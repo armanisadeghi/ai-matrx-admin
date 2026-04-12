@@ -197,7 +197,7 @@ export default function ToolTestingClient() {
     }
 
     console.log(
-      `[ToolTest] Executing "${selectedTool.name}" → ${backendUrl}/api/tools/test/execute`,
+      `[ToolTest] Executing "${selectedTool.name}" → ${backendUrl}${ENDPOINTS.tools.testExecute}`,
       "\n  user:",
       userId,
       "\n  context:",

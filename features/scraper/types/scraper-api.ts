@@ -208,9 +208,9 @@ export interface SearchResult {
  * AUTHENTICATED USER FLOW
  *
  * ```typescript
- * import { BACKEND_URLS } from '@/lib/api/endpoints';
+ * import { BACKEND_URLS, ENDPOINTS } from '@/lib/api/endpoints';
  *
- * const response = await fetch(`${BACKEND_URLS.production}/api/scraper/quick-scrape`, {
+ * const response = await fetch(`${BACKEND_URLS.production}${ENDPOINTS.scraper.quickScrape}`, {
  *   method: "POST",
  *   headers: {
  *     "Content-Type": "application/json",
@@ -228,11 +228,11 @@ export interface SearchResult {
  *
  * ```typescript
  * import { getFingerprint } from '@/lib/services/fingerprint-service';
- * import { BACKEND_URLS } from '@/lib/api/endpoints';
+ * import { BACKEND_URLS, ENDPOINTS } from '@/lib/api/endpoints';
  *
  * const fingerprintId = await getFingerprint();
  *
- * const response = await fetch(`${BACKEND_URLS.production}/api/scraper/quick-scrape`, {
+ * const response = await fetch(`${BACKEND_URLS.production}${ENDPOINTS.scraper.quickScrape}`, {
  *   method: "POST",
  *   headers: {
  *     "Content-Type": "application/json",

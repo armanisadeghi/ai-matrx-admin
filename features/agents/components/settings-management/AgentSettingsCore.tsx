@@ -11,8 +11,11 @@ import {
   Code2,
   SlidersHorizontal,
   ClipboardCopy,
+  Plus,
+  X,
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -417,6 +420,201 @@ function IssueTable({
   );
 }
 
+// ── TtsVoiceEditor ───────────────────────────────────────────────────────────
+
+interface SpeakerEntry {
+  name: string;
+  voice: string;
+}
+
+interface TtsVoiceEditorProps {
+  voiceEnum: string[];
+  ttsValue: unknown;
+  multiSpeakerAllowed: boolean;
+  maxSpeakers?: number;
+  isEnabled: boolean;
+  onSave: (ttsVoice: string | SpeakerEntry[], multiSpeaker: boolean) => void;
+}
+
+function TtsVoiceEditor({
+  voiceEnum,
+  ttsValue,
+  multiSpeakerAllowed,
+  maxSpeakers,
+  isEnabled,
+  onSave,
+}: TtsVoiceEditorProps) {
+  const isMulti = Array.isArray(ttsValue);
+  const atMax = maxSpeakers !== undefined && maxSpeakers > 0;
+
+  const speakers: SpeakerEntry[] = isMulti
+    ? ttsValue.map((s) => ({
+        name: typeof s?.name === "string" ? s.name : "",
+        voice: typeof s?.voice === "string" ? s.voice : (voiceEnum[0] ?? ""),
+      }))
+    : [];
+
+  const singleVoice =
+    typeof ttsValue === "string" ? ttsValue : (voiceEnum[0] ?? "");
+
+  const switchToMulti = () => {
+    const initial: SpeakerEntry[] = [
+      { name: "Speaker 1", voice: singleVoice || voiceEnum[0] || "" },
+      { name: "Speaker 2", voice: voiceEnum[1] ?? voiceEnum[0] ?? "" },
+    ];
+    onSave(initial, true);
+  };
+
+  const switchToSingle = () => {
+    onSave(speakers[0]?.voice || voiceEnum[0] || "", false);
+  };
+
+  const updateSpeaker = (idx: number, field: "name" | "voice", val: string) => {
+    const next = speakers.map((s, i) =>
+      i === idx ? { ...s, [field]: val } : s,
+    );
+    onSave(next, true);
+  };
+
+  const canAddMore = !atMax || speakers.length < maxSpeakers;
+
+  const addSpeaker = () => {
+    if (!canAddMore) return;
+    onSave(
+      [
+        ...speakers,
+        {
+          name: `Speaker ${speakers.length + 1}`,
+          voice: voiceEnum[0] ?? "",
+        },
+      ],
+      true,
+    );
+  };
+
+  const removeSpeaker = (idx: number) => {
+    if (speakers.length <= 2) return;
+    onSave(
+      speakers.filter((_, i) => i !== idx),
+      true,
+    );
+  };
+
+  return (
+    <div className="space-y-2.5">
+      {/* Mode switch — only shown when model supports multi-speaker */}
+      {multiSpeakerAllowed && (
+        <div className="flex items-center gap-2">
+          <span
+            className={`text-xs ${!isMulti ? "font-medium text-foreground" : "text-muted-foreground"}`}
+          >
+            Single
+          </span>
+          <Switch
+            checked={isMulti}
+            onCheckedChange={(checked) =>
+              checked ? switchToMulti() : switchToSingle()
+            }
+            disabled={!isEnabled}
+            className="data-[state=checked]:bg-primary"
+          />
+          <span
+            className={`text-xs ${isMulti ? "font-medium text-foreground" : "text-muted-foreground"}`}
+          >
+            Multi
+          </span>
+          {isMulti && atMax && (
+            <span className="text-[10px] text-muted-foreground ml-1">
+              (max {maxSpeakers})
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Voice selection */}
+      {!isMulti ? (
+        <div>
+          {multiSpeakerAllowed && (
+            <Label className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1 block">
+              Voice
+            </Label>
+          )}
+          <Select
+            value={singleVoice}
+            onValueChange={(val) => onSave(val, false)}
+            disabled={!isEnabled}
+          >
+            <SelectTrigger className="h-7 text-xs">
+              <SelectValue placeholder="Select voice..." />
+            </SelectTrigger>
+            <SelectContent className="text-xs">
+              {voiceEnum.map((v) => (
+                <SelectItem key={v} value={v} className="text-xs py-1">
+                  {v}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      ) : (
+        <div>
+          <Label className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1 block">
+            Voices
+          </Label>
+          <div className="space-y-1.5">
+            {speakers.map((speaker, idx) => (
+              <div key={idx} className="flex items-center gap-1.5">
+                <Input
+                  value={speaker.name}
+                  onChange={(e) => updateSpeaker(idx, "name", e.target.value)}
+                  disabled={!isEnabled}
+                  className="h-7 text-xs flex-1 min-w-0"
+                  placeholder="Name..."
+                />
+                <Select
+                  value={speaker.voice}
+                  onValueChange={(val) => updateSpeaker(idx, "voice", val)}
+                  disabled={!isEnabled}
+                >
+                  <SelectTrigger className="h-7 text-xs w-[140px] flex-shrink-0">
+                    <SelectValue placeholder="Voice..." />
+                  </SelectTrigger>
+                  <SelectContent className="text-xs">
+                    {voiceEnum.map((v) => (
+                      <SelectItem key={v} value={v} className="text-xs py-1">
+                        {v}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 flex-shrink-0 text-muted-foreground hover:text-destructive"
+                  onClick={() => removeSpeaker(idx)}
+                  disabled={!isEnabled || speakers.length <= 2}
+                >
+                  <X className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            ))}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 text-xs gap-1 text-muted-foreground hover:text-foreground"
+              onClick={addSpeaker}
+              disabled={!isEnabled || !canAddMore}
+            >
+              <Plus className="h-3 w-3" />
+              Add Speaker
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── ModelConfigViewer ─────────────────────────────────────────────────────────
 function ModelConfigViewer({
   normalizedControls,
@@ -783,8 +981,16 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
       }
     } else {
       newEnabled.delete(key);
-      const { [key]: _removed, ...rest } = currentSettings;
-      dispatch(setAgentSettings({ id: agentId, settings: rest as LLMParams }));
+      const cleaned = { ...currentSettings };
+      delete (cleaned as Record<string, unknown>)[key];
+      // When disabling tts_voice, also remove the coupled multi_speaker flag
+      if (key === "tts_voice") {
+        delete (cleaned as Record<string, unknown>).multi_speaker;
+        newEnabled.delete("multi_speaker" as keyof LLMParams);
+      }
+      dispatch(
+        setAgentSettings({ id: agentId, settings: cleaned as LLMParams }),
+      );
     }
     setEnabledSettings(newEnabled);
   };
@@ -1130,7 +1336,6 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
   ];
 
   const audioSettings: { key: keyof LLMParams; label: string }[] = [
-    { key: "tts_voice", label: "TTS Voice" },
     { key: "audio_format", label: "Audio Format" },
   ];
 
@@ -1204,11 +1409,85 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
 
             {/* Audio settings */}
             {!noControls &&
-              audioSettings.some(({ key }) => getControl(key)) && (
+              (getControl("tts_voice") ||
+                audioSettings.some(({ key }) => getControl(key))) && (
                 <div className="border-t pt-2 mt-2">
                   <div className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
                     Audio Settings
                   </div>
+
+                  {/* Voice — custom editor with single/multi speaker modes */}
+                  {(() => {
+                    const voiceControl = getControl("tts_voice");
+                    if (!voiceControl) return null;
+                    const voiceEnum = voiceControl.enum ?? [];
+                    const ttsEnabled = enabledSettings.has("tts_voice");
+                    const multiControl = getControl("multi_speaker");
+                    const multiAllowed = !!multiControl;
+                    const maxSpeakers = multiControl?.max;
+
+                    return (
+                      <div className="mb-2">
+                        <div className="flex items-center gap-3 mb-1">
+                          <div
+                            className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
+                            onClick={() =>
+                              handleToggleSetting("tts_voice", !ttsEnabled)
+                            }
+                          >
+                            <Checkbox
+                              id="setting-agent-tts_voice"
+                              checked={ttsEnabled}
+                              onCheckedChange={(checked) =>
+                                handleToggleSetting(
+                                  "tts_voice",
+                                  checked as boolean,
+                                )
+                              }
+                              className="cursor-pointer"
+                            />
+                            <Label
+                              htmlFor="setting-agent-tts_voice"
+                              className={`text-xs flex-shrink-0 w-36 cursor-pointer ${
+                                ttsEnabled
+                                  ? "text-gray-700 dark:text-gray-300"
+                                  : "text-gray-400 dark:text-gray-600"
+                              }`}
+                            >
+                              Voice
+                            </Label>
+                          </div>
+                        </div>
+                        <div
+                          className={`pl-[calc(1rem+8px+0.75rem)] ${!ttsEnabled ? "opacity-50 pointer-events-none" : ""}`}
+                        >
+                          <TtsVoiceEditor
+                            voiceEnum={voiceEnum}
+                            ttsValue={
+                              (currentSettings as Record<string, unknown>)
+                                .tts_voice
+                            }
+                            multiSpeakerAllowed={multiAllowed}
+                            maxSpeakers={maxSpeakers}
+                            isEnabled={ttsEnabled}
+                            onSave={(ttsVoice, multi) => {
+                              dispatch(
+                                setAgentSettings({
+                                  id: agentId,
+                                  settings: {
+                                    ...currentSettings,
+                                    tts_voice: ttsVoice,
+                                    multi_speaker: multi,
+                                  } as LLMParams,
+                                }),
+                              );
+                            }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })()}
+
                   {audioSettings.map(({ key, label }) => {
                     const control = getControl(key);
                     if (!control) return null;

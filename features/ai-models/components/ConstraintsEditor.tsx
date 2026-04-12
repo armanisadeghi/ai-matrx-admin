@@ -675,18 +675,26 @@ function ConditionalRow({
 interface ConstraintsEditorProps {
   constraints: ModelConstraint[] | null;
   onSave: (constraints: ModelConstraint[]) => Promise<void>;
+  onChange?: (constraints: ModelConstraint[]) => void;
 }
 
 export default function ConstraintsEditor({
   constraints,
   onSave,
+  onChange,
 }: ConstraintsEditorProps) {
-  const [local, setLocal] = useState<ModelConstraint[]>(constraints ?? []);
+  const toArray = (
+    v: ModelConstraint[] | null | undefined,
+  ): ModelConstraint[] => (Array.isArray(v) ? v : []);
+
+  const [local, setLocal] = useState<ModelConstraint[]>(() =>
+    toArray(constraints),
+  );
   const [mode, setMode] = useState<"structured" | "raw">("structured");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    setLocal(constraints ?? []);
+    setLocal(toArray(constraints));
   }, [constraints]);
 
   const hasChanges =
@@ -710,6 +718,7 @@ export default function ConstraintsEditor({
     try {
       await onSave(parsed);
       setLocal(parsed);
+      onChange?.(parsed);
     } catch (err) {
       console.error("Failed to save constraints (raw)", err);
     } finally {
@@ -718,31 +727,48 @@ export default function ConstraintsEditor({
   };
 
   const updateAt = (i: number, c: ModelConstraint) =>
-    setLocal((p) => p.map((x, j) => (j === i ? c : x)));
-  const deleteAt = (i: number) => setLocal((p) => p.filter((_, j) => j !== i));
+    setLocal((p) => {
+      const next = p.map((x, j) => (j === i ? c : x));
+      onChange?.(next);
+      return next;
+    });
+  const deleteAt = (i: number) =>
+    setLocal((p) => {
+      const next = p.filter((_, j) => j !== i);
+      onChange?.(next);
+      return next;
+    });
 
   const addSimple = () =>
-    setLocal((p) => [
-      ...p,
-      {
-        id: "",
-        rule: "required" as UnconditionalRule,
-        field: "",
-        severity: "error" as const,
-        message: "",
-      },
-    ]);
+    setLocal((p) => {
+      const next = [
+        ...p,
+        {
+          id: "",
+          rule: "required" as UnconditionalRule,
+          field: "",
+          severity: "error" as const,
+          message: "",
+        },
+      ];
+      onChange?.(next);
+      return next;
+    });
   const addConditional = () =>
-    setLocal((p) => [
-      ...p,
-      {
-        id: "",
-        when: { field: "", op: "gt" as ConditionOp, value: 0 },
-        require: { field: "", op: "eq" as ConditionOp, value: true },
-        severity: "error" as const,
-        message: "",
-      },
-    ]);
+    setLocal((p) => {
+      const next = [
+        ...p,
+        {
+          id: "",
+          when: { field: "", op: "gt" as ConditionOp, value: 0 },
+          require: { field: "", op: "eq" as ConditionOp, value: true },
+          severity: "error" as const,
+          message: "",
+        },
+      ];
+      onChange?.(next);
+      return next;
+    });
 
   const simpleCount = local.filter((c) => !isConditionalConstraint(c)).length;
   const condCount = local.filter((c) => isConditionalConstraint(c)).length;
@@ -799,16 +825,6 @@ export default function ConstraintsEditor({
               </>
             )}
           </Button>
-          {mode === "structured" && hasChanges && (
-            <Button
-              size="sm"
-              className="h-6 px-2.5 text-[10px]"
-              onClick={save}
-              disabled={saving}
-            >
-              {saving ? "Saving…" : "Save"}
-            </Button>
-          )}
         </div>
       </div>
 

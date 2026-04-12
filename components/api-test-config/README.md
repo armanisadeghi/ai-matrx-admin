@@ -9,7 +9,7 @@ Centralized server selection and authentication for all API test pages.
 ### How it works
 
 1. Hook initializes with `defaultServerType` for zero-delay first paint
-2. Hook immediately pings `{localUrl}/api/health` to validate localhost
+2. Hook immediately pings `{localUrl}/health` to validate localhost
 3. If localhost is unreachable, auto-falls back to production
 4. Panel disables the localhost toggle when server is unavailable
 5. Manual toggle re-checks before switching
@@ -30,7 +30,7 @@ export default function MyTestPage() {
       <ApiTestConfigPanel config={apiConfig} />
 
       <button onClick={async () => {
-        const response = await fetch(`${apiConfig.baseUrl}/api/endpoint`, {
+        const response = await fetch(`${apiConfig.baseUrl}/ai/chat`, {
           headers: { 'Authorization': `Bearer ${apiConfig.authToken}` }
         });
       }}>
@@ -83,7 +83,7 @@ interface ApiTestConfigPanelProps {
 
 ## Localhost Validation Flow
 
-1. **On mount** — always pings `/api/health` with 2s timeout. Any HTTP response = available, network error = unavailable.
+1. **On mount** — always pings `/health` with 2s timeout. Any HTTP response = available, network error = unavailable.
 2. **Manual switch to localhost** — re-checks before committing. If unavailable, shows error toast and stays on production.
 3. **Manual switch to production** — immediate, no check needed.
 4. **Panel UI** — localhost toggle is disabled + dimmed when unavailable. Spinner shown during checks.

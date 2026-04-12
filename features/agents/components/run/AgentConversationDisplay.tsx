@@ -24,10 +24,14 @@ import {
   selectLatestAccumulatedText,
   selectLatestInfoUserMessage,
   selectLatestError,
+  selectLatestContentBlocks,
 } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
+import type { ServerProcessedBlock } from "@/components/mardown-display/chat-markdown/EnhancedChatMarkdown";
 import { AgentUserMessage } from "./AgentUserMessage";
 
-const AgentAssistantMessage = dynamic(
+import type { AgentAssistantMessageProps } from "./AgentAssistantMessage";
+
+const AgentAssistantMessage = dynamic<AgentAssistantMessageProps>(
   () =>
     import("./AgentAssistantMessage").then((m) => ({
       default: m.AgentAssistantMessage,
@@ -51,6 +55,7 @@ interface DisplayMessage {
   role: "user" | "assistant" | "system" | "status";
   content: string;
   contentBlocks?: Array<Record<string, unknown>>;
+  serverProcessedBlocks?: ServerProcessedBlock[];
   isStreamActive: boolean;
   error?: string | null;
   infoMessage?: string | null;
@@ -74,6 +79,13 @@ export function AgentConversationDisplay({
     selectLatestInfoUserMessage(conversationId),
   );
   const error = useAppSelector(selectLatestError(conversationId));
+  // Live content blocks (audio, images, etc.) accumulated during the current stream.
+  // Memoize the selector instance so createSelector caching works correctly.
+  const contentBlocksSelector = useMemo(
+    () => selectLatestContentBlocks(conversationId),
+    [conversationId],
+  );
+  const liveContentBlocks = useAppSelector(contentBlocksSelector);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const isActive =
@@ -89,6 +101,11 @@ export function AgentConversationDisplay({
       role: turn.role,
       content: turn.content,
       contentBlocks: turn.contentBlocks,
+      // Map committed contentBlocks to ServerProcessedBlock shape for MarkdownStream
+      serverProcessedBlocks:
+        turn.contentBlocks && turn.contentBlocks.length > 0
+          ? (turn.contentBlocks as unknown as ServerProcessedBlock[])
+          : undefined,
       isStreamActive: false,
       ...(turn.errorMessage && { error: turn.errorMessage }),
     }));
@@ -108,6 +125,11 @@ export function AgentConversationDisplay({
           content: streamingText ?? "",
           isStreamActive: true,
           infoMessage: phase === "interstitial" ? infoMessage : null,
+          // Pass live content blocks (audio, images) accumulated during streaming
+          serverProcessedBlocks:
+            liveContentBlocks.length > 0
+              ? (liveContentBlocks as unknown as ServerProcessedBlock[])
+              : undefined,
         });
       } else if (phase === "error") {
         msgs.push({
@@ -121,7 +143,15 @@ export function AgentConversationDisplay({
     }
 
     return msgs;
-  }, [turns, isActive, phase, streamingText, infoMessage, error]);
+  }, [
+    turns,
+    isActive,
+    phase,
+    streamingText,
+    infoMessage,
+    error,
+    liveContentBlocks,
+  ]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -163,6 +193,7 @@ export function AgentConversationDisplay({
                 error={msg.error}
                 conversationId={conversationId}
                 messageKey={msg.key}
+                serverProcessedBlocks={msg.serverProcessedBlocks}
               />
               {msg.isStreamActive && msg.infoMessage && (
                 <AgentStatusIndicator

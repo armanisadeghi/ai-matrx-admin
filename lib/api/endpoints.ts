@@ -146,6 +146,8 @@ export const ENDPOINTS = {
 
   /** PDF extraction & document management — Authenticated */
   pdf: {
+    /** POST — Compress PDF (multipart file upload) */
+    compress: "/utilities/pdf/compress" as const,
     /** POST — Single-file text extraction (stateless, legacy) */
     extractText: "/utilities/pdf/extract-text" as const,
     /** POST — Batch extraction with NDJSON streaming (saves to DB + storage) */

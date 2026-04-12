@@ -14,6 +14,7 @@ const MarkdownStreamImpl: React.FC<MarkdownStreamProps> = (props) => {
     content = "",
     events,
     strictServerData = false,
+    serverProcessedBlocks,
     ...restProps
   } = props;
 
@@ -41,6 +42,7 @@ const MarkdownStreamImpl: React.FC<MarkdownStreamProps> = (props) => {
         <StreamAwareChatMarkdown
           content={content}
           events={events}
+          serverProcessedBlocks={serverProcessedBlocks}
           {...restProps}
         />
       </MarkdownErrorBoundary>

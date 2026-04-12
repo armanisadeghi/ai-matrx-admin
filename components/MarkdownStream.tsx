@@ -1,6 +1,7 @@
 import dynamic from "next/dynamic";
 import { StreamEvent } from "@/components/mardown-display/chat-markdown/types";
 import type { ToolCallObject } from "@/lib/api/tool-call.types";
+import type { ServerProcessedBlock } from "@/components/mardown-display/chat-markdown/EnhancedChatMarkdown";
 
 /**
  * Props for the MarkdownStream component.
@@ -59,6 +60,13 @@ export interface MarkdownStreamProps {
    * if block.serverData is null. Leave false (default) for production.
    */
   strictServerData?: boolean;
+  /**
+   * Pre-processed blocks from the server (content_block events committed to Redux).
+   * Pass these to bypass client-side parsing and render server-side blocks directly.
+   * Used by AgentAssistantMessage to render committed blocks (audio, images, etc.)
+   * without going through the event-based streaming path.
+   */
+  serverProcessedBlocks?: ServerProcessedBlock[];
 }
 
 /**

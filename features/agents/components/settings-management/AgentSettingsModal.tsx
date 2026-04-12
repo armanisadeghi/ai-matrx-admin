@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { SlidersHorizontal } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
@@ -75,6 +75,7 @@ export function AgentSettingsModal({
 
   const [snapshot, setSnapshot] = useState<SettingsSnapshot | null>(null);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const discardedRef = useRef(false);
 
   useEffect(() => {
     if (isControlled && controlledOpen && !snapshot) {
@@ -134,8 +135,10 @@ export function AgentSettingsModal({
   };
 
   const handleConfirmCancel = () => {
+    discardedRef.current = true;
     revertToSnapshot();
     setShowCancelConfirm(false);
+    setSnapshot(null);
   };
 
   const handleDone = () => {
@@ -197,7 +200,13 @@ export function AgentSettingsModal({
         <AlertDialog
           open={showCancelConfirm}
           onOpenChange={(o) => {
-            if (!o) handleKeepEditing();
+            if (!o) {
+              if (discardedRef.current) {
+                discardedRef.current = false;
+                return;
+              }
+              handleKeepEditing();
+            }
           }}
         >
           <AlertDialogContent>
@@ -250,7 +259,13 @@ export function AgentSettingsModal({
       <AlertDialog
         open={showCancelConfirm}
         onOpenChange={(o) => {
-          if (!o) handleKeepEditing();
+          if (!o) {
+            if (discardedRef.current) {
+              discardedRef.current = false;
+              return;
+            }
+            handleKeepEditing();
+          }
         }}
       >
         <AlertDialogContent>

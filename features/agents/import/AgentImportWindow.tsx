@@ -177,7 +177,7 @@ function PasteBody({
         value={pastedText}
         onChange={(e) => onPastedTextChange(e.target.value)}
         disabled={isConverting}
-        style={{ fontSize: 12 }}
+        autoFocus
       />
 
       <div className="flex justify-end shrink-0 pt-1 border-t border-border">

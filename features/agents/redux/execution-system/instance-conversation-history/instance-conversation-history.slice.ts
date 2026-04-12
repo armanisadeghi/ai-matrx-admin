@@ -230,6 +230,7 @@ const instanceConversationHistorySlice = createSlice({
         finishReason?: string;
         completionStats?: CompletionStats;
         errorMessage?: string;
+        contentBlocks?: Array<Record<string, unknown>>;
       }>,
     ) {
       const {
@@ -241,6 +242,7 @@ const instanceConversationHistorySlice = createSlice({
         finishReason,
         completionStats,
         errorMessage,
+        contentBlocks,
       } = action.payload;
 
       const entry = state.byConversationId[conversationId];
@@ -261,6 +263,7 @@ const instanceConversationHistorySlice = createSlice({
         ...(finishReason && { finishReason }),
         ...(completionStats && { completionStats }),
         ...(errorMessage && { errorMessage }),
+        ...(contentBlocks && contentBlocks.length > 0 && { contentBlocks }),
       });
     },
 

@@ -403,15 +403,13 @@ const COLUMNS: ColDef[] = [
         return <span className="text-xs text-muted-foreground/40">—</span>;
       }
       const tier = item.pricing[item.pricing.length - 1];
+      const fmt = (v: number | null) =>
+        v == null ? "—" : `$${v.toFixed(v < 0.1 ? 3 : 2)}`;
       return (
         <div className="text-xs font-mono leading-tight">
-          <span className="text-foreground">
-            ${tier.input_price.toFixed(tier.input_price < 0.1 ? 3 : 2)}
-          </span>
+          <span className="text-foreground">{fmt(tier.input_price)}</span>
           <span className="text-muted-foreground mx-0.5">/</span>
-          <span className="text-foreground">
-            ${tier.output_price.toFixed(tier.output_price < 0.1 ? 3 : 2)}
-          </span>
+          <span className="text-foreground">{fmt(tier.output_price)}</span>
           {item.pricing.length > 1 && (
             <span className="ml-1 text-muted-foreground/60">
               ({item.pricing.length}T)
@@ -464,10 +462,7 @@ function applyFilters(
     );
   }
   if (filters.api_class) {
-    const lc = filters.api_class.toLowerCase();
-    result = result.filter((m) =>
-      (m.api_class ?? "").toLowerCase().includes(lc),
-    );
+    result = result.filter((m) => m.api_class === filters.api_class);
   }
   if (filters.model_class) {
     result = result.filter((m) => m.model_class === filters.model_class);

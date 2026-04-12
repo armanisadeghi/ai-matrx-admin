@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -24,7 +24,6 @@ import {
 import type { ModelAuditResult, AuditCategory } from "./auditTypes";
 import type { AiModel } from "../types";
 import { ModelNameCell, ProviderBadge } from "./AuditTableShell";
-import { ALL_PROVIDERS } from "../components/AiModelFilterBar";
 import ModelDetailSheet, { OpenDetailButton } from "./ModelDetailSheet";
 
 const CATEGORY_LABELS: Record<AuditCategory, string> = {
@@ -71,6 +70,11 @@ export default function AuditOverviewTab({
   );
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [detailModelId, setDetailModelId] = useState<string | null>(null);
+
+  const providers = useMemo(
+    () => [...new Set(allModels.map((m) => m.provider).filter(Boolean))].sort(),
+    [allModels],
+  );
 
   const filtered = results.filter((r) => {
     if (filterStatus === "pass" && !r.pass) return false;
@@ -147,7 +151,7 @@ export default function AuditOverviewTab({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="__all__">All Providers</SelectItem>
-            {ALL_PROVIDERS.map((p) => (
+            {providers.map((p) => (
               <SelectItem key={p} value={p}>
                 {p}
               </SelectItem>

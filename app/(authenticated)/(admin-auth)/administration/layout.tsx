@@ -5,7 +5,7 @@ import { ClientAdminLayout } from "./ClientAdminLayout";
 export const metadata = createRouteMetadata("/administration", {
   title: "Administration",
   description: "Administrative tools and system management",
-  letter: "Ad",
+  letter: "Ao",
   additionalMetadata: {
     keywords: [
       "administration",
