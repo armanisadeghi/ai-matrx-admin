@@ -81,35 +81,54 @@ function makeEmptyRecord(id: string): AgentDefinitionRecord {
  * Never overwrites with undefined. Does not touch runtime flags.
  */
 /**
- * Normalizes the messages array from the DB.
- * The canonical TextBlock shape is { type: "text", text: "..." }.
- * If a block arrives with { type: "text", content: "..." } (malformed DB row),
- * we fix it in-place, log an error so developers catch it, and move on.
- * We do NOT change types to accommodate this — it is a data error.
+ * Normalizes the messages array from the DB or templates.
+ *
+ * Handles three real-world content shapes:
+ *   1. string  → wrap as [{ type: "text", text: "..." }]
+ *   2. array   → map blocks, fixing the { type:"text", content:"..." } DB typo
+ *   3. anything else (null/undefined) → leave untouched
  */
 function normalizeMessages(
   messages: AgentDefinition["messages"],
 ): AgentDefinition["messages"] {
   if (!messages) return messages;
-  return messages.map((msg) => ({
-    ...msg,
-    content: msg.content.map((block) => {
-      const raw = block as unknown as Record<string, unknown>;
-      if (
-        raw.type === "text" &&
-        raw.text === undefined &&
-        raw.content !== undefined
-      ) {
-        console.error(
-          "[AgentDefinition] Malformed TextBlock: field is 'content' but should be 'text'. " +
-            "Fix the database record. Block:",
-          raw,
-        );
-        return { type: "text" as const, text: raw.content as string };
-      }
-      return block;
-    }),
-  }));
+  return messages.map((msg) => {
+    const rawContent = msg.content as unknown;
+
+    // Shape 1: plain string content (common in templates / OpenAI format)
+    if (typeof rawContent === "string") {
+      return {
+        ...msg,
+        content: [{ type: "text" as const, text: rawContent }],
+      };
+    }
+
+    // Shape 2: array of content blocks
+    if (Array.isArray(rawContent)) {
+      return {
+        ...msg,
+        content: rawContent.map((block) => {
+          const raw = block as unknown as Record<string, unknown>;
+          if (
+            raw.type === "text" &&
+            raw.text === undefined &&
+            raw.content !== undefined
+          ) {
+            console.error(
+              "[AgentDefinition] Malformed TextBlock: field is 'content' but should be 'text'. " +
+                "Fix the database record. Block:",
+              raw,
+            );
+            return { type: "text" as const, text: raw.content as string };
+          }
+          return block;
+        }),
+      };
+    }
+
+    // Shape 3: null/undefined or unexpected — leave as-is
+    return msg;
+  });
 }
 
 function mergeAndTrack(
@@ -315,15 +334,35 @@ export const agentDefinitionSlice = createSlice({
       const status: AgentFetchStatus = data.isVersion
         ? "versionSnapshot"
         : "full";
+
+      // Detect whether normalizeMessages actually changed anything so we can
+      // mark the field dirty — forcing a save that writes the cleaned form.
+      const originalMessages = data.messages;
+      const normalizedMessages = normalizeMessages(originalMessages);
+      const messagesWereNormalized =
+        normalizedMessages !== originalMessages &&
+        JSON.stringify(normalizedMessages) !== JSON.stringify(originalMessages);
+      const normalizedData = messagesWereNormalized
+        ? { ...data, messages: normalizedMessages }
+        : data;
+
       const existing = state.agents[data.id];
       if (existing) {
-        mergeAndTrack(existing, data);
+        mergeAndTrack(existing, normalizedData);
         markRecordClean(existing);
+        if (messagesWereNormalized) {
+          existing._dirtyFields.add("messages");
+          existing._dirty = true;
+        }
         applyFetchStatus(existing, status);
       } else {
         const record = makeEmptyRecord(data.id);
-        mergeAndTrack(record, data);
+        mergeAndTrack(record, normalizedData);
         markRecordClean(record);
+        if (messagesWereNormalized) {
+          record._dirtyFields.add("messages");
+          record._dirty = true;
+        }
         applyFetchStatus(record, status);
         state.agents[data.id] = record;
       }
@@ -341,6 +380,11 @@ export const agentDefinitionSlice = createSlice({
     ) {
       const data = action.payload;
       const now = new Date().toISOString();
+      const rawMessages = data.messages ?? [];
+      const seedMessages = normalizeMessages(rawMessages) ?? [];
+      const seedMessagesNormalized =
+        JSON.stringify(seedMessages) !== JSON.stringify(rawMessages);
+
       const full: AgentDefinition = {
         id: data.id,
         name: data.name ?? "New Agent",
@@ -358,7 +402,7 @@ export const agentDefinitionSlice = createSlice({
         changedAt: null,
         changeNote: null,
         modelId: data.modelId ?? null,
-        messages: data.messages ?? [],
+        messages: seedMessages,
         variableDefinitions: data.variableDefinitions ?? null,
         settings: data.settings ?? ({} as AgentDefinition["settings"]),
         tools: data.tools ?? [],
@@ -383,6 +427,10 @@ export const agentDefinitionSlice = createSlice({
         const record = makeEmptyRecord(full.id);
         mergeAndTrack(record, full);
         markRecordClean(record);
+        if (seedMessagesNormalized) {
+          record._dirtyFields.add("messages");
+          record._dirty = true;
+        }
         applyFetchStatus(record, "full");
         state.agents[full.id] = record;
       }

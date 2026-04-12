@@ -64,22 +64,32 @@ const INTERFACE_VARIATIONS = [
 interface MenuItem {
   label: string;
   icon: React.ComponentType<{ className?: string }>;
+  soon?: boolean;
 }
 
-const GENERAL_ITEMS: MenuItem[] = [
+// Actions scoped to the currently active agent
+const THIS_AGENT_ITEMS: MenuItem[] = [
   { label: "Edit Agent Info", icon: FileText },
   { label: "View Run History", icon: History },
   { label: "View Agent Window", icon: AppWindow },
-  { label: "View All Versions", icon: GitBranch },
-  { label: "Advanced Settings View", icon: SlidersHorizontal },
-  { label: "Matrx Agent Optimizer", icon: Sparkles },
-  { label: "Full Screen Editor", icon: Maximize2 },
-  { label: "Open Run Modal", icon: Play },
+  { label: "Advanced Settings View", icon: SlidersHorizontal, soon: true },
+  { label: "View All Versions", icon: GitBranch, soon: true },
+  { label: "Full Screen Editor", icon: Maximize2, soon: true },
+  { label: "Open Run Modal", icon: Play, soon: true },
+  { label: "Matrx Agent Optimizer", icon: Sparkles, soon: true },
+];
+
+// Actions that produce something new from this agent
+const AGENT_MANAGEMENT_ITEMS: MenuItem[] = [
   { label: "Duplicate", icon: Copy },
-  { label: "Import Agent", icon: Upload },
   { label: "Convert to Template", icon: Shield },
-  { label: "Create App", icon: AppWindow },
-  { label: "Add Data Storage Support", icon: Database },
+  { label: "Create App", icon: AppWindow, soon: true },
+  { label: "Add Data Storage Support", icon: Database, soon: true },
+];
+
+// Global agent actions — not scoped to the current agent
+const GLOBAL_AGENT_ITEMS: MenuItem[] = [
+  { label: "Import Agent", icon: Upload },
 ];
 
 // Items that can be opened in a new tab (have navigatable URLs)
@@ -107,13 +117,21 @@ const NEW_TAB_ITEMS: {
 ];
 
 const ADMIN_ITEMS: MenuItem[] = [
-  { label: "Convert/Update System Agent", icon: RefreshCw },
-  { label: "Create/Update Shortcut", icon: Link2 },
-  { label: "Find Usages", icon: Search },
+  { label: "Convert/Update System Agent", icon: RefreshCw, soon: true },
+  { label: "Create/Update Shortcut", icon: Link2, soon: true },
+  { label: "Find Usages", icon: Search, soon: true },
 ];
 
 function comingSoon() {
   toast.info("Coming Soon");
+}
+
+function SoonBadge() {
+  return (
+    <span className="ml-2 text-[10px] font-medium text-muted-foreground/60 bg-muted rounded px-1 py-0.5 leading-none">
+      soon
+    </span>
+  );
 }
 
 async function convertToTemplate(agentId: string): Promise<void> {
@@ -226,32 +244,24 @@ export function AgentOptionsMenu({
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-72">
-        {GENERAL_ITEMS.map(({ label, icon: Icon }) => {
-          const isLoading =
-            (label === "Convert to Template" && isConverting) ||
-            (label === "Duplicate" && isDuplicating);
-          const displayLabel =
-            label === "Convert to Template" && isConverting
-              ? "Saving..."
-              : label === "Duplicate" && isDuplicating
-                ? "Duplicating..."
-                : label;
-          return (
-            <DropdownMenuItem
-              key={label}
-              disabled={isLoading}
-              onClick={() => handleDesktopItemClick(label)}
-            >
-              <Icon className="w-4 h-4 mr-2 text-muted-foreground" />
-              {displayLabel}
-            </DropdownMenuItem>
-          );
-        })}
+        {/* ── This Agent ── */}
+        {THIS_AGENT_ITEMS.map(({ label, icon: Icon, soon }) => (
+          <DropdownMenuItem
+            key={label}
+            onClick={() => handleDesktopItemClick(label)}
+            className={cn(soon && "text-muted-foreground")}
+          >
+            <Icon className="w-4 h-4 mr-2 text-muted-foreground" />
+            <span className="flex-1">{label}</span>
+            {soon && <SoonBadge />}
+          </DropdownMenuItem>
+        ))}
 
         <DropdownMenuSub>
-          <DropdownMenuSubTrigger>
+          <DropdownMenuSubTrigger className="text-muted-foreground">
             <Layers className="w-4 h-4 mr-2 text-muted-foreground" />
-            Try Interface Variations
+            <span className="flex-1">Try Interface Variations</span>
+            <SoonBadge />
           </DropdownMenuSubTrigger>
           <DropdownMenuSubContent className="w-48">
             {INTERFACE_VARIATIONS.map((v) => (
@@ -284,14 +294,66 @@ export function AgentOptionsMenu({
           </DropdownMenuSubContent>
         </DropdownMenuSub>
 
+        {/* ── Manage This Agent ── */}
         <DropdownMenuSeparator />
         <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-semibold">
-          Admin Options
+          Manage
+        </DropdownMenuLabel>
+        {AGENT_MANAGEMENT_ITEMS.map(({ label, icon: Icon, soon }) => {
+          const isLoading =
+            (label === "Convert to Template" && isConverting) ||
+            (label === "Duplicate" && isDuplicating);
+          const displayLabel =
+            label === "Convert to Template" && isConverting
+              ? "Saving..."
+              : label === "Duplicate" && isDuplicating
+                ? "Duplicating..."
+                : label;
+          return (
+            <DropdownMenuItem
+              key={label}
+              disabled={isLoading}
+              onClick={() => handleDesktopItemClick(label)}
+              className={cn(soon && "text-muted-foreground")}
+            >
+              <Icon className="w-4 h-4 mr-2 text-muted-foreground" />
+              <span className="flex-1">{displayLabel}</span>
+              {soon && <SoonBadge />}
+            </DropdownMenuItem>
+          );
+        })}
+
+        {/* ── Global (not agent-specific) ── */}
+        <DropdownMenuSeparator />
+        <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-semibold">
+          Agents
+        </DropdownMenuLabel>
+        {GLOBAL_AGENT_ITEMS.map(({ label, icon: Icon, soon }) => (
+          <DropdownMenuItem
+            key={label}
+            onClick={() => handleDesktopItemClick(label)}
+            className={cn(soon && "text-muted-foreground")}
+          >
+            <Icon className="w-4 h-4 mr-2 text-muted-foreground" />
+            <span className="flex-1">{label}</span>
+            {soon && <SoonBadge />}
+          </DropdownMenuItem>
+        ))}
+
+        {/* ── Admin ── */}
+        <DropdownMenuSeparator />
+        <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-semibold">
+          Admin
         </DropdownMenuLabel>
         {ADMIN_ITEMS.map(({ label, icon: Icon }) => (
-          <DropdownMenuItem key={label} onClick={comingSoon}>
+          <DropdownMenuItem
+            key={label}
+            onClick={comingSoon}
+            className="text-muted-foreground"
+          >
             <Icon className="w-4 h-4 mr-2 text-muted-foreground" />
-            {label}
+            <span className="flex-1">{label}</span>
+            <SoonBadge />
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>
@@ -354,27 +416,33 @@ function MobileMenuContent({
 
   return (
     <div className="flex flex-col overflow-y-auto max-h-[calc(85dvh-2rem)] pb-safe">
+      {/* ── This Agent ── */}
       <div className="py-1">
-        {GENERAL_ITEMS.map(({ label, icon: Icon }) => (
+        {THIS_AGENT_ITEMS.map(({ label, icon: Icon, soon }) => (
           <button
             key={label}
             onClick={() => handleItem(label)}
-            className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-foreground hover:bg-muted/50 active:bg-muted/70 transition-colors"
+            className={cn(
+              "flex items-center gap-3 w-full px-4 py-2.5 text-sm hover:bg-muted/50 active:bg-muted/70 transition-colors",
+              soon ? "text-muted-foreground" : "text-foreground",
+            )}
           >
             <Icon className="w-4 h-4 text-muted-foreground shrink-0" />
-            {label}
+            <span className="flex-1 text-left">{label}</span>
+            {soon && <SoonBadge />}
           </button>
         ))}
 
         <button
           onClick={() => setVariationsOpen(!variationsOpen)}
-          className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-foreground hover:bg-muted/50 active:bg-muted/70 transition-colors"
+          className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-muted-foreground hover:bg-muted/50 active:bg-muted/70 transition-colors"
         >
           <Layers className="w-4 h-4 text-muted-foreground shrink-0" />
           <span className="flex-1 text-left">Try Interface Variations</span>
+          <SoonBadge />
           <ChevronRight
             className={cn(
-              "w-3.5 h-3.5 text-muted-foreground transition-transform",
+              "w-3.5 h-3.5 text-muted-foreground transition-transform ml-1",
               variationsOpen && "rotate-90",
             )}
           />
@@ -394,8 +462,8 @@ function MobileMenuContent({
         )}
       </div>
 
+      {/* ── Open in New Tab ── */}
       <div className="h-px bg-border mx-3 my-1" />
-
       <div className="px-4 py-1.5">
         <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-semibold">
           Open in New Tab
@@ -417,11 +485,63 @@ function MobileMenuContent({
         ))}
       </div>
 
+      {/* ── Manage This Agent ── */}
       <div className="h-px bg-border mx-3 my-1" />
-
       <div className="px-4 py-1.5">
         <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-semibold">
-          Admin Options
+          Manage
+        </span>
+      </div>
+      <div className="py-1">
+        {AGENT_MANAGEMENT_ITEMS.map(({ label, icon: Icon, soon }) => (
+          <button
+            key={label}
+            onClick={() => handleItem(label)}
+            disabled={
+              isBusy &&
+              (label === "Duplicate" || label === "Convert to Template")
+            }
+            className={cn(
+              "flex items-center gap-3 w-full px-4 py-2.5 text-sm hover:bg-muted/50 active:bg-muted/70 transition-colors",
+              soon ? "text-muted-foreground" : "text-foreground",
+            )}
+          >
+            <Icon className="w-4 h-4 text-muted-foreground shrink-0" />
+            <span className="flex-1 text-left">{label}</span>
+            {soon && <SoonBadge />}
+          </button>
+        ))}
+      </div>
+
+      {/* ── Agents (global) ── */}
+      <div className="h-px bg-border mx-3 my-1" />
+      <div className="px-4 py-1.5">
+        <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-semibold">
+          Agents
+        </span>
+      </div>
+      <div className="py-1">
+        {GLOBAL_AGENT_ITEMS.map(({ label, icon: Icon, soon }) => (
+          <button
+            key={label}
+            onClick={() => handleItem(label)}
+            className={cn(
+              "flex items-center gap-3 w-full px-4 py-2.5 text-sm hover:bg-muted/50 active:bg-muted/70 transition-colors",
+              soon ? "text-muted-foreground" : "text-foreground",
+            )}
+          >
+            <Icon className="w-4 h-4 text-muted-foreground shrink-0" />
+            <span className="flex-1 text-left">{label}</span>
+            {soon && <SoonBadge />}
+          </button>
+        ))}
+      </div>
+
+      {/* ── Admin ── */}
+      <div className="h-px bg-border mx-3 my-1" />
+      <div className="px-4 py-1.5">
+        <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-semibold">
+          Admin
         </span>
       </div>
       <div className="py-1">
@@ -429,10 +549,11 @@ function MobileMenuContent({
           <button
             key={label}
             onClick={() => handleItem(label)}
-            className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-foreground hover:bg-muted/50 active:bg-muted/70 transition-colors"
+            className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-muted-foreground hover:bg-muted/50 active:bg-muted/70 transition-colors"
           >
             <Icon className="w-4 h-4 text-muted-foreground shrink-0" />
-            {label}
+            <span className="flex-1 text-left">{label}</span>
+            <SoonBadge />
           </button>
         ))}
       </div>

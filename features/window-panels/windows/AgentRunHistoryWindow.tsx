@@ -23,6 +23,7 @@ import { createManualInstance } from "@/features/agents/redux/execution-system/t
 import { setFocus } from "@/features/agents/redux/execution-system/conversation-focus/conversation-focus.slice";
 import type { RootState } from "@/lib/redux/store";
 import { useAppStore } from "@/lib/redux/hooks";
+import { AgentListDropdown } from "@/features/agents/components/agent-listings/AgentListDropdown";
 
 const SURFACE_KEY = "agent-run-history-window";
 
@@ -160,29 +161,43 @@ function RunHistorySidebar({
   agentId,
   selectedConversationId,
   onSelect,
+  onAgentSelect,
 }: {
-  agentId: string;
+  agentId: string | null;
   selectedConversationId: string | null;
   onSelect: (id: string) => void;
+  onAgentSelect: (id: string) => void;
 }) {
   const dispatch = useAppDispatch();
 
+  const agentName = useAppSelector((state: RootState) =>
+    agentId ? (selectAgentById(state, agentId)?.name ?? null) : null,
+  );
+
   const canonicalAgentId = useAppSelector((state: RootState) => {
+    if (!agentId) return null;
     const agent = selectAgentById(state, agentId);
     return agent?.parentAgentId ?? agent?.id ?? agentId;
   });
 
   const selectConversations = useMemo(
-    () => makeSelectAgentConversations(canonicalAgentId, null),
+    () =>
+      canonicalAgentId
+        ? makeSelectAgentConversations(canonicalAgentId, null)
+        : null,
     [canonicalAgentId],
   );
 
-  const { status, conversations, error } = useAppSelector((state) =>
-    selectConversations(state),
+  const conversationState = useAppSelector((state) =>
+    selectConversations ? selectConversations(state) : null,
   );
 
+  const status = conversationState?.status ?? "idle";
+  const conversations = conversationState?.conversations ?? [];
+  const error = conversationState?.error ?? null;
+
   useEffect(() => {
-    if (status === "idle") {
+    if (canonicalAgentId && status === "idle") {
       dispatch(
         fetchAgentConversations({
           agentId: canonicalAgentId,
@@ -199,25 +214,45 @@ function RunHistorySidebar({
 
   return (
     <div className="h-full min-h-0 flex flex-col">
-      {/* Header */}
-      <div className="px-2 py-1.5 border-b border-border shrink-0 flex items-center justify-between">
-        <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
-          Conversations
-        </span>
-        {status === "loading" && (
-          <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />
-        )}
+      {/* Agent picker — always visible */}
+      <div className="px-2 py-1.5 border-b border-border shrink-0">
+        <AgentListDropdown
+          onSelect={onAgentSelect}
+          label={agentName ?? "Select agent…"}
+          className="w-full"
+        />
       </div>
 
-      {/* Scrollable list — parent WindowPanel handles overflow */}
+      {/* Conversations header */}
+      {agentId && (
+        <div className="px-2 py-1 border-b border-border/50 shrink-0 flex items-center justify-between">
+          <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+            Conversations
+          </span>
+          {status === "loading" && (
+            <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />
+          )}
+        </div>
+      )}
+
+      {/* Scrollable list */}
       <div className="flex-1 min-h-0 overflow-y-auto">
-        {status === "failed" && (
+        {!agentId && (
+          <div className="flex flex-col items-center justify-center py-10 px-3 text-center gap-2">
+            <Clock className="w-6 h-6 text-muted-foreground opacity-25" />
+            <p className="text-xs text-muted-foreground">
+              Choose an agent above to see its run history
+            </p>
+          </div>
+        )}
+
+        {agentId && status === "failed" && (
           <p className="px-3 py-2 text-[10px] text-destructive">
             {error ?? "Failed to load"}
           </p>
         )}
 
-        {status === "succeeded" && conversations.length === 0 && (
+        {agentId && status === "succeeded" && conversations.length === 0 && (
           <div className="flex flex-col items-center justify-center py-8 px-3 text-center">
             <History className="w-6 h-6 text-muted-foreground mb-2 opacity-40" />
             <p className="text-xs text-muted-foreground">
@@ -291,7 +326,7 @@ export default function AgentRunHistoryWindow({
 
 function AgentRunHistoryWindowInner({
   onClose,
-  agentId,
+  agentId: initialAgentId,
   initialSelectedConversationId,
 }: {
   onClose: () => void;
@@ -301,9 +336,15 @@ function AgentRunHistoryWindowInner({
   const dispatch = useAppDispatch();
   const store = useAppStore();
 
+  const [agentId, setAgentId] = useState<string | null>(initialAgentId);
   const [selectedConversationId, setSelectedConversationId] = useState<
     string | null
   >(initialSelectedConversationId);
+
+  const handleAgentSelect = useCallback((selectedId: string) => {
+    setAgentId(selectedId);
+    setSelectedConversationId(null);
+  }, []);
 
   const handleSelect = useCallback(
     async (conversationId: string) => {
@@ -339,13 +380,15 @@ function AgentRunHistoryWindowInner({
   );
 
   const agentName = useAppSelector((state: RootState) =>
-    agentId ? (selectAgentById(state, agentId)?.name ?? "Agent") : "Agent",
+    agentId ? (selectAgentById(state, agentId)?.name ?? "Agent") : null,
   );
+
+  const titleSuffix = agentName ? ` — ${agentName}` : "";
 
   return (
     <WindowPanel
       id="agent-run-history-window"
-      title={`Run History — ${agentName}`}
+      title={`Run History${titleSuffix}`}
       onClose={onClose}
       width={900}
       height={640}
@@ -354,27 +397,36 @@ function AgentRunHistoryWindowInner({
       overlayId="agentRunHistoryWindow"
       onCollectData={collectData}
       sidebar={
-        agentId ? (
-          <RunHistorySidebar
-            agentId={agentId}
-            selectedConversationId={selectedConversationId}
-            onSelect={handleSelect}
-          />
-        ) : (
-          <div className="flex flex-col items-center justify-center h-full text-muted-foreground px-3">
-            <Clock className="w-6 h-6 mb-2 opacity-30" />
-            <p className="text-xs text-center">No agent selected</p>
-          </div>
-        )
+        <RunHistorySidebar
+          agentId={agentId}
+          selectedConversationId={selectedConversationId}
+          onSelect={handleSelect}
+          onAgentSelect={handleAgentSelect}
+        />
       }
       sidebarDefaultSize={220}
       sidebarMinSize={160}
       defaultSidebarOpen
     >
-      <RunHistoryBody
-        agentId={agentId ?? ""}
-        selectedConversationId={selectedConversationId}
-      />
+      {agentId ? (
+        <RunHistoryBody
+          agentId={agentId}
+          selectedConversationId={selectedConversationId}
+        />
+      ) : (
+        <div className="flex flex-col items-center justify-center h-full gap-3 px-6 text-center text-muted-foreground">
+          <Bot className="w-12 h-12 opacity-15" />
+          <div className="space-y-1">
+            <p className="text-sm font-medium text-foreground">
+              No agent selected
+            </p>
+            <p className="text-xs opacity-60">
+              Use the sidebar to pick an agent and browse its conversation
+              history.
+            </p>
+          </div>
+        </div>
+      )}
     </WindowPanel>
   );
 }

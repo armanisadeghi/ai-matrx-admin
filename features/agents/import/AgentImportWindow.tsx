@@ -172,7 +172,8 @@ function PasteBody({
       </p>
 
       <Textarea
-        className="flex-1 font-mono text-xs resize-none min-h-0"
+        wrapperClassName="flex-1 min-h-0 flex flex-col"
+        className="flex-1 min-h-0 font-mono text-xs resize-none"
         placeholder={`Paste your ${sourceLabel} here…`}
         value={pastedText}
         onChange={(e) => onPastedTextChange(e.target.value)}
@@ -182,6 +183,8 @@ function PasteBody({
 
       <div className="flex justify-end shrink-0 pt-1 border-t border-border">
         <Button
+          variant="default"
+          size="sm"
           onClick={onConvert}
           disabled={!pastedText.trim() || isConverting}
         >

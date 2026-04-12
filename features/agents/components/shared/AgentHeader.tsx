@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
 import { AgentSelectorIsland } from "./AgentSelectorIsland";
 import { AgentModeController } from "./AgentModeController";
 import { AgentSaveStatus } from "./AgentSaveStatus";
@@ -28,7 +30,16 @@ export function AgentHeader({ agentId, agentName }: AgentHeaderProps) {
 
       {/* ── Desktop layout (>= lg) ───────────────────────────────────────── */}
       <div className="hidden lg:flex items-center justify-between w-full gap-2 px-1">
-        <AgentSelectorIsland agentId={agentId} initialName={agentName} />
+        <div className="flex items-center gap-1">
+          <Link
+            href="/agents"
+            className="flex items-center justify-center h-7 w-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shrink-0"
+            aria-label="Back to Agents"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Link>
+          <AgentSelectorIsland agentId={agentId} initialName={agentName} />
+        </div>
         <AgentModeController agentId={agentId} />
         <div className="flex items-center gap-1.5 shrink-0">
           <AgentSaveStatus agentId={agentId} />

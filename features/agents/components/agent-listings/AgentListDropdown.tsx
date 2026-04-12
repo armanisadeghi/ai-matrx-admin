@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useRef, useMemo, useTransition, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useRef, useCallback } from "react";
 import Link from "next/link";
 import {
   Search,
@@ -23,19 +22,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { useAgentConsumer } from "@/features/agents/hooks/useAgentConsumer";
-import {
-  makeSelectFilteredAgents,
-  selectAllAgentCategories,
-  selectAllAgentTags,
-} from "@/features/agents/redux/agent-consumers/selectors";
-import {
-  selectAgentsSliceStatus,
-  selectActiveAgentId,
-} from "@/features/agents/redux/agent-definition/selectors";
-import { initializeChatAgents } from "@/features/agents/redux/agent-definition/thunks";
-import { setActiveAgentId } from "@/features/agents/redux/agent-definition/slice";
 import type { AgentSortOption } from "@/features/agents/redux/agent-consumers/slice";
 import type { AgentDefinitionRecord } from "@/features/agents/types/agent-definition.types";
 import {
@@ -49,6 +36,7 @@ import {
   DrawerContent,
   DrawerTitle,
 } from "@/components/ui/drawer";
+import { useAgentListCore } from "./useAgentListCore";
 
 const CONSUMER_ID = "agent-list-dropdown";
 
@@ -82,76 +70,52 @@ export function AgentListDropdown({
   triggerSlot,
 }: AgentListDropdownProps) {
   const isMobile = useIsMobile();
-  const dispatch = useAppDispatch();
-  const router = useRouter();
-  const [, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
-  const [hasFetched, setHasFetched] = useState(false);
   const [rightPanel, setRightPanel] = useState<RightPanel>(null);
   const [catSearch, setCatSearch] = useState("");
   const [tagSearch, setTagSearch] = useState("");
-  const [hoveredAgent, setHoveredAgent] =
-    useState<AgentDefinitionRecord | null>(null);
   const [mobileDetailAgent, setMobileDetailAgent] =
     useState<AgentDefinitionRecord | null>(null);
   const [mobileSubView, setMobileSubView] = useState<
     "sort" | "categories" | "tags" | null
   >(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const hoverLeaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const consumer = useAgentConsumer(CONSUMER_ID, {
-    unregisterOnUnmount: true,
-  });
-
-  const selectFiltered = useMemo(
-    () => makeSelectFilteredAgents(CONSUMER_ID),
-    [],
-  );
-  const agents = useAppSelector(selectFiltered);
-  const sliceStatus = useAppSelector(selectAgentsSliceStatus);
-  const activeAgentId = useAppSelector(selectActiveAgentId);
-  const allCategories = useAppSelector(selectAllAgentCategories);
-  const allTags = useAppSelector(selectAllAgentTags);
-  const isLoading = sliceStatus === "loading";
+  const {
+    agents,
+    isLoading,
+    activeAgentId,
+    allCategories,
+    allTags,
+    consumer,
+    activeFilterCount,
+    hoveredAgent,
+    ensureLoaded,
+    handleSelectAgent: coreSelectAgent,
+    handleAgentHover: coreAgentHover,
+    handleAgentHoverEnd: coreAgentHoverEnd,
+    handleDetailPanelMouseEnter,
+    handleDetailPanelMouseLeave: coreDetailMouseLeave,
+  } = useAgentListCore({ consumerId: CONSUMER_ID, onSelect, navigateTo });
 
   const handleOpen = (nextOpen: boolean) => {
     setOpen(nextOpen);
-    if (nextOpen && !hasFetched) {
-      dispatch(initializeChatAgents());
-      setHasFetched(true);
-    }
     if (nextOpen) {
+      ensureLoaded();
       setTimeout(() => inputRef.current?.focus(), 50);
-    }
-    if (!nextOpen) {
+    } else {
       setRightPanel(null);
       setCatSearch("");
       setTagSearch("");
-      setHoveredAgent(null);
       setMobileDetailAgent(null);
       setMobileSubView(null);
     }
   };
 
   const handleSelectAgent = (agent: AgentDefinitionRecord) => {
-    if (onSelect) {
-      onSelect(agent.id);
-    } else if (navigateTo) {
-      startTransition(() => router.push(navigateTo.replace("{id}", agent.id)));
-    } else {
-      dispatch(setActiveAgentId(agent.id));
-    }
+    coreSelectAgent(agent);
     setOpen(false);
   };
-
-  const activeFilterCount =
-    (consumer.sortBy !== "updated-desc" ? 1 : 0) +
-    (consumer.includedCats.length > 0 ? 1 : 0) +
-    (consumer.includedTags.length > 0 ? 1 : 0) +
-    (consumer.favFilter !== "all" ? 1 : 0);
-
-  const hasRightPanel = rightPanel !== null;
 
   const handleFilterChipClick = (panel: "sort" | "categories" | "tags") => {
     if (isMobile) {
@@ -164,49 +128,30 @@ export function AgentListDropdown({
   const handleAgentHover = useCallback(
     (agent: AgentDefinitionRecord) => {
       if (isMobile) return;
-      if (
+      const filterPanelOpen =
         rightPanel === "sort" ||
         rightPanel === "categories" ||
-        rightPanel === "tags"
-      )
-        return;
-      if (hoverLeaveTimerRef.current) {
-        clearTimeout(hoverLeaveTimerRef.current);
-        hoverLeaveTimerRef.current = null;
-      }
-      setHoveredAgent(agent);
-      setRightPanel("detail");
+        rightPanel === "tags";
+      coreAgentHover(agent, filterPanelOpen);
+      if (!filterPanelOpen) setRightPanel("detail");
     },
-    [isMobile, rightPanel],
+    [isMobile, rightPanel, coreAgentHover],
   );
 
   const handleAgentHoverEnd = useCallback(
     (agent: AgentDefinitionRecord) => {
       if (isMobile) return;
       if (rightPanel !== "detail") return;
-      if (hoveredAgent?.id === agent.id) {
-        hoverLeaveTimerRef.current = setTimeout(() => {
-          setHoveredAgent(null);
-          setRightPanel(null);
-        }, 150);
-      }
+      coreAgentHoverEnd(agent, () => setRightPanel(null));
     },
-    [isMobile, rightPanel, hoveredAgent],
+    [isMobile, rightPanel, coreAgentHoverEnd],
   );
 
-  const handleDetailPanelMouseEnter = useCallback(() => {
-    if (hoverLeaveTimerRef.current) {
-      clearTimeout(hoverLeaveTimerRef.current);
-      hoverLeaveTimerRef.current = null;
-    }
-  }, []);
-
   const handleDetailPanelMouseLeave = useCallback(() => {
-    hoverLeaveTimerRef.current = setTimeout(() => {
-      setHoveredAgent(null);
-      setRightPanel(null);
-    }, 150);
-  }, []);
+    coreDetailMouseLeave(() => setRightPanel(null));
+  }, [coreDetailMouseLeave]);
+
+  const hasRightPanel = rightPanel !== null;
 
   const trigger = triggerSlot ?? (
     <button
@@ -391,11 +336,9 @@ export function AgentListDropdown({
 function AgentDetailCard({
   agent,
   onSelect,
-  onOpenNewTab,
 }: {
   agent: AgentDefinitionRecord;
   onSelect: () => void;
-  onOpenNewTab?: () => void;
 }) {
   const updatedDate = agent.updatedAt ? new Date(agent.updatedAt) : null;
   const createdDate = agent.createdAt ? new Date(agent.createdAt) : null;

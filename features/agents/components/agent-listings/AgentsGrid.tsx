@@ -2,7 +2,7 @@
 
 import { useState, useTransition, useMemo, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import dynamic from "next/dynamic";
+import Link from "next/link";
 import { AgentCard } from "./AgentCard";
 import { AgentListItem } from "./AgentListItem";
 import { MobileActionBar } from "@/components/official/mobile-action-bar";
@@ -53,14 +53,6 @@ import {
 import type { AgentSortOption } from "@/features/agents/redux/agent-consumers/slice";
 import type { AgentDefinitionRecord } from "@/features/agents/types/agent-definition.types";
 
-const NewAgentModal = dynamic(
-  () =>
-    import("../TO-BE-ORGANIZED/NewAgentModal").then((m) => ({
-      default: m.NewAgentModal,
-    })),
-  { ssr: false },
-);
-
 const CONSUMER_ID = "agents-main";
 
 function AgentsSkeleton({ count = 4 }: { count?: number }) {
@@ -108,7 +100,6 @@ export function AgentsGrid() {
     name: string;
   } | null>(null);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-  const [isNewModalOpen, setIsNewModalOpen] = useState(false);
 
   const consumer = useAgentConsumer(CONSUMER_ID);
   const {
@@ -405,14 +396,15 @@ export function AgentsGrid() {
             )}
 
             {/* New agent icon (right) */}
-            <Button
-              size="icon"
-              onClick={() => setIsNewModalOpen(true)}
-              className="h-8 w-8 rounded-full mx-glass hover:shadow-xl bg-primary hover:bg-primary/90 shrink-0"
-              title="Create new agent"
-            >
-              <Plus className="h-4 w-4" />
-            </Button>
+            <Link href="/agents/new">
+              <Button
+                size="icon"
+                className="h-8 w-8 rounded-full mx-glass hover:shadow-xl bg-primary hover:bg-primary/90 shrink-0"
+                title="Create new agent"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </Link>
           </div>
         </div>
       )}
@@ -467,10 +459,12 @@ export function AgentsGrid() {
                 </p>
               </div>
               {!hasActiveFilters && (
-                <Button onClick={() => setIsNewModalOpen(true)}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Agent
-                </Button>
+                <Link href="/agents/new">
+                  <Button>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Agent
+                  </Button>
+                </Link>
               )}
               {hasActiveFilters && (
                 <Button variant="outline" onClick={resetFilters}>
@@ -502,7 +496,7 @@ export function AgentsGrid() {
         onSearchChange={setSearchTerm}
         totalCount={filteredAgents.length}
         filteredCount={filteredAgents.length}
-        onPrimaryAction={() => setIsNewModalOpen(true)}
+        onPrimaryAction={() => router.push("/agents/new")}
         primaryActionLabel="New Agent"
         primaryActionIcon={<Plus className="h-5 w-5" />}
         showFilterButton
@@ -510,12 +504,6 @@ export function AgentsGrid() {
         isFilterModalOpen={isFilterModalOpen}
         setIsFilterModalOpen={setIsFilterModalOpen}
         searchPlaceholder="Search agents..."
-      />
-
-      {/* New Agent Modal */}
-      <NewAgentModal
-        isOpen={isNewModalOpen}
-        onClose={() => setIsNewModalOpen(false)}
       />
 
       {/* Mobile Filter Bottom Sheet */}

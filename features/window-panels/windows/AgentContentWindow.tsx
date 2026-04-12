@@ -16,7 +16,6 @@ import {
   Copy,
   Circle,
   Search,
-  Bot,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { WindowPanel } from "../WindowPanel";
@@ -314,9 +313,6 @@ function AgentPickerFallback({ onSelect }: AgentPickerFallbackProps) {
               onClick={() => handleSelect(agent.id)}
               className="w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-left hover:bg-accent transition-colors"
             >
-              <div className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center shrink-0">
-                <Bot className="w-3.5 h-3.5 text-primary" />
-              </div>
               <div className="min-w-0">
                 <p className="text-xs font-medium text-foreground truncate">
                   {agent.name || "Untitled"}
