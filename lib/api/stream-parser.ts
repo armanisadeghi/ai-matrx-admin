@@ -3,7 +3,7 @@
 // Single implementation — all consumers use this instead of inline parsing.
 
 import type {
-  StreamEvent,
+  TypedStreamEvent,
   ChunkPayload,
   ReasoningChunkPayload,
   PhasePayload,
@@ -37,8 +37,22 @@ import {
   isRenderBlockEvent,
   isRecordReservedEvent,
   isRecordUpdateEvent,
+  expandCompactEvent,
+  isCompactEvent,
 } from "./types";
 import { BackendApiError } from "./errors";
+
+// ============================================================================
+// COMPACT EVENT NORMALIZATION (wire format → TypedStreamEvent)
+// ============================================================================
+
+/** Single NDJSON object after JSON.parse — expand compact `e`/`t` lines per python-generated types. */
+function normalizeWireEvent(parsed: unknown): TypedStreamEvent {
+  if (isCompactEvent(parsed)) {
+    return expandCompactEvent(parsed);
+  }
+  return parsed as TypedStreamEvent;
+}
 
 // ============================================================================
 // NDJSON STREAM PARSER
@@ -63,7 +77,7 @@ export function parseNdjsonStream(
   response: Response,
   signal?: AbortSignal,
 ): {
-  events: AsyncGenerator<StreamEvent, void, undefined>;
+  events: AsyncGenerator<TypedStreamEvent, void, undefined>;
   requestId: string | null;
   conversationId: string | null;
 } {
@@ -79,7 +93,7 @@ export function parseNdjsonStream(
 async function* _parseNdjsonStream(
   response: Response,
   signal?: AbortSignal,
-): AsyncGenerator<StreamEvent, void, undefined> {
+): AsyncGenerator<TypedStreamEvent, void, undefined> {
   if (!response.body) {
     throw new BackendApiError({
       code: "internal_error",
@@ -100,11 +114,11 @@ async function* _parseNdjsonStream(
   // Each push increments the counter; each consumer wakeup decrements it.
   // If the counter is already > 0 when the consumer would sleep, it skips
   // the sleep entirely — no wakeup is ever lost.
-  const queue: Array<StreamEvent | BackendApiError | null> = []; // null = done
+  const queue: Array<TypedStreamEvent | BackendApiError | null> = []; // null = done
   let pendingWakeups = 0;
   let resolveWaiter: (() => void) | null = null;
 
-  const pushItem = (item: StreamEvent | BackendApiError | null) => {
+  const pushItem = (item: TypedStreamEvent | BackendApiError | null) => {
     queue.push(item);
     pendingWakeups++;
     if (resolveWaiter) {
@@ -137,7 +151,8 @@ async function* _parseNdjsonStream(
           if (!trimmed) continue;
 
           try {
-            pushItem(JSON.parse(trimmed) as StreamEvent);
+            const parsed: unknown = JSON.parse(trimmed);
+            pushItem(normalizeWireEvent(parsed));
           } catch {
             console.warn(
               "[stream-parser] Failed to parse NDJSON line:",
@@ -156,7 +171,7 @@ async function* _parseNdjsonStream(
       const remaining = buffer.trim();
       if (remaining) {
         try {
-          pushItem(JSON.parse(remaining) as StreamEvent);
+          pushItem(normalizeWireEvent(JSON.parse(remaining)));
         } catch (parseErr) {
           console.warn(
             "[stream-parser] Trailing NDJSON incomplete or invalid (len=%s): %s",
@@ -220,7 +235,7 @@ async function* _parseNdjsonStream(
 // ============================================================================
 
 /** Extract accumulated text from chunk events */
-export function accumulateChunks(events: StreamEvent[]): string {
+export function accumulateChunks(events: TypedStreamEvent[]): string {
   let text = "";
   for (const event of events) {
     if (isChunkEvent(event)) {
@@ -231,7 +246,9 @@ export function accumulateChunks(events: StreamEvent[]): string {
 }
 
 /** Extract the first error from stream events, if any */
-export function findStreamError(events: StreamEvent[]): ErrorPayload | null {
+export function findStreamError(
+  events: TypedStreamEvent[],
+): ErrorPayload | null {
   for (const event of events) {
     if (isErrorEvent(event)) {
       return event.data;
@@ -253,7 +270,7 @@ export function findStreamError(events: StreamEvent[]): ErrorPayload | null {
  * consumers should adopt.
  */
 export interface StreamCallbacks {
-  onEvent?: (event: StreamEvent) => void;
+  onEvent?: (event: TypedStreamEvent) => void;
   onChunk?: (data: ChunkPayload) => void;
   onReasoningChunk?: (data: ReasoningChunkPayload) => void;
   onPhase?: (data: PhasePayload) => void;

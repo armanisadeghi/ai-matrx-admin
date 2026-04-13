@@ -53,7 +53,7 @@ import {
 // ─── Instance user input selectors ────────────────────────────────────────────
 import {
   selectUserInputText,
-  selectUserInputContentBlocks,
+  selectUserInputMessageParts,
 } from "@/features/agents/redux/execution-system/instance-user-input/instance-user-input.selectors";
 
 // ─── Instance UI state selectors ──────────────────────────────────────────────
@@ -489,7 +489,7 @@ function UserInputTab({ conversationId }: { conversationId: string | null }) {
     conversationId ? selectUserInputText(conversationId) : () => "",
   );
   const blocks = useAppSelector(
-    conversationId ? selectUserInputContentBlocks(conversationId) : () => null,
+    conversationId ? selectUserInputMessageParts(conversationId) : () => null,
   );
 
   if (!conversationId)

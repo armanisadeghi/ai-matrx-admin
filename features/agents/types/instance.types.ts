@@ -15,6 +15,7 @@ import { ContextObjectType, LLMParams } from "./agent-api-types";
 import type { SystemInstruction } from "./agent-api-types";
 import type { ApplicationScope } from "@/features/agents/utils/scope-mapping";
 import type { LaunchResult } from "@/features/agents/redux/execution-system/thunks/launch-agent-execution.thunk";
+import type { MessagePart } from "@/types/python-generated/stream-events";
 
 // =============================================================================
 // JSON Extraction Config (mirrored from process-stream.ts to avoid circular dep)
@@ -176,7 +177,7 @@ export interface ManagedResource {
   options: ResourceOptions;
 
   /** The assembled ContentBlock payload ready for the API call */
-  finalPayload: Record<string, unknown> | null;
+  finalPayload: MessagePart | null;
 
   /** Sort order for display and payload assembly */
   sortOrder: number;
@@ -212,9 +213,9 @@ export interface InstanceUserInputState {
 
   /**
    * If the user is composing mixed content (text + inline images, etc.),
-   * this holds the structured blocks. When null, `text` is the only input.
+   * this holds the structured parts. When null, `text` is the only input.
    */
-  contentBlocks: Array<Record<string, unknown>> | null;
+  messageParts: MessagePart[] | null;
 }
 
 // =============================================================================

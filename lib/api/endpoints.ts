@@ -185,12 +185,16 @@ export const ENDPOINTS = {
     uploadPodcastVideo: "/media/podcast/upload-video" as const,
   },
 
-  /** Health endpoints — Public */
+  /** Health endpoints — Public (aligned with types/python-generated OpenAPI) */
   health: {
     /** GET — Basic health check */
     check: "/health",
     /** GET — Detailed health with component status */
     detailed: "/health/detailed",
+    /** GET — Liveness (process up; no I/O) */
+    live: "/health/live",
+    /** GET — Readiness (deps initialized; use for deploy probes) */
+    ready: "/health/ready",
   },
 
   /** Research endpoints — Authenticated */
@@ -249,6 +253,10 @@ export const ENDPOINTS = {
  *   NEXT_PUBLIC_BACKEND_URL_STAGING  → staging server
  *   NEXT_PUBLIC_BACKEND_URL_LOCAL    → local dev (default: http://localhost:8000)
  *   NEXT_PUBLIC_BACKEND_URL_GPU      → dedicated GPU inference server
+ *
+ * Use the service origin only (e.g. https://server.example.com), not a path
+ * suffix like https://server.example.com/api — paths in ENDPOINTS are rooted at
+ * the host (/health, /ai, …). A bad base produces wrong URLs and server warnings.
  *
  * 'custom' is not listed here — it is stored in adminPreferences.customServerUrl
  * and resolved dynamically in resolveBaseUrl().

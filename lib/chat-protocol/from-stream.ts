@@ -19,32 +19,33 @@
  *   tool_completed      → sets output, phase: 'complete'
  *   tool_error          → sets error, phase: 'error'
  *   chunk               → appends to / creates TextBlock
+ *   reasoning_chunk     → appends to / creates ThinkingBlock
  *   error               → creates ErrorBlock
- *   thinking (future)   → creates ThinkingBlock
  */
 
 import type {
-    StreamEvent,
-    ToolEventPayload,
-    ChunkPayload,
-    ErrorPayload,
-} from '@/types/python-generated/stream-events';
+  TypedStreamEvent,
+  ToolEventPayload,
+  ChunkPayload,
+  ReasoningChunkPayload,
+  ErrorPayload,
+} from "@/types/python-generated/stream-events";
 
 import type {
-    CanonicalBlock,
-    TextBlock,
-    ToolCallBlock,
-    ThinkingBlock,
-    ErrorBlock,
-    ToolInput,
-    ToolOutput,
-    ToolProgress,
-    StreamingState,
-    CanonicalMessage,
-    MessageStatus,
-} from './types';
+  CanonicalBlock,
+  TextBlock,
+  ToolCallBlock,
+  ThinkingBlock,
+  ErrorBlock,
+  ToolInput,
+  ToolOutput,
+  ToolProgress,
+  StreamingState,
+  CanonicalMessage,
+  MessageStatus,
+} from "./types";
 
-import { PROTOCOL_VERSION } from './types';
+import { PROTOCOL_VERSION } from "./types";
 
 // ============================================================================
 // INTERNAL MUTABLE TYPES (never leave this module)
@@ -52,23 +53,33 @@ import { PROTOCOL_VERSION } from './types';
 
 /** Mutable counterpart of ToolCallBlock used while building. */
 interface MutableToolCallBlock {
-    type: 'tool_call';
-    callId: string;
-    toolName: string;
-    input: ToolInput;
-    output?: ToolOutput;
-    error?: { message: string };
-    progress: ToolProgress[];
-    phase: 'pending' | 'running' | 'complete' | 'error';
+  type: "tool_call";
+  callId: string;
+  toolName: string;
+  input: ToolInput;
+  output?: ToolOutput;
+  error?: { message: string };
+  progress: ToolProgress[];
+  phase: "pending" | "running" | "complete" | "error";
 }
 
 /** Mutable counterpart of TextBlock used while building. */
 interface MutableTextBlock {
-    type: 'text';
-    content: string;
+  type: "text";
+  content: string;
 }
 
-type MutableBlock = MutableTextBlock | MutableToolCallBlock | ThinkingBlock | ErrorBlock;
+/** Mutable counterpart of ThinkingBlock used while building. */
+interface MutableThinkingBlock {
+  type: "thinking";
+  content: string;
+}
+
+type MutableBlock =
+  | MutableTextBlock
+  | MutableToolCallBlock
+  | MutableThinkingBlock
+  | ErrorBlock;
 
 // ============================================================================
 // CORE BUILDER
@@ -81,119 +92,134 @@ type MutableBlock = MutableTextBlock | MutableToolCallBlock | ThinkingBlock | Er
  * Call this once on a complete array, or call it progressively in real time
  * (the function is pure and O(n) — safe to call on every new event batch).
  */
-export function buildCanonicalBlocks(events: StreamEvent[]): CanonicalBlock[] {
-    const blocks: MutableBlock[] = [];
+export function buildCanonicalBlocks(
+  events: TypedStreamEvent[],
+): CanonicalBlock[] {
+  const blocks: MutableBlock[] = [];
 
-    /** Index in `blocks` by tool callId — O(1) lookup for subsequent events. */
-    const toolIndex = new Map<string, number>();
+  /** Index in `blocks` by tool callId — O(1) lookup for subsequent events. */
+  const toolIndex = new Map<string, number>();
 
-    // ------------------------------------------------------------------
-    function getOrCreateToolBlock(callId: string, toolName: string): number {
-        if (toolIndex.has(callId)) return toolIndex.get(callId)!;
-        const idx = blocks.length;
-        blocks.push({
-            type: 'tool_call',
-            callId,
-            toolName,
-            input: { name: toolName, arguments: {} },
-            progress: [],
-            phase: 'pending',
-        });
-        toolIndex.set(callId, idx);
-        return idx;
+  // ------------------------------------------------------------------
+  function getOrCreateToolBlock(callId: string, toolName: string): number {
+    if (toolIndex.has(callId)) return toolIndex.get(callId)!;
+    const idx = blocks.length;
+    blocks.push({
+      type: "tool_call",
+      callId,
+      toolName,
+      input: { name: toolName, arguments: {} },
+      progress: [],
+      phase: "pending",
+    });
+    toolIndex.set(callId, idx);
+    return idx;
+  }
+
+  function toolBlock(callId: string): MutableToolCallBlock | null {
+    const idx = toolIndex.get(callId);
+    if (idx === undefined) return null;
+    return blocks[idx] as MutableToolCallBlock;
+  }
+  // ------------------------------------------------------------------
+
+  for (const event of events) {
+    // ── Text chunk ──────────────────────────────────────────────────
+    if (event.event === "chunk") {
+      const text = (event.data as unknown as ChunkPayload).text ?? "";
+      if (!text) continue;
+
+      const last = blocks[blocks.length - 1];
+      if (last && last.type === "text") {
+        (last as MutableTextBlock).content += text;
+      } else {
+        blocks.push({ type: "text", content: text });
+      }
+      continue;
     }
 
-    function toolBlock(callId: string): MutableToolCallBlock | null {
-        const idx = toolIndex.get(callId);
-        if (idx === undefined) return null;
-        return blocks[idx] as MutableToolCallBlock;
-    }
-    // ------------------------------------------------------------------
+    if (event.event === "reasoning_chunk") {
+      const text = (event.data as unknown as ReasoningChunkPayload).text ?? "";
+      if (!text) continue;
 
-    for (const event of events) {
-        // ── Text chunk ──────────────────────────────────────────────────
-        if (event.event === 'chunk') {
-            const text = (event.data as unknown as ChunkPayload).text ?? '';
-            if (!text) continue;
-
-            const last = blocks[blocks.length - 1];
-            if (last && last.type === 'text') {
-                (last as MutableTextBlock).content += text;
-            } else {
-                blocks.push({ type: 'text', content: text });
-            }
-            continue;
-        }
-
-        // ── Tool event ──────────────────────────────────────────────────
-        if (event.event === 'tool_event') {
-            const te = event.data as unknown as ToolEventPayload;
-            const { call_id: callId, tool_name: toolName, message } = te;
-            const data = te.data ?? {};
-
-            switch (te.event) {
-                case 'tool_started': {
-                    const idx = getOrCreateToolBlock(callId, toolName);
-                    const tb = blocks[idx] as MutableToolCallBlock;
-                    tb.input = {
-                        name: toolName,
-                        arguments: (data.arguments as Record<string, unknown>) ?? {},
-                    };
-                    tb.phase = 'running';
-                    if (message) tb.progress.push({ message });
-                    break;
-                }
-
-                case 'tool_progress':
-                case 'tool_step':
-                case 'tool_result_preview': {
-                    // Ensure block exists (may receive progress before started in edge cases)
-                    getOrCreateToolBlock(callId, toolName);
-                    const tb = toolBlock(callId)!;
-                    if (message) tb.progress.push({ message });
-                    break;
-                }
-
-                case 'tool_completed': {
-                    getOrCreateToolBlock(callId, toolName);
-                    const tb = toolBlock(callId)!;
-                    tb.output = {
-                        status: 'success',
-                        result: data.result ?? data,
-                    };
-                    tb.phase = 'complete';
-                    if (message) tb.progress.push({ message });
-                    break;
-                }
-
-                case 'tool_error': {
-                    getOrCreateToolBlock(callId, toolName);
-                    const tb = toolBlock(callId)!;
-                    tb.error = { message: message ?? 'Tool execution failed' };
-                    tb.phase = 'error';
-                    break;
-                }
-            }
-            continue;
-        }
-
-        // ── Stream-level error ──────────────────────────────────────────
-        if (event.event === 'error') {
-            const err = event.data as unknown as ErrorPayload;
-            blocks.push({
-                type: 'error',
-                errorType: err.error_type ?? 'unknown',
-                message: err.message ?? 'An error occurred',
-            });
-            continue;
-        }
-
-        // All other events (status_update, broker, heartbeat, end, completion)
-        // carry no renderable content — intentionally ignored.
+      const last = blocks[blocks.length - 1];
+      if (last && last.type === "thinking") {
+        (last as MutableThinkingBlock).content += text;
+      } else {
+        blocks.push({ type: "thinking", content: text });
+      }
+      continue;
     }
 
-    // Freeze mutable blocks into readonly CanonicalBlocks before returning.
-    return blocks as unknown as CanonicalBlock[];
+    // ── Tool event ──────────────────────────────────────────────────
+    if (event.event === "tool_event") {
+      const te = event.data as unknown as ToolEventPayload;
+      const { call_id: callId, tool_name: toolName, message } = te;
+      const data = te.data ?? {};
+
+      switch (te.event) {
+        case "tool_started": {
+          const idx = getOrCreateToolBlock(callId, toolName);
+          const tb = blocks[idx] as MutableToolCallBlock;
+          tb.input = {
+            name: toolName,
+            arguments: (data.arguments as Record<string, unknown>) ?? {},
+          };
+          tb.phase = "running";
+          if (message) tb.progress.push({ message });
+          break;
+        }
+
+        case "tool_progress":
+        case "tool_step":
+        case "tool_result_preview": {
+          // Ensure block exists (may receive progress before started in edge cases)
+          getOrCreateToolBlock(callId, toolName);
+          const tb = toolBlock(callId)!;
+          if (message) tb.progress.push({ message });
+          break;
+        }
+
+        case "tool_completed": {
+          getOrCreateToolBlock(callId, toolName);
+          const tb = toolBlock(callId)!;
+          tb.output = {
+            status: "success",
+            result: data.result ?? data,
+          };
+          tb.phase = "complete";
+          if (message) tb.progress.push({ message });
+          break;
+        }
+
+        case "tool_error": {
+          getOrCreateToolBlock(callId, toolName);
+          const tb = toolBlock(callId)!;
+          tb.error = { message: message ?? "Tool execution failed" };
+          tb.phase = "error";
+          break;
+        }
+      }
+      continue;
+    }
+
+    // ── Stream-level error ──────────────────────────────────────────
+    if (event.event === "error") {
+      const err = event.data as unknown as ErrorPayload;
+      blocks.push({
+        type: "error",
+        errorType: err.error_type ?? "unknown",
+        message: err.message ?? "An error occurred",
+      });
+      continue;
+    }
+
+    // All other events (status_update, broker, heartbeat, end, completion)
+    // carry no renderable content — intentionally ignored.
+  }
+
+  // Freeze mutable blocks into readonly CanonicalBlocks before returning.
+  return blocks as unknown as CanonicalBlock[];
 }
 
 // ============================================================================
@@ -206,21 +232,23 @@ export function buildCanonicalBlocks(events: StreamEvent[]): CanonicalBlock[] {
  * This is a pure function — call it on every new event batch during streaming.
  * The output is immutable and safe to pass directly to renderers.
  */
-export function buildStreamingState(events: StreamEvent[]): StreamingState {
-    const blocks = buildCanonicalBlocks(events);
+export function buildStreamingState(
+  events: TypedStreamEvent[],
+): StreamingState {
+  const blocks = buildCanonicalBlocks(events);
 
-    // Determine whether the stream is still live (no 'end' or stream-level 'error')
-    const hasEnd   = events.some(e => e.event === 'end');
-    const hasError = events.some(e => e.event === 'error');
-    const isLive   = !hasEnd && !hasError;
+  // Determine whether the stream is still live (no 'end' or stream-level 'error')
+  const hasEnd = events.some((e) => e.event === "end");
+  const hasError = events.some((e) => e.event === "error");
+  const isLive = !hasEnd && !hasError;
 
-    const streamError = blocks.find((b): b is ErrorBlock => b.type === 'error');
+  const streamError = blocks.find((b): b is ErrorBlock => b.type === "error");
 
-    return {
-        blocks,
-        isLive,
-        streamError,
-    };
+  return {
+    blocks,
+    isLive,
+    streamError,
+  };
 }
 
 // ============================================================================
@@ -234,10 +262,10 @@ export function buildStreamingState(events: StreamEvent[]): StreamingState {
  * state needs to be stored in the DB.
  */
 export function extractPersistableToolBlocks(
-    events: StreamEvent[],
+  events: TypedStreamEvent[],
 ): ReadonlyArray<ToolCallBlock> {
-    const blocks = buildCanonicalBlocks(events);
-    return blocks.filter((b): b is ToolCallBlock => b.type === 'tool_call');
+  const blocks = buildCanonicalBlocks(events);
+  return blocks.filter((b): b is ToolCallBlock => b.type === "tool_call");
 }
 
 // ============================================================================
@@ -251,19 +279,19 @@ export function extractPersistableToolBlocks(
  * immediately before the message is persisted and the stream events cleared.
  */
 export function buildCanonicalMessageFromStream(params: {
-    id: string;
-    timestamp?: Date;
-    status?: MessageStatus;
-    events: StreamEvent[];
+  id: string;
+  timestamp?: Date;
+  status?: MessageStatus;
+  events: TypedStreamEvent[];
 }): CanonicalMessage {
-    const { id, timestamp = new Date(), status = 'complete', events } = params;
-    return {
-        id,
-        role: 'assistant',
-        timestamp,
-        status,
-        isCondensed: false,
-        blocks: buildCanonicalBlocks(events),
-        schemaVersion: PROTOCOL_VERSION,
-    };
+  const { id, timestamp = new Date(), status = "complete", events } = params;
+  return {
+    id,
+    role: "assistant",
+    timestamp,
+    status,
+    isCondensed: false,
+    blocks: buildCanonicalBlocks(events),
+    schemaVersion: PROTOCOL_VERSION,
+  };
 }

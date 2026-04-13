@@ -22,6 +22,7 @@ import type {
   ResourceOptions,
   ResourceStatus,
 } from "@/features/agents/types";
+import type { MessagePart } from "@/types/python-generated/stream-events";
 import { generateResourceId } from "../utils";
 import { destroyInstance } from "../execution-instances/execution-instances.slice";
 
@@ -173,7 +174,7 @@ const instanceResourcesSlice = createSlice({
       action: PayloadAction<{
         conversationId: string;
         resourceId: string;
-        payload: Record<string, unknown>;
+        payload: MessagePart;
       }>,
     ) {
       const { conversationId, resourceId, payload } = action.payload;

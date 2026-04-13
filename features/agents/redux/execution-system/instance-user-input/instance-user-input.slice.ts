@@ -7,6 +7,7 @@
 
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { InstanceUserInputState } from "@/features/agents/types";
+import type { MessagePart } from "@/types/python-generated/stream-events";
 import { destroyInstance } from "../execution-instances/execution-instances.slice";
 
 // =============================================================================
@@ -37,7 +38,7 @@ const instanceUserInputSlice = createSlice({
       state.byConversationId[conversationId] = {
         conversationId,
         text,
-        contentBlocks: null,
+        messageParts: null,
       };
     },
 
@@ -52,17 +53,17 @@ const instanceUserInputSlice = createSlice({
       }
     },
 
-    setUserInputContentBlocks(
+    setUserInputMessageParts(
       state,
       action: PayloadAction<{
         conversationId: string;
-        blocks: Array<Record<string, unknown>>;
+        parts: MessagePart[];
       }>,
     ) {
-      const { conversationId, blocks } = action.payload;
+      const { conversationId, parts } = action.payload;
       const entry = state.byConversationId[conversationId];
       if (entry) {
-        entry.contentBlocks = blocks;
+        entry.messageParts = parts;
       }
     },
 
@@ -70,7 +71,7 @@ const instanceUserInputSlice = createSlice({
       const entry = state.byConversationId[action.payload];
       if (entry) {
         entry.text = "";
-        entry.contentBlocks = null;
+        entry.messageParts = null;
       }
     },
 
@@ -89,7 +90,7 @@ const instanceUserInputSlice = createSlice({
 export const {
   initInstanceUserInput,
   setUserInputText,
-  setUserInputContentBlocks,
+  setUserInputMessageParts,
   clearUserInput,
   removeInstanceUserInput,
 } = instanceUserInputSlice.actions;

@@ -21,6 +21,7 @@ import type {
   ChatRequestPayload,
   SystemInstruction,
 } from "@/features/agents/types/agent-api-types";
+import type { MessagePart } from "@/types/python-generated/stream-events";
 import type { ConversationTurn } from "../instance-conversation-history/instance-conversation-history.slice";
 import { generateRequestId } from "../utils";
 import { setInstanceStatus } from "../execution-instances";
@@ -51,7 +52,7 @@ import { upsertAgentConversationFromExecutionAction } from "@/features/agents/re
 /**
  * Converts ConversationTurn[] to the wire format the chat endpoint expects.
  * Each turn becomes { role, content } where content is either the text-wrapped
- * content blocks array or the raw contentBlocks if they exist.
+ * content parts array or the raw contentBlocks if they exist.
  */
 function turnsToMessages(
   turns: ConversationTurn[],
@@ -71,7 +72,7 @@ function turnsToMessages(
 
 /**
  * Extracts plain text from a system message's content field.
- * Agent definition messages store content as an array of content blocks.
+ * Agent definition messages store content as an array of content parts.
  * This flattens them into a single string for the structured system_instruction.
  */
 function extractSystemText(content: unknown): string {
@@ -174,19 +175,18 @@ export function assembleChatRequest(
   const userInputState =
     state.instanceUserInput.byConversationId[conversationId];
   const textInput = userInputState?.text?.trim() ?? "";
-  const userContentBlocks = userInputState?.contentBlocks;
+  const userMessageParts = userInputState?.messageParts;
   const resourcePayloads = selectResourcePayloads(conversationId)(state);
 
-  if (textInput || userContentBlocks || resourcePayloads.length > 0) {
-    const blocks: Array<Record<string, unknown>> = [];
-    if (textInput) blocks.push({ type: "text", text: textInput });
-    if (userContentBlocks) blocks.push(...userContentBlocks);
-    if (resourcePayloads.length > 0) blocks.push(...resourcePayloads);
+  if (textInput || userMessageParts || resourcePayloads.length > 0) {
+    const parts: MessagePart[] = [];
+    if (textInput) parts.push({ type: "text", text: textInput });
+    if (userMessageParts) parts.push(...userMessageParts);
+    if (resourcePayloads.length > 0) parts.push(...resourcePayloads);
 
     messages.push({
       role: "user",
-      content:
-        blocks.length === 1 && blocks[0].type === "text" ? blocks : blocks,
+      content: parts.length === 1 && parts[0].type === "text" ? parts : parts,
     });
   }
 
@@ -300,7 +300,7 @@ export const executeChatInstance = createAsyncThunk<
       const userInputEntry =
         state.instanceUserInput.byConversationId[conversationId];
       const userInputText = userInputEntry?.text?.trim() ?? "";
-      const userContentBlocks = userInputEntry?.contentBlocks ?? undefined;
+      const userMessageParts = userInputEntry?.messageParts ?? undefined;
 
       // Assemble the chat request — reads FRESH from agent definition
       const payload = assembleChatRequest(state, conversationId);
@@ -311,7 +311,7 @@ export const executeChatInstance = createAsyncThunk<
       }
 
       // Resolve base URL
-      const baseUrl = selectResolvedBaseUrl(state as any);
+      const baseUrl = selectResolvedBaseUrl(state);
       if (!baseUrl) {
         throw new Error("No backend URL configured");
       }
@@ -330,19 +330,17 @@ export const executeChatInstance = createAsyncThunk<
 
       // Optimistic user turn — add to history before the API call
       const resourcePayloads = selectResourcePayloads(conversationId)(state);
-      const resourceBlocks = resourcePayloads.filter(
-        (b) => b["type"] !== "text",
-      );
-      if (userInputText || userContentBlocks || resourceBlocks.length > 0) {
+      const resourceBlocks = resourcePayloads.filter((b) => b.type !== "text");
+      if (userInputText || userMessageParts || resourceBlocks.length > 0) {
         const existingConversationId =
           selectLatestConversationId(conversationId)(state);
         dispatch(
           addUserTurn({
             conversationId,
             content: userInputText,
-            contentBlocks:
-              [...(userContentBlocks ?? []), ...resourceBlocks].length > 0
-                ? [...(userContentBlocks ?? []), ...resourceBlocks]
+            messageParts:
+              [...(userMessageParts ?? []), ...resourceBlocks].length > 0
+                ? [...(userMessageParts ?? []), ...resourceBlocks]
                 : undefined,
             serverConversationId: existingConversationId,
           }),

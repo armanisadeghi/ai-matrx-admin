@@ -154,7 +154,7 @@ export interface RecordReservedPayload {
   db_project: string;
   table: string;
   record_id: string;
-  status?: "pending";
+  status: "pending";
   parent_refs?: Record<string, string>;
   metadata?: Record<string, unknown>;
 }
@@ -174,13 +174,13 @@ export interface DataPayload {
 }
 
 export interface AudioOutputData {
-  type?: "audio_output";
+  type: "audio_output";
   url: string;
   mime_type: string;
 }
 
 export interface CategorizationResultData {
-  type?: "categorization_result";
+  type: "categorization_result";
   prompt_id: string;
   category: string;
   tags?: string[];
@@ -190,12 +190,12 @@ export interface CategorizationResultData {
 }
 
 export interface ConversationIdData {
-  type?: "conversation_id";
+  type: "conversation_id";
   conversation_id: string;
 }
 
 export interface ConversationLabeledData {
-  type?: "conversation_labeled";
+  type: "conversation_labeled";
   conversation_id: string;
   title: string;
   description?: string;
@@ -215,7 +215,7 @@ export interface QuestionnaireQuestion {
 }
 
 export interface QuestionnaireDisplayData {
-  type?: "display_questionnaire";
+  type: "display_questionnaire";
   introduction: string;
   questions?: QuestionnaireQuestion[];
 }
@@ -228,13 +228,13 @@ export interface FetchResultItem {
 }
 
 export interface FetchResultsData {
-  type?: "fetch_results";
+  type: "fetch_results";
   metadata?: Record<string, unknown>;
   results?: FetchResultItem[];
 }
 
 export interface FunctionResultData {
-  type?: "function_result";
+  type: "function_result";
   function_name: string;
   success: boolean;
   result?: unknown;
@@ -243,13 +243,13 @@ export interface FunctionResultData {
 }
 
 export interface ImageOutputData {
-  type?: "image_output";
+  type: "image_output";
   url: string;
   mime_type: string;
 }
 
 export interface PodcastCompleteData {
-  type?: "podcast_complete";
+  type: "podcast_complete";
   show_id: string;
   success: boolean;
   episode_count?: number;
@@ -257,7 +257,7 @@ export interface PodcastCompleteData {
 }
 
 export interface PodcastStageData {
-  type?: "podcast_stage";
+  type: "podcast_stage";
   stage: string;
   success: boolean;
   error?: string | null;
@@ -265,12 +265,12 @@ export interface PodcastStageData {
 }
 
 export interface ScrapeBatchCompleteData {
-  type?: "scrape_batch_complete";
+  type: "scrape_batch_complete";
   total_scraped: number;
 }
 
 export interface SearchErrorData {
-  type?: "search_error";
+  type: "search_error";
   metadata?: Record<string, unknown>;
   error: string;
 }
@@ -284,7 +284,7 @@ export interface SearchResultItem {
 }
 
 export interface SearchResultsData {
-  type?: "search_results";
+  type: "search_results";
   metadata?: Record<string, unknown>;
   results?: SearchResultItem[];
 }
@@ -295,19 +295,19 @@ export interface StructuredInputFailure {
 }
 
 export interface StructuredInputWarningData {
-  type?: "structured_input_warning";
+  type: "structured_input_warning";
   block_type: string;
   failures?: StructuredInputFailure[];
 }
 
 export interface VideoOutputData {
-  type?: "video_output";
+  type: "video_output";
   url: string;
   mime_type: string;
 }
 
 export interface WorkflowStepData {
-  type?: "workflow_step";
+  type: "workflow_step";
   step_name: string;
   status: string;
   data?: Record<string, unknown>;
@@ -330,6 +330,12 @@ export type TypedDataPayload =
   | StructuredInputWarningData
   | VideoOutputData
   | WorkflowStepData;
+
+/** Fallback for data events whose `type` isn't in TypedDataPayload. */
+export interface UntypedDataPayload {
+  type: string;
+  [key: string]: unknown;
+}
 
 // --- Completion Result Models ---
 
@@ -1662,7 +1668,7 @@ export function isTypedRenderBlock(e: RenderBlockPayload): e is RenderBlockPaylo
 
 export interface TextPart {
   metadata?: Record<string, unknown>;
-  type?: "text";
+  type: "text";
   text?: string;
   id?: string;
   citations?: unknown[];
@@ -1670,7 +1676,7 @@ export interface TextPart {
 
 export interface ThinkingPart {
   metadata?: Record<string, unknown>;
-  type?: "thinking";
+  type: "thinking";
   text?: string;
   id?: string;
   provider?: "openai" | "anthropic" | "google" | "cerebras" | null;
@@ -1681,7 +1687,7 @@ export interface ThinkingPart {
 
 export interface ToolCallPart {
   metadata?: Record<string, unknown>;
-  type?: "tool_call";
+  type: "tool_call";
   id?: string;
   name?: string;
   arguments?: Record<string, unknown>;
@@ -1689,7 +1695,7 @@ export interface ToolCallPart {
 
 export interface ToolResultPart {
   metadata?: Record<string, unknown>;
-  type?: "tool_result";
+  type: "tool_result";
   tool_use_id?: string;
   call_id?: string;
   name?: string;
@@ -1699,8 +1705,8 @@ export interface ToolResultPart {
 
 export interface ImageMediaPart {
   metadata?: Record<string, unknown>;
-  type?: "media";
-  kind?: "image";
+  type: "media";
+  kind: "image";
   url?: string | null;
   file_uri?: string | null;
   mime_type?: string | null;
@@ -1708,8 +1714,8 @@ export interface ImageMediaPart {
 
 export interface AudioMediaPart {
   metadata?: Record<string, unknown>;
-  type?: "media";
-  kind?: "audio";
+  type: "media";
+  kind: "audio";
   url?: string | null;
   file_uri?: string | null;
   mime_type?: string | null;
@@ -1718,8 +1724,8 @@ export interface AudioMediaPart {
 
 export interface VideoMediaPart {
   metadata?: Record<string, unknown>;
-  type?: "media";
-  kind?: "video";
+  type: "media";
+  kind: "video";
   url?: string | null;
   file_uri?: string | null;
   mime_type?: string | null;
@@ -1727,8 +1733,8 @@ export interface VideoMediaPart {
 
 export interface DocumentMediaPart {
   metadata?: Record<string, unknown>;
-  type?: "media";
-  kind?: "document";
+  type: "media";
+  kind: "document";
   url?: string | null;
   file_uri?: string | null;
   mime_type?: string | null;
@@ -1736,29 +1742,29 @@ export interface DocumentMediaPart {
 
 export interface YouTubeMediaPart {
   metadata?: Record<string, unknown>;
-  type?: "media";
-  kind?: "youtube";
+  type: "media";
+  kind: "youtube";
   url: string;
   mime_type?: string | null;
 }
 
 export interface CodeExecPart {
   metadata?: Record<string, unknown>;
-  type?: "code_exec";
+  type: "code_exec";
   language?: string;
   code?: string;
 }
 
 export interface CodeResultPart {
   metadata?: Record<string, unknown>;
-  type?: "code_result";
+  type: "code_result";
   output?: string;
   outcome?: string;
 }
 
 export interface WebSearchPart {
   metadata?: Record<string, unknown>;
-  type?: "web_search";
+  type: "web_search";
   id?: string;
   status?: string;
 }
@@ -1773,7 +1779,7 @@ export interface PreFetchedUrl {
 
 export interface WebpageInputPart {
   metadata?: Record<string, unknown>;
-  type?: "input_webpage";
+  type: "input_webpage";
   urls?: string | PreFetchedUrl[];
   convert_to_text?: boolean;
   optional_context?: boolean;
@@ -1783,7 +1789,7 @@ export interface WebpageInputPart {
 
 export interface NotesInputPart {
   metadata?: Record<string, unknown>;
-  type?: "input_notes";
+  type: "input_notes";
   note_ids?: string[];
   template?: string;
   convert_to_text?: boolean;
@@ -1794,7 +1800,7 @@ export interface NotesInputPart {
 
 export interface TaskInputPart {
   metadata?: Record<string, unknown>;
-  type?: "input_task";
+  type: "input_task";
   task_ids?: string[];
   template?: string;
   convert_to_text?: boolean;
@@ -1805,7 +1811,7 @@ export interface TaskInputPart {
 
 export interface TableInputPart {
   metadata?: Record<string, unknown>;
-  type?: "input_table";
+  type: "input_table";
   bookmarks?: Record<string, unknown>[];
   convert_to_text?: boolean;
   optional_context?: boolean;
@@ -1815,7 +1821,7 @@ export interface TableInputPart {
 
 export interface ListInputPart {
   metadata?: Record<string, unknown>;
-  type?: "input_list";
+  type: "input_list";
   bookmarks?: Record<string, unknown>[];
   convert_to_text?: boolean;
   optional_context?: boolean;
@@ -1825,7 +1831,7 @@ export interface ListInputPart {
 
 export interface DataInputPart {
   metadata?: Record<string, unknown>;
-  type?: "input_data";
+  type: "input_data";
   refs?: Record<string, unknown>[];
   convert_to_text?: boolean;
   optional_context?: boolean;
@@ -1835,7 +1841,7 @@ export interface DataInputPart {
 
 export interface ContextInputPart {
   metadata?: Record<string, unknown>;
-  type?: "input_context";
+  type: "input_context";
   context_id?: string;
   context_name?: string;
   context_data?: Record<string, unknown>;
@@ -1871,12 +1877,6 @@ export function parseMessageContent(content: unknown[]): MessagePart[] {
   return content as MessagePart[];
 }
 
-export interface StreamEvent {
-  event: EventType;
-  data: unknown;
-}
-
-// Typed event helpers
 export interface ChunkEvent {
   event: "chunk";
   data: ChunkPayload;
@@ -1904,7 +1904,7 @@ export interface InfoEvent {
 
 export interface TypedDataEvent {
   event: "data";
-  data: TypedDataPayload | Record<string, unknown>;
+  data: TypedDataPayload | UntypedDataPayload;
 }
 
 export interface InitEvent {
@@ -1957,6 +1957,7 @@ export interface RecordUpdateEvent {
   data: RecordUpdatePayload;
 }
 
+/** Discriminated union — `event.event === "chunk"` narrows `data` automatically. */
 export type TypedStreamEvent =
   | ChunkEvent
   | ReasoningChunkEvent
@@ -1975,67 +1976,108 @@ export type TypedStreamEvent =
   | RecordReservedEvent
   | RecordUpdateEvent;
 
-// Type guards
-export function isChunkEvent(e: StreamEvent): e is { event: "chunk"; data: ChunkPayload } {
+/**
+ * @deprecated Use `TypedStreamEvent` instead — it provides automatic type narrowing
+ * via the discriminated union so `event.event === "chunk"` narrows `data` to `ChunkPayload`.
+ */
+export type StreamEvent = TypedStreamEvent;
+
+// Compact wire format for high-frequency events (90%+ of stream traffic).
+// e = event type ("c" = chunk, "r" = reasoning_chunk), t = text content.
+export interface CompactChunkEvent {
+  e: "c";
+  t: string;
+}
+
+export interface CompactReasoningChunkEvent {
+  e: "r";
+  t: string;
+}
+
+export type CompactStreamEvent = CompactChunkEvent | CompactReasoningChunkEvent;
+
+/** A line from the NDJSON stream — either compact or standard format. */
+export type RawStreamLine = CompactStreamEvent | TypedStreamEvent;
+
+export function isCompactEvent(line: unknown): line is CompactStreamEvent {
+  return typeof line === "object" && line !== null && "e" in line && "t" in line;
+}
+
+/** Normalize a compact event into the standard TypedStreamEvent shape. */
+export function expandCompactEvent(compact: CompactStreamEvent): TypedStreamEvent {
+  if (compact.e === "c") return { event: "chunk", data: { text: compact.t } };
+  return { event: "reasoning_chunk", data: { text: compact.t } };
+}
+
+// Type guards (work on both TypedStreamEvent and the deprecated StreamEvent alias)
+export function isChunkEvent(e: TypedStreamEvent): e is { event: "chunk"; data: ChunkPayload } {
   return e.event === "chunk";
 }
 
-export function isReasoningChunkEvent(e: StreamEvent): e is { event: "reasoning_chunk"; data: ReasoningChunkPayload } {
+export function isReasoningChunkEvent(e: TypedStreamEvent): e is { event: "reasoning_chunk"; data: ReasoningChunkPayload } {
   return e.event === "reasoning_chunk";
 }
 
-export function isPhaseEvent(e: StreamEvent): e is { event: "phase"; data: PhasePayload } {
+export function isPhaseEvent(e: TypedStreamEvent): e is { event: "phase"; data: PhasePayload } {
   return e.event === "phase";
 }
 
-export function isWarningEvent(e: StreamEvent): e is { event: "warning"; data: WarningPayload } {
+export function isWarningEvent(e: TypedStreamEvent): e is { event: "warning"; data: WarningPayload } {
   return e.event === "warning";
 }
 
-export function isInfoEvent(e: StreamEvent): e is { event: "info"; data: InfoPayload } {
+export function isInfoEvent(e: TypedStreamEvent): e is { event: "info"; data: InfoPayload } {
   return e.event === "info";
 }
 
-export function isTypedDataEvent(e: StreamEvent): e is { event: "data"; data: TypedDataPayload | Record<string, unknown> } {
+export function isTypedDataEvent(e: TypedStreamEvent): e is { event: "data"; data: TypedDataPayload | UntypedDataPayload } {
   return e.event === "data";
 }
 
-export function isInitEvent(e: StreamEvent): e is { event: "init"; data: InitPayload } {
+export function isInitEvent(e: TypedStreamEvent): e is { event: "init"; data: InitPayload } {
   return e.event === "init";
 }
 
-export function isCompletionEvent(e: StreamEvent): e is { event: "completion"; data: CompletionPayload } {
+export function isCompletionEvent(e: TypedStreamEvent): e is { event: "completion"; data: CompletionPayload } {
   return e.event === "completion";
 }
 
-export function isErrorEvent(e: StreamEvent): e is { event: "error"; data: ErrorPayload } {
+export function isErrorEvent(e: TypedStreamEvent): e is { event: "error"; data: ErrorPayload } {
   return e.event === "error";
 }
 
-export function isToolEventEvent(e: StreamEvent): e is { event: "tool_event"; data: ToolEventPayload } {
+export function isToolEventEvent(e: TypedStreamEvent): e is { event: "tool_event"; data: ToolEventPayload } {
   return e.event === "tool_event";
 }
 
-export function isBrokerEvent(e: StreamEvent): e is { event: "broker"; data: BrokerPayload } {
+export function isBrokerEvent(e: TypedStreamEvent): e is { event: "broker"; data: BrokerPayload } {
   return e.event === "broker";
 }
 
-export function isHeartbeatEvent(e: StreamEvent): e is { event: "heartbeat"; data: HeartbeatPayload } {
+export function isHeartbeatEvent(e: TypedStreamEvent): e is { event: "heartbeat"; data: HeartbeatPayload } {
   return e.event === "heartbeat";
 }
 
-export function isEndEvent(e: StreamEvent): e is { event: "end"; data: EndPayload } {
+export function isEndEvent(e: TypedStreamEvent): e is { event: "end"; data: EndPayload } {
   return e.event === "end";
 }
 
-export function isRenderBlockEvent(e: StreamEvent): e is { event: "render_block"; data: RenderBlockPayload } {
+export function isRenderBlockEvent(e: TypedStreamEvent): e is { event: "render_block"; data: RenderBlockPayload } {
   return e.event === "render_block";
 }
 
-export function isRecordReservedEvent(e: StreamEvent): e is { event: "record_reserved"; data: RecordReservedPayload } {
+export function isRecordReservedEvent(e: TypedStreamEvent): e is { event: "record_reserved"; data: RecordReservedPayload } {
   return e.event === "record_reserved";
 }
 
-export function isRecordUpdateEvent(e: StreamEvent): e is { event: "record_update"; data: RecordUpdatePayload } {
+export function isRecordUpdateEvent(e: TypedStreamEvent): e is { event: "record_update"; data: RecordUpdatePayload } {
   return e.event === "record_update";
+}
+
+export function isCompactChunkEvent(e: unknown): e is CompactChunkEvent {
+  return typeof e === "object" && e !== null && (e as CompactChunkEvent).e === "c" && typeof (e as CompactChunkEvent).t === "string";
+}
+
+export function isCompactReasoningChunkEvent(e: unknown): e is CompactReasoningChunkEvent {
+  return typeof e === "object" && e !== null && (e as CompactReasoningChunkEvent).e === "r" && typeof (e as CompactReasoningChunkEvent).t === "string";
 }

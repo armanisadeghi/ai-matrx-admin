@@ -167,7 +167,6 @@ export const checkServerHealth = createAsyncThunk(
       }
     }
 
-    // Resolve the URL for this environment
     const baseUrl =
       targetEnv === "custom"
         ? state.apiConfig.customUrl

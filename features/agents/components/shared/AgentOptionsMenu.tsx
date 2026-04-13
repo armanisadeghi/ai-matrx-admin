@@ -243,7 +243,7 @@ export function AgentOptionsMenu({
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-72">
+      <DropdownMenuContent align="end" className="w-80">
         {/* ── This Agent ── */}
         {THIS_AGENT_ITEMS.map(({ label, icon: Icon, soon }) => (
           <DropdownMenuItem

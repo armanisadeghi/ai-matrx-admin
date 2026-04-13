@@ -19,17 +19,6 @@ import { ReactReduxContext, useSelector } from "react-redux";
 import dynamic from "next/dynamic";
 import FullScreenMarkdownEditor from "./FullScreenMarkdownEditor";
 
-const BlockRenderer = dynamic(
-  () => import("./block-registry/BlockRenderer").then((m) => m.BlockRenderer),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="py-2 px-1 text-sm text-neutral-400 animate-pulse">
-        Loading...
-      </div>
-    ),
-  },
-);
 import { selectPrimaryResponseToolBlocksByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 import { toolCallBlockToLegacy } from "@/lib/chat-protocol";
 import type { ToolCallObject } from "@/lib/redux/socket-io/socket.types";
@@ -44,6 +33,18 @@ import { selectTurnInterleavedContent } from "@/features/agents/redux/execution-
 import type { ToolLifecycleEntry } from "@/features/agents/types/request.types";
 import type { ToolCallPhase } from "@/lib/api/tool-call.types";
 import { useAppSelector } from "@/lib/redux/hooks";
+
+const BlockRenderer = dynamic(
+  () => import("./block-registry/BlockRenderer").then((m) => m.BlockRenderer),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="py-2 px-1 text-sm text-neutral-400 animate-pulse">
+        Loading...
+      </div>
+    ),
+  },
+);
 
 // ============================================================================
 // REDUX TOOL UPDATES — isolated subscriber so text-chunk re-renders don't

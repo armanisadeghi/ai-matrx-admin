@@ -12,16 +12,18 @@
 import { createSelector } from "@reduxjs/toolkit";
 import type { RootState } from "@/lib/redux/store";
 import type { ManagedResource } from "@/features/agents/types";
+import type { MessagePart } from "@/types/python-generated/stream-events";
 
 const EMPTY_RESOURCES: ManagedResource[] = [];
-const EMPTY_PAYLOADS: Array<Record<string, unknown>> = [];
+const EMPTY_PAYLOADS: MessagePart[] = [];
 
 /**
  * All resources for an instance, sorted by sortOrder.
  */
 export const selectInstanceResources = (conversationId: string) =>
   createSelector(
-    (state: RootState) => state.instanceResources.byConversationId[conversationId],
+    (state: RootState) =>
+      state.instanceResources.byConversationId[conversationId],
     (resources) => {
       if (!resources) return EMPTY_RESOURCES;
       const arr = Object.values(resources).sort(
@@ -44,7 +46,8 @@ export const selectResource =
  */
 export const selectReadyResources = (conversationId: string) =>
   createSelector(
-    (state: RootState) => state.instanceResources.byConversationId[conversationId],
+    (state: RootState) =>
+      state.instanceResources.byConversationId[conversationId],
     (resources) => {
       if (!resources) return EMPTY_RESOURCES;
       const arr = Object.values(resources)
@@ -59,7 +62,8 @@ export const selectReadyResources = (conversationId: string) =>
  */
 export const selectPendingResources = (conversationId: string) =>
   createSelector(
-    (state: RootState) => state.instanceResources.byConversationId[conversationId],
+    (state: RootState) =>
+      state.instanceResources.byConversationId[conversationId],
     (resources) => {
       if (!resources) return EMPTY_RESOURCES;
       const arr = Object.values(resources).filter(
@@ -71,15 +75,19 @@ export const selectPendingResources = (conversationId: string) =>
 
 /**
  * Whether all resources are resolved (ready or error — nothing pending).
+ * Uses a for..in loop over the Record keys to avoid Object.values() allocation
+ * on every call — this runs on every dispatch while resources are resolving.
  */
 export const selectAllResourcesResolved =
   (conversationId: string) =>
   (state: RootState): boolean => {
     const resources = state.instanceResources.byConversationId[conversationId];
     if (!resources) return true;
-    return Object.values(resources).every(
-      (r) => r.status === "ready" || r.status === "error",
-    );
+    for (const key in resources) {
+      const status = resources[key]?.status;
+      if (status !== "ready" && status !== "error") return false;
+    }
+    return true;
   };
 
 /**
@@ -88,14 +96,15 @@ export const selectAllResourcesResolved =
  */
 export const selectResourcePayloads = (conversationId: string) =>
   createSelector(
-    (state: RootState) => state.instanceResources.byConversationId[conversationId],
+    (state: RootState) =>
+      state.instanceResources.byConversationId[conversationId],
     (resources) => {
       if (!resources) return EMPTY_PAYLOADS;
 
       const arr = Object.values(resources)
         .filter((r) => r.status === "ready")
         .sort((a, b) => a.sortOrder - b.sortOrder)
-        .map((r) => {
+        .map((r): MessagePart => {
           if (r.finalPayload) return r.finalPayload;
 
           const payload: Record<string, unknown> = { type: r.blockType };
@@ -144,7 +153,7 @@ export const selectResourcePayloads = (conversationId: string) =>
               break;
           }
 
-          return payload;
+          return payload as unknown as MessagePart;
         });
 
       return arr.length === 0 ? EMPTY_PAYLOADS : arr;

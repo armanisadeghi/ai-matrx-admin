@@ -931,10 +931,10 @@ function UserInputTab({ data }: { data: InstanceUserInputState | undefined }) {
           {data.text || "(empty)"}
         </pre>
       </Section>
-      {data.contentBlocks && data.contentBlocks.length > 0 && (
-        <Section title="Content Blocks">
+      {data.messageParts && data.messageParts.length > 0 && (
+        <Section title="Message Parts">
           <div className="text-sm">
-            <JsonTreeViewer data={data.contentBlocks} />
+            <JsonTreeViewer data={data.messageParts} />
           </div>
         </Section>
       )}

@@ -35,7 +35,7 @@ function deriveMode(pathname: string, agentId: string): AgentPageMode {
   if (pathname.startsWith(`${base}/build`)) return "edit";
   if (
     pathname.startsWith(`${base}/latest`) ||
-    /^\/agents\/[^/]+\/\d+$/.test(pathname)
+    /^\/agents\/[^/]+\/v\/\d+$/.test(pathname)
   )
     return "versions";
   return "view";

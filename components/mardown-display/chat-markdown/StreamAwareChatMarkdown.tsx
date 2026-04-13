@@ -188,10 +188,8 @@ export const StreamAwareChatMarkdown: React.FC<
 
       switch (event.event) {
         case "chunk": {
-          const chunkData = event.data as unknown as { text: string };
-          accumulatedContentRef.current += chunkData.text;
+          accumulatedContentRef.current += event.data.text;
           hasNewContent = true;
-          // Text chunks also change canonical blocks (the text block grows)
           canonicalBlocksChangedRef.current = true;
           hasNewCanonical = true;
           break;
@@ -210,10 +208,9 @@ export const StreamAwareChatMarkdown: React.FC<
 
         case "error": {
           console.log("[STREAM] error:", JSON.stringify(event.data, null, 2));
-          const errorData = event.data as Record<string, unknown>;
           const errorMessage =
-            (errorData?.user_message as string) ||
-            (errorData?.message as string) ||
+            event.data.user_message ||
+            event.data.message ||
             "An error occurred";
           onErrorRef.current?.(errorMessage);
           setHasStreamError(true);
@@ -222,9 +219,7 @@ export const StreamAwareChatMarkdown: React.FC<
 
         case "phase": {
           console.log("[STREAM] phase:", JSON.stringify(event.data, null, 2));
-          const phaseData = event.data as Record<string, unknown>;
-          console.log("[STREAM] phase:", JSON.stringify(phaseData, null, 2));
-          onPhaseUpdateRef.current?.(phaseData?.phase as string);
+          onPhaseUpdateRef.current?.(event.data.phase);
           break;
         }
 
@@ -233,27 +228,17 @@ export const StreamAwareChatMarkdown: React.FC<
             "[STREAM] render_block:",
             JSON.stringify(event.data, null, 2),
           );
-          // New server-processed block protocol.
-          // The Python backend sends snake_case keys (block_id, block_index);
-          // RenderBlockPayload uses camelCase. Normalise both forms so we
-          // work whether the payload has been transformed or not.
           isNewProtocolRef.current = true;
-          const raw = event.data as unknown as Record<string, unknown>;
-          const blockId = (raw.blockId ?? raw.block_id) as string | undefined;
-          const blockIndex = (raw.blockIndex ?? raw.block_index) as
-            | number
-            | undefined;
-          if (blockId !== undefined) {
-            serverBlockMapRef.current.set(blockId, {
-              blockId,
-              blockIndex: blockIndex ?? 0,
-              type: raw.type as string,
-              status:
-                (raw.status as "streaming" | "complete" | "error") ??
-                "streaming",
-              content: (raw.content as string | null) ?? null,
-              data: (raw.data as Record<string, unknown> | null) ?? null,
-              metadata: (raw.metadata as Record<string, unknown>) ?? {},
+          const block = event.data;
+          if (block.blockId !== undefined) {
+            serverBlockMapRef.current.set(block.blockId, {
+              blockId: block.blockId,
+              blockIndex: block.blockIndex ?? 0,
+              type: block.type,
+              status: block.status ?? "streaming",
+              content: block.content ?? null,
+              data: block.data ?? null,
+              metadata: block.metadata ?? {},
             });
             hasNewBlocks = true;
           }

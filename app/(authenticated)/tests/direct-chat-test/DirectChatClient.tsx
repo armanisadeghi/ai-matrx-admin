@@ -10,6 +10,7 @@ import CodeBlock from '@/features/code-editor/components/code-block/CodeBlock';
 import MarkdownStream from '@/components/MarkdownStream';
 import { BACKEND_URLS, ENDPOINTS } from '@/lib/api/endpoints';
 import { parseNdjsonStream } from '@/lib/api/stream-parser';
+import { isChunkEvent } from '@/types/python-generated/stream-events';
 
 type ServerType = 'local' | 'production';
 
@@ -117,8 +118,8 @@ export default function DirectChatClient() {
         jsonEvents.push(event);
         setResponseJson(JSON.stringify(jsonEvents, null, 2));
 
-        if (event.event === 'chunk' && typeof event.data === 'string') {
-          setStreamText(prev => prev + event.data);
+        if (isChunkEvent(event)) {
+          setStreamText((prev) => prev + event.data.text);
         }
       }
 

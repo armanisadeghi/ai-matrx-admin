@@ -45,6 +45,8 @@ import type {
   CompletionPayload,
   WarningPayload,
   InfoPayload,
+  TypedDataPayload,
+  UntypedDataPayload,
 } from "@/types/python-generated/stream-events";
 import { generateRequestId } from "../utils";
 import { destroyInstance } from "../execution-instances/execution-instances.slice";
@@ -182,23 +184,20 @@ const activeRequestsSlice = createSlice({
         if (!request.firstChunkAt) {
           request.firstChunkAt = new Date().toISOString();
         }
-        // O(1) push — lazy join in selectors avoids O(n) concat per chunk
         request.textChunks.push(action.payload.content);
+        request.accumulatedText += action.payload.content;
       }
     },
 
     /**
-     * Joins textChunks into accumulatedText. Call once after the stream ends
-     * so that commitAssistantTurn reads the final string without a selector.
+     * No-op retained for backward compat — accumulatedText is now maintained
+     * incrementally by appendChunk. Safe to call; does nothing.
      */
     finalizeAccumulatedText(
-      state,
-      action: PayloadAction<{ requestId: string }>,
+      _state,
+      _action: PayloadAction<{ requestId: string }>,
     ) {
-      const request = state.byRequestId[action.payload.requestId];
-      if (request && request.textChunks.length > 0) {
-        request.accumulatedText = request.textChunks.join("");
-      }
+      // accumulatedText is already up-to-date from appendChunk
     },
 
     // ── Reasoning Chunks ─────────────────────────────────────────
@@ -210,17 +209,19 @@ const activeRequestsSlice = createSlice({
       const request = state.byRequestId[action.payload.requestId];
       if (request) {
         request.reasoningChunks.push(action.payload.content);
+        request.accumulatedReasoning += action.payload.content;
       }
     },
 
+    /**
+     * No-op retained for backward compat — accumulatedReasoning is now maintained
+     * incrementally by appendReasoningChunk. Safe to call; does nothing.
+     */
     finalizeAccumulatedReasoning(
-      state,
-      action: PayloadAction<{ requestId: string }>,
+      _state,
+      _action: PayloadAction<{ requestId: string }>,
     ) {
-      const request = state.byRequestId[action.payload.requestId];
-      if (request && request.reasoningChunks.length > 0) {
-        request.accumulatedReasoning = request.reasoningChunks.join("");
-      }
+      // accumulatedReasoning is already up-to-date from appendReasoningChunk
     },
 
     markReasoningStreamStart(
@@ -491,7 +492,7 @@ const activeRequestsSlice = createSlice({
       state,
       action: PayloadAction<{
         requestId: string;
-        data: Record<string, unknown>;
+        data: TypedDataPayload | UntypedDataPayload;
       }>,
     ) {
       const request = state.byRequestId[action.payload.requestId];

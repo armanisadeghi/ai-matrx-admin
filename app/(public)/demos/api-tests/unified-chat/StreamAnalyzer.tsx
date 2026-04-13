@@ -24,6 +24,7 @@ import {
   ArrowRight,
   Copy,
   Check,
+  Brain,
 } from 'lucide-react';
 import {
   TimestampedEvent,
@@ -61,6 +62,7 @@ function CategoryIcon({ category, className }: { category: EventCategory; classN
   switch (category) {
     case 'phase': return <Radio className={cn} />;
     case 'chunk': return <MessageSquareText className={cn} />;
+    case 'reasoning_chunk': return <Brain className={cn} />;
     case 'tool_event': return <Wrench className={cn} />;
     case 'completion': return <BarChart3 className={cn} />;
     case 'data': return <BarChart3 className={cn} />;
@@ -77,6 +79,7 @@ function CategoryIcon({ category, className }: { category: EventCategory; classN
 const CATEGORY_ORDER: EventCategory[] = [
   'phase',
   'chunk',
+  'reasoning_chunk',
   'tool_event',
   'completion',
   'data',
@@ -410,6 +413,8 @@ function CategoryView({ category, events }: { category: EventCategory; events: T
   switch (category) {
     case 'chunk':
       return <ChunkCategoryView events={events} />;
+    case 'reasoning_chunk':
+      return <ReasoningChunkCategoryView events={events} />;
     case 'tool_event':
       return <ToolUpdateCategoryView events={events} />;
     case 'phase':
@@ -487,6 +492,44 @@ function ChunkCategoryView({ events }: { events: TimestampedEvent[] }) {
       <CollapsibleSection title="Raw Chunks (JSON)" defaultOpen={false} count={events.length}>
         <pre className="text-xs font-mono whitespace-pre-wrap text-muted-foreground max-h-60 overflow-y-auto">
           {JSON.stringify(events.map(e => e.raw), null, 2)}
+        </pre>
+      </CollapsibleSection>
+    </div>
+  );
+}
+
+// ─── Reasoning chunk category (dedicated reasoning_chunk events from server) ─
+
+function ReasoningChunkCategoryView({ events }: { events: TimestampedEvent[] }) {
+  const assembled = events
+    .map((e) => {
+      const data = e.raw.data as Record<string, unknown>;
+      return typeof data.text === 'string' ? data.text : '';
+    })
+    .join('');
+
+  const firstTime = events.length > 0 ? events[0].offsetMs : 0;
+  const lastTime = events.length > 0 ? events[events.length - 1].offsetMs : 0;
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-3 text-xs font-mono text-muted-foreground">
+        <span>{events.length} reasoning chunks</span>
+        <span className="text-[10px]">|</span>
+        <span>First: {formatDuration(firstTime)}</span>
+        <ArrowRight className="h-3 w-3" />
+        <span>Last: {formatDuration(lastTime)}</span>
+      </div>
+      {assembled && (
+        <CollapsibleSection title="Assembled reasoning" defaultOpen count={events.length}>
+          <pre className="text-xs font-mono whitespace-pre-wrap text-muted-foreground leading-relaxed italic">
+            {assembled}
+          </pre>
+        </CollapsibleSection>
+      )}
+      <CollapsibleSection title="Raw events (JSON)" defaultOpen={false} count={events.length}>
+        <pre className="text-xs font-mono whitespace-pre-wrap text-muted-foreground max-h-60 overflow-y-auto">
+          {JSON.stringify(events.map((e) => e.raw), null, 2)}
         </pre>
       </CollapsibleSection>
     </div>
@@ -1058,6 +1101,12 @@ function eventPreview(evt: TimestampedEvent): string {
       const text = typeof d.text === 'string' ? d.text : '';
       const clean = text.replace(/<reasoning>|<\/reasoning>/g, '').trim();
       return clean.length > 80 ? clean.slice(0, 80) + '...' : clean || '(empty chunk)';
+    }
+
+    case 'reasoning_chunk': {
+      const d = data as Record<string, unknown>;
+      const text = typeof d.text === 'string' ? d.text : '';
+      return text.length > 80 ? text.slice(0, 80) + '...' : text || '(empty reasoning chunk)';
     }
 
     case 'phase': {

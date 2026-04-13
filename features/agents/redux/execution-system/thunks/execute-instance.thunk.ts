@@ -23,6 +23,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import type { RootState } from "@/lib/redux/store";
 import type { AssembledAgentStartRequest } from "@/features/agents/types/request.types";
+import type { MessagePart } from "@/types/python-generated/stream-events";
 import { generateRequestId } from "../utils";
 import { setInstanceStatus } from "../execution-instances";
 import { selectResourcePayloads } from "../instance-resources";
@@ -78,7 +79,7 @@ export function assembleRequest(
   const userInputState =
     state.instanceUserInput.byConversationId[conversationId];
   const textInput = userInputState?.text?.trim() ?? "";
-  const contentBlocks = userInputState?.contentBlocks;
+  const messageParts = userInputState?.messageParts;
 
   // Resources → ContentBlock[]
   const resourcePayloads = selectResourcePayloads(conversationId)(state);
@@ -88,16 +89,16 @@ export function assembleRequest(
   // Build user_input
   let user_input: AssembledAgentStartRequest["user_input"];
   if (resourcePayloads.length > 0) {
-    const blocks: Array<Record<string, unknown>> = [];
-    if (textInput) blocks.push({ type: "text", text: textInput });
-    if (contentBlocks) blocks.push(...contentBlocks);
-    blocks.push(...resourcePayloads);
-    user_input = blocks as AssembledAgentStartRequest["user_input"];
-  } else if (contentBlocks && contentBlocks.length > 0) {
-    const blocks: Array<Record<string, unknown>> = [];
-    if (textInput) blocks.push({ type: "text", text: textInput });
-    blocks.push(...contentBlocks);
-    user_input = blocks as AssembledAgentStartRequest["user_input"];
+    const parts: MessagePart[] = [];
+    if (textInput) parts.push({ type: "text", text: textInput });
+    if (messageParts) parts.push(...messageParts);
+    parts.push(...resourcePayloads);
+    user_input = parts;
+  } else if (messageParts && messageParts.length > 0) {
+    const parts: MessagePart[] = [];
+    if (textInput) parts.push({ type: "text", text: textInput });
+    parts.push(...messageParts);
+    user_input = parts;
   } else if (textInput) {
     user_input = textInput;
   }
@@ -179,7 +180,7 @@ export const executeInstance = createAsyncThunk<
       const userInputEntry =
         state.instanceUserInput.byConversationId[conversationId];
       const userInputText = userInputEntry?.text?.trim() ?? "";
-      const userContentBlocks = userInputEntry?.contentBlocks ?? undefined;
+      const userMessageParts = userInputEntry?.messageParts ?? undefined;
 
       // Assemble the request
       const payload = assembleRequest(state, conversationId);
@@ -188,7 +189,7 @@ export const executeInstance = createAsyncThunk<
       }
       if (debug) payload.debug = true;
 
-      const variables = payload.variables ?? undefined;
+      const variables = payload.variables;
 
       // Format variables for display in the user message bubble.
       const variableLines = variables
@@ -196,7 +197,7 @@ export const executeInstance = createAsyncThunk<
         : "";
 
       // Resolve base URL from Redux (single source of truth)
-      const baseUrl = selectResolvedBaseUrl(state as any);
+      const baseUrl = selectResolvedBaseUrl(state);
       if (!baseUrl) {
         throw new Error("No backend URL configured");
       }
@@ -219,27 +220,24 @@ export const executeInstance = createAsyncThunk<
         selectLatestConversationId(conversationId)(state);
 
       // Add the user's message to history immediately — before the API call fires.
-      // Include resource payload blocks so they display even before the DB round-trip.
-      // The condition covers: typed text, content blocks, resources, OR variables.
-      const resourceBlocks =
-        payload.user_input && Array.isArray(payload.user_input)
-          ? (payload.user_input as Array<Record<string, unknown>>).filter(
-              (b) => b["type"] !== "text",
-            )
-          : [];
+      // Include resource payload parts so they display even before the DB round-trip.
+      // The condition covers: typed text, content parts, resources, OR variables.
+      const resourceBlocks = Array.isArray(payload.user_input)
+        ? payload.user_input.filter((b) => b.type !== "text")
+        : [];
 
       const displayContent = [variableLines, userInputText]
         .filter(Boolean)
         .join("\n");
 
-      if (displayContent || userContentBlocks || resourceBlocks.length > 0) {
+      if (displayContent || userMessageParts || resourceBlocks.length > 0) {
         dispatch(
           addUserTurn({
             conversationId,
             content: displayContent,
             messageParts:
-              [...(userContentBlocks ?? []), ...resourceBlocks].length > 0
-                ? [...(userContentBlocks ?? []), ...resourceBlocks]
+              [...(userMessageParts ?? []), ...resourceBlocks].length > 0
+                ? [...(userMessageParts ?? []), ...resourceBlocks]
                 : undefined,
             serverConversationId: existingConversationId,
           }),
@@ -375,7 +373,7 @@ export const executeInstance = createAsyncThunk<
 
 /**
  * Atomically clears all input state after a successful send.
- * Clears user text input, content blocks, and all attached resources.
+ * Clears user text input, content parts, and all attached resources.
  * Call this after executeInstance resolves — keeps the instance alive
  * for follow-up turns while returning the input area to a clean state.
  */
@@ -418,7 +416,7 @@ export const submitToolResults = createAsyncThunk<void, SubmitToolResultsArgs>(
       }
 
       // Resolve base URL and auth (same as executeInstance)
-      const baseUrl = selectResolvedBaseUrl(state as any);
+      const baseUrl = selectResolvedBaseUrl(state);
       if (!baseUrl) throw new Error("No backend URL configured");
 
       const accessToken = selectAccessToken(state);

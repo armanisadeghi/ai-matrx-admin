@@ -41,7 +41,7 @@ import {
 // User input
 import {
   selectUserInputText,
-  selectUserInputContentBlocks,
+  selectUserInputMessageParts,
   selectHasUserInput,
 } from "@/features/agents/redux/execution-system/instance-user-input/instance-user-input.selectors";
 
@@ -266,7 +266,7 @@ export const AgentExecutionDebugPanel: React.FC<
 
   const userInputText = useAppSelector(selectUserInputText(instanceId));
   const userInputContentBlocks = useAppSelector(
-    selectUserInputContentBlocks(instanceId),
+    selectUserInputMessageParts(instanceId),
   );
   const hasUserInput = useAppSelector(selectHasUserInput(instanceId));
 

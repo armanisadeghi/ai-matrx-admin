@@ -1,4 +1,5 @@
-import type { StreamEvent } from "@/types/python-generated/stream-events";
+import type { TypedStreamEvent } from "@/types/python-generated/stream-events";
+import { expandCompactEvent, isCompactEvent } from "@/types/python-generated/stream-events";
 import type { ToolCallObject } from "@/lib/api/tool-call.types";
 import type { FinalPayload, ToolStreamEvent } from "../../types";
 import type { BackendStreamFoldState } from "./fold-stream-events";
@@ -11,13 +12,21 @@ import {
  * Parse newline-delimited JSON (as produced by the Python streaming endpoint)
  * into typed stream events. Invalid lines are skipped.
  */
-export function parseNdjsonStringToStreamEvents(ndjson: string): StreamEvent[] {
-  const out: StreamEvent[] = [];
+function normalizeParsedLine(parsed: unknown): TypedStreamEvent {
+  if (isCompactEvent(parsed)) {
+    return expandCompactEvent(parsed);
+  }
+  return parsed as TypedStreamEvent;
+}
+
+export function parseNdjsonStringToStreamEvents(ndjson: string): TypedStreamEvent[] {
+  const out: TypedStreamEvent[] = [];
   for (const line of ndjson.split("\n")) {
     const trimmed = line.trim();
     if (!trimmed) continue;
     try {
-      out.push(JSON.parse(trimmed) as StreamEvent);
+      const parsed: unknown = JSON.parse(trimmed);
+      out.push(normalizeParsedLine(parsed));
     } catch {
       // skip malformed line
     }

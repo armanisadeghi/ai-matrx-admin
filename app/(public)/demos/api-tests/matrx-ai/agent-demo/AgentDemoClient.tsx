@@ -46,6 +46,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { parseNdjsonStream } from "@/lib/api/stream-parser";
+import { ENDPOINTS } from "@/lib/api/endpoints";
 import { useServerConfig } from "../_shared/useServerConfig";
 import { ServerBar } from "../_shared/ServerBar";
 
@@ -406,7 +407,7 @@ export default function AgentDemoClient() {
           setTextOutput((prev) => prev + (evt.data as { text: string }).text);
         }
         if (evt.event === "error") {
-          const d = evt.data as Record<string, string> | null;
+          const d = evt.data;
           setErrorMessage(
             d?.user_message ||
               d?.message ||
@@ -505,7 +506,7 @@ export default function AgentDemoClient() {
                 <Bot className="h-4 w-4 text-primary" />
                 <h1 className="text-base font-bold">Agent Demo</h1>
                 <Badge variant="outline" className="text-[10px] h-5 px-1.5">
-                  POST /api/ai/agents/{"{id}"}
+                  POST {ENDPOINTS.ai.agentStart("{id}")}
                 </Badge>
               </div>
             }
@@ -523,7 +524,8 @@ export default function AgentDemoClient() {
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent className="text-xs">
-                  POST /api/ai/agents/{"{id}"}/warm — pre-load agent into cache
+                  POST {ENDPOINTS.ai.agentWarm("{id}")} — pre-load agent into
+                  cache
                 </TooltipContent>
               </Tooltip>
             }
@@ -549,7 +551,8 @@ export default function AgentDemoClient() {
                   <p className="text-[10px] text-muted-foreground">
                     Sent as:{" "}
                     <code className="font-mono">
-                      POST /api/ai/agents/{agentId || "{agent_id}"}
+                      POST{" "}
+                      {ENDPOINTS.ai.agentStart(agentId.trim() || "{agent_id}")}
                     </code>
                   </p>
                 </div>
@@ -938,12 +941,12 @@ export default function AgentDemoClient() {
                 >
                   <div className="flex justify-end flex-shrink-0 mb-1">
                     <CopyButton
-                      text={`POST ${config.serverUrl}/api/ai/agents/${agentId}\n\n${requestBody}`}
+                      text={`POST ${config.serverUrl}${ENDPOINTS.ai.agentStart(agentId || "{agent_id}")}\n\n${requestBody}`}
                     />
                   </div>
                   <div className="flex-1 overflow-y-auto min-h-0">
                     <pre className="text-[11px] font-mono whitespace-pre-wrap text-foreground/80">
-                      {`POST ${config.serverUrl}/api/ai/agents/${agentId || "{agent_id}"}\n`}
+                      {`POST ${config.serverUrl}${ENDPOINTS.ai.agentStart(agentId || "{agent_id}")}\n`}
                       {`Authorization: Bearer ${config.authToken || "<token>"}\n`}
                       {`Content-Type: application/json\n\n`}
                       {requestBody}

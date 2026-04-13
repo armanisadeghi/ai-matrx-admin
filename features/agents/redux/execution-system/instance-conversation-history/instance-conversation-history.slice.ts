@@ -62,7 +62,7 @@ export interface ConversationTurn {
   messageParts?: MessagePart[];
 
   /**
-   * Streaming-path render blocks (images, audio, etc.) attached during
+   * Streaming-path renderBlocks (Pre-processed, parsed items like Flashcards, Quiz, Timeline, etc.) attached during
    * addUserTurn or commitAssistantTurn. Used by AgentUserMessage for
    * inline attachment rendering. Separate from messageParts (DB path).
    */
@@ -242,6 +242,7 @@ const instanceConversationHistorySlice = createSlice({
         content: string;
         serverConversationId: string | null;
         messageParts?: MessagePart[];
+        renderBlocks?: RenderBlockPayload[];
         tokenUsage?: TokenUsage;
         finishReason?: string;
         completionStats?: CompletionStats;
@@ -254,6 +255,7 @@ const instanceConversationHistorySlice = createSlice({
         content,
         serverConversationId,
         messageParts,
+        renderBlocks,
         tokenUsage,
         finishReason,
         completionStats,
@@ -275,6 +277,7 @@ const instanceConversationHistorySlice = createSlice({
         requestId,
         conversationId: serverConversationId,
         ...(messageParts && { messageParts }),
+        ...(renderBlocks && { renderBlocks }),
         ...(tokenUsage && { tokenUsage }),
         ...(finishReason && { finishReason }),
         ...(completionStats && { completionStats }),

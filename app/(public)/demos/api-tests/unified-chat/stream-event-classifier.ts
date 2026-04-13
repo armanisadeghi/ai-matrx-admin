@@ -6,7 +6,11 @@
  *
  * Updated for V2 protocol: no more tool_update or info events.
  * New events: completion, heartbeat, tool_event.
+ * Compact wire lines `{"e":"c","t":"..."}` / `{"e":"r","t":"..."}` are normalized
+ * via python-generated `expandCompactEvent` before classification.
  */
+
+import { expandCompactEvent, isCompactEvent } from '@/types/python-generated/stream-events';
 
 // ─── Classified Event Envelope ───────────────────────────────────────────────
 
@@ -28,6 +32,7 @@ export interface TimestampedEvent {
 export type EventCategory =
   | 'phase'
   | 'chunk'
+  | 'reasoning_chunk'
   | 'tool_event'
   | 'completion'
   | 'data'
@@ -99,8 +104,12 @@ export function classifyEvent(
   now: number,
   streamStart: number,
 ): TimestampedEvent {
-  const eventName = (raw.event as string) ?? 'unknown';
-  const data = (raw.data ?? {}) as Record<string, unknown>;
+  const normalized: Record<string, unknown> = isCompactEvent(raw)
+    ? (expandCompactEvent(raw) as unknown as Record<string, unknown>)
+    : raw;
+
+  const eventName = (normalized.event as string) ?? 'unknown';
+  const data = (normalized.data ?? {}) as Record<string, unknown>;
 
   let category: EventCategory;
   let subType: string | null = null;
@@ -113,6 +122,11 @@ export function classifyEvent(
       subType = typeof data.text === 'string' && data.text.includes('<reasoning>')
         ? 'chunk_reasoning'
         : 'chunk_content';
+      break;
+
+    case 'reasoning_chunk':
+      category = 'reasoning_chunk';
+      subType = 'reasoning_chunk';
       break;
 
     case 'phase':
@@ -163,7 +177,7 @@ export function classifyEvent(
   }
 
   return {
-    raw,
+    raw: normalized,
     receivedAt: now,
     offsetMs: now - streamStart,
     category,
@@ -205,6 +219,7 @@ export function categoryLabel(cat: EventCategory): string {
   switch (cat) {
     case 'phase': return 'Phase Updates';
     case 'chunk': return 'Text Chunks';
+    case 'reasoning_chunk': return 'Reasoning Chunks';
     case 'tool_event': return 'Tool Events';
     case 'completion': return 'Completion';
     case 'data': return 'Data';
@@ -229,6 +244,7 @@ export function subTypeLabel(subType: string): string {
     // Chunks
     chunk_reasoning: 'Reasoning',
     chunk_content: 'Content',
+    reasoning_chunk: 'Reasoning chunk',
     // Tool events
     tool_started: 'Tool Started',
     tool_progress: 'Progress',
@@ -255,6 +271,7 @@ export function categoryColor(cat: EventCategory): string {
   switch (cat) {
     case 'phase': return 'bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/25';
     case 'chunk': return 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/25';
+    case 'reasoning_chunk': return 'bg-fuchsia-500/15 text-fuchsia-700 dark:text-fuchsia-400 border-fuchsia-500/25';
     case 'tool_event': return 'bg-violet-500/15 text-violet-700 dark:text-violet-400 border-violet-500/25';
     case 'completion': return 'bg-teal-500/15 text-teal-700 dark:text-teal-400 border-teal-500/25';
     case 'data': return 'bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/25';

@@ -4,8 +4,11 @@
  * SELECTOR RULES (same as aggregate.selectors.ts):
  * - Primitives returned directly — stable by value, safe for useAppSelector.
  * - Arrays/objects from .filter()/.map() ALWAYS wrapped in createSelector.
- * - Input selectors: plain state lookups only.
+ * - Input selectors: plain state lookups only — no filtering, no ?? defaults.
  * - Result functions: all filtering, mapping, and derivation.
+ * - No ?? [] / ?? {} / ?? null defaults in selectors — return undefined, guard in component.
+ * - Every parameterized selector chains from selectRequest (the base record selector)
+ *   so the shared byRequestId[id] lookup is not duplicated across the call tree.
  */
 
 import { createSelector } from "@reduxjs/toolkit";
@@ -32,6 +35,7 @@ import type {
   SubAgentResult,
   PersistenceResult,
   TypedDataPayload,
+  UntypedDataPayload,
   AudioOutputData,
   CategorizationResultData,
   ConversationIdData,
@@ -55,13 +59,21 @@ import type {
 } from "@/features/agents/types/request.types";
 
 // =============================================================================
-// Core Request Selectors
+// Base Record Selector — all parameterized selectors chain from this
 // =============================================================================
 
+/**
+ * The base record lookup. Everything else derives from this so the
+ * byRequestId[id] lookup is never duplicated in input selectors.
+ */
 export const selectRequest =
   (requestId: string) =>
   (state: RootState): ActiveRequest | undefined =>
     state.activeRequests.byRequestId[requestId];
+
+// =============================================================================
+// Core Request Selectors
+// =============================================================================
 
 export const selectRequestsForInstance = (conversationId: string) =>
   createSelector(
@@ -86,14 +98,14 @@ export const selectPrimaryRequest =
 export const selectRequestStatus = (requestId: string) => (state: RootState) =>
   state.activeRequests.byRequestId[requestId]?.status;
 
+/**
+ * Returns "" when no request exists — safe because "" is a string literal
+ * (always the same reference). String ?? "" defaults do NOT create new refs.
+ */
 export const selectAccumulatedText =
   (requestId: string) =>
-  (state: RootState): string => {
-    const request = state.activeRequests.byRequestId[requestId];
-    if (!request) return "";
-    if (request.textChunks.length > 0) return request.textChunks.join("");
-    return request.accumulatedText || "";
-  };
+  (state: RootState): string =>
+    state.activeRequests.byRequestId[requestId]?.accumulatedText ?? "";
 
 export const selectRequestConversationId =
   (requestId: string) =>
@@ -103,14 +115,17 @@ export const selectRequestConversationId =
     return r.serverConversationId ?? r.conversationId;
   };
 
-export const selectHasActiveRequests = (state: RootState): boolean =>
-  Object.values(state.activeRequests.byRequestId).some(
-    (r) =>
-      r.status === "pending" ||
-      r.status === "connecting" ||
-      r.status === "streaming" ||
-      r.status === "awaiting-tools",
-  );
+export const selectHasActiveRequests = createSelector(
+  (state: RootState) => state.activeRequests.byRequestId,
+  (byRequestId): boolean =>
+    Object.values(byRequestId).some(
+      (r) =>
+        r.status === "pending" ||
+        r.status === "connecting" ||
+        r.status === "streaming" ||
+        r.status === "awaiting-tools",
+    ),
+);
 
 // =============================================================================
 // Phase Selectors (V2 — replaces status_update)
@@ -125,8 +140,9 @@ export const selectCurrentPhase =
 /** Full phase history — for timeline / debug views. Memoized. */
 export const selectPhaseHistory = (requestId: string) =>
   createSelector(
-    (state: RootState) => state.activeRequests.byRequestId[requestId],
-    (request): Phase[] => request?.phaseHistory ?? [],
+    (state: RootState) =>
+      state.activeRequests.byRequestId[requestId]?.phaseHistory,
+    (phaseHistory): Phase[] | undefined => phaseHistory,
   );
 
 // =============================================================================
@@ -145,13 +161,17 @@ export const selectCompletedOperations =
   (state: RootState): Record<string, CompletedOperationEntry> | undefined =>
     state.activeRequests.byRequestId[requestId]?.completedOperations;
 
-/** Whether any operations are currently in-flight. Primitive. */
+/**
+ * Whether any operations are currently in-flight. Primitive.
+ * Uses the activeOperations Record keys count — no Object.values() filter.
+ */
 export const selectHasActiveOperations =
   (requestId: string) =>
-  (state: RootState): boolean =>
-    Object.keys(
-      state.activeRequests.byRequestId[requestId]?.activeOperations ?? {},
-    ).length > 0;
+  (state: RootState): boolean => {
+    const ops = state.activeRequests.byRequestId[requestId]?.activeOperations;
+    if (!ops) return false;
+    return Object.keys(ops).length > 0;
+  };
 
 /** Completed operations filtered by operation type. Memoized. */
 export const selectCompletedOperationsByType = (
@@ -161,8 +181,8 @@ export const selectCompletedOperationsByType = (
   createSelector(
     (state: RootState) =>
       state.activeRequests.byRequestId[requestId]?.completedOperations,
-    (ops): CompletedOperationEntry[] => {
-      if (!ops) return [];
+    (ops): CompletedOperationEntry[] | undefined => {
+      if (!ops) return undefined;
       return Object.values(ops).filter((o) => o.operation === operation);
     },
   );
@@ -196,11 +216,14 @@ export const selectRenderBlockOrder =
 /** All render blocks in emission order. Memoized. */
 export const selectAllRenderBlocks = (requestId: string) =>
   createSelector(
-    (state: RootState) => state.activeRequests.byRequestId[requestId],
-    (request): RenderBlockPayload[] => {
-      if (!request) return [];
-      return request.renderBlockOrder
-        .map((id) => request.renderBlocks[id])
+    (state: RootState) =>
+      state.activeRequests.byRequestId[requestId]?.renderBlockOrder,
+    (state: RootState) =>
+      state.activeRequests.byRequestId[requestId]?.renderBlocks,
+    (order, blocks): RenderBlockPayload[] | undefined => {
+      if (!order || !blocks) return undefined;
+      return order
+        .map((id) => blocks[id])
         .filter((b): b is RenderBlockPayload => b != null);
     },
   );
@@ -208,11 +231,14 @@ export const selectAllRenderBlocks = (requestId: string) =>
 /** Content blocks filtered by type (e.g., "code", "flashcards"). Memoized. */
 export const selectRenderBlocksByType = (requestId: string, type: string) =>
   createSelector(
-    (state: RootState) => state.activeRequests.byRequestId[requestId],
-    (request): RenderBlockPayload[] => {
-      if (!request) return [];
-      return request.renderBlockOrder
-        .map((id) => request.renderBlocks[id])
+    (state: RootState) =>
+      state.activeRequests.byRequestId[requestId]?.renderBlockOrder,
+    (state: RootState) =>
+      state.activeRequests.byRequestId[requestId]?.renderBlocks,
+    (order, blocks): RenderBlockPayload[] | undefined => {
+      if (!order || !blocks) return undefined;
+      return order
+        .map((id) => blocks[id])
         .filter((b): b is RenderBlockPayload => b != null && b.type === type);
     },
   );
@@ -220,11 +246,14 @@ export const selectRenderBlocksByType = (requestId: string, type: string) =>
 /** Blocks still streaming. Memoized. */
 export const selectStreamingBlocks = (requestId: string) =>
   createSelector(
-    (state: RootState) => state.activeRequests.byRequestId[requestId],
-    (request): RenderBlockPayload[] => {
-      if (!request) return [];
-      return request.renderBlockOrder
-        .map((id) => request.renderBlocks[id])
+    (state: RootState) =>
+      state.activeRequests.byRequestId[requestId]?.renderBlockOrder,
+    (state: RootState) =>
+      state.activeRequests.byRequestId[requestId]?.renderBlocks,
+    (order, blocks): RenderBlockPayload[] | undefined => {
+      if (!order || !blocks) return undefined;
+      return order
+        .map((id) => blocks[id])
         .filter(
           (b): b is RenderBlockPayload => b != null && b.status === "streaming",
         );
@@ -234,11 +263,14 @@ export const selectStreamingBlocks = (requestId: string) =>
 /** Blocks that are complete. Memoized. */
 export const selectCompletedBlocks = (requestId: string) =>
   createSelector(
-    (state: RootState) => state.activeRequests.byRequestId[requestId],
-    (request): RenderBlockPayload[] => {
-      if (!request) return [];
-      return request.renderBlockOrder
-        .map((id) => request.renderBlocks[id])
+    (state: RootState) =>
+      state.activeRequests.byRequestId[requestId]?.renderBlockOrder,
+    (state: RootState) =>
+      state.activeRequests.byRequestId[requestId]?.renderBlocks,
+    (order, blocks): RenderBlockPayload[] | undefined => {
+      if (!order || !blocks) return undefined;
+      return order
+        .map((id) => blocks[id])
         .filter(
           (b): b is RenderBlockPayload => b != null && b.status === "complete",
         );
@@ -261,13 +293,22 @@ export const selectToolLifecycle =
   (state: RootState): ToolLifecycleEntry | undefined =>
     state.activeRequests.byRequestId[requestId]?.toolLifecycle[callId];
 
+/**
+ * Raw tool lifecycle map — use this as input to derived selectors.
+ * Stable reference until the map itself changes.
+ */
+export const selectToolLifecycleMap =
+  (requestId: string) =>
+  (state: RootState): Record<string, ToolLifecycleEntry> | undefined =>
+    state.activeRequests.byRequestId[requestId]?.toolLifecycle;
+
 /** All tool lifecycle entries. Memoized. */
 export const selectAllToolLifecycles = (requestId: string) =>
   createSelector(
     (state: RootState) =>
       state.activeRequests.byRequestId[requestId]?.toolLifecycle,
-    (lifecycle): ToolLifecycleEntry[] =>
-      lifecycle ? Object.values(lifecycle) : [],
+    (lifecycle): ToolLifecycleEntry[] | undefined =>
+      lifecycle ? Object.values(lifecycle) : undefined,
   );
 
 /** Tools that are actively running (started, progress, step). Memoized. */
@@ -275,8 +316,8 @@ export const selectActiveTools = (requestId: string) =>
   createSelector(
     (state: RootState) =>
       state.activeRequests.byRequestId[requestId]?.toolLifecycle,
-    (lifecycle): ToolLifecycleEntry[] => {
-      if (!lifecycle) return [];
+    (lifecycle): ToolLifecycleEntry[] | undefined => {
+      if (!lifecycle) return undefined;
       return Object.values(lifecycle).filter(
         (t) =>
           t.status === "started" ||
@@ -291,8 +332,8 @@ export const selectCompletedTools = (requestId: string) =>
   createSelector(
     (state: RootState) =>
       state.activeRequests.byRequestId[requestId]?.toolLifecycle,
-    (lifecycle): ToolLifecycleEntry[] => {
-      if (!lifecycle) return [];
+    (lifecycle): ToolLifecycleEntry[] | undefined => {
+      if (!lifecycle) return undefined;
       return Object.values(lifecycle).filter((t) => t.status === "completed");
     },
   );
@@ -302,26 +343,35 @@ export const selectToolErrors = (requestId: string) =>
   createSelector(
     (state: RootState) =>
       state.activeRequests.byRequestId[requestId]?.toolLifecycle,
-    (lifecycle): ToolLifecycleEntry[] => {
-      if (!lifecycle) return [];
+    (lifecycle): ToolLifecycleEntry[] | undefined => {
+      if (!lifecycle) return undefined;
       return Object.values(lifecycle).filter((t) => t.status === "error");
     },
   );
 
-/** How many tools are currently active. Primitive. */
-export const selectActiveToolCount =
-  (requestId: string) =>
-  (state: RootState): number => {
-    const lifecycle =
-      state.activeRequests.byRequestId[requestId]?.toolLifecycle;
-    if (!lifecycle) return 0;
-    return Object.values(lifecycle).filter(
-      (t) =>
-        t.status === "started" ||
-        t.status === "progress" ||
-        t.status === "step",
-    ).length;
-  };
+/**
+ * How many tools are currently active. Primitive.
+ * Avoids Object.values().filter().length by counting inside the result fn.
+ */
+export const selectActiveToolCount = (requestId: string) =>
+  createSelector(
+    (state: RootState) =>
+      state.activeRequests.byRequestId[requestId]?.toolLifecycle,
+    (lifecycle): number => {
+      if (!lifecycle) return 0;
+      let count = 0;
+      for (const t of Object.values(lifecycle)) {
+        if (
+          t.status === "started" ||
+          t.status === "progress" ||
+          t.status === "step"
+        ) {
+          count++;
+        }
+      }
+      return count;
+    },
+  );
 
 /**
  * Ordered list of callIds, in the order their tool_started event appeared
@@ -330,8 +380,8 @@ export const selectActiveToolCount =
 export const selectToolCallIdsInOrder = (requestId: string) =>
   createSelector(
     (state: RootState) => state.activeRequests.byRequestId[requestId]?.timeline,
-    (timeline): string[] => {
-      if (!timeline) return [];
+    (timeline): string[] | undefined => {
+      if (!timeline) return undefined;
       const seen = new Set<string>();
       const ordered: string[] = [];
       for (const entry of timeline) {
@@ -414,7 +464,7 @@ export const selectInterleavedContent = (requestId: string) =>
       state.activeRequests.byRequestId[requestId]?.accumulatedText,
     (timeline, textChunks, accumulatedText): ContentSegment[] => {
       if (!timeline || timeline.length === 0) {
-        const fallback = textChunks?.join("") || accumulatedText || "";
+        const fallback = accumulatedText || "";
         if (fallback) return [{ type: "text", content: fallback }];
         return [];
       }
@@ -489,8 +539,8 @@ export const selectInterleavedContent = (requestId: string) =>
 
       // Fallback: timeline exists but produced no segments
       if (segments.length === 0) {
-        const fallback = chunks.join("") || accumulatedText || "";
-        if (fallback) return [{ type: "text", content: fallback }];
+        if (accumulatedText)
+          return [{ type: "text", content: accumulatedText }];
       }
 
       return segments;
@@ -500,10 +550,11 @@ export const selectInterleavedContent = (requestId: string) =>
 /** Pending tool calls that haven't been resolved yet. Memoized. */
 export const selectUnresolvedToolCalls = (requestId: string) =>
   createSelector(
-    (state: RootState) => state.activeRequests.byRequestId[requestId],
-    (request) => {
-      if (!request) return undefined;
-      return request.pendingToolCalls.filter((c) => !c.resolved);
+    (state: RootState) =>
+      state.activeRequests.byRequestId[requestId]?.pendingToolCalls,
+    (pendingToolCalls) => {
+      if (!pendingToolCalls) return undefined;
+      return pendingToolCalls.filter((c) => !c.resolved);
     },
   );
 
@@ -545,8 +596,8 @@ function getTypedResult<T extends Operation>(
 function getAllTypedResults<T extends Operation>(
   ops: Record<string, CompletedOperationEntry> | undefined,
   operation: T,
-): OperationResultMap[T][] {
-  if (!ops) return [];
+): OperationResultMap[T][] | undefined {
+  if (!ops) return undefined;
   return Object.values(ops)
     .filter((o) => o.operation === operation)
     .map((o) => o.result as OperationResultMap[T]);
@@ -566,7 +617,8 @@ export const selectLlmRequestResults = (requestId: string) =>
   createSelector(
     (state: RootState) =>
       state.activeRequests.byRequestId[requestId]?.completedOperations,
-    (ops): LlmRequestResult[] => getAllTypedResults(ops, "llm_request"),
+    (ops): LlmRequestResult[] | undefined =>
+      getAllTypedResults(ops, "llm_request"),
   );
 
 /** All tool execution results. */
@@ -574,7 +626,8 @@ export const selectToolExecutionResults = (requestId: string) =>
   createSelector(
     (state: RootState) =>
       state.activeRequests.byRequestId[requestId]?.completedOperations,
-    (ops): ToolExecutionResult[] => getAllTypedResults(ops, "tool_execution"),
+    (ops): ToolExecutionResult[] | undefined =>
+      getAllTypedResults(ops, "tool_execution"),
   );
 
 /** All sub-agent results. */
@@ -582,7 +635,7 @@ export const selectSubAgentResults = (requestId: string) =>
   createSelector(
     (state: RootState) =>
       state.activeRequests.byRequestId[requestId]?.completedOperations,
-    (ops): SubAgentResult[] => getAllTypedResults(ops, "sub_agent"),
+    (ops): SubAgentResult[] | undefined => getAllTypedResults(ops, "sub_agent"),
   );
 
 /** All persistence results. */
@@ -590,7 +643,8 @@ export const selectPersistenceResults = (requestId: string) =>
   createSelector(
     (state: RootState) =>
       state.activeRequests.byRequestId[requestId]?.completedOperations,
-    (ops): PersistenceResult[] => getAllTypedResults(ops, "persistence"),
+    (ops): PersistenceResult[] | undefined =>
+      getAllTypedResults(ops, "persistence"),
   );
 
 // =============================================================================
@@ -626,7 +680,7 @@ type DataTypeName = keyof DataTypeMap;
  * the given type discriminator, narrowed to the correct interface.
  *
  * Usage: const results = useAppSelector(selectTypedDataPayloads(requestId, "search_results"));
- *        // results is SearchResultsData[]
+ *        // results is SearchResultsData[] | undefined
  */
 export const selectTypedDataPayloads = <T extends DataTypeName>(
   requestId: string,
@@ -635,11 +689,9 @@ export const selectTypedDataPayloads = <T extends DataTypeName>(
   createSelector(
     (state: RootState) =>
       state.activeRequests.byRequestId[requestId]?.dataPayloads,
-    (payloads): DataTypeMap[T][] => {
-      if (!payloads) return [];
-      return payloads.filter(
-        (p) => (p as Record<string, unknown>).type === dataType,
-      ) as unknown as DataTypeMap[T][];
+    (payloads): DataTypeMap[T][] | undefined => {
+      if (!payloads) return undefined;
+      return payloads.filter((p) => p.type === dataType) as DataTypeMap[T][];
     },
   );
 
@@ -649,9 +701,9 @@ export const selectFirstTypedDataPayload =
   (state: RootState): DataTypeMap[T] | undefined => {
     const payloads = state.activeRequests.byRequestId[requestId]?.dataPayloads;
     if (!payloads) return undefined;
-    return payloads.find(
-      (p) => (p as Record<string, unknown>).type === dataType,
-    ) as unknown as DataTypeMap[T] | undefined;
+    return payloads.find((p) => p.type === dataType) as
+      | DataTypeMap[T]
+      | undefined;
   };
 
 /** All data payloads as a typed union. Memoized. */
@@ -659,12 +711,8 @@ export const selectAllTypedDataPayloads = (requestId: string) =>
   createSelector(
     (state: RootState) =>
       state.activeRequests.byRequestId[requestId]?.dataPayloads,
-    (payloads): TypedDataPayload[] => {
-      if (!payloads) return [];
-      return payloads.filter(
-        (p) => typeof (p as Record<string, unknown>).type === "string",
-      ) as TypedDataPayload[];
-    },
+    (payloads): (TypedDataPayload | UntypedDataPayload)[] | undefined =>
+      payloads,
   );
 
 /** Distinct data types received for this request. Memoized. */
@@ -672,12 +720,11 @@ export const selectReceivedDataTypes = (requestId: string) =>
   createSelector(
     (state: RootState) =>
       state.activeRequests.byRequestId[requestId]?.dataPayloads,
-    (payloads): string[] => {
-      if (!payloads) return [];
+    (payloads): string[] | undefined => {
+      if (!payloads) return undefined;
       const types = new Set<string>();
       for (const p of payloads) {
-        const t = (p as Record<string, unknown>).type;
-        if (typeof t === "string") types.add(t);
+        types.add(p.type);
       }
       return Array.from(types);
     },
@@ -687,16 +734,14 @@ export const selectReceivedDataTypes = (requestId: string) =>
 // Reasoning Selectors
 // =============================================================================
 
-/** Accumulated reasoning text (joined lazily like text chunks). */
+/**
+ * Accumulated reasoning text. Returns "" when no request exists — string
+ * literal default is safe (stable reference, no new-ref churn).
+ */
 export const selectAccumulatedReasoning =
   (requestId: string) =>
-  (state: RootState): string => {
-    const request = state.activeRequests.byRequestId[requestId];
-    if (!request) return "";
-    if (request.reasoningChunks.length > 0)
-      return request.reasoningChunks.join("");
-    return request.accumulatedReasoning || "";
-  };
+  (state: RootState): string =>
+    state.activeRequests.byRequestId[requestId]?.accumulatedReasoning ?? "";
 
 /** Whether reasoning tokens are currently streaming. Primitive. */
 export const selectIsReasoningStreaming =
@@ -731,8 +776,8 @@ export const selectWarningCount =
 export const selectHighWarnings = (requestId: string) =>
   createSelector(
     (state: RootState) => state.activeRequests.byRequestId[requestId]?.warnings,
-    (warnings): WarningPayload[] => {
-      if (!warnings) return [];
+    (warnings): WarningPayload[] | undefined => {
+      if (!warnings) return undefined;
       return warnings.filter((w) => w.level === "high");
     },
   );
@@ -768,8 +813,8 @@ export const selectReservationsByTable = (requestId: string, table: string) =>
   createSelector(
     (state: RootState) =>
       state.activeRequests.byRequestId[requestId]?.reservations,
-    (reservations): ReservationRecord[] => {
-      if (!reservations) return [];
+    (reservations): ReservationRecord[] | undefined => {
+      if (!reservations) return undefined;
       return Object.values(reservations).filter((r) => r.table === table);
     },
   );
@@ -779,8 +824,8 @@ export const selectPendingReservations = (requestId: string) =>
   createSelector(
     (state: RootState) =>
       state.activeRequests.byRequestId[requestId]?.reservations,
-    (reservations): ReservationRecord[] => {
-      if (!reservations) return [];
+    (reservations): ReservationRecord[] | undefined => {
+      if (!reservations) return undefined;
       return Object.values(reservations).filter((r) => r.status === "pending");
     },
   );
@@ -790,8 +835,8 @@ export const selectFailedReservations = (requestId: string) =>
   createSelector(
     (state: RootState) =>
       state.activeRequests.byRequestId[requestId]?.reservations,
-    (reservations): ReservationRecord[] => {
-      if (!reservations) return [];
+    (reservations): ReservationRecord[] | undefined => {
+      if (!reservations) return undefined;
       return Object.values(reservations).filter((r) => r.status === "failed");
     },
   );
@@ -799,9 +844,12 @@ export const selectFailedReservations = (requestId: string) =>
 /** Total count of reservations. Primitive. */
 export const selectReservationCount =
   (requestId: string) =>
-  (state: RootState): number =>
-    Object.keys(state.activeRequests.byRequestId[requestId]?.reservations ?? {})
-      .length;
+  (state: RootState): number => {
+    const reservations =
+      state.activeRequests.byRequestId[requestId]?.reservations;
+    if (!reservations) return 0;
+    return Object.keys(reservations).length;
+  };
 
 /** The conversation_id from the cx_conversation reservation, if available. */
 export const selectReservedConversationId =
@@ -897,8 +945,8 @@ export const selectTimelineByKind = (
 ) =>
   createSelector(
     (state: RootState) => state.activeRequests.byRequestId[requestId]?.timeline,
-    (timeline): TimelineEntry[] => {
-      if (!timeline) return [];
+    (timeline): TimelineEntry[] | undefined => {
+      if (!timeline) return undefined;
       return timeline.filter((e) => e.kind === kind);
     },
   );
@@ -907,9 +955,9 @@ export const selectTimelineByKind = (
 export const selectTimelineKindCounts = (requestId: string) =>
   createSelector(
     (state: RootState) => state.activeRequests.byRequestId[requestId]?.timeline,
-    (timeline): Record<string, number> => {
+    (timeline): Record<string, number> | undefined => {
+      if (!timeline) return undefined;
       const counts: Record<string, number> = {};
-      if (!timeline) return counts;
       for (const entry of timeline) {
         counts[entry.kind] = (counts[entry.kind] ?? 0) + 1;
       }

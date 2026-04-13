@@ -466,9 +466,9 @@ export function AgentUserMessage({
   const previousContentRef = useRef<string>("");
 
   const content = turn?.content ?? "";
-  const contentBlocks = turn?.renderBlocks;
+  const renderBlocks = turn?.renderBlocks;
 
-  const normalisedBlocks: NormalisedBlock[] = (contentBlocks ?? [])
+  const normalisedBlocks: NormalisedBlock[] = (renderBlocks ?? [])
     .map((b, i) => normaliseBlock(b, i))
     .filter((b): b is NormalisedBlock => b !== null);
 

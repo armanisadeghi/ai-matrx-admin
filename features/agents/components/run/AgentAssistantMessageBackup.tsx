@@ -84,7 +84,7 @@ export function AgentAssistantMessage({
   const mergedBlocks =
     activeRequestBlocks.length > 0
       ? activeRequestBlocks
-      : (turn?.contentBlocks ?? EMPTY_BLOCKS);
+      : (turn?.renderBlocks ?? EMPTY_BLOCKS);
 
   const serverProcessedBlocks =
     mergedBlocks.length > 0 ? mergedBlocks : undefined;

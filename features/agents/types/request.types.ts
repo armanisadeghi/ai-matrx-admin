@@ -24,6 +24,9 @@ import type {
   RenderBlockPayload,
   WarningPayload,
   InfoPayload,
+  TypedDataPayload,
+  UntypedDataPayload,
+  MessagePart,
 } from "@/types/python-generated/stream-events";
 
 // =============================================================================
@@ -209,7 +212,7 @@ export interface ActiveRequest {
 
   // ── Data Events (genuine catch-all) ──────────────────────────
   /** ONLY for unstructured data events — NOT status/tools/blocks/completion */
-  dataPayloads: Array<Record<string, unknown>>;
+  dataPayloads: Array<TypedDataPayload | UntypedDataPayload>;
 
   // ── Event Timeline (first-class sequential record) ───────────
   /**
@@ -505,7 +508,7 @@ export interface PendingToolCall {
  * Scope fields are snapshotted at execution time.
  */
 export interface AssembledAgentStartRequest {
-  user_input?: string | Array<Record<string, unknown>>;
+  user_input?: string | MessagePart[];
   variables?: Record<string, unknown>;
   config_overrides?: Record<string, unknown>;
   context?: Record<string, unknown>;
@@ -525,7 +528,7 @@ export interface AssembledAgentStartRequest {
  * Assembled snake_case wire payload for POST /ai/conversations/{conversation_id}.
  */
 export interface AssembledConversationRequest {
-  user_input: string | Array<Record<string, unknown>>;
+  user_input: string | MessagePart[];
   config_overrides?: Record<string, unknown>;
   context?: Record<string, unknown>;
   client_tools?: string[];

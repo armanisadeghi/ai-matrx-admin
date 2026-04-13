@@ -38,6 +38,10 @@ export type {
   RecordUpdatePayload,
   StreamEvent,
   TypedStreamEvent,
+  CompactChunkEvent,
+  CompactReasoningChunkEvent,
+  CompactStreamEvent,
+  RawStreamLine,
   TypedDataPayload,
   ChunkEvent,
   ReasoningChunkEvent,
@@ -86,6 +90,10 @@ export {
   isRenderBlockEvent,
   isRecordReservedEvent,
   isRecordUpdateEvent,
+  isCompactEvent,
+  isCompactChunkEvent,
+  isCompactReasoningChunkEvent,
+  expandCompactEvent,
 } from "@/types/python-generated/stream-events";
 
 // ============================================================================

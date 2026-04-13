@@ -167,7 +167,6 @@ async function pollForCompletion(
       request &&
       (request.status === "complete" || request.status === "error")
     ) {
-      if (request.textChunks.length > 0) return request.textChunks.join("");
       return request.accumulatedText || "";
     }
     await new Promise((r) => setTimeout(r, intervalMs));

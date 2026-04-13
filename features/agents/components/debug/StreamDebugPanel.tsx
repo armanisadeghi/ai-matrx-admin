@@ -1229,7 +1229,7 @@ function StateSnapshotTab({
             <span className="font-mono">
               {Object.keys(request.completedOperations).length}
             </span>
-            <span className="text-muted-foreground">contentBlocks:</span>
+            <span className="text-muted-foreground">renderBlocks:</span>
             <span className="font-mono">{request.renderBlockOrder.length}</span>
             <span className="text-muted-foreground">toolLifecycle:</span>
             <span className="font-mono">
