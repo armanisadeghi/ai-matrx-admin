@@ -99,13 +99,24 @@ export const selectRequestStatus = (requestId: string) => (state: RootState) =>
   state.activeRequests.byRequestId[requestId]?.status;
 
 /**
- * Returns "" when no request exists — safe because "" is a string literal
- * (always the same reference). String ?? "" defaults do NOT create new refs.
+ * Derives accumulated text from render blocks (single source of truth).
+ * Returns "" when no request exists — safe because "" is a string literal.
+ * Memoized so consumers don't re-render unless render block content changes.
  */
-export const selectAccumulatedText =
-  (requestId: string) =>
-  (state: RootState): string =>
-    state.activeRequests.byRequestId[requestId]?.accumulatedText ?? "";
+export const selectAccumulatedText = (requestId: string) =>
+  createSelector(
+    (state: RootState) =>
+      state.activeRequests.byRequestId[requestId]?.renderBlockOrder,
+    (state: RootState) =>
+      state.activeRequests.byRequestId[requestId]?.renderBlocks,
+    (order, blocks): string => {
+      if (!order || !blocks || order.length === 0) return "";
+      return order
+        .map((id) => blocks[id]?.content ?? "")
+        .filter(Boolean)
+        .join("\n");
+    },
+  );
 
 export const selectRequestConversationId =
   (requestId: string) =>
@@ -399,7 +410,7 @@ export const selectToolCallIdsInOrder = (requestId: string) =>
   );
 
 // =============================================================================
-// Interleaved Content Segments
+// Content Segment Types (kept for DB-turn path and backward compat exports)
 // =============================================================================
 
 export type ContentSegmentText = { type: "text"; content: string };
@@ -428,6 +439,20 @@ export type ContentSegment =
   | ContentSegmentDbTool
   | ContentSegmentThinking;
 
+// =============================================================================
+// Unified Slot Rendering — single source of truth for stream content ordering
+// =============================================================================
+
+export type UnifiedSlot =
+  | { kind: "render_block"; blockId: string; seq: number }
+  | { kind: "tool"; callId: string; seq: number }
+  | {
+      kind: "status";
+      label: string;
+      statusKind: "phase" | "info";
+      seq: number;
+    };
+
 const PHASE_LABELS: Record<string, string> = {
   connected: "Connected",
   processing: "Processing…",
@@ -443,49 +468,55 @@ const PHASE_LABELS: Record<string, string> = {
 };
 
 /**
- * Builds an ordered list of content segments by walking the timeline.
+ * Builds an ordered list of unified slots by walking the timeline and
+ * merging render blocks with non-text events (tools, status indicators).
  *
- * Segment types:
- *   text   — text_start / text_end → sliced textChunks
- *   tool   — tool_event (tool_started) → keyed by callId
- *   status — phase / info events with a user-facing label
+ * Render blocks are assigned to the text run they belong to using the
+ * blockStartIndex/blockEndIndex stored on text_start/text_end entries.
+ * Non-text timeline events (tool_started, phase, info) get their own slots.
  *
- * Status segments are **transient**: each new status replaces the previous one,
- * and any "real" content event (text_start, tool_started, reasoning_start)
- * clears the pending status. This means at most one status segment exists
- * at the trailing edge of the array.
+ * Status slots are transient: each new status replaces the previous one,
+ * and any "real" content event clears the pending status.
  */
-export const selectInterleavedContent = (requestId: string) =>
+export const selectUnifiedSlots = (requestId: string) =>
   createSelector(
     (state: RootState) => state.activeRequests.byRequestId[requestId]?.timeline,
     (state: RootState) =>
-      state.activeRequests.byRequestId[requestId]?.textChunks,
+      state.activeRequests.byRequestId[requestId]?.renderBlockOrder,
     (state: RootState) =>
-      state.activeRequests.byRequestId[requestId]?.accumulatedText,
-    (timeline, textChunks, accumulatedText): ContentSegment[] => {
+      state.activeRequests.byRequestId[requestId]?.isTextStreaming,
+    (timeline, renderBlockOrder, isTextStreaming): UnifiedSlot[] => {
       if (!timeline || timeline.length === 0) {
-        const fallback = accumulatedText || "";
-        if (fallback) return [{ type: "text", content: fallback }];
-        return [];
+        if (!renderBlockOrder || renderBlockOrder.length === 0) return [];
+        return renderBlockOrder.map((blockId, i) => ({
+          kind: "render_block" as const,
+          blockId,
+          seq: i,
+        }));
       }
 
-      const chunks = textChunks ?? [];
-      const segments: ContentSegment[] = [];
+      const blockOrder = renderBlockOrder ?? [];
+      const slots: UnifiedSlot[] = [];
       const seenTools = new Set<string>();
-      let openTextStart: number | null = null;
-      let pendingStatus: ContentSegmentStatus | null = null;
+      let nextSeq = 0;
+      let pendingStatus: UnifiedSlot | null = null;
+      let lastTextEndBlockIndex = 0;
 
       for (const entry of timeline) {
         if (entry.kind === "text_start") {
           pendingStatus = null;
-          openTextStart = entry.chunkStartIndex;
         } else if (entry.kind === "text_end") {
           pendingStatus = null;
-          const start = openTextStart ?? entry.chunkStartIndex;
-          const end = entry.chunkEndIndex;
-          const text = chunks.slice(start, end).join("");
-          if (text) segments.push({ type: "text", content: text });
-          openTextStart = null;
+          const start = entry.blockStartIndex;
+          const end = entry.blockEndIndex;
+          for (let i = start; i < end && i < blockOrder.length; i++) {
+            slots.push({
+              kind: "render_block",
+              blockId: blockOrder[i],
+              seq: nextSeq++,
+            });
+          }
+          lastTextEndBlockIndex = end;
         } else if (
           entry.kind === "reasoning_start" ||
           entry.kind === "reasoning_end"
@@ -497,25 +528,26 @@ export const selectInterleavedContent = (requestId: string) =>
           !seenTools.has(entry.callId)
         ) {
           pendingStatus = null;
-          if (openTextStart !== null) {
-            const text = chunks.slice(openTextStart).join("");
-            if (text) segments.push({ type: "text", content: text });
-            openTextStart = null;
-          }
           seenTools.add(entry.callId);
-          segments.push({ type: "tool", callId: entry.callId });
+          slots.push({ kind: "tool", callId: entry.callId, seq: nextSeq++ });
         } else if (entry.kind === "phase") {
           const label = PHASE_LABELS[entry.phase];
           if (label && entry.phase !== "complete") {
-            pendingStatus = { type: "status", label, kind: "phase" };
+            pendingStatus = {
+              kind: "status",
+              label,
+              statusKind: "phase",
+              seq: nextSeq,
+            };
           } else {
             pendingStatus = null;
           }
         } else if (entry.kind === "info" && entry.userMessage) {
           pendingStatus = {
-            type: "status",
+            kind: "status",
             label: entry.userMessage,
-            kind: "info",
+            statusKind: "info",
+            seq: nextSeq,
           };
         } else if (
           entry.kind === "completion" ||
@@ -526,24 +558,33 @@ export const selectInterleavedContent = (requestId: string) =>
         }
       }
 
-      // Trailing open text run (still streaming)
-      if (openTextStart !== null) {
-        const text = chunks.slice(openTextStart).join("");
-        if (text) segments.push({ type: "text", content: text });
+      // Trailing open text run (still streaming) — emit blocks from
+      // lastTextEndBlockIndex to the current end of renderBlockOrder
+      if (isTextStreaming) {
+        for (let i = lastTextEndBlockIndex; i < blockOrder.length; i++) {
+          slots.push({
+            kind: "render_block",
+            blockId: blockOrder[i],
+            seq: nextSeq++,
+          });
+        }
       }
 
-      // Append the trailing status if no content has superseded it
       if (pendingStatus) {
-        segments.push(pendingStatus);
+        pendingStatus.seq = nextSeq++;
+        slots.push(pendingStatus);
       }
 
-      // Fallback: timeline exists but produced no segments
-      if (segments.length === 0) {
-        if (accumulatedText)
-          return [{ type: "text", content: accumulatedText }];
+      // Fallback: timeline exists but produced no slots, yet blocks exist
+      if (slots.length === 0 && blockOrder.length > 0) {
+        return blockOrder.map((blockId, i) => ({
+          kind: "render_block" as const,
+          blockId,
+          seq: i,
+        }));
       }
 
-      return segments;
+      return slots;
     },
   );
 

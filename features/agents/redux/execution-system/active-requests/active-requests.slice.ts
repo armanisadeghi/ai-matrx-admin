@@ -95,8 +95,7 @@ const activeRequestsSlice = createSlice({
         serverConversationId: null,
         parentConversationId,
         status: "pending",
-        textChunks: [],
-        accumulatedText: "",
+        chunkCount: 0,
         reasoningChunks: [],
         accumulatedReasoning: "",
         isReasoningStreaming: false,
@@ -119,7 +118,7 @@ const activeRequestsSlice = createSlice({
         timeline: [],
         rawEvents: [],
         isTextStreaming: false,
-        textRunChunkStart: 0,
+        textRunBlockStart: 0,
         extractedJson: null,
         jsonExtractionRevision: 0,
         jsonExtractionComplete: false,
@@ -184,20 +183,8 @@ const activeRequestsSlice = createSlice({
         if (!request.firstChunkAt) {
           request.firstChunkAt = new Date().toISOString();
         }
-        request.textChunks.push(action.payload.content);
-        request.accumulatedText += action.payload.content;
+        request.chunkCount++;
       }
-    },
-
-    /**
-     * No-op retained for backward compat — accumulatedText is now maintained
-     * incrementally by appendChunk. Safe to call; does nothing.
-     */
-    finalizeAccumulatedText(
-      _state,
-      _action: PayloadAction<{ requestId: string }>,
-    ) {
-      // accumulatedText is already up-to-date from appendChunk
     },
 
     // ── Reasoning Chunks ─────────────────────────────────────────
@@ -586,9 +573,10 @@ const activeRequestsSlice = createSlice({
           kind: "text_end",
           seq: request.timeline.length,
           timestamp: action.payload.entry.timestamp,
-          chunkStartIndex: request.textRunChunkStart,
-          chunkEndIndex: request.textChunks.length,
-          chunkCount: request.textChunks.length - request.textRunChunkStart,
+          blockStartIndex: request.textRunBlockStart,
+          blockEndIndex: request.renderBlockOrder.length,
+          blockCount:
+            request.renderBlockOrder.length - request.textRunBlockStart,
         });
         request.isTextStreaming = false;
       }
@@ -628,7 +616,7 @@ const activeRequestsSlice = createSlice({
 
     /**
      * Called when the first chunk of a new text run arrives.
-     * Records a `text_start` marker. Subsequent chunks just push to textChunks.
+     * Records a `text_start` marker referencing the current renderBlockOrder index.
      */
     markTextStreamStart(
       state,
@@ -641,13 +629,13 @@ const activeRequestsSlice = createSlice({
       if (!request) return;
 
       request.isTextStreaming = true;
-      request.textRunChunkStart = request.textChunks.length;
+      request.textRunBlockStart = request.renderBlockOrder.length;
 
       request.timeline.push({
         kind: "text_start",
         seq: request.timeline.length,
         timestamp: action.payload.timestamp,
-        chunkStartIndex: request.textChunks.length,
+        blockStartIndex: request.renderBlockOrder.length,
       });
     },
 
@@ -669,9 +657,9 @@ const activeRequestsSlice = createSlice({
         kind: "text_end",
         seq: request.timeline.length,
         timestamp: action.payload.timestamp,
-        chunkStartIndex: request.textRunChunkStart,
-        chunkEndIndex: request.textChunks.length,
-        chunkCount: request.textChunks.length - request.textRunChunkStart,
+        blockStartIndex: request.textRunBlockStart,
+        blockEndIndex: request.renderBlockOrder.length,
+        blockCount: request.renderBlockOrder.length - request.textRunBlockStart,
       });
       request.isTextStreaming = false;
     },
@@ -743,7 +731,6 @@ export const {
   setRequestStatus,
   setConversationId,
   appendChunk,
-  finalizeAccumulatedText,
   appendReasoningChunk,
   finalizeAccumulatedReasoning,
   markReasoningStreamStart,

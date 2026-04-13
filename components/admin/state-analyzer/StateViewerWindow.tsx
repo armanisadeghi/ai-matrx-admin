@@ -99,7 +99,7 @@ export default function StateViewerWindow({
         sidebarMinSize={150}
         sidebarClassName="bg-muted/10"
       >
-        <div className="flex-1 flex flex-col min-w-0 min-h-0">
+        <div className="flex flex-col h-full min-w-0 overflow-hidden">
           <div className="flex items-center px-3 py-1.5 border-b border-border bg-muted/40 shrink-0">
             {!isOnIndex && (
               <button
@@ -114,7 +114,7 @@ export default function StateViewerWindow({
               {tabs.find((t) => t.id === activeTabId)?.label || "Slice Viewer"}
             </span>
           </div>
-          <div className="flex-1 p-4 overflow-hidden relative">
+          <div className="flex-1 min-h-0 overflow-hidden">
             {activeTabContent}
           </div>
         </div>

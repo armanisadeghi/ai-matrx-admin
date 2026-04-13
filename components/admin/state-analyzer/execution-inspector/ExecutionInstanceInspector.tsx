@@ -997,10 +997,10 @@ function RequestsTab({ requests }: { requests: ActiveRequest[] }) {
                 </span>
               )}
               <span className="text-xs text-muted-foreground">
-                {req.textChunks.length} chunks
+                {req.chunkCount} chunks
               </span>
               <span className="text-xs text-muted-foreground">
-                {req.accumulatedText.length} chars
+                {req.renderBlockOrder.length} blocks
               </span>
               {req.isTextStreaming && (
                 <StatusBadge className="bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/20">

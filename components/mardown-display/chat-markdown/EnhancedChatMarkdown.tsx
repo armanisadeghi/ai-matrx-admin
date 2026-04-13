@@ -24,11 +24,12 @@ import { toolCallBlockToLegacy } from "@/lib/chat-protocol";
 import type { ToolCallObject } from "@/lib/redux/socket-io/socket.types";
 import {
   selectAccumulatedText,
-  selectInterleavedContent,
+  selectUnifiedSlots,
   selectToolLifecycle,
   selectAllRenderBlocks,
   type ContentSegment,
   type ContentSegmentDbTool,
+  type UnifiedSlot,
 } from "@/features/agents/redux/execution-system/active-requests/active-requests.selectors";
 import { selectTurnInterleavedContent } from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.selectors";
 import type { RenderBlockPayload } from "@/types/python-generated/stream-events";
@@ -410,8 +411,10 @@ const SafeBlockRenderer: React.FC<{
 };
 
 const _EMPTY_SEGMENTS: ContentSegment[] = [];
+const _EMPTY_SLOTS: UnifiedSlot[] = [];
 const _selectEmptyString = () => "";
 const _selectEmptySegments = () => _EMPTY_SEGMENTS;
+const _selectEmptySlots = () => _EMPTY_SLOTS;
 const _selectEmptyRenderBlocks = () =>
   undefined as RenderBlockPayload[] | undefined;
 
@@ -461,12 +464,17 @@ export const EnhancedChatMarkdownInternal: React.FC<
   const hasReduxProvider =
     reduxContext !== null && reduxContext.store !== undefined;
 
-  const requestText = useAppSelector(
-    requestId ? selectAccumulatedText(requestId) : _selectEmptyString,
+  const requestTextSelector = useMemo(
+    () => (requestId ? selectAccumulatedText(requestId) : _selectEmptyString),
+    [requestId],
   );
-  const interleavedSegments = useAppSelector(
-    requestId ? selectInterleavedContent(requestId) : _selectEmptySegments,
+  const requestText = useAppSelector(requestTextSelector);
+
+  const unifiedSlotsSelector = useMemo(
+    () => (requestId ? selectUnifiedSlots(requestId) : _selectEmptySlots),
+    [requestId],
   );
+  const unifiedSlots = useAppSelector(unifiedSlotsSelector);
 
   const dbTurnSegments = useAppSelector(
     turnId && conversationId
@@ -481,6 +489,15 @@ export const EnhancedChatMarkdownInternal: React.FC<
   );
   const reduxRenderBlocks = useAppSelector(renderBlocksSelector);
 
+  const renderBlocksMap = useMemo(() => {
+    if (!reduxRenderBlocks) return {};
+    const map: Record<string, RenderBlockPayload> = {};
+    for (const b of reduxRenderBlocks) {
+      map[b.blockId] = b;
+    }
+    return map;
+  }, [reduxRenderBlocks]);
+
   const hasClientBlocks = !!(
     reduxRenderBlocks &&
     reduxRenderBlocks.length > 0 &&
@@ -493,8 +510,8 @@ export const EnhancedChatMarkdownInternal: React.FC<
   const hasRequestOrTaskId = requestId || taskId;
   const isWaitingForContent = hasRequestOrTaskId && !resolvedContent.trim();
 
-  const hasInterleavedSpecial = interleavedSegments.some(
-    (s) => s.type === "tool" || s.type === "status",
+  const hasUnifiedSpecial = unifiedSlots.some(
+    (s) => s.kind === "tool" || s.kind === "status",
   );
 
   const hasDbInterleavedSpecial = dbTurnSegments.some(
@@ -827,13 +844,13 @@ export const EnhancedChatMarkdownInternal: React.FC<
     );
   }
 
-  // When requestId is present and interleaved segments have non-text content
-  // (tools, status), skip the generic loader and let the interleaved renderer
+  // When requestId is present and unified slots have non-text content
+  // (tools, status), skip the generic loader and let the unified renderer
   // handle it — even before any text arrives.
   const hasPreTextSegments =
     isWaitingForContent &&
     requestId &&
-    interleavedSegments.some((s) => s.type === "tool" || s.type === "status");
+    unifiedSlots.some((s) => s.kind === "tool" || s.kind === "status");
 
   if (isWaitingForContent && !hasPreTextSegments && toolUpdates.length === 0) {
     const hasReduxTaskId =
@@ -937,43 +954,32 @@ export const EnhancedChatMarkdownInternal: React.FC<
         )}
 
         <div className={containerStyles}>
-          {hasInterleavedSpecial && requestId
-            ? interleavedSegments.map((segment, segIdx) => {
-                if (segment.type === "tool") {
+          {hasUnifiedSpecial && requestId
+            ? unifiedSlots.map((slot, i) => {
+                if (slot.kind === "render_block") {
+                  const rb = renderBlocksMap[slot.blockId];
+                  if (!rb || !rb.content?.trim()) return null;
+                  const block = renderBlockToContentBlock(rb);
+                  return renderBlock(block, i);
+                }
+                if (slot.kind === "tool") {
                   return (
                     <InlineToolCard
-                      key={`tool-${segment.callId}`}
+                      key={`tool-${slot.callId}`}
                       requestId={requestId}
-                      callId={segment.callId}
+                      callId={slot.callId}
                     />
                   );
                 }
-                if (segment.type === "status") {
+                if (slot.kind === "status") {
                   return (
                     <InlineStatusIndicator
-                      key={`status-${segIdx}`}
-                      label={segment.label}
+                      key={`status-${i}`}
+                      label={slot.label}
                     />
                   );
                 }
-                if (segment.type !== "text") return null;
-                const segBlocks = (() => {
-                  try {
-                    return splitContentIntoBlocksV2(segment.content);
-                  } catch {
-                    return [
-                      {
-                        type: "text" as const,
-                        content: segment.content,
-                        startLine: 0,
-                        endLine: 0,
-                      },
-                    ];
-                  }
-                })();
-                return segBlocks.map((block, blockIdx) =>
-                  renderBlock(block, segIdx * 1000 + blockIdx),
-                );
+                return null;
               })
             : hasDbInterleavedSpecial
               ? dbTurnSegments.map((segment, segIdx) => {

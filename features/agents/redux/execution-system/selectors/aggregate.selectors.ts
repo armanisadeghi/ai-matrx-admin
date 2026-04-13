@@ -90,19 +90,26 @@ export const selectIsAwaitingTools =
 
 /**
  * The accumulated response text for the latest request on this instance.
- * Returns "" when no request exists — string literal default is safe
- * (always the same reference, no new-ref churn on every dispatch).
+ * Derives from render blocks (single source of truth).
+ * Memoized — stable reference until render block content changes.
  */
-export const selectLatestAccumulatedText =
-  (conversationId: string) =>
-  (state: RootState): string => {
-    const ids = state.activeRequests?.byConversationId[conversationId];
-    if (!ids || ids.length === 0) return "";
-    return (
-      state.activeRequests?.byRequestId[ids[ids.length - 1]]?.accumulatedText ??
-      ""
-    );
-  };
+export const selectLatestAccumulatedText = (conversationId: string) =>
+  createSelector(
+    (state: RootState) =>
+      state.activeRequests?.byConversationId[conversationId],
+    (state: RootState) => state.activeRequests?.byRequestId,
+    (requestIds, byRequestId): string => {
+      if (!requestIds || requestIds.length === 0) return "";
+      const latest = byRequestId[requestIds[requestIds.length - 1]];
+      if (!latest) return "";
+      const { renderBlockOrder, renderBlocks } = latest;
+      if (!renderBlockOrder || renderBlockOrder.length === 0) return "";
+      return renderBlockOrder
+        .map((id) => renderBlocks[id]?.content ?? "")
+        .filter(Boolean)
+        .join("\n");
+    },
+  );
 
 /**
  * The conversation ID for this instance.
@@ -866,7 +873,7 @@ export const selectStreamPhase =
     if (request.isReasoningStreaming) return "reasoning";
     if (request.isTextStreaming) return "text_streaming";
 
-    if (request.textChunks.length > 0 && request.status === "streaming") {
+    if (request.chunkCount > 0 && request.status === "streaming") {
       return "interstitial";
     }
 

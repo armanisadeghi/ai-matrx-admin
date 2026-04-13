@@ -49,7 +49,6 @@ import {
   closeTextRun,
   markReasoningStreamStart,
   closeReasoningRun,
-  finalizeAccumulatedText,
   finalizeAccumulatedReasoning,
   finalizeClientMetrics,
   setConversationId,
@@ -191,6 +190,8 @@ export async function processStream({
       blockAccumulator.ingest(flushed, dispatch);
       textBuffer = "";
     }
+    // appendChunk now only increments chunkCount and sets firstChunkAt.
+    // The actual text content is written exclusively via blockAccumulator → upsertRenderBlock.
     if (reasoningBuffer.length > 0) {
       dispatch(appendReasoningChunk({ requestId, content: reasoningBuffer }));
       reasoningBuffer = "";
@@ -809,7 +810,6 @@ export async function processStream({
 
   const streamEndAt = performance.now();
 
-  dispatch(finalizeAccumulatedText({ requestId }));
   dispatch(finalizeAccumulatedReasoning({ requestId }));
 
   if (jsonTracker) {
@@ -826,7 +826,11 @@ export async function processStream({
 
   const finalState = getState();
   const finalRequest = finalState.activeRequests.byRequestId[requestId];
-  const completedText = finalRequest?.accumulatedText ?? "";
+  const completedText = finalRequest
+    ? finalRequest.renderBlockOrder
+        .map((id) => finalRequest.renderBlocks[id]?.content ?? "")
+        .join("\n")
+    : "";
   const finalConversationId =
     finalRequest?.serverConversationId ?? streamServerConversationId ?? null;
   const finalErrorMessage =

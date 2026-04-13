@@ -167,7 +167,11 @@ async function pollForCompletion(
       request &&
       (request.status === "complete" || request.status === "error")
     ) {
-      return request.accumulatedText || "";
+      return (
+        request.renderBlockOrder
+          .map((id) => request.renderBlocks[id]?.content ?? "")
+          .join("\n") || ""
+      );
     }
     await new Promise((r) => setTimeout(r, intervalMs));
   }

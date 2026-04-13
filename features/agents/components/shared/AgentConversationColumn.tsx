@@ -5,7 +5,7 @@ import { ArrowDown } from "lucide-react";
 import { AgentConversationDisplay } from "../run/AgentConversationDisplay";
 import { CreatorRunPanel } from "../run-controls/CreatorRunPanel";
 import { SmartAgentInput } from "../inputs/SmartAgentInput";
-import { StreamProfilerOverlay } from "./StreamProfilerOverlay";
+
 import { cn } from "@/lib/utils";
 
 interface SmartInputForwardProps {
@@ -55,7 +55,7 @@ export function AgentConversationColumn({
       )}
     >
       <div className="relative flex-1 min-h-0">
-        <StreamProfilerOverlay />
+
         <div
           ref={scrollRef}
           onScroll={handleScroll}

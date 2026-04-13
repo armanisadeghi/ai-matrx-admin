@@ -148,10 +148,9 @@ export interface ActiveRequest {
 
   status: RequestStatus;
 
-  // ── Streaming Text (chunks) ──────────────────────────────────
-  /** O(1) array accumulation — joined lazily in selectors */
-  textChunks: string[];
-  accumulatedText: string;
+  // ── Streaming Text ──────────────────────────────────────────
+  /** How many raw chunk events arrived (for metrics/status checks) */
+  chunkCount: number;
 
   // ── Reasoning Chunks ────────────────────────────────────────
   /** Same pattern as textChunks — O(1) push, joined lazily in selectors */
@@ -222,8 +221,8 @@ export interface ActiveRequest {
    *
    * Chunks are coalesced: a `text_start` entry marks when text began
    * streaming and `text_end` marks when a non-chunk event interrupted
-   * (or the stream ended). Individual chunks live in textChunks[] for
-   * O(1) append. Everything else gets its own timeline entry.
+   * (or the stream ended). Text content lives in renderBlocks (the
+   * single source of truth). Everything else gets its own timeline entry.
    *
    * This allows full reconstruction of the assistant's behavior:
    *   thinking → tool calls → results → more thinking → text → more tools → text
@@ -238,11 +237,11 @@ export interface ActiveRequest {
   isTextStreaming: boolean;
 
   /**
-   * Running index for the current text run. When isTextStreaming flips
-   * to false, this is written into the text_end entry so selectors can
-   * reconstruct which chunks belong to which text run.
+   * Running block-order index for the current text run. When isTextStreaming
+   * flips to false, this is written into the text_end entry so selectors can
+   * reconstruct which render blocks belong to which text run.
    */
-  textRunChunkStart: number;
+  textRunBlockStart: number;
 
   // ── Raw Event Log (absolute truth) ──────────────────────────
   /**
@@ -350,14 +349,14 @@ interface TimelineBase {
 
 export interface TimelineTextStart extends TimelineBase {
   kind: "text_start";
-  chunkStartIndex: number;
+  blockStartIndex: number;
 }
 
 export interface TimelineTextEnd extends TimelineBase {
   kind: "text_end";
-  chunkStartIndex: number;
-  chunkEndIndex: number;
-  chunkCount: number;
+  blockStartIndex: number;
+  blockEndIndex: number;
+  blockCount: number;
 }
 
 export interface TimelineReasoningStart extends TimelineBase {

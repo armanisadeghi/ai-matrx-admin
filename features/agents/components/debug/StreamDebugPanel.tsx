@@ -385,18 +385,24 @@ function getTimelineIcon(kind: TimelineEntry["kind"]): React.ReactNode {
 
 function timelineSummary(
   entry: TimelineEntry,
-  textChunks: string[],
+  renderBlocks: Record<
+    string,
+    import("@/types/python-generated/stream-events").RenderBlockPayload
+  >,
+  renderBlockOrder: string[],
   reasoningChunks?: string[],
 ): string {
   switch (entry.kind) {
     case "text_start":
-      return `text streaming started (chunk idx ${entry.chunkStartIndex})`;
+      return `text streaming started (block idx ${entry.blockStartIndex})`;
     case "text_end": {
-      const slice = textChunks
-        .slice(entry.chunkStartIndex, entry.chunkEndIndex)
+      const blockSlice = renderBlockOrder
+        .slice(entry.blockStartIndex, entry.blockEndIndex)
+        .map((id) => renderBlocks[id]?.content ?? "")
         .join("");
-      const preview = slice.length > 80 ? slice.slice(0, 80) + "..." : slice;
-      return `${entry.chunkCount} chunks: "${preview}"`;
+      const preview =
+        blockSlice.length > 80 ? blockSlice.slice(0, 80) + "..." : blockSlice;
+      return `${entry.blockCount} blocks: "${preview}"`;
     }
     case "reasoning_start":
       return `reasoning started (chunk idx ${entry.chunkStartIndex})`;
@@ -446,13 +452,18 @@ function timelineSummary(
 function TimelineRow({
   entry,
   baseTime,
-  textChunks,
+  renderBlocks,
+  renderBlockOrder,
   reasoningChunks,
   forceExpanded = false,
 }: {
   entry: TimelineEntry;
   baseTime: number;
-  textChunks: string[];
+  renderBlocks: Record<
+    string,
+    import("@/types/python-generated/stream-events").RenderBlockPayload
+  >;
+  renderBlockOrder: string[];
   reasoningChunks?: string[];
   forceExpanded?: boolean;
 }) {
@@ -462,7 +473,12 @@ function TimelineRow({
   const colorClass = getTimelineColor(entry.kind);
   const icon = getTimelineIcon(entry.kind);
   const json = JSON.stringify(entry, null, 2);
-  const summary = timelineSummary(entry, textChunks, reasoningChunks);
+  const summary = timelineSummary(
+    entry,
+    renderBlocks,
+    renderBlockOrder,
+    reasoningChunks,
+  );
 
   return (
     <div
@@ -524,13 +540,15 @@ function TimelineRow({
           {entry.kind === "text_end" && (
             <div className="mb-1">
               <pre className="text-[9px] font-mono bg-muted/30 border border-border/50 rounded p-1 whitespace-pre-wrap break-all max-h-[200px] overflow-y-auto">
-                {textChunks
-                  .slice(entry.chunkStartIndex, entry.chunkEndIndex)
+                {renderBlockOrder
+                  .slice(entry.blockStartIndex, entry.blockEndIndex)
+                  .map((id) => renderBlocks[id]?.content ?? "")
                   .join("")}
               </pre>
               <CopyBtn
-                text={textChunks
-                  .slice(entry.chunkStartIndex, entry.chunkEndIndex)
+                text={renderBlockOrder
+                  .slice(entry.blockStartIndex, entry.blockEndIndex)
+                  .map((id) => renderBlocks[id]?.content ?? "")
                   .join("")}
                 id={`tl-text-${entry.seq}`}
               />
@@ -851,7 +869,8 @@ function TimelineTab({ request }: { request: ActiveRequest }) {
             key={`${entry.seq}-${idx}`}
             entry={entry}
             baseTime={baseTime}
-            textChunks={request.textChunks}
+            renderBlocks={request.renderBlocks}
+            renderBlockOrder={request.renderBlockOrder}
             reasoningChunks={request.reasoningChunks}
             forceExpanded={allExpanded}
           />
@@ -975,10 +994,9 @@ function BlocksTab({ request }: { request: ActiveRequest }) {
 }
 
 function TextTab({ request }: { request: ActiveRequest }) {
-  const text =
-    request.textChunks.length > 0
-      ? request.textChunks.join("")
-      : request.accumulatedText;
+  const text = request.renderBlockOrder
+    .map((id) => request.renderBlocks[id]?.content ?? "")
+    .join("\n");
   const reasoning =
     request.reasoningChunks.length > 0
       ? request.reasoningChunks.join("")
@@ -986,7 +1004,7 @@ function TextTab({ request }: { request: ActiveRequest }) {
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center gap-1 px-1.5 py-0.5 border-b border-border/30 text-[9px] text-muted-foreground">
-        <span>{request.textChunks.length} chunks</span>
+        <span>{request.chunkCount} chunks</span>
         <span className="text-muted-foreground/40">|</span>
         <span>{new TextEncoder().encode(text).length} bytes</span>
         {request.reasoningChunks.length > 0 && (
@@ -1215,8 +1233,8 @@ function StateSnapshotTab({
             Counts
           </span>
           <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 ml-2 text-[9px] mt-0.5">
-            <span className="text-muted-foreground">textChunks:</span>
-            <span className="font-mono">{request.textChunks.length}</span>
+            <span className="text-muted-foreground">chunkCount:</span>
+            <span className="font-mono">{request.chunkCount}</span>
             <span className="text-muted-foreground">reasoningChunks:</span>
             <span className="font-mono">{request.reasoningChunks.length}</span>
             <span className="text-muted-foreground">phaseHistory:</span>

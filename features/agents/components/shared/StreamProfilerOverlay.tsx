@@ -26,7 +26,7 @@ export function StreamProfilerOverlay() {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="absolute top-4 right-4 z-50 flex items-center justify-center p-2 rounded-full bg-slate-900/80 text-green-400 shadow-xl hover:bg-slate-900 transition-colors border border-green-500/30 backdrop-blur-md"
+        className="fixed top-4 right-4 z-50 flex items-center justify-center p-2 rounded-full bg-slate-900/80 text-green-400 shadow-xl hover:bg-slate-900 transition-colors border border-green-500/30 backdrop-blur-md"
         title="View Stream Performance Metrics"
       >
         <Activity className="w-5 h-5" />
@@ -35,7 +35,7 @@ export function StreamProfilerOverlay() {
   }
 
   return (
-    <div className="absolute top-4 right-4 w-[400px] max-h-[80vh] bg-slate-950 border border-slate-800 shadow-2xl rounded-xl z-50 flex flex-col overflow-hidden text-sm font-mono text-slate-300">
+    <div className="fixed top-4 right-4 w-[400px] max-h-[80vh] bg-slate-950 border border-slate-800 shadow-2xl rounded-xl z-50 flex flex-col overflow-hidden text-sm font-mono text-slate-300">
       <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800 bg-slate-900">
         <div className="flex items-center gap-2 text-green-400 font-semibold">
           <Activity className="w-4 h-4" />
