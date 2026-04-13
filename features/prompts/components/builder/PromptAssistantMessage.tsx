@@ -1,22 +1,11 @@
 "use client";
 import React, { useState, useRef, useCallback } from "react";
-import {
-  Edit,
-  MoreHorizontal,
-  Copy,
-  Check,
-  Volume2,
-  Download,
-  Loader2,
-  Link,
-} from "lucide-react";
+import { Volume2, Download, Loader2, Link, Copy, Check } from "lucide-react";
 import { useDomCapturePrint } from "@/features/chat/hooks/useDomCapturePrint";
 import MarkdownStream from "@/components/MarkdownStream";
-import MessageOptionsMenu from "@/features/chat/components/response/assistant-message/MessageOptionsMenu";
+import { AssistantActionBar } from "@/features/cx-conversation/AssistantActionBar";
 import { PromptErrorMessage } from "../PromptErrorMessage";
 import { Button } from "@/components/ui/button";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { openFullScreenEditor, openHtmlPreview } from "@/lib/redux/slices/overlaySlice";
 
 interface PromptAssistantMessageProps {
   content: string;
@@ -49,12 +38,8 @@ export function PromptAssistantMessage({
   isTtsRequest = false,
   compact = false,
 }: PromptAssistantMessageProps) {
-  const dispatch = useAppDispatch();
-  const [showOptionsMenu, setShowOptionsMenu] = useState(false);
-  const [isCopied, setIsCopied] = useState(false);
   const [isAudioLinkCopied, setIsAudioLinkCopied] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
-  const moreOptionsButtonRef = useRef<HTMLButtonElement>(null);
 
   // DOM-capture print (Tier 2 — captures all rendered blocks)
   const { captureRef, isCapturing, captureAsPDF } = useDomCapturePrint();
@@ -66,18 +51,6 @@ export function PromptAssistantMessage({
     if (onContentChange) {
       onContentChange(messageIndex, newContent);
     }
-  };
-
-  const handleEditClick = () => {
-    dispatch(openFullScreenEditor({
-      content,
-      onSave: onContentChange
-        ? (newContent: string) => onContentChange(messageIndex, newContent)
-        : undefined,
-      tabs: ["write", "matrx_split", "markdown", "wysiwyg", "preview"],
-      initialTab: "matrx_split",
-      showSaveButton: !!onContentChange,
-    }));
   };
 
   const handleDownloadAudio = async () => {
@@ -103,31 +76,12 @@ export function PromptAssistantMessage({
     }
   };
 
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(content);
-      setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2000);
-    } catch (err) {
-      console.error("Failed to copy: ", err);
-    }
-  };
-
-  const toggleOptionsMenu = () => {
-    setShowOptionsMenu(!showOptionsMenu);
-  };
-
-  const handleShowHtmlPreview = () => {
-    dispatch(openHtmlPreview({ content }));
-  };
-
   // Check if this is an error message
   const isError = content.startsWith("Error:");
   const isAudioResponse = !!audioUrl;
 
   // Adjust styling based on compact mode - keep ALL functionality
   const markdownClassName = compact ? "text-xs bg-transparent" : "bg-textured";
-  const buttonMargin = compact ? "mt-0.5" : "mt-1";
 
   return (
     <div>
@@ -211,60 +165,12 @@ export function PromptAssistantMessage({
             </div>
           )}
           {!isStreamActive && (
-            <div className={`flex items-center gap-1 ${buttonMargin}`}>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleCopy}
-                className="h-6 w-6 p-0 text-muted-foreground"
-                title="Copy"
-              >
-                {isCopied ? (
-                  <Check className="w-3.5 h-3.5" />
-                ) : (
-                  <Copy className="w-3.5 h-3.5" />
-                )}
-              </Button>
-              {onContentChange && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleEditClick}
-                  className="h-6 w-6 p-0 text-muted-foreground"
-                  title="Edit in full screen"
-                >
-                  <Edit className="w-3.5 h-3.5" />
-                </Button>
-              )}
-              <Button
-                ref={moreOptionsButtonRef}
-                variant="ghost"
-                size="sm"
-                onClick={toggleOptionsMenu}
-                className="h-6 w-6 p-0 text-muted-foreground"
-                title="More options"
-              >
-                <MoreHorizontal className="w-3.5 h-3.5" />
-              </Button>
-              <MessageOptionsMenu
-                isOpen={showOptionsMenu}
-                content={content}
-                onClose={() => setShowOptionsMenu(false)}
-                onShowHtmlPreview={handleShowHtmlPreview}
-                onEditContent={handleEditClick}
-                onFullPrint={handleFullPrint}
-                isCapturing={isCapturing}
-                anchorElement={moreOptionsButtonRef.current}
-                metadata={
-                  metadata
-                    ? {
-                        taskId,
-                        ...metadata,
-                      }
-                    : undefined
-                }
-              />
-            </div>
+            <AssistantActionBar
+              content={content}
+              messageId={`prompt-${taskId ?? messageIndex}`}
+              onFullPrint={handleFullPrint}
+              isCapturing={isCapturing}
+            />
           )}
         </>
       )}

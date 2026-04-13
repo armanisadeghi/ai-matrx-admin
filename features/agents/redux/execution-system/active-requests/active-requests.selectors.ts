@@ -22,7 +22,7 @@ import type {
   Phase,
   Operation,
   InitCompletionStatus,
-  ContentBlockPayload,
+  RenderBlockPayload,
   CompletionPayload,
   WarningPayload,
   InfoPayload,
@@ -178,42 +178,42 @@ export const selectUserRequestCompletion =
   };
 
 // =============================================================================
-// Content Block Selectors
+// Render Block Selectors
 // =============================================================================
 
-/** A single content block by blockId. Primitive-ish — object ref stable until upserted. */
-export const selectContentBlock =
+/** A single render block by blockId. Primitive-ish — object ref stable until upserted. */
+export const selectRenderBlock =
   (requestId: string, blockId: string) =>
-  (state: RootState): ContentBlockPayload | undefined =>
-    state.activeRequests.byRequestId[requestId]?.contentBlocks[blockId];
+  (state: RootState): RenderBlockPayload | undefined =>
+    state.activeRequests.byRequestId[requestId]?.renderBlocks[blockId];
 
 /** Ordered blockIds for rendering. Stable array ref until a new block arrives. */
-export const selectContentBlockOrder =
+export const selectRenderBlockOrder =
   (requestId: string) =>
   (state: RootState): string[] | undefined =>
-    state.activeRequests.byRequestId[requestId]?.contentBlockOrder;
+    state.activeRequests.byRequestId[requestId]?.renderBlockOrder;
 
-/** All content blocks in emission order. Memoized. */
-export const selectAllContentBlocks = (requestId: string) =>
+/** All render blocks in emission order. Memoized. */
+export const selectAllRenderBlocks = (requestId: string) =>
   createSelector(
     (state: RootState) => state.activeRequests.byRequestId[requestId],
-    (request): ContentBlockPayload[] => {
+    (request): RenderBlockPayload[] => {
       if (!request) return [];
-      return request.contentBlockOrder
-        .map((id) => request.contentBlocks[id])
-        .filter((b): b is ContentBlockPayload => b != null);
+      return request.renderBlockOrder
+        .map((id) => request.renderBlocks[id])
+        .filter((b): b is RenderBlockPayload => b != null);
     },
   );
 
 /** Content blocks filtered by type (e.g., "code", "flashcards"). Memoized. */
-export const selectContentBlocksByType = (requestId: string, type: string) =>
+export const selectRenderBlocksByType = (requestId: string, type: string) =>
   createSelector(
     (state: RootState) => state.activeRequests.byRequestId[requestId],
-    (request): ContentBlockPayload[] => {
+    (request): RenderBlockPayload[] => {
       if (!request) return [];
-      return request.contentBlockOrder
-        .map((id) => request.contentBlocks[id])
-        .filter((b): b is ContentBlockPayload => b != null && b.type === type);
+      return request.renderBlockOrder
+        .map((id) => request.renderBlocks[id])
+        .filter((b): b is RenderBlockPayload => b != null && b.type === type);
     },
   );
 
@@ -221,13 +221,12 @@ export const selectContentBlocksByType = (requestId: string, type: string) =>
 export const selectStreamingBlocks = (requestId: string) =>
   createSelector(
     (state: RootState) => state.activeRequests.byRequestId[requestId],
-    (request): ContentBlockPayload[] => {
+    (request): RenderBlockPayload[] => {
       if (!request) return [];
-      return request.contentBlockOrder
-        .map((id) => request.contentBlocks[id])
+      return request.renderBlockOrder
+        .map((id) => request.renderBlocks[id])
         .filter(
-          (b): b is ContentBlockPayload =>
-            b != null && b.status === "streaming",
+          (b): b is RenderBlockPayload => b != null && b.status === "streaming",
         );
     },
   );
@@ -236,21 +235,21 @@ export const selectStreamingBlocks = (requestId: string) =>
 export const selectCompletedBlocks = (requestId: string) =>
   createSelector(
     (state: RootState) => state.activeRequests.byRequestId[requestId],
-    (request): ContentBlockPayload[] => {
+    (request): RenderBlockPayload[] => {
       if (!request) return [];
-      return request.contentBlockOrder
-        .map((id) => request.contentBlocks[id])
+      return request.renderBlockOrder
+        .map((id) => request.renderBlocks[id])
         .filter(
-          (b): b is ContentBlockPayload => b != null && b.status === "complete",
+          (b): b is RenderBlockPayload => b != null && b.status === "complete",
         );
     },
   );
 
 /** How many content blocks exist for this request. Primitive. */
-export const selectContentBlockCount =
+export const selectRenderBlockCount =
   (requestId: string) =>
   (state: RootState): number =>
-    state.activeRequests.byRequestId[requestId]?.contentBlockOrder.length ?? 0;
+    state.activeRequests.byRequestId[requestId]?.renderBlockOrder.length ?? 0;
 
 // =============================================================================
 // Tool Lifecycle Selectors

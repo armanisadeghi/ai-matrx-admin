@@ -989,7 +989,7 @@ const MarkdownTester: React.FC<MarkdownTesterProps> = ({ className }) => {
             blocks: Record<string, unknown>[];
           };
           const synthetic: StreamEvent[] = data.blocks.map((block, i) => ({
-            event: "content_block" as const,
+            event: "render_block" as const,
             data: {
               blockId: (block.blockId ??
                 block.block_id ??

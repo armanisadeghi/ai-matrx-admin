@@ -7,46 +7,46 @@
  */
 
 export type {
-    StreamEvent,
-    TypedStreamEvent,
-    EventType,
-    ToolEventType,
-    ChunkPayload,
-    PhasePayload,
-    DataPayload,
-    CompletionPayload,
-    ErrorPayload,
-    ToolEventPayload,
-    BrokerPayload,
-    HeartbeatPayload,
-    EndPayload,
-    ChunkEvent,
-    PhaseEvent,
-    TypedDataEvent,
-    CompletionEvent,
-    ErrorEvent,
-    ToolEventEvent,
-    BrokerEvent,
-    HeartbeatEvent,
-    EndEvent,
-    ContentBlockEvent,
-} from '@/types/python-generated/stream-events';
+  StreamEvent,
+  TypedStreamEvent,
+  EventType,
+  ToolEventType,
+  ChunkPayload,
+  PhasePayload,
+  DataPayload,
+  CompletionPayload,
+  ErrorPayload,
+  ToolEventPayload,
+  BrokerPayload,
+  HeartbeatPayload,
+  EndPayload,
+  ChunkEvent,
+  PhaseEvent,
+  TypedDataEvent,
+  CompletionEvent,
+  ErrorEvent,
+  ToolEventEvent,
+  BrokerEvent,
+  HeartbeatEvent,
+  EndEvent,
+  RenderBlockEvent,
+} from "@/types/python-generated/stream-events";
 
 export {
-    isChunkEvent,
-    isPhaseEvent,
-    isTypedDataEvent,
-    isCompletionEvent,
-    isErrorEvent,
-    isToolEventEvent,
-    isBrokerEvent,
-    isHeartbeatEvent,
-    isEndEvent,
-    isContentBlockEvent,
-} from '@/types/python-generated/stream-events';
+  isChunkEvent,
+  isPhaseEvent,
+  isTypedDataEvent,
+  isCompletionEvent,
+  isErrorEvent,
+  isToolEventEvent,
+  isBrokerEvent,
+  isHeartbeatEvent,
+  isEndEvent,
+  isRenderBlockEvent,
+} from "@/types/python-generated/stream-events";
 
-import type { StreamEvent } from '@/types/python-generated/stream-events';
+import type { StreamEvent } from "@/types/python-generated/stream-events";
 
 export function isNewProtocol(events: StreamEvent[]): boolean {
-    return events.some(e => e.event === 'content_block');
+  return events.some((e) => e.event === "render_block");
 }

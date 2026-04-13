@@ -12,9 +12,15 @@
  *   back-only     — answers/definitions only
  */
 
-import { buildPrintDocument, openPrintWindow, escapeHtml, type BlockPrinter, type PrintSettings } from "@/features/chat/utils/block-print-utils";
+import {
+  buildPrintDocument,
+  openPrintWindow,
+  escapeHtml,
+  type BlockPrinter,
+  type PrintSettings,
+} from "@/features/chat/utils/block-print-utils";
 import type { Flashcard } from "./flashcard-parser";
-import type { FlashcardsBlockData } from "@/types/python-generated/content-blocks";
+import type { FlashcardsBlockData } from "@/types/python-generated/stream-events";
 
 // ---------------------------------------------------------------------------
 // Settings helpers
@@ -22,51 +28,56 @@ import type { FlashcardsBlockData } from "@/types/python-generated/content-block
 
 /** Resolved settings with all defaults filled in — safe to use without null checks */
 interface CardPrintSettings {
-    showSideLabel: boolean;   // "Front" / "Back" label
-    showCardNumber: boolean;  // "#1", "#2" … badge
-    showTickMarks: boolean;   // 4 small tick marks at cut intersection
-    showCutLines: boolean;    // full dashed crossing lines
-    lightBackText: boolean;   // print back text in dark gray (~#555) to reduce show-through
-    mirrorBack: boolean;      // horizontally flip back page text so bleed-through is unreadable
+  showSideLabel: boolean; // "Front" / "Back" label
+  showCardNumber: boolean; // "#1", "#2" … badge
+  showTickMarks: boolean; // 4 small tick marks at cut intersection
+  showCutLines: boolean; // full dashed crossing lines
+  lightBackText: boolean; // print back text in dark gray (~#555) to reduce show-through
+  mirrorBack: boolean; // horizontally flip back page text so bleed-through is unreadable
 }
 
 const SETTING_DEFAULTS: CardPrintSettings = {
-    showSideLabel: false,
-    showCardNumber: false,
-    showTickMarks: true,
-    showCutLines: false,
-    lightBackText: false,
-    mirrorBack: false,
+  showSideLabel: false,
+  showCardNumber: false,
+  showTickMarks: true,
+  showCutLines: false,
+  lightBackText: false,
+  mirrorBack: false,
 };
 
 function resolveSettings(raw?: PrintSettings): CardPrintSettings {
-    if (!raw) return { ...SETTING_DEFAULTS };
-    const b = (key: keyof CardPrintSettings) =>
-        raw[key] !== undefined ? Boolean(raw[key]) : SETTING_DEFAULTS[key];
-    return {
-        showSideLabel:  b("showSideLabel"),
-        showCardNumber: b("showCardNumber"),
-        showTickMarks:  b("showTickMarks"),
-        showCutLines:   b("showCutLines"),
-        lightBackText:  b("lightBackText"),
-        mirrorBack:     b("mirrorBack"),
-    };
+  if (!raw) return { ...SETTING_DEFAULTS };
+  const b = (key: keyof CardPrintSettings) =>
+    raw[key] !== undefined ? Boolean(raw[key]) : SETTING_DEFAULTS[key];
+  return {
+    showSideLabel: b("showSideLabel"),
+    showCardNumber: b("showCardNumber"),
+    showTickMarks: b("showTickMarks"),
+    showCutLines: b("showCutLines"),
+    lightBackText: b("lightBackText"),
+    mirrorBack: b("mirrorBack"),
+  };
 }
 
-export type FlashcardsVariant = "landscape-duplex" | "landscape-stacked" | "avery-5388" | "cut-cards" | "both-sides" | "study-sheet" | "front-only" | "back-only";
+export type FlashcardsVariant =
+  | "landscape-duplex"
+  | "landscape-stacked"
+  | "avery-5388"
+  | "cut-cards"
+  | "both-sides"
+  | "study-sheet"
+  | "front-only"
+  | "back-only";
 
-type FlashcardsData =
-    | { cards: Flashcard[] }
-    | FlashcardsBlockData
-    | string;
+type FlashcardsData = { cards: Flashcard[] } | FlashcardsBlockData | string;
 
 function extractCards(data: unknown): Flashcard[] {
-    if (!data) return [];
-    if (typeof data === "object" && data !== null && "cards" in data) {
-        const cards = (data as { cards: unknown[] }).cards;
-        return Array.isArray(cards) ? (cards as Flashcard[]) : [];
-    }
-    return [];
+  if (!data) return [];
+  if (typeof data === "object" && data !== null && "cards" in data) {
+    const cards = (data as { cards: unknown[] }).cards;
+    return Array.isArray(cards) ? (cards as Flashcard[]) : [];
+  }
+  return [];
 }
 
 // ---------------------------------------------------------------------------
@@ -225,30 +236,30 @@ const CUT_CARD_STYLES = `
 `;
 
 function sizeClass(text: string): string {
-    const len = text.length;
-    if (len > 200) return "xlong";
-    if (len > 100) return "long";
-    return "";
+  const len = text.length;
+  if (len > 200) return "xlong";
+  if (len > 100) return "long";
+  return "";
 }
 
 function renderCutCards(cards: Flashcard[], title: string): string {
-    const PAGE_SIZE = 4; // cards per page
-    const pages: string[] = [];
+  const PAGE_SIZE = 4; // cards per page
+  const pages: string[] = [];
 
-    for (let p = 0; p < Math.ceil(cards.length / PAGE_SIZE); p++) {
-        const batch = cards.slice(p * PAGE_SIZE, (p + 1) * PAGE_SIZE);
+  for (let p = 0; p < Math.ceil(cards.length / PAGE_SIZE); p++) {
+    const batch = cards.slice(p * PAGE_SIZE, (p + 1) * PAGE_SIZE);
 
-        const cells = batch
-            .map((card, i) => {
-                const globalIdx = p * PAGE_SIZE + i + 1;
-                const frontSize = sizeClass(card.front);
-                const backSize = sizeClass(card.back ?? "");
-                const backContent = (card.back ?? "")
-                    .split("\n")
-                    .map((line) => escapeHtml(line))
-                    .join("<br>");
+    const cells = batch
+      .map((card, i) => {
+        const globalIdx = p * PAGE_SIZE + i + 1;
+        const frontSize = sizeClass(card.front);
+        const backSize = sizeClass(card.back ?? "");
+        const backContent = (card.back ?? "")
+          .split("\n")
+          .map((line) => escapeHtml(line))
+          .join("<br>");
 
-                return `<div class="card-cell">
+        return `<div class="card-cell">
   <span class="card-number-badge">#${globalIdx}</span>
   <div class="card-inner">
     <div class="card-face card-front-face">
@@ -261,15 +272,15 @@ function renderCutCards(cards: Flashcard[], title: string): string {
     </div>
   </div>
 </div>`;
-            })
-            .join("\n");
+      })
+      .join("\n");
 
-        const isFirst = p === 0;
-        const pageClass = isFirst ? "" : ' class="page-break"';
-        pages.push(`<div${pageClass}>
+    const isFirst = p === 0;
+    const pageClass = isFirst ? "" : ' class="page-break"';
+    pages.push(`<div${pageClass}>
 ${
-    isFirst
-        ? `<div class="deck-header">
+  isFirst
+    ? `<div class="deck-header">
   <h1 class="deck-title">${escapeHtml(title)}</h1>
   <div class="deck-meta">${cards.length} card${cards.length !== 1 ? "s" : ""} &nbsp;·&nbsp; Cut along dashed lines</div>
 </div>
@@ -277,16 +288,16 @@ ${
   ✂ Print this page, then cut along the dashed lines. Each cell is one card — front (blue) on top, answer on the bottom.
   Fold in half for a double-sided card, or cut each half separately for separate front/back cards.
 </div>`
-        : `<div class="deck-meta" style="margin-bottom:10px;">Cards ${p * PAGE_SIZE + 1}–${Math.min((p + 1) * PAGE_SIZE, cards.length)} of ${cards.length}</div>`
+    : `<div class="deck-meta" style="margin-bottom:10px;">Cards ${p * PAGE_SIZE + 1}–${Math.min((p + 1) * PAGE_SIZE, cards.length)} of ${cards.length}</div>`
 }
 <div class="cards-grid">
 ${cells}
 </div>
 <div class="fold-hint">✂ cut along dashed borders · fold on the center line for double-sided cards</div>
 </div>`);
-    }
+  }
 
-    return pages.join("\n");
+  return pages.join("\n");
 }
 
 // ---------------------------------------------------------------------------
@@ -335,19 +346,19 @@ const BOTH_SIDES_STYLES = `
 `;
 
 function renderBothSides(cards: Flashcard[], title: string): string {
-    const cells = cards
-        .map(
-            (card, i) => `<div class="card-cell">
+  const cells = cards
+    .map(
+      (card, i) => `<div class="card-cell">
   <div class="card-front">
     <div class="card-number">Card ${i + 1}</div>
     ${escapeHtml(card.front)}
   </div>
   <div class="card-back">${escapeHtml(card.back ?? "")}</div>
 </div>`,
-        )
-        .join("\n");
+    )
+    .join("\n");
 
-    return `<div class="deck-header">
+  return `<div class="deck-header">
   <h1 class="deck-title">${escapeHtml(title)}</h1>
   <div class="deck-meta">${cards.length} card${cards.length !== 1 ? "s" : ""} &nbsp;·&nbsp; Front and back</div>
 </div>
@@ -411,16 +422,16 @@ const STUDY_SHEET_STYLES = `
 `;
 
 function renderStudySheet(cards: Flashcard[], title: string): string {
-    const rows = cards
-        .map(
-            (card, i) => `  <tr>
+  const rows = cards
+    .map(
+      (card, i) => `  <tr>
     <td><span class="row-num">${i + 1}.</span>${escapeHtml(card.front)}</td>
     <td>${escapeHtml(card.back ?? "")}</td>
   </tr>`,
-        )
-        .join("\n");
+    )
+    .join("\n");
 
-    return `<div class="deck-header">
+  return `<div class="deck-header">
   <h1 class="deck-title">${escapeHtml(title)}</h1>
   <div class="deck-meta">${cards.length} card${cards.length !== 1 ? "s" : ""} &nbsp;·&nbsp; Study sheet</div>
 </div>
@@ -487,19 +498,19 @@ const FRONT_ONLY_STYLES = `
 `;
 
 function renderFrontOnly(cards: Flashcard[], title: string): string {
-    const cells = cards
-        .map(
-            (card, i) => `<div class="card-cell">
+  const cells = cards
+    .map(
+      (card, i) => `<div class="card-cell">
   <div class="card-front">
     <div class="card-number">Card ${i + 1}</div>
     ${escapeHtml(card.front)}
   </div>
   <div class="answer-blank"></div>
 </div>`,
-        )
-        .join("\n");
+    )
+    .join("\n");
 
-    return `<div class="deck-header">
+  return `<div class="deck-header">
   <h1 class="deck-title">${escapeHtml(title)}</h1>
   <div class="deck-meta">${cards.length} card${cards.length !== 1 ? "s" : ""} &nbsp;·&nbsp; Self-test — write your answers in the blank space</div>
 </div>
@@ -550,16 +561,16 @@ const BACK_ONLY_STYLES = `
 `;
 
 function renderBackOnly(cards: Flashcard[], title: string): string {
-    const cells = cards
-        .map(
-            (card, i) => `<div class="card-cell">
+  const cells = cards
+    .map(
+      (card, i) => `<div class="card-cell">
   <div class="card-back-header">Card ${i + 1}</div>
   <div class="card-back-content">${escapeHtml(card.back ?? "")}</div>
 </div>`,
-        )
-        .join("\n");
+    )
+    .join("\n");
 
-    return `<div class="deck-header">
+  return `<div class="deck-header">
   <h1 class="deck-title">${escapeHtml(title)}</h1>
   <div class="deck-meta">${cards.length} card${cards.length !== 1 ? "s" : ""} &nbsp;·&nbsp; Answers and definitions only</div>
 </div>
@@ -823,14 +834,14 @@ const FIT_TEXT_SCRIPT = `
 
 /** Returns true if the majority of non-empty lines look like bullet items */
 function isBulletContent(text: string): boolean {
-    const lines = text.split("\n").filter((l) => l.trim().length > 0);
-    if (lines.length < 2) return false;
-    const bulletLines = lines.filter((l) => /^\s*[-•*]\s/.test(l));
-    return bulletLines.length >= lines.length * 0.6; // 60%+ bullet lines = treat as list
+  const lines = text.split("\n").filter((l) => l.trim().length > 0);
+  if (lines.length < 2) return false;
+  const bulletLines = lines.filter((l) => /^\s*[-•*]\s/.test(l));
+  return bulletLines.length >= lines.length * 0.6; // 60%+ bullet lines = treat as list
 }
 
 function isMultiline(text: string): boolean {
-    return text.includes("\n") || text.length > 120;
+  return text.includes("\n") || text.length > 120;
 }
 
 /**
@@ -839,60 +850,69 @@ function isMultiline(text: string): boolean {
  *   - Plain centered text for normal prose
  *   - Front text is always plain centered
  */
-function renderCardText(text: string, isFront: boolean, extraStyle = ""): { html: string; isList: boolean } {
-    if (isFront) {
-        const styleAttr = extraStyle ? ` style="${extraStyle}"` : "";
-        return {
-            html: `<div class="card-text-inner"${styleAttr}>${escapeHtml(text).replace(/\n/g, "<br>")}</div>`,
-            isList: false,
-        };
-    }
-
-    const bullet = isBulletContent(text);
-
-    if (bullet) {
-        const lines = text.split("\n");
-        const items = lines
-            .map((l) => l.trim())
-            .filter((l) => l.length > 0)
-            .map((l) => l.replace(/^[-•*]\s*/, "")) // strip leading dash/bullet
-            .map((l) => `<li>${escapeHtml(l)}</li>`)
-            .join("");
-        const styleAttr = extraStyle ? ` style="${extraStyle}"` : "";
-        return {
-            html: `<ul class="card-text-inner card-list"${styleAttr}>${items}</ul>`,
-            isList: true,
-        };
-    }
-
-    // Plain multiline or single-line prose
-    const ml = isMultiline(text);
-    const cls = ml ? "card-text-inner multiline" : "card-text-inner";
+function renderCardText(
+  text: string,
+  isFront: boolean,
+  extraStyle = "",
+): { html: string; isList: boolean } {
+  if (isFront) {
     const styleAttr = extraStyle ? ` style="${extraStyle}"` : "";
     return {
-        html: `<div class="${cls}"${styleAttr}>${escapeHtml(text).replace(/\n/g, "<br>")}</div>`,
-        isList: false,
+      html: `<div class="card-text-inner"${styleAttr}>${escapeHtml(text).replace(/\n/g, "<br>")}</div>`,
+      isList: false,
     };
+  }
+
+  const bullet = isBulletContent(text);
+
+  if (bullet) {
+    const lines = text.split("\n");
+    const items = lines
+      .map((l) => l.trim())
+      .filter((l) => l.length > 0)
+      .map((l) => l.replace(/^[-•*]\s*/, "")) // strip leading dash/bullet
+      .map((l) => `<li>${escapeHtml(l)}</li>`)
+      .join("");
+    const styleAttr = extraStyle ? ` style="${extraStyle}"` : "";
+    return {
+      html: `<ul class="card-text-inner card-list"${styleAttr}>${items}</ul>`,
+      isList: true,
+    };
+  }
+
+  // Plain multiline or single-line prose
+  const ml = isMultiline(text);
+  const cls = ml ? "card-text-inner multiline" : "card-text-inner";
+  const styleAttr = extraStyle ? ` style="${extraStyle}"` : "";
+  return {
+    html: `<div class="${cls}"${styleAttr}>${escapeHtml(text).replace(/\n/g, "<br>")}</div>`,
+    isList: false,
+  };
 }
 
 function buildCardFace(
-    text: string,
-    cardNum: number,
-    isFront: boolean,
-    s: CardPrintSettings,
+  text: string,
+  cardNum: number,
+  isFront: boolean,
+  s: CardPrintSettings,
 ): string {
-    const numBadge  = s.showCardNumber ? `<span class="card-num">#${cardNum}</span>` : "";
-    const sideLabel = s.showSideLabel  ? `<span class="side-label">${isFront ? "Front" : "Back"}</span>` : "";
+  const numBadge = s.showCardNumber
+    ? `<span class="card-num">#${cardNum}</span>`
+    : "";
+  const sideLabel = s.showSideLabel
+    ? `<span class="side-label">${isFront ? "Front" : "Back"}</span>`
+    : "";
 
-    const textColor   = (!isFront && s.lightBackText) ? "color:#777;" : "";
-    const mirrorXform = (!isFront && s.mirrorBack)    ? "transform:scaleX(-1);display:block;" : "";
-    const innerStyle  = textColor + mirrorXform;
+  const textColor = !isFront && s.lightBackText ? "color:#777;" : "";
+  const mirrorXform =
+    !isFront && s.mirrorBack ? "transform:scaleX(-1);display:block;" : "";
+  const innerStyle = textColor + mirrorXform;
 
-    const { html, isList } = renderCardText(text, isFront, innerStyle);
-    // Lists align to the start so bullets sit at top-left; prose/front stays centered
-    const cardTextStyle = isList ? ' style="align-items:flex-start;"' : "";
+  const { html, isList } = renderCardText(text, isFront, innerStyle);
+  // Lists align to the start so bullets sit at top-left; prose/front stays centered
+  const cardTextStyle = isList ? ' style="align-items:flex-start;"' : "";
 
-    return `<div class="card-face">
+  return `<div class="card-face">
   ${numBadge}
   ${sideLabel}
   <div class="card-text"${cardTextStyle}>
@@ -902,29 +922,26 @@ function buildCardFace(
 }
 
 const QUAD_CLASSES = [
-    "quad top left",
-    "quad top right",
-    "quad bottom left",
-    "quad bottom right",
+  "quad top left",
+  "quad top right",
+  "quad bottom left",
+  "quad bottom right",
 ] as const;
 
-function buildPage(
-    cells: string[],
-    s: CardPrintSettings,
-): string {
-    const ticks = s.showTickMarks
-        ? `<div class="tick-h-left"></div>
+function buildPage(cells: string[], s: CardPrintSettings): string {
+  const ticks = s.showTickMarks
+    ? `<div class="tick-h-left"></div>
   <div class="tick-h-right"></div>
   <div class="tick-v-top"></div>
   <div class="tick-v-bottom"></div>`
-        : "";
+    : "";
 
-    const lines = s.showCutLines
-        ? `<div class="cut-line-h"></div>
+  const lines = s.showCutLines
+    ? `<div class="cut-line-h"></div>
   <div class="cut-line-v"></div>`
-        : "";
+    : "";
 
-    return `<div class="page">
+  return `<div class="page">
   ${ticks}
   ${lines}
   ${cells.map((c, i) => `<div class="${QUAD_CLASSES[i]}">${c}</div>`).join("\n  ")}
@@ -939,37 +956,37 @@ function buildPage(
  * landscape-stacked: all fronts first, then all backs (same column order both pages).
  */
 function renderLandscape(
-    cards: Flashcard[],
-    title: string,
-    mode: "duplex" | "stacked",
-    s: CardPrintSettings,
+  cards: Flashcard[],
+  title: string,
+  mode: "duplex" | "stacked",
+  s: CardPrintSettings,
 ): string {
-    const BATCH = 4;
-    const pages: string[] = [];
-    const empty = `<div class="card-face"></div>`;
+  const BATCH = 4;
+  const pages: string[] = [];
+  const empty = `<div class="card-face"></div>`;
 
-    for (let p = 0; p < Math.ceil(cards.length / BATCH); p++) {
-        const batch = cards.slice(p * BATCH, (p + 1) * BATCH);
-        while (batch.length < BATCH) batch.push({ front: "", back: "" });
+  for (let p = 0; p < Math.ceil(cards.length / BATCH); p++) {
+    const batch = cards.slice(p * BATCH, (p + 1) * BATCH);
+    while (batch.length < BATCH) batch.push({ front: "", back: "" });
 
-        const fronts = batch.map((c, i) =>
-            c.front ? buildCardFace(c.front, p * BATCH + i + 1, true, s) : empty,
-        );
-        const backs = batch.map((c, i) =>
-            c.back ? buildCardFace(c.back ?? "", p * BATCH + i + 1, false, s) : empty,
-        );
+    const fronts = batch.map((c, i) =>
+      c.front ? buildCardFace(c.front, p * BATCH + i + 1, true, s) : empty,
+    );
+    const backs = batch.map((c, i) =>
+      c.back ? buildCardFace(c.back ?? "", p * BATCH + i + 1, false, s) : empty,
+    );
 
-        if (mode === "duplex") {
-            const backsFlipped = [backs[1], backs[0], backs[3], backs[2]];
-            pages.push(buildPage(fronts, s));
-            pages.push(buildPage(backsFlipped, s));
-        } else {
-            pages.push(buildPage(fronts, s));
-            pages.push(buildPage(backs, s));
-        }
+    if (mode === "duplex") {
+      const backsFlipped = [backs[1], backs[0], backs[3], backs[2]];
+      pages.push(buildPage(fronts, s));
+      pages.push(buildPage(backsFlipped, s));
+    } else {
+      pages.push(buildPage(fronts, s));
+      pages.push(buildPage(backs, s));
     }
+  }
 
-    return pages.join("\n");
+  return pages.join("\n");
 }
 
 /**
@@ -977,7 +994,7 @@ function renderLandscape(
  * because that adds max-width, padding, and chrome that fights the precise page geometry.
  */
 function openLandscapeWindow(bodyHtml: string, title: string): void {
-    const html = `<!DOCTYPE html>
+  const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -995,22 +1012,22 @@ ${FIT_TEXT_SCRIPT}
 </body>
 </html>`;
 
-    const win = window.open("", "_blank", "width=1100,height=720,scrollbars=yes");
-    if (!win) {
-        const blob = new Blob([html], { type: "text/html;charset=utf-8" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `${title.replace(/\s+/g, "-").toLowerCase()}-flashcards.html`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        return;
-    }
-    win.document.open();
-    win.document.write(html);
-    win.document.close();
+  const win = window.open("", "_blank", "width=1100,height=720,scrollbars=yes");
+  if (!win) {
+    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${title.replace(/\s+/g, "-").toLowerCase()}-flashcards.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    return;
+  }
+  win.document.open();
+  win.document.write(html);
+  win.document.close();
 }
 
 // ---------------------------------------------------------------------------
@@ -1148,42 +1165,51 @@ const AVERY_5388_STYLES = `
 `;
 
 function buildAveryCard(
-    text: string,
-    cardNum: number,
-    isFront: boolean,
-    s: CardPrintSettings,
+  text: string,
+  cardNum: number,
+  isFront: boolean,
+  s: CardPrintSettings,
 ): string {
-    const numBadge  = s.showCardNumber ? `<span class="avery-card-num">#${cardNum}</span>` : "";
-    const sideLabel = s.showSideLabel  ? `<span class="avery-side-label">${isFront ? "Front" : "Back"}</span>` : "";
+  const numBadge = s.showCardNumber
+    ? `<span class="avery-card-num">#${cardNum}</span>`
+    : "";
+  const sideLabel = s.showSideLabel
+    ? `<span class="avery-side-label">${isFront ? "Front" : "Back"}</span>`
+    : "";
 
-    const textColor   = (!isFront && s.lightBackText) ? "color:#777;" : "";
-    const mirrorXform = (!isFront && s.mirrorBack)    ? "transform:scaleX(-1);" : "";
-    const innerStyle  = textColor + mirrorXform;
+  const textColor = !isFront && s.lightBackText ? "color:#777;" : "";
+  const mirrorXform = !isFront && s.mirrorBack ? "transform:scaleX(-1);" : "";
+  const innerStyle = textColor + mirrorXform;
 
-    // Render with shared logic — detects bullets, builds <ul> if needed
-    const isBullet = !isFront && isBulletContent(text);
-    const isML     = !isFront && isMultiline(text);
-    const cls      = isBullet ? "avery-text card-list" : isML ? "avery-text multiline" : "avery-text";
-    const styleAttr = innerStyle ? ` style="${innerStyle}"` : "";
+  // Render with shared logic — detects bullets, builds <ul> if needed
+  const isBullet = !isFront && isBulletContent(text);
+  const isML = !isFront && isMultiline(text);
+  const cls = isBullet
+    ? "avery-text card-list"
+    : isML
+      ? "avery-text multiline"
+      : "avery-text";
+  const styleAttr = innerStyle ? ` style="${innerStyle}"` : "";
 
-    let innerHtml: string;
-    if (isBullet) {
-        const items = text.split("\n")
-            .map((l) => l.trim())
-            .filter((l) => l.length > 0)
-            .map((l) => l.replace(/^[-•*]\s*/, ""))
-            .map((l) => `<li>${escapeHtml(l)}</li>`)
-            .join("");
-        innerHtml = `<ul class="${cls}"${styleAttr}>${items}</ul>`;
-    } else {
-        const escaped = escapeHtml(text).replace(/\n/g, "<br>");
-        innerHtml = `<div class="${cls}"${styleAttr}>${escaped}</div>`;
-    }
+  let innerHtml: string;
+  if (isBullet) {
+    const items = text
+      .split("\n")
+      .map((l) => l.trim())
+      .filter((l) => l.length > 0)
+      .map((l) => l.replace(/^[-•*]\s*/, ""))
+      .map((l) => `<li>${escapeHtml(l)}</li>`)
+      .join("");
+    innerHtml = `<ul class="${cls}"${styleAttr}>${items}</ul>`;
+  } else {
+    const escaped = escapeHtml(text).replace(/\n/g, "<br>");
+    innerHtml = `<div class="${cls}"${styleAttr}>${escaped}</div>`;
+  }
 
-    // List content: wrap aligns to start; prose/front: centered
-    const wrapExtra = isBullet ? ' style="align-items:flex-start;"' : "";
+  // List content: wrap aligns to start; prose/front: centered
+  const wrapExtra = isBullet ? ' style="align-items:flex-start;"' : "";
 
-    return `<div class="avery-card">
+  return `<div class="avery-card">
   ${numBadge}
   ${sideLabel}
   <div class="avery-text-wrap"${wrapExtra}>
@@ -1192,32 +1218,38 @@ function buildAveryCard(
 </div>`;
 }
 
-function renderAvery5388(cards: Flashcard[], title: string, s: CardPrintSettings): string {
-    const BATCH = 3;
-    const pages: string[] = [];
+function renderAvery5388(
+  cards: Flashcard[],
+  title: string,
+  s: CardPrintSettings,
+): string {
+  const BATCH = 3;
+  const pages: string[] = [];
 
-    for (let p = 0; p < Math.ceil(cards.length / BATCH); p++) {
-        const batch = cards.slice(p * BATCH, (p + 1) * BATCH);
+  for (let p = 0; p < Math.ceil(cards.length / BATCH); p++) {
+    const batch = cards.slice(p * BATCH, (p + 1) * BATCH);
 
-        const frontCells = batch
-            .map((c, i) => buildAveryCard(c.front, p * BATCH + i + 1, true, s))
-            .join("\n");
-        const backCells = batch
-            .map((c, i) => buildAveryCard(c.back ?? "", p * BATCH + i + 1, false, s))
-            .join("\n");
+    const frontCells = batch
+      .map((c, i) => buildAveryCard(c.front, p * BATCH + i + 1, true, s))
+      .join("\n");
+    const backCells = batch
+      .map((c, i) => buildAveryCard(c.back ?? "", p * BATCH + i + 1, false, s))
+      .join("\n");
 
-        const padCount = BATCH - batch.length;
-        const padCells = Array(padCount).fill(`<div class="avery-card"></div>`).join("\n");
+    const padCount = BATCH - batch.length;
+    const padCells = Array(padCount)
+      .fill(`<div class="avery-card"></div>`)
+      .join("\n");
 
-        pages.push(`<div class="avery-page">${frontCells}${padCells}</div>`);
-        pages.push(`<div class="avery-page">${backCells}${padCells}</div>`);
-    }
+    pages.push(`<div class="avery-page">${frontCells}${padCells}</div>`);
+    pages.push(`<div class="avery-page">${backCells}${padCells}</div>`);
+  }
 
-    return pages.join("\n");
+  return pages.join("\n");
 }
 
 function openAveryWindow(bodyHtml: string, title: string): void {
-    const html = `<!DOCTYPE html>
+  const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -1235,188 +1267,205 @@ ${FIT_TEXT_SCRIPT}
 </body>
 </html>`;
 
-    const win = window.open("", "_blank", "width=900,height=720,scrollbars=yes");
-    if (!win) {
-        const blob = new Blob([html], { type: "text/html;charset=utf-8" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `${title.replace(/\s+/g, "-").toLowerCase()}-avery5388.html`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        return;
-    }
-    win.document.open();
-    win.document.write(html);
-    win.document.close();
+  const win = window.open("", "_blank", "width=900,height=720,scrollbars=yes");
+  if (!win) {
+    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${title.replace(/\s+/g, "-").toLowerCase()}-avery5388.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    return;
+  }
+  win.document.open();
+  win.document.write(html);
+  win.document.close();
 }
 
 // ---------------------------------------------------------------------------
 // Helper: derive a title from the data if available
 // ---------------------------------------------------------------------------
 function deriveTitle(data: unknown): string {
-    if (data && typeof data === "object" && "title" in data) {
-        const t = (data as { title?: unknown }).title;
-        if (typeof t === "string" && t.trim()) return t.trim();
-    }
-    return "Flashcards";
+  if (data && typeof data === "object" && "title" in data) {
+    const t = (data as { title?: unknown }).title;
+    if (typeof t === "string" && t.trim()) return t.trim();
+  }
+  return "Flashcards";
 }
 
 // ---------------------------------------------------------------------------
 // Exported printer
 // ---------------------------------------------------------------------------
 export const flashcardsPrinter: BlockPrinter = {
-    label: "Print flashcards",
-    variants: [
-        {
-            id: "landscape-duplex",
-            label: "Landscape cut sheet — duplex (double-sided)",
-            description: "4 cards per page, landscape. Fronts and backs on alternating pages — backs are mirrored so they align perfectly when you flip and cut",
-        },
-        {
-            id: "landscape-stacked",
-            label: "Landscape cut sheet — all fronts then all backs",
-            description: "4 cards per page, landscape. All front pages first, then all back pages — cut all sheets together for a matching deck",
-        },
-        {
-            id: "avery-5388",
-            label: "Avery 5388 — 3×5\" index cards (3 per page)",
-            description: "Prints to Avery 5388 card stock. 3 cards per page, portrait. Front page then back page per set of 3 — load the sheet twice to print both sides",
-        },
-        {
-            id: "cut-cards",
-            label: "Cut-out cards (portrait)",
-            description: "4 per page with cut lines — front and back shown together per card",
-        },
-        {
-            id: "both-sides",
-            label: "Both sides per card",
-            description: "Front and back shown together — best for review or sharing",
-        },
-        {
-            id: "study-sheet",
-            label: "Study sheet (table)",
-            description: "Compact two-column table — all cards on one or two pages",
-        },
-        {
-            id: "front-only",
-            label: "Questions only (self-test)",
-            description: "Front side with blank space to write answers — print and quiz yourself",
-        },
-        {
-            id: "back-only",
-            label: "Answers only",
-            description: "Definitions / answers without the questions",
-        },
-    ],
-
-    settings: [
-        {
-            type: "boolean" as const,
-            id: "showSideLabel",
-            label: "Show side label",
-            description: 'Prints "Front" or "Back" in the corner of each card',
-            defaultValue: false,
-            appliesTo: ["landscape-duplex", "landscape-stacked", "avery-5388"],
-        },
-        {
-            type: "boolean" as const,
-            id: "showCardNumber",
-            label: "Show card number",
-            description: "Prints #1, #2 … in the corner of each card",
-            defaultValue: false,
-            appliesTo: ["landscape-duplex", "landscape-stacked", "avery-5388"],
-        },
-        {
-            type: "boolean" as const,
-            id: "showTickMarks",
-            label: "Show cut tick marks",
-            description: "Four small marks at the center intersection — where to make each cut",
-            defaultValue: true,
-            appliesTo: ["landscape-duplex", "landscape-stacked"],
-        },
-        {
-            type: "boolean" as const,
-            id: "showCutLines",
-            label: "Show full cut lines",
-            description: "Dashed lines all the way across the page — helps if you don't have a ruler",
-            defaultValue: false,
-            appliesTo: ["landscape-duplex", "landscape-stacked"],
-        },
-        {
-            type: "boolean" as const,
-            id: "lightBackText",
-            label: "Light back text (reduce show-through)",
-            description: "Prints the back side in dark gray instead of black — ink is lighter and less visible through the paper",
-            defaultValue: false,
-            appliesTo: ["landscape-duplex", "landscape-stacked", "avery-5388"],
-        },
-        {
-            type: "boolean" as const,
-            id: "mirrorBack",
-            label: "Mirror back text (best show-through prevention)",
-            description: "Flips back text horizontally — any ink that bleeds through reads backwards and is unrecognizable from the front",
-            defaultValue: false,
-            appliesTo: ["landscape-duplex", "landscape-stacked", "avery-5388"],
-        },
-    ],
-
-    print(data: unknown, variantId: string = "landscape-duplex", rawSettings?: PrintSettings) {
-        const cards = extractCards(data);
-        const title = deriveTitle(data);
-        const s = resolveSettings(rawSettings);
-
-        if (cards.length === 0) {
-            openPrintWindow(
-                buildPrintDocument("<p>No flashcard data available to print.</p>", title, BASE_STYLES),
-                "flashcards",
-            );
-            return;
-        }
-
-        // Landscape and Avery variants use fully custom documents (precise page geometry)
-        if (variantId === "landscape-duplex") {
-            openLandscapeWindow(renderLandscape(cards, title, "duplex", s), title);
-            return;
-        }
-        if (variantId === "landscape-stacked") {
-            openLandscapeWindow(renderLandscape(cards, title, "stacked", s), title);
-            return;
-        }
-        if (variantId === "avery-5388") {
-            openAveryWindow(renderAvery5388(cards, title, s), title);
-            return;
-        }
-
-        let bodyHtml: string;
-        let styles: string;
-
-        switch (variantId as FlashcardsVariant) {
-            case "cut-cards":
-                bodyHtml = renderCutCards(cards, title);
-                styles = CUT_CARD_STYLES;
-                break;
-            case "front-only":
-                bodyHtml = renderFrontOnly(cards, title);
-                styles = FRONT_ONLY_STYLES;
-                break;
-            case "back-only":
-                bodyHtml = renderBackOnly(cards, title);
-                styles = BACK_ONLY_STYLES;
-                break;
-            case "study-sheet":
-                bodyHtml = renderStudySheet(cards, title);
-                styles = STUDY_SHEET_STYLES;
-                break;
-            case "both-sides":
-            default:
-                bodyHtml = renderBothSides(cards, title);
-                styles = BOTH_SIDES_STYLES;
-                break;
-        }
-
-        openPrintWindow(buildPrintDocument(bodyHtml, title, styles), "flashcards");
+  label: "Print flashcards",
+  variants: [
+    {
+      id: "landscape-duplex",
+      label: "Landscape cut sheet — duplex (double-sided)",
+      description:
+        "4 cards per page, landscape. Fronts and backs on alternating pages — backs are mirrored so they align perfectly when you flip and cut",
     },
+    {
+      id: "landscape-stacked",
+      label: "Landscape cut sheet — all fronts then all backs",
+      description:
+        "4 cards per page, landscape. All front pages first, then all back pages — cut all sheets together for a matching deck",
+    },
+    {
+      id: "avery-5388",
+      label: 'Avery 5388 — 3×5" index cards (3 per page)',
+      description:
+        "Prints to Avery 5388 card stock. 3 cards per page, portrait. Front page then back page per set of 3 — load the sheet twice to print both sides",
+    },
+    {
+      id: "cut-cards",
+      label: "Cut-out cards (portrait)",
+      description:
+        "4 per page with cut lines — front and back shown together per card",
+    },
+    {
+      id: "both-sides",
+      label: "Both sides per card",
+      description: "Front and back shown together — best for review or sharing",
+    },
+    {
+      id: "study-sheet",
+      label: "Study sheet (table)",
+      description: "Compact two-column table — all cards on one or two pages",
+    },
+    {
+      id: "front-only",
+      label: "Questions only (self-test)",
+      description:
+        "Front side with blank space to write answers — print and quiz yourself",
+    },
+    {
+      id: "back-only",
+      label: "Answers only",
+      description: "Definitions / answers without the questions",
+    },
+  ],
+
+  settings: [
+    {
+      type: "boolean" as const,
+      id: "showSideLabel",
+      label: "Show side label",
+      description: 'Prints "Front" or "Back" in the corner of each card',
+      defaultValue: false,
+      appliesTo: ["landscape-duplex", "landscape-stacked", "avery-5388"],
+    },
+    {
+      type: "boolean" as const,
+      id: "showCardNumber",
+      label: "Show card number",
+      description: "Prints #1, #2 … in the corner of each card",
+      defaultValue: false,
+      appliesTo: ["landscape-duplex", "landscape-stacked", "avery-5388"],
+    },
+    {
+      type: "boolean" as const,
+      id: "showTickMarks",
+      label: "Show cut tick marks",
+      description:
+        "Four small marks at the center intersection — where to make each cut",
+      defaultValue: true,
+      appliesTo: ["landscape-duplex", "landscape-stacked"],
+    },
+    {
+      type: "boolean" as const,
+      id: "showCutLines",
+      label: "Show full cut lines",
+      description:
+        "Dashed lines all the way across the page — helps if you don't have a ruler",
+      defaultValue: false,
+      appliesTo: ["landscape-duplex", "landscape-stacked"],
+    },
+    {
+      type: "boolean" as const,
+      id: "lightBackText",
+      label: "Light back text (reduce show-through)",
+      description:
+        "Prints the back side in dark gray instead of black — ink is lighter and less visible through the paper",
+      defaultValue: false,
+      appliesTo: ["landscape-duplex", "landscape-stacked", "avery-5388"],
+    },
+    {
+      type: "boolean" as const,
+      id: "mirrorBack",
+      label: "Mirror back text (best show-through prevention)",
+      description:
+        "Flips back text horizontally — any ink that bleeds through reads backwards and is unrecognizable from the front",
+      defaultValue: false,
+      appliesTo: ["landscape-duplex", "landscape-stacked", "avery-5388"],
+    },
+  ],
+
+  print(
+    data: unknown,
+    variantId: string = "landscape-duplex",
+    rawSettings?: PrintSettings,
+  ) {
+    const cards = extractCards(data);
+    const title = deriveTitle(data);
+    const s = resolveSettings(rawSettings);
+
+    if (cards.length === 0) {
+      openPrintWindow(
+        buildPrintDocument(
+          "<p>No flashcard data available to print.</p>",
+          title,
+          BASE_STYLES,
+        ),
+        "flashcards",
+      );
+      return;
+    }
+
+    // Landscape and Avery variants use fully custom documents (precise page geometry)
+    if (variantId === "landscape-duplex") {
+      openLandscapeWindow(renderLandscape(cards, title, "duplex", s), title);
+      return;
+    }
+    if (variantId === "landscape-stacked") {
+      openLandscapeWindow(renderLandscape(cards, title, "stacked", s), title);
+      return;
+    }
+    if (variantId === "avery-5388") {
+      openAveryWindow(renderAvery5388(cards, title, s), title);
+      return;
+    }
+
+    let bodyHtml: string;
+    let styles: string;
+
+    switch (variantId as FlashcardsVariant) {
+      case "cut-cards":
+        bodyHtml = renderCutCards(cards, title);
+        styles = CUT_CARD_STYLES;
+        break;
+      case "front-only":
+        bodyHtml = renderFrontOnly(cards, title);
+        styles = FRONT_ONLY_STYLES;
+        break;
+      case "back-only":
+        bodyHtml = renderBackOnly(cards, title);
+        styles = BACK_ONLY_STYLES;
+        break;
+      case "study-sheet":
+        bodyHtml = renderStudySheet(cards, title);
+        styles = STUDY_SHEET_STYLES;
+        break;
+      case "both-sides":
+      default:
+        bodyHtml = renderBothSides(cards, title);
+        styles = BOTH_SIDES_STYLES;
+        break;
+    }
+
+    openPrintWindow(buildPrintDocument(bodyHtml, title, styles), "flashcards");
+  },
 };

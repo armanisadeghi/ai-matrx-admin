@@ -10,12 +10,13 @@ import type {
   WarningPayload,
   InfoPayload,
   ErrorPayload,
-  ContentBlockPayload,
+  RenderBlockPayload,
   RecordReservedPayload,
   RecordUpdatePayload,
   HeartbeatPayload,
   EndPayload,
   BrokerPayload,
+  RenderBlockEvent,
 } from "@/types/python-generated/stream-events";
 import {
   isChunkEvent,
@@ -28,7 +29,7 @@ import {
   isWarningEvent,
   isInfoEvent,
   isErrorEvent,
-  isContentBlockEvent,
+  isRenderBlockEvent,
   isRecordReservedEvent,
   isRecordUpdateEvent,
   isHeartbeatEvent,
@@ -47,25 +48,7 @@ export interface UnknownWireEvent {
 }
 
 /** Fold bucket key — one row appended per wire event (arrival order). */
-export type BackendStreamFoldBucket =
-  | "chunk"
-  | "reasoning_chunk"
-  | "phase"
-  | "init"
-  | "completion"
-  | "data"
-  | "tool_event"
-  | "warning"
-  | "info"
-  | "error"
-  | "content_block"
-  | "record_reserved"
-  | "record_update"
-  | "heartbeat"
-  | "end"
-  | "broker"
-  | "unknown";
-
+export type BackendStreamFoldBucket = RenderBlockPayload["type"];
 /**
  * One arrival step: wire row `i` → bucket + `record` (object stored in that bucket).
  * `toolTester` captures demo-only side effects on the same row (final payload / tool row).
@@ -116,7 +99,7 @@ export interface BackendStreamFoldState {
   warnings: WarningPayload[];
   infos: InfoPayload[];
   errors: ErrorPayload[];
-  contentBlocks: ContentBlockPayload[];
+  renderBlocks: RenderBlockPayload[];
   recordReserved: RecordReservedPayload[];
   recordUpdates: RecordUpdatePayload[];
   heartbeats: HeartbeatPayload[];
@@ -136,7 +119,7 @@ export interface BackendStreamFoldState {
     warning: number;
     info: number;
     error: number;
-    contentBlock: number;
+    renderBlock: number;
     recordReserved: number;
     recordUpdate: number;
     heartbeat: number;
@@ -164,7 +147,7 @@ function emptyCounts(): BackendStreamFoldState["counts"] {
     warning: 0,
     info: 0,
     error: 0,
-    contentBlock: 0,
+    renderBlock: 0,
     recordReserved: 0,
     recordUpdate: 0,
     heartbeat: 0,
@@ -189,7 +172,7 @@ function emptyFoldState(): BackendStreamFoldState {
     warnings: [],
     infos: [],
     errors: [],
-    contentBlocks: [],
+    renderBlocks: [],
     recordReserved: [],
     recordUpdates: [],
     heartbeats: [],
@@ -299,10 +282,10 @@ export function foldBackendStreamEvents(
       state.counts.error++;
       state.errors.push(event.data);
       pushArrival(state, wire, "error", event.data, tt);
-    } else if (isContentBlockEvent(event)) {
-      state.counts.contentBlock++;
-      state.contentBlocks.push(event.data);
-      pushArrival(state, wire, "content_block", event.data, tt);
+    } else if (isRenderBlockEvent(event)) {
+      state.counts.renderBlock++;
+      state.renderBlocks.push(event.data);
+      pushArrival(state, wire, "render_block", event.data, tt);
     } else if (isRecordReservedEvent(event)) {
       state.counts.recordReserved++;
       state.recordReserved.push(event.data);

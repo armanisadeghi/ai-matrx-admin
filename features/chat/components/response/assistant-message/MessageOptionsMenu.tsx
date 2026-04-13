@@ -26,8 +26,8 @@ import { printMarkdownContent } from "@/features/chat/utils/markdown-print-utils
 import { loadWordPressCSS } from "@/features/html-pages/css/wordpress-styles";
 import AdvancedMenu, { MenuItem } from "@/components/official/AdvancedMenu";
 import { NotesAPI } from "@/features/notes";
-import { useCartesiaWithPreferences } from "@/hooks/tts/simple/useCartesiaWithPreferences";
-import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { useCartesiaSpeaker } from "@/features/tts/hooks/useCartesiaSpeaker";
+import { useAppDispatch } from "@/lib/redux/hooks";
 import { openSaveToNotes } from "@/lib/redux/slices/overlaySlice";
 import { toast } from "sonner";
 import { useQuickActions } from "@/features/quick-actions/hooks/useQuickActions";
@@ -65,28 +65,12 @@ const MessageOptionsMenu: React.FC<MessageOptionsMenuProps> = ({
   const dispatch = useAppDispatch();
   const { openQuickTasks } = useQuickActions();
 
-  // Get user's voice preferences (for Cartesia TTS)
-  const voicePreferences = useAppSelector(
-    (state) => state.userPreferences?.voice,
-  );
-  const voiceName = voicePreferences?.voice ? "Cartesia" : "Default voice";
-
-  // Cartesia TTS hook with preferences integration
+  // Lazy TTS hook — does nothing until speak() is called (no eager token fetch)
   const {
     speak,
-    isGenerating: isTtsGenerating,
+    isLoading: isTtsGenerating,
     isPlaying: isTtsPlaying,
-  } = useCartesiaWithPreferences({
-    processMarkdown: true,
-    onError: (error) => {
-      toast.error("Speech playback failed", { description: error });
-    },
-    onPlaybackStart: () => {
-      toast.success("Playing audio...", {
-        description: `Using ${voiceName}`,
-      });
-    },
-  });
+  } = useCartesiaSpeaker({ processMarkdown: true });
 
   // Notes handlers
   const handleSaveToScratch = async () => {

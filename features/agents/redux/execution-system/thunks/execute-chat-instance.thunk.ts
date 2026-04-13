@@ -59,8 +59,8 @@ function turnsToMessages(
   return turns.map((turn) => ({
     role: turn.role,
     content:
-      turn.contentBlocks && turn.contentBlocks.length > 0
-        ? turn.contentBlocks
+      turn.renderBlocks && turn.renderBlocks.length > 0
+        ? turn.renderBlocks
         : [{ type: "text", text: turn.content }],
   }));
 }

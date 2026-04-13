@@ -27,7 +27,7 @@ import { destroyInstance } from "../execution-instances/execution-instances.slic
 import type { CompletionStats } from "@/features/agents/types/instance.types";
 import type { ClientMetrics } from "@/features/agents/types/request.types";
 import type { Json } from "@/types/database.types";
-import type { ContentBlockPayload } from "@/types/python-generated/stream-events";
+import type { RenderBlockPayload } from "@/types/python-generated/stream-events";
 
 // =============================================================================
 // Types
@@ -53,10 +53,10 @@ export interface ConversationTurn {
 
   /**
    * Multimodal content blocks (audio, images, etc.).
-   * Always in ContentBlockPayload shape — normalized at the Redux boundary
+   * Always in RenderBlockPayload shape — normalized at the Redux boundary
    * so every consumer gets a single canonical type.
    */
-  contentBlocks?: ContentBlockPayload[];
+  renderBlocks?: RenderBlockPayload[];
 
   /** ISO timestamp when this turn was added/committed */
   timestamp: string;
@@ -192,7 +192,7 @@ const instanceConversationHistorySlice = createSlice({
       action: PayloadAction<{
         conversationId: string;
         content: string;
-        contentBlocks?: ContentBlockPayload[];
+        renderBlock?: RenderBlockPayload[];
         serverConversationId?: string | null;
         systemGenerated?: boolean;
       }>,
@@ -200,7 +200,7 @@ const instanceConversationHistorySlice = createSlice({
       const {
         conversationId,
         content,
-        contentBlocks,
+        renderBlock,
         serverConversationId = null,
         systemGenerated,
       } = action.payload;
@@ -212,7 +212,7 @@ const instanceConversationHistorySlice = createSlice({
         turnId: newTurnId(),
         role: "user",
         content,
-        ...(contentBlocks && { contentBlocks }),
+        ...(renderBlock && { renderBlocks: renderBlock }),
         timestamp: new Date().toISOString(),
         requestId: null,
         conversationId: serverConversationId,
@@ -231,7 +231,7 @@ const instanceConversationHistorySlice = createSlice({
         requestId: string;
         content: string;
         serverConversationId: string | null;
-        contentBlocks?: ContentBlockPayload[];
+        renderBlock?: RenderBlockPayload[];
         tokenUsage?: TokenUsage;
         finishReason?: string;
         completionStats?: CompletionStats;
@@ -243,7 +243,7 @@ const instanceConversationHistorySlice = createSlice({
         requestId,
         content,
         serverConversationId,
-        contentBlocks,
+        renderBlock,
         tokenUsage,
         finishReason,
         completionStats,
@@ -264,7 +264,8 @@ const instanceConversationHistorySlice = createSlice({
         timestamp: new Date().toISOString(),
         requestId,
         conversationId: serverConversationId,
-        ...(contentBlocks && contentBlocks.length > 0 && { contentBlocks }),
+        ...(renderBlock &&
+          renderBlock.length > 0 && { renderBlocks: renderBlock }),
         ...(tokenUsage && { tokenUsage }),
         ...(finishReason && { finishReason }),
         ...(completionStats && { completionStats }),
@@ -325,21 +326,21 @@ const instanceConversationHistorySlice = createSlice({
      * Upsert content blocks onto an existing turn by turnId.
      * Used after normalization of DB-loaded blocks or any late-arriving blocks.
      */
-    setTurnContentBlocks(
+    setTurnRenderBlocks(
       state,
       action: PayloadAction<{
         conversationId: string;
         turnId: string;
-        contentBlocks: ContentBlockPayload[];
+        renderBlock: RenderBlockPayload[];
       }>,
     ) {
-      const { conversationId, turnId, contentBlocks } = action.payload;
+      const { conversationId, turnId, renderBlock } = action.payload;
       const entry = state.byConversationId[conversationId];
       if (!entry) return;
 
       const turn = entry.turns.find((t) => t.turnId === turnId);
       if (turn) {
-        turn.contentBlocks = contentBlocks;
+        turn.renderBlocks = renderBlock;
       }
     },
 
@@ -393,7 +394,7 @@ export const {
   commitAssistantTurn,
   attachClientMetrics,
   loadConversationHistory,
-  setTurnContentBlocks,
+  setTurnRenderBlocks,
   setConversationLabel,
   clearHistory,
   removeInstanceHistory,

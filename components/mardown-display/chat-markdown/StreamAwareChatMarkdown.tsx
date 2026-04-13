@@ -22,7 +22,7 @@ const ToolCallVisualization = lazy(
 );
 
 // ---------------------------------------------------------------------------
-// Server-processed block state — used when backend sends content_block events
+// Server-processed block state — used when backend sends render_block events
 // ---------------------------------------------------------------------------
 
 interface ProcessedBlockState {
@@ -64,7 +64,7 @@ export interface StreamAwareChatMarkdownProps extends Omit<
   onPhaseUpdate?: (phase: string) => void;
 
   /**
-   * Pre-processed blocks from the server (new content_block protocol).
+   * Pre-processed blocks from the server (new render_block protocol).
    * When present and non-empty, the component skips client-side parsing
    * and renders these blocks directly.
    */
@@ -104,7 +104,7 @@ export const StreamAwareChatMarkdown: React.FC<
   // Ordered canonical blocks derived from events (text + tool_call interleaved)
   const [canonicalBlocks, setCanonicalBlocks] = useState<CanonicalBlock[]>([]);
 
-  // Server-processed blocks state (new content_block protocol)
+  // Server-processed blocks state (new render_block protocol)
   const [serverBlocks, setServerBlocks] = useState<ProcessedBlockState[]>([]);
   const serverBlockMapRef = React.useRef<Map<string, ProcessedBlockState>>(
     new Map(),
@@ -223,14 +223,14 @@ export const StreamAwareChatMarkdown: React.FC<
           break;
         }
 
-        case "content_block": {
+        case "render_block": {
           console.log(
-            "[STREAM] content_block:",
+            "[STREAM] render_block:",
             JSON.stringify(event.data, null, 2),
           );
           // New server-processed block protocol.
           // The Python backend sends snake_case keys (block_id, block_index);
-          // ContentBlockPayload uses camelCase. Normalise both forms so we
+          // RenderBlockPayload uses camelCase. Normalise both forms so we
           // work whether the payload has been transformed or not.
           isNewProtocolRef.current = true;
           const raw = event.data as unknown as Record<string, unknown>;

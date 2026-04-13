@@ -9,12 +9,11 @@ import {
   selectMessageHasUnsavedChanges,
   selectMessageHasHistory,
 } from "@/features/cx-conversation/redux/selectors";
-import { useCartesiaWithPreferences } from "@/hooks/tts/simple/useCartesiaWithPreferences";
+import { useCartesiaSpeaker } from "@/features/tts/hooks/useCartesiaSpeaker";
 import {
   getMessageActions,
   resumePendingAuthAction,
 } from "../../actions/messageActionRegistry";
-import { toast } from "sonner";
 
 export interface MessageOptionsMenuProps {
   isOpen: boolean;
@@ -58,21 +57,12 @@ const MessageOptionsMenu: React.FC<MessageOptionsMenuProps> = ({
       : false,
   );
 
-  const voicePreferences = useAppSelector(
-    (state) => state.userPreferences?.voice,
-  );
-  const voiceName = voicePreferences?.voice ? "Cartesia" : "Default voice";
+  // Lazy TTS hook — does nothing until speak() is called (no eager token fetch)
   const {
     speak: cartesiaSpeak,
-    isGenerating: isTtsGenerating,
+    isLoading: isTtsGenerating,
     isPlaying: isTtsPlaying,
-  } = useCartesiaWithPreferences({
-    processMarkdown: true,
-    onError: (error) =>
-      toast.error("Speech playback failed", { description: error }),
-    onPlaybackStart: () =>
-      toast.success("Playing audio...", { description: `Using ${voiceName}` }),
-  });
+  } = useCartesiaSpeaker({ processMarkdown: true });
 
   useEffect(() => {
     if (instance) {

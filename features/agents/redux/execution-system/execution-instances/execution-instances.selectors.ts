@@ -3,6 +3,7 @@ import type { RootState } from "@/lib/redux/store";
 import type { ExecutionInstance } from "@/features/agents/types";
 
 const EMPTY_INSTANCES: ExecutionInstance[] = [];
+const EMPTY_CONVERSATION_IDS_BY_AGENT: Record<string, string[]> = {};
 
 export const selectInstance =
   (conversationId: string) =>
@@ -14,6 +15,25 @@ export const selectAllConversationIds = (state: RootState): string[] =>
 
 /** @deprecated Use selectAllConversationIds */
 export const selectAllInstanceIds = selectAllConversationIds;
+
+/** Conversation IDs grouped by agent ID; stable empty object when none. */
+export const selectConversationIdsByAgent = createSelector(
+  (state: RootState) => state.executionInstances.allConversationIds,
+  (state: RootState) => state.executionInstances.byConversationId,
+  (allIds, byId): Record<string, string[]> => {
+    const map: Record<string, string[]> = {};
+    for (const cid of allIds) {
+      const inst = byId[cid];
+      if (!inst) continue;
+      const aid = inst.agentId;
+      if (!map[aid]) map[aid] = [];
+      map[aid].push(cid);
+    }
+    return Object.keys(map).length === 0
+      ? EMPTY_CONVERSATION_IDS_BY_AGENT
+      : map;
+  },
+);
 
 export const selectInstancesByAgent = (agentId: string) =>
   createSelector(
@@ -54,4 +74,5 @@ export const selectAgentIdFromInstance =
 export const selectIsCacheOnly =
   (conversationId: string) =>
   (state: RootState): boolean =>
-    state.executionInstances.byConversationId[conversationId]?.cacheOnly ?? true;
+    state.executionInstances.byConversationId[conversationId]?.cacheOnly ??
+    true;

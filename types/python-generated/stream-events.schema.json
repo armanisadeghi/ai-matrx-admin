@@ -413,7 +413,7 @@
     "title": "EndPayload",
     "type": "object"
   },
-  "ContentBlockPayload": {
+  "RenderBlockPayload": {
     "additionalProperties": false,
     "properties": {
       "blockId": {
@@ -481,7 +481,7 @@
       "type",
       "status"
     ],
-    "title": "ContentBlockPayload",
+    "title": "RenderBlockPayload",
     "type": "object"
   },
   "RecordReservedPayload": {
@@ -2091,7 +2091,7 @@
           "broker",
           "heartbeat",
           "end",
-          "content_block",
+          "render_block",
           "record_reserved",
           "record_update"
         ],
@@ -2132,7 +2132,7 @@
       "broker",
       "heartbeat",
       "end",
-      "content_block",
+      "render_block",
       "record_reserved",
       "record_update"
     ]

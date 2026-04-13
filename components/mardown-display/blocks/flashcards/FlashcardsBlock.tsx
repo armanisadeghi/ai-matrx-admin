@@ -18,7 +18,7 @@ import { parseFlashcards } from "./flashcard-parser";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/styles/themes/utils";
 import { useCanvas } from "@/features/canvas/hooks/useCanvas";
-import type { FlashcardsBlockData } from "@/types/python-generated/content-blocks";
+import type { FlashcardsBlockData } from "@/types/python-generated/stream-events";
 import { flashcardsPrinter } from "./flashcards-printer";
 import {
   PrintOptionsDialog,
@@ -152,12 +152,18 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({
         setTimeout(() => setShowMobilePrompt(false), 8000);
       }
     }, 1000);
-    return () => { if (stabilityTimer.current) clearTimeout(stabilityTimer.current); };
+    return () => {
+      if (stabilityTimer.current) clearTimeout(stabilityTimer.current);
+    };
   }, [isMobile, flashcards.length, isComplete]);
 
   // Auto-enter flash mode when URL contains ?mode=flash
   useEffect(() => {
-    if (searchParams.get("mode") === "flash" && flashcards.length > 0 && !isMobileView) {
+    if (
+      searchParams.get("mode") === "flash" &&
+      flashcards.length > 0 &&
+      !isMobileView
+    ) {
       setMobileStartIndex(0);
       setIsMobileView(true);
       // Suppress the mobile prompt since we're already entering flash mode

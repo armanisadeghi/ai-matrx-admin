@@ -11,7 +11,7 @@
  *   phase              → currentPhase + phaseHistory
  *   init               → activeOperations (keyed by operation_id)
  *   completion         → completedOperations + completion (user_request)
- *   content_block      → contentBlocks (Record by blockId) + contentBlockOrder
+ *   render_block      → renderBlocks (Record by blockId) + renderBlockOrder
  *   tool_event         → toolLifecycle (Record by callId) + pendingToolCalls
  *   data (typed)       → dataPayloads (typed, with `type` discriminator)
  *   warning            → warnings
@@ -41,7 +41,7 @@ import type {
   Phase,
   Operation,
   InitCompletionStatus,
-  ContentBlockPayload,
+  RenderBlockPayload,
   CompletionPayload,
   WarningPayload,
   InfoPayload,
@@ -103,8 +103,8 @@ const activeRequestsSlice = createSlice({
         phaseHistory: [],
         activeOperations: {},
         completedOperations: {},
-        contentBlocks: {},
-        contentBlockOrder: [],
+        renderBlocks: {},
+        renderBlockOrder: [],
         toolLifecycle: {},
         pendingToolCalls: [],
         completion: null,
@@ -330,25 +330,25 @@ const activeRequestsSlice = createSlice({
       delete request.activeOperations[action.payload.operationId];
     },
 
-    // ── Content Blocks ─────────────────────────────────────────
+    // ── Render Blocks ─────────────────────────────────────────
 
-    upsertContentBlock(
+    upsertRenderBlock(
       state,
       action: PayloadAction<{
         requestId: string;
-        block: ContentBlockPayload;
+        block: RenderBlockPayload;
       }>,
     ) {
       const request = state.byRequestId[action.payload.requestId];
       if (!request) return;
 
       const { block } = action.payload;
-      const isNew = !(block.blockId in request.contentBlocks);
+      const isNew = !(block.blockId in request.renderBlocks);
 
-      request.contentBlocks[block.blockId] = block;
+      request.renderBlocks[block.blockId] = block;
 
       if (isNew) {
-        request.contentBlockOrder.push(block.blockId);
+        request.renderBlockOrder.push(block.blockId);
       }
     },
 
@@ -750,7 +750,7 @@ export const {
   setCurrentPhase,
   trackOperationInit,
   trackOperationCompletion,
-  upsertContentBlock,
+  upsertRenderBlock,
   upsertToolLifecycle,
   addPendingToolCall,
   resolveToolCall,

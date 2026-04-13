@@ -40,7 +40,7 @@ import type {
 } from "@/features/agents/types/request.types";
 import type {
   Phase,
-  ContentBlockPayload,
+  RenderBlockPayload,
   CompletionPayload,
 } from "@/types/python-generated/stream-events";
 import type { InstanceStatus } from "@/features/agents/types/instance.types";
@@ -171,7 +171,7 @@ const EVENT_COLORS: Record<string, string> = {
   broker: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
   heartbeat: "bg-gray-500/20 text-gray-400 border-gray-500/30",
   end: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
-  content_block: "bg-pink-500/20 text-pink-400 border-pink-500/30",
+  render_block: "bg-pink-500/20 text-pink-400 border-pink-500/30",
   record_reserved: "bg-teal-500/20 text-teal-400 border-teal-500/30",
   record_update: "bg-teal-500/20 text-teal-400 border-teal-500/30",
 };
@@ -190,7 +190,7 @@ const EVENT_ICONS: Record<string, React.ReactNode> = {
   broker: <Radio className="h-2.5 w-2.5" />,
   heartbeat: <Heart className="h-2.5 w-2.5" />,
   end: <Square className="h-2.5 w-2.5" />,
-  content_block: <Layers className="h-2.5 w-2.5" />,
+  render_block: <Layers className="h-2.5 w-2.5" />,
   record_reserved: <BookmarkPlus className="h-2.5 w-2.5" />,
   record_update: <RefreshCw className="h-2.5 w-2.5" />,
 };
@@ -322,7 +322,7 @@ function MetricsBar({ metrics }: { metrics: ClientMetrics }) {
         {metrics.warningEvents > 0 && ` warn:${metrics.warningEvents}`}
         {metrics.infoEvents > 0 && ` info:${metrics.infoEvents}`} tool:
         {metrics.toolEvents} data:{metrics.dataEvents} block:
-        {metrics.contentBlockEvents}
+        {metrics.renderBlockEvents}
         {metrics.recordReservedEvents > 0 &&
           ` reserved:${metrics.recordReservedEvents}`}
         {metrics.recordUpdateEvents > 0 &&
@@ -344,7 +344,7 @@ function getTimelineColor(kind: TimelineEntry["kind"]): string {
     warning: EVENT_COLORS.warning,
     info: EVENT_COLORS.info,
     tool_event: EVENT_COLORS.tool_event,
-    content_block: EVENT_COLORS.content_block,
+    render_block: EVENT_COLORS.render_block,
     data: EVENT_COLORS.data,
     completion: EVENT_COLORS.completion,
     error: EVENT_COLORS.error,
@@ -369,7 +369,7 @@ function getTimelineIcon(kind: TimelineEntry["kind"]): React.ReactNode {
     warning: EVENT_ICONS.warning,
     info: EVENT_ICONS.info,
     tool_event: EVENT_ICONS.tool_event,
-    content_block: EVENT_ICONS.content_block,
+    render_block: EVENT_ICONS.render_block,
     data: EVENT_ICONS.data,
     completion: EVENT_ICONS.completion,
     error: EVENT_ICONS.error,
@@ -418,7 +418,7 @@ function timelineSummary(
       return `[${entry.code}] ${entry.userMessage ?? entry.systemMessage}`;
     case "tool_event":
       return `${entry.subEvent} — ${entry.toolName} (${entry.callId.slice(0, 8)})`;
-    case "content_block":
+    case "render_block":
       return `${entry.blockType} [${entry.blockStatus}] ${entry.blockId.slice(0, 8)}`;
     case "data":
       return JSON.stringify(entry.data).slice(0, 80);
@@ -618,7 +618,7 @@ function ToolLifecycleRow({ tool }: { tool: ToolLifecycleEntry }) {
   );
 }
 
-function ContentBlockRow({ block }: { block: ContentBlockPayload }) {
+function ContentBlockRow({ block }: { block: RenderBlockPayload }) {
   const statusColor: Record<string, string> = {
     streaming: "bg-blue-500/20 text-blue-400",
     complete: "bg-green-500/20 text-green-400",
@@ -703,7 +703,7 @@ const ALL_TIMELINE_KINDS: TimelineEntry["kind"][] = [
   "warning",
   "info",
   "tool_event",
-  "content_block",
+  "render_block",
   "data",
   "completion",
   "error",
@@ -957,9 +957,9 @@ function StatusTab({ request }: { request: ActiveRequest }) {
 }
 
 function BlocksTab({ request }: { request: ActiveRequest }) {
-  const blocks = request.contentBlockOrder
-    .map((id) => request.contentBlocks[id])
-    .filter(Boolean) as ContentBlockPayload[];
+  const blocks = request.renderBlockOrder
+    .map((id) => request.renderBlocks[id])
+    .filter(Boolean) as RenderBlockPayload[];
   return (
     <ScrollArea className="h-full">
       {blocks.length === 0 && (
@@ -1230,9 +1230,7 @@ function StateSnapshotTab({
               {Object.keys(request.completedOperations).length}
             </span>
             <span className="text-muted-foreground">contentBlocks:</span>
-            <span className="font-mono">
-              {request.contentBlockOrder.length}
-            </span>
+            <span className="font-mono">{request.renderBlockOrder.length}</span>
             <span className="text-muted-foreground">toolLifecycle:</span>
             <span className="font-mono">
               {Object.keys(request.toolLifecycle).length}
@@ -1483,7 +1481,8 @@ function InstanceDebugView({
   const [activeTab, setActiveTab] = useState<TabId>("events");
 
   const instanceStatus = useAppSelector(
-    (state) => state.executionInstances.byConversationId[conversationId]?.status,
+    (state) =>
+      state.executionInstances.byConversationId[conversationId]?.status,
   );
 
   const requestIds = useAppSelector(
@@ -1737,10 +1736,12 @@ function InstanceTab({
   onSelect: () => void;
 }) {
   const status = useAppSelector(
-    (state) => state.executionInstances.byConversationId[conversationId]?.status,
+    (state) =>
+      state.executionInstances.byConversationId[conversationId]?.status,
   );
   const requestCount = useAppSelector(
-    (state) => (state.activeRequests.byConversationId[conversationId] ?? []).length,
+    (state) =>
+      (state.activeRequests.byConversationId[conversationId] ?? []).length,
   );
 
   const statusDot = status
@@ -1759,7 +1760,9 @@ function InstanceTab({
       )}
     >
       <span className="text-muted-foreground/60">#{idx + 1}</span>
-      <span className="max-w-[80px] truncate">{conversationId.slice(0, 8)}</span>
+      <span className="max-w-[80px] truncate">
+        {conversationId.slice(0, 8)}
+      </span>
       {status && (
         <Badge
           variant="outline"

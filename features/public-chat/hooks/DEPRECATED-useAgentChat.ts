@@ -155,7 +155,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
           : content;
 
       // ── Route to correct endpoint based on conversation state ──
-      const blockMode = isAdmin && state.useBlockMode;
+      const blockMode = isAdmin && state.isBlockMode;
       let executeUrl: string;
       let requestBody: AgentStartRequestBody | ConversationContinueRequestBody;
 
@@ -256,7 +256,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
 
       let accumulatedContent = "";
       // In block mode, we accumulate all events and push them onto the message
-      // so MarkdownStream can render via the server-processed content_block protocol.
+      // so MarkdownStream can render via the server-processed render_block protocol.
       const blockEventsBuffer: StreamEvent[] = [];
 
       for await (const event of events) {
@@ -301,7 +301,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
             }
             break;
           }
-          case "content_block": {
+          case "render_block": {
             // Block mode: push new block event and update message events array
             blockEventsBuffer.push(event);
             updateMessage(assistantMessageId, {

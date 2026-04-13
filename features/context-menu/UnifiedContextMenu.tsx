@@ -993,7 +993,7 @@ export function UnifiedContextMenu({
     }
   };
 
-  // Handle content block insertion
+  // Handle content block "Render Block Template" insertion
   const handleContentBlockInsert = (block: ContentBlockItem) => {
     const template = block.template;
 

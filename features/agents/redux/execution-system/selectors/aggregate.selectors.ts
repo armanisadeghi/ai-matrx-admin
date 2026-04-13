@@ -25,7 +25,7 @@ import type {
 } from "@/features/agents/types/request.types";
 import type {
   Phase,
-  ContentBlockPayload,
+  RenderBlockPayload,
   CompletionPayload,
 } from "@/types/python-generated/stream-events";
 import type { ShortcutContext } from "@/features/agents/redux/agent-shortcuts/types";
@@ -662,39 +662,39 @@ export const selectLatestInfoUserMessage =
   };
 
 // =============================================================================
-// Instance-Level Bridges — Content Blocks
+// Instance-Level Bridges — Render Blocks
 // =============================================================================
 
 /**
- * All content blocks from the latest request on this instance, in order.
+ * All render blocks from the latest request on this instance, in order.
  * Memoized — stable reference until a new block arrives.
  */
-export const selectLatestContentBlocks = (conversationId: string) =>
+export const selectLatestRenderBlocks = (conversationId: string) =>
   createSelector(
     (state: RootState) =>
       state.activeRequests?.byConversationId[conversationId],
     (state: RootState) => state.activeRequests?.byRequestId,
-    (requestIds, byRequestId): ContentBlockPayload[] => {
+    (requestIds, byRequestId): RenderBlockPayload[] => {
       if (!requestIds || requestIds.length === 0) return [];
       const latest = byRequestId[requestIds[requestIds.length - 1]];
       if (!latest) return [];
-      return latest.contentBlockOrder
-        .map((id) => latest.contentBlocks[id])
-        .filter((b): b is ContentBlockPayload => b != null);
+      return latest.renderBlockOrder
+        .map((id) => latest.renderBlocks[id])
+        .filter((b): b is RenderBlockPayload => b != null);
     },
   );
 
 /**
- * Content block count for the latest request. Primitive — safe for useAppSelector.
+ * Render block count for the latest request. Primitive — safe for useAppSelector.
  */
-export const selectLatestContentBlockCount =
+export const selectLatestRenderBlockCount =
   (conversationId: string) =>
   (state: RootState): number => {
     const ids =
       state.activeRequests?.byConversationId[conversationId] ?? EMPTY_IDS;
     if (ids.length === 0) return 0;
     return (
-      state.activeRequests?.byRequestId[ids[ids.length - 1]]?.contentBlockOrder
+      state.activeRequests?.byRequestId[ids[ids.length - 1]]?.renderBlockOrder
         .length ?? 0
     );
   };

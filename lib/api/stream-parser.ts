@@ -15,7 +15,7 @@ import type {
   InfoPayload,
   HeartbeatPayload,
   EndPayload,
-  ContentBlockPayload,
+  RenderBlockPayload,
   RecordReservedPayload,
   RecordUpdatePayload,
   TypedDataPayload,
@@ -34,7 +34,7 @@ import {
   isBrokerEvent,
   isHeartbeatEvent,
   isEndEvent,
-  isContentBlockEvent,
+  isRenderBlockEvent,
   isRecordReservedEvent,
   isRecordUpdateEvent,
 } from "./types";
@@ -264,7 +264,7 @@ export interface StreamCallbacks {
   onWarning?: (data: WarningPayload) => void;
   onInfo?: (data: InfoPayload) => void;
   onError?: (data: ErrorPayload) => void;
-  onContentBlock?: (data: ContentBlockPayload) => void;
+  onRenderBlock?: (data: RenderBlockPayload) => void;
   onRecordReserved?: (data: RecordReservedPayload) => void;
   onRecordUpdate?: (data: RecordUpdatePayload) => void;
   onHeartbeat?: (data: HeartbeatPayload) => void;
@@ -322,8 +322,8 @@ export async function consumeStream(
       callbacks.onInfo?.(event.data);
     } else if (isErrorEvent(event)) {
       callbacks.onError?.(event.data);
-    } else if (isContentBlockEvent(event)) {
-      callbacks.onContentBlock?.(event.data);
+    } else if (isRenderBlockEvent(event)) {
+      callbacks.onRenderBlock?.(event.data);
     } else if (isRecordReservedEvent(event)) {
       callbacks.onRecordReserved?.(event.data);
     } else if (isRecordUpdateEvent(event)) {

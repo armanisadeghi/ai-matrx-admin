@@ -98,6 +98,8 @@ const HANDLES: HandleDef[] = [
 export interface WindowPanelProps extends UseWindowPanelOptions {
   children: React.ReactNode;
   title?: string;
+  /** Rich title rendered in the header. Falls back to `title` (string) when omitted. */
+  titleNode?: React.ReactNode;
   /** @deprecated Use `actionsLeft` and `actionsRight` instead */
   actions?: React.ReactNode;
   actionsLeft?: React.ReactNode;
@@ -161,6 +163,7 @@ export interface WindowPanelProps extends UseWindowPanelOptions {
 export function WindowPanel({
   children,
   title,
+  titleNode,
   actions,
   actionsLeft,
   actionsRight,
@@ -405,7 +408,7 @@ export function WindowPanel({
   // ── Header (shared across all states) ───────────────────────────────────
   const header = (
     <WindowHeader
-      title={title}
+      title={titleNode ?? title}
       actionsLeft={actionsLeft}
       actionsRight={resolvedActionsRight}
       onDragStart={onDragStart}
@@ -647,7 +650,7 @@ function DebugStrip({ rect, zIndex }: DebugStripProps) {
 // ─── WindowHeader ─────────────────────────────────────────────────────────────
 
 interface WindowHeaderProps {
-  title?: string;
+  title?: React.ReactNode;
   actionsLeft?: React.ReactNode;
   actionsRight?: React.ReactNode;
   onDragStart: (e: React.MouseEvent) => void;

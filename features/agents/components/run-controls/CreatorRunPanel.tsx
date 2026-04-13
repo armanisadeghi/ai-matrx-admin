@@ -789,7 +789,7 @@ function ClientContent({
         { label: "Chunk events", value: String(metrics.chunkEvents) },
         { label: "Data events", value: String(metrics.dataEvents) },
         { label: "Tool events", value: String(metrics.toolEvents) },
-        { label: "Block events", value: String(metrics.contentBlockEvents) },
+        { label: "Block events", value: String(metrics.renderBlockEvents) },
         { label: "Phase events", value: String(metrics.phaseEvents) },
         { label: "Other events", value: String(metrics.otherEvents) },
       ]

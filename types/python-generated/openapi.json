@@ -980,7 +980,7 @@
           "AI"
         ],
         "summary": "Start Agent Blocks",
-        "description": "Start a block-streaming agent session.\n\nIdentical to POST /agents/{agent_id} but the LLM token stream is parsed\nserver-side into typed content blocks.  The client receives 'content_block'\nJSONL events instead of raw 'chunk' events.\n\nEach content_block event carries:\n  - block_id / block_index — stable identity for UI reconciliation\n  - type — text | code | table | flashcards | quiz | ... (30+ types)\n  - status — streaming | complete\n  - content — raw text (for text-like blocks)\n  - data — parsed structured data (for rich block types)\n  - metadata — language, parse_error, etc.",
+        "description": "Start a block-streaming agent session.\n\nIdentical to POST /agents/{agent_id} but the LLM token stream is parsed\nserver-side into typed render blocks.  The client receives 'render_block'\nJSONL events instead of raw 'chunk' events.\n\nEach render_block event carries:\n  - block_id / block_index — stable identity for UI reconciliation\n  - type — text | code | table | flashcards | quiz | ... (30+ types)\n  - status — streaming | complete\n  - content — raw text (for text-like blocks)\n  - data — parsed structured data (for rich block types)\n  - metadata — language, parse_error, etc.",
         "operationId": "start_agent_blocks_ai_agents_blocks__agent_id__post",
         "parameters": [
           {
@@ -1950,7 +1950,7 @@
           "Utilities"
         ],
         "summary": "Process Blocks Stream",
-        "description": "Process content into structured blocks (streaming NDJSON).\n\nSimulates the real-time block streaming pipeline by feeding content\ntoken-by-token through StreamBlockProcessor and yielding each\nContentBlockEvent as a 'content_block' JSONL line.\n\nThe response format is identical to what a live agent-blocks endpoint\nwould emit, making this endpoint ideal for frontend integration testing\nwithout requiring a live LLM call.",
+        "description": "Process content into structured blocks (streaming NDJSON).\n\nSimulates the real-time block streaming pipeline by feeding content\ntoken-by-token through StreamBlockProcessor and yielding each\nRenderBlockEvent as a 'render_block' JSONL line.\n\nThe response format is identical to what a live agent-blocks endpoint\nwould emit, making this endpoint ideal for frontend integration testing\nwithout requiring a live LLM call.",
         "operationId": "process_blocks_stream_utilities_block_processing_process_stream_post",
         "requestBody": {
           "content": {

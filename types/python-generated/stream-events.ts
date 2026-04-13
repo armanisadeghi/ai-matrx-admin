@@ -18,7 +18,7 @@ export const EventType = {
   BROKER: "broker",
   HEARTBEAT: "heartbeat",
   END: "end",
-  CONTENT_BLOCK: "content_block",
+  RENDER_BLOCK: "render_block",
   RECORD_RESERVED: "record_reserved",
   RECORD_UPDATE: "record_update",
 } as const;
@@ -55,9 +55,15 @@ export type ToolEventType =
   | "tool_error"
   | "tool_delegated";
 
-export type WarningLevel = "low" | "medium" | "high";
+export type WarningLevel =
+  | "low"
+  | "medium"
+  | "high";
 
-export type InitCompletionStatus = "success" | "failed" | "cancelled";
+export type InitCompletionStatus =
+  | "success"
+  | "failed"
+  | "cancelled";
 
 export interface ChunkPayload {
   text: string;
@@ -68,19 +74,7 @@ export interface ReasoningChunkPayload {
 }
 
 export interface PhasePayload {
-  phase:
-    | "connected"
-    | "processing"
-    | "generating"
-    | "using_tools"
-    | "persisting"
-    | "searching"
-    | "scraping"
-    | "analyzing"
-    | "synthesizing"
-    | "retrying"
-    | "executing"
-    | "complete";
+  phase: "connected" | "processing" | "generating" | "using_tools" | "persisting" | "searching" | "scraping" | "analyzing" | "synthesizing" | "retrying" | "executing" | "complete";
 }
 
 export interface WarningPayload {
@@ -100,24 +94,14 @@ export interface InfoPayload {
 }
 
 export interface InitPayload {
-  operation:
-    | "llm_request"
-    | "tool_execution"
-    | "user_request"
-    | "sub_agent"
-    | "persistence";
+  operation: "llm_request" | "tool_execution" | "user_request" | "sub_agent" | "persistence";
   operation_id: string;
   parent_operation_id?: string | null;
   metadata?: Record<string, unknown>;
 }
 
 export interface CompletionPayload {
-  operation:
-    | "llm_request"
-    | "tool_execution"
-    | "user_request"
-    | "sub_agent"
-    | "persistence";
+  operation: "llm_request" | "tool_execution" | "user_request" | "sub_agent" | "persistence";
   operation_id: string;
   status: "success" | "failed" | "cancelled";
   result?: Record<string, unknown>;
@@ -132,14 +116,7 @@ export interface ErrorPayload {
 }
 
 export interface ToolEventPayload {
-  event:
-    | "tool_started"
-    | "tool_progress"
-    | "tool_step"
-    | "tool_result_preview"
-    | "tool_completed"
-    | "tool_error"
-    | "tool_delegated";
+  event: "tool_started" | "tool_progress" | "tool_step" | "tool_result_preview" | "tool_completed" | "tool_error" | "tool_delegated";
   call_id: string;
   tool_name: string;
   timestamp?: number;
@@ -163,7 +140,7 @@ export interface EndPayload {
   reason?: string;
 }
 
-export interface ContentBlockPayload {
+export interface RenderBlockPayload {
   blockId: string;
   blockIndex: number;
   type: string;
@@ -228,14 +205,7 @@ export interface ConversationLabeledData {
 export interface QuestionnaireQuestion {
   id: string;
   prompt: string;
-  component_type:
-    | "dropdown"
-    | "checkboxes"
-    | "radio"
-    | "toggle"
-    | "slider"
-    | "input"
-    | "textarea";
+  component_type: "dropdown" | "checkboxes" | "radio" | "toggle" | "slider" | "input" | "textarea";
   options?: string[];
   min?: number | null;
   max?: number | null;
@@ -494,20 +464,11 @@ export type TypedCompletionEvent =
   | PersistenceCompletionEvent;
 
 const TYPED_COMPLETION_EVENT_OPERATIONS = new Set<Operation>([
-  "llm_request",
-  "tool_execution",
-  "user_request",
-  "sub_agent",
-  "persistence",
+  "llm_request", "tool_execution", "user_request", "sub_agent", "persistence",
 ]);
 
-export function isTypedCompletionEvent(
-  e: CompletionPayload,
-): e is CompletionPayload & TypedCompletionEvent {
-  return (
-    TYPED_COMPLETION_EVENT_OPERATIONS.has(e.operation as Operation) &&
-    e.result !== undefined
-  );
+export function isTypedCompletionEvent(e: CompletionPayload): e is CompletionPayload & TypedCompletionEvent {
+  return TYPED_COMPLETION_EVENT_OPERATIONS.has(e.operation as Operation) && e.result !== undefined;
 }
 
 // --- Tool Event Data Models ---
@@ -637,24 +598,14 @@ export type TypedToolEvent =
   | ToolDelegatedToolEvent;
 
 const TYPED_TOOL_EVENT_TYPES = new Set<ToolEventType>([
-  "tool_started",
-  "tool_progress",
-  "tool_step",
-  "tool_result_preview",
-  "tool_completed",
-  "tool_error",
-  "tool_delegated",
+  "tool_started", "tool_progress", "tool_step", "tool_result_preview", "tool_completed", "tool_error", "tool_delegated",
 ]);
 
-export function isTypedToolEvent(
-  e: ToolEventPayload,
-): e is ToolEventPayload & TypedToolEvent {
-  return (
-    TYPED_TOOL_EVENT_TYPES.has(e.event as ToolEventType) && e.data !== undefined
-  );
+export function isTypedToolEvent(e: ToolEventPayload): e is ToolEventPayload & TypedToolEvent {
+  return TYPED_TOOL_EVENT_TYPES.has(e.event as ToolEventType) && e.data !== undefined;
 }
 
-// --- Content Block Data Models (ContentBlockPayload.data per type) ---
+// --- Render Block Data Models (RenderBlockPayload.data per type) ---
 
 export interface FlashcardItem {
   front: string;
@@ -678,7 +629,8 @@ export interface TaskItem {
   children?: TaskItem[];
 }
 
-export interface TaskItem {}
+export interface TaskItem {
+}
 
 export interface QuizQuestion {
   id: number;
@@ -913,7 +865,8 @@ export interface DecisionNode {
   estimatedTime?: string | null;
 }
 
-export interface DecisionNode {}
+export interface DecisionNode {
+}
 
 export interface QuestionnaireSection {
   title?: string;
@@ -924,7 +877,8 @@ export interface QuestionnaireSection {
   jsonBlocks?: Record<string, unknown>[];
 }
 
-export interface TextBlockData {}
+export interface TextBlockData {
+}
 
 export interface CodeBlockData {
   language?: string;
@@ -938,9 +892,11 @@ export interface DiffBlockData {
   code?: string;
 }
 
-export interface ThinkingBlockData {}
+export interface ThinkingBlockData {
+}
 
-export interface ReasoningBlockData {}
+export interface ReasoningBlockData {
+}
 
 export interface ConsolidatedReasoningBlockData {
   reasoning_texts: string[];
@@ -1086,13 +1042,7 @@ export interface DiagramNode {
 export interface DiagramBlockData {
   title: string;
   description?: string | null;
-  type?:
-    | "flowchart"
-    | "mindmap"
-    | "orgchart"
-    | "network"
-    | "system"
-    | "process";
+  type?: "flowchart" | "mindmap" | "orgchart" | "network" | "system" | "process";
   nodes?: DiagramNode[];
   edges?: DiagramEdge[];
   layout?: DiagramLayout;
@@ -1308,12 +1258,12 @@ export interface MatrxBrokerBlockData {
   rawContent?: string;
 }
 
-// --- Typed Content Block Interfaces (discriminated on `type`) ---
+// --- Typed Render Block Interfaces (discriminated on `type`) ---
 
-// Each interface narrows ContentBlockPayload.data to its concrete type.
-// Use TypedContentBlock instead of ContentBlockPayload when you need typed data.
+// Each interface narrows RenderBlockPayload.data to its concrete type.
+// Use TypedRenderBlock instead of RenderBlockPayload when you need typed data.
 
-export interface TextContentBlock {
+export interface TextRenderBlock {
   blockId: string;
   blockIndex: number;
   type: "text";
@@ -1323,7 +1273,7 @@ export interface TextContentBlock {
   metadata?: Record<string, unknown>;
 }
 
-export interface CodeContentBlock {
+export interface CodeRenderBlock {
   blockId: string;
   blockIndex: number;
   type: "code";
@@ -1333,7 +1283,7 @@ export interface CodeContentBlock {
   metadata?: Record<string, unknown>;
 }
 
-export interface TableContentBlock {
+export interface TableRenderBlock {
   blockId: string;
   blockIndex: number;
   type: "table";
@@ -1343,7 +1293,7 @@ export interface TableContentBlock {
   metadata?: Record<string, unknown>;
 }
 
-export interface ThinkingContentBlock {
+export interface ThinkingRenderBlock {
   blockId: string;
   blockIndex: number;
   type: "thinking";
@@ -1353,7 +1303,7 @@ export interface ThinkingContentBlock {
   metadata?: Record<string, unknown>;
 }
 
-export interface ReasoningContentBlock {
+export interface ReasoningRenderBlock {
   blockId: string;
   blockIndex: number;
   type: "reasoning";
@@ -1363,7 +1313,7 @@ export interface ReasoningContentBlock {
   metadata?: Record<string, unknown>;
 }
 
-export interface ConsolidatedReasoningContentBlock {
+export interface ConsolidatedReasoningRenderBlock {
   blockId: string;
   blockIndex: number;
   type: "consolidated_reasoning";
@@ -1373,7 +1323,7 @@ export interface ConsolidatedReasoningContentBlock {
   metadata?: Record<string, unknown>;
 }
 
-export interface ImageContentBlock {
+export interface ImageRenderBlock {
   blockId: string;
   blockIndex: number;
   type: "image";
@@ -1383,7 +1333,7 @@ export interface ImageContentBlock {
   metadata?: Record<string, unknown>;
 }
 
-export interface VideoContentBlock {
+export interface VideoRenderBlock {
   blockId: string;
   blockIndex: number;
   type: "video";
@@ -1393,7 +1343,7 @@ export interface VideoContentBlock {
   metadata?: Record<string, unknown>;
 }
 
-export interface TasksContentBlock {
+export interface TasksRenderBlock {
   blockId: string;
   blockIndex: number;
   type: "tasks";
@@ -1403,7 +1353,7 @@ export interface TasksContentBlock {
   metadata?: Record<string, unknown>;
 }
 
-export interface TranscriptContentBlock {
+export interface TranscriptRenderBlock {
   blockId: string;
   blockIndex: number;
   type: "transcript";
@@ -1413,7 +1363,7 @@ export interface TranscriptContentBlock {
   metadata?: Record<string, unknown>;
 }
 
-export interface StructuredInfoContentBlock {
+export interface StructuredInfoRenderBlock {
   blockId: string;
   blockIndex: number;
   type: "structured_info";
@@ -1423,7 +1373,7 @@ export interface StructuredInfoContentBlock {
   metadata?: Record<string, unknown>;
 }
 
-export interface MatrxBrokerContentBlock {
+export interface MatrxBrokerRenderBlock {
   blockId: string;
   blockIndex: number;
   type: "matrxBroker";
@@ -1433,7 +1383,7 @@ export interface MatrxBrokerContentBlock {
   metadata?: Record<string, unknown>;
 }
 
-export interface QuestionnaireContentBlock {
+export interface QuestionnaireRenderBlock {
   blockId: string;
   blockIndex: number;
   type: "questionnaire";
@@ -1443,7 +1393,7 @@ export interface QuestionnaireContentBlock {
   metadata?: Record<string, unknown>;
 }
 
-export interface FlashcardsContentBlock {
+export interface FlashcardsRenderBlock {
   blockId: string;
   blockIndex: number;
   type: "flashcards";
@@ -1453,7 +1403,7 @@ export interface FlashcardsContentBlock {
   metadata?: Record<string, unknown>;
 }
 
-export interface QuizContentBlock {
+export interface QuizRenderBlock {
   blockId: string;
   blockIndex: number;
   type: "quiz";
@@ -1463,7 +1413,7 @@ export interface QuizContentBlock {
   metadata?: Record<string, unknown>;
 }
 
-export interface PresentationContentBlock {
+export interface PresentationRenderBlock {
   blockId: string;
   blockIndex: number;
   type: "presentation";
@@ -1473,7 +1423,7 @@ export interface PresentationContentBlock {
   metadata?: Record<string, unknown>;
 }
 
-export interface CookingRecipeContentBlock {
+export interface CookingRecipeRenderBlock {
   blockId: string;
   blockIndex: number;
   type: "cooking_recipe";
@@ -1483,7 +1433,7 @@ export interface CookingRecipeContentBlock {
   metadata?: Record<string, unknown>;
 }
 
-export interface TimelineContentBlock {
+export interface TimelineRenderBlock {
   blockId: string;
   blockIndex: number;
   type: "timeline";
@@ -1493,7 +1443,7 @@ export interface TimelineContentBlock {
   metadata?: Record<string, unknown>;
 }
 
-export interface ProgressTrackerContentBlock {
+export interface ProgressTrackerRenderBlock {
   blockId: string;
   blockIndex: number;
   type: "progress_tracker";
@@ -1503,7 +1453,7 @@ export interface ProgressTrackerContentBlock {
   metadata?: Record<string, unknown>;
 }
 
-export interface ComparisonTableContentBlock {
+export interface ComparisonTableRenderBlock {
   blockId: string;
   blockIndex: number;
   type: "comparison_table";
@@ -1513,7 +1463,7 @@ export interface ComparisonTableContentBlock {
   metadata?: Record<string, unknown>;
 }
 
-export interface TroubleshootingContentBlock {
+export interface TroubleshootingRenderBlock {
   blockId: string;
   blockIndex: number;
   type: "troubleshooting";
@@ -1523,7 +1473,7 @@ export interface TroubleshootingContentBlock {
   metadata?: Record<string, unknown>;
 }
 
-export interface ResourcesContentBlock {
+export interface ResourcesRenderBlock {
   blockId: string;
   blockIndex: number;
   type: "resources";
@@ -1533,7 +1483,7 @@ export interface ResourcesContentBlock {
   metadata?: Record<string, unknown>;
 }
 
-export interface DecisionTreeContentBlock {
+export interface DecisionTreeRenderBlock {
   blockId: string;
   blockIndex: number;
   type: "decision_tree";
@@ -1543,7 +1493,7 @@ export interface DecisionTreeContentBlock {
   metadata?: Record<string, unknown>;
 }
 
-export interface DecisionContentBlock {
+export interface DecisionRenderBlock {
   blockId: string;
   blockIndex: number;
   type: "decision";
@@ -1553,7 +1503,7 @@ export interface DecisionContentBlock {
   metadata?: Record<string, unknown>;
 }
 
-export interface ResearchContentBlock {
+export interface ResearchRenderBlock {
   blockId: string;
   blockIndex: number;
   type: "research";
@@ -1563,7 +1513,7 @@ export interface ResearchContentBlock {
   metadata?: Record<string, unknown>;
 }
 
-export interface DiagramContentBlock {
+export interface DiagramRenderBlock {
   blockId: string;
   blockIndex: number;
   type: "diagram";
@@ -1573,7 +1523,7 @@ export interface DiagramContentBlock {
   metadata?: Record<string, unknown>;
 }
 
-export interface MathProblemContentBlock {
+export interface MathProblemRenderBlock {
   blockId: string;
   blockIndex: number;
   type: "math_problem";
@@ -1583,7 +1533,7 @@ export interface MathProblemContentBlock {
   metadata?: Record<string, unknown>;
 }
 
-export interface ArtifactContentBlock {
+export interface ArtifactRenderBlock {
   blockId: string;
   blockIndex: number;
   type: "artifact";
@@ -1593,7 +1543,7 @@ export interface ArtifactContentBlock {
   metadata?: Record<string, unknown>;
 }
 
-export interface InfoContentBlock {
+export interface InfoRenderBlock {
   blockId: string;
   blockIndex: number;
   type: "info";
@@ -1603,7 +1553,7 @@ export interface InfoContentBlock {
   metadata?: Record<string, unknown>;
 }
 
-export interface TaskContentBlock {
+export interface TaskRenderBlock {
   blockId: string;
   blockIndex: number;
   type: "task";
@@ -1613,7 +1563,7 @@ export interface TaskContentBlock {
   metadata?: Record<string, unknown>;
 }
 
-export interface DatabaseContentBlock {
+export interface DatabaseRenderBlock {
   blockId: string;
   blockIndex: number;
   type: "database";
@@ -1623,7 +1573,7 @@ export interface DatabaseContentBlock {
   metadata?: Record<string, unknown>;
 }
 
-export interface PrivateContentBlock {
+export interface PrivateRenderBlock {
   blockId: string;
   blockIndex: number;
   type: "private";
@@ -1633,7 +1583,7 @@ export interface PrivateContentBlock {
   metadata?: Record<string, unknown>;
 }
 
-export interface PlanContentBlock {
+export interface PlanRenderBlock {
   blockId: string;
   blockIndex: number;
   type: "plan";
@@ -1643,7 +1593,7 @@ export interface PlanContentBlock {
   metadata?: Record<string, unknown>;
 }
 
-export interface EventContentBlock {
+export interface EventRenderBlock {
   blockId: string;
   blockIndex: number;
   type: "event";
@@ -1653,7 +1603,7 @@ export interface EventContentBlock {
   metadata?: Record<string, unknown>;
 }
 
-export interface ToolContentBlock {
+export interface ToolRenderBlock {
   blockId: string;
   blockIndex: number;
   type: "tool";
@@ -1663,85 +1613,49 @@ export interface ToolContentBlock {
   metadata?: Record<string, unknown>;
 }
 
-export type TypedContentBlock =
-  | TextContentBlock
-  | CodeContentBlock
-  | TableContentBlock
-  | ThinkingContentBlock
-  | ReasoningContentBlock
-  | ConsolidatedReasoningContentBlock
-  | ImageContentBlock
-  | VideoContentBlock
-  | TasksContentBlock
-  | TranscriptContentBlock
-  | StructuredInfoContentBlock
-  | MatrxBrokerContentBlock
-  | QuestionnaireContentBlock
-  | FlashcardsContentBlock
-  | QuizContentBlock
-  | PresentationContentBlock
-  | CookingRecipeContentBlock
-  | TimelineContentBlock
-  | ProgressTrackerContentBlock
-  | ComparisonTableContentBlock
-  | TroubleshootingContentBlock
-  | ResourcesContentBlock
-  | DecisionTreeContentBlock
-  | DecisionContentBlock
-  | ResearchContentBlock
-  | DiagramContentBlock
-  | MathProblemContentBlock
-  | ArtifactContentBlock
-  | InfoContentBlock
-  | TaskContentBlock
-  | DatabaseContentBlock
-  | PrivateContentBlock
-  | PlanContentBlock
-  | EventContentBlock
-  | ToolContentBlock;
+export type TypedRenderBlock =
+  | TextRenderBlock
+  | CodeRenderBlock
+  | TableRenderBlock
+  | ThinkingRenderBlock
+  | ReasoningRenderBlock
+  | ConsolidatedReasoningRenderBlock
+  | ImageRenderBlock
+  | VideoRenderBlock
+  | TasksRenderBlock
+  | TranscriptRenderBlock
+  | StructuredInfoRenderBlock
+  | MatrxBrokerRenderBlock
+  | QuestionnaireRenderBlock
+  | FlashcardsRenderBlock
+  | QuizRenderBlock
+  | PresentationRenderBlock
+  | CookingRecipeRenderBlock
+  | TimelineRenderBlock
+  | ProgressTrackerRenderBlock
+  | ComparisonTableRenderBlock
+  | TroubleshootingRenderBlock
+  | ResourcesRenderBlock
+  | DecisionTreeRenderBlock
+  | DecisionRenderBlock
+  | ResearchRenderBlock
+  | DiagramRenderBlock
+  | MathProblemRenderBlock
+  | ArtifactRenderBlock
+  | InfoRenderBlock
+  | TaskRenderBlock
+  | DatabaseRenderBlock
+  | PrivateRenderBlock
+  | PlanRenderBlock
+  | EventRenderBlock
+  | ToolRenderBlock;
 
-const TYPED_CONTENT_BLOCK_TYPES = new Set<string>([
-  "text",
-  "code",
-  "table",
-  "thinking",
-  "reasoning",
-  "consolidated_reasoning",
-  "image",
-  "video",
-  "tasks",
-  "transcript",
-  "structured_info",
-  "matrxBroker",
-  "questionnaire",
-  "flashcards",
-  "quiz",
-  "presentation",
-  "cooking_recipe",
-  "timeline",
-  "progress_tracker",
-  "comparison_table",
-  "troubleshooting",
-  "resources",
-  "decision_tree",
-  "decision",
-  "research",
-  "diagram",
-  "math_problem",
-  "artifact",
-  "info",
-  "task",
-  "database",
-  "private",
-  "plan",
-  "event",
-  "tool",
+const TYPED_RENDER_BLOCK_TYPES = new Set<string>([
+  "text", "code", "table", "thinking", "reasoning", "consolidated_reasoning", "image", "video", "tasks", "transcript", "structured_info", "matrxBroker", "questionnaire", "flashcards", "quiz", "presentation", "cooking_recipe", "timeline", "progress_tracker", "comparison_table", "troubleshooting", "resources", "decision_tree", "decision", "research", "diagram", "math_problem", "artifact", "info", "task", "database", "private", "plan", "event", "tool",
 ]);
 
-export function isTypedContentBlock(
-  e: ContentBlockPayload,
-): e is ContentBlockPayload & TypedContentBlock {
-  return TYPED_CONTENT_BLOCK_TYPES.has(e.type);
+export function isTypedRenderBlock(e: RenderBlockPayload): e is RenderBlockPayload & TypedRenderBlock {
+  return TYPED_RENDER_BLOCK_TYPES.has(e.type);
 }
 
 // --- Message Part Models (cx_message.content[] items) ---
@@ -2028,9 +1942,9 @@ export interface EndEvent {
   data: EndPayload;
 }
 
-export interface ContentBlockEvent {
-  event: "content_block";
-  data: ContentBlockPayload;
+export interface RenderBlockEvent {
+  event: "render_block";
+  data: RenderBlockPayload;
 }
 
 export interface RecordReservedEvent {
@@ -2057,103 +1971,71 @@ export type TypedStreamEvent =
   | BrokerEvent
   | HeartbeatEvent
   | EndEvent
-  | ContentBlockEvent
+  | RenderBlockEvent
   | RecordReservedEvent
   | RecordUpdateEvent;
 
 // Type guards
-export function isChunkEvent(
-  e: StreamEvent,
-): e is { event: "chunk"; data: ChunkPayload } {
+export function isChunkEvent(e: StreamEvent): e is { event: "chunk"; data: ChunkPayload } {
   return e.event === "chunk";
 }
 
-export function isReasoningChunkEvent(
-  e: StreamEvent,
-): e is { event: "reasoning_chunk"; data: ReasoningChunkPayload } {
+export function isReasoningChunkEvent(e: StreamEvent): e is { event: "reasoning_chunk"; data: ReasoningChunkPayload } {
   return e.event === "reasoning_chunk";
 }
 
-export function isPhaseEvent(
-  e: StreamEvent,
-): e is { event: "phase"; data: PhasePayload } {
+export function isPhaseEvent(e: StreamEvent): e is { event: "phase"; data: PhasePayload } {
   return e.event === "phase";
 }
 
-export function isWarningEvent(
-  e: StreamEvent,
-): e is { event: "warning"; data: WarningPayload } {
+export function isWarningEvent(e: StreamEvent): e is { event: "warning"; data: WarningPayload } {
   return e.event === "warning";
 }
 
-export function isInfoEvent(
-  e: StreamEvent,
-): e is { event: "info"; data: InfoPayload } {
+export function isInfoEvent(e: StreamEvent): e is { event: "info"; data: InfoPayload } {
   return e.event === "info";
 }
 
-export function isTypedDataEvent(
-  e: StreamEvent,
-): e is { event: "data"; data: TypedDataPayload | Record<string, unknown> } {
+export function isTypedDataEvent(e: StreamEvent): e is { event: "data"; data: TypedDataPayload | Record<string, unknown> } {
   return e.event === "data";
 }
 
-export function isInitEvent(
-  e: StreamEvent,
-): e is { event: "init"; data: InitPayload } {
+export function isInitEvent(e: StreamEvent): e is { event: "init"; data: InitPayload } {
   return e.event === "init";
 }
 
-export function isCompletionEvent(
-  e: StreamEvent,
-): e is { event: "completion"; data: CompletionPayload } {
+export function isCompletionEvent(e: StreamEvent): e is { event: "completion"; data: CompletionPayload } {
   return e.event === "completion";
 }
 
-export function isErrorEvent(
-  e: StreamEvent,
-): e is { event: "error"; data: ErrorPayload } {
+export function isErrorEvent(e: StreamEvent): e is { event: "error"; data: ErrorPayload } {
   return e.event === "error";
 }
 
-export function isToolEventEvent(
-  e: StreamEvent,
-): e is { event: "tool_event"; data: ToolEventPayload } {
+export function isToolEventEvent(e: StreamEvent): e is { event: "tool_event"; data: ToolEventPayload } {
   return e.event === "tool_event";
 }
 
-export function isBrokerEvent(
-  e: StreamEvent,
-): e is { event: "broker"; data: BrokerPayload } {
+export function isBrokerEvent(e: StreamEvent): e is { event: "broker"; data: BrokerPayload } {
   return e.event === "broker";
 }
 
-export function isHeartbeatEvent(
-  e: StreamEvent,
-): e is { event: "heartbeat"; data: HeartbeatPayload } {
+export function isHeartbeatEvent(e: StreamEvent): e is { event: "heartbeat"; data: HeartbeatPayload } {
   return e.event === "heartbeat";
 }
 
-export function isEndEvent(
-  e: StreamEvent,
-): e is { event: "end"; data: EndPayload } {
+export function isEndEvent(e: StreamEvent): e is { event: "end"; data: EndPayload } {
   return e.event === "end";
 }
 
-export function isContentBlockEvent(
-  e: StreamEvent,
-): e is { event: "content_block"; data: ContentBlockPayload } {
-  return e.event === "content_block";
+export function isRenderBlockEvent(e: StreamEvent): e is { event: "render_block"; data: RenderBlockPayload } {
+  return e.event === "render_block";
 }
 
-export function isRecordReservedEvent(
-  e: StreamEvent,
-): e is { event: "record_reserved"; data: RecordReservedPayload } {
+export function isRecordReservedEvent(e: StreamEvent): e is { event: "record_reserved"; data: RecordReservedPayload } {
   return e.event === "record_reserved";
 }
 
-export function isRecordUpdateEvent(
-  e: StreamEvent,
-): e is { event: "record_update"; data: RecordUpdatePayload } {
+export function isRecordUpdateEvent(e: StreamEvent): e is { event: "record_update"; data: RecordUpdatePayload } {
   return e.event === "record_update";
 }

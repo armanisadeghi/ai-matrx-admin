@@ -261,7 +261,7 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
             blocks: Record<string, unknown>[];
           };
           const synthetic: StreamEvent[] = data.blocks.map((block, i) => ({
-            event: "content_block" as const,
+            event: "render_block" as const,
             data: {
               blockId: (block.blockId ??
                 block.block_id ??

@@ -531,10 +531,10 @@ export interface paths {
          * @description Start a block-streaming agent session.
          *
          *     Identical to POST /agents/{agent_id} but the LLM token stream is parsed
-         *     server-side into typed content blocks.  The client receives 'content_block'
+         *     server-side into typed render blocks.  The client receives 'render_block'
          *     JSONL events instead of raw 'chunk' events.
          *
-         *     Each content_block event carries:
+         *     Each render_block event carries:
          *       - block_id / block_index — stable identity for UI reconciliation
          *       - type — text | code | table | flashcards | quiz | ... (30+ types)
          *       - status — streaming | complete
@@ -956,7 +956,7 @@ export interface paths {
          *
          *     Simulates the real-time block streaming pipeline by feeding content
          *     token-by-token through StreamBlockProcessor and yielding each
-         *     ContentBlockEvent as a 'content_block' JSONL line.
+         *     RenderBlockEvent as a 'render_block' JSONL line.
          *
          *     The response format is identical to what a live agent-blocks endpoint
          *     would emit, making this endpoint ideal for frontend integration testing

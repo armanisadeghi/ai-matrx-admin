@@ -84,7 +84,8 @@ function ChatDebugWindowInner({
   return (
     <WindowPanel
       id="chat-debug-window"
-      title={
+      title={isAdmin ? "Admin Debug Options" : "Debug Options"}
+      titleNode={
         <span className="flex items-center gap-2">
           {isAdmin ? "Admin Debug Options" : "Debug Options"}
           <Badge variant="destructive" className="text-[10px] px-1.5 py-0">

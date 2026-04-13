@@ -29,7 +29,7 @@ import {
   isInfoEvent,
   isErrorEvent,
   isEndEvent,
-  isContentBlockEvent,
+  isRenderBlockEvent,
   isHeartbeatEvent,
   isBrokerEvent,
   isRecordReservedEvent,
@@ -59,7 +59,7 @@ import {
   addWarning,
   addInfoEvent,
   upsertReservation,
-  upsertContentBlock,
+  upsertRenderBlock,
   upsertToolLifecycle,
   setCompletion,
   updateExtractedJson,
@@ -149,7 +149,7 @@ export async function processStream({
   let completionEvents = 0;
   let dataEvents = 0;
   let toolEvents = 0;
-  let contentBlockEvents = 0;
+  let renderBlockEvents = 0;
   let warningEvents = 0;
   let infoEvents = 0;
   let recordReservedEvents = 0;
@@ -397,11 +397,11 @@ export async function processStream({
             : "unknown_data_event";
 
           dispatch(
-            upsertContentBlock({
+            upsertRenderBlock({
               requestId,
               block: {
                 blockId: `data_${dataType}_${totalEvents}`,
-                blockIndex: contentBlockEvents,
+                blockIndex: renderBlockEvents,
                 type: blockType,
                 status: "complete",
                 content: null,
@@ -497,10 +497,10 @@ export async function processStream({
             },
           }),
         );
-      } else if (isContentBlockEvent(event)) {
-        contentBlockEvents++;
+      } else if (isRenderBlockEvent(event)) {
+        renderBlockEvents++;
         dispatch(
-          upsertContentBlock({
+          upsertRenderBlock({
             requestId,
             block: event.data,
           }),
@@ -509,7 +509,7 @@ export async function processStream({
           appendTimeline({
             requestId,
             entry: {
-              kind: "content_block",
+              kind: "render_block",
               seq: 0,
               timestamp: now,
               blockId: event.data.blockId,
@@ -776,8 +776,8 @@ export async function processStream({
   // Snapshot content blocks from the active request so they persist on the
   // committed turn even after the active request is eventually cleaned up.
   const finalContentBlocks = finalRequest
-    ? finalRequest.contentBlockOrder
-        .map((id) => finalRequest.contentBlocks[id])
+    ? finalRequest.renderBlockOrder
+        .map((id) => finalRequest.renderBlocks[id])
         .filter(Boolean)
     : [];
 
@@ -832,7 +832,7 @@ export async function processStream({
     completionEvents,
     dataEvents,
     toolEvents,
-    contentBlockEvents,
+    renderBlockEvents: renderBlockEvents,
     warningEvents,
     infoEvents,
     recordReservedEvents,

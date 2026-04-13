@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import type { ContentBlockPayload } from "@/types/python-generated/stream-events";
+import type { RenderBlockPayload } from "@/types/python-generated/stream-events";
 
 /**
  * Mapping from legacy DB "media" kind values to the canonical stream-protocol type.
@@ -13,7 +13,7 @@ const MEDIA_KIND_TO_BLOCK_TYPE: Record<string, string> = {
 };
 
 /**
- * Types that are already in ContentBlockPayload-compatible shape
+ * Types that are already in RenderBlockPayload-compatible shape
  * (i.e. they came from the stream protocol and were persisted as-is).
  */
 const KNOWN_STREAM_TYPES = new Set([
@@ -43,7 +43,7 @@ const TEXT_FIELD_BLOCK_TYPES = new Set(["thinking", "reasoning"]);
 
 /**
  * User-input block types (attachments sent to the server).
- * Wrapped in ContentBlockPayload envelope with their original type preserved.
+ * Wrapped in RenderBlockPayload envelope with their original type preserved.
  */
 const USER_INPUT_TYPES = new Set([
   "image",
@@ -71,9 +71,9 @@ function isAlreadyNormalized(block: Record<string, unknown>): boolean {
 function normalizeSingle(
   raw: Record<string, unknown>,
   index: number,
-): ContentBlockPayload {
+): RenderBlockPayload {
   if (isAlreadyNormalized(raw)) {
-    return raw as unknown as ContentBlockPayload;
+    return raw as unknown as RenderBlockPayload;
   }
 
   const rawType = typeof raw.type === "string" ? raw.type : "";
@@ -146,13 +146,13 @@ function normalizeSingle(
 
 /**
  * Normalizes an array of raw DB content blocks into the canonical
- * ContentBlockPayload shape used by the streaming pipeline.
+ * RenderBlockPayload shape used by the streaming pipeline.
  *
  * Call this at the Redux boundary — in thunks or reducers — so that
  * every consumer downstream sees a single type.
  */
 export function normalizeContentBlocks(
   rawBlocks: Array<Record<string, unknown>>,
-): ContentBlockPayload[] {
+): RenderBlockPayload[] {
   return rawBlocks.map((block, i) => normalizeSingle(block, i));
 }

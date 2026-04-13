@@ -39,6 +39,7 @@ import {
 import {
   selectInstance,
   selectAllConversationIds,
+  selectConversationIdsByAgent,
   selectInstancesByAgent,
 } from "@/features/agents/redux/execution-system/execution-instances/execution-instances.selectors";
 
@@ -847,20 +848,7 @@ function AgentDebugSidebar({
   onSelectInstance: (agentId: string, conversationId: string) => void;
 }) {
   const allAgents = useAppSelector(selectAllAgentsArray);
-  const allConversationIds = useAppSelector(selectAllConversationIds);
-
-  // Build a map: agentId → conversationIds
-  const instancesByAgent = useAppSelector((state) => {
-    const map: Record<string, string[]> = {};
-    for (const cid of allConversationIds) {
-      const inst = selectInstance(cid)(state);
-      if (!inst) continue;
-      const aid = inst.agentId;
-      if (!map[aid]) map[aid] = [];
-      map[aid].push(cid);
-    }
-    return map;
-  });
+  const instancesByAgent = useAppSelector(selectConversationIdsByAgent);
 
   const withInstances: SidebarAgent[] = [];
   const withoutInstances: SidebarAgent[] = [];

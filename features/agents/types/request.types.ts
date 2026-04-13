@@ -21,7 +21,7 @@ import type {
   PhasePayload,
   InitPayload,
   CompletionPayload,
-  ContentBlockPayload,
+  RenderBlockPayload,
   WarningPayload,
   InfoPayload,
 } from "@/types/python-generated/stream-events";
@@ -76,7 +76,7 @@ export interface ClientMetrics {
   completionEvents: number;
   dataEvents: number;
   toolEvents: number;
-  contentBlockEvents: number;
+  renderBlockEvents: number;
   warningEvents: number;
   infoEvents: number;
   recordReservedEvents: number;
@@ -170,11 +170,11 @@ export interface ActiveRequest {
   /** Completed operations keyed by operation_id */
   completedOperations: Record<string, CompletedOperationEntry>;
 
-  // ── Content Blocks ───────────────────────────────────────────
+  // ── Render Blocks ───────────────────────────────────────────
   /** Keyed by blockId for O(1) lookup. Each block upserted in place. */
-  contentBlocks: Record<string, ContentBlockPayload>;
+  renderBlocks: Record<string, RenderBlockPayload>;
   /** Ordered list of blockIds preserving server emission order */
-  contentBlockOrder: string[];
+  renderBlockOrder: string[];
 
   // ── Tool Lifecycle ───────────────────────────────────────────
   /** Delegations that need client action (unchanged from before) */
@@ -330,7 +330,7 @@ export type TimelineEntry =
   | TimelineWarning
   | TimelineInfo
   | TimelineToolEvent
-  | TimelineContentBlock
+  | TimelineRenderBlock
   | TimelineDataEvent
   | TimelineError
   | TimelineEnd
@@ -420,8 +420,8 @@ export interface TimelineToolEvent extends TimelineBase {
   data: Record<string, unknown> | null;
 }
 
-export interface TimelineContentBlock extends TimelineBase {
-  kind: "content_block";
+export interface TimelineRenderBlock extends TimelineBase {
+  kind: "render_block";
   blockId: string;
   blockType: string;
   blockStatus: string;

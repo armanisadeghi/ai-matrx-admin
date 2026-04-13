@@ -14,113 +14,117 @@
 // ============================================================================
 
 export type {
-    EventType,
-    ToolEventType,
-    Phase,
-    Operation,
-    InitCompletionStatus,
-    WarningLevel,
-    ChunkPayload,
-    ReasoningChunkPayload,
-    PhasePayload,
-    InitPayload,
-    DataPayload,
-    CompletionPayload,
-    ErrorPayload,
-    ToolEventPayload,
-    WarningPayload,
-    InfoPayload,
-    BrokerPayload,
-    HeartbeatPayload,
-    EndPayload,
-    ContentBlockPayload,
-    RecordReservedPayload,
-    RecordUpdatePayload,
-    StreamEvent,
-    TypedStreamEvent,
-    TypedDataPayload,
-    ChunkEvent,
-    ReasoningChunkEvent,
-    PhaseEvent,
-    InitEvent,
-    TypedDataEvent,
-    CompletionEvent,
-    ErrorEvent,
-    ToolEventEvent,
-    WarningEvent,
-    InfoEvent,
-    BrokerEvent,
-    HeartbeatEvent,
-    EndEvent,
-    ContentBlockEvent,
-    RecordReservedEvent,
-    RecordUpdateEvent,
-    UserRequestResult,
-    LlmRequestResult,
-    ToolExecutionResult,
-    SubAgentResult,
-    PersistenceResult,
-    AggregatedUsageResult,
-    ModelUsageSummary,
-    UsageTotals,
-    TimingStatsResult,
-    ToolCallStatsResult,
-    ToolCallByTool,
-} from '@/types/python-generated/stream-events';
+  EventType,
+  ToolEventType,
+  Phase,
+  Operation,
+  InitCompletionStatus,
+  WarningLevel,
+  ChunkPayload,
+  ReasoningChunkPayload,
+  PhasePayload,
+  InitPayload,
+  DataPayload,
+  CompletionPayload,
+  ErrorPayload,
+  ToolEventPayload,
+  WarningPayload,
+  InfoPayload,
+  BrokerPayload,
+  HeartbeatPayload,
+  EndPayload,
+  RenderBlockPayload,
+  RecordReservedPayload,
+  RecordUpdatePayload,
+  StreamEvent,
+  TypedStreamEvent,
+  TypedDataPayload,
+  ChunkEvent,
+  ReasoningChunkEvent,
+  PhaseEvent,
+  InitEvent,
+  TypedDataEvent,
+  CompletionEvent,
+  ErrorEvent,
+  ToolEventEvent,
+  WarningEvent,
+  InfoEvent,
+  BrokerEvent,
+  HeartbeatEvent,
+  EndEvent,
+  RenderBlockEvent,
+  RecordReservedEvent,
+  RecordUpdateEvent,
+  UserRequestResult,
+  LlmRequestResult,
+  ToolExecutionResult,
+  SubAgentResult,
+  PersistenceResult,
+  AggregatedUsageResult,
+  ModelUsageSummary,
+  UsageTotals,
+  TimingStatsResult,
+  ToolCallStatsResult,
+  ToolCallByTool,
+} from "@/types/python-generated/stream-events";
 
 export {
-    EventType as EventTypeEnum,
-    isChunkEvent,
-    isReasoningChunkEvent,
-    isPhaseEvent,
-    isInitEvent,
-    isTypedDataEvent,
-    isCompletionEvent,
-    isErrorEvent,
-    isToolEventEvent,
-    isWarningEvent,
-    isInfoEvent,
-    isBrokerEvent,
-    isHeartbeatEvent,
-    isEndEvent,
-    isContentBlockEvent,
-    isRecordReservedEvent,
-    isRecordUpdateEvent,
-} from '@/types/python-generated/stream-events';
+  EventType as EventTypeEnum,
+  isChunkEvent,
+  isReasoningChunkEvent,
+  isPhaseEvent,
+  isInitEvent,
+  isTypedDataEvent,
+  isCompletionEvent,
+  isErrorEvent,
+  isToolEventEvent,
+  isWarningEvent,
+  isInfoEvent,
+  isBrokerEvent,
+  isHeartbeatEvent,
+  isEndEvent,
+  isRenderBlockEvent,
+  isRecordReservedEvent,
+  isRecordUpdateEvent,
+} from "@/types/python-generated/stream-events";
 
 // ============================================================================
 // RE-EXPORTS — Auto-generated from Python (OpenAPI request/response schemas)
 // ============================================================================
 
 export type {
-    components,
-    operations,
-    paths,
-} from '@/types/python-generated/api-types';
+  components,
+  operations,
+  paths,
+} from "@/types/python-generated/api-types";
 
-import type { components } from '@/types/python-generated/api-types';
+import type { components } from "@/types/python-generated/api-types";
 
 // Named aliases — every one of these resolves to a generated schema.
 // If a schema is renamed/removed in Python, TypeScript will error here immediately.
-export type ChatRequestBody = components['schemas']['ChatRequest'];
-export type AgentStartRequestBody = components['schemas']['AgentStartRequest'];
-export type AgentBlocksStartRequestBody = components['schemas']['AgentBlocksStartRequest'];
-export type ConversationContinueRequestBody = components['schemas']['ConversationContinueRequest'];
-export type LLMParams = components['schemas']['LLMParams'];
-export type ToolTestExecuteRequestBody = components['schemas']['ToolTestExecuteRequest'];
-export type ClientToolResult = components['schemas']['ClientToolResult'];
-export type ToolResultsRequestBody = components['schemas']['ToolResultsRequest'];
-export type DirectChatRequestBody = components['schemas']['DirectChatRequest'];
+export type ChatRequestBody = components["schemas"]["ChatRequest"];
+export type AgentStartRequestBody = components["schemas"]["AgentStartRequest"];
+export type AgentBlocksStartRequestBody =
+  components["schemas"]["AgentBlocksStartRequest"];
+export type ConversationContinueRequestBody =
+  components["schemas"]["ConversationContinueRequest"];
+export type LLMParams = components["schemas"]["LLMParams"];
+export type ToolTestExecuteRequestBody =
+  components["schemas"]["ToolTestExecuteRequest"];
+export type ClientToolResult = components["schemas"]["ClientToolResult"];
+export type ToolResultsRequestBody =
+  components["schemas"]["ToolResultsRequest"];
+export type DirectChatRequestBody = components["schemas"]["DirectChatRequest"];
 
 export type ResearchConfigCreateBody = Record<string, unknown>;
 export type ResearchConfigUpdateBody = Record<string, unknown>;
-export type KeywordCreateBody = components['schemas']['KeywordCreate'];
-export type SourceUpdateBody = components['schemas']['SourceUpdate'];
-export type SourceBulkActionBody = components['schemas']['SourceBulkAction'];
-export type SynthesisRequestBody = components['schemas']['SynthesisRequest'];
-export type SuggestRequestBody = components['schemas']['SuggestRequest'];
-export type TagCreateBody = components['schemas']['TagCreate'];
-export type TemplateCreateBody = components['schemas']['TemplateCreate'];
+export type KeywordCreateBody = components["schemas"]["KeywordCreate"];
+export type SourceUpdateBody = components["schemas"]["SourceUpdate"];
+export type SourceBulkActionBody = components["schemas"]["SourceBulkAction"];
+export type SynthesisRequestBody = components["schemas"]["SynthesisRequest"];
+export type SuggestRequestBody = components["schemas"]["SuggestRequest"];
+export type TagCreateBody = components["schemas"]["TagCreate"];
+export type TemplateCreateBody = components["schemas"]["TemplateCreate"];
 
 /**
  * Utility: extract the keys of ChatRequest as a runtime Set.
@@ -140,28 +144,28 @@ export type LLMParamsKey = keyof LLMParams;
  * Matches the Python `APIError` Pydantic model.
  */
 export interface BackendApiErrorData {
-    /** Machine-readable error code (e.g. "auth_required", "validation_error") */
-    error: string;
-    /** Developer-facing detail for debugging */
-    message: string;
-    /** Safe to display directly in the UI */
-    user_message: string;
-    /** Extra info (validation errors, etc.) */
-    details: unknown | null;
-    /** Unique request ID for support/debugging */
-    request_id: string;
+  /** Machine-readable error code (e.g. "auth_required", "validation_error") */
+  error: string;
+  /** Developer-facing detail for debugging */
+  message: string;
+  /** Safe to display directly in the UI */
+  user_message: string;
+  /** Extra info (validation errors, etc.) */
+  details: unknown | null;
+  /** Unique request ID for support/debugging */
+  request_id: string;
 }
 
 /** Common backend error codes */
 export type BackendErrorCode =
-    | 'auth_required'
-    | 'token_required'
-    | 'admin_required'
-    | 'validation_error'
-    | 'not_found'
-    | 'internal_error'
-    | 'agent_error'
-    | (string & {});
+  | "auth_required"
+  | "token_required"
+  | "admin_required"
+  | "validation_error"
+  | "not_found"
+  | "internal_error"
+  | "agent_error"
+  | (string & {});
 
 // ============================================================================
 // CONTEXT / SCOPE TYPES
@@ -173,16 +177,16 @@ export type BackendErrorCode =
  * All fields are optional — omit when not applicable.
  */
 export interface ContextScope {
-    organization_id?: string;
-    project_id?: string;
-    task_id?: string;
+  organization_id?: string;
+  project_id?: string;
+  task_id?: string;
 }
 
 /** URL search param names mapped to ContextScope field names */
 export const SCOPE_URL_PARAMS = {
-    org: 'organization_id',
-    proj: 'project_id',
-    task: 'task_id',
+  org: "organization_id",
+  proj: "project_id",
+  task: "task_id",
 } as const;
 
 export type ScopeUrlParam = keyof typeof SCOPE_URL_PARAMS;
@@ -196,9 +200,9 @@ export type ScopeUrlParam = keyof typeof SCOPE_URL_PARAMS;
  * Exactly one of: JWT token, fingerprint ID, or anonymous.
  */
 export type AuthCredentials =
-    | { type: 'token'; token: string }
-    | { type: 'fingerprint'; fingerprintId: string }
-    | { type: 'anonymous' };
+  | { type: "token"; token: string }
+  | { type: "fingerprint"; fingerprintId: string }
+  | { type: "anonymous" };
 
 // ============================================================================
 // RESPONSE TYPES (not in OpenAPI — simple enough to define here)
@@ -206,19 +210,19 @@ export type AuthCredentials =
 
 /** Tool test session response */
 export interface ToolTestSessionResponse {
-    conversation_id: string;
-    user_id: string;
+  conversation_id: string;
+  user_id: string;
 }
 
 /** Health check response */
 export interface HealthCheckResponse {
-    status: string;
-    service: string;
-    timestamp: string;
+  status: string;
+  service: string;
+  timestamp: string;
 }
 
 /** Health detailed response */
 export interface HealthDetailedResponse extends HealthCheckResponse {
-    components: Record<string, unknown>;
-    version: string;
+  components: Record<string, unknown>;
+  version: string;
 }

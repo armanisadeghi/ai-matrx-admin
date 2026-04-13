@@ -18,28 +18,23 @@
  */
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import { Edit, MoreHorizontal, Copy, Check, AlertCircle } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import { useDomCapturePrint } from "@/features/chat/hooks/useDomCapturePrint";
 import MarkdownStream from "@/components/MarkdownStream";
-import MessageOptionsMenu from "@/features/chat/components/response/assistant-message/MessageOptionsMenu";
-import { Button } from "@/components/ui/button";
+import { AssistantActionBar } from "@/features/cx-conversation/AssistantActionBar";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
-import {
-  openFullScreenEditor,
-  openHtmlPreview,
-} from "@/lib/redux/slices/overlaySlice";
 import { useDebugContext } from "@/hooks/useDebugContext";
 import { upsertAssistantMarkdownDraft } from "@/features/agents/redux/agent-assistant-markdown-draft.slice";
 import {
   selectAccumulatedText,
   selectRequestStatus,
-  selectAllContentBlocks,
+  selectAllRenderBlocks,
 } from "@/features/agents/redux/execution-system/active-requests/active-requests.selectors";
 import { selectTurnByTurnId } from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.selectors";
 import { AgentToolDisplay } from "./AgentToolDisplay";
-import type { ContentBlockPayload } from "@/types/python-generated/stream-events";
+import type { RenderBlockPayload } from "@/types/python-generated/stream-events";
 
-const EMPTY_BLOCKS: ContentBlockPayload[] = [];
+const EMPTY_BLOCKS: RenderBlockPayload[] = [];
 
 interface AgentAssistantMessageProps {
   conversationId: string;
@@ -57,9 +52,6 @@ export function AgentAssistantMessage({
   compact = false,
 }: AgentAssistantMessageProps) {
   const dispatch = useAppDispatch();
-  const [showOptionsMenu, setShowOptionsMenu] = useState(false);
-  const [isCopied, setIsCopied] = useState(false);
-  const moreOptionsButtonRef = useRef<HTMLButtonElement>(null);
   const { publish: publishDebug, isActive: isDebugPublishing } =
     useDebugContext("AgentAssistantMessage");
 
@@ -74,7 +66,7 @@ export function AgentAssistantMessage({
   );
 
   const activeRequestBlocks = useAppSelector(
-    requestId ? selectAllContentBlocks(requestId) : () => EMPTY_BLOCKS,
+    requestId ? selectAllRenderBlocks(requestId) : () => EMPTY_BLOCKS,
   );
 
   const turn = useAppSelector(
@@ -87,7 +79,7 @@ export function AgentAssistantMessage({
       ? (turn?.errorMessage ?? "An error occurred during streaming.")
       : (turn?.errorMessage ?? null);
 
-  // Both sources are already ContentBlockPayload[] — prefer active request
+  // Both sources are already RenderBlockPayload[] — prefer active request
   // (live/recently committed), fall back to turn blocks (DB-loaded).
   const mergedBlocks =
     activeRequestBlocks.length > 0
@@ -154,36 +146,10 @@ export function AgentAssistantMessage({
     });
   }, [captureAsPDF, turnId, requestId]);
 
-  const handleEditClick = () => {
-    dispatch(
-      openFullScreenEditor({
-        content,
-        tabs: ["write", "matrx_split", "markdown", "wysiwyg", "preview"],
-        initialTab: "matrx_split",
-        showSaveButton: false,
-      }),
-    );
-  };
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(content);
-      setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2000);
-    } catch {
-      // silent
-    }
-  };
-
-  const handleShowHtmlPreview = () => {
-    dispatch(openHtmlPreview({ content }));
-  };
-
   // ── Render ───────────────────────────────────────────────────────────────
 
   const isError = content.startsWith("Error:");
   const markdownClassName = compact ? "text-xs bg-transparent" : "bg-textured";
-  const buttonMargin = compact ? "mt-0.5" : "mt-1";
 
   if (isError) {
     return (
@@ -243,50 +209,13 @@ export function AgentAssistantMessage({
       )}
 
       {!isStreamActive && content && (
-        <div className={`flex items-center gap-1 ${buttonMargin}`}>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleCopy}
-            className="h-6 w-6 p-0 text-muted-foreground"
-            title="Copy"
-          >
-            {isCopied ? (
-              <Check className="w-3.5 h-3.5" />
-            ) : (
-              <Copy className="w-3.5 h-3.5" />
-            )}
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleEditClick}
-            className="h-6 w-6 p-0 text-muted-foreground"
-            title="Edit in full screen"
-          >
-            <Edit className="w-3.5 h-3.5" />
-          </Button>
-          <Button
-            ref={moreOptionsButtonRef}
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowOptionsMenu(!showOptionsMenu)}
-            className="h-6 w-6 p-0 text-muted-foreground"
-            title="More options"
-          >
-            <MoreHorizontal className="w-3.5 h-3.5" />
-          </Button>
-          <MessageOptionsMenu
-            isOpen={showOptionsMenu}
-            content={content}
-            onClose={() => setShowOptionsMenu(false)}
-            onShowHtmlPreview={handleShowHtmlPreview}
-            onEditContent={handleEditClick}
-            onFullPrint={handleFullPrint}
-            isCapturing={isCapturing}
-            anchorElement={moreOptionsButtonRef.current}
-          />
-        </div>
+        <AssistantActionBar
+          content={content}
+          messageId={turnId ?? requestId ?? ""}
+          conversationId={conversationId}
+          onFullPrint={handleFullPrint}
+          isCapturing={isCapturing}
+        />
       )}
     </div>
   );

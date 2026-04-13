@@ -6,7 +6,7 @@
  * Renders a user turn — text + content block chips — inside one collapsible
  * bubble, matching the style of PromptUserMessage.
  *
- * Content blocks are always ContentBlockPayload (normalized at the Redux
+ * Content blocks are always RenderBlockPayload (normalized at the Redux
  * boundary). Chips are tiny pill-shaped references. Clicking opens a per-type
  * modal (placeholder JSON viewer until real modals are built).
  */
@@ -38,9 +38,9 @@ import { selectTurnByTurnId } from "@/features/agents/redux/execution-system/ins
 // Types
 // ─────────────────────────────────────────────────────────────────────────────
 
-import type { ContentBlockPayload } from "@/types/python-generated/stream-events";
+import type { RenderBlockPayload } from "@/types/python-generated/stream-events";
 
-type ContentBlock = ContentBlockPayload;
+type ContentBlock = RenderBlockPayload;
 
 interface AgentUserMessageProps {
   conversationId: string;
@@ -466,7 +466,7 @@ export function AgentUserMessage({
   const previousContentRef = useRef<string>("");
 
   const content = turn?.content ?? "";
-  const contentBlocks = turn?.contentBlocks;
+  const contentBlocks = turn?.renderBlocks;
 
   const normalisedBlocks: NormalisedBlock[] = (contentBlocks ?? [])
     .map((b, i) => normaliseBlock(b, i))

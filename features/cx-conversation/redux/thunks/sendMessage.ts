@@ -324,7 +324,7 @@ export const sendMessage = createAsyncThunk<
           }
           break;
         }
-        case "content_block": {
+        case "render_block": {
           blockEventsBuffer.push(event);
           dispatch(
             chatConversationsActions.pushStreamEvent({
