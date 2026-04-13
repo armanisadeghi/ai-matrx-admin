@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
+import InstanceUIStateSliceViewer from "./sliceViewers/InstanceUIStateSliceViewer";
 
 export const TAB_INDEX_ID = "__tab_index__" as const;
 
@@ -115,23 +116,7 @@ export function getStateViewerTabs(
       label: "Execution Inspector",
       content: <ExecutionInstanceInspector />,
     },
-    {
-      id: "user",
-      label: "User",
-      content: (
-        <GenericSliceViewer sliceKey="user" state={completeState.user} />
-      ),
-    },
-    {
-      id: "userPreferences",
-      label: "User Preferences",
-      content: (
-        <GenericSliceViewer
-          sliceKey="userPreferences"
-          state={completeState.userPreferences}
-        />
-      ),
-    },
+
     {
       id: "adminDebug",
       label: "Admin Debug",
@@ -142,6 +127,169 @@ export function getStateViewerTabs(
         />
       ),
     },
+
+    {
+      id: "apiConfig",
+      label: "API Config",
+      content: (
+        <GenericSliceViewer
+          sliceKey="apiConfig"
+          state={completeState.apiConfig}
+        />
+      ),
+    },
+    {
+      id: "agentDefinition",
+      label: "Agent Definition",
+      content: (
+        <GenericSliceViewer
+          sliceKey="agentDefinition"
+          state={completeState.agentDefinition}
+        />
+      ),
+    },
+    {
+      id: "executionInstances",
+      label: "Execution Instances",
+      content: (
+        <GenericSliceViewer
+          sliceKey="executionInstances"
+          state={completeState.executionInstances}
+        />
+      ),
+    },
+    {
+      id: "instanceVariableValues",
+      label: "Instance Variable Values",
+      content: (
+        <GenericSliceViewer
+          sliceKey="instanceVariableValues"
+          state={completeState.instanceVariableValues}
+        />
+      ),
+    },
+    {
+      id: "instanceUserInput",
+      label: "Instance User Input",
+      content: (
+        <GenericSliceViewer
+          sliceKey="instanceUserInput"
+          state={completeState.instanceUserInput}
+        />
+      ),
+    },
+    {
+      id: "customInstanceUIState",
+      label: "Custom Instance UI State",
+      content: <InstanceUIStateSliceViewer />,
+    },
+    {
+      id: "instanceUIState",
+      label: "Instance UI State",
+      content: (
+        <GenericSliceViewer
+          sliceKey="instanceUIState"
+          state={completeState.instanceUIState}
+        />
+      ),
+    },
+
+    {
+      id: "activeRequests",
+      label: "Active Requests",
+      content: (
+        <GenericSliceViewer
+          sliceKey="activeRequests"
+          state={completeState.activeRequests}
+        />
+      ),
+    },
+    {
+      id: "instanceConversationHistory",
+      label: "Instance Conversation History",
+      content: (
+        <GenericSliceViewer
+          sliceKey="instanceConversationHistory"
+          state={completeState.instanceConversationHistory}
+        />
+      ),
+    },
+
+    {
+      id: "instanceResources",
+      label: "Instance Resources",
+      content: (
+        <GenericSliceViewer
+          sliceKey="instanceResources"
+          state={completeState.instanceResources}
+        />
+      ),
+    },
+
+    {
+      id: "agentShortcut",
+      label: "Agent Shortcuts",
+      content: (
+        <GenericSliceViewer
+          sliceKey="agentShortcut"
+          state={completeState.agentShortcut}
+        />
+      ),
+    },
+    {
+      id: "agentConsumers",
+      label: "Agent Consumers",
+      content: (
+        <GenericSliceViewer
+          sliceKey="agentConsumers"
+          state={completeState.agentConsumers}
+        />
+      ),
+    },
+    {
+      id: "appContext",
+      label: "App Context",
+      content: (
+        <GenericSliceViewer
+          sliceKey="appContext"
+          state={completeState.appContext}
+        />
+      ),
+    },
+
+    {
+      id: "instanceModelOverrides",
+      label: "Instance Model Overrides",
+      content: (
+        <GenericSliceViewer
+          sliceKey="instanceModelOverrides"
+          state={completeState.instanceModelOverrides}
+        />
+      ),
+    },
+
+    {
+      id: "instanceContext",
+      label: "Instance Context",
+      content: (
+        <GenericSliceViewer
+          sliceKey="instanceContext"
+          state={completeState.instanceContext}
+        />
+      ),
+    },
+
+    {
+      id: "instanceClientTools",
+      label: "Instance Client Tools",
+      content: (
+        <GenericSliceViewer
+          sliceKey="instanceClientTools"
+          state={completeState.instanceClientTools}
+        />
+      ),
+    },
+
     {
       id: "overlays",
       label: "Overlays",
@@ -233,6 +381,23 @@ export function getStateViewerTabs(
         <GenericSliceViewer
           sliceKey="noteVersions"
           state={completeState.noteVersions}
+        />
+      ),
+    },
+    {
+      id: "user",
+      label: "User",
+      content: (
+        <GenericSliceViewer sliceKey="user" state={completeState.user} />
+      ),
+    },
+    {
+      id: "userPreferences",
+      label: "User Preferences",
+      content: (
+        <GenericSliceViewer
+          sliceKey="userPreferences"
+          state={completeState.userPreferences}
         />
       ),
     },
@@ -718,156 +883,7 @@ export function getStateViewerTabs(
         />
       ),
     },
-    {
-      id: "apiConfig",
-      label: "API Config",
-      content: (
-        <GenericSliceViewer
-          sliceKey="apiConfig"
-          state={completeState.apiConfig}
-        />
-      ),
-    },
-    {
-      id: "agentDefinition",
-      label: "Agent Definition",
-      content: (
-        <GenericSliceViewer
-          sliceKey="agentDefinition"
-          state={completeState.agentDefinition}
-        />
-      ),
-    },
-    {
-      id: "agentShortcut",
-      label: "Agent Shortcuts",
-      content: (
-        <GenericSliceViewer
-          sliceKey="agentShortcut"
-          state={completeState.agentShortcut}
-        />
-      ),
-    },
-    {
-      id: "agentConsumers",
-      label: "Agent Consumers",
-      content: (
-        <GenericSliceViewer
-          sliceKey="agentConsumers"
-          state={completeState.agentConsumers}
-        />
-      ),
-    },
-    {
-      id: "appContext",
-      label: "App Context",
-      content: (
-        <GenericSliceViewer
-          sliceKey="appContext"
-          state={completeState.appContext}
-        />
-      ),
-    },
-    {
-      id: "executionInstances",
-      label: "Execution Instances",
-      content: (
-        <GenericSliceViewer
-          sliceKey="executionInstances"
-          state={completeState.executionInstances}
-        />
-      ),
-    },
-    {
-      id: "instanceModelOverrides",
-      label: "Instance Model Overrides",
-      content: (
-        <GenericSliceViewer
-          sliceKey="instanceModelOverrides"
-          state={completeState.instanceModelOverrides}
-        />
-      ),
-    },
-    {
-      id: "instanceVariableValues",
-      label: "Instance Variable Values",
-      content: (
-        <GenericSliceViewer
-          sliceKey="instanceVariableValues"
-          state={completeState.instanceVariableValues}
-        />
-      ),
-    },
-    {
-      id: "instanceResources",
-      label: "Instance Resources",
-      content: (
-        <GenericSliceViewer
-          sliceKey="instanceResources"
-          state={completeState.instanceResources}
-        />
-      ),
-    },
-    {
-      id: "instanceContext",
-      label: "Instance Context",
-      content: (
-        <GenericSliceViewer
-          sliceKey="instanceContext"
-          state={completeState.instanceContext}
-        />
-      ),
-    },
-    {
-      id: "instanceUserInput",
-      label: "Instance User Input",
-      content: (
-        <GenericSliceViewer
-          sliceKey="instanceUserInput"
-          state={completeState.instanceUserInput}
-        />
-      ),
-    },
-    {
-      id: "instanceClientTools",
-      label: "Instance Client Tools",
-      content: (
-        <GenericSliceViewer
-          sliceKey="instanceClientTools"
-          state={completeState.instanceClientTools}
-        />
-      ),
-    },
-    {
-      id: "instanceUIState",
-      label: "Instance UI State",
-      content: (
-        <GenericSliceViewer
-          sliceKey="instanceUIState"
-          state={completeState.instanceUIState}
-        />
-      ),
-    },
-    {
-      id: "activeRequests",
-      label: "Active Requests",
-      content: (
-        <GenericSliceViewer
-          sliceKey="activeRequests"
-          state={completeState.activeRequests}
-        />
-      ),
-    },
-    {
-      id: "instanceConversationHistory",
-      label: "Instance Conversation History",
-      content: (
-        <GenericSliceViewer
-          sliceKey="instanceConversationHistory"
-          state={completeState.instanceConversationHistory}
-        />
-      ),
-    },
+
     {
       id: "mcp",
       label: "MCP",

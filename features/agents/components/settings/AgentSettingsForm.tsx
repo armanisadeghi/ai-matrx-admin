@@ -132,7 +132,7 @@ export function AgentSettingsForm({ agentId }: AgentSettingsFormProps) {
   return (
     <div className="flex flex-col h-full relative">
       {/* Top sticky static action bar (for saving state) */}
-      <div className="flex items-center justify-between px-4 py-2 border-b bg-muted/40 shrink-0">
+      <div className="flex items-center justify-between p-2 border-b bg-muted/40 shrink-0">
         <span className="text-xs font-medium text-muted-foreground">
           {isDirty ? "Unsaved changes..." : "All changes saved"}
         </span>
@@ -163,8 +163,8 @@ export function AgentSettingsForm({ agentId }: AgentSettingsFormProps) {
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        <div className="flex flex-col gap-8 p-6 max-w-4xl mx-auto text-sm">
-          <div className="grid grid-cols-1 gap-6">
+        <div className="flex flex-col gap-8 p-3 max-w-4xl mx-auto text-sm">
+          <div className="grid grid-cols-1 gap-4">
             <div className="space-y-2 flex flex-col">
               <Label className="text-sm font-semibold">Name</Label>
               <VoiceTextarea

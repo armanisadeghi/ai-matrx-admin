@@ -15,6 +15,7 @@ import type { Resource } from "@/features/prompts/types/resources";
 import type { PromptVariable } from "@/features/prompts/types/core";
 import type { Json } from "@/types/database.types";
 import type {
+  CxMessage,
   CxToolCall,
   CxContentBlock,
   CxContentHistoryEntry,
@@ -173,7 +174,7 @@ export interface SessionUIState {
   /** Full model settings (temperature, max_tokens, etc.) — sent as config_overrides */
   modelSettings: Record<string, unknown>;
   useLocalhost: boolean;
-  useBlockMode: boolean;
+  isBlockMode: boolean;
   /** Admin/creator debug panel open — shows system messages, raw state, etc. */
   showDebugInfo: boolean;
 }
@@ -212,6 +213,17 @@ export interface ConversationSession {
    * Use selectToolCallByCallId(state, sessionId, callId) for O(1) access.
    */
   toolCallsById: Record<string, CxToolCall>;
+
+  /**
+   * Raw `cx_message` rows from the last `loadConversationHistory` fetch.
+   * `null` until a DB load populates them (see `selectProtocolCanonicalMessages`).
+   */
+  protocolDbMessages: CxMessage[] | null;
+  /**
+   * Raw `cx_tool_call` rows from the same fetch (conversation order).
+   * `null` when no tool calls or not yet loaded.
+   */
+  protocolDbToolCalls: CxToolCall[] | null;
 
   // ========== Timestamps ==========
   createdAt: number;
@@ -325,6 +337,9 @@ export interface LoadConversationPayload {
   variableDefaults?: PromptVariable[];
   /** All CxToolCall records for the conversation, keyed by call_id */
   toolCallsById?: Record<string, CxToolCall>;
+  /** Raw DB rows for chat-protocol rebuild (`buildCanonicalMessages`) */
+  protocolDbMessages?: CxMessage[] | null;
+  protocolDbToolCalls?: CxToolCall[] | null;
 }
 
 /** Payload for applying a historical content snapshot back to a message */

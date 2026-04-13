@@ -12,7 +12,7 @@
 //   - modelOverride     → user-selected model (only sent if dirty vs agent default)
 //   - modelSettings     → user-modified settings (only sent if dirty vs agent default)
 //   - agentDefaultSettings → baseline for dirty detection
-//   - useBlockMode      → admin toggle, persists across conversations
+//   - isBlockMode      → admin toggle, persists across conversations
 //   - messageContext     → deferred context objects sent with the next message
 //                          (questionnaire responses, IDE state, user data, etc.)
 //                          Backend handles injection tiers — we just populate the dict.
@@ -65,7 +65,7 @@ interface ActiveChatState {
   /** Controls the AgentPickerSheet visibility */
   isAgentPickerOpen: boolean;
   /** Admin-only block mode toggle — persists across conversations */
-  useBlockMode: boolean;
+  isBlockMode: boolean;
   /** Queued first message for welcome → conversation transition */
   firstMessage: FirstMessage | null;
   /** User-selected model override (null = use agent default) */
@@ -92,7 +92,7 @@ const initialState: ActiveChatState = {
   sessionId: null,
   selectedAgent: getDefaultAgent(),
   isAgentPickerOpen: false,
-  useBlockMode: false,
+  isBlockMode: false,
   firstMessage: null,
   modelOverride: null,
   modelSettings: {},
@@ -121,7 +121,7 @@ const activeChatSlice = createSlice({
       state.isAgentPickerOpen = false;
     },
     setUseBlockMode(state, action: PayloadAction<boolean>) {
-      state.useBlockMode = action.payload;
+      state.isBlockMode = action.payload;
     },
     /** Queue a first message for the welcome → conversation transition */
     setFirstMessage(state, action: PayloadAction<FirstMessage | null>) {
@@ -205,7 +205,7 @@ export const selectIsAgentPickerOpen = (s: StateWithActiveChat): boolean =>
   s.activeChat.isAgentPickerOpen;
 
 export const selectActiveChatUseBlockMode = (s: StateWithActiveChat): boolean =>
-  s.activeChat.useBlockMode;
+  s.activeChat.isBlockMode;
 
 export const selectFirstMessage = (
   s: StateWithActiveChat,

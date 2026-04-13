@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   AlertTriangle,
   ArrowLeft,
-  Bot,
+  Webhook,
   CheckCircle2,
   Clock,
   ExternalLink,
@@ -224,11 +224,6 @@ function PreviewBody({
 
   return (
     <div className="flex flex-col h-full min-h-0 gap-3 p-4">
-      <div className="flex items-center gap-2 shrink-0">
-        <Bot className="w-4 h-4 text-muted-foreground" />
-        <span className="text-sm font-medium">Preview — will be created</span>
-      </div>
-
       {warnings.length > 0 && (
         <div className="flex flex-col gap-1.5 shrink-0">
           {warnings.map((w, i) => (

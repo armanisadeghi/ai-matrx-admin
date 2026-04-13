@@ -9,7 +9,6 @@ import {
   AgentSidebar,
   AgentTabs,
 } from "@/features/agents/components/settings/AgentSettingsWorkspace";
-import { Bot } from "lucide-react";
 
 interface AgentSettingsWindowProps {
   initialAgentId?: string;
@@ -88,7 +87,6 @@ export default function AgentSettingsWindow({
             <AgentSettingsForm key={activeTabId} agentId={activeTabId} />
           ) : (
             <div className="flex flex-col items-center justify-center p-8 text-center h-[300px] text-muted-foreground">
-              <Bot className="w-12 h-12 mb-4 opacity-20" />
               <p className="text-sm font-medium">
                 Select an agent to edit info
               </p>

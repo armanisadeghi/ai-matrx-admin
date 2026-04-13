@@ -25,7 +25,6 @@ export default async function AgentTemplatesPage() {
 
   if (error) {
     console.error("Error fetching templates:", error);
-    throw new Error("Failed to fetch templates");
   }
 
   return (
@@ -50,7 +49,18 @@ export default async function AgentTemplatesPage() {
           </div>
         </div>
 
-        <TemplatesGrid templates={templates || []} />
+        {error ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center gap-3">
+            <p className="text-muted-foreground">
+              Unable to load templates right now.
+            </p>
+            <p className="text-xs text-muted-foreground/60">
+              Check the server logs for details.
+            </p>
+          </div>
+        ) : (
+          <TemplatesGrid templates={templates || []} />
+        )}
       </div>
     </Card>
   );

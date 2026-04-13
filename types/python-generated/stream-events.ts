@@ -1,6 +1,8 @@
 // AUTO-GENERATED — do not edit manually.
-// Source: matrx_connect.context.* (Pydantic models + registries)
-// Run: .venv/bin/python scripts/generate_types.py stream
+// Sources:
+//   matrx_connect.context.*  — stream event types
+//   matrx_ai.db.message_parts — cx_message.content[] types
+// Run: uv run python scripts/generate_types.py stream
 
 export const EventType = {
   CHUNK: "chunk",
@@ -53,15 +55,9 @@ export type ToolEventType =
   | "tool_error"
   | "tool_delegated";
 
-export type WarningLevel =
-  | "low"
-  | "medium"
-  | "high";
+export type WarningLevel = "low" | "medium" | "high";
 
-export type InitCompletionStatus =
-  | "success"
-  | "failed"
-  | "cancelled";
+export type InitCompletionStatus = "success" | "failed" | "cancelled";
 
 export interface ChunkPayload {
   text: string;
@@ -72,7 +68,19 @@ export interface ReasoningChunkPayload {
 }
 
 export interface PhasePayload {
-  phase: "connected" | "processing" | "generating" | "using_tools" | "persisting" | "searching" | "scraping" | "analyzing" | "synthesizing" | "retrying" | "executing" | "complete";
+  phase:
+    | "connected"
+    | "processing"
+    | "generating"
+    | "using_tools"
+    | "persisting"
+    | "searching"
+    | "scraping"
+    | "analyzing"
+    | "synthesizing"
+    | "retrying"
+    | "executing"
+    | "complete";
 }
 
 export interface WarningPayload {
@@ -92,14 +100,24 @@ export interface InfoPayload {
 }
 
 export interface InitPayload {
-  operation: "llm_request" | "tool_execution" | "user_request" | "sub_agent" | "persistence";
+  operation:
+    | "llm_request"
+    | "tool_execution"
+    | "user_request"
+    | "sub_agent"
+    | "persistence";
   operation_id: string;
   parent_operation_id?: string | null;
   metadata?: Record<string, unknown>;
 }
 
 export interface CompletionPayload {
-  operation: "llm_request" | "tool_execution" | "user_request" | "sub_agent" | "persistence";
+  operation:
+    | "llm_request"
+    | "tool_execution"
+    | "user_request"
+    | "sub_agent"
+    | "persistence";
   operation_id: string;
   status: "success" | "failed" | "cancelled";
   result?: Record<string, unknown>;
@@ -114,7 +132,14 @@ export interface ErrorPayload {
 }
 
 export interface ToolEventPayload {
-  event: "tool_started" | "tool_progress" | "tool_step" | "tool_result_preview" | "tool_completed" | "tool_error" | "tool_delegated";
+  event:
+    | "tool_started"
+    | "tool_progress"
+    | "tool_step"
+    | "tool_result_preview"
+    | "tool_completed"
+    | "tool_error"
+    | "tool_delegated";
   call_id: string;
   tool_name: string;
   timestamp?: number;
@@ -200,16 +225,42 @@ export interface ConversationLabeledData {
   keywords?: string[];
 }
 
+export interface QuestionnaireQuestion {
+  id: string;
+  prompt: string;
+  component_type:
+    | "dropdown"
+    | "checkboxes"
+    | "radio"
+    | "toggle"
+    | "slider"
+    | "input"
+    | "textarea";
+  options?: string[];
+  min?: number | null;
+  max?: number | null;
+  step?: number | null;
+  default?: unknown;
+  required?: boolean;
+}
+
 export interface QuestionnaireDisplayData {
   type?: "display_questionnaire";
   introduction: string;
-  questions?: Record<string, unknown>[];
+  questions?: QuestionnaireQuestion[];
+}
+
+export interface FetchResultItem {
+  url?: string;
+  title?: string;
+  content?: string;
+  status?: string;
 }
 
 export interface FetchResultsData {
   type?: "fetch_results";
   metadata?: Record<string, unknown>;
-  results?: Record<string, unknown>[];
+  results?: FetchResultItem[];
 }
 
 export interface FunctionResultData {
@@ -254,16 +305,29 @@ export interface SearchErrorData {
   error: string;
 }
 
+export interface SearchResultItem {
+  url?: string;
+  title?: string;
+  snippet?: string;
+  published?: string | null;
+  source?: string | null;
+}
+
 export interface SearchResultsData {
   type?: "search_results";
   metadata?: Record<string, unknown>;
-  results?: Record<string, unknown>[];
+  results?: SearchResultItem[];
+}
+
+export interface StructuredInputFailure {
+  url?: string;
+  reason?: string;
 }
 
 export interface StructuredInputWarningData {
   type?: "structured_input_warning";
   block_type: string;
-  failures?: Record<string, unknown>[];
+  failures?: StructuredInputFailure[];
 }
 
 export interface VideoOutputData {
@@ -382,24 +446,74 @@ export interface PersistenceResult {
   duration_ms?: number;
 }
 
+// --- Typed Completion Event Interfaces (discriminated on `operation`) ---
+
+// Each interface narrows CompletionPayload.result to its concrete type.
+// Use TypedCompletionEvent instead of CompletionPayload when you need typed result.
+
+export interface LlmRequestCompletionEvent {
+  operation: "llm_request";
+  operation_id: string;
+  status: InitCompletionStatus;
+  result: LlmRequestResult;
+}
+
+export interface ToolExecutionCompletionEvent {
+  operation: "tool_execution";
+  operation_id: string;
+  status: InitCompletionStatus;
+  result: ToolExecutionResult;
+}
+
+export interface UserRequestCompletionEvent {
+  operation: "user_request";
+  operation_id: string;
+  status: InitCompletionStatus;
+  result: UserRequestResult;
+}
+
+export interface SubAgentCompletionEvent {
+  operation: "sub_agent";
+  operation_id: string;
+  status: InitCompletionStatus;
+  result: SubAgentResult;
+}
+
+export interface PersistenceCompletionEvent {
+  operation: "persistence";
+  operation_id: string;
+  status: InitCompletionStatus;
+  result: PersistenceResult;
+}
+
+export type TypedCompletionEvent =
+  | LlmRequestCompletionEvent
+  | ToolExecutionCompletionEvent
+  | UserRequestCompletionEvent
+  | SubAgentCompletionEvent
+  | PersistenceCompletionEvent;
+
+const TYPED_COMPLETION_EVENT_OPERATIONS = new Set<Operation>([
+  "llm_request",
+  "tool_execution",
+  "user_request",
+  "sub_agent",
+  "persistence",
+]);
+
+export function isTypedCompletionEvent(
+  e: CompletionPayload,
+): e is CompletionPayload & TypedCompletionEvent {
+  return (
+    TYPED_COMPLETION_EVENT_OPERATIONS.has(e.operation as Operation) &&
+    e.result !== undefined
+  );
+}
+
 // --- Tool Event Data Models ---
 
 export interface ToolStartedData {
   arguments?: Record<string, unknown>;
-}
-
-export interface ToolCompletedData {
-  result?: unknown;
-}
-
-export interface ToolErrorData {
-  error_type: string;
-  detail?: string | null;
-}
-
-export interface ToolStepData {
-  step: string;
-  metadata?: Record<string, unknown>;
 }
 
 export interface ToolProgressData {
@@ -407,8 +521,22 @@ export interface ToolProgressData {
   metadata?: Record<string, unknown>;
 }
 
+export interface ToolStepData {
+  step: string;
+  metadata?: Record<string, unknown>;
+}
+
 export interface ToolResultPreviewData {
   preview: string;
+}
+
+export interface ToolCompletedData {
+  result?: string | Record<string, unknown> | null;
+}
+
+export interface ToolErrorData {
+  error_type: string;
+  detail?: string | null;
 }
 
 export interface ToolDelegatedData {
@@ -417,12 +545,1417 @@ export interface ToolDelegatedData {
 
 export type TypedToolEventData =
   | ToolStartedData
+  | ToolProgressData
+  | ToolStepData
+  | ToolResultPreviewData
   | ToolCompletedData
   | ToolErrorData
-  | ToolStepData
-  | ToolProgressData
-  | ToolResultPreviewData
   | ToolDelegatedData;
+
+// --- Typed Tool Event Interfaces (discriminated on `event`) ---
+
+// Each interface narrows ToolEventPayload.data to its concrete type.
+// Use TypedToolEvent instead of the base ToolEventPayload when you need typed data.
+
+export interface ToolStartedToolEvent {
+  event: "tool_started";
+  call_id: string;
+  tool_name: string;
+  timestamp?: number;
+  message?: string | null;
+  show_spinner?: boolean;
+  data: ToolStartedData;
+}
+
+export interface ToolProgressToolEvent {
+  event: "tool_progress";
+  call_id: string;
+  tool_name: string;
+  timestamp?: number;
+  message?: string | null;
+  show_spinner?: boolean;
+  data: ToolProgressData;
+}
+
+export interface ToolStepToolEvent {
+  event: "tool_step";
+  call_id: string;
+  tool_name: string;
+  timestamp?: number;
+  message?: string | null;
+  show_spinner?: boolean;
+  data: ToolStepData;
+}
+
+export interface ToolResultPreviewToolEvent {
+  event: "tool_result_preview";
+  call_id: string;
+  tool_name: string;
+  timestamp?: number;
+  message?: string | null;
+  show_spinner?: boolean;
+  data: ToolResultPreviewData;
+}
+
+export interface ToolCompletedToolEvent {
+  event: "tool_completed";
+  call_id: string;
+  tool_name: string;
+  timestamp?: number;
+  message?: string | null;
+  show_spinner?: boolean;
+  data: ToolCompletedData;
+}
+
+export interface ToolErrorToolEvent {
+  event: "tool_error";
+  call_id: string;
+  tool_name: string;
+  timestamp?: number;
+  message?: string | null;
+  show_spinner?: boolean;
+  data: ToolErrorData;
+}
+
+export interface ToolDelegatedToolEvent {
+  event: "tool_delegated";
+  call_id: string;
+  tool_name: string;
+  timestamp?: number;
+  message?: string | null;
+  show_spinner?: boolean;
+  data: ToolDelegatedData;
+}
+
+export type TypedToolEvent =
+  | ToolStartedToolEvent
+  | ToolProgressToolEvent
+  | ToolStepToolEvent
+  | ToolResultPreviewToolEvent
+  | ToolCompletedToolEvent
+  | ToolErrorToolEvent
+  | ToolDelegatedToolEvent;
+
+const TYPED_TOOL_EVENT_TYPES = new Set<ToolEventType>([
+  "tool_started",
+  "tool_progress",
+  "tool_step",
+  "tool_result_preview",
+  "tool_completed",
+  "tool_error",
+  "tool_delegated",
+]);
+
+export function isTypedToolEvent(
+  e: ToolEventPayload,
+): e is ToolEventPayload & TypedToolEvent {
+  return (
+    TYPED_TOOL_EVENT_TYPES.has(e.event as ToolEventType) && e.data !== undefined
+  );
+}
+
+// --- Content Block Data Models (ContentBlockPayload.data per type) ---
+
+export interface FlashcardItem {
+  front: string;
+  back?: string | null;
+}
+
+export interface TranscriptSegment {
+  id: string;
+  timecode: string;
+  seconds: number;
+  text: string;
+  speaker?: string | null;
+}
+
+export interface TaskItem {
+  id: string;
+  title: string;
+  type: "section" | "task" | "subtask";
+  bold?: boolean;
+  checked?: boolean;
+  children?: TaskItem[];
+}
+
+export interface TaskItem {}
+
+export interface QuizQuestion {
+  id: number;
+  question: string;
+  options: string[];
+  correctAnswer: number;
+  explanation: string;
+}
+
+export interface Slide {
+  type?: string;
+  title?: string | null;
+  subtitle?: string | null;
+  description?: string | null;
+  bullets?: string[];
+  notes?: string | null;
+  imageUrl?: string | null;
+  quote?: string | null;
+  author?: string | null;
+  layout?: string | null;
+  extra?: Record<string, unknown>;
+}
+
+export interface SlideTheme {
+  primaryColor?: string;
+  secondaryColor?: string;
+  accentColor?: string;
+  backgroundColor?: string;
+  textColor?: string;
+}
+
+export interface Ingredient {
+  amount?: string;
+  item: string;
+}
+
+export interface RecipeStep {
+  action: string;
+  description: string;
+  time?: string | null;
+}
+
+export interface TimelineEvent {
+  id: string;
+  title: string;
+  date?: string;
+  description?: string;
+  status?: "completed" | "in-progress" | "pending" | null;
+  category?: string | null;
+}
+
+export interface TimelineEvent {
+  id: string;
+  title: string;
+  date?: string;
+  description?: string;
+  status?: "completed" | "in-progress" | "pending" | null;
+  category?: string | null;
+}
+
+export interface TimelinePeriod {
+  period: string;
+  events?: TimelineEvent[];
+}
+
+export interface Position {
+  x: number;
+  y: number;
+}
+
+export interface Position {
+  x: number;
+  y: number;
+}
+
+export interface DiagramNode {
+  id: string;
+  label: string;
+  type?: string | null;
+  nodeType?: string;
+  description?: string | null;
+  details?: string | null;
+  position?: Position | null;
+}
+
+export interface DiagramEdge {
+  id: string;
+  source: string;
+  target: string;
+  label?: string | null;
+  type?: string;
+  color?: string | null;
+  dashed?: boolean;
+  strokeWidth?: number;
+}
+
+export interface DiagramLayout {
+  direction?: "TB" | "LR" | "BT" | "RL";
+  spacing?: number;
+}
+
+export interface ResourceItem {
+  id: string;
+  title: string;
+  url?: string;
+  description?: string;
+  type?: string;
+  duration?: string | null;
+  difficulty?: "beginner" | "intermediate" | "advanced" | null;
+  rating?: number | null;
+  tags?: string[];
+}
+
+export interface ResourceItem {
+  id: string;
+  title: string;
+  url?: string;
+  description?: string;
+  type?: string;
+  duration?: string | null;
+  difficulty?: "beginner" | "intermediate" | "advanced" | null;
+  rating?: number | null;
+  tags?: string[];
+}
+
+export interface ResourceCategory {
+  name: string;
+  items?: ResourceItem[];
+}
+
+export interface ProgressItem {
+  id: string;
+  text: string;
+  completed?: boolean;
+  priority?: "high" | "medium" | "low" | null;
+  estimatedHours?: number | null;
+  optional?: boolean;
+  category?: string | null;
+}
+
+export interface ProgressItem {
+  id: string;
+  text: string;
+  completed?: boolean;
+  priority?: "high" | "medium" | "low" | null;
+  estimatedHours?: number | null;
+  optional?: boolean;
+  category?: string | null;
+}
+
+export interface ProgressCategory {
+  id: string;
+  name: string;
+  description?: string | null;
+  color?: string | null;
+  completionPercentage?: number;
+  items?: ProgressItem[];
+}
+
+export interface ComparisonCriterion {
+  name: string;
+  values: unknown[];
+  type?: "cost" | "rating" | "text" | "boolean";
+  weight?: number | null;
+  higherIsBetter?: boolean | null;
+}
+
+export interface TroubleshootingLink {
+  title: string;
+  url: string;
+}
+
+export interface TroubleshootingStep {
+  id: string;
+  title: string;
+  description: string;
+  commands?: string[];
+  difficulty?: "easy" | "medium" | "hard" | null;
+  estimatedTime?: string | null;
+  links?: TroubleshootingLink[];
+}
+
+export interface TroubleshootingStep {
+  id: string;
+  title: string;
+  description: string;
+  commands?: string[];
+  difficulty?: "easy" | "medium" | "hard" | null;
+  estimatedTime?: string | null;
+  links?: TroubleshootingLink[];
+}
+
+export interface TroubleshootingSolution {
+  id: string;
+  title: string;
+  description?: string | null;
+  priority?: "high" | "medium" | "low" | null;
+  successRate?: number | null;
+  tags?: string[];
+  steps?: TroubleshootingStep[];
+}
+
+export interface TroubleshootingSolution {
+  id: string;
+  title: string;
+  description?: string | null;
+  priority?: "high" | "medium" | "low" | null;
+  successRate?: number | null;
+  tags?: string[];
+  steps?: TroubleshootingStep[];
+}
+
+export interface TroubleshootingIssue {
+  id: string;
+  symptom: string;
+  description?: string | null;
+  severity?: "low" | "medium" | "high" | "critical" | null;
+  causes?: string[];
+  relatedIssues?: string[];
+  solutions?: TroubleshootingSolution[];
+}
+
+export interface DecisionNode {
+  id: string;
+  question?: string | null;
+  action?: string | null;
+  type?: string;
+  yes?: DecisionNode | null;
+  no?: DecisionNode | null;
+  priority?: string | null;
+  category?: string | null;
+  estimatedTime?: string | null;
+}
+
+export interface DecisionNode {}
+
+export interface QuestionnaireSection {
+  title?: string;
+  content?: string;
+  items?: Record<string, unknown>[];
+  tables?: Record<string, unknown>[];
+  codeBlocks?: Record<string, unknown>[];
+  jsonBlocks?: Record<string, unknown>[];
+}
+
+export interface TextBlockData {}
+
+export interface CodeBlockData {
+  language?: string;
+  code?: string;
+  is_diff?: boolean;
+}
+
+export interface DiffBlockData {
+  language?: string;
+  style?: string;
+  code?: string;
+}
+
+export interface ThinkingBlockData {}
+
+export interface ReasoningBlockData {}
+
+export interface ConsolidatedReasoningBlockData {
+  reasoning_texts: string[];
+}
+
+export interface ImageBlockData {
+  src: string;
+  alt?: string;
+}
+
+export interface VideoBlockData {
+  src: string;
+  alt?: string;
+}
+
+export interface FlashcardItem {
+  front: string;
+  back?: string | null;
+}
+
+export interface FlashcardsBlockData {
+  cards: FlashcardItem[];
+  isComplete?: boolean;
+}
+
+export interface TranscriptSegment {
+  id: string;
+  timecode: string;
+  seconds: number;
+  text: string;
+  speaker?: string | null;
+}
+
+export interface TranscriptBlockData {
+  segments: TranscriptSegment[];
+}
+
+export interface TasksBlockData {
+  items: TaskItem[];
+}
+
+export interface QuizQuestion {
+  id: number;
+  question: string;
+  options: string[];
+  correctAnswer: number;
+  explanation: string;
+}
+
+export interface QuizBlockData {
+  quizTitle: string;
+  category?: string | null;
+  multipleChoice: QuizQuestion[];
+}
+
+export interface Slide {
+  type?: string;
+  title?: string | null;
+  subtitle?: string | null;
+  description?: string | null;
+  bullets?: string[];
+  notes?: string | null;
+  imageUrl?: string | null;
+  quote?: string | null;
+  author?: string | null;
+  layout?: string | null;
+  extra?: Record<string, unknown>;
+}
+
+export interface SlideTheme {
+  primaryColor?: string;
+  secondaryColor?: string;
+  accentColor?: string;
+  backgroundColor?: string;
+  textColor?: string;
+}
+
+export interface PresentationBlockData {
+  title?: string | null;
+  slides?: Slide[];
+  theme?: SlideTheme;
+}
+
+export interface Ingredient {
+  amount?: string;
+  item: string;
+}
+
+export interface RecipeStep {
+  action: string;
+  description: string;
+  time?: string | null;
+}
+
+export interface RecipeBlockData {
+  title?: string;
+  yields?: string;
+  totalTime?: string;
+  prepTime?: string;
+  cookTime?: string;
+  ingredients?: Ingredient[];
+  instructions?: RecipeStep[];
+  notes?: string | null;
+}
+
+export interface TimelinePeriod {
+  period: string;
+  events?: TimelineEvent[];
+}
+
+export interface TimelineBlockData {
+  title?: string;
+  description?: string | null;
+  periods?: TimelinePeriod[];
+}
+
+export interface DiagramEdge {
+  id: string;
+  source: string;
+  target: string;
+  label?: string | null;
+  type?: string;
+  color?: string | null;
+  dashed?: boolean;
+  strokeWidth?: number;
+}
+
+export interface DiagramLayout {
+  direction?: "TB" | "LR" | "BT" | "RL";
+  spacing?: number;
+}
+
+export interface DiagramNode {
+  id: string;
+  label: string;
+  type?: string | null;
+  nodeType?: string;
+  description?: string | null;
+  details?: string | null;
+  position?: Position | null;
+}
+
+export interface DiagramBlockData {
+  title: string;
+  description?: string | null;
+  type?:
+    | "flowchart"
+    | "mindmap"
+    | "orgchart"
+    | "network"
+    | "system"
+    | "process";
+  nodes?: DiagramNode[];
+  edges?: DiagramEdge[];
+  layout?: DiagramLayout;
+}
+
+export interface TableBlockData {
+  headers: string[];
+  rows: string[][];
+  isComplete?: boolean;
+  rawMarkdown?: string;
+}
+
+export interface ResearchFinding {
+  id: string;
+  title: string;
+  primarySource?: string;
+  additionalSources?: string[];
+  urls?: string[];
+  keyDetails?: string;
+  significance?: string;
+  futureImplications?: string;
+  confidenceLevel?: "HIGH" | "MEDIUM" | "LOW";
+}
+
+export interface ResearchSection {
+  id: string;
+  title: string;
+  subtitle?: string | null;
+  findings?: ResearchFinding[];
+}
+
+export interface ConvergentTheme {
+  theme: string;
+  description: string;
+}
+
+export interface ResearchChallenge {
+  id: string;
+  title: string;
+  description: string;
+  currentSolutions?: string | null;
+  researchGaps?: string | null;
+  category?: "technical" | "ethical" | "regulatory" | "other";
+}
+
+export interface ResearchMetadata {
+  researchDate?: string | null;
+  lastUpdated?: string | null;
+  confidenceRating?: string | null;
+  biasAssessment?: string | null;
+}
+
+export interface ResearchRecommendation {
+  id: string;
+  recommendation: string;
+  target?: "researchers" | "industry" | "policymakers" | "general";
+}
+
+export interface ResearchSection {
+  id: string;
+  title: string;
+  subtitle?: string | null;
+  findings?: ResearchFinding[];
+}
+
+export interface ResearchBlockData {
+  title: string;
+  overview?: string;
+  introduction?: string;
+  conclusion?: string;
+  executiveSummary?: string | null;
+  researchScope?: string | null;
+  keyFocusAreas?: string | null;
+  analysisPeriod?: string | null;
+  researchQuestions?: string[];
+  sections?: ResearchSection[];
+  convergentThemes?: ConvergentTheme[];
+  shortTermOutlook?: string[];
+  mediumTermOutlook?: string[];
+  longTermVision?: string[];
+  challenges?: ResearchChallenge[];
+  recommendations?: ResearchRecommendation[];
+  keyTakeaways?: string[];
+  limitations?: string[];
+  metadata?: ResearchMetadata;
+}
+
+export interface ResourceCategory {
+  name: string;
+  items?: ResourceItem[];
+}
+
+export interface ResourcesBlockData {
+  title: string;
+  description?: string | null;
+  categories?: ResourceCategory[];
+}
+
+export interface ProgressCategory {
+  id: string;
+  name: string;
+  description?: string | null;
+  color?: string | null;
+  completionPercentage?: number;
+  items?: ProgressItem[];
+}
+
+export interface ProgressTrackerBlockData {
+  title: string;
+  description?: string | null;
+  overallProgress?: number;
+  totalItems?: number;
+  completedItems?: number;
+  categories?: ProgressCategory[];
+}
+
+export interface ComparisonCriterion {
+  name: string;
+  values: unknown[];
+  type?: "cost" | "rating" | "text" | "boolean";
+  weight?: number | null;
+  higherIsBetter?: boolean | null;
+}
+
+export interface ComparisonBlockData {
+  title: string;
+  description?: string | null;
+  items: string[];
+  criteria?: ComparisonCriterion[];
+}
+
+export interface TroubleshootingIssue {
+  id: string;
+  symptom: string;
+  description?: string | null;
+  severity?: "low" | "medium" | "high" | "critical" | null;
+  causes?: string[];
+  relatedIssues?: string[];
+  solutions?: TroubleshootingSolution[];
+}
+
+export interface TroubleshootingBlockData {
+  title: string;
+  description?: string | null;
+  issues?: TroubleshootingIssue[];
+}
+
+export interface DecisionTreeBlockData {
+  title: string;
+  description?: string | null;
+  root: DecisionNode;
+}
+
+export interface MathProblemInner {
+  title?: string;
+  courseName?: string;
+  topicName?: string;
+  moduleName?: string;
+  description?: string | null;
+  introText?: string | null;
+  finalStatement?: string | null;
+  problemStatement?: MathProblemStatement;
+  solutions?: MathSolution[];
+}
+
+export interface MathProblemStatement {
+  text?: string;
+  equation?: string;
+  instruction?: string;
+}
+
+export interface MathSolution {
+  task?: string;
+  transitionText?: string | null;
+  solutionAnswer?: string;
+  steps?: MathSolutionStep[];
+}
+
+export interface MathSolutionStep {
+  title?: string;
+  equation?: string;
+  explanation?: string | null;
+  simplified?: string | null;
+}
+
+export interface MathProblemBlockData {
+  math_problem: MathProblemInner;
+}
+
+export interface QuestionnaireSection {
+  title?: string;
+  content?: string;
+  items?: Record<string, unknown>[];
+  tables?: Record<string, unknown>[];
+  codeBlocks?: Record<string, unknown>[];
+  jsonBlocks?: Record<string, unknown>[];
+}
+
+export interface QuestionnaireBlockData {
+  sections?: QuestionnaireSection[];
+  rawContent?: string;
+}
+
+export interface MatrxBrokerBlockData {
+  matrxRecordId?: string | null;
+  id?: string | null;
+  name?: string | null;
+  defaultValue?: string | null;
+  color?: string | null;
+  status?: string | null;
+  defaultComponent?: string | null;
+  dataType?: string | null;
+  rawContent?: string;
+}
+
+// --- Typed Content Block Interfaces (discriminated on `type`) ---
+
+// Each interface narrows ContentBlockPayload.data to its concrete type.
+// Use TypedContentBlock instead of ContentBlockPayload when you need typed data.
+
+export interface TextContentBlock {
+  blockId: string;
+  blockIndex: number;
+  type: "text";
+  status: "streaming" | "complete" | "error";
+  content?: string | null;
+  data?: TextBlockData | null;
+  metadata?: Record<string, unknown>;
+}
+
+export interface CodeContentBlock {
+  blockId: string;
+  blockIndex: number;
+  type: "code";
+  status: "streaming" | "complete" | "error";
+  content?: string | null;
+  data?: CodeBlockData | null;
+  metadata?: Record<string, unknown>;
+}
+
+export interface TableContentBlock {
+  blockId: string;
+  blockIndex: number;
+  type: "table";
+  status: "streaming" | "complete" | "error";
+  content?: string | null;
+  data?: TableBlockData | null;
+  metadata?: Record<string, unknown>;
+}
+
+export interface ThinkingContentBlock {
+  blockId: string;
+  blockIndex: number;
+  type: "thinking";
+  status: "streaming" | "complete" | "error";
+  content?: string | null;
+  data?: ThinkingBlockData | null;
+  metadata?: Record<string, unknown>;
+}
+
+export interface ReasoningContentBlock {
+  blockId: string;
+  blockIndex: number;
+  type: "reasoning";
+  status: "streaming" | "complete" | "error";
+  content?: string | null;
+  data?: ReasoningBlockData | null;
+  metadata?: Record<string, unknown>;
+}
+
+export interface ConsolidatedReasoningContentBlock {
+  blockId: string;
+  blockIndex: number;
+  type: "consolidated_reasoning";
+  status: "streaming" | "complete" | "error";
+  content?: string | null;
+  data?: ConsolidatedReasoningBlockData | null;
+  metadata?: Record<string, unknown>;
+}
+
+export interface ImageContentBlock {
+  blockId: string;
+  blockIndex: number;
+  type: "image";
+  status: "streaming" | "complete" | "error";
+  content?: string | null;
+  data?: ImageBlockData | null;
+  metadata?: Record<string, unknown>;
+}
+
+export interface VideoContentBlock {
+  blockId: string;
+  blockIndex: number;
+  type: "video";
+  status: "streaming" | "complete" | "error";
+  content?: string | null;
+  data?: VideoBlockData | null;
+  metadata?: Record<string, unknown>;
+}
+
+export interface TasksContentBlock {
+  blockId: string;
+  blockIndex: number;
+  type: "tasks";
+  status: "streaming" | "complete" | "error";
+  content?: string | null;
+  data?: TasksBlockData | null;
+  metadata?: Record<string, unknown>;
+}
+
+export interface TranscriptContentBlock {
+  blockId: string;
+  blockIndex: number;
+  type: "transcript";
+  status: "streaming" | "complete" | "error";
+  content?: string | null;
+  data?: TranscriptBlockData | null;
+  metadata?: Record<string, unknown>;
+}
+
+export interface StructuredInfoContentBlock {
+  blockId: string;
+  blockIndex: number;
+  type: "structured_info";
+  status: "streaming" | "complete" | "error";
+  content?: string | null;
+  data?: Record<string, unknown> | null;
+  metadata?: Record<string, unknown>;
+}
+
+export interface MatrxBrokerContentBlock {
+  blockId: string;
+  blockIndex: number;
+  type: "matrxBroker";
+  status: "streaming" | "complete" | "error";
+  content?: string | null;
+  data?: MatrxBrokerBlockData | null;
+  metadata?: Record<string, unknown>;
+}
+
+export interface QuestionnaireContentBlock {
+  blockId: string;
+  blockIndex: number;
+  type: "questionnaire";
+  status: "streaming" | "complete" | "error";
+  content?: string | null;
+  data?: QuestionnaireBlockData | null;
+  metadata?: Record<string, unknown>;
+}
+
+export interface FlashcardsContentBlock {
+  blockId: string;
+  blockIndex: number;
+  type: "flashcards";
+  status: "streaming" | "complete" | "error";
+  content?: string | null;
+  data?: FlashcardsBlockData | null;
+  metadata?: Record<string, unknown>;
+}
+
+export interface QuizContentBlock {
+  blockId: string;
+  blockIndex: number;
+  type: "quiz";
+  status: "streaming" | "complete" | "error";
+  content?: string | null;
+  data?: QuizBlockData | null;
+  metadata?: Record<string, unknown>;
+}
+
+export interface PresentationContentBlock {
+  blockId: string;
+  blockIndex: number;
+  type: "presentation";
+  status: "streaming" | "complete" | "error";
+  content?: string | null;
+  data?: PresentationBlockData | null;
+  metadata?: Record<string, unknown>;
+}
+
+export interface CookingRecipeContentBlock {
+  blockId: string;
+  blockIndex: number;
+  type: "cooking_recipe";
+  status: "streaming" | "complete" | "error";
+  content?: string | null;
+  data?: RecipeBlockData | null;
+  metadata?: Record<string, unknown>;
+}
+
+export interface TimelineContentBlock {
+  blockId: string;
+  blockIndex: number;
+  type: "timeline";
+  status: "streaming" | "complete" | "error";
+  content?: string | null;
+  data?: TimelineBlockData | null;
+  metadata?: Record<string, unknown>;
+}
+
+export interface ProgressTrackerContentBlock {
+  blockId: string;
+  blockIndex: number;
+  type: "progress_tracker";
+  status: "streaming" | "complete" | "error";
+  content?: string | null;
+  data?: ProgressTrackerBlockData | null;
+  metadata?: Record<string, unknown>;
+}
+
+export interface ComparisonTableContentBlock {
+  blockId: string;
+  blockIndex: number;
+  type: "comparison_table";
+  status: "streaming" | "complete" | "error";
+  content?: string | null;
+  data?: ComparisonBlockData | null;
+  metadata?: Record<string, unknown>;
+}
+
+export interface TroubleshootingContentBlock {
+  blockId: string;
+  blockIndex: number;
+  type: "troubleshooting";
+  status: "streaming" | "complete" | "error";
+  content?: string | null;
+  data?: TroubleshootingBlockData | null;
+  metadata?: Record<string, unknown>;
+}
+
+export interface ResourcesContentBlock {
+  blockId: string;
+  blockIndex: number;
+  type: "resources";
+  status: "streaming" | "complete" | "error";
+  content?: string | null;
+  data?: ResourcesBlockData | null;
+  metadata?: Record<string, unknown>;
+}
+
+export interface DecisionTreeContentBlock {
+  blockId: string;
+  blockIndex: number;
+  type: "decision_tree";
+  status: "streaming" | "complete" | "error";
+  content?: string | null;
+  data?: DecisionTreeBlockData | null;
+  metadata?: Record<string, unknown>;
+}
+
+export interface DecisionContentBlock {
+  blockId: string;
+  blockIndex: number;
+  type: "decision";
+  status: "streaming" | "complete" | "error";
+  content?: string | null;
+  data?: Record<string, unknown> | null;
+  metadata?: Record<string, unknown>;
+}
+
+export interface ResearchContentBlock {
+  blockId: string;
+  blockIndex: number;
+  type: "research";
+  status: "streaming" | "complete" | "error";
+  content?: string | null;
+  data?: ResearchBlockData | null;
+  metadata?: Record<string, unknown>;
+}
+
+export interface DiagramContentBlock {
+  blockId: string;
+  blockIndex: number;
+  type: "diagram";
+  status: "streaming" | "complete" | "error";
+  content?: string | null;
+  data?: DiagramBlockData | null;
+  metadata?: Record<string, unknown>;
+}
+
+export interface MathProblemContentBlock {
+  blockId: string;
+  blockIndex: number;
+  type: "math_problem";
+  status: "streaming" | "complete" | "error";
+  content?: string | null;
+  data?: MathProblemBlockData | null;
+  metadata?: Record<string, unknown>;
+}
+
+export interface ArtifactContentBlock {
+  blockId: string;
+  blockIndex: number;
+  type: "artifact";
+  status: "streaming" | "complete" | "error";
+  content?: string | null;
+  data?: Record<string, unknown> | null;
+  metadata?: Record<string, unknown>;
+}
+
+export interface InfoContentBlock {
+  blockId: string;
+  blockIndex: number;
+  type: "info";
+  status: "streaming" | "complete" | "error";
+  content?: string | null;
+  data?: TextBlockData | null;
+  metadata?: Record<string, unknown>;
+}
+
+export interface TaskContentBlock {
+  blockId: string;
+  blockIndex: number;
+  type: "task";
+  status: "streaming" | "complete" | "error";
+  content?: string | null;
+  data?: TextBlockData | null;
+  metadata?: Record<string, unknown>;
+}
+
+export interface DatabaseContentBlock {
+  blockId: string;
+  blockIndex: number;
+  type: "database";
+  status: "streaming" | "complete" | "error";
+  content?: string | null;
+  data?: TextBlockData | null;
+  metadata?: Record<string, unknown>;
+}
+
+export interface PrivateContentBlock {
+  blockId: string;
+  blockIndex: number;
+  type: "private";
+  status: "streaming" | "complete" | "error";
+  content?: string | null;
+  data?: TextBlockData | null;
+  metadata?: Record<string, unknown>;
+}
+
+export interface PlanContentBlock {
+  blockId: string;
+  blockIndex: number;
+  type: "plan";
+  status: "streaming" | "complete" | "error";
+  content?: string | null;
+  data?: TextBlockData | null;
+  metadata?: Record<string, unknown>;
+}
+
+export interface EventContentBlock {
+  blockId: string;
+  blockIndex: number;
+  type: "event";
+  status: "streaming" | "complete" | "error";
+  content?: string | null;
+  data?: TextBlockData | null;
+  metadata?: Record<string, unknown>;
+}
+
+export interface ToolContentBlock {
+  blockId: string;
+  blockIndex: number;
+  type: "tool";
+  status: "streaming" | "complete" | "error";
+  content?: string | null;
+  data?: TextBlockData | null;
+  metadata?: Record<string, unknown>;
+}
+
+export type TypedContentBlock =
+  | TextContentBlock
+  | CodeContentBlock
+  | TableContentBlock
+  | ThinkingContentBlock
+  | ReasoningContentBlock
+  | ConsolidatedReasoningContentBlock
+  | ImageContentBlock
+  | VideoContentBlock
+  | TasksContentBlock
+  | TranscriptContentBlock
+  | StructuredInfoContentBlock
+  | MatrxBrokerContentBlock
+  | QuestionnaireContentBlock
+  | FlashcardsContentBlock
+  | QuizContentBlock
+  | PresentationContentBlock
+  | CookingRecipeContentBlock
+  | TimelineContentBlock
+  | ProgressTrackerContentBlock
+  | ComparisonTableContentBlock
+  | TroubleshootingContentBlock
+  | ResourcesContentBlock
+  | DecisionTreeContentBlock
+  | DecisionContentBlock
+  | ResearchContentBlock
+  | DiagramContentBlock
+  | MathProblemContentBlock
+  | ArtifactContentBlock
+  | InfoContentBlock
+  | TaskContentBlock
+  | DatabaseContentBlock
+  | PrivateContentBlock
+  | PlanContentBlock
+  | EventContentBlock
+  | ToolContentBlock;
+
+const TYPED_CONTENT_BLOCK_TYPES = new Set<string>([
+  "text",
+  "code",
+  "table",
+  "thinking",
+  "reasoning",
+  "consolidated_reasoning",
+  "image",
+  "video",
+  "tasks",
+  "transcript",
+  "structured_info",
+  "matrxBroker",
+  "questionnaire",
+  "flashcards",
+  "quiz",
+  "presentation",
+  "cooking_recipe",
+  "timeline",
+  "progress_tracker",
+  "comparison_table",
+  "troubleshooting",
+  "resources",
+  "decision_tree",
+  "decision",
+  "research",
+  "diagram",
+  "math_problem",
+  "artifact",
+  "info",
+  "task",
+  "database",
+  "private",
+  "plan",
+  "event",
+  "tool",
+]);
+
+export function isTypedContentBlock(
+  e: ContentBlockPayload,
+): e is ContentBlockPayload & TypedContentBlock {
+  return TYPED_CONTENT_BLOCK_TYPES.has(e.type);
+}
+
+// --- Message Part Models (cx_message.content[] items) ---
+
+export interface TextPart {
+  metadata?: Record<string, unknown>;
+  type?: "text";
+  text?: string;
+  id?: string;
+  citations?: unknown[];
+}
+
+export interface ThinkingPart {
+  metadata?: Record<string, unknown>;
+  type?: "thinking";
+  text?: string;
+  id?: string;
+  provider?: "openai" | "anthropic" | "google" | "cerebras" | null;
+  signature?: string | null;
+  signature_encoding?: "base64" | null;
+  summary?: unknown[];
+}
+
+export interface ToolCallPart {
+  metadata?: Record<string, unknown>;
+  type?: "tool_call";
+  id?: string;
+  name?: string;
+  arguments?: Record<string, unknown>;
+}
+
+export interface ToolResultPart {
+  metadata?: Record<string, unknown>;
+  type?: "tool_result";
+  tool_use_id?: string;
+  call_id?: string;
+  name?: string;
+  content?: string;
+  is_error?: boolean;
+}
+
+export interface ImageMediaPart {
+  metadata?: Record<string, unknown>;
+  type?: "media";
+  kind?: "image";
+  url?: string | null;
+  file_uri?: string | null;
+  mime_type?: string | null;
+}
+
+export interface AudioMediaPart {
+  metadata?: Record<string, unknown>;
+  type?: "media";
+  kind?: "audio";
+  url?: string | null;
+  file_uri?: string | null;
+  mime_type?: string | null;
+  transcription_result?: string | null;
+}
+
+export interface VideoMediaPart {
+  metadata?: Record<string, unknown>;
+  type?: "media";
+  kind?: "video";
+  url?: string | null;
+  file_uri?: string | null;
+  mime_type?: string | null;
+}
+
+export interface DocumentMediaPart {
+  metadata?: Record<string, unknown>;
+  type?: "media";
+  kind?: "document";
+  url?: string | null;
+  file_uri?: string | null;
+  mime_type?: string | null;
+}
+
+export interface YouTubeMediaPart {
+  metadata?: Record<string, unknown>;
+  type?: "media";
+  kind?: "youtube";
+  url: string;
+  mime_type?: string | null;
+}
+
+export interface CodeExecPart {
+  metadata?: Record<string, unknown>;
+  type?: "code_exec";
+  language?: string;
+  code?: string;
+}
+
+export interface CodeResultPart {
+  metadata?: Record<string, unknown>;
+  type?: "code_result";
+  output?: string;
+  outcome?: string;
+}
+
+export interface WebSearchPart {
+  metadata?: Record<string, unknown>;
+  type?: "web_search";
+  id?: string;
+  status?: string;
+}
+
+export interface PreFetchedUrl {
+  url: string;
+  textContent: string;
+  title?: string | null;
+  scrapedAt?: string | null;
+  charCount?: number | null;
+}
+
+export interface WebpageInputPart {
+  metadata?: Record<string, unknown>;
+  type?: "input_webpage";
+  urls?: string | PreFetchedUrl[];
+  convert_to_text?: boolean;
+  optional_context?: boolean;
+  keep_fresh?: boolean;
+  editable?: boolean;
+}
+
+export interface NotesInputPart {
+  metadata?: Record<string, unknown>;
+  type?: "input_notes";
+  note_ids?: string[];
+  template?: string;
+  convert_to_text?: boolean;
+  optional_context?: boolean;
+  keep_fresh?: boolean;
+  editable?: boolean;
+}
+
+export interface TaskInputPart {
+  metadata?: Record<string, unknown>;
+  type?: "input_task";
+  task_ids?: string[];
+  template?: string;
+  convert_to_text?: boolean;
+  optional_context?: boolean;
+  keep_fresh?: boolean;
+  editable?: boolean;
+}
+
+export interface TableInputPart {
+  metadata?: Record<string, unknown>;
+  type?: "input_table";
+  bookmarks?: Record<string, unknown>[];
+  convert_to_text?: boolean;
+  optional_context?: boolean;
+  keep_fresh?: boolean;
+  editable?: boolean;
+}
+
+export interface ListInputPart {
+  metadata?: Record<string, unknown>;
+  type?: "input_list";
+  bookmarks?: Record<string, unknown>[];
+  convert_to_text?: boolean;
+  optional_context?: boolean;
+  keep_fresh?: boolean;
+  editable?: boolean;
+}
+
+export interface DataInputPart {
+  metadata?: Record<string, unknown>;
+  type?: "input_data";
+  refs?: Record<string, unknown>[];
+  convert_to_text?: boolean;
+  optional_context?: boolean;
+  keep_fresh?: boolean;
+  editable?: boolean;
+}
+
+export interface ContextInputPart {
+  metadata?: Record<string, unknown>;
+  type?: "input_context";
+  context_id?: string;
+  context_name?: string;
+  context_data?: Record<string, unknown>;
+  convert_to_text?: boolean;
+  optional_context?: boolean;
+  keep_fresh?: boolean;
+  editable?: boolean;
+}
+
+export type MessagePart =
+  | TextPart
+  | ThinkingPart
+  | ToolCallPart
+  | ToolResultPart
+  | ImageMediaPart
+  | AudioMediaPart
+  | VideoMediaPart
+  | DocumentMediaPart
+  | YouTubeMediaPart
+  | CodeExecPart
+  | CodeResultPart
+  | WebSearchPart
+  | WebpageInputPart
+  | NotesInputPart
+  | TaskInputPart
+  | TableInputPart
+  | ListInputPart
+  | DataInputPart
+  | ContextInputPart;
+
+/** Parse the content array from a cx_message DB row. */
+export function parseMessageContent(content: unknown[]): MessagePart[] {
+  return content as MessagePart[];
+}
 
 export interface StreamEvent {
   event: EventType;
@@ -529,66 +2062,98 @@ export type TypedStreamEvent =
   | RecordUpdateEvent;
 
 // Type guards
-export function isChunkEvent(e: StreamEvent): e is { event: "chunk"; data: ChunkPayload } {
+export function isChunkEvent(
+  e: StreamEvent,
+): e is { event: "chunk"; data: ChunkPayload } {
   return e.event === "chunk";
 }
 
-export function isReasoningChunkEvent(e: StreamEvent): e is { event: "reasoning_chunk"; data: ReasoningChunkPayload } {
+export function isReasoningChunkEvent(
+  e: StreamEvent,
+): e is { event: "reasoning_chunk"; data: ReasoningChunkPayload } {
   return e.event === "reasoning_chunk";
 }
 
-export function isPhaseEvent(e: StreamEvent): e is { event: "phase"; data: PhasePayload } {
+export function isPhaseEvent(
+  e: StreamEvent,
+): e is { event: "phase"; data: PhasePayload } {
   return e.event === "phase";
 }
 
-export function isWarningEvent(e: StreamEvent): e is { event: "warning"; data: WarningPayload } {
+export function isWarningEvent(
+  e: StreamEvent,
+): e is { event: "warning"; data: WarningPayload } {
   return e.event === "warning";
 }
 
-export function isInfoEvent(e: StreamEvent): e is { event: "info"; data: InfoPayload } {
+export function isInfoEvent(
+  e: StreamEvent,
+): e is { event: "info"; data: InfoPayload } {
   return e.event === "info";
 }
 
-export function isTypedDataEvent(e: StreamEvent): e is { event: "data"; data: TypedDataPayload | Record<string, unknown> } {
+export function isTypedDataEvent(
+  e: StreamEvent,
+): e is { event: "data"; data: TypedDataPayload | Record<string, unknown> } {
   return e.event === "data";
 }
 
-export function isInitEvent(e: StreamEvent): e is { event: "init"; data: InitPayload } {
+export function isInitEvent(
+  e: StreamEvent,
+): e is { event: "init"; data: InitPayload } {
   return e.event === "init";
 }
 
-export function isCompletionEvent(e: StreamEvent): e is { event: "completion"; data: CompletionPayload } {
+export function isCompletionEvent(
+  e: StreamEvent,
+): e is { event: "completion"; data: CompletionPayload } {
   return e.event === "completion";
 }
 
-export function isErrorEvent(e: StreamEvent): e is { event: "error"; data: ErrorPayload } {
+export function isErrorEvent(
+  e: StreamEvent,
+): e is { event: "error"; data: ErrorPayload } {
   return e.event === "error";
 }
 
-export function isToolEventEvent(e: StreamEvent): e is { event: "tool_event"; data: ToolEventPayload } {
+export function isToolEventEvent(
+  e: StreamEvent,
+): e is { event: "tool_event"; data: ToolEventPayload } {
   return e.event === "tool_event";
 }
 
-export function isBrokerEvent(e: StreamEvent): e is { event: "broker"; data: BrokerPayload } {
+export function isBrokerEvent(
+  e: StreamEvent,
+): e is { event: "broker"; data: BrokerPayload } {
   return e.event === "broker";
 }
 
-export function isHeartbeatEvent(e: StreamEvent): e is { event: "heartbeat"; data: HeartbeatPayload } {
+export function isHeartbeatEvent(
+  e: StreamEvent,
+): e is { event: "heartbeat"; data: HeartbeatPayload } {
   return e.event === "heartbeat";
 }
 
-export function isEndEvent(e: StreamEvent): e is { event: "end"; data: EndPayload } {
+export function isEndEvent(
+  e: StreamEvent,
+): e is { event: "end"; data: EndPayload } {
   return e.event === "end";
 }
 
-export function isContentBlockEvent(e: StreamEvent): e is { event: "content_block"; data: ContentBlockPayload } {
+export function isContentBlockEvent(
+  e: StreamEvent,
+): e is { event: "content_block"; data: ContentBlockPayload } {
   return e.event === "content_block";
 }
 
-export function isRecordReservedEvent(e: StreamEvent): e is { event: "record_reserved"; data: RecordReservedPayload } {
+export function isRecordReservedEvent(
+  e: StreamEvent,
+): e is { event: "record_reserved"; data: RecordReservedPayload } {
   return e.event === "record_reserved";
 }
 
-export function isRecordUpdateEvent(e: StreamEvent): e is { event: "record_update"; data: RecordUpdatePayload } {
+export function isRecordUpdateEvent(
+  e: StreamEvent,
+): e is { event: "record_update"; data: RecordUpdatePayload } {
   return e.event === "record_update";
 }

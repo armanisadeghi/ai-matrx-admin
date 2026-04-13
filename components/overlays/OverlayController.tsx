@@ -241,6 +241,11 @@ const StreamDebugFloating = dynamic(
   { ssr: false },
 );
 
+const StreamDebugHistoryWindow = dynamic(
+  () => import("@/features/window-panels/windows/StreamDebugHistoryWindow"),
+  { ssr: false },
+);
+
 const PromptRunnerModal = dynamic(
   () =>
     import("@/features/prompts/components/results-display/PromptRunnerModal").then(
@@ -438,6 +443,14 @@ const NotesWindow = dynamic(
   { ssr: false },
 );
 
+const NotesBetaWindow = dynamic(
+  () =>
+    import("@/features/window-panels/windows/NotesBetaWindow").then((m) => ({
+      default: m.NotesBetaWindow,
+    })),
+  { ssr: false },
+);
+
 const VoicePadAdvanced = dynamic(
   () =>
     import("@/components/official-candidate/voice-pad/components/VoicePadAdvanced"),
@@ -525,6 +538,21 @@ const ExecutionInspectorWindow = dynamic(
   { ssr: false },
 );
 
+const InstanceUIStateWindow = dynamic(
+  () => import("@/features/window-panels/windows/InstanceUIStateWindow"),
+  { ssr: false },
+);
+
+const AgentDebugWindow = dynamic(
+  () => import("@/features/window-panels/windows/AgentDebugWindow"),
+  { ssr: false },
+);
+
+const ChatDebugWindow = dynamic(
+  () => import("@/features/window-panels/windows/ChatDebugWindow"),
+  { ssr: false },
+);
+
 const AgentAssistantMarkdownDebugWindow = dynamic(
   () =>
     import("@/features/window-panels/windows/AgentAssistantMarkdownDebugWindow"),
@@ -604,6 +632,12 @@ export const OverlayController: React.FC = () => {
   const streamDebugData = useAppSelector((s) =>
     selectOverlayData(s, "streamDebug"),
   );
+  const isStreamDebugHistoryWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "streamDebugHistoryWindow"),
+  );
+  const streamDebugHistoryData = useAppSelector((s) =>
+    selectOverlayData(s, "streamDebugHistoryWindow"),
+  );
   const isJsonTruncatorOpen = useAppSelector((s) =>
     selectIsOverlayOpen(s, "jsonTruncator"),
   );
@@ -666,6 +700,10 @@ export const OverlayController: React.FC = () => {
 
   const isNotesWindowOpen = useAppSelector((s) =>
     selectIsOverlayOpen(s, "notesWindow"),
+  );
+
+  const notesBetaWindowInstances = useAppSelector((s) =>
+    selectOpenInstances(s, "notesBetaWindow"),
   );
 
   const isScraperWindowOpen = useAppSelector((s) =>
@@ -744,6 +782,27 @@ export const OverlayController: React.FC = () => {
 
   const isExecutionInspectorWindowOpen = useAppSelector((s) =>
     selectIsOverlayOpen(s, "executionInspectorWindow"),
+  );
+
+  const isInstanceUIStateWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "instanceUIStateWindow"),
+  );
+  const instanceUIStateWindowData = useAppSelector((s) =>
+    selectOverlayData(s, "instanceUIStateWindow"),
+  );
+
+  const isAgentDebugWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "agentDebugWindow"),
+  );
+  const agentDebugWindowData = useAppSelector((s) =>
+    selectOverlayData(s, "agentDebugWindow"),
+  );
+
+  const isChatDebugWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "chatDebugWindow"),
+  );
+  const chatDebugWindowData = useAppSelector((s) =>
+    selectOverlayData(s, "chatDebugWindow"),
   );
 
   const isAgentAssistantMarkdownDebugWindowOpen = useAppSelector((s) =>
@@ -1083,6 +1142,15 @@ export const OverlayController: React.FC = () => {
           />
         )}
 
+      <StreamDebugHistoryWindow
+        isOpen={isStreamDebugHistoryWindowOpen}
+        onClose={() => close("streamDebugHistoryWindow")}
+        initialConversationId={
+          (streamDebugHistoryData as { initialConversationId?: string } | null)
+            ?.initialConversationId ?? null
+        }
+      />
+
       {isJsonTruncatorOpen && (
         <JsonTruncatorDialog
           isOpen={true}
@@ -1245,6 +1313,14 @@ export const OverlayController: React.FC = () => {
       {isNotesWindowOpen && (
         <NotesWindow onClose={() => close("notesWindow")} />
       )}
+
+      {notesBetaWindowInstances.map(({ instanceId }) => (
+        <NotesBetaWindow
+          key={instanceId}
+          windowInstanceId={instanceId}
+          onClose={() => close("notesBetaWindow", instanceId)}
+        />
+      ))}
 
       {isVoicePadOpen && <VoicePadAdvanced />}
 
@@ -1745,6 +1821,35 @@ export const OverlayController: React.FC = () => {
         <ExecutionInspectorWindow
           isOpen={true}
           onClose={() => close("executionInspectorWindow")}
+        />
+      )}
+
+      {isInstanceUIStateWindowOpen && (
+        <InstanceUIStateWindow
+          isOpen={true}
+          onClose={() => close("instanceUIStateWindow")}
+          initialConversationId={
+            instanceUIStateWindowData?.selectedConversationId as string | null
+          }
+        />
+      )}
+
+      {isAgentDebugWindowOpen && (
+        <AgentDebugWindow
+          isOpen={true}
+          onClose={() => close("agentDebugWindow")}
+          initialAgentId={agentDebugWindowData?.initialAgentId as string | null}
+          initialConversationId={
+            agentDebugWindowData?.initialConversationId as string | null
+          }
+        />
+      )}
+
+      {isChatDebugWindowOpen && (
+        <ChatDebugWindow
+          isOpen={true}
+          onClose={() => close("chatDebugWindow")}
+          sessionId={chatDebugWindowData?.sessionId as string | null}
         />
       )}
 

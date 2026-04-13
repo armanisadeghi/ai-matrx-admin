@@ -1,4 +1,4 @@
-import { SupabaseClient } from '@supabase/supabase-js';
+import { SupabaseClient } from "@supabase/supabase-js";
 
 export interface UserSessionData {
   isAdmin: boolean;
@@ -12,7 +12,6 @@ interface UserSessionDataResponse {
   preferences_exists: boolean;
 }
 
-
 /**
  * Checks if a user is an admin by querying the admins table.
  * Use this for simple admin verification in API routes.
@@ -23,16 +22,16 @@ interface UserSessionDataResponse {
  */
 export async function checkIsUserAdmin(
   supabase: SupabaseClient,
-  userId: string
+  userId: string,
 ): Promise<boolean> {
   const { data, error } = await supabase
-    .from('admins')
-    .select('user_id')
-    .eq('user_id', userId)
+    .from("admins")
+    .select("user_id")
+    .eq("user_id", userId)
     .maybeSingle();
 
   if (error) {
-    console.error('Error checking admin status:', error);
+    console.error("Error checking admin status:", error);
     return false;
   }
 
@@ -49,19 +48,22 @@ export async function checkIsUserAdmin(
  */
 export async function getUserSessionData(
   supabase: SupabaseClient,
-  userId: string
+  userId: string,
 ): Promise<UserSessionData> {
-  const { data, error } = await supabase
-    .rpc('get_user_session_data', { p_user_id: userId })
-    .single() as { data: UserSessionDataResponse | null; error: any };
+  const { data, error } = (await supabase
+    .rpc("get_user_session_data", { p_user_id: userId })
+    .single()) as { data: UserSessionDataResponse | null; error: any };
 
   if (error) {
-    console.error('Error fetching user session data:', error);
-    throw new Error(`Failed to fetch user session data: ${error.message}`);
+    console.error("Error fetching user session data:", error);
+    return {
+      isAdmin: false,
+      preferences: {},
+      preferencesExist: false,
+    };
   }
 
   if (!data) {
-    // Fallback if no data is returned
     return {
       isAdmin: false,
       preferences: {},

@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useMemo } from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Info, Eye } from 'lucide-react';
-import type { ToolCallObject } from '@/lib/api/tool-call.types';
-import { hasCustomRenderer } from '@/features/chat/components/response/tool-renderers/registry';
-import ToolCallVisualization from '@/features/chat/components/response/assistant-message/stream/ToolCallVisualization';
-import type { ToolStreamEvent, FinalPayload } from '../types';
+import { useMemo } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Info, Eye } from "lucide-react";
+import type { ToolCallObject } from "@/lib/api/tool-call.types";
+import { hasCustomRenderer } from "@/features/chat/components/response/tool-renderers/registry";
+import ToolCallVisualization from "@/features/chat/components/response/assistant-message/stream/ToolCallVisualization";
+import type { ToolStreamEvent, FinalPayload } from "../types";
 
 /**
  * Bridge streaming tool test events into the ToolCallObject[] format
@@ -22,8 +22,8 @@ function buildToolCallObjects(
 
   // 1. mcp_input — always first
   objects.push({
-    id: toolEvents[0]?.call_id ?? 'test-call',
-    type: 'mcp_input',
+    id: toolEvents[0]?.call_id ?? "test-call",
+    type: "mcp_input",
     mcp_input: {
       name: toolName,
       arguments: args,
@@ -33,20 +33,20 @@ function buildToolCallObjects(
   // 2. Map tool events to step_data / user_message
   for (const event of toolEvents) {
     switch (event.event) {
-      case 'tool_progress':
-      case 'tool_step': {
+      case "tool_progress":
+      case "tool_step": {
         const msg = event.message;
         if (msg) {
           objects.push({
             id: event.call_id,
-            type: 'user_message',
+            type: "user_message",
             user_message: msg,
           });
         }
         if (Object.keys(event.data).length > 0) {
           objects.push({
             id: event.call_id,
-            type: 'step_data',
+            type: "step_data",
             step_data: {
               type: event.event,
               content: event.data,
@@ -55,30 +55,30 @@ function buildToolCallObjects(
         }
         break;
       }
-      case 'tool_result_preview':
+      case "tool_result_preview":
         if (event.data.preview) {
           objects.push({
             id: event.call_id,
-            type: 'step_data',
+            type: "step_data",
             step_data: {
-              type: 'result_preview',
+              type: "result_preview",
               content: event.data,
             },
           });
         }
         break;
-      case 'tool_started': {
+      case "tool_started": {
         const startedMsg = event.message;
         if (startedMsg) {
           objects.push({
             id: event.call_id,
-            type: 'user_message',
+            type: "user_message",
             user_message: startedMsg,
           });
         }
         break;
       }
-      case 'tool_completed': {
+      case "tool_completed": {
         // The completed event carries the full result — map it to mcp_output
         // so renderers see a complete output before finalPayload is set.
         // finalPayload will later add its own mcp_output; we deduplicate by
@@ -87,7 +87,7 @@ function buildToolCallObjects(
         if (completedResult !== undefined) {
           objects.push({
             id: event.call_id,
-            type: 'mcp_output',
+            type: "mcp_output",
             mcp_output: {
               result: completedResult,
             },
@@ -95,22 +95,22 @@ function buildToolCallObjects(
         }
         break;
       }
-      case 'tool_error':
+      case "tool_error":
         objects.push({
           id: event.call_id,
-          type: 'mcp_error',
-          mcp_error: event.message ?? 'Tool execution failed',
+          type: "mcp_error",
+          mcp_error: event.message ?? "Tool execution failed",
         });
         break;
     }
   }
 
   // 3. mcp_output — from final payload, only if tool_completed didn't already produce one
-  const alreadyHasOutput = objects.some((o) => o.type === 'mcp_output');
+  const alreadyHasOutput = objects.some((o) => o.type === "mcp_output");
   if (!alreadyHasOutput && finalPayload?.output?.full_result) {
     objects.push({
-      id: toolEvents[0]?.call_id ?? 'test-call',
-      type: 'mcp_output',
+      id: toolEvents[0]?.call_id ?? "test-call",
+      type: "mcp_output",
       mcp_output: {
         result: finalPayload.output.full_result.output,
       },
@@ -175,7 +175,7 @@ export function ToolRendererPreview({
       {/* Data bridge info */}
       <p className="text-[10px] text-muted-foreground">
         <Info className="h-3 w-3 inline mr-1" />
-        {toolCallObjects.length} ToolCallObject(s) generated from{' '}
+        {toolCallObjects.length} ToolCallObject(s) generated from{" "}
         {toolEvents.length} stream events
       </p>
     </div>

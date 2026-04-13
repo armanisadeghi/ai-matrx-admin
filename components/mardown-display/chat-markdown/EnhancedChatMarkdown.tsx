@@ -96,6 +96,7 @@ export interface ServerProcessedBlock {
 }
 
 export interface ChatMarkdownDisplayProps {
+  requestId?: string;
   content: string;
   taskId?: string;
   type?:
@@ -128,11 +129,12 @@ export interface ChatMarkdownDisplayProps {
 
 // Fallback component that renders plain text with basic formatting
 export const PlainTextFallback: React.FC<{
+  requestId?: string;
   content: string;
   className?: string;
   role?: string;
   type?: string;
-}> = ({ content, className, role, type }) => {
+}> = ({ requestId, content, className, role, type }) => {
   const containerStyles = cn(
     "py-3 px-4 space-y-2 font-sans text-md antialiased leading-relaxed tracking-wide whitespace-pre-wrap break-words overflow-x-hidden min-w-0",
     type === "flashcard"
@@ -226,6 +228,7 @@ const SafeBlockRenderer: React.FC<{
 export const EnhancedChatMarkdownInternal: React.FC<
   ChatMarkdownDisplayProps
 > = ({
+  requestId,
   content,
   taskId,
   type = "message",
@@ -293,19 +296,48 @@ export const EnhancedChatMarkdownInternal: React.FC<
   const { blocks, blockError } = useMemo(() => {
     if (isWaitingForContent) return { blocks: [], blockError: false };
 
-    // New protocol: server already processed the blocks — convert to ContentBlock shape
+    // New protocol: server already processed the blocks — convert to ContentBlock shape.
+    // When text content also exists, parse it through the normal pipeline first,
+    // then append server-processed blocks (audio, images, etc.) so both render.
     if (useServerBlocks && serverProcessedBlocks) {
-      const serverBlocks: ContentBlock[] = serverProcessedBlocks.map((sb) => ({
-        type: sb.type as ContentBlock["type"],
-        content: sb.content ?? "",
-        // Preserve server-parsed data and metadata so BlockRenderer can use it directly
-        serverData: sb.data ?? undefined,
-        metadata: sb.metadata,
-        language: (sb.data as any)?.language,
-        src: (sb.data as any)?.src,
-        alt: (sb.data as any)?.alt,
-      }));
-      return { blocks: serverBlocks, blockError: false };
+      const supplementaryBlocks: ContentBlock[] = serverProcessedBlocks.map(
+        (sb) => ({
+          type: sb.type as ContentBlock["type"],
+          content: sb.content ?? "",
+          serverData: sb.data ?? undefined,
+          metadata: sb.metadata,
+          language: (sb.data as any)?.language,
+          src: (sb.data as any)?.src,
+          alt: (sb.data as any)?.alt,
+        }),
+      );
+
+      // If there's also text content, parse it normally and append supplementary blocks
+      if (currentContent.trim()) {
+        try {
+          const textBlocks = splitContentIntoBlocksV2(currentContent);
+          const parsed = Array.isArray(textBlocks) ? textBlocks : [];
+          return {
+            blocks: [...parsed, ...supplementaryBlocks],
+            blockError: false,
+          };
+        } catch {
+          return {
+            blocks: [
+              {
+                type: "text" as const,
+                content: currentContent,
+                startLine: 0,
+                endLine: 0,
+              },
+              ...supplementaryBlocks,
+            ],
+            blockError: false,
+          };
+        }
+      }
+
+      return { blocks: supplementaryBlocks, blockError: false };
     }
 
     // Legacy: client-side parsing
@@ -542,6 +574,7 @@ export const EnhancedChatMarkdownInternal: React.FC<
   if (hasError) {
     return (
       <PlainTextFallback
+        requestId={requestId}
         content={currentContent}
         className={className}
         role={role}

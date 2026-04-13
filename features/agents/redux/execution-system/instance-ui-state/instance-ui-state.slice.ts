@@ -63,12 +63,12 @@ export interface InstanceUIStateSlice {
    * Read at execute time like apiBaseUrl — applied to the instance at creation.
    * Not tied to any specific instance — it is a global display preference.
    */
-  useBlockMode: boolean;
+  isBlockMode: boolean;
 }
 
 const initialState: InstanceUIStateSlice = {
   byConversationId: {},
-  useBlockMode: false,
+  isBlockMode: false,
 };
 
 // =============================================================================
@@ -484,7 +484,7 @@ const instanceUIStateSlice = createSlice({
     },
 
     setUseBlockMode(state, action: PayloadAction<boolean>) {
-      state.useBlockMode = action.payload;
+      state.isBlockMode = action.payload;
     },
   },
 

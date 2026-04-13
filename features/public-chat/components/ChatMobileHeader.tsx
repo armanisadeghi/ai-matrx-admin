@@ -130,14 +130,14 @@ export function ChatMobileHeader({
               local
             </button>
             <button
-              onClick={() => setUseBlockMode(!state.useBlockMode)}
+              onClick={() => setUseBlockMode(!state.isBlockMode)}
               title={
-                state.useBlockMode
+                state.isBlockMode
                   ? "Block mode ON — using agents-blocks endpoint. Click to disable."
                   : "Block mode OFF — using standard agents endpoint. Click to enable."
               }
               className={`p-1.5 rounded-md transition-colors ${
-                state.useBlockMode
+                state.isBlockMode
                   ? "text-violet-600 dark:text-violet-400 bg-violet-500/15 border border-violet-500/30"
                   : "text-muted-foreground/50 hover:text-muted-foreground hover:bg-accent/50 border border-transparent"
               }`}

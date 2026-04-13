@@ -15,6 +15,14 @@ export const selectConversationTurns =
     state.instanceConversationHistory.byConversationId[conversationId]?.turns ??
     EMPTY_TURNS;
 
+/** Look up a single turn by turnId within a conversation. */
+export const selectTurnByTurnId =
+  (conversationId: string, turnId: string) =>
+  (state: RootState): ConversationTurn | undefined =>
+    state.instanceConversationHistory.byConversationId[
+      conversationId
+    ]?.turns.find((t) => t.turnId === turnId);
+
 export const selectConversationMode =
   (conversationId: string) =>
   (state: RootState): ConversationMode =>

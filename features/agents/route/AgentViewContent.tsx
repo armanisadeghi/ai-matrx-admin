@@ -18,7 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import {
-  Bot,
+  Webhook,
   MessageSquare,
   Wrench,
   Variable,
@@ -116,7 +116,7 @@ export function AgentViewContent({ agentId }: { agentId: string }) {
           <div className="flex items-center gap-2 shrink-0">
             {modelId && (
               <Badge variant="secondary" className="gap-1">
-                <Bot className="w-3 h-3" /> {modelId}
+                <Webhook className="w-3 h-3" /> {modelId}
               </Badge>
             )}
             {versionNumber != null && (

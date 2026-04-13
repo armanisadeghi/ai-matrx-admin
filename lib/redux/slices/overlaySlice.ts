@@ -101,6 +101,7 @@ const initialState: OverlayState = {
     executionInspectorWindow: makeDefaultInstance(),
     agentAssistantMarkdownDebugWindow: makeDefaultInstance(),
     agentImportWindow: makeDefaultInstance(),
+    notesBetaWindow: makeDefaultInstance(),
     // Agent execution widget overlays — each is autonomous, instanced
     agentFullModal: makeDefaultInstance(),
     agentCompactModal: makeDefaultInstance(),

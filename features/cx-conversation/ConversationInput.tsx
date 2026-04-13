@@ -79,7 +79,7 @@ import { useClipboardPaste } from "@/components/ui/file-upload/useClipboardPaste
 import { useFileUploadWithStorage } from "@/components/ui/file-upload/useFileUploadWithStorage";
 import { useRecordAndTranscribe, TranscriptionLoader } from "@/features/audio";
 import { ModelSettingsDialog } from "@/features/prompts/components/configuration/ModelSettingsDialog";
-import { ChatDebugModal } from "./ChatDebugModal";
+import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { toast } from "sonner";
 import type { Resource } from "@/features/prompts/types/resources";
 import type { PromptSettings } from "@/features/prompts/types/core";
@@ -193,7 +193,10 @@ export function ConversationInput({
   const [previewResource, setPreviewResource] = useState<Resource | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isModelPickerOpen, setIsModelPickerOpen] = useState(false);
-  const [isDebugModalOpen, setIsDebugModalOpen] = useState(false);
+  const openDebugWindow = () =>
+    dispatch(
+      openOverlay({ overlayId: "chatDebugWindow", data: { sessionId } }),
+    );
 
   // ── Redux state ────────────────────────────────────────────────────────────
   const content = useAppSelector((state) =>
@@ -560,7 +563,7 @@ export function ConversationInput({
               Debug
             </span>
             <button
-              onClick={() => setIsDebugModalOpen(true)}
+              onClick={openDebugWindow}
               className="flex items-center gap-1 px-2 py-0.5 bg-red-600 hover:bg-red-700 text-white text-[10px] font-medium rounded transition-colors"
               title="Open debug modal"
             >
@@ -640,9 +643,7 @@ export function ConversationInput({
                   onSettingsClick={
                     showSettings ? () => setIsSettingsOpen(true) : undefined
                   }
-                  onDebugClick={
-                    isAdmin ? () => setIsDebugModalOpen(true) : undefined
-                  }
+                  onDebugClick={isAdmin ? openDebugWindow : undefined}
                   showDebugActive={showDebugInfo}
                 />
               </PopoverContent>
@@ -802,15 +803,6 @@ export function ConversationInput({
             models={availableModels}
             settings={settingsForDialog}
             onSettingsChange={handleSettingsChange}
-          />
-        )}
-
-        {/* Admin debug modal */}
-        {isAdmin && (
-          <ChatDebugModal
-            sessionId={sessionId}
-            isOpen={isDebugModalOpen}
-            onClose={() => setIsDebugModalOpen(false)}
           />
         )}
       </div>

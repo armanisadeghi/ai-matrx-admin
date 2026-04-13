@@ -67,7 +67,7 @@ export async function fetchContentTemplates(
 
   const { data, error } = await query;
 
-  if (error) throw error;
+  if (error) throw new Error(error.message || "Failed to fetch templates");
 
   return data as ContentTemplateDB[];
 }
@@ -115,7 +115,7 @@ export async function getTemplateById(
 
   if (error) {
     if (error.code === "PGRST116") return null; // Not found
-    throw error;
+    throw new Error(error.message || "Failed to fetch template");
   }
 
   return data as ContentTemplateDB;
@@ -145,7 +145,7 @@ export async function createTemplate(
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) throw new Error(error.message || "Failed to create template");
 
   return data as ContentTemplateDB;
 }
@@ -172,7 +172,7 @@ export async function updateTemplate(
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) throw new Error(error.message || "Failed to update template");
 
   return data as ContentTemplateDB;
 }
@@ -186,7 +186,7 @@ export async function deleteTemplate(id: string): Promise<void> {
     .delete()
     .eq("id", id);
 
-  if (error) throw error;
+  if (error) throw new Error(error.message || "Failed to delete template");
 }
 
 // Toggle public status of a template
@@ -205,7 +205,7 @@ export async function getAllTags(): Promise<string[]> {
     .from("content_template")
     .select("tags");
 
-  if (error) throw error;
+  if (error) throw new Error(error.message || "Failed to fetch tags");
 
   // Flatten and deduplicate tags
   const allTags = new Set<string>();

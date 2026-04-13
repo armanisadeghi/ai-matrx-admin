@@ -21,7 +21,7 @@ import {
   selectIsAdmin,
 } from "@/lib/redux/slices/userSlice";
 import {
-  selectUseBlockMode,
+  selectIsBlockMode,
   setUseBlockMode,
 } from "@/features/agents/redux/execution-system/instance-ui-state";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -38,7 +38,7 @@ export default function ChatHeaderControls() {
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const isAdmin = useAppSelector(selectIsAdmin);
 
-  const blockMode = useAppSelector(selectUseBlockMode);
+  const blockMode = useAppSelector(selectIsBlockMode);
 
   // Derive conversationId from URL — header only needs it for the share button.
   const conversationId = (() => {

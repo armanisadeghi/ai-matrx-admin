@@ -15,11 +15,17 @@ import type { ConversationSession, SessionUIState } from "./types";
 // as that creates a new reference on every call and breaks createSelector memoization.
 const EMPTY_MODEL_SETTINGS: Record<string, unknown> = {};
 import type {
+  CxMessage,
   CxToolCall,
   CxContentHistoryEntry,
 } from "@/features/public-chat/types/cx-tables";
+import { buildCanonicalMessages } from "@/lib/chat-protocol";
+import type { CanonicalMessage } from "@/lib/chat-protocol";
 
 const EMPTY_CONTENT_HISTORY: CxContentHistoryEntry[] = [];
+
+/** Stable empty — protocol DB snapshot selectors */
+const EMPTY_PROTOCOL_CANONICAL: CanonicalMessage[] = [];
 
 // ============================================================================
 // BASE SELECTORS
@@ -313,8 +319,8 @@ export const selectModelOverride = (state: RootState, sessionId: string) =>
 export const selectUseLocalhost = (state: RootState, sessionId: string) =>
   state.chatConversations.uiState[sessionId]?.useLocalhost ?? false;
 
-export const selectUseBlockMode = (state: RootState, sessionId: string) =>
-  state.chatConversations.uiState[sessionId]?.useBlockMode ?? false;
+export const selectIsBlockMode = (state: RootState, sessionId: string) =>
+  state.chatConversations.uiState[sessionId]?.isBlockMode ?? false;
 
 export const selectShowDebugInfo = (state: RootState, sessionId: string) =>
   state.chatConversations.uiState[sessionId]?.showDebugInfo ?? false;
@@ -462,6 +468,51 @@ export const selectAllToolCalls = createSelector(
     state.chatConversations.sessions[sessionId]?.toolCallsById ??
     EMPTY_TOOL_CALLS_BY_ID,
   (byId): CxToolCall[] => Object.values(byId),
+);
+
+// ============================================================================
+// CHAT PROTOCOL (raw cx_* snapshot → CanonicalMessage[])
+// ============================================================================
+
+/** Raw `cx_message` rows from the last `loadConversationHistory` for this session. */
+export const selectProtocolDbMessages = (
+  state: RootState,
+  sessionId: string,
+): CxMessage[] | null =>
+  state.chatConversations.sessions[sessionId]?.protocolDbMessages ?? null;
+
+/** Raw `cx_tool_call` rows from the same load (or null). */
+export const selectProtocolDbToolCalls = (
+  state: RootState,
+  sessionId: string,
+): CxToolCall[] | null =>
+  state.chatConversations.sessions[sessionId]?.protocolDbToolCalls ?? null;
+
+/** Whether a DB snapshot was written (even if the conversation has zero messages). */
+export const selectHasProtocolDbSnapshot = (
+  state: RootState,
+  sessionId: string,
+): boolean =>
+  state.chatConversations.sessions[sessionId]?.protocolDbMessages != null;
+
+/**
+ * `buildCanonicalMessages(protocolDbMessages, protocolDbToolCalls)` — same shapes as
+ * `lib/chat-protocol/from-db`. Empty array when no snapshot or no rows.
+ */
+export const selectProtocolCanonicalMessages = createSelector(
+  [
+    (state: RootState, sessionId: string) =>
+      state.chatConversations.sessions[sessionId]?.protocolDbMessages,
+    (state: RootState, sessionId: string) =>
+      state.chatConversations.sessions[sessionId]?.protocolDbToolCalls,
+  ],
+  (dbMessages, dbToolCalls): CanonicalMessage[] => {
+    if (!dbMessages?.length) return EMPTY_PROTOCOL_CANONICAL;
+    return buildCanonicalMessages(
+      dbMessages,
+      dbToolCalls && dbToolCalls.length > 0 ? dbToolCalls : undefined,
+    );
+  },
 );
 
 // ============================================================================

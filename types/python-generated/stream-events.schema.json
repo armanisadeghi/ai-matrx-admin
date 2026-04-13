@@ -1397,6 +1397,24 @@
     "type": "object"
   },
   "StructuredInputWarningData": {
+    "$defs": {
+      "StructuredInputFailure": {
+        "properties": {
+          "url": {
+            "default": "",
+            "title": "Url",
+            "type": "string"
+          },
+          "reason": {
+            "default": "",
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "title": "StructuredInputFailure",
+        "type": "object"
+      }
+    },
     "additionalProperties": false,
     "properties": {
       "type": {
@@ -1411,8 +1429,7 @@
       },
       "failures": {
         "items": {
-          "additionalProperties": true,
-          "type": "object"
+          "$ref": "#/$defs/StructuredInputFailure"
         },
         "title": "Failures",
         "type": "array"
@@ -1641,6 +1658,93 @@
     "type": "object"
   },
   "QuestionnaireDisplayData": {
+    "$defs": {
+      "QuestionnaireQuestion": {
+        "description": "A single interactive question in the questionnaire UI.",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "prompt": {
+            "title": "Prompt",
+            "type": "string"
+          },
+          "component_type": {
+            "enum": [
+              "dropdown",
+              "checkboxes",
+              "radio",
+              "toggle",
+              "slider",
+              "input",
+              "textarea"
+            ],
+            "title": "Component Type",
+            "type": "string"
+          },
+          "options": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Options",
+            "type": "array"
+          },
+          "min": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Min"
+          },
+          "max": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Max"
+          },
+          "step": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Step"
+          },
+          "default": {
+            "default": null,
+            "title": "Default"
+          },
+          "required": {
+            "default": false,
+            "title": "Required",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "prompt",
+          "component_type"
+        ],
+        "title": "QuestionnaireQuestion",
+        "type": "object"
+      }
+    },
     "additionalProperties": false,
     "properties": {
       "type": {
@@ -1655,8 +1759,7 @@
       },
       "questions": {
         "items": {
-          "additionalProperties": true,
-          "type": "object"
+          "$ref": "#/$defs/QuestionnaireQuestion"
         },
         "title": "Questions",
         "type": "array"
@@ -1689,6 +1792,35 @@
     "type": "object"
   },
   "FetchResultsData": {
+    "$defs": {
+      "FetchResultItem": {
+        "additionalProperties": true,
+        "properties": {
+          "url": {
+            "default": "",
+            "title": "Url",
+            "type": "string"
+          },
+          "title": {
+            "default": "",
+            "title": "Title",
+            "type": "string"
+          },
+          "content": {
+            "default": "",
+            "title": "Content",
+            "type": "string"
+          },
+          "status": {
+            "default": "",
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "title": "FetchResultItem",
+        "type": "object"
+      }
+    },
     "additionalProperties": false,
     "properties": {
       "type": {
@@ -1704,8 +1836,7 @@
       },
       "results": {
         "items": {
-          "additionalProperties": true,
-          "type": "object"
+          "$ref": "#/$defs/FetchResultItem"
         },
         "title": "Results",
         "type": "array"
@@ -1715,6 +1846,55 @@
     "type": "object"
   },
   "SearchResultsData": {
+    "$defs": {
+      "SearchResultItem": {
+        "additionalProperties": true,
+        "description": "One result entry from a web search.",
+        "properties": {
+          "url": {
+            "default": "",
+            "title": "Url",
+            "type": "string"
+          },
+          "title": {
+            "default": "",
+            "title": "Title",
+            "type": "string"
+          },
+          "snippet": {
+            "default": "",
+            "title": "Snippet",
+            "type": "string"
+          },
+          "published": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Published"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Source"
+          }
+        },
+        "title": "SearchResultItem",
+        "type": "object"
+      }
+    },
     "additionalProperties": false,
     "properties": {
       "type": {
@@ -1730,8 +1910,7 @@
       },
       "results": {
         "items": {
-          "additionalProperties": true,
-          "type": "object"
+          "$ref": "#/$defs/SearchResultItem"
         },
         "title": "Results",
         "type": "array"
@@ -1838,6 +2017,18 @@
     "additionalProperties": false,
     "properties": {
       "result": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          {
+            "type": "null"
+          }
+        ],
         "default": null,
         "title": "Result"
       }

@@ -98,7 +98,7 @@ export function ChatDebugModal({
     dispatch(
       chatConversationsActions.updateUIState({
         sessionId,
-        updates: { useBlockMode: checked },
+        updates: { isBlockMode: checked },
       }),
     );
   };
@@ -206,7 +206,7 @@ export function ChatDebugModal({
                 </Label>
                 <Switch
                   id="block-mode"
-                  checked={uiState.useBlockMode}
+                  checked={uiState.isBlockMode}
                   onCheckedChange={toggleBlockMode}
                 />
               </div>
@@ -256,8 +256,8 @@ export function ChatDebugModal({
                     {String(uiState.useLocalhost)}
                   </div>
                   <div>
-                    <span className="text-foreground">useBlockMode:</span>{" "}
-                    {String(uiState.useBlockMode)}
+                    <span className="text-foreground">isBlockMode:</span>{" "}
+                    {String(uiState.isBlockMode)}
                   </div>
                 </div>
               </div>

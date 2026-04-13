@@ -66,7 +66,7 @@ import {
   fetchAvailableModels,
 } from "@/features/ai-models/redux/modelRegistrySlice";
 import { selectIsDebugMode } from "@/lib/redux/slices/adminDebugSlice";
-import { ChatDebugModal } from "../../admin/ChatDebugModal";
+import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { ResourceChips } from "@/features/prompts/components/resource-display";
 import { ResourcePickerMenu } from "@/features/resource-manager/resource-picker/ResourcePickerMenu";
 import { useClipboardPaste } from "@/components/ui/file-upload/useClipboardPaste";
@@ -224,14 +224,22 @@ export function ConversationInput({
   const [previewResource, setPreviewResource] = useState<Resource | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isModelPickerOpen, setIsModelPickerOpen] = useState(false);
-  const [isDebugOpen, setIsDebugOpen] = useState(false);
+  const openDebugWindow = () =>
+    dispatch(
+      openOverlay({
+        overlayId: "chatDebugWindow",
+        data: { sessionId: conversationId },
+      }),
+    );
   // ── Redux state (all from instance system) ─────────────────────────────────
   const content = useAppSelector((state) =>
     selectUserInputText(conversationId)(state),
   );
   const resources = useAppSelector(selectInstanceResources(conversationId));
   const isExecuting = useAppSelector(selectIsExecuting(conversationId));
-  const hasVariables = useAppSelector(selectShouldShowVariables(conversationId));
+  const hasVariables = useAppSelector(
+    selectShouldShowVariables(conversationId),
+  );
   const settingsForDialogRaw = useAppSelector(
     selectCurrentSettings(conversationId),
   );
@@ -243,7 +251,9 @@ export function ConversationInput({
   const { publish: publishDebug } = useDebugContext("Input");
 
   // Publish instance state to the floating AdminIndicator whenever it changes.
-  const latestStatus = useAppSelector(selectLatestRequestStatus(conversationId));
+  const latestStatus = useAppSelector(
+    selectLatestRequestStatus(conversationId),
+  );
   useEffect(() => {
     publishDebug({
       "Instance ID": conversationId,
@@ -361,7 +371,9 @@ export function ConversationInput({
     (text: string) => {
       if (!text) return;
       const newContent = content ? `${content} ${text}` : text;
-      dispatch(setUserInputText({ conversationId: conversationId, text: newContent }));
+      dispatch(
+        setUserInputText({ conversationId: conversationId, text: newContent }),
+      );
     },
     [content, dispatch, conversationId],
   );
@@ -386,7 +398,9 @@ export function ConversationInput({
       if (onSubmitOverride) {
         const shouldClear = await onSubmitOverride(finalContent, resources);
         if (shouldClear) {
-          dispatch(setUserInputText({ conversationId: conversationId, text: "" }));
+          dispatch(
+            setUserInputText({ conversationId: conversationId, text: "" }),
+          );
         }
         onSend?.();
         return;
@@ -395,7 +409,12 @@ export function ConversationInput({
       // Set the text in Redux then fire executeInstance — it assembles everything
       // (user input, variables, resources, model overrides) from instance slices.
       if (finalContent) {
-        dispatch(setUserInputText({ conversationId: conversationId, text: finalContent }));
+        dispatch(
+          setUserInputText({
+            conversationId: conversationId,
+            text: finalContent,
+          }),
+        );
       }
       dispatch(executeInstance({ conversationId }));
       dispatch(setUserInputText({ conversationId: conversationId, text: "" }));
@@ -443,7 +462,10 @@ export function ConversationInput({
       const { model_id, ...rest } = newSettings as Record<string, unknown>;
       if (model_id)
         dispatch(
-          setOverrides({ conversationId, changes: { model: model_id as string } }),
+          setOverrides({
+            conversationId,
+            changes: { model: model_id as string },
+          }),
         );
       if (Object.keys(rest).length > 0)
         dispatch(setOverrides({ conversationId, changes: rest }));
@@ -555,9 +577,7 @@ export function ConversationInput({
                   onSettingsClick={
                     showSettings ? () => setIsSettingsOpen(true) : undefined
                   }
-                  onDebugClick={
-                    isAdmin ? () => setIsDebugOpen(true) : undefined
-                  }
+                  onDebugClick={isAdmin ? openDebugWindow : undefined}
                   showDebugActive={isAdmin}
                 />
               </PopoverContent>
@@ -568,7 +588,12 @@ export function ConversationInput({
             ref={textareaRef}
             value={content}
             onChange={(e) =>
-              dispatch(setUserInputText({ conversationId: conversationId, text: e.target.value }))
+              dispatch(
+                setUserInputText({
+                  conversationId: conversationId,
+                  text: e.target.value,
+                }),
+              )
             }
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
@@ -591,7 +616,7 @@ export function ConversationInput({
             isUploading={isUploading}
             sendButtonVariant={sendButtonVariant}
             onSubmit={() => handleSubmit()}
-            onDebugClick={isAdmin ? () => setIsDebugOpen(true) : undefined}
+            onDebugClick={isAdmin ? openDebugWindow : undefined}
           />
         </div>
 
@@ -671,14 +696,6 @@ export function ConversationInput({
 
         {/* Admin debug modal */}
       </div>
-
-      {isAdmin && isDebugOpen && (
-        <ChatDebugModal
-          sessionId={conversationId}
-          isOpen={isDebugOpen}
-          onClose={() => setIsDebugOpen(false)}
-        />
-      )}
 
       {/* ── Footer row (outside the bordered box, below it) ───────────── */}
       {showFooter && (

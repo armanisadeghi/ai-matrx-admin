@@ -44,6 +44,10 @@ import {
   ScrollText,
   History,
   Upload,
+  LayoutDashboard,
+  ShieldAlert,
+  BugPlay,
+  List,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -68,6 +72,7 @@ import {
   openAgentContentSidebarWindow,
   openAgentImportWindow,
 } from "@/lib/redux/slices/overlaySlice";
+import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 import { LayoutIconButton } from "@/features/window-panels/components/LayoutIcon";
 
 // ─── State dot colours ────────────────────────────────────────────────────────
@@ -92,12 +97,13 @@ export default function SidebarWindowToggle() {
   const hidden = useAppSelector(selectWindowsHidden);
   const allMinimized = useAppSelector(selectAllMinimized);
   const windows = useAppSelector(selectAllWindows);
+  const isAdmin = useAppSelector(selectIsAdmin);
   const hasWindows = windows.length > 0;
 
   const [open, setOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"visibility" | "layout" | "tools">(
-    "tools",
-  );
+  const [activeTab, setActiveTab] = useState<
+    "visibility" | "layout" | "tools" | "admin"
+  >("tools");
   const [layoutDirX, setLayoutDirX] = useState<"ltr" | "rtl">("rtl");
   const [layoutDirY, setLayoutDirY] = useState<"ttb" | "btt">("ttb");
   const [layoutPrimary, setLayoutPrimary] = useState<"horizontal" | "vertical">(
@@ -243,6 +249,21 @@ export default function SidebarWindowToggle() {
               >
                 Layout
               </button>
+              {isAdmin && (
+                <button
+                  type="button"
+                  className={cn(
+                    "px-2 py-1 text-[11px] font-medium uppercase tracking-wider rounded-md transition-colors flex items-center gap-1",
+                    activeTab === "admin"
+                      ? "bg-amber-500/15 text-amber-500"
+                      : "text-muted-foreground hover:text-foreground hover:bg-accent/40",
+                  )}
+                  onClick={() => setActiveTab("admin")}
+                >
+                  <ShieldAlert className="w-3 h-3" />
+                  Admin
+                </button>
+              )}
             </div>
 
             {/* ── Tab Content: Visibility ──────────────────────────────────── */}
@@ -628,6 +649,20 @@ export default function SidebarWindowToggle() {
                     }
                   />
                   <MenuGridItem
+                    icon={<StickyNote className="w-3.5 h-3.5" />}
+                    label="Notes Beta"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(
+                          openOverlay({
+                            overlayId: "notesBetaWindow",
+                            instanceId: `notes-beta-${Date.now()}`,
+                          }),
+                        ),
+                      )
+                    }
+                  />
+                  <MenuGridItem
                     icon={<Mic className="w-3.5 h-3.5" />}
                     label="AI Voice"
                     onClick={() =>
@@ -663,6 +698,20 @@ export default function SidebarWindowToggle() {
                           openOverlay({
                             overlayId: "streamDebug",
                             data: { conversationId: "default" },
+                          }),
+                        ),
+                      )
+                    }
+                  />
+                  <MenuGridItem
+                    icon={<List className="w-3.5 h-3.5" />}
+                    label="Stream History"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(
+                          openOverlay({
+                            overlayId: "streamDebugHistoryWindow",
+                            data: { initialConversationId: null },
                           }),
                         ),
                       )
@@ -912,8 +961,119 @@ export default function SidebarWindowToggle() {
                     }
                   />
                   <MenuGridItem
+                    icon={<LayoutDashboard className="w-3.5 h-3.5" />}
+                    label="UI State"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(
+                          openOverlay({
+                            overlayId: "instanceUIStateWindow",
+                          }),
+                        ),
+                      )
+                    }
+                  />
+                  <MenuGridItem
                     icon={<ScrollText className="w-3.5 h-3.5" />}
                     label="MD debug"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(
+                          openOverlay({
+                            overlayId: "agentAssistantMarkdownDebugWindow",
+                          }),
+                        ),
+                      )
+                    }
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* ── Tab Content: Admin ───────────────────────────────────────── */}
+            {activeTab === "admin" && isAdmin && (
+              <div className="flex-1 flex flex-col overflow-y-auto">
+                <MenuSection label="Agent Debugging" />
+                <div className="grid grid-cols-2 gap-1.5 px-2 pb-2 mt-1">
+                  <MenuGridItem
+                    icon={<BugPlay className="w-3.5 h-3.5" />}
+                    label="Agent Debug"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(
+                          openOverlay({ overlayId: "agentDebugWindow" }),
+                        ),
+                      )
+                    }
+                  />
+                  <MenuGridItem
+                    icon={<LayoutDashboard className="w-3.5 h-3.5" />}
+                    label="UI State"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(
+                          openOverlay({ overlayId: "instanceUIStateWindow" }),
+                        ),
+                      )
+                    }
+                  />
+                  <MenuGridItem
+                    icon={<Cpu className="w-3.5 h-3.5" />}
+                    label="Exec Inspector"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(
+                          openOverlay({
+                            overlayId: "executionInspectorWindow",
+                          }),
+                        ),
+                      )
+                    }
+                  />
+                  <MenuGridItem
+                    icon={<Activity className="w-3.5 h-3.5" />}
+                    label="State Analyzer"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(
+                          openOverlay({
+                            overlayId: "adminStateAnalyzerWindow",
+                          }),
+                        ),
+                      )
+                    }
+                  />
+                  <MenuGridItem
+                    icon={<Bug className="w-3.5 h-3.5" />}
+                    label="Stream Debug"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(
+                          openOverlay({
+                            overlayId: "streamDebug",
+                            data: { conversationId: "default" },
+                          }),
+                        ),
+                      )
+                    }
+                  />
+                  <MenuGridItem
+                    icon={<List className="w-3.5 h-3.5" />}
+                    label="Stream History"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(
+                          openOverlay({
+                            overlayId: "streamDebugHistoryWindow",
+                            data: { initialConversationId: null },
+                          }),
+                        ),
+                      )
+                    }
+                  />
+                  <MenuGridItem
+                    icon={<ScrollText className="w-3.5 h-3.5" />}
+                    label="MD Debug"
                     onClick={() =>
                       act(() =>
                         dispatch(

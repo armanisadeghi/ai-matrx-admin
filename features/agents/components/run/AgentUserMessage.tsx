@@ -6,12 +6,9 @@
  * Renders a user turn — text + content block chips — inside one collapsible
  * bubble, matching the style of PromptUserMessage.
  *
- * Content blocks arrive in two shapes:
- *   Live  → { type: "image"|"audio"|"video"|"document"|"youtube_video"|"input_*", ... }
- *   DB    → { type: "media", kind: "image"|"audio"|"video"|"document"|"youtube", url }
- *
- * Chips are tiny pill-shaped references. Clicking opens a per-type modal
- * (placeholder JSON viewer until real modals are built).
+ * Content blocks are always ContentBlockPayload (normalized at the Redux
+ * boundary). Chips are tiny pill-shaped references. Clicking opens a per-type
+ * modal (placeholder JSON viewer until real modals are built).
  */
 
 import { useEffect, useRef, useState } from "react";
@@ -34,20 +31,20 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectTurnByTurnId } from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.selectors";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
 // ─────────────────────────────────────────────────────────────────────────────
 
-interface ContentBlock {
-  type: string;
-  [key: string]: unknown;
-}
+import type { ContentBlockPayload } from "@/types/python-generated/stream-events";
+
+type ContentBlock = ContentBlockPayload;
 
 interface AgentUserMessageProps {
-  content: string;
-  contentBlocks?: Array<Record<string, unknown>>;
-  messageIndex: number;
+  conversationId: string;
+  turnId: string;
   compact?: boolean;
 }
 
@@ -73,20 +70,21 @@ function normaliseBlock(
 ): NormalisedBlock | null {
   if (block.type === "text") return null;
 
-  const key = `block-${idx}`;
+  const key = block.blockId ?? `block-${idx}`;
 
-  if (block.type === "media") {
-    return mediaChip(key, block["kind"] as string, block);
-  }
-
+  // Normalized output types (from streaming or DB normalization)
   switch (block.type) {
     case "image":
+    case "image_output":
       return mediaChip(key, "image", block);
     case "audio":
+    case "audio_output":
       return mediaChip(key, "audio", block);
     case "video":
+    case "video_output":
       return mediaChip(key, "video", block);
     case "document":
+    case "file_output":
       return mediaChip(key, "document", block);
     case "youtube_video":
       return mediaChip(key, "youtube", block);
@@ -216,14 +214,16 @@ function mediaChip(
   };
   const [icon, iconColor, chipBg, chipBorder, defaultLabel] =
     map[kind] ?? map.document;
+
+  const d = raw.data as Record<string, unknown> | null | undefined;
   const title =
-    (raw["filename"] as string) ??
-    (raw["title"] as string) ??
-    (raw["url"] as string)?.split("/").pop() ??
+    (d?.["filename"] as string) ??
+    (d?.["title"] as string) ??
+    (d?.["url"] as string)?.split("/").pop() ??
     defaultLabel;
   return {
     key,
-    blockType: raw.type === "media" ? `media_${kind}` : raw.type,
+    blockType: raw.type,
     icon,
     iconColor,
     chipBg,
@@ -244,10 +244,11 @@ function chip(
   label: string,
   raw: ContentBlock,
 ): NormalisedBlock {
+  const d = raw.data as Record<string, unknown> | null | undefined;
   const title =
-    (raw["title"] as string) ??
-    (raw["label"] as string) ??
-    (raw["name"] as string) ??
+    (d?.["title"] as string) ??
+    (d?.["label"] as string) ??
+    (d?.["name"] as string) ??
     label;
   return {
     key,
@@ -315,7 +316,8 @@ function BlockModalShell({
 }
 
 function ImageBlockModal({ block, onClose }: BlockModalProps) {
-  const url = block.raw["url"] as string | undefined;
+  const d = block.raw.data as Record<string, unknown> | null | undefined;
+  const url = d?.["url"] as string | undefined;
   return (
     <BlockModalShell block={block} onClose={onClose}>
       {url ? (
@@ -386,19 +388,18 @@ function UnknownBlockModal({ block, onClose }: BlockModalProps) {
 function BlockModal({ block, onClose }: BlockModalProps) {
   switch (block.blockType) {
     case "image":
-    case "media_image":
+    case "image_output":
       return <ImageBlockModal block={block} onClose={onClose} />;
     case "audio":
-    case "media_audio":
+    case "audio_output":
       return <AudioBlockModal block={block} onClose={onClose} />;
     case "video":
-    case "media_video":
+    case "video_output":
       return <VideoBlockModal block={block} onClose={onClose} />;
     case "document":
-    case "media_document":
+    case "file_output":
       return <DocumentBlockModal block={block} onClose={onClose} />;
     case "youtube_video":
-    case "media_youtube":
       return <YoutubeBlockModal block={block} onClose={onClose} />;
     case "input_webpage":
       return <WebpageBlockModal block={block} onClose={onClose} />;
@@ -452,19 +453,23 @@ function AttachmentChip({ block }: { block: NormalisedBlock }) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function AgentUserMessage({
-  content,
-  contentBlocks,
-  messageIndex,
+  conversationId,
+  turnId,
   compact = false,
 }: AgentUserMessageProps) {
+  const turn = useAppSelector(selectTurnByTurnId(conversationId, turnId));
+
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [shouldBeCollapsible, setShouldBeCollapsible] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const measureRef = useRef<HTMLDivElement>(null);
   const previousContentRef = useRef<string>("");
 
+  const content = turn?.content ?? "";
+  const contentBlocks = turn?.contentBlocks;
+
   const normalisedBlocks: NormalisedBlock[] = (contentBlocks ?? [])
-    .map((b, i) => normaliseBlock(b as ContentBlock, i))
+    .map((b, i) => normaliseBlock(b, i))
     .filter((b): b is NormalisedBlock => b !== null);
 
   const trimmedText = content.trim();

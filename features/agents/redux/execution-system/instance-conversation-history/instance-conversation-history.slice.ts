@@ -27,6 +27,7 @@ import { destroyInstance } from "../execution-instances/execution-instances.slic
 import type { CompletionStats } from "@/features/agents/types/instance.types";
 import type { ClientMetrics } from "@/features/agents/types/request.types";
 import type { Json } from "@/types/database.types";
+import type { ContentBlockPayload } from "@/types/python-generated/stream-events";
 
 // =============================================================================
 // Types
@@ -50,8 +51,12 @@ export interface ConversationTurn {
   /** The text content of this turn */
   content: string;
 
-  /** Optional multimodal content blocks (images, files, etc.) */
-  contentBlocks?: Array<Record<string, unknown>>;
+  /**
+   * Multimodal content blocks (audio, images, etc.).
+   * Always in ContentBlockPayload shape — normalized at the Redux boundary
+   * so every consumer gets a single canonical type.
+   */
+  contentBlocks?: ContentBlockPayload[];
 
   /** ISO timestamp when this turn was added/committed */
   timestamp: string;
@@ -187,7 +192,7 @@ const instanceConversationHistorySlice = createSlice({
       action: PayloadAction<{
         conversationId: string;
         content: string;
-        contentBlocks?: Array<Record<string, unknown>>;
+        contentBlocks?: ContentBlockPayload[];
         serverConversationId?: string | null;
         systemGenerated?: boolean;
       }>,
@@ -226,11 +231,11 @@ const instanceConversationHistorySlice = createSlice({
         requestId: string;
         content: string;
         serverConversationId: string | null;
+        contentBlocks?: ContentBlockPayload[];
         tokenUsage?: TokenUsage;
         finishReason?: string;
         completionStats?: CompletionStats;
         errorMessage?: string;
-        contentBlocks?: Array<Record<string, unknown>>;
       }>,
     ) {
       const {
@@ -238,11 +243,11 @@ const instanceConversationHistorySlice = createSlice({
         requestId,
         content,
         serverConversationId,
+        contentBlocks,
         tokenUsage,
         finishReason,
         completionStats,
         errorMessage,
-        contentBlocks,
       } = action.payload;
 
       const entry = state.byConversationId[conversationId];
@@ -259,11 +264,11 @@ const instanceConversationHistorySlice = createSlice({
         timestamp: new Date().toISOString(),
         requestId,
         conversationId: serverConversationId,
+        ...(contentBlocks && contentBlocks.length > 0 && { contentBlocks }),
         ...(tokenUsage && { tokenUsage }),
         ...(finishReason && { finishReason }),
         ...(completionStats && { completionStats }),
         ...(errorMessage && { errorMessage }),
-        ...(contentBlocks && contentBlocks.length > 0 && { contentBlocks }),
       });
     },
 
@@ -316,6 +321,28 @@ const instanceConversationHistorySlice = createSlice({
       entry.loadedFromHistory = true;
     },
 
+    /**
+     * Upsert content blocks onto an existing turn by turnId.
+     * Used after normalization of DB-loaded blocks or any late-arriving blocks.
+     */
+    setTurnContentBlocks(
+      state,
+      action: PayloadAction<{
+        conversationId: string;
+        turnId: string;
+        contentBlocks: ContentBlockPayload[];
+      }>,
+    ) {
+      const { conversationId, turnId, contentBlocks } = action.payload;
+      const entry = state.byConversationId[conversationId];
+      if (!entry) return;
+
+      const turn = entry.turns.find((t) => t.turnId === turnId);
+      if (turn) {
+        turn.contentBlocks = contentBlocks;
+      }
+    },
+
     /** Set conversation label from server's conversation_labeled data event. */
     setConversationLabel(
       state,
@@ -366,6 +393,7 @@ export const {
   commitAssistantTurn,
   attachClientMetrics,
   loadConversationHistory,
+  setTurnContentBlocks,
   setConversationLabel,
   clearHistory,
   removeInstanceHistory,

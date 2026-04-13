@@ -48,7 +48,13 @@ export default async function AuthenticatedLayout({
   const accessToken = session?.access_token;
 
   // Fetch admin status and preferences in a single efficient query
-  const sessionData = await getUserSessionData(supabase, user.id);
+  let sessionData;
+  try {
+    sessionData = await getUserSessionData(supabase, user.id);
+  } catch (e) {
+    console.error("Failed to fetch session data, using defaults:", e);
+    sessionData = { isAdmin: false, preferences: {}, preferencesExist: false };
+  }
   const isAdmin = sessionData.isAdmin;
   const userData = mapUserData(user, accessToken, isAdmin);
 

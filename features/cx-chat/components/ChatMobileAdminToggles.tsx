@@ -12,7 +12,7 @@ import {
   switchServer,
 } from "@/lib/redux/slices/apiConfigSlice";
 import {
-  selectUseBlockMode,
+  selectIsBlockMode,
   setUseBlockMode,
 } from "@/features/agents/redux/execution-system/instance-ui-state";
 
@@ -21,7 +21,7 @@ export default function ChatMobileAdminToggles() {
   const isAdmin = useAppSelector(selectIsAdmin);
   const activeServer = useAppSelector(selectActiveServer);
   const isUsingLocalhost = activeServer === "localhost";
-  const blockMode = useAppSelector(selectUseBlockMode);
+  const blockMode = useAppSelector(selectIsBlockMode);
 
   if (!isAdmin) return null;
 

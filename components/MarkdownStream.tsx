@@ -15,6 +15,7 @@ export interface MarkdownStreamProps {
   events?: StreamEvent[];
   /** Optional task ID for streaming updates (legacy mode with Redux) */
   taskId?: string;
+  requestId?: string;
   /** Content type (flashcard, message, text, etc.) */
   type?:
     | "flashcard"
@@ -54,19 +55,14 @@ export interface MarkdownStreamProps {
   onError?: (error: string) => void;
   /** Callback when phase events are received (new mode) */
   onPhaseUpdate?: (phase: string) => void;
+  /** Pre-processed content blocks from server/Redux (new content_block protocol). */
+  serverProcessedBlocks?: ServerProcessedBlock[];
   /**
    * Strict server-data mode — for testing/debugging only.
    * When true, structured blocks will NOT fall back to client-side parsing
    * if block.serverData is null. Leave false (default) for production.
    */
   strictServerData?: boolean;
-  /**
-   * Pre-processed blocks from the server (content_block events committed to Redux).
-   * Pass these to bypass client-side parsing and render server-side blocks directly.
-   * Used by AgentAssistantMessage to render committed blocks (audio, images, etc.)
-   * without going through the event-based streaming path.
-   */
-  serverProcessedBlocks?: ServerProcessedBlock[];
 }
 
 /**

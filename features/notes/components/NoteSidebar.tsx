@@ -26,6 +26,7 @@ import React, {
   useRef,
   useEffect,
 } from "react";
+import { createPortal } from "react-dom";
 import dynamic from "next/dynamic";
 import {
   FileText,
@@ -126,9 +127,19 @@ const GROUP_MODES: {
 
 interface NoteSidebarProps {
   instanceId: string;
+  /**
+   * When provided, context menus are rendered via createPortal into this element
+   * instead of as fixed-positioned children inside the sidebar DOM tree.
+   * Pass `document.body` when the sidebar is inside a floating window to ensure
+   * context menus appear above the window's stacking context.
+   */
+  contextMenuPortalTarget?: Element | null;
 }
 
-export function NoteSidebar({ instanceId }: NoteSidebarProps) {
+export function NoteSidebar({
+  instanceId,
+  contextMenuPortalTarget,
+}: NoteSidebarProps) {
   const dispatch = useAppDispatch();
   const { id: userId } = useAppSelector(selectUser);
 
@@ -885,139 +896,155 @@ export function NoteSidebar({ instanceId }: NoteSidebarProps) {
       </div>
 
       {/* ── Folder context menu ────────────────────────────────────────── */}
-      {folderCtx && (
-        <>
-          <div
-            className="fixed inset-0 z-[110]"
-            onClick={() => setFolderCtx(null)}
-          />
-          <div
-            ref={ctxMenuRef}
-            className="fixed z-[120] min-w-[160px] py-1 bg-card/95 backdrop-blur-2xl border border-border rounded-lg shadow-lg"
-            style={{ left: folderCtx.x, top: folderCtx.y }}
-          >
-            <button
-              className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-foreground hover:bg-accent cursor-pointer transition-colors"
-              onClick={() => {
-                handleNewNote(folderCtx.folder);
-                setFolderCtx(null);
-              }}
-            >
-              <Plus className="w-3 h-3" /> New Note in {folderCtx.folder}
-            </button>
-            {!isDefaultFolder(folderCtx.folder) && (
-              <>
-                <div className="h-px bg-border/50 my-1" />
+      {folderCtx &&
+        (() => {
+          const zBackdrop = contextMenuPortalTarget ? "z-[9980]" : "z-[110]";
+          const zMenu = contextMenuPortalTarget ? "z-[9990]" : "z-[120]";
+          const content = (
+            <>
+              <div
+                className={`fixed inset-0 ${zBackdrop}`}
+                onClick={() => setFolderCtx(null)}
+              />
+              <div
+                ref={ctxMenuRef}
+                className={`fixed ${zMenu} min-w-[160px] py-1 bg-card/95 backdrop-blur-2xl border border-border rounded-lg shadow-lg`}
+                style={{ left: folderCtx.x, top: folderCtx.y }}
+              >
                 <button
                   className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-foreground hover:bg-accent cursor-pointer transition-colors"
-                  onClick={() => handleFolderRename(folderCtx.folder)}
+                  onClick={() => {
+                    handleNewNote(folderCtx.folder);
+                    setFolderCtx(null);
+                  }}
                 >
-                  <FileText className="w-3 h-3" /> Rename Folder
+                  <Plus className="w-3 h-3" /> New Note in {folderCtx.folder}
                 </button>
-                <button
-                  className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-destructive hover:bg-destructive/10 cursor-pointer transition-colors"
-                  onClick={() => handleFolderDeleteAll(folderCtx.folder)}
-                >
-                  <Trash2 className="w-3 h-3" /> Delete All Notes
-                </button>
-              </>
-            )}
-          </div>
-        </>
-      )}
+                {!isDefaultFolder(folderCtx.folder) && (
+                  <>
+                    <div className="h-px bg-border/50 my-1" />
+                    <button
+                      className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-foreground hover:bg-accent cursor-pointer transition-colors"
+                      onClick={() => handleFolderRename(folderCtx.folder)}
+                    >
+                      <FileText className="w-3 h-3" /> Rename Folder
+                    </button>
+                    <button
+                      className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-destructive hover:bg-destructive/10 cursor-pointer transition-colors"
+                      onClick={() => handleFolderDeleteAll(folderCtx.folder)}
+                    >
+                      <Trash2 className="w-3 h-3" /> Delete All Notes
+                    </button>
+                  </>
+                )}
+              </div>
+            </>
+          );
+          return contextMenuPortalTarget
+            ? createPortal(content, contextMenuPortalTarget)
+            : content;
+        })()}
 
       {/* ── Note context menu ──────────────────────────────────────────── */}
-      {noteCtx && (
-        <>
-          <div
-            className="fixed inset-0 z-[110]"
-            onClick={() => {
-              setNoteCtx(null);
-              setMoveSubmenu(false);
-            }}
-          />
-          <div
-            ref={ctxMenuRef}
-            className="fixed z-[120] min-w-[160px] py-1 bg-card/95 backdrop-blur-2xl border border-border rounded-lg shadow-lg"
-            style={{ left: noteCtx.x, top: noteCtx.y }}
-          >
-            <button
-              className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-foreground hover:bg-accent cursor-pointer transition-colors"
-              onClick={() => {
-                selectNote(noteCtx.noteId);
-                setNoteCtx(null);
-              }}
-            >
-              <FileText className="w-3 h-3" /> Open
-            </button>
-            <button
-              className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-foreground hover:bg-accent cursor-pointer transition-colors"
-              onClick={() => {
-                dispatch(copyNote(noteCtx.noteId));
-                setNoteCtx(null);
-              }}
-            >
-              <Copy className="w-3 h-3" /> Duplicate
-            </button>
-            <button
-              className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-foreground hover:bg-accent cursor-pointer transition-colors"
-              onClick={() =>
-                handleNoteExport(noteCtx.noteId, noteCtx.noteLabel)
-              }
-            >
-              <Download className="w-3 h-3" /> Export as Markdown
-            </button>
-            <div className="h-px bg-border/50 my-1" />
-            {/* Move to folder submenu */}
-            <div className="relative">
-              <button
-                className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-foreground hover:bg-accent cursor-pointer transition-colors"
-                onClick={() => setMoveSubmenu((v) => !v)}
+      {noteCtx &&
+        (() => {
+          const zBackdrop = contextMenuPortalTarget ? "z-[9980]" : "z-[110]";
+          const zMenu = contextMenuPortalTarget ? "z-[9990]" : "z-[120]";
+          const content = (
+            <>
+              <div
+                className={`fixed inset-0 ${zBackdrop}`}
+                onClick={() => {
+                  setNoteCtx(null);
+                  setMoveSubmenu(false);
+                }}
+              />
+              <div
+                ref={ctxMenuRef}
+                className={`fixed ${zMenu} min-w-[160px] py-1 bg-card/95 backdrop-blur-2xl border border-border rounded-lg shadow-lg`}
+                style={{ left: noteCtx.x, top: noteCtx.y }}
               >
-                <FolderInput className="w-3 h-3" /> Move to Folder
-                <ChevronRight className="w-3 h-3 ml-auto" />
-              </button>
-              {moveSubmenu && (
-                <div className="absolute left-full top-0 ml-1 min-w-[120px] max-h-[200px] overflow-auto py-1 bg-card/95 backdrop-blur-2xl border border-border rounded-lg shadow-lg">
-                  {allFolders
-                    .filter((f) => f !== noteCtx.folder)
-                    .map((f) => (
-                      <button
-                        key={f}
-                        className="w-full text-left px-3 py-1.5 text-[0.625rem] text-foreground hover:bg-accent cursor-pointer transition-colors"
-                        onClick={() => {
-                          dispatch(
-                            moveNoteToFolder({
-                              noteId: noteCtx.noteId,
-                              folder: f,
-                            }),
-                          );
-                          setNoteCtx(null);
-                          setMoveSubmenu(false);
-                        }}
-                      >
-                        {f}
-                      </button>
-                    ))}
+                <button
+                  className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-foreground hover:bg-accent cursor-pointer transition-colors"
+                  onClick={() => {
+                    selectNote(noteCtx.noteId);
+                    setNoteCtx(null);
+                  }}
+                >
+                  <FileText className="w-3 h-3" /> Open
+                </button>
+                <button
+                  className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-foreground hover:bg-accent cursor-pointer transition-colors"
+                  onClick={() => {
+                    dispatch(copyNote(noteCtx.noteId));
+                    setNoteCtx(null);
+                  }}
+                >
+                  <Copy className="w-3 h-3" /> Duplicate
+                </button>
+                <button
+                  className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-foreground hover:bg-accent cursor-pointer transition-colors"
+                  onClick={() =>
+                    handleNoteExport(noteCtx.noteId, noteCtx.noteLabel)
+                  }
+                >
+                  <Download className="w-3 h-3" /> Export as Markdown
+                </button>
+                <div className="h-px bg-border/50 my-1" />
+                {/* Move to folder submenu */}
+                <div className="relative">
+                  <button
+                    className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-foreground hover:bg-accent cursor-pointer transition-colors"
+                    onClick={() => setMoveSubmenu((v) => !v)}
+                  >
+                    <FolderInput className="w-3 h-3" /> Move to Folder
+                    <ChevronRight className="w-3 h-3 ml-auto" />
+                  </button>
+                  {moveSubmenu && (
+                    <div className="absolute left-full top-0 ml-1 min-w-[120px] max-h-[200px] overflow-auto py-1 bg-card/95 backdrop-blur-2xl border border-border rounded-lg shadow-lg">
+                      {allFolders
+                        .filter((f) => f !== noteCtx.folder)
+                        .map((f) => (
+                          <button
+                            key={f}
+                            className="w-full text-left px-3 py-1.5 text-[0.625rem] text-foreground hover:bg-accent cursor-pointer transition-colors"
+                            onClick={() => {
+                              dispatch(
+                                moveNoteToFolder({
+                                  noteId: noteCtx.noteId,
+                                  folder: f,
+                                }),
+                              );
+                              setNoteCtx(null);
+                              setMoveSubmenu(false);
+                            }}
+                          >
+                            {f}
+                          </button>
+                        ))}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-            <div className="h-px bg-border/50 my-1" />
-            <button
-              className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-destructive hover:bg-destructive/10 cursor-pointer transition-colors"
-              onClick={() => {
-                dispatch(
-                  removeInstanceTab({ instanceId, noteId: noteCtx.noteId }),
-                );
-                dispatch(deleteNote(noteCtx.noteId));
-                setNoteCtx(null);
-              }}
-            >
-              <Trash2 className="w-3 h-3" /> Delete Note
-            </button>
-          </div>
-        </>
-      )}
+                <div className="h-px bg-border/50 my-1" />
+                <button
+                  className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-destructive hover:bg-destructive/10 cursor-pointer transition-colors"
+                  onClick={() => {
+                    dispatch(
+                      removeInstanceTab({ instanceId, noteId: noteCtx.noteId }),
+                    );
+                    dispatch(deleteNote(noteCtx.noteId));
+                    setNoteCtx(null);
+                  }}
+                >
+                  <Trash2 className="w-3 h-3" /> Delete Note
+                </button>
+              </div>
+            </>
+          );
+          return contextMenuPortalTarget
+            ? createPortal(content, contextMenuPortalTarget)
+            : content;
+        })()}
 
       {/* ── Dialogs ────────────────────────────────────────────────────── */}
       <CreateFolderDialog

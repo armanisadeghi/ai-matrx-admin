@@ -56,6 +56,7 @@ import {
   loadConversationHistory,
   type ConversationTurn,
 } from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.slice";
+import { normalizeContentBlocks } from "@/features/agents/redux/execution-system/utils";
 import type { CxConversationListItem } from "./types";
 
 type ThunkApi = { dispatch: AppDispatch; state: RootState };
@@ -185,77 +186,74 @@ export const fetchConversationHistory = createAsyncThunk<
   void,
   { conversationId: string },
   ThunkApi
->(
-  "cxConversations/fetchHistory",
-  async ({ conversationId }, { dispatch }) => {
-    dispatch(
-      initInstanceHistory({ conversationId, mode: "conversation" }),
-    );
+>("cxConversations/fetchHistory", async ({ conversationId }, { dispatch }) => {
+  dispatch(initInstanceHistory({ conversationId, mode: "conversation" }));
 
-    const { data, error } = await supabase
-      .from("cx_message")
-      .select(
-        "agent_id, content, content_history, conversation_id, created_at, deleted_at, id, is_visible_to_model, is_visible_to_user, metadata, position, role, source, status, user_content",
+  const { data, error } = await supabase
+    .from("cx_message")
+    .select(
+      "agent_id, content, content_history, conversation_id, created_at, deleted_at, id, is_visible_to_model, is_visible_to_user, metadata, position, role, source, status, user_content",
+    )
+    .eq("conversation_id", conversationId)
+    .is("deleted_at", null)
+    .order("position", { ascending: true });
+
+  if (error) throw error;
+
+  const rows = data ?? [];
+
+  const turns: ConversationTurn[] = rows
+    .filter((row) => row.role === "user" || row.role === "assistant")
+    .map((row) => {
+      const rawBlocks: Array<Record<string, unknown>> = Array.isArray(
+        row.content,
       )
-      .eq("conversation_id", conversationId)
-      .is("deleted_at", null)
-      .order("position", { ascending: true });
+        ? (row.content as unknown[]).filter(
+            (b): b is Record<string, unknown> =>
+              typeof b === "object" && b !== null && !Array.isArray(b),
+          )
+        : [];
 
-    if (error) throw error;
+      const textBlock = rawBlocks.find((b) => b["type"] === "text") as
+        | { type: "text"; text: string }
+        | undefined;
+      const primaryText =
+        typeof textBlock?.text === "string" ? textBlock.text : "";
 
-    const rows = data ?? [];
+      const richBlocks = rawBlocks.filter((b) => b["type"] !== "text");
+      const normalizedBlocks =
+        richBlocks.length > 0 ? normalizeContentBlocks(richBlocks) : undefined;
 
-    const turns: ConversationTurn[] = rows
-      .filter((row) => row.role === "user" || row.role === "assistant")
-      .map((row) => {
-        const rawBlocks: Array<Record<string, unknown>> = Array.isArray(
-          row.content,
-        )
-          ? (row.content as unknown[]).filter(
-              (b): b is Record<string, unknown> =>
-                typeof b === "object" && b !== null && !Array.isArray(b),
-            )
-          : [];
-
-        const textBlock = rawBlocks.find((b) => b["type"] === "text") as
-          | { type: "text"; text: string }
-          | undefined;
-        const primaryText =
-          typeof textBlock?.text === "string" ? textBlock.text : "";
-
-        const richBlocks = rawBlocks.filter((b) => b["type"] !== "text");
-
-        return {
-          turnId: uuidv4(),
-          cxMessageId: row.id,
-          role: row.role as "user" | "assistant",
-          content: primaryText,
-          ...(richBlocks.length > 0 && { contentBlocks: richBlocks }),
-          timestamp: row.created_at,
-          requestId: null,
-          conversationId,
-          agentId: row.agent_id,
-          position: row.position,
-          contentHistory: row.content_history,
-          deletedAt: row.deleted_at,
-          isVisibleToModel: row.is_visible_to_model,
-          isVisibleToUser: row.is_visible_to_user,
-          messageMetadata: jsonMetadataToRecord(row.metadata),
-          source: row.source,
-          messageStatus: row.status,
-          userContent: row.user_content,
-        };
-      });
-
-    dispatch(
-      loadConversationHistory({
+      return {
+        turnId: uuidv4(),
+        cxMessageId: row.id,
+        role: row.role as "user" | "assistant",
+        content: primaryText,
+        ...(normalizedBlocks && { contentBlocks: normalizedBlocks }),
+        timestamp: row.created_at,
+        requestId: null,
         conversationId,
-        turns,
-        mode: "conversation",
-      }),
-    );
-  },
-);
+        agentId: row.agent_id,
+        position: row.position,
+        contentHistory: row.content_history,
+        deletedAt: row.deleted_at,
+        isVisibleToModel: row.is_visible_to_model,
+        isVisibleToUser: row.is_visible_to_user,
+        messageMetadata: jsonMetadataToRecord(row.metadata),
+        source: row.source,
+        messageStatus: row.status,
+        userContent: row.user_content,
+      };
+    });
+
+  dispatch(
+    loadConversationHistory({
+      conversationId,
+      turns,
+      mode: "conversation",
+    }),
+  );
+});
 
 // ── Mutations ─────────────────────────────────────────────────────────────────
 

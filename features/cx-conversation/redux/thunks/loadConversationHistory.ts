@@ -111,6 +111,8 @@ export const loadConversationHistory = createAsyncThunk<
           agentId,
           messages,
           toolCallsById,
+          protocolDbMessages: data.messages,
+          protocolDbToolCalls: data.toolCalls ?? null,
         }),
       );
     } catch (error: unknown) {

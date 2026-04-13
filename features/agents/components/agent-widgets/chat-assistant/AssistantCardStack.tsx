@@ -21,9 +21,7 @@ import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { selectConversationTurns } from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.selectors";
 import {
   selectStreamPhase,
-  selectLatestAccumulatedText,
-  selectLatestInfoUserMessage,
-  selectLatestError,
+  selectLatestRequestId,
   selectConversationMode,
 } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
 import { selectInstanceVariableDefinitions } from "@/features/agents/redux/execution-system/instance-variable-values/instance-variable-values.selectors";
@@ -32,7 +30,6 @@ import { executeInstance } from "@/features/agents/redux/execution-system/thunks
 import { executeChatInstance } from "@/features/agents/redux/execution-system/thunks/execute-chat-instance.thunk";
 import { AgentUserMessage } from "../../run/AgentUserMessage";
 import { AgentPlanningIndicator } from "../../run/AgentPlanningIndicator";
-import { AgentStatusIndicator } from "../../run/AgentStatusIndicator";
 import { ChatAssistantVariableInputs } from "./ChatAssistantVariableInputs";
 
 const AgentAssistantMessage = dynamic(
@@ -50,11 +47,9 @@ const AgentAssistantMessage = dynamic(
 interface DisplayMessage {
   key: string;
   role: "user" | "assistant" | "system" | "status";
-  content: string;
-  contentBlocks?: Array<Record<string, unknown>>;
+  turnId: string | null;
+  requestId: string | null;
   isStreamActive: boolean;
-  error?: string | null;
-  infoMessage?: string | null;
 }
 
 interface AssistantCardStackProps {
@@ -71,13 +66,7 @@ export function AssistantCardStack({
   const dispatch = useAppDispatch();
   const turns = useAppSelector(selectConversationTurns(conversationId));
   const phase = useAppSelector(selectStreamPhase(conversationId));
-  const streamingText = useAppSelector(
-    selectLatestAccumulatedText(conversationId),
-  );
-  const infoMessage = useAppSelector(
-    selectLatestInfoUserMessage(conversationId),
-  );
-  const error = useAppSelector(selectLatestError(conversationId));
+  const latestRequestId = useAppSelector(selectLatestRequestId(conversationId));
   const variableDefs = useAppSelector(
     selectInstanceVariableDefinitions(conversationId),
   );
@@ -105,41 +94,26 @@ export function AssistantCardStack({
     const msgs: DisplayMessage[] = turns.map((turn) => ({
       key: turn.turnId,
       role: turn.role,
-      content: turn.content,
-      contentBlocks: turn.contentBlocks,
+      turnId: turn.turnId,
+      requestId: turn.requestId ?? null,
       isStreamActive: false,
-      ...(turn.errorMessage && { error: turn.errorMessage }),
     }));
 
     if (isActive) {
-      if (phase === "connecting" || phase === "pre_token") {
-        msgs.push({
-          key: "__streaming__",
-          role: "status",
-          content: "",
-          isStreamActive: true,
-        });
-      } else if (phase === "text_streaming" || phase === "interstitial") {
-        msgs.push({
-          key: "__streaming__",
-          role: "assistant",
-          content: streamingText ?? "",
-          isStreamActive: true,
-          infoMessage: phase === "interstitial" ? infoMessage : null,
-        });
-      } else if (phase === "error") {
-        msgs.push({
-          key: "__streaming__",
-          role: "assistant",
-          content: streamingText ?? "",
-          isStreamActive: false,
-          error: error ?? "An error occurred during streaming.",
-        });
-      }
+      msgs.push({
+        key: "__streaming__",
+        role:
+          phase === "connecting" || phase === "pre_token"
+            ? "status"
+            : "assistant",
+        turnId: null,
+        requestId: latestRequestId ?? null,
+        isStreamActive: true,
+      });
     }
 
     return msgs;
-  }, [turns, isActive, phase, streamingText, infoMessage, error]);
+  }, [turns, isActive, phase, latestRequestId]);
 
   // ── Auto-scroll on new messages ─────────────────────────────────────────────
   useEffect(() => {
@@ -175,14 +149,13 @@ export function AssistantCardStack({
       {/* Conversation messages — transparent, floating, detached */}
       {hasMessages ? (
         <div className="flex-1 space-y-3 px-3 py-2">
-          {displayMessages.map((msg, idx) => {
-            if (msg.role === "user") {
+          {displayMessages.map((msg) => {
+            if (msg.role === "user" && msg.turnId) {
               return (
                 <AgentUserMessage
                   key={msg.key}
-                  content={msg.content}
-                  contentBlocks={msg.contentBlocks}
-                  messageIndex={idx}
+                  conversationId={conversationId}
+                  turnId={msg.turnId}
                   compact
                 />
               );
@@ -198,23 +171,14 @@ export function AssistantCardStack({
 
             if (msg.role === "assistant") {
               return (
-                <div key={msg.key}>
-                  <AgentAssistantMessage
-                    content={msg.content}
-                    messageIndex={idx}
-                    isStreamActive={msg.isStreamActive}
-                    compact
-                    error={msg.error}
-                    conversationId={conversationId}
-                    messageKey={msg.key}
-                  />
-                  {msg.isStreamActive && msg.infoMessage && (
-                    <AgentStatusIndicator
-                      message={msg.infoMessage}
-                      compact
-                    />
-                  )}
-                </div>
+                <AgentAssistantMessage
+                  key={msg.key}
+                  conversationId={conversationId}
+                  requestId={msg.requestId ?? undefined}
+                  turnId={msg.turnId ?? undefined}
+                  isStreamActive={msg.isStreamActive}
+                  compact
+                />
               );
             }
 

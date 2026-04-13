@@ -97,8 +97,7 @@ import { useDebugContext } from "@/hooks/useDebugContext";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 import { selectIsDebugMode } from "@/lib/redux/slices/adminDebugSlice";
 
-// Admin debug modal
-import { ChatDebugModal } from "@/features/cx-chat/admin/ChatDebugModal";
+import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { AgentVariableInputForm } from "../run/AgentVariableInputForm";
 
 // Inline button helper
@@ -244,7 +243,13 @@ export function SmartAgentInput({
   // ── Admin / debug ──────────────────────────────────────────────────────────
   const isAdmin = useAppSelector(selectIsAdmin);
   const isDebugMode = useAppSelector(selectIsDebugMode);
-  const [isDebugOpen, setIsDebugOpen] = useState(false);
+  const openDebugWindow = () =>
+    dispatch(
+      openOverlay({
+        overlayId: "chatDebugWindow",
+        data: { sessionId: conversationId },
+      }),
+    );
   const { publish: publishDebug } = useDebugContext("AgentInput");
   const latestStatus = useAppSelector((state) =>
     conversationId
@@ -594,7 +599,7 @@ export function SmartAgentInput({
                 <InputButton
                   icon={Bug}
                   tooltip="Debug instance state"
-                  onClick={() => setIsDebugOpen(true)}
+                  onClick={openDebugWindow}
                   className="text-orange-500"
                 />
               )}
@@ -698,14 +703,6 @@ export function SmartAgentInput({
           )}
         </div>
       </div>
-
-      {isAdmin && isDebugOpen && (
-        <ChatDebugModal
-          sessionId={conversationId}
-          isOpen={isDebugOpen}
-          onClose={() => setIsDebugOpen(false)}
-        />
-      )}
     </div>
   );
 }

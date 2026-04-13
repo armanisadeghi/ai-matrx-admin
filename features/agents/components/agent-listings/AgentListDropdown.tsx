@@ -14,7 +14,6 @@ import {
   RotateCcw,
   Check,
   ChevronRight,
-  Bot,
   Users,
   Clock,
   Globe,
@@ -356,9 +355,7 @@ function AgentDetailCard({
     <div className="flex flex-col h-full">
       <div className="px-4 pt-4 pb-3">
         <div className="flex items-start gap-3">
-          <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-            <Bot className="w-4.5 h-4.5 text-primary" />
-          </div>
+          <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0"></div>
           <div className="flex-1 min-w-0">
             <h3 className="text-sm font-semibold text-foreground leading-tight truncate">
               {agent.name || "Untitled"}
@@ -441,7 +438,6 @@ function AgentDetailCard({
 
         {agent.modelId && (
           <div className="flex items-center gap-2">
-            <Bot className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
             <span className="text-xs text-foreground/80 font-mono truncate">
               {agent.modelId}
             </span>

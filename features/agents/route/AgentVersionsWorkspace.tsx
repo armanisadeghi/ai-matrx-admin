@@ -13,10 +13,7 @@ import {
   selectAgentMessages,
   selectVersionsByParentAgentId,
 } from "@/features/agents/redux/agent-definition/selectors";
-import type {
-  AgentDefinition,
-  AgentDefinitionMessage,
-} from "@/features/agents/types/agent-definition.types";
+import type { AgentDefinition } from "@/features/agents/types/agent-definition.types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -43,7 +40,7 @@ import {
   Clock,
   ArrowUpCircle,
   MessageSquare,
-  Bot,
+  Webhook,
   Variable,
   Wrench,
   Settings,
@@ -51,6 +48,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/lib/toast-service";
+import type { AgentDefinitionMessage } from "@/features/agents/types/agent-message-types";
 
 const ReactDiffViewer = lazy(() => import("react-diff-viewer-continued"));
 
@@ -62,7 +60,9 @@ function extractTextContent(msg: AgentDefinitionMessage): string {
     .join("\n");
 }
 
-function allMessagesText(messages: AgentDefinitionMessage[] | undefined): string {
+function allMessagesText(
+  messages: AgentDefinitionMessage[] | undefined,
+): string {
   if (!messages || messages.length === 0) return "";
   return messages
     .map((m) => `[${m.role.toUpperCase()}]\n${extractTextContent(m)}`)
@@ -70,7 +70,8 @@ function allMessagesText(messages: AgentDefinitionMessage[] | undefined): string
 }
 
 function settingsText(settings: AgentDefinition["settings"]): string {
-  if (!settings || Object.keys(settings).length === 0) return "No settings configured";
+  if (!settings || Object.keys(settings).length === 0)
+    return "No settings configured";
   return Object.entries(settings)
     .filter(([, v]) => v != null)
     .map(([k, v]) => `${k}: ${JSON.stringify(v)}`)
@@ -87,9 +88,7 @@ function toolsText(
   return lines.length > 0 ? lines.join("\n") : "No tools configured";
 }
 
-function variablesText(
-  vars: AgentDefinition["variableDefinitions"],
-): string {
+function variablesText(vars: AgentDefinition["variableDefinitions"]): string {
   if (!vars || vars.length === 0) return "No variables defined";
   return vars
     .map((v) => {
@@ -321,7 +320,7 @@ export function AgentVersionsWorkspace({
           />
           <DiffSection
             title="Model"
-            icon={<Bot className="w-4 h-4" />}
+            icon={<Webhook className="w-4 h-4" />}
             oldValue={snapshot.modelId ?? "Default"}
             newValue={liveAgent.modelId ?? "Default"}
             oldLabel={`v${snapshot.versionNumber}`}
@@ -364,8 +363,8 @@ export function AgentVersionsWorkspace({
             <AlertDialogTitle>Promote Version</AlertDialogTitle>
             <AlertDialogDescription>
               This will replace the current agent configuration with the content
-              from v{selectedVersion}. The current configuration will be saved as
-              a new version in the history.
+              from v{selectedVersion}. The current configuration will be saved
+              as a new version in the history.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

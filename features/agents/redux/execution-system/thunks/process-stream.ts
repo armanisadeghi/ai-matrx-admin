@@ -773,17 +773,13 @@ export async function processStream({
       ? (finalRequest.errorMessage ?? null)
       : null;
 
-  // Collect completed content blocks to persist in the turn (audio, images, etc.)
-  const completedContentBlocks =
-    finalRequest && finalRequest.contentBlockOrder.length > 0
-      ? finalRequest.contentBlockOrder
-          .map((id) => finalRequest.contentBlocks[id])
-          .filter(
-            (b): b is NonNullable<typeof b> =>
-              b != null && b.status === "complete",
-          )
-          .map((b) => b as unknown as Record<string, unknown>)
-      : undefined;
+  // Snapshot content blocks from the active request so they persist on the
+  // committed turn even after the active request is eventually cleaned up.
+  const finalContentBlocks = finalRequest
+    ? finalRequest.contentBlockOrder
+        .map((id) => finalRequest.contentBlocks[id])
+        .filter(Boolean)
+    : [];
 
   dispatch(
     commitAssistantTurn({
@@ -791,11 +787,13 @@ export async function processStream({
       requestId,
       content: completedText,
       serverConversationId: finalConversationId,
+      ...(finalContentBlocks.length > 0 && {
+        contentBlocks: finalContentBlocks,
+      }),
       ...(tokenUsage && { tokenUsage }),
       ...(finishReason && { finishReason }),
       ...(completionStats && { completionStats }),
       ...(finalErrorMessage && { errorMessage: finalErrorMessage }),
-      ...(completedContentBlocks && { contentBlocks: completedContentBlocks }),
     }),
   );
 

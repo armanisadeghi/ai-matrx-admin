@@ -2558,6 +2558,11 @@ export interface components {
             conversation_id?: string | null;
             /** Is New */
             is_new?: boolean | null;
+            /**
+             * Block Mode
+             * @default false
+             */
+            block_mode: boolean;
         };
         /** AnalyzeBulkRequest */
         AnalyzeBulkRequest: {
@@ -2863,6 +2868,11 @@ export interface components {
             context: {
                 [key: string]: unknown;
             };
+            /**
+             * Block Mode
+             * @default false
+             */
+            block_mode: boolean;
             /** Metadata */
             metadata?: {
                 [key: string]: unknown;
@@ -2979,6 +2989,11 @@ export interface components {
             context: {
                 [key: string]: unknown;
             };
+            /**
+             * Block Mode
+             * @default false
+             */
+            block_mode: boolean;
         };
         /** DirectChatRequest */
         DirectChatRequest: {
@@ -8124,6 +8139,8 @@ export interface operations {
                 /** @description Field name to sort by */
                 sort_by?: string | null;
                 sort_dir?: string;
+                /** @description Column filters as 'col1:val1,col2:val2' */
+                search?: string | null;
             };
             header?: never;
             path: {

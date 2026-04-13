@@ -5,14 +5,12 @@
  *
  * Renders the full conversation history for an execution instance.
  *
- * CRITICAL DESIGN: The streaming message is rendered as part of a unified
- * displayMessages array — NOT as a conditional sibling. This means the
- * streaming AgentAssistantMessage never unmounts when the stream completes
- * and the turn is committed to history. The component simply transitions
- * from streaming content to committed content in the same slot, avoiding
- * any flash or re-render of previous messages.
- *
- * Pattern borrowed from PromptBuilderRightPanel which handles this correctly.
+ * ID-ONLY DESIGN: No content or data flows through this component as props.
+ * Each child receives only the identifiers it needs to subscribe to its own
+ * data in Redux. This ensures:
+ *   - Committed turns never re-render when a new streaming turn arrives
+ *   - Streaming components subscribe to exactly the data they need
+ *   - DB-loaded history and live-streamed turns use the same component tree
  */
 
 import { useEffect, useRef, useMemo } from "react";
@@ -21,16 +19,11 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectConversationTurns } from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.selectors";
 import {
   selectStreamPhase,
-  selectLatestAccumulatedText,
-  selectLatestInfoUserMessage,
-  selectLatestError,
-  selectLatestContentBlocks,
+  selectLatestRequestId,
 } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
 import { AgentUserMessage } from "./AgentUserMessage";
 
-import type { AgentAssistantMessageProps } from "./AgentAssistantMessage";
-
-const AgentAssistantMessage = dynamic<AgentAssistantMessageProps>(
+const AgentAssistantMessage = dynamic(
   () =>
     import("./AgentAssistantMessage").then((m) => ({
       default: m.AgentAssistantMessage,
@@ -47,16 +40,15 @@ const AgentEmptyMessageDisplay = dynamic(
 );
 
 import { AgentPlanningIndicator } from "./AgentPlanningIndicator";
-import { AgentStatusIndicator } from "./AgentStatusIndicator";
 
 interface DisplayMessage {
   key: string;
   role: "user" | "assistant" | "system" | "status";
-  content: string;
-  contentBlocks?: Array<Record<string, unknown>>;
+  /** turnId for committed turns (used by user/assistant to look up their own data) */
+  turnId: string | null;
+  /** requestId for assistant turns that have activeRequest data in Redux */
+  requestId: string | null;
   isStreamActive: boolean;
-  error?: string | null;
-  infoMessage?: string | null;
 }
 
 interface AgentConversationDisplayProps {
@@ -70,20 +62,7 @@ export function AgentConversationDisplay({
 }: AgentConversationDisplayProps) {
   const turns = useAppSelector(selectConversationTurns(conversationId));
   const phase = useAppSelector(selectStreamPhase(conversationId));
-  const streamingText = useAppSelector(
-    selectLatestAccumulatedText(conversationId),
-  );
-  const infoMessage = useAppSelector(
-    selectLatestInfoUserMessage(conversationId),
-  );
-  const error = useAppSelector(selectLatestError(conversationId));
-  // Live content blocks (audio, images, etc.) accumulated during the current stream.
-  // Memoize the selector instance so createSelector caching works correctly.
-  const contentBlocksSelector = useMemo(
-    () => selectLatestContentBlocks(conversationId),
-    [conversationId],
-  );
-  const liveContentBlocks = useAppSelector(contentBlocksSelector);
+  const latestRequestId = useAppSelector(selectLatestRequestId(conversationId));
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const isActive =
@@ -97,57 +76,26 @@ export function AgentConversationDisplay({
     const msgs: DisplayMessage[] = turns.map((turn) => ({
       key: turn.turnId,
       role: turn.role,
-      content: turn.content,
-      // contentBlocks on committed turns come from DB or from the committed stream blocks.
-      // Rendered additively below text by AgentContentBlocks — never replaces text.
-      contentBlocks: turn.contentBlocks,
+      turnId: turn.turnId,
+      requestId: turn.requestId ?? null,
       isStreamActive: false,
-      ...(turn.errorMessage && { error: turn.errorMessage }),
     }));
 
     if (isActive) {
-      if (phase === "connecting" || phase === "pre_token") {
-        msgs.push({
-          key: "__streaming__",
-          role: "status",
-          content: "",
-          isStreamActive: true,
-        });
-      } else if (phase === "text_streaming" || phase === "interstitial") {
-        msgs.push({
-          key: "__streaming__",
-          role: "assistant",
-          content: streamingText ?? "",
-          isStreamActive: true,
-          infoMessage: phase === "interstitial" ? infoMessage : null,
-          // Live content blocks (audio, images, etc.) from the active stream.
-          // Cast is safe: ContentBlockPayload is compatible with Record<string, unknown>.
-          contentBlocks:
-            liveContentBlocks.length > 0
-              ? (liveContentBlocks as unknown as Array<Record<string, unknown>>)
-              : undefined,
-        });
-      } else if (phase === "error") {
-        msgs.push({
-          key: "__streaming__",
-          role: "assistant",
-          content: streamingText ?? "",
-          isStreamActive: false,
-          error: error ?? "An error occurred during streaming.",
-        });
-      }
+      msgs.push({
+        key: "__streaming__",
+        role:
+          phase === "connecting" || phase === "pre_token"
+            ? "status"
+            : "assistant",
+        turnId: null,
+        requestId: latestRequestId ?? null,
+        isStreamActive: true,
+      });
     }
 
     return msgs;
-  }, [
-    turns,
-    isActive,
-    phase,
-    streamingText,
-    infoMessage,
-    error,
-    liveContentBlocks,
-  ]);
+  }, [turns, isActive, phase, latestRequestId]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -161,14 +109,13 @@ export function AgentConversationDisplay({
 
   return (
     <div className={`${spacingClass} px-4 pt-14`}>
-      {displayMessages.map((msg, idx) => {
-        if (msg.role === "user") {
+      {displayMessages.map((msg) => {
+        if (msg.role === "user" && msg.turnId) {
           return (
             <AgentUserMessage
               key={msg.key}
-              content={msg.content}
-              contentBlocks={msg.contentBlocks}
-              messageIndex={idx}
+              conversationId={conversationId}
+              turnId={msg.turnId}
               compact={compact}
             />
           );
@@ -180,24 +127,14 @@ export function AgentConversationDisplay({
 
         if (msg.role === "assistant") {
           return (
-            <div key={msg.key}>
-              <AgentAssistantMessage
-                content={msg.content}
-                messageIndex={idx}
-                isStreamActive={msg.isStreamActive}
-                compact={compact}
-                error={msg.error}
-                conversationId={conversationId}
-                messageKey={msg.key}
-                contentBlocks={msg.contentBlocks}
-              />
-              {msg.isStreamActive && msg.infoMessage && (
-                <AgentStatusIndicator
-                  message={msg.infoMessage}
-                  compact={compact}
-                />
-              )}
-            </div>
+            <AgentAssistantMessage
+              key={msg.key}
+              conversationId={conversationId}
+              requestId={msg.requestId ?? undefined}
+              turnId={msg.turnId ?? undefined}
+              isStreamActive={msg.isStreamActive}
+              compact={compact}
+            />
           );
         }
 

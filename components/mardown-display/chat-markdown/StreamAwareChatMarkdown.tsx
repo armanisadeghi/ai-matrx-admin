@@ -86,6 +86,7 @@ export interface StreamAwareChatMarkdownProps extends Omit<
 export const StreamAwareChatMarkdown: React.FC<
   StreamAwareChatMarkdownProps
 > = ({
+  requestId,
   content,
   events,
   onError,
@@ -98,7 +99,7 @@ export const StreamAwareChatMarkdown: React.FC<
   );
   const [hasStreamError, setHasStreamError] = useState(false);
 
-  const { hideCopyButton } = restProps;
+  console.log("[STREAM] StreamAwareChatMarkdown requestId:", requestId);
 
   // Ordered canonical blocks derived from events (text + tool_call interleaved)
   const [canonicalBlocks, setCanonicalBlocks] = useState<CanonicalBlock[]>([]);
@@ -192,6 +193,10 @@ export const StreamAwareChatMarkdown: React.FC<
         }
 
         case "tool_event": {
+          console.log(
+            "[STREAM] tool_event:",
+            JSON.stringify(event.data, null, 2),
+          );
           // Tool events change canonical blocks (new/updated tool_call block)
           canonicalBlocksChangedRef.current = true;
           hasNewCanonical = true;
@@ -199,6 +204,7 @@ export const StreamAwareChatMarkdown: React.FC<
         }
 
         case "error": {
+          console.log("[STREAM] error:", JSON.stringify(event.data, null, 2));
           const errorData = event.data as Record<string, unknown>;
           const errorMessage =
             (errorData?.user_message as string) ||
@@ -210,6 +216,7 @@ export const StreamAwareChatMarkdown: React.FC<
         }
 
         case "phase": {
+          console.log("[STREAM] phase:", JSON.stringify(event.data, null, 2));
           const phaseData = event.data as Record<string, unknown>;
           console.log("[STREAM] phase:", JSON.stringify(phaseData, null, 2));
           onPhaseUpdateRef.current?.(phaseData?.phase as string);
@@ -217,6 +224,10 @@ export const StreamAwareChatMarkdown: React.FC<
         }
 
         case "content_block": {
+          console.log(
+            "[STREAM] content_block:",
+            JSON.stringify(event.data, null, 2),
+          );
           // New server-processed block protocol.
           // The Python backend sends snake_case keys (block_id, block_index);
           // ContentBlockPayload uses camelCase. Normalise both forms so we
@@ -251,6 +262,10 @@ export const StreamAwareChatMarkdown: React.FC<
           );
           break;
         case "heartbeat":
+          console.log(
+            "[STREAM] heartbeat:",
+            JSON.stringify(event.data, null, 2),
+          );
           break;
         case "data":
           console.log("[STREAM] data:", JSON.stringify(event.data, null, 2));
@@ -336,6 +351,7 @@ export const StreamAwareChatMarkdown: React.FC<
             const textBlock = block as TextBlock;
             return (
               <EnhancedChatMarkdownInternal
+                requestId={requestId}
                 key={`text-${index}`}
                 {...restProps}
                 content={textBlock.content}

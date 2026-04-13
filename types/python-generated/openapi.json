@@ -5711,6 +5711,24 @@
               "default": "asc",
               "title": "Sort Dir"
             }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Column filters as 'col1:val1,col2:val2'",
+              "title": "Search"
+            },
+            "description": "Column filters as 'col1:val1,col2:val2'"
           }
         ],
         "responses": {
@@ -6886,6 +6904,11 @@
               }
             ],
             "title": "Is New"
+          },
+          "block_mode": {
+            "type": "boolean",
+            "title": "Block Mode",
+            "default": false
           }
         },
         "type": "object",
@@ -7920,6 +7943,11 @@
             "title": "Context",
             "default": {}
           },
+          "block_mode": {
+            "type": "boolean",
+            "title": "Block Mode",
+            "default": false
+          },
           "metadata": {
             "anyOf": [
               {
@@ -8183,6 +8211,11 @@
             "type": "object",
             "title": "Context",
             "default": {}
+          },
+          "block_mode": {
+            "type": "boolean",
+            "title": "Block Mode",
+            "default": false
           }
         },
         "type": "object",

@@ -35,7 +35,7 @@ export const SHORTCUT_CONTEXT_META = {
   "agent-builder": {
     label: "Agent Builder",
     description: "Agent creation and editing interface",
-    icon: "Bot",
+    icon: "Webhook",
   },
   "custom-apps": {
     label: "Custom Apps",

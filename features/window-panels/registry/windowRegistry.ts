@@ -72,6 +72,14 @@ const REGISTRY: WindowRegistryEntry[] = [
     defaultData: { openNoteId: null },
   },
 
+  // ── Notes Beta ────────────────────────────────────────────────────────────
+  {
+    slug: "notes-beta-window",
+    overlayId: "notesBetaWindow",
+    label: "Notes Beta",
+    defaultData: { openNoteId: null },
+  },
+
   // ── Quick Data ────────────────────────────────────────────────────────────
   {
     slug: "quick-data-window",
@@ -200,6 +208,33 @@ const REGISTRY: WindowRegistryEntry[] = [
     overlayId: "agentGateWindow",
     label: "Agent Gate",
     defaultData: { conversationId: null },
+  },
+
+  // ── Chat Debug ────────────────────────────────────────────────────────────
+  {
+    slug: "chat-debug-window",
+    overlayId: "chatDebugWindow",
+    label: "Chat Debug",
+    defaultData: { sessionId: null },
+    ephemeral: true,
+  },
+
+  // ── Agent Debug ───────────────────────────────────────────────────────────
+  {
+    slug: "agent-debug-window",
+    overlayId: "agentDebugWindow",
+    label: "Agent Debug",
+    defaultData: { initialAgentId: null, initialConversationId: null },
+    ephemeral: true,
+  },
+
+  // ── Instance UI State ─────────────────────────────────────────────────────
+  {
+    slug: "instance-ui-state-window",
+    overlayId: "instanceUIStateWindow",
+    label: "Instance UI State",
+    defaultData: { selectedConversationId: null },
+    ephemeral: true,
   },
 
   // ── Execution Inspector ───────────────────────────────────────────────────
@@ -336,6 +371,15 @@ const REGISTRY: WindowRegistryEntry[] = [
     overlayId: "streamDebug",
     label: "Stream Debug",
     defaultData: { conversationId: null },
+    ephemeral: true,
+  },
+
+  // ── Stream Debug History ──────────────────────────────────────────────────
+  {
+    slug: "stream-debug-history",
+    overlayId: "streamDebugHistoryWindow",
+    label: "Stream History",
+    defaultData: { initialConversationId: null },
     ephemeral: true,
   },
 

@@ -29,9 +29,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectConversationTurns } from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.selectors";
 import {
   selectStreamPhase,
-  selectLatestAccumulatedText,
-  selectLatestInfoUserMessage,
-  selectLatestError,
+  selectLatestRequestId,
 } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
 import {
   selectShowDefinitionMessages,
@@ -48,19 +46,16 @@ const AgentAssistantMessage = dynamic(
   { ssr: false },
 );
 import { AgentPlanningIndicator } from "../run/AgentPlanningIndicator";
-import { AgentStatusIndicator } from "../run/AgentStatusIndicator";
 import { Webhook } from "lucide-react";
 import type { ConversationTurn } from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.slice";
 
 interface DisplayMessage {
   key: string;
   role: "user" | "assistant" | "system" | "status";
-  content: string;
-  contentBlocks?: Array<Record<string, unknown>>;
+  turnId: string | null;
+  requestId: string | null;
   isStreamActive: boolean;
   isDefinitionTurn: boolean;
-  error?: string | null;
-  infoMessage?: string | null;
 }
 
 interface SmartAgentMessageListProps {
@@ -98,13 +93,7 @@ export function SmartAgentMessageList({
 }: SmartAgentMessageListProps) {
   const turns = useAppSelector(selectConversationTurns(conversationId));
   const phase = useAppSelector(selectStreamPhase(conversationId));
-  const streamingText = useAppSelector(
-    selectLatestAccumulatedText(conversationId),
-  );
-  const infoMessage = useAppSelector(
-    selectLatestInfoUserMessage(conversationId),
-  );
-  const error = useAppSelector(selectLatestError(conversationId));
+  const latestRequestId = useAppSelector(selectLatestRequestId(conversationId));
   const showDefinitionMessages = useAppSelector(
     selectShowDefinitionMessages(conversationId),
   );
@@ -136,44 +125,27 @@ export function SmartAgentMessageList({
     const msgs: DisplayMessage[] = visibleTurns.map((turn) => ({
       key: turn.turnId,
       role: turn.role,
-      content: turn.content,
-      contentBlocks: turn.contentBlocks,
+      turnId: turn.turnId,
+      requestId: turn.requestId ?? null,
       isStreamActive: false,
       isDefinitionTurn:
         showDefinitionMessages &&
         !showDefinitionMessageContent &&
         !!turn.systemGenerated,
-      ...(turn.errorMessage && { error: turn.errorMessage }),
     }));
 
     if (isActive) {
-      if (phase === "connecting" || phase === "pre_token") {
-        msgs.push({
-          key: "__streaming__",
-          role: "status",
-          content: "",
-          isStreamActive: true,
-          isDefinitionTurn: false,
-        });
-      } else if (phase === "text_streaming" || phase === "interstitial") {
-        msgs.push({
-          key: "__streaming__",
-          role: "assistant",
-          content: streamingText ?? "",
-          isStreamActive: true,
-          isDefinitionTurn: false,
-          infoMessage: phase === "interstitial" ? infoMessage : null,
-        });
-      } else if (phase === "error") {
-        msgs.push({
-          key: "__streaming__",
-          role: "assistant",
-          content: streamingText ?? "",
-          isStreamActive: false,
-          isDefinitionTurn: false,
-          error: error ?? "An error occurred during streaming.",
-        });
-      }
+      msgs.push({
+        key: "__streaming__",
+        role:
+          phase === "connecting" || phase === "pre_token"
+            ? "status"
+            : "assistant",
+        turnId: null,
+        requestId: latestRequestId ?? null,
+        isStreamActive: true,
+        isDefinitionTurn: false,
+      });
     }
 
     return msgs;
@@ -181,9 +153,7 @@ export function SmartAgentMessageList({
     visibleTurns,
     isActive,
     phase,
-    streamingText,
-    infoMessage,
-    error,
+    latestRequestId,
     showDefinitionMessages,
     showDefinitionMessageContent,
   ]);
@@ -204,9 +174,6 @@ export function SmartAgentMessageList({
   if (displayMessages.length === 0 && !isActive) {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-3 text-center px-6 py-12">
-        <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center">
-          <Webhook className="w-12 h-12 text-primary" />
-        </div>
         <div>
           <p className="text-sm font-medium">{emptyStateMessage}</p>
           <p className="text-xs text-muted-foreground mt-1">
@@ -230,18 +197,13 @@ export function SmartAgentMessageList({
   return (
     <div ref={containerRef} className={`${spacingClass} px-4`}>
       {displayMessages.map((msg, idx) => {
-        if (msg.role === "user") {
+        if (msg.role === "user" && msg.turnId) {
           const isLastUser = idx === lastUserIndex;
           return (
             <div key={msg.key} ref={isLastUser ? lastUserRef : undefined}>
               <AgentUserMessage
-                content={
-                  msg.isDefinitionTurn
-                    ? "[Agent definition message]"
-                    : msg.content
-                }
-                contentBlocks={msg.contentBlocks}
-                messageIndex={idx}
+                conversationId={conversationId}
+                turnId={msg.turnId}
                 compact={compact}
               />
             </div>
@@ -254,23 +216,14 @@ export function SmartAgentMessageList({
 
         if (msg.role === "assistant") {
           return (
-            <div key={msg.key}>
-              <AgentAssistantMessage
-                content={msg.content}
-                messageIndex={idx}
-                isStreamActive={msg.isStreamActive}
-                compact={compact}
-                error={msg.error}
-                conversationId={conversationId}
-                messageKey={msg.key}
-              />
-              {msg.isStreamActive && msg.infoMessage && (
-                <AgentStatusIndicator
-                  message={msg.infoMessage}
-                  compact={compact}
-                />
-              )}
-            </div>
+            <AgentAssistantMessage
+              key={msg.key}
+              conversationId={conversationId}
+              requestId={msg.requestId ?? undefined}
+              turnId={msg.turnId ?? undefined}
+              isStreamActive={msg.isStreamActive}
+              compact={compact}
+            />
           );
         }
 

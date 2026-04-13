@@ -172,7 +172,7 @@ export interface SessionUIState {
   /** Full model settings (temperature, max_tokens, etc.) — sent as config_overrides */
   modelSettings: Record<string, unknown>;
   useLocalhost: boolean;
-  useBlockMode: boolean;
+  isBlockMode: boolean;
   /** Admin/creator debug panel open — shows system messages, raw state, etc. */
   showDebugInfo: boolean;
 }

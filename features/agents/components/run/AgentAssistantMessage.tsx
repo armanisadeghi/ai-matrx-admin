@@ -1,48 +1,60 @@
 "use client";
 
+/**
+ * AgentAssistantMessage
+ *
+ * ID-ONLY DESIGN: This component receives only identifiers (requestId, turnId,
+ * conversationId) and subscribes to its own data in Redux. No content flows
+ * through props from the parent.
+ *
+ * Data resolution priority:
+ *   1. requestId → activeRequests (live streaming or recently committed)
+ *   2. turnId → instanceConversationHistory (DB-loaded or committed fallback)
+ *
+ * For the streaming turn: requestId is set, turnId is null.
+ * For committed turns:    requestId may be set (if ActiveRequest still in store),
+ *                         turnId is always set.
+ * For DB-loaded turns:    requestId is null, turnId is set.
+ */
+
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Edit, MoreHorizontal, Copy, Check, AlertCircle } from "lucide-react";
 import { useDomCapturePrint } from "@/features/chat/hooks/useDomCapturePrint";
 import MarkdownStream from "@/components/MarkdownStream";
 import MessageOptionsMenu from "@/features/chat/components/response/assistant-message/MessageOptionsMenu";
 import { Button } from "@/components/ui/button";
-import { useAppDispatch } from "@/lib/redux/hooks";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import {
   openFullScreenEditor,
   openHtmlPreview,
 } from "@/lib/redux/slices/overlaySlice";
 import { useDebugContext } from "@/hooks/useDebugContext";
 import { upsertAssistantMarkdownDraft } from "@/features/agents/redux/agent-assistant-markdown-draft.slice";
-import { AgentContentBlocks } from "./AgentContentBlocks";
+import {
+  selectAccumulatedText,
+  selectRequestStatus,
+  selectAllContentBlocks,
+} from "@/features/agents/redux/execution-system/active-requests/active-requests.selectors";
+import { selectTurnByTurnId } from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.selectors";
+import { AgentToolDisplay } from "./AgentToolDisplay";
 import type { ContentBlockPayload } from "@/types/python-generated/stream-events";
 
-export interface AgentAssistantMessageProps {
-  content: string;
-  messageIndex: number;
+const EMPTY_BLOCKS: ContentBlockPayload[] = [];
+
+interface AgentAssistantMessageProps {
+  conversationId: string;
+  requestId?: string;
+  turnId?: string;
   isStreamActive?: boolean;
   compact?: boolean;
-  error?: string | null;
-  /** Execution instance id — shown in Admin Indicator debug panel when debug mode is on. */
-  conversationId?: string;
-  /** Stable row id (e.g. turn id or `__streaming__`) for correlating copies. */
-  messageKey?: string;
-  /**
-   * Content blocks (audio, images, search results, etc.) rendered below the text.
-   * Accepts both live ContentBlockPayload[] from Redux and committed blocks from DB.
-   * Always rendered additively — never replaces the text.
-   */
-  contentBlocks?: ContentBlockPayload[] | Array<Record<string, unknown>>;
 }
 
 export function AgentAssistantMessage({
-  content,
-  messageIndex,
+  conversationId,
+  requestId,
+  turnId,
   isStreamActive = false,
   compact = false,
-  error,
-  conversationId,
-  messageKey,
-  contentBlocks,
 }: AgentAssistantMessageProps) {
   const dispatch = useAppDispatch();
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
@@ -51,69 +63,96 @@ export function AgentAssistantMessage({
   const { publish: publishDebug, isActive: isDebugPublishing } =
     useDebugContext("AgentAssistantMessage");
 
+  // ── Data Resolution ──────────────────────────────────────────────────────
+  // Priority: activeRequest (live/recent) → committed turn (DB/history)
+
+  const requestText = useAppSelector(
+    requestId ? selectAccumulatedText(requestId) : () => "",
+  );
+  const requestStatus = useAppSelector(
+    requestId ? selectRequestStatus(requestId) : () => undefined,
+  );
+
+  const activeRequestBlocks = useAppSelector(
+    requestId ? selectAllContentBlocks(requestId) : () => EMPTY_BLOCKS,
+  );
+
+  const turn = useAppSelector(
+    turnId ? selectTurnByTurnId(conversationId, turnId) : () => undefined,
+  );
+
+  const content = requestText || turn?.content || "";
+  const error =
+    requestStatus === "error"
+      ? (turn?.errorMessage ?? "An error occurred during streaming.")
+      : (turn?.errorMessage ?? null);
+
+  // Both sources are already ContentBlockPayload[] — prefer active request
+  // (live/recently committed), fall back to turn blocks (DB-loaded).
+  const mergedBlocks =
+    activeRequestBlocks.length > 0
+      ? activeRequestBlocks
+      : (turn?.contentBlocks ?? EMPTY_BLOCKS);
+
+  const serverProcessedBlocks =
+    mergedBlocks.length > 0 ? mergedBlocks : undefined;
+
+  // ── Debug ────────────────────────────────────────────────────────────────
+
   useEffect(() => {
     if (!isDebugPublishing) return;
     const preview =
       content.length <= 200 ? content : `${content.slice(0, 200)}…`;
     publishDebug({
-      ...(conversationId !== undefined && {
-        "Conversation ID": conversationId,
-      }),
-      ...(messageKey !== undefined && { "Message Key": messageKey }),
-      "Message Index": messageIndex,
+      "Conversation ID": conversationId,
+      "Request ID": requestId ?? "—",
+      "Turn ID": turnId ?? "—",
       "Stream Active": isStreamActive,
       Compact: compact,
       "Content Length": content.length,
       "Content Prefix": preview,
       "Inline Error": error ?? "—",
-      "Is Error Content": content.startsWith("Error:"),
     });
   }, [
     isDebugPublishing,
     publishDebug,
     conversationId,
-    messageKey,
-    messageIndex,
+    requestId,
+    turnId,
     isStreamActive,
     compact,
     content,
     error,
   ]);
 
-  const canMarkdownSink = Boolean(conversationId && messageKey);
+  // ── Markdown Draft Sink ──────────────────────────────────────────────────
+
+  const draftKey = requestId ?? turnId;
+  const canMarkdownSink = Boolean(conversationId && draftKey);
 
   const handleAssistantMarkdownChange = useCallback(
     (next: string) => {
-      if (!conversationId || !messageKey) return;
+      if (!conversationId || !draftKey) return;
       dispatch(
         upsertAssistantMarkdownDraft({
           conversationId,
-          messageKey,
+          messageKey: draftKey,
           baseContent: content,
           draftContent: next,
         }),
       );
-      if (isDebugPublishing) {
-        publishDebug({
-          "Sink draft length": next.length,
-          "Sink updated at": new Date().toISOString(),
-        });
-      }
     },
-    [
-      conversationId,
-      messageKey,
-      content,
-      dispatch,
-      isDebugPublishing,
-      publishDebug,
-    ],
+    [conversationId, draftKey, content, dispatch],
   );
+
+  // ── Actions ──────────────────────────────────────────────────────────────
 
   const { captureRef, isCapturing, captureAsPDF } = useDomCapturePrint();
   const handleFullPrint = useCallback(() => {
-    captureAsPDF({ filename: `agent-response-${messageIndex}` });
-  }, [captureAsPDF, messageIndex]);
+    captureAsPDF({
+      filename: `agent-response-${turnId ?? requestId ?? "msg"}`,
+    });
+  }, [captureAsPDF, turnId, requestId]);
 
   const handleEditClick = () => {
     dispatch(
@@ -140,6 +179,8 @@ export function AgentAssistantMessage({
     dispatch(openHtmlPreview({ content }));
   };
 
+  // ── Render ───────────────────────────────────────────────────────────────
+
   const isError = content.startsWith("Error:");
   const markdownClassName = compact ? "text-xs bg-transparent" : "bg-textured";
   const buttonMargin = compact ? "mt-0.5" : "mt-1";
@@ -159,8 +200,11 @@ export function AgentAssistantMessage({
 
   return (
     <div>
+      {requestId && <AgentToolDisplay requestId={requestId} />}
+
       <div ref={captureRef}>
         <MarkdownStream
+          requestId={requestId}
           content={content}
           type="message"
           role="assistant"
@@ -168,14 +212,12 @@ export function AgentAssistantMessage({
           hideCopyButton={true}
           allowFullScreenEditor={false}
           className={markdownClassName}
+          serverProcessedBlocks={serverProcessedBlocks}
           onContentChange={
             canMarkdownSink ? handleAssistantMarkdownChange : undefined
           }
           applyLocalEdits={!canMarkdownSink}
         />
-        {contentBlocks && contentBlocks.length > 0 && (
-          <AgentContentBlocks blocks={contentBlocks} />
-        )}
       </div>
 
       {error && (

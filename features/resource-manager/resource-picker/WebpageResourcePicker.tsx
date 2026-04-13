@@ -10,9 +10,11 @@ import {
   AlertCircle,
   Copy,
   Check,
+  Scissors,
 } from "lucide-react";
 import { Button } from "@/components/ui/ButtonMine";
 import { Input } from "@/components/ui/input";
+import { Slider } from "@/components/ui/slider";
 import {
   Dialog,
   DialogContent,
@@ -121,6 +123,7 @@ export function WebpageResourcePickerCore({
     "youtube" | "image_url" | "file_url" | null
   >(null);
   const [editedContent, setEditedContent] = useState<string>("");
+  const [charLimit, setCharLimit] = useState<number>(0);
   const [previewTab, setPreviewTab] = useState("pretty");
   const [copied, setCopied] = useState(false);
   const {
@@ -133,6 +136,20 @@ export function WebpageResourcePickerCore({
     reset,
   } = useScraperApi();
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // The content actually sent on confirm — respects the char limit
+  const effectiveContent =
+    charLimit > 0 ? editedContent.slice(0, charLimit) : editedContent;
+
+  // The markdown shown in the pretty tab — use editedContent (possibly truncated)
+  // so edits are always reflected. Fall back to original markdown only if unedited.
+  const prettyMarkdown = (() => {
+    const isEdited = data && editedContent !== data.textContent;
+    const base = isEdited
+      ? editedContent
+      : (data?.markdownRenderable ?? editedContent);
+    return charLimit > 0 ? base.slice(0, charLimit) : base;
+  })();
 
   // Auto-focus the input on mount (preventScroll to avoid auto-scroll)
   useEffect(() => {
@@ -147,10 +164,11 @@ export function WebpageResourcePickerCore({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialUrl]);
 
-  // Set edited content when data is loaded
+  // Set edited content and reset char limit when data is loaded
   useEffect(() => {
     if (data?.textContent) {
       setEditedContent(data.textContent);
+      setCharLimit(0);
     }
   }, [data]);
 
@@ -193,8 +211,8 @@ export function WebpageResourcePickerCore({
     onSelect({
       url,
       title: data.overview.page_title || url,
-      textContent: editedContent,
-      charCount: editedContent.length,
+      textContent: effectiveContent,
+      charCount: effectiveContent.length,
       scrapedAt: data.scrapedAt,
     });
 
@@ -202,6 +220,7 @@ export function WebpageResourcePickerCore({
     reset();
     setUrl("");
     setEditedContent("");
+    setCharLimit(0);
   };
 
   const handleClosePreview = () => {
@@ -209,6 +228,7 @@ export function WebpageResourcePickerCore({
     setPreviewTab("pretty");
     reset();
     setEditedContent("");
+    setCharLimit(0);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -226,8 +246,8 @@ export function WebpageResourcePickerCore({
   };
 
   const handleCopy = async () => {
-    if (!editedContent) return;
-    await navigator.clipboard.writeText(editedContent);
+    if (!effectiveContent) return;
+    await navigator.clipboard.writeText(effectiveContent);
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
   };
@@ -426,9 +446,7 @@ export function WebpageResourcePickerCore({
                     className="flex-1 overflow-auto mt-0 px-0 pb-0 min-h-0 data-[state=inactive]:hidden"
                   >
                     <div className="h-full overflow-auto rounded-none bg-background border-none">
-                      <ScrapedContentPretty
-                        markdown={data.markdownRenderable ?? ""}
-                      />
+                      <ScrapedContentPretty markdown={prettyMarkdown} />
                     </div>
                   </TabsContent>
                   <TabsContent
@@ -443,7 +461,10 @@ export function WebpageResourcePickerCore({
                         {editedContent !== data.textContent && (
                           <button
                             type="button"
-                            onClick={() => setEditedContent(data.textContent)}
+                            onClick={() => {
+                              setEditedContent(data.textContent);
+                              setCharLimit(0);
+                            }}
                             className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
                           >
                             Reset to original
@@ -463,13 +484,53 @@ export function WebpageResourcePickerCore({
                       </div>
                     </div>
                     <textarea
-                      value={editedContent}
-                      onChange={(e) => setEditedContent(e.target.value)}
+                      value={
+                        charLimit > 0
+                          ? editedContent.slice(0, charLimit)
+                          : editedContent
+                      }
+                      onChange={(e) => {
+                        setEditedContent(e.target.value);
+                        if (charLimit > 0) setCharLimit(0);
+                      }}
                       className="flex-1 px-6 py-4 bg-white dark:bg-zinc-900 text-xs text-gray-900 dark:text-gray-100 font-mono leading-relaxed resize-none focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 dark:focus:ring-blue-600 min-h-0"
                       placeholder="Edit the scraped content here..."
                     />
                   </TabsContent>
                 </Tabs>
+              </div>
+
+              {/* Character limit slider */}
+              <div className="flex-shrink-0 px-6 py-3 border-t border-border bg-gray-50 dark:bg-zinc-800/50">
+                <div className="flex items-center gap-3">
+                  <Scissors className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500 flex-shrink-0" />
+                  <span className="text-[10px] text-gray-500 dark:text-gray-400 flex-shrink-0 w-16">
+                    Limit chars
+                  </span>
+                  <Slider
+                    min={100}
+                    max={editedContent.length || 1000}
+                    step={100}
+                    value={[charLimit > 0 ? charLimit : editedContent.length]}
+                    onValueChange={([val]) => {
+                      setCharLimit(val >= editedContent.length ? 0 : val);
+                    }}
+                    className="flex-1"
+                  />
+                  <span className="text-[10px] font-mono text-gray-600 dark:text-gray-300 flex-shrink-0 w-20 text-right">
+                    {effectiveContent.length.toLocaleString()} /{" "}
+                    {editedContent.length.toLocaleString()}
+                  </span>
+                  {charLimit > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setCharLimit(0)}
+                      className="text-[10px] text-blue-600 dark:text-blue-400 hover:underline flex-shrink-0"
+                    >
+                      Reset
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* Actions */}
@@ -485,14 +546,19 @@ export function WebpageResourcePickerCore({
                     <span className="truncate">{url}</span>
                   </a>
                   <span className="text-[10px] text-gray-500 dark:text-gray-400 flex-shrink-0">
-                    {editedContent.length.toLocaleString()} chars
+                    {effectiveContent.length.toLocaleString()} chars
                   </span>
                   <span className="text-[10px] text-gray-500 dark:text-gray-400 flex-shrink-0">
-                    {Math.ceil(editedContent.length / 1000)} KB
+                    {Math.ceil(effectiveContent.length / 1000)} KB
                   </span>
                   {editedContent !== data.textContent && (
                     <span className="text-[10px] text-orange-600 dark:text-orange-500 flex-shrink-0">
-                      ✏️ Edited
+                      Edited
+                    </span>
+                  )}
+                  {charLimit > 0 && (
+                    <span className="text-[10px] text-purple-600 dark:text-purple-400 flex-shrink-0">
+                      Trimmed
                     </span>
                   )}
                 </div>
@@ -506,7 +572,7 @@ export function WebpageResourcePickerCore({
                   </Button>
                   <Button
                     onClick={handleConfirm}
-                    disabled={!editedContent.trim()}
+                    disabled={!effectiveContent.trim()}
                     size="xs"
                   >
                     Add Content

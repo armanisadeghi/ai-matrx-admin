@@ -109,6 +109,8 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
     [index, isStreamActive, onContentChange, handleOpenEditor, messageId],
   );
 
+  console.log("[BLOCK] BlockRenderer block:", block);
+
   switch (block.type) {
     case "audio_output": {
       const audioUrl =
@@ -125,6 +127,26 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
         />
       );
     }
+
+    case "thinking":
+    case "reasoning":
+      return (
+        <BlockComponents.ReasoningVisualization
+          key={index}
+          reasoningText={block.content}
+          showReasoning={true}
+          isStreaming={isStreamActive && isLastReasoningBlock}
+        />
+      );
+
+    case "consolidated_reasoning":
+      return (
+        <BlockComponents.ConsolidatedReasoningVisualization
+          key={index}
+          reasoningTexts={block.metadata?.reasoningTexts || [block.content]}
+          showReasoning={true}
+        />
+      );
 
     case "image_output": {
       const imgUrl = (block.serverData?.url as string | undefined) ?? block.src;
@@ -314,35 +336,6 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
           key={index}
           src={block.src!}
           alt={block.alt}
-        />
-      );
-
-    case "thinking":
-      return (
-        <BlockComponents.ThinkingVisualization
-          key={index}
-          thinkingText={block.content}
-          showThinking={true}
-          isStreaming={isStreamActive}
-        />
-      );
-
-    case "reasoning":
-      return (
-        <BlockComponents.ReasoningVisualization
-          key={index}
-          reasoningText={block.content}
-          showReasoning={true}
-          isStreaming={isStreamActive && isLastReasoningBlock}
-        />
-      );
-
-    case "consolidated_reasoning":
-      return (
-        <BlockComponents.ConsolidatedReasoningVisualization
-          key={index}
-          reasoningTexts={block.metadata?.reasoningTexts || [block.content]}
-          showReasoning={true}
         />
       );
 

@@ -416,8 +416,8 @@ export const selectVariableInputStyle =
 
 // ── Global preference selectors ───────────────────────────────────────────────
 
-export const selectUseBlockMode = (state: RootState): boolean =>
-  state.instanceUIState.useBlockMode;
+export const selectIsBlockMode = (state: RootState): boolean =>
+  state.instanceUIState.isBlockMode;
 
 // ── Global registry selectors (keyed by display mode) ────────────────────────
 
@@ -453,3 +453,71 @@ export const selectPersistentInstanceIds = createSelector(
     return ids.length > 0 ? ids : undefined;
   },
 );
+
+// ── All conversation IDs in instance UI state ─────────────────────────────────
+
+export const selectAllUIStateConversationIds = createSelector(
+  (state: RootState) => state.instanceUIState.byConversationId,
+  (byConversationId): string[] => Object.keys(byConversationId),
+);
+
+// ── Instances grouped by agent (for tree view) ────────────────────────────────
+//
+// Returns stable references: groups with no instances are omitted.
+// Instances whose executionInstances entry has no agentId go into the
+// "unassigned" bucket (agentId: null).
+
+export interface InstanceAgentGroup {
+  agentId: string | null;
+  agentName: string | undefined;
+  conversationIds: string[];
+}
+
+export const selectUIStateInstancesByAgent = createSelector(
+  (state: RootState) => state.instanceUIState.byConversationId,
+  (state: RootState) => state.executionInstances.byConversationId,
+  (state: RootState) => state.agentDefinition.agents,
+  (byUIConversationId, byExecConversationId, agents): InstanceAgentGroup[] => {
+    const groupMap = new Map<string | null, string[]>();
+
+    for (const conversationId of Object.keys(byUIConversationId)) {
+      const agentId = byExecConversationId[conversationId]?.agentId ?? null;
+      if (!groupMap.has(agentId)) groupMap.set(agentId, []);
+      groupMap.get(agentId)!.push(conversationId);
+    }
+
+    const result: InstanceAgentGroup[] = [];
+
+    // Named agents first (sorted by name), then unassigned
+    const namedAgentIds = Array.from(groupMap.keys())
+      .filter((id): id is string => id !== null)
+      .sort((a, b) => {
+        const nameA = agents?.[a]?.name ?? a;
+        const nameB = agents?.[b]?.name ?? b;
+        return nameA.localeCompare(nameB);
+      });
+
+    for (const agentId of namedAgentIds) {
+      result.push({
+        agentId,
+        agentName: agents?.[agentId]?.name,
+        conversationIds: groupMap.get(agentId)!,
+      });
+    }
+
+    if (groupMap.has(null)) {
+      result.push({
+        agentId: null,
+        agentName: undefined,
+        conversationIds: groupMap.get(null)!,
+      });
+    }
+
+    return result;
+  },
+);
+
+// ── Full instance UI state slice (for slice viewer) ───────────────────────────
+
+export const selectFullInstanceUIStateSlice = (state: RootState) =>
+  state.instanceUIState;

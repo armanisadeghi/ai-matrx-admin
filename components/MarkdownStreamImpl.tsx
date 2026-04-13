@@ -11,20 +11,19 @@ import type { MarkdownStreamProps } from "./MarkdownStream";
 
 const MarkdownStreamImpl: React.FC<MarkdownStreamProps> = (props) => {
   const {
+    requestId,
     content = "",
     events,
     strictServerData = false,
-    serverProcessedBlocks,
     ...restProps
   } = props;
-
-  const { hideCopyButton } = restProps;
 
   return (
     <BlockRenderingProvider strictServerData={strictServerData}>
       <MarkdownErrorBoundary
         fallback={
           <PlainTextFallback
+            requestId={requestId}
             content={content}
             className={props.className}
             role={props.role}
@@ -40,9 +39,9 @@ const MarkdownStreamImpl: React.FC<MarkdownStreamProps> = (props) => {
         }}
       >
         <StreamAwareChatMarkdown
+          requestId={requestId}
           content={content}
           events={events}
-          serverProcessedBlocks={serverProcessedBlocks}
           {...restProps}
         />
       </MarkdownErrorBoundary>
