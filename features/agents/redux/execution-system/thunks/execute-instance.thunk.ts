@@ -48,6 +48,7 @@ import {
 import { addUserTurn } from "../instance-conversation-history/instance-conversation-history.slice";
 import { processStream } from "./process-stream";
 import { upsertAgentConversationFromExecutionAction } from "@/features/agents/redux/agent-conversations";
+import { formatVariablesForDisplay } from "@/features/agents/utils/variable-utils";
 
 // =============================================================================
 // Assemble Request (pure selector logic, extracted for testability)
@@ -81,6 +82,8 @@ export function assembleRequest(
 
   // Resources → ContentBlock[]
   const resourcePayloads = selectResourcePayloads(conversationId)(state);
+  // Variables (three-tier resolved — uses instance-owned definitions snapshot)
+  const variables = selectResolvedVariables(conversationId)(state);
 
   // Build user_input
   let user_input: AssembledAgentStartRequest["user_input"];
@@ -98,9 +101,6 @@ export function assembleRequest(
   } else if (textInput) {
     user_input = textInput;
   }
-
-  // Variables (three-tier resolved — uses instance-owned definitions snapshot)
-  const variables = selectResolvedVariables(conversationId)(state);
 
   // Config overrides (ONLY deltas — uses instance-owned baseSettings snapshot)
   const config_overrides = selectSettingsOverridesForApi(conversationId)(state);
@@ -188,6 +188,13 @@ export const executeInstance = createAsyncThunk<
       }
       if (debug) payload.debug = true;
 
+      const variables = payload.variables ?? undefined;
+
+      // Format variables for display in the user message bubble.
+      const variableLines = variables
+        ? formatVariablesForDisplay(variables)
+        : "";
+
       // Resolve base URL from Redux (single source of truth)
       const baseUrl = selectResolvedBaseUrl(state as any);
       if (!baseUrl) {
@@ -213,19 +220,24 @@ export const executeInstance = createAsyncThunk<
 
       // Add the user's message to history immediately — before the API call fires.
       // Include resource payload blocks so they display even before the DB round-trip.
-      // The condition covers: typed text, content blocks, OR resources.
+      // The condition covers: typed text, content blocks, resources, OR variables.
       const resourceBlocks =
         payload.user_input && Array.isArray(payload.user_input)
           ? (payload.user_input as Array<Record<string, unknown>>).filter(
               (b) => b["type"] !== "text",
             )
           : [];
-      if (userInputText || userContentBlocks || resourceBlocks.length > 0) {
+
+      const displayContent = [variableLines, userInputText]
+        .filter(Boolean)
+        .join("\n");
+
+      if (displayContent || userContentBlocks || resourceBlocks.length > 0) {
         dispatch(
           addUserTurn({
             conversationId,
-            content: userInputText,
-            contentBlocks:
+            content: displayContent,
+            messageParts:
               [...(userContentBlocks ?? []), ...resourceBlocks].length > 0
                 ? [...(userContentBlocks ?? []), ...resourceBlocks]
                 : undefined,

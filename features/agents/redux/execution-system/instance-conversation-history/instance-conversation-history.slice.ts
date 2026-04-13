@@ -202,7 +202,7 @@ const instanceConversationHistorySlice = createSlice({
       action: PayloadAction<{
         conversationId: string;
         content: string;
-        renderBlock?: RenderBlockPayload[];
+        messageParts?: MessagePart[];
         serverConversationId?: string | null;
         systemGenerated?: boolean;
       }>,
@@ -210,7 +210,7 @@ const instanceConversationHistorySlice = createSlice({
       const {
         conversationId,
         content,
-        renderBlock,
+        messageParts,
         serverConversationId = null,
         systemGenerated,
       } = action.payload;
@@ -222,7 +222,7 @@ const instanceConversationHistorySlice = createSlice({
         turnId: newTurnId(),
         role: "user",
         content,
-        ...(renderBlock && { renderBlocks: renderBlock }),
+        ...(messageParts && { messageParts }),
         timestamp: new Date().toISOString(),
         requestId: null,
         conversationId: serverConversationId,
@@ -241,7 +241,7 @@ const instanceConversationHistorySlice = createSlice({
         requestId: string;
         content: string;
         serverConversationId: string | null;
-        renderBlock?: RenderBlockPayload[];
+        messageParts?: MessagePart[];
         tokenUsage?: TokenUsage;
         finishReason?: string;
         completionStats?: CompletionStats;
@@ -253,7 +253,7 @@ const instanceConversationHistorySlice = createSlice({
         requestId,
         content,
         serverConversationId,
-        renderBlock,
+        messageParts,
         tokenUsage,
         finishReason,
         completionStats,
@@ -274,8 +274,7 @@ const instanceConversationHistorySlice = createSlice({
         timestamp: new Date().toISOString(),
         requestId,
         conversationId: serverConversationId,
-        ...(renderBlock &&
-          renderBlock.length > 0 && { renderBlocks: renderBlock }),
+        ...(messageParts && { messageParts }),
         ...(tokenUsage && { tokenUsage }),
         ...(finishReason && { finishReason }),
         ...(completionStats && { completionStats }),

@@ -39,3 +39,30 @@ export const isVariableUsedInText = (
   variableName: string,
   text: string,
 ): boolean => text.includes(`{{${variableName}}}`);
+
+/**
+ * Converts a sanitized variable name back to a human-readable display label.
+ *   user_name       → "User Name"
+ *   favorite_color  → "Favorite Color"
+ *   age             → "Age"
+ */
+export const formatVariableDisplayName = (name: string): string =>
+  name
+    .split("_")
+    .map((w) => (w ? w.charAt(0).toUpperCase() + w.slice(1) : ""))
+    .join(" ")
+    .trim();
+
+/**
+ * Formats a resolved variables record into display lines for the user bubble.
+ * Returns an empty string when there are no non-empty values.
+ *
+ *   { user_name: "Mike", age: 26 }  →  "User Name: Mike\nAge: 26"
+ */
+export const formatVariablesForDisplay = (
+  variables: Record<string, unknown>,
+): string =>
+  Object.entries(variables)
+    .filter(([, v]) => v != null && v !== "")
+    .map(([k, v]) => `${formatVariableDisplayName(k)}: ${String(v)}`)
+    .join("\n");
