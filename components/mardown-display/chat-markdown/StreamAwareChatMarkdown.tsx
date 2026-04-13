@@ -99,8 +99,6 @@ export const StreamAwareChatMarkdown: React.FC<
   );
   const [hasStreamError, setHasStreamError] = useState(false);
 
-  console.log("[STREAM] StreamAwareChatMarkdown requestId:", requestId);
-
   // Ordered canonical blocks derived from events (text + tool_call interleaved)
   const [canonicalBlocks, setCanonicalBlocks] = useState<CanonicalBlock[]>([]);
 
@@ -404,6 +402,7 @@ export const StreamAwareChatMarkdown: React.FC<
   return (
     <EnhancedChatMarkdownInternal
       {...restProps}
+      requestId={requestId}
       content={processedContent}
       serverProcessedBlocks={effectiveServerBlocks}
     />

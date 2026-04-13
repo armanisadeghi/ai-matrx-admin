@@ -33,6 +33,15 @@ const BlockRenderer = dynamic(
 import { selectPrimaryResponseToolBlocksByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 import { toolCallBlockToLegacy } from "@/lib/chat-protocol";
 import type { ToolCallObject } from "@/lib/redux/socket-io/socket.types";
+import {
+  selectAccumulatedText,
+  selectInterleavedContent,
+  selectToolLifecycle,
+  type ContentSegment,
+} from "@/features/agents/redux/execution-system/active-requests/active-requests.selectors";
+import type { ToolLifecycleEntry } from "@/features/agents/types/request.types";
+import type { ToolCallPhase } from "@/lib/api/tool-call.types";
+import { useAppSelector } from "@/lib/redux/hooks";
 
 // ============================================================================
 // REDUX TOOL UPDATES — isolated subscriber so text-chunk re-renders don't
@@ -83,6 +92,107 @@ const ReduxToolVisualization: React.FC<ReduxToolVisualizationProps> = ({
     />
   );
 };
+
+// ============================================================================
+// INLINE TOOL CARD — subscribes to a single tool's lifecycle by callId.
+// Renders independently; only re-renders when this specific tool changes.
+// ============================================================================
+
+function lifecycleToPhase(status: ToolLifecycleEntry["status"]): ToolCallPhase {
+  switch (status) {
+    case "completed":
+      return "complete";
+    case "error":
+      return "error";
+    default:
+      return "running";
+  }
+}
+
+function lifecycleToToolObjects(entry: ToolLifecycleEntry): ToolCallObject[] {
+  const objects: ToolCallObject[] = [];
+
+  objects.push({
+    id: entry.callId,
+    type: "mcp_input",
+    mcp_input: { name: entry.toolName, arguments: entry.arguments },
+    phase: lifecycleToPhase(entry.status),
+  });
+
+  if (entry.latestMessage) {
+    objects.push({
+      id: entry.callId,
+      type: "user_message",
+      user_message: entry.latestMessage,
+    });
+  }
+
+  if (entry.latestData && Object.keys(entry.latestData).length > 0) {
+    objects.push({
+      id: entry.callId,
+      type: "step_data",
+      step_data: { type: entry.status, content: entry.latestData },
+    });
+  }
+
+  if (entry.status === "completed" && entry.result != null) {
+    objects.push({
+      id: entry.callId,
+      type: "mcp_output",
+      mcp_output: { result: entry.result },
+    });
+  }
+
+  if (entry.status === "error" && entry.errorMessage) {
+    objects.push({
+      id: entry.callId,
+      type: "mcp_error",
+      mcp_error: entry.errorMessage,
+    });
+  }
+
+  return objects;
+}
+
+const InlineToolCard: React.FC<{
+  requestId: string;
+  callId: string;
+}> = ({ requestId, callId }) => {
+  const lifecycle = useAppSelector(selectToolLifecycle(requestId, callId));
+  const toolObjects = useMemo(
+    () => (lifecycle ? lifecycleToToolObjects(lifecycle) : []),
+    [lifecycle],
+  );
+
+  if (toolObjects.length === 0) return null;
+
+  return (
+    <ToolCallVisualization
+      toolUpdates={toolObjects}
+      hasContent={true}
+      className="my-2"
+    />
+  );
+};
+
+// ============================================================================
+// INLINE STATUS INDICATOR — transient shimmer label for phase/info events.
+// Automatically removed from the segment list when real content supersedes it.
+// ============================================================================
+
+const InlineStatusIndicator: React.FC<{ label: string }> = ({ label }) => (
+  <div className="flex items-center gap-2 py-2">
+    <span
+      className="inline-block text-sm bg-clip-text text-transparent bg-[length:200%_100%] animate-shimmer"
+      style={{
+        backgroundImage:
+          "linear-gradient(90deg, hsl(var(--muted-foreground) / 0.3) 0%, hsl(var(--foreground)) 50%, hsl(var(--muted-foreground) / 0.3) 100%)",
+      }}
+    >
+      {label}
+    </span>
+  </div>
+);
 
 /** Server-processed block from the content_block protocol. */
 export interface ServerProcessedBlock {
@@ -193,6 +303,7 @@ export class MarkdownErrorBoundary extends React.Component<
 
 // Safe wrapper for individual block rendering
 const SafeBlockRenderer: React.FC<{
+  requestId?: string;
   block: ContentBlock;
   index: number;
   isStreamActive?: boolean;
@@ -225,6 +336,10 @@ const SafeBlockRenderer: React.FC<{
   }
 };
 
+const _EMPTY_SEGMENTS: ContentSegment[] = [];
+const _selectEmptyString = () => "";
+const _selectEmptySegments = () => _EMPTY_SEGMENTS;
+
 export const EnhancedChatMarkdownInternal: React.FC<
   ChatMarkdownDisplayProps
 > = ({
@@ -246,32 +361,32 @@ export const EnhancedChatMarkdownInternal: React.FC<
   applyLocalEdits = true,
 }) => {
   const [isEditorOpen, setIsEditorOpen] = useState(false);
-  // null = no local edits; use the `content` prop directly.
-  // Set to a string only when the user explicitly edits (code, table, full-screen editor).
-  // This avoids the useEffect -> setState -> re-render cycle during streaming.
   const [editedContent, setEditedContent] = useState<string | null>(null);
   const [hasError, setHasError] = useState(false);
 
-  // Derive the display content: prefer local edits over the incoming prop.
-  const currentContent = editedContent ?? content;
-
-  // Check if we should show loading state (taskId exists but no content yet)
-  const isWaitingForContent = taskId && !content.trim();
-
-  // Safely check if Redux is available before using selector
-  // This allows the component to work in both Redux and non-Redux contexts
   const reduxContext = useContext(ReactReduxContext);
   const hasReduxProvider =
     reduxContext !== null && reduxContext.store !== undefined;
 
-  // toolUpdates: used only when passed directly as a prop (event mode / legacy adapter).
-  // Redux-based tool updates are handled by ReduxToolVisualization (rendered separately below).
+  const requestText = useAppSelector(
+    requestId ? selectAccumulatedText(requestId) : _selectEmptyString,
+  );
+  const interleavedSegments = useAppSelector(
+    requestId ? selectInterleavedContent(requestId) : _selectEmptySegments,
+  );
+
+  const resolvedContent = requestText || content;
+  const currentContent = editedContent ?? resolvedContent;
+
+  const hasRequestOrTaskId = requestId || taskId;
+  const isWaitingForContent = hasRequestOrTaskId && !resolvedContent.trim();
+
+  const hasInterleavedSpecial = interleavedSegments.some(
+    (s) => s.type === "tool" || s.type === "status",
+  );
+
   const toolUpdates = toolUpdatesProp ?? [];
 
-  // When the incoming content prop changes (new stream / stream reset), clear any local edits
-  // so the component re-syncs to the authoritative prop value.
-  // We only do this during streaming (isStreamActive) to avoid clobbering intentional edits
-  // made after a stream has completed.
   useEffect(() => {
     if (isStreamActive) {
       setEditedContent(null);
@@ -282,7 +397,7 @@ export const EnhancedChatMarkdownInternal: React.FC<
     if (applyLocalEdits === false) {
       setEditedContent(null);
     }
-  }, [applyLocalEdits, content]);
+  }, [applyLocalEdits, resolvedContent]);
 
   // When server-processed blocks are available, use them directly (skip client-side parsing).
   // Otherwise, fall back to the client-side splitContentIntoBlocksV2 pipeline.
@@ -524,6 +639,7 @@ export const EnhancedChatMarkdownInternal: React.FC<
             isStreamActive={isStreamActive}
             onContentChange={onContentChange}
             messageId={messageId}
+            requestId={requestId}
             taskId={taskId}
             isLastReasoningBlock={index === lastReasoningBlockIndex}
             replaceBlockContent={replaceBlockContent}
@@ -583,15 +699,19 @@ export const EnhancedChatMarkdownInternal: React.FC<
     );
   }
 
-  // Show loading state when taskId exists but no content has arrived yet.
-  // With Redux: mount the ReduxToolVisualization alongside the loader so tools
-  // can appear before text arrives. Without Redux: just show the loader.
-  if (isWaitingForContent && toolUpdates.length === 0) {
+  // When requestId is present and interleaved segments have non-text content
+  // (tools, status), skip the generic loader and let the interleaved renderer
+  // handle it — even before any text arrives.
+  const hasPreTextSegments =
+    isWaitingForContent &&
+    requestId &&
+    interleavedSegments.some((s) => s.type === "tool" || s.type === "status");
+
+  if (isWaitingForContent && !hasPreTextSegments && toolUpdates.length === 0) {
     const hasReduxTaskId =
       hasReduxProvider && !!taskId && toolUpdatesProp === undefined;
 
     if (hasReduxTaskId) {
-      // Render loader + tool subscriber; tools will appear as they arrive
       return (
         <div
           className={`${type === "message" ? "mb-1 w-full min-w-0" : ""} ${role === "user" ? "text-right" : "text-left"} overflow-x-hidden`}
@@ -663,7 +783,7 @@ export const EnhancedChatMarkdownInternal: React.FC<
           >
             <ReduxToolVisualization
               taskId={taskId}
-              hasContent={!!content.trim()}
+              hasContent={!!resolvedContent.trim()}
               className="mb-2"
             />
           </MarkdownErrorBoundary>
@@ -682,14 +802,51 @@ export const EnhancedChatMarkdownInternal: React.FC<
           >
             <ToolCallVisualization
               toolUpdates={toolUpdates}
-              hasContent={!!content.trim()}
+              hasContent={!!resolvedContent.trim()}
               className="mb-2"
             />
           </MarkdownErrorBoundary>
         )}
 
         <div className={containerStyles}>
-          {processedBlocks.map((block, index) => renderBlock(block, index))}
+          {hasInterleavedSpecial && requestId
+            ? interleavedSegments.map((segment, segIdx) => {
+                if (segment.type === "tool") {
+                  return (
+                    <InlineToolCard
+                      key={`tool-${segment.callId}`}
+                      requestId={requestId}
+                      callId={segment.callId}
+                    />
+                  );
+                }
+                if (segment.type === "status") {
+                  return (
+                    <InlineStatusIndicator
+                      key={`status-${segIdx}`}
+                      label={segment.label}
+                    />
+                  );
+                }
+                const segBlocks = (() => {
+                  try {
+                    return splitContentIntoBlocksV2(segment.content);
+                  } catch {
+                    return [
+                      {
+                        type: "text" as const,
+                        content: segment.content,
+                        startLine: 0,
+                        endLine: 0,
+                      },
+                    ];
+                  }
+                })();
+                return segBlocks.map((block, blockIdx) =>
+                  renderBlock(block, segIdx * 1000 + blockIdx),
+                );
+              })
+            : processedBlocks.map((block, index) => renderBlock(block, index))}
         </div>
 
         {!hideCopyButton && (

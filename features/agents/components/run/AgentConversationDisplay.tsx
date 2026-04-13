@@ -39,11 +39,9 @@ const AgentEmptyMessageDisplay = dynamic(
   { ssr: false },
 );
 
-import { AgentPlanningIndicator } from "./AgentPlanningIndicator";
-
 interface DisplayMessage {
   key: string;
-  role: "user" | "assistant" | "system" | "status";
+  role: "user" | "assistant" | "system";
   /** turnId for committed turns (used by user/assistant to look up their own data) */
   turnId: string | null;
   /** requestId for assistant turns that have activeRequest data in Redux */
@@ -84,10 +82,7 @@ export function AgentConversationDisplay({
     if (isActive) {
       msgs.push({
         key: "__streaming__",
-        role:
-          phase === "connecting" || phase === "pre_token"
-            ? "status"
-            : "assistant",
+        role: "assistant",
         turnId: null,
         requestId: latestRequestId ?? null,
         isStreamActive: true,
@@ -97,9 +92,13 @@ export function AgentConversationDisplay({
     return msgs;
   }, [turns, isActive, phase, latestRequestId]);
 
+  const prevLengthRef = useRef(displayMessages.length);
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [displayMessages.length, isActive]);
+    if (displayMessages.length > prevLengthRef.current) {
+      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+    prevLengthRef.current = displayMessages.length;
+  }, [displayMessages.length]);
 
   if (displayMessages.length === 0) {
     return <AgentEmptyMessageDisplay conversationId={conversationId} />;
@@ -119,10 +118,6 @@ export function AgentConversationDisplay({
               compact={compact}
             />
           );
-        }
-
-        if (msg.role === "status") {
-          return <AgentPlanningIndicator key={msg.key} compact={compact} />;
         }
 
         if (msg.role === "assistant") {

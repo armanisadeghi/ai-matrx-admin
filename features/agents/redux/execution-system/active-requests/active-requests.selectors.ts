@@ -323,6 +323,166 @@ export const selectActiveToolCount =
     ).length;
   };
 
+/**
+ * Ordered list of callIds, in the order their tool_started event appeared
+ * in the timeline. Used by inline tool rendering to maintain stream position.
+ */
+export const selectToolCallIdsInOrder = (requestId: string) =>
+  createSelector(
+    (state: RootState) => state.activeRequests.byRequestId[requestId]?.timeline,
+    (timeline): string[] => {
+      if (!timeline) return [];
+      const seen = new Set<string>();
+      const ordered: string[] = [];
+      for (const entry of timeline) {
+        if (
+          entry.kind === "tool_event" &&
+          entry.subEvent === "tool_started" &&
+          !seen.has(entry.callId)
+        ) {
+          seen.add(entry.callId);
+          ordered.push(entry.callId);
+        }
+      }
+      return ordered;
+    },
+  );
+
+// =============================================================================
+// Interleaved Content Segments
+// =============================================================================
+
+export type ContentSegmentText = { type: "text"; content: string };
+export type ContentSegmentTool = { type: "tool"; callId: string };
+export type ContentSegmentStatus = {
+  type: "status";
+  label: string;
+  kind: "phase" | "info";
+};
+export type ContentSegment =
+  | ContentSegmentText
+  | ContentSegmentTool
+  | ContentSegmentStatus;
+
+const PHASE_LABELS: Record<string, string> = {
+  connected: "Connected",
+  processing: "Processing…",
+  generating: "Generating…",
+  using_tools: "Using tools…",
+  persisting: "Saving…",
+  searching: "Searching…",
+  scraping: "Reading pages…",
+  analyzing: "Analyzing…",
+  synthesizing: "Synthesizing…",
+  retrying: "Retrying…",
+  executing: "Executing…",
+};
+
+/**
+ * Builds an ordered list of content segments by walking the timeline.
+ *
+ * Segment types:
+ *   text   — text_start / text_end → sliced textChunks
+ *   tool   — tool_event (tool_started) → keyed by callId
+ *   status — phase / info events with a user-facing label
+ *
+ * Status segments are **transient**: each new status replaces the previous one,
+ * and any "real" content event (text_start, tool_started, reasoning_start)
+ * clears the pending status. This means at most one status segment exists
+ * at the trailing edge of the array.
+ */
+export const selectInterleavedContent = (requestId: string) =>
+  createSelector(
+    (state: RootState) => state.activeRequests.byRequestId[requestId]?.timeline,
+    (state: RootState) =>
+      state.activeRequests.byRequestId[requestId]?.textChunks,
+    (state: RootState) =>
+      state.activeRequests.byRequestId[requestId]?.accumulatedText,
+    (timeline, textChunks, accumulatedText): ContentSegment[] => {
+      if (!timeline || timeline.length === 0) {
+        const fallback = textChunks?.join("") || accumulatedText || "";
+        if (fallback) return [{ type: "text", content: fallback }];
+        return [];
+      }
+
+      const chunks = textChunks ?? [];
+      const segments: ContentSegment[] = [];
+      const seenTools = new Set<string>();
+      let openTextStart: number | null = null;
+      let pendingStatus: ContentSegmentStatus | null = null;
+
+      for (const entry of timeline) {
+        if (entry.kind === "text_start") {
+          pendingStatus = null;
+          openTextStart = entry.chunkStartIndex;
+        } else if (entry.kind === "text_end") {
+          pendingStatus = null;
+          const start = openTextStart ?? entry.chunkStartIndex;
+          const end = entry.chunkEndIndex;
+          const text = chunks.slice(start, end).join("");
+          if (text) segments.push({ type: "text", content: text });
+          openTextStart = null;
+        } else if (
+          entry.kind === "reasoning_start" ||
+          entry.kind === "reasoning_end"
+        ) {
+          pendingStatus = null;
+        } else if (
+          entry.kind === "tool_event" &&
+          entry.subEvent === "tool_started" &&
+          !seenTools.has(entry.callId)
+        ) {
+          pendingStatus = null;
+          if (openTextStart !== null) {
+            const text = chunks.slice(openTextStart).join("");
+            if (text) segments.push({ type: "text", content: text });
+            openTextStart = null;
+          }
+          seenTools.add(entry.callId);
+          segments.push({ type: "tool", callId: entry.callId });
+        } else if (entry.kind === "phase") {
+          const label = PHASE_LABELS[entry.phase];
+          if (label && entry.phase !== "complete") {
+            pendingStatus = { type: "status", label, kind: "phase" };
+          } else {
+            pendingStatus = null;
+          }
+        } else if (entry.kind === "info" && entry.userMessage) {
+          pendingStatus = {
+            type: "status",
+            label: entry.userMessage,
+            kind: "info",
+          };
+        } else if (
+          entry.kind === "completion" ||
+          entry.kind === "end" ||
+          entry.kind === "error"
+        ) {
+          pendingStatus = null;
+        }
+      }
+
+      // Trailing open text run (still streaming)
+      if (openTextStart !== null) {
+        const text = chunks.slice(openTextStart).join("");
+        if (text) segments.push({ type: "text", content: text });
+      }
+
+      // Append the trailing status if no content has superseded it
+      if (pendingStatus) {
+        segments.push(pendingStatus);
+      }
+
+      // Fallback: timeline exists but produced no segments
+      if (segments.length === 0) {
+        const fallback = chunks.join("") || accumulatedText || "";
+        if (fallback) return [{ type: "text", content: fallback }];
+      }
+
+      return segments;
+    },
+  );
+
 /** Pending tool calls that haven't been resolved yet. Memoized. */
 export const selectUnresolvedToolCalls = (requestId: string) =>
   createSelector(
