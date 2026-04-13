@@ -6,6 +6,16 @@ import type {
 } from "./instance-conversation-history.slice";
 import type { CompletionStats } from "@/features/agents/types/instance.types";
 import type { ClientMetrics } from "@/features/agents/types/request.types";
+import type {
+  ContentSegment,
+  ContentSegmentText,
+  ContentSegmentDbTool,
+  ContentSegmentThinking,
+} from "../active-requests/active-requests.selectors";
+import type {
+  ToolCallPart,
+  ToolResultPart,
+} from "@/types/python-generated/stream-events";
 
 const EMPTY_TURNS: ConversationTurn[] = [];
 
@@ -26,7 +36,8 @@ export const selectTurnByTurnId =
 export const selectConversationMode =
   (conversationId: string) =>
   (state: RootState): ConversationMode =>
-    state.instanceConversationHistory.byConversationId[conversationId]?.mode ?? "agent";
+    state.instanceConversationHistory.byConversationId[conversationId]?.mode ??
+    "agent";
 
 export const selectStoredConversationId =
   (conversationId: string) =>
@@ -38,14 +49,14 @@ export const selectStoredConversationId =
 export const selectTurnCount =
   (conversationId: string) =>
   (state: RootState): number =>
-    state.instanceConversationHistory.byConversationId[conversationId]?.turns.length ??
-    0;
+    state.instanceConversationHistory.byConversationId[conversationId]?.turns
+      .length ?? 0;
 
 export const selectHasConversationHistory =
   (conversationId: string) =>
   (state: RootState): boolean =>
-    (state.instanceConversationHistory.byConversationId[conversationId]?.turns.length ??
-      0) > 0;
+    (state.instanceConversationHistory.byConversationId[conversationId]?.turns
+      .length ?? 0) > 0;
 
 export const selectLoadedFromHistory =
   (conversationId: string) =>
@@ -268,16 +279,135 @@ export const selectAggregateClientMetrics = (conversationId: string) =>
 export const selectConversationTitle =
   (conversationId: string) =>
   (state: RootState): string | null =>
-    state.instanceConversationHistory.byConversationId[conversationId]?.title ?? null;
+    state.instanceConversationHistory.byConversationId[conversationId]?.title ??
+    null;
 
 export const selectConversationDescription =
   (conversationId: string) =>
   (state: RootState): string | null =>
-    state.instanceConversationHistory.byConversationId[conversationId]?.description ??
-    null;
+    state.instanceConversationHistory.byConversationId[conversationId]
+      ?.description ?? null;
 
 export const selectConversationKeywords =
   (conversationId: string) =>
   (state: RootState): string[] | null =>
-    state.instanceConversationHistory.byConversationId[conversationId]?.keywords ??
-    null;
+    state.instanceConversationHistory.byConversationId[conversationId]
+      ?.keywords ?? null;
+
+// =============================================================================
+// Interleaved Content from DB-Loaded Turns
+// =============================================================================
+
+const EMPTY_SEGMENTS: ContentSegment[] = [];
+
+/**
+ * Converts a DB-loaded turn's `messageParts` into the same `ContentSegment[]`
+ * format that `selectInterleavedContent` produces for streaming turns.
+ *
+ * Walks `messageParts` in order:
+ *   - TextPart       → ContentSegmentText
+ *   - ThinkingPart   → ContentSegmentThinking
+ *   - ToolCallPart   → look ahead for matching ToolResultPart, emit ContentSegmentDbTool
+ *   - ToolResultPart → consumed by the look-ahead, skipped
+ *   - Other parts    → ignored for now
+ *
+ * Falls back to `[{ type: "text", content: turn.content }]` when messageParts
+ * is not available or contains only text.
+ */
+export const selectTurnInterleavedContent = (
+  conversationId: string,
+  turnId: string,
+) =>
+  createSelector(
+    (state: RootState) =>
+      state.instanceConversationHistory.byConversationId[conversationId]?.turns,
+    (turns): ContentSegment[] => {
+      if (!turns) return EMPTY_SEGMENTS;
+
+      const turn = turns.find((t) => t.turnId === turnId);
+      if (!turn) return EMPTY_SEGMENTS;
+
+      const parts = turn.messageParts;
+      if (!parts || parts.length === 0) {
+        if (turn.content) return [{ type: "text", content: turn.content }];
+        return EMPTY_SEGMENTS;
+      }
+
+      const resultsByCallId = new Map<string, ToolResultPart>();
+      for (const p of parts) {
+        if (p.type === "tool_result") {
+          const rp = p as ToolResultPart;
+          const key = rp.call_id ?? rp.tool_use_id;
+          if (key) resultsByCallId.set(key, rp);
+        }
+      }
+
+      const segments: ContentSegment[] = [];
+      const consumedResultIds = new Set<string>();
+
+      for (const part of parts) {
+        switch (part.type) {
+          case "text": {
+            const text = (part as { text?: string }).text;
+            if (text) {
+              segments.push({
+                type: "text",
+                content: text,
+              } satisfies ContentSegmentText);
+            }
+            break;
+          }
+          case "thinking": {
+            const text = (part as { text?: string }).text;
+            if (text) {
+              segments.push({
+                type: "thinking",
+                content: text,
+              } satisfies ContentSegmentThinking);
+            }
+            break;
+          }
+          case "tool_call": {
+            const tc = part as ToolCallPart;
+            const callId = tc.id ?? "unknown";
+            const result = resultsByCallId.get(callId);
+            if (result) {
+              consumedResultIds.add(result.call_id ?? result.tool_use_id ?? "");
+            }
+
+            segments.push({
+              type: "db_tool",
+              callId,
+              toolName: tc.name ?? "unknown_tool",
+              arguments: tc.arguments ?? {},
+              result: result?.content ?? null,
+              isError: result?.is_error ?? false,
+            } satisfies ContentSegmentDbTool);
+            break;
+          }
+          case "tool_result": {
+            const rp = part as ToolResultPart;
+            const key = rp.call_id ?? rp.tool_use_id ?? "";
+            if (consumedResultIds.has(key)) break;
+            segments.push({
+              type: "db_tool",
+              callId: key || "orphan",
+              toolName: rp.name ?? "unknown_tool",
+              arguments: {},
+              result: rp.content ?? null,
+              isError: rp.is_error ?? false,
+            } satisfies ContentSegmentDbTool);
+            break;
+          }
+          default:
+            break;
+        }
+      }
+
+      if (segments.length === 0 && turn.content) {
+        return [{ type: "text", content: turn.content }];
+      }
+
+      return segments;
+    },
+  );

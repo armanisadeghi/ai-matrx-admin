@@ -12,6 +12,8 @@ import type { MarkdownStreamProps } from "./MarkdownStream";
 const MarkdownStreamImpl: React.FC<MarkdownStreamProps> = (props) => {
   const {
     requestId,
+    turnId,
+    conversationId,
     content = "",
     events,
     strictServerData = false,
@@ -40,6 +42,8 @@ const MarkdownStreamImpl: React.FC<MarkdownStreamProps> = (props) => {
       >
         <StreamAwareChatMarkdown
           requestId={requestId}
+          turnId={turnId}
+          conversationId={conversationId}
           content={content}
           events={events}
           {...restProps}

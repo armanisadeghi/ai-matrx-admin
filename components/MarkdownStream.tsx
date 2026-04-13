@@ -16,6 +16,10 @@ export interface MarkdownStreamProps {
   /** Optional task ID for streaming updates (legacy mode with Redux) */
   taskId?: string;
   requestId?: string;
+  /** Turn ID for DB-loaded turn rendering */
+  turnId?: string;
+  /** Conversation ID for DB-loaded turn rendering */
+  conversationId?: string;
   /** Content type (flashcard, message, text, etc.) */
   type?:
     | "flashcard"

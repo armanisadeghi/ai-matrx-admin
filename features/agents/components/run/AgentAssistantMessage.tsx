@@ -60,6 +60,9 @@ export function AgentAssistantMessage({
     <div>
       <MarkdownStream
         requestId={requestId}
+        turnId={turnId}
+        conversationId={conversationId}
+        content={turn?.content ?? ""}
         isStreamActive={isStreamActive}
         hideCopyButton={true}
         allowFullScreenEditor={false}

@@ -56,7 +56,7 @@ import {
   loadConversationHistory,
   type ConversationTurn,
 } from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.slice";
-import { normalizeContentBlocks } from "@/features/agents/redux/execution-system/utils";
+import type { MessagePart } from "@/types/python-generated/stream-events";
 import type { CxConversationListItem } from "./types";
 
 type ThunkApi = { dispatch: AppDispatch; state: RootState };
@@ -182,6 +182,18 @@ export const fetchConversationListMore = createAsyncThunk<
  * Call this when the user clicks a conversation in the sidebar.
  * The conversationId is used directly as the key — no separate instanceId needed.
  */
+/**
+ * Shape of a cx_tool_call row used for joining results onto assistant turns.
+ */
+interface ToolCallRow {
+  call_id: string;
+  tool_name: string;
+  arguments: unknown;
+  output: string | null;
+  is_error: boolean | null;
+  status: string;
+}
+
 export const fetchConversationHistory = createAsyncThunk<
   void,
   { conversationId: string },
@@ -189,47 +201,79 @@ export const fetchConversationHistory = createAsyncThunk<
 >("cxConversations/fetchHistory", async ({ conversationId }, { dispatch }) => {
   dispatch(initInstanceHistory({ conversationId, mode: "conversation" }));
 
-  const { data, error } = await supabase
-    .from("cx_message")
-    .select(
-      "agent_id, content, content_history, conversation_id, created_at, deleted_at, id, is_visible_to_model, is_visible_to_user, metadata, position, role, source, status, user_content",
-    )
-    .eq("conversation_id", conversationId)
-    .is("deleted_at", null)
-    .order("position", { ascending: true });
+  const [messagesResult, toolCallsResult] = await Promise.all([
+    supabase
+      .from("cx_message")
+      .select(
+        "agent_id, content, content_history, conversation_id, created_at, deleted_at, id, is_visible_to_model, is_visible_to_user, metadata, position, role, source, status, user_content",
+      )
+      .eq("conversation_id", conversationId)
+      .is("deleted_at", null)
+      .order("position", { ascending: true }),
+    supabase
+      .from("cx_tool_call")
+      .select("call_id, tool_name, arguments, output, is_error, status")
+      .eq("conversation_id", conversationId)
+      .is("deleted_at", null),
+  ]);
 
-  if (error) throw error;
+  if (messagesResult.error) throw messagesResult.error;
 
-  const rows = data ?? [];
+  const rows = messagesResult.data ?? [];
+
+  // Build a lookup of tool results by call_id from cx_tool_call
+  const toolResultsByCallId = new Map<string, ToolCallRow>();
+  if (!toolCallsResult.error && toolCallsResult.data) {
+    for (const tc of toolCallsResult.data as ToolCallRow[]) {
+      toolResultsByCallId.set(tc.call_id, tc);
+    }
+  }
 
   const turns: ConversationTurn[] = rows
     .filter((row) => row.role === "user" || row.role === "assistant")
     .map((row) => {
-      const rawBlocks: Array<Record<string, unknown>> = Array.isArray(
-        row.content,
-      )
+      const rawParts: MessagePart[] = Array.isArray(row.content)
         ? (row.content as unknown[]).filter(
-            (b): b is Record<string, unknown> =>
+            (b): b is MessagePart =>
               typeof b === "object" && b !== null && !Array.isArray(b),
           )
         : [];
 
-      const textBlock = rawBlocks.find((b) => b["type"] === "text") as
+      // For assistant turns with tool_call parts, inject matching ToolResultPart
+      // entries so the selector can pair calls with their results.
+      const enrichedParts: MessagePart[] = [];
+      for (const part of rawParts) {
+        enrichedParts.push(part);
+
+        if (part.type === "tool_call") {
+          const callId = (part as { id?: string }).id;
+          if (callId) {
+            const result = toolResultsByCallId.get(callId);
+            if (result) {
+              enrichedParts.push({
+                type: "tool_result",
+                call_id: callId,
+                name: result.tool_name,
+                content: result.output ?? "",
+                is_error: result.is_error ?? false,
+              } as MessagePart);
+            }
+          }
+        }
+      }
+
+      const textBlock = enrichedParts.find((b) => b.type === "text") as
         | { type: "text"; text: string }
         | undefined;
       const primaryText =
         typeof textBlock?.text === "string" ? textBlock.text : "";
-
-      const richBlocks = rawBlocks.filter((b) => b["type"] !== "text");
-      const normalizedBlocks =
-        richBlocks.length > 0 ? normalizeContentBlocks(richBlocks) : undefined;
 
       return {
         turnId: uuidv4(),
         cxMessageId: row.id,
         role: row.role as "user" | "assistant",
         content: primaryText,
-        ...(normalizedBlocks && { contentBlocks: normalizedBlocks }),
+        ...(enrichedParts.length > 0 && { messageParts: enrichedParts }),
         timestamp: row.created_at,
         requestId: null,
         conversationId,

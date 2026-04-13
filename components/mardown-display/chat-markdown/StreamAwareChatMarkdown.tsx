@@ -47,6 +47,11 @@ export interface StreamAwareChatMarkdownProps extends Omit<
    */
   content?: string;
 
+  /** Turn ID for DB-loaded turn rendering */
+  turnId?: string;
+  /** Conversation ID for DB-loaded turn rendering */
+  conversationId?: string;
+
   /**
    * Array of stream events to process (new mode)
    * When provided, this takes precedence over content prop
@@ -87,6 +92,8 @@ export const StreamAwareChatMarkdown: React.FC<
   StreamAwareChatMarkdownProps
 > = ({
   requestId,
+  turnId,
+  conversationId,
   content,
   events,
   onError,
@@ -350,6 +357,8 @@ export const StreamAwareChatMarkdown: React.FC<
             return (
               <EnhancedChatMarkdownInternal
                 requestId={requestId}
+                turnId={turnId}
+                conversationId={conversationId}
                 key={`text-${index}`}
                 {...restProps}
                 content={textBlock.content}
@@ -403,6 +412,8 @@ export const StreamAwareChatMarkdown: React.FC<
     <EnhancedChatMarkdownInternal
       {...restProps}
       requestId={requestId}
+      turnId={turnId}
+      conversationId={conversationId}
       content={processedContent}
       serverProcessedBlocks={effectiveServerBlocks}
     />

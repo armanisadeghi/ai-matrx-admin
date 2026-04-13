@@ -38,7 +38,9 @@ import {
   selectInterleavedContent,
   selectToolLifecycle,
   type ContentSegment,
+  type ContentSegmentDbTool,
 } from "@/features/agents/redux/execution-system/active-requests/active-requests.selectors";
+import { selectTurnInterleavedContent } from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.selectors";
 import type { ToolLifecycleEntry } from "@/features/agents/types/request.types";
 import type { ToolCallPhase } from "@/lib/api/tool-call.types";
 import { useAppSelector } from "@/lib/redux/hooks";
@@ -176,6 +178,60 @@ const InlineToolCard: React.FC<{
 };
 
 // ============================================================================
+// DB TOOL CARD — renders a completed tool call from DB-loaded message parts.
+// Self-contained: all data comes from the segment, no Redux subscription.
+// ============================================================================
+
+const DbToolCard: React.FC<{
+  segment: ContentSegmentDbTool;
+}> = ({ segment }) => {
+  const toolObjects = useMemo((): ToolCallObject[] => {
+    const objects: ToolCallObject[] = [];
+
+    objects.push({
+      id: segment.callId,
+      type: "mcp_input",
+      mcp_input: { name: segment.toolName, arguments: segment.arguments },
+      phase: "complete" as ToolCallPhase,
+    });
+
+    if (segment.result != null) {
+      if (segment.isError) {
+        objects.push({
+          id: segment.callId,
+          type: "mcp_error",
+          mcp_error: String(segment.result),
+        });
+      } else {
+        objects.push({
+          id: segment.callId,
+          type: "mcp_output",
+          mcp_output: { result: segment.result },
+        });
+      }
+    }
+
+    return objects;
+  }, [
+    segment.callId,
+    segment.toolName,
+    segment.arguments,
+    segment.result,
+    segment.isError,
+  ]);
+
+  if (toolObjects.length === 0) return null;
+
+  return (
+    <ToolCallVisualization
+      toolUpdates={toolObjects}
+      hasContent={true}
+      className="my-2"
+    />
+  );
+};
+
+// ============================================================================
 // INLINE STATUS INDICATOR — transient shimmer label for phase/info events.
 // Automatically removed from the segment list when real content supersedes it.
 // ============================================================================
@@ -207,6 +263,10 @@ export interface ServerProcessedBlock {
 
 export interface ChatMarkdownDisplayProps {
   requestId?: string;
+  /** Turn ID for DB-loaded turn rendering */
+  turnId?: string;
+  /** Conversation ID for DB-loaded turn rendering */
+  conversationId?: string;
   content: string;
   taskId?: string;
   type?:
@@ -344,6 +404,8 @@ export const EnhancedChatMarkdownInternal: React.FC<
   ChatMarkdownDisplayProps
 > = ({
   requestId,
+  turnId,
+  conversationId,
   content,
   taskId,
   type = "message",
@@ -375,6 +437,12 @@ export const EnhancedChatMarkdownInternal: React.FC<
     requestId ? selectInterleavedContent(requestId) : _selectEmptySegments,
   );
 
+  const dbTurnSegments = useAppSelector(
+    turnId && conversationId
+      ? selectTurnInterleavedContent(conversationId, turnId)
+      : _selectEmptySegments,
+  );
+
   const resolvedContent = requestText || content;
   const currentContent = editedContent ?? resolvedContent;
 
@@ -383,6 +451,10 @@ export const EnhancedChatMarkdownInternal: React.FC<
 
   const hasInterleavedSpecial = interleavedSegments.some(
     (s) => s.type === "tool" || s.type === "status",
+  );
+
+  const hasDbInterleavedSpecial = dbTurnSegments.some(
+    (s) => s.type === "db_tool" || s.type === "thinking",
   );
 
   const toolUpdates = toolUpdatesProp ?? [];
@@ -828,6 +900,7 @@ export const EnhancedChatMarkdownInternal: React.FC<
                     />
                   );
                 }
+                if (segment.type !== "text") return null;
                 const segBlocks = (() => {
                   try {
                     return splitContentIntoBlocksV2(segment.content);
@@ -846,7 +919,62 @@ export const EnhancedChatMarkdownInternal: React.FC<
                   renderBlock(block, segIdx * 1000 + blockIdx),
                 );
               })
-            : processedBlocks.map((block, index) => renderBlock(block, index))}
+            : hasDbInterleavedSpecial
+              ? dbTurnSegments.map((segment, segIdx) => {
+                  if (segment.type === "db_tool") {
+                    return (
+                      <DbToolCard
+                        key={`db-tool-${segment.callId}`}
+                        segment={segment}
+                      />
+                    );
+                  }
+                  if (segment.type === "thinking") {
+                    const thinkBlocks = (() => {
+                      try {
+                        return splitContentIntoBlocksV2(segment.content);
+                      } catch {
+                        return [
+                          {
+                            type: "reasoning" as const,
+                            content: segment.content,
+                            startLine: 0,
+                            endLine: 0,
+                          },
+                        ];
+                      }
+                    })();
+                    return thinkBlocks.map((block, blockIdx) =>
+                      renderBlock(
+                        { ...block, type: "reasoning" },
+                        segIdx * 1000 + blockIdx,
+                      ),
+                    );
+                  }
+                  if (segment.type === "text") {
+                    const segBlocks = (() => {
+                      try {
+                        return splitContentIntoBlocksV2(segment.content);
+                      } catch {
+                        return [
+                          {
+                            type: "text" as const,
+                            content: segment.content,
+                            startLine: 0,
+                            endLine: 0,
+                          },
+                        ];
+                      }
+                    })();
+                    return segBlocks.map((block, blockIdx) =>
+                      renderBlock(block, segIdx * 1000 + blockIdx),
+                    );
+                  }
+                  return null;
+                })
+              : processedBlocks.map((block, index) =>
+                  renderBlock(block, index),
+                )}
         </div>
 
         {!hideCopyButton && (

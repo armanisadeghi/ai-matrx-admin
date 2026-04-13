@@ -27,7 +27,10 @@ import { destroyInstance } from "../execution-instances/execution-instances.slic
 import type { CompletionStats } from "@/features/agents/types/instance.types";
 import type { ClientMetrics } from "@/features/agents/types/request.types";
 import type { Json } from "@/types/database.types";
-import type { RenderBlockPayload } from "@/types/python-generated/stream-events";
+import type {
+  MessagePart,
+  RenderBlockPayload,
+} from "@/types/python-generated/stream-events";
 
 // =============================================================================
 // Types
@@ -52,9 +55,16 @@ export interface ConversationTurn {
   content: string;
 
   /**
-   * Multimodal content blocks (audio, images, etc.).
-   * Always in RenderBlockPayload shape — normalized at the Redux boundary
-   * so every consumer gets a single canonical type.
+   * Raw message parts from the database (cx_message.content[]).
+   * Stored as-is — selectors convert to ContentSegment[] for rendering.
+   * Only present on DB-loaded turns; streaming turns use activeRequests.
+   */
+  messageParts?: MessagePart[];
+
+  /**
+   * Streaming-path render blocks (images, audio, etc.) attached during
+   * addUserTurn or commitAssistantTurn. Used by AgentUserMessage for
+   * inline attachment rendering. Separate from messageParts (DB path).
    */
   renderBlocks?: RenderBlockPayload[];
 
@@ -323,24 +333,24 @@ const instanceConversationHistorySlice = createSlice({
     },
 
     /**
-     * Upsert content blocks onto an existing turn by turnId.
-     * Used after normalization of DB-loaded blocks or any late-arriving blocks.
+     * Store raw MessagePart[] on an existing turn by turnId.
+     * Used for DB-loaded turns that need their full parts array attached.
      */
-    setTurnRenderBlocks(
+    setTurnMessageParts(
       state,
       action: PayloadAction<{
         conversationId: string;
         turnId: string;
-        renderBlock: RenderBlockPayload[];
+        messageParts: MessagePart[];
       }>,
     ) {
-      const { conversationId, turnId, renderBlock } = action.payload;
+      const { conversationId, turnId, messageParts } = action.payload;
       const entry = state.byConversationId[conversationId];
       if (!entry) return;
 
       const turn = entry.turns.find((t) => t.turnId === turnId);
       if (turn) {
-        turn.renderBlocks = renderBlock;
+        turn.messageParts = messageParts;
       }
     },
 
@@ -394,7 +404,7 @@ export const {
   commitAssistantTurn,
   attachClientMetrics,
   loadConversationHistory,
-  setTurnRenderBlocks,
+  setTurnMessageParts,
   setConversationLabel,
   clearHistory,
   removeInstanceHistory,

@@ -359,10 +359,24 @@ export type ContentSegmentStatus = {
   label: string;
   kind: "phase" | "info";
 };
+export type ContentSegmentDbTool = {
+  type: "db_tool";
+  callId: string;
+  toolName: string;
+  arguments: Record<string, unknown>;
+  result: unknown | null;
+  isError: boolean;
+};
+export type ContentSegmentThinking = {
+  type: "thinking";
+  content: string;
+};
 export type ContentSegment =
   | ContentSegmentText
   | ContentSegmentTool
-  | ContentSegmentStatus;
+  | ContentSegmentStatus
+  | ContentSegmentDbTool
+  | ContentSegmentThinking;
 
 const PHASE_LABELS: Record<string, string> = {
   connected: "Connected",
