@@ -12,11 +12,11 @@ import os from "os";
  */
 const LOCAL_LOG_FILES: Record<string, string> = {
   "local-python-run": path.join(
-    os.homedir(),
+    /* turbopackIgnore: true */ os.homedir(),
     "code/aidream/temp/logs/run_py.log",
   ),
   "local-python-dev": path.join(
-    os.homedir(),
+    /* turbopackIgnore: true */ os.homedir(),
     "code/aidream/temp/logs/aidreamdev.log",
   ),
 };

@@ -530,53 +530,6 @@ export function getStateViewerTabs(
       ),
     },
     {
-      id: "aiChat",
-      label: "AI Chat",
-      content: (
-        <GenericSliceViewer sliceKey="aiChat" state={completeState.aiChat} />
-      ),
-    },
-    {
-      id: "conversation",
-      label: "Conversation",
-      content: (
-        <GenericSliceViewer
-          sliceKey="conversation"
-          state={completeState.conversation}
-        />
-      ),
-    },
-    {
-      id: "messages",
-      label: "Messages",
-      content: (
-        <GenericSliceViewer
-          sliceKey="messages"
-          state={completeState.messages}
-        />
-      ),
-    },
-    {
-      id: "newMessage",
-      label: "New Message",
-      content: (
-        <GenericSliceViewer
-          sliceKey="newMessage"
-          state={completeState.newMessage}
-        />
-      ),
-    },
-    {
-      id: "chatDisplay",
-      label: "Chat Display",
-      content: (
-        <GenericSliceViewer
-          sliceKey="chatDisplay"
-          state={completeState.chatDisplay}
-        />
-      ),
-    },
-    {
       id: "activeChat",
       label: "Active Chat",
       content: (

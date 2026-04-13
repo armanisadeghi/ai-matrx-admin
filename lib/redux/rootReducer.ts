@@ -8,7 +8,7 @@ import { moduleSchemas, ModuleName } from "./dynamic/moduleSchema";
 import layoutReducer from "./slices/layoutSlice";
 import formReducer from "./slices/formSlice";
 import userReducer from "./slices/userSlice";
-import aiChatReducer from "./slices/aiChatSlice";
+
 import userPreferencesReducer from "./slices/userPreferencesSlice";
 import testRoutesReducer from "./slices/testRoutesSlice";
 import flashcardChatReducer from "./slices/flashcardChatSlice";
@@ -26,10 +26,7 @@ import { storageReducer } from "./storage";
 import { createFileSystemSlice } from "./fileSystem/slice";
 import { AvailableBuckets, FileManagement } from "./fileSystem/types";
 import { UnifiedSchemaCache } from "@/types/entityTypes";
-import { conversationReducer } from "./features/aiChats/conversationSlice";
-import { messagesReducer } from "./features/aiChats/messagesSlice";
-import { newMessageReducer } from "./features/aiChats/newMessageSlice";
-import chatDisplayReducer from "./features/aiChats/chatDisplaySlice";
+
 import socketConnectionReducer from "./socket-io/slices/socketConnectionsSlice";
 import socketResponseReducer from "./socket-io/slices/socketResponseSlice";
 import socketTasksReducer from "./socket-io/slices/socketTasksSlice";
@@ -231,13 +228,6 @@ export const createRootReducer = (initialState: InitialReduxState) => {
     globalCache: globalCacheSlice.reducer,
     ui: uiReducer,
     storage: storageReducer,
-
-    // ==== OLD AI CHAT SYSTEM (DEPRECATED) ====
-    aiChat: aiChatReducer,
-    conversation: conversationReducer,
-    messages: messagesReducer,
-    newMessage: newMessageReducer,
-    chatDisplay: chatDisplayReducer,
 
     // Active chat page state (selected agent, block mode, agent picker)
     activeChat: activeChatReducer,

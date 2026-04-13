@@ -9,10 +9,10 @@ export default async function NotesExperimentalIndexPage() {
         process.cwd(),
         "app",
         "(authenticated)",
-        "notes",
+        "notes-dep",
         "experimental",
       )}
-      basePath="/notes/experimental"
+      basePath="/notes-dep/experimental"
       title="Notes — experimental"
       description="In-progress note experiments (unfinished work lives here so it stays discoverable)."
       icon={FlaskConical}

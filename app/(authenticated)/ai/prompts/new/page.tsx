@@ -2,8 +2,7 @@ import { PromptBuilder } from "@/features/prompts/components/builder/PromptBuild
 import { fetchAIModels } from "@/features/ai-models/server/ai-models-server";
 import { serverToolsService } from "@/utils/supabase/server-tools-service";
 
-// Cache this page for 12 hours
-export const revalidate = 43200;
+export const dynamic = "force-dynamic";
 
 export default async function NewPromptPage() {
   // Fetch AI models and tools in parallel
