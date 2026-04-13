@@ -368,7 +368,16 @@ export class StreamBlockAccumulator {
     dispatch: DispatchFn,
     status: "streaming" | "complete",
   ): void {
-    const content = this.currentBlockContent;
+    let content = this.currentBlockContent;
+    
+    // Project in-flight characters so the UI physically streams char-by-char, 
+    // avoiding the broken line-by-line visual stuttering.
+    if (status === "streaming" && this.pendingLineFragment) {
+      if (this.subState.kind === "none" || this.subState.kind === "code_fence") {
+        content = content ? content + "\n" + this.pendingLineFragment : this.pendingLineFragment;
+      }
+    }
+
     if (!content && status === "streaming") return;
 
     this.emitCount++;

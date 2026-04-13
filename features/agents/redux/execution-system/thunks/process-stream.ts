@@ -211,11 +211,10 @@ export async function processStream({
 
   const scheduleBatchEvent = () => {
     if (rafHandle === null) {
-      if (typeof window !== "undefined" && window.requestAnimationFrame) {
-        rafHandle = window.requestAnimationFrame(dispatchBatch);
-      } else {
-        rafHandle = setTimeout(dispatchBatch, 16) as any;
-      }
+      // Throttling down to ~30fps (30ms delay) rather than rAF's 60fps (16ms)
+      // because feeding 12,000 character strings to react-markdown 60x a second
+      // will mathematically freeze the browser main thread.
+      rafHandle = setTimeout(dispatchBatch, 30) as any;
     }
   };
 
