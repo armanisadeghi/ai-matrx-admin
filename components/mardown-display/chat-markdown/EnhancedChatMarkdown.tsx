@@ -203,10 +203,20 @@ const DbToolCard: React.FC<{
           mcp_error: String(segment.result),
         });
       } else {
+        // DB stores output as a JSON string — parse it so ToolCallVisualization
+        // gets the same object shape as the streaming path.
+        let parsed: unknown = segment.result;
+        if (typeof parsed === "string") {
+          try {
+            parsed = JSON.parse(parsed);
+          } catch {
+            // leave as raw string if not valid JSON
+          }
+        }
         objects.push({
           id: segment.callId,
           type: "mcp_output",
-          mcp_output: { result: segment.result },
+          mcp_output: { result: parsed },
         });
       }
     }
