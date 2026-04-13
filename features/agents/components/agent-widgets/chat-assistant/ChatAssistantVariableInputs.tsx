@@ -54,7 +54,9 @@ export function ChatAssistantVariableInputs({
         ) : (
           <ChevronRight className="w-3 h-3 shrink-0" />
         )}
-        <span className="font-medium uppercase tracking-wider">Variables</span>
+        <span className="font-medium uppercase tracking-wider">
+          Quick Questions
+        </span>
         <span className="text-muted-foreground/60 ml-auto">
           {filledCount}/{variableDefs.length}
         </span>
@@ -71,17 +73,6 @@ export function ChatAssistantVariableInputs({
               dispatch={dispatch}
             />
           ))}
-          {/* Run button — lets agents execute with just variables, no text */}
-          <div className="flex justify-end pt-0.5">
-            <Button
-              size="sm"
-              className="h-6 px-2.5 text-[10px] rounded-full gap-1"
-              onClick={onSubmit}
-            >
-              <Play className="w-2.5 h-2.5" />
-              Run
-            </Button>
-          </div>
         </div>
       )}
     </div>
@@ -116,7 +107,10 @@ function MicroVariableRow({
 
   return (
     <div className="flex items-center gap-2 min-w-0">
-      <label className="text-[10px] font-medium text-muted-foreground shrink-0 w-16 truncate" title={variable.name}>
+      <label
+        className="text-[10px] font-medium text-muted-foreground shrink-0 w-16 truncate"
+        title={variable.name}
+      >
         {variable.name}
         {variable.required && <span className="text-destructive">*</span>}
       </label>
@@ -180,7 +174,6 @@ function MicroText({
     <input
       type="text"
       className="w-full h-6 px-1.5 text-[11px] bg-muted/40 border border-border/60 rounded focus:outline-none focus:ring-1 focus:ring-primary/40"
-      style={{ fontSize: "16px" }}
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder="..."
