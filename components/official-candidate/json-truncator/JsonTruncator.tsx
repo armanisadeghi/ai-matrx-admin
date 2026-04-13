@@ -1318,7 +1318,7 @@ function InputPanel({
   pl,
 }: InputPanelProps) {
   return (
-    <>
+    <div className="flex flex-col h-full min-h-0 overflow-hidden">
       <div className={ph}>
         <span className={pl}>Input JSON</span>
         <div className="flex-1" />
@@ -1370,7 +1370,7 @@ function InputPanel({
         </>
       )}
       <textarea
-        className="flex-1 resize-none bg-background text-foreground font-mono text-[11px] px-2 py-1.5 outline-none border-0 leading-relaxed placeholder:text-muted-foreground"
+        className="flex-1 min-h-0 resize-none bg-background text-foreground font-mono text-[11px] px-2 py-1.5 outline-none border-0 leading-relaxed placeholder:text-muted-foreground"
         placeholder="Paste JSON here…"
         value={inputText}
         onChange={(e) => {
@@ -1390,7 +1390,7 @@ function InputPanel({
           <span>{fieldCount} fields</span>
         </div>
       )}
-    </>
+    </div>
   );
 }
 
@@ -1482,7 +1482,7 @@ function FieldsPanel({
   fb,
 }: FieldsPanelProps) {
   return (
-    <>
+    <div className="flex flex-col h-full min-h-0 overflow-hidden">
       {/* Search */}
       <div className="flex items-center gap-1.5 px-2 py-1.5 bg-card border-b border-border flex-shrink-0">
         <Search size={12} className="text-primary flex-shrink-0" />
@@ -1649,7 +1649,7 @@ function FieldsPanel({
           </button>
         </div>
       ) : null}
-    </>
+    </div>
   );
 }
 
@@ -1687,7 +1687,7 @@ function OutputPanel({
   pl,
 }: OutputPanelProps) {
   return (
-    <>
+    <div className="flex flex-col h-full min-h-0 overflow-hidden">
       <div className={ph}>
         <span className={pl}>Result</span>
         <div className="flex-1" />
@@ -1722,7 +1722,7 @@ function OutputPanel({
       </div>
       <textarea
         ref={outputRef}
-        className="flex-1 resize-none bg-background text-foreground font-mono text-[11px] px-2 py-1.5 outline-none border-0 leading-relaxed placeholder:text-muted-foreground"
+        className="flex-1 min-h-0 resize-none bg-background text-foreground font-mono text-[11px] px-2 py-1.5 outline-none border-0 leading-relaxed placeholder:text-muted-foreground"
         value={outputText}
         onChange={(e) => {
           setOutputText(e.target.value);
@@ -1732,7 +1732,7 @@ function OutputPanel({
         spellCheck={false}
         placeholder="Result will appear here…"
       />
-    </>
+    </div>
   );
 }
 
@@ -2267,17 +2267,17 @@ export function JsonTruncator({
         {/* Tab content */}
         <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
           {activeTab === "input" && (
-            <div className="flex flex-col flex-1 min-h-0">
+            <div className="flex-1 min-h-0 overflow-hidden">
               <InputPanel {...inputPanelProps} showControls={false} />
             </div>
           )}
           {activeTab === "fields" && (
-            <div className="flex flex-col flex-1 min-h-0">
+            <div className="flex-1 min-h-0 overflow-hidden">
               <FieldsPanel {...fieldsPanelProps} />
             </div>
           )}
           {activeTab === "output" && (
-            <div className="flex flex-col flex-1 min-h-0">
+            <div className="flex-1 min-h-0 overflow-hidden">
               <OutputPanel {...outputPanelProps} />
             </div>
           )}
@@ -2307,17 +2307,17 @@ export function JsonTruncator({
       {/* 3-column layout */}
       <div className="flex flex-1 min-h-0 overflow-hidden">
         {/* LEFT: Input + auto settings */}
-        <div className="flex flex-col w-[30%] min-w-0 border-r border-border">
+        <div className="w-[30%] min-w-0 min-h-0 overflow-hidden border-r border-border">
           <InputPanel {...inputPanelProps} />
         </div>
 
         {/* CENTER: Fields */}
-        <div className="flex flex-col w-[38%] min-w-0 border-r border-border">
+        <div className="w-[38%] min-w-0 min-h-0 overflow-hidden border-r border-border">
           <FieldsPanel {...fieldsPanelProps} />
         </div>
 
         {/* RIGHT: Output */}
-        <div className="flex flex-col flex-1 min-w-0">
+        <div className="flex-1 min-w-0 min-h-0 overflow-hidden">
           <OutputPanel {...outputPanelProps} />
         </div>
       </div>

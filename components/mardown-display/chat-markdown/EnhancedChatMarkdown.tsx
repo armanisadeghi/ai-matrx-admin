@@ -26,10 +26,12 @@ import {
   selectAccumulatedText,
   selectInterleavedContent,
   selectToolLifecycle,
+  selectAllRenderBlocks,
   type ContentSegment,
   type ContentSegmentDbTool,
 } from "@/features/agents/redux/execution-system/active-requests/active-requests.selectors";
 import { selectTurnInterleavedContent } from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.selectors";
+import type { RenderBlockPayload } from "@/types/python-generated/stream-events";
 import type { ToolLifecycleEntry } from "@/features/agents/types/request.types";
 import type { ToolCallPhase } from "@/lib/api/tool-call.types";
 import { useAppSelector } from "@/lib/redux/hooks";
@@ -410,6 +412,24 @@ const SafeBlockRenderer: React.FC<{
 const _EMPTY_SEGMENTS: ContentSegment[] = [];
 const _selectEmptyString = () => "";
 const _selectEmptySegments = () => _EMPTY_SEGMENTS;
+const _selectEmptyRenderBlocks = () =>
+  undefined as RenderBlockPayload[] | undefined;
+
+function renderBlockToContentBlock(
+  rb: RenderBlockPayload,
+): ContentBlock & { serverData?: Record<string, unknown> } {
+  return {
+    type: rb.type as ContentBlock["type"],
+    content: rb.content ?? "",
+    serverData: (rb.data as Record<string, unknown>) ?? undefined,
+    metadata: rb.metadata,
+    language: (rb.data as Record<string, unknown>)?.language as
+      | string
+      | undefined,
+    src: (rb.data as Record<string, unknown>)?.src as string | undefined,
+    alt: (rb.data as Record<string, unknown>)?.alt as string | undefined,
+  };
+}
 
 export const EnhancedChatMarkdownInternal: React.FC<
   ChatMarkdownDisplayProps
@@ -454,6 +474,19 @@ export const EnhancedChatMarkdownInternal: React.FC<
       : _selectEmptySegments,
   );
 
+  const renderBlocksSelector = useMemo(
+    () =>
+      requestId ? selectAllRenderBlocks(requestId) : _selectEmptyRenderBlocks,
+    [requestId],
+  );
+  const reduxRenderBlocks = useAppSelector(renderBlocksSelector);
+
+  const hasClientBlocks = !!(
+    reduxRenderBlocks &&
+    reduxRenderBlocks.length > 0 &&
+    reduxRenderBlocks.some((b) => b.blockId.startsWith("client_"))
+  );
+
   const resolvedContent = requestText || content;
   const currentContent = editedContent ?? resolvedContent;
 
@@ -493,6 +526,16 @@ export const EnhancedChatMarkdownInternal: React.FC<
   // that triggers re-renders during render, potentially causing infinite loops.
   const { blocks, blockError } = useMemo(() => {
     if (isWaitingForContent) return { blocks: [], blockError: false };
+
+    // Fast path: Redux already has client-generated render blocks from the
+    // StreamBlockAccumulator. Convert to ContentBlock shape and skip the
+    // expensive splitContentIntoBlocksV2 entirely.
+    if (hasClientBlocks && reduxRenderBlocks) {
+      const clientBlocks: ContentBlock[] = reduxRenderBlocks
+        .filter((rb) => rb.content?.trim())
+        .map(renderBlockToContentBlock);
+      return { blocks: clientBlocks, blockError: false };
+    }
 
     // New protocol: server already processed the blocks — convert to ContentBlock shape.
     // When text content also exists, parse it through the normal pipeline first,
@@ -567,6 +610,8 @@ export const EnhancedChatMarkdownInternal: React.FC<
     useV2Parser,
     useServerBlocks,
     serverProcessedBlocks,
+    hasClientBlocks,
+    reduxRenderBlocks,
   ]);
 
   // Handle block processing errors outside of useMemo to avoid setState during render

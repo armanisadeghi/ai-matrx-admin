@@ -68,7 +68,7 @@ export function NotesBetaWindow({
           showTabs: true,
           instanceId: notesInstanceId,
         }}
-        className="h-full"
+        className="h-full border-2 border-red-500"
       />
     </WindowPanel>
   );

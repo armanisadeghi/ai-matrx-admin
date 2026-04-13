@@ -701,6 +701,9 @@ export const OverlayController: React.FC = () => {
   const isNotesWindowOpen = useAppSelector((s) =>
     selectIsOverlayOpen(s, "notesWindow"),
   );
+  const notesWindowData = useAppSelector((s) =>
+    selectOverlayData(s, "notesWindow"),
+  );
 
   const notesBetaWindowInstances = useAppSelector((s) =>
     selectOpenInstances(s, "notesBetaWindow"),
@@ -1311,7 +1314,15 @@ export const OverlayController: React.FC = () => {
       )}
 
       {isNotesWindowOpen && (
-        <NotesWindow onClose={() => close("notesWindow")} />
+        <NotesWindow
+          onClose={() => close("notesWindow")}
+          initialTabs={
+            (notesWindowData?.openTabs as string[] | undefined) ?? undefined
+          }
+          initialActiveTab={
+            (notesWindowData?.activeTabId as string | null | undefined) ?? null
+          }
+        />
       )}
 
       {notesBetaWindowInstances.map(({ instanceId }) => (

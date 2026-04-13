@@ -66,6 +66,7 @@ import {
   updateExtractedJson,
 } from "../active-requests/active-requests.slice";
 import { StreamingJsonTracker } from "@/utils/json/streaming-json-tracker";
+import { StreamBlockAccumulator } from "../utils/stream-block-accumulator";
 import type { ExtractedJsonSnapshot } from "@/features/agents/types/request.types";
 import {
   commitAssistantTurn,
@@ -164,6 +165,11 @@ export async function processStream({
 
   StreamProfiler.getInstance().start(requestId);
 
+  const blockAccumulator = new StreamBlockAccumulator(
+    requestId,
+    upsertRenderBlock,
+  );
+
   let textBuffer = "";
   let reasoningBuffer = "";
   let rafHandle: number | null = null;
@@ -180,7 +186,9 @@ export async function processStream({
     }
 
     if (textBuffer.length > 0) {
-      dispatch(appendChunk({ requestId, content: textBuffer }));
+      const flushed = textBuffer;
+      dispatch(appendChunk({ requestId, content: flushed }));
+      blockAccumulator.ingest(flushed, dispatch);
       textBuffer = "";
     }
     if (reasoningBuffer.length > 0) {
@@ -194,7 +202,7 @@ export async function processStream({
           results: pendingJsonState.results,
           revision: pendingJsonState.revision,
           isComplete: false,
-        })
+        }),
       );
       pendingJsonState = null;
     }
@@ -247,7 +255,7 @@ export async function processStream({
           };
         }
       }
-      
+
       scheduleBatchEvent();
       continue;
     }
@@ -774,6 +782,7 @@ export async function processStream({
 
   // Final flush of any trailing buffers after the loop ends
   dispatchBatch();
+  blockAccumulator.finalize(dispatch);
 
   if (isInTextRun) {
     dispatch(closeTextRun({ requestId, timestamp: performance.now() }));

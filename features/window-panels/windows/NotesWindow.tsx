@@ -2,27 +2,103 @@
 
 // NotesWindow — Floating notes panel using the 6-layer architecture.
 // Wraps NotesView inside a WindowPanel. No prop drilling.
-// Each layer reads its own Redux selectors.
+// Persists open tabs + active tab to window_sessions via onCollectData.
+// Auto-saves when tabs change so state is always current in the DB.
 
-import React from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import {
   WindowPanel,
   type WindowPanelProps,
 } from "@/features/window-panels/WindowPanel";
 import { NotesView } from "@/features/notes/components/NotesView";
+import { useAppSelector } from "@/lib/redux/hooks";
+import {
+  selectInstanceTabs,
+  selectInstanceActiveTab,
+} from "@/features/notes/redux/selectors";
+import {
+  selectWindowRect,
+  selectWindowState,
+  selectWindowZIndex,
+} from "@/lib/redux/slices/windowManagerSlice";
+import { useWindowPersistence } from "@/features/window-panels/WindowPersistenceManager";
 
 export interface NotesWindowProps extends Omit<
   WindowPanelProps,
   "children" | "title"
 > {
   title?: string;
+  /** Tab IDs to restore from a saved session (from window_sessions.data) */
+  initialTabs?: string[];
+  /** Active tab ID to restore from a saved session */
+  initialActiveTab?: string | null;
 }
+
+const INSTANCE_ID = "window-notes-window";
+const OVERLAY_ID = "notesWindow";
+const WINDOW_ID = "notes-window";
 
 export function NotesWindow({
   title = "Notes",
-  id = "notes-window",
+  id = WINDOW_ID,
+  initialTabs,
+  initialActiveTab,
   ...windowProps
 }: NotesWindowProps) {
+  const openTabs = useAppSelector(selectInstanceTabs(INSTANCE_ID));
+  const activeTabId = useAppSelector(selectInstanceActiveTab(INSTANCE_ID));
+
+  // Geometry from Redux — used to persist an accurate rect on auto-save
+  const windowId = id;
+  const rect = useAppSelector(selectWindowRect(windowId));
+  const windowState = useAppSelector(selectWindowState(windowId));
+  const zIndex = useAppSelector(selectWindowZIndex(windowId));
+
+  const persistence = useWindowPersistence();
+
+  // Stable ref to latest tab state so save callback always has current values
+  const tabStateRef = useRef({ openTabs, activeTabId });
+  useEffect(() => {
+    tabStateRef.current = { openTabs, activeTabId };
+  }, [openTabs, activeTabId]);
+
+  const collectData = useCallback(
+    (): Record<string, unknown> => ({
+      openTabs: tabStateRef.current.openTabs ?? [],
+      activeTabId: tabStateRef.current.activeTabId ?? null,
+    }),
+    [],
+  );
+
+  // Auto-save to window_sessions whenever tabs change (debounced 1.5s)
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    // Only auto-save when there are tabs open
+    if (!openTabs || openTabs.length === 0) return;
+
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => {
+      const panelState = {
+        windowState: (windowState ?? "windowed") as
+          | "windowed"
+          | "maximized"
+          | "minimized",
+        rect: rect ?? { x: 100, y: 100, width: 600, height: 500 },
+        sidebarOpen: false,
+        zIndex: zIndex ?? 1000,
+      };
+      persistence.saveWindow(OVERLAY_ID, panelState, {
+        openTabs: openTabs ?? [],
+        activeTabId: activeTabId ?? null,
+      });
+    }, 1500);
+
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openTabs, activeTabId]);
+
   return (
     <WindowPanel
       title={title}
@@ -31,14 +107,17 @@ export function NotesWindow({
       urlSyncKey="notes"
       urlSyncId="default"
       id={id}
-      overlayId="notesWindow"
+      overlayId={OVERLAY_ID}
+      onCollectData={collectData}
       {...windowProps}
     >
       <NotesView
         config={{
           showSidebar: true,
           showTabs: true,
-          instanceId: `window-${id}`,
+          instanceId: INSTANCE_ID,
+          initialTabs,
+          initialActiveTab,
         }}
         className="h-full"
       />

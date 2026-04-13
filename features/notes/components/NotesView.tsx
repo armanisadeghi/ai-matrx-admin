@@ -20,15 +20,15 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/slices/userSlice";
 
-const MobileNotesView = dynamic(
-  () => import("./mobile/MobileNotesView"),
-  { ssr: false },
-);
+const MobileNotesView = dynamic(() => import("./mobile/MobileNotesView"), {
+  ssr: false,
+});
 
 const NoteVersionHistory = dynamic(
-  () => import("@/app/(ssr)/ssr/notes/_components/NoteVersionHistory").then(
-    (mod) => ({ default: mod.NoteVersionHistory }),
-  ),
+  () =>
+    import("@/app/(ssr)/ssr/notes/_components/NoteVersionHistory").then(
+      (mod) => ({ default: mod.NoteVersionHistory }),
+    ),
   { ssr: false },
 );
 import {
@@ -70,6 +70,10 @@ export interface NotesViewConfig {
   singleNote?: string | null;
   /** Custom instance ID (default: auto-generated) */
   instanceId?: string;
+  /** Tabs to restore from DB session (skips URL hydration for these) */
+  initialTabs?: string[];
+  /** Active tab to restore from DB session */
+  initialActiveTab?: string | null;
 }
 
 export interface NotesViewProps {
@@ -86,6 +90,8 @@ export function NotesView({ config, className }: NotesViewProps) {
   const showTabs = config?.showTabs ?? true;
   const [showHistory, setShowHistory] = useState(false);
   const singleNote = config?.singleNote ?? null;
+  const initialTabs = config?.initialTabs;
+  const initialActiveTab = config?.initialActiveTab;
 
   // ── Generate or use provided instance ID ──────────────────────────
   const instanceIdRef = useRef(
@@ -100,6 +106,27 @@ export function NotesView({ config, className }: NotesViewProps) {
     return () => {
       dispatch(unregisterInstance(instanceId));
     };
+  }, [dispatch, instanceId]);
+
+  // ── Restore tabs from DB session (initialTabs wins over URL params) ─
+  const restoredFromDbRef = useRef(false);
+  useEffect(() => {
+    if (restoredFromDbRef.current) return;
+    if (!initialTabs || initialTabs.length === 0) return;
+    restoredFromDbRef.current = true;
+
+    initialTabs.forEach((noteId) => {
+      dispatch(addInstanceTab({ instanceId, noteId }));
+      dispatch(fetchNoteContent(noteId));
+    });
+
+    const activeId =
+      initialActiveTab && initialTabs.includes(initialActiveTab)
+        ? initialActiveTab
+        : initialTabs[0];
+    dispatch(setInstanceActiveTab({ instanceId, noteId: activeId }));
+    // Only run once on mount — initialTabs/initialActiveTab are stable
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch, instanceId]);
 
   // ── Fetch notes list + scope data on mount ──────────────────────────
@@ -127,10 +154,13 @@ export function NotesView({ config, className }: NotesViewProps) {
   const activeTabId = useAppSelector(selectInstanceActiveTab(instanceId));
   const openTabs = useAppSelector(selectInstanceTabs(instanceId));
   const othersActive = useAppSelector(selectOtherUsersActive);
-  const activeNoteEditedByOthers = useAppSelector(selectActiveNoteEditedByOthers);
-  const editorMode = useAppSelector(
-    activeTabId ? selectNoteEditorMode(activeTabId) : () => "plain",
-  ) ?? "plain";
+  const activeNoteEditedByOthers = useAppSelector(
+    selectActiveNoteEditedByOthers,
+  );
+  const editorMode =
+    useAppSelector(
+      activeTabId ? selectNoteEditorMode(activeTabId) : () => "plain",
+    ) ?? "plain";
 
   const setMode = useCallback(
     (mode: string) => {
@@ -199,19 +229,34 @@ export function NotesView({ config, className }: NotesViewProps) {
         {activeTabId && (
           <PageHeader>
             <div className="shell-glass flex items-center gap-0.5 rounded-full p-0.5">
-              <button className={modeBtnClass("plain")} onClick={() => setMode("plain")}>
+              <button
+                className={modeBtnClass("plain")}
+                onClick={() => setMode("plain")}
+              >
                 <FileText /> Edit
               </button>
-              <button className={cn(modeBtnClass("split"), "max-lg:hidden")} onClick={() => setMode("split")}>
+              <button
+                className={cn(modeBtnClass("split"), "max-lg:hidden")}
+                onClick={() => setMode("split")}
+              >
                 <SplitSquareHorizontal /> Split
               </button>
-              <button className={cn(modeBtnClass("wysiwyg"), "max-lg:hidden")} onClick={() => setMode("wysiwyg")}>
+              <button
+                className={cn(modeBtnClass("wysiwyg"), "max-lg:hidden")}
+                onClick={() => setMode("wysiwyg")}
+              >
                 <PilcrowRight /> Rich
               </button>
-              <button className={cn(modeBtnClass("markdown-split"), "max-lg:hidden")} onClick={() => setMode("markdown-split")}>
+              <button
+                className={cn(modeBtnClass("markdown-split"), "max-lg:hidden")}
+                onClick={() => setMode("markdown-split")}
+              >
                 <Columns /> MD Split
               </button>
-              <button className={modeBtnClass("preview")} onClick={() => setMode("preview")}>
+              <button
+                className={modeBtnClass("preview")}
+                onClick={() => setMode("preview")}
+              >
                 <Eye /> Preview
               </button>
               <div className="w-px h-4 bg-border/30 mx-0.5" />
@@ -274,7 +319,9 @@ export function NotesView({ config, className }: NotesViewProps) {
               <div className="flex-1 flex items-center justify-center text-muted-foreground">
                 <div className="text-center">
                   <p className="text-sm">No note selected</p>
-                  <p className="text-xs mt-1">Select a note or create a new one</p>
+                  <p className="text-xs mt-1">
+                    Select a note or create a new one
+                  </p>
                 </div>
               </div>
             )}

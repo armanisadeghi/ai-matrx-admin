@@ -69,7 +69,7 @@ const REGISTRY: WindowRegistryEntry[] = [
     slug: "notes-window",
     overlayId: "notesWindow",
     label: "Notes",
-    defaultData: { openNoteId: null },
+    defaultData: { openTabs: [], activeTabId: null },
   },
 
   // ── Notes Beta ────────────────────────────────────────────────────────────

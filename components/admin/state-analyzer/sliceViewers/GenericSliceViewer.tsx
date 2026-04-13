@@ -107,13 +107,13 @@ const GenericSliceViewer = ({
         {/* Truncator fills height directly — no extra overflow wrapper needed */}
         <TabsContent
           value="truncator"
-          className="flex-1 min-h-0 overflow-hidden mt-0 border-none outline-none ring-0"
+          className="flex-1 min-h-0 overflow-hidden mt-0 border-none outline-none ring-0 data-[state=active]:flex data-[state=active]:flex-col"
         >
           <JsonTruncator
             initialValue={truncatorValue}
             tabbed
             defaultTab="fields"
-            className="h-full"
+            className="flex-1 min-h-0"
             allowLayoutToggle
           />
         </TabsContent>
