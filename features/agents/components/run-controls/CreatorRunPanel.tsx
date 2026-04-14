@@ -37,6 +37,13 @@ import {
 } from "@/lib/redux/slices/windowManagerSlice";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { startNewConversation } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
 import { setBuilderAdvancedSettings } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.slice";
 import { selectUseStructuredSystemInstruction } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
@@ -69,6 +76,10 @@ import {
   getDisplayMeta,
 } from "@/features/agents/utils/run-ui-utils";
 import { useAgentLauncherTester } from "@/features/agents/hooks/useAgentLauncherTester";
+import {
+  VARIABLE_INPUT_STYLE_OPTIONS,
+  type VariableInputStyle,
+} from "@/features/agents/types";
 
 // =============================================================================
 // Tab type
@@ -993,7 +1004,7 @@ function CollapsedStatsPills({
 // =============================================================================
 
 function TestDisplaysTab({ conversationId }: { conversationId: string }) {
-  const tester = useAgentLauncherTester(conversationId);
+  const tester = useAgentLauncherTester(conversationId, "agent-creator-panel");
 
   const displayTypes = getAllDisplayTypes().map((displayMode) => {
     const meta = getDisplayMeta(displayMode);
@@ -1012,85 +1023,156 @@ function TestDisplaysTab({ conversationId }: { conversationId: string }) {
     <div className="flex h-full w-full">
       {/* Left sidebar for configurations */}
       <div className="w-1/3 min-w-[170px] max-w-[210px] border-r border-border p-3 space-y-4 overflow-y-auto">
-        <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
-          Configurations
-        </div>
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <Label className="text-[11px] cursor-pointer">Auto Run</Label>
+          <div className="flex items-center justify-between gap-2">
+            <Label
+              htmlFor="creator-test-use-pre-execution"
+              className="text-[11px] cursor-pointer leading-tight"
+            >
+              Use Pre-Execution Input
+            </Label>
             <Switch
-              checked={tester.autoRun}
-              onCheckedChange={tester.setAutoRun}
-              className="scale-75"
+              id="creator-test-use-pre-execution"
+              checked={tester.usePreExecutionInput}
+              onCheckedChange={tester.setUsePreExecutionInput}
+              className="scale-75 shrink-0"
             />
           </div>
-          <div className="flex items-center justify-between">
-            <Label className="text-[11px] cursor-pointer">Allow Chat</Label>
-            <Switch
-              checked={tester.allowChat}
-              onCheckedChange={tester.setAllowChat}
-              className="scale-75"
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <Label className="text-[11px] cursor-pointer">Show Variables</Label>
-            <Switch
-              checked={tester.showVariables}
-              onCheckedChange={tester.setShowVariables}
-              className="scale-75"
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <Label className="text-[11px] cursor-pointer">
+          <div className="flex items-center justify-between gap-2">
+            <Label
+              htmlFor="creator-test-apply-variables"
+              className="text-[11px] cursor-pointer leading-tight"
+            >
               Apply Variables
             </Label>
             <Switch
+              id="creator-test-apply-variables"
               checked={tester.applyVariables}
               onCheckedChange={tester.setApplyVariables}
-              className="scale-75"
+              className="scale-75 shrink-0"
             />
           </div>
-          <div className="flex items-center justify-between">
-            <Label className="text-[11px] cursor-pointer">
-              Use Pre-Exec Input
+          <div className="flex items-center justify-between gap-2">
+            <Label
+              htmlFor="creator-test-auto-run"
+              className="text-[11px] cursor-pointer leading-tight"
+            >
+              Auto Run
             </Label>
             <Switch
-              checked={tester.usePreExecutionInput}
-              onCheckedChange={tester.setUsePreExecutionInput}
-              className="scale-75"
+              id="creator-test-auto-run"
+              checked={tester.autoRun}
+              onCheckedChange={tester.setAutoRun}
+              className="scale-75 shrink-0"
             />
           </div>
-          <div className="flex items-center justify-between">
-            <Label className="text-[11px] cursor-pointer">Mode</Label>
-            <select
+          <div className="flex items-center justify-between gap-2">
+            <Label
+              htmlFor="creator-test-allow-chat"
+              className="text-[11px] cursor-pointer leading-tight"
+            >
+              Allow Chat
+            </Label>
+            <Switch
+              id="creator-test-allow-chat"
+              checked={tester.allowChat}
+              onCheckedChange={tester.setAllowChat}
+              className="scale-75 shrink-0"
+            />
+          </div>
+          <div className="flex items-center justify-between gap-2">
+            <Label
+              htmlFor="creator-test-show-variables"
+              className="text-[11px] cursor-pointer leading-tight"
+            >
+              Show Variables
+            </Label>
+            <Switch
+              id="creator-test-show-variables"
+              checked={tester.showVariables}
+              onCheckedChange={tester.setShowVariables}
+              className="scale-75 shrink-0"
+            />
+          </div>
+          <div className="flex items-center justify-between gap-2">
+            <Label
+              htmlFor="creator-test-variable-input-style"
+              className={`text-[11px] leading-tight ${tester.showVariables ? "text-foreground cursor-pointer" : "text-muted-foreground cursor-not-allowed"}`}
+              aria-disabled={!tester.showVariables}
+            >
+              Variable UI
+            </Label>
+            <Select
+              value={tester.variableInputStyle}
+              onValueChange={(v) =>
+                tester.setVariableInputStyle(v as VariableInputStyle)
+              }
+              disabled={!tester.showVariables}
+            >
+              <SelectTrigger
+                id="creator-test-variable-input-style"
+                size="sm"
+                className="h-6 min-w-[6.5rem] max-w-[6.5rem] shrink-0 text-[11px] px-1.5"
+              >
+                <SelectValue placeholder="Variable UI" />
+              </SelectTrigger>
+              <SelectContent>
+                {VARIABLE_INPUT_STYLE_OPTIONS.map((opt) => (
+                  <SelectItem
+                    key={opt.value}
+                    value={opt.value}
+                    title={opt.description}
+                  >
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center justify-between gap-2">
+            <Label
+              htmlFor="creator-test-conversation-mode"
+              className="text-[11px] cursor-pointer leading-tight"
+            >
+              Mode
+            </Label>
+            <Select
               value={tester.conversationMode}
-              onChange={(e) =>
+              onValueChange={(v) =>
                 tester.setConversationMode(
-                  e.target.value as "agent" | "conversation" | "chat",
+                  v as "agent" | "conversation" | "chat",
                 )
               }
-              className="text-[11px] rounded border border-border bg-background px-1 py-0.5"
             >
-              <option value="agent">Agent</option>
-              <option value="chat">Chat (builder)</option>
-            </select>
+              <SelectTrigger
+                id="creator-test-conversation-mode"
+                size="sm"
+                className="h-6 min-w-[6.5rem] max-w-[6.5rem] shrink-0 text-[11px] px-1.5"
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="agent">Agent</SelectItem>
+                <SelectItem value="chat">Chat (builder)</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </div>
 
       {/* Right side for icons */}
-      <div className="flex-1 p-2 flex flex-wrap content-start gap-2 overflow-y-auto">
+      <div className="flex-1 p-1 flex flex-wrap content-start gap-2 overflow-y-auto">
         {displayTypes.map((display) => (
           <button
             key={display.displayMode}
             onClick={() => tester.openWithDisplayType(display.displayMode)}
             title={display.note}
-            className="flex flex-col items-center justify-center gap-1.5 w-[84px] h-[84px] bg-muted/10 hover:bg-muted/30 border border-transparent hover:border-border rounded-xl transition-all shrink-0"
+            className="flex flex-col items-center justify-center border border-border gap-1.5 w-[84px] h-[84px] bg-muted/10 hover:bg-muted/30 border border-transparent hover:border-border rounded-xl transition-all shrink-0"
           >
             {display.icon && (
               <display.icon className={`w-7 h-7 ${display.color}`} />
             )}
-            <span className="text-[10px] text-center leading-tight truncate w-full px-1">
+            <span className="text-[10px] text-center leading-tight line-clamp-2 break-words w-full p-1">
               {display.name}
             </span>
           </button>
@@ -1109,6 +1191,7 @@ function TestDisplaysTab({ conversationId }: { conversationId: string }) {
           showVariables={tester.showVariables}
           applyVariables={tester.applyVariables}
           conversationMode={tester.conversationMode}
+          variableInputStyle={tester.variableInputStyle}
           variables={tester.applyVariables ? tester.currentVariables : {}}
           userInput={tester.currentInput || ""}
         />
@@ -1123,7 +1206,6 @@ function TestDisplaysTab({ conversationId }: { conversationId: string }) {
 
 const ALL_TABS: TabId[] = [
   "actions",
-  "test",
   "settings",
   "sysprompt",
   "last",
@@ -1276,7 +1358,7 @@ export function CreatorRunPanel({
 
   const allTabDefs: Array<{ id: TabId; label: string }> = [
     { id: "actions", label: "Actions" },
-    { id: "test", label: "Test" },
+    { id: "test_displays", label: "Test Displays" },
     { id: "settings", label: "Run" },
     { id: "sysprompt", label: "System" },
     { id: "last", label: "Request" },
@@ -1286,7 +1368,6 @@ export function CreatorRunPanel({
         totalRequestCount > 0 ? `Session (${totalRequestCount})` : "Session",
     },
     { id: "client", label: "Client" },
-    { id: "test_displays", label: "Test Displays" },
   ];
 
   const tabs = allTabDefs.filter((t) => visibleTabIds.includes(t.id));
@@ -1332,9 +1413,6 @@ export function CreatorRunPanel({
               onOpenStreamDebugWindow={openStreamDebugWindow}
               onOpenRunSettingsWindow={openRunSettingsWindow}
             />
-          )}
-          {activeTab === "test" && (
-            <AgentLauncherSidebarTester conversationId={conversationId} />
           )}
           {activeTab === "settings" && (
             <RunSettingsTab conversationId={conversationId} />

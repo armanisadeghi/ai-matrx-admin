@@ -1262,13 +1262,17 @@ export const OverlayController: React.FC = () => {
 
       {/* Agent Gate Window — instanced, one per agent pre-execution gate */}
       {agentGateWindowInstances.map(({ instanceId, data }) => {
-        const d = data as { conversationId: string } | null;
+        const d = data as {
+          conversationId: string;
+          downstreamOverlayId?: string;
+        } | null;
         if (!d?.conversationId) return null;
         return (
           <AgentGateWindow
             key={instanceId}
             instanceId={instanceId}
             conversationId={d.conversationId}
+            downstreamOverlayId={d.downstreamOverlayId}
             isOpen={true}
             onClose={() => close("agentGateWindow", instanceId)}
           />

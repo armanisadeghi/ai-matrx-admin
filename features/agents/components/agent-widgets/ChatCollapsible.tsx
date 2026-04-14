@@ -2,10 +2,7 @@
 
 import { useState, useRef, useCallback } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
-import {
-  selectNeedsPreExecutionInput,
-  selectInstanceDisplayTitle,
-} from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
+import { selectInstanceDisplayTitle } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { selectIsExecuting } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
 import {
   Collapsible,
@@ -15,7 +12,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Check, ChevronDown, Loader2, Webhook, X } from "lucide-react";
 import { AgentRunner } from "../smart/AgentRunner";
-import { ExecutionManager } from "./execution-gates/ExecutionManager";
 
 interface ChatCollapsibleProps {
   conversationId: string;
@@ -26,9 +22,6 @@ export function ChatCollapsible({
   conversationId,
   onClose,
 }: ChatCollapsibleProps) {
-  const needsPreExecution = useAppSelector(
-    selectNeedsPreExecutionInput(conversationId),
-  );
   const title = useAppSelector(selectInstanceDisplayTitle(conversationId));
   const isExecuting = useAppSelector(selectIsExecuting(conversationId));
   const [isOpen, setIsOpen] = useState(true);
@@ -68,9 +61,6 @@ export function ChatCollapsible({
   const handlePointerUp = useCallback(() => {
     dragRef.current = null;
   }, []);
-
-  if (needsPreExecution)
-    return <ExecutionManager conversationId={conversationId} />;
 
   return (
     <div

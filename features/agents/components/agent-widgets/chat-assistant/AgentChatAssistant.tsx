@@ -16,13 +16,9 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
-import {
-  selectNeedsPreExecutionInput,
-  selectInstanceDisplayTitle,
-} from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
+import { selectInstanceDisplayTitle } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { selectIsExecuting } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
 import { selectTurnCount } from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.selectors";
-import { ExecutionManager } from "../execution-gates/ExecutionManager";
 import { AssistantCardStack } from "./AssistantCardStack";
 import { CompactAssistantInput } from "./CompactAssistantInput";
 import { AssistantControlBar } from "./AssistantControlBar";
@@ -40,9 +36,6 @@ export function AgentChatAssistant({
   stackIndex = 0,
   onClose,
 }: AgentChatAssistantProps) {
-  const needsPreExecution = useAppSelector(
-    selectNeedsPreExecutionInput(conversationId),
-  );
   const title = useAppSelector(selectInstanceDisplayTitle(conversationId));
   const isExecuting = useAppSelector(selectIsExecuting(conversationId));
   const turnCount = useAppSelector(selectTurnCount(conversationId));
@@ -110,9 +103,6 @@ export function AgentChatAssistant({
     setIsExiting(true);
     setTimeout(onClose, 300);
   }, [onClose]);
-
-  if (needsPreExecution)
-    return <ExecutionManager conversationId={conversationId} />;
 
   const bottomOffset = 16 + stackIndex * 56;
   const rightOffset = 16 + stackIndex * 340;

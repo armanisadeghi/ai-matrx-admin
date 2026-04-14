@@ -24,7 +24,7 @@ import {
   selectShowVariablePanel,
   selectVariableInputStyle,
 } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
-import { VariableInputComponent } from "@/features/prompts/components/variable-inputs";
+import { VariableInputComponent } from "./variable-inputs";
 import { formatText } from "@/utils/text/text-case-converter";
 
 interface WizardAgentVariableInputsProps {
@@ -43,7 +43,9 @@ export function WizardAgentVariableInputs({
   const dispatch = useAppDispatch();
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const showVariablePanel = useAppSelector(selectShowVariablePanel(conversationId));
+  const showVariablePanel = useAppSelector(
+    selectShowVariablePanel(conversationId),
+  );
   const variableInputStyle = useAppSelector(
     selectVariableInputStyle(conversationId),
   );
@@ -104,29 +106,26 @@ export function WizardAgentVariableInputs({
   const current = currentIndex + 1;
 
   return (
-    <div
-      className="border-b border-border flex flex-col"
-      style={{ height: 200 }}
-    >
+    <div className="flex flex-col" style={{ height: 270 }}>
       {/* Header — variable name + counter */}
-      <div className="flex items-center justify-between px-3 pt-2 pb-0.5 shrink-0">
-        <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
-          {formatText(variable.name)}
-        </span>
-        <span className="text-[10px] text-muted-foreground/60 tabular-nums">
+      <div className="flex items-center justify-between px-3 pt-3 pb-0.5 shrink-0">
+        <div className="flex items-center gap-1">
+          <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest">
+            {formatText(variable.name)}:
+          </span>
+          {variable.helpText && (
+            <span className="text-[11px] text-muted-foreground tabular-nums">
+              {variable.helpText}
+            </span>
+          )}
+        </div>
+        <span className="text-[11px] text-muted-foreground tabular-nums">
           {current} / {total}
         </span>
       </div>
 
-      {/* Help text */}
-      {variable.helpText && (
-        <p className="px-3 text-[11px] text-muted-foreground/70 leading-snug shrink-0 pb-1">
-          {variable.helpText}
-        </p>
-      )}
-
       {/* Input area — scrollable, takes remaining height */}
-      <div className="flex-1 overflow-y-auto px-3 py-1 min-h-0">
+      <div className="flex-1 overflow-y-auto px-2 py-2 min-h-0">
         <VariableInputComponent
           value={value}
           onChange={(v) => handleValueChange(variable.name, v)}
@@ -134,12 +133,13 @@ export function WizardAgentVariableInputs({
           customComponent={variable.customComponent}
           helpText={undefined}
           compact={true}
+          wizardMode={true}
           hideLabel={true}
         />
       </div>
 
       {/* Footer — delicate inline nav */}
-      <div className="flex items-center justify-between px-3 py-1.5 shrink-0 border-t border-border/40">
+      <div className="flex items-center justify-between px-3 py-1.5 shrink-0">
         <button
           type="button"
           onClick={goBack}
@@ -151,23 +151,14 @@ export function WizardAgentVariableInputs({
         </button>
 
         <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={goNext}
-            className="flex items-center gap-0.5 text-[11px] text-muted-foreground/60 hover:text-muted-foreground transition-colors"
-          >
-            Skip
-            <ChevronRight className="w-3 h-3" />
-          </button>
-
           {!isLast && (
             <button
               type="button"
-              onClick={skipAll}
+              onClick={goNext}
               className="flex items-center gap-0.5 text-[11px] text-muted-foreground/60 hover:text-muted-foreground transition-colors"
             >
-              Skip All
-              <ChevronsRight className="w-3 h-3" />
+              Next
+              <ChevronRight className="w-3 h-3" />
             </button>
           )}
 

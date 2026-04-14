@@ -1,13 +1,9 @@
 "use client";
 
 import { useAppSelector } from "@/lib/redux/hooks";
-import {
-  selectNeedsPreExecutionInput,
-  selectInstanceDisplayTitle,
-} from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
+import { selectInstanceDisplayTitle } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { AgentRunner } from "../smart/AgentRunner";
-import { ExecutionManager } from "./execution-gates/ExecutionManager";
 import { AgentChatHistorySidebar } from "./AgentChatHistorySidebar";
 
 interface AgentFloatingChatProps {
@@ -21,14 +17,9 @@ export function AgentFloatingChat({
   conversationId,
   onClose,
 }: AgentFloatingChatProps) {
-  const displayTitle = useAppSelector(selectInstanceDisplayTitle(conversationId));
-
-  const needsPreExecution = useAppSelector(
-    selectNeedsPreExecutionInput(conversationId),
+  const displayTitle = useAppSelector(
+    selectInstanceDisplayTitle(conversationId),
   );
-
-  // While waiting for pre-execution, don't render the chat window yet.
-  if (needsPreExecution) return <ExecutionManager conversationId={conversationId} />;
 
   return (
     <WindowPanel

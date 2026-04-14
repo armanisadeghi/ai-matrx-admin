@@ -44,7 +44,10 @@ import { setUserInputText } from "../instance-user-input/instance-user-input.sli
 import { setDisplayMode as setDisplayModeAction } from "../instance-ui-state/instance-ui-state.slice";
 import { selectRequest } from "../active-requests/active-requests.selectors";
 import { setInstanceStatus } from "../execution-instances/execution-instances.slice";
-import { openOverlay } from "@/lib/redux/slices/overlaySlice";
+import {
+  openOverlay,
+  openAgentGateWindow,
+} from "@/lib/redux/slices/overlaySlice";
 
 // =============================================================================
 // Types
@@ -423,15 +426,6 @@ export const launchAgentExecution = createAsyncThunk<
   }
 
   // =========================================================================
-  // Step 1c: Open the overlay for the resolved display mode
-  // =========================================================================
-
-  const overlayId = DISPLAY_MODE_TO_OVERLAY_ID[resolvedDisplayMode];
-  if (overlayId) {
-    dispatch(openOverlay({ overlayId, instanceId: conversationId }));
-  }
-
-  // =========================================================================
   // Step 2: Set user input if provided
   // =========================================================================
 
@@ -440,14 +434,11 @@ export const launchAgentExecution = createAsyncThunk<
   }
 
   // =========================================================================
-  // Step 3: Decide whether to execute now or defer to the UI
+  // Step 3: Gate check — usePreExecutionInput blocks everything downstream.
   //
-  // Two hard gates prevent immediate execution:
-  //   1. autoRun is false → user must manually submit
-  //   2. usePreExecutionInput is true → user must complete the pre-exec gate
-  //      first. The AgentRunner component handles executing after that.
-  //
-  // When either gate is active, we return the conversationId without executing.
+  // The gate window is opened here (not in a component) to avoid a
+  // chicken-and-egg problem: the real overlay widgets only mount after
+  // their overlay is open, so they can't be responsible for opening the gate.
   // =========================================================================
 
   if (!autoRun) {
@@ -455,7 +446,31 @@ export const launchAgentExecution = createAsyncThunk<
   }
 
   if (usePreExecutionInput) {
+    const downstreamOverlayId = DISPLAY_MODE_TO_OVERLAY_ID[resolvedDisplayMode];
+    dispatch(
+      openAgentGateWindow({
+        conversationId,
+        gateWindowId: `gate-${conversationId}`,
+        downstreamOverlayId,
+      }),
+    );
     return { conversationId };
+  }
+
+  // =========================================================================
+  // Step 1c: Open the overlay for the resolved display mode.
+  // Only reached when usePreExecutionInput is false (gate is not active).
+  // =========================================================================
+
+  const overlayId = DISPLAY_MODE_TO_OVERLAY_ID[resolvedDisplayMode];
+  if (overlayId) {
+    dispatch(
+      openOverlay({
+        overlayId,
+        instanceId: conversationId,
+        data: { conversationId: conversationId },
+      }),
+    );
   }
 
   const isChatMode = conversationMode === "chat";

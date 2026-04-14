@@ -69,6 +69,9 @@ export type InstanceOrigin =
 export type SourceFeature =
   | "agent-builder"
   | "agent-runner"
+  | "agent-tester"
+  | "agent-launcher-sidebar"
+  | "agent-creator-panel"
   | "agent-generator"
   | "chat-interface"
   | "context-menu"
@@ -377,6 +380,12 @@ export interface InstanceUIState {
    * DEFAULT: false in run mode (AgentRunPage) where multi-turn is desired.
    */
   autoClearConversation: boolean;
+
+  /**
+   * When true, the auto-clear toggle is shown in the input area.
+   * When false, the auto-clear toggle is not shown.
+   */
+  showAutoClearToggle: boolean;
 
   /**
    * When true, subsequent chat calls reuse the conversation_id from the first

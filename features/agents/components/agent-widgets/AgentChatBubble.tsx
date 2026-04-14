@@ -2,26 +2,22 @@
 
 import { useState } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectNeedsPreExecutionInput } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { selectIsExecuting } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
 import { Button } from "@/components/ui/button";
 import { MessageSquare, Minimize2, X } from "lucide-react";
 import { AgentRunner } from "../smart/AgentRunner";
-import { ExecutionManager } from "./execution-gates/ExecutionManager";
 
 interface AgentChatBubbleProps {
   conversationId: string;
   onClose: () => void;
 }
 
-export function AgentChatBubble({ conversationId, onClose }: AgentChatBubbleProps) {
+export function AgentChatBubble({
+  conversationId,
+  onClose,
+}: AgentChatBubbleProps) {
   const [expanded, setExpanded] = useState(true);
   const isExecuting = useAppSelector(selectIsExecuting(conversationId));
-  const needsPreExecution = useAppSelector(
-    selectNeedsPreExecutionInput(conversationId),
-  );
-
-  if (needsPreExecution) return <ExecutionManager conversationId={conversationId} />;
 
   if (!expanded) {
     return (
@@ -63,7 +59,11 @@ export function AgentChatBubble({ conversationId, onClose }: AgentChatBubbleProp
           </Button>
         </div>
       </div>
-      <AgentRunner conversationId={conversationId} compact className="flex-1 min-h-0" />
+      <AgentRunner
+        conversationId={conversationId}
+        compact
+        className="flex-1 min-h-0"
+      />
     </div>
   );
 }

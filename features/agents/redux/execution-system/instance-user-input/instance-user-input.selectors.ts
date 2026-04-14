@@ -23,6 +23,16 @@ export const selectUserInputMessageParts =
     state.instanceUserInput.byConversationId[conversationId]?.messageParts ??
     undefined;
 
+/**
+ * Character count of the current text input.
+ * Returns a primitive number — stable reference, no array/object churn.
+ * Used by AgentTextarea to decide whether to show the expand button.
+ */
+export const selectInputCharCount =
+  (conversationId: string) =>
+  (state: RootState): number =>
+    state.instanceUserInput.byConversationId[conversationId]?.text?.length ?? 0;
+
 export const selectHasUserInput =
   (conversationId: string) =>
   (state: RootState): boolean => {

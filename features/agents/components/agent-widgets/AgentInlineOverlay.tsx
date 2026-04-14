@@ -1,11 +1,8 @@
 "use client";
 
-import { useAppSelector } from "@/lib/redux/hooks";
-import { selectNeedsPreExecutionInput } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { AgentRunner } from "../smart/AgentRunner";
-import { ExecutionManager } from "./execution-gates/ExecutionManager";
 
 interface AgentInlineOverlayProps {
   conversationId: string;
@@ -16,12 +13,6 @@ export function AgentInlineOverlay({
   conversationId,
   onClose,
 }: AgentInlineOverlayProps) {
-  const needsPreExecution = useAppSelector(
-    selectNeedsPreExecutionInput(conversationId),
-  );
-
-  if (needsPreExecution) return <ExecutionManager conversationId={conversationId} />;
-
   return (
     <div className="fixed top-1/3 left-1/2 -translate-x-1/2 z-50 w-[600px] max-h-[60vh] bg-card border border-border rounded-lg shadow-2xl overflow-hidden flex flex-col">
       <div className="flex items-center justify-between px-3 py-1.5 bg-muted/30 border-b border-border shrink-0">

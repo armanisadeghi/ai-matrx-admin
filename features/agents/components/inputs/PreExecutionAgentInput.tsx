@@ -36,6 +36,8 @@ export function PreExecutionAgentInput({
   const dispatch = useAppDispatch();
   const title = useAppSelector(selectInstanceAgentName(conversationId));
 
+  console.log("[PreExecutionAgentInput] title", title);
+
   const hasInput = useAppSelector(selectHasUserInput(conversationId));
   const preExecutionMessage = useAppSelector(
     selectPreExecutionMessage(conversationId),
@@ -89,7 +91,6 @@ export function PreExecutionAgentInput({
           compact
           placeholder="Additional instructions (optional)..."
           showSubmitOnEnterToggle={false}
-          showAutoClearToggle={false}
           disableSend
         />
       </div>

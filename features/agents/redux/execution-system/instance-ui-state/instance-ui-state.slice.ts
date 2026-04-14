@@ -88,6 +88,7 @@ export interface InitInstanceUIStatePayload {
   callbackGroupId?: string | null;
   isCreator?: boolean;
   submitOnEnter?: boolean;
+  showAutoClearToggle?: boolean;
   autoClearConversation?: boolean;
   reuseConversationId?: boolean;
   builderAdvancedSettings?: Partial<BuilderAdvancedSettings>;
@@ -125,6 +126,7 @@ const instanceUIStateSlice = createSlice({
         callbackGroupId = null,
         isCreator = false,
         submitOnEnter = true,
+        showAutoClearToggle = false,
         autoClearConversation = false,
         reuseConversationId = false,
         builderAdvancedSettings,
@@ -153,6 +155,7 @@ const instanceUIStateSlice = createSlice({
         isCreator,
         showCreatorDebug: false,
         submitOnEnter,
+        showAutoClearToggle: false,
         autoClearConversation,
         reuseConversationId,
         builderAdvancedSettings: {
@@ -361,6 +364,15 @@ const instanceUIStateSlice = createSlice({
       }
     },
 
+    setShowAutoClearToggle(
+      state,
+      action: PayloadAction<{ conversationId: string; value: boolean }>,
+    ) {
+      const entry = state.byConversationId[action.payload.conversationId];
+      if (entry) {
+        entry.showAutoClearToggle = action.payload.value;
+      }
+    },
     setAutoClearConversation(
       state,
       action: PayloadAction<{ conversationId: string; value: boolean }>,
@@ -519,6 +531,7 @@ export const {
   setExpandedVariableId,
   toggleCreatorDebug,
   setSubmitOnEnter,
+  setShowAutoClearToggle,
   setAutoClearConversation,
   setReuseConversationId,
   setBuilderAdvancedSettings,

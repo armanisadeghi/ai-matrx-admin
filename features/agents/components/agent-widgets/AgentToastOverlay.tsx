@@ -2,10 +2,7 @@
 
 import { useState, useRef, useCallback } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
-import {
-  selectNeedsPreExecutionInput,
-  selectInstanceDisplayTitle,
-} from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
+import { selectInstanceDisplayTitle } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import {
   selectLatestAccumulatedText,
   selectIsExecuting,
@@ -13,7 +10,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Check, Loader2, Minimize2, X } from "lucide-react";
 import { AgentRunner } from "../smart/AgentRunner";
-import { ExecutionManager } from "./execution-gates/ExecutionManager";
 
 interface AgentToastOverlayProps {
   conversationId: string;
@@ -31,9 +27,6 @@ export function AgentToastOverlay({
   const text = useAppSelector(selectLatestAccumulatedText(conversationId));
   const isExecuting = useAppSelector(selectIsExecuting(conversationId));
   const title = useAppSelector(selectInstanceDisplayTitle(conversationId));
-  const needsPreExecution = useAppSelector(
-    selectNeedsPreExecutionInput(conversationId),
-  );
 
   // ── Drag state ───────────────────────────────────────────────────────────
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -75,8 +68,6 @@ export function AgentToastOverlay({
     setIsExiting(true);
     setTimeout(onClose, 300);
   }, [onClose]);
-
-  if (needsPreExecution) return <ExecutionManager conversationId={conversationId} />;
 
   // ── Expanded: full chat view ─────────────────────────────────────────────
   if (expanded) {

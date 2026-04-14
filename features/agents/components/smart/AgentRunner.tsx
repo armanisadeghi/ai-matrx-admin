@@ -58,6 +58,7 @@ export function AgentRunner({
 }: AgentRunnerProps) {
   const dispatch = useAppDispatch();
   const autoRunFiredRef = useRef(false);
+  console.log("[AgentRunner] conversationId", conversationId);
 
   const autoRun = useAppSelector(selectAutoRun(conversationId));
   const allowChat = useAppSelector(selectAllowChat(conversationId));
@@ -100,8 +101,11 @@ export function AgentRunner({
     dispatch,
   ]);
 
+  console.log("needsPreExecution", needsPreExecution);
+
   // ── Pre-execution gate ─────────────────────────────────────────────────────
   if (needsPreExecution) {
+    console.log("needsPreExecution", needsPreExecution);
     return <PreExecutionAgentInput conversationId={conversationId} />;
   }
 
@@ -132,7 +136,6 @@ export function AgentRunner({
             conversationId={conversationId}
             surfaceKey={surfaceKey}
             compact={compact}
-            showAutoClearToggle={false}
           />
         </div>
       )}

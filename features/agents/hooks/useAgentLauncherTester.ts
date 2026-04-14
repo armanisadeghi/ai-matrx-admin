@@ -4,9 +4,16 @@ import { useAgentLauncher } from "@/features/agents/hooks/useAgentLauncher";
 import { selectInstance } from "@/features/agents/redux/execution-system/execution-instances/execution-instances.selectors";
 import { selectResolvedVariables } from "@/features/agents/redux/execution-system/instance-variable-values/instance-variable-values.selectors";
 import { selectUserInputText } from "@/features/agents/redux/execution-system/instance-user-input/instance-user-input.selectors";
-import type { ResultDisplayMode } from "@/features/agents/types/instance.types";
+import type {
+  ResultDisplayMode,
+  SourceFeature,
+} from "@/features/agents/types/instance.types";
+import type { VariableInputStyle } from "@/features/agents/types";
 
-export function useAgentLauncherTester(conversationId: string) {
+export function useAgentLauncherTester(
+  conversationId: string,
+  sourceFeature: SourceFeature,
+) {
   const { launchAgent } = useAgentLauncher();
   const [testModalOpen, setTestModalOpen] = useState(false);
   const [testModalType, setTestModalType] = useState<"direct" | "background">(
@@ -21,6 +28,8 @@ export function useAgentLauncherTester(conversationId: string) {
   const [conversationMode, setConversationMode] = useState<
     "agent" | "conversation" | "chat"
   >("agent");
+  const [variableInputStyle, setVariableInputStyle] =
+    useState<VariableInputStyle>("inline");
 
   const instance = useAppSelector(selectInstance(conversationId));
   const currentVariables = useAppSelector(
@@ -42,13 +51,14 @@ export function useAgentLauncherTester(conversationId: string) {
 
     try {
       await launchAgent(instance.agentId, {
-        sourceFeature: "agent-builder",
+        sourceFeature,
         displayMode,
         autoRun,
         allowChat,
         showVariables,
         usePreExecutionInput,
         conversationMode,
+        variableInputStyle,
         variables: applyVariables ? currentVariables : undefined,
         userInput: currentInput || undefined,
       });
@@ -73,6 +83,8 @@ export function useAgentLauncherTester(conversationId: string) {
     setUsePreExecutionInput,
     conversationMode,
     setConversationMode,
+    variableInputStyle,
+    setVariableInputStyle,
     instance,
     currentVariables,
     currentInput,

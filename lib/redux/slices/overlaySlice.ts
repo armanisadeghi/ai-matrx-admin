@@ -131,6 +131,7 @@ const overlaySlice = createSlice({
         instanceId = DEFAULT_INSTANCE_ID,
         data,
       } = action.payload;
+      console.log("[overlaySlice] openOverlay", overlayId, instanceId);
       if (!state.overlays[overlayId]) {
         state.overlays[overlayId] = {};
       }
@@ -502,17 +503,22 @@ export const openAiVoiceWindow = (options?: AiVoiceWindowPayload) =>
   });
 
 interface AgentGateWindowPayload {
-  /** The instanceId of the window panel itself (used as the overlay instance key). */
+  /** The agent conversation instance whose gate input to render. */
   conversationId: string;
-  /** The agent execution instanceId whose gate input to render. */
+  /** Unique window panel ID — used as the overlay instance key. */
   gateWindowId: string;
+  /** The overlay to open after the user clicks Continue (if any). */
+  downstreamOverlayId?: string;
 }
 
 export const openAgentGateWindow = (options: AgentGateWindowPayload) =>
   openOverlay({
     overlayId: "agentGateWindow",
-    conversationId: options.conversationId,
-    data: { gateWindowId: options.gateWindowId },
+    instanceId: options.gateWindowId,
+    data: {
+      conversationId: options.conversationId,
+      downstreamOverlayId: options.downstreamOverlayId,
+    },
   });
 
 interface HierarchyCreationWindowPayload {

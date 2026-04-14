@@ -1,26 +1,20 @@
 "use client";
 
 import { useAppSelector } from "@/lib/redux/hooks";
-import {
-  selectNeedsPreExecutionInput,
-  selectInstanceDisplayTitle,
-} from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
+import { selectInstanceDisplayTitle } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { AgentRunner } from "../smart/AgentRunner";
-import { ExecutionManager } from "./execution-gates/ExecutionManager";
 
 interface AgentFullModalProps {
   conversationId: string;
   onClose: () => void;
 }
 
-export function AgentFullModal({ conversationId, onClose }: AgentFullModalProps) {
+export function AgentFullModal({
+  conversationId,
+  onClose,
+}: AgentFullModalProps) {
   const title = useAppSelector(selectInstanceDisplayTitle(conversationId));
-  const needsPreExecution = useAppSelector(
-    selectNeedsPreExecutionInput(conversationId),
-  );
-
-  if (needsPreExecution) return <ExecutionManager conversationId={conversationId} />;
 
   return (
     <Dialog open={true} onOpenChange={(open) => !open && onClose()}>

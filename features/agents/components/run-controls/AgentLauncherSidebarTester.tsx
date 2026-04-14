@@ -138,7 +138,7 @@ export function AgentLauncherSidebarTester({
 
     try {
       await launchAgent(instance.agentId, {
-        sourceFeature: "agent-builder",
+        sourceFeature: "agent-launcher-sidebar",
         displayMode,
         autoRun,
         allowChat,

@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, X } from "lucide-react";
+import { ArrowRight, ArrowUp, X } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import {
   selectPreExecutionMessage,
@@ -8,19 +8,22 @@ import {
 } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { setPreExecutionSatisfied } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.slice";
 import { destroyInstance } from "@/features/agents/redux/execution-system/execution-instances/execution-instances.slice";
-import { closeOverlay } from "@/lib/redux/slices/overlaySlice";
+import { closeOverlay, openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { SmartAgentInput } from "../../inputs/SmartAgentInput";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { PaperPlaneIcon } from "@radix-ui/react-icons";
 
 // ─── WindowPanel body — used by AgentGateWindow ───────────────────────────────
 
 export function AgentGateBody({
   conversationId,
   windowInstanceId,
+  downstreamOverlayId,
   onClose,
 }: {
   conversationId: string;
   windowInstanceId: string;
+  downstreamOverlayId?: string;
   onClose: () => void;
 }) {
   const dispatch = useAppDispatch();
@@ -29,45 +32,49 @@ export function AgentGateBody({
     selectPreExecutionMessage(conversationId),
   );
 
-  const handleContinue = () => {
-    dispatch(setPreExecutionSatisfied({ conversationId, value: true }));
+  const closeGate = () => {
     dispatch(
       closeOverlay({
         overlayId: "agentGateWindow",
-        conversationId: windowInstanceId,
+        instanceId: windowInstanceId,
       }),
     );
   };
 
+  const handleContinue = () => {
+    // 1. Mark gate satisfied so execute thunks will proceed
+    dispatch(setPreExecutionSatisfied({ conversationId, value: true }));
+    // 2. Close the gate window
+    closeGate();
+    // 3. Open the real downstream overlay now that the gate is cleared
+    if (downstreamOverlayId) {
+      dispatch(
+        openOverlay({
+          overlayId: downstreamOverlayId,
+          instanceId: conversationId,
+          data: { conversationId },
+        }),
+      );
+    }
+    onClose();
+  };
+
   const handleCancel = () => {
+    // Destroy the instance — nothing downstream was ever opened, so we just clean up
     dispatch(destroyInstance(conversationId));
-    dispatch(
-      closeOverlay({
-        overlayId: "agentGateWindow",
-        conversationId: windowInstanceId,
-      }),
-    );
+    closeGate();
     onClose();
   };
 
   const footer = (
     <>
-      <button
-        type="button"
-        onClick={handleCancel}
-        className="flex items-center gap-1.5 px-3 py-1 text-xs rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-      >
-        <X className="w-3 h-3" />
-        Cancel
-      </button>
       <div className="flex-1" />
       <button
         type="button"
         onClick={handleContinue}
         className="flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
       >
-        Continue
-        <ArrowRight className="w-3 h-3" />
+        <PaperPlaneIcon className="w-3 h-3" />
       </button>
     </>
   );
@@ -77,8 +84,8 @@ export function AgentGateBody({
       id={`agent-gate-${windowInstanceId}`}
       title={agentName ?? "Provide Details"}
       onClose={handleCancel}
-      width={600}
-      height={600}
+      width={500}
+      height={380}
       minWidth={360}
       minHeight={320}
       position="center"
@@ -106,30 +113,27 @@ function AgentGateContent({
 }) {
   return (
     <div className="flex flex-col h-full min-h-0">
-      {/* Scrollable top area — description + variables from SmartAgentInput */}
-      <div className="flex-1 overflow-auto min-h-0 px-4 py-3">
+      {/* Scrollable top area — description + variables */}
+      {/* <div className="flex-1 overflow-auto min-h-0 px-4 py-3 border border-green-500">
         {preExecutionMessage && (
-          <div className="mb-3 px-3 py-2 rounded-lg bg-muted/40 border border-border/40">
+          <div className="px-0 py-0 rounded-lg bg-muted/40 border border-border/40">
             <p className="text-xs text-muted-foreground leading-relaxed">
               {preExecutionMessage}
             </p>
           </div>
         )}
-
-        {/* Spacer so the input area feels anchored */}
         <div className="flex-1" />
-      </div>
+      </div> */}
 
       {/* Input pinned to bottom */}
-      <div className="shrink-0 px-3 pb-3 border-t border-border/30 pt-3 flex justify-center">
+      <div className="h-full flex justify-center">
         <SmartAgentInput
           conversationId={conversationId}
           placeholder="Additional instructions (optional)..."
-          compact
+          singleRowTextarea={true}
           showSendButton={false}
           showVariableIcon={false}
           showSubmitOnEnterToggle={false}
-          showAutoClearToggle={false}
           disableSend
         />
       </div>
