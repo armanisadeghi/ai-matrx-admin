@@ -35,6 +35,8 @@ import type {
   CompletionPayload,
 } from "@/types/python-generated/stream-events";
 import type { ShortcutContext } from "@/features/agents/redux/agent-shortcuts/types";
+import { selectHasConversationHistory } from "../instance-conversation-history/instance-conversation-history.selectors";
+import { selectAutoClearConversation } from "../instance-ui-state/instance-ui-state.selectors";
 import { assembleRequest } from "../thunks/execute-instance.thunk";
 
 // =============================================================================
@@ -83,6 +85,17 @@ export const selectIsAwaitingTools =
   (state: RootState): boolean =>
     state.executionInstances?.byConversationId[conversationId]?.status ===
     "paused";
+
+/**
+ * True only when auto-clear is enabled and this conversation has at least one
+ * history turn. If auto-clear is off, returns false without reading history.
+ */
+export const selectAutoClearWithConversationHistory =
+  (conversationId: string) =>
+  (state: RootState): boolean => {
+    if (!selectAutoClearConversation(conversationId)(state)) return false;
+    return selectHasConversationHistory(conversationId)(state);
+  };
 
 // =============================================================================
 // Derived Request Selectors (conversationId → latest request data)

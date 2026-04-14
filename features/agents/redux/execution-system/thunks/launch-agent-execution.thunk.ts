@@ -266,8 +266,8 @@ export const launchAgentExecution = createAsyncThunk<
   // =========================================================================
 
   const callbackGroupId = registerCallbacks(options);
-
   const visibilityFromConfig = resolveVisibilitySettings(showVariables);
+
   const resolvedShowVariablePanel =
     showVariablePanel ?? visibilityFromConfig.showVariablePanel;
   const resolvedShowDefinitionMessages =

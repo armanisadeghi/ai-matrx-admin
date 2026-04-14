@@ -95,11 +95,8 @@ export function useAgentLauncher(
   options?: ManagedAgentOptions,
 ): ImperativeMethods | ManagedReturn {
   const dispatch = useAppDispatch();
-
   const surfaceKey = options?.surfaceKey;
-  const conversationId = useAppSelector(
-    surfaceKey ? selectFocusedConversation(surfaceKey) : () => null,
-  );
+  const conversationId = useAppSelector(selectFocusedConversation(surfaceKey));
 
   // ── Imperative methods (always created) ──────────────────────────────────
 
@@ -107,7 +104,7 @@ export function useAgentLauncher(
     async (id: string, opts?: LaunchAgentOverrides): Promise<LaunchResult> => {
       const payload: LaunchAgentOptions = {
         agentId: id,
-        sourceFeature: opts?.sourceFeature ?? "agent-runner",
+        sourceFeature: opts?.sourceFeature,
         displayMode: opts?.displayMode,
         autoRun: opts?.autoRun,
         allowChat: opts?.allowChat,
@@ -147,7 +144,7 @@ export function useAgentLauncher(
       const payload: LaunchAgentOptions = {
         shortcutId,
         applicationScope,
-        sourceFeature: opts?.sourceFeature ?? "context-menu",
+        sourceFeature: opts?.sourceFeature,
         displayMode: opts?.displayMode,
         autoRun: opts?.autoRun,
         allowChat: opts?.allowChat,
@@ -171,15 +168,18 @@ export function useAgentLauncher(
 
   const launchChat = useCallback(
     async (opts?: LaunchAgentOverrides): Promise<LaunchResult> => {
+      const conversationMode = opts?.conversationMode ?? "chat";
+      const allowChat = opts?.allowChat ?? true;
+
       const payload: LaunchAgentOptions = {
         manual: {
           label: "Chat",
           baseSettings: opts?.overrides,
         },
-        sourceFeature: opts?.sourceFeature ?? "chat",
+        sourceFeature: opts?.sourceFeature,
         displayMode: opts?.displayMode,
         autoRun: opts?.autoRun,
-        allowChat: opts?.allowChat ?? true,
+        allowChat,
         showVariables: opts?.showVariables,
         showVariablePanel: opts?.showVariablePanel,
         showDefinitionMessages: opts?.showDefinitionMessages,
@@ -187,7 +187,7 @@ export function useAgentLauncher(
         usePreExecutionInput: opts?.usePreExecutionInput,
         userInput: opts?.userInput,
         variables: opts?.variables,
-        conversationMode: "chat",
+        conversationMode,
         onComplete: opts?.onComplete,
         onTextReplace: opts?.onTextReplace,
         onTextInsertBefore: opts?.onTextInsertBefore,
@@ -197,6 +197,19 @@ export function useAgentLauncher(
       return dispatch(launchAgentExecution(payload)).unwrap();
     },
     [dispatch],
+  );
+
+  const launch = useCallback(
+    async (opts: LaunchAgentOverrides): Promise<LaunchResult> => {
+      if (opts?.conversationMode === "chat") {
+        return await launchChat(opts);
+      } else if (opts?.conversationMode === "agent") {
+        return await launchAgent(agentId!, opts);
+      } else {
+        throw new Error("Invalid conversation mode");
+      }
+    },
+    [launchAgent, launchChat],
   );
 
   const close = useCallback(

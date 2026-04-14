@@ -69,7 +69,6 @@ export function AgentRunnerPage({ agentId }: AgentRunnerPageProps) {
   const [historyDrawerOpen, setHistoryDrawerOpen] = useState(false);
   const [testModesDrawerOpen, setTestModesDrawerOpen] = useState(false);
 
-  const currentRunId = searchParams.get("runId") ?? undefined;
   const conversationIdFromUrl = searchParams.get("conversationId") ?? undefined;
 
   useEffect(() => {
@@ -93,10 +92,13 @@ export function AgentRunnerPage({ agentId }: AgentRunnerPageProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [agentId]);
 
-  const surfaceKey = `agent-runner:${agentId}`;
+  const sourceFeature = "agent-runner";
+  const surfaceKey = `${sourceFeature}:${agentId}`;
+  const conversationMode = "agent";
+
   const { conversationId } = useAgentLauncher(agentId, {
     surfaceKey,
-    sourceFeature: "agent-runner",
+    sourceFeature,
     ready: !isInitializing,
   });
 
@@ -145,7 +147,7 @@ export function AgentRunnerPage({ agentId }: AgentRunnerPageProps) {
   }
 
   return (
-    <div className="relative flex flex-col h-full overflow-hidden pt-12 border border-red-500">
+    <div className="relative flex flex-col h-full overflow-hidden">
       {/* ── Mobile toolbar ──────────────────────────────────────────────────── */}
       {isMobile && (
         <div className="shrink-0 flex items-center gap-1 px-2 py-1 border-b border-border bg-background">
@@ -180,12 +182,8 @@ export function AgentRunnerPage({ agentId }: AgentRunnerPageProps) {
               conversationId={conversationId}
               surfaceKey={surfaceKey}
               conversationIdFromUrl={conversationIdFromUrl}
-              currentRunId={currentRunId}
               onClose={() => setSidebarOpen(false)}
             />
-            <div className="shrink-0 border-t border-border">
-              <AgentLauncherSidebarTester conversationId={conversationId} />
-            </div>
           </div>
         )}
 
@@ -215,6 +213,7 @@ export function AgentRunnerPage({ agentId }: AgentRunnerPageProps) {
             smartInputProps={{
               sendButtonVariant: "blue",
               showSubmitOnEnterToggle: true,
+              showAutoClearToggle: true,
             }}
           />
         </div>
@@ -240,7 +239,6 @@ export function AgentRunnerPage({ agentId }: AgentRunnerPageProps) {
                   conversationId={conversationId}
                   surfaceKey={surfaceKey}
                   conversationIdFromUrl={conversationIdFromUrl}
-                  currentRunId={currentRunId}
                   onClose={() => setHistoryDrawerOpen(false)}
                 />
               </div>

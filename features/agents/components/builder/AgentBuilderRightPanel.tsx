@@ -11,7 +11,6 @@
 import { Loader2 } from "lucide-react";
 import { useAgentLauncher } from "@/features/agents/hooks/useAgentLauncher";
 import { AgentConversationColumn } from "../shared/AgentConversationColumn";
-import { BuilderAutoClearButton } from "./BuilderAutoClearButton";
 
 interface AgentBuilderRightPanelProps {
   agentId: string;
@@ -20,10 +19,14 @@ interface AgentBuilderRightPanelProps {
 export function AgentBuilderRightPanel({
   agentId,
 }: AgentBuilderRightPanelProps) {
+  const sourceFeature = "agent-builder";
+  const surfaceKey = `${sourceFeature}:${agentId}`;
+  const conversationMode = "chat";
+
   const { conversationId } = useAgentLauncher(agentId, {
-    surfaceKey: "agent-builder",
-    sourceFeature: "agent-builder",
-    conversationMode: "chat",
+    surfaceKey,
+    sourceFeature,
+    conversationMode,
   });
 
   if (!conversationId) {
@@ -38,12 +41,10 @@ export function AgentBuilderRightPanel({
   return (
     <AgentConversationColumn
       conversationId={conversationId}
-      surfaceKey="agent-builder"
+      surfaceKey={surfaceKey}
       smartInputProps={{
         showSubmitOnEnterToggle: true,
-        extraRightControls: (
-          <BuilderAutoClearButton conversationId={conversationId} />
-        ),
+        showAutoClearToggle: true,
       }}
     />
   );

@@ -107,7 +107,7 @@ export function AgentConversationDisplay({
   const spacingClass = compact ? "space-y-2 pb-2" : "space-y-6 pb-24";
 
   return (
-    <div className={`${spacingClass} px-4 pt-14 scrollbar-hide`}>
+    <div className={`${spacingClass} p-2 scrollbar-hide`}>
       {displayMessages.map((msg) => {
         if (msg.role === "user" && msg.turnId) {
           return (

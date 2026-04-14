@@ -32,6 +32,7 @@ import { recreateManualInstance } from "@/features/agents/redux/execution-system
 import { fetchAgentConversations } from "@/features/agents/redux/agent-conversations/agent-conversations.thunks";
 import { makeSelectAgentConversations } from "@/features/agents/redux/agent-conversations/agent-conversations.selectors";
 import type { AgentConversationListItem } from "@/features/agents/redux/agent-conversations/agent-conversations.types";
+import { AgentLauncherSidebarTester } from "../run-controls/AgentLauncherSidebarTester";
 
 // Module-level cache — checked once per session, avoids repeated 404 noise
 // when the agent_runs table hasn't been created by the Python backend yet.
@@ -72,7 +73,6 @@ export function AgentRunsSidebar({
   conversationId,
   surfaceKey,
   conversationIdFromUrl,
-  currentRunId,
   onClose,
 }: AgentRunsSidebarProps) {
   const dispatch = useAppDispatch();
@@ -241,62 +241,9 @@ export function AgentRunsSidebar({
             />
           ))}
         </div>
-
-        {/* Background runs (agent_runs) */}
-        <div className="flex-1 min-h-0 flex flex-col">
-          <div className="px-3 py-1.5 border-b border-border/40 shrink-0">
-            <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-              Runs
-            </span>
-          </div>
-          {isLoadingRuns ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-            </div>
-          ) : runs.length === 0 ? (
-            <div className="px-4 py-6 text-center">
-              <MessageSquare className="w-6 h-6 text-muted-foreground mx-auto mb-2 opacity-50" />
-              <p className="text-xs text-muted-foreground">No runs yet</p>
-            </div>
-          ) : (
-            runs.map((run) => {
-              const isActive = run.id === currentRunId;
-              return (
-                <button
-                  key={run.id}
-                  type="button"
-                  onClick={() => handleRunSelect(run.id)}
-                  className={cn(
-                    "flex items-center gap-2 w-full px-4 py-2.5 text-left transition-colors border-b border-border/50",
-                    isActive
-                      ? "bg-primary/10 text-primary"
-                      : "hover:bg-muted/50 text-foreground",
-                  )}
-                >
-                  <div className="flex-1 min-w-0">
-                    <p
-                      className={cn(
-                        "text-xs font-medium truncate",
-                        isActive && "text-primary",
-                      )}
-                    >
-                      {run.name ?? `Run ${run.id.slice(0, 8)}`}
-                    </p>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      <Clock className="w-2.5 h-2.5 text-muted-foreground" />
-                      <span className="text-[10px] text-muted-foreground">
-                        {formatDate(run.created_at)}
-                      </span>
-                    </div>
-                  </div>
-                  {isActive && (
-                    <ChevronRight className="w-3 h-3 text-primary shrink-0" />
-                  )}
-                </button>
-              );
-            })
-          )}
-        </div>
+      </div>
+      <div className="shrink-0 border-t border-border pb-2">
+        <AgentLauncherSidebarTester conversationId={conversationId} />
       </div>
     </div>
   );

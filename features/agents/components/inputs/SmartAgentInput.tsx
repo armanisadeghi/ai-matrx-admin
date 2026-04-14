@@ -58,15 +58,12 @@ import {
   selectIsExecuting,
   selectShouldShowVariables,
   selectLatestRequestStatus,
+  selectAutoClearWithConversationHistory,
 } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
 import { selectInstanceResources } from "@/features/agents/redux/execution-system/instance-resources/instance-resources.selectors";
 
 // Execution
-import { executeInstance } from "@/features/agents/redux/execution-system/thunks/execute-instance.thunk";
-import { executeChatInstance } from "@/features/agents/redux/execution-system/thunks/execute-chat-instance.thunk";
-import { startNewConversationAndExecute } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
-import { selectHasConversationHistory } from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.selectors";
-import { selectConversationMode } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
+import { smartExecute } from "@/features/agents/redux/execution-system/thunks/smart-execute.thunk";
 import type { VariableInputStyle } from "@/features/agents/types/instance.types";
 
 // Sub-components
@@ -96,7 +93,6 @@ import {
 import { useDebugContext } from "@/hooks/useDebugContext";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 import { selectIsDebugMode } from "@/lib/redux/slices/adminDebugSlice";
-
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { AgentVariableInputForm } from "../run/AgentVariableInputForm";
 
@@ -120,7 +116,7 @@ function InputButton({
       onClick={onClick}
       title={tooltip}
       className={`h-7 w-7 flex items-center justify-center rounded-md transition-colors
-        ${active ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted"}
+        ${active ? "text-foreground" : "text-muted-foreground/70 hover:text-foreground hover:bg-muted"}
         ${className}`}
     >
       <Icon className="w-3.5 h-3.5" />
@@ -194,50 +190,28 @@ export function SmartAgentInput({
 }: SmartAgentInputProps) {
   const dispatch = useAppDispatch();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const pendingVoiceSubmitRef = useRef(false);
 
   // ── Local UI state ──────────────────────────────────────────────────────────
   const [isExpanded, setIsExpanded] = useState(false);
 
   // ── Redux state (all guarded against null conversationId) ──────────────────────
-  const inputText = useAppSelector((state) =>
-    conversationId ? selectUserInputText(conversationId)(state) : "",
+  const inputText = useAppSelector(selectUserInputText(conversationId));
+  const isExecuting = useAppSelector(selectIsExecuting(conversationId));
+  const submitOnEnter = useAppSelector(selectSubmitOnEnter(conversationId));
+  const showVariablePanel = useAppSelector(
+    selectShowVariablePanel(conversationId),
   );
-  const isExecuting = useAppSelector((state) =>
-    conversationId ? selectIsExecuting(conversationId)(state) : false,
+  const isCreator = useAppSelector(selectIsCreator(conversationId));
+  const showCreatorDebug = useAppSelector(
+    selectShowCreatorDebug(conversationId),
   );
-  const submitOnEnter = useAppSelector((state) =>
-    conversationId ? selectSubmitOnEnter(conversationId)(state) : true,
+  const resolvedVariableInputStyle = useAppSelector(
+    selectVariableInputStyle(conversationId),
   );
-  const autoClearConversation = useAppSelector((state) =>
-    conversationId ? selectAutoClearConversation(conversationId)(state) : false,
-  );
-  const showVariablePanel = useAppSelector((state) =>
-    conversationId ? selectShowVariablePanel(conversationId)(state) : false,
-  );
-  const isCreator = useAppSelector((state) =>
-    conversationId ? selectIsCreator(conversationId)(state) : false,
-  );
-  const showCreatorDebug = useAppSelector((state) =>
-    conversationId ? selectShowCreatorDebug(conversationId)(state) : false,
-  );
-  const reduxVariableInputStyle = useAppSelector((state) =>
-    conversationId ? selectVariableInputStyle(conversationId)(state) : "inline",
-  );
-  // Prop takes precedence when explicitly provided; otherwise honour Redux state.
-  const resolvedVariableInputStyle =
-    variableInputStyle ?? reduxVariableInputStyle;
-  const hasHistory = useAppSelector((state) =>
-    conversationId
-      ? selectHasConversationHistory(conversationId)(state)
-      : false,
-  );
-  const conversationMode = useAppSelector((state) =>
-    conversationId ? selectConversationMode(conversationId)(state) : "agent",
-  );
-  const isChatMode = conversationMode === "chat";
-  const shouldShowVariables = useAppSelector((state) =>
-    conversationId ? selectShouldShowVariables(conversationId)(state) : false,
+  const shouldShowVariables = useAppSelector(
+    selectShouldShowVariables(conversationId),
   );
 
   // ── Admin / debug ──────────────────────────────────────────────────────────
@@ -251,14 +225,13 @@ export function SmartAgentInput({
       }),
     );
   const { publish: publishDebug } = useDebugContext("AgentInput");
-  const latestStatus = useAppSelector((state) =>
-    conversationId
-      ? selectLatestRequestStatus(conversationId)(state)
-      : undefined,
+
+  const latestStatus = useAppSelector(
+    selectLatestRequestStatus(conversationId),
   );
-  const resourceCount = useAppSelector((state) =>
-    conversationId ? selectInstanceResources(conversationId)(state).length : 0,
-  );
+  const resources = useAppSelector(selectInstanceResources(conversationId));
+  const resourceCount = resources?.length ?? 0;
+
   useEffect(() => {
     if (!conversationId) return;
     publishDebug({
@@ -268,7 +241,6 @@ export function SmartAgentInput({
       "Should Show Variables": shouldShowVariables,
       "Resource Count": resourceCount,
       "Input Length": inputText.length,
-      "Has History": hasHistory,
     });
   }, [
     conversationId,
@@ -277,7 +249,6 @@ export function SmartAgentInput({
     shouldShowVariables,
     resourceCount,
     inputText.length,
-    hasHistory,
   ]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── File upload (for paste-image support) ───────────────────────────────────
@@ -321,11 +292,37 @@ export function SmartAgentInput({
   }, [inputText, conversationId]);
 
   // ── Auto-resize textarea ────────────────────────────────────────────────────
+  // Handles both normal typing (instant) and expand/collapse (animated).
   useEffect(() => {
     const el = textareaRef.current;
-    if (!el) return;
-    el.style.height = "auto";
-    el.style.height = `${isExpanded ? Math.max(el.scrollHeight, 300) : Math.min(el.scrollHeight, 200)}px`;
+    const wrapper = wrapperRef.current;
+    if (!el || !wrapper) return;
+
+    if (isExpanded) {
+      const target = Math.max(Math.floor(window.innerHeight * 0.6) - 80, 200);
+      el.style.height = `${target}px`;
+      wrapper.style.transition = "none";
+      wrapper.style.height = `${wrapper.offsetHeight}px`;
+      requestAnimationFrame(() => {
+        wrapper.style.transition = "height 300ms cubic-bezier(0.4, 0, 0.2, 1)";
+        wrapper.style.height = `${target}px`;
+      });
+    } else {
+      // Keep textarea at its current tall height so content stays visible
+      // while the wrapper animates closed, then snap textarea to natural size
+      el.style.height = `${wrapper.offsetHeight}px`;
+      const natural = Math.min(el.scrollHeight, 200);
+      wrapper.style.transition = "none";
+      wrapper.style.height = `${wrapper.offsetHeight}px`;
+      requestAnimationFrame(() => {
+        wrapper.style.transition = "height 300ms cubic-bezier(0.4, 0, 0.2, 1)";
+        wrapper.style.height = `${natural}px`;
+        // Snap textarea down only after the animation completes
+        setTimeout(() => {
+          el.style.height = `${natural}px`;
+        }, 300);
+      });
+    }
   }, [inputText, isExpanded]);
 
   // ── Auto-focus when conversationId becomes available ────────────────────────────
@@ -380,36 +377,14 @@ export function SmartAgentInput({
   // disableSend suppresses the entire send flow (used in pre-execution input gate).
   const isSendDisabled = !conversationId || isExecuting || disableSend;
 
+  const autoClearWithHistory = useAppSelector(
+    selectAutoClearWithConversationHistory(conversationId),
+  );
+
   const handleSend = useCallback(() => {
     if (!conversationId || isSendDisabled) return;
-
-    if (autoClearConversation && hasHistory) {
-      if (!surfaceKey) {
-        console.error(
-          "[SmartAgentInput] surfaceKey is required when auto-clearing an existing conversation",
-        );
-        return;
-      }
-      dispatch(
-        startNewConversationAndExecute({
-          currentConversationId: conversationId,
-          surfaceKey,
-        }),
-      );
-    } else if (isChatMode) {
-      dispatch(executeChatInstance({ conversationId: conversationId }));
-    } else {
-      dispatch(executeInstance({ conversationId }));
-    }
-  }, [
-    conversationId,
-    isSendDisabled,
-    autoClearConversation,
-    hasHistory,
-    isChatMode,
-    surfaceKey,
-    dispatch,
-  ]);
+    dispatch(smartExecute({ conversationId, surfaceKey }));
+  }, [conversationId, isSendDisabled, surfaceKey, dispatch]);
 
   const handleTextChange = useCallback(
     (value: string) => {
@@ -437,7 +412,7 @@ export function SmartAgentInput({
   }, [isRecording, isTranscribing, startRecording, stopRecording]);
 
   // ── Derived ─────────────────────────────────────────────────────────────────
-  const showExpand = inputText.length > 80;
+  const showExpand = isExpanded || inputText.length > 80;
   const placeholderText =
     placeholder ??
     (showVariablePanel ? "Add a message..." : "Type your message...");
@@ -508,28 +483,8 @@ export function SmartAgentInput({
       <SmartAgentResourceChips conversationId={conversationId} />
 
       {/* Text area */}
-      <div
-        className={`px-2 pt-1.5 relative ${
-          isExpanded
-            ? "fixed inset-x-4 top-16 bottom-24 z-50 bg-card rounded-lg border border-border shadow-2xl px-3 pt-3 flex flex-col"
-            : ""
-        }`}
-      >
-        {isExpanded && (
-          <div className="flex items-center justify-between mb-2 pb-2 border-b border-border shrink-0">
-            <span className="text-xs text-muted-foreground font-medium">
-              Expanded input
-            </span>
-            <button
-              type="button"
-              onClick={() => setIsExpanded(false)}
-              className="p-1 rounded hover:bg-muted transition-colors"
-            >
-              <Minimize2 className="w-4 h-4 text-muted-foreground" />
-            </button>
-          </div>
-        )}
-        <div className="relative flex-1">
+      <div className="px-2 pt-1.5 relative">
+        <div ref={wrapperRef} className="relative">
           <textarea
             ref={textareaRef}
             value={inputText}
@@ -537,24 +492,22 @@ export function SmartAgentInput({
             onKeyDown={handleKeyDown}
             placeholder={placeholderText}
             disabled={isExecuting}
-            className={`w-full bg-transparent border-none outline-none text-base md:text-xs text-foreground placeholder:text-muted-foreground/60 resize-none overflow-y-auto scrollbar-hide disabled:opacity-60 ${
-              isExpanded ? "h-full min-h-[200px]" : ""
-            }`}
-            style={
-              isExpanded
-                ? { minHeight: 200 }
-                : { minHeight: compact ? 20 : 40, maxHeight: 200 }
-            }
+            className="w-full bg-transparent border-none outline-none text-base md:text-xs text-foreground placeholder:text-muted-foreground/60 resize-none overflow-y-auto scrollbar-hide disabled:opacity-60"
+            style={{ minHeight: compact ? 20 : 40 }}
             rows={1}
           />
-          {showExpand && !isExpanded && (
+          {showExpand && (
             <button
               type="button"
-              onClick={() => setIsExpanded(true)}
+              onClick={() => setIsExpanded((v) => !v)}
               className="absolute top-0 right-0 p-1 rounded hover:bg-muted/80 opacity-50 hover:opacity-100 transition-all"
-              title="Expand input"
+              title={isExpanded ? "Collapse input" : "Expand input"}
             >
-              <Maximize2 className="w-3.5 h-3.5 text-muted-foreground" />
+              {isExpanded ? (
+                <Minimize2 className="w-3.5 h-3.5 text-muted-foreground" />
+              ) : (
+                <Maximize2 className="w-3.5 h-3.5 text-muted-foreground" />
+              )}
             </button>
           )}
         </div>
@@ -594,8 +547,15 @@ export function SmartAgentInput({
             </div>
           ) : (
             <>
+              {/* Resource picker */}
+              <SmartAgentResourcePickerButton
+                conversationId={conversationId}
+                uploadBucket={uploadBucket}
+                uploadPath={uploadPath}
+              />
+
               {/* Admin debug button */}
-              {isAdmin && (
+              {isAdmin && isDebugMode && (
                 <InputButton
                   icon={Bug}
                   tooltip="Debug instance state"
@@ -626,20 +586,6 @@ export function SmartAgentInput({
                   active={showVariablePanel}
                 />
               )}
-
-              {/* Mic */}
-              <InputButton
-                icon={Mic}
-                tooltip="Record voice message"
-                onClick={handleMicClick}
-              />
-
-              {/* Resource picker */}
-              <SmartAgentResourcePickerButton
-                conversationId={conversationId}
-                uploadBucket={uploadBucket}
-                uploadPath={uploadPath}
-              />
             </>
           )}
         </div>
@@ -648,11 +594,11 @@ export function SmartAgentInput({
         <div className="flex items-center gap-0.5">
           {extraRightControls}
           {/* autoClearConversation toggle */}
-          {showAutoClearToggle && (
+          {autoClearWithHistory && (
             <InputButton
               icon={RefreshCcw}
               tooltip={
-                autoClearConversation
+                autoClearWithHistory
                   ? "Auto-clear ON — each send starts fresh (click to disable)"
                   : "Auto-clear OFF — conversation continues (click to enable)"
               }
@@ -660,11 +606,11 @@ export function SmartAgentInput({
                 dispatch(
                   setAutoClearConversation({
                     conversationId,
-                    value: !autoClearConversation,
+                    value: !autoClearWithHistory,
                   }),
                 )
               }
-              active={autoClearConversation}
+              active={autoClearWithHistory}
             />
           )}
 
@@ -686,6 +632,12 @@ export function SmartAgentInput({
             />
           )}
 
+          {/* Mic */}
+          <InputButton
+            icon={Mic}
+            tooltip="Record voice message"
+            onClick={handleMicClick}
+          />
           {/* Send button */}
           {showSendButton && (
             <Button

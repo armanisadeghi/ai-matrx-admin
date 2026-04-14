@@ -69,7 +69,7 @@ export type SourceFeature =
   | "agent-builder"
   | "agent-runner"
   | "agent-generator"
-  | "chat"
+  | "chat-interface"
   | "context-menu"
   | "prompt-app"
   | "research"

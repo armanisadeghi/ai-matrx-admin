@@ -51,15 +51,14 @@ export function AgentConversationColumn({
     <div
       className={cn(
         "h-full flex flex-col overflow-hidden",
-        constrainWidth && "w-full max-w-3xl mx-auto",
+        constrainWidth && "w-full max-w-3xl mx-auto pb-2",
       )}
     >
       <div className="relative flex-1 min-h-0">
-
         <div
           ref={scrollRef}
           onScroll={handleScroll}
-          className="h-full overflow-y-auto"
+          className="h-full overflow-y-auto pt-12"
         >
           <AgentConversationDisplay conversationId={conversationId} />
         </div>
@@ -86,7 +85,10 @@ export function AgentConversationColumn({
         )}
       </div>
 
-      <CreatorRunPanel conversationId={conversationId} surfaceKey={surfaceKey} />
+      <CreatorRunPanel
+        conversationId={conversationId}
+        surfaceKey={surfaceKey}
+      />
 
       <SmartAgentInput
         conversationId={conversationId}

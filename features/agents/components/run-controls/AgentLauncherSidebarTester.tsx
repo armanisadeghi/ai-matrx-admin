@@ -22,6 +22,13 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
@@ -190,7 +197,7 @@ export function AgentLauncherSidebarTester({
         <Separator />
 
         {/* Context & Resources Info */}
-        {instance && (
+        {/* {instance && (
           <div className="px-2 py-1 space-y-1.5">
             <InfoRow label="Source App" value={instance.sourceApp || "—"} />
             <InfoRow
@@ -225,7 +232,7 @@ export function AgentLauncherSidebarTester({
               )}
             </div>
           </div>
-        )}
+        )} */}
         {/* Execution Config Toggles */}
         <div className="space-y-2 p-2">
           <div className="flex items-center justify-between">
@@ -240,6 +247,20 @@ export function AgentLauncherSidebarTester({
               id="use-pre-execution"
               checked={usePreExecutionInput}
               onCheckedChange={setUsePreExecutionInput}
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <Label
+              htmlFor="apply-variables"
+              className="flex items-center gap-1.5 text-xs cursor-pointer"
+            >
+              <Settings className="w-3.5 h-3.5" />
+              Apply Variables
+            </Label>
+            <Switch
+              id="apply-variables"
+              checked={applyVariables}
+              onCheckedChange={setApplyVariables}
             />
           </div>
 
@@ -288,47 +309,41 @@ export function AgentLauncherSidebarTester({
             />
           </div>
 
-          <div className="flex flex-col gap-1">
-            <Label
-              htmlFor="variable-input-style"
-              className="flex items-center gap-1.5 text-xs"
-            >
-              <GalleryVertical className="w-3.5 h-3.5" />
-              Variable UI
-            </Label>
-            <select
-              id="variable-input-style"
-              value={variableInputStyle}
-              onChange={(e) =>
-                setVariableInputStyle(e.target.value as VariableInputStyle)
-              }
-              className="text-xs rounded border border-border bg-background px-1.5 py-1 w-full"
-            >
-              {VARIABLE_INPUT_STYLE_OPTIONS.map((opt) => (
-                <option
-                  key={opt.value}
-                  value={opt.value}
-                  title={opt.description}
-                >
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
           <div className="flex items-center justify-between">
             <Label
-              htmlFor="apply-variables"
-              className="flex items-center gap-1.5 text-xs cursor-pointer"
+              htmlFor="variable-input-style"
+              className={`flex items-center gap-1.5 text-xs ${showVariables ? "text-foreground" : "text-muted-foreground cursor-not-allowed"}`}
+              aria-disabled={!showVariables}
             >
-              <Settings className="w-3.5 h-3.5" />
-              Apply Variables
+              <GalleryVertical className="w-3.5 h-3.5 shrink-0" />
+              Variable UI
             </Label>
-            <Switch
-              id="apply-variables"
-              checked={applyVariables}
-              onCheckedChange={setApplyVariables}
-            />
+            <Select
+              value={variableInputStyle}
+              onValueChange={(v) =>
+                setVariableInputStyle(v as VariableInputStyle)
+              }
+              disabled={!showVariables}
+            >
+              <SelectTrigger
+                id="variable-input-style"
+                size="sm"
+                className="min-w-[9rem] max-w-[9rem] shrink-0"
+              >
+                <SelectValue placeholder="Variable UI" />
+              </SelectTrigger>
+              <SelectContent>
+                {VARIABLE_INPUT_STYLE_OPTIONS.map((opt) => (
+                  <SelectItem
+                    key={opt.value}
+                    value={opt.value}
+                    title={opt.description}
+                  >
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex items-center justify-between">
@@ -339,26 +354,31 @@ export function AgentLauncherSidebarTester({
               <Layers className="w-3.5 h-3.5" />
               Mode
             </Label>
-            <select
-              id="conversation-mode"
+            <Select
               value={conversationMode}
-              onChange={(e) =>
-                setConversationMode(
-                  e.target.value as "agent" | "conversation" | "chat",
-                )
+              onValueChange={(v) =>
+                setConversationMode(v as "agent" | "conversation" | "chat")
               }
-              className="text-xs rounded border border-border bg-background px-1.5 py-0.5"
             >
-              <option value="agent">Agent</option>
-              <option value="chat">Chat (builder)</option>
-            </select>
+              <SelectTrigger
+                id="conversation-mode"
+                size="sm"
+                className="min-w-[9rem] max-w-[9rem] shrink-0"
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="agent">Agent</SelectItem>
+                <SelectItem value="chat">Chat (builder)</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
         <Separator />
 
         {/* Display Type Buttons */}
-        <div className="space-y-1">
+        <div className="space-y-0.5">
           <div className="space-y-0 px-1">
             {displayTypes.map((display) => (
               <Button

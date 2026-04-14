@@ -13,7 +13,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
-import { Check, ChevronDown, Loader2, X } from "lucide-react";
+import { Check, ChevronDown, Loader2, Webhook, X } from "lucide-react";
 import { AgentRunner } from "../smart/AgentRunner";
 import { ExecutionManager } from "./execution-gates/ExecutionManager";
 
@@ -22,7 +22,10 @@ interface ChatCollapsibleProps {
   onClose?: () => void;
 }
 
-export function ChatCollapsible({ conversationId, onClose }: ChatCollapsibleProps) {
+export function ChatCollapsible({
+  conversationId,
+  onClose,
+}: ChatCollapsibleProps) {
   const needsPreExecution = useAppSelector(
     selectNeedsPreExecutionInput(conversationId),
   );
@@ -66,7 +69,8 @@ export function ChatCollapsible({ conversationId, onClose }: ChatCollapsibleProp
     dragRef.current = null;
   }, []);
 
-  if (needsPreExecution) return <ExecutionManager conversationId={conversationId} />;
+  if (needsPreExecution)
+    return <ExecutionManager conversationId={conversationId} />;
 
   return (
     <div
@@ -86,11 +90,11 @@ export function ChatCollapsible({ conversationId, onClose }: ChatCollapsibleProp
         >
           <CollapsibleTrigger asChild data-no-drag>
             <button className="flex items-center gap-2 min-w-0 hover:opacity-80 transition-opacity">
-              <div className="p-0.5 rounded-full bg-primary/10 shrink-0">
+              <div className="p-0 rounded-full bg-primary/10 shrink-0">
                 {isExecuting ? (
                   <Loader2 className="w-3.5 h-3.5 text-primary animate-spin" />
                 ) : (
-                  <Check className="w-3.5 h-3.5 text-primary" />
+                  <Webhook className="w-3.5 h-3.5 text-primary" />
                 )}
               </div>
               <span className="text-xs font-medium text-foreground truncate">

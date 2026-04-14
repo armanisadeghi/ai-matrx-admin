@@ -164,10 +164,10 @@ export class StreamBlockAccumulator {
       this.pendingLineFragment = "";
     }
     this.emitCurrentBlock(dispatch, "complete");
-    console.log(
-      `%c[BlockAccumulator] FINALIZED for ${this.requestId.slice(0, 8)} — ${this.ingestCount} ingests, ${this.emitCount} dispatches, ${this.currentBlockIndex + 1} blocks total`,
-      "color: #4ade80; font-weight: bold",
-    );
+    // console.log(
+    //   `%c[BlockAccumulator] FINALIZED for ${this.requestId.slice(0, 8)} — ${this.ingestCount} ingests, ${this.emitCount} dispatches, ${this.currentBlockIndex + 1} blocks total`,
+    //   "color: #4ade80; font-weight: bold",
+    // );
   }
 
   // ── Internal ────────────────────────────────────────────────────────────
@@ -369,12 +369,17 @@ export class StreamBlockAccumulator {
     status: "streaming" | "complete",
   ): void {
     let content = this.currentBlockContent;
-    
-    // Project in-flight characters so the UI physically streams char-by-char, 
+
+    // Project in-flight characters so the UI physically streams char-by-char,
     // avoiding the broken line-by-line visual stuttering.
     if (status === "streaming" && this.pendingLineFragment) {
-      if (this.subState.kind === "none" || this.subState.kind === "code_fence") {
-        content = content ? content + "\n" + this.pendingLineFragment : this.pendingLineFragment;
+      if (
+        this.subState.kind === "none" ||
+        this.subState.kind === "code_fence"
+      ) {
+        content = content
+          ? content + "\n" + this.pendingLineFragment
+          : this.pendingLineFragment;
       }
     }
 

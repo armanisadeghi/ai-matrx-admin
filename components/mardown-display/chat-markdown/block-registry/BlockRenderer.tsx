@@ -136,8 +136,6 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
     [index, isStreamActive, onContentChange, handleOpenEditor, messageId],
   );
 
-  console.log("[BLOCK] BlockRenderer block:", block);
-
   switch (block.type) {
     case "audio_output": {
       // Python sends: { url: string; mime_type: string }

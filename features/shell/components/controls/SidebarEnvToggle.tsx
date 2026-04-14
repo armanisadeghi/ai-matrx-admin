@@ -16,8 +16,8 @@ export default function SidebarEnvToggle() {
   if (!isAdmin) return null;
 
   const isLocalhost = activeServer === "localhost";
-  console.log("isLocalhost", isLocalhost);
-  console.log("activeServer", activeServer);
+  // console.log("isLocalhost", isLocalhost);
+  // console.log("activeServer", activeServer);
 
   const handleToggle = () => {
     dispatch(switchServer({ env: isLocalhost ? "production" : "localhost" }));

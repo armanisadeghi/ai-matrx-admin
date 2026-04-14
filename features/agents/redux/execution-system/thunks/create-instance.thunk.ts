@@ -439,7 +439,7 @@ export const createManualInstanceNoAgent = createAsyncThunk<
       variableDefinitions = [],
       baseSettings = {},
       userInput,
-      sourceFeature = "chat",
+      sourceFeature,
     },
     { dispatch },
   ) => {
