@@ -134,7 +134,8 @@ export type RequestStatus =
   | "awaiting-tools"
   | "complete"
   | "error"
-  | "timeout";
+  | "timeout"
+  | "cancelled";
 
 export interface ActiveRequest {
   requestId: string;

@@ -74,6 +74,7 @@ import {
 } from "../instance-conversation-history/instance-conversation-history.slice";
 import { clearUserInput } from "../instance-user-input/instance-user-input.slice";
 import { clearAllResources } from "../instance-resources/instance-resources.slice";
+import { resetUserVariableValues } from "../instance-variable-values/instance-variable-values.slice";
 import { setInstanceStatus } from "../execution-instances";
 import {
   patchAgentConversationMetadata,
@@ -863,6 +864,7 @@ export async function processStream({
 
   dispatch(clearUserInput(conversationId));
   dispatch(clearAllResources(conversationId));
+  dispatch(resetUserVariableValues(conversationId));
 
   const renderCompleteAt = performance.now();
 

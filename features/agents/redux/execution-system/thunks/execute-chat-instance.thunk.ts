@@ -44,6 +44,11 @@ import { addUserTurn } from "../instance-conversation-history/instance-conversat
 import { processStream } from "./process-stream";
 import { ENDPOINTS } from "@/lib/api/endpoints";
 import { upsertAgentConversationFromExecutionAction } from "@/features/agents/redux/agent-conversations";
+import { selectHasConversationHistory } from "../instance-conversation-history/instance-conversation-history.selectors";
+import {
+  registerAbortController,
+  unregisterAbortController,
+} from "./abort-registry";
 
 // =============================================================================
 // Turn Conversion Utility
@@ -219,10 +224,12 @@ export function assembleChatRequest(
       : undefined;
 
   // Conversation ID (reuse if configured)
-  const reuseConversationId = uiState?.reuseConversationId ?? false;
-  const existingConversationId = reuseConversationId
-    ? selectLatestConversationId(conversationId)(state)
-    : undefined;
+  // const reuseConversationId = uiState?.reuseConversationId ?? true;
+  const reuseConversationId = true;
+  const hasHistory = selectHasConversationHistory(conversationId)(state);
+
+  console.log("[assembleChatRequest] hasHistory", hasHistory);
+  console.log("[assembleChatRequest] reuseConversationId", reuseConversationId);
 
   // Source tracking
   const { sourceApp, sourceFeature } = instance;
@@ -239,10 +246,16 @@ export function assembleChatRequest(
     ...fullSettings,
   };
 
-  if (existingConversationId) {
-    request.conversation_id = existingConversationId;
+  if (hasHistory && reuseConversationId) {
     request.is_new = false;
+    request.conversation_id = conversationId;
+    console.log("[assembleChatRequest] path 1");
+  } else if (hasHistory && !reuseConversationId) {
+    console.log("[assembleChatRequest] path 2");
+    // request.conversation_id = conversationId;
+    request.is_new = true;
   } else {
+    console.log("[assembleChatRequest] path 3");
     request.conversation_id = conversationId;
     request.is_new = true;
   }
@@ -356,10 +369,13 @@ export const executeChatInstance = createAsyncThunk<
 
       // Always POST to the chat endpoint
       const url = `${baseUrl}${ENDPOINTS.ai.chat}`;
+      const abortController = new AbortController();
+      registerAbortController(conversationId, abortController);
       const response = await fetch(url, {
         method: "POST",
         headers,
         body: JSON.stringify(payload),
+        signal: abortController.signal,
       });
 
       if (!response.ok) {
@@ -422,11 +438,19 @@ export const executeChatInstance = createAsyncThunk<
         jsonExtraction: currentUiState?.jsonExtraction ?? undefined,
       });
 
+      unregisterAbortController(conversationId);
       return {
         requestId,
         conversationId: streamResult.conversationId,
       };
     } catch (error) {
+      unregisterAbortController(conversationId);
+
+      if (error instanceof Error && error.name === "AbortError") {
+        dispatch(setInstanceStatus({ conversationId, status: "cancelled" }));
+        return rejectWithValue("Cancelled");
+      }
+
       dispatch(
         setRequestStatus({
           requestId,

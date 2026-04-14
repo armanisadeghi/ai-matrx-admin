@@ -7,6 +7,9 @@ import {
 import { executeInstance } from "./execute-instance.thunk";
 import { executeChatInstance } from "./execute-chat-instance.thunk";
 import { startNewConversationAndExecute } from "./create-instance.thunk";
+import { abortConversation } from "./abort-registry";
+import { setInstanceStatus } from "../execution-instances";
+import { setRequestStatus } from "../active-requests/active-requests.slice";
 
 interface SmartExecuteArgs {
   conversationId: string;
@@ -27,7 +30,6 @@ export const smartExecute = createAsyncThunk<
     const conversationMode = selectConversationMode(conversationId)(state);
 
     if (autoClearWithHistory) {
-      console.log("[smartExecute] autoClearWithHistory", autoClearWithHistory);
       await dispatch(
         startNewConversationAndExecute({
           currentConversationId: conversationId,
@@ -35,17 +37,30 @@ export const smartExecute = createAsyncThunk<
         }),
       );
     } else if (conversationMode === "chat") {
-      console.log(
-        "[smartExecute] conversationMode === 'chat'",
-        conversationMode,
-      );
       await dispatch(executeChatInstance({ conversationId }));
     } else {
-      console.log(
-        "[smartExecute] conversationMode === 'agent'",
-        conversationMode,
-      );
       await dispatch(executeInstance({ conversationId }));
     }
+  },
+);
+
+export const cancelExecution = createAsyncThunk<
+  void,
+  string,
+  { state: RootState; dispatch: AppDispatch }
+>(
+  "instances/cancelExecution",
+  async (conversationId, { getState, dispatch }) => {
+    abortConversation(conversationId);
+
+    const state = getState();
+    const requestIds = state.activeRequests?.byConversationId[conversationId];
+    if (requestIds && requestIds.length > 0) {
+      const latestRequestId = requestIds[requestIds.length - 1];
+      dispatch(
+        setRequestStatus({ requestId: latestRequestId, status: "cancelled" }),
+      );
+    }
+    dispatch(setInstanceStatus({ conversationId, status: "cancelled" }));
   },
 );

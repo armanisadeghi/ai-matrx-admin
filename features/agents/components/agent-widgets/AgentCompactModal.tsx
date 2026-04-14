@@ -23,7 +23,8 @@ export function AgentCompactModal({
     selectNeedsPreExecutionInput(conversationId),
   );
 
-  if (needsPreExecution) return <ExecutionManager conversationId={conversationId} />;
+  if (needsPreExecution)
+    return <ExecutionManager conversationId={conversationId} />;
 
   return (
     <Dialog open={true} onOpenChange={(open) => !open && onClose()}>

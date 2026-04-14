@@ -57,7 +57,8 @@ export type InstanceStatus =
   | "streaming" // Receiving stream chunks
   | "paused" // Waiting for client tool results
   | "complete" // Stream ended successfully
-  | "error"; // Stream ended with error
+  | "error" // Stream ended with error
+  | "cancelled"; // Aborted by the user
 
 export type InstanceOrigin =
   | "manual" // User opened the agent runner

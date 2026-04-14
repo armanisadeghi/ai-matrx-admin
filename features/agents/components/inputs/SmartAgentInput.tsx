@@ -32,6 +32,7 @@ import {
   RefreshCcw,
   Braces,
   Bug,
+  CircleStop,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
@@ -63,7 +64,11 @@ import {
 import { selectInstanceResources } from "@/features/agents/redux/execution-system/instance-resources/instance-resources.selectors";
 
 // Execution
-import { smartExecute } from "@/features/agents/redux/execution-system/thunks/smart-execute.thunk";
+import {
+  smartExecute,
+  cancelExecution,
+} from "@/features/agents/redux/execution-system/thunks/smart-execute.thunk";
+import { useInstanceInputUndoRedo } from "@/features/agents/hooks/useInstanceInputUndoRedo";
 import type { VariableInputStyle } from "@/features/agents/types/instance.types";
 
 // Sub-components
@@ -232,6 +237,16 @@ export function SmartAgentInput({
   const resources = useAppSelector(selectInstanceResources(conversationId));
   const resourceCount = resources?.length ?? 0;
 
+  // For undo snapshots — capture current variable values alongside text changes
+  const currentUserValues = useAppSelector(
+    (state) =>
+      state.instanceVariableValues.byConversationId[conversationId ?? ""]
+        ?.userValues ?? {},
+  );
+
+  // Undo/redo — Cmd+Z restores text + variable values atomically
+  useInstanceInputUndoRedo({ conversationId: conversationId ?? null });
+
   useEffect(() => {
     if (!conversationId) return;
     publishDebug({
@@ -375,7 +390,7 @@ export function SmartAgentInput({
   // Only block when not initialized or already executing.
   // hasContent is NOT a gate — agents run on variables/context without user text.
   // disableSend suppresses the entire send flow (used in pre-execution input gate).
-  const isSendDisabled = !conversationId || isExecuting || disableSend;
+  const isSendDisabled = !conversationId || disableSend;
 
   const autoClearWithHistory = useAppSelector(
     selectAutoClearWithConversationHistory(conversationId),
@@ -383,27 +398,35 @@ export function SmartAgentInput({
 
   const handleSend = useCallback(() => {
     if (!conversationId || isSendDisabled) return;
-    dispatch(smartExecute({ conversationId, surfaceKey }));
-  }, [conversationId, isSendDisabled, surfaceKey, dispatch]);
+    if (isExecuting) {
+      dispatch(cancelExecution(conversationId));
+    } else {
+      dispatch(smartExecute({ conversationId, surfaceKey }));
+    }
+  }, [conversationId, isSendDisabled, isExecuting, surfaceKey, dispatch]);
 
   const handleTextChange = useCallback(
     (value: string) => {
       if (conversationId)
         dispatch(
-          setUserInputText({ conversationId: conversationId, text: value }),
+          setUserInputText({
+            conversationId,
+            text: value,
+            userValues: currentUserValues,
+          }),
         );
     },
-    [conversationId, dispatch],
+    [conversationId, currentUserValues, dispatch],
   );
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
       if (e.key === "Enter" && !e.shiftKey && submitOnEnter) {
         e.preventDefault();
-        if (!isSendDisabled) handleSend();
+        if (!isSendDisabled && !isExecuting) handleSend();
       }
     },
-    [submitOnEnter, isSendDisabled, handleSend],
+    [submitOnEnter, isSendDisabled, isExecuting, handleSend],
   );
 
   const handleMicClick = useCallback(() => {
@@ -491,8 +514,7 @@ export function SmartAgentInput({
             onChange={(e) => handleTextChange(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={placeholderText}
-            disabled={isExecuting}
-            className="w-full bg-transparent border-none outline-none text-base md:text-xs text-foreground placeholder:text-muted-foreground/60 resize-none overflow-y-auto scrollbar-hide disabled:opacity-60"
+            className="w-full bg-transparent border-none outline-none text-base md:text-xs text-foreground placeholder:text-muted-foreground/60 resize-none overflow-y-auto scrollbar-hide"
             style={{ minHeight: compact ? 20 : 40 }}
             rows={1}
           />
@@ -638,16 +660,17 @@ export function SmartAgentInput({
             tooltip="Record voice message"
             onClick={handleMicClick}
           />
-          {/* Send button */}
+          {/* Send / Stop button */}
           {showSendButton && (
             <Button
               onClick={handleSend}
               disabled={isSendDisabled}
               className={sendBtnClass}
               tabIndex={-1}
+              title={isExecuting ? "Stop" : "Send"}
             >
               {isExecuting ? (
-                <div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                <CircleStop className="w-3.5 h-3.5" />
               ) : (
                 <ArrowUp className="w-3.5 h-3.5" />
               )}

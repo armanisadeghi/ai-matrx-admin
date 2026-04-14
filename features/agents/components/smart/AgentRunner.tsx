@@ -127,7 +127,7 @@ export function AgentRunner({
       </div>
 
       {shouldShowInput && (
-        <div className="shrink-0 px-3 pb-3 pt-1 bg-background">
+        <div className="shrink-0 flex items-center justify-center px-3 pb-3 pt-1 bg-background">
           <SmartAgentInput
             conversationId={conversationId}
             surfaceKey={surfaceKey}

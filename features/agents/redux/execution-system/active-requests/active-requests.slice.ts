@@ -152,7 +152,8 @@ const activeRequestsSlice = createSlice({
         if (
           status === "complete" ||
           status === "error" ||
-          status === "timeout"
+          status === "timeout" ||
+          status === "cancelled"
         ) {
           request.completedAt = new Date().toISOString();
         }

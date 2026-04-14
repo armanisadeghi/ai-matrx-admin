@@ -50,6 +50,10 @@ import { addUserTurn } from "../instance-conversation-history/instance-conversat
 import { processStream } from "./process-stream";
 import { upsertAgentConversationFromExecutionAction } from "@/features/agents/redux/agent-conversations";
 import { formatVariablesForDisplay } from "@/features/agents/utils/variable-utils";
+import {
+  registerAbortController,
+  unregisterAbortController,
+} from "./abort-registry";
 
 // =============================================================================
 // Assemble Request (pure selector logic, extracted for testability)
@@ -280,10 +284,13 @@ export const executeInstance = createAsyncThunk<
       const submitAt = performance.now();
 
       // Fire the API call
+      const abortController = new AbortController();
+      registerAbortController(conversationId, abortController);
       const response = await fetch(url, {
         method: "POST",
         headers,
         body: JSON.stringify(routedPayload),
+        signal: abortController.signal,
       });
 
       if (!response.ok) {
@@ -345,11 +352,19 @@ export const executeInstance = createAsyncThunk<
         jsonExtraction: currentUiState?.jsonExtraction ?? undefined,
       });
 
+      unregisterAbortController(conversationId);
       return {
         requestId,
         conversationId: streamResult.conversationId ?? conversationId,
       };
     } catch (error) {
+      unregisterAbortController(conversationId);
+
+      if (error instanceof Error && error.name === "AbortError") {
+        dispatch(setInstanceStatus({ conversationId, status: "cancelled" }));
+        return rejectWithValue("Cancelled");
+      }
+
       dispatch(
         setRequestStatus({
           requestId,
