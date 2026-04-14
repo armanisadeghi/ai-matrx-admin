@@ -10,17 +10,29 @@ import type { DbRpcRow } from "@/types/supabase-rpc";
 export type AgentType = "user" | "builtin";
 
 // ---------------------------------------------------------------------------
-// Variable component types
+// Variable component types — single source of truth for the agents feature
 // ---------------------------------------------------------------------------
 
-/** The input UI type for a variable's custom component. */
-export type VariableComponentType =
-  | "textarea" // Default — multi-line text
-  | "toggle" // Boolean with custom on/off labels
-  | "radio" // Single-select from options
-  | "checkbox" // Multi-select from options
-  | "select" // Dropdown single-select
-  | "number"; // Number input with optional min/max/step
+/**
+ * All available UI input types for agent variables.
+ * Each value is a distinct component — no separate variant concept.
+ */
+export const VARIABLE_COMPONENT_TYPES = [
+  "textarea", // Multi-line free text (default)
+  "toggle", // Simple on/off switch with custom labels
+  "light-switch", // 3D toggle switch with custom labels
+  "radio", // Single-select list with radio indicators
+  "pill-toggle", // Segmented pill control (best for 2–4 short options)
+  "selection-list", // All options as a single-column button list
+  "buttons", // All options as an auto-grid of buttons
+  "checkbox", // Multi-select list with checkboxes
+  "select", // Compact dropdown single-select
+  "number", // Number stepper with optional min/max/step
+  "slider", // Range slider with min/max/step
+] as const;
+
+/** The input UI type for a variable's custom component. Derived from the const above. */
+export type VariableComponentType = (typeof VARIABLE_COMPONENT_TYPES)[number];
 
 /** Configuration for a variable's custom UI input component. */
 export interface VariableCustomComponent {

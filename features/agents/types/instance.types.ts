@@ -26,7 +26,7 @@ export interface JsonExtractionConfig {
   fuzzyOnFinalize?: boolean;
   maxResults?: number;
 }
-import type { VariableInputStyle } from "./variable-input-style";
+import type { VariableInputStyle } from "../components/inputs/variable-input-variations/variable-input-options";
 
 // =============================================================================
 // Completion Stats — re-exported from auto-generated stream-events.ts
@@ -699,4 +699,4 @@ export const AGENT_EXECUTION_DEFAULTS = {
   sourceFeature: "agent-runner" as SourceFeature,
 } as const;
 
-export type { VariableInputStyle } from "./variable-input-style";
+export type { VariableInputStyle } from "../components/inputs/variable-input-variations/variable-input-options";

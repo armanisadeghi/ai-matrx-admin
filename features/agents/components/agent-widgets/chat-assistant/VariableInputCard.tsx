@@ -8,4 +8,4 @@
 export {
   AgentVariableInputCard as VariableInputCard,
   type AgentVariableInputCardProps as VariableInputCardProps,
-} from "@/features/agents/components/inputs/variable-input-styles/AgentVariableInputCard";
+} from "@/features/agents/components/inputs/variable-input-variations/AgentVariableInputCard";

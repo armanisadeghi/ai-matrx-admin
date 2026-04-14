@@ -3,15 +3,15 @@
 /**
  * AgentVariablesPanel
  *
- * Full two-column variable manager:
- *   Left  — scrollable list of variables + "Add New Variable" slot at the bottom
- *   Right — AgentVariableEditor for the selected variable (inline, no nested modal)
- *
- * Designed to be embedded directly inside the AgentVariablesModal dialog.
+ * Two-column variable manager.
+ *   Left  — scrollable list of variables + "Add New Variable" slot
+ *   Right — AgentVariableEditor
+ *             • existing variable: passes agentId + variableName → auto-saves to Redux
+ *             • new variable: controlled state here → dispatched on "Add Variable"
  */
 
-import React, { useState, useEffect } from "react";
-import { Plus, Variable, AlertCircle, Trash2, Check, X } from "lucide-react";
+import React, { useState } from "react";
+import { Plus, Variable, AlertCircle, Trash2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -21,7 +21,10 @@ import {
   selectAgentMessages,
 } from "@/features/agents/redux/agent-definition/selectors";
 import { setAgentVariableDefinitions } from "@/features/agents/redux/agent-definition/slice";
-import type { VariableDefinition } from "@/features/agents/types/agent-definition.types";
+import type {
+  VariableDefinition,
+  VariableCustomComponent,
+} from "@/features/agents/types/agent-definition.types";
 import { sanitizeVariableName } from "@/features/agents/utils/variable-utils";
 import { AgentVariableEditor } from "./AgentVariableEditor";
 
@@ -67,93 +70,66 @@ export function AgentVariablesPanel({ agentId }: AgentVariablesPanelProps) {
   const variables: VariableDefinition[] = rawVariables ?? [];
   const allText = buildAllText(messages);
 
-  // ── Selection — default to first variable on mount ─────────────────────────
+  // ── Selection ──────────────────────────────────────────────────────────────
   const [selection, setSelection] = useState<SelectionState>(() =>
     rawVariables && rawVariables.length > 0
       ? { kind: "existing", name: rawVariables[0].name }
       : { kind: "none" },
   );
 
-  // ── Editor state (controlled by us, passed down) ───────────────────────────
-  const [editorName, setEditorName] = useState("");
-  const [editorDefaultValue, setEditorDefaultValue] = useState("");
-  const [editorRequired, setEditorRequired] = useState(false);
-  const [editorHelpText, setEditorHelpText] = useState("");
-  const [editorCustomComponent, setEditorCustomComponent] =
-    useState<VariableDefinition["customComponent"]>(undefined);
+  // ── New-variable form state (only active when selection.kind === "new") ────
+  const [newName, setNewName] = useState("");
+  const [newDefaultValue, setNewDefaultValue] = useState("");
+  const [newRequired, setNewRequired] = useState(false);
+  const [newHelpText, setNewHelpText] = useState("");
+  const [newCustomComponent, setNewCustomComponent] = useState<
+    VariableCustomComponent | undefined
+  >(undefined);
 
-  // Sync editor fields when selection changes
-  useEffect(() => {
-    if (selection.kind === "existing") {
-      const v = variables.find((x) => x.name === selection.name);
-      if (v) {
-        setEditorName(v.name);
-        setEditorDefaultValue(String(v.defaultValue ?? ""));
-        setEditorRequired(v.required ?? false);
-        setEditorHelpText(v.helpText ?? "");
-        setEditorCustomComponent(
-          v.customComponent
-            ? (v.customComponent as VariableDefinition["customComponent"])
-            : undefined,
-        );
-      }
-    } else if (selection.kind === "new") {
-      setEditorName("");
-      setEditorDefaultValue("");
-      setEditorRequired(false);
-      setEditorHelpText("");
-      setEditorCustomComponent(undefined);
-    }
-  }, [selection]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // ── Derived ────────────────────────────────────────────────────────────────
-  const sanitizedName = editorName.trim()
-    ? sanitizeVariableName(editorName)
-    : "";
-
-  const existingNames =
-    selection.kind === "existing"
-      ? variables.filter((v) => v.name !== selection.name).map((v) => v.name)
-      : variables.map((v) => v.name);
-
-  const isDuplicate = !!sanitizedName && existingNames.includes(sanitizedName);
-
-  const canSave = !!sanitizedName && !isDuplicate;
-
-  // ── Actions ────────────────────────────────────────────────────────────────
-  const handleSave = () => {
-    if (!canSave) return;
-    const saved: VariableDefinition = {
-      name: sanitizedName,
-      defaultValue: editorDefaultValue,
-      customComponent: editorCustomComponent,
-      required: editorRequired || undefined,
-      helpText: editorHelpText || undefined,
-    };
-
-    if (selection.kind === "new") {
-      dispatch(
-        setAgentVariableDefinitions({
-          id: agentId,
-          variableDefinitions: [...variables, saved],
-        }),
-      );
-      // Select the newly added variable
-      setSelection({ kind: "existing", name: sanitizedName });
-    } else if (selection.kind === "existing") {
-      const oldName = selection.name;
-      dispatch(
-        setAgentVariableDefinitions({
-          id: agentId,
-          variableDefinitions: variables.map((v) =>
-            v.name === oldName ? saved : v,
-          ),
-        }),
-      );
-      setSelection({ kind: "existing", name: sanitizedName });
-    }
+  const resetNewForm = () => {
+    setNewName("");
+    setNewDefaultValue("");
+    setNewRequired(false);
+    setNewHelpText("");
+    setNewCustomComponent(undefined);
   };
 
+  const handleStartNew = () => {
+    resetNewForm();
+    setSelection({ kind: "new" });
+  };
+
+  const handleCancelNew = () => {
+    resetNewForm();
+    setSelection({ kind: "none" });
+  };
+
+  // ── Add variable ───────────────────────────────────────────────────────────
+  const sanitizedNewName = newName.trim() ? sanitizeVariableName(newName) : "";
+  const newNameIsDuplicate =
+    !!sanitizedNewName && variables.some((v) => v.name === sanitizedNewName);
+  const canAdd = !!sanitizedNewName && !newNameIsDuplicate;
+
+  const handleAdd = () => {
+    if (!canAdd) return;
+    const saved: VariableDefinition = {
+      name: sanitizedNewName,
+      defaultValue: newDefaultValue,
+      customComponent: newCustomComponent,
+      required: newRequired || undefined,
+      helpText: newHelpText || undefined,
+    };
+    dispatch(
+      setAgentVariableDefinitions({
+        id: agentId,
+        variableDefinitions: [...variables, saved],
+      }),
+    );
+    resetNewForm();
+    setSelection({ kind: "existing", name: sanitizedNewName });
+  };
+
+  // ── Delete variable ────────────────────────────────────────────────────────
   const handleDelete = (name: string) => {
     dispatch(
       setAgentVariableDefinitions({
@@ -164,10 +140,6 @@ export function AgentVariablesPanel({ agentId }: AgentVariablesPanelProps) {
     if (selection.kind === "existing" && selection.name === name) {
       setSelection({ kind: "none" });
     }
-  };
-
-  const handleCancel = () => {
-    setSelection({ kind: "none" });
   };
 
   const isEditing = selection.kind !== "none";
@@ -227,9 +199,8 @@ export function AgentVariablesPanel({ agentId }: AgentVariablesPanelProps) {
               );
             })}
 
-            {/* Add New Variable slot */}
             <button
-              onClick={() => setSelection({ kind: "new" })}
+              onClick={handleStartNew}
               className={cn(
                 "w-full flex items-center gap-2 px-3 py-2 text-left transition-colors",
                 selection.kind === "new"
@@ -247,7 +218,6 @@ export function AgentVariablesPanel({ agentId }: AgentVariablesPanelProps) {
       {/* ── Right panel — editor ───────────────────────────────────────────── */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {!isEditing ? (
-          /* Empty state */
           <div className="flex-1 flex flex-col items-center justify-center gap-3 text-center px-8">
             <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
               <Variable className="w-5 h-5 text-muted-foreground" />
@@ -269,9 +239,16 @@ export function AgentVariablesPanel({ agentId }: AgentVariablesPanelProps) {
           <>
             {/* Header */}
             <div className="px-5 py-3 border-b border-border shrink-0 flex items-center justify-between">
-              <p className="text-sm font-semibold">
-                {selection.kind === "new" ? "New Variable" : selection.name}
-              </p>
+              <div>
+                <p className="text-sm font-semibold">
+                  {selection.kind === "new" ? "New Variable" : selection.name}
+                </p>
+                {selection.kind === "existing" && (
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    Changes save automatically
+                  </p>
+                )}
+              </div>
 
               <div className="flex items-center gap-1">
                 {selection.kind === "existing" && (
@@ -285,24 +262,12 @@ export function AgentVariablesPanel({ agentId }: AgentVariablesPanelProps) {
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>
                 )}
-                {selection.kind === "existing" && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6 text-primary hover:bg-primary/10"
-                    onClick={handleSave}
-                    disabled={!canSave}
-                    title="Save changes"
-                  >
-                    <Check className="h-3.5 w-3.5" />
-                  </Button>
-                )}
                 {selection.kind === "new" && (
                   <Button
                     variant="ghost"
                     size="icon"
                     className="h-6 w-6 text-muted-foreground hover:text-foreground"
-                    onClick={handleCancel}
+                    onClick={handleCancelNew}
                     title="Cancel"
                   >
                     <X className="h-3.5 w-3.5" />
@@ -314,36 +279,43 @@ export function AgentVariablesPanel({ agentId }: AgentVariablesPanelProps) {
             {/* Editor */}
             <ScrollArea className="flex-1">
               <div className="px-5 py-4">
-                <AgentVariableEditor
-                  name={editorName}
-                  defaultValue={editorDefaultValue}
-                  customComponent={editorCustomComponent}
-                  required={editorRequired}
-                  helpText={editorHelpText}
-                  existingNames={existingNames}
-                  originalName={
-                    selection.kind === "existing" ? selection.name : undefined
-                  }
-                  onNameChange={setEditorName}
-                  onDefaultValueChange={setEditorDefaultValue}
-                  onCustomComponentChange={setEditorCustomComponent}
-                  onRequiredChange={setEditorRequired}
-                  onHelpTextChange={setEditorHelpText}
-                />
-
-                {/* Add button lives inside the editor area, only for new variable */}
-                {selection.kind === "new" && (
-                  <div className="mt-4 flex justify-end">
-                    <Button
-                      size="sm"
-                      className="h-7 px-3 text-xs"
-                      onClick={handleSave}
-                      disabled={!canSave}
-                    >
-                      <Plus className="h-3.5 w-3.5 mr-1" />
-                      Add Variable
-                    </Button>
-                  </div>
+                {selection.kind === "existing" ? (
+                  // Existing variable — AgentVariableEditor dispatches directly
+                  <AgentVariableEditor
+                    agentId={agentId}
+                    variableName={selection.name}
+                    existingNames={variables
+                      .filter((v) => v.name !== selection.name)
+                      .map((v) => v.name)}
+                  />
+                ) : (
+                  // New variable — controlled state here, dispatched on Add
+                  <>
+                    <AgentVariableEditor
+                      name={newName}
+                      defaultValue={newDefaultValue}
+                      customComponent={newCustomComponent}
+                      required={newRequired}
+                      helpText={newHelpText}
+                      existingNames={variables.map((v) => v.name)}
+                      onNameChange={setNewName}
+                      onDefaultValueChange={setNewDefaultValue}
+                      onCustomComponentChange={setNewCustomComponent}
+                      onRequiredChange={setNewRequired}
+                      onHelpTextChange={setNewHelpText}
+                    />
+                    <div className="mt-4 flex justify-end">
+                      <Button
+                        size="sm"
+                        className="h-7 px-3 text-xs"
+                        onClick={handleAdd}
+                        disabled={!canAdd}
+                      >
+                        <Plus className="h-3.5 w-3.5 mr-1" />
+                        Add Variable
+                      </Button>
+                    </div>
+                  </>
                 )}
               </div>
             </ScrollArea>

@@ -20,7 +20,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { TranscriptionLoader } from "@/features/audio";
-import { SmartAgentResourcePickerButton } from "./SmartAgentResourcePickerButton";
+import { SmartAgentResourcePickerButton } from "../resources/SmartAgentResourcePickerButton";
 import { InputButton } from "./InputActionButtons";
 import {
   selectShowVariablePanel,

@@ -28,20 +28,15 @@ import { selectInstanceVariableDefinitions } from "@/features/agents/redux/execu
 import { executeInstance } from "@/features/agents/redux/execution-system/thunks/execute-instance.thunk";
 import { executeChatInstance } from "@/features/agents/redux/execution-system/thunks/execute-chat-instance.thunk";
 import { Button } from "@/components/ui/button";
-import {
-  ArrowUp,
-  Mic,
-  Braces,
-  CornerDownLeft,
-} from "lucide-react";
+import { ArrowUp, Mic, Braces, CornerDownLeft } from "lucide-react";
 
 // Voice input
 import { useRecordAndTranscribe } from "@/features/audio";
 import { TranscriptionLoader } from "@/features/audio";
 
 // Resource picker
-import { SmartAgentResourcePickerButton } from "../../inputs/SmartAgentResourcePickerButton";
-import { SmartAgentResourceChips } from "../../inputs/SmartAgentResourceChips";
+import { SmartAgentResourcePickerButton } from "../../inputs/resources/SmartAgentResourcePickerButton";
+import { SmartAgentResourceChips } from "../../inputs/resources/SmartAgentResourceChips";
 
 import { toast } from "sonner";
 
@@ -148,9 +143,7 @@ export function CompactAssistantInput({
           ref={textareaRef}
           value={inputText}
           onChange={(e) =>
-            dispatch(
-              setUserInputText({ conversationId, text: e.target.value }),
-            )
+            dispatch(setUserInputText({ conversationId, text: e.target.value }))
           }
           onKeyDown={handleKeyDown}
           placeholder="Ask anything..."
@@ -194,9 +187,7 @@ export function CompactAssistantInput({
                 <ToolbarButton
                   icon={Braces}
                   tooltip="Toggle variables"
-                  onClick={() =>
-                    dispatch(toggleVariablePanel(conversationId))
-                  }
+                  onClick={() => dispatch(toggleVariablePanel(conversationId))}
                 />
               )}
 
@@ -208,9 +199,7 @@ export function CompactAssistantInput({
               />
 
               {/* Resource picker */}
-              <SmartAgentResourcePickerButton
-                conversationId={conversationId}
-              />
+              <SmartAgentResourcePickerButton conversationId={conversationId} />
             </>
           )}
         </div>

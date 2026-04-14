@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, ArrowUp, X } from "lucide-react";
+import { ArrowLeftFromLine, ArrowRight, ArrowUp, X } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import {
   selectPreExecutionMessage,
@@ -9,9 +9,10 @@ import {
 import { setPreExecutionSatisfied } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.slice";
 import { destroyInstance } from "@/features/agents/redux/execution-system/execution-instances/execution-instances.slice";
 import { closeOverlay, openOverlay } from "@/lib/redux/slices/overlaySlice";
-import { SmartAgentInput } from "../../inputs/SmartAgentInput";
+import { SmartAgentInput } from "../../inputs/smart-input/SmartAgentInput";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { PaperPlaneIcon } from "@radix-ui/react-icons";
+import { Button } from "@/components/ui/ButtonMine";
 
 // ─── WindowPanel body — used by AgentGateWindow ───────────────────────────────
 
@@ -66,77 +67,47 @@ export function AgentGateBody({
     onClose();
   };
 
-  const footer = (
-    <>
-      <div className="flex-1" />
-      <button
-        type="button"
-        onClick={handleContinue}
-        className="flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-      >
-        <PaperPlaneIcon className="w-3 h-3" />
-      </button>
-    </>
+  const footerRight = (
+    <Button onClick={handleContinue} size="icon" variant="primary">
+      <PaperPlaneIcon />
+    </Button>
   );
+  const footerLeft = (
+    <Button onClick={handleCancel} size="icon" variant="secondary">
+      <ArrowLeftFromLine />
+    </Button>
+  );
+
+  const title = preExecutionMessage || agentName || "Provide Details";
 
   return (
     <WindowPanel
       id={`agent-gate-${windowInstanceId}`}
-      title={agentName ?? "Provide Details"}
+      title={title}
       onClose={handleCancel}
       width={500}
-      height={380}
+      height={420}
       minWidth={360}
-      minHeight={320}
+      minHeight={200}
       position="center"
-      bodyClassName="p-0"
-      footer={footer}
+      bodyClassName="p-0 flex flex-col"
+      footerRight={footerRight}
+      footerLeft={footerLeft}
       overlayId="agentGateWindow"
       onCollectData={() => ({ conversationId })}
     >
-      <AgentGateContent
-        conversationId={conversationId}
-        preExecutionMessage={preExecutionMessage}
-      />
-    </WindowPanel>
-  );
-}
-
-// ─── Inner content — scrollable variables area + input pinned at bottom ───────
-
-function AgentGateContent({
-  conversationId,
-  preExecutionMessage,
-}: {
-  conversationId: string;
-  preExecutionMessage: string | null | undefined;
-}) {
-  return (
-    <div className="flex flex-col h-full min-h-0">
-      {/* Scrollable top area — description + variables */}
-      {/* <div className="flex-1 overflow-auto min-h-0 px-4 py-3 border border-green-500">
-        {preExecutionMessage && (
-          <div className="px-0 py-0 rounded-lg bg-muted/40 border border-border/40">
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              {preExecutionMessage}
-            </p>
-          </div>
-        )}
-        <div className="flex-1" />
-      </div> */}
-
-      {/* Input pinned to bottom */}
-      <div className="h-full flex justify-center">
+      <div className="flex flex-col flex-1 min-h-0 justify-end">
         <SmartAgentInput
           conversationId={conversationId}
           placeholder="Additional instructions (optional)..."
-          singleRowTextarea={true}
+          singleRowTextarea={false}
+          compact={true}
           showSendButton={false}
           showVariableIcon={false}
           showSubmitOnEnterToggle={false}
           disableSend
         />
       </div>
-    </div>
+    </WindowPanel>
   );
 }

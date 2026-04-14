@@ -19,8 +19,8 @@
 import React, { useState, useCallback } from "react";
 import { ArrowUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { SmartAgentResourceChips } from "./SmartAgentResourceChips";
-import { AgentVariableSection } from "./AgentVariableSection";
+import { SmartAgentResourceChips } from "../resources/SmartAgentResourceChips";
+import { SmartAgentVariables } from "../variable-input-variations/SmartAgentVariables";
 import { AgentTextarea, type VoiceState } from "./AgentTextarea";
 import { InputActionButtons } from "./InputActionButtons";
 import { SingleRowActionButtons } from "./SingleRowActionButtons";
@@ -156,7 +156,7 @@ export function SmartAgentInput({
     return (
       <div className="flex flex-col gap-1 w-full">
         {/* Variable inputs (stacked above the row when present) */}
-        <AgentVariableSection
+        <SmartAgentVariables
           conversationId={conversationId}
           compact
           onSubmit={handleSubmit}
@@ -209,20 +209,20 @@ export function SmartAgentInput({
   // ── Default stacked layout ─────────────────────────────────────────────────
   return (
     <div
-      className={`relative bg-card rounded-lg w-full ${compact ? "max-w-[500px]" : "max-w-[800px]"} border border-border overflow-hidden`}
+      className={`flex flex-col min-h-0 bg-card rounded-lg w-full ${compact ? "max-w-[500px]" : "max-w-[800px]"} border border-border overflow-hidden`}
     >
-      {/* Variable inputs */}
-      <AgentVariableSection
+      {/* Variable inputs — scrolls internally, never pushes textarea/toolbar off screen */}
+      <SmartAgentVariables
         conversationId={conversationId}
         compact={compact}
         onSubmit={handleSubmit}
         styleOverride={variableInputStyle}
       />
 
-      {/* Resource chips */}
+      {/* Resource chips — pinned, never scrolls away */}
       <SmartAgentResourceChips conversationId={conversationId} />
 
-      {/* Textarea */}
+      {/* Textarea — shrinks slightly under pressure but stays visible */}
       <AgentTextarea
         conversationId={conversationId}
         placeholder={placeholder}
@@ -235,7 +235,7 @@ export function SmartAgentInput({
         onVoiceStateChange={handleVoiceStateChange}
       />
 
-      {/* Toolbar */}
+      {/* Toolbar — always pinned at the bottom */}
       <InputActionButtons
         conversationId={conversationId}
         isRecording={voiceState.isRecording}

@@ -33,13 +33,11 @@ import type {
 
 const IOS_INPUT_STYLE = { fontSize: "16px" } as const;
 
-interface AgentVariableInputFormProps {
+interface AgentVariableFormProps {
   conversationId: string;
 }
 
-export function AgentVariableInputForm({
-  conversationId,
-}: AgentVariableInputFormProps) {
+export function AgentVariableForm({ conversationId }: AgentVariableFormProps) {
   const dispatch = useAppDispatch();
   const definitions = useAppSelector(
     selectInstanceVariableDefinitions(conversationId),
@@ -60,9 +58,10 @@ export function AgentVariableInputForm({
     dispatch(setUserVariableValue({ conversationId, name, value }));
 
   return (
-    <div className="border-b border-border">
+    <div className="flex flex-col max-h-72 border-b border-border overflow-hidden">
+      {/* Always-visible toggle header */}
       <button
-        className="flex items-center justify-between w-full px-2.5 py-1.5 hover:bg-accent/50 transition-colors"
+        className="flex items-center justify-between w-full px-2.5 py-1.5 hover:bg-accent/50 transition-colors shrink-0"
         onClick={() => dispatch(toggleVariablePanel(conversationId))}
       >
         <span className="text-xs font-medium text-foreground">
@@ -79,10 +78,7 @@ export function AgentVariableInputForm({
       </button>
 
       {showVariables && (
-        <div
-          className="border-t border-border overflow-y-auto"
-          style={{ maxHeight: "45dvh" }}
-        >
+        <div className="border-t border-border flex-1 min-h-0 overflow-y-auto">
           <div className="px-2.5 py-2">
             {definitions.map((def, i) => (
               <div key={def.name}>
@@ -187,14 +183,14 @@ function VariableField({ def, value, onChange }: VariableFieldProps) {
           autoGrow
           minHeight={28}
           maxHeight={120}
-          className="text-xs bg-background"
+          className="text-xs bg-transparent"
           style={IOS_INPUT_STYLE}
         />
       </div>
     );
   }
 
-  if (cc.type === "toggle") {
+  if (cc.type === "toggle" || cc.type === "light-switch") {
     const offLabel = cc.toggleValues?.[0] ?? "No";
     const onLabel = cc.toggleValues?.[1] ?? "Yes";
     const checked = value === true || value === "true" || value === onLabel;
@@ -216,7 +212,12 @@ function VariableField({ def, value, onChange }: VariableFieldProps) {
     );
   }
 
-  if (cc.type === "radio") {
+  if (
+    cc.type === "radio" ||
+    cc.type === "pill-toggle" ||
+    cc.type === "selection-list" ||
+    cc.type === "buttons"
+  ) {
     return (
       <div>
         {fieldLabel}
@@ -249,7 +250,7 @@ function VariableField({ def, value, onChange }: VariableFieldProps) {
       <div>
         {fieldLabel}
         <Select value={String(value ?? "")} onValueChange={(v) => onChange(v)}>
-          <SelectTrigger id={fieldId} className="h-7 text-xs bg-background">
+          <SelectTrigger id={fieldId} className="h-7 text-xs bg-transparent">
             <SelectValue placeholder="Choose..." />
           </SelectTrigger>
           <SelectContent>
@@ -264,7 +265,7 @@ function VariableField({ def, value, onChange }: VariableFieldProps) {
     );
   }
 
-  if (cc.type === "number") {
+  if (cc.type === "number" || cc.type === "slider") {
     return (
       <div>
         {fieldLabel}
@@ -285,7 +286,7 @@ function VariableField({ def, value, onChange }: VariableFieldProps) {
               const raw = e.target.value;
               onChange(raw === "" ? "" : parseFloat(raw));
             }}
-            className="h-7 text-xs bg-background w-28"
+            className="h-7 text-xs bg-transparent w-28"
             style={IOS_INPUT_STYLE}
           />
           {(cc.min !== undefined || cc.max !== undefined) && (
@@ -310,7 +311,7 @@ function VariableField({ def, value, onChange }: VariableFieldProps) {
         value={String(value ?? "")}
         placeholder={`Enter ${formattedName.toLowerCase()}...`}
         onChange={(e) => onChange(e.target.value)}
-        className="h-7 text-xs bg-background"
+        className="h-7 text-xs bg-transparent"
         style={IOS_INPUT_STYLE}
       />
     </div>
@@ -389,7 +390,7 @@ function RadioField({
         autoGrow
         minHeight={28}
         maxHeight={80}
-        className="text-xs bg-background"
+        className="text-xs bg-transparent"
         style={IOS_INPUT_STYLE}
       />
     </div>
@@ -503,7 +504,7 @@ function CheckboxField({
         autoGrow
         minHeight={28}
         maxHeight={80}
-        className="text-xs bg-background"
+        className="text-xs bg-transparent"
         style={IOS_INPUT_STYLE}
       />
     </div>

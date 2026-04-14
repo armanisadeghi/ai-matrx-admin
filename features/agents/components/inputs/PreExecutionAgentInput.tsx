@@ -24,7 +24,7 @@ import { selectPreExecutionMessage } from "@/features/agents/redux/execution-sys
 import { selectHasUserInput } from "@/features/agents/redux/execution-system/instance-user-input/instance-user-input.selectors";
 import { destroyInstance } from "@/features/agents/redux/execution-system/execution-instances/execution-instances.slice";
 import { selectInstanceAgentName } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
-import { SmartAgentInput } from "./SmartAgentInput";
+import { SmartAgentInput } from "./smart-input/SmartAgentInput";
 
 interface PreExecutionAgentInputProps {
   conversationId: string;

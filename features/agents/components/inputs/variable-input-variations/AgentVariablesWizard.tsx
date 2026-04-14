@@ -24,10 +24,10 @@ import {
   selectShowVariablePanel,
   selectVariableInputStyle,
 } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
-import { VariableInputComponent } from "./variable-inputs";
+import { VariableInputComponent } from "../input-components";
 import { formatText } from "@/utils/text/text-case-converter";
 
-interface WizardAgentVariableInputsProps {
+interface AgentVariablesWizardProps {
   conversationId: string;
   /** Called when all variables are answered (or skipped) */
   onComplete?: () => void;
@@ -35,11 +35,11 @@ interface WizardAgentVariableInputsProps {
   onSubmit?: () => void;
 }
 
-export function WizardAgentVariableInputs({
+export function AgentVariablesWizard({
   conversationId,
   onComplete,
   onSubmit,
-}: WizardAgentVariableInputsProps) {
+}: AgentVariablesWizardProps) {
   const dispatch = useAppDispatch();
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -106,26 +106,27 @@ export function WizardAgentVariableInputs({
   const current = currentIndex + 1;
 
   return (
-    <div className="flex flex-col" style={{ height: 270 }}>
+    <div className="flex flex-col h-72 max-h-72 w-full overflow-hidden border-b border-border">
       {/* Header — variable name + counter */}
-      <div className="flex items-center justify-between px-3 pt-3 pb-0.5 shrink-0">
-        <div className="flex items-center gap-1">
-          <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest">
-            {formatText(variable.name)}:
+      <div className="grid grid-cols-[1fr_auto] gap-2 items-start px-3 pt-3 pb-0.5 shrink-0">
+        <p className="text-[11px] text-muted-foreground leading-snug">
+          <span className="font-semibold uppercase tracking-widest whitespace-nowrap">
+            {formatText(variable.name)}
           </span>
           {variable.helpText && (
-            <span className="text-[11px] text-muted-foreground tabular-nums">
+            <span className="font-normal">
+              {": "}
               {variable.helpText}
             </span>
           )}
-        </div>
-        <span className="text-[11px] text-muted-foreground tabular-nums">
+        </p>
+        <span className="text-[11px] text-muted-foreground tabular-nums whitespace-nowrap pt-px">
           {current} / {total}
         </span>
       </div>
 
       {/* Input area — scrollable, takes remaining height */}
-      <div className="flex-1 overflow-y-auto px-2 py-2 min-h-0">
+      <div className="flex-1 overflow-y-scroll px-2 py-2 min-h-0">
         <VariableInputComponent
           value={value}
           onChange={(v) => handleValueChange(variable.name, v)}

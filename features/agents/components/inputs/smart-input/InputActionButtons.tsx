@@ -22,7 +22,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { TranscriptionLoader } from "@/features/audio";
-import { SmartAgentResourcePickerButton } from "./SmartAgentResourcePickerButton";
+import { SmartAgentResourcePickerButton } from "../resources/SmartAgentResourcePickerButton";
 import {
   selectSubmitOnEnter,
   selectShowVariablePanel,
@@ -158,7 +158,7 @@ export function InputActionButtons({
       : "h-7 w-7 p-0 shrink-0 rounded-full bg-muted hover:bg-muted/80 dark:bg-zinc-700 dark:hover:bg-zinc-600 disabled:opacity-40 text-foreground";
 
   return (
-    <div className="flex items-center justify-between px-2 pb-1.5 mt-1">
+    <div className="flex items-center justify-between px-2 pb-1.5 mt-1 shrink-0">
       {/* Left: voice state / resource picker / debug / variable toggle */}
       <div className="flex items-center gap-0.5">
         {isTranscribing && !isRecording ? (

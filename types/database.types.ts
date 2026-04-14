@@ -2670,63 +2670,6 @@ export type Database = {
         }
         Relationships: []
       }
-      category_configs: {
-        Row: {
-          category_id: string
-          color: string | null
-          created_at: string | null
-          icon_name: string | null
-          id: string
-          is_active: boolean | null
-          label: string
-          sort_order: number | null
-          updated_at: string | null
-        }
-        Insert: {
-          category_id: string
-          color?: string | null
-          created_at?: string | null
-          icon_name?: string | null
-          id?: string
-          is_active?: boolean | null
-          label: string
-          sort_order?: number | null
-          updated_at?: string | null
-        }
-        Update: {
-          category_id?: string
-          color?: string | null
-          created_at?: string | null
-          icon_name?: string | null
-          id?: string
-          is_active?: boolean | null
-          label?: string
-          sort_order?: number | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
-      category_migration_map: {
-        Row: {
-          new_category_uuid: string
-          new_subcategory_uuid: string | null
-          old_category_id: string
-          old_subcategory_id: string | null
-        }
-        Insert: {
-          new_category_uuid: string
-          new_subcategory_uuid?: string | null
-          old_category_id: string
-          old_subcategory_id?: string | null
-        }
-        Update: {
-          new_category_uuid?: string
-          new_subcategory_uuid?: string | null
-          old_category_id?: string
-          old_subcategory_id?: string | null
-        }
-        Relationships: []
-      }
       cloud_file_permissions: {
         Row: {
           expires_at: string | null
@@ -5324,6 +5267,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      dashboard_saved_views: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          table_name: string
+          updated_at: string
+          url_params: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          table_name: string
+          updated_at?: string
+          url_params?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          table_name?: string
+          updated_at?: string
+          url_params?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       data_broker: {
         Row: {
@@ -12777,50 +12753,6 @@ export type Database = {
           },
         ]
       }
-      subcategory_configs: {
-        Row: {
-          category_id: string
-          created_at: string | null
-          icon_name: string
-          id: string
-          is_active: boolean | null
-          label: string
-          sort_order: number | null
-          subcategory_id: string
-          updated_at: string | null
-        }
-        Insert: {
-          category_id: string
-          created_at?: string | null
-          icon_name: string
-          id?: string
-          is_active?: boolean | null
-          label: string
-          sort_order?: number | null
-          subcategory_id: string
-          updated_at?: string | null
-        }
-        Update: {
-          category_id?: string
-          created_at?: string | null
-          icon_name?: string
-          id?: string
-          is_active?: boolean | null
-          label?: string
-          sort_order?: number | null
-          subcategory_id?: string
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "subcategory_configs_category_id_fkey"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "category_configs"
-            referencedColumns: ["category_id"]
-          },
-        ]
-      }
       system_announcements: {
         Row: {
           announcement_type: string
@@ -12887,45 +12819,6 @@ export type Database = {
         }
         Relationships: []
       }
-      system_prompt_categories: {
-        Row: {
-          category_id: string
-          color: string
-          created_at: string | null
-          description: string | null
-          icon_name: string
-          id: string
-          is_active: boolean | null
-          label: string
-          sort_order: number | null
-          updated_at: string | null
-        }
-        Insert: {
-          category_id: string
-          color: string
-          created_at?: string | null
-          description?: string | null
-          icon_name: string
-          id?: string
-          is_active?: boolean | null
-          label: string
-          sort_order?: number | null
-          updated_at?: string | null
-        }
-        Update: {
-          category_id?: string
-          color?: string
-          created_at?: string | null
-          description?: string | null
-          icon_name?: string
-          id?: string
-          is_active?: boolean | null
-          label?: string
-          sort_order?: number | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
       system_prompt_executions: {
         Row: {
           created_at: string | null
@@ -12969,65 +12862,6 @@ export type Database = {
             columns: ["system_prompt_id"]
             isOneToOne: false
             referencedRelation: "system_prompts"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      system_prompt_functionality_configs: {
-        Row: {
-          category_id: string
-          created_at: string | null
-          description: string | null
-          examples: string[] | null
-          functionality_id: string
-          icon_name: string
-          id: string
-          is_active: boolean | null
-          label: string
-          optional_variables: string[] | null
-          placement_types: string[] | null
-          required_variables: string[] | null
-          sort_order: number | null
-          updated_at: string | null
-        }
-        Insert: {
-          category_id: string
-          created_at?: string | null
-          description?: string | null
-          examples?: string[] | null
-          functionality_id: string
-          icon_name: string
-          id?: string
-          is_active?: boolean | null
-          label: string
-          optional_variables?: string[] | null
-          placement_types?: string[] | null
-          required_variables?: string[] | null
-          sort_order?: number | null
-          updated_at?: string | null
-        }
-        Update: {
-          category_id?: string
-          created_at?: string | null
-          description?: string | null
-          examples?: string[] | null
-          functionality_id?: string
-          icon_name?: string
-          id?: string
-          is_active?: boolean | null
-          label?: string
-          optional_variables?: string[] | null
-          placement_types?: string[] | null
-          required_variables?: string[] | null
-          sort_order?: number | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "system_prompt_functionality_configs_category_id_fkey"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "system_prompt_categories"
             referencedColumns: ["id"]
           },
         ]

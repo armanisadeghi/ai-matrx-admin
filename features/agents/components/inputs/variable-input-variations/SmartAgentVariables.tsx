@@ -1,27 +1,42 @@
 "use client";
 
 /**
- * AgentVariableSection
+ * SmartAgentVariables
  *
  * Renders the correct variable input UI based on the instance's variableInputStyle.
  * Only requires conversationId — reads style from Redux directly.
- * Receives onSubmit as a stable callback since it needs to know how to submit.
  */
 
-import React from "react";
+import dynamic from "next/dynamic";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectVariableInputStyle } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
-import { SmartAgentVariableInputs } from "./SmartAgentVariableInputs";
-import { WizardAgentVariableInputs } from "./WizardAgentVariableInputs";
-import {
-  AgentCompactVariableInputs,
-  AgentGuidedVariableInputs,
-  AgentVariableCardsInputs,
-} from "./variable-input-styles";
-import { AgentVariableInputForm } from "../run/AgentVariableInputForm";
-import type { VariableInputStyle } from "@/features/agents/types/instance.types";
+import type { VariableInputStyle } from "./variable-input-options";
 
-interface AgentVariableSectionProps {
+const AgentVariableInputForm = dynamic(() =>
+  import("./AgentVariableForm").then((m) => m.AgentVariableForm),
+);
+
+const SmartAgentVariableInputs = dynamic(() =>
+  import("../AgentVariablesInline").then((m) => m.AgentVariablesInline),
+);
+
+const WizardAgentVariableInputs = dynamic(() =>
+  import("./AgentVariablesWizard").then((m) => m.AgentVariablesWizard),
+);
+
+const AgentCompactVariableInputs = dynamic(() =>
+  import("./AgentVariablesStacked").then((m) => m.AgentVariablesStacked),
+);
+
+const AgentGuidedVariableInputs = dynamic(() =>
+  import("./AgentVariablesGuided").then((m) => m.AgentVariablesGuided),
+);
+
+const AgentVariableCardsInputs = dynamic(() =>
+  import("./AgentVariableCards").then((m) => m.AgentVariableCards),
+);
+
+interface SmartAgentVariablesProps {
   conversationId: string;
   compact?: boolean;
   onSubmit: () => void;
@@ -29,12 +44,12 @@ interface AgentVariableSectionProps {
   styleOverride?: VariableInputStyle;
 }
 
-export function AgentVariableSection({
+export function SmartAgentVariables({
   conversationId,
   compact = false,
   onSubmit,
   styleOverride,
-}: AgentVariableSectionProps) {
+}: SmartAgentVariablesProps) {
   const reduxStyle = useAppSelector(selectVariableInputStyle(conversationId));
   const submitOnEnter = useAppSelector(
     (state) =>
@@ -77,6 +92,7 @@ export function AgentVariableSection({
         />
       );
     default:
+      console.warn(`Unknown variable input style: ${style}`);
       return null;
   }
 }

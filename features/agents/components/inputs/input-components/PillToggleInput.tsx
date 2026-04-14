@@ -1,0 +1,60 @@
+import React from "react";
+
+interface PillToggleInputProps {
+  value: string;
+  onChange: (value: string) => void;
+  options: string[];
+  variableName: string;
+  compact?: boolean;
+  wizardMode?: boolean;
+  containerWidth?: number;
+}
+
+/**
+ * Pill Toggle Input - Segmented pill control for single-select.
+ * Best for 2–4 short options. Returns the selected option as text.
+ */
+export function PillToggleInput({
+  value,
+  onChange,
+  options,
+  variableName,
+  compact = false,
+  containerWidth = 0,
+}: PillToggleInputProps) {
+  const height = compact ? "h-7" : "h-8";
+  const textSize = compact ? "text-xs" : "text-sm";
+  const px = compact ? "px-2.5" : "px-3";
+
+  return (
+    <div
+      className={`inline-flex w-full rounded-md border border-border bg-muted p-0.5 ${compact ? "gap-0.5" : "gap-0.5"}`}
+      role="radiogroup"
+      aria-label={variableName}
+    >
+      {options.map((option) => {
+        const isSelected = value === option;
+        return (
+          <button
+            key={option}
+            type="button"
+            role="radio"
+            aria-checked={isSelected}
+            onClick={() => onChange(option)}
+            className={`
+              flex-1 ${height} ${px} ${textSize} rounded font-medium transition-all duration-150
+              focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring
+              ${
+                isSelected
+                  ? "bg-transparent text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }
+            `}
+          >
+            {option}
+          </button>
+        );
+      })}
+    </div>
+  );
+}

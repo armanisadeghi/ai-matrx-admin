@@ -3,11 +3,8 @@
 /**
  * AgentVariablesManager
  *
- * Smart component — manages variable definitions for an agent.
- * UI matches the prompts VariablesManager: compact chip row with
- * full VariableEditor inside a Dialog/Drawer when adding or editing.
- *
- * Reads/writes directly through Redux — no prop drilling.
+ * Compact chip row. Edit opens AgentVariableEditorModal which dispatches
+ * directly to Redux. Add uses controlled state and dispatches on confirm.
  */
 
 import React, { useState } from "react";
@@ -26,7 +23,6 @@ interface AgentVariablesManagerProps {
   agentId: string;
 }
 
-/** Check if a variable name appears in content as {{name}} */
 function isVariableUsedInText(name: string, text: string): boolean {
   return new RegExp(`\\{\\{\\s*${name}\\s*\\}\\}`).test(text);
 }
@@ -42,17 +38,11 @@ export function AgentVariablesManager({ agentId }: AgentVariablesManagerProps) {
 
   const variables: VariableDefinition[] = rawVariables ?? [];
 
-  // Collect all text across every message block for {{variable}} usage detection.
-  // Text blocks use `.text`; non-text blocks (image, audio, video, etc.) may carry
-  // {{variable}} references in any string field (url, mimeType, alt, etc.).
   const allText = (messages ?? [])
     .flatMap((m) =>
       (m.content ?? []).flatMap((b) => {
         const block = b as unknown as Record<string, unknown>;
-        if (b.type === "text") {
-          return [(block.text as string) ?? ""];
-        }
-        // Collect every string-valued property from non-text blocks
+        if (b.type === "text") return [(block.text as string) ?? ""];
         return Object.values(block).filter(
           (v) => typeof v === "string" && v !== b.type,
         ) as string[];
@@ -62,40 +52,29 @@ export function AgentVariablesManager({ agentId }: AgentVariablesManagerProps) {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"add" | "edit">("add");
-  const [editingVariable, setEditingVariable] = useState<
-    VariableDefinition | undefined
-  >();
+  const [editingVariableName, setEditingVariableName] = useState<
+    string | undefined
+  >(undefined);
 
   const handleAddClick = () => {
     setModalMode("add");
-    setEditingVariable(undefined);
+    setEditingVariableName(undefined);
     setIsModalOpen(true);
   };
 
-  const handleEditClick = (variable: VariableDefinition) => {
+  const handleEditClick = (name: string) => {
     setModalMode("edit");
-    setEditingVariable(variable);
+    setEditingVariableName(name);
     setIsModalOpen(true);
   };
 
-  const handleSave = (saved: VariableDefinition) => {
-    if (modalMode === "add") {
-      dispatch(
-        setAgentVariableDefinitions({
-          id: agentId,
-          variableDefinitions: [...variables, saved],
-        }),
-      );
-    } else if (editingVariable) {
-      dispatch(
-        setAgentVariableDefinitions({
-          id: agentId,
-          variableDefinitions: variables.map((v) =>
-            v.name === editingVariable.name ? saved : v,
-          ),
-        }),
-      );
-    }
+  const handleAdd = (saved: VariableDefinition) => {
+    dispatch(
+      setAgentVariableDefinitions({
+        id: agentId,
+        variableDefinitions: [...variables, saved],
+      }),
+    );
   };
 
   const handleRemove = (name: string) => {
@@ -119,7 +98,7 @@ export function AgentVariablesManager({ agentId }: AgentVariablesManagerProps) {
           return (
             <div
               key={variable.name}
-              className={`inline-flex items-center gap-1.5 px-2.5 rounded-md text-xs font-medium group ${
+              className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium group ${
                 isUsed
                   ? "bg-muted text-foreground border border-border"
                   : "bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800"
@@ -132,11 +111,11 @@ export function AgentVariablesManager({ agentId }: AgentVariablesManagerProps) {
                     ? "hover:text-primary"
                     : "hover:text-amber-900 dark:hover:text-amber-100"
                 }`}
-                onClick={() => handleEditClick(variable)}
+                onClick={() => handleEditClick(variable.name)}
                 title={
                   isUsed
                     ? "Click to edit"
-                    : "Variable not used in messages — click to edit"
+                    : "Not used in messages — click to edit"
                 }
               >
                 {variable.name}
@@ -162,10 +141,11 @@ export function AgentVariablesManager({ agentId }: AgentVariablesManagerProps) {
       </div>
 
       <AgentVariableEditorModal
+        agentId={agentId}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSave={handleSave}
-        existingVariable={editingVariable}
+        variableName={editingVariableName}
+        onAdd={handleAdd}
         existingNames={existingNames}
         mode={modalMode}
       />

@@ -135,6 +135,13 @@ export interface WindowPanelProps extends UseWindowPanelOptions {
   footerCenter?: React.ReactNode;
   /** Right-aligned footer content */
   footerRight?: React.ReactNode;
+  /**
+   * When true, the windowed panel sizes itself to fit its content rather than
+   * using the explicit width/height from Redux. A ResizeObserver syncs the
+   * measured dimensions back into Redux so drag/snap operations still work.
+   * The panel will still respect minWidth/minHeight constraints.
+   */
+  fitContent?: boolean;
 
   // ── Persistence ────────────────────────────────────────────────────────────
   /**
@@ -185,6 +192,7 @@ export function WindowPanel({
   footerLeft,
   footerCenter,
   footerRight,
+  fitContent = false,
   overlayId,
   onCollectData,
   onSessionSaved,
@@ -259,6 +267,34 @@ export function WindowPanel({
       sidebarPanelRef.current?.collapse();
     }
   }, [defaultSidebarOpen]);
+
+  // ── fitContent: sync measured shell size back into Redux ─────────────────
+  const fitContentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!fitContent) return;
+    const el = fitContentRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (!entry) return;
+      const { width, height } = entry.contentRect;
+      // Include border (2px each side) to match the element's full box size
+      const borderH = el.offsetHeight - el.clientHeight;
+      const borderW = el.offsetWidth - el.clientWidth;
+      dispatch(
+        updateWindowRect({
+          id,
+          rect: {
+            width: Math.ceil(width + borderW),
+            height: Math.ceil(height + borderH),
+          },
+        }),
+      );
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [fitContent, id, dispatch]);
 
   const toggleSidebar = useCallback(() => {
     const panel = sidebarPanelRef.current;
@@ -466,7 +502,7 @@ export function WindowPanel({
 
   const footerBar = hasFooter ? (
     <div
-      className="shrink-0 flex items-center gap-1 px-2 py-1.5 border-t border-border/50 bg-muted/40 select-none text-xs [&_svg]:h-3 [&_svg]:w-3 [&_button]:h-5 [&_button]:text-xs"
+      className="shrink-0 flex items-center gap-1 px-2 py-1 rounded-b-xl border-t border-border/50 bg-muted/40 select-none text-xs [&_svg]:h-3 [&_svg]:w-3 [&_button]:h-5 [&_button]:text-xs"
       onMouseDown={(e) => e.stopPropagation()}
     >
       {footer ?? (
@@ -510,6 +546,7 @@ export function WindowPanel({
   // ────────────────────────────────────────────────────────────────────────
   const el = (
     <div
+      ref={fitContent ? fitContentRef : undefined}
       className={cn(
         "fixed flex flex-col",
         "rounded-xl bg-card/95 backdrop-blur-md border border-border shadow-xl",
@@ -519,8 +556,9 @@ export function WindowPanel({
       style={{
         left: rect.x,
         top: rect.y,
-        width: rect.width,
-        height: rect.height,
+        ...(fitContent && !isMinimized
+          ? { width: "max-content", height: "auto" }
+          : { width: rect.width, height: rect.height }),
         zIndex,
         minWidth: isMinimized ? 0 : (minWidth ?? 180),
         minHeight: isMinimized ? 0 : (minHeight ?? 80),
@@ -545,7 +583,12 @@ export function WindowPanel({
       {isDebugMode && <DebugStrip rect={rect} zIndex={zIndex} />}
 
       {!isMinimized && (
-        <div className={cn("flex-1 overflow-auto min-h-0", bodyClassName)}>
+        <div
+          className={cn(
+            fitContent ? "overflow-visible" : "flex-1 overflow-auto min-h-0",
+            bodyClassName,
+          )}
+        >
           {bodyContent}
         </div>
       )}

@@ -5,6 +5,6 @@
  */
 
 export {
-  AgentGuidedVariableInputs as GuidedVariableInputs,
+  AgentVariablesGuided as GuidedVariableInputs,
   type AgentGuidedVariableInputsProps as GuidedVariableInputsProps,
-} from "@/features/agents/components/inputs/variable-input-styles/AgentGuidedVariableInputs";
+} from "@/features/agents/components/inputs/variable-input-variations/AgentVariablesGuided";

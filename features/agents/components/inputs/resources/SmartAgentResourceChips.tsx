@@ -206,7 +206,7 @@ export function SmartAgentResourceChips({
   if (resources.length === 0) return null;
 
   return (
-    <div className="flex flex-wrap gap-1.5 px-2 py-1 border-b border-border">
+    <div className="flex flex-wrap gap-1.5 px-2 py-1 border-b border-border shrink-0">
       <AnimatePresence mode="popLayout">
         {resources.map((resource) => (
           <ResourceChip

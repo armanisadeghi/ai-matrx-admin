@@ -7,7 +7,7 @@ import { selectInstanceAgentName } from "@/features/agents/redux/execution-syste
 import { selectHasUserInput } from "@/features/agents/redux/execution-system/instance-user-input/instance-user-input.selectors";
 import { setPreExecutionSatisfied } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.slice";
 import { destroyInstance } from "@/features/agents/redux/execution-system/execution-instances/execution-instances.slice";
-import { SmartAgentInput } from "../../inputs/SmartAgentInput";
+import { SmartAgentInput } from "../../inputs/smart-input/SmartAgentInput";
 import { cn } from "@/lib/utils";
 
 // ─── Pre-execution compact card (portalled, no WindowPanel) ──────────────────

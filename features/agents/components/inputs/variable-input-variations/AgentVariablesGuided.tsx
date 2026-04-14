@@ -22,7 +22,7 @@ import { selectShouldShowVariables } from "@/features/agents/redux/execution-sys
 // TYPES
 // ============================================================================
 
-export interface AgentGuidedVariableInputsProps {
+export interface AgentVariablesGuidedProps {
   conversationId: string;
   disabled?: boolean;
   /** When true, renders with flat bottom (no bottom border-radius) for seamless join with chat input */
@@ -498,6 +498,9 @@ function GuidedVariableContent({
   switch (cc.type) {
     case "select":
     case "radio":
+    case "pill-toggle":
+    case "selection-list":
+    case "buttons":
       if (!cc.options?.length) {
         return (
           <GuidedTextarea
@@ -535,6 +538,7 @@ function GuidedVariableContent({
         />
       );
     case "toggle":
+    case "light-switch":
       return (
         <GuidedToggle
           value={value}
@@ -544,6 +548,7 @@ function GuidedVariableContent({
         />
       );
     case "number":
+    case "slider":
       return (
         <GuidedNumber
           value={value}
@@ -568,11 +573,11 @@ function GuidedVariableContent({
 // MAIN COMPONENT
 // ============================================================================
 
-export function AgentGuidedVariableInputs({
+export function AgentVariablesGuided({
   conversationId,
   disabled = false,
   seamless = false,
-}: AgentGuidedVariableInputsProps) {
+}: AgentVariablesGuidedProps) {
   const dispatch = useAppDispatch();
   const variableDefaults = useAppSelector(
     selectInstanceVariableDefinitions(conversationId),
@@ -711,7 +716,7 @@ export function AgentGuidedVariableInputs({
     return (
       <div
         className={cn(
-          `bg-card border border-border ${collapsedRadius} ${seamless ? "border-b-0" : ""}`,
+          `w-full bg-card border border-border ${collapsedRadius} ${seamless ? "border-b-0" : ""}`,
           disabled && "opacity-50 pointer-events-none",
         )}
       >
@@ -743,19 +748,16 @@ export function AgentGuidedVariableInputs({
   return (
     <div
       className={cn(
-        `bg-muted border border-border ${outerRadius} ${seamless ? "border-b-0" : ""}`,
+        `flex flex-col h-64 max-h-64 w-full overflow-hidden bg-muted border border-border ${outerRadius} ${seamless ? "border-b-0" : ""}`,
         disabled && "opacity-50 pointer-events-none",
       )}
       onKeyDown={handleKeyDown}
     >
       {/* Header — always visible, never scrolls */}
-      <div className="px-3 pt-2.5 pb-2 border-b border-border/40">
+      <div className="px-3 pt-2.5 pb-2 border-b border-border/40 shrink-0">
         {/* Row 1: progress dots + title + skip */}
         <div className="flex items-center gap-2">
           {progressDots}
-          <h3 className="flex-1 text-sm font-medium text-foreground truncate min-w-0">
-            {formattedName}
-          </h3>
           <button
             type="button"
             onClick={handleSkipAll}
@@ -765,18 +767,19 @@ export function AgentGuidedVariableInputs({
           </button>
         </div>
         {/* Row 2: description (only when present) */}
-        {helpText && (
-          <p className="ml-2 mt-1.5 text-xs text-muted-foreground leading-snug">
-            {helpText}
-          </p>
-        )}
+        <p className="mt-1.5 text-xs text-muted-foreground leading-snug break-words min-w-0 w-full">
+          {formattedName}
+          {helpText && (
+            <span className="text-muted-foreground">: {helpText}</span>
+          )}
+        </p>
       </div>
 
-      {/* Question content — only this area scrolls, with conditional bottom fade */}
-      <div className="relative">
+      {/* Question content — fills remaining space between header and nav, scrolls */}
+      <div className="relative flex-1 min-h-0 pb-3">
         <div
           ref={scrollRef}
-          className="max-h-[28vh] md:max-h-[35vh] overflow-y-auto overscroll-contain px-3 py-2"
+          className="h-full overflow-y-scroll overscroll-contain px-3 py-2"
         >
           <GuidedVariableContent
             variable={variable}
@@ -791,7 +794,7 @@ export function AgentGuidedVariableInputs({
       </div>
 
       {/* Navigation — always visible, never scrolls */}
-      <div className="flex items-center justify-between px-3 py-2 border-t border-border/50">
+      <div className="flex items-center justify-between px-3 py-2 border-t border-border/50 shrink-0">
         <button
           type="button"
           onClick={goPrev}

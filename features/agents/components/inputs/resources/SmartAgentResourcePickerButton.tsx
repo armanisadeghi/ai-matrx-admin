@@ -11,7 +11,7 @@
  */
 
 import { useState, useCallback } from "react";
-import { Paperclip } from "lucide-react";
+import { Database } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -125,12 +125,12 @@ export function SmartAgentResourcePickerButton({
     <Button
       variant="ghost"
       size="sm"
-      className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
+      className="h-7 w-7 p-1 text-muted-foreground hover:text-foreground"
       tabIndex={-1}
       title="Attach resource"
       onClick={useWindowMode ? () => setIsOpen(true) : undefined}
     >
-      <Paperclip className="w-3.5 h-3.5" />
+      <Database className="w-3 h-3" />
     </Button>
   );
 

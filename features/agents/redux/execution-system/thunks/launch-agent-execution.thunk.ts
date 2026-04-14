@@ -434,16 +434,15 @@ export const launchAgentExecution = createAsyncThunk<
   }
 
   // =========================================================================
-  // Step 3: Gate check — usePreExecutionInput blocks everything downstream.
+  // Step 3: Open the gate window if pre-execution input is required.
   //
-  // The gate window is opened here (not in a component) to avoid a
-  // chicken-and-egg problem: the real overlay widgets only mount after
-  // their overlay is open, so they can't be responsible for opening the gate.
+  // The gate is opened here (not in a component) to avoid a chicken-and-egg
+  // problem: the real overlay widgets only mount after their overlay is open,
+  // so they can't be responsible for opening the gate.
+  //
+  // The gate blocks thunk execution only — the real overlay still opens so
+  // the component is always ready to render once the user continues.
   // =========================================================================
-
-  if (!autoRun) {
-    return { conversationId };
-  }
 
   if (usePreExecutionInput) {
     const downstreamOverlayId = DISPLAY_MODE_TO_OVERLAY_ID[resolvedDisplayMode];
@@ -458,8 +457,8 @@ export const launchAgentExecution = createAsyncThunk<
   }
 
   // =========================================================================
-  // Step 1c: Open the overlay for the resolved display mode.
-  // Only reached when usePreExecutionInput is false (gate is not active).
+  // Step 4: Open the overlay for the resolved display mode.
+  // Always runs (regardless of autoRun) so the component renders immediately.
   // =========================================================================
 
   const overlayId = DISPLAY_MODE_TO_OVERLAY_ID[resolvedDisplayMode];
@@ -471,6 +470,14 @@ export const launchAgentExecution = createAsyncThunk<
         data: { conversationId: conversationId },
       }),
     );
+  }
+
+  // =========================================================================
+  // Step 5: autoRun=false — component is open, user triggers execution manually.
+  // =========================================================================
+
+  if (!autoRun) {
+    return { conversationId };
   }
 
   const isChatMode = conversationMode === "chat";

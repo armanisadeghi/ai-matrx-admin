@@ -2,7 +2,7 @@ export {
   VARIABLE_INPUT_STYLES,
   VARIABLE_INPUT_STYLE_OPTIONS,
   isVariableInputStyle,
-} from "./variable-input-style";
+} from "../components/inputs/variable-input-variations/variable-input-options";
 
 export type * from "./agent-message-types";
 export type * from "./agent-api-types";

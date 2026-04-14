@@ -1,20 +1,27 @@
 "use client";
 
+/**
+ * Renders one AgentVariableInputCard per definition (micro card UX), gated like other variable layouts.
+ */
+
 import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { selectInstanceVariableDefinitions } from "@/features/agents/redux/execution-system/instance-variable-values/instance-variable-values.selectors";
+import { selectShouldShowVariables } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
+import { selectShowVariablePanel } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { setUserVariableValue } from "@/features/agents/redux/execution-system/instance-variable-values/instance-variable-values.slice";
 import { selectUserVariableValues } from "@/features/agents/redux/execution-system/instance-variable-values/instance-variable-values.selectors";
 import type { VariableDefinition } from "@/features/agents/types/agent-definition.types";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Minus, Plus } from "lucide-react";
 
-export interface AgentVariableInputCardProps {
+interface AgentVariableInputCardProps {
   conversationId: string;
   variable: VariableDefinition;
   onSubmit: () => void;
 }
 
-export function AgentVariableInputCard({
+function AgentVariableInputCard({
   conversationId,
   variable,
   onSubmit,
@@ -32,7 +39,7 @@ export function AgentVariableInputCard({
   };
 
   return (
-    <div className="w-72 bg-card border border-border rounded-xl shadow-sm animate-in slide-in-from-bottom-2 duration-200 overflow-hidden">
+    <div className="w-full bg-card border border-border rounded-xl shadow-sm animate-in slide-in-from-bottom-2 duration-200 overflow-hidden">
       <div className="px-3 py-2">
         <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider block mb-1.5">
           {variable.name}
@@ -53,13 +60,16 @@ export function AgentVariableInputCard({
                 value={(currentValue as string) ?? ""}
                 onChange={setValue}
               />
-            ) : type === "toggle" ? (
+            ) : type === "toggle" || type === "light-switch" ? (
               <ToggleMicroInput
                 value={currentValue as string}
                 labels={comp?.toggleValues ?? ["On", "Off"]}
                 onChange={setValue}
               />
-            ) : type === "radio" ? (
+            ) : type === "radio" ||
+              type === "pill-toggle" ||
+              type === "selection-list" ||
+              type === "buttons" ? (
               <ChipsMicroInput
                 options={comp?.options ?? []}
                 selected={(currentValue as string) ?? ""}
@@ -79,7 +89,7 @@ export function AgentVariableInputCard({
                 value={(currentValue as string) ?? ""}
                 onChange={setValue}
               />
-            ) : type === "number" ? (
+            ) : type === "number" || type === "slider" ? (
               <NumberMicroInput
                 value={(currentValue as number) ?? comp?.min ?? 0}
                 min={comp?.min}
@@ -94,7 +104,6 @@ export function AgentVariableInputCard({
               />
             )}
           </div>
-          <SubmitArrow onClick={onSubmit} />
         </div>
       </div>
     </div>
@@ -276,6 +285,49 @@ function NumberMicroInput({
       >
         <Plus className="w-3 h-3" />
       </button>
+    </div>
+  );
+}
+
+interface AgentVariableCardsProps {
+  conversationId: string;
+  onSubmit?: () => void;
+}
+
+export function AgentVariableCards({
+  conversationId,
+  onSubmit,
+}: AgentVariableCardsProps) {
+  const showVariablePanel = useAppSelector(
+    selectShowVariablePanel(conversationId),
+  );
+  const shouldShowVariables = useAppSelector(
+    selectShouldShowVariables(conversationId),
+  );
+  const defs = useAppSelector(
+    selectInstanceVariableDefinitions(conversationId),
+  );
+
+  if (!shouldShowVariables || !showVariablePanel || defs.length === 0) {
+    return null;
+  }
+
+  const fire = onSubmit ?? (() => {});
+
+  return (
+    <div className="flex flex-col gap-2 border-b border-border px-2 py-2 max-h-64 overflow-y-auto">
+      {defs.map((variable) => (
+        <div
+          key={variable.name}
+          className="flex justify-center sm:justify-start"
+        >
+          <AgentVariableInputCard
+            conversationId={conversationId}
+            variable={variable}
+            onSubmit={fire}
+          />
+        </div>
+      ))}
     </div>
   );
 }

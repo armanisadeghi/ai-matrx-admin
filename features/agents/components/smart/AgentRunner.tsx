@@ -36,7 +36,7 @@ import {
 import { selectHasUserInput } from "@/features/agents/redux/execution-system/instance-user-input/instance-user-input.selectors";
 import { executeInstance } from "@/features/agents/redux/execution-system/thunks/execute-instance.thunk";
 import { executeChatInstance } from "@/features/agents/redux/execution-system/thunks/execute-chat-instance.thunk";
-import { SmartAgentInput } from "../inputs/SmartAgentInput";
+import { SmartAgentInput } from "../inputs/smart-input/SmartAgentInput";
 import { PreExecutionAgentInput } from "../inputs/PreExecutionAgentInput";
 import { AgentConversationDisplay } from "../run/AgentConversationDisplay";
 
@@ -101,37 +101,43 @@ export function AgentRunner({
     dispatch,
   ]);
 
-  console.log("needsPreExecution", needsPreExecution);
-
   // ── Pre-execution gate ─────────────────────────────────────────────────────
   if (needsPreExecution) {
-    console.log("needsPreExecution", needsPreExecution);
     return <PreExecutionAgentInput conversationId={conversationId} />;
   }
 
   // ── Main display ───────────────────────────────────────────────────────────
+  // Layout: relative container → conversation fills + scrolls freely behind the
+  // input → input panel is absolutely pinned to the bottom, overlaying the
+  // conversation. The conversation gets bottom padding equal to a reasonable
+  // input height so the last message is never hidden behind the input bar.
+  // The input panel itself uses max-h so variables can never overflow the
+  // container — they scroll internally instead.
   return (
     <div
-      className={`flex flex-col h-full max-w-[800px] overflow-hidden bg-background ${className}`}
+      className={`relative h-full max-w-[800px] overflow-hidden bg-background ${className}`}
     >
       {showTitle && title && (
-        <div className="px-4 py-2 border-b border-border shrink-0">
+        <div className="absolute top-0 left-0 right-0 z-10 px-4 py-2 border-b border-border bg-background">
           <p className="text-sm font-medium text-foreground truncate">
             {title}
           </p>
         </div>
       )}
 
-      <div className="flex-1 overflow-y-auto min-h-0 bg-background pt-2">
-        {/* <SmartAgentMessageList conversationId={conversationId} compact={compact} /> */}
+      {/* Conversation — fills entire container, scrolls freely under the input */}
+      <div
+        className={`absolute inset-0 overflow-y-auto bg-background pt-2 ${showTitle && title ? "top-9" : ""} ${shouldShowInput ? "pb-32" : "pb-2"}`}
+      >
         <AgentConversationDisplay
           conversationId={conversationId}
           compact={compact}
         />
       </div>
 
+      {/* Input panel — pinned to bottom, grows upward, never taller than 70% of container */}
       {shouldShowInput && (
-        <div className="shrink-0 flex items-center justify-center px-3 pb-3 pt-1 bg-background">
+        <div className="absolute bottom-0 left-0 right-0 z-20 flex items-end justify-center px-3 pb-3 pt-1 bg-gradient-to-t from-background via-background/95 to-transparent max-h-[70%] overflow-hidden">
           <SmartAgentInput
             conversationId={conversationId}
             surfaceKey={surfaceKey}

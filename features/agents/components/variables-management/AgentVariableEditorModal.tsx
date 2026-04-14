@@ -15,73 +15,73 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/ButtonMine";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { sanitizeVariableName } from "@/features/agents/utils/variable-utils";
-import type { VariableCustomComponent } from "@/features/agents/types/agent-definition.types";
-import type { VariableDefinition } from "@/features/agents/types/agent-definition.types";
+import type {
+  VariableCustomComponent,
+  VariableDefinition,
+} from "@/features/agents/types/agent-definition.types";
 import { AgentVariableEditor } from "./AgentVariableEditor";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface AgentVariableEditorModalProps {
+  agentId: string;
   isOpen: boolean;
   onClose: () => void;
-  onSave: (variable: VariableDefinition) => void;
-  existingVariable?: VariableDefinition;
+
+  // Edit mode: pass variableName → editor auto-saves via Redux
+  variableName?: string;
+
+  // Add mode: no variableName → controlled state, onAdd called on confirm
+  onAdd?: (variable: VariableDefinition) => void;
   existingNames: string[];
   mode: "add" | "edit";
 }
 
 export function AgentVariableEditorModal({
+  agentId,
   isOpen,
   onClose,
-  onSave,
-  existingVariable,
+  variableName,
+  onAdd,
   existingNames,
   mode,
 }: AgentVariableEditorModalProps) {
   const isMobile = useIsMobile();
-  const [name, setName] = useState("");
-  const [defaultValue, setDefaultValue] = useState("");
-  const [customComponent, setCustomComponent] = useState<
+
+  // Add-mode controlled state
+  const [newName, setNewName] = useState("");
+  const [newDefaultValue, setNewDefaultValue] = useState("");
+  const [newCustomComponent, setNewCustomComponent] = useState<
     VariableCustomComponent | undefined
-  >();
-  const [required, setRequired] = useState(false);
-  const [helpText, setHelpText] = useState("");
+  >(undefined);
+  const [newRequired, setNewRequired] = useState(false);
+  const [newHelpText, setNewHelpText] = useState("");
 
   useEffect(() => {
-    if (mode === "edit" && existingVariable) {
-      setName(existingVariable.name);
-      setDefaultValue(String(existingVariable.defaultValue ?? ""));
-      // customComponent stored as object in JSONB
-      setCustomComponent(
-        existingVariable.customComponent
-          ? (existingVariable.customComponent as unknown as VariableCustomComponent)
-          : undefined,
-      );
-      setRequired(existingVariable.required ?? false);
-      setHelpText(existingVariable.helpText ?? "");
-    } else {
-      setName("");
-      setDefaultValue("");
-      setCustomComponent(undefined);
-      setRequired(false);
-      setHelpText("");
+    if (isOpen && mode === "add") {
+      setNewName("");
+      setNewDefaultValue("");
+      setNewCustomComponent(undefined);
+      setNewRequired(false);
+      setNewHelpText("");
     }
-  }, [isOpen, mode, existingVariable]);
+  }, [isOpen, mode]);
 
-  const sanitizedName = name.trim() ? sanitizeVariableName(name) : "";
+  const sanitizedName = newName.trim() ? sanitizeVariableName(newName) : "";
   const isDuplicate =
-    mode === "add" && sanitizedName && existingNames.includes(sanitizedName);
+    mode === "add" && !!sanitizedName && existingNames.includes(sanitizedName);
+  const canAdd = mode === "add" && !!sanitizedName && !isDuplicate;
 
-  const handleSave = () => {
-    if (!sanitizedName || isDuplicate) return;
-    onSave({
+  const handleAdd = () => {
+    if (!canAdd || !onAdd) return;
+    onAdd({
       name: sanitizedName,
-      defaultValue,
-      customComponent: customComponent ?? undefined,
-      required: required || undefined,
-      helpText: helpText || undefined,
+      defaultValue: newDefaultValue,
+      customComponent: newCustomComponent,
+      required: newRequired || undefined,
+      helpText: newHelpText || undefined,
     });
     onClose();
   };
@@ -90,28 +90,48 @@ export function AgentVariableEditorModal({
 
   const content = (
     <>
-      <AgentVariableEditor
-        name={name}
-        defaultValue={defaultValue}
-        customComponent={customComponent}
-        required={required}
-        helpText={helpText}
-        existingNames={existingNames}
-        originalName={mode === "edit" ? existingVariable?.name : undefined}
-        onNameChange={setName}
-        onDefaultValueChange={setDefaultValue}
-        onCustomComponentChange={setCustomComponent}
-        onRequiredChange={setRequired}
-        onHelpTextChange={setHelpText}
-      />
-      <div className="flex justify-end gap-2 pt-4">
-        <Button variant="outline" onClick={onClose}>
-          Cancel
-        </Button>
-        <Button onClick={handleSave} disabled={!sanitizedName || !!isDuplicate}>
-          {mode === "add" ? "Add Variable" : "Save Changes"}
-        </Button>
-      </div>
+      {mode === "edit" && variableName ? (
+        // Existing variable — AgentVariableEditor dispatches directly
+        <AgentVariableEditor
+          agentId={agentId}
+          variableName={variableName}
+          existingNames={existingNames}
+        />
+      ) : (
+        // New variable — controlled
+        <AgentVariableEditor
+          name={newName}
+          defaultValue={newDefaultValue}
+          customComponent={newCustomComponent}
+          required={newRequired}
+          helpText={newHelpText}
+          existingNames={existingNames}
+          onNameChange={setNewName}
+          onDefaultValueChange={setNewDefaultValue}
+          onCustomComponentChange={setNewCustomComponent}
+          onRequiredChange={setNewRequired}
+          onHelpTextChange={setNewHelpText}
+        />
+      )}
+
+      {mode === "add" && (
+        <div className="flex justify-end gap-2 pt-4">
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button onClick={handleAdd} disabled={!canAdd}>
+            Add Variable
+          </Button>
+        </div>
+      )}
+
+      {mode === "edit" && (
+        <div className="flex justify-end pt-4">
+          <Button variant="outline" onClick={onClose}>
+            Done
+          </Button>
+        </div>
+      )}
     </>
   );
 
@@ -122,7 +142,7 @@ export function AgentVariableEditorModal({
           <DrawerHeader className="px-0">
             <DrawerTitle>{title}</DrawerTitle>
             <DrawerDescription>
-              <span className="sr-only">Variables</span>
+              <span className="sr-only">Variable editor</span>
             </DrawerDescription>
           </DrawerHeader>
           <ScrollArea className="flex-1 overflow-y-auto pb-4">
@@ -135,11 +155,11 @@ export function AgentVariableEditorModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="sm:max-w-[500px] max-h-[90dvh] overflow-hidden flex flex-col">
+      <DialogContent className="sm:max-w-[500px] max-h-[90dvh] overflow-hidden flex flex-col p-3">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
-            <span className="sr-only">Variables</span>
+            <span className="sr-only">Variable editor</span>
           </DialogDescription>
         </DialogHeader>
         <ScrollArea className="flex-1 overflow-y-auto pr-1">

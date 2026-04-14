@@ -31,10 +31,10 @@ import {
   selectShowVariablePanel,
 } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { setExpandedVariableId } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.slice";
-import { VariableInputComponent } from "@/features/prompts/components/variable-inputs";
+import { VariableInputComponent } from "./input-components";
 import { formatText } from "@/utils/text/text-case-converter";
 
-interface SmartAgentVariableInputsProps {
+interface AgentVariablesInlineProps {
   conversationId: string;
   /** Pass through to VariableInputComponent for compact display */
   compact?: boolean;
@@ -43,15 +43,17 @@ interface SmartAgentVariableInputsProps {
   submitOnEnter?: boolean;
 }
 
-export function SmartAgentVariableInputs({
+export function AgentVariablesInline({
   conversationId,
   compact = false,
   onSubmit,
   submitOnEnter = true,
-}: SmartAgentVariableInputsProps) {
+}: AgentVariablesInlineProps) {
   const dispatch = useAppDispatch();
 
-  const showVariablePanel = useAppSelector(selectShowVariablePanel(conversationId));
+  const showVariablePanel = useAppSelector(
+    selectShowVariablePanel(conversationId),
+  );
   const shouldShowVariables = useAppSelector(
     selectShouldShowVariables(conversationId),
   );
@@ -106,7 +108,10 @@ export function SmartAgentVariableInputs({
     return null;
 
   return (
-    <div className="border-b border-border" data-variable-inputs>
+    <div
+      className="bg-transparent border-b border-border max-h-72 overflow-y-scroll w-full shrink-0"
+      data-variable-inputs
+    >
       {definitions.map((variable, index) => {
         const isExpanded = expandedVariableId === variable.name;
         const rawValue =
@@ -121,13 +126,14 @@ export function SmartAgentVariableInputs({
             <Popover
               key={variable.name}
               open
+              modal={false}
               onOpenChange={(open) => {
                 if (!open) handleExpand(null);
               }}
             >
               <PopoverTrigger asChild>
                 <div
-                  className="w-full flex items-center gap-2 pl-1.5 pr-3 h-12 bg-background/50 border-b border-border cursor-pointer hover:border-muted-foreground/40 transition-colors group"
+                  className="flex items-center gap-2 pl-1.5 pr-3 h-6 bg-transparent border-b border-border hover:bg-muted/50 transition-colors focus-within:border-primary/50 group w-full"
                   onClick={() => handleExpand(variable.name)}
                   tabIndex={index + 1}
                 >
@@ -145,14 +151,15 @@ export function SmartAgentVariableInputs({
                       </span>
                     )}
                   </div>
-                  <ChevronUp className="w-4 h-4 text-primary shrink-0" />
+                  <ChevronUp className="w-3.5 h-3.5 text-primary shrink-0" />
                 </div>
               </PopoverTrigger>
               <PopoverContent
-                className="w-[500px] max-h-[500px] p-2 border-border overflow-y-auto"
-                align="center"
+                className="max-h-[500px] p-2 border-border overflow-y-auto"
+                style={{ width: "var(--radix-popover-trigger-width)" }}
+                align="start"
                 side="top"
-                sideOffset={8}
+                sideOffset={0}
               >
                 <VariableInputComponent
                   value={value}
@@ -171,7 +178,7 @@ export function SmartAgentVariableInputs({
         return (
           <div
             key={variable.name}
-            className="flex items-center gap-2 pl-1.5 pr-3 h-6 bg-background border-b border-border hover:bg-muted/50 transition-colors focus-within:border-primary/50 group"
+            className="flex items-center gap-2 pl-1.5 pr-3 h-6 bg-transparent border-b border-border hover:bg-muted/50 transition-colors focus-within:border-primary/50 group"
           >
             <Label
               className="text-xs font-medium text-muted-foreground whitespace-nowrap flex-shrink-0 cursor-pointer"

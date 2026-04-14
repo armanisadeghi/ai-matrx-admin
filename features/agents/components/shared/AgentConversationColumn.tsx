@@ -4,7 +4,7 @@ import { useState, useRef, useCallback } from "react";
 import { ArrowDown } from "lucide-react";
 import { AgentConversationDisplay } from "../run/AgentConversationDisplay";
 import { CreatorRunPanel } from "../run-controls/CreatorRunPanel";
-import { SmartAgentInput } from "../inputs/SmartAgentInput";
+import { SmartAgentInput } from "../inputs/smart-input/SmartAgentInput";
 
 import { cn } from "@/lib/utils";
 

@@ -304,7 +304,7 @@ export function AgentTextarea({
   }
 
   return (
-    <div className="px-2 pt-1.5 relative">
+    <div className="px-2 pt-1.5 relative shrink-0">
       <div ref={wrapperRef} className="relative">
         <textarea
           ref={textareaRef}
