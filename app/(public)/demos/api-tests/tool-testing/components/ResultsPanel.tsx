@@ -1,14 +1,22 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { useState, useMemo } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   Activity,
   Eye,
@@ -29,33 +37,35 @@ import {
   Code2,
   CheckCircle2,
   XCircle,
-} from 'lucide-react';
-import { toast } from 'sonner';
-import { StreamEventTimeline } from './StreamEventTimeline';
-import { SchemaValidator, validateAgainstSchema } from './SchemaValidator';
-import { CostEstimateTable } from './CostEstimateTable';
-import { ToolRendererPreview } from './ToolRendererPreview';
-import { useSaveSample } from '../hooks/useSaveSample';
-import type { StreamEvent } from '@/types/python-generated/stream-events';
-import type {
-  ToolStreamEvent,
-  FinalPayload,
-  ExecutionStatus,
-} from '../types';
+} from "lucide-react";
+import { toast } from "sonner";
+import { StreamEventTimeline } from "./StreamEventTimeline";
+import { SchemaValidator, validateAgainstSchema } from "./SchemaValidator";
+import { CostEstimateTable } from "./CostEstimateTable";
+import { ToolRendererPreview } from "./ToolRendererPreview";
+import { useSaveSample } from "../hooks/useSaveSample";
+import type { TypedStreamEvent } from "@/types/python-generated/stream-events";
+import type { ToolStreamEvent, FinalPayload, ExecutionStatus } from "../types";
 
 // ─── Copy button ────────────────────────────────────────────────────────────
 
-function CopyButton({ content, label = 'Copy' }: { content: string; label?: string }) {
+function CopyButton({
+  content,
+  label = "Copy",
+}: {
+  content: string;
+  label?: string;
+}) {
   const [copied, setCopied] = useState(false);
   const handleCopy = async () => {
     if (!content) return;
     try {
       await navigator.clipboard.writeText(content);
       setCopied(true);
-      toast.success('Copied to clipboard');
+      toast.success("Copied to clipboard");
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error('Failed to copy');
+      toast.error("Failed to copy");
     }
   };
   return (
@@ -66,33 +76,47 @@ function CopyButton({ content, label = 'Copy' }: { content: string; label?: stri
       onClick={handleCopy}
       disabled={!content}
     >
-      {copied ? <Check className="h-3 w-3 text-success" /> : <Copy className="h-3 w-3" />}
-      {copied ? 'Copied' : label}
+      {copied ? (
+        <Check className="h-3 w-3 text-success" />
+      ) : (
+        <Copy className="h-3 w-3" />
+      )}
+      {copied ? "Copied" : label}
     </Button>
   );
 }
 
 // ─── Save Sample Popover ─────────────────────────────────────────────────────
 
-type SuccessVote = 'yes' | 'no' | null;
+type SuccessVote = "yes" | "no" | null;
 
 interface SaveSamplePopoverProps {
   disabled: boolean;
-  onSave: (opts: { adminComments: string; isSuccess: boolean | null; useForComponent: boolean }) => Promise<void>;
+  onSave: (opts: {
+    adminComments: string;
+    isSuccess: boolean | null;
+    useForComponent: boolean;
+  }) => Promise<void>;
   isSaving: boolean;
   savedId: string | null;
 }
 
-function SaveSamplePopover({ disabled, onSave, isSaving, savedId }: SaveSamplePopoverProps) {
+function SaveSamplePopover({
+  disabled,
+  onSave,
+  isSaving,
+  savedId,
+}: SaveSamplePopoverProps) {
   const [open, setOpen] = useState(false);
-  const [adminComments, setAdminComments] = useState('');
+  const [adminComments, setAdminComments] = useState("");
   const [successVote, setSuccessVote] = useState<SuccessVote>(null);
   const [useForComponent, setUseForComponent] = useState(false);
 
   const handleSave = async () => {
     await onSave({
-      adminComments: adminComments.trim() || '',
-      isSuccess: successVote === 'yes' ? true : successVote === 'no' ? false : null,
+      adminComments: adminComments.trim() || "",
+      isSuccess:
+        successVote === "yes" ? true : successVote === "no" ? false : null,
       useForComponent,
     });
     setOpen(false);
@@ -126,20 +150,24 @@ function SaveSamplePopover({ disabled, onSave, isSaving, savedId }: SaveSamplePo
 
           {/* Success vote */}
           <div className="space-y-1">
-            <Label className="text-[11px] text-muted-foreground">Success?</Label>
+            <Label className="text-[11px] text-muted-foreground">
+              Success?
+            </Label>
             <div className="flex gap-1.5">
               <Button
                 size="sm"
-                variant={successVote === 'yes' ? 'default' : 'outline'}
+                variant={successVote === "yes" ? "default" : "outline"}
                 className="h-7 text-xs px-2.5 gap-1 flex-1"
-                onClick={() => setSuccessVote(successVote === 'yes' ? null : 'yes')}
+                onClick={() =>
+                  setSuccessVote(successVote === "yes" ? null : "yes")
+                }
               >
                 <ThumbsUp className="h-3 w-3" />
                 Yes
               </Button>
               <Button
                 size="sm"
-                variant={successVote === null ? 'secondary' : 'outline'}
+                variant={successVote === null ? "secondary" : "outline"}
                 className="h-7 text-xs px-2.5 gap-1 flex-1"
                 onClick={() => setSuccessVote(null)}
               >
@@ -148,9 +176,11 @@ function SaveSamplePopover({ disabled, onSave, isSaving, savedId }: SaveSamplePo
               </Button>
               <Button
                 size="sm"
-                variant={successVote === 'no' ? 'destructive' : 'outline'}
+                variant={successVote === "no" ? "destructive" : "outline"}
                 className="h-7 text-xs px-2.5 gap-1 flex-1"
-                onClick={() => setSuccessVote(successVote === 'no' ? null : 'no')}
+                onClick={() =>
+                  setSuccessVote(successVote === "no" ? null : "no")
+                }
               >
                 <ThumbsDown className="h-3 w-3" />
                 No
@@ -160,7 +190,9 @@ function SaveSamplePopover({ disabled, onSave, isSaving, savedId }: SaveSamplePo
 
           {/* Admin comments */}
           <div className="space-y-1">
-            <Label className="text-[11px] text-muted-foreground">Comments</Label>
+            <Label className="text-[11px] text-muted-foreground">
+              Comments
+            </Label>
             <Textarea
               placeholder="Notes about this sample response…"
               value={adminComments}
@@ -171,7 +203,10 @@ function SaveSamplePopover({ disabled, onSave, isSaving, savedId }: SaveSamplePo
 
           {/* Use for component */}
           <div className="flex items-center justify-between">
-            <Label className="text-[11px] text-muted-foreground cursor-pointer" htmlFor="use-for-component">
+            <Label
+              className="text-[11px] text-muted-foreground cursor-pointer"
+              htmlFor="use-for-component"
+            >
               Use for component
             </Label>
             <Switch
@@ -226,7 +261,7 @@ interface ResultsPanelProps {
   toolSchema?: Record<string, unknown> | null;
   args: Record<string, unknown>;
   toolEvents: ToolStreamEvent[];
-  rawLines: StreamEvent[];
+  rawLines: TypedStreamEvent[];
   finalPayload: FinalPayload | null;
   rawJsonLog: string;
   executionStatus: ExecutionStatus;
@@ -249,19 +284,27 @@ export function ResultsPanel({
   onClear,
   authToken,
 }: ResultsPanelProps) {
-  const isRunning = executionStatus === 'running' || executionStatus === 'connecting';
-  const isComplete = executionStatus === 'complete';
-  const isError = executionStatus === 'error';
+  const isRunning =
+    executionStatus === "running" || executionStatus === "connecting";
+  const isComplete = executionStatus === "complete";
+  const isError = executionStatus === "error";
   const duration = finalPayload?.output?.full_result?.duration_ms;
   const canSave = (isComplete || isError) && !!finalPayload;
 
   // Schema — prefer the tool-level schema (available immediately on selection),
   // fall back to what comes back in the execution metadata
-  const activeSchema = toolSchema ?? finalPayload?.metadata?.output_schema ?? null;
+  const activeSchema =
+    toolSchema ?? finalPayload?.metadata?.output_schema ?? null;
   const schemaOutput = finalPayload?.output?.full_result?.output ?? null;
   const toolSuccess = finalPayload?.output?.full_result?.success ?? false;
   const schemaValidation = useMemo(() => {
-    if (!activeSchema || !toolSuccess || schemaOutput === null || schemaOutput === undefined) return null;
+    if (
+      !activeSchema ||
+      !toolSuccess ||
+      schemaOutput === null ||
+      schemaOutput === undefined
+    )
+      return null;
     return validateAgainstSchema(schemaOutput, activeSchema);
   }, [schemaOutput, activeSchema, toolSuccess]);
 
@@ -283,11 +326,13 @@ export function ResultsPanel({
         isSuccess: opts.isSuccess,
         useForComponent: opts.useForComponent,
       });
-      toast.success('Sample saved', {
-        description: opts.useForComponent ? 'Marked for component development.' : undefined,
+      toast.success("Sample saved", {
+        description: opts.useForComponent
+          ? "Marked for component development."
+          : undefined,
       });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to save sample');
+      toast.error(err instanceof Error ? err.message : "Failed to save sample");
     }
   };
 
@@ -301,13 +346,19 @@ export function ResultsPanel({
         <div className="flex items-center gap-2 min-w-0">
           <span className="text-xs font-semibold flex-shrink-0">Results</span>
           {isRunning && (
-            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 gap-1">
+            <Badge
+              variant="secondary"
+              className="text-[10px] px-1.5 py-0 gap-1"
+            >
               <Loader2 className="h-2.5 w-2.5 animate-spin" />
               Running
             </Badge>
           )}
           {isComplete && (
-            <Badge variant="default" className="text-[10px] px-1.5 py-0 gap-1 bg-primary text-foreground">
+            <Badge
+              variant="default"
+              className="text-[10px] px-1.5 py-0 gap-1 bg-primary text-foreground"
+            >
               <Check className="h-2.5 w-2.5" />
               Complete
             </Badge>
@@ -324,7 +375,10 @@ export function ResultsPanel({
             </span>
           )}
           {finalPayload?.metadata?.call_id && (
-            <span className="text-[10px] text-muted-foreground font-mono truncate max-w-[160px]" title={finalPayload.metadata.call_id}>
+            <span
+              className="text-[10px] text-muted-foreground font-mono truncate max-w-[160px]"
+              title={finalPayload.metadata.call_id}
+            >
               {finalPayload.metadata.call_id}
             </span>
           )}
@@ -340,7 +394,9 @@ export function ResultsPanel({
                 </span>
               </TooltipTrigger>
               <TooltipContent className="text-xs">
-                {schemaValidation.valid ? 'Output matches registered schema' : 'Output does not match schema'}
+                {schemaValidation.valid
+                  ? "Output matches registered schema"
+                  : "Output does not match schema"}
               </TooltipContent>
             </Tooltip>
           )}
@@ -348,7 +404,9 @@ export function ResultsPanel({
         <div className="flex items-center gap-1.5">
           {finalPayload?.metadata?.cost_estimate && (
             <span className="text-[10px] text-muted-foreground font-mono">
-              ~{finalPayload.metadata.cost_estimate.estimated_tokens.toLocaleString()} tokens
+              ~
+              {finalPayload.metadata.cost_estimate.estimated_tokens.toLocaleString()}{" "}
+              tokens
             </span>
           )}
           <SaveSamplePopover
@@ -378,7 +436,10 @@ export function ResultsPanel({
       )}
 
       {/* Tabs */}
-      <Tabs defaultValue="stream" className="flex-1 flex flex-col overflow-hidden min-h-0 px-3 pt-2">
+      <Tabs
+        defaultValue="stream"
+        className="flex-1 flex flex-col overflow-hidden min-h-0 px-3 pt-2"
+      >
         <TabsList className="grid w-full grid-cols-7 h-8 flex-shrink-0">
           <TabsTrigger value="stream" className="text-[10px] gap-1">
             <Activity className="h-3 w-3" />
@@ -411,7 +472,10 @@ export function ResultsPanel({
         </TabsList>
 
         {/* Stream Events */}
-        <TabsContent value="stream" className="flex-1 overflow-hidden mt-2 rounded border bg-card">
+        <TabsContent
+          value="stream"
+          className="flex-1 overflow-hidden mt-2 rounded border bg-card"
+        >
           <StreamEventTimeline
             toolEvents={toolEvents}
             rawLines={rawLines}
@@ -420,7 +484,10 @@ export function ResultsPanel({
         </TabsContent>
 
         {/* Rendered Result (via tool renderer system) */}
-        <TabsContent value="rendered" className="flex-1 overflow-y-auto mt-2 rounded border bg-card">
+        <TabsContent
+          value="rendered"
+          className="flex-1 overflow-y-auto mt-2 rounded border bg-card"
+        >
           <ToolRendererPreview
             toolName={toolName}
             args={args}
@@ -431,13 +498,16 @@ export function ResultsPanel({
         </TabsContent>
 
         {/* Model-Facing Result */}
-        <TabsContent value="model-facing" className="flex-1 flex flex-col overflow-hidden mt-2 rounded border bg-muted/30">
+        <TabsContent
+          value="model-facing"
+          className="flex-1 flex flex-col overflow-hidden mt-2 rounded border bg-muted/30"
+        >
           <div className="flex justify-between items-center px-3 py-1.5 border-b flex-shrink-0">
             <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
               Model-Facing Result
             </span>
             <CopyButton
-              content={finalPayload?.output?.model_facing_result?.content ?? ''}
+              content={finalPayload?.output?.model_facing_result?.content ?? ""}
               label="Copy"
             />
           </div>
@@ -446,10 +516,16 @@ export function ResultsPanel({
               <div className="space-y-3">
                 <div className="flex items-center gap-2 flex-wrap">
                   <Badge
-                    variant={finalPayload.output.model_facing_result.is_error ? 'destructive' : 'outline'}
+                    variant={
+                      finalPayload.output.model_facing_result.is_error
+                        ? "destructive"
+                        : "outline"
+                    }
                     className="text-[10px]"
                   >
-                    {finalPayload.output.model_facing_result.is_error ? 'Error' : 'Success'}
+                    {finalPayload.output.model_facing_result.is_error
+                      ? "Error"
+                      : "Success"}
                   </Badge>
                   <span className="text-[10px] text-muted-foreground font-mono">
                     call_id: {finalPayload.output.model_facing_result.call_id}
@@ -468,7 +544,10 @@ export function ResultsPanel({
         </TabsContent>
 
         {/* Schema Validation */}
-        <TabsContent value="schema" className="flex-1 overflow-hidden mt-2 rounded border bg-card">
+        <TabsContent
+          value="schema"
+          className="flex-1 overflow-hidden mt-2 rounded border bg-card"
+        >
           <SchemaValidator
             output={schemaOutput}
             schema={activeSchema}
@@ -478,7 +557,10 @@ export function ResultsPanel({
         </TabsContent>
 
         {/* Raw Output */}
-        <TabsContent value="output" className="flex-1 overflow-hidden mt-2 rounded border bg-card">
+        <TabsContent
+          value="output"
+          className="flex-1 overflow-hidden mt-2 rounded border bg-card"
+        >
           <SchemaValidator
             output={schemaOutput}
             schema={activeSchema}
@@ -488,12 +570,20 @@ export function ResultsPanel({
         </TabsContent>
 
         {/* Usage Estimate */}
-        <TabsContent value="usage" className="flex-1 overflow-y-auto mt-2 rounded border bg-card">
-          <CostEstimateTable costEstimate={finalPayload?.metadata?.cost_estimate ?? null} />
+        <TabsContent
+          value="usage"
+          className="flex-1 overflow-y-auto mt-2 rounded border bg-card"
+        >
+          <CostEstimateTable
+            costEstimate={finalPayload?.metadata?.cost_estimate ?? null}
+          />
         </TabsContent>
 
         {/* JSON Stream */}
-        <TabsContent value="json" className="flex-1 flex flex-col overflow-hidden mt-2 rounded border bg-muted/30">
+        <TabsContent
+          value="json"
+          className="flex-1 flex flex-col overflow-hidden mt-2 rounded border bg-muted/30"
+        >
           <div className="flex justify-between items-center px-3 py-1.5 border-b flex-shrink-0">
             <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
               Raw NDJSON Stream
@@ -502,7 +592,7 @@ export function ResultsPanel({
           </div>
           <div className="flex-1 overflow-y-auto min-h-0 p-3">
             <pre className="text-[10px] font-mono whitespace-pre-wrap text-foreground/70">
-              {rawJsonLog || 'No JSON data yet...'}
+              {rawJsonLog || "No JSON data yet..."}
             </pre>
           </div>
         </TabsContent>

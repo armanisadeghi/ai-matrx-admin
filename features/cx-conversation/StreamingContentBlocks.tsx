@@ -15,12 +15,11 @@
  * instead. This shim is kept only for backward compatibility.
  */
 
-import React from "react";
 import MarkdownStream from "@/components/MarkdownStream";
-import type { StreamEvent } from "@/types/python-generated/stream-events";
+import type { TypedStreamEvent } from "@/types/python-generated/stream-events";
 
 interface StreamingContentBlocksProps {
-  streamEvents: StreamEvent[];
+  streamEvents: TypedStreamEvent[];
   isStreaming: boolean;
 }
 

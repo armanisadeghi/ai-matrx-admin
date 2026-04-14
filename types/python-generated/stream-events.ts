@@ -55,15 +55,9 @@ export type ToolEventType =
   | "tool_error"
   | "tool_delegated";
 
-export type WarningLevel =
-  | "low"
-  | "medium"
-  | "high";
+export type WarningLevel = "low" | "medium" | "high";
 
-export type InitCompletionStatus =
-  | "success"
-  | "failed"
-  | "cancelled";
+export type InitCompletionStatus = "success" | "failed" | "cancelled";
 
 export interface ChunkPayload {
   text: string;
@@ -74,7 +68,19 @@ export interface ReasoningChunkPayload {
 }
 
 export interface PhasePayload {
-  phase: "connected" | "processing" | "generating" | "using_tools" | "persisting" | "searching" | "scraping" | "analyzing" | "synthesizing" | "retrying" | "executing" | "complete";
+  phase:
+    | "connected"
+    | "processing"
+    | "generating"
+    | "using_tools"
+    | "persisting"
+    | "searching"
+    | "scraping"
+    | "analyzing"
+    | "synthesizing"
+    | "retrying"
+    | "executing"
+    | "complete";
 }
 
 export interface WarningPayload {
@@ -94,14 +100,24 @@ export interface InfoPayload {
 }
 
 export interface InitPayload {
-  operation: "llm_request" | "tool_execution" | "user_request" | "sub_agent" | "persistence";
+  operation:
+    | "llm_request"
+    | "tool_execution"
+    | "user_request"
+    | "sub_agent"
+    | "persistence";
   operation_id: string;
   parent_operation_id?: string | null;
   metadata?: Record<string, unknown>;
 }
 
 export interface CompletionPayload {
-  operation: "llm_request" | "tool_execution" | "user_request" | "sub_agent" | "persistence";
+  operation:
+    | "llm_request"
+    | "tool_execution"
+    | "user_request"
+    | "sub_agent"
+    | "persistence";
   operation_id: string;
   status: "success" | "failed" | "cancelled";
   result?: Record<string, unknown>;
@@ -116,7 +132,14 @@ export interface ErrorPayload {
 }
 
 export interface ToolEventPayload {
-  event: "tool_started" | "tool_progress" | "tool_step" | "tool_result_preview" | "tool_completed" | "tool_error" | "tool_delegated";
+  event:
+    | "tool_started"
+    | "tool_progress"
+    | "tool_step"
+    | "tool_result_preview"
+    | "tool_completed"
+    | "tool_error"
+    | "tool_delegated";
   call_id: string;
   tool_name: string;
   timestamp?: number;
@@ -205,7 +228,14 @@ export interface ConversationLabeledData {
 export interface QuestionnaireQuestion {
   id: string;
   prompt: string;
-  component_type: "dropdown" | "checkboxes" | "radio" | "toggle" | "slider" | "input" | "textarea";
+  component_type:
+    | "dropdown"
+    | "checkboxes"
+    | "radio"
+    | "toggle"
+    | "slider"
+    | "input"
+    | "textarea";
   options?: string[];
   min?: number | null;
   max?: number | null;
@@ -470,11 +500,20 @@ export type TypedCompletionEvent =
   | PersistenceCompletionEvent;
 
 const TYPED_COMPLETION_EVENT_OPERATIONS = new Set<Operation>([
-  "llm_request", "tool_execution", "user_request", "sub_agent", "persistence",
+  "llm_request",
+  "tool_execution",
+  "user_request",
+  "sub_agent",
+  "persistence",
 ]);
 
-export function isTypedCompletionEvent(e: CompletionPayload): e is CompletionPayload & TypedCompletionEvent {
-  return TYPED_COMPLETION_EVENT_OPERATIONS.has(e.operation as Operation) && e.result !== undefined;
+export function isTypedCompletionEvent(
+  e: CompletionPayload,
+): e is CompletionPayload & TypedCompletionEvent {
+  return (
+    TYPED_COMPLETION_EVENT_OPERATIONS.has(e.operation as Operation) &&
+    e.result !== undefined
+  );
 }
 
 // --- Tool Event Data Models ---
@@ -604,11 +643,21 @@ export type TypedToolEvent =
   | ToolDelegatedToolEvent;
 
 const TYPED_TOOL_EVENT_TYPES = new Set<ToolEventType>([
-  "tool_started", "tool_progress", "tool_step", "tool_result_preview", "tool_completed", "tool_error", "tool_delegated",
+  "tool_started",
+  "tool_progress",
+  "tool_step",
+  "tool_result_preview",
+  "tool_completed",
+  "tool_error",
+  "tool_delegated",
 ]);
 
-export function isTypedToolEvent(e: ToolEventPayload): e is ToolEventPayload & TypedToolEvent {
-  return TYPED_TOOL_EVENT_TYPES.has(e.event as ToolEventType) && e.data !== undefined;
+export function isTypedToolEvent(
+  e: ToolEventPayload,
+): e is ToolEventPayload & TypedToolEvent {
+  return (
+    TYPED_TOOL_EVENT_TYPES.has(e.event as ToolEventType) && e.data !== undefined
+  );
 }
 
 // --- Render Block Data Models (RenderBlockPayload.data per type) ---
@@ -635,8 +684,7 @@ export interface TaskItem {
   children?: TaskItem[];
 }
 
-export interface TaskItem {
-}
+export interface TaskItem {}
 
 export interface QuizQuestion {
   id: number;
@@ -871,8 +919,7 @@ export interface DecisionNode {
   estimatedTime?: string | null;
 }
 
-export interface DecisionNode {
-}
+export interface DecisionNode {}
 
 export interface QuestionnaireSection {
   title?: string;
@@ -883,8 +930,7 @@ export interface QuestionnaireSection {
   jsonBlocks?: Record<string, unknown>[];
 }
 
-export interface TextBlockData {
-}
+export interface TextBlockData {}
 
 export interface CodeBlockData {
   language?: string;
@@ -898,11 +944,9 @@ export interface DiffBlockData {
   code?: string;
 }
 
-export interface ThinkingBlockData {
-}
+export interface ThinkingBlockData {}
 
-export interface ReasoningBlockData {
-}
+export interface ReasoningBlockData {}
 
 export interface ConsolidatedReasoningBlockData {
   reasoning_texts: string[];
@@ -1048,7 +1092,13 @@ export interface DiagramNode {
 export interface DiagramBlockData {
   title: string;
   description?: string | null;
-  type?: "flowchart" | "mindmap" | "orgchart" | "network" | "system" | "process";
+  type?:
+    | "flowchart"
+    | "mindmap"
+    | "orgchart"
+    | "network"
+    | "system"
+    | "process";
   nodes?: DiagramNode[];
   edges?: DiagramEdge[];
   layout?: DiagramLayout;
@@ -1657,10 +1707,46 @@ export type TypedRenderBlock =
   | ToolRenderBlock;
 
 const TYPED_RENDER_BLOCK_TYPES = new Set<string>([
-  "text", "code", "table", "thinking", "reasoning", "consolidated_reasoning", "image", "video", "tasks", "transcript", "structured_info", "matrxBroker", "questionnaire", "flashcards", "quiz", "presentation", "cooking_recipe", "timeline", "progress_tracker", "comparison_table", "troubleshooting", "resources", "decision_tree", "decision", "research", "diagram", "math_problem", "artifact", "info", "task", "database", "private", "plan", "event", "tool",
+  "text",
+  "code",
+  "table",
+  "thinking",
+  "reasoning",
+  "consolidated_reasoning",
+  "image",
+  "video",
+  "tasks",
+  "transcript",
+  "structured_info",
+  "matrxBroker",
+  "questionnaire",
+  "flashcards",
+  "quiz",
+  "presentation",
+  "cooking_recipe",
+  "timeline",
+  "progress_tracker",
+  "comparison_table",
+  "troubleshooting",
+  "resources",
+  "decision_tree",
+  "decision",
+  "research",
+  "diagram",
+  "math_problem",
+  "artifact",
+  "info",
+  "task",
+  "database",
+  "private",
+  "plan",
+  "event",
+  "tool",
 ]);
 
-export function isTypedRenderBlock(e: RenderBlockPayload): e is RenderBlockPayload & TypedRenderBlock {
+export function isTypedRenderBlock(
+  e: RenderBlockPayload,
+): e is RenderBlockPayload & TypedRenderBlock {
   return TYPED_RENDER_BLOCK_TYPES.has(e.type);
 }
 
@@ -1976,12 +2062,6 @@ export type TypedStreamEvent =
   | RecordReservedEvent
   | RecordUpdateEvent;
 
-/**
- * @deprecated Use `TypedStreamEvent` instead — it provides automatic type narrowing
- * via the discriminated union so `event.event === "chunk"` narrows `data` to `ChunkPayload`.
- */
-export type StreamEvent = TypedStreamEvent;
-
 // Compact wire format for high-frequency events (90%+ of stream traffic).
 // e = event type ("c" = chunk, "r" = reasoning_chunk), t = text content.
 export interface CompactChunkEvent {
@@ -2000,84 +2080,132 @@ export type CompactStreamEvent = CompactChunkEvent | CompactReasoningChunkEvent;
 export type RawStreamLine = CompactStreamEvent | TypedStreamEvent;
 
 export function isCompactEvent(line: unknown): line is CompactStreamEvent {
-  return typeof line === "object" && line !== null && "e" in line && "t" in line;
+  return (
+    typeof line === "object" && line !== null && "e" in line && "t" in line
+  );
 }
 
 /** Normalize a compact event into the standard TypedStreamEvent shape. */
-export function expandCompactEvent(compact: CompactStreamEvent): TypedStreamEvent {
+export function expandCompactEvent(
+  compact: CompactStreamEvent,
+): TypedStreamEvent {
   if (compact.e === "c") return { event: "chunk", data: { text: compact.t } };
   return { event: "reasoning_chunk", data: { text: compact.t } };
 }
 
-// Type guards (work on both TypedStreamEvent and the deprecated StreamEvent alias)
-export function isChunkEvent(e: TypedStreamEvent): e is { event: "chunk"; data: ChunkPayload } {
+// Type guards (work on both TypedStreamEvent and the deprecated TypedStreamEvent alias)
+export function isChunkEvent(
+  e: TypedStreamEvent,
+): e is { event: "chunk"; data: ChunkPayload } {
   return e.event === "chunk";
 }
 
-export function isReasoningChunkEvent(e: TypedStreamEvent): e is { event: "reasoning_chunk"; data: ReasoningChunkPayload } {
+export function isReasoningChunkEvent(
+  e: TypedStreamEvent,
+): e is { event: "reasoning_chunk"; data: ReasoningChunkPayload } {
   return e.event === "reasoning_chunk";
 }
 
-export function isPhaseEvent(e: TypedStreamEvent): e is { event: "phase"; data: PhasePayload } {
+export function isPhaseEvent(
+  e: TypedStreamEvent,
+): e is { event: "phase"; data: PhasePayload } {
   return e.event === "phase";
 }
 
-export function isWarningEvent(e: TypedStreamEvent): e is { event: "warning"; data: WarningPayload } {
+export function isWarningEvent(
+  e: TypedStreamEvent,
+): e is { event: "warning"; data: WarningPayload } {
   return e.event === "warning";
 }
 
-export function isInfoEvent(e: TypedStreamEvent): e is { event: "info"; data: InfoPayload } {
+export function isInfoEvent(
+  e: TypedStreamEvent,
+): e is { event: "info"; data: InfoPayload } {
   return e.event === "info";
 }
 
-export function isTypedDataEvent(e: TypedStreamEvent): e is { event: "data"; data: TypedDataPayload | UntypedDataPayload } {
+export function isTypedDataEvent(
+  e: TypedStreamEvent,
+): e is { event: "data"; data: TypedDataPayload | UntypedDataPayload } {
   return e.event === "data";
 }
 
-export function isInitEvent(e: TypedStreamEvent): e is { event: "init"; data: InitPayload } {
+export function isInitEvent(
+  e: TypedStreamEvent,
+): e is { event: "init"; data: InitPayload } {
   return e.event === "init";
 }
 
-export function isCompletionEvent(e: TypedStreamEvent): e is { event: "completion"; data: CompletionPayload } {
+export function isCompletionEvent(
+  e: TypedStreamEvent,
+): e is { event: "completion"; data: CompletionPayload } {
   return e.event === "completion";
 }
 
-export function isErrorEvent(e: TypedStreamEvent): e is { event: "error"; data: ErrorPayload } {
+export function isErrorEvent(
+  e: TypedStreamEvent,
+): e is { event: "error"; data: ErrorPayload } {
   return e.event === "error";
 }
 
-export function isToolEventEvent(e: TypedStreamEvent): e is { event: "tool_event"; data: ToolEventPayload } {
+export function isToolEventEvent(
+  e: TypedStreamEvent,
+): e is { event: "tool_event"; data: ToolEventPayload } {
   return e.event === "tool_event";
 }
 
-export function isBrokerEvent(e: TypedStreamEvent): e is { event: "broker"; data: BrokerPayload } {
+export function isBrokerEvent(
+  e: TypedStreamEvent,
+): e is { event: "broker"; data: BrokerPayload } {
   return e.event === "broker";
 }
 
-export function isHeartbeatEvent(e: TypedStreamEvent): e is { event: "heartbeat"; data: HeartbeatPayload } {
+export function isHeartbeatEvent(
+  e: TypedStreamEvent,
+): e is { event: "heartbeat"; data: HeartbeatPayload } {
   return e.event === "heartbeat";
 }
 
-export function isEndEvent(e: TypedStreamEvent): e is { event: "end"; data: EndPayload } {
+export function isEndEvent(
+  e: TypedStreamEvent,
+): e is { event: "end"; data: EndPayload } {
   return e.event === "end";
 }
 
-export function isRenderBlockEvent(e: TypedStreamEvent): e is { event: "render_block"; data: RenderBlockPayload } {
+export function isRenderBlockEvent(
+  e: TypedStreamEvent,
+): e is { event: "render_block"; data: RenderBlockPayload } {
   return e.event === "render_block";
 }
 
-export function isRecordReservedEvent(e: TypedStreamEvent): e is { event: "record_reserved"; data: RecordReservedPayload } {
+export function isRecordReservedEvent(
+  e: TypedStreamEvent,
+): e is { event: "record_reserved"; data: RecordReservedPayload } {
   return e.event === "record_reserved";
 }
 
-export function isRecordUpdateEvent(e: TypedStreamEvent): e is { event: "record_update"; data: RecordUpdatePayload } {
+export function isRecordUpdateEvent(
+  e: TypedStreamEvent,
+): e is { event: "record_update"; data: RecordUpdatePayload } {
   return e.event === "record_update";
 }
 
 export function isCompactChunkEvent(e: unknown): e is CompactChunkEvent {
-  return typeof e === "object" && e !== null && (e as CompactChunkEvent).e === "c" && typeof (e as CompactChunkEvent).t === "string";
+  return (
+    typeof e === "object" &&
+    e !== null &&
+    (e as CompactChunkEvent).e === "c" &&
+    typeof (e as CompactChunkEvent).t === "string"
+  );
 }
 
-export function isCompactReasoningChunkEvent(e: unknown): e is CompactReasoningChunkEvent {
-  return typeof e === "object" && e !== null && (e as CompactReasoningChunkEvent).e === "r" && typeof (e as CompactReasoningChunkEvent).t === "string";
+export function isCompactReasoningChunkEvent(
+  e: unknown,
+): e is CompactReasoningChunkEvent {
+  return (
+    typeof e === "object" &&
+    e !== null &&
+    (e as CompactReasoningChunkEvent).e === "r" &&
+    typeof (e as CompactReasoningChunkEvent).t === "string"
+  );
 }

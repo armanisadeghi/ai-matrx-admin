@@ -11,7 +11,7 @@ import React, {
 import type { PromptVariable } from "@/features/prompts/types/core";
 import type { PublicResource, ContentItem } from "../types/content";
 import type { ToolCallObject } from "@/lib/api/tool-call.types";
-import type { StreamEvent } from "@/types/python-generated/stream-events";
+import type { TypedStreamEvent } from "@/types/python-generated/stream-events";
 
 // ============================================================================
 // TYPES
@@ -33,7 +33,7 @@ export interface ChatMessage {
   /** Whether this is a condensed message (out of context window but still visible) */
   isCondensed?: boolean;
   /** Stream events for block-mode messages — passed to MarkdownStream instead of plain content */
-  streamEvents?: StreamEvent[];
+  streamEvents?: TypedStreamEvent[];
 }
 
 export interface ChatSettings {

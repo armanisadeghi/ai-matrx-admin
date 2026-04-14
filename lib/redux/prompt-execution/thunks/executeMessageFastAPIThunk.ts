@@ -23,7 +23,7 @@ import type {
   BrokerPayload,
   CompletionPayload,
   PhasePayload,
-  StreamEvent,
+  TypedStreamEvent,
 } from "@/types/python-generated/stream-events";
 import type { ChatRequestBody } from "@/lib/api/types";
 
@@ -361,12 +361,12 @@ export const executeMessageFastAPI = createAsyncThunk<
           }
 
           case "tool_event": {
-            // Store the raw StreamEvent so buildCanonicalBlocks can derive ToolCallBlock[]
+            // Store the raw TypedStreamEvent so buildCanonicalBlocks can derive ToolCallBlock[]
             // with correct phase tracking. The canonical selector handles all rendering.
             dispatch(
               appendRawToolEvent({
                 listenerId,
-                event: event as unknown as StreamEvent,
+                event: event as unknown as TypedStreamEvent,
               }),
             );
             break;

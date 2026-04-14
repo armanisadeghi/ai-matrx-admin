@@ -1,5 +1,5 @@
 import dynamic from "next/dynamic";
-import { StreamEvent } from "@/components/mardown-display/chat-markdown/types";
+import { TypedStreamEvent } from "@/components/mardown-display/chat-markdown/types";
 import type { ToolCallObject } from "@/lib/api/tool-call.types";
 import type { ServerProcessedBlock } from "@/components/mardown-display/chat-markdown/EnhancedChatMarkdown";
 
@@ -12,7 +12,7 @@ export interface MarkdownStreamProps {
   /** Markdown content to render (legacy mode) */
   content?: string;
   /** Stream events to process (new mode) */
-  events?: StreamEvent[];
+  events?: TypedStreamEvent[];
   /** Optional task ID for streaming updates (legacy mode with Redux) */
   taskId?: string;
   requestId?: string;
@@ -51,8 +51,6 @@ export interface MarkdownStreamProps {
   allowFullScreenEditor?: boolean;
   /** Hide the copy button */
   hideCopyButton?: boolean;
-  /** Use V2 parser (default: true) */
-  useV2Parser?: boolean;
   /** DB-loaded tool calls — rendered above markdown content (non-streaming path) */
   toolUpdates?: ToolCallObject[];
   /** Callback when an error event is received (new mode) */

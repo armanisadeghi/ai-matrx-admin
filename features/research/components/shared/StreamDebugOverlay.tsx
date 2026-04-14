@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { useStreamDebug } from "../../context/ResearchContext";
 import {
   EventType,
-  type StreamEvent,
+  type TypedStreamEvent,
 } from "@/types/python-generated/stream-events";
 
 /**
@@ -47,7 +47,7 @@ export function StreamDebugOverlay() {
     setExpanded(false);
   };
 
-  const eventColor = (event: StreamEvent) => {
+  const eventColor = (event: TypedStreamEvent) => {
     switch (event.event) {
       case EventType.CHUNK:
         return "text-blue-400";
@@ -69,8 +69,18 @@ export function StreamDebugOverlay() {
         return "text-zinc-400";
       case EventType.INIT:
         return "text-amber-400";
-      case EventType.CONTENT_BLOCK:
+      case EventType.RENDER_BLOCK:
         return "text-violet-400";
+      case EventType.RECORD_RESERVED:
+        return "text-green-400";
+      case EventType.RECORD_UPDATE:
+        return "text-blue-400";
+      case EventType.WARNING:
+        return "text-yellow-400";
+      case EventType.INFO:
+        return "text-sky-400";
+      case EventType.BROKER:
+        return "text-cyan-400";
       default:
         return "text-orange-400";
     }
@@ -161,7 +171,7 @@ function EventRow({
   event,
   colorClass,
 }: {
-  event: StreamEvent;
+  event: TypedStreamEvent;
   colorClass: string;
 }) {
   const [open, setOpen] = useState(false);

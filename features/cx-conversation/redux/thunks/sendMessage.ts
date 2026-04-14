@@ -36,7 +36,7 @@ import { persistArtifactsFromContent } from "@/features/canvas/hooks/useArtifact
 import type {
   ChunkPayload,
   ErrorPayload,
-  StreamEvent,
+  TypedStreamEvent,
 } from "@/types/python-generated/stream-events";
 import { chatConversationsActions } from "../slice";
 import {
@@ -244,11 +244,11 @@ export const sendMessage = createAsyncThunk<
     let serverRequestId: string | null = null;
     let accumulatedContent = "";
     // blockEventsBuffer: all events when in block mode (used for tool extraction + display)
-    const blockEventsBuffer: StreamEvent[] = [];
+    const blockEventsBuffer: TypedStreamEvent[] = [];
     // toolEventsBuffer: all tool_event entries regardless of mode.
     // Used in onStreamComplete for non-block mode to build toolUpdates,
     // producing the same Redux message shape as DB-loaded messages.
-    const toolEventsBuffer: StreamEvent[] = [];
+    const toolEventsBuffer: TypedStreamEvent[] = [];
 
     // ── Streaming callbacks — all Redux dispatch logic lives here ──────────
 
@@ -283,7 +283,7 @@ export const sendMessage = createAsyncThunk<
       );
     };
 
-    const onStreamEvent = (event: StreamEvent) => {
+    const onStreamEvent = (event: TypedStreamEvent) => {
       switch (event.event) {
         case "data": {
           // Fallback path: some older server configs emit conversation_id in the body

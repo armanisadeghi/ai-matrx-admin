@@ -24,7 +24,7 @@ import { PromptAppErrorBoundary } from "./PromptAppErrorBoundary";
 import MarkdownStream from "@/components/MarkdownStream";
 import PublicMessageOptionsMenu from "@/features/public-chat/components/PublicMessageOptionsMenu";
 import type {
-  StreamEvent,
+  TypedStreamEvent,
   ChunkPayload,
   ErrorPayload,
 } from "@/types/python-generated/stream-events";
@@ -53,7 +53,7 @@ interface PromptAppPublicRendererFastAPIProps {
       userInput?: string,
     ) => Promise<void>;
     response: string;
-    streamEvents: StreamEvent[];
+    streamEvents: TypedStreamEvent[];
     isStreaming: boolean;
     isExecuting: boolean;
     error: any;
@@ -71,7 +71,7 @@ export function PromptAppPublicRendererFastAPI({
   // Local state for execution
   const [isExecuting, setIsExecuting] = useState(false);
   const [error, setError] = useState<any>(null);
-  const [streamEvents, setStreamEvents] = useState<StreamEvent[]>([]);
+  const [streamEvents, setStreamEvents] = useState<TypedStreamEvent[]>([]);
   const [isStreamComplete, setIsStreamComplete] = useState(false);
   const [dbConversationId, setDbConversationId] = useState<string | null>(null);
   const dbConversationIdRef = useRef<string | null>(null);
@@ -80,7 +80,7 @@ export function PromptAppPublicRendererFastAPI({
   // Track the task_id from the logging call so we can update it on failure
   const currentTaskIdRef = useRef<string | null>(null);
   // Accumulate events in a ref and flush to state via RAF to throttle renders during fast streaming
-  const streamEventsRef = useRef<StreamEvent[]>([]);
+  const streamEventsRef = useRef<TypedStreamEvent[]>([]);
   const streamRafIdRef = useRef<number | null>(null);
 
   // Centralized auth - handles both authenticated users and guests

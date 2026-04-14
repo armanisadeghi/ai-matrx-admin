@@ -11,7 +11,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import MarkdownStream from "@/components/MarkdownStream";
-import type { StreamEvent } from "@/types/python-generated/stream-events";
+import type {
+  TypedStreamEvent,
+  RenderBlockEvent,
+} from "@/types/python-generated/stream-events";
 import {
   Loader2,
   Cpu,
@@ -106,7 +109,9 @@ export default function BlockProcessingClient() {
   // Stream mode events (raw NDJSON objects for Raw tab)
   const [rawEvents, setRawEvents] = useState<Record<string, unknown>[]>([]);
   // Typed stream events for Processed tab (what MarkdownStream.events expects)
-  const [processedEvents, setProcessedEvents] = useState<StreamEvent[]>([]);
+  const [processedEvents, setProcessedEvents] = useState<TypedStreamEvent[]>(
+    [],
+  );
 
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -119,7 +124,7 @@ export default function BlockProcessingClient() {
 
   // Captured events from the last completed run (never cleared on replay)
   const capturedRawRef = useRef<Record<string, unknown>[]>([]);
-  const capturedTypedRef = useRef<StreamEvent[]>([]);
+  const capturedTypedRef = useRef<TypedStreamEvent[]>([]);
   const replayAbortRef = useRef<boolean>(false);
 
   const abortRef = useRef<AbortController | null>(null);
@@ -173,21 +178,24 @@ export default function BlockProcessingClient() {
 
         // Convert JSON blocks into synthetic render_block stream events
         // so the Processed tab can pass them to MarkdownStream.events
-        const syntheticEvents: StreamEvent[] = data.blocks.map((block, i) => ({
-          event: "render_block" as const,
-          data: {
-            blockId: (block.block_id as string) || `block-${i}`,
-            blockIndex: (block.block_index as number) ?? i,
-            type: block.type as string,
-            status: "complete" as const,
-            content: (block.content as string) ?? null,
-            data: (block.data as Record<string, unknown>) ?? null,
-            metadata: (block.metadata as Record<string, unknown>) ?? undefined,
-          } as unknown as Record<string, unknown>,
-        }));
+        const syntheticEvents: TypedStreamEvent[] = data.blocks.map(
+          (block, i): RenderBlockEvent => ({
+            event: "render_block",
+            data: {
+              blockId: (block.block_id as string) || `block-${i}`,
+              blockIndex: (block.block_index as number) ?? i,
+              type: block.type as string,
+              status: "complete",
+              content: (block.content as string) ?? null,
+              data: (block.data as Record<string, unknown>) ?? null,
+              metadata:
+                (block.metadata as Record<string, unknown>) ?? undefined,
+            },
+          }),
+        );
         setProcessedEvents(syntheticEvents);
       } else {
-        // Stream mode — collect raw events AND build typed StreamEvent[]
+        // Stream mode — collect raw events AND build typed TypedStreamEvent[]
         const res = await fetch(
           `${apiConfig.baseUrl}${ENDPOINTS.blockProcessing.processStream}`,
           {
@@ -203,7 +211,7 @@ export default function BlockProcessingClient() {
         }
         const { events } = parseNdjsonStream(res, controller.signal);
         const accRaw: Record<string, unknown>[] = [];
-        const accTyped: StreamEvent[] = [];
+        const accTyped: TypedStreamEvent[] = [];
 
         for await (const ev of events) {
           accRaw.push(ev as unknown as Record<string, unknown>);

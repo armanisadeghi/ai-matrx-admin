@@ -40,7 +40,7 @@ import {
   ApiTestConfigPanel,
 } from "@/components/api-test-config";
 import type {
-  StreamEvent,
+  TypedStreamEvent,
   ChunkPayload,
   ErrorPayload,
   CompletionPayload,
@@ -168,7 +168,7 @@ export default function ChatTestClient() {
   const [isRunning, setIsRunning] = useState(false);
   const [streamOutput, setStreamOutput] = useState<string>("");
   const [streamText, setStreamText] = useState<string>("");
-  const [streamEvents, setStreamEvents] = useState<StreamEvent[]>([]);
+  const [streamEvents, setStreamEvents] = useState<TypedStreamEvent[]>([]);
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [debugInfo, setDebugInfo] = useState<{
     chunkCount: number;
@@ -478,7 +478,7 @@ export default function ChatTestClient() {
         setStreamOutput(
           (prev) => prev + JSON.stringify(json, null, 2) + "\n\n",
         );
-        setStreamEvents((prev) => [...prev, json as StreamEvent]);
+        setStreamEvents((prev) => [...prev, json as TypedStreamEvent]);
         rawEventsRef.current.push(json as unknown as Record<string, unknown>);
 
         if (

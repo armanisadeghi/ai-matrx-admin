@@ -24,7 +24,7 @@ function layoutConfigFromDb(raw: PromptApp["layout_config"]): LayoutConfig {
   return {};
 }
 import type {
-  StreamEvent,
+  TypedStreamEvent,
   ChunkPayload,
   ErrorPayload,
 } from "@/types/python-generated/stream-events";
@@ -48,7 +48,7 @@ export function PromptAppRenderer({ app, slug }: PromptAppRendererProps) {
     type: ExecutionErrorType;
     message: string;
   } | null>(null);
-  const [streamEvents, setStreamEvents] = useState<StreamEvent[]>([]);
+  const [streamEvents, setStreamEvents] = useState<TypedStreamEvent[]>([]);
   const [isStreamComplete, setIsStreamComplete] = useState(false);
   const [dbConversationId, setDbConversationId] = useState<string | null>(null);
   const dbConversationIdRef = useRef<string | null>(null);

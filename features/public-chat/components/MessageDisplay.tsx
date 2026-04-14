@@ -30,7 +30,7 @@ import { Button } from "@/components/ui/button";
 import MarkdownStream from "@/components/MarkdownStream";
 import type { ChatMessage } from "../context/DEPRECATED-ChatContext";
 import type { PublicResource, PublicResourceType } from "../types/content";
-import type { StreamEvent } from "@/types/python-generated/stream-events";
+import type { TypedStreamEvent } from "@/types/python-generated/stream-events";
 import {
   buildCanonicalBlocks,
   toolCallBlockToLegacy,
@@ -120,7 +120,7 @@ const ToolCallVisualization = lazy(
 // ============================================================================
 
 interface StreamingContentBlocksProps {
-  streamEvents: StreamEvent[];
+  streamEvents: TypedStreamEvent[];
   isStreaming: boolean;
 }
 
@@ -404,7 +404,7 @@ function UserMessage({ message }: UserMessageProps) {
 
 interface AssistantMessageProps {
   message: ChatMessage;
-  streamEvents?: StreamEvent[];
+  streamEvents?: TypedStreamEvent[];
   isStreaming?: boolean;
   onContentChange?: (messageId: string, newContent: string) => void;
 }
@@ -627,7 +627,7 @@ function AssistantMessage({
 
 interface MessageListProps {
   messages: ChatMessage[];
-  streamEvents?: StreamEvent[];
+  streamEvents?: TypedStreamEvent[];
   isStreaming?: boolean;
   emptyStateMessage?: string;
   className?: string;

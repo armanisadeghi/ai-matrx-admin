@@ -23,66 +23,45 @@
  * Legacy V1 parser available in content-splitter.ts for rollback if needed.
  */
 
-import {
-  getMetadataFromText,
-  MATRX_PATTERN,
-  MatrxMetadata,
-} from "@/features/rich-text-editor/utils/patternUtils";
-export interface ContentBlock {
-  type:
-    | "text"
-    | "code"
-    | "table"
-    | "thinking"
-    | "reasoning"
-    | "consolidated_reasoning"
-    | "image"
-    | "video"
-    | "tasks"
-    | "transcript"
-    | "structured_info"
-    | "matrxBroker"
-    | "questionnaire"
-    | "flashcards"
-    | "quiz"
-    | "presentation"
-    | "cooking_recipe"
-    | "timeline"
-    | "progress_tracker"
-    | "comparison_table"
-    | "troubleshooting"
-    | "resources"
-    | "decision_tree"
-    | "research"
-    | "diagram"
-    | "math_problem"
-    | "decision"
-    | "artifact"
-    | "tree"
-    | string;
+import { getMetadataFromText } from "@/features/rich-text-editor/utils/patternUtils";
+import type { TypedRenderBlock } from "@/types/python-generated/stream-events";
+import type { MissingBlockType } from "@/types/python-generated/missing-types";
+
+/**
+ * All block type strings this splitter can emit — the union of:
+ *   - TypedRenderBlock["type"]  : types defined in Python's auto-generated stream-events.ts
+ *   - MissingBlockType          : client-only types (tree, accent-divider, heavy-divider)
+ *                                 and server-only types not yet in stream-events.ts
+ */
+type SplitterBlockType = TypedRenderBlock["type"] | MissingBlockType;
+
+/**
+ * SplitterBlock — the output type of splitContentIntoBlocksV2.
+ *
+ * Structurally aligned with TypedRenderBlock so that the same type
+ * discriminant works across the splitter, Redux, server events, and renderer.
+ * Omits blockId/blockIndex/status/data (server/Redux concerns) and adds
+ * language/src/alt which are needed by BlockRenderer for code/image/video blocks.
+ *
+ * The bridge field `serverData` is NOT defined here — BlockRenderer adds it
+ * via its local `BlockWithServerData` extension when merging server-processed blocks.
+ */
+export interface SplitterBlock {
+  type: SplitterBlockType;
   content: string;
   language?: string;
   src?: string;
   alt?: string;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 }
 
-// ============================================================================
-// BLOCK TYPE REGISTRY
-// ============================================================================
+/**
+ * @deprecated Use SplitterBlock instead.
+ * Kept as an alias so existing imports continue to compile during migration.
+ */
+export type ContentBlock = SplitterBlock;
 
-interface BlockDetector {
-  /** Quick check if content might be this block type */
-  matches: (content: string, context: ParsingContext) => boolean;
-  /** Extract the full content for this block */
-  extract: (
-    content: string,
-    startIndex: number,
-    lines: string[],
-  ) => ExtractionResult;
-  /** Validate and determine if streaming content is complete */
-  validateStreaming?: (content: string) => StreamingState;
-}
+const MATRX_PATTERN = /<<<MATRX_START>>>(.*?)<<<MATRX_END>>>/gs;
 
 interface ExtractionResult {
   content: string;
@@ -1292,8 +1271,10 @@ function detectMatrxPattern(
 // MAIN SPLITTER
 // ============================================================================
 
-export const splitContentIntoBlocksV2 = (mdContent: string): ContentBlock[] => {
-  const blocks: ContentBlock[] = [];
+export const splitContentIntoBlocksV2 = (
+  mdContent: string,
+): SplitterBlock[] => {
+  const blocks: SplitterBlock[] = [];
   const lines = mdContent.split(/\r?\n/);
 
   let currentText = "";
@@ -1382,7 +1363,7 @@ export const splitContentIntoBlocksV2 = (mdContent: string): ContentBlock[] => {
 
       if (codeCheck.language && specialCodeTypes.includes(codeCheck.language)) {
         blocks.push({
-          type: codeCheck.language as any,
+          type: codeCheck.language as SplitterBlockType,
           content: extraction.content,
         });
       } else if (codeCheck.language === "json") {
@@ -1395,7 +1376,7 @@ export const splitContentIntoBlocksV2 = (mdContent: string): ContentBlock[] => {
             jsonType,
           );
           blocks.push({
-            type: jsonType as any,
+            type: jsonType as SplitterBlockType,
             content: extraction.content,
             language: "json",
             metadata: streamingState.metadata,
@@ -1444,7 +1425,7 @@ export const splitContentIntoBlocksV2 = (mdContent: string): ContentBlock[] => {
       );
 
       blocks.push({
-        type: attrXmlMatch.type as any,
+        type: attrXmlMatch.type as SplitterBlockType,
         content: extraction.content,
         metadata: extraction.metadata,
       });
@@ -1469,7 +1450,7 @@ export const splitContentIntoBlocksV2 = (mdContent: string): ContentBlock[] => {
       );
 
       blocks.push({
-        type: xmlMatch.type as any,
+        type: xmlMatch.type as SplitterBlockType,
         content: extraction.content,
         metadata: extraction.metadata,
       });
@@ -1624,7 +1605,7 @@ export const splitContentIntoBlocksV2 = (mdContent: string): ContentBlock[] => {
           .slice(i, treeEnd)
           .map((l) => removeMatrxPattern(l))
           .join("\n");
-        blocks.push({ type: "tree" as any, content: treeContent.trim() });
+        blocks.push({ type: "tree", content: treeContent.trim() });
         i = treeEnd;
         continue;
       }

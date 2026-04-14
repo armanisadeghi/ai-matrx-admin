@@ -7,7 +7,6 @@
  */
 
 export type {
-  StreamEvent,
   TypedStreamEvent,
   EventType,
   ToolEventType,
@@ -45,8 +44,8 @@ export {
   isRenderBlockEvent,
 } from "@/types/python-generated/stream-events";
 
-import type { StreamEvent } from "@/types/python-generated/stream-events";
+import type { TypedStreamEvent } from "@/types/python-generated/stream-events";
 
-export function isNewProtocol(events: StreamEvent[]): boolean {
+export function isNewProtocol(events: TypedStreamEvent[]): boolean {
   return events.some((e) => e.event === "render_block");
 }

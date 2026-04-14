@@ -9,7 +9,7 @@
  * - streamEvents per message enables both normal NDJSON and block-mode streaming
  */
 
-import type { StreamEvent } from "@/types/python-generated/stream-events";
+import type { TypedStreamEvent } from "@/types/python-generated/stream-events";
 import type { LLMParams } from "@/lib/api/types";
 import type { Resource } from "@/features/prompts/types/resources";
 import type { PromptVariable } from "@/features/prompts/types/core";
@@ -81,7 +81,7 @@ export interface ConversationMessage {
 
   // ── Streaming & tool updates ──────────────────────────────────────────────────────────
   /** Stream events for NDJSON normal-mode streaming (interleaved text + tool blocks) */
-  streamEvents?: StreamEvent[];
+  streamEvents?: TypedStreamEvent[];
   /** Display-ready tool call objects (mcp_input/mcp_output pairs) — for rendering */
   toolUpdates?: unknown[];
   /**
@@ -290,7 +290,7 @@ export interface AppendStreamChunkPayload {
 export interface PushStreamEventPayload {
   sessionId: string;
   messageId: string;
-  event: StreamEvent;
+  event: TypedStreamEvent;
 }
 
 export interface SetConversationIdPayload {

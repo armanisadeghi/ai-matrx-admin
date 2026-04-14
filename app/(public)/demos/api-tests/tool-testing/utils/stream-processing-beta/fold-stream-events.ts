@@ -1,5 +1,5 @@
 import type {
-  StreamEvent,
+  TypedStreamEvent,
   ChunkPayload,
   ReasoningChunkPayload,
   PhasePayload,
@@ -83,10 +83,10 @@ function toolTesterDelta(
 /**
  * Full fold of an NDJSON stream — mirrors branching order in
  * `lib/api/stream-parser.ts` `consumeStream` and `process-stream.ts`.
- * Use for offline replay, tests, or after capturing `StreamEvent[]` via `onEvent`.
+ * Use for offline replay, tests, or after capturing `TypedStreamEvent[]` via `onEvent`.
  */
 export interface BackendStreamFoldState {
-  rawEvents: StreamEvent[];
+  rawEvents: TypedStreamEvent[];
   accumulatedText: string;
   accumulatedReasoning: string;
   chunks: ChunkPayload[];
@@ -206,7 +206,7 @@ function pushArrival(
 
 function applyToolTesterRules(
   state: BackendStreamFoldState,
-  event: StreamEvent,
+  event: TypedStreamEvent,
 ): void {
   if (isPhaseEvent(event) && event.data.phase === "complete") {
     state.toolTesterFinalPayload = { status: "complete" } as FinalPayload;
@@ -220,11 +220,11 @@ function applyToolTesterRules(
 }
 
 /**
- * Single-pass fold of `StreamEvent[]` into structured state (all V2 event kinds).
+ * Single-pass fold of `TypedStreamEvent[]` into structured state (all V2 event kinds).
  * Branch order matches `consumeStream` in `@/lib/api/stream-parser`.
  */
 export function foldBackendStreamEvents(
-  events: Iterable<StreamEvent>,
+  events: Iterable<TypedStreamEvent>,
 ): BackendStreamFoldState {
   const state = emptyFoldState();
 
@@ -322,7 +322,7 @@ export function foldBackendStreamEvents(
 }
 
 /** @deprecated Prefer `foldBackendStreamEvents` + `.toolStreamEvents` / `.toolTesterFinalPayload`. */
-export function foldStreamEventsToToolTestState(events: StreamEvent[]): {
+export function foldStreamEventsToToolTestState(events: TypedStreamEvent[]): {
   toolEvents: ToolStreamEvent[];
   finalPayload: FinalPayload | null;
 } {
@@ -339,7 +339,7 @@ export function foldStreamEventsToToolTestState(events: StreamEvent[]): {
 export function streamEventsToRenderedToolCalls(input: {
   toolName: string;
   args: Record<string, unknown>;
-  streamEvents: StreamEvent[];
+  streamEvents: TypedStreamEvent[];
 }): {
   fold: BackendStreamFoldState;
   toolEvents: ToolStreamEvent[];

@@ -1,16 +1,12 @@
 "use client";
 import React, { useCallback } from "react";
 import { BlockComponents, LoadingComponents } from "./BlockComponentRegistry";
-import { ContentBlock } from "@/components/mardown-display/markdown-classification/processors/utils/content-splitter-v2";
 import { looksLikeDiff } from "../diff-blocks/diff-style-registry";
 import { safeJsonParse } from "./json-parse-utils";
 import { useBlockRenderingConfig } from "@/components/mardown-display/chat-markdown/BlockRenderingContext";
 import { InlineCodeSnippet } from "../InlineCodeSnippet";
-
-/** Extended ContentBlock that may include server-processed data. */
-interface BlockWithServerData extends ContentBlock {
-  serverData?: Record<string, unknown>;
-}
+import type { TypedRenderBlock } from "@/types/python-generated/stream-events";
+import type { MissingBlockType } from "@/types/python-generated/missing-types";
 
 /**
  * Shown in strict-mode when block.serverData is null — means Python did not
@@ -34,8 +30,38 @@ const StrictModeError: React.FC<{ blockType: string; blockId?: string }> = ({
   </div>
 );
 
+/**
+ * Flat render block interface used by BlockRenderer.
+ *
+ * This is intentionally NOT a discriminated union. Using a discriminated union
+ * (like TypedRenderBlock) causes TypeScript to narrow `block` to `never` for any
+ * `case` whose type string isn't in the union — making the switch unusable.
+ *
+ * All fields are the union of what any block case can access. Specific typed data
+ * for server-processed blocks arrives via `serverData` (the Python `data` field).
+ *
+ * The `type` string covers ALL blocks: Python-typed (TypedRenderBlock["type"]),
+ * missing/pending types (MissingBlockType), and the open `string` fallback for
+ * anything Python adds before TypeScript types catch up.
+ */
+export interface RenderBlock {
+  type: TypedRenderBlock["type"] | MissingBlockType | string;
+  content: string;
+  /** Python's `data` field — typed by the server, accessed via serverData in the renderer. */
+  serverData?: Record<string, unknown>;
+  /** For code blocks: the language identifier (e.g. "typescript", "json"). */
+  language?: string;
+  /** For image/video blocks parsed from markdown: the media URL. */
+  src?: string;
+  /** For image/video blocks parsed from markdown: the alt text. */
+  alt?: string;
+  /** Block-specific metadata from the splitter or server. */
+  metadata?: Record<string, unknown>;
+}
+
 interface BlockRendererProps {
-  block: BlockWithServerData;
+  requestId?: string;
+  block: RenderBlock;
   index: number;
   isStreamActive?: boolean;
   onContentChange?: (newContent: string) => void;
@@ -65,6 +91,7 @@ function isGenuinelyIncomplete(content: string): boolean {
  * Extracted from MarkdownStream for better code splitting
  */
 export const BlockRenderer: React.FC<BlockRendererProps> = ({
+  requestId,
   block,
   index,
   isStreamActive,
@@ -113,17 +140,17 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
 
   switch (block.type) {
     case "audio_output": {
-      const audioUrl =
-        (block.serverData?.url as string | undefined) ?? block.src;
-      const audioMimeType =
-        (block.serverData?.mime_type as string | undefined) ??
-        (block.metadata?.mimeType as string | undefined);
-      if (!audioUrl) return null;
+      // Python sends: { url: string; mime_type: string }
+      // Component wants: { url: string; mimeType?: string }
+      // TODO(python): rename mime_type → mimeType in the Python AudioOutputData schema.
+      const sd = block.serverData ?? {};
+      const url = sd.url as string | undefined;
+      if (!url) return null;
       return (
         <BlockComponents.AudioOutputBlock
           key={index}
-          url={audioUrl}
-          mimeType={audioMimeType}
+          url={url}
+          mimeType={sd.mime_type as string | undefined}
         />
       );
     }
@@ -143,42 +170,49 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
       return (
         <BlockComponents.ConsolidatedReasoningVisualization
           key={index}
-          reasoningTexts={block.metadata?.reasoningTexts || [block.content]}
+          reasoningTexts={
+            (block.metadata?.reasoningTexts as string[] | undefined) ?? [
+              block.content,
+            ]
+          }
           showReasoning={true}
         />
       );
 
     case "image_output": {
-      const imgUrl = (block.serverData?.url as string | undefined) ?? block.src;
-      const imgMimeType =
-        (block.serverData?.mime_type as string | undefined) ??
-        (block.metadata?.mimeType as string | undefined);
-      if (!imgUrl) return null;
+      // Python sends: { url: string; mime_type: string }
+      // Component wants: { url: string; mimeType?: string }
+      // TODO(python): rename mime_type → mimeType in the Python ImageOutputData schema.
+      const sd = block.serverData ?? {};
+      const url = sd.url as string | undefined;
+      if (!url) return null;
       return (
         <BlockComponents.ImageOutputBlock
           key={index}
-          url={imgUrl}
-          mimeType={imgMimeType}
+          url={url}
+          mimeType={sd.mime_type as string | undefined}
         />
       );
     }
 
     case "video_output": {
-      const vidUrl = (block.serverData?.url as string | undefined) ?? block.src;
-      const vidMimeType =
-        (block.serverData?.mime_type as string | undefined) ??
-        (block.metadata?.mimeType as string | undefined);
-      if (!vidUrl) return null;
+      // Python sends: { url: string; mime_type: string }
+      // Component wants: { url: string; mimeType?: string }
+      // TODO(python): rename mime_type → mimeType in the Python VideoOutputData schema.
+      const sd = block.serverData ?? {};
+      const url = sd.url as string | undefined;
+      if (!url) return null;
       return (
         <BlockComponents.VideoOutputBlock
           key={index}
-          url={vidUrl}
-          mimeType={vidMimeType}
+          url={url}
+          mimeType={sd.mime_type as string | undefined}
         />
       );
     }
 
     case "search_results": {
+      // Python sends: { results?: SearchResultItem[]; metadata?: Record<string, unknown> }
       const sd = block.serverData ?? {};
       return (
         <BlockComponents.SearchResultsBlock
@@ -190,6 +224,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
     }
 
     case "search_error": {
+      // Python sends: { error: string; metadata?: Record<string, unknown> }
       const sd = block.serverData ?? {};
       return (
         <BlockComponents.SearchErrorBlock
@@ -201,6 +236,9 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
     }
 
     case "function_result": {
+      // Python sends: { function_name, success, result, error, duration_ms }
+      // Component wants: { functionName, success, result, error, durationMs }
+      // TODO(python): rename function_name → functionName, duration_ms → durationMs.
       const sd = block.serverData ?? {};
       return (
         <BlockComponents.FunctionResultBlock
@@ -215,6 +253,9 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
     }
 
     case "workflow_step": {
+      // Python sends: { step_name, status, data }
+      // Component wants: { stepName, status, data }
+      // TODO(python): rename step_name → stepName.
       const sd = block.serverData ?? {};
       return (
         <BlockComponents.WorkflowStepBlock
@@ -227,6 +268,9 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
     }
 
     case "categorization_result": {
+      // Python sends: { prompt_id, category, tags, description, dry_run, metadata }
+      // Component wants: { promptId, category, tags, description, dryRun, metadata }
+      // TODO(python): rename prompt_id → promptId, dry_run → dryRun.
       const sd = block.serverData ?? {};
       return (
         <BlockComponents.CategorizationResultBlock
@@ -242,6 +286,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
     }
 
     case "fetch_results": {
+      // Python sends: { results?: FetchResultItem[]; metadata?: Record<string, unknown> }
       const sd = block.serverData ?? {};
       return (
         <BlockComponents.FetchResultsBlock
@@ -253,6 +298,9 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
     }
 
     case "podcast_complete": {
+      // Python sends: { show_id, success, episode_count, error }
+      // Component wants: { showId, success, episodeCount, error }
+      // TODO(python): rename show_id → showId, episode_count → episodeCount.
       const sd = block.serverData ?? {};
       return (
         <BlockComponents.PodcastCompleteBlock
@@ -266,6 +314,9 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
     }
 
     case "podcast_stage": {
+      // Python sends: { stage, success, error, result_keys }
+      // Component wants: { stage, success, error, resultKeys }
+      // TODO(python): rename result_keys → resultKeys.
       const sd = block.serverData ?? {};
       return (
         <BlockComponents.PodcastStageBlock
@@ -279,6 +330,9 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
     }
 
     case "scrape_batch_complete": {
+      // Python sends: { total_scraped }
+      // Component wants: { totalScraped }
+      // TODO(python): rename total_scraped → totalScraped.
       const sd = block.serverData ?? {};
       return (
         <BlockComponents.ScrapeBatchCompleteBlock
@@ -289,6 +343,9 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
     }
 
     case "structured_input_warning": {
+      // Python sends: { block_type, failures }
+      // Component wants: { blockType, failures }
+      // TODO(python): rename block_type → blockType.
       const sd = block.serverData ?? {};
       return (
         <BlockComponents.StructuredInputWarningBlock
@@ -300,6 +357,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
     }
 
     case "display_questionnaire": {
+      // Python sends: { introduction, questions }
       const sd = block.serverData ?? {};
       return (
         <BlockComponents.DisplayQuestionnaireBlock
@@ -311,6 +369,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
     }
 
     case "unknown_data_event": {
+      // Fallback for unknown data event types.
       const sd = block.serverData ?? {};
       return (
         <BlockComponents.UnknownDataEventBlock

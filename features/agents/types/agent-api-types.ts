@@ -212,7 +212,7 @@ export type ContextValue =
  * POST /ai/agents/{agent_id}
  *
  * Starts a new agent conversation. All fields except user_input are optional.
- * The response is a JSONL stream of StreamEvent objects.
+ * The response is a JSONL stream of TypedStreamEvent objects.
  */
 export interface AgentStartRequest {
   /**
@@ -530,7 +530,6 @@ export type {
   RenderBlockPayload,
   RecordReservedPayload,
   RecordUpdatePayload,
-  StreamEvent,
   TypedStreamEvent,
   ChunkEvent,
   ReasoningChunkEvent,

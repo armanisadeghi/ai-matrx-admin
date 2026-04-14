@@ -1,14 +1,14 @@
 /**
  * lib/chat-protocol/from-stream.ts
  *
- * Converts raw StreamEvent arrays into CanonicalBlock[] / StreamingState.
+ * Converts raw TypedStreamEvent arrays into CanonicalBlock[] / StreamingState.
  *
  * DESIGN PRINCIPLES
  * ─────────────────
  * • Zero platform deps — pure TypeScript, no JSX, no React.
  * • Single source of truth — all stream-to-canonical logic lives here.
  * • Immutable output — every returned object is readonly.
- * • Event engine stays here — no consumer should pick through StreamEvent[].
+ * • Event engine stays here — no consumer should pick through TypedStreamEvent[].
  *
  * STREAM CONTRACT (backend ToolEventPayload.event values)
  * ────────────────────────────────────────────────────────

@@ -37,7 +37,7 @@ import { ConversationSelector } from "./components/ConversationSelector";
 import { ContextScopeModal } from "./components/ContextScopeModal";
 import { fetchToolsFromDatabase, executeToolTest } from "./streaming-client";
 import { useToolTestContext } from "./hooks/useToolTestContext";
-import type { StreamEvent } from "@/types/python-generated/stream-events";
+import type { TypedStreamEvent } from "@/types/python-generated/stream-events";
 import type {
   ToolDefinition,
   ToolStreamEvent,
@@ -120,7 +120,7 @@ export default function ToolTestingClient() {
   const [executionStatus, setExecutionStatus] =
     useState<ExecutionStatus>("idle");
   const [toolEvents, setToolEvents] = useState<ToolStreamEvent[]>([]);
-  const [rawLines, setRawLines] = useState<StreamEvent[]>([]);
+  const [rawLines, setRawLines] = useState<TypedStreamEvent[]>([]);
   const [rawJsonLog, setRawJsonLog] = useState("");
   const [finalPayload, setFinalPayload] = useState<FinalPayload | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);

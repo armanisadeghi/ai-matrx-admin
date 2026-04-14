@@ -1,268 +1,39 @@
 "use client";
+
 import React, {
   useState,
   useEffect,
   useMemo,
   useCallback,
-  ErrorInfo,
   useContext,
 } from "react";
 import { cn } from "@/styles/themes/utils";
-import {
-  splitContentIntoBlocksV2,
-  ContentBlock,
-} from "../markdown-classification/processors/utils/content-splitter-v2";
+import { splitContentIntoBlocksV2 } from "../markdown-classification/processors/utils/content-splitter-v2";
+import { RenderBlock } from "./block-registry/BlockRenderer";
 import { InlineCopyButton } from "@/components/matrx/buttons/MarkdownCopyButton";
 import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
 import ToolCallVisualization from "@/features/chat/components/response/assistant-message/stream/ToolCallVisualization";
-import { ReactReduxContext, useSelector } from "react-redux";
-import dynamic from "next/dynamic";
+import { ReactReduxContext } from "react-redux";
 import FullScreenMarkdownEditor from "./FullScreenMarkdownEditor";
-
-import { selectPrimaryResponseToolBlocksByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
-import { toolCallBlockToLegacy } from "@/lib/chat-protocol";
-import type { ToolCallObject } from "@/lib/redux/socket-io/socket.types";
+import { InlineStatusIndicator } from "./internal-handlers/InlineStatusIndicator";
 import {
   selectAccumulatedText,
   selectUnifiedSlots,
-  selectToolLifecycle,
   selectAllRenderBlocks,
   type ContentSegment,
-  type ContentSegmentDbTool,
   type UnifiedSlot,
 } from "@/features/agents/redux/execution-system/active-requests/active-requests.selectors";
 import { selectTurnInterleavedContent } from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.selectors";
 import type { RenderBlockPayload } from "@/types/python-generated/stream-events";
-import type { ToolLifecycleEntry } from "@/features/agents/types/request.types";
-import type { ToolCallPhase } from "@/lib/api/tool-call.types";
 import { useAppSelector } from "@/lib/redux/hooks";
-
-const BlockRenderer = dynamic(
-  () => import("./block-registry/BlockRenderer").then((m) => m.BlockRenderer),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="py-2 px-1 text-sm text-neutral-400 animate-pulse">
-        Loading...
-      </div>
-    ),
-  },
-);
-
-// ============================================================================
-// REDUX TOOL UPDATES — isolated subscriber so text-chunk re-renders don't
-// cause this to re-execute, and tool-event updates don't re-render text blocks.
-// ============================================================================
-
-interface ReduxToolVisualizationProps {
-  taskId: string;
-  hasContent: boolean;
-  className?: string;
-}
-
-/**
- * Subscribes to Redux rawToolEvents for a given taskId and renders
- * ToolCallVisualization. Isolated so that:
- *   - Text chunk re-renders (from parent) don't re-run the canonical selector.
- *   - New tool events re-render only this component, not the text blocks.
- */
-const ReduxToolVisualization: React.FC<ReduxToolVisualizationProps> = ({
-  taskId,
-  hasContent,
-  className,
-}) => {
-  // Stable selector instance — created once per taskId change (during render, not after).
-  // selectPrimaryResponseToolBlocksByTaskId(taskId) produces a memoized createSelector instance;
-  // keeping one reference per taskId ensures the memoization cache is reused across renders.
-  const selector = useMemo(
-    () => selectPrimaryResponseToolBlocksByTaskId(taskId),
-    [taskId],
-  );
-
-  const toolBlocks = useSelector(selector);
-  const toolUpdates: ToolCallObject[] = useMemo(
-    () =>
-      toolBlocks.flatMap(
-        (b: any) => toolCallBlockToLegacy(b) as ToolCallObject[],
-      ),
-    [toolBlocks],
-  );
-
-  if (toolUpdates.length === 0) return null;
-
-  return (
-    <ToolCallVisualization
-      toolUpdates={toolUpdates}
-      hasContent={hasContent}
-      className={className}
-    />
-  );
-};
-
-// ============================================================================
-// INLINE TOOL CARD — subscribes to a single tool's lifecycle by callId.
-// Renders independently; only re-renders when this specific tool changes.
-// ============================================================================
-
-function lifecycleToPhase(status: ToolLifecycleEntry["status"]): ToolCallPhase {
-  switch (status) {
-    case "completed":
-      return "complete";
-    case "error":
-      return "error";
-    default:
-      return "running";
-  }
-}
-
-function lifecycleToToolObjects(entry: ToolLifecycleEntry): ToolCallObject[] {
-  const objects: ToolCallObject[] = [];
-
-  objects.push({
-    id: entry.callId,
-    type: "mcp_input",
-    mcp_input: { name: entry.toolName, arguments: entry.arguments },
-    phase: lifecycleToPhase(entry.status),
-  });
-
-  if (entry.latestMessage) {
-    objects.push({
-      id: entry.callId,
-      type: "user_message",
-      user_message: entry.latestMessage,
-    });
-  }
-
-  if (entry.latestData && Object.keys(entry.latestData).length > 0) {
-    objects.push({
-      id: entry.callId,
-      type: "step_data",
-      step_data: { type: entry.status, content: entry.latestData },
-    });
-  }
-
-  if (entry.status === "completed" && entry.result != null) {
-    objects.push({
-      id: entry.callId,
-      type: "mcp_output",
-      mcp_output: { result: entry.result },
-    });
-  }
-
-  if (entry.status === "error" && entry.errorMessage) {
-    objects.push({
-      id: entry.callId,
-      type: "mcp_error",
-      mcp_error: entry.errorMessage,
-    });
-  }
-
-  return objects;
-}
-
-const InlineToolCard: React.FC<{
-  requestId: string;
-  callId: string;
-}> = ({ requestId, callId }) => {
-  const lifecycle = useAppSelector(selectToolLifecycle(requestId, callId));
-  const toolObjects = useMemo(
-    () => (lifecycle ? lifecycleToToolObjects(lifecycle) : []),
-    [lifecycle],
-  );
-
-  if (toolObjects.length === 0) return null;
-
-  return (
-    <ToolCallVisualization
-      toolUpdates={toolObjects}
-      hasContent={true}
-      className="my-2"
-    />
-  );
-};
-
-// ============================================================================
-// DB TOOL CARD — renders a completed tool call from DB-loaded message parts.
-// Self-contained: all data comes from the segment, no Redux subscription.
-// ============================================================================
-
-const DbToolCard: React.FC<{
-  segment: ContentSegmentDbTool;
-}> = ({ segment }) => {
-  const toolObjects = useMemo((): ToolCallObject[] => {
-    const objects: ToolCallObject[] = [];
-
-    objects.push({
-      id: segment.callId,
-      type: "mcp_input",
-      mcp_input: { name: segment.toolName, arguments: segment.arguments },
-      phase: "complete" as ToolCallPhase,
-    });
-
-    if (segment.result != null) {
-      if (segment.isError) {
-        objects.push({
-          id: segment.callId,
-          type: "mcp_error",
-          mcp_error: String(segment.result),
-        });
-      } else {
-        // DB stores output as a JSON string — parse it so ToolCallVisualization
-        // gets the same object shape as the streaming path.
-        let parsed: unknown = segment.result;
-        if (typeof parsed === "string") {
-          try {
-            parsed = JSON.parse(parsed);
-          } catch {
-            // leave as raw string if not valid JSON
-          }
-        }
-        objects.push({
-          id: segment.callId,
-          type: "mcp_output",
-          mcp_output: { result: parsed },
-        });
-      }
-    }
-
-    return objects;
-  }, [
-    segment.callId,
-    segment.toolName,
-    segment.arguments,
-    segment.result,
-    segment.isError,
-  ]);
-
-  if (toolObjects.length === 0) return null;
-
-  return (
-    <ToolCallVisualization
-      toolUpdates={toolObjects}
-      hasContent={true}
-      className="my-2"
-    />
-  );
-};
-
-// ============================================================================
-// INLINE STATUS INDICATOR — transient shimmer label for phase/info events.
-// Automatically removed from the segment list when real content supersedes it.
-// ============================================================================
-
-const InlineStatusIndicator: React.FC<{ label: string }> = ({ label }) => (
-  <div className="flex items-center gap-2 py-2">
-    <span
-      className="inline-block text-sm bg-clip-text text-transparent bg-[length:200%_100%] animate-shimmer"
-      style={{
-        backgroundImage:
-          "linear-gradient(90deg, hsl(var(--muted-foreground) / 0.3) 0%, hsl(var(--foreground)) 50%, hsl(var(--muted-foreground) / 0.3) 100%)",
-      }}
-    >
-      {label}
-    </span>
-  </div>
-);
+import {
+  ReduxToolVisualization,
+  InlineToolCard,
+  DbToolCard,
+} from "./internal-handlers/ToolHandlers";
+import { PlainTextFallback } from "./internal-handlers/PlainTextFallback";
+import { SafeBlockRenderer } from "./internal-handlers/SafeBlockRenderer";
+import { MarkdownErrorBoundary } from "./internal-handlers/MarkdownErrorBoundary";
 
 /** Server-processed block from the content_block protocol. */
 export interface ServerProcessedBlock {
@@ -300,7 +71,6 @@ export interface ChatMarkdownDisplayProps {
   messageId?: string;
   allowFullScreenEditor?: boolean;
   hideCopyButton?: boolean;
-  useV2Parser?: boolean; // Default: true (V2 parser). Set to false to use legacy V1 parser.
   toolUpdates?: any[]; // Optional: Pass tool updates directly (bypasses Redux selector)
   /** Pre-processed blocks from server (new content_block protocol). Bypasses client-side parsing. */
   serverProcessedBlocks?: ServerProcessedBlock[];
@@ -311,105 +81,6 @@ export interface ChatMarkdownDisplayProps {
   applyLocalEdits?: boolean;
 }
 
-// Fallback component that renders plain text with basic formatting
-export const PlainTextFallback: React.FC<{
-  requestId?: string;
-  content: string;
-  className?: string;
-  role?: string;
-  type?: string;
-}> = ({ requestId, content, className, role, type }) => {
-  const containerStyles = cn(
-    "py-3 px-4 space-y-2 font-sans text-md antialiased leading-relaxed tracking-wide whitespace-pre-wrap break-words overflow-x-hidden min-w-0",
-    type === "flashcard"
-      ? "text-left mb-1 text-white"
-      : `block rounded-lg w-full ${
-          role === "user"
-            ? "bg-neutral-200 text-neutral-900 dark:bg-neutral-700 dark:text-neutral-100"
-            : "bg-textured"
-        }`,
-    className,
-  );
-
-  return (
-    <div
-      className={`${type === "message" ? "mb-3 w-full min-w-0" : ""} ${role === "user" ? "text-right" : "text-left"} overflow-x-hidden`}
-    >
-      <div className={containerStyles}>{content || "No content available"}</div>
-    </div>
-  );
-};
-
-// Error boundary component for catching React errors
-export class MarkdownErrorBoundary extends React.Component<
-  {
-    children: React.ReactNode;
-    fallback: React.ReactNode;
-    onError?: (error: Error, errorInfo: ErrorInfo) => void;
-  },
-  { hasError: boolean }
-> {
-  constructor(props: any) {
-    super(props);
-    this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError(_: Error) {
-    return { hasError: true };
-  }
-
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error(
-      "[MarkdownStream] Error caught by boundary:",
-      error,
-      errorInfo,
-    );
-    this.props.onError?.(error, errorInfo);
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return this.props.fallback;
-    }
-    return this.props.children;
-  }
-}
-
-// Safe wrapper for individual block rendering
-const SafeBlockRenderer: React.FC<{
-  requestId?: string;
-  block: ContentBlock;
-  index: number;
-  isStreamActive?: boolean;
-  onContentChange?: (newContent: string) => void;
-  messageId?: string;
-  taskId?: string;
-  isLastReasoningBlock?: boolean;
-  replaceBlockContent: (original: string, replacement: string) => void;
-  handleOpenEditor: () => void;
-}> = (props) => {
-  try {
-    return (
-      <MarkdownErrorBoundary
-        fallback={
-          <div className="py-2 px-1 text-sm text-neutral-600 dark:text-neutral-400 whitespace-pre-wrap break-words border-l-2 border-yellow-500 bg-yellow-50 dark:bg-yellow-950/20">
-            {props.block.content || "[Block rendering failed]"}
-          </div>
-        }
-      >
-        <BlockRenderer {...props} />
-      </MarkdownErrorBoundary>
-    );
-  } catch (error) {
-    console.error("[MarkdownStream] Error rendering block:", error);
-    return (
-      <div className="py-2 px-1 text-sm text-neutral-600 dark:text-neutral-400 whitespace-pre-wrap break-words border-l-2 border-yellow-500 bg-yellow-50 dark:bg-yellow-950/20">
-        {props.block.content || "[Block rendering failed]"}
-      </div>
-    );
-  }
-};
-
 const _EMPTY_SEGMENTS: ContentSegment[] = [];
 const _EMPTY_SLOTS: UnifiedSlot[] = [];
 const _selectEmptyString = () => "";
@@ -418,11 +89,9 @@ const _selectEmptySlots = () => _EMPTY_SLOTS;
 const _selectEmptyRenderBlocks = () =>
   undefined as RenderBlockPayload[] | undefined;
 
-function renderBlockToContentBlock(
-  rb: RenderBlockPayload,
-): ContentBlock & { serverData?: Record<string, unknown> } {
+function renderBlockToContentBlock(rb: RenderBlockPayload): RenderBlock {
   return {
-    type: rb.type as ContentBlock["type"],
+    type: rb.type,
     content: rb.content ?? "",
     serverData: (rb.data as Record<string, unknown>) ?? undefined,
     metadata: rb.metadata,
@@ -451,7 +120,6 @@ export const EnhancedChatMarkdownInternal: React.FC<
   messageId,
   allowFullScreenEditor = true,
   hideCopyButton = true,
-  useV2Parser = true,
   toolUpdates: toolUpdatesProp,
   serverProcessedBlocks,
   applyLocalEdits = true,
@@ -545,28 +213,30 @@ export const EnhancedChatMarkdownInternal: React.FC<
     if (isWaitingForContent) return { blocks: [], blockError: false };
 
     // Fast path: Redux already has client-generated render blocks from the
-    // StreamBlockAccumulator. Convert to ContentBlock shape and skip the
+    // StreamBlockAccumulator. Convert to RenderBlock shape and skip the
     // expensive splitContentIntoBlocksV2 entirely.
     if (hasClientBlocks && reduxRenderBlocks) {
-      const clientBlocks: ContentBlock[] = reduxRenderBlocks
+      const clientBlocks: RenderBlock[] = reduxRenderBlocks
         .filter((rb) => rb.content?.trim())
         .map(renderBlockToContentBlock);
       return { blocks: clientBlocks, blockError: false };
     }
 
-    // New protocol: server already processed the blocks — convert to ContentBlock shape.
+    // New protocol: server already processed the blocks — convert to RenderBlock shape.
     // When text content also exists, parse it through the normal pipeline first,
     // then append server-processed blocks (audio, images, etc.) so both render.
     if (useServerBlocks && serverProcessedBlocks) {
-      const supplementaryBlocks: ContentBlock[] = serverProcessedBlocks.map(
+      const supplementaryBlocks: RenderBlock[] = serverProcessedBlocks.map(
         (sb) => ({
-          type: sb.type as ContentBlock["type"],
+          type: sb.type,
           content: sb.content ?? "",
-          serverData: sb.data ?? undefined,
+          serverData: (sb.data as Record<string, unknown>) ?? undefined,
           metadata: sb.metadata,
-          language: (sb.data as any)?.language,
-          src: (sb.data as any)?.src,
-          alt: (sb.data as any)?.alt,
+          language: (sb.data as Record<string, unknown>)?.language as
+            | string
+            | undefined,
+          src: (sb.data as Record<string, unknown>)?.src as string | undefined,
+          alt: (sb.data as Record<string, unknown>)?.alt as string | undefined,
         }),
       );
 
@@ -582,12 +252,7 @@ export const EnhancedChatMarkdownInternal: React.FC<
         } catch {
           return {
             blocks: [
-              {
-                type: "text" as const,
-                content: currentContent,
-                startLine: 0,
-                endLine: 0,
-              },
+              { type: "text" as const, content: currentContent },
               ...supplementaryBlocks,
             ],
             blockError: false,
@@ -610,21 +275,13 @@ export const EnhancedChatMarkdownInternal: React.FC<
       );
       // Return a single text block with the original content as fallback
       return {
-        blocks: [
-          {
-            type: "text" as const,
-            content: currentContent,
-            startLine: 0,
-            endLine: 0,
-          },
-        ],
+        blocks: [{ type: "text" as const, content: currentContent }],
         blockError: true,
       };
     }
   }, [
     currentContent,
     isWaitingForContent,
-    useV2Parser,
     useServerBlocks,
     serverProcessedBlocks,
     hasClientBlocks,
@@ -646,7 +303,7 @@ export const EnhancedChatMarkdownInternal: React.FC<
     // During streaming, return blocks as-is for real-time display
     if (isStreamActive) return blocks;
 
-    const result: ContentBlock[] = [];
+    const result: RenderBlock[] = [];
     let i = 0;
 
     while (i < blocks.length) {
@@ -762,14 +419,14 @@ export const EnhancedChatMarkdownInternal: React.FC<
   // the array collapses). Index is appended only as a tiebreaker for identical
   // blocks; the content prefix keeps identity stable across re-parses.
   const blockKey = useCallback(
-    (block: ContentBlock, index: number) =>
+    (block: RenderBlock, index: number) =>
       `${block.type}-${block.content.slice(0, 100)}-${index}`,
     [],
   );
 
   // Memoize the render block function to prevent unnecessary re-renders
   const renderBlock = useCallback(
-    (block: ContentBlock, index: number) => {
+    (block: RenderBlock, index: number) => {
       try {
         if (!block || typeof block !== "object") {
           console.warn("[MarkdownStream] Invalid block at index:", index);
@@ -821,13 +478,7 @@ export const EnhancedChatMarkdownInternal: React.FC<
 
   const containerStyles = cn(
     "pt-1 pb-0 px-0 space-y-4 font-sans text-md antialiased leading-relaxed tracking-wide overflow-x-hidden min-w-0 break-words",
-    type === "flashcard"
-      ? "text-left mb-0 text-white"
-      : `block rounded-lg w-full ${
-          role === "user"
-            ? "bg-neutral-200 text-neutral-900 dark:bg-neutral-700 dark:text-neutral-100"
-            : "bg-textured"
-        }`,
+    "block w-full bg-inherit",
     className,
   );
 

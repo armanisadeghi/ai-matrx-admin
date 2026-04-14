@@ -3,7 +3,7 @@
 import { useRef, useEffect } from "react";
 import { useChatContext } from "../context/DEPRECATED-ChatContext";
 import type {
-  StreamEvent,
+  TypedStreamEvent,
   ChunkPayload,
   ErrorPayload,
   CompletionPayload,
@@ -31,7 +31,7 @@ import { useApiAuth } from "@/hooks/useApiAuth";
 // ============================================================================
 
 interface UseAgentChatOptions {
-  onStreamEvent?: (event: StreamEvent) => void;
+  onStreamEvent?: (event: TypedStreamEvent) => void;
   onComplete?: () => void;
   onError?: (error: string) => void;
 }
@@ -58,7 +58,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
     conversationIdRef,
   } = useChatContext();
   const abortControllerRef = useRef<AbortController | null>(null);
-  const streamEventsRef = useRef<StreamEvent[]>([]);
+  const streamEventsRef = useRef<TypedStreamEvent[]>([]);
   const isExecutingRef = useRef(false);
   const serverRequestIdRef = useRef<string | null>(null);
 
@@ -257,7 +257,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
       let accumulatedContent = "";
       // In block mode, we accumulate all events and push them onto the message
       // so MarkdownStream can render via the server-processed render_block protocol.
-      const blockEventsBuffer: StreamEvent[] = [];
+      const blockEventsBuffer: TypedStreamEvent[] = [];
 
       for await (const event of events) {
         streamEventsRef.current.push(event);

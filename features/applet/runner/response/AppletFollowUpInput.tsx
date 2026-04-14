@@ -44,7 +44,7 @@ import {
 import type {
   ChunkPayload,
   ErrorPayload,
-  StreamEvent,
+  TypedStreamEvent,
 } from "@/types/python-generated/stream-events";
 
 export interface FollowUpTurn {
@@ -147,7 +147,10 @@ export default function AppletFollowUpInput({
           }
           case "tool_event":
             dispatch(
-              appendRawToolEvent({ listenerId, event: event as StreamEvent }),
+              appendRawToolEvent({
+                listenerId,
+                event: event as TypedStreamEvent,
+              }),
             );
             break;
           case "error": {

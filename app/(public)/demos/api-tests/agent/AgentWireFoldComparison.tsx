@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useMemo } from "react";
-import type { StreamEvent } from "@/types/python-generated/stream-events";
+import type { TypedStreamEvent } from "@/types/python-generated/stream-events";
 import { foldBackendStreamEvents } from "@/app/(public)/demos/api-tests/tool-testing/utils/stream-processing-beta";
 
 type WireEvent = { event: string; data: unknown };
@@ -33,7 +33,7 @@ export function AgentWireFoldComparison({
   events,
 }: AgentWireFoldComparisonProps) {
   const fold = useMemo(
-    () => foldBackendStreamEvents(events as StreamEvent[]),
+    () => foldBackendStreamEvents(events as TypedStreamEvent[]),
     [events],
   );
 

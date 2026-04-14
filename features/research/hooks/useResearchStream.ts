@@ -1,28 +1,40 @@
-'use client';
+"use client";
 
-import { useState, useCallback, useRef } from 'react';
-import { consumeStream } from '@/lib/api/stream-parser';
-import type { PhasePayload, EndPayload, CompletionPayload, ToolEventPayload } from '@/lib/api/types';
-import type { StreamEvent } from '@/types/python-generated/stream-events';
-import type { ResearchStreamStep, ResearchDataEvent, ResearchStreamCallbacks } from '../types';
+import { useState, useCallback, useRef } from "react";
+import { consumeStream } from "@/lib/api/stream-parser";
+import type {
+  PhasePayload,
+  EndPayload,
+  CompletionPayload,
+  ToolEventPayload,
+} from "@/lib/api/types";
+import type { TypedStreamEvent } from "@/types/python-generated/stream-events";
+import type {
+  ResearchStreamStep,
+  ResearchDataEvent,
+  ResearchStreamCallbacks,
+} from "../types";
 
 export interface StreamMessage {
-    id: string;
-    timestamp: number;
-    status: ResearchStreamStep;
-    message: string;
+  id: string;
+  timestamp: number;
+  status: ResearchStreamStep;
+  message: string;
 }
 
 export interface UseResearchStreamReturn {
-    isStreaming: boolean;
-    streamingText: string;
-    messages: StreamMessage[];
-    currentStep: ResearchStreamStep | null;
-    error: string | null;
-    rawEvents: StreamEvent[];
-    startStream: (response: Response, callbacks?: ResearchStreamCallbacks) => Promise<void>;
-    cancel: () => void;
-    clearMessages: () => void;
+  isStreaming: boolean;
+  streamingText: string;
+  messages: StreamMessage[];
+  currentStep: ResearchStreamStep | null;
+  error: string | null;
+  rawEvents: TypedStreamEvent[];
+  startStream: (
+    response: Response,
+    callbacks?: ResearchStreamCallbacks,
+  ) => Promise<void>;
+  cancel: () => void;
+  clearMessages: () => void;
 }
 
 /**
@@ -36,122 +48,153 @@ export interface UseResearchStreamReturn {
  * The hook handles progress messages and error state automatically.
  */
 export function useResearchStream(
-    onComplete?: () => void,
+  onComplete?: () => void,
 ): UseResearchStreamReturn {
-    const [isStreaming, setIsStreaming] = useState(false);
-    const [streamingText, setStreamingText] = useState('');
-    const [messages, setMessages] = useState<StreamMessage[]>([]);
-    const [currentStep, setCurrentStep] = useState<ResearchStreamStep | null>(null);
-    const [error, setError] = useState<string | null>(null);
-    const [rawEvents, setRawEvents] = useState<StreamEvent[]>([]);
-    const abortRef = useRef<AbortController | null>(null);
-    const idCounter = useRef(0);
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [streamingText, setStreamingText] = useState("");
+  const [messages, setMessages] = useState<StreamMessage[]>([]);
+  const [currentStep, setCurrentStep] = useState<ResearchStreamStep | null>(
+    null,
+  );
+  const [error, setError] = useState<string | null>(null);
+  const [rawEvents, setRawEvents] = useState<TypedStreamEvent[]>([]);
+  const abortRef = useRef<AbortController | null>(null);
+  const idCounter = useRef(0);
 
-    const addMessage = useCallback((status: ResearchStreamStep, message: string) => {
-        setMessages(prev => [...prev, {
-            id: `msg-${++idCounter.current}`,
-            timestamp: Date.now(),
-            status,
-            message,
-        }]);
-    }, []);
+  const addMessage = useCallback(
+    (status: ResearchStreamStep, message: string) => {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `msg-${++idCounter.current}`,
+          timestamp: Date.now(),
+          status,
+          message,
+        },
+      ]);
+    },
+    [],
+  );
 
-    const startStream = useCallback(async (response: Response, callbacks?: ResearchStreamCallbacks) => {
-        const controller = new AbortController();
-        abortRef.current = controller;
-        setIsStreaming(true);
-        setError(null);
-        setMessages([]);
-        setCurrentStep(null);
-        setStreamingText('');
-        setRawEvents([]);
+  const startStream = useCallback(
+    async (response: Response, callbacks?: ResearchStreamCallbacks) => {
+      const controller = new AbortController();
+      abortRef.current = controller;
+      setIsStreaming(true);
+      setError(null);
+      setMessages([]);
+      setCurrentStep(null);
+      setStreamingText("");
+      setRawEvents([]);
 
-        try {
-            await consumeStream(response, {
-                onEvent: (event: StreamEvent) => {
-                    setRawEvents(prev => [...prev, event]);
-                    const handled = ['chunk', 'phase', 'data', 'completion', 'tool_event', 'error', 'heartbeat', 'end'];
-                    if (!handled.includes(event.event)) {
-                        callbacks?.onUnknownEvent?.(event as { event: string; data: unknown });
-                    }
-                },
+      try {
+        await consumeStream(
+          response,
+          {
+            onEvent: (event: TypedStreamEvent) => {
+              setRawEvents((prev) => [...prev, event]);
+              const handled = [
+                "chunk",
+                "phase",
+                "data",
+                "completion",
+                "tool_event",
+                "error",
+                "heartbeat",
+                "end",
+              ];
+              if (!handled.includes(event.event)) {
+                callbacks?.onUnknownEvent?.(
+                  event as { event: string; data: unknown },
+                );
+              }
+            },
 
-                onChunk: (data) => {
-                    setStreamingText(prev => prev + data.text);
-                    callbacks?.onChunk?.(data.text);
-                },
+            onChunk: (data) => {
+              setStreamingText((prev) => prev + data.text);
+              callbacks?.onChunk?.(data.text);
+            },
 
-                onPhase: (data: PhasePayload) => {
-                    const step = (data.phase as ResearchStreamStep) || 'searching';
-                    setCurrentStep(step);
-                    addMessage(step, data.phase);
-                    callbacks?.onStatusUpdate?.(step, data.phase);
-                },
+            onPhase: (data: PhasePayload) => {
+              const step = (data.phase as ResearchStreamStep) || "searching";
+              setCurrentStep(step);
+              addMessage(step, data.phase);
+              callbacks?.onStatusUpdate?.(step, data.phase);
+            },
 
-                onData: (data) => {
-                    const record = data as unknown as Record<string, unknown>;
-                    if (record.event && typeof record.event === 'string') {
-                        callbacks?.onData?.(record as unknown as ResearchDataEvent);
-                    }
-                },
+            onData: (data) => {
+              const record = data as unknown as Record<string, unknown>;
+              if (record.event && typeof record.event === "string") {
+                callbacks?.onData?.(record as unknown as ResearchDataEvent);
+              }
+            },
 
-                onCompletion: (data: CompletionPayload) => {
-                    callbacks?.onCompletion?.(data as unknown as Record<string, unknown>);
-                },
+            onCompletion: (data: CompletionPayload) => {
+              callbacks?.onCompletion?.(
+                data as unknown as Record<string, unknown>,
+              );
+            },
 
-                onToolEvent: (data: ToolEventPayload) => {
-                    callbacks?.onToolEvent?.(data as unknown as Record<string, unknown>);
-                },
+            onToolEvent: (data: ToolEventPayload) => {
+              callbacks?.onToolEvent?.(
+                data as unknown as Record<string, unknown>,
+              );
+            },
 
-                onError: (err) => {
-                    const msg = err.user_message ?? err.message ?? 'An error occurred';
-                    setError(msg);
-                    setCurrentStep('error');
-                    callbacks?.onError?.(msg);
-                },
+            onError: (err) => {
+              const msg =
+                err.user_message ?? err.message ?? "An error occurred";
+              setError(msg);
+              setCurrentStep("error");
+              callbacks?.onError?.(msg);
+            },
 
-                onEnd: (_data: EndPayload) => {
-                    setCurrentStep('complete');
-                    callbacks?.onEnd?.();
-                    onComplete?.();
-                },
-            }, controller.signal);
-        } catch (err) {
-            if ((err as Error).name !== 'AbortError') {
-                const msg = (err as Error).message;
-                setError(msg);
-                setCurrentStep('error');
-                callbacks?.onError?.(msg);
-            }
-        } finally {
-            setIsStreaming(false);
-            abortRef.current = null;
+            onEnd: (_data: EndPayload) => {
+              setCurrentStep("complete");
+              callbacks?.onEnd?.();
+              onComplete?.();
+            },
+          },
+          controller.signal,
+        );
+      } catch (err) {
+        if ((err as Error).name !== "AbortError") {
+          const msg = (err as Error).message;
+          setError(msg);
+          setCurrentStep("error");
+          callbacks?.onError?.(msg);
         }
-    }, [addMessage, onComplete]);
-
-    const cancel = useCallback(() => {
-        abortRef.current?.abort();
+      } finally {
         setIsStreaming(false);
-        setCurrentStep(null);
-    }, []);
+        abortRef.current = null;
+      }
+    },
+    [addMessage, onComplete],
+  );
 
-    const clearMessages = useCallback(() => {
-        setMessages([]);
-        setCurrentStep(null);
-        setError(null);
-        setStreamingText('');
-        setRawEvents([]);
-    }, []);
+  const cancel = useCallback(() => {
+    abortRef.current?.abort();
+    setIsStreaming(false);
+    setCurrentStep(null);
+  }, []);
 
-    return {
-        isStreaming,
-        streamingText,
-        messages,
-        currentStep,
-        error,
-        rawEvents,
-        startStream,
-        cancel,
-        clearMessages,
-    };
+  const clearMessages = useCallback(() => {
+    setMessages([]);
+    setCurrentStep(null);
+    setError(null);
+    setStreamingText("");
+    setRawEvents([]);
+  }, []);
+
+  return {
+    isStreaming,
+    streamingText,
+    messages,
+    currentStep,
+    error,
+    rawEvents,
+    startStream,
+    cancel,
+    clearMessages,
+  };
 }

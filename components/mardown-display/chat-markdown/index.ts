@@ -1,12 +1,12 @@
 // Main exports
-export { EnhancedChatMarkdownInternal as EnhancedChatMarkdown } from './EnhancedChatMarkdown';
-export { StreamAwareChatMarkdown, useStreamEvents } from './StreamAwareChatMarkdown';
+export { EnhancedChatMarkdownInternal as EnhancedChatMarkdown } from "./EnhancedChatMarkdown";
+export { StreamAwareChatMarkdown } from "./StreamAwareChatMarkdown";
 
 // Type exports
-export type { ChatMarkdownDisplayProps } from './EnhancedChatMarkdown';
-export type { StreamAwareChatMarkdownProps } from './StreamAwareChatMarkdown';
+export type { ChatMarkdownDisplayProps } from "./EnhancedChatMarkdown";
+export type { StreamAwareChatMarkdownProps } from "./StreamAwareChatMarkdown";
 export type {
-  StreamEvent,
+  TypedStreamEvent,
   EventType,
   ChunkPayload,
   PhasePayload,
@@ -16,7 +16,4 @@ export type {
   CompletionPayload,
   HeartbeatPayload,
   EndPayload,
-} from './types';
-
-// Utility exports
-export { PlainTextFallback, MarkdownErrorBoundary } from './EnhancedChatMarkdown';
+} from "./types";

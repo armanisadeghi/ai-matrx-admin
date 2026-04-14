@@ -58,7 +58,6 @@ export type {
   RenderBlockPayload,
   RecordReservedPayload,
   RecordUpdatePayload,
-  StreamEvent,
   TypedStreamEvent,
   CompactChunkEvent,
   CompactReasoningChunkEvent,

@@ -37,15 +37,22 @@ export interface ToolDefinition {
 // specific types that aren't in the wire protocol.
 
 import type {
-  StreamEvent,
+  TypedStreamEvent,
   ToolEventPayload,
   CompletionPayload,
   ErrorPayload,
   EndPayload,
   PhasePayload,
-} from '@/types/python-generated/stream-events';
+} from "@/types/python-generated/stream-events";
 
-export type { StreamEvent, ToolEventPayload, CompletionPayload, ErrorPayload, EndPayload, PhasePayload };
+export type {
+  TypedStreamEvent,
+  ToolEventPayload,
+  CompletionPayload,
+  ErrorPayload,
+  EndPayload,
+  PhasePayload,
+};
 
 // Tool-testing specific enriched types
 export interface ToolStreamEvent {
@@ -139,12 +146,18 @@ export interface StreamEventHandlers {
   onError?: (error: ErrorPayload) => void;
   onEnd?: (data: EndPayload) => void;
   onHeartbeat?: () => void;
-  onRawEvent?: (event: StreamEvent) => void;
+  onRawEvent?: (event: TypedStreamEvent) => void;
 }
 
 // ─── Execution State ────────────────────────────────────────────────────────
 
-export type ExecutionStatus = "idle" | "connecting" | "running" | "complete" | "error" | "cancelled";
+export type ExecutionStatus =
+  | "idle"
+  | "connecting"
+  | "running"
+  | "complete"
+  | "error"
+  | "cancelled";
 
 export interface SchemaValidationResult {
   valid: boolean;

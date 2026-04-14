@@ -1,8 +1,5 @@
-import {
-  consumeStream,
-  type StreamCallbacks,
-} from "@/lib/api/stream-parser";
-import type { StreamEvent } from "@/types/python-generated/stream-events";
+import { consumeStream, type StreamCallbacks } from "@/lib/api/stream-parser";
+import type { TypedStreamEvent } from "@/types/python-generated/stream-events";
 
 /**
  * Handlers for the Python NDJSON stream — same contract as `StreamCallbacks`
@@ -45,7 +42,7 @@ export async function consumeBackendStreamResponse(
  * finishes, run `foldBackendStreamEvents(sink)` for a full structured snapshot.
  */
 export function withRawEventCapture(
-  sink: StreamEvent[],
+  sink: TypedStreamEvent[],
   handlers: BackendStreamHandlers = {},
 ): BackendStreamHandlers {
   const userOnEvent = handlers.onEvent;

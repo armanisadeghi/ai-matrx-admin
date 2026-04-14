@@ -1,11 +1,11 @@
 "use client";
-import React, { useState, useEffect, useCallback, lazy, Suspense } from "react";
+import React, { useState, useEffect, lazy, Suspense } from "react";
 import {
   EnhancedChatMarkdownInternal,
   ChatMarkdownDisplayProps,
-  MarkdownErrorBoundary,
 } from "./EnhancedChatMarkdown";
-import { StreamEvent } from "./types";
+import { TypedStreamEvent } from "./types";
+
 import {
   buildCanonicalBlocks,
   toolCallBlockToLegacy,
@@ -15,7 +15,7 @@ import type {
   CanonicalBlock,
   TextBlock,
 } from "@/lib/chat-protocol";
-import { parseNdjsonStream } from "@/lib/api/stream-parser";
+import { MarkdownErrorBoundary } from "./internal-handlers/MarkdownErrorBoundary";
 
 const ToolCallVisualization = lazy(
   () => import("@/features/cx-conversation/ToolCallVisualization"),
@@ -56,7 +56,7 @@ export interface StreamAwareChatMarkdownProps extends Omit<
    * Array of stream events to process (new mode)
    * When provided, this takes precedence over content prop
    */
-  events?: StreamEvent[];
+  events?: TypedStreamEvent[];
 
   /**
    * Callback when an error event is received
@@ -128,7 +128,7 @@ export const StreamAwareChatMarkdown: React.FC<
   // Track whether tool events or blocks changed since last RAF flush
   const canonicalBlocksChangedRef = React.useRef(false);
   // Always point to the latest events array so RAF callback can access most-current state
-  const eventsRef = React.useRef<StreamEvent[] | undefined>(events);
+  const eventsRef = React.useRef<TypedStreamEvent[] | undefined>(events);
 
   // Throttle state updates using RAF to batch rapid chunks
   const rafIdRef = React.useRef<number | null>(null);
@@ -403,45 +403,6 @@ export const StreamAwareChatMarkdown: React.FC<
       serverProcessedBlocks={effectiveServerBlocks}
     />
   );
-};
-
-/**
- * Hook to accumulate stream events from a fetch response
- * Useful for the unified-chat test page
- */
-export const useStreamEvents = () => {
-  const [events, setEvents] = useState<StreamEvent[]>([]);
-  const [isStreaming, setIsStreaming] = useState(false);
-
-  const processStream = useCallback(async (response: Response) => {
-    if (!response.body) {
-      throw new Error("No response body");
-    }
-
-    setIsStreaming(true);
-    setEvents([]);
-
-    try {
-      const { events: streamEvents } = parseNdjsonStream(response);
-      for await (const event of streamEvents) {
-        setEvents((prev) => [...prev, event as unknown as StreamEvent]);
-      }
-    } finally {
-      setIsStreaming(false);
-    }
-  }, []);
-
-  const reset = useCallback(() => {
-    setEvents([]);
-    setIsStreaming(false);
-  }, []);
-
-  return {
-    events,
-    isStreaming,
-    processStream,
-    reset,
-  };
 };
 
 export default StreamAwareChatMarkdown;

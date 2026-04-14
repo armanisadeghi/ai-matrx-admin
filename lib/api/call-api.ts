@@ -80,7 +80,7 @@ import { parseNdjsonStream } from "@/lib/api/stream-parser";
 // ─── Auto-generated types (source of truth for all request/response shapes) ──
 
 import type { paths, components } from "@/types/python-generated/api-types";
-import type { StreamEvent } from "@/types/python-generated/stream-events";
+import type { TypedStreamEvent } from "@/types/python-generated/stream-events";
 
 // ============================================================================
 // SECTION 1 — UTILITY TYPE HELPERS
@@ -278,7 +278,7 @@ export interface ApiCallConfig<
   ) => void;
 
   /** Called for each NDJSON event during streaming */
-  onStreamEvent?: (event: StreamEvent) => void;
+  onStreamEvent?: (event: TypedStreamEvent) => void;
 
   /** Called when the stream ends cleanly */
   onStreamComplete?: (
@@ -908,7 +908,7 @@ export interface CallAgentStartOptions {
   body: AgentStartBody;
   signal?: AbortSignal;
   scopeOverrides?: Partial<CallScope>;
-  onStreamEvent?: (event: StreamEvent) => void;
+  onStreamEvent?: (event: TypedStreamEvent) => void;
   onStreamComplete?: (
     requestId: string | null,
     conversationId: string | null,
@@ -940,7 +940,7 @@ export interface CallAgentBlocksStartOptions {
   body: AgentBlocksStartBody;
   signal?: AbortSignal;
   scopeOverrides?: Partial<CallScope>;
-  onStreamEvent?: (event: StreamEvent) => void;
+  onStreamEvent?: (event: TypedStreamEvent) => void;
   onStreamComplete?: (
     requestId: string | null,
     conversationId: string | null,
@@ -972,7 +972,7 @@ export interface CallConversationContinueOptions {
   body: ConversationContinueBody;
   signal?: AbortSignal;
   scopeOverrides?: Partial<CallScope>;
-  onStreamEvent?: (event: StreamEvent) => void;
+  onStreamEvent?: (event: TypedStreamEvent) => void;
   onStreamComplete?: (
     requestId: string | null,
     conversationId: string | null,
@@ -1066,7 +1066,7 @@ export interface CallPromptStartOptions {
     requestId: string | null,
     conversationId: string | null,
   ) => void;
-  onStreamEvent?: (event: StreamEvent) => void;
+  onStreamEvent?: (event: TypedStreamEvent) => void;
   onStreamComplete?: (
     requestId: string | null,
     conversationId: string | null,

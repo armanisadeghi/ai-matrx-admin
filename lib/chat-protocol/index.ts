@@ -21,10 +21,10 @@
  *   ProtocolVersion / PROTOCOL_VERSION
  *
  * ─── FROM STREAM ─────────────────────────────────────────────────────────────
- *   buildCanonicalBlocks            StreamEvent[] → CanonicalBlock[]
- *   buildStreamingState             StreamEvent[] → StreamingState  (live)
- *   buildCanonicalMessageFromStream StreamEvent[] → CanonicalMessage (complete)
- *   extractPersistableToolBlocks    StreamEvent[] → ToolCallBlock[]  (for DB save)
+ *   buildCanonicalBlocks            TypedStreamEvent[] → CanonicalBlock[]
+ *   buildStreamingState             TypedStreamEvent[] → StreamingState  (live)
+ *   buildCanonicalMessageFromStream TypedStreamEvent[] → CanonicalMessage (complete)
+ *   extractPersistableToolBlocks    TypedStreamEvent[] → ToolCallBlock[]  (for DB save)
  *
  * ─── FROM DB ─────────────────────────────────────────────────────────────────
  *   buildCanonicalMessages   CxMessage[] + CxToolCall[]? → CanonicalMessage[]
@@ -41,55 +41,52 @@
 
 // Types
 export type {
-    CanonicalMessage,
-    CanonicalBlock,
-    TextBlock,
-    ThinkingBlock,
-    MediaBlock,
-    ToolCallBlock,
-    ErrorBlock,
-    StreamingState,
-    ToolInput,
-    ToolOutput,
-    ToolError,
-    ToolProgress,
-    MessageRole,
-    MessageStatus,
-    ProtocolVersion,
-} from './types';
+  CanonicalMessage,
+  CanonicalBlock,
+  TextBlock,
+  ThinkingBlock,
+  MediaBlock,
+  ToolCallBlock,
+  ErrorBlock,
+  StreamingState,
+  ToolInput,
+  ToolOutput,
+  ToolError,
+  ToolProgress,
+  MessageRole,
+  MessageStatus,
+  ProtocolVersion,
+} from "./types";
 
 export {
-    PROTOCOL_VERSION,
-    isTextBlock,
-    isThinkingBlock,
-    isMediaBlock,
-    isToolCallBlock,
-    isErrorBlock,
-} from './types';
+  PROTOCOL_VERSION,
+  isTextBlock,
+  isThinkingBlock,
+  isMediaBlock,
+  isToolCallBlock,
+  isErrorBlock,
+} from "./types";
 
 // Stream normalizer
 export {
-    buildCanonicalBlocks,
-    buildStreamingState,
-    buildCanonicalMessageFromStream,
-    extractPersistableToolBlocks,
-} from './from-stream';
+  buildCanonicalBlocks,
+  buildStreamingState,
+  buildCanonicalMessageFromStream,
+  extractPersistableToolBlocks,
+} from "./from-stream";
 
 // DB normalizer
-export {
-    buildCanonicalMessages,
-    buildCanonicalMessage,
-} from './from-db';
+export { buildCanonicalMessages, buildCanonicalMessage } from "./from-db";
 
 // Legacy adapters
 export type {
-    LegacyChatMessage,
-    LegacyToolCallObject,
-    LegacyMcpInput,
-} from './adapters';
+  LegacyChatMessage,
+  LegacyToolCallObject,
+  LegacyMcpInput,
+} from "./adapters";
 
 export {
-    canonicalToLegacy,
-    canonicalArrayToLegacy,
-    toolCallBlockToLegacy,
-} from './adapters';
+  canonicalToLegacy,
+  canonicalArrayToLegacy,
+  toolCallBlockToLegacy,
+} from "./adapters";

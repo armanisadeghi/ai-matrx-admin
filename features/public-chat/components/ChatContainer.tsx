@@ -21,7 +21,7 @@ import {
   BackToStartButton,
   DEFAULT_AGENTS,
 } from "./AgentSelector";
-import type { StreamEvent } from "@/types/python-generated/stream-events";
+import type { TypedStreamEvent } from "@/types/python-generated/stream-events";
 import { formatText } from "@/utils/text/text-case-converter";
 import type { PublicResource } from "../types/content";
 import type { PromptVariable } from "@/features/prompts/types/core";
@@ -64,7 +64,7 @@ export function ChatContainer({ className = "" }: ChatContainerProps) {
   const [variableValues, setVariableValues] = useState<Record<string, any>>({});
   // Active variable definitions shown in the UI. Cleared after first submit.
   const [activeVariables, setActiveVariables] = useState<PromptVariable[]>([]);
-  const [streamEvents, setStreamEvents] = useState<StreamEvent[]>([]);
+  const [streamEvents, setStreamEvents] = useState<TypedStreamEvent[]>([]);
   const latestAssistantRef = useRef<HTMLDivElement>(null);
   const prevAssistantCountRef = useRef(0);
   const textInputRef = useRef<HTMLTextAreaElement>(null);

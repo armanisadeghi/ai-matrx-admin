@@ -14,7 +14,10 @@ import { AudioTestModal } from "@/components/admin/AudioTestModal";
 import { useApiTestConfig } from "@/components/api-test-config";
 import { ENDPOINTS } from "@/lib/api/endpoints";
 import { parseNdjsonStream } from "@/lib/api/stream-parser";
-import type { StreamEvent } from "@/types/python-generated/stream-events";
+import type {
+  TypedStreamEvent,
+  RenderBlockEvent,
+} from "@/types/python-generated/stream-events";
 import {
   CheckCircle2,
   Copy,
@@ -933,7 +936,9 @@ const MarkdownTester: React.FC<MarkdownTesterProps> = ({ className }) => {
 
   // Block-processing API
   const apiConfig = useApiTestConfig({ defaultServerType: "local" });
-  const [processedEvents, setProcessedEvents] = useState<StreamEvent[]>([]);
+  const [processedEvents, setProcessedEvents] = useState<TypedStreamEvent[]>(
+    [],
+  );
   const [isProcessing, setIsProcessing] = useState(false);
   const [processError, setProcessError] = useState<string | null>(null);
   const [rawCopied, setRawCopied] = useState(false);
@@ -988,22 +993,24 @@ const MarkdownTester: React.FC<MarkdownTesterProps> = ({ className }) => {
           const data = JSON.parse(text) as {
             blocks: Record<string, unknown>[];
           };
-          const synthetic: StreamEvent[] = data.blocks.map((block, i) => ({
-            event: "render_block" as const,
-            data: {
-              blockId: (block.blockId ??
-                block.block_id ??
-                `block-${i}`) as string,
-              blockIndex: (block.blockIndex ??
-                block.block_index ??
-                i) as number,
-              type: block.type as string,
-              status: "complete" as const,
-              content: (block.content ?? null) as string | null,
-              data: (block.data ?? null) as Record<string, unknown> | null,
-              metadata: (block.metadata ?? {}) as Record<string, unknown>,
-            } as unknown as Record<string, unknown>,
-          }));
+          const synthetic: TypedStreamEvent[] = data.blocks.map(
+            (block, i): RenderBlockEvent => ({
+              event: "render_block",
+              data: {
+                blockId: (block.blockId ??
+                  block.block_id ??
+                  `block-${i}`) as string,
+                blockIndex: (block.blockIndex ??
+                  block.block_index ??
+                  i) as number,
+                type: block.type as string,
+                status: "complete",
+                content: (block.content ?? null) as string | null,
+                data: (block.data ?? null) as Record<string, unknown> | null,
+                metadata: (block.metadata ?? {}) as Record<string, unknown>,
+              },
+            }),
+          );
           setProcessedEvents(synthetic);
         } else {
           const res = await fetch(
@@ -1022,7 +1029,7 @@ const MarkdownTester: React.FC<MarkdownTesterProps> = ({ className }) => {
             );
           }
           const { events } = parseNdjsonStream(res, controller.signal);
-          const acc: StreamEvent[] = [];
+          const acc: TypedStreamEvent[] = [];
           const lines: string[] = [];
           for await (const ev of events) {
             acc.push(ev);

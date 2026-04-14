@@ -1,10 +1,8 @@
 "use client";
 
 import React from "react";
-import {
-  PlainTextFallback,
-  MarkdownErrorBoundary,
-} from "@/components/mardown-display/chat-markdown/EnhancedChatMarkdown";
+import { PlainTextFallback } from "@/components/mardown-display/chat-markdown/internal-handlers/PlainTextFallback";
+import { MarkdownErrorBoundary } from "@/components/mardown-display/chat-markdown/internal-handlers/MarkdownErrorBoundary";
 import { StreamAwareChatMarkdown } from "@/components/mardown-display/chat-markdown/StreamAwareChatMarkdown";
 import { BlockRenderingProvider } from "@/components/mardown-display/chat-markdown/BlockRenderingContext";
 import type { MarkdownStreamProps } from "./MarkdownStream";

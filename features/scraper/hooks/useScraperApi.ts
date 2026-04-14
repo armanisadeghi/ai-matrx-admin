@@ -26,7 +26,7 @@ import type {
   ErrorPayload,
   EndPayload,
   InfoPayload,
-  StreamEvent,
+  TypedStreamEvent,
 } from "@/lib/api/types";
 import type {
   QuickScrapeRequest,
@@ -373,7 +373,10 @@ function extractResultsFromData(
   eventData: TypedDataPayload | Record<string, unknown>,
   results: Array<Record<string, unknown>>,
   metadata: Record<string, unknown>,
-): { results: Array<Record<string, unknown>>; metadata: Record<string, unknown> } {
+): {
+  results: Array<Record<string, unknown>>;
+  metadata: Record<string, unknown>;
+} {
   const d = eventData as Record<string, unknown>;
 
   if (Array.isArray(d.results) && (d.results as unknown[]).length > 0) {
@@ -429,7 +432,7 @@ async function consumeScrapeStream(
   await consumeStream(
     response,
     {
-      onEvent: (event: StreamEvent) => {
+      onEvent: (event: TypedStreamEvent) => {
         eventCount++;
         pushLog({ kind: "ndjson_event", parsed: cloneForDiagnostics(event) });
 
@@ -440,7 +443,9 @@ async function consumeScrapeStream(
             eventDataKeys: d ? Object.keys(d).join(", ") : "(no data)",
             dataType: d?.type,
             hasResults: Array.isArray(d?.results),
-            resultsCount: Array.isArray(d?.results) ? (d!.results as unknown[]).length : 0,
+            resultsCount: Array.isArray(d?.results)
+              ? (d!.results as unknown[]).length
+              : 0,
           });
         }
       },
@@ -473,7 +478,10 @@ async function consumeScrapeStream(
       },
 
       onError: (data: ErrorPayload) => {
-        pushLog({ kind: "stream_error_event", parsed: cloneForDiagnostics(data) });
+        pushLog({
+          kind: "stream_error_event",
+          parsed: cloneForDiagnostics(data),
+        });
         const msg = data.user_message ?? data.message ?? "Scraping failed";
         throw new Error(msg, {
           cause: {

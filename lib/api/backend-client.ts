@@ -2,7 +2,7 @@
 // Core API client for the Python FastAPI backend.
 // Pure TypeScript — no React dependency. Can be used from hooks, services, or scripts.
 
-import type { AuthCredentials, ContextScope, StreamEvent } from "./types";
+import type { AuthCredentials, ContextScope, TypedStreamEvent } from "./types";
 import { BackendApiError, parseHttpError } from "./errors";
 import { parseNdjsonStream, consumeStream } from "./stream-parser";
 import type { StreamCallbacks } from "./stream-parser";
@@ -179,7 +179,7 @@ export class BackendClient {
     body: Record<string, unknown> = {},
     signal?: AbortSignal,
   ): Promise<{
-    events: AsyncGenerator<StreamEvent, void, undefined>;
+    events: AsyncGenerator<TypedStreamEvent, void, undefined>;
     requestId: string | null;
     conversationId: string | null;
   }> {
