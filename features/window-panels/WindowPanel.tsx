@@ -478,6 +478,7 @@ export function WindowPanel({
         minSize={sidebarMinSize}
         collapsible
         collapsedSize={0}
+        groupResizeBehavior="preserve-pixel-size"
         onResize={handleSidebarResize}
         style={{ overflow: "hidden" }}
       >

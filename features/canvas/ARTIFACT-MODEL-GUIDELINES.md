@@ -141,13 +141,44 @@ HTML content rendered directly (not in an iframe). Lighter than `iframe`, no san
 
 ### `diagram` — Interactive Diagram
 
-JSON structure describing nodes, edges, and layout for an interactive diagram.
+JSON structure describing nodes, edges, and layout for an interactive diagram. Supports many diagram types including flowcharts, org charts, family pedigrees, timelines, ERDs, network diagrams, and more.
+
+#### Diagram types
+
+| `type` value | Use for |
+|---|---|
+| `flowchart` | Step-by-step process flows with decisions |
+| `process` | Sequential process steps |
+| `orgchart` | Organizational hierarchies |
+| `mindmap` | Radial topic maps |
+| `network` | Network or infrastructure topology |
+| `system` | System architecture with components |
+| `pedigree` | Family/genetic pedigree charts |
+| `timeline` | Chronological event sequences |
+| `erd` | Entity-relationship database diagrams |
+| `sequence` | Interaction/sequence diagrams |
+
+#### Layout control
+
+Use `layout.direction` to control orientation:
+- `"TB"` — top-to-bottom (default for most types)
+- `"LR"` — left-to-right (default for network/system/timeline)
+- `"BT"` — bottom-to-top
+- `"RL"` — right-to-left
+
+#### Node types (for `type` field on nodes)
+
+`start`, `end`, `process`, `decision`, `data`, `user`, `system`, `api`, `compute`, `storage`, `event`, `entity`, `gateway`
+
+#### Standard flowchart example
 
 ```xml
 <artifact id="artifact_1" type="diagram" title="Authentication Flow">
 {
   "diagram": {
     "title": "Authentication Flow",
+    "type": "flowchart",
+    "layout": {"direction": "TB"},
     "nodes": [
       {"id": "1", "label": "User Login", "type": "start"},
       {"id": "2", "label": "Validate Credentials", "type": "process"},
@@ -157,18 +188,101 @@ JSON structure describing nodes, edges, and layout for an interactive diagram.
       {"id": "6", "label": "Return Error", "type": "end"}
     ],
     "edges": [
-      {"source": "1", "target": "2"},
-      {"source": "2", "target": "3"},
-      {"source": "3", "target": "4", "label": "Yes"},
-      {"source": "3", "target": "6", "label": "No"},
-      {"source": "4", "target": "5"}
+      {"from": "1", "to": "2"},
+      {"from": "2", "to": "3"},
+      {"from": "3", "to": "4", "label": "Yes"},
+      {"from": "3", "to": "6", "label": "No"},
+      {"from": "4", "to": "5"}
     ]
   }
 }
 </artifact>
 ```
 
-**When to use:** System architectures, flowcharts, process diagrams, entity relationships.
+#### Family pedigree example
+
+Family pedigrees use `type: "pedigree"`. Nodes use `gender` (male/female/unknown), `affected`, `deceased`, `proband`, `generation` (integer, 0 = earliest generation), `birthYear`, `deathYear`. Edges use `relationship` (`parent`, `marriage`, `divorced`, `adopted`, `consanguineous`). Marriage edges go between partners (no arrowhead). Parent edges go from parents to children.
+
+```xml
+<artifact id="artifact_2" type="diagram" title="Smith Family Pedigree">
+{
+  "diagram": {
+    "title": "Smith Family Pedigree",
+    "type": "pedigree",
+    "nodes": [
+      {"id": "gf1", "label": "John", "gender": "male",   "generation": 0, "birthYear": "1940", "deathYear": "2010", "deceased": true},
+      {"id": "gm1", "label": "Mary", "gender": "female", "generation": 0, "birthYear": "1942"},
+      {"id": "f1",  "label": "Robert", "gender": "male",   "generation": 1, "birthYear": "1965", "affected": true},
+      {"id": "m1",  "label": "Susan",  "gender": "female", "generation": 1, "birthYear": "1967"},
+      {"id": "c1",  "label": "Emma",   "gender": "female", "generation": 2, "birthYear": "1992", "proband": true, "affected": true},
+      {"id": "c2",  "label": "Liam",   "gender": "male",   "generation": 2, "birthYear": "1994"}
+    ],
+    "edges": [
+      {"id": "e1", "from": "gf1", "to": "gm1", "relationship": "marriage"},
+      {"id": "e2", "from": "gf1", "to": "f1",  "relationship": "parent"},
+      {"id": "e3", "from": "gm1", "to": "f1",  "relationship": "parent"},
+      {"id": "e4", "from": "f1",  "to": "m1",  "relationship": "marriage"},
+      {"id": "e5", "from": "f1",  "to": "c1",  "relationship": "parent"},
+      {"id": "e6", "from": "m1",  "to": "c1",  "relationship": "parent"},
+      {"id": "e7", "from": "f1",  "to": "c2",  "relationship": "parent"},
+      {"id": "e8", "from": "m1",  "to": "c2",  "relationship": "parent"}
+    ]
+  }
+}
+</artifact>
+```
+
+#### Timeline example
+
+```xml
+<artifact id="artifact_3" type="diagram" title="Project Timeline">
+{
+  "diagram": {
+    "title": "Project Timeline",
+    "type": "timeline",
+    "layout": {"direction": "LR"},
+    "nodes": [
+      {"id": "e1", "label": "Project Kickoff",  "details": "Jan 2024", "type": "start"},
+      {"id": "e2", "label": "Design Phase",     "details": "Feb 2024", "type": "process"},
+      {"id": "e3", "label": "Development",      "details": "Mar–May 2024", "type": "process"},
+      {"id": "e4", "label": "Launch",           "details": "Jun 2024", "type": "end"}
+    ],
+    "edges": [
+      {"from": "e1", "to": "e2"},
+      {"from": "e2", "to": "e3"},
+      {"from": "e3", "to": "e4"}
+    ]
+  }
+}
+</artifact>
+```
+
+#### Optional edge fields
+
+| Field | Values | Effect |
+|---|---|---|
+| `label` | string | Text shown on the edge |
+| `color` | hex color | Edge color |
+| `dashed` | true/false | Dashed line style |
+| `strokeWidth` | number | Line thickness |
+| `relationship` | string | Semantic meaning (pedigrees, ERDs) |
+| `animated` | true/false | Animated flowing edge |
+
+#### Optional node fields
+
+| Field | Effect |
+|---|---|
+| `description` | Subtitle shown below label |
+| `details` | Smaller italic text (dates, notes) |
+| `color` | Custom hex color for node |
+
+**Rules:**
+- Do not put the chart type in the title — it already shows in the header
+- Use `from`/`to` or `source`/`target` for edges — both work
+- Edge `id` is optional — auto-generated if omitted
+- For pedigree charts, always set `generation` on every node for best layout
+
+**When to use:** System architectures, flowcharts, process diagrams, entity relationships, family trees, timelines, org charts.
 
 ---
 

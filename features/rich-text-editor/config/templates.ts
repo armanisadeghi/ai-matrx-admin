@@ -111,7 +111,6 @@ Rules:
 
 Randomize the position of the correct answer so it's always in a different position.`;
 
-
 export const simpleTimelineTemplate = `<timeline>
 ### Project Timeline
 
@@ -161,7 +160,6 @@ Complex Template:
 ${complexTimelineTemplate}
 
 Choose the template that best fits the user's request.`;
-
 
 export const progressTrackerTemplate = `<progress_tracker>
 ### Learning Progress
@@ -286,26 +284,36 @@ export const diagramTemplate = `Return ONLY valid JSON in this exact format:
   "diagram": {
     "type": "flowchart",
     "title": "User Authentication Flow",
+    "layout": {"direction": "TB"},
     "nodes": [
       {"id": "start", "label": "User Request", "type": "start"},
       {"id": "auth", "label": "Authentication", "type": "process"},
-      {"id": "db", "label": "Database Query", "type": "process"},
+      {"id": "db", "label": "Database Query", "type": "data"},
+      {"id": "api", "label": "API Call", "type": "api"},
       {"id": "end", "label": "Response", "type": "end"}
     ],
     "edges": [
       {"from": "start", "to": "auth"},
       {"from": "auth", "to": "db"},
-      {"from": "db", "to": "end"}
+      {"from": "db", "to": "api"},
+      {"from": "api", "to": "end"}
     ]
   }
 }
 \`\`\`
 
 Rules:
-- type: "flowchart", "mindmap", or "orgchart"
-- nodes: id, label, type ("start", "end", "process", "decision")
-- edges: from/to node ids
-- Return ONLY the JSON, no other text`;
+- type: "flowchart", "mindmap", "orgchart", "network", "system", "process", "pedigree", "timeline", "erd", or "sequence"
+- layout.direction: "TB" (top-to-bottom), "LR" (left-to-right), "BT" (bottom-to-top), "RL" (right-to-left)
+- nodes: id (required), label (required), type (optional), description (optional), details (optional)
+- Available node types: "start", "end", "process", "decision", "data", "user", "system", "api", "compute", "storage", "event", "entity", "gateway"
+- edges: from/to node ids (also accepts source/target); optional: label, color, dashed, strokeWidth, relationship, animated
+- Do not put the chart type in the title — it already displays in the header
+- Return ONLY the JSON, no other text
+
+For PEDIGREE diagrams, nodes also support: gender ("male"/"female"/"unknown"), affected (true/false), deceased (true/false), proband (true/false), generation (integer starting at 0), birthYear, deathYear
+For PEDIGREE edges, use relationship: "marriage", "divorced", "parent", "adopted", "consanguineous"
+For PEDIGREE: always set generation on every node; marriage edges connect partners horizontally; parent edges flow from parent to child`;
 
 export const deepResearchReportTemplate = `<research>
 # Research Analysis: [TOPIC] ([TIME_FRAME])
@@ -483,7 +491,7 @@ This comprehensive research analysis focuses on [TOPIC], with a forward-looking 
 
 </research>`;
 
-export const decisionTreeExample  = `{
+export const decisionTreeExample = `{
   "decision_tree": {
     "title": "Bug Diagnosis Guide",
     "description": "Step-by-step workflow for diagnosing and handling software bugs",

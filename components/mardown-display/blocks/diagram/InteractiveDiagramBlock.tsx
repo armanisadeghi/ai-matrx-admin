@@ -24,8 +24,8 @@ import ReactFlow, {
   Handle,
   Position,
   useReactFlow,
-  getRectOfNodes,
-  getTransformForBounds,
+  getNodesBounds,
+  getViewportForBounds,
 } from "reactflow";
 import "reactflow/dist/style.css";
 import {
@@ -52,6 +52,9 @@ import {
   Camera,
   ExternalLink,
   Printer,
+  Clock,
+  Table,
+  ArrowRight,
 } from "lucide-react";
 import { useCanvas } from "@/features/canvas/hooks/useCanvas";
 import {
@@ -59,18 +62,285 @@ import {
   getLayoutOptionsForDiagramType,
   getRadialLayout,
   getOrgChartLayout,
+  getPedigreeLayout,
 } from "./layout-utils";
 import { getOrgChartRoleIcon, formatDiagramType } from "./ui-utils";
+import type { DiagramData, DiagramNode } from "./parseDiagramJSON";
 
-// Custom Node Components
-const CustomNode = ({ data, selected }: any) => {
+// ─────────────────────────────────────────────────────────────────────────────
+// Tailwind CSS 4 uses modern CSS color functions (oklch, lab, color(display-p3))
+// that html2canvas cannot parse. It calls console.error for each one, which gets
+// intercepted by AdminDebugContextCollector as false-positive errors.
+//
+// Fix: patch window.getComputedStyle during capture so html2canvas always
+// receives safe hex values. Returns a restore function to call when done.
+// ─────────────────────────────────────────────────────────────────────────────
+const UNSAFE_COLOR_RE = /\b(oklch|oklab|lab|lch|color)\s*\(/i;
+
+function safenColor(value: string, prop: string, isDark: boolean): string {
+  if (!UNSAFE_COLOR_RE.test(value)) return value;
+  const lp = prop.toLowerCase();
+  if (lp.includes("background")) return isDark ? "#1f2937" : "#ffffff";
+  if (lp === "color") return isDark ? "#f3f4f6" : "#111827";
+  if (lp.includes("border") || lp.includes("outline"))
+    return isDark ? "#4b5563" : "#d1d5db";
+  if (lp === "fill" || lp === "stroke") return isDark ? "#9ca3af" : "#374151";
+  return isDark ? "#6b7280" : "#6b7280";
+}
+
+function patchComputedStyleForCapture(isDark: boolean): () => void {
+  const original = window.getComputedStyle.bind(window);
+  window.getComputedStyle = function (elt: Element, pseudo?: string | null) {
+    const computed = original(elt, pseudo);
+    return new Proxy(computed, {
+      get(target, prop: string | symbol) {
+        const value = (target as unknown as Record<string | symbol, unknown>)[
+          prop
+        ];
+        if (
+          typeof prop === "string" &&
+          typeof value === "string" &&
+          value &&
+          UNSAFE_COLOR_RE.test(value)
+        ) {
+          return safenColor(value, prop, isDark);
+        }
+        if (prop === "getPropertyValue") {
+          return (p: string) => {
+            const raw = target.getPropertyValue(p);
+            return raw && UNSAFE_COLOR_RE.test(raw)
+              ? safenColor(raw, p, isDark)
+              : raw;
+          };
+        }
+        if (typeof value === "function")
+          return (value as CallableFunction).bind(target);
+        return value;
+      },
+    });
+  };
+  return () => {
+    window.getComputedStyle = original;
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Pedigree Node — square (male) / circle (female), affected shading, proband
+// ─────────────────────────────────────────────────────────────────────────────
+const PedigreeNode = ({
+  data,
+  selected,
+}: {
+  data: Record<string, unknown>;
+  selected: boolean;
+}) => {
+  const gender = data.gender as string | undefined;
+  const affected = data.affected as boolean | undefined;
+  const deceased = data.deceased as boolean | undefined;
+  const proband = data.proband as boolean | undefined;
+  const birthYear = data.birthYear as string | undefined;
+  const deathYear = data.deathYear as string | undefined;
+
+  const isCircle = gender === "female";
+  const isUnknown = !gender || gender === "unknown";
+
+  const shapeBase = "relative flex items-center justify-center transition-all";
+  const size = "w-20 h-20";
+
+  const fillColor = affected
+    ? "bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-900"
+    : "bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100";
+
+  const borderColor = proband
+    ? "border-4 border-blue-500"
+    : selected
+      ? "border-4 border-blue-400"
+      : "border-2 border-gray-600 dark:border-gray-400";
+
+  const shapeClass = isCircle
+    ? `rounded-full ${shapeBase} ${size} ${fillColor} ${borderColor}`
+    : isUnknown
+      ? `rotate-45 ${shapeBase} ${size} ${fillColor} border-2 border-gray-600 dark:border-gray-400`
+      : `${shapeBase} ${size} ${fillColor} ${borderColor}`;
+
+  return (
+    <div className="flex flex-col items-center gap-1 p-1">
+      <Handle
+        type="target"
+        position={Position.Top}
+        id="input"
+        className="w-2 h-2 border border-gray-400 dark:border-gray-500 bg-white dark:bg-gray-700"
+      />
+
+      <div className={shapeClass} title={data.label as string}>
+        {deceased && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            {/* Diagonal line for deceased */}
+            <div className="absolute w-full h-px bg-gray-600 dark:bg-gray-400 rotate-45 origin-center" />
+          </div>
+        )}
+        {proband && (
+          <div className="absolute -bottom-1 -left-3 text-blue-500 text-xs font-bold">
+            ↗
+          </div>
+        )}
+        {isUnknown && (
+          <div className="-rotate-45 text-xs font-semibold text-center leading-tight px-1">
+            {data.label as string}
+          </div>
+        )}
+        {!isUnknown && (
+          <div className="text-xs font-semibold text-center leading-tight px-1 break-words max-w-full">
+            {data.label as string}
+          </div>
+        )}
+      </div>
+
+      {/* Name and dates below the shape */}
+      {(data.description || birthYear) && (
+        <div className="text-center max-w-[120px]">
+          {data.description && (
+            <div className="text-xs text-gray-700 dark:text-gray-300 font-medium truncate">
+              {data.description as string}
+            </div>
+          )}
+          {(birthYear || deathYear) && (
+            <div className="text-xs text-gray-500 dark:text-gray-400">
+              {birthYear && deathYear
+                ? `${birthYear}–${deathYear}`
+                : birthYear
+                  ? `b. ${birthYear}`
+                  : deathYear
+                    ? `d. ${deathYear}`
+                    : null}
+            </div>
+          )}
+        </div>
+      )}
+
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        id="output"
+        className="w-2 h-2 border border-gray-400 dark:border-gray-500 bg-white dark:bg-gray-700"
+      />
+    </div>
+  );
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Timeline Node
+// ─────────────────────────────────────────────────────────────────────────────
+const TimelineNode = ({
+  data,
+  selected,
+}: {
+  data: Record<string, unknown>;
+  selected: boolean;
+}) => {
+  return (
+    <div
+      className={`px-4 py-3 min-w-[140px] max-w-[200px] rounded-xl border-2 shadow-md transition-all bg-blue-50 dark:bg-blue-950/30 border-blue-400 dark:border-blue-600 text-blue-900 dark:text-blue-100 ${
+        selected
+          ? "shadow-xl scale-105 ring-2 ring-blue-400"
+          : "hover:shadow-md"
+      }`}
+    >
+      <Handle
+        type="target"
+        position={Position.Left}
+        id="input"
+        className="w-2 h-2 border border-blue-400 bg-white dark:bg-gray-800"
+      />
+      {data.details && (
+        <div className="text-xs font-bold text-blue-500 dark:text-blue-400 mb-1">
+          {data.details as string}
+        </div>
+      )}
+      <div className="font-semibold text-sm">{data.label as string}</div>
+      {data.description && (
+        <div className="text-xs opacity-75 mt-1">
+          {data.description as string}
+        </div>
+      )}
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="output"
+        className="w-2 h-2 border border-blue-400 bg-white dark:bg-gray-800"
+      />
+    </div>
+  );
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ERD Node
+// ─────────────────────────────────────────────────────────────────────────────
+const ERDNode = ({
+  data,
+  selected,
+}: {
+  data: Record<string, unknown>;
+  selected: boolean;
+}) => {
+  const attributes = data.attributes as string[] | undefined;
+  return (
+    <div
+      className={`min-w-[160px] rounded-lg border-2 shadow-md overflow-hidden transition-all bg-white dark:bg-gray-800 border-purple-400 dark:border-purple-600 ${
+        selected
+          ? "shadow-xl scale-105 ring-2 ring-purple-400"
+          : "hover:shadow-md"
+      }`}
+    >
+      <Handle
+        type="target"
+        position={Position.Left}
+        id="input"
+        className="w-2 h-2 border border-purple-400 bg-white dark:bg-gray-800"
+      />
+      <div className="bg-purple-500 dark:bg-purple-700 px-3 py-2 text-white font-bold text-sm text-center">
+        {data.label as string}
+      </div>
+      {attributes && attributes.length > 0 && (
+        <div className="divide-y divide-gray-100 dark:divide-gray-700">
+          {attributes.map((attr, i) => (
+            <div
+              key={i}
+              className="px-3 py-1 text-xs text-gray-700 dark:text-gray-300 font-mono"
+            >
+              {attr}
+            </div>
+          ))}
+        </div>
+      )}
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="output"
+        className="w-2 h-2 border border-purple-400 bg-white dark:bg-gray-800"
+      />
+    </div>
+  );
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Generic Custom Node (flowchart, orgchart, network, system, process, etc.)
+// ─────────────────────────────────────────────────────────────────────────────
+const CustomNode = ({
+  data,
+  selected,
+}: {
+  data: Record<string, unknown>;
+  selected: boolean;
+}) => {
   const getNodeIcon = () => {
-    // For organizational charts, use role-based icons
     if (data.diagramType === "orgchart") {
-      return getOrgChartRoleIcon(data.label, data.description, data.details);
+      return getOrgChartRoleIcon(
+        data.label as string,
+        data.description as string,
+        data.details as string,
+      );
     }
-
-    // For other diagram types, use the original logic
     switch (data.nodeType) {
       case "process":
         return <Settings className="h-4 w-4" />;
@@ -92,12 +362,21 @@ const CustomNode = ({ data, selected }: any) => {
         return <Cpu className="h-4 w-4" />;
       case "storage":
         return <HardDrive className="h-4 w-4" />;
+      case "event":
+        return <Clock className="h-4 w-4" />;
+      case "entity":
+        return <Table className="h-4 w-4" />;
+      case "gateway":
+        return <ArrowRight className="h-4 w-4" />;
       default:
         return <Square className="h-4 w-4" />;
     }
   };
 
   const getNodeColor = () => {
+    // Allow per-node color override via data.color
+    if (data.color) return "";
+
     switch (data.nodeType) {
       case "start":
         return "bg-green-100 dark:bg-green-950/30 border-green-500 text-green-700 dark:text-green-300";
@@ -119,83 +398,91 @@ const CustomNode = ({ data, selected }: any) => {
         return "bg-yellow-100 dark:bg-yellow-950/30 border-yellow-500 text-yellow-700 dark:text-yellow-300";
       case "storage":
         return "bg-pink-100 dark:bg-pink-950/30 border-pink-500 text-pink-700 dark:text-pink-300";
+      case "event":
+        return "bg-cyan-100 dark:bg-cyan-950/30 border-cyan-500 text-cyan-700 dark:text-cyan-300";
+      case "entity":
+        return "bg-violet-100 dark:bg-violet-950/30 border-violet-500 text-violet-700 dark:text-violet-300";
+      case "gateway":
+        return "bg-amber-100 dark:bg-amber-950/30 border-amber-500 text-amber-700 dark:text-amber-300";
       default:
         return "bg-textured border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300";
     }
   };
 
-  // Check if this is an org chart node for special styling
   const isOrgChart = data.diagramType === "orgchart";
+  const colorClass = getNodeColor();
+  const inlineStyle = data.color
+    ? {
+        backgroundColor: `${data.color}20`,
+        borderColor: data.color as string,
+        color: data.color as string,
+      }
+    : undefined;
 
   return (
     <div
-      className={`${isOrgChart ? "px-6 py-4 min-w-[200px]" : "px-4 py-3 min-w-[120px]"} rounded-lg border-2 shadow-lg transition-all ${getNodeColor()} ${
+      className={`${isOrgChart ? "px-6 py-4 min-w-[200px]" : "px-4 py-3 min-w-[120px]"} rounded-lg border-2 shadow-lg transition-all ${colorClass} ${
         selected
           ? "shadow-xl scale-105 ring-2 ring-blue-400 dark:ring-blue-500"
           : "hover:shadow-md"
       }`}
+      style={inlineStyle}
     >
-      {/* Input Handle - positioned based on diagram type */}
       <Handle
         type="target"
         position={isOrgChart ? Position.Top : Position.Left}
         id="input"
         style={
           isOrgChart
-            ? {
-                left: "50%",
-                transform: "translateX(-50%)",
-                top: "-6px",
-              }
+            ? { left: "50%", transform: "translateX(-50%)", top: "-6px" }
             : {}
         }
         className="w-3 h-3 border-2 border-gray-400 dark:border-gray-500 bg-textured hover:bg-blue-200 dark:hover:bg-blue-700 transition-colors"
       />
 
       {isOrgChart ? (
-        // Org chart specific layout - centered and hierarchical
         <div className="text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
             {getNodeIcon()}
-            <div className="font-bold text-base">{data.label}</div>
+            <div className="font-bold text-base">{data.label as string}</div>
           </div>
           {data.description && (
             <div className="text-sm font-medium opacity-90 mb-1">
-              {data.description}
+              {data.description as string}
             </div>
           )}
           {data.details && (
-            <div className="text-xs opacity-70 italic">{data.details}</div>
+            <div className="text-xs opacity-70 italic">
+              {data.details as string}
+            </div>
           )}
         </div>
       ) : (
-        // Regular diagram layout
         <div>
           <div className="flex items-center gap-2 mb-1">
             {getNodeIcon()}
-            <div className="font-semibold text-sm">{data.label}</div>
+            <div className="font-semibold text-sm">{data.label as string}</div>
           </div>
           {data.description && (
-            <div className="text-xs opacity-80 mt-1">{data.description}</div>
+            <div className="text-xs opacity-80 mt-1">
+              {data.description as string}
+            </div>
           )}
           {data.details && (
-            <div className="text-xs opacity-70 mt-1 italic">{data.details}</div>
+            <div className="text-xs opacity-70 mt-1 italic">
+              {data.details as string}
+            </div>
           )}
         </div>
       )}
 
-      {/* Output Handle - positioned based on diagram type */}
       <Handle
         type="source"
         position={isOrgChart ? Position.Bottom : Position.Right}
         id="output"
         style={
           isOrgChart
-            ? {
-                left: "50%",
-                transform: "translateX(-50%)",
-                bottom: "-6px",
-              }
+            ? { left: "50%", transform: "translateX(-50%)", bottom: "-6px" }
             : {}
         }
         className="w-3 h-3 border-2 border-gray-400 dark:border-gray-500 bg-textured hover:bg-blue-200 dark:hover:bg-blue-700 transition-colors"
@@ -204,51 +491,130 @@ const CustomNode = ({ data, selected }: any) => {
   );
 };
 
-interface DiagramData {
-  title: string;
-  description?: string;
-  type: "flowchart" | "mindmap" | "orgchart" | "network" | "system" | "process";
-  nodes: Array<{
-    id: string;
-    label: string;
-    type?: string;
-    nodeType?: string;
-    description?: string;
-    details?: string;
-    position?: { x: number; y: number };
-  }>;
-  edges: Array<{
-    id: string;
-    source: string;
-    target: string;
-    label?: string;
-    type?: string;
-    color?: string;
-    dashed?: boolean;
-    strokeWidth?: number;
-  }>;
-  layout?: {
-    direction?: "TB" | "LR" | "BT" | "RL";
-    spacing?: number;
-  };
-}
-
-interface InteractiveDiagramBlockProps {
-  diagram: DiagramData;
-  taskId?: string; // Task ID for canvas deduplication
-}
-
+// ─────────────────────────────────────────────────────────────────────────────
+// NodeTypes registry — defined OUTSIDE render to prevent ReactFlow warning
+// ─────────────────────────────────────────────────────────────────────────────
 const nodeTypes: NodeTypes = {
-  custom: CustomNode,
+  custom: CustomNode as NodeTypes[string],
+  pedigree: PedigreeNode as NodeTypes[string],
+  timeline: TimelineNode as NodeTypes[string],
+  erd: ERDNode as NodeTypes[string],
 };
 
-// Inner component that uses ReactFlow hooks
+// ─────────────────────────────────────────────────────────────────────────────
+// Helpers — convert DiagramData nodes/edges to ReactFlow format
+// ─────────────────────────────────────────────────────────────────────────────
+function getReactFlowNodeType(
+  diagramType: string,
+  nodeData: DiagramNode,
+): string {
+  if (diagramType === "pedigree") return "pedigree";
+  if (diagramType === "timeline") return "timeline";
+  if (diagramType === "erd") return "erd";
+  return "custom";
+}
+
+function buildReactFlowNodes(diagram: DiagramData): Node[] {
+  return diagram.nodes.map((node, index) => ({
+    id: node.id,
+    type: getReactFlowNodeType(diagram.type, node),
+    position: node.position || {
+      x: (index % 3) * 200 + 100,
+      y: Math.floor(index / 3) * 150 + 100,
+    },
+    data: {
+      label: node.label,
+      nodeType: node.nodeType || node.type || "default",
+      description: node.description,
+      details: node.details,
+      diagramType: diagram.type,
+      // Pedigree fields
+      gender: node.gender,
+      affected: node.affected,
+      deceased: node.deceased,
+      proband: node.proband,
+      birthYear: node.birthYear,
+      deathYear: node.deathYear,
+      generation: node.generation,
+      // Extras
+      color: node.color,
+      attributes: node.metadata?.attributes as string[] | undefined,
+    },
+  }));
+}
+
+function buildReactFlowEdges(diagram: DiagramData): Edge[] {
+  const nodeIds = new Set(diagram.nodes.map((n) => n.id));
+  const isPedigree = diagram.type === "pedigree";
+  const hideArrows = diagram.renderHints?.hideArrows;
+  const showLabels = diagram.renderHints?.showEdgeLabels !== false;
+
+  return diagram.edges
+    .filter((edge) => {
+      if (!nodeIds.has(edge.source) || !nodeIds.has(edge.target)) {
+        console.warn(`Diagram edge ${edge.id} references missing nodes`, edge);
+        return false;
+      }
+      return true;
+    })
+    .map((edge) => {
+      const isMarriage =
+        edge.relationship === "marriage" || edge.relationship === "divorced";
+      const isDivorced = edge.relationship === "divorced";
+      const isConsanguineous = edge.relationship === "consanguineous";
+
+      // Marriage edges: horizontal double line, no arrow
+      const edgeStyle: React.CSSProperties = {
+        stroke: edge.color || (isMarriage ? "#374151" : "#6b7280"),
+        strokeWidth: isMarriage ? 3 : edge.strokeWidth || 2,
+        strokeDasharray: isDivorced
+          ? "6,3"
+          : isConsanguineous
+            ? "2,2"
+            : edge.dashed
+              ? "5,5"
+              : "none",
+      };
+
+      const showArrow = !hideArrows && !isMarriage && edge.arrow !== false;
+
+      return {
+        id: edge.id,
+        source: edge.source,
+        target: edge.target,
+        sourceHandle: "output",
+        targetHandle: "input",
+        type: isPedigree && isMarriage ? "straight" : "default",
+        animated: edge.animated || false,
+        markerEnd: showArrow
+          ? {
+              type: MarkerType.ArrowClosed,
+              width: isPedigree ? 14 : 20,
+              height: isPedigree ? 14 : 20,
+              color: edge.color || "#6b7280",
+            }
+          : undefined,
+        style: edgeStyle,
+        label: showLabels && !isPedigree ? edge.label : undefined,
+        labelStyle: {
+          fontSize: 12,
+          fontWeight: 500,
+          fill: edge.color || "#6b7280",
+        },
+        labelBgStyle: { fill: "#ffffff", fillOpacity: 0.8, rx: 4, ry: 4 },
+      };
+    });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DiagramFlow — inner component that uses ReactFlow hooks
+// ─────────────────────────────────────────────────────────────────────────────
 const DiagramFlow: React.FC<{
   diagram: DiagramData;
   showMiniMap: boolean;
-  setShowMiniMap: (show: boolean) => void;
+  setShowMiniMap: (v: boolean) => void;
   backgroundVariant: BackgroundVariant;
-  setBackgroundVariant: (variant: BackgroundVariant) => void;
+  setBackgroundVariant: (v: BackgroundVariant) => void;
   onExportImage: () => void;
 }> = ({
   diagram,
@@ -261,207 +627,8 @@ const DiagramFlow: React.FC<{
   const { fitView, getNodes } = useReactFlow();
   const hasAutoLayoutApplied = useRef(false);
 
-  // Enhanced image export function that properly handles viewport and theme
-  const exportImage = useCallback(() => {
-    const nodes = getNodes();
-    const nodesBounds = getRectOfNodes(nodes);
-    const imageWidth = 1024;
-    const imageHeight = 768;
-
-    // Calculate transform to fit all nodes in the export
-    const transform = getTransformForBounds(
-      nodesBounds,
-      imageWidth,
-      imageHeight,
-      0.1,
-      2,
-    );
-
-    // Get the React Flow container
-    const reactFlowInstance = document.querySelector(".react-flow");
-    if (!reactFlowInstance) {
-      onExportImage(); // Fallback to original method
-      return;
-    }
-
-    // Detect current theme (dark mode)
-    const isDarkMode =
-      document.documentElement.classList.contains("dark") ||
-      document.body.classList.contains("dark") ||
-      window.matchMedia("(prefers-color-scheme: dark)").matches;
-
-    // Get computed background color from React Flow instance
-    const computedStyle = window.getComputedStyle(reactFlowInstance);
-    const currentBgColor =
-      computedStyle.backgroundColor || (isDarkMode ? "#111827" : "#ffffff");
-
-    // Create a temporary container for export that matches current theme
-    const exportContainer = document.createElement("div");
-    exportContainer.style.position = "absolute";
-    exportContainer.style.top = "-9999px";
-    exportContainer.style.left = "-9999px";
-    exportContainer.style.width = `${imageWidth}px`;
-    exportContainer.style.height = `${imageHeight}px`;
-    exportContainer.style.background = currentBgColor;
-
-    // Apply dark mode class if needed to ensure proper styling
-    if (isDarkMode) {
-      exportContainer.classList.add("dark");
-    }
-
-    document.body.appendChild(exportContainer);
-
-    // Clone the entire React Flow instance to preserve all styling
-    const clonedReactFlow = reactFlowInstance.cloneNode(true) as HTMLElement;
-
-    // Ensure the cloned element maintains theme classes
-    if (isDarkMode && !clonedReactFlow.classList.contains("dark")) {
-      clonedReactFlow.classList.add("dark");
-    }
-
-    // Set dimensions and apply transform
-    clonedReactFlow.style.width = `${imageWidth}px`;
-    clonedReactFlow.style.height = `${imageHeight}px`;
-    clonedReactFlow.style.position = "relative";
-    clonedReactFlow.style.overflow = "hidden";
-
-    // Find and transform the viewport within the cloned element
-    const clonedViewport = clonedReactFlow.querySelector(
-      ".react-flow__viewport",
-    ) as HTMLElement;
-    if (clonedViewport) {
-      const [x, y, zoom] = transform;
-      clonedViewport.style.transform = `translate(${x}px, ${y}px) scale(${zoom})`;
-    }
-
-    exportContainer.appendChild(clonedReactFlow);
-
-    // Use html2canvas on the export container
-    import("html2canvas")
-      .then((html2canvas) => {
-        html2canvas
-          .default(exportContainer, {
-            backgroundColor: currentBgColor,
-            scale: 2,
-            useCORS: true,
-            allowTaint: true,
-            width: imageWidth,
-            height: imageHeight,
-            ignoreElements: (element) => {
-              // Ignore controls, minimap, and panels for cleaner export
-              return (
-                element.classList.contains("react-flow__controls") ||
-                element.classList.contains("react-flow__minimap") ||
-                element.classList.contains("react-flow__panel")
-              );
-            },
-          })
-          .then((canvas) => {
-            // Create download link
-            const link = document.createElement("a");
-            const themeSuffix = isDarkMode ? "_dark" : "_light";
-            link.download = `${diagram.title.replace(/[^a-z0-9]/gi, "_").toLowerCase()}_diagram${themeSuffix}.png`;
-            link.href = canvas.toDataURL("image/png");
-            link.click();
-
-            // Cleanup
-            document.body.removeChild(exportContainer);
-          })
-          .catch((error) => {
-            console.error("Failed to export image:", error);
-            document.body.removeChild(exportContainer);
-            alert("Image export failed. Please try the JSON export instead.");
-          });
-      })
-      .catch(() => {
-        document.body.removeChild(exportContainer);
-        alert(
-          "Image export not available. Please use the JSON export instead.",
-        );
-      });
-  }, [getNodes, diagram.title, onExportImage]);
-
-  // Convert diagram data to ReactFlow format
-  const initialNodes: Node[] = useMemo(() => {
-    return diagram.nodes.map((node, index) => ({
-      id: node.id,
-      type: "custom",
-      position: node.position || {
-        x: (index % 3) * 200 + 100,
-        y: Math.floor(index / 3) * 150 + 100,
-      },
-      data: {
-        label: node.label,
-        nodeType: node.nodeType || node.type || "default",
-        description: node.description,
-        details: node.details,
-        diagramType: diagram.type, // Pass diagram type for styling
-      },
-    }));
-  }, [diagram.nodes, diagram.type]);
-
-  const initialEdges: Edge[] = useMemo(() => {
-    const nodeIds = new Set(diagram.nodes.map((node) => node.id));
-
-    const processedEdges = diagram.edges
-      .filter((edge) => {
-        const sourceExists = nodeIds.has(edge.source);
-        const targetExists = nodeIds.has(edge.target);
-
-        if (!sourceExists || !targetExists) {
-          console.warn(`Edge ${edge.id} references non-existent nodes:`, {
-            source: edge.source,
-            target: edge.target,
-            sourceExists,
-            targetExists,
-            availableNodes: Array.from(nodeIds),
-          });
-          return false;
-        }
-
-        return true;
-      })
-      .map((edge) => ({
-        id: edge.id,
-        source: edge.source,
-        target: edge.target,
-        sourceHandle: "output",
-        targetHandle: "input",
-        type: "default",
-        markerEnd: {
-          type: MarkerType.ArrowClosed,
-          width: diagram.type === "orgchart" ? 16 : 20,
-          height: diagram.type === "orgchart" ? 16 : 20,
-          color: edge.color || "#6b7280",
-        },
-        style: {
-          stroke: edge.color || "#6b7280",
-          strokeWidth: edge.strokeWidth || 2,
-          strokeDasharray: edge.dashed ? "5,5" : "none",
-        },
-        // Remove labels for org charts to keep them clean
-        label: diagram.type === "orgchart" ? undefined : edge.label,
-        labelStyle:
-          diagram.type === "orgchart"
-            ? undefined
-            : {
-                fontSize: 12,
-                fontWeight: 500,
-                fill: edge.color || "#6b7280",
-              },
-        labelBgStyle:
-          diagram.type === "orgchart"
-            ? undefined
-            : {
-                fill: "#ffffff",
-                fillOpacity: 0.8,
-                rx: 4,
-                ry: 4,
-              },
-      }));
-
-    return processedEdges;
-  }, [diagram.edges, diagram.nodes]);
+  const initialNodes = useMemo(() => buildReactFlowNodes(diagram), [diagram]);
+  const initialEdges = useMemo(() => buildReactFlowEdges(diagram), [diagram]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
@@ -471,96 +638,158 @@ const DiagramFlow: React.FC<{
     [setEdges],
   );
 
-  const resetLayout = () => {
-    const layoutNodes = diagram.nodes.map((node, index) => ({
-      ...nodes.find((n) => n.id === node.id)!,
-      position: node.position || {
-        x: (index % 3) * 200 + 100,
-        y: Math.floor(index / 3) * 150 + 100,
-      },
-      data: {
-        ...nodes.find((n) => n.id === node.id)!.data,
-        diagramType: diagram.type, // Preserve diagram type
-      },
-    }));
-    setNodes(layoutNodes);
-    setTimeout(() => fitView({ duration: 800 }), 100);
-    // When user manually resets layout, mark as applied to prevent auto-layout interference
-    hasAutoLayoutApplied.current = true;
-  };
-
-  const applyAutoLayout = useCallback(() => {
-    let layoutedNodes: Node[];
-    let layoutedEdges: Edge[];
-
-    if (diagram.type === "orgchart") {
-      // Use specialized org chart layout
-      const layoutOptions = getLayoutOptionsForDiagramType(
-        diagram.type,
-        diagram.nodes.length,
-      );
-      const result = getOrgChartLayout(nodes, edges, layoutOptions);
-      layoutedNodes = result.nodes;
-      layoutedEdges = result.edges;
-      setEdges(layoutedEdges);
-    } else {
-      // Use general layout for other diagram types
-      const layoutOptions = getLayoutOptionsForDiagramType(
-        diagram.type,
-        diagram.nodes.length,
-      );
-      const result = getLayoutedElements(nodes, edges, layoutOptions);
-      layoutedNodes = result.nodes;
+  // ── Export with updated (non-deprecated) ReactFlow APIs ──
+  const exportImage = useCallback(() => {
+    const currentNodes = getNodes();
+    if (!currentNodes.length) {
+      onExportImage();
+      return;
     }
 
-    setNodes(layoutedNodes);
+    const nodesBounds = getNodesBounds(currentNodes);
+    const imageWidth = 1200;
+    const imageHeight = 800;
+
+    const viewport = getViewportForBounds(
+      nodesBounds,
+      imageWidth,
+      imageHeight,
+      0.1,
+      2,
+      0.1,
+    );
+
+    const reactFlowEl = document.querySelector(
+      ".react-flow",
+    ) as HTMLElement | null;
+    if (!reactFlowEl) {
+      onExportImage();
+      return;
+    }
+
+    const isDark =
+      document.documentElement.classList.contains("dark") ||
+      window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+    const bgColor = isDark ? "#111827" : "#ffffff";
+
+    const exportContainer = document.createElement("div");
+    exportContainer.style.cssText = `position:absolute;top:-9999px;left:-9999px;width:${imageWidth}px;height:${imageHeight}px;background:${bgColor}`;
+    if (isDark) exportContainer.classList.add("dark");
+
+    const cloned = reactFlowEl.cloneNode(true) as HTMLElement;
+    if (isDark) cloned.classList.add("dark");
+    cloned.style.cssText = `width:${imageWidth}px;height:${imageHeight}px;position:relative;overflow:hidden`;
+
+    const clonedViewport = cloned.querySelector(
+      ".react-flow__viewport",
+    ) as HTMLElement | null;
+    if (clonedViewport) {
+      clonedViewport.style.transform = `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`;
+    }
+
+    exportContainer.appendChild(cloned);
+    document.body.appendChild(exportContainer);
+
+    import("html2canvas")
+      .then((mod) => {
+        // Patch getComputedStyle so html2canvas never sees oklch/lab values
+        const restore = patchComputedStyleForCapture(isDark);
+        return mod
+          .default(exportContainer, {
+            backgroundColor: bgColor,
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
+            width: imageWidth,
+            height: imageHeight,
+            ignoreElements: (el) =>
+              el.classList.contains("react-flow__controls") ||
+              el.classList.contains("react-flow__minimap") ||
+              el.classList.contains("react-flow__panel"),
+          })
+          .finally(restore);
+      })
+      .then((canvas) => {
+        const a = document.createElement("a");
+        a.download = `${diagram.title.replace(/[^a-z0-9]/gi, "_").toLowerCase()}_diagram${isDark ? "_dark" : "_light"}.png`;
+        a.href = canvas.toDataURL("image/png");
+        a.click();
+      })
+      .catch((err) => console.warn("Diagram export failed:", err))
+      .finally(() => document.body.removeChild(exportContainer));
+  }, [getNodes, diagram.title, onExportImage]);
+
+  // ── Layout helpers ──
+  const applyAutoLayout = useCallback(() => {
+    let result: { nodes: Node[]; edges?: Edge[] };
+
+    if (diagram.type === "pedigree") {
+      result = getPedigreeLayout(nodes, edges);
+    } else if (diagram.type === "orgchart") {
+      const opts = getLayoutOptionsForDiagramType(
+        diagram.type,
+        diagram.nodes.length,
+        diagram.layout?.direction,
+      );
+      result = getOrgChartLayout(nodes, edges, opts);
+      if (result.edges) setEdges(result.edges);
+    } else {
+      const opts = getLayoutOptionsForDiagramType(
+        diagram.type,
+        diagram.nodes.length,
+        diagram.layout?.direction,
+      );
+      result = getLayoutedElements(nodes, edges, opts);
+    }
+
+    setNodes(result.nodes);
     setTimeout(() => fitView({ duration: 800 }), 100);
-    // When user manually applies layout, mark as applied to prevent auto-layout interference
     hasAutoLayoutApplied.current = true;
   }, [
     nodes,
     edges,
     diagram.type,
     diagram.nodes.length,
+    diagram.layout?.direction,
     setNodes,
     setEdges,
     fitView,
   ]);
 
   const applyRadialLayout = useCallback(() => {
-    const { nodes: layoutedNodes } = getRadialLayout(nodes, edges);
-    setNodes(layoutedNodes);
+    const { nodes: laid } = getRadialLayout(nodes, edges);
+    setNodes(laid);
     setTimeout(() => fitView({ duration: 800 }), 100);
-    // When user manually applies layout, mark as applied to prevent auto-layout interference
     hasAutoLayoutApplied.current = true;
   }, [nodes, edges, setNodes, fitView]);
 
-  // Auto-apply layout after initial render for better organization - but only once
+  const resetLayout = useCallback(() => {
+    setNodes(buildReactFlowNodes(diagram));
+    setEdges(buildReactFlowEdges(diagram));
+    setTimeout(() => fitView({ duration: 800 }), 100);
+    hasAutoLayoutApplied.current = true;
+  }, [diagram, setNodes, setEdges, fitView]);
+
+  // ── Auto-layout on mount ──
   useEffect(() => {
-    // Only apply auto-layout if it hasn't been applied yet
-    if (hasAutoLayoutApplied.current) {
-      return;
-    }
-
-    const timer = setTimeout(
-      () => {
-        // For org charts, always apply auto-layout for better hierarchy
-        // For other diagrams, only auto-layout if nodes don't have custom positions
-        const hasCustomPositions = diagram.nodes.some((node) => node.position);
-        const shouldAutoLayout =
-          diagram.type === "orgchart" ||
-          (!hasCustomPositions && nodes.length > 1);
-
-        if (shouldAutoLayout && nodes.length > 1) {
-          applyAutoLayout();
-          hasAutoLayoutApplied.current = true; // Mark as applied
-        }
-      },
-      diagram.type === "orgchart" ? 500 : 1000,
-    ); // Faster for org charts
-
+    if (hasAutoLayoutApplied.current) return;
+    const delay =
+      diagram.type === "orgchart" || diagram.type === "pedigree" ? 500 : 1000;
+    const timer = setTimeout(() => {
+      const hasCustomPositions = diagram.nodes.some((n) => n.position);
+      const shouldAuto =
+        diagram.type === "orgchart" ||
+        diagram.type === "pedigree" ||
+        (!hasCustomPositions && nodes.length > 1);
+      if (shouldAuto && nodes.length > 1) {
+        applyAutoLayout();
+        hasAutoLayoutApplied.current = true;
+      }
+    }, delay);
     return () => clearTimeout(timer);
-  }, [diagram.nodes, nodes.length, diagram.type]); // Removed applyAutoLayout from dependencies
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <ReactFlow
@@ -580,7 +809,6 @@ const DiagramFlow: React.FC<{
         size={1}
         className="bg-gray-50 dark:bg-gray-900"
       />
-
       <Controls
         className="bg-textured border-border rounded-lg shadow-lg"
         showInteractive={false}
@@ -605,7 +833,7 @@ const DiagramFlow: React.FC<{
                 return "#6b7280";
             }
           }}
-          maskColor="rgba(0, 0, 0, 0.1)"
+          maskColor="rgba(0,0,0,0.1)"
         />
       )}
 
@@ -655,11 +883,7 @@ const DiagramFlow: React.FC<{
           <div className="flex gap-2 justify-center">
             <button
               onClick={() => setShowMiniMap(!showMiniMap)}
-              className={`p-2 rounded-lg transition-colors ${
-                showMiniMap
-                  ? "bg-blue-100 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/50"
-                  : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400"
-              }`}
+              className={`p-2 rounded-lg transition-colors ${showMiniMap ? "bg-blue-100 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/50" : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400"}`}
               title="Toggle Mini Map"
             >
               <Layers className="h-4 w-4" />
@@ -678,6 +902,189 @@ const DiagramFlow: React.FC<{
   );
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Legend data — all known node types
+// ─────────────────────────────────────────────────────────────────────────────
+const ALL_LEGEND_ITEMS = [
+  {
+    type: "start",
+    label: "Start",
+    color:
+      "bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-300",
+    icon: CheckCircle2,
+  },
+  {
+    type: "process",
+    label: "Process",
+    color: "bg-blue-100 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300",
+    icon: Settings,
+  },
+  {
+    type: "decision",
+    label: "Decision",
+    color:
+      "bg-orange-100 dark:bg-orange-950/30 text-orange-700 dark:text-orange-300",
+    icon: GitBranch,
+  },
+  {
+    type: "data",
+    label: "Data",
+    color:
+      "bg-purple-100 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300",
+    icon: Database,
+  },
+  {
+    type: "end",
+    label: "End",
+    color: "bg-red-100 dark:bg-red-950/30 text-red-700 dark:text-red-300",
+    icon: XCircle,
+  },
+  {
+    type: "user",
+    label: "User",
+    color:
+      "bg-indigo-100 dark:bg-indigo-950/30 text-indigo-700 dark:text-indigo-300",
+    icon: Users,
+  },
+  {
+    type: "system",
+    label: "System",
+    color: "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300",
+    icon: Server,
+  },
+  {
+    type: "api",
+    label: "API",
+    color: "bg-teal-100 dark:bg-teal-950/30 text-teal-700 dark:text-teal-300",
+    icon: Globe,
+  },
+  {
+    type: "compute",
+    label: "Compute",
+    color:
+      "bg-yellow-100 dark:bg-yellow-950/30 text-yellow-700 dark:text-yellow-300",
+    icon: Cpu,
+  },
+  {
+    type: "storage",
+    label: "Storage",
+    color: "bg-pink-100 dark:bg-pink-950/30 text-pink-700 dark:text-pink-300",
+    icon: HardDrive,
+  },
+  {
+    type: "event",
+    label: "Event",
+    color: "bg-cyan-100 dark:bg-cyan-950/30 text-cyan-700 dark:text-cyan-300",
+    icon: Clock,
+  },
+  {
+    type: "entity",
+    label: "Entity",
+    color:
+      "bg-violet-100 dark:bg-violet-950/30 text-violet-700 dark:text-violet-300",
+    icon: Table,
+  },
+  {
+    type: "gateway",
+    label: "Gateway",
+    color:
+      "bg-amber-100 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300",
+    icon: ArrowRight,
+  },
+  {
+    type: "default",
+    label: "Node",
+    color: "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300",
+    icon: Square,
+  },
+] as const;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Pedigree legend — always shown for pedigree diagrams
+// ─────────────────────────────────────────────────────────────────────────────
+const PedigreeLegend: React.FC = () => (
+  <div className="bg-textured rounded-xl p-3 border-border shadow-sm">
+    <div className="flex flex-wrap gap-3">
+      {[
+        {
+          label: "Male",
+          shape: "w-6 h-6 border-2 border-gray-600 bg-white dark:bg-gray-800",
+        },
+        {
+          label: "Female",
+          shape:
+            "w-6 h-6 rounded-full border-2 border-gray-600 bg-white dark:bg-gray-800",
+        },
+        {
+          label: "Affected",
+          shape:
+            "w-6 h-6 border-2 border-gray-600 bg-gray-800 dark:bg-gray-200",
+        },
+        {
+          label: "Deceased",
+          shape:
+            "w-6 h-6 border-2 border-gray-600 bg-white dark:bg-gray-800 relative overflow-hidden",
+        },
+        {
+          label: "Proband →",
+          shape: "w-6 h-6 border-4 border-blue-500 bg-white dark:bg-gray-800",
+        },
+      ].map(({ label, shape }) => (
+        <div key={label} className="flex items-center gap-2">
+          <div className={shape} />
+          <span className="text-xs text-gray-600 dark:text-gray-400">
+            {label}
+          </span>
+        </div>
+      ))}
+      <div className="flex items-center gap-2">
+        <div className="w-8 h-px border-t-2 border-dashed border-gray-500" />
+        <span className="text-xs text-gray-600 dark:text-gray-400">
+          Divorced
+        </span>
+      </div>
+    </div>
+  </div>
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// getDiagramIcon
+// ─────────────────────────────────────────────────────────────────────────────
+function getDiagramIcon(type: string): React.ReactNode {
+  switch (type) {
+    case "flowchart":
+      return <GitBranch className="h-4 w-4" />;
+    case "mindmap":
+      return <Sparkles className="h-4 w-4" />;
+    case "orgchart":
+      return <Users className="h-4 w-4" />;
+    case "network":
+      return <Network className="h-4 w-4" />;
+    case "system":
+      return <Server className="h-4 w-4" />;
+    case "process":
+      return <Settings className="h-4 w-4" />;
+    case "pedigree":
+      return <Users className="h-4 w-4" />;
+    case "timeline":
+      return <Clock className="h-4 w-4" />;
+    case "erd":
+      return <Table className="h-4 w-4" />;
+    case "sequence":
+      return <ArrowRight className="h-4 w-4" />;
+    default:
+      return <Network className="h-4 w-4" />;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Main export
+// ─────────────────────────────────────────────────────────────────────────────
+interface InteractiveDiagramBlockProps {
+  diagram: DiagramData;
+  taskId?: string;
+}
+
 const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({
   diagram,
   taskId,
@@ -690,6 +1097,7 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({
   const { open: openCanvas } = useCanvas();
   const diagramContainerRef = useRef<HTMLDivElement>(null);
   const [isPrinting, setIsPrinting] = useState(false);
+
   const handlePrint = useCallback(async () => {
     if (!diagramContainerRef.current || isPrinting) return;
     setIsPrinting(true);
@@ -701,30 +1109,14 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({
         diagram.title.replace(/\s+/g, "-").toLowerCase() || "diagram",
       );
     } catch (err) {
-      console.error("[InteractiveDiagramBlock] Print failed:", err);
+      console.warn("[InteractiveDiagramBlock] Print failed:", err);
     } finally {
       setIsPrinting(false);
     }
   }, [diagram.title, isPrinting]);
 
-  const exportDiagramJSON = () => {
-    const exportData = {
-      title: diagram.title,
-      nodes: diagram.nodes.map((node) => ({
-        id: node.id,
-        label: node.label,
-        position: node.position,
-        type: node.nodeType || node.type,
-      })),
-      edges: diagram.edges.map((edge) => ({
-        id: edge.id,
-        source: edge.source,
-        target: edge.target,
-        label: edge.label,
-      })),
-    };
-
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+  const exportDiagramJSON = useCallback(() => {
+    const blob = new Blob([JSON.stringify({ diagram }, null, 2)], {
       type: "application/json",
     });
     const url = URL.createObjectURL(blob);
@@ -733,70 +1125,79 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({
     a.download = `${diagram.title.replace(/[^a-z0-9]/gi, "_").toLowerCase()}.json`;
     a.click();
     URL.revokeObjectURL(url);
-  };
+  }, [diagram]);
 
-  // Function to handle image export from DiagramFlow
+  // Fallback image export (used if DiagramFlow can't do it)
   const handleExportImage = useCallback(() => {
-    const reactFlowInstance = document.querySelector(".react-flow");
-    if (!reactFlowInstance) return;
-
-    // Get the React Flow viewport element
-    const viewport = reactFlowInstance.querySelector(".react-flow__viewport");
+    const viewport = document.querySelector(
+      ".react-flow__viewport",
+    ) as HTMLElement | null;
     if (!viewport) return;
 
-    // Use html2canvas to capture the diagram
+    const isDark =
+      document.documentElement.classList.contains("dark") ||
+      window.matchMedia("(prefers-color-scheme: dark)").matches;
+
     import("html2canvas")
-      .then((html2canvas) => {
-        html2canvas
-          .default(viewport as HTMLElement, {
-            backgroundColor: "#ffffff",
-            scale: 2, // Higher resolution
+      .then((mod) => {
+        const restore = patchComputedStyleForCapture(isDark);
+        return mod
+          .default(viewport, {
+            backgroundColor: isDark ? "#111827" : "#ffffff",
+            scale: 2,
             useCORS: true,
-            allowTaint: true,
           })
-          .then((canvas) => {
-            // Create download link
-            const link = document.createElement("a");
-            link.download = `${diagram.title.replace(/[^a-z0-9]/gi, "_").toLowerCase()}_diagram.png`;
-            link.href = canvas.toDataURL("image/png");
-            link.click();
-          })
-          .catch((error) => {
-            console.error("Failed to export image:", error);
-            // Fallback: show message to user
-            alert("Image export failed. Please try the JSON export instead.");
-          });
+          .finally(restore);
       })
-      .catch(() => {
-        // html2canvas not available, show message
-        alert(
-          "Image export not available. Please use the JSON export instead.",
-        );
-      });
+      .then((canvas) => {
+        const a = document.createElement("a");
+        a.download = `${diagram.title.replace(/[^a-z0-9]/gi, "_").toLowerCase()}_diagram.png`;
+        a.href = canvas.toDataURL("image/png");
+        a.click();
+      })
+      .catch((err) => console.warn("Image export failed:", err));
   }, [diagram.title]);
 
-  const getDiagramIcon = () => {
-    switch (diagram.type) {
-      case "flowchart":
-        return <GitBranch className="h-4 w-4" />;
-      case "mindmap":
-        return <Sparkles className="h-4 w-4" />;
-      case "orgchart":
-        return <Users className="h-4 w-4" />;
-      case "network":
-        return <Network className="h-4 w-4" />;
-      case "system":
-        return <Server className="h-4 w-4" />;
-      case "process":
-        return <Settings className="h-4 w-4" />;
-      default:
-        return <Network className="h-4 w-4" />;
-    }
+  // ── Legend ──
+  const renderLegend = () => {
+    if (diagram.type === "orgchart") return null;
+    if (diagram.type === "pedigree") return <PedigreeLegend />;
+    if (diagram.renderHints?.showLegend === false) return null;
+
+    const usedTypes = new Set(
+      diagram.nodes.map((n) => n.nodeType || n.type || "default"),
+    );
+    const items = ALL_LEGEND_ITEMS.filter((item) => usedTypes.has(item.type));
+
+    if (
+      items.length === 0 ||
+      (items.length === 1 && items[0].type === "default")
+    )
+      return null;
+
+    return (
+      <div className="bg-textured rounded-xl p-3 border-border shadow-sm">
+        <div
+          className={`grid gap-3 ${items.length <= 2 ? "grid-cols-2" : items.length <= 3 ? "grid-cols-3" : "grid-cols-2 md:grid-cols-5"}`}
+        >
+          {items.map(({ type, label, color, icon: Icon }) => (
+            <div
+              key={type}
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg ${color} text-xs font-medium`}
+            >
+              <Icon className="h-3 w-3" />
+              <span>{label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   };
+
+  const legend = renderLegend();
 
   return (
     <>
-      {/* Fullscreen Backdrop */}
       {isFullScreen && (
         <div
           className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
@@ -812,13 +1213,17 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({
         >
           {/* Header */}
           <div
-            className={`${isFullScreen ? "flex-shrink-0 px-4 py-3 border-b border-border" : ""}`}
+            className={
+              isFullScreen
+                ? "flex-shrink-0 px-4 py-3 border-b border-border"
+                : ""
+            }
           >
             <div className="bg-gradient-to-br from-blue-100 via-indigo-50 to-purple-100 dark:from-blue-950/40 dark:via-indigo-950/30 dark:to-purple-950/40 rounded-2xl p-4 shadow-lg border-2 border-blue-200 dark:border-blue-800/50">
               <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                 <div className="flex items-start gap-3">
-                  <div className="p-2 bg-blue-500 dark:bg-blue-600 rounded-lg shadow-md">
-                    {getDiagramIcon()}
+                  <div className="p-2 bg-blue-500 dark:bg-blue-600 rounded-lg shadow-md text-white">
+                    {getDiagramIcon(diagram.type)}
                   </div>
                   <div className="flex-1">
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1">
@@ -833,6 +1238,11 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({
                       <span className="px-3 py-1 bg-blue-100 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 rounded-full text-sm font-medium">
                         {formatDiagramType(diagram.type)}
                       </span>
+                      {diagram.layout?.direction && (
+                        <span className="px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-full text-xs">
+                          {diagram.layout.direction}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -921,139 +1331,18 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({
             </ReactFlowProvider>
           </div>
 
-          {/* Dynamic Legend */}
-          {(() => {
-            // For org charts, don't show a legend since they use role-based icons
-            if (diagram.type === "orgchart") {
-              return null;
-            }
-
-            // Get unique node types actually used in the diagram
-            const usedNodeTypes = new Set(
-              diagram.nodes.map(
-                (node) => node.nodeType || node.type || "default",
-              ),
-            );
-
-            // Define all possible legend items
-            const allLegendItems = [
-              {
-                type: "start",
-                label: "Start",
-                color:
-                  "bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-300",
-                icon: CheckCircle2,
-              },
-              {
-                type: "process",
-                label: "Process",
-                color:
-                  "bg-blue-100 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300",
-                icon: Settings,
-              },
-              {
-                type: "decision",
-                label: "Decision",
-                color:
-                  "bg-orange-100 dark:bg-orange-950/30 text-orange-700 dark:text-orange-300",
-                icon: GitBranch,
-              },
-              {
-                type: "data",
-                label: "Data",
-                color:
-                  "bg-purple-100 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300",
-                icon: Database,
-              },
-              {
-                type: "end",
-                label: "End",
-                color:
-                  "bg-red-100 dark:bg-red-950/30 text-red-700 dark:text-red-300",
-                icon: XCircle,
-              },
-              {
-                type: "user",
-                label: "User",
-                color:
-                  "bg-indigo-100 dark:bg-indigo-950/30 text-indigo-700 dark:text-indigo-300",
-                icon: Users,
-              },
-              {
-                type: "system",
-                label: "System",
-                color:
-                  "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300",
-                icon: Server,
-              },
-              {
-                type: "api",
-                label: "API",
-                color:
-                  "bg-teal-100 dark:bg-teal-950/30 text-teal-700 dark:text-teal-300",
-                icon: Globe,
-              },
-              {
-                type: "compute",
-                label: "Compute",
-                color:
-                  "bg-yellow-100 dark:bg-yellow-950/30 text-yellow-700 dark:text-yellow-300",
-                icon: Cpu,
-              },
-              {
-                type: "storage",
-                label: "Storage",
-                color:
-                  "bg-pink-100 dark:bg-pink-950/30 text-pink-700 dark:text-pink-300",
-                icon: HardDrive,
-              },
-              {
-                type: "default",
-                label: "Node",
-                color:
-                  "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300",
-                icon: Square,
-              },
-            ];
-
-            // Filter to only show legend items for node types actually used
-            const relevantLegendItems = allLegendItems.filter((item) =>
-              usedNodeTypes.has(item.type),
-            );
-
-            // Don't render legend if no relevant items or only default nodes
-            if (
-              relevantLegendItems.length === 0 ||
-              (relevantLegendItems.length === 1 &&
-                relevantLegendItems[0].type === "default")
-            ) {
-              return null;
-            }
-
-            return (
-              <div
-                className={`${isFullScreen ? "flex-shrink-0 px-4 py-3 border-t border-border" : "mt-4"}`}
-              >
-                <div className="bg-textured rounded-xl p-3 border-border shadow-sm">
-                  <div
-                    className={`grid gap-3 ${relevantLegendItems.length <= 2 ? "grid-cols-2" : relevantLegendItems.length <= 3 ? "grid-cols-3" : "grid-cols-2 md:grid-cols-5"}`}
-                  >
-                    {relevantLegendItems.map(
-                      ({ type, label, color, icon: Icon }) => (
-                        <div
-                          key={type}
-                          className={`flex items-center gap-2 px-3 py-2 rounded-lg ${color} text-xs font-medium`}
-                        >
-                          <Icon className="h-3 w-3" />
-                          <span>{label}</span>
-                        </div>
-                      ),
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          })()}
+          {/* Legend */}
+          {legend && (
+            <div
+              className={
+                isFullScreen
+                  ? "flex-shrink-0 px-4 py-3 border-t border-border"
+                  : "mt-4"
+              }
+            >
+              {legend}
+            </div>
+          )}
         </div>
       </div>
     </>

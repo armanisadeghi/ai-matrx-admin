@@ -159,9 +159,12 @@ export function NoteSidebar({
 
   // ── Local UI state ─────────────────────────────────────────────────
   const [searchQuery, setSearchQuery] = useState("");
-  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(
-    () => new Set(allFolders),
-  );
+  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(() => {
+    if (!activeTabId) return new Set<string>();
+    const activeNote = allNotes.find((n) => n.id === activeTabId);
+    if (activeNote?.folder_name) return new Set([activeNote.folder_name]);
+    return new Set<string>();
+  });
   const [sortField, setSortField] = useState<NoteSortField>("updated_at");
   const [sortOrder, setSortOrder] = useState<NoteSortOrder>("desc");
   const [groupBy, setGroupBy] = useState<NoteGroupBy | "recent">("folder");

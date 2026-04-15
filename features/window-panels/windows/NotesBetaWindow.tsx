@@ -46,8 +46,8 @@ export function NotesBetaWindow({
   return (
     <WindowPanel
       title={title}
-      minWidth={560}
-      minHeight={480}
+      minWidth={700}
+      minHeight={600}
       urlSyncKey={`notes-beta-${stableKey}`}
       urlSyncId={stableKey}
       id={windowId}
@@ -58,8 +58,8 @@ export function NotesBetaWindow({
           contextMenuPortalTarget={portalTarget}
         />
       }
-      sidebarDefaultSize={180}
-      sidebarMinSize={100}
+      sidebarDefaultSize={200}
+      sidebarMinSize={140}
       sidebarExpandsWindow
       {...windowProps}
     >
@@ -68,7 +68,7 @@ export function NotesBetaWindow({
           showTabs: true,
           instanceId: notesInstanceId,
         }}
-        className="h-full border-2 border-red-500"
+        className="h-full"
       />
     </WindowPanel>
   );
