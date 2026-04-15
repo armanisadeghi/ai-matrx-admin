@@ -89,6 +89,9 @@ import htmlPagesReducer from "./slices/htmlPagesSlice";
 import mcpReducer from "@/features/agents/redux/mcp/mcp.slice";
 import appContextReducer from "@/features/agent-context/redux/appContextSlice";
 import hierarchyReducer from "@/features/agent-context/redux/hierarchySlice";
+import organizationsReducer from "@/features/agent-context/redux/organizationsSlice";
+import projectsReducer from "@/features/agent-context/redux/projectsSlice";
+import tasksReducer from "@/features/agent-context/redux/tasksSlice";
 import {
   scopeTypesReducer,
   scopesReducer,
@@ -307,6 +310,11 @@ export const createRootReducer = (initialState: InitialReduxState) => {
 
     // Hierarchy tree cache — org/project/task tree from RPC
     hierarchy: hierarchyReducer,
+
+    // Normalized entity slices (hydrated from hierarchy RPC, with data-level tracking)
+    organizations: organizationsReducer,
+    projects: projectsReducer,
+    tasks: tasksReducer,
 
     // Scope system — ctx_scope_types, ctx_scopes, ctx_scope_assignments, resolved context
     scopeTypes: scopeTypesReducer,

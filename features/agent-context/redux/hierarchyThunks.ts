@@ -29,6 +29,9 @@ import {
 } from "./hierarchySlice";
 import { hydrateScopeTypesFromContext } from "./scope/scopeTypesSlice";
 import { hydrateScopesFromContext } from "./scope/scopesSlice";
+import { hydrateOrgsFromContext } from "./organizationsSlice";
+import { hydrateProjectsFromContext } from "./projectsSlice";
+import { hydrateTasksFromContext } from "./tasksSlice";
 import type { ScopeType } from "./scope/types";
 import type { Scope } from "./scope/types";
 import type { AppDispatch } from "@/lib/redux/store";
@@ -87,20 +90,39 @@ async function doFetchFullContext(dispatch: AppDispatch) {
       organizations: [],
     };
 
-    // Fan scope data out to the entity adapter slices so the rest of the
-    // app can read from them without separate fetches.
-    const scopeTypesPayload = (response.organizations ?? []).map((org) => ({
+    const orgs = response.organizations ?? [];
+
+    // ── Fan scope data out ───────────────────────────────────────────────
+    const scopeTypesPayload = orgs.map((org) => ({
       orgId: org.id,
       types: (org.scope_types ?? []).map((t) => mapScopeType(org.id, t)),
     }));
 
-    const scopesPayload = (response.organizations ?? []).map((org) => ({
+    const scopesPayload = orgs.map((org) => ({
       orgId: org.id,
       scopes: (org.scopes ?? []).map((s) => mapScope(org.id, s)),
     }));
 
     dispatch(hydrateScopeTypesFromContext(scopeTypesPayload));
     dispatch(hydrateScopesFromContext(scopesPayload));
+
+    // ── Fan org, project, and task data out to normalized slices ─────────
+    dispatch(hydrateOrgsFromContext(orgs));
+
+    const projectsPayload = orgs.map((org) => ({
+      orgId: org.id,
+      projects: org.projects ?? [],
+    }));
+    dispatch(hydrateProjectsFromContext(projectsPayload));
+
+    // Tasks are now a flat array per org in the new RPC response shape.
+    // Each task has project_id (null = orphaned) and parent_task_id.
+    const tasksPayload = orgs.map((org) => ({
+      orgId: org.id,
+      tasks: org.tasks ?? [],
+    }));
+    dispatch(hydrateTasksFromContext(tasksPayload));
+
     dispatch(fullContextFetchSucceeded(response));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);

@@ -14,6 +14,19 @@ import {
   invalidateAndRefetchFullContext,
   invalidateAndRefetchAll,
 } from "@/features/agent-context/redux/hierarchyThunks";
+import {
+  upsertOrgWithLevel,
+  removeOrgFromSlice,
+} from "@/features/agent-context/redux/organizationsSlice";
+import {
+  upsertProjectWithLevel,
+  removeProjectFromSlice,
+  adjustProjectTaskCount,
+} from "@/features/agent-context/redux/projectsSlice";
+import {
+  upsertTaskWithLevel,
+  removeTaskFromSlice,
+} from "@/features/agent-context/redux/tasksSlice";
 
 const KEYS = {
   tree: () => ["hierarchy-tree"] as const,
@@ -98,12 +111,32 @@ function useInvalidateAfterTaskMutation() {
 // ─── Mutations ──────────────────────────────────────────────────────
 
 export function useCreateOrganization() {
-  const invalidate = useInvalidateAll();
+  const qc = useQueryClient();
+  const dispatch = useAppDispatch();
   return useMutation({
     mutationFn: (data: { name: string; slug: string; description?: string }) =>
       hierarchyService.createOrganization(data),
-    onSuccess: () => {
-      invalidate();
+    onSuccess: (org) => {
+      // Upsert the new org into the normalized slice immediately
+      dispatch(
+        upsertOrgWithLevel({
+          record: {
+            id: org.id,
+            name: org.name,
+            slug: org.slug,
+            is_personal: org.is_personal ?? false,
+            role: org.role,
+            description: org.description,
+            logo_url: org.logo_url,
+            settings: org.settings ?? undefined,
+            created_at: org.created_at,
+          },
+          level: "full-data",
+        }),
+      );
+      // Also refresh the full context so the sidebar picks up the new org
+      qc.invalidateQueries({ queryKey: KEYS.tree() });
+      dispatch(invalidateAndRefetchFullContext() as any);
       toast.success("Organization created");
     },
     onError: (err: Error) =>
@@ -122,7 +155,28 @@ export function useCreateProject() {
       organization_id?: string;
       description?: string;
     }) => hierarchyService.createProject(data),
-    onSuccess: () => {
+    onSuccess: (proj) => {
+      // Upsert the new project into the normalized slice immediately
+      dispatch(
+        upsertProjectWithLevel({
+          record: {
+            id: proj.id,
+            name: proj.name,
+            slug: proj.slug,
+            organization_id: proj.organization_id,
+            is_personal: proj.is_personal ?? false,
+            open_task_count: 0,
+            total_task_count: 0,
+            scope_tags: [],
+            description: proj.description,
+            settings: proj.settings ?? undefined,
+            created_at: proj.created_at,
+            created_by: proj.created_by,
+          },
+          level: "full-data",
+        }),
+      );
+      // Refresh full context to pick up the new project in the hierarchy
       qc.invalidateQueries({ queryKey: KEYS.tree() });
       dispatch(invalidateAndRefetchFullContext() as any);
       toast.success("Project created");
@@ -133,18 +187,54 @@ export function useCreateProject() {
 }
 
 export function useCreateTask() {
-  const invalidate = useInvalidateAfterTaskMutation();
+  const qc = useQueryClient();
+  const dispatch = useAppDispatch();
   return useMutation({
     mutationFn: (data: {
       title: string;
       project_id: string;
+      organization_id: string;
       parent_task_id?: string;
       description?: string;
       status?: string;
       priority?: string;
-    }) => hierarchyService.createTask(data),
-    onSuccess: () => {
-      invalidate();
+    }) => {
+      const { organization_id: _orgId, ...serviceData } = data;
+      return hierarchyService.createTask(serviceData);
+    },
+    onSuccess: (task, variables) => {
+      // Upsert the new task into the normalized slice immediately
+      dispatch(
+        upsertTaskWithLevel({
+          record: {
+            id: task.id,
+            title: task.title,
+            status: task.status ?? "not_started",
+            priority: task.priority ?? null,
+            due_date: task.due_date ?? null,
+            assignee_id: task.assignee_id ?? null,
+            project_id: task.project_id ?? null,
+            parent_task_id: task.parent_task_id ?? null,
+            organization_id: variables.organization_id,
+            description: task.description ?? null,
+            settings: task.settings ?? undefined,
+            created_at: task.created_at ?? null,
+            user_id: task.user_id ?? null,
+          },
+          level: "full-data",
+        }),
+      );
+      // Optimistically increment the project's open task count
+      if (task.project_id) {
+        dispatch(
+          adjustProjectTaskCount({
+            projectId: task.project_id,
+            openDelta: 1,
+            totalDelta: 1,
+          }),
+        );
+      }
+      qc.invalidateQueries({ queryKey: KEYS.tasks(task.project_id ?? "") });
       toast.success("Task created");
     },
     onError: (err: Error) =>
@@ -153,7 +243,8 @@ export function useCreateTask() {
 }
 
 export function useUpdateEntity() {
-  const invalidate = useInvalidateAll();
+  const dispatch = useAppDispatch();
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: (params: {
       type: HierarchyNodeType;
@@ -172,8 +263,10 @@ export function useUpdateEntity() {
           throw new Error(`Cannot update type: ${type}`);
       }
     },
-    onSuccess: () => {
-      invalidate();
+    onSuccess: (_result, params) => {
+      // For updates, invalidate the full context to ensure consistency
+      qc.invalidateQueries({ queryKey: KEYS.tree() });
+      dispatch(invalidateAndRefetchFullContext() as any);
       toast.success("Updated successfully");
     },
     onError: (err: Error) =>
@@ -182,7 +275,8 @@ export function useUpdateEntity() {
 }
 
 export function useDeleteEntity() {
-  const invalidate = useInvalidateAll();
+  const dispatch = useAppDispatch();
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: (params: { type: HierarchyNodeType; id: string }) => {
       const { type, id } = params;
@@ -197,8 +291,17 @@ export function useDeleteEntity() {
           throw new Error(`Delete not supported for: ${type}`);
       }
     },
-    onSuccess: () => {
-      invalidate();
+    onSuccess: (_result, params) => {
+      // Remove from normalized slices synchronously (DB call already succeeded)
+      if (params.type === "task") {
+        dispatch(removeTaskFromSlice(params.id));
+      } else if (params.type === "project") {
+        dispatch(removeProjectFromSlice(params.id));
+      } else if (params.type === "organization") {
+        dispatch(removeOrgFromSlice(params.id));
+      }
+      qc.invalidateQueries({ queryKey: KEYS.tree() });
+      dispatch(invalidateAndRefetchFullContext() as any);
       toast.success("Deleted successfully");
     },
     onError: (err: Error) =>
@@ -207,14 +310,16 @@ export function useDeleteEntity() {
 }
 
 export function useMoveProject() {
-  const invalidate = useInvalidateAll();
+  const qc = useQueryClient();
+  const dispatch = useAppDispatch();
   return useMutation({
     mutationFn: (params: {
       projectId: string;
       target: { organization_id?: string | null };
     }) => hierarchyService.moveProject(params.projectId, params.target),
     onSuccess: () => {
-      invalidate();
+      qc.invalidateQueries({ queryKey: KEYS.tree() });
+      dispatch(invalidateAndRefetchFullContext() as any);
       toast.success("Project moved");
     },
     onError: (err: Error) =>
@@ -223,14 +328,16 @@ export function useMoveProject() {
 }
 
 export function useMoveTask() {
-  const invalidate = useInvalidateAfterTaskMutation();
+  const qc = useQueryClient();
+  const dispatch = useAppDispatch();
   return useMutation({
     mutationFn: (params: {
       taskId: string;
       target: { project_id?: string | null; parent_task_id?: string | null };
     }) => hierarchyService.moveTask(params.taskId, params.target),
     onSuccess: () => {
-      invalidate();
+      qc.invalidateQueries({ queryKey: KEYS.tree() });
+      dispatch(invalidateAndRefetchFullContext() as any);
       toast.success("Task moved");
     },
     onError: (err: Error) =>

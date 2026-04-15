@@ -49,7 +49,11 @@ export interface ProjectScopeTag {
   type_id: string;
 }
 
-/** Task as returned from full context */
+/**
+ * Task as returned from full context.
+ * Tasks are a flat array per org — NOT nested under projects.
+ * project_id is null for orphaned tasks.
+ */
 export interface NavTask {
   id: string;
   title: string;
@@ -57,20 +61,23 @@ export interface NavTask {
   priority: string | null;
   due_date: string | null;
   assignee_id: string | null;
+  project_id: string | null; // NEW — null = orphaned task
+  parent_task_id: string | null; // NEW — null = top-level task
 }
 
-/** Project from full context — includes scope_tags */
+/** Project from full context — includes scope_tags and task counts only */
 export interface NavProject {
   id: string;
   name: string;
   slug: string | null;
   is_personal: boolean;
   open_task_count: number;
-  open_tasks: NavTask[];
+  total_task_count: number; // NEW — total (including completed)
   scope_tags: ProjectScopeTag[];
+  // open_tasks is intentionally removed — tasks are now flat at org level
 }
 
-/** Organization from full context — includes scope_types and scopes */
+/** Organization from full context — includes scope_types, scopes, and flat tasks */
 export interface NavOrganization {
   id: string;
   name: string;
@@ -80,6 +87,7 @@ export interface NavOrganization {
   scope_types: FullContextScopeType[];
   scopes: FullContextScope[];
   projects: NavProject[];
+  tasks: NavTask[]; // NEW — flat task list for the org (open tasks only)
 }
 
 /** Shape of get_user_full_context response */
@@ -103,6 +111,8 @@ export interface HierarchyState {
   fullContext: FullContextResponse | null;
   fullContextStatus: FetchStatus;
   fullContextError: string | null;
+  /** When the full context was last successfully fetched (Date.now()) */
+  lastFetchedAt: number | null;
 
   /** @deprecated — kept for backwards compat; mirrors fullContextStatus */
   navTreeStatus: FetchStatus;
@@ -113,6 +123,7 @@ const initialState: HierarchyState = {
   fullContext: null,
   fullContextStatus: "idle",
   fullContextError: null,
+  lastFetchedAt: null,
 
   navTreeStatus: "idle",
   navTreeError: null,
@@ -137,6 +148,7 @@ const hierarchySlice = createSlice({
       state.fullContext = action.payload;
       state.fullContextStatus = "success";
       state.fullContextError = null;
+      state.lastFetchedAt = Date.now();
       state.navTreeStatus = "success";
       state.navTreeError = null;
     },
@@ -168,6 +180,7 @@ const hierarchySlice = createSlice({
     invalidateFullContext(state) {
       state.fullContextStatus = "idle";
       state.fullContext = null;
+      state.lastFetchedAt = null;
       state.navTreeStatus = "idle";
     },
     /** @deprecated — alias for invalidateFullContext */
@@ -209,6 +222,8 @@ export const selectFullContextStatus = (s: StateWithHierarchy) =>
   s.hierarchy.fullContextStatus;
 export const selectFullContextError = (s: StateWithHierarchy) =>
   s.hierarchy.fullContextError;
+export const selectFullContextLastFetchedAt = (s: StateWithHierarchy) =>
+  s.hierarchy.lastFetchedAt;
 
 /** @deprecated — use selectFullContext */
 export const selectNavTree = selectFullContext;

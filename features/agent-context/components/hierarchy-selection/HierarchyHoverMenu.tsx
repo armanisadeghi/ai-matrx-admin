@@ -25,6 +25,10 @@ import { invalidateAndRefetchFullContext } from "@/features/agent-context/redux/
 import { createScope } from "@/features/agent-context/redux/scope/scopesSlice";
 import { setEntityScopes } from "@/features/agent-context/redux/scope/scopeAssignmentsSlice";
 import {
+  selectAllTasks,
+  fetchTask,
+} from "@/features/agent-context/redux/tasksSlice";
+import {
   useHierarchySelection,
   FULL_HIERARCHY_LEVELS,
 } from "./useHierarchySelection";
@@ -186,6 +190,7 @@ export function HierarchyHoverMenu({
   });
   const dispatch = useAppDispatch();
   const orgsFromStore = useAppSelector(selectNavOrganizations);
+  const allTasksFromStore = useAppSelector(selectAllTasks);
 
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -210,7 +215,24 @@ export function HierarchyHoverMenu({
     }
   };
 
+  /**
+   * Handle a selection from the menu. If a task is selected, trigger a
+   * background full-data fetch so the task detail view has rich data when
+   * the user opens it (description, comments, etc.).
+   */
+  const handleSelect = (next: HierarchySelection) => {
+    if (next.taskId) {
+      dispatch(fetchTask(next.taskId) as any);
+    }
+    onChange(next);
+    setOpen(false);
+    setHoveredItem(null);
+  };
+
   // ─── Build flat item list from Redux store ───────────────────────────────
+  // Tasks now come from tasksSlice (flat, keyed by organization_id + project_id).
+  // The hierarchy fullContext only carries task counts on projects; full task
+  // objects live in the normalized tasksSlice populated by hydrateTasksFromContext.
 
   const flatItems: FlatItem[] = [];
 
@@ -270,7 +292,11 @@ export function HierarchyHoverMenu({
         });
 
         if (levels.includes("task")) {
-          for (const task of proj.open_tasks ?? []) {
+          // Read tasks from normalized tasksSlice — not from proj.open_tasks
+          const projTasks = allTasksFromStore.filter(
+            (t) => t.project_id === proj.id && t.status !== "completed",
+          );
+          for (const task of projTasks) {
             flatItems.push({
               kind: "task",
               id: task.id,
@@ -283,6 +309,27 @@ export function HierarchyHoverMenu({
               status: task.status,
             });
           }
+        }
+      }
+
+      // Also include orphaned tasks for this org (project_id === null)
+      if (levels.includes("task")) {
+        const orphanTasks = allTasksFromStore.filter(
+          (t) =>
+            t.organization_id === org.id &&
+            t.project_id === null &&
+            t.status !== "completed",
+        );
+        for (const task of orphanTasks) {
+          flatItems.push({
+            kind: "task",
+            id: task.id,
+            name: task.title,
+            orgId: org.id,
+            orgName: org.name,
+            scopePath: [],
+            status: task.status,
+          });
         }
       }
     }
@@ -309,14 +356,17 @@ export function HierarchyHoverMenu({
     if (!org) return [];
 
     if (hoveredItem.kind === "project") {
-      const proj = org.projects?.find((p) => p.id === hoveredItem.id);
-      return (proj?.open_tasks ?? []).map((t) => ({
+      // Tasks come from the normalized tasksSlice, not from proj.open_tasks
+      const projTasks = allTasksFromStore.filter(
+        (t) => t.project_id === hoveredItem.id && t.status !== "completed",
+      );
+      return projTasks.map((t) => ({
         id: t.id,
         name: t.title,
         kind: "task" as const,
         status: t.status,
-        projectId: proj!.id,
-        projectName: proj!.name,
+        projectId: hoveredItem.id,
+        projectName: hoveredItem.name,
         scopePath: hoveredItem.scopePath,
       }));
     }
@@ -542,11 +592,7 @@ export function HierarchyHoverMenu({
                               hoveredItem?.kind === item.kind
                             }
                             onHover={setHoveredItem}
-                            onSelect={(next) => {
-                              onChange(next);
-                              setOpen(false);
-                              setHoveredItem(null);
-                            }}
+                            onSelect={handleSelect}
                           />
                         ))}
                       </div>
@@ -565,11 +611,7 @@ export function HierarchyHoverMenu({
                           hoveredItem?.kind === item.kind
                         }
                         onHover={setHoveredItem}
-                        onSelect={(next) => {
-                          onChange(next);
-                          setOpen(false);
-                          setHoveredItem(null);
-                        }}
+                        onSelect={handleSelect}
                       />
                     ))}
                     {visible.length === 0 && <EmptyState search={search} />}
@@ -595,11 +637,7 @@ export function HierarchyHoverMenu({
               detailItems={detailItems}
               value={value}
               levels={levels}
-              onSelect={(next) => {
-                onChange(next);
-                setOpen(false);
-                setHoveredItem(null);
-              }}
+              onSelect={handleSelect}
               onAdded={handleRefresh}
             />
           )}
@@ -799,6 +837,7 @@ function DetailPanel({
         await createTask.mutateAsync({
           title: newName.trim(),
           project_id: effectiveTaskProjectId,
+          organization_id: item.orgId,
         });
       } else if (adding === "project" && item.orgId) {
         // Create project then immediately associate it with this scope (if hovering a scope)
@@ -1159,6 +1198,7 @@ function AddNewFooter({
         await createTask.mutateAsync({
           title: newName.trim(),
           project_id: selectedProjectId,
+          organization_id: orgId ?? "",
         });
       } else if (adding === "scope" && orgId && selectedScopeTypeId) {
         await dispatch(
