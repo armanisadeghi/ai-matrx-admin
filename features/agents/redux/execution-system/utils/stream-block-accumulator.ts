@@ -22,6 +22,7 @@ import {
   Candidate,
   type CandidateFlags,
 } from "./content-prefilter";
+import { detectJsonBlockType } from "@/components/mardown-display/markdown-classification/processors/utils/content-splitter-v2";
 
 // ============================================================================
 // Types
@@ -31,7 +32,13 @@ type DispatchFn = (action: unknown) => unknown;
 
 type BlockSubState =
   | { kind: "none" }
-  | { kind: "code_fence"; language: string; fenceTicks: number }
+  | {
+      kind: "code_fence";
+      language: string;
+      fenceTicks: number;
+      /** Set to true once we've found the JSON root key and upgraded the block type. */
+      earlyTypeResolved: boolean;
+    }
   | { kind: "xml_tag"; tagName: string; closingTag: string }
   | { kind: "table" };
 
@@ -173,7 +180,7 @@ export class StreamBlockAccumulator {
   // ── Internal ────────────────────────────────────────────────────────────
 
   private get currentBlockId(): string {
-    return `client_${this.currentBlockType}_${this.currentBlockIndex}`;
+    return `client_block_${this.currentBlockIndex}`;
   }
 
   private processLine(rawLine: string, dispatch: DispatchFn): void {
@@ -202,6 +209,7 @@ export class StreamBlockAccumulator {
           kind: "code_fence",
           language: fence.language,
           fenceTicks: fence.ticks,
+          earlyTypeResolved: false,
         };
         return;
       }
@@ -306,10 +314,35 @@ export class StreamBlockAccumulator {
           fence.ticks >= this.subState.fenceTicks &&
           trimmed.slice(fence.ticks).trim() === ""
         ) {
+          // Fence is closing. For any JSON fence, run type detection on the
+          // full accumulated content. This handles cases where early detection
+          // failed (e.g. model split `{` and `"diagram":` across lines).
+          // If detection finds a known type, upgrade; otherwise keep "code".
+          if (this.subState.language === "json") {
+            const confirmed = detectJsonBlockType(this.currentBlockContent);
+            this.currentBlockType = confirmed ?? "code";
+          }
           this.closeCurrentBlock(dispatch);
           this.subState = { kind: "none" };
           this.openBlock("text", dispatch);
         } else {
+          // Early JSON sub-type detection: run on each content line until we
+          // find the root key. The blockId is index-based (stable), so upgrading
+          // currentBlockType mid-stream safely overwrites the same Redux entry
+          // with the new type and status:"streaming" → loading skeleton shows.
+          if (
+            this.subState.language === "json" &&
+            !this.subState.earlyTypeResolved
+          ) {
+            const soFar = this.currentBlockContent
+              ? this.currentBlockContent + "\n" + rawLine
+              : rawLine;
+            const jsonType = detectJsonBlockType(soFar);
+            if (jsonType) {
+              this.subState.earlyTypeResolved = true;
+              this.currentBlockType = jsonType;
+            }
+          }
           this.appendToCurrentBlock(rawLine);
         }
         return;
@@ -402,12 +435,13 @@ export class StreamBlockAccumulator {
 
   private buildBlockData(): Record<string, unknown> | null {
     if (this.subState.kind === "code_fence") {
+      // Only emit language data for plain code blocks. When the type has been
+      // upgraded to a JSON sub-type (diagram, quiz, etc.), `data` must be null
+      // so BlockRenderer takes the content-parse path, not the serverData path.
+      if (this.currentBlockType !== "code") return null;
       return this.subState.language
         ? { language: this.subState.language }
         : null;
-    }
-    if (this.currentBlockType === "code" && this.subState.kind === "none") {
-      return null;
     }
     return null;
   }

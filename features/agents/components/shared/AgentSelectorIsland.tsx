@@ -25,11 +25,14 @@ interface AgentSelectorIslandProps {
   agentId: string;
   /** SSR-provided name shown on first paint; replaced by Redux value once hydrated */
   initialName: string;
+  /** Custom trigger element — replaces the default text button inside AgentListDropdown */
+  triggerSlot?: React.ReactNode;
 }
 
 export function AgentSelectorIsland({
   agentId,
   initialName,
+  triggerSlot,
 }: AgentSelectorIslandProps) {
   const [, startTransition] = useTransition();
   const router = useRouter();
@@ -56,6 +59,7 @@ export function AgentSelectorIsland({
         onSelect={handleAgentSelect}
         label={displayName}
         className="max-w-[120px] md:max-w-[180px]"
+        triggerSlot={triggerSlot}
       />
       {versionNumber != null && (
         <span className="text-[0.625rem] font-medium text-[var(--shell-nav-text)] tabular-nums shrink-0">

@@ -485,7 +485,14 @@ export const selectUnifiedSlots = (requestId: string) =>
       state.activeRequests.byRequestId[requestId]?.renderBlockOrder,
     (state: RootState) =>
       state.activeRequests.byRequestId[requestId]?.isTextStreaming,
-    (timeline, renderBlockOrder, isTextStreaming): UnifiedSlot[] => {
+    (state: RootState) =>
+      state.activeRequests.byRequestId[requestId]?.isReasoningStreaming,
+    (
+      timeline,
+      renderBlockOrder,
+      isTextStreaming,
+      isReasoningStreaming,
+    ): UnifiedSlot[] => {
       if (!timeline || timeline.length === 0) {
         if (!renderBlockOrder || renderBlockOrder.length === 0) return [];
         return renderBlockOrder.map((blockId, i) => ({
@@ -500,7 +507,9 @@ export const selectUnifiedSlots = (requestId: string) =>
       const seenTools = new Set<string>();
       let nextSeq = 0;
       let pendingStatus: UnifiedSlot | null = null;
-      let lastTextEndBlockIndex = 0;
+      // Tracks how many blocks from renderBlockOrder have been emitted into slots.
+      // Used by both text_end and reasoning_end to emit their respective blocks.
+      let lastEmittedBlockIndex = 0;
 
       for (const entry of timeline) {
         if (entry.kind === "text_start") {
@@ -516,12 +525,24 @@ export const selectUnifiedSlots = (requestId: string) =>
               seq: nextSeq++,
             });
           }
-          lastTextEndBlockIndex = end;
-        } else if (
-          entry.kind === "reasoning_start" ||
-          entry.kind === "reasoning_end"
-        ) {
+          lastEmittedBlockIndex = Math.max(lastEmittedBlockIndex, end);
+        } else if (entry.kind === "reasoning_start") {
           pendingStatus = null;
+        } else if (entry.kind === "reasoning_end") {
+          // Reasoning blocks arrive as render_block events and land in renderBlockOrder.
+          // They are NOT covered by text_end block ranges because they aren't part of
+          // a text run. Emit any blocks accumulated in renderBlockOrder since the last
+          // emission — these are the reasoning block(s) for this reasoning run.
+          pendingStatus = null;
+          const end = blockOrder.length;
+          for (let i = lastEmittedBlockIndex; i < end; i++) {
+            slots.push({
+              kind: "render_block",
+              blockId: blockOrder[i],
+              seq: nextSeq++,
+            });
+          }
+          lastEmittedBlockIndex = end;
         } else if (
           entry.kind === "tool_event" &&
           entry.subEvent === "tool_started" &&
@@ -559,9 +580,22 @@ export const selectUnifiedSlots = (requestId: string) =>
       }
 
       // Trailing open text run (still streaming) — emit blocks from
-      // lastTextEndBlockIndex to the current end of renderBlockOrder
+      // lastEmittedBlockIndex to the current end of renderBlockOrder
       if (isTextStreaming) {
-        for (let i = lastTextEndBlockIndex; i < blockOrder.length; i++) {
+        for (let i = lastEmittedBlockIndex; i < blockOrder.length; i++) {
+          slots.push({
+            kind: "render_block",
+            blockId: blockOrder[i],
+            seq: nextSeq++,
+          });
+        }
+      }
+
+      // Trailing active reasoning run — reasoning_start fired but reasoning_end has not
+      // yet. Any render_block events that arrived since the last emission belong to this
+      // reasoning run (e.g. type: "reasoning", blockId: "client_reasoning_1").
+      if (isReasoningStreaming) {
+        for (let i = lastEmittedBlockIndex; i < blockOrder.length; i++) {
           slots.push({
             kind: "render_block",
             blockId: blockOrder[i],

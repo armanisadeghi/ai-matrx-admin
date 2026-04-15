@@ -33,10 +33,11 @@ export default async function AgentDetailLayout({
     <>
       {/* Hydrates Redux store. Runs after paint so layout never blocks on it. */}
       <AgentHydratorServer agentId={id} />
-      <PageHeader>
-        {/* Server shell with SSR-known agent name — no flash, no empty state */}
+
+      {/* <PageHeader>
         <AgentHeader agentId={id} agentName={agent.name} />
-      </PageHeader>
+      </PageHeader> */}
+
       <div className="h-full overflow-hidden">{children}</div>
     </>
   );

@@ -14,25 +14,21 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import {
-  Clock,
-  Loader2,
-  ChevronRight,
-  MessageSquare,
-  PanelLeft,
-  Plus,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Loader2, ChevronRight, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/utils/supabase/client";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { selectAgentById } from "@/features/agents/redux/agent-definition/selectors";
+import {
+  selectAgentById,
+  selectAgentName,
+} from "@/features/agents/redux/agent-definition/selectors";
 import { selectLatestConversationId } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
 import { recreateManualInstance } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
 import { fetchAgentConversations } from "@/features/agents/redux/agent-conversations/agent-conversations.thunks";
 import { makeSelectAgentConversations } from "@/features/agents/redux/agent-conversations/agent-conversations.selectors";
 import type { AgentConversationListItem } from "@/features/agents/redux/agent-conversations/agent-conversations.types";
 import { AgentLauncherSidebarTester } from "../run-controls/AgentLauncherSidebarTester";
+import { SidebarHeader } from "./SidebarHeader";
 
 // Module-level cache — checked once per session, avoids repeated 404 noise
 // when the agent_runs table hasn't been created by the Python backend yet.
@@ -49,10 +45,9 @@ interface AgentRunsSidebarProps {
   agentId: string;
   conversationId: string;
   surfaceKey: string;
-  /** URL ?conversationId= — takes precedence over live instance conversation. */
   conversationIdFromUrl?: string;
   currentRunId?: string;
-  onClose: () => void;
+  onToggleSidebar: () => void;
 }
 
 function formatDate(iso: string | null): string {
@@ -73,7 +68,7 @@ export function AgentRunsSidebar({
   conversationId,
   surfaceKey,
   conversationIdFromUrl,
-  onClose,
+  onToggleSidebar,
 }: AgentRunsSidebarProps) {
   const dispatch = useAppDispatch();
   const router = useRouter();
@@ -174,45 +169,26 @@ export function AgentRunsSidebar({
     router.push(`${pathname}?${params.toString()}`);
   };
 
-  const handleRunSelect = (runId: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete("conversationId");
-    params.set("runId", runId);
-    router.push(`${pathname}?${params.toString()}`);
-  };
+  const agentName = useAppSelector((state) => selectAgentName(state, agentId));
 
   const conversationSectionLoading = convStatus === "loading";
   const conversationSectionFailed = convStatus === "failed";
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
-      {/* Sidebar header — toggle + label + new button, all compact */}
-      <div className="flex items-center gap-1 px-1 py-1 border-b border-border shrink-0">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7 shrink-0"
-          onClick={onClose}
-        >
-          <PanelLeft className="w-4 h-4" />
-        </Button>
-        <Button
-          size="sm"
-          variant="ghost"
-          className="h-7 px-2 text-xs gap-1 text-primary shrink-0"
-          onClick={handleNewRun}
-        >
-          <Plus className="w-3 h-3" />
-          New
-        </Button>
-      </div>
-
+      <SidebarHeader
+        agentId={agentId}
+        conversationId={conversationId}
+        surfaceKey={surfaceKey}
+        conversationIdFromUrl={conversationIdFromUrl}
+        onToggleSidebar={onToggleSidebar}
+      />
       <div className="flex-1 overflow-y-auto min-h-0 flex flex-col">
         {/* Conversations (agent / AI threads) */}
         <div className="shrink-0 border-b border-border/60">
-          <div className="px-3 py-1.5">
+          <div className="px-3 py-1.5 flex items-center justify-between">
             <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-              Conversations
+              {agentName} History
             </span>
           </div>
           {conversationSectionLoading && (

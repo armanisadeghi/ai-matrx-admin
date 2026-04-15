@@ -29,7 +29,7 @@ import { selectShowVariablePanel } from "@/features/agents/redux/execution-syste
 import { executeInstance } from "@/features/agents/redux/execution-system/thunks/execute-instance.thunk";
 import { executeChatInstance } from "@/features/agents/redux/execution-system/thunks/execute-chat-instance.thunk";
 import { AgentUserMessage } from "../../run/AgentUserMessage";
-import { AgentPlanningIndicator } from "../../run/AgentPlanningIndicator";
+import { AgentPlanningIndicator } from "../../shared/AgentPlanningIndicator";
 import { ChatAssistantVariableInputs } from "./ChatAssistantVariableInputs";
 
 const AgentAssistantMessage = dynamic(

@@ -45,7 +45,7 @@ const AgentAssistantMessage = dynamic(
     })),
   { ssr: false },
 );
-import { AgentPlanningIndicator } from "../run/AgentPlanningIndicator";
+import { AgentPlanningIndicator } from "../shared/AgentPlanningIndicator";
 import { Webhook } from "lucide-react";
 import type { ConversationTurn } from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.slice";
 

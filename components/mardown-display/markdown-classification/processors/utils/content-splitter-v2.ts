@@ -130,7 +130,7 @@ function extractFirstJsonKey(content: string): string | null {
   return match ? match[1] : null;
 }
 
-function detectJsonBlockType(
+export function detectJsonBlockType(
   content: string,
 ): keyof typeof JSON_BLOCK_PATTERNS | null {
   const firstKey = extractFirstJsonKey(content);

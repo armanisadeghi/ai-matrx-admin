@@ -57,6 +57,8 @@ export interface RenderBlock {
   alt?: string;
   /** Block-specific metadata from the splitter or server. */
   metadata?: Record<string, unknown>;
+  /** True when this block was emitted mid-stream (status: "streaming") — content is incomplete. */
+  isStreamingBlock?: boolean;
 }
 
 interface BlockRendererProps {
@@ -84,6 +86,30 @@ function isGenuinelyIncomplete(content: string): boolean {
 
   // If braces are unbalanced, it's genuinely incomplete
   return openBraces > closeBraces;
+}
+
+/**
+ * Returns true when a block should show its loading skeleton instead of
+ * attempting to parse incomplete content.
+ *
+ * A block is considered "still loading" when either:
+ *  - It was emitted mid-stream (status === "streaming") — content is definitely
+ *    incomplete because the accumulator hasn't seen the closing fence/tag yet.
+ *  - The splitter/server explicitly marked it isComplete: false AND the
+ *    brace count shows the JSON is still open.
+ */
+function isBlockLoading(block: {
+  isStreamingBlock?: boolean;
+  metadata?: Record<string, unknown>;
+  content: string;
+}): boolean {
+  if (block.isStreamingBlock) return true;
+  if (
+    block.metadata?.isComplete === false &&
+    isGenuinelyIncomplete(block.content)
+  )
+    return true;
+  return false;
 }
 
 /**
@@ -638,11 +664,8 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
           />
         );
       }
-      // Smart fallback: only show loading if genuinely incomplete
-      if (!block.metadata?.isComplete) {
-        if (isGenuinelyIncomplete(block.content)) {
-          return <LoadingComponents.QuizLoading key={index} />;
-        }
+      if (isBlockLoading(block)) {
+        return <LoadingComponents.QuizLoading key={index} />;
       }
 
       const quizData = safeJsonParse(block.content) as any | null;
@@ -706,10 +729,8 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
           />
         );
       }
-      if (!block.metadata?.isComplete) {
-        if (isGenuinelyIncomplete(block.content)) {
-          return <LoadingComponents.PresentationLoading key={index} />;
-        }
+      if (isBlockLoading(block)) {
+        return <LoadingComponents.PresentationLoading key={index} />;
       }
       const presentationData = safeJsonParse(block.content) as any | null;
       if (
@@ -755,7 +776,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
           />
         );
       }
-      if (block.metadata?.isComplete === false) {
+      if (isBlockLoading(block)) {
         return <LoadingComponents.RecipeLoading key={index} />;
       }
       const RecipeWithParser = React.lazy(async () => {
@@ -772,7 +793,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
       return (
         <React.Suspense
           key={index}
-          fallback={renderBasicMarkdown(block.content)}
+          fallback={<LoadingComponents.RecipeLoading />}
         >
           <RecipeWithParser />
         </React.Suspense>
@@ -797,7 +818,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
           />
         );
       }
-      if (block.metadata?.isComplete === false) {
+      if (isBlockLoading(block)) {
         return <LoadingComponents.TimelineLoading key={index} />;
       }
       const TimelineWithParser = React.lazy(async () => {
@@ -817,7 +838,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
       return (
         <React.Suspense
           key={index}
-          fallback={renderBasicMarkdown(block.content)}
+          fallback={<LoadingComponents.TimelineLoading />}
         >
           <TimelineWithParser />
         </React.Suspense>
@@ -842,7 +863,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
           />
         );
       }
-      if (block.metadata?.isComplete === false) {
+      if (isBlockLoading(block)) {
         return <LoadingComponents.ResearchLoading key={index} />;
       }
       const ResearchWithParser = React.lazy(async () => {
@@ -862,7 +883,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
       return (
         <React.Suspense
           key={index}
-          fallback={renderBasicMarkdown(block.content)}
+          fallback={<LoadingComponents.ResearchLoading />}
         >
           <ResearchWithParser />
         </React.Suspense>
@@ -887,7 +908,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
           />
         );
       }
-      if (block.metadata?.isComplete === false) {
+      if (isBlockLoading(block)) {
         return <LoadingComponents.ResourcesLoading key={index} />;
       }
       const ResourcesWithParser = React.lazy(async () => {
@@ -907,7 +928,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
       return (
         <React.Suspense
           key={index}
-          fallback={renderBasicMarkdown(block.content)}
+          fallback={<LoadingComponents.ResourcesLoading />}
         >
           <ResourcesWithParser />
         </React.Suspense>
@@ -932,7 +953,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
           />
         );
       }
-      if (block.metadata?.isComplete === false) {
+      if (isBlockLoading(block)) {
         return <LoadingComponents.ProgressLoading key={index} />;
       }
       const ProgressWithParser = React.lazy(async () => {
@@ -952,7 +973,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
       return (
         <React.Suspense
           key={index}
-          fallback={renderBasicMarkdown(block.content)}
+          fallback={<LoadingComponents.ProgressLoading />}
         >
           <ProgressWithParser />
         </React.Suspense>
@@ -977,10 +998,8 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
           />
         );
       }
-      if (block.metadata?.isComplete === false) {
-        if (isGenuinelyIncomplete(block.content)) {
-          return <LoadingComponents.ComparisonLoading key={index} />;
-        }
+      if (isBlockLoading(block)) {
+        return <LoadingComponents.ComparisonLoading key={index} />;
       }
       const ComparisonWithParser = React.lazy(async () => {
         const { parseComparisonJSON } =
@@ -999,7 +1018,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
       return (
         <React.Suspense
           key={index}
-          fallback={renderFallbackContent(block.content)}
+          fallback={<LoadingComponents.ComparisonLoading />}
         >
           <ComparisonWithParser />
         </React.Suspense>
@@ -1024,7 +1043,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
           />
         );
       }
-      if (block.metadata?.isComplete === false) {
+      if (isBlockLoading(block)) {
         return <LoadingComponents.TroubleshootingLoading key={index} />;
       }
       const TroubleshootingWithParser = React.lazy(async () => {
@@ -1045,7 +1064,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
       return (
         <React.Suspense
           key={index}
-          fallback={renderBasicMarkdown(block.content)}
+          fallback={<LoadingComponents.TroubleshootingLoading />}
         >
           <TroubleshootingWithParser />
         </React.Suspense>
@@ -1070,10 +1089,8 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
           />
         );
       }
-      if (block.metadata?.isComplete === false) {
-        if (isGenuinelyIncomplete(block.content)) {
-          return <LoadingComponents.DecisionTreeLoading key={index} />;
-        }
+      if (isBlockLoading(block)) {
+        return <LoadingComponents.DecisionTreeLoading key={index} />;
       }
       const DecisionTreeWithParser = React.lazy(async () => {
         const { parseDecisionTreeJSON } =
@@ -1092,7 +1109,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
       return (
         <React.Suspense
           key={index}
-          fallback={renderFallbackContent(block.content)}
+          fallback={<LoadingComponents.DecisionTreeLoading />}
         >
           <DecisionTreeWithParser />
         </React.Suspense>
@@ -1117,10 +1134,8 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
           />
         );
       }
-      if (block.metadata?.isComplete === false) {
-        if (isGenuinelyIncomplete(block.content)) {
-          return <LoadingComponents.DiagramLoading key={index} />;
-        }
+      if (isBlockLoading(block)) {
+        return <LoadingComponents.DiagramLoading key={index} />;
       }
       const DiagramWithParser = React.lazy(async () => {
         const { parseDiagramJSON } =
@@ -1139,7 +1154,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
       return (
         <React.Suspense
           key={index}
-          fallback={renderFallbackContent(block.content)}
+          fallback={<LoadingComponents.DiagramLoading />}
         >
           <DiagramWithParser />
         </React.Suspense>
@@ -1163,10 +1178,8 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
           />
         );
       }
-      if (block.metadata?.isComplete === false) {
-        if (isGenuinelyIncomplete(block.content)) {
-          return <LoadingComponents.MathProblemLoading key={index} />;
-        }
+      if (isBlockLoading(block)) {
+        return <LoadingComponents.MathProblemLoading key={index} />;
       }
       const mathProblemData = safeJsonParse(block.content) as Record<
         string,

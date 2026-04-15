@@ -47,6 +47,7 @@ import {
   DrawerTitle,
   DrawerDescription,
 } from "@/components/ui/drawer";
+import { AgentRunHeader } from "./AgentRunHeader";
 
 interface AgentRunnerPageProps {
   agentId: string;
@@ -147,65 +148,57 @@ export function AgentRunnerPage({ agentId }: AgentRunnerPageProps) {
   }
 
   return (
-    <div className="relative flex flex-col h-full overflow-hidden">
-      {/* ── Mobile toolbar ──────────────────────────────────────────────────── */}
-      {isMobile && (
-        <div className="shrink-0 flex items-center gap-1 px-2 py-1 border-b border-border bg-background">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 px-2 text-xs gap-1.5"
-            onClick={() => setHistoryDrawerOpen(true)}
-          >
-            <History className="w-3.5 h-3.5" />
-            History
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 px-2 text-xs gap-1.5"
-            onClick={() => setTestModesDrawerOpen(true)}
-          >
-            <TestTube2 className="w-3.5 h-3.5" />
-            Test Modes
-          </Button>
+    <div className="relative flex h-full overflow-hidden">
+      {/* ── Desktop sidebar (full height, border extends to top) ────────────── */}
+      {!isMobile && sidebarOpen && (
+        <div className="w-64 shrink-0 border-r border-border overflow-hidden flex flex-col">
+          <AgentRunsSidebar
+            agentId={agentId}
+            conversationId={conversationId}
+            surfaceKey={surfaceKey}
+            conversationIdFromUrl={conversationIdFromUrl}
+            onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+          />
         </div>
       )}
 
-      {/* ── Main layout ─────────────────────────────────────────────────────── */}
-      <div className="flex flex-1 min-h-0 overflow-hidden">
-        {/* Desktop sidebar */}
-        {!isMobile && sidebarOpen && (
-          <div className="w-64 shrink-0 border-r border-border overflow-hidden flex flex-col">
-            <AgentRunsSidebar
-              agentId={agentId}
-              conversationId={conversationId}
-              surfaceKey={surfaceKey}
-              conversationIdFromUrl={conversationIdFromUrl}
-              onClose={() => setSidebarOpen(false)}
-            />
+      {/* ── Right column: header + content ──────────────────────────────────── */}
+      <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+        {/* Mobile toolbar */}
+        {isMobile && (
+          <div className="shrink-0 flex items-center gap-1 px-2 py-1 border-b border-border bg-background">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2 text-xs gap-1.5"
+              onClick={() => setHistoryDrawerOpen(true)}
+            >
+              <History className="w-3.5 h-3.5" />
+              History
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2 text-xs gap-1.5"
+              onClick={() => setTestModesDrawerOpen(true)}
+            >
+              <TestTube2 className="w-3.5 h-3.5" />
+              Test Modes
+            </Button>
           </div>
         )}
 
+        <AgentRunHeader
+          agentId={agentId}
+          conversationId={conversationId}
+          surfaceKey={surfaceKey}
+          conversationIdFromUrl={conversationIdFromUrl}
+          sidebarOpen={sidebarOpen}
+          onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+        />
+
         {/* Main conversation area */}
         <div className="flex-1 overflow-hidden flex justify-center min-w-0">
-          {!isMobile && !sidebarOpen && (
-            <div
-              className="absolute left-1 z-10"
-              style={{ top: "var(--shell-header-h)" }}
-            >
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7"
-                onClick={() => setSidebarOpen(true)}
-                title="Show history"
-              >
-                <PanelLeft className="w-4 h-4" />
-              </Button>
-            </div>
-          )}
-
           <AgentConversationColumn
             conversationId={conversationId}
             surfaceKey={surfaceKey}
@@ -239,7 +232,7 @@ export function AgentRunnerPage({ agentId }: AgentRunnerPageProps) {
                   conversationId={conversationId}
                   surfaceKey={surfaceKey}
                   conversationIdFromUrl={conversationIdFromUrl}
-                  onClose={() => setHistoryDrawerOpen(false)}
+                  onToggleSidebar={() => setHistoryDrawerOpen(false)}
                 />
               </div>
             </DrawerContent>

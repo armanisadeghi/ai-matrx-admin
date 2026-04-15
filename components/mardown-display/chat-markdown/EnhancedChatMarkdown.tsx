@@ -100,6 +100,7 @@ function renderBlockToContentBlock(rb: RenderBlockPayload): RenderBlock {
       | undefined,
     src: (rb.data as Record<string, unknown>)?.src as string | undefined,
     alt: (rb.data as Record<string, unknown>)?.alt as string | undefined,
+    isStreamingBlock: rb.status === "streaming",
   };
 }
 

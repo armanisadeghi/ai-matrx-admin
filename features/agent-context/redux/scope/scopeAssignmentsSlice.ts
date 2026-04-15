@@ -24,6 +24,34 @@ const initialState =
     loadedEntities: [],
   });
 
+type RawScopeAssignment = {
+  id?: string;
+  scope_id?: string;
+  entity_type?: string;
+  entity_id?: string;
+  created_by?: string | null;
+  created_at?: string;
+  [key: string]: unknown;
+};
+
+function normalizeAssignments(
+  raw: unknown,
+  entityType: string,
+  entityId: string,
+): ScopeAssignment[] {
+  if (!Array.isArray(raw)) return [];
+  return (raw as RawScopeAssignment[])
+    .filter((r) => r.scope_id)
+    .map((r) => ({
+      id: r.id ?? `${entityType}:${entityId}:${r.scope_id}`,
+      scope_id: r.scope_id!,
+      entity_type: r.entity_type ?? entityType,
+      entity_id: r.entity_id ?? entityId,
+      created_by: r.created_by ?? null,
+      created_at: r.created_at ?? new Date().toISOString(),
+    }));
+}
+
 export const fetchEntityScopes = createAsyncThunk(
   "scopeAssignments/fetchForEntity",
   async (params: { entity_type: string; entity_id: string }) => {
@@ -32,7 +60,14 @@ export const fetchEntityScopes = createAsyncThunk(
       p_entity_id: params.entity_id,
     });
     if (error) throw error;
-    return { ...params, assignments: data as ScopeAssignment[] };
+    return {
+      ...params,
+      assignments: normalizeAssignments(
+        data,
+        params.entity_type,
+        params.entity_id,
+      ),
+    };
   },
 );
 
@@ -49,7 +84,14 @@ export const setEntityScopes = createAsyncThunk(
       p_scope_ids: params.scope_ids,
     });
     if (error) throw error;
-    return { ...params, assignments: data as ScopeAssignment[] };
+    return {
+      ...params,
+      assignments: normalizeAssignments(
+        data,
+        params.entity_type,
+        params.entity_id,
+      ),
+    };
   },
 );
 

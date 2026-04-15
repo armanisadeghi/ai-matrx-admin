@@ -29,7 +29,7 @@ export function AgentHeader({ agentId, agentName }: AgentHeaderProps) {
       </div>
 
       {/* ── Desktop layout (>= lg) ───────────────────────────────────────── */}
-      <div className="hidden lg:flex items-center justify-between w-full gap-2 px-1">
+      <div className="hidden lg:flex items-center justify-between w-full gap-0 px-0">
         <div className="flex items-center gap-1">
           <Link
             href="/agents"

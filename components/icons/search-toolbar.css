@@ -257,16 +257,14 @@
   pointer-events: auto;
 }
 
-/* ── Group: full-width on mobile (collapsed state) ─────────────── */
-@media (max-width: 639px) {
-  .stb-group.stb-group-fill {
-    flex: 1;
-  }
-  .stb-group.stb-group-fill .stb-group-pill {
-    width: 100%;
-  }
-  .stb-group.stb-group-fill .stb-group-icons {
-    width: 100%;
-    justify-content: space-evenly;
-  }
+/* ── Group: full-width (collapsed state) ────────────────────────── */
+.stb-group.stb-group-fill {
+  flex: 1;
+}
+.stb-group.stb-group-fill .stb-group-pill {
+  width: 100%;
+}
+.stb-group.stb-group-fill .stb-group-icons {
+  width: 100%;
+  justify-content: space-evenly;
 }

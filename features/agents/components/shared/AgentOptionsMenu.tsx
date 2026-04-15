@@ -48,6 +48,7 @@ import {
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
+import { MenuTapButton } from "@/components/icons/tap-buttons";
 
 const INTERFACE_VARIATIONS = [
   "Full Modal",
@@ -204,16 +205,7 @@ export function AgentOptionsMenu({
     }
   };
 
-  const trigger = (
-    <button
-      className={cn(
-        "flex items-center justify-center w-6 h-6 rounded-md transition-colors",
-        "text-muted-foreground hover:text-foreground hover:bg-muted/60",
-      )}
-    >
-      <MoreHorizontal className="w-4 h-4" />
-    </button>
-  );
+  const trigger = <MenuTapButton />;
 
   if (isMobile) {
     return (
