@@ -1,7 +1,7 @@
 import { AgentModeController } from "../shared/AgentModeController";
 import { AgentSaveStatus } from "../shared/AgentSaveStatus";
 import { AgentOptionsMenu } from "../shared/AgentOptionsMenu";
-import { SidebarHeader } from "./SidebarHeader";
+import { SidebarHeader } from "./run-sidebar/SidebarHeader";
 
 interface AgentRunHeaderProps {
   agentId: string;

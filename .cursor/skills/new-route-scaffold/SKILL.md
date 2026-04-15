@@ -170,12 +170,12 @@ export const preloadNote = (id: string): void => { void getNote(id); };
 app/(a)/[feature]/
 ├── layout.tsx          ← static metadata only
 ├── loading.tsx         ← dimension-exact skeleton of the full shell
-├── error.tsx           ← error boundary ('use client')
+├── error.tsx           ← <ErrorBoundaryView context="[Feature]" /> one-liner
 ├── page.tsx            ← fetches list seed, hydrates Redux, renders shell
 └── [id]/
     ├── layout.tsx      ← parallel fetch, generateMetadata, BOTH hydrators, shell
     ├── loading.tsx     ← skeleton of the content area only (not the full shell)
-    ├── error.tsx       ← inner error boundary
+    ├── error.tsx       ← <ErrorBoundaryView context="[Feature] Detail" /> one-liner
     ├── not-found.tsx   ← not-found UI
     ├── page.tsx        ← redirect to default view
     ├── edit/page.tsx
@@ -185,6 +185,48 @@ app/(a)/[feature]/
     ├── preview/page.tsx
     └── diff/page.tsx
 ```
+
+### `error.tsx` (route root and `[id]/`)
+
+Every error boundary is a one-liner — **never build error UI inline**.
+
+```typescript
+"use client";
+import { ErrorBoundaryView } from "@/components/errors/ErrorBoundaryView";
+
+export default function MyFeatureError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
+    return <ErrorBoundaryView error={error} reset={reset} context="My Feature" />;
+}
+```
+
+Optional props: `context` (string label for console logs), `homePath` (override home button path, default `"/"`).
+
+`ErrorBoundaryView` shows all users a polished error UI with retry/back/home actions. Admins get a collapsible debug panel with full error details, request context, user context, stack trace, raw JSON dump, and a **"Copy for AI"** button that strips minified chunk URLs and formats a clean Markdown summary for pasting into any AI chat.
+
+---
+
+### `page.tsx` — placeholder for routes under development
+
+When a route's real UI isn't built yet, use `ComingSoonPage` from `components/coming-soon/CominSoonTemplate.tsx`. **Always customize all four props** — the defaults are generic marketing copy that will confuse users and hurt SEO.
+
+```typescript
+import ComingSoonPage from "@/components/coming-soon/CominSoonTemplate";
+
+export default function MyFeaturePage() {
+    return (
+        <ComingSoonPage
+            heroTitleLine1="Your Notes,"
+            heroTitleLine2="organised by AI"
+            description="A smart note-taking workspace with AI tagging, linking, and search. Coming soon."
+            statusBadgeText="Notes is under active development"
+        />
+    );
+}
+```
+
+Props to always set: `heroTitleLine1`, `heroTitleLine2`, `description` (feature-specific, SEO-friendly), `statusBadgeText` (present-tense, names the feature).
+
+---
 
 ### `layout.tsx` (route root)
 
@@ -462,11 +504,11 @@ Every `loading.tsx` must satisfy:
 - [ ] `lib/[feature]/data.ts` created with `server-only`, `cache()`, and `preloadNote`
 - [ ] `app/(a)/[feature]/layout.tsx` — static metadata only
 - [ ] `app/(a)/[feature]/loading.tsx` — exact dimension match to shell
-- [ ] `app/(a)/[feature]/error.tsx` — client error boundary
+- [ ] `app/(a)/[feature]/error.tsx` — one-liner wrapping `<ErrorBoundaryView context="[Feature]" />`
 - [ ] `app/(a)/[feature]/page.tsx` — list seed + both hydrators + Suspense
 - [ ] `app/(a)/[feature]/[id]/layout.tsx` — parallel fetch + both hydrators + generateMetadata
 - [ ] `app/(a)/[feature]/[id]/loading.tsx` — content-area skeleton only
-- [ ] `app/(a)/[feature]/[id]/error.tsx` + `not-found.tsx`
+- [ ] `app/(a)/[feature]/[id]/error.tsx` — one-liner wrapping `<ErrorBoundaryView context="[Feature] Detail" />`, plus `not-found.tsx`
 - [ ] `app/(a)/[feature]/[id]/page.tsx` — redirect to default view
 - [ ] All view sub-pages created (ask Arman for the list)
 - [ ] `features/[feature]/route/` — `ListHydrator` + `EntityHydrator`

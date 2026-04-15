@@ -10,6 +10,9 @@ import {
   Building,
   ListCheck,
   FileText,
+  BriefcaseBusiness,
+  Scale,
+  Blocks,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -17,17 +20,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-// ============================================================================
-// TYPES
-// ============================================================================
-
-interface SidebarActionsProps {
-  onNewChat: () => void;
-  searchQuery: string;
-  onSearchChange: (query: string) => void;
-  newChatHref?: string;
-}
 
 // ============================================================================
 // PLACEHOLDER DROPDOWN ROW
@@ -67,23 +59,21 @@ function PlaceholderDropdownRow({
 }
 
 // ============================================================================
-// SIDEBAR ACTIONS
+// DIRECT CONTEXT SELECTION
 // ============================================================================
 
-export function SidebarActions({
-  onNewChat,
-  searchQuery,
-  onSearchChange,
-  newChatHref = "/ssr/chat",
-}: SidebarActionsProps) {
+export function DirectContextSelection() {
   return (
     <div className="px-1.5 py-1">
       {/* Context Setting Dropdowns */}
       <PlaceholderDropdownRow icon={Building} label="Organization" />
+      <PlaceholderDropdownRow icon={BriefcaseBusiness} label="Custom Scope 1" />
+      <PlaceholderDropdownRow icon={Scale} label="Custom Scope 2" />
+      <PlaceholderDropdownRow icon={Blocks} label="Custom Scope 3" />
       <PlaceholderDropdownRow icon={FolderKanban} label="Project" />
       <PlaceholderDropdownRow icon={ListCheck} label="Tasks" />
     </div>
   );
 }
 
-export default SidebarActions;
+export default DirectContextSelection;

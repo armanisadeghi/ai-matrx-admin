@@ -23,6 +23,14 @@ export const primaryNavItems: ShellNavItem[] = [
     color: "sky",
   },
   {
+    label: "Agents",
+    href: "/agents",
+    iconName: "Webhook",
+    section: "primary",
+    description: "AI Agent Harness Management",
+    color: "blue",
+  },
+  {
     label: "Prompt Builder",
     href: "/ssr/prompts",
     iconName: "Wand2",
@@ -147,14 +155,6 @@ export const primaryNavItems: ShellNavItem[] = [
     section: "primary",
     description: "Manage context items, templates, and knowledge",
     color: "cyan",
-  },
-  {
-    label: "Content",
-    href: "/ssr/content",
-    iconName: "PanelTop",
-    section: "primary",
-    description: "Manage websites, pages, and published content",
-    color: "rose",
   },
 ];
 

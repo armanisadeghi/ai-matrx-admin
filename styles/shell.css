@@ -297,6 +297,7 @@
 :where(
   .shell-root[data-pathname="/ssr/dashboard"] .shell-nav-item[data-nav-href="/ssr/dashboard"],
   .shell-root[data-pathname="/ssr"]           .shell-nav-item[data-nav-href="/ssr/dashboard"],
+  .shell-root[data-pathname^="/agents"]       .shell-nav-item[data-nav-href="/agents"],
   .shell-root[data-pathname^="/ssr/chat"]     .shell-nav-item[data-nav-href="/ssr/chat"],
   .shell-root[data-pathname^="/ssr/notes"]    .shell-nav-item[data-nav-href="/ssr/notes"],
   .shell-root[data-pathname^="/tasks"]        .shell-nav-item[data-nav-href="/tasks"],
@@ -312,6 +313,7 @@
 :where(
   .shell-root[data-pathname="/ssr/dashboard"] .shell-nav-item[data-nav-href="/ssr/dashboard"],
   .shell-root[data-pathname="/ssr"]           .shell-nav-item[data-nav-href="/ssr/dashboard"],
+  .shell-root[data-pathname^="/agents"]       .shell-nav-item[data-nav-href="/agents"],
   .shell-root[data-pathname^="/ssr/chat"]     .shell-nav-item[data-nav-href="/ssr/chat"],
   .shell-root[data-pathname^="/ssr/notes"]    .shell-nav-item[data-nav-href="/ssr/notes"],
   .shell-root[data-pathname^="/tasks"]        .shell-nav-item[data-nav-href="/tasks"],
@@ -322,6 +324,7 @@
 :where(
   .shell-root[data-pathname="/ssr/dashboard"] .shell-nav-item[data-nav-href="/ssr/dashboard"],
   .shell-root[data-pathname="/ssr"]           .shell-nav-item[data-nav-href="/ssr/dashboard"],
+  .shell-root[data-pathname^="/agents"]       .shell-nav-item[data-nav-href="/agents"],
   .shell-root[data-pathname^="/ssr/chat"]     .shell-nav-item[data-nav-href="/ssr/chat"],
   .shell-root[data-pathname^="/ssr/notes"]    .shell-nav-item[data-nav-href="/ssr/notes"],
   .shell-root[data-pathname^="/tasks"]        .shell-nav-item[data-nav-href="/tasks"],
@@ -520,8 +523,8 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.5rem 0.625rem;
-  border-radius: 0.625rem;
+  padding: 0.15rem 0.375rem;
+  border-radius: 0.25rem;
   text-decoration: none;
   color: var(--shell-nav-text);
   transition:

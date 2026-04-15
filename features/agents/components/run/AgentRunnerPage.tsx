@@ -34,7 +34,7 @@ import { useAgentLauncher } from "@/features/agents/hooks/useAgentLauncher";
 import { createManualInstance } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
 import { fetchConversationHistory } from "@/features/cx-chat/redux/thunks";
 import { setFocus } from "@/features/agents/redux/execution-system/conversation-focus/conversation-focus.slice";
-import { AgentRunsSidebar } from "./AgentRunsSidebar";
+import { AgentRunsSidebar } from "./run-sidebar/AgentRunsSidebar";
 import { AgentLauncherSidebarTester } from "../run-controls/AgentLauncherSidebarTester";
 import { AgentConversationColumn } from "../shared/AgentConversationColumn";
 import { Loader2, PanelLeft, History, TestTube2 } from "lucide-react";

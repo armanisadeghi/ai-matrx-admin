@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AgentSelectorIsland } from "../shared/AgentSelectorIsland";
+import { AgentSelectorIsland } from "../../shared/AgentSelectorIsland";
 import {
   PanelLeftTapButton,
   ChevronLeftTapButton,
@@ -9,7 +9,7 @@ import {
   SearchGroup,
   SearchGroupTrigger,
 } from "@/components/icons/SearchToolbar";
-import { AgentNewRunButton } from "../shared/AgentNewRunButton";
+import { AgentNewRunButton } from "../../shared/AgentNewRunButton";
 
 interface SidebarHeaderProps {
   agentId: string;
@@ -34,7 +34,7 @@ export function SidebarHeader({
   onToggleSidebar,
 }: SidebarHeaderProps) {
   return (
-    <div className="flex items-center shrink-0 w-full h-10 border-b border-border px-1 gap-1">
+    <div className="flex items-center shrink-0 w-full h-10 px-1 gap-1">
       <Link href="/agents" aria-label="Back to Agents">
         <ChevronLeftTapButton />
       </Link>

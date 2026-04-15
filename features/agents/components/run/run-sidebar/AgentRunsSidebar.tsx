@@ -1,33 +1,19 @@
 "use client";
 
-/**
- * AgentRunsSidebar
- *
- * Two sections:
- *  - Conversations — get_agent_conversations via Redux (agentConversations slice)
- *  - Runs — agent_runs from Supabase, polls every 10s
- *
- * On conversation click → ?conversationId= (clears ?runId=)
- * On run click → ?runId= (clears ?conversationId=)
- * "New" → clears URL params + startNewConversation (focus registry updates the surface)
- */
-
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Loader2, ChevronRight, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { supabase } from "@/utils/supabase/client";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   selectAgentById,
   selectAgentName,
 } from "@/features/agents/redux/agent-definition/selectors";
 import { selectLatestConversationId } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
-import { startNewConversation } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
 import { fetchAgentConversations } from "@/features/agents/redux/agent-conversations/agent-conversations.thunks";
 import { makeSelectAgentConversations } from "@/features/agents/redux/agent-conversations/agent-conversations.selectors";
 import type { AgentConversationListItem } from "@/features/agents/redux/agent-conversations/agent-conversations.types";
-import { AgentLauncherSidebarTester } from "../run-controls/AgentLauncherSidebarTester";
+import { AgentLauncherSidebarTester } from "../../run-controls/AgentLauncherSidebarTester";
 import { SidebarHeader } from "./SidebarHeader";
 
 // Module-level cache — checked once per session, avoids repeated 404 noise
@@ -74,8 +60,6 @@ export function AgentRunsSidebar({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [runs, setRuns] = useState<AgentRun[]>([]);
-  const [isLoadingRuns, setIsLoadingRuns] = useState(true);
 
   const canonicalAgentId = useAppSelector((state) => {
     const agent = selectAgentById(state, agentId);
@@ -110,45 +94,8 @@ export function AgentRunsSidebar({
   const activeConversationId =
     conversationIdFromUrl ?? liveConversationId ?? undefined;
 
-  const fetchRuns = useCallback(async () => {
-    // Skip immediately if a previous attempt already confirmed the table is missing
-    if (agentRunsTableExists === false) {
-      setIsLoadingRuns(false);
-      return;
-    }
-
-    try {
-      const { data, error } = await supabase
-        .from("agent_runs" as never)
-        .select("id, name, created_at, message_count")
-        .eq("agent_id", agentId)
-        .order("created_at", { ascending: false })
-        .limit(50);
-
-      if (error) {
-        // Any error (404 = table missing) — stop polling for this session
-        agentRunsTableExists = false;
-      } else if (data) {
-        agentRunsTableExists = true;
-        setRuns(data as AgentRun[]);
-      }
-    } catch {
-      // Silently ignore
-    } finally {
-      setIsLoadingRuns(false);
-    }
-  }, [agentId]);
-
-  useEffect(() => {
-    fetchRuns();
-    if (agentRunsTableExists === false) return;
-    const interval = setInterval(fetchRuns, 10_000);
-    return () => clearInterval(interval);
-  }, [fetchRuns]);
-
   const handleConversationSelect = (conversationId: string) => {
     const params = new URLSearchParams(searchParams.toString());
-    params.delete("runId");
     params.set("conversationId", conversationId);
     router.push(`${pathname}?${params.toString()}`);
   };
@@ -169,7 +116,7 @@ export function AgentRunsSidebar({
       />
       <div className="flex-1 overflow-y-auto min-h-0 flex flex-col">
         {/* Conversations (agent / AI threads) */}
-        <div className="shrink-0 border-b border-border/60">
+        <div className="shrink-0 pt-2">
           <div className="px-3 py-1.5 flex items-center justify-between">
             <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
               {agentName} History
@@ -230,7 +177,7 @@ function ConversationListRow({
       type="button"
       onClick={onSelect}
       className={cn(
-        "flex items-center gap-2 w-full px-3 py-2 text-left transition-colors border-b border-border/50",
+        "flex items-center gap-2 w-full px-3 py-2 text-left transition-colors",
         isActive
           ? "bg-primary/10 text-primary"
           : "hover:bg-muted/50 text-foreground",

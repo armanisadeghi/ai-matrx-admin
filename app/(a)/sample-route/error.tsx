@@ -2,12 +2,16 @@
 
 import { ErrorBoundaryView } from "@/components/errors/ErrorBoundaryView";
 
-export default function AgentsListError({
+const ROUTE_CONTEXT = "Sample Route";
+
+export default function RouteError({
   error,
   reset,
 }: {
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  return <ErrorBoundaryView error={error} reset={reset} context="Agents" />;
+  return (
+    <ErrorBoundaryView error={error} reset={reset} context={ROUTE_CONTEXT} />
+  );
 }

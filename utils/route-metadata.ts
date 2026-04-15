@@ -70,7 +70,9 @@ export function createRouteMetadata(
 
   // Compose the browser-tab title: "Prefix | Section" or just "Section"
   const composedTitle =
-    titlePrefix && title ? `${titlePrefix} | ${title}` : title;
+    titlePrefix && title
+      ? `${titlePrefix} | ${title} | AI Matrx Agentic Harness`
+      : `${title} | AI Matrx Agentic Harness`;
 
   // OG/Twitter titles always include the brand name
   const socialTitle = composedTitle

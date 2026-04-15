@@ -28,6 +28,7 @@ import {
   PanelLeft,
   Menu,
   X,
+  Webhook,
   type LucideProps,
 } from "lucide-react";
 
@@ -58,6 +59,7 @@ const iconMap: Record<string, React.ComponentType<LucideProps>> = {
   PanelLeft,
   Menu,
   X,
+  Webhook,
 };
 
 interface ShellIconProps extends LucideProps {
