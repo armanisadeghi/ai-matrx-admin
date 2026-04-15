@@ -16,6 +16,9 @@ import {
   Copy,
   Circle,
   Search,
+  Play,
+  GitBranch,
+  Clock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { WindowPanel } from "../WindowPanel";
@@ -44,18 +47,24 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { useMemo } from "react";
+import { AgentRunWrapper } from "@/features/agents/components/smart/AgentRunWrapper";
+import { SourceFeature } from "@/features/agents/types";
+import { AgentVersionsWorkspace } from "@/features/agents/route/AgentVersionsWorkspace";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 export type AgentContentTab =
   | "messages"
   | "system"
-  | "model"
+  | "settings"
   | "variables"
   | "tools"
   | "context"
-  | "settings"
-  | "share";
+  | "overview"
+  | "share"
+  | "run"
+  | "history"
+  | "versions";
 
 interface TabDefinition {
   id: AgentContentTab;
@@ -66,14 +75,22 @@ interface TabDefinition {
 }
 
 export const ALL_TABS: TabDefinition[] = [
+  { id: "overview", label: "Overview", icon: Info },
+  {
+    id: "system",
+    label: "System Instructions",
+    icon: Settings,
+    inlineSave: true,
+  },
   { id: "messages", label: "Messages", icon: MessageSquare, inlineSave: true },
-  { id: "system", label: "System", icon: Settings, inlineSave: true },
-  { id: "model", label: "Model", icon: Cpu },
+  { id: "settings", label: "Settings", icon: Cpu },
   { id: "variables", label: "Variables", icon: Variable, inlineSave: true },
   { id: "tools", label: "Tools", icon: Wrench, inlineSave: true },
   { id: "context", label: "Context", icon: Layers, inlineSave: true },
-  { id: "settings", label: "Settings", icon: Info },
   { id: "share", label: "Share", icon: Share2, inlineSave: true },
+  { id: "run", label: "Run", icon: Play, inlineSave: true },
+  { id: "history", label: "History", icon: Clock, inlineSave: true },
+  { id: "versions", label: "Versions", icon: GitBranch, inlineSave: true },
 ];
 
 // ── Props ─────────────────────────────────────────────────────────────────────
@@ -343,6 +360,13 @@ export function TabContent({
 }: TabContentProps) {
   return (
     <div className="flex-1 min-h-0 overflow-hidden">
+      {activeTab === "system" && (
+        <ScrollArea className="h-full">
+          <div className="p-3">
+            <SystemMessage agentId={agentId} />
+          </div>
+        </ScrollArea>
+      )}
       {activeTab === "messages" && (
         <ScrollArea className="h-full">
           <div className="p-3">
@@ -351,15 +375,7 @@ export function TabContent({
         </ScrollArea>
       )}
 
-      {activeTab === "system" && (
-        <ScrollArea className="h-full">
-          <div className="p-3">
-            <SystemMessage agentId={agentId} />
-          </div>
-        </ScrollArea>
-      )}
-
-      {activeTab === "model" && <AgentModelPanel agentId={agentId} />}
+      {activeTab === "settings" && <AgentModelPanel agentId={agentId} />}
 
       {activeTab === "variables" && <AgentVariablesPanel agentId={agentId} />}
 
@@ -373,13 +389,24 @@ export function TabContent({
         </ScrollArea>
       )}
 
-      {activeTab === "settings" && <AgentSettingsForm agentId={agentId} />}
+      {activeTab === "overview" && <AgentSettingsForm agentId={agentId} />}
 
       {activeTab === "share" && (
         <AgentSharePanel
           agentId={agentId}
           isOwner={isOwner}
           agentName={agentName}
+        />
+      )}
+
+      {/* {activeTab === "history" && <AgentRunHistoryPanel agentId={agentId} />} */}
+
+      {activeTab === "versions" && <AgentVersionsWorkspace agentId={agentId} />}
+
+      {activeTab === "run" && (
+        <AgentRunWrapper
+          agentId={agentId}
+          sourceFeature="agent-content-window"
         />
       )}
     </div>
@@ -396,6 +423,8 @@ export default function AgentContentWindow({
   onClose,
 }: AgentContentWindowProps) {
   const dispatch = useAppDispatch();
+  dispatch(fetchFullAgent(initialAgentId));
+
   const [localAgentId, setLocalAgentId] = useState<string | null>(
     initialAgentId ?? null,
   );

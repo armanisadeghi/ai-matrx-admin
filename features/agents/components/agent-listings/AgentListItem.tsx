@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { RootState } from "@/lib/redux/store";
-import { useAppSelector } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 import { selectAgentById } from "@/features/agents/redux/agent-definition/selectors";
 import { ShareModal } from "@/features/sharing";
@@ -35,6 +35,8 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { openAgentContentWindow } from "@/lib/redux/slices/overlaySlice";
+import { AgentContentTab } from "@/features/window-panels/windows/AgentContentWindow";
 
 interface AgentListItemProps {
   id: string;
@@ -57,6 +59,7 @@ export function AgentListItem({
   isNavigating,
   isAnyNavigating,
 }: AgentListItemProps) {
+  const dispatch = useAppDispatch();
   const record = useAppSelector((state) => selectAgentById(state, id));
   const name = record?.name ?? "Untitled Agent";
   const isArchived = record?.isArchived ?? false;
@@ -108,8 +111,7 @@ export function AgentListItem({
   const handleEditDetails = (e?: React.MouseEvent) => {
     e?.stopPropagation();
     setIsMenuOpen(false);
-    setIsActionModalOpen(false);
-    setIsMetadataModalOpen(true);
+    dispatch(openAgentContentWindow({ agentId: id, initialTab: "overview" }));
   };
 
   const handleRun = (e?: React.MouseEvent) => {

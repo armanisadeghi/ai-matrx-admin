@@ -14,6 +14,7 @@
 // All existing callers that omit instanceId continue to work with zero changes.
 
 import { createSlice, createSelector } from "@reduxjs/toolkit";
+import { AgentContentTab } from "@/features/window-panels/windows/AgentContentWindow";
 
 export const DEFAULT_INSTANCE_ID = "default";
 
@@ -569,21 +570,11 @@ export const openAgentRunHistoryWindow = (
 export const openAgentImportWindow = () =>
   openOverlay({ overlayId: "agentImportWindow", data: {} });
 
-type AgentContentTabId =
-  | "messages"
-  | "system"
-  | "model"
-  | "variables"
-  | "tools"
-  | "context"
-  | "settings"
-  | "share";
-
 interface AgentContentWindowPayload {
   agentId?: string;
-  initialTab?: AgentContentTabId;
+  initialTab?: AgentContentTab;
   /** Optional ordered subset of tabs to display; null = all 8 in default order */
-  tabs?: AgentContentTabId[] | null;
+  tabs?: AgentContentTab[] | null;
   instanceId?: string;
 }
 
@@ -600,7 +591,7 @@ export const openAgentContentWindow = (options: AgentContentWindowPayload) =>
 
 interface AgentContentSidebarWindowPayload {
   agentId?: string;
-  initialTab?: AgentContentTabId;
+  initialTab?: AgentContentTab;
   instanceId?: string;
 }
 

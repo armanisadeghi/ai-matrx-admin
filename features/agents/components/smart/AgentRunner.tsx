@@ -58,7 +58,6 @@ export function AgentRunner({
 }: AgentRunnerProps) {
   const dispatch = useAppDispatch();
   const autoRunFiredRef = useRef(false);
-  console.log("[AgentRunner] conversationId", conversationId);
 
   const autoRun = useAppSelector(selectAutoRun(conversationId));
   const allowChat = useAppSelector(selectAllowChat(conversationId));

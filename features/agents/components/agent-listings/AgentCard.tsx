@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { RootState } from "@/lib/redux/store";
-import { useAppSelector } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 import { selectAgentById } from "@/features/agents/redux/agent-definition/selectors";
 import { ShareModal } from "@/features/sharing";
@@ -37,6 +37,10 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import {
+  openAgentContentWindow,
+  openOverlay,
+} from "@/lib/redux/slices/overlaySlice";
 
 interface AgentCardProps {
   id: string;
@@ -59,6 +63,7 @@ export function AgentCard({
   isNavigating,
   isAnyNavigating,
 }: AgentCardProps) {
+  const dispatch = useAppDispatch();
   const record = useAppSelector((state) => selectAgentById(state, id));
   const name = record?.name ?? "Untitled Agent";
   const description = record?.description ?? undefined;
@@ -128,7 +133,7 @@ export function AgentCard({
   const handleEditDetails = (e?: React.MouseEvent) => {
     e?.stopPropagation();
     setIsActionModalOpen(false);
-    setIsMetadataModalOpen(true);
+    dispatch(openAgentContentWindow({ agentId: id, initialTab: "overview" }));
   };
 
   const handleShareClickInline = (e: React.MouseEvent) => {

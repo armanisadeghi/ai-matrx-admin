@@ -3,7 +3,7 @@
 import { useCallback } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { recreateManualInstance } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
+import { startNewConversation } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
 import { PlusTapButton } from "@/components/icons/tap-buttons";
 import { selectAgentName } from "@/features/agents/redux/agent-definition/selectors";
 
@@ -35,7 +35,7 @@ export function AgentNewRunButton({
     router.replace(`${pathname}?${params.toString()}`);
 
     dispatch(
-      recreateManualInstance({
+      startNewConversation({
         currentConversationId: conversationId,
         surfaceKey,
       }),

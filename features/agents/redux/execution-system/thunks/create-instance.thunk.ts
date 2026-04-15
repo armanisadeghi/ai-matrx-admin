@@ -580,9 +580,6 @@ export const startNewConversation = createAsyncThunk<
   },
 );
 
-/** @deprecated Use startNewConversation */
-export const recreateManualInstance = startNewConversation;
-
 // =============================================================================
 // Start New Conversation and Execute (autoClearConversation path)
 // =============================================================================

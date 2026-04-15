@@ -77,7 +77,8 @@ export type SourceFeature =
   | "context-menu"
   | "prompt-app"
   | "research"
-  | "code-editor";
+  | "code-editor"
+  | "agent-content-window";
 
 export const SOURCE_APP = "matrx-admin" as const;
 

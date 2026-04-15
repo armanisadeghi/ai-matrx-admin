@@ -127,7 +127,8 @@ export function AgentToolsManager({ agentId }: AgentToolsManagerProps) {
   }, [externalTools, fetchedMetadata]);
 
   // The view is loading if we don't have any metadata and we're either waiting on Redux or waiting on a direct fetch
-  const isLoading = !metadata && (reduxToolsStatus === "loading" || isFetchingMetadata);
+  const isLoading =
+    !metadata && (reduxToolsStatus === "loading" || isFetchingMetadata);
 
   useEffect(() => {
     // Return early if externalTools is already available or if Redux is currently actively fetching it
@@ -1374,7 +1375,7 @@ function McpToolsTab({ agentId }: { agentId: string }) {
     selectAgentMcpServers(state, agentId),
   );
   const agentMcpServers = agentMcpServersRaw ?? [];
-  const [showCatalog, setShowCatalog] = useState(false);
+  const [showCatalog, setShowCatalog] = useState(true);
   const [search, setSearch] = useState("");
   const [expandedServer, setExpandedServer] = useState<string | null>(null);
   const [oauthFeedback, setOauthFeedback] = useState<{
@@ -2545,19 +2546,12 @@ function McpCatalogCard({
                 Official
               </Badge>
             )}
-            {isComingSoon ? (
+            {isComingSoon && (
               <Badge
                 variant="outline"
                 className="text-[9px] h-4 px-1.5 border bg-muted/40 text-muted-foreground"
               >
                 Coming Soon
-              </Badge>
-            ) : (
-              <Badge
-                variant="outline"
-                className={`text-[9px] h-4 px-1.5 border ${badge.cls}`}
-              >
-                {badge.label}
               </Badge>
             )}
             {isOnAgent && (
@@ -2588,35 +2582,53 @@ function McpCatalogCard({
           </div>
         </div>
 
-        <div className="flex flex-col items-end gap-1 shrink-0">
-          {!isOnAgent && !isUnavailable && (
-            <Button size="sm" className="h-6 text-[10px] px-2" onClick={onAdd}>
-              <Plus className="w-3 h-3 mr-0.5" />
-              Add
-            </Button>
-          )}
-          {needsAuth && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-6 text-[10px] px-2"
-              disabled={isConnecting}
-              onClick={onConnect}
-            >
-              <KeyRound className="w-3 h-3 mr-0.5" />
-              {isConnecting ? "..." : "Connect"}
-            </Button>
-          )}
-          {entry.connectionStatus === "connected" && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 text-[10px] px-2 text-muted-foreground hover:text-destructive"
-              onClick={onDisconnect}
-            >
-              Disconnect
-            </Button>
-          )}
+        <div className="flex items-center gap-1.5 shrink-0">
+          {/* Connection status badge — fixed width so all rows align */}
+          <div className="w-24 flex justify-end">
+            {isComingSoon ? null : isUnavailable ? null : (
+              <Badge
+                variant="outline"
+                className={`text-[9px] h-5 px-1.5 border whitespace-nowrap ${badge.cls}`}
+              >
+                {badge.label}
+              </Badge>
+            )}
+          </div>
+
+          {/* Connect / Disconnect button — fixed width */}
+          <div className="w-20 flex justify-end">
+            {needsAuth && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-6 text-[10px] px-2 w-full"
+                disabled={isConnecting}
+                onClick={onConnect}
+              >
+                <KeyRound className="w-3 h-3 mr-1" />
+                {isConnecting ? "..." : "Connect"}
+              </Button>
+            )}
+            {entry.connectionStatus === "connected" && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 text-[10px] px-2 w-full text-muted-foreground hover:text-destructive"
+                onClick={onDisconnect}
+              >
+                Disconnect
+              </Button>
+            )}
+          </div>
+
+          {/* Add button — fixed width */}
+          <div className="w-7 flex justify-end">
+            {!isOnAgent && !isUnavailable && (
+              <Button size="sm" className="h-6 w-6 p-0" onClick={onAdd}>
+                <Plus className="w-3 h-3" />
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     </div>

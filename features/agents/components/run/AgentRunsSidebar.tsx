@@ -23,7 +23,7 @@ import {
   selectAgentName,
 } from "@/features/agents/redux/agent-definition/selectors";
 import { selectLatestConversationId } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
-import { recreateManualInstance } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
+import { startNewConversation } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
 import { fetchAgentConversations } from "@/features/agents/redux/agent-conversations/agent-conversations.thunks";
 import { makeSelectAgentConversations } from "@/features/agents/redux/agent-conversations/agent-conversations.selectors";
 import type { AgentConversationListItem } from "@/features/agents/redux/agent-conversations/agent-conversations.types";
@@ -76,22 +76,6 @@ export function AgentRunsSidebar({
   const searchParams = useSearchParams();
   const [runs, setRuns] = useState<AgentRun[]>([]);
   const [isLoadingRuns, setIsLoadingRuns] = useState(true);
-
-  const handleNewRun = useCallback(() => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete("runId");
-    params.delete("conversationId");
-    router.replace(`${pathname}?${params.toString()}`);
-
-    dispatch(
-      recreateManualInstance({
-        currentConversationId: conversationId,
-        surfaceKey,
-      }),
-    )
-      .unwrap()
-      .catch((err) => console.error("Failed to create new run:", err));
-  }, [conversationId, surfaceKey, dispatch, pathname, router, searchParams]);
 
   const canonicalAgentId = useAppSelector((state) => {
     const agent = selectAgentById(state, agentId);

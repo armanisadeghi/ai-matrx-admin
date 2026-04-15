@@ -10,10 +10,7 @@ export interface AgentModelPanelProps {
 export function AgentModelPanel({ agentId }: AgentModelPanelProps) {
   return (
     <div className="flex flex-col h-full min-h-0">
-      <div className="shrink-0 border-b border-border px-3 py-2">
-        <AgentModelConfiguration agentId={agentId} />
-      </div>
-      <div className="flex-1 min-h-0 overflow-hidden">
+      <div className="flex-1 min-h-0 overflow-hidden px-4">
         <AgentSettingsCore agentId={agentId} />
       </div>
     </div>
