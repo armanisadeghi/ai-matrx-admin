@@ -47,7 +47,13 @@ import { useNavTree } from "@/features/agent-context/hooks/useNavTree";
 
 // ─── Lucide icon resolver ─────────────────────────────────────────────────────
 
-function DynamicIcon({ name, className }: { name: string; className?: string }) {
+function DynamicIcon({
+  name,
+  className,
+}: {
+  name: string;
+  className?: string;
+}) {
   const icons = LucideIcons as unknown as Record<
     string,
     React.ComponentType<{ className?: string }>
@@ -95,7 +101,9 @@ function SearchableList({
   }, []);
 
   const q = search.toLowerCase();
-  const filtered = q ? options.filter((o) => o.name.toLowerCase().includes(q)) : options;
+  const filtered = q
+    ? options.filter((o) => o.name.toLowerCase().includes(q))
+    : options;
   const filteredOrphans = q
     ? orphanOptions.filter((o) => o.name.toLowerCase().includes(q))
     : orphanOptions;
@@ -115,7 +123,10 @@ function SearchableList({
         />
         {search && (
           <button
-            onMouseDown={(e) => { e.preventDefault(); setSearch(""); }}
+            onMouseDown={(e) => {
+              e.preventDefault();
+              setSearch("");
+            }}
             className="text-muted-foreground hover:text-foreground"
           >
             <X className="h-2.5 w-2.5" />
@@ -126,7 +137,9 @@ function SearchableList({
       {/* List */}
       <div className="max-h-52 overflow-y-auto">
         {filtered.length === 0 && filteredOrphans.length === 0 && (
-          <div className="px-2 py-2 text-[11px] text-muted-foreground">{emptyText}</div>
+          <div className="px-2 py-2 text-[11px] text-muted-foreground">
+            {emptyText}
+          </div>
         )}
 
         {filtered.map((opt) => (
@@ -145,7 +158,9 @@ function SearchableList({
             )}
             <span className="flex-1 truncate">{opt.name}</span>
             {opt.status && (
-              <span className="text-[9px] text-muted-foreground/50">{opt.status}</span>
+              <span className="text-[9px] text-muted-foreground/50">
+                {opt.status}
+              </span>
             )}
           </DropdownMenuItem>
         ))}
@@ -223,11 +238,13 @@ function ContextRow({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         {/* ── exact original trigger button style ── */}
-        <button className="flex items-center gap-2.5 w-full px-2.5 py-1.5 rounded-md text-foreground/80 hover:bg-accent/50 hover:text-foreground transition-colors text-left group">
+        <button className="flex items-center gap-2 w-full px-1 py-1.5 rounded-md text-foreground/80 hover:bg-accent/50 hover:text-foreground transition-colors text-left group">
           <Icon
             className={cn(
               "h-3.5 w-3.5 flex-shrink-0 transition-colors",
-              selectedName ? accentClass : "text-muted-foreground group-hover:text-foreground",
+              selectedName
+                ? accentClass
+                : "text-muted-foreground group-hover:text-foreground",
             )}
           />
           <span
@@ -299,8 +316,12 @@ export function DirectContextSelection() {
   const allScopes = useAppSelector(selectAllScopes);
 
   // ── Scope-filtered project IDs ─────────────────────────────────────────────
-  const [scopeFilteredIds, setScopeFilteredIds] = useState<Set<string> | null>(null);
-  const activeScopeIds = Object.values(scopeSelections).filter(Boolean) as string[];
+  const [scopeFilteredIds, setScopeFilteredIds] = useState<Set<string> | null>(
+    null,
+  );
+  const activeScopeIds = Object.values(scopeSelections).filter(
+    Boolean,
+  ) as string[];
   const activeScopeKey = [...activeScopeIds].sort().join(",");
   const lastScopeKey = useRef("");
 
@@ -319,13 +340,18 @@ export function DirectContextSelection() {
       }),
     )
       .unwrap()
-      .then((entities) => setScopeFilteredIds(new Set(entities.map((e) => e.entity_id))))
+      .then((entities) =>
+        setScopeFilteredIds(new Set(entities.map((e) => e.entity_id))),
+      )
       .catch(() => setScopeFilteredIds(null));
   }, [dispatch, activeScopeKey]);
 
   // ── Scope types to render (all types; filtered to org when one is selected) ─
   const visibleScopeTypes = useMemo(
-    () => (orgId ? allScopeTypes.filter((t) => t.organization_id === orgId) : allScopeTypes),
+    () =>
+      orgId
+        ? allScopeTypes.filter((t) => t.organization_id === orgId)
+        : allScopeTypes,
     [allScopeTypes, orgId],
   );
 
@@ -345,7 +371,9 @@ export function DirectContextSelection() {
       : orgFiltered;
     const orphans =
       scopeFilteredIds && orgFiltered.length > 0
-        ? orgFiltered.filter((p) => !scopeFilteredIds.has(p.id)).map((p) => ({ id: p.id, name: p.name }))
+        ? orgFiltered
+            .filter((p) => !scopeFilteredIds.has(p.id))
+            .map((p) => ({ id: p.id, name: p.name }))
         : [];
     return {
       projectOptions: scopeFiltered.map((p) => ({ id: p.id, name: p.name })),
@@ -354,18 +382,26 @@ export function DirectContextSelection() {
   }, [allProjects, orgId, scopeFilteredIds]);
 
   const { taskOptions, orphanTaskOptions } = useMemo(() => {
-    const base = (orgId ? allTasks.filter((t) => t.organization_id === orgId) : allTasks).filter(
-      (t) => t.status !== "completed",
-    );
+    const base = (
+      orgId ? allTasks.filter((t) => t.organization_id === orgId) : allTasks
+    ).filter((t) => t.status !== "completed");
     if (projectId) {
       return {
-        taskOptions: base.filter((t) => t.project_id === projectId).map((t) => ({ id: t.id, name: t.title, status: t.status })),
-        orphanTaskOptions: base.filter((t) => t.project_id === null).map((t) => ({ id: t.id, name: t.title, status: t.status })),
+        taskOptions: base
+          .filter((t) => t.project_id === projectId)
+          .map((t) => ({ id: t.id, name: t.title, status: t.status })),
+        orphanTaskOptions: base
+          .filter((t) => t.project_id === null)
+          .map((t) => ({ id: t.id, name: t.title, status: t.status })),
       };
     }
     return {
-      taskOptions: base.filter((t) => t.project_id !== null).map((t) => ({ id: t.id, name: t.title, status: t.status })),
-      orphanTaskOptions: base.filter((t) => t.project_id === null).map((t) => ({ id: t.id, name: t.title, status: t.status })),
+      taskOptions: base
+        .filter((t) => t.project_id !== null)
+        .map((t) => ({ id: t.id, name: t.title, status: t.status })),
+      orphanTaskOptions: base
+        .filter((t) => t.project_id === null)
+        .map((t) => ({ id: t.id, name: t.title, status: t.status })),
     };
   }, [allTasks, orgId, projectId]);
 
@@ -403,13 +439,13 @@ export function DirectContextSelection() {
     dispatch(clearContext());
   };
 
-  const hasAnyContext = !!orgId || !!projectId || !!taskId || activeScopeIds.length > 0;
+  const hasAnyContext =
+    !!orgId || !!projectId || !!taskId || activeScopeIds.length > 0;
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
     <div className="px-1.5 py-1 border-b border-border">
-
       {/* ── SCOPE ROWS — first-class, always visible ── */}
       {isLoading && visibleScopeTypes.length === 0 && (
         // Skeleton while loading
@@ -422,6 +458,18 @@ export function DirectContextSelection() {
           ))}
         </>
       )}
+
+      {/* ── ORGANIZATION ── */}
+      <ContextRow
+        icon={Building}
+        label="Organization"
+        selectedName={orgName}
+        selectedId={orgId}
+        accentClass="text-violet-500"
+        options={orgOptions}
+        onSelect={handleSelectOrg}
+        emptyText="No organizations found"
+      />
 
       {visibleScopeTypes.map((scopeType) => {
         const selectedScopeId = scopeSelections[scopeType.id] ?? null;
@@ -452,18 +500,6 @@ export function DirectContextSelection() {
         <div className="mx-2.5 my-0.5 border-t border-border/40" />
       )}
 
-      {/* ── ORGANIZATION ── */}
-      <ContextRow
-        icon={Building}
-        label="Organization"
-        selectedName={orgName}
-        selectedId={orgId}
-        accentClass="text-violet-500"
-        options={orgOptions}
-        onSelect={handleSelectOrg}
-        emptyText="No organizations found"
-      />
-
       {/* ── PROJECT ── */}
       <ContextRow
         icon={FolderKanban}
@@ -478,8 +514,8 @@ export function DirectContextSelection() {
           activeScopeIds.length > 0
             ? "No projects match selected scopes"
             : orgId
-            ? "No projects in this organization"
-            : "Search all projects"
+              ? "No projects in this organization"
+              : "Search all projects"
         }
       />
 
@@ -493,7 +529,9 @@ export function DirectContextSelection() {
         options={taskOptions}
         orphanOptions={orphanTaskOptions}
         onSelect={handleSelectTask}
-        emptyText={projectId ? "No open tasks in this project" : "Search tasks by name"}
+        emptyText={
+          projectId ? "No open tasks in this project" : "Search tasks by name"
+        }
       />
 
       {/* Clear all — only when something is set */}
