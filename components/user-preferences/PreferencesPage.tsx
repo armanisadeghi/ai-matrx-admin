@@ -21,6 +21,7 @@ import {
   Cpu,
   Zap,
   AlertCircle,
+  BrainCircuit,
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -51,6 +52,7 @@ import FlashcardPreferences from "./FlashcardPreferences";
 import PlaygroundPreferences from "./PlaygroundPreferences";
 import AiModelsPreferences from "./AiModelsPreferences";
 import MessagingPreferences from "./MessagingPreferences";
+import AgentContextPreferences from "./AgentContextPreferences";
 
 export type PreferenceTab =
   | "display"
@@ -67,7 +69,8 @@ export type PreferenceTab =
   | "coding"
   | "flashcard"
   | "playground"
-  | "aiModels";
+  | "aiModels"
+  | "agentContext";
 
 const validTabs: PreferenceTab[] = [
   "display",
@@ -85,6 +88,7 @@ const validTabs: PreferenceTab[] = [
   "flashcard",
   "playground",
   "aiModels",
+  "agentContext",
 ];
 
 const tabCategories: {
@@ -183,6 +187,12 @@ const tabCategories: {
     icon: <Gamepad2 className="h-3.5 w-3.5" />,
     description: "Playground defaults",
   },
+  {
+    value: "agentContext",
+    label: "Agent Context",
+    icon: <BrainCircuit className="h-3.5 w-3.5" />,
+    description: "Default context auto-selection",
+  },
 ];
 
 const tabContent: Record<PreferenceTab, React.ReactNode> = {
@@ -201,6 +211,7 @@ const tabContent: Record<PreferenceTab, React.ReactNode> = {
   playground: <PlaygroundPreferences />,
   aiModels: <AiModelsPreferences />,
   messaging: <MessagingPreferences />,
+  agentContext: <AgentContextPreferences />,
 };
 
 const PreferencesPage = () => {

@@ -32,10 +32,13 @@ const SidebarAgentHeader = dynamic(
   { ssr: false, loading: () => <div className="h-9 border-b border-border" /> },
 );
 
-const SidebarActions = dynamic(() => import("./sidebar/SidebarActions"), {
-  ssr: false,
-  loading: () => <div className="h-[120px] border-b border-border" />,
-});
+const SidebarActions = dynamic(
+  () => import("../../shell/components/sidebar/DirectContextSelection"),
+  {
+    ssr: false,
+    loading: () => <div className="h-[120px] border-b border-border" />,
+  },
+);
 
 const SidebarAgents = dynamic(() => import("./sidebar/SidebarAgents"), {
   ssr: false,

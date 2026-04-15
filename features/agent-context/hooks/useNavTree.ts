@@ -61,3 +61,23 @@ export function useNavOrganizations() {
   const { orgs, isLoading, isError } = useNavTree();
   return { orgs, isLoading, isError };
 }
+
+/**
+ * Ensure the full hierarchy (orgs, projects, tasks, scopes) is loaded in Redux.
+ *
+ * This is the canonical "ensure loaded" hook for all agent-context data.
+ * It is idempotent and safe to call from any number of components on the same page —
+ * only one network request will ever fire per session. Call it at the top of any
+ * component that reads from hierarchySlice, projectsSlice, tasksSlice, or scopeSlices.
+ *
+ * Returns { isLoading, isSuccess, isError } so callers can show skeletons while
+ * the initial fetch is in flight.
+ *
+ * Because DeferredSingletons also dispatches fetchFullContext() on every authenticated
+ * page load, most of the time this hook finds data already present and returns
+ * isSuccess: true immediately with zero network cost.
+ */
+export function useEnsureHierarchyLoaded() {
+  const { isLoading, isSuccess, isError, error } = useNavTree();
+  return { isLoading, isSuccess, isError, error };
+}

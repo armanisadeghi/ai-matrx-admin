@@ -25,6 +25,7 @@ import {
   Gamepad2,
   Cpu,
   Zap,
+  BrainCircuit,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -110,6 +111,11 @@ const settingsNavItems: SettingsNavItem[] = [
         title: "Playground",
         param: "playground",
         icon: <Gamepad2 className="h-3 w-3" />,
+      },
+      {
+        title: "Agent Context",
+        param: "agentContext",
+        icon: <BrainCircuit className="h-3 w-3" />,
       },
     ],
   },

@@ -23,6 +23,7 @@ import {
   Save,
   RotateCcw,
   Check,
+  BrainCircuit,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -79,6 +80,9 @@ const AiModelsPreferences = lazy(
 );
 const MessagingPreferences = lazy(
   () => import("@/components/user-preferences/MessagingPreferences"),
+);
+const AgentContextPreferences = lazy(
+  () => import("@/components/user-preferences/AgentContextPreferences"),
 );
 
 interface CategoryDef {
@@ -179,6 +183,12 @@ const categories: CategoryDef[] = [
     icon: Gamepad2,
     description: "Playground defaults",
   },
+  {
+    value: "agentContext",
+    label: "Agent Context",
+    icon: BrainCircuit,
+    description: "Default context auto-selection",
+  },
 ];
 
 const tabComponents: Record<
@@ -200,6 +210,7 @@ const tabComponents: Record<
   playground: PlaygroundPreferences,
   aiModels: AiModelsPreferences,
   messaging: MessagingPreferences,
+  agentContext: AgentContextPreferences,
 };
 
 function LoadingFallback() {

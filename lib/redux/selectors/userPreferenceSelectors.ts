@@ -17,6 +17,7 @@ import type {
   FlashcardPreferences,
   AiModelsPreferences,
   SystemPreferences,
+  AgentContextPreferences,
 } from "@/lib/redux/slices/userPreferencesSlice";
 
 // Base selector
@@ -97,6 +98,11 @@ export const selectAiModelsPreferences = createSelector(
 export const selectSystemPreferences = createSelector(
   selectUserPreferences,
   (state): SystemPreferences => state.system,
+);
+
+export const selectDefaultContextPreferences = createSelector(
+  selectUserPreferences,
+  (state): AgentContextPreferences => state.agentContext,
 );
 
 // Meta selectors for async state management

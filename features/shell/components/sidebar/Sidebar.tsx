@@ -5,11 +5,13 @@
 import NavItem from "./NavItem";
 import ShellIcon from "../ShellIcon";
 import SidebarContextSelector from "./SidebarContextSelector";
+import SidebarRouteExtras from "./SidebarRouteExtras";
 import SidebarNotesToggle from "@/features/notes/actions/SidebarNotesToggle";
 import SidebarVoicePadToggle from "../controls/SidebarVoicePadToggle";
 import SidebarAdminIndicatorToggle from "../controls/SidebarAdminIndicatorToggle";
 import SidebarEnvToggle from "../controls/SidebarEnvToggle";
 import SidebarWindowToggle from "@/features/window-panels/SidebarWindowToggle";
+import DirectContextSelection from "./DirectContextSelection";
 import {
   primaryNavItems,
   settingsItem,
@@ -43,7 +45,11 @@ export default function Sidebar({ pathname }: SidebarProps) {
 
       {/* Navigation — Self-scrolling container */}
       <nav className="shell-sidebar-nav" aria-label="Main navigation">
-        <SidebarContextSelector />
+        {/* <SidebarContextSelector /> */}
+        <DirectContextSelection />
+
+        {/* Route-specific extras — client island, updates on every navigation */}
+        <SidebarRouteExtras />
 
         {primaryNavItems.map((item) => (
           <NavItem key={item.href} item={item} isActive={isActive(item)} />

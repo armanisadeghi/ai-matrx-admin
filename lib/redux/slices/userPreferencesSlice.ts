@@ -159,6 +159,23 @@ export interface MessagingPreferences {
   showDesktopNotifications: boolean; // Browser notifications
 }
 
+// How deep the auto-applied default context should go.
+// "none"    — no context applied automatically
+// "org"     — auto-select a specific organization
+// "scope"   — auto-select org + one or more scope entries (map of scopeTypeId → scopeId)
+// "project" — auto-select org + project
+// "task"    — auto-select org + project + task
+export type DefaultContextLevel = "none" | "org" | "scope" | "project" | "task";
+
+export interface AgentContextPreferences {
+  level: DefaultContextLevel;
+  organizationId: string | null;
+  /** scopeTypeId → scopeId pairs to auto-select */
+  scopeSelections: Record<string, string>;
+  projectId: string | null;
+  taskId: string | null;
+}
+
 export type ThinkingMode = "none" | "simple" | "deep";
 
 export interface PromptsPreferences {
@@ -189,6 +206,7 @@ export interface UserPreferences {
   aiModels: AiModelsPreferences;
   system: SystemPreferences;
   messaging: MessagingPreferences;
+  agentContext: AgentContextPreferences;
 }
 
 // Add state interface for async operations
@@ -339,6 +357,13 @@ export const initializeUserPreferencesState = (
       notificationVolume: 50,
       showDesktopNotifications: false,
     },
+    agentContext: {
+      level: "none",
+      organizationId: null,
+      scopeSelections: {},
+      projectId: null,
+      taskId: null,
+    },
   };
 
   // Merge with defaults to ensure all properties exist
@@ -374,6 +399,10 @@ export const initializeUserPreferencesState = (
     aiModels: { ...defaultPreferences.aiModels, ...preferences.aiModels },
     system: { ...defaultPreferences.system, ...preferences.system },
     messaging: { ...defaultPreferences.messaging, ...preferences.messaging },
+    agentContext: {
+      ...defaultPreferences.agentContext,
+      ...preferences.agentContext,
+    },
   };
 
   // If setAsLoaded is true, store the merged preferences as the loaded state
@@ -456,6 +485,7 @@ const userPreferencesSlice = createSlice({
         state.aiModels = { ...state._meta.loadedPreferences.aiModels };
         state.system = { ...state._meta.loadedPreferences.system };
         state.messaging = { ...state._meta.loadedPreferences.messaging };
+        state.agentContext = { ...state._meta.loadedPreferences.agentContext };
         state._meta.hasUnsavedChanges = false;
         state._meta.error = null;
       }
@@ -535,6 +565,15 @@ const userPreferencesSlice = createSlice({
         state.aiModels = { ...loadedPrefs.aiModels };
         state.system = { ...loadedPrefs.system };
         state.messaging = { ...loadedPrefs.messaging };
+        state.agentContext = {
+          ...(loadedPrefs.agentContext ?? {
+            level: "none",
+            organizationId: null,
+            scopeSelections: {},
+            projectId: null,
+            taskId: null,
+          }),
+        };
         state._meta.loadedPreferences = { ...loadedPrefs };
         state._meta.hasUnsavedChanges = false;
       })

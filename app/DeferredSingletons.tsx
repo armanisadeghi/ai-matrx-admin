@@ -12,6 +12,7 @@ import { useAppDispatch } from "@/lib/redux/hooks";
 import { brokerActions } from "@/lib/redux/brokerSlice";
 import { identifyUser } from "@/providers/PostHogProvider";
 import { loadPreferences } from "@/lib/redux/middleware/preferencesMiddleware";
+import { fetchFullContext } from "@/features/agent-context/redux/hierarchyThunks";
 
 const SYSTEM_BROKERS = [
   {
@@ -84,6 +85,17 @@ export default function DeferredSingletons() {
 
   useIdleTask("load-preferences", 2, () => {
     dispatch(loadPreferences());
+  });
+
+  // Pre-warm the full hierarchy (orgs, projects, tasks, scopes) once per session.
+  // fetchFullContext() is idempotent — it skips the network call if data is already
+  // loading or loaded. Any component that calls useNavTree() is safe to mount anywhere
+  // in the app without worrying about triggering a duplicate fetch.
+  useIdleTask("fetch-full-context", 1, () => {
+    if (user?.id) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      dispatch(fetchFullContext() as any);
+    }
   });
 
   useIdleTask("posthog-identify", 3, () => {
