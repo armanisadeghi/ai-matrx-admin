@@ -34,7 +34,7 @@ const SidebarAgentHeader = dynamic(
 
 const SidebarActions = dynamic(() => import("./sidebar/SidebarActions"), {
   ssr: false,
-  loading: () => <div className="h-[168px] border-b border-border" />,
+  loading: () => <div className="h-[120px] border-b border-border" />,
 });
 
 const SidebarAgents = dynamic(() => import("./sidebar/SidebarAgents"), {
