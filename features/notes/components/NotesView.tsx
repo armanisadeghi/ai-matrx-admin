@@ -6,7 +6,7 @@
 // Can be used as full page, floating window, or single-note embed.
 // ZERO PROP DRILLING — each child receives only an instanceId or noteId.
 
-import React, { useEffect, useRef, useCallback, useState } from "react";
+import React, { useEffect, useRef, useCallback, useState, useMemo } from "react";
 import dynamic from "next/dynamic";
 import {
   FileText,
@@ -16,6 +16,7 @@ import {
   Eye,
   History,
 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/slices/userSlice";
@@ -90,8 +91,18 @@ export function NotesView({ config, className }: NotesViewProps) {
   const showTabs = config?.showTabs ?? true;
   const [showHistory, setShowHistory] = useState(false);
   const singleNote = config?.singleNote ?? null;
-  const initialTabs = config?.initialTabs;
-  const initialActiveTab = config?.initialActiveTab;
+
+  // ── URL param hydration: read ?tabs= and ?active= on mount ────────
+  const searchParams = useSearchParams();
+  const urlTabs = useMemo(
+    () => searchParams.get("tabs")?.split(",").filter(Boolean) ?? [],
+    [searchParams],
+  );
+  const urlActive = searchParams.get("active");
+
+  // Config props win over URL params
+  const initialTabs = config?.initialTabs ?? (urlTabs.length > 0 ? urlTabs : undefined);
+  const initialActiveTab = config?.initialActiveTab ?? urlActive;
 
   // ── Generate or use provided instance ID ──────────────────────────
   const instanceIdRef = useRef(
@@ -108,7 +119,7 @@ export function NotesView({ config, className }: NotesViewProps) {
     };
   }, [dispatch, instanceId]);
 
-  // ── Restore tabs from DB session (initialTabs wins over URL params) ─
+  // ── Restore tabs from config props, URL params, or DB session ──────
   const restoredFromDbRef = useRef(false);
   useEffect(() => {
     if (restoredFromDbRef.current) return;
