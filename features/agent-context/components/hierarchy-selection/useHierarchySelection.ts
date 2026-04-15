@@ -5,11 +5,8 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { useNavTree } from "@/features/agent-context/hooks/useNavTree";
 import { useProjectTasks } from "@/features/agent-context/hooks/useHierarchy";
 import {
-  fetchScopeTypes,
-  fetchScopes,
-  EMPTY_SCOPE_PICKER_OPTIONS,
   selectScopePickerOptions,
-  selectScopeTypesLoading,
+  EMPTY_SCOPE_PICKER_OPTIONS,
 } from "@/features/agent-context/redux/scope";
 import { fetchEntitiesByScopes } from "@/features/agent-context/redux/scope/scopeAssignmentsSlice";
 import type {
@@ -45,8 +42,6 @@ function enforceHierarchyLevels(requested: HierarchyLevel[]): HierarchyLevel[] {
   const hasTask = requested.includes("task");
   const hasScope = requested.includes("scope");
 
-  // If org is present AND anything below scope (project or task) is present,
-  // scope MUST be included. Insert it between org and project if missing.
   if (hasOrg && (hasProject || hasTask) && !hasScope) {
     if (process.env.NODE_ENV === "development") {
       console.error(
@@ -56,7 +51,6 @@ function enforceHierarchyLevels(requested: HierarchyLevel[]): HierarchyLevel[] {
           "Scope has been automatically inserted. Please fix the levels prop at the callsite.",
       );
     }
-    // Insert scope in the correct position: after org, before project
     const corrected: HierarchyLevel[] = [];
     for (const lvl of requested) {
       corrected.push(lvl);
@@ -96,6 +90,9 @@ export function useHierarchySelection(
 
   const levels = enforceHierarchyLevels(requestedLevels);
   const dispatch = useAppDispatch();
+
+  // All data comes from a single Redux store populated by get_user_full_context.
+  // No secondary per-org fetches needed.
   const {
     orgs: rawOrgs,
     flatProjects,
@@ -119,21 +116,13 @@ export function useHierarchySelection(
   const selectedOrgId = selection.organizationId;
   const scopeSelections = selection.scopeSelections ?? {};
 
-  const hasFetchedScopes = useRef<string | null>(null);
-  useEffect(() => {
-    if (!includesScopes || !selectedOrgId) return;
-    if (hasFetchedScopes.current === selectedOrgId) return;
-    hasFetchedScopes.current = selectedOrgId;
-    dispatch(fetchScopeTypes(selectedOrgId));
-    dispatch(fetchScopes({ org_id: selectedOrgId }));
-  }, [dispatch, includesScopes, selectedOrgId]);
-
+  // Scope types and values are already in Redux — hydrated from the full context
+  // response by the thunk. No per-org secondary fetches required.
   const pickerOptions = useAppSelector((state) =>
     selectedOrgId && includesScopes
       ? selectScopePickerOptions(state, selectedOrgId)
       : EMPTY_SCOPE_PICKER_OPTIONS,
   );
-  const scopeTypesLoading = useAppSelector(selectScopeTypesLoading);
 
   const scopeLevels: ScopeTypeLevel[] = pickerOptions.map((group) => ({
     typeId: group.type_id,
@@ -148,6 +137,8 @@ export function useHierarchySelection(
     })),
   }));
 
+  // When scope selections change, fetch the project IDs that match those scopes.
+  // This is a targeted lookup (not a full refetch) and is still needed.
   const activeScopeIds = Object.values(scopeSelections).filter(
     Boolean,
   ) as string[];
@@ -277,7 +268,7 @@ export function useHierarchySelection(
     projects,
     tasks,
     scopeLevels,
-    isLoading: isLoading || (includesScopes && scopeTypesLoading),
+    isLoading,
     isError,
     selection,
     setOrg,

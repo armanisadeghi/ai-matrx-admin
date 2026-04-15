@@ -24,12 +24,11 @@ function seedToInsertPayload(
     is_favorite: seed.isFavorite ?? false,
     agent_type: seed.agentType ?? "user",
     model_id: seed.modelId ?? null,
-    messages:
-      (seed.messages as unknown as AgentInsert["messages"]) ?? null,
+    messages: (seed.messages as unknown as AgentInsert["messages"]) ?? null,
     variable_definitions:
-      (seed.variableDefinitions as unknown as AgentInsert["variable_definitions"]) ?? null,
-    settings:
-      (seed.settings as unknown as AgentInsert["settings"]) ?? null,
+      (seed.variableDefinitions as unknown as AgentInsert["variable_definitions"]) ??
+      null,
+    settings: (seed.settings as unknown as AgentInsert["settings"]) ?? null,
     tools: seed.tools ?? [],
     context_slots:
       (seed.contextSlots as unknown as AgentInsert["context_slots"]) ?? null,
@@ -45,15 +44,25 @@ function seedToInsertPayload(
 
 /**
  * Creates an agent from a seed (template constant) and redirects to the builder.
- * Runs entirely on the server — the DB INSERT sets user_id via RLS default.
+ * Explicitly sets user_id to satisfy RLS INSERT policy.
  */
 export async function createAgentFromSeed(
   seed: Omit<Partial<AgentDefinition>, "id">,
 ) {
   const supabase = await createClient();
+
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    redirect("/login");
+  }
+
   const { data, error } = await supabase
     .from("agx_agent")
-    .insert(seedToInsertPayload(seed))
+    .insert({ ...seedToInsertPayload(seed), user_id: user.id })
     .select("id")
     .single();
 

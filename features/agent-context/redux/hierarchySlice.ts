@@ -2,24 +2,54 @@
 
 // features/context/redux/hierarchySlice.ts
 //
-// Stores the user's org/project/task tree fetched from Supabase RPCs.
-// Workspaces have been removed from the schema.
-//
-// Two RPCs:
-//   get_user_nav_tree        — lightweight, no tasks  → always loaded on app boot
-//   get_user_full_context    — includes open tasks     → loaded on demand
+// Single source of truth for the user's org/project/task/scope tree.
+// One RPC — get_user_full_context — fetches everything in a single call.
+// The full context response is fanned out to scopeTypesSlice and scopesSlice
+// so they stay consistent without separate fetches.
 
 import { createSlice, createSelector, PayloadAction } from "@reduxjs/toolkit";
 
 // ─── RPC response types ────────────────────────────────────────────────────
 
-export interface NavProject {
+/** Scope type as returned inside the full context response */
+export interface FullContextScopeType {
   id: string;
-  name: string;
-  slug: string | null;
-  is_personal: boolean;
+  label_singular: string;
+  label_plural: string;
+  icon: string;
+  color: string;
+  sort_order: number;
+  parent_type_id: string | null;
+  max_assignments_per_entity: number | null;
+  description: string;
+  default_variable_keys: string[];
+  created_at: string;
+  updated_at: string;
 }
 
+/** Scope (value) as returned inside the full context response */
+export interface FullContextScope {
+  id: string;
+  scope_type_id: string;
+  name: string;
+  type_label: string;
+  parent_scope_id: string | null;
+  description: string;
+  settings: Record<string, unknown>;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Scope tag attached to a project (denormalized for display) */
+export interface ProjectScopeTag {
+  type_label: string;
+  scope_name: string;
+  scope_id: string;
+  type_id: string;
+}
+
+/** Task as returned from full context */
 export interface NavTask {
   id: string;
   title: string;
@@ -29,61 +59,63 @@ export interface NavTask {
   assignee_id: string | null;
 }
 
-export interface NavProjectWithTasks extends NavProject {
+/** Project from full context — includes scope_tags */
+export interface NavProject {
+  id: string;
+  name: string;
+  slug: string | null;
+  is_personal: boolean;
   open_task_count: number;
   open_tasks: NavTask[];
+  scope_tags: ProjectScopeTag[];
 }
 
+/** Organization from full context — includes scope_types and scopes */
 export interface NavOrganization {
   id: string;
   name: string;
   slug: string;
   is_personal: boolean;
   role: string;
+  scope_types: FullContextScopeType[];
+  scopes: FullContextScope[];
   projects: NavProject[];
 }
 
-export interface NavOrganizationWithTasks {
-  id: string;
-  name: string;
-  slug: string;
-  is_personal: boolean;
-  role: string;
-  projects: NavProjectWithTasks[];
-}
-
-export interface NavTreeResponse {
+/** Shape of get_user_full_context response */
+export interface FullContextResponse {
   organizations: NavOrganization[];
 }
 
-export interface FullContextResponse {
-  organizations: NavOrganizationWithTasks[];
-}
+// Keep NavTreeResponse as an alias so nothing that imports it breaks
+/** @deprecated Use FullContextResponse — navTree is now always the full context */
+export type NavTreeResponse = FullContextResponse;
+
+// Convenience re-export for consumers that still reference task types
+export type { NavTask as NavTaskItem };
 
 // ─── Slice state ───────────────────────────────────────────────────────────
 
 type FetchStatus = "idle" | "loading" | "success" | "error";
 
 export interface HierarchyState {
-  /** Lightweight nav tree (no tasks) */
-  navTree: NavTreeResponse | null;
-  navTreeStatus: FetchStatus;
-  navTreeError: string | null;
-
-  /** Full context including open tasks */
+  /** Full context — the single data source for orgs, projects, tasks, scopes */
   fullContext: FullContextResponse | null;
   fullContextStatus: FetchStatus;
   fullContextError: string | null;
+
+  /** @deprecated — kept for backwards compat; mirrors fullContextStatus */
+  navTreeStatus: FetchStatus;
+  navTreeError: string | null;
 }
 
 const initialState: HierarchyState = {
-  navTree: null,
-  navTreeStatus: "idle",
-  navTreeError: null,
-
   fullContext: null,
   fullContextStatus: "idle",
   fullContextError: null,
+
+  navTreeStatus: "idle",
+  navTreeError: null,
 };
 
 // ─── Slice ─────────────────────────────────────────────────────────────────
@@ -92,23 +124,11 @@ const hierarchySlice = createSlice({
   name: "hierarchy",
   initialState,
   reducers: {
-    navTreeFetchStarted(state) {
-      state.navTreeStatus = "loading";
-      state.navTreeError = null;
-    },
-    navTreeFetchSucceeded(state, action: PayloadAction<NavTreeResponse>) {
-      state.navTree = action.payload;
-      state.navTreeStatus = "success";
-      state.navTreeError = null;
-    },
-    navTreeFetchFailed(state, action: PayloadAction<string>) {
-      state.navTreeStatus = "error";
-      state.navTreeError = action.payload;
-    },
-
     fullContextFetchStarted(state) {
       state.fullContextStatus = "loading";
       state.fullContextError = null;
+      state.navTreeStatus = "loading";
+      state.navTreeError = null;
     },
     fullContextFetchSucceeded(
       state,
@@ -117,53 +137,71 @@ const hierarchySlice = createSlice({
       state.fullContext = action.payload;
       state.fullContextStatus = "success";
       state.fullContextError = null;
+      state.navTreeStatus = "success";
+      state.navTreeError = null;
     },
     fullContextFetchFailed(state, action: PayloadAction<string>) {
       state.fullContextStatus = "error";
       state.fullContextError = action.payload;
+      state.navTreeStatus = "error";
+      state.navTreeError = action.payload;
     },
 
-    /** Force a re-fetch on next request (e.g. after creating/deleting entities) */
-    invalidateNavTree(state) {
-      state.navTreeStatus = "idle";
-      state.navTree = null;
+    /** @deprecated — no-op, kept so old dispatch calls don't crash */
+    navTreeFetchStarted(state) {
+      state.navTreeStatus = "loading";
+      state.navTreeError = null;
+      state.fullContextStatus = "loading";
     },
+    /** @deprecated — no-op, kept so old dispatch calls don't crash */
+    navTreeFetchSucceeded(state, action: PayloadAction<FullContextResponse>) {
+      state.fullContext = action.payload;
+      state.fullContextStatus = "success";
+      state.navTreeStatus = "success";
+    },
+    /** @deprecated — no-op, kept so old dispatch calls don't crash */
+    navTreeFetchFailed(state, action: PayloadAction<string>) {
+      state.navTreeStatus = "error";
+      state.navTreeError = action.payload;
+    },
+
     invalidateFullContext(state) {
       state.fullContextStatus = "idle";
       state.fullContext = null;
-    },
-    invalidateAll(state) {
       state.navTreeStatus = "idle";
-      state.navTree = null;
+    },
+    /** @deprecated — alias for invalidateFullContext */
+    invalidateNavTree(state) {
       state.fullContextStatus = "idle";
       state.fullContext = null;
+      state.navTreeStatus = "idle";
+    },
+    /** @deprecated — alias for invalidateFullContext */
+    invalidateAll(state) {
+      state.fullContextStatus = "idle";
+      state.fullContext = null;
+      state.navTreeStatus = "idle";
     },
   },
 });
 
 export const {
-  navTreeFetchStarted,
-  navTreeFetchSucceeded,
-  navTreeFetchFailed,
   fullContextFetchStarted,
   fullContextFetchSucceeded,
   fullContextFetchFailed,
-  invalidateNavTree,
+  navTreeFetchStarted,
+  navTreeFetchSucceeded,
+  navTreeFetchFailed,
   invalidateFullContext,
+  invalidateNavTree,
   invalidateAll,
 } = hierarchySlice.actions;
 
 export default hierarchySlice.reducer;
 
-// ─── Selectors ──────────────────────────────────────────────────────────────
+// ─── Selectors ─────────────────────────────────────────────────────────────
 
 type StateWithHierarchy = { hierarchy: HierarchyState };
-
-export const selectNavTree = (s: StateWithHierarchy) => s.hierarchy.navTree;
-export const selectNavTreeStatus = (s: StateWithHierarchy) =>
-  s.hierarchy.navTreeStatus;
-export const selectNavTreeError = (s: StateWithHierarchy) =>
-  s.hierarchy.navTreeError;
 
 export const selectFullContext = (s: StateWithHierarchy) =>
   s.hierarchy.fullContext;
@@ -172,23 +210,28 @@ export const selectFullContextStatus = (s: StateWithHierarchy) =>
 export const selectFullContextError = (s: StateWithHierarchy) =>
   s.hierarchy.fullContextError;
 
-/** All organizations from the nav tree (no tasks). */
-export const selectNavOrganizations = (s: StateWithHierarchy) =>
-  s.hierarchy.navTree?.organizations;
+/** @deprecated — use selectFullContext */
+export const selectNavTree = selectFullContext;
+export const selectNavTreeStatus = (s: StateWithHierarchy) =>
+  s.hierarchy.navTreeStatus;
+export const selectNavTreeError = (s: StateWithHierarchy) =>
+  s.hierarchy.navTreeError;
 
-/** All organizations from full context (with tasks). */
-export const selectFullContextOrganizations = (s: StateWithHierarchy) =>
+/** All organizations (with scopes + projects + tasks) */
+export const selectNavOrganizations = (s: StateWithHierarchy) =>
   s.hierarchy.fullContext?.organizations;
 
-// ─── Flat-list helpers ────────────────────────────────────────────────────
+/** @deprecated alias */
+export const selectFullContextOrganizations = selectNavOrganizations;
 
-const EMPTY_PROJECTS: (NavProject & { org_id: string })[] = [];
+// ─── Flat-list helpers ─────────────────────────────────────────────────────
 
-/** Extract all projects across all orgs as a flat list. */
-function flattenProjects(
-  orgs: NavOrganization[],
-): (NavProject & { org_id: string })[] {
-  const result: (NavProject & { org_id: string })[] = [];
+export type FlatProject = NavProject & { org_id: string };
+
+const EMPTY_PROJECTS: FlatProject[] = [];
+
+function flattenProjects(orgs: NavOrganization[]): FlatProject[] {
+  const result: FlatProject[] = [];
   for (const org of orgs) {
     for (const p of org.projects) {
       result.push({ ...p, org_id: org.id });
@@ -197,7 +240,7 @@ function flattenProjects(
   return result;
 }
 
-/** Flat list of all projects across all orgs. Memoized. */
+/** Flat list of all projects across all orgs, including scope_tags. Memoized. */
 export const selectFlatProjects = createSelector(
   [selectNavOrganizations],
   (orgs) => (orgs ? flattenProjects(orgs) : EMPTY_PROJECTS),
@@ -206,7 +249,38 @@ export const selectFlatProjects = createSelector(
 /** Projects for a given org. */
 export const selectProjectsForOrg =
   (orgId: string | null) =>
-  (s: StateWithHierarchy): (NavProject & { org_id: string })[] => {
+  (s: StateWithHierarchy): FlatProject[] => {
     if (!orgId) return EMPTY_PROJECTS;
     return selectFlatProjects(s).filter((p) => p.org_id === orgId);
   };
+
+// ─── Scope selectors derived from full context ─────────────────────────────
+
+/**
+ * Extract all scope types from all orgs as a flat list.
+ * These are already hydrated into scopeTypesSlice by the thunk, but this
+ * selector is useful for components that only need a quick lookup.
+ */
+export const selectAllScopeTypesFromContext = createSelector(
+  [selectNavOrganizations],
+  (orgs): FullContextScopeType[] => {
+    if (!orgs) return [];
+    return orgs.flatMap((org) =>
+      (org.scope_types ?? []).map((t) => ({ ...t, organization_id: org.id })),
+    );
+  },
+);
+
+/**
+ * Extract all scopes from all orgs as a flat list.
+ * These are already hydrated into scopesSlice by the thunk.
+ */
+export const selectAllScopesFromContext = createSelector(
+  [selectNavOrganizations],
+  (orgs): (FullContextScope & { organization_id: string })[] => {
+    if (!orgs) return [];
+    return orgs.flatMap((org) =>
+      (org.scopes ?? []).map((s) => ({ ...s, organization_id: org.id })),
+    );
+  },
+);

@@ -114,7 +114,8 @@ export function useCreateOrganization() {
 }
 
 export function useCreateProject() {
-  const invalidate = useInvalidateAll();
+  const qc = useQueryClient();
+  const dispatch = useAppDispatch();
   return useMutation({
     mutationFn: (data: {
       name: string;
@@ -122,7 +123,8 @@ export function useCreateProject() {
       description?: string;
     }) => hierarchyService.createProject(data),
     onSuccess: () => {
-      invalidate();
+      qc.invalidateQueries({ queryKey: KEYS.tree() });
+      dispatch(invalidateAndRefetchFullContext() as any);
       toast.success("Project created");
     },
     onError: (err: Error) =>

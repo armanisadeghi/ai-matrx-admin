@@ -266,7 +266,7 @@ export function AgentCard({
       </div>
       <div className="border-t border-border p-1 bg-card rounded-b-lg min-h-[36px]">
         <div
-          className="flex gap-2 justify-center items-center"
+          className="flex gap-1 justify-between items-center"
           onClick={(e) => e.stopPropagation()}
         >
           <Link

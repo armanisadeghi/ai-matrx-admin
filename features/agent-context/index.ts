@@ -79,9 +79,14 @@ export type {
   NavOrganization,
   NavProject,
   NavTask,
-  NavProjectWithTasks,
+  /** @deprecated NavProject now includes open_task_count/open_tasks/scope_tags — use NavProject directly */
+  NavProject as NavProjectWithTasks,
   NavTreeResponse,
   FullContextResponse,
+  FlatProject,
+  ProjectScopeTag,
+  FullContextScopeType,
+  FullContextScope,
 } from "./redux/hierarchySlice";
 
 // Thunks

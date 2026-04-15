@@ -15,6 +15,7 @@ export { HierarchyCascade } from "./HierarchyCascade";
 export { HierarchyBreadcrumb } from "./HierarchyBreadcrumb";
 export { HierarchyCommand, HierarchyCommandContent } from "./HierarchyCommand";
 export { HierarchyPills } from "./HierarchyPills";
+export { HierarchyHoverMenu } from "./HierarchyHoverMenu";
 
 export {
   useHierarchySelection,

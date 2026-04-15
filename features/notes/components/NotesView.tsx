@@ -136,11 +136,16 @@ export function NotesView({ config, className }: NotesViewProps) {
     if (!fetchedRef.current && userId) {
       fetchedRef.current = true;
       dispatch(fetchNotesList());
-      // Pre-fetch scope types + scopes so ScopePicker and ScopeTagsDisplay work
-      dispatch(fetchScopeTypes());
-      dispatch(fetchScopes());
     }
   }, [dispatch, userId]);
+
+  useEffect(() => {
+    if (fetchedRef.current && orgId) {
+      // Pre-fetch scope types + scopes so ScopePicker and ScopeTagsDisplay work
+      dispatch(fetchScopeTypes(orgId));
+      dispatch(fetchScopes({ org_id: orgId }));
+    }
+  }, [dispatch, orgId]);
 
   // ── Single note mode: set active immediately ──────────────────────
   useEffect(() => {

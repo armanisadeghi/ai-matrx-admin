@@ -13,6 +13,7 @@ export type {
 export {
   default as scopeTypesReducer,
   fetchScopeTypes,
+  hydrateScopeTypesFromContext,
   createScopeType,
   updateScopeType,
   deleteScopeType,
@@ -30,6 +31,7 @@ export {
 export {
   default as scopesReducer,
   fetchScopes,
+  hydrateScopesFromContext,
   fetchScopeTree,
   createScope,
   updateScope,

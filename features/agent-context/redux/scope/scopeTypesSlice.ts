@@ -5,7 +5,7 @@ import {
   createEntityAdapter,
   createAsyncThunk,
   createSelector,
-  type PayloadAction,
+  PayloadAction,
 } from "@reduxjs/toolkit";
 import { supabase } from "@/utils/supabase/client";
 import type { ScopeType } from "./types";
@@ -105,7 +105,23 @@ export const deleteScopeType = createAsyncThunk(
 const scopeTypesSlice = createSlice({
   name: "scopeTypes",
   initialState,
-  reducers: {},
+  reducers: {
+    /**
+     * Hydrate scope types from get_user_full_context response.
+     * Called by the hierarchy thunk after a successful full-context fetch.
+     */
+    hydrateFromFullContext(
+      state,
+      action: PayloadAction<{ orgId: string; types: ScopeType[] }[]>,
+    ) {
+      for (const { orgId, types } of action.payload) {
+        scopeTypesAdapter.upsertMany(state, types);
+        if (!state.loadedOrgs.includes(orgId)) {
+          state.loadedOrgs.push(orgId);
+        }
+      }
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchScopeTypes.pending, (state) => {
@@ -134,6 +150,9 @@ const scopeTypesSlice = createSlice({
       });
   },
 });
+
+export const { hydrateFromFullContext: hydrateScopeTypesFromContext } =
+  scopeTypesSlice.actions;
 
 export default scopeTypesSlice.reducer;
 

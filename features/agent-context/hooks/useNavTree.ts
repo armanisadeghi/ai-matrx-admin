@@ -2,50 +2,55 @@
 
 // features/context/hooks/useNavTree.ts
 //
-// Single hook for accessing the nav tree (org/project hierarchy).
+// Single hook for accessing the user hierarchy (orgs, projects, tasks, scopes).
+// Backed by get_user_full_context — one RPC, cached in Redux, never re-fetched
+// unless explicitly invalidated after a mutation.
 
 import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
-  selectNavTree,
-  selectNavTreeStatus,
-  selectNavTreeError,
+  selectFullContext,
+  selectFullContextStatus,
+  selectFullContextError,
   selectNavOrganizations,
   selectFlatProjects,
   selectProjectsForOrg,
   type NavOrganization,
+  type FlatProject,
 } from "@/features/agent-context/redux/hierarchySlice";
-import { fetchNavTree } from "@/features/agent-context/redux/hierarchyThunks";
+import { fetchFullContext } from "@/features/agent-context/redux/hierarchyThunks";
 
 const EMPTY_NAV_ORGS: NavOrganization[] = [];
+const EMPTY_FLAT_PROJECTS: FlatProject[] = [];
 
 export function useNavTree() {
   const dispatch = useAppDispatch();
-  const navTree = useAppSelector(selectNavTree);
-  const status = useAppSelector(selectNavTreeStatus);
-  const error = useAppSelector(selectNavTreeError);
+  const fullContext = useAppSelector(selectFullContext);
+  const status = useAppSelector(selectFullContextStatus);
+  const error = useAppSelector(selectFullContextError);
   const orgs = useAppSelector(selectNavOrganizations);
   const flatProjects = useAppSelector(selectFlatProjects);
 
   useEffect(() => {
     if (status === "idle") {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      dispatch(fetchNavTree() as any);
+      dispatch(fetchFullContext() as any);
     }
   }, [dispatch, status]);
 
   return {
-    navTree,
+    /** @deprecated — use orgs + flatProjects directly */
+    navTree: fullContext,
     orgs: orgs ?? EMPTY_NAV_ORGS,
-    flatProjects,
+    flatProjects: flatProjects ?? EMPTY_FLAT_PROJECTS,
     status,
     isLoading: status === "loading",
     isSuccess: status === "success",
     isError: status === "error",
     error,
     /** Selector helper: all projects for a given org */
-    projectsForOrg: (orgId: string | null) =>
-      flatProjects.filter((p) => p.org_id === orgId),
+    projectsForOrg: (orgId: string | null): FlatProject[] =>
+      (flatProjects ?? EMPTY_FLAT_PROJECTS).filter((p) => p.org_id === orgId),
   };
 }
 

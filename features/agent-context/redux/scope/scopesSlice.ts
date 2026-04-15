@@ -5,6 +5,7 @@ import {
   createEntityAdapter,
   createAsyncThunk,
   createSelector,
+  PayloadAction,
 } from "@reduxjs/toolkit";
 import { supabase } from "@/utils/supabase/client";
 import type { Scope } from "./types";
@@ -129,7 +130,24 @@ export const searchScopes = createAsyncThunk(
 const scopesSlice = createSlice({
   name: "scopes",
   initialState,
-  reducers: {},
+  reducers: {
+    /**
+     * Hydrate scopes from get_user_full_context response.
+     * Called by the hierarchy thunk after a successful full-context fetch.
+     */
+    hydrateFromFullContext(
+      state,
+      action: PayloadAction<{ orgId: string; scopes: Scope[] }[]>,
+    ) {
+      for (const { orgId, scopes } of action.payload) {
+        scopesAdapter.upsertMany(state, scopes);
+        const filterKey = `${orgId}:all:root`;
+        if (!state.loadedFilters.includes(filterKey)) {
+          state.loadedFilters.push(filterKey);
+        }
+      }
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchScopes.pending, (state) => {
@@ -164,6 +182,9 @@ const scopesSlice = createSlice({
       });
   },
 });
+
+export const { hydrateFromFullContext: hydrateScopesFromContext } =
+  scopesSlice.actions;
 
 export default scopesSlice.reducer;
 

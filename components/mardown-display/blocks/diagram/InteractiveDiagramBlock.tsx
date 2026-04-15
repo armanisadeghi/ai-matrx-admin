@@ -66,6 +66,11 @@ import {
 } from "./layout-utils";
 import { getOrgChartRoleIcon, formatDiagramType } from "./ui-utils";
 import type { DiagramData, DiagramNode } from "./parseDiagramJSON";
+import {
+  PrintOptionsDialog,
+  usePrintOptions,
+} from "@/features/chat/components/print/PrintOptionsDialog";
+import { createDiagramPrinter } from "./diagram-printer";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Tailwind CSS 4 uses modern CSS color functions (oklch, lab, color(display-p3))
@@ -1096,24 +1101,19 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({
   );
   const { open: openCanvas } = useCanvas();
   const diagramContainerRef = useRef<HTMLDivElement>(null);
-  const [isPrinting, setIsPrinting] = useState(false);
 
-  const handlePrint = useCallback(async () => {
-    if (!diagramContainerRef.current || isPrinting) return;
-    setIsPrinting(true);
-    try {
-      const { captureBlockElement } =
-        await import("@/features/chat/utils/dom-capture-block-printer");
-      await captureBlockElement(
-        diagramContainerRef.current,
-        diagram.title.replace(/\s+/g, "-").toLowerCase() || "diagram",
-      );
-    } catch (err) {
-      console.warn("[InteractiveDiagramBlock] Print failed:", err);
-    } finally {
-      setIsPrinting(false);
-    }
-  }, [diagram.title, isPrinting]);
+  // Build printer — stable unless diagram type or title changes
+  const diagramPrinter = useMemo(
+    () => createDiagramPrinter(() => diagramContainerRef.current, diagram),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [diagram.title, diagram.type],
+  );
+
+  const {
+    open: printDialogOpen,
+    setOpen: setPrintDialogOpen,
+    triggerPrint,
+  } = usePrintOptions(diagramPrinter, diagram);
 
   const exportDiagramJSON = useCallback(() => {
     const blob = new Blob([JSON.stringify({ diagram }, null, 2)], {
@@ -1251,9 +1251,8 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({
                   {!isFullScreen && (
                     <>
                       <button
-                        onClick={handlePrint}
-                        disabled={isPrinting}
-                        className="flex items-center justify-center gap-2 px-2 py-2 rounded-lg bg-slate-500 dark:bg-slate-600 text-white text-sm font-semibold shadow-md hover:bg-slate-600 dark:hover:bg-slate-700 hover:shadow-lg transform hover:scale-105 transition-all disabled:opacity-50"
+                        onClick={triggerPrint}
+                        className="flex items-center justify-center gap-2 px-2 py-2 rounded-lg bg-slate-500 dark:bg-slate-600 text-white text-sm font-semibold shadow-md hover:bg-slate-600 dark:hover:bg-slate-700 hover:shadow-lg transform hover:scale-105 transition-all"
                         title="Print / Save as PDF"
                       >
                         <Printer className="h-4 w-4" />
@@ -1286,9 +1285,8 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({
                   {isFullScreen && (
                     <>
                       <button
-                        onClick={handlePrint}
-                        disabled={isPrinting}
-                        className="flex items-center justify-center gap-2 px-2 py-2 rounded-lg bg-slate-500 dark:bg-slate-600 text-white text-sm font-medium transition-all shadow-sm hover:bg-slate-600 dark:hover:bg-slate-700 disabled:opacity-50"
+                        onClick={triggerPrint}
+                        className="flex items-center justify-center gap-2 px-2 py-2 rounded-lg bg-slate-500 dark:bg-slate-600 text-white text-sm font-medium transition-all shadow-sm hover:bg-slate-600 dark:hover:bg-slate-700"
                         title="Print / Save as PDF"
                       >
                         <Printer className="h-4 w-4" />
@@ -1345,6 +1343,14 @@ const InteractiveDiagramBlock: React.FC<InteractiveDiagramBlockProps> = ({
           )}
         </div>
       </div>
+
+      {/* Print options dialog */}
+      <PrintOptionsDialog
+        printer={diagramPrinter}
+        data={diagram}
+        open={printDialogOpen}
+        onOpenChange={setPrintDialogOpen}
+      />
     </>
   );
 };

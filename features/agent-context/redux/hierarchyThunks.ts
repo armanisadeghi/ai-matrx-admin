@@ -2,47 +2,79 @@
 
 // features/context/redux/hierarchyThunks.ts
 //
-// Thunks for fetching the user hierarchy via Supabase RPCs.
-// Workspace layer removed — hierarchy is now org -> project -> task.
+// Single fetch: get_user_full_context returns everything in one call —
+// orgs, projects (with scope_tags), tasks, scope types, and scope values.
+//
+// The thunk fans the response out to:
+//   - hierarchySlice   (orgs / projects / tasks)
+//   - scopeTypesSlice  (scope type definitions per org)
+//   - scopesSlice      (scope values per org)
+//
+// This means scope pickers are populated immediately on app load without
+// any per-org secondary fetches.
 //
 // Usage:
-//   dispatch(fetchNavTree())        — on sidebar mount / app boot
-//   dispatch(fetchFullContext())    — on dashboard / task-board pages
-//   dispatch(invalidateAndRefetchNavTree())  — after CRUD mutations
+//   dispatch(fetchFullContext())              — app boot / sidebar mount
+//   dispatch(invalidateAndRefetchFullContext()) — after any CRUD mutation
 
 import { supabase } from "@/utils/supabase/client";
 import {
-  navTreeFetchStarted,
-  navTreeFetchSucceeded,
-  navTreeFetchFailed,
   fullContextFetchStarted,
   fullContextFetchSucceeded,
   fullContextFetchFailed,
-  invalidateNavTree,
   invalidateFullContext,
-  invalidateAll,
-  type NavTreeResponse,
   type FullContextResponse,
+  type FullContextScopeType,
+  type FullContextScope,
 } from "./hierarchySlice";
+import { hydrateScopeTypesFromContext } from "./scope/scopeTypesSlice";
+import { hydrateScopesFromContext } from "./scope/scopesSlice";
+import type { ScopeType } from "./scope/types";
+import type { Scope } from "./scope/types";
 import type { AppDispatch } from "@/lib/redux/store";
 
-// ─── Internal fetch helpers ───────────────────────────────────────────────
+// ─── Internal helpers ─────────────────────────────────────────────────────
 
-async function doFetchNavTree(dispatch: AppDispatch) {
-  dispatch(navTreeFetchStarted());
-  try {
-    const { data, error } = await supabase.rpc("get_user_nav_tree");
-    if (error) throw error;
-    dispatch(
-      navTreeFetchSucceeded(
-        (data as unknown as NavTreeResponse) ?? { organizations: [] },
-      ),
-    );
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    console.error("[fetchNavTree]", message);
-    dispatch(navTreeFetchFailed(message));
-  }
+/**
+ * Map the scope type shape returned by get_user_full_context to the full
+ * ScopeType shape used by scopeTypesSlice (adds organization_id).
+ */
+function mapScopeType(orgId: string, t: FullContextScopeType): ScopeType {
+  return {
+    id: t.id,
+    organization_id: orgId,
+    parent_type_id: t.parent_type_id,
+    label_singular: t.label_singular,
+    label_plural: t.label_plural,
+    icon: t.icon,
+    description: t.description,
+    color: t.color,
+    sort_order: t.sort_order,
+    max_assignments_per_entity: t.max_assignments_per_entity,
+    default_variable_keys: t.default_variable_keys ?? [],
+    created_at: t.created_at,
+    updated_at: t.updated_at,
+  };
+}
+
+/**
+ * Map the scope shape returned by get_user_full_context to the full
+ * Scope shape used by scopesSlice (adds organization_id).
+ */
+function mapScope(orgId: string, s: FullContextScope): Scope {
+  return {
+    id: s.id,
+    organization_id: orgId,
+    scope_type_id: s.scope_type_id,
+    parent_scope_id: s.parent_scope_id,
+    name: s.name,
+    description: s.description ?? "",
+    settings: s.settings ?? {},
+    created_by: s.created_by,
+    created_at: s.created_at,
+    updated_at: s.updated_at,
+    _type_label: s.type_label,
+  };
 }
 
 async function doFetchFullContext(dispatch: AppDispatch) {
@@ -50,11 +82,26 @@ async function doFetchFullContext(dispatch: AppDispatch) {
   try {
     const { data, error } = await supabase.rpc("get_user_full_context");
     if (error) throw error;
-    dispatch(
-      fullContextFetchSucceeded(
-        (data as unknown as FullContextResponse) ?? { organizations: [] },
-      ),
-    );
+
+    const response = (data as unknown as FullContextResponse) ?? {
+      organizations: [],
+    };
+
+    // Fan scope data out to the entity adapter slices so the rest of the
+    // app can read from them without separate fetches.
+    const scopeTypesPayload = (response.organizations ?? []).map((org) => ({
+      orgId: org.id,
+      types: (org.scope_types ?? []).map((t) => mapScopeType(org.id, t)),
+    }));
+
+    const scopesPayload = (response.organizations ?? []).map((org) => ({
+      orgId: org.id,
+      scopes: (org.scopes ?? []).map((s) => mapScope(org.id, s)),
+    }));
+
+    dispatch(hydrateScopeTypesFromContext(scopeTypesPayload));
+    dispatch(hydrateScopesFromContext(scopesPayload));
+    dispatch(fullContextFetchSucceeded(response));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     console.error("[fetchFullContext]", message);
@@ -62,28 +109,12 @@ async function doFetchFullContext(dispatch: AppDispatch) {
   }
 }
 
-// ─── fetchNavTree ─────────────────────────────────────────────────────────
-
-/**
- * Fetch the lightweight org/project tree (no tasks).
- * Skips if already loading or successfully loaded.
- */
-export function fetchNavTree() {
-  return (
-    dispatch: AppDispatch,
-    getState: () => { hierarchy: { navTreeStatus: string } },
-  ) => {
-    const status = getState().hierarchy.navTreeStatus;
-    if (status === "loading" || status === "success") return;
-    return doFetchNavTree(dispatch);
-  };
-}
-
 // ─── fetchFullContext ─────────────────────────────────────────────────────
 
 /**
- * Fetch the full hierarchy including open tasks.
- * Skips if already loading or successfully loaded.
+ * Fetch the full user hierarchy (orgs, projects, tasks, scopes).
+ * Skips if data is already loading or loaded.
+ * Safe to call from multiple components — only one network request fires.
  */
 export function fetchFullContext() {
   return (
@@ -96,22 +127,16 @@ export function fetchFullContext() {
   };
 }
 
+/**
+ * @deprecated — use fetchFullContext(). Kept for backwards compat.
+ */
+export const fetchNavTree = fetchFullContext;
+
 // ─── Invalidate + re-fetch helpers ────────────────────────────────────────
 
 /**
- * Reset the nav tree status to idle and trigger a fresh fetch.
- * Use after creating/updating/deleting orgs or projects.
- */
-export function invalidateAndRefetchNavTree() {
-  return (dispatch: AppDispatch) => {
-    dispatch(invalidateNavTree());
-    return doFetchNavTree(dispatch);
-  };
-}
-
-/**
- * Reset full context and trigger a fresh fetch.
- * Use after task creates/updates/deletes.
+ * Invalidate the full context and trigger a fresh fetch.
+ * Use after any mutation that changes orgs, projects, tasks, or scopes.
  */
 export function invalidateAndRefetchFullContext() {
   return (dispatch: AppDispatch) => {
@@ -121,12 +146,11 @@ export function invalidateAndRefetchFullContext() {
 }
 
 /**
- * Invalidate both tree and full context and re-fetch nav tree.
- * Use after structural mutations (move org/project).
+ * @deprecated — use invalidateAndRefetchFullContext().
  */
-export function invalidateAndRefetchAll() {
-  return (dispatch: AppDispatch) => {
-    dispatch(invalidateAll());
-    return doFetchNavTree(dispatch);
-  };
-}
+export const invalidateAndRefetchNavTree = invalidateAndRefetchFullContext;
+
+/**
+ * @deprecated — use invalidateAndRefetchFullContext().
+ */
+export const invalidateAndRefetchAll = invalidateAndRefetchFullContext;
