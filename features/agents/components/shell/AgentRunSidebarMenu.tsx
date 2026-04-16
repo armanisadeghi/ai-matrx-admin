@@ -1,11 +1,11 @@
 "use client";
 
-// AgentRunSidebarMenu — conversation history list for the Agent Run page.
+// AgentRunSidebarMenu — conversation history grouped by agent version.
 // Controls (back, agent selector, new run) live in the shell header, not here.
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { Loader2, MessageSquare, ChevronRight } from "lucide-react";
+import { Loader2, ChevronRight, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectAgentById } from "@/features/agents/redux/agent-definition/selectors";
@@ -33,6 +33,21 @@ function formatRelativeDate(iso: string | null): string {
   if (diffDays === 1) return "Yesterday";
   if (diffDays < 7) return `${diffDays}d ago`;
   return d.toLocaleDateString([], { month: "short", day: "numeric" });
+}
+
+/** Group conversations by agentVersionNumber, sorted highest version first. */
+function groupByVersion(
+  conversations: AgentConversationListItem[],
+): { version: number; items: AgentConversationListItem[] }[] {
+  const map = new Map<number, AgentConversationListItem[]>();
+  for (const conv of conversations) {
+    const v = conv.agentVersionNumber ?? 0;
+    if (!map.has(v)) map.set(v, []);
+    map.get(v)!.push(conv);
+  }
+  return Array.from(map.entries())
+    .sort(([a], [b]) => b - a)
+    .map(([version, items]) => ({ version, items }));
 }
 
 export default function AgentRunSidebarMenu({
@@ -74,6 +89,11 @@ export default function AgentRunSidebarMenu({
     }
   }, [canonicalAgentId, convStatus, dispatch]);
 
+  const versionGroups = useMemo(
+    () => groupByVersion(conversations),
+    [conversations],
+  );
+
   const handleConversationSelect = (convId: string) => {
     if (!agentId) return;
     router.push(`/agents/${agentId}/run?conversationId=${convId}`);
@@ -81,36 +101,49 @@ export default function AgentRunSidebarMenu({
 
   if (!agentId) return null;
 
-  // Collapsed: icon-only conversation list
+  // Collapsed: version number badges
   if (!expanded) {
     return (
-      <div className="flex flex-col items-center gap-0.5 py-0.5">
-        {conversations.slice(0, 10).map((conv) => (
-          <button
-            key={conv.conversationId}
-            onClick={() => handleConversationSelect(conv.conversationId)}
-            title={conv.title?.trim() || "Untitled"}
-            className={cn(
-              "shell-nav-item shell-tactile-subtle",
-              conv.conversationId === conversationIdFromUrl &&
-                "shell-active-pill",
-            )}
-          >
-            <span className="shell-nav-icon">
-              <MessageSquare className="w-[14px] h-[14px]" strokeWidth={1.75} />
-            </span>
-          </button>
-        ))}
+      <div className="flex flex-col items-center gap-1 py-0.5">
+        {versionGroups.slice(0, 10).map(({ version, items }) => {
+          const isActive = items.some(
+            (c) => c.conversationId === conversationIdFromUrl,
+          );
+          return (
+            <button
+              key={version}
+              onClick={() => handleConversationSelect(items[0].conversationId)}
+              title={`Version ${version} — ${items.length} run${items.length === 1 ? "" : "s"}`}
+              className={cn(
+                "w-full flex items-center justify-center py-1.5",
+                "shell-tactile-subtle rounded-sm transition-colors",
+                isActive && "shell-active-pill",
+              )}
+            >
+              <span
+                className={cn(
+                  "font-black leading-none tabular-nums",
+                  "text-[12px]",
+                  isActive
+                    ? "text-[var(--shell-pill-text)]"
+                    : "text-muted-foreground",
+                )}
+              >
+                V{version}
+              </span>
+            </button>
+          );
+        })}
       </div>
     );
   }
 
-  // Expanded: full conversation list
+  // Expanded: conversations grouped by version
   return (
     <div className="flex flex-col flex-1 min-h-0">
       <div className="px-2 py-1 shrink-0">
         <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-          History
+          Test History
         </span>
       </div>
 
@@ -128,19 +161,81 @@ export default function AgentRunSidebarMenu({
         {convStatus === "succeeded" && conversations.length === 0 && (
           <div className="px-2 py-3 text-center">
             <p className="text-[10px] text-muted-foreground">
-              No conversations yet
+              No test runs yet
             </p>
           </div>
         )}
-        {conversations.map((conv) => (
-          <ConversationRow
-            key={conv.conversationId}
-            conv={conv}
-            isActive={conv.conversationId === conversationIdFromUrl}
-            onSelect={() => handleConversationSelect(conv.conversationId)}
+        {versionGroups.map(({ version, items }) => (
+          <VersionGroup
+            key={version}
+            version={version}
+            items={items}
+            activeConversationId={conversationIdFromUrl}
+            onSelect={handleConversationSelect}
           />
         ))}
       </div>
+    </div>
+  );
+}
+
+function VersionGroup({
+  version,
+  items,
+  activeConversationId,
+  onSelect,
+}: {
+  version: number;
+  items: AgentConversationListItem[];
+  activeConversationId: string | undefined;
+  onSelect: (convId: string) => void;
+}) {
+  const hasActive = items.some(
+    (c) => c.conversationId === activeConversationId,
+  );
+  const [open, setOpen] = useState(hasActive);
+
+  const latestDate = useMemo(() => {
+    const timestamps = items
+      .map((c) => c.updatedAt)
+      .filter(Boolean)
+      .map((d) => new Date(d).getTime());
+    if (timestamps.length === 0) return "";
+    return formatRelativeDate(new Date(Math.max(...timestamps)).toISOString());
+  }, [items]);
+
+  return (
+    <div className="mb-0.5">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex items-center gap-1.5 w-full px-2 py-1 text-left transition-colors hover:bg-[var(--shell-glass-bg-hover)] rounded-sm group"
+      >
+        {open ? (
+          <ChevronDown className="w-3 h-3 shrink-0 text-muted-foreground" />
+        ) : (
+          <ChevronRight className="w-3 h-3 shrink-0 text-muted-foreground" />
+        )}
+        <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+          Version {version}
+        </span>
+        <span className="text-[10px] text-muted-foreground/60 ml-auto">
+          {latestDate}
+        </span>
+      </button>
+
+      {open && (
+        <div className="pl-1">
+          {items.map((conv) => (
+            <ConversationRow
+              key={conv.conversationId}
+              conv={conv}
+              isActive={conv.conversationId === activeConversationId}
+              onSelect={() => onSelect(conv.conversationId)}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -169,20 +264,11 @@ function ConversationRow({
         <p className="text-[11px] font-medium truncate">
           {conv.title?.trim() || "Untitled"}
         </p>
-        <div className="flex items-center gap-1 mt-0.5">
-          <MessageSquare
-            className={cn(
-              "w-2.5 h-2.5 shrink-0",
-              isActive
-                ? "text-[var(--shell-pill-text)]"
-                : "text-muted-foreground",
-            )}
-          />
-          <span className="text-[10px] text-muted-foreground">
-            {conv.messageCount} msg{conv.messageCount === 1 ? "" : "s"}
-            {conv.updatedAt ? ` · ${formatRelativeDate(conv.updatedAt)}` : ""}
-          </span>
-        </div>
+        {conv.updatedAt && (
+          <p className="text-[10px] text-muted-foreground mt-0.5">
+            {formatRelativeDate(conv.updatedAt)}
+          </p>
+        )}
       </div>
       {isActive && <ChevronRight className="w-3 h-3 shrink-0" />}
     </button>

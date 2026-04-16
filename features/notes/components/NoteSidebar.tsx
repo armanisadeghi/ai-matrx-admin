@@ -58,11 +58,13 @@ import { selectUser } from "@/lib/redux/slices/userSlice";
 import {
   selectOrganizationId,
   selectOrganizationName,
+  selectScopeSelectionsContext,
   selectProjectId,
   selectProjectName,
   selectTaskId,
   selectTaskName,
 } from "@/features/agent-context/redux/appContextSlice";
+import { fetchEntitiesByScopes } from "@/features/agent-context/redux/scope/scopeAssignmentsSlice";
 import {
   setInstanceActiveTab,
   addInstanceTab,
@@ -126,10 +128,6 @@ const GROUP_MODES: {
 }[] = [
   { mode: "folder", label: "Folder", icon: Folder },
   { mode: "recent", label: "Recent", icon: Clock },
-  { mode: "scope", label: "Scope", icon: Tag },
-  { mode: "organization", label: "Organization", icon: Building2 },
-  { mode: "project", label: "Project", icon: Kanban },
-  { mode: "task", label: "Task", icon: ListTodo },
 ];
 
 interface NoteSidebarProps {
@@ -163,18 +161,50 @@ export function NoteSidebar({
   const activeOrgId = useAppSelector(selectOrganizationId);
   const activeProjectId = useAppSelector(selectProjectId);
   const activeTaskId = useAppSelector(selectTaskId);
+  const scopeSelections = useAppSelector(selectScopeSelectionsContext);
   const orgName = useAppSelector(selectOrganizationName);
   const projName = useAppSelector(selectProjectName);
   const taskName = useAppSelector(selectTaskName);
 
-  // ── Filter notes by active context ────────────────────────────────
+  // ── Scope-filtered note IDs (fetched when scopes change) ──────────
+  const activeScopeIds = useMemo(
+    () => Object.values(scopeSelections).filter(Boolean) as string[],
+    [scopeSelections],
+  );
+  const [scopeFilteredNoteIds, setScopeFilteredNoteIds] = useState<Set<string> | null>(null);
+  const lastScopeKey = useRef("");
+
+  useEffect(() => {
+    const key = [...activeScopeIds].sort().join(",");
+    if (key === lastScopeKey.current) return;
+    lastScopeKey.current = key;
+    if (activeScopeIds.length === 0) {
+      setScopeFilteredNoteIds(null);
+      return;
+    }
+    dispatch(
+      fetchEntitiesByScopes({
+        scope_ids: activeScopeIds,
+        entity_type: "note",
+        match_all: false,
+      }),
+    )
+      .unwrap()
+      .then((entities) =>
+        setScopeFilteredNoteIds(new Set(entities.map((e) => e.entity_id))),
+      )
+      .catch(() => setScopeFilteredNoteIds(null));
+  }, [dispatch, activeScopeIds]);
+
+  // ── Filter notes by active context (org + scopes + project + task) ─
   const contextFiltered = useMemo(() => {
     let result = allNotes;
     if (activeOrgId) result = result.filter((n) => n.organization_id === activeOrgId);
+    if (scopeFilteredNoteIds) result = result.filter((n) => scopeFilteredNoteIds.has(n.id));
     if (activeProjectId) result = result.filter((n) => n.project_id === activeProjectId);
     if (activeTaskId) result = result.filter((n) => n.task_id === activeTaskId);
     return result;
-  }, [allNotes, activeOrgId, activeProjectId, activeTaskId]);
+  }, [allNotes, activeOrgId, scopeFilteredNoteIds, activeProjectId, activeTaskId]);
 
   // ── Local UI state ─────────────────────────────────────────────────
   const [searchQuery, setSearchQuery] = useState("");

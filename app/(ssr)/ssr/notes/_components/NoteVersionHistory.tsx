@@ -51,26 +51,23 @@ export function NoteVersionHistory({
         className,
       )}
     >
-      {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-border shrink-0">
-        <div className="flex items-center gap-2">
-          <History className="h-3.5 w-3.5 text-primary" />
-          <span className="text-xs font-semibold">Version History</span>
-        </div>
+      {/* Panel header — close button only; DiffHistory renders its own title */}
+      <div className="flex items-center justify-end px-2 py-1.5 border-b border-border shrink-0">
         <button
           onClick={onClose}
           className="flex items-center justify-center w-5 h-5 rounded hover:bg-accent transition-colors cursor-pointer [&_svg]:w-3 [&_svg]:h-3 text-muted-foreground hover:text-foreground"
+          title="Close history"
         >
           <X />
         </button>
       </div>
 
-      {/* Version Timeline */}
-      <div className="flex-1 min-h-0 overflow-auto [&_.h-\[400px\]]:h-full">
+      {/* Version Timeline — fills remaining height */}
+      <div className="flex-1 min-h-0 flex flex-col">
         <DiffHistory
           noteId={noteId}
           onRestoreVersion={handleRestore}
-          className="border-0 shadow-none rounded-none bg-transparent h-full"
+          className="border-0 shadow-none rounded-none bg-transparent"
         />
       </div>
     </div>

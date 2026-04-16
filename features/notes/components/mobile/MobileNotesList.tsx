@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { FolderOpen, Clock, Tag, Plus } from 'lucide-react';
 import { useNotesRedux } from '../../hooks/useNotesRedux';
-import { useAppSelector } from '@/lib/redux/hooks';
-import { selectOrganizationId, selectProjectId, selectTaskId } from '@/features/agent-context/redux/appContextSlice';
+import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
+import { selectOrganizationId, selectProjectId, selectTaskId, selectScopeSelectionsContext } from '@/features/agent-context/redux/appContextSlice';
+import { fetchEntitiesByScopes } from '@/features/agent-context/redux/scope/scopeAssignmentsSlice';
 import { MobileActionBar } from '@/components/official/mobile-action-bar';
 import NotesFilterSheet, { NotesFilterState } from './NotesFilterSheet';
 import type { Note } from '@/features/notes/types';
@@ -16,6 +17,7 @@ interface MobileNotesListProps {
 }
 
 export default function MobileNotesList({ onNoteSelect, filters, onFiltersChange }: MobileNotesListProps) {
+  const dispatch = useAppDispatch();
   const { notes, findOrCreateEmptyNote, isLoading } = useNotesRedux();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -25,6 +27,31 @@ export default function MobileNotesList({ onNoteSelect, filters, onFiltersChange
   const activeOrgId = useAppSelector(selectOrganizationId);
   const activeProjectId = useAppSelector(selectProjectId);
   const activeTaskId = useAppSelector(selectTaskId);
+  const scopeSelections = useAppSelector(selectScopeSelectionsContext);
+
+  // Scope-filtered note IDs
+  const activeScopeIds = useMemo(
+    () => Object.values(scopeSelections).filter(Boolean) as string[],
+    [scopeSelections],
+  );
+  const [scopeFilteredNoteIds, setScopeFilteredNoteIds] = useState<Set<string> | null>(null);
+  const lastScopeKey = useRef('');
+
+  useEffect(() => {
+    const key = [...activeScopeIds].sort().join(',');
+    if (key === lastScopeKey.current) return;
+    lastScopeKey.current = key;
+    if (activeScopeIds.length === 0) {
+      setScopeFilteredNoteIds(null);
+      return;
+    }
+    dispatch(
+      fetchEntitiesByScopes({ scope_ids: activeScopeIds, entity_type: 'note', match_all: false }),
+    )
+      .unwrap()
+      .then((entities) => setScopeFilteredNoteIds(new Set(entities.map((e) => e.entity_id))))
+      .catch(() => setScopeFilteredNoteIds(null));
+  }, [dispatch, activeScopeIds]);
 
   // Deduplicated + context-filtered notes
   const uniqueNotes = useMemo(() => {
@@ -35,6 +62,7 @@ export default function MobileNotesList({ onNoteSelect, filters, onFiltersChange
       return true;
     });
     if (activeOrgId) result = result.filter(n => n.organization_id === activeOrgId);
+    if (scopeFilteredNoteIds) result = result.filter(n => scopeFilteredNoteIds.has(n.id));
     if (activeProjectId) result = result.filter(n => n.project_id === activeProjectId);
     if (activeTaskId) result = result.filter(n => n.task_id === activeTaskId);
     return result;

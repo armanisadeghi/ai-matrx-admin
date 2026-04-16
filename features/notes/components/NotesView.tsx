@@ -6,7 +6,13 @@
 // Can be used as full page, floating window, or single-note embed.
 // ZERO PROP DRILLING — each child receives only an instanceId or noteId.
 
-import React, { useEffect, useRef, useCallback, useState, useMemo } from "react";
+import React, {
+  useEffect,
+  useRef,
+  useCallback,
+  useState,
+  useMemo,
+} from "react";
 import dynamic from "next/dynamic";
 import {
   FileText,
@@ -102,7 +108,8 @@ export function NotesView({ config, className }: NotesViewProps) {
   const urlActive = searchParams.get("active");
 
   // Config props win over URL params
-  const initialTabs = config?.initialTabs ?? (urlTabs.length > 0 ? urlTabs : undefined);
+  const initialTabs =
+    config?.initialTabs ?? (urlTabs.length > 0 ? urlTabs : undefined);
   const initialActiveTab = config?.initialActiveTab ?? urlActive;
 
   // ── Generate or use provided instance ID ──────────────────────────
@@ -215,7 +222,10 @@ export function NotesView({ config, className }: NotesViewProps) {
       }
 
       // Ctrl+H (Win/Linux) or Cmd+Option+F (Mac) — open find+replace
-      if ((e.ctrlKey && !e.metaKey && e.key === "h") || (e.metaKey && e.altKey && e.key === "f")) {
+      if (
+        (e.ctrlKey && !e.metaKey && e.key === "h") ||
+        (e.metaKey && e.altKey && e.key === "f")
+      ) {
         e.preventDefault();
         dispatch(openFindReplace({ instanceId, showReplace: true }));
         return;
@@ -253,126 +263,131 @@ export function NotesView({ config, className }: NotesViewProps) {
       {isMobile ? (
         <MobileNotesView />
       ) : (
-      <div className={`flex h-full w-full min-h-0 ${className ?? ""}`}>
-        {/* ── Header center: View mode buttons (portaled into shell header) */}
-        {activeTabId && (
-          <PageHeader>
-            <div className="shell-glass flex items-center gap-0.5 rounded-full p-0.5">
-              <button
-                className={modeBtnClass("plain")}
-                onClick={() => setMode("plain")}
-              >
-                <FileText /> Edit
-              </button>
-              <button
-                className={cn(modeBtnClass("split"), "max-lg:hidden")}
-                onClick={() => setMode("split")}
-              >
-                <SplitSquareHorizontal /> Split
-              </button>
-              <button
-                className={cn(modeBtnClass("wysiwyg"), "max-lg:hidden")}
-                onClick={() => setMode("wysiwyg")}
-              >
-                <PilcrowRight /> Rich
-              </button>
-              <button
-                className={cn(modeBtnClass("markdown-split"), "max-lg:hidden")}
-                onClick={() => setMode("markdown-split")}
-              >
-                <Columns /> MD Split
-              </button>
-              <button
-                className={modeBtnClass("preview")}
-                onClick={() => setMode("preview")}
-              >
-                <Eye /> Preview
-              </button>
-              <div className="w-px h-4 bg-border/30 mx-0.5" />
-              <button
-                className={cn(
-                  "flex items-center gap-1 px-2.5 py-0.5 text-[0.6875rem] font-medium rounded-full transition-colors cursor-pointer [&_svg]:w-3.5 [&_svg]:h-3.5",
-                  showHistory
-                    ? "bg-[var(--shell-glass-bg-active)] text-[var(--shell-nav-text-hover)]"
-                    : "text-[var(--shell-nav-text)] hover:text-[var(--shell-nav-text-hover)]",
-                )}
-                onClick={() => setShowHistory((v) => !v)}
-              >
-                <History /> History
-              </button>
-            </div>
-          </PageHeader>
-        )}
-
-        {/* Layer 5: Sidebar */}
-        {showSidebar && !singleNote && (
-          <div className="w-[280px] shrink-0 border-r border-border flex flex-col min-h-0 max-lg:hidden">
-            <NoteSidebar instanceId={instanceId} />
-          </div>
-        )}
-
-        {/* Main content area */}
-        <div className="flex-1 flex min-w-0 min-h-0">
-          {/* Editor column */}
-          <div className="flex-1 flex flex-col min-w-0 min-h-0">
-            {/* Layer 4: Tab bar (top) */}
-            {showTabs && !singleNote && <NoteTabBar instanceId={instanceId} />}
-
-            {/* Presence indicator */}
-            {activeTabId && activeNoteEditedByOthers && (
-              <div className="flex items-center gap-2 px-4 py-1 bg-amber-500/10 border-b border-amber-500/20 shrink-0">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500" />
-                </span>
-                <span className="text-[0.6875rem] text-amber-700 dark:text-amber-300">
-                  Another user is editing this note
-                </span>
+        <div className={`flex h-full w-full min-h-0 ${className ?? ""}`}>
+          {/* ── Header center: View mode buttons (portaled into shell header) */}
+          {activeTabId && (
+            <PageHeader>
+              <div className="shell-glass flex items-center gap-0.5 rounded-full p-0.5">
+                <button
+                  className={modeBtnClass("plain")}
+                  onClick={() => setMode("plain")}
+                >
+                  <FileText /> Edit
+                </button>
+                <button
+                  className={cn(modeBtnClass("split"), "max-lg:hidden")}
+                  onClick={() => setMode("split")}
+                >
+                  <SplitSquareHorizontal /> Split
+                </button>
+                <button
+                  className={cn(modeBtnClass("wysiwyg"), "max-lg:hidden")}
+                  onClick={() => setMode("wysiwyg")}
+                >
+                  <PilcrowRight /> Rich
+                </button>
+                <button
+                  className={cn(
+                    modeBtnClass("markdown-split"),
+                    "max-lg:hidden",
+                  )}
+                  onClick={() => setMode("markdown-split")}
+                >
+                  <Columns /> MD Split
+                </button>
+                <button
+                  className={modeBtnClass("preview")}
+                  onClick={() => setMode("preview")}
+                >
+                  <Eye /> Preview
+                </button>
+                <div className="w-px h-4 bg-border/30 mx-0.5" />
+                <button
+                  className={cn(
+                    "flex items-center gap-1 px-2.5 py-0.5 text-[0.6875rem] font-medium rounded-full transition-colors cursor-pointer [&_svg]:w-3.5 [&_svg]:h-3.5",
+                    showHistory
+                      ? "bg-[var(--shell-glass-bg-active)] text-[var(--shell-nav-text-hover)]"
+                      : "text-[var(--shell-nav-text)] hover:text-[var(--shell-nav-text-hover)]",
+                  )}
+                  onClick={() => setShowHistory((v) => !v)}
+                >
+                  <History /> History
+                </button>
               </div>
-            )}
-            {othersActive && !activeNoteEditedByOthers && (
-              <div className="flex items-center gap-2 px-4 py-0.5 bg-blue-500/5 border-b border-blue-500/10 shrink-0">
-                <span className="relative flex h-1.5 w-1.5">
-                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-blue-500" />
-                </span>
-                <span className="text-[0.625rem] text-blue-600/70 dark:text-blue-400/70">
-                  Other users are active in notes
-                </span>
-              </div>
-            )}
+            </PageHeader>
+          )}
 
-            {/* Layer 1: Content editor (fills available space) */}
-            {activeTabId ? (
-              <NoteContentEditor noteId={activeTabId} />
-            ) : (
-              <div className="flex-1 flex items-center justify-center text-muted-foreground">
-                <div className="text-center">
-                  <p className="text-sm">No note selected</p>
-                  <p className="text-xs mt-1">
-                    Select a note or create a new one
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* Layer 2: Metadata bar (bottom — folder, tags, status) */}
-            {activeTabId && <NoteMetadataBar noteId={activeTabId} />}
-          </div>
-
-          {/* Version history side panel */}
-          {showHistory && activeTabId && (
-            <div className="w-[300px] shrink-0 max-lg:hidden">
-              <NoteVersionHistory
-                noteId={activeTabId}
-                onClose={() => setShowHistory(false)}
-                onVersionRestored={() => {
-                  dispatch(fetchNoteContent(activeTabId));
-                }}
-              />
+          {/* Layer 5: Sidebar */}
+          {showSidebar && !singleNote && (
+            <div className="w-[280px] shrink-0 border-r border-border flex flex-col min-h-0 max-lg:hidden">
+              <NoteSidebar instanceId={instanceId} />
             </div>
           )}
+
+          {/* Main content area */}
+          <div className="flex-1 flex min-w-0 min-h-0">
+            {/* Editor column */}
+            <div className="flex-1 flex flex-col min-w-0 min-h-0">
+              {/* Layer 4: Tab bar (top) */}
+              {showTabs && !singleNote && (
+                <NoteTabBar instanceId={instanceId} />
+              )}
+
+              {/* Presence indicator */}
+              {activeTabId && activeNoteEditedByOthers && (
+                <div className="flex items-center gap-2 px-4 py-1 bg-amber-500/10 border-b border-amber-500/20 shrink-0">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500" />
+                  </span>
+                  <span className="text-[0.6875rem] text-amber-700 dark:text-amber-300">
+                    Another user is editing this note
+                  </span>
+                </div>
+              )}
+              {othersActive && !activeNoteEditedByOthers && (
+                <div className="flex items-center gap-2 px-4 py-0.5 bg-blue-500/5 border-b border-blue-500/10 shrink-0">
+                  <span className="relative flex h-1.5 w-1.5">
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-blue-500" />
+                  </span>
+                  <span className="text-[0.625rem] text-blue-600/70 dark:text-blue-400/70">
+                    Other users are active in notes
+                  </span>
+                </div>
+              )}
+
+              {/* Layer 1: Content editor (fills available space) */}
+              {activeTabId ? (
+                <NoteContentEditor noteId={activeTabId} />
+              ) : (
+                <div className="flex-1 flex items-center justify-center text-muted-foreground">
+                  <div className="text-center">
+                    <p className="text-sm">No note selected</p>
+                    <p className="text-xs mt-1">
+                      Select a note or create a new one
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Layer 2: Metadata bar (bottom — folder, tags, status) */}
+              {activeTabId && <NoteMetadataBar noteId={activeTabId} />}
+            </div>
+
+            {/* Version history side panel */}
+            {showHistory && activeTabId && (
+              <div className="w-[360px] shrink-0 min-h-0 max-lg:hidden flex flex-col overflow-hidden">
+                <NoteVersionHistory
+                  noteId={activeTabId}
+                  onClose={() => setShowHistory(false)}
+                  onVersionRestored={() => {
+                    dispatch(fetchNoteContent(activeTabId));
+                  }}
+                />
+              </div>
+            )}
+          </div>
         </div>
-      </div>
       )}
     </NotesInstanceProvider>
   );
