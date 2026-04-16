@@ -12,16 +12,12 @@ import {
   selectAgentById,
   selectVersionsByParentAgentId,
 } from "@/features/agents/redux/agent-definition/selectors";
+import SearchableSelect from "@/components/matrx/SearchableSelect";
+import type { Option } from "@/components/matrx/SearchableSelect";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,9 +28,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Loader2, Clock, ArrowUpCircle, CheckCircle2 } from "lucide-react";
+import { Loader2, Clock, ArrowUpCircle, CheckCircle2, GitCompareArrows, History } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { toast } from "@/lib/toast-service";
 import { AgentDiffViewer } from "./AgentDiffViewer";
+import { VersionHistoryTimeline } from "./VersionHistoryTimeline";
 
 interface AgentVersionDiffPageProps {
   agentId: string;
@@ -46,19 +44,31 @@ export function AgentVersionDiffPage({ agentId, initialVersion }: AgentVersionDi
   const [versions, setVersions] = useState<AgentVersionHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedVersion, setSelectedVersion] = useState<number | null>(initialVersion ?? null);
+  const [, startTransition] = useTransition();
+
+  // Left side (the version being inspected)
+  const [leftVersion, setLeftVersion] = useState<number | null>(initialVersion ?? null);
+  // Right side (defaults to "current", can be overridden)
+  const [rightVersion, setRightVersion] = useState<"current" | number>("current");
+  const [rightSnapshotLoading, setRightSnapshotLoading] = useState(false);
+
   const [snapshotLoading, setSnapshotLoading] = useState(false);
   const [promoting, setPromoting] = useState(false);
   const [showPromoteDialog, setShowPromoteDialog] = useState(false);
-  const [, startTransition] = useTransition();
+  const [activeTab, setActiveTab] = useState<"compare" | "history">("compare");
 
   const liveAgent = useAppSelector((state) => selectAgentById(state, agentId));
   const snapshotRecords = useAppSelector((state) => selectVersionsByParentAgentId(state, agentId));
 
-  const snapshot = selectedVersion
-    ? snapshotRecords.find((r) => r.version === selectedVersion)
+  const leftSnapshot = leftVersion
+    ? snapshotRecords.find((r) => r.version === leftVersion)
     : null;
 
+  const rightAgent = rightVersion === "current"
+    ? liveAgent
+    : snapshotRecords.find((r) => r.version === rightVersion) ?? null;
+
+  // Fetch version history on mount
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
@@ -67,8 +77,18 @@ export function AgentVersionDiffPage({ agentId, initialVersion }: AgentVersionDi
       .then((data) => {
         if (!cancelled) {
           setVersions(data);
-          if (!selectedVersion && data.length > 0) {
-            setSelectedVersion(initialVersion ?? data[0].version_number);
+          if (!leftVersion && data.length > 0) {
+            if (initialVersion) {
+              setLeftVersion(initialVersion);
+            } else {
+              // The newest version in history mirrors current, so pick the second one
+              // (first version that differs from the live agent's version number)
+              const currentVer = liveAgent?.version;
+              const bestDefault = currentVer != null
+                ? data.find((v) => v.version_number !== currentVer)
+                : data.length > 1 ? data[1] : data[0];
+              setLeftVersion(bestDefault?.version_number ?? data[0].version_number);
+            }
           }
         }
       })
@@ -78,33 +98,41 @@ export function AgentVersionDiffPage({ agentId, initialVersion }: AgentVersionDi
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [agentId]);
 
+  // Fetch left snapshot when selected
   useEffect(() => {
-    if (!selectedVersion) return;
-    const alreadyLoaded = snapshotRecords.some((r) => r.version === selectedVersion);
-    if (alreadyLoaded) return;
-
+    if (!leftVersion) return;
+    if (snapshotRecords.some((r) => r.version === leftVersion)) return;
     setSnapshotLoading(true);
-    dispatch(fetchAgentVersionSnapshot({ agentId, version: selectedVersion }))
+    dispatch(fetchAgentVersionSnapshot({ agentId, version: leftVersion }))
       .unwrap()
       .finally(() => setSnapshotLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedVersion, agentId]);
+  }, [leftVersion, agentId]);
+
+  // Fetch right snapshot when overridden to a specific version
+  useEffect(() => {
+    if (rightVersion === "current") return;
+    if (snapshotRecords.some((r) => r.version === rightVersion)) return;
+    setRightSnapshotLoading(true);
+    dispatch(fetchAgentVersionSnapshot({ agentId, version: rightVersion }))
+      .unwrap()
+      .finally(() => setRightSnapshotLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rightVersion, agentId]);
 
   const handlePromote = async () => {
-    if (!selectedVersion) return;
+    if (!leftVersion) return;
     setPromoting(true);
     try {
       const result = await dispatch(
-        promoteAgentVersion({ agentId, version: selectedVersion }),
+        promoteAgentVersion({ agentId, version: leftVersion }),
       ).unwrap();
       if (result.success) {
-        toast.success(`Promoted v${selectedVersion} to current`);
+        toast.success(`Promoted v${leftVersion} to current`);
       } else {
         toast.error(result.error ?? "Failed to promote version");
       }
@@ -114,6 +142,41 @@ export function AgentVersionDiffPage({ agentId, initialVersion }: AgentVersionDi
       setPromoting(false);
       setShowPromoteDialog(false);
     }
+  };
+
+  // Build version options for SearchableSelect
+  const leftVersionOptions: Option[] = versions.map((v) => ({
+    value: v.version_number.toString(),
+    label: `v${v.version_number}${v.change_note ? ` — ${v.change_note}` : ""}`,
+  }));
+
+  const rightVersionOptions: Option[] = [
+    { value: "current", label: `Current Version${liveAgent?.version != null ? ` (v${liveAgent.version})` : ""}` },
+    ...versions.map((v) => ({
+      value: v.version_number.toString(),
+      label: `v${v.version_number}${v.change_note ? ` — ${v.change_note}` : ""}`,
+    })),
+  ];
+
+  const handleLeftVersionChange = (opt: Option) => {
+    startTransition(() => setLeftVersion(parseInt(opt.value, 10)));
+  };
+
+  const handleRightVersionChange = (opt: Option) => {
+    startTransition(() => {
+      if (opt.value === "current") {
+        setRightVersion("current");
+      } else {
+        setRightVersion(parseInt(opt.value, 10));
+      }
+    });
+  };
+
+  // Navigate to a diff from the history timeline
+  const handleHistoryCompare = (version: number, compareToVersion: number | "current") => {
+    setLeftVersion(version);
+    setRightVersion(compareToVersion);
+    setActiveTab("compare");
   };
 
   if (loading) {
@@ -127,9 +190,7 @@ export function AgentVersionDiffPage({ agentId, initialVersion }: AgentVersionDi
 
   if (error) {
     return (
-      <div className="flex items-center justify-center h-full text-destructive text-sm">
-        {error}
-      </div>
+      <div className="flex items-center justify-center h-full text-destructive text-sm">{error}</div>
     );
   }
 
@@ -141,89 +202,123 @@ export function AgentVersionDiffPage({ agentId, initialVersion }: AgentVersionDi
     );
   }
 
-  const selectedVersionItem = versions.find((v) => v.version_number === selectedVersion);
+  const selectedVersionItem = versions.find((v) => v.version_number === leftVersion);
+
+  const leftLabel = leftSnapshot ? `Version ${leftSnapshot.version}` : "Select a version";
+  const rightLabel = rightVersion === "current"
+    ? `Current Version${liveAgent?.version != null ? ` (v${liveAgent.version})` : ""}`
+    : `Version ${rightVersion}`;
+
+  const isAnyLoading = snapshotLoading || rightSnapshotLoading;
 
   return (
     <div className="h-full flex flex-col overflow-hidden" style={{ paddingTop: "var(--shell-header-h)" }}>
-      {/* Version selector toolbar */}
-      <div className="shrink-0 flex items-center gap-3 px-4 py-2 border-b border-border bg-card/50">
-        <Select
-          value={selectedVersion?.toString() ?? ""}
-          onValueChange={(val) => startTransition(() => setSelectedVersion(parseInt(val, 10)))}
-        >
-          <SelectTrigger className="w-[200px] h-8 text-sm">
-            <SelectValue placeholder="Select version..." />
-          </SelectTrigger>
-          <SelectContent>
-            {versions.map((v) => (
-              <SelectItem key={v.version_number} value={v.version_number.toString()}>
-                <span className="font-mono tabular-nums">v{v.version_number}</span>
-                {v.change_note && (
-                  <span className="ml-2 text-muted-foreground truncate">— {v.change_note}</span>
-                )}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "compare" | "history")} className="flex flex-col h-full">
+        {/* Toolbar */}
+        <div className="shrink-0 flex items-center gap-3 px-4 py-2 border-b border-border bg-card/50">
+          <TabsList className="h-7 p-0.5 bg-muted/50">
+            <TabsTrigger value="compare" className="h-6 px-2 text-xs gap-1 data-[state=active]:bg-background">
+              <GitCompareArrows className="w-3 h-3" />
+              Compare
+            </TabsTrigger>
+            <TabsTrigger value="history" className="h-6 px-2 text-xs gap-1 data-[state=active]:bg-background">
+              <History className="w-3 h-3" />
+              History
+            </TabsTrigger>
+          </TabsList>
 
-        {selectedVersionItem && (
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Clock className="w-3 h-3" />
-            {new Date(selectedVersionItem.changed_at).toLocaleString()}
-          </div>
-        )}
+          {activeTab === "compare" && (
+            <>
+              <div className="w-[220px]">
+                <SearchableSelect
+                  options={leftVersionOptions}
+                  value={leftVersion?.toString() ?? undefined}
+                  onChange={handleLeftVersionChange}
+                  placeholder="Select version..."
+                  searchPlaceholder="Search versions..."
+                />
+              </div>
+              <span className="text-xs text-muted-foreground">vs</span>
+              <div className="w-[260px]">
+                <SearchableSelect
+                  options={rightVersionOptions}
+                  value={rightVersion.toString()}
+                  onChange={handleRightVersionChange}
+                  placeholder="Compare to..."
+                  searchPlaceholder="Search versions..."
+                />
+              </div>
 
-        <div className="flex-1" />
-
-        {liveAgent?.version != null &&
-          selectedVersion != null &&
-          selectedVersion !== liveAgent.version && (
-            <Button
-              variant="default"
-              size="sm"
-              className="gap-1.5 h-8"
-              onClick={() => setShowPromoteDialog(true)}
-              disabled={promoting}
-            >
-              {promoting ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              ) : (
-                <ArrowUpCircle className="w-3.5 h-3.5" />
+              {selectedVersionItem && (
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Clock className="w-3 h-3" />
+                  {new Date(selectedVersionItem.changed_at).toLocaleString()}
+                </div>
               )}
-              Promote v{selectedVersion} to Current
-            </Button>
+
+              <div className="flex-1" />
+
+              {liveAgent?.version != null &&
+                leftVersion != null &&
+                leftVersion !== liveAgent.version && (
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="gap-1.5 h-8"
+                    onClick={() => setShowPromoteDialog(true)}
+                    disabled={promoting}
+                  >
+                    {promoting ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <ArrowUpCircle className="w-3.5 h-3.5" />
+                    )}
+                    Promote v{leftVersion}
+                  </Button>
+                )}
+
+              {liveAgent?.version != null && leftVersion === liveAgent.version && (
+                <Badge variant="secondary" className="gap-1 text-xs text-emerald-600 dark:text-emerald-400">
+                  <CheckCircle2 className="w-3 h-3" />
+                  Current Version
+                </Badge>
+              )}
+            </>
           )}
-
-        {liveAgent?.version != null && selectedVersion === liveAgent.version && (
-          <Badge variant="secondary" className="gap-1 text-xs text-emerald-600 dark:text-emerald-400">
-            <CheckCircle2 className="w-3 h-3" />
-            Current Version
-          </Badge>
-        )}
-      </div>
-
-      {/* Diff content */}
-      {snapshotLoading ? (
-        <div className="flex-1 p-4 space-y-3">
-          <Skeleton className="h-6 w-48" />
-          <Skeleton className="h-64 w-full" />
-          <Skeleton className="h-32 w-full" />
         </div>
-      ) : snapshot && liveAgent ? (
-        <div className="flex-1 overflow-hidden">
-          <AgentDiffViewer
-            oldAgent={snapshot}
-            newAgent={liveAgent}
-            oldLabel={`Version ${snapshot.version}`}
-            newLabel={`Current Version${liveAgent.version != null ? ` (v${liveAgent.version})` : ""}`}
-            className="h-full"
+
+        {/* Compare tab */}
+        <TabsContent value="compare" className="flex-1 overflow-hidden mt-0">
+          {isAnyLoading ? (
+            <div className="flex-1 p-4 space-y-3">
+              <Skeleton className="h-6 w-48" />
+              <Skeleton className="h-64 w-full" />
+            </div>
+          ) : leftSnapshot && rightAgent ? (
+            <AgentDiffViewer
+              oldAgent={leftSnapshot}
+              newAgent={rightAgent}
+              oldLabel={leftLabel}
+              newLabel={rightLabel}
+              className="h-full"
+            />
+          ) : (
+            <div className="flex items-center justify-center h-full text-sm text-muted-foreground">
+              Select a version to see differences
+            </div>
+          )}
+        </TabsContent>
+
+        {/* History tab */}
+        <TabsContent value="history" className="flex-1 overflow-y-auto mt-0">
+          <VersionHistoryTimeline
+            agentId={agentId}
+            versions={versions}
+            currentVersion={liveAgent?.version ?? null}
+            onCompare={handleHistoryCompare}
           />
-        </div>
-      ) : (
-        <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground">
-          Select a version to see differences
-        </div>
-      )}
+        </TabsContent>
+      </Tabs>
 
       <AlertDialog open={showPromoteDialog} onOpenChange={setShowPromoteDialog}>
         <AlertDialogContent>
@@ -231,15 +326,14 @@ export function AgentVersionDiffPage({ agentId, initialVersion }: AgentVersionDi
             <AlertDialogTitle>Promote Version</AlertDialogTitle>
             <AlertDialogDescription>
               This will replace the current agent configuration with the content from v
-              {selectedVersion}. The current configuration will be saved as a new version in the
-              history.
+              {leftVersion}. The current configuration will be saved as a new version in the history.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={promoting}>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handlePromote} disabled={promoting}>
               {promoting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              Promote v{selectedVersion}
+              Promote v{leftVersion}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

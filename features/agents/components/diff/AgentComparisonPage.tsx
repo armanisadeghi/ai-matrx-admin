@@ -14,13 +14,8 @@ import {
   selectAgentById,
   selectVersionsByParentAgentId,
 } from "@/features/agents/redux/agent-definition/selectors";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import SearchableSelect from "@/components/matrx/SearchableSelect";
+import type { Option } from "@/components/matrx/SearchableSelect";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Loader2 } from "lucide-react";
 import { AgentDiffViewer } from "./AgentDiffViewer";
@@ -51,7 +46,6 @@ export function AgentComparisonPage() {
   const [left, setLeft] = useState<SideState>(initialSide);
   const [right, setRight] = useState<SideState>(initialSide);
 
-  // Load agents list on mount
   useEffect(() => {
     if (allAgents.length === 0) {
       dispatch(fetchAgentsListFull())
@@ -63,12 +57,13 @@ export function AgentComparisonPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Sorted agent list for the dropdowns
-  const agentOptions = allAgents
+  const agentOptions: Option[] = allAgents
     .filter((a) => !a.isVersion)
-    .sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""));
+    .sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""))
+    .map((a) => ({ value: a.id, label: a.name ?? a.id }));
 
-  const handleAgentChange = (side: "left" | "right", agentId: string) => {
+  const handleAgentChange = (side: "left" | "right", option: Option) => {
+    const agentId = option.value;
     const setter = side === "left" ? setLeft : setRight;
     setter((prev) => ({
       ...prev,
@@ -78,44 +73,36 @@ export function AgentComparisonPage() {
       versionHistory: [],
     }));
 
-    // Fetch full agent + version history
     dispatch(fetchFullAgent(agentId));
     dispatch(fetchAgentVersionHistory({ agentId, limit: 100 }))
       .unwrap()
       .then((data) => {
-        setter((prev) => ({
-          ...prev,
-          versionHistory: data,
-          versionsLoading: false,
-        }));
+        setter((prev) => ({ ...prev, versionHistory: data, versionsLoading: false }));
       })
       .catch(() => {
         setter((prev) => ({ ...prev, versionsLoading: false }));
       });
   };
 
-  const handleVersionChange = (side: "left" | "right", version: string) => {
+  const handleVersionChange = (side: "left" | "right", option: Option) => {
     const setter = side === "left" ? setLeft : setRight;
     const state = side === "left" ? left : right;
 
-    if (version === "current") {
+    if (option.value === "current") {
       setter((prev) => ({ ...prev, version: "current" }));
       return;
     }
 
-    const versionNum = parseInt(version, 10);
+    const versionNum = parseInt(option.value, 10);
     setter((prev) => ({ ...prev, version: versionNum, snapshotLoading: true }));
 
     if (state.agentId) {
       dispatch(fetchAgentVersionSnapshot({ agentId: state.agentId, version: versionNum }))
         .unwrap()
-        .finally(() => {
-          setter((prev) => ({ ...prev, snapshotLoading: false }));
-        });
+        .finally(() => setter((prev) => ({ ...prev, snapshotLoading: false })));
     }
   };
 
-  // Resolve the actual agent records for each side
   const leftAgent = useAppSelector((s) => (left.agentId ? selectAgentById(s, left.agentId) : undefined));
   const rightAgent = useAppSelector((s) => (right.agentId ? selectAgentById(s, right.agentId) : undefined));
   const leftVersions = useAppSelector((s) => (left.agentId ? selectVersionsByParentAgentId(s, left.agentId) : []));
@@ -154,27 +141,23 @@ export function AgentComparisonPage() {
       {/* Selector toolbar */}
       <div className="shrink-0 border-b border-border bg-card/50">
         <div className="grid grid-cols-2 divide-x divide-border">
-          {/* Left side selector */}
           <SideSelector
-            label="Left"
-            agents={agentOptions}
+            agentOptions={agentOptions}
             selectedAgentId={left.agentId}
             selectedVersion={left.version}
             versionHistory={left.versionHistory}
             versionsLoading={left.versionsLoading}
-            onAgentChange={(id) => startTransition(() => handleAgentChange("left", id))}
-            onVersionChange={(v) => startTransition(() => handleVersionChange("left", v))}
+            onAgentChange={(opt) => startTransition(() => handleAgentChange("left", opt))}
+            onVersionChange={(opt) => startTransition(() => handleVersionChange("left", opt))}
           />
-          {/* Right side selector */}
           <SideSelector
-            label="Right"
-            agents={agentOptions}
+            agentOptions={agentOptions}
             selectedAgentId={right.agentId}
             selectedVersion={right.version}
             versionHistory={right.versionHistory}
             versionsLoading={right.versionsLoading}
-            onAgentChange={(id) => startTransition(() => handleAgentChange("right", id))}
-            onVersionChange={(v) => startTransition(() => handleVersionChange("right", v))}
+            onAgentChange={(opt) => startTransition(() => handleAgentChange("right", opt))}
+            onVersionChange={(opt) => startTransition(() => handleVersionChange("right", opt))}
           />
         </div>
       </div>
@@ -205,8 +188,7 @@ export function AgentComparisonPage() {
 }
 
 function SideSelector({
-  label,
-  agents,
+  agentOptions,
   selectedAgentId,
   selectedVersion,
   versionHistory,
@@ -214,50 +196,42 @@ function SideSelector({
   onAgentChange,
   onVersionChange,
 }: {
-  label: string;
-  agents: Array<{ id: string; name: string }>;
+  agentOptions: Option[];
   selectedAgentId: string | null;
   selectedVersion: "current" | number | null;
   versionHistory: AgentVersionHistoryItem[];
   versionsLoading: boolean;
-  onAgentChange: (id: string) => void;
-  onVersionChange: (version: string) => void;
+  onAgentChange: (option: Option) => void;
+  onVersionChange: (option: Option) => void;
 }) {
+  const versionOptions: Option[] = [
+    { value: "current", label: "Current Version" },
+    ...versionHistory.map((v) => ({
+      value: v.version_number.toString(),
+      label: `v${v.version_number}${v.change_note ? ` — ${v.change_note}` : ""}`,
+    })),
+  ];
+
   return (
     <div className="flex items-center gap-2 px-3 py-2">
-      <Select value={selectedAgentId ?? ""} onValueChange={onAgentChange}>
-        <SelectTrigger className="h-8 text-xs flex-1 min-w-0">
-          <SelectValue placeholder="Select agent..." />
-        </SelectTrigger>
-        <SelectContent>
-          {agents.map((agent) => (
-            <SelectItem key={agent.id} value={agent.id}>
-              {agent.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      <Select
-        value={selectedVersion?.toString() ?? ""}
-        onValueChange={onVersionChange}
-        disabled={!selectedAgentId || versionsLoading}
-      >
-        <SelectTrigger className="h-8 text-xs w-[140px]">
-          <SelectValue placeholder={versionsLoading ? "Loading..." : "Version..."} />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="current">Current</SelectItem>
-          {versionHistory.map((v) => (
-            <SelectItem key={v.version_number} value={v.version_number.toString()}>
-              <span className="font-mono tabular-nums">v{v.version_number}</span>
-              {v.change_note && (
-                <span className="ml-1.5 text-muted-foreground truncate">— {v.change_note}</span>
-              )}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <div className="flex-1 min-w-0">
+        <SearchableSelect
+          options={agentOptions}
+          value={selectedAgentId ?? undefined}
+          onChange={onAgentChange}
+          placeholder="Select agent..."
+          searchPlaceholder="Search agents..."
+        />
+      </div>
+      <div className="w-[180px] shrink-0">
+        <SearchableSelect
+          options={versionOptions}
+          value={selectedVersion?.toString() ?? undefined}
+          onChange={onVersionChange}
+          placeholder={versionsLoading ? "Loading..." : "Version..."}
+          searchPlaceholder="Search versions..."
+        />
+      </div>
     </div>
   );
 }
