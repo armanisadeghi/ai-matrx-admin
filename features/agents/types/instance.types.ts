@@ -447,12 +447,31 @@ export interface InstanceUIState {
 // =============================================================================
 
 export interface LaunchAgentOverrides {
+  // -- Display Mode ───────────────────────────────────────────────────────────
+  /**
+   * How the result is presented. "direct" means the caller manages the UI
+   *
+   * "inline" | "sidebar" | "modal-full" | "modal-compact" | "chat-bubble" |
+   * "flexible-panel" | "panel" | "toast" | "floating-chat" | "direct" | "background" |
+   * "chat-collapsible" | "chat-assistant"
+   */
   displayMode?: ResultDisplayMode;
+
+  // autoRun means the agent triggers without any user input or variables.
+  // used for programmatic triggers where the full context is already assembled
+  // (e.g. flashcard "I'm confused" button) or many context menu options.
   autoRun?: boolean;
+
+  // allowChat means the user can send follow-up messages after the first response.
+  // true = multi-turn conversation; false = single-shot only.
   allowChat?: boolean;
 
-  /** Coarse visibility toggle — resolves to fine-grained fields in the thunk. */
+  /** Determines whether the user has the ability to see the 'form' for capturing variables.
+   * This does Not alter the behavior of the default variable values or the programmatic variable inclusion.
+   * If False, everything proceeds nomally but the user cannot modify the variable values.
+   */
   showVariables?: boolean;
+
   /** Fine-grained: override variable panel independently. */
   showVariablePanel?: boolean;
   /** Fine-grained: override definition message visibility independently. */

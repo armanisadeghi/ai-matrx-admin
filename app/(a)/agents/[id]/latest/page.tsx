@@ -1,5 +1,5 @@
 import { getAgent } from "@/lib/agents/data";
-import { AgentVersionsWorkspace } from "@/features/agents/route/AgentVersionsWorkspace";
+import { AgentVersionDiffPage } from "@/features/agents/components/diff/AgentVersionDiffPage";
 import PageHeader from "@/features/shell/components/header/PageHeader";
 import { AgentHeader } from "@/features/agents/components/shared/AgentHeader";
 
@@ -18,7 +18,7 @@ export default async function AgentLatestPage({
       <PageHeader>
         <AgentHeader agentId={id} agentName={agent.name} />
       </PageHeader>
-      <AgentVersionsWorkspace agentId={id} />
+      <AgentVersionDiffPage agentId={id} />
     </>
   );
 }

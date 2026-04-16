@@ -81,6 +81,7 @@ import {
   upsertAgentConversationFromExecutionAction,
 } from "@/features/agents/redux/agent-conversations";
 import { StreamProfiler } from "@/utils/stream-profiler";
+import { assembleMessageParts } from "../utils/assemble-cx-content-blocks";
 
 // =============================================================================
 // Types
@@ -846,12 +847,20 @@ export async function processStream({
         .filter(Boolean)
     : [];
 
+  // Assemble DB-compatible CxContentBlock[] from the completed request.
+  // This is the authoritative format for persistence and editing — it mirrors
+  // exactly what cx_message.content[] stores in the database.
+  const cxContentBlocks = finalRequest
+    ? assembleMessageParts(finalRequest)
+    : [];
+
   dispatch(
     commitAssistantTurn({
       conversationId,
       requestId,
       content: completedText,
       serverConversationId: finalConversationId,
+      ...(cxContentBlocks.length > 0 && { cxContentBlocks }),
       ...(finalContentBlocks.length > 0 && {
         renderBlocks: finalContentBlocks,
       }),

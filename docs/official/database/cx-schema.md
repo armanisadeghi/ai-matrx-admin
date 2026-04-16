@@ -7,6 +7,7 @@ Client → POST /agents → creates cx_user_request
   → cx_user_request loops N iterations:
       each iteration → cx_request (1 LLM API call)
       each iteration → cx_message(s) (user/assistant/tool turns)
+      tool invocations → cx_tool_call (one per tool executed)
   → streams response back to client
 ```
 
@@ -48,6 +49,7 @@ One per client API call. Tracks the full round-trip including all iterations.
 | `trigger_message_position` | which message position triggered this |
 | `result_start_position` / `result_end_position` | message range produced |
 | `total_input_tokens`, `total_output_tokens`, `total_cached_tokens`, `total_cost` | aggregated across all iterations |
+| `total_tool_calls` | aggregated tool invocation count |
 | `total_duration_ms`, `api_duration_ms`, `tool_duration_ms` | timing breakdown |
 | `status` | pending → complete / error |
 | `finish_reason` | stop, tool_use, max_tokens, etc. |
@@ -66,7 +68,7 @@ One per LLM API call. A user_request with 3 tool-call iterations = 3 cx_requests
 | `input_tokens`, `output_tokens`, `cached_tokens`, `cost` | per-call metrics |
 | `api_duration_ms`, `tool_duration_ms`, `total_duration_ms` | per-call timing |
 | `tool_calls_count` | number of tools invoked |
-| `tool_calls_details` (jsonb) | tool names, args, results |
+| `tool_calls_details` (jsonb) | tool names, args, results summary |
 | `response_id` | provider's response ID |
 | `finish_reason` | why this call stopped |
 
@@ -85,6 +87,38 @@ Individual conversation turns. Ordered by `position` within a conversation.
 | `agent_id` → `agx_agent.id` | which agent produced this message |
 | `is_visible_to_user` | controls UI rendering |
 | `is_visible_to_model` | controls what gets sent to LLM |
+
+### cx_tool_call
+One per tool invocation. The authoritative execution record for each tool the agent calls.
+
+| Key Column | Notes |
+|---|---|
+| `conversation_id` → `cx_conversation.id` | **required** (denormalized for direct query) |
+| `message_id` → `cx_message.id` | message that contains this tool call block |
+| `user_request_id` → `cx_user_request.id` | which user request triggered it |
+| `user_id` | caller |
+| `parent_call_id` → self | for nested/delegated tool calls |
+| **Identity** | |
+| `tool_name` | registered tool name |
+| `tool_type` | local, mcp, builtin, etc. (default: `'local'`) |
+| `call_id` | provider-assigned ID (matches LLM response tool_call_id) |
+| `iteration` | which iteration of the agent loop this belongs to |
+| **Execution** | |
+| `status` | pending, running, complete, failed, etc. |
+| `arguments` (jsonb) | input args passed to the tool |
+| `success` (bool) | did it succeed |
+| `output` (text) | result payload |
+| `output_type` | text, json, markdown, image, etc. |
+| `is_error` / `error_type` / `error_message` | failure details |
+| `retry_count` | retry attempts |
+| `execution_events` (jsonb[]) | streaming/progress events captured during execution |
+| **Metrics** | |
+| `duration_ms` | wall time |
+| `started_at` / `completed_at` | precise timing |
+| `input_tokens` / `output_tokens` / `total_tokens` / `cost_usd` | token + cost tracking (for LLM-backed tools) |
+| **Persistence** | |
+| `persist_key` | stable key for deduping/caching |
+| `file_path` | for tools that produce files |
 
 ## Related Tables
 
@@ -129,12 +163,17 @@ Persistent memory across conversations. **No FKs to cx_ tables** — scoped inde
 
 ```
 cx_conversation (root)
- ├── cx_user_request[]        (1 per client call)
- │    └── cx_request[]        (1 per LLM iteration)
- ├── cx_message[]             (ordered by position)
- │    └── cx_artifact[]       (attached outputs)
- ├── cx_media[]               (uploaded files)
- └── (cx_agent_memory)        (scoped independently, no direct FK)
+ ├── cx_user_request[]            (1 per client call)
+ │    ├── cx_request[]            (1 per LLM iteration)
+ │    └── cx_tool_call[]          (1 per tool invocation)
+ ├── cx_message[]                 (ordered by position)
+ │    ├── cx_tool_call[]          (tool calls referenced in this message)
+ │    └── cx_artifact[]           (attached outputs)
+ ├── cx_media[]                   (uploaded files)
+ └── (cx_agent_memory)            (scoped independently, no direct FK)
+
+cx_tool_call
+ └── parent_call_id → self        (nested/delegated calls)
 ```
 
 ## Key Patterns
@@ -142,7 +181,8 @@ cx_conversation (root)
 - **Soft deletes everywhere**: `deleted_at` on all tables, never hard delete.
 - **Position-based ordering**: Messages use `position` (smallint), not timestamps.
 - **Dual visibility**: `is_visible_to_user` + `is_visible_to_model` on messages enables hidden system messages and model-only context.
-- **Denormalized `conversation_id`**: Present on cx_request, cx_artifact, cx_media for direct queries without joins.
+- **Denormalized `conversation_id`**: Present on cx_request, cx_tool_call, cx_artifact, cx_media for direct queries without joins.
+- **Tool call dual-tracking**: `cx_request.tool_calls_details` (jsonb) is a summary inside the LLM call record; `cx_tool_call` rows are the authoritative per-execution records with full args/output/metrics. Always query `cx_tool_call` for tool history, not `cx_request.tool_calls_details`.
 - **Source tracking**: `source_app` + `source_feature` on conversations and user_requests to trace which Matrx app originated the call.
 - **All UUIDs**: Every `id` is `uuid DEFAULT gen_random_uuid()`.
 - **JSONB config pattern**: `metadata`, `config`, `variables`, `overrides` — all `jsonb DEFAULT '{}'`.

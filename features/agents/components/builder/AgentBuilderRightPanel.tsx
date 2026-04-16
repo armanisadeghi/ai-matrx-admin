@@ -9,7 +9,10 @@
  */
 
 import { Loader2 } from "lucide-react";
-import { useAgentLauncher } from "@/features/agents/hooks/useAgentLauncher";
+import {
+  useAgentLauncher,
+  type ManagedAgentOptions,
+} from "@/features/agents/hooks/useAgentLauncher";
 import { AgentConversationColumn } from "../shared/AgentConversationColumn";
 
 interface AgentBuilderRightPanelProps {
@@ -21,13 +24,18 @@ export function AgentBuilderRightPanel({
 }: AgentBuilderRightPanelProps) {
   const sourceFeature = "agent-builder";
   const surfaceKey = `${sourceFeature}:${agentId}`;
-  const conversationMode = "chat";
 
-  const { conversationId } = useAgentLauncher(agentId, {
+  const agentOptions: ManagedAgentOptions = {
     surfaceKey,
     sourceFeature,
-    conversationMode,
-  });
+    conversationMode: "chat",
+    showVariables: true,
+    autoRun: false,
+    allowChat: true,
+    showVariablePanel: true,
+  };
+
+  const { conversationId } = useAgentLauncher(agentId, agentOptions);
 
   if (!conversationId) {
     return (

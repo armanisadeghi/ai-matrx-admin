@@ -5043,6 +5043,8 @@ export type Database = {
           message_id: string | null
           metadata: Json
           output: string | null
+          output_chars: number
+          output_preview: Json | null
           output_tokens: number | null
           output_type: string | null
           parent_call_id: string | null
@@ -5077,6 +5079,8 @@ export type Database = {
           message_id?: string | null
           metadata?: Json
           output?: string | null
+          output_chars?: number
+          output_preview?: Json | null
           output_tokens?: number | null
           output_type?: string | null
           parent_call_id?: string | null
@@ -5111,6 +5115,8 @@ export type Database = {
           message_id?: string | null
           metadata?: Json
           output?: string | null
+          output_chars?: number
+          output_preview?: Json | null
           output_tokens?: number | null
           output_type?: string | null
           parent_call_id?: string | null

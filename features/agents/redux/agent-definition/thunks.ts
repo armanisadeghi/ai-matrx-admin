@@ -388,17 +388,29 @@ export const saveAgentField = createAsyncThunk<
 
     dispatch(setAgentField({ id: agentId, field, value }));
 
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from("agx_agent")
       .update(
         agentDefinitionToUpdate({ [field]: value } as Partial<AgentDefinition>),
       )
-      .eq("id", agentId);
+      .eq("id", agentId)
+      .select("version, updated_at")
+      .single();
 
     if (error) {
       dispatch(rollbackAgentOptimisticUpdate({ id: agentId, snapshot }));
       dispatch(setAgentError({ id: agentId, error: error.message }));
       throw error;
+    }
+
+    if (data) {
+      dispatch(
+        mergePartialAgent({
+          id: agentId,
+          version: data.version,
+          updatedAt: data.updated_at,
+        }),
+      );
     }
 
     dispatch(markAgentSaved({ id: agentId }));
@@ -427,10 +439,12 @@ export const saveAgent = createAsyncThunk<void, string, ThunkApi>(
 
     dispatch(setAgentLoading({ id: agentId, loading: true }));
 
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from("agx_agent")
       .update(agentDefinitionToUpdate(dirtyPartial))
-      .eq("id", agentId);
+      .eq("id", agentId)
+      .select("version, updated_at")
+      .single();
 
     dispatch(setAgentLoading({ id: agentId, loading: false }));
 
@@ -438,6 +452,16 @@ export const saveAgent = createAsyncThunk<void, string, ThunkApi>(
       dispatch(rollbackAgentOptimisticUpdate({ id: agentId, snapshot }));
       dispatch(setAgentError({ id: agentId, error: error.message }));
       throw error;
+    }
+
+    if (data) {
+      dispatch(
+        mergePartialAgent({
+          id: agentId,
+          version: data.version,
+          updatedAt: data.updated_at,
+        }),
+      );
     }
 
     dispatch(markAgentSaved({ id: agentId }));

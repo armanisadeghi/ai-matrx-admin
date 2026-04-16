@@ -173,11 +173,13 @@ export type AiModelFormData = {
 export type ModelUsageItem = {
   id: string;
   name: string;
-  table: "prompts" | "prompt_builtins";
+  table: "prompts" | "prompt_builtins" | "agx_agent" | "agx_agent_templates";
   source_prompt_id?: string | null;
 };
 
 export type ModelUsageResult = {
   prompts: ModelUsageItem[];
   promptBuiltins: ModelUsageItem[];
+  agents: ModelUsageItem[];
+  agentTemplates: ModelUsageItem[];
 };

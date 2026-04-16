@@ -31,6 +31,7 @@ import type {
   MessagePart,
   RenderBlockPayload,
 } from "@/types/python-generated/stream-events";
+import type { CxContentBlock } from "@/features/public-chat/types/cx-tables";
 
 // =============================================================================
 // Types
@@ -62,9 +63,18 @@ export interface ConversationTurn {
   messageParts?: MessagePart[];
 
   /**
+   * DB-compatible content blocks in cx_message.content[] format.
+   * Assembled from activeRequests at commitAssistantTurn time, or
+   * copied verbatim from CxMessage.content on DB-loaded turns.
+   * This is the authoritative format for edits, API requests, and persistence.
+   * Use this (not renderBlocks) when calling cx_message_edit or assembling chat messages.
+   */
+  cxContentBlocks?: CxContentBlock[];
+
+  /**
    * Streaming-path renderBlocks (Pre-processed, parsed items like Flashcards, Quiz, Timeline, etc.) attached during
    * addUserTurn or commitAssistantTurn. Used by AgentUserMessage for
-   * inline attachment rendering. Separate from messageParts (DB path).
+   * inline attachment rendering. Separate from cxContentBlocks (DB path).
    */
   renderBlocks?: RenderBlockPayload[];
 
@@ -203,6 +213,7 @@ const instanceConversationHistorySlice = createSlice({
         conversationId: string;
         content: string;
         messageParts?: MessagePart[];
+        cxContentBlocks?: CxContentBlock[];
         serverConversationId?: string | null;
         systemGenerated?: boolean;
       }>,
@@ -211,6 +222,7 @@ const instanceConversationHistorySlice = createSlice({
         conversationId,
         content,
         messageParts,
+        cxContentBlocks,
         serverConversationId = null,
         systemGenerated,
       } = action.payload;
@@ -223,6 +235,8 @@ const instanceConversationHistorySlice = createSlice({
         role: "user",
         content,
         ...(messageParts && { messageParts }),
+        ...(cxContentBlocks &&
+          cxContentBlocks.length > 0 && { cxContentBlocks }),
         timestamp: new Date().toISOString(),
         requestId: null,
         conversationId: serverConversationId,
@@ -242,6 +256,7 @@ const instanceConversationHistorySlice = createSlice({
         content: string;
         serverConversationId: string | null;
         messageParts?: MessagePart[];
+        cxContentBlocks?: CxContentBlock[];
         renderBlocks?: RenderBlockPayload[];
         tokenUsage?: TokenUsage;
         finishReason?: string;
@@ -255,6 +270,7 @@ const instanceConversationHistorySlice = createSlice({
         content,
         serverConversationId,
         messageParts,
+        cxContentBlocks,
         renderBlocks,
         tokenUsage,
         finishReason,
@@ -277,6 +293,8 @@ const instanceConversationHistorySlice = createSlice({
         requestId,
         conversationId: serverConversationId,
         ...(messageParts && { messageParts }),
+        ...(cxContentBlocks &&
+          cxContentBlocks.length > 0 && { cxContentBlocks }),
         ...(renderBlocks && { renderBlocks }),
         ...(tokenUsage && { tokenUsage }),
         ...(finishReason && { finishReason }),
@@ -356,6 +374,30 @@ const instanceConversationHistorySlice = createSlice({
       }
     },
 
+    /**
+     * Store DB-compatible CxContentBlock[] on an existing turn by turnId.
+     * Used for DB-loaded turns and after cx_message_edit to keep the turn
+     * in sync with the persisted state. This is the authoritative copy for
+     * edits and API request assembly.
+     */
+    setTurnCxContentBlocks(
+      state,
+      action: PayloadAction<{
+        conversationId: string;
+        turnId: string;
+        cxContentBlocks: CxContentBlock[];
+      }>,
+    ) {
+      const { conversationId, turnId, cxContentBlocks } = action.payload;
+      const entry = state.byConversationId[conversationId];
+      if (!entry) return;
+
+      const turn = entry.turns.find((t) => t.turnId === turnId);
+      if (turn) {
+        turn.cxContentBlocks = cxContentBlocks;
+      }
+    },
+
     /** Set conversation label from server's conversation_labeled data event. */
     setConversationLabel(
       state,
@@ -407,6 +449,7 @@ export const {
   attachClientMetrics,
   loadConversationHistory,
   setTurnMessageParts,
+  setTurnCxContentBlocks,
   setConversationLabel,
   clearHistory,
   removeInstanceHistory,

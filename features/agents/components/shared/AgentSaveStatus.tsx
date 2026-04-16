@@ -14,7 +14,14 @@ import {
   saveAgent,
   createAgent,
 } from "@/features/agents/redux/agent-definition/thunks";
-import { Save, Loader2, AlertTriangle } from "lucide-react";
+import { Save, Loader2, AlertTriangle, Eye } from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { UnsavedChangesDiff } from "@/features/agents/components/diff/UnsavedChangesDiff";
 import { cn } from "@/lib/utils";
 import { toast } from "@/lib/toast-service";
 import {
@@ -50,6 +57,7 @@ export function AgentSaveStatus({ agentId }: { agentId: string }) {
 
   const [showModelWarning, setShowModelWarning] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [showDiff, setShowDiff] = useState(false);
 
   const isNewRoute = pathname === "/agents/new";
   const isEditMode =
@@ -116,9 +124,20 @@ export function AgentSaveStatus({ agentId }: { agentId: string }) {
         )}
 
         {isEditMode && isDirty && (
-          <span className="text-[10px] font-medium text-amber-500 px-1.5 py-0.5 rounded bg-amber-500/10">
-            {isNewRoute ? "Not saved" : "Unsaved"}
-          </span>
+          <>
+            <span className="text-[10px] font-medium text-amber-500 px-1.5 py-0.5 rounded bg-amber-500/10">
+              {isNewRoute ? "Not saved" : "Unsaved"}
+            </span>
+            {!isNewRoute && (
+              <button
+                onClick={() => setShowDiff(true)}
+                className="flex items-center justify-center w-6 h-6 rounded-md transition-colors text-amber-500 hover:bg-amber-500/10 active:bg-amber-500/20"
+                title="View unsaved changes"
+              >
+                <Eye className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </>
         )}
 
         {isEditMode && (
@@ -175,6 +194,17 @@ export function AgentSaveStatus({ agentId }: { agentId: string }) {
         open={settingsOpen}
         onOpenChange={setSettingsOpen}
       />
+
+      <Sheet open={showDiff} onOpenChange={setShowDiff}>
+        <SheetContent side="right" className="w-[700px] sm:max-w-[700px] p-0 flex flex-col">
+          <SheetHeader className="px-4 py-3 border-b border-border shrink-0">
+            <SheetTitle className="text-sm">Unsaved Changes</SheetTitle>
+          </SheetHeader>
+          <div className="flex-1 overflow-hidden">
+            {showDiff && <UnsavedChangesDiff agentId={agentId} />}
+          </div>
+        </SheetContent>
+      </Sheet>
     </>
   );
 }

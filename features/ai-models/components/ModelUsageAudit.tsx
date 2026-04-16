@@ -62,7 +62,10 @@ export default function ModelUsageAudit({
   }, [load]);
 
   const totalUsage =
-    (usage?.prompts.length ?? 0) + (usage?.promptBuiltins.length ?? 0);
+    (usage?.prompts.length ?? 0) +
+    (usage?.promptBuiltins.length ?? 0) +
+    (usage?.agents.length ?? 0) +
+    (usage?.agentTemplates.length ?? 0);
 
   const replacementOptions = allModels.filter(
     (m) => m.id !== model.id && !m.is_deprecated,
@@ -92,6 +95,8 @@ export default function ModelUsageAudit({
       await Promise.all([
         aiModelService.replaceModelInPrompts(model.id, replacementId),
         aiModelService.replaceModelInBuiltins(model.id, replacementId),
+        aiModelService.replaceModelInAgents(model.id, replacementId),
+        aiModelService.replaceModelInAgentTemplates(model.id, replacementId),
       ]);
       setStep("idle");
       await load();
@@ -115,6 +120,16 @@ export default function ModelUsageAudit({
           pendingSettings,
         ),
         aiModelService.replaceModelInBuiltins(
+          model.id,
+          replacementId,
+          pendingSettings,
+        ),
+        aiModelService.replaceModelInAgents(
+          model.id,
+          replacementId,
+          pendingSettings,
+        ),
+        aiModelService.replaceModelInAgentTemplates(
           model.id,
           replacementId,
           pendingSettings,
@@ -286,6 +301,19 @@ export default function ModelUsageAudit({
               </div>
             </div>
           )}
+
+          <UsageSection
+            title="Agents"
+            items={usage.agents}
+            emptyMessage="No agents reference this model."
+            linkBase="/agents"
+          />
+
+          <UsageSection
+            title="Agent Templates"
+            items={usage.agentTemplates}
+            emptyMessage="No agent templates reference this model."
+          />
 
           <UsageSection
             title="Prompts"

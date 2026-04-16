@@ -82,19 +82,34 @@ export const aiModelService = {
   },
 
   async fetchUsage(modelId: string): Promise<ModelUsageResult> {
-    const [promptsResult, builtinsResult] = await Promise.all([
-      supabase
-        .from("prompts")
-        .select("id, name, model_id")
-        .or(`model_id.eq.${modelId},settings->>model_id.eq.${modelId}`),
-      supabase
-        .from("prompt_builtins")
-        .select("id, name, source_prompt_id, settings")
-        .or(`model_id.eq.${modelId},settings->>model_id.eq.${modelId}`),
-    ]);
+    const [promptsResult, builtinsResult, agentsResult, agentTemplatesResult] =
+      await Promise.all([
+        supabase
+          .from("prompts")
+          .select("id, name, model_id")
+          .or(`model_id.eq.${modelId},settings->>model_id.eq.${modelId}`),
+        supabase
+          .from("prompt_builtins")
+          .select("id, name, source_prompt_id, settings")
+          .or(`model_id.eq.${modelId},settings->>model_id.eq.${modelId}`),
+        supabase
+          .from("agx_agent")
+          .select("id, name, model_id")
+          .or(
+            `model_id.eq.${modelId},settings->>model_id.eq.${modelId},model_tiers->>primary_model_id.eq.${modelId}`,
+          ),
+        supabase
+          .from("agx_agent_templates")
+          .select("id, name, model_id")
+          .or(
+            `model_id.eq.${modelId},settings->>model_id.eq.${modelId},model_tiers->>primary_model_id.eq.${modelId}`,
+          ),
+      ]);
 
     if (promptsResult.error) throw promptsResult.error;
     if (builtinsResult.error) throw builtinsResult.error;
+    if (agentsResult.error) throw agentsResult.error;
+    if (agentTemplatesResult.error) throw agentTemplatesResult.error;
 
     const prompts = (promptsResult.data ?? []).map((p) => ({
       id: p.id,
@@ -109,7 +124,19 @@ export const aiModelService = {
       source_prompt_id: b.source_prompt_id,
     }));
 
-    return { prompts, promptBuiltins };
+    const agents = (agentsResult.data ?? []).map((a) => ({
+      id: a.id,
+      name: a.name ?? a.id,
+      table: "agx_agent" as const,
+    }));
+
+    const agentTemplates = (agentTemplatesResult.data ?? []).map((t) => ({
+      id: t.id,
+      name: t.name ?? t.id,
+      table: "agx_agent_templates" as const,
+    }));
+
+    return { prompts, promptBuiltins, agents, agentTemplates };
   },
 
   async replaceModelInPrompts(
@@ -171,6 +198,71 @@ export const aiModelService = {
       const payload: Record<string, unknown> = { settings };
       if (hasColumn) payload.model_id = newId;
       return supabase.from("prompt_builtins").update(payload).eq("id", row.id);
+    });
+
+    const results = await Promise.all(updates);
+    const firstError = results.find((r) => r.error);
+    if (firstError?.error) throw firstError.error;
+
+    return rows.length;
+  },
+
+  async replaceModelInAgents(
+    oldId: string,
+    newId: string,
+    newSettings?: PromptSettings,
+  ): Promise<number> {
+    const { data: rows, error: fetchErr } = await supabase
+      .from("agx_agent")
+      .select("id, model_id, settings, model_tiers")
+      .or(`model_id.eq.${oldId},settings->>model_id.eq.${oldId}`);
+    if (fetchErr) throw fetchErr;
+    if (!rows || rows.length === 0) return 0;
+
+    const updates = rows.map((row) => {
+      const hasColumn = row.model_id === oldId;
+      const settings = newSettings
+        ? { ...newSettings, model_id: newId }
+        : typeof row.settings === "object" && row.settings !== null
+          ? { ...(row.settings as Record<string, unknown>), model_id: newId }
+          : { model_id: newId };
+      const payload: Record<string, unknown> = { settings };
+      if (hasColumn) payload.model_id = newId;
+      return supabase.from("agx_agent").update(payload).eq("id", row.id);
+    });
+
+    const results = await Promise.all(updates);
+    const firstError = results.find((r) => r.error);
+    if (firstError?.error) throw firstError.error;
+
+    return rows.length;
+  },
+
+  async replaceModelInAgentTemplates(
+    oldId: string,
+    newId: string,
+    newSettings?: PromptSettings,
+  ): Promise<number> {
+    const { data: rows, error: fetchErr } = await supabase
+      .from("agx_agent_templates")
+      .select("id, model_id, settings, model_tiers")
+      .or(`model_id.eq.${oldId},settings->>model_id.eq.${oldId}`);
+    if (fetchErr) throw fetchErr;
+    if (!rows || rows.length === 0) return 0;
+
+    const updates = rows.map((row) => {
+      const hasColumn = row.model_id === oldId;
+      const settings = newSettings
+        ? { ...newSettings, model_id: newId }
+        : typeof row.settings === "object" && row.settings !== null
+          ? { ...(row.settings as Record<string, unknown>), model_id: newId }
+          : { model_id: newId };
+      const payload: Record<string, unknown> = { settings };
+      if (hasColumn) payload.model_id = newId;
+      return supabase
+        .from("agx_agent_templates")
+        .update(payload)
+        .eq("id", row.id);
     });
 
     const results = await Promise.all(updates);

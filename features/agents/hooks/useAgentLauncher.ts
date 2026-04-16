@@ -38,7 +38,6 @@ import {
 } from "@/features/agents/redux/execution-system/conversation-focus";
 import type { ApplicationScope } from "@/features/agents/utils/scope-mapping";
 import type { LaunchAgentOverrides } from "@/features/agents/types/instance.types";
-export type { LaunchAgentOverrides } from "@/features/agents/types/instance.types";
 
 // =============================================================================
 // Options for managed mode (extends LaunchAgentOverrides)

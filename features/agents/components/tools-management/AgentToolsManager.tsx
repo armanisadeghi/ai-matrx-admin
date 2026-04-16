@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback, useEffect } from "react";
+import * as LucideIcons from "lucide-react";
 import {
   Wrench,
   Search,
@@ -30,7 +31,15 @@ import {
   EyeOff,
   Loader2,
   Save,
+  SlidersHorizontal,
 } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -91,6 +100,221 @@ type ToolsTab = "server" | "custom" | "client" | "mcp";
 
 const ALL_CATEGORY = "__all__";
 const ENABLED_CATEGORY = "__enabled__";
+
+// Resolve a Lucide icon name string to the actual React component
+function DynamicIcon({
+  name,
+  className,
+}: {
+  name: string;
+  className?: string;
+}) {
+  const IconComponent = (LucideIcons as Record<string, unknown>)[name] as
+    | React.ComponentType<{ className?: string }>
+    | undefined;
+  if (!IconComponent) return null;
+  return <IconComponent className={className} />;
+}
+
+// Deterministic color palette for category icons — muted, professional tones
+// that work in both light and dark mode.
+const CATEGORY_COLORS: Record<
+  string,
+  { bg: string; text: string; border: string; dot: string }
+> = {
+  browser: {
+    bg: "bg-blue-500/10",
+    text: "text-blue-500",
+    border: "border-blue-500/20",
+    dot: "bg-blue-500",
+  },
+  code: {
+    bg: "bg-violet-500/10",
+    text: "text-violet-500",
+    border: "border-violet-500/20",
+    dot: "bg-violet-500",
+  },
+  context: {
+    bg: "bg-cyan-500/10",
+    text: "text-cyan-500",
+    border: "border-cyan-500/20",
+    dot: "bg-cyan-500",
+  },
+  database: {
+    bg: "bg-emerald-500/10",
+    text: "text-emerald-500",
+    border: "border-emerald-500/20",
+    dot: "bg-emerald-500",
+  },
+  filesystem: {
+    bg: "bg-amber-500/10",
+    text: "text-amber-500",
+    border: "border-amber-500/20",
+    dot: "bg-amber-500",
+  },
+  ide: {
+    bg: "bg-indigo-500/10",
+    text: "text-indigo-500",
+    border: "border-indigo-500/20",
+    dot: "bg-indigo-500",
+  },
+  interaction: {
+    bg: "bg-pink-500/10",
+    text: "text-pink-500",
+    border: "border-pink-500/20",
+    dot: "bg-pink-500",
+  },
+  internal: {
+    bg: "bg-zinc-500/10",
+    text: "text-zinc-500",
+    border: "border-zinc-500/20",
+    dot: "bg-zinc-500",
+  },
+  local_browser: {
+    bg: "bg-sky-500/10",
+    text: "text-sky-500",
+    border: "border-sky-500/20",
+    dot: "bg-sky-500",
+  },
+  local_documents: {
+    bg: "bg-teal-500/10",
+    text: "text-teal-500",
+    border: "border-teal-500/20",
+    dot: "bg-teal-500",
+  },
+  local_execution: {
+    bg: "bg-orange-500/10",
+    text: "text-orange-500",
+    border: "border-orange-500/20",
+    dot: "bg-orange-500",
+  },
+  local_file_ops: {
+    bg: "bg-yellow-500/10",
+    text: "text-yellow-600",
+    border: "border-yellow-500/20",
+    dot: "bg-yellow-500",
+  },
+  local_input: {
+    bg: "bg-fuchsia-500/10",
+    text: "text-fuchsia-500",
+    border: "border-fuchsia-500/20",
+    dot: "bg-fuchsia-500",
+  },
+  local_media: {
+    bg: "bg-rose-500/10",
+    text: "text-rose-500",
+    border: "border-rose-500/20",
+    dot: "bg-rose-500",
+  },
+  local_network: {
+    bg: "bg-blue-400/10",
+    text: "text-blue-400",
+    border: "border-blue-400/20",
+    dot: "bg-blue-400",
+  },
+  local_os: {
+    bg: "bg-slate-500/10",
+    text: "text-slate-500",
+    border: "border-slate-500/20",
+    dot: "bg-slate-500",
+  },
+  local_process: {
+    bg: "bg-lime-500/10",
+    text: "text-lime-600",
+    border: "border-lime-500/20",
+    dot: "bg-lime-500",
+  },
+  local_system: {
+    bg: "bg-stone-500/10",
+    text: "text-stone-500",
+    border: "border-stone-500/20",
+    dot: "bg-stone-500",
+  },
+  local_window: {
+    bg: "bg-purple-500/10",
+    text: "text-purple-500",
+    border: "border-purple-500/20",
+    dot: "bg-purple-500",
+  },
+  math: {
+    bg: "bg-cyan-600/10",
+    text: "text-cyan-600",
+    border: "border-cyan-600/20",
+    dot: "bg-cyan-600",
+  },
+  memory: {
+    bg: "bg-violet-400/10",
+    text: "text-violet-400",
+    border: "border-violet-400/20",
+    dot: "bg-violet-400",
+  },
+  news: {
+    bg: "bg-red-500/10",
+    text: "text-red-500",
+    border: "border-red-500/20",
+    dot: "bg-red-500",
+  },
+  productivity: {
+    bg: "bg-green-500/10",
+    text: "text-green-500",
+    border: "border-green-500/20",
+    dot: "bg-green-500",
+  },
+  research: {
+    bg: "bg-indigo-400/10",
+    text: "text-indigo-400",
+    border: "border-indigo-400/20",
+    dot: "bg-indigo-400",
+  },
+  seo: {
+    bg: "bg-amber-600/10",
+    text: "text-amber-600",
+    border: "border-amber-600/20",
+    dot: "bg-amber-600",
+  },
+  shell: {
+    bg: "bg-green-600/10",
+    text: "text-green-600",
+    border: "border-green-600/20",
+    dot: "bg-green-600",
+  },
+  text: {
+    bg: "bg-sky-400/10",
+    text: "text-sky-400",
+    border: "border-sky-400/20",
+    dot: "bg-sky-400",
+  },
+  travel: {
+    bg: "bg-orange-400/10",
+    text: "text-orange-400",
+    border: "border-orange-400/20",
+    dot: "bg-orange-400",
+  },
+};
+
+const FALLBACK_COLOR = {
+  bg: "bg-muted",
+  text: "text-muted-foreground",
+  border: "border-border",
+  dot: "bg-muted-foreground",
+};
+
+function getCategoryColor(category?: string) {
+  if (!category) return FALLBACK_COLOR;
+  const key = category.toLowerCase().replace(/\s+/g, "_");
+  return CATEGORY_COLORS[key] ?? FALLBACK_COLOR;
+}
+
+// Tab accent colors
+const TAB_COLORS: Record<string, { active: string; icon: string }> = {
+  server: { active: "text-primary border-primary", icon: "text-primary" },
+  custom: { active: "text-secondary border-secondary", icon: "text-secondary" },
+  client: { active: "text-success border-success", icon: "text-success" },
+  mcp: {
+    active: "text-warning border-[hsl(var(--warning))]",
+    icon: "text-warning",
+  },
+};
 
 interface AgentToolsManagerProps {
   agentId: string;
@@ -183,20 +407,27 @@ export function AgentToolsManager({ agentId }: AgentToolsManagerProps) {
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <div className="flex border-b border-border shrink-0 px-2">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors select-none ${
-              activeTab === tab.id
-                ? "text-foreground border-b-2 border-primary -mb-px"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {tab.icon}
-            {tab.label}
-          </button>
-        ))}
+        {tabs.map((tab) => {
+          const isActive = activeTab === tab.id;
+          const tabColor = TAB_COLORS[tab.id] ?? TAB_COLORS.server;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              title={tab.label}
+              className={`flex items-center gap-1.5 px-2 sm:px-3 py-2 text-xs font-medium transition-colors select-none min-w-0 border-b-2 -mb-px ${
+                isActive
+                  ? tabColor.active
+                  : "text-muted-foreground border-transparent hover:text-foreground"
+              }`}
+            >
+              <span className={`shrink-0 ${isActive ? tabColor.icon : ""}`}>
+                {tab.icon}
+              </span>
+              <span className="hidden sm:inline truncate">{tab.label}</span>
+            </button>
+          );
+        })}
       </div>
 
       <div className="flex-1 overflow-hidden min-h-0">
@@ -244,6 +475,7 @@ function ServerToolsTab({
   const [expandedTool, setExpandedTool] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize] = useState(50);
+  const [mobileCategorySheetOpen, setMobileCategorySheetOpen] = useState(false);
   const [toolsList, setToolsList] = useState<{
     items: any[];
     total: number;
@@ -448,66 +680,98 @@ function ServerToolsTab({
     (c: any) => c.category === activeCategory,
   )?.count;
 
-  return (
-    <div className="flex overflow-hidden h-full">
-      {/* Left sidebar: categories */}
-      <div className="w-52 shrink-0 border-r border-border flex flex-col overflow-hidden">
-        <div className="px-3 py-3 border-b border-border shrink-0">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-1.5">
-              <Zap className="w-3.5 h-3.5 text-primary" />
-              <span className="text-xs font-semibold text-primary">
-                {enabledCount} enabled
-              </span>
+  const categoryListContent = (inSheet = false) => (
+    <div className={`flex flex-col ${inSheet ? "h-full" : "overflow-hidden"}`}>
+      <div className="px-3 py-2.5 border-b border-border shrink-0">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5">
+            <div className="flex items-center justify-center w-5 h-5 rounded bg-primary/10">
+              <Zap className="w-3 h-3 text-primary" />
             </div>
-            {enabledCount > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-5 px-1.5 text-[10px] text-muted-foreground hover:text-destructive"
-                onClick={clearAll}
-              >
-                Clear all
-              </Button>
-            )}
+            <span className="text-xs font-semibold text-primary">
+              {enabledCount} enabled
+            </span>
           </div>
-        </div>
-
-        <div className="flex-1 overflow-y-auto">
-          <div className="p-1.5 space-y-0.5">
-            <CategoryItem
-              label="All Tools"
-              count={totalCount}
-              enabledCount={enabledCount}
-              active={activeCategory === ALL_CATEGORY}
-              onClick={() => setActiveCategory(ALL_CATEGORY)}
-              icon={<Layers className="w-3 h-3" />}
-            />
-            {enabledCount > 0 && (
-              <CategoryItem
-                label="Enabled"
-                count={enabledCount}
-                enabledCount={enabledCount}
-                active={activeCategory === ENABLED_CATEGORY}
-                onClick={() => setActiveCategory(ENABLED_CATEGORY)}
-                icon={<Check className="w-3 h-3" />}
-                highlight
-              />
-            )}
-            <div className="h-px bg-border mx-1 my-2" />
-            {categories.map((c: any) => (
-              <CategoryItem
-                key={c.category}
-                label={c.category}
-                count={c.count}
-                enabledCount={enabledPerCategory.get(c.category) ?? 0}
-                active={activeCategory === c.category}
-                onClick={() => setActiveCategory(c.category)}
-              />
-            ))}
-          </div>
+          {enabledCount > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-5 px-1.5 text-[10px] text-muted-foreground hover:text-destructive"
+              onClick={clearAll}
+            >
+              Clear all
+            </Button>
+          )}
         </div>
       </div>
+      <div className="flex-1 overflow-y-auto">
+        <div className="p-1.5 space-y-0.5">
+          <CategoryItem
+            label="All Tools"
+            count={totalCount}
+            enabledCount={enabledCount}
+            active={activeCategory === ALL_CATEGORY}
+            onClick={() => {
+              setActiveCategory(ALL_CATEGORY);
+              if (inSheet) setMobileCategorySheetOpen(false);
+            }}
+            icon={<Layers className="w-3 h-3" />}
+          />
+          {enabledCount > 0 && (
+            <CategoryItem
+              label="Enabled"
+              count={enabledCount}
+              enabledCount={enabledCount}
+              active={activeCategory === ENABLED_CATEGORY}
+              onClick={() => {
+                setActiveCategory(ENABLED_CATEGORY);
+                if (inSheet) setMobileCategorySheetOpen(false);
+              }}
+              icon={<Check className="w-3 h-3" />}
+              highlight
+            />
+          )}
+          <div className="h-px bg-border mx-1 my-2" />
+          {categories.map((c: any) => (
+            <CategoryItem
+              key={c.category}
+              label={c.category}
+              count={c.count}
+              enabledCount={enabledPerCategory.get(c.category) ?? 0}
+              active={activeCategory === c.category}
+              onClick={() => {
+                setActiveCategory(c.category);
+                if (inSheet) setMobileCategorySheetOpen(false);
+              }}
+              colorKey={c.category}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="flex overflow-hidden h-full">
+      {/* Left sidebar: categories (desktop only) */}
+      <div className="hidden sm:flex w-52 shrink-0 border-r border-border flex-col overflow-hidden">
+        {categoryListContent(false)}
+      </div>
+
+      {/* Mobile category sheet */}
+      <Sheet
+        open={mobileCategorySheetOpen}
+        onOpenChange={setMobileCategorySheetOpen}
+      >
+        <SheetContent side="left" className="w-64 p-0 flex flex-col">
+          <SheetHeader className="px-4 pt-4 pb-2 border-b border-border shrink-0">
+            <SheetTitle className="text-sm">Categories</SheetTitle>
+          </SheetHeader>
+          <div className="flex-1 overflow-hidden">
+            {categoryListContent(true)}
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {/* Right panel: tools */}
       <div className="flex-1 flex flex-col overflow-hidden min-w-0">
@@ -521,7 +785,17 @@ function ServerToolsTab({
         )}
 
         {/* Search */}
-        <div className="px-4 py-3 border-b border-border shrink-0 flex items-center gap-3">
+        <div className="px-3 py-2.5 border-b border-border shrink-0 flex items-center gap-2">
+          {/* Mobile: category filter button */}
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-8 w-8 shrink-0 sm:hidden"
+            onClick={() => setMobileCategorySheetOpen(true)}
+            title="Filter by category"
+          >
+            <SlidersHorizontal className="w-3.5 h-3.5" />
+          </Button>
           <div className="relative flex-1">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
             <Input
@@ -543,17 +817,36 @@ function ServerToolsTab({
         </div>
 
         {/* Panel label */}
-        <div className="px-4 py-2 shrink-0 flex items-center justify-between">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-            {activeCategory === ALL_CATEGORY
-              ? "All Tools"
-              : activeCategory === ENABLED_CATEGORY
-                ? "Enabled Tools"
-                : activeCategory}
-          </span>
-          <span className="text-[11px] text-muted-foreground tabular-nums">
-            {isEnabledTab ? visibleTools.length : toolsList?.total || 0} tools
-          </span>
+        <div className="px-3 py-2 shrink-0 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5 min-w-0">
+            {activeCategory !== ALL_CATEGORY &&
+              activeCategory !== ENABLED_CATEGORY && (
+                <span
+                  className={`w-2 h-2 rounded-full shrink-0 ${getCategoryColor(activeCategory).dot}`}
+                />
+              )}
+            {activeCategory === ENABLED_CATEGORY && (
+              <Zap className="w-3 h-3 text-primary shrink-0" />
+            )}
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground truncate">
+              {activeCategory === ALL_CATEGORY
+                ? "All Tools"
+                : activeCategory === ENABLED_CATEGORY
+                  ? "Enabled Tools"
+                  : activeCategory}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            {enabledCount > 0 && (
+              <span className="flex items-center gap-1 text-[11px] font-semibold text-primary sm:hidden">
+                <Zap className="w-3 h-3" />
+                {enabledCount}
+              </span>
+            )}
+            <span className="text-[11px] text-muted-foreground tabular-nums">
+              {isEnabledTab ? visibleTools.length : toolsList?.total || 0} tools
+            </span>
+          </div>
         </div>
 
         {/* Tool cards */}
@@ -2700,6 +2993,7 @@ function CategoryItem({
   onClick,
   icon,
   highlight,
+  colorKey,
 }: {
   label: string;
   count: number;
@@ -2708,37 +3002,47 @@ function CategoryItem({
   onClick: () => void;
   icon?: React.ReactNode;
   highlight?: boolean;
+  colorKey?: string;
 }) {
+  const colors = getCategoryColor(colorKey ?? label);
   return (
     <button
       onClick={onClick}
       className={`flex items-center gap-2 w-full px-2.5 py-1.5 rounded-md text-left transition-colors group ${
         active
-          ? "bg-primary/10 text-primary"
+          ? `${colors.bg} ${colors.text}`
           : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
       }`}
     >
       {icon && (
-        <span className={active ? "text-primary" : "text-muted-foreground"}>
+        <span
+          className={`shrink-0 ${active ? colors.text : "text-muted-foreground group-hover:text-foreground"}`}
+        >
           {icon}
         </span>
       )}
+      {!icon && colorKey && (
+        <span
+          className={`w-2 h-2 rounded-full shrink-0 ${active ? colors.dot : "bg-border group-hover:bg-muted-foreground"}`}
+        />
+      )}
       <span
-        className={`text-xs flex-1 truncate font-medium ${highlight && !active ? "text-primary/70" : ""}`}
+        className={`text-xs flex-1 truncate font-medium ${
+          active ? colors.text : highlight ? "text-primary/70" : ""
+        }`}
       >
         {label}
       </span>
       <div className="flex items-center gap-1 shrink-0">
         {enabledCount > 0 && (
           <span
-            className={`text-[10px] font-semibold tabular-nums ${active ? "text-primary" : "text-primary/70"}`}
+            className={`text-[10px] font-bold tabular-nums px-1 py-0.5 rounded ${
+              active
+                ? `${colors.bg} ${colors.text}`
+                : "text-primary/80 bg-primary/10"
+            }`}
           >
             {enabledCount}
-          </span>
-        )}
-        {enabledCount > 0 && count !== enabledCount && (
-          <span className="text-[10px] text-muted-foreground tabular-nums">
-            /
           </span>
         )}
         {count !== enabledCount && (
@@ -2747,7 +3051,9 @@ function CategoryItem({
           </span>
         )}
         {active && (
-          <ChevronRight className="w-3 h-3 ml-0.5 opacity-60 shrink-0" />
+          <ChevronRight
+            className={`w-3 h-3 ml-0.5 opacity-60 shrink-0 ${colors.text}`}
+          />
         )}
       </div>
     </button>
@@ -2768,13 +3074,14 @@ function ToolCard({
   onExpand: () => void;
 }) {
   const hasDetails = tool.has_details ?? true;
+  const colors = getCategoryColor(tool.category);
 
   return (
     <div
       className={`rounded-lg text-left transition-all border ${
         active
-          ? "bg-primary/8 border-primary/20"
-          : "border-transparent hover:bg-muted/50 hover:border-border"
+          ? `${colors.bg} ${colors.border}`
+          : "border-transparent hover:bg-muted/40 hover:border-border"
       }`}
     >
       <div className="flex items-start gap-3 w-full px-3 py-2.5">
@@ -2783,7 +3090,7 @@ function ToolCard({
           <div
             className={`flex items-center justify-center w-4 h-4 rounded border-[1.5px] transition-all ${
               active
-                ? "bg-primary border-primary text-primary-foreground"
+                ? `${colors.dot} border-transparent text-white`
                 : "border-border hover:border-primary/50"
             }`}
           >
@@ -2793,31 +3100,33 @@ function ToolCard({
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-0.5">
+          <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+            {/* Icon pill — colored by category */}
             {tool.icon && (
-              <span className="text-muted-foreground shrink-0">
-                {tool.icon}
+              <span
+                className={`inline-flex items-center justify-center w-5 h-5 rounded shrink-0 ${colors.bg} ${colors.text} border ${colors.border}`}
+              >
+                {typeof tool.icon === "string" ? (
+                  <DynamicIcon name={tool.icon} className="w-3 h-3" />
+                ) : (
+                  tool.icon
+                )}
               </span>
             )}
             <span
               className={`text-xs font-semibold leading-tight ${
-                active ? "text-primary" : "text-foreground"
+                active ? colors.text : "text-foreground"
               }`}
             >
               {tool.name}
             </span>
-            {tool.category && (
-              <span className="text-[10px] text-muted-foreground/70 bg-muted/60 px-1.5 py-0.5 rounded shrink-0">
-                {tool.category}
-              </span>
-            )}
             {tool.tags && tool.tags.length > 0 && (
               <div className="flex items-center gap-1">
                 {tool.tags.slice(0, 2).map((tag: string) => (
                   <Badge
                     key={tag}
                     variant="outline"
-                    className="text-[9px] h-4 px-1"
+                    className={`text-[9px] h-4 px-1 ${active ? `${colors.border} ${colors.text}` : ""}`}
                   >
                     {tag}
                   </Badge>
@@ -2841,7 +3150,11 @@ function ToolCard({
         {hasDetails && (
           <button
             onClick={onExpand}
-            className="mt-0.5 text-muted-foreground hover:text-foreground transition-colors shrink-0"
+            className={`mt-0.5 transition-colors shrink-0 ${
+              expanded
+                ? `${colors.text}`
+                : "text-muted-foreground hover:text-foreground"
+            }`}
             title="View details"
           >
             {expanded ? (

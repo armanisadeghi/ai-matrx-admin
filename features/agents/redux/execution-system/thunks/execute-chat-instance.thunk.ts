@@ -56,8 +56,17 @@ import {
 
 /**
  * Converts ConversationTurn[] to the wire format the chat endpoint expects.
- * Each turn becomes { role, content } where content is either the text-wrapped
- * content parts array or the raw contentBlocks if they exist.
+ * Each turn becomes { role, content } where content is a CxContentBlock[].
+ *
+ * Priority:
+ *   1. turn.cxContentBlocks — DB-compatible format assembled at commit time
+ *      or loaded from the database. Most accurate — preserves tool calls,
+ *      thinking blocks, and media exactly as the server stored them.
+ *   2. turn.messageParts — from DB-loaded turns (older loading path).
+ *   3. Fallback: plain text wrapped in a single text block.
+ *
+ * renderBlocks are intentionally NOT used here — they are a UI-rendering
+ * format, not the wire/DB format.
  */
 function turnsToMessages(
   turns: ConversationTurn[],
@@ -65,9 +74,11 @@ function turnsToMessages(
   return turns.map((turn) => ({
     role: turn.role,
     content:
-      turn.renderBlocks && turn.renderBlocks.length > 0
-        ? turn.renderBlocks
-        : [{ type: "text", text: turn.content }],
+      turn.cxContentBlocks && turn.cxContentBlocks.length > 0
+        ? turn.cxContentBlocks
+        : turn.messageParts && turn.messageParts.length > 0
+          ? turn.messageParts
+          : [{ type: "text", text: turn.content }],
   }));
 }
 
