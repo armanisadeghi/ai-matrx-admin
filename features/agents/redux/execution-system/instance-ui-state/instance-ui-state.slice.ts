@@ -155,7 +155,7 @@ const instanceUIStateSlice = createSlice({
         isCreator,
         showCreatorDebug: false,
         submitOnEnter,
-        showAutoClearToggle: false,
+        showAutoClearToggle,
         autoClearConversation,
         reuseConversationId,
         builderAdvancedSettings: {

@@ -52,7 +52,6 @@ export function AgentBuilderRightPanel({
       surfaceKey={surfaceKey}
       smartInputProps={{
         showSubmitOnEnterToggle: true,
-        showAutoClearToggle: true,
       }}
     />
   );

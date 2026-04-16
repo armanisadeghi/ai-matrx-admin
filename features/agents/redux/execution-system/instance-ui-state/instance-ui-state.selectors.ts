@@ -343,6 +343,12 @@ export const selectAutoClearConversation =
     state.instanceUIState.byConversationId[conversationId]
       ?.autoClearConversation ?? false;
 
+export const selectShowAutoClearToggle =
+  (conversationId: string) =>
+  (state: RootState): boolean =>
+    state.instanceUIState.byConversationId[conversationId]
+      ?.showAutoClearToggle ?? false;
+
 export const selectIsExpanded =
   (conversationId: string) =>
   (state: RootState): boolean =>

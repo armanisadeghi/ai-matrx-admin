@@ -93,6 +93,7 @@ interface CreateManualInstanceArgs {
   conversationId?: string;
   agentType?: AgentType;
   autoClearConversation?: boolean;
+  showAutoClearToggle?: boolean;
   mode?: ConversationMode;
   sourceFeature?: SourceFeature;
   autoRun?: boolean;
@@ -120,6 +121,7 @@ export const createManualInstance = createAsyncThunk<
     conversationId: providedConversationId,
     agentType,
     autoClearConversation = false,
+    showAutoClearToggle,
     mode = "agent",
     sourceFeature = "agent-runner",
     autoRun,
@@ -177,6 +179,7 @@ export const createManualInstance = createAsyncThunk<
       displayMode,
       isCreator: snapshot.isCreator,
       autoClearConversation,
+      showAutoClearToggle,
       autoRun,
       allowChat,
       usePreExecutionInput,
@@ -211,6 +214,7 @@ interface CreateShortcutInstanceArgs {
   allowChat?: boolean;
   usePreExecutionInput?: boolean;
   autoClearConversation?: boolean;
+  showAutoClearToggle?: boolean;
   conversationMode?: ConversationMode;
   showVariablePanel?: boolean;
   showDefinitionMessages?: boolean;
@@ -237,6 +241,7 @@ export const createInstanceFromShortcut = createAsyncThunk<
     allowChat,
     usePreExecutionInput,
     autoClearConversation,
+    showAutoClearToggle,
     conversationMode = "agent",
     showVariablePanel,
     showDefinitionMessages,
@@ -296,6 +301,7 @@ export const createInstanceFromShortcut = createAsyncThunk<
       allowChat: allowChat ?? shortcut.allowChat,
       usePreExecutionInput,
       autoClearConversation,
+      showAutoClearToggle,
       showVariablePanel: showVariablePanel ?? shortcut.showVariables,
       showDefinitionMessages,
       showDefinitionMessageContent,
@@ -548,6 +554,7 @@ export const startNewConversation = createAsyncThunk<
         displayMode: currentUIState?.displayMode,
         isCreator: snapshot?.isCreator ?? currentUIState?.isCreator ?? false,
         autoClearConversation: currentUIState?.autoClearConversation ?? true,
+        showAutoClearToggle: currentUIState?.showAutoClearToggle,
         autoRun: currentUIState?.autoRun,
         allowChat: currentUIState?.allowChat,
         usePreExecutionInput: currentUIState?.usePreExecutionInput,
@@ -678,6 +685,7 @@ export const startNewConversationAndExecute = createAsyncThunk<
         displayMode: currentUIState?.displayMode,
         isCreator: snapshot?.isCreator ?? currentUIState?.isCreator ?? false,
         autoClearConversation: true,
+        showAutoClearToggle: currentUIState?.showAutoClearToggle,
         autoRun: currentUIState?.autoRun,
         allowChat: currentUIState?.allowChat,
         usePreExecutionInput: currentUIState?.usePreExecutionInput,

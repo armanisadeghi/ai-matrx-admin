@@ -10,7 +10,6 @@ import { cn } from "@/lib/utils";
 
 interface SmartInputForwardProps {
   sendButtonVariant?: "default" | "blue";
-  showAutoClearToggle?: boolean;
   showSubmitOnEnterToggle?: boolean;
   placeholder?: string;
   compact?: boolean;

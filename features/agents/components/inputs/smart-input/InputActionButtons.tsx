@@ -28,6 +28,7 @@ import {
   selectShowVariablePanel,
   selectIsCreator,
   selectShowCreatorDebug,
+  selectShowAutoClearToggle,
 } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import {
   setSubmitOnEnter,
@@ -39,6 +40,7 @@ import {
   selectIsExecuting,
   selectShouldShowVariables,
   selectAutoClearWithConversationHistory,
+  selectShouldShowAutoClearToggle,
 } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 import { selectIsDebugMode } from "@/lib/redux/slices/adminDebugSlice";
@@ -97,7 +99,6 @@ interface InputActionButtonsProps {
   surfaceKey?: string;
   disableSend?: boolean;
   extraRightControls?: React.ReactNode;
-  showAutoClearToggle?: boolean;
 }
 
 // ── Component ────────────────────────────────────────────────────────────────
@@ -118,7 +119,6 @@ export function InputActionButtons({
   surfaceKey,
   disableSend = false,
   extraRightControls,
-  showAutoClearToggle = false,
 }: InputActionButtonsProps) {
   const dispatch = useAppDispatch();
 
@@ -137,6 +137,9 @@ export function InputActionButtons({
   );
   const autoClearWithHistory = useAppSelector(
     selectAutoClearWithConversationHistory(conversationId),
+  );
+  const shouldShowAutoClearToggle = useAppSelector(
+    selectShouldShowAutoClearToggle(conversationId),
   );
   const isAdmin = useAppSelector(selectIsAdmin);
   const isDebugMode = useAppSelector(selectIsDebugMode);
@@ -241,7 +244,7 @@ export function InputActionButtons({
       <div className="flex items-center gap-0.5">
         {extraRightControls}
 
-        {showAutoClearToggle && autoClearWithHistory && (
+        {shouldShowAutoClearToggle && (
           <InputButton
             icon={RefreshCcw}
             tooltip="Auto-clear ON — each send starts fresh (click to disable)"

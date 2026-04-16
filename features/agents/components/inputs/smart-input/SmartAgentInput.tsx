@@ -46,7 +46,6 @@ interface SmartAgentInputProps {
   disableSend?: boolean;
   variableInputStyle?: VariableInputStyle;
   extraRightControls?: React.ReactNode;
-  showAutoClearToggle?: boolean;
 }
 
 // ── Default voice state (before AgentTextarea mounts) ────────────────────────
@@ -119,7 +118,6 @@ export function SmartAgentInput({
   compact = false,
   showSendButton = true,
   showVariableIcon = true,
-  showAutoClearToggle = false,
   surfaceKey,
   disableSend = false,
   variableInputStyle,
@@ -248,7 +246,6 @@ export function SmartAgentInput({
         showSendButton={showSendButton}
         showSubmitOnEnterToggle={showSubmitOnEnterToggle}
         showVariableIcon={showVariableIcon}
-        showAutoClearToggle={showAutoClearToggle}
         sendButtonVariant={sendButtonVariant}
         surfaceKey={surfaceKey}
         disableSend={disableSend}

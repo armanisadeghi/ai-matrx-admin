@@ -36,7 +36,10 @@ import type {
 } from "@/types/python-generated/stream-events";
 import type { ShortcutContext } from "@/features/agents/redux/agent-shortcuts/types";
 import { selectHasConversationHistory } from "../instance-conversation-history/instance-conversation-history.selectors";
-import { selectAutoClearConversation } from "../instance-ui-state/instance-ui-state.selectors";
+import {
+  selectAutoClearConversation,
+  selectShowAutoClearToggle,
+} from "../instance-ui-state/instance-ui-state.selectors";
 import { assembleRequest } from "../thunks/execute-instance.thunk";
 
 // =============================================================================
@@ -94,6 +97,13 @@ export const selectAutoClearWithConversationHistory =
   (conversationId: string) =>
   (state: RootState): boolean => {
     if (!selectAutoClearConversation(conversationId)(state)) return false;
+    return selectHasConversationHistory(conversationId)(state);
+  };
+
+export const selectShouldShowAutoClearToggle =
+  (conversationId: string) =>
+  (state: RootState): boolean => {
+    if (!selectShowAutoClearToggle(conversationId)(state)) return false;
     return selectHasConversationHistory(conversationId)(state);
   };
 
