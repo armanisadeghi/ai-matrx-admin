@@ -211,17 +211,20 @@ export default function MobileNotesView() {
             </div>
 
             {/* Save state */}
-            <div className="flex-shrink-0 flex items-center">
+            <div className="flex-shrink-0 flex items-center relative">
               {isSaving && <Loader2 size={14} className="animate-spin text-muted-foreground" />}
               {justSaved && !isSaving && <Check size={14} className="text-green-500" />}
               {isDirty && !isSaving && !justSaved && (
-                <button
-                  onClick={handleSave}
-                  className="flex items-center justify-center w-7 h-7 rounded-full hover:bg-muted/60 transition-colors text-primary"
-                  aria-label="Save"
-                >
-                  <Save size={14} />
-                </button>
+                <>
+                  <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                  <button
+                    onClick={handleSave}
+                    className="flex items-center justify-center w-7 h-7 rounded-full hover:bg-muted/60 transition-colors text-primary"
+                    aria-label="Save"
+                  >
+                    <Save size={14} />
+                  </button>
+                </>
               )}
             </div>
           </div>

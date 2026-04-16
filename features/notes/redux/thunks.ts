@@ -71,7 +71,7 @@ export const fetchNotesList = createAsyncThunk<void, void>(
 
     const { data, error } = await supabase
       .from("notes")
-      .select("id, label, folder_name, folder_id, tags, updated_at, position, organization_id, project_id, task_id, is_public, version")
+      .select("id, label, content, folder_name, folder_id, tags, updated_at, position, organization_id, project_id, task_id, is_public, version")
       .eq("user_id", userId)
       .eq("is_deleted", false)
       .order("updated_at", { ascending: false });

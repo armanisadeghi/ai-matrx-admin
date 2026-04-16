@@ -31,9 +31,11 @@ import { useNotesInstanceId } from "../context/NotesInstanceContext";
 import { analyzeDiff } from "../utils/diffAnalysis";
 import { supabase } from "@/utils/supabase/client";
 import { NoteEditorCore, type EditorMode } from "./NoteEditorCore";
+import { FindReplaceBar } from "./FindReplaceBar";
 import { MoveNoteDialog } from "./MoveNoteDialog";
 import { ShareModal } from "@/features/sharing/components/ShareModal";
 import { useIsOwner } from "@/utils/permissions";
+import { selectFindReplaceState } from "../redux/selectors";
 
 const NoteConflictWindow = dynamic(
   () => import("@/app/(ssr)/ssr/notes/_components/NoteConflictWindow").then(
@@ -67,6 +69,7 @@ export function NoteContentEditor({ noteId }: NoteContentEditorProps) {
   const saveState = useAppSelector(selectNoteSaveState(noteId));
 
   const { isOwner } = useIsOwner("note", noteId);
+  const findReplaceState = useAppSelector(selectFindReplaceState(instanceId));
 
   // ── Dialog state ──────────────────────────────────────────────────
   const [moveDialogOpen, setMoveDialogOpen] = useState(false);
@@ -283,6 +286,9 @@ export function NoteContentEditor({ noteId }: NoteContentEditorProps) {
         onDelete={handleDelete}
       >
         <div className="flex-1 flex flex-col min-h-0 min-w-0">
+          {findReplaceState?.isOpen && (
+            <FindReplaceBar noteId={noteId} textareaRef={textareaRef} />
+          )}
           <NoteEditorCore
             content={localContent}
             onChange={handleChange}

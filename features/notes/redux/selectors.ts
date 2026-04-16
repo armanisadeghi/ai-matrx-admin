@@ -12,6 +12,7 @@ import type {
   NoteFetchStatus,
   NotesInstance,
   NotesSliceState,
+  FindReplaceState,
 } from "./notes.types";
 
 // ── Selector cache to prevent re-creation on every render ───────────────────
@@ -246,6 +247,11 @@ export const selectInstanceTabs = (instanceId: string) =>
 export const selectInstanceActiveTab = (instanceId: string) =>
   cached(`instActive:${instanceId}`, () =>
     createSelector(selectInstancesMap, (instances): string | null | undefined => instances[instanceId]?.activeTabId),
+  );
+
+export const selectFindReplaceState = (instanceId: string) =>
+  cached(`instFR:${instanceId}`, () =>
+    createSelector(selectInstancesMap, (instances): FindReplaceState | null => instances[instanceId]?.findReplace ?? null),
   );
 
 export const selectIsActiveTab = (instanceId: string, noteId: string): ((state: RootState) => boolean) =>

@@ -83,8 +83,8 @@ export default function MobileNotesList({ onNoteSelect, filters, onFiltersChange
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
-  const getPreviewText = (content: string) => {
-    const stripped = content.replace(/[#*_~`]/g, '').trim();
+  const getPreviewText = (content: string | null | undefined) => {
+    const stripped = (content ?? '').replace(/[#*_~`]/g, '').trim();
     return stripped.split('\n')[0] || 'No content';
   };
 

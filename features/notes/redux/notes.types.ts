@@ -65,6 +65,32 @@ export type NoteFieldSnapshot = Partial<
   Record<NoteUndoableField, Note[NoteUndoableField]>
 >;
 
+// ── Find & Replace state ────────────────────────────────────────────────────
+
+export interface FindReplaceState {
+  isOpen: boolean;
+  query: string;
+  replaceText: string;
+  caseSensitive: boolean;
+  useRegex: boolean;
+  wholeWord: boolean;
+  showReplace: boolean;
+  matchCount: number;
+  currentMatchIndex: number; // 0-based, -1 = no match
+}
+
+export const FIND_REPLACE_DEFAULTS: FindReplaceState = {
+  isOpen: true,
+  query: "",
+  replaceText: "",
+  caseSensitive: false,
+  useRegex: false,
+  wholeWord: false,
+  showReplace: false,
+  matchCount: 0,
+  currentMatchIndex: -1,
+};
+
 // ── Notes Instance (Layer 6 — multi-instance support) ───────────────────────
 
 export interface NotesInstance {
@@ -74,6 +100,8 @@ export interface NotesInstance {
   openTabs: string[];
   /** Active note ID within THIS instance */
   activeTabId: string | null;
+  /** Find & Replace state for this instance (null = closed) */
+  findReplace: FindReplaceState | null;
 }
 
 // ── Note Record (extends Note with all runtime tracking) ────────────────────
