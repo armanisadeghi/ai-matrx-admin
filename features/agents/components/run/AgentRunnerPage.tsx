@@ -3,26 +3,11 @@
 /**
  * AgentRunPage
  *
- * The full execution page for an agent run.
- * Creates an execution instance via useAgentLauncher (managed mode), which snapshots
- * the agent's variableDefinitions and settings ONCE at creation time.
- * After that, the instance is fully self-contained — agentId is not
- * referenced again by any component or selector.
+ * Full execution page for an agent run. Creates an execution instance via
+ * useAgentLauncher (managed mode). Conversation history sidebar is now
+ * handled by the shell sidebar's Large Route system (AgentRunSidebarMenu).
  *
- * Layout:
- *   Desktop:
- *   ┌────────────────────────────────────┐
- *   │  Sidebar (runs history) │   Main   │
- *   │                         │   conv   │
- *   │                         │   area   │
- *   └────────────────────────────────────┘
- *
- *   Mobile:
- *   ┌────────────────────────────────────┐
- *   │  [History] [Test Modes]  toolbar   │
- *   │         Main conv area             │
- *   └────────────────────────────────────┘
- *   History & Test Modes open as drawers (bottom sheets).
+ * This page only renders the header strip, conversation area, and mobile drawers.
  */
 
 import { useEffect, useRef, useState } from "react";
@@ -34,10 +19,9 @@ import { useAgentLauncher } from "@/features/agents/hooks/useAgentLauncher";
 import { createManualInstance } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
 import { fetchConversationHistory } from "@/features/cx-chat/redux/thunks";
 import { setFocus } from "@/features/agents/redux/execution-system/conversation-focus/conversation-focus.slice";
-import { AgentRunsSidebar } from "./run-sidebar/AgentRunsSidebar";
 import { AgentLauncherSidebarTester } from "../run-controls/AgentLauncherSidebarTester";
 import { AgentConversationColumn } from "../shared/AgentConversationColumn";
-import { Loader2, PanelLeft, History, TestTube2 } from "lucide-react";
+import { Loader2, TestTube2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
@@ -64,10 +48,8 @@ export function AgentRunnerPage({ agentId }: AgentRunnerPageProps) {
   );
 
   const [isInitializing, setIsInitializing] = useState(true);
-  const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
 
   // Mobile drawer state
-  const [historyDrawerOpen, setHistoryDrawerOpen] = useState(false);
   const [testModesDrawerOpen, setTestModesDrawerOpen] = useState(false);
 
   const conversationIdFromUrl = searchParams.get("conversationId") ?? undefined;
@@ -95,7 +77,6 @@ export function AgentRunnerPage({ agentId }: AgentRunnerPageProps) {
 
   const sourceFeature = "agent-runner";
   const surfaceKey = `${sourceFeature}:${agentId}`;
-  const conversationMode = "agent";
 
   const { conversationId } = useAgentLauncher(agentId, {
     surfaceKey,
@@ -148,116 +129,61 @@ export function AgentRunnerPage({ agentId }: AgentRunnerPageProps) {
   }
 
   return (
-    <div className="relative flex h-full overflow-hidden">
-      {/* ── Desktop sidebar (full height, border extends to top) ────────────── */}
-      {!isMobile && sidebarOpen && (
-        <div className="w-64 shrink-0 border-r border-border overflow-hidden flex flex-col">
-          <AgentRunsSidebar
-            agentId={agentId}
-            conversationId={conversationId}
-            surfaceKey={surfaceKey}
-            conversationIdFromUrl={conversationIdFromUrl}
-            onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-          />
+    <div className="relative flex flex-col h-full overflow-hidden">
+      <AgentRunHeader
+        agentId={agentId}
+        conversationId={conversationId}
+        surfaceKey={surfaceKey}
+        conversationIdFromUrl={conversationIdFromUrl}
+      />
+
+      {/* Mobile toolbar — Test Modes only (History is in shell sidebar) */}
+      {isMobile && (
+        <div className="shrink-0 flex items-center gap-1 px-2 py-1 border-b border-border bg-background">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 text-xs gap-1.5"
+            onClick={() => setTestModesDrawerOpen(true)}
+          >
+            <TestTube2 className="w-3.5 h-3.5" />
+            Test Modes
+          </Button>
         </div>
       )}
 
-      {/* ── Right column: header + content ──────────────────────────────────── */}
-      <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-        {/* Mobile toolbar */}
-        {isMobile && (
-          <div className="shrink-0 flex items-center gap-1 px-2 py-1 border-b border-border bg-background">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 px-2 text-xs gap-1.5"
-              onClick={() => setHistoryDrawerOpen(true)}
-            >
-              <History className="w-3.5 h-3.5" />
-              History
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 px-2 text-xs gap-1.5"
-              onClick={() => setTestModesDrawerOpen(true)}
-            >
-              <TestTube2 className="w-3.5 h-3.5" />
-              Test Modes
-            </Button>
-          </div>
-        )}
-
-        <AgentRunHeader
-          agentId={agentId}
+      {/* Main conversation area */}
+      <div className="flex-1 overflow-hidden flex justify-center min-w-0">
+        <AgentConversationColumn
           conversationId={conversationId}
           surfaceKey={surfaceKey}
-          conversationIdFromUrl={conversationIdFromUrl}
-          sidebarOpen={sidebarOpen}
-          onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+          constrainWidth
+          smartInputProps={{
+            sendButtonVariant: "blue",
+            showSubmitOnEnterToggle: true,
+            showAutoClearToggle: true,
+          }}
         />
-
-        {/* Main conversation area */}
-        <div className="flex-1 overflow-hidden flex justify-center min-w-0">
-          <AgentConversationColumn
-            conversationId={conversationId}
-            surfaceKey={surfaceKey}
-            constrainWidth
-            smartInputProps={{
-              sendButtonVariant: "blue",
-              showSubmitOnEnterToggle: true,
-              showAutoClearToggle: true,
-            }}
-          />
-        </div>
       </div>
 
-      {/* ── Mobile drawers ──────────────────────────────────────────────────── */}
+      {/* Mobile Test Modes drawer */}
       {isMobile && (
-        <>
-          {/* History drawer */}
-          <Drawer open={historyDrawerOpen} onOpenChange={setHistoryDrawerOpen}>
-            <DrawerContent className="max-h-[80dvh]">
-              <DrawerHeader className="pb-2">
-                <DrawerTitle className="text-sm">
-                  Conversation History
-                </DrawerTitle>
-                <DrawerDescription className="text-xs">
-                  Past conversations and runs for this agent
-                </DrawerDescription>
-              </DrawerHeader>
-              <div className="flex-1 overflow-y-auto min-h-0 pb-safe">
-                <AgentRunsSidebar
-                  agentId={agentId}
-                  conversationId={conversationId}
-                  surfaceKey={surfaceKey}
-                  conversationIdFromUrl={conversationIdFromUrl}
-                  onToggleSidebar={() => setHistoryDrawerOpen(false)}
-                />
-              </div>
-            </DrawerContent>
-          </Drawer>
-
-          {/* Test Modes drawer */}
-          <Drawer
-            open={testModesDrawerOpen}
-            onOpenChange={setTestModesDrawerOpen}
-          >
-            <DrawerContent className="max-h-[80dvh]">
-              <DrawerHeader className="pb-2">
-                <DrawerTitle className="text-sm">
-                  Test Display Modes
-                </DrawerTitle>
-                <DrawerDescription className="text-xs">
-                  Launch the agent in different display modes
-                </DrawerDescription>
-              </DrawerHeader>
-              <div className="flex-1 overflow-y-auto min-h-0 pb-safe">
-                <AgentLauncherSidebarTester conversationId={conversationId} />
-              </div>
-            </DrawerContent>
-          </Drawer>
-        </>
+        <Drawer
+          open={testModesDrawerOpen}
+          onOpenChange={setTestModesDrawerOpen}
+        >
+          <DrawerContent className="max-h-[80dvh]">
+            <DrawerHeader className="pb-2">
+              <DrawerTitle className="text-sm">Test Display Modes</DrawerTitle>
+              <DrawerDescription className="text-xs">
+                Launch the agent in different display modes
+              </DrawerDescription>
+            </DrawerHeader>
+            <div className="flex-1 overflow-y-auto min-h-0 pb-safe">
+              <AgentLauncherSidebarTester conversationId={conversationId} />
+            </div>
+          </DrawerContent>
+        </Drawer>
       )}
     </div>
   );

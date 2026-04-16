@@ -1,14 +1,23 @@
 'use client';
 
 import React, { useState, useCallback, useMemo } from 'react';
-import { ChevronLeft, FileText, Eye, Save, Loader2, Check, FolderOpen, Layers, ChevronDown } from 'lucide-react';
+import dynamic from 'next/dynamic';
+import { ChevronLeft, FileText, Eye, Save, Loader2, Check, FolderOpen, Layers, ChevronDown, Network } from 'lucide-react';
 import { useNotesRedux } from '../../hooks/useNotesRedux';
+import { useAppSelector } from '@/lib/redux/hooks';
+import { selectOrganizationId, selectOrganizationName } from '@/features/agent-context/redux/appContextSlice';
 import { PageSpecificHeader } from '@/components/layout/new-layout/PageSpecificHeader';
+import { BottomSheet, BottomSheetHeader, BottomSheetBody } from '@/components/official/bottom-sheet/BottomSheet';
 import { cn } from '@/lib/utils';
 import MobileNotesList from './MobileNotesList';
 import MobileNoteEditor, { type MobileEditorMode } from './MobileNoteEditor';
 import { DEFAULT_FILTER_STATE, type NotesFilterState } from './NotesFilterSheet';
 import type { Note } from '@/features/notes/types';
+
+const DirectContextSelection = dynamic(
+  () => import('@/features/shell/components/sidebar/DirectContextSelection'),
+  { ssr: false },
+);
 
 type MobileView = 'list' | 'editor';
 
@@ -26,6 +35,10 @@ export default function MobileNotesView() {
   // Shared filter state — owned here so header dropdown and list stay in sync
   const [filters, setFilters] = useState<NotesFilterState>(DEFAULT_FILTER_STATE);
   const [folderDropdownOpen, setFolderDropdownOpen] = useState(false);
+  const [contextSheetOpen, setContextSheetOpen] = useState(false);
+  const activeOrgName = useAppSelector(selectOrganizationName);
+  const activeOrgId = useAppSelector(selectOrganizationId);
+  const hasContextFilter = !!activeOrgId;
   // Mirror of the editor's dirty/saving state for the header
   const [isDirty, setIsDirty] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -165,9 +178,42 @@ export default function MobileNotesView() {
                 </>
               )}
             </div>
+
+            {/* Context filter button */}
+            <button
+              onClick={() => setContextSheetOpen(true)}
+              className={cn(
+                'relative flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium transition-colors',
+                hasContextFilter
+                  ? 'bg-primary/15 text-primary'
+                  : 'bg-muted/60 text-muted-foreground hover:text-foreground hover:bg-muted',
+              )}
+            >
+              <Network size={12} />
+              <span className="max-w-[70px] truncate">
+                {activeOrgName ?? 'Context'}
+              </span>
+              {hasContextFilter && (
+                <span className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" />
+              )}
+            </button>
           </div>
         </PageSpecificHeader>
       )}
+
+      {/* Context filter bottom sheet */}
+      <BottomSheet
+        open={contextSheetOpen}
+        onOpenChange={setContextSheetOpen}
+        title="Filter by Context"
+      >
+        <BottomSheetHeader title="Filter by Context" />
+        <BottomSheetBody>
+          <div className="px-2 py-2">
+            <DirectContextSelection />
+          </div>
+        </BottomSheetBody>
+      </BottomSheet>
 
       {/* ── Editor header: back + title + view toggle + save ── */}
       {currentView === 'editor' && selectedNote && (

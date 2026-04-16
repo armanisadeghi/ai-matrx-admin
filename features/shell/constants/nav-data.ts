@@ -1,14 +1,22 @@
 // nav-data.ts — Pure data, no React/JSX imports
 // Maps icon names to Lucide component names for server-side rendering
 
+export interface ShellNavChild {
+  label: string;
+  href: string;
+  iconName: string;
+  exact?: boolean;
+}
+
 export interface ShellNavItem {
   label: string;
   href: string;
-  iconName: string; // Lucide icon component name
+  iconName: string;
   section: "primary" | "admin";
-  dockOrder?: number; // 1-6 for mobile dock inclusion
+  dockOrder?: number;
   description?: string;
-  color?: string; // Tailwind color name for dashboard icon bg
+  color?: string;
+  children?: ShellNavChild[];
 }
 
 // Primary navigation items
@@ -29,6 +37,15 @@ export const primaryNavItems: ShellNavItem[] = [
     section: "primary",
     description: "AI Agent Harness Management",
     color: "blue",
+    children: [
+      { label: "All Agents", href: "/agents", iconName: "List", exact: true },
+      {
+        label: "Templates",
+        href: "/agents/templates",
+        iconName: "LayoutTemplate",
+      },
+      { label: "New Agent", href: "/agents/new", iconName: "Plus" },
+    ],
   },
   {
     label: "Prompt Builder",

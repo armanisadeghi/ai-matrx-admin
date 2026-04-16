@@ -29,6 +29,11 @@ import {
   Menu,
   X,
   Webhook,
+  List,
+  LayoutTemplate,
+  Plus,
+  ArrowLeftRight,
+  Loader2,
   type LucideProps,
 } from "lucide-react";
 
@@ -60,6 +65,11 @@ const iconMap: Record<string, React.ComponentType<LucideProps>> = {
   Menu,
   X,
   Webhook,
+  List,
+  LayoutTemplate,
+  Plus,
+  ArrowLeftRight,
+  Loader2,
 };
 
 interface ShellIconProps extends LucideProps {

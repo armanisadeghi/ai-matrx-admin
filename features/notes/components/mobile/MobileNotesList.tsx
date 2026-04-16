@@ -3,6 +3,8 @@
 import React, { useState, useMemo } from 'react';
 import { FolderOpen, Clock, Tag, Plus } from 'lucide-react';
 import { useNotesRedux } from '../../hooks/useNotesRedux';
+import { useAppSelector } from '@/lib/redux/hooks';
+import { selectOrganizationId, selectProjectId, selectTaskId } from '@/features/agent-context/redux/appContextSlice';
 import { MobileActionBar } from '@/components/official/mobile-action-bar';
 import NotesFilterSheet, { NotesFilterState } from './NotesFilterSheet';
 import type { Note } from '@/features/notes/types';
@@ -19,15 +21,24 @@ export default function MobileNotesList({ onNoteSelect, filters, onFiltersChange
   const [searchQuery, setSearchQuery] = useState('');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  // Deduplicated notes
+  // Active context for filtering
+  const activeOrgId = useAppSelector(selectOrganizationId);
+  const activeProjectId = useAppSelector(selectProjectId);
+  const activeTaskId = useAppSelector(selectTaskId);
+
+  // Deduplicated + context-filtered notes
   const uniqueNotes = useMemo(() => {
     const seen = new Set<string>();
-    return notes.filter(n => {
+    let result = notes.filter(n => {
       if (seen.has(n.id)) return false;
       seen.add(n.id);
       return true;
     });
-  }, [notes]);
+    if (activeOrgId) result = result.filter(n => n.organization_id === activeOrgId);
+    if (activeProjectId) result = result.filter(n => n.project_id === activeProjectId);
+    if (activeTaskId) result = result.filter(n => n.task_id === activeTaskId);
+    return result;
+  }, [notes, activeOrgId, activeProjectId, activeTaskId]);
 
   // Filtered + sorted notes
   const filteredNotes = useMemo(() => {

@@ -55,8 +55,11 @@ import {
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/slices/userSlice";
 import {
+  selectOrganizationId,
   selectOrganizationName,
+  selectProjectId,
   selectProjectName,
+  selectTaskId,
   selectTaskName,
 } from "@/features/agent-context/redux/appContextSlice";
 import {
@@ -99,8 +102,8 @@ import { cn } from "@/lib/utils";
 import type { NoteRecord } from "../redux/notes.types";
 import type { NoteSortField, NoteSortOrder, NoteGroupBy } from "../types";
 
-const ContextSwitcher = dynamic(
-  () => import("@/app/(ssr)/ssr/notes/_components/ContextSwitcher"),
+const DirectContextSelection = dynamic(
+  () => import("@/features/shell/components/sidebar/DirectContextSelection"),
   { ssr: false },
 );
 
@@ -152,10 +155,22 @@ export function NoteSidebar({
   const scopeGrouped = useAppSelector(selectNotesGroupedByScope);
   const scopesLoaded = useAppSelector(selectNoteScopesLoaded);
 
-  // ── Hierarchy names for grouping labels ─────────────────────────────
+  // ── Active context for filtering + grouping labels ──────────────────
+  const activeOrgId = useAppSelector(selectOrganizationId);
+  const activeProjectId = useAppSelector(selectProjectId);
+  const activeTaskId = useAppSelector(selectTaskId);
   const orgName = useAppSelector(selectOrganizationName);
   const projName = useAppSelector(selectProjectName);
   const taskName = useAppSelector(selectTaskName);
+
+  // ── Filter notes by active context ────────────────────────────────
+  const contextFiltered = useMemo(() => {
+    let result = allNotes;
+    if (activeOrgId) result = result.filter((n) => n.organization_id === activeOrgId);
+    if (activeProjectId) result = result.filter((n) => n.project_id === activeProjectId);
+    if (activeTaskId) result = result.filter((n) => n.task_id === activeTaskId);
+    return result;
+  }, [allNotes, activeOrgId, activeProjectId, activeTaskId]);
 
   // ── Local UI state ─────────────────────────────────────────────────
   const [searchQuery, setSearchQuery] = useState("");
@@ -265,17 +280,17 @@ export function NoteSidebar({
     return result;
   }, [allNotes, allFolders]);
 
-  // Filter notes by search
+  // Filter notes by search (operates on context-filtered set)
   const filteredNotes = useMemo(() => {
-    if (!searchQuery) return allNotes;
+    if (!searchQuery) return contextFiltered;
     const q = searchQuery.toLowerCase();
-    return allNotes.filter(
+    return contextFiltered.filter(
       (n) =>
         n.label.toLowerCase().includes(q) ||
         n.content?.toLowerCase().includes(q) ||
         n.tags?.some((t) => t.toLowerCase().includes(q)),
     );
-  }, [allNotes, searchQuery]);
+  }, [contextFiltered, searchQuery]);
 
   // Sort function
   const sortNotes = useCallback(
@@ -599,9 +614,9 @@ export function NoteSidebar({
         </div>
       </div>
 
-      {/* Context switcher (org/project/task hierarchy) */}
-      <div className="shrink-0 px-2 py-1 border-b border-border/20">
-        <ContextSwitcher />
+      {/* Context filter (org/scopes/project/task — filters sidebar notes) */}
+      <div className="shrink-0 border-b border-border/20">
+        <DirectContextSelection />
       </div>
 
       {/* Toolbar: group-by + sort + expand/collapse */}

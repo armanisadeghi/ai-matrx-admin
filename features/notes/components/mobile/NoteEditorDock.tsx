@@ -19,15 +19,18 @@ import {
   Download,
   Trash2,
   Loader2,
+  Network,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BottomSheet, BottomSheetHeader, BottomSheetBody } from '@/components/official/bottom-sheet/BottomSheet';
 import MobileNoteToolbar from './MobileNoteToolbar';
+import { NoteContextPicker } from '../NoteContextPicker';
 import { useToastManager } from '@/hooks/useToastManager';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface NoteEditorDockProps {
+  noteId: string;
   folder: string;
   tags: string[];
   onFolderChange: (folder: string) => void;
@@ -46,6 +49,7 @@ const PILL_INSET_Y = 4;
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function NoteEditorDock({
+  noteId,
   folder,
   tags,
   onFolderChange,
@@ -61,7 +65,7 @@ export function NoteEditorDock({
 
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [pill, setPill] = useState<{ x: number; width: number; height: number } | null>(null);
-  const [sheetOpen, setSheetOpen] = useState<'folder-tags' | 'more' | null>(null);
+  const [sheetOpen, setSheetOpen] = useState<'folder-tags' | 'context' | 'more' | null>(null);
 
   // Dock items definition — icons only, no labels
   const items: { key: string; tooltip: string; Icon: LucideIcon; onPress: () => void }[] = [
@@ -90,10 +94,16 @@ export function NoteEditorDock({
       onPress: () => { onExport(); },
     },
     {
+      key: 'context',
+      tooltip: 'Context',
+      Icon: Network,
+      onPress: () => { setActiveIndex(4); setSheetOpen('context'); },
+    },
+    {
       key: 'more',
       tooltip: 'More',
       Icon: MoreHorizontal,
-      onPress: () => { setActiveIndex(4); setSheetOpen('more'); },
+      onPress: () => { setActiveIndex(5); setSheetOpen('more'); },
     },
   ];
 
@@ -200,6 +210,20 @@ export function NoteEditorDock({
             onTagsChange={onTagsChange}
             onClose={() => setSheetOpen(null)}
           />
+        </BottomSheetBody>
+      </BottomSheet>
+
+      {/* Context assignment sheet */}
+      <BottomSheet
+        open={sheetOpen === 'context'}
+        onOpenChange={open => setSheetOpen(open ? 'context' : null)}
+        title="Note Context"
+      >
+        <BottomSheetHeader title="Note Context" />
+        <BottomSheetBody>
+          <div className="px-2 py-2">
+            <NoteContextPicker noteId={noteId} />
+          </div>
         </BottomSheetBody>
       </BottomSheet>
 

@@ -13,7 +13,6 @@ import type { ShellNavItem } from "../../constants/nav-data";
 
 interface NavItemProps {
   item: ShellNavItem;
-  isActive?: boolean;
 }
 
 export default function NavItem({ item }: NavItemProps) {

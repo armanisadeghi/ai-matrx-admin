@@ -7,12 +7,11 @@
 
 import React, { useState, useCallback, useMemo } from "react";
 import dynamic from "next/dynamic";
-import { FolderOpen, ChevronDown, X, Plus, Building2, Kanban, ListTodo, Tags } from "lucide-react";
+import { FolderOpen, ChevronDown, X, Plus, Building2 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   updateNoteFolder,
   updateNoteTags,
-  setNoteField,
 } from "../redux/slice";
 import {
   selectNoteFolder,
@@ -31,15 +30,8 @@ import {
   selectProjectId,
   selectTaskId,
 } from "@/features/agent-context/redux/appContextSlice";
-import { ScopeTagsDisplay } from "@/features/agent-context/components/ScopeTagsDisplay";
 import { cn } from "@/lib/utils";
-
-const ScopePicker = dynamic(
-  () => import("@/features/agent-context/components/ScopePicker").then(
-    (mod) => ({ default: mod.ScopePicker }),
-  ),
-  { ssr: false },
-);
+import { NoteContextPicker } from "./NoteContextPicker";
 
 interface NoteMetadataBarProps {
   noteId: string;
@@ -110,37 +102,6 @@ export function NoteMetadataBar({ noteId }: NoteMetadataBarProps) {
     setAddingTag(false);
   }, [dispatch, noteId, tags, tagInput]);
 
-  // Assign current context to note
-  const handleAssignContext = useCallback(() => {
-    if (ctxOrgId && !noteOrgId) {
-      dispatch(setNoteField({ id: noteId, field: "organization_id", value: ctxOrgId }));
-    }
-    if (ctxProjId && !noteProjId) {
-      dispatch(setNoteField({ id: noteId, field: "project_id", value: ctxProjId }));
-    }
-    if (ctxTaskId && !noteTaskId) {
-      dispatch(setNoteField({ id: noteId, field: "task_id", value: ctxTaskId }));
-    }
-  }, [dispatch, noteId, ctxOrgId, ctxProjId, ctxTaskId, noteOrgId, noteProjId, noteTaskId]);
-
-  const handleClearContext = useCallback(
-    (field: "organization_id" | "project_id" | "task_id") => {
-      dispatch(setNoteField({ id: noteId, field, value: null }));
-      if (field === "organization_id") {
-        dispatch(setNoteField({ id: noteId, field: "project_id", value: null }));
-        dispatch(setNoteField({ id: noteId, field: "task_id", value: null }));
-      }
-      if (field === "project_id") {
-        dispatch(setNoteField({ id: noteId, field: "task_id", value: null }));
-      }
-    },
-    [dispatch, noteId],
-  );
-
-  const hasUnassignedContext = (ctxOrgId && !noteOrgId) || (ctxProjId && !noteProjId) || (ctxTaskId && !noteTaskId);
-
-  // Resolve orgId for scope picker (use note's org, or active context org)
-  const scopeOrgId = noteOrgId || ctxOrgId || null;
 
   return (
     <>
@@ -175,55 +136,23 @@ export function NoteMetadataBar({ noteId }: NoteMetadataBarProps) {
           )}
         </div>
 
-        {/* Context pills (org/project/task) */}
-        {noteOrgId && (
-          <span className="flex items-center gap-0.5 px-1.5 py-0.5 text-[0.5625rem] bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-full shrink-0">
-            <Building2 className="w-2.5 h-2.5" />
-            {ctxOrgName && noteOrgId === ctxOrgId ? ctxOrgName : "Org"}
-            <button onClick={() => handleClearContext("organization_id")} className="cursor-pointer hover:text-foreground [&_svg]:w-2 [&_svg]:h-2"><X /></button>
-          </span>
-        )}
-        {noteProjId && (
-          <span className="flex items-center gap-0.5 px-1.5 py-0.5 text-[0.5625rem] bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-full shrink-0">
-            <Kanban className="w-2.5 h-2.5" />
-            {ctxProjName && noteProjId === ctxProjId ? ctxProjName : "Project"}
-            <button onClick={() => handleClearContext("project_id")} className="cursor-pointer hover:text-foreground [&_svg]:w-2 [&_svg]:h-2"><X /></button>
-          </span>
-        )}
-        {noteTaskId && (
-          <span className="flex items-center gap-0.5 px-1.5 py-0.5 text-[0.5625rem] bg-green-500/10 text-green-600 dark:text-green-400 rounded-full shrink-0">
-            <ListTodo className="w-2.5 h-2.5" />
-            {ctxTaskName && noteTaskId === ctxTaskId ? ctxTaskName : "Task"}
-            <button onClick={() => handleClearContext("task_id")} className="cursor-pointer hover:text-foreground [&_svg]:w-2 [&_svg]:h-2"><X /></button>
-          </span>
-        )}
-        {hasUnassignedContext && (
-          <button
-            onClick={handleAssignContext}
-            className="flex items-center gap-0.5 px-1.5 py-0.5 text-[0.5625rem] text-muted-foreground hover:text-foreground border border-dashed border-border/50 rounded-full cursor-pointer transition-colors shrink-0"
-            title="Assign current context to this note"
-          >
-            <Plus className="w-2.5 h-2.5" /> Context
-          </button>
-        )}
-
-        {/* Scope tags (e.g., "Client: Acme", "Department: SEO") */}
-        <ScopeTagsDisplay
-          entityType="note"
-          entityId={noteId}
-          className="shrink-0 [&_.badge]:text-[0.5rem] [&_.badge]:py-0 [&_.badge]:px-1"
-        />
-
-        {/* Scope picker trigger */}
-        {scopeOrgId && (
-          <button
-            onClick={() => setScopePickerOpen((v) => !v)}
-            className="flex items-center gap-0.5 px-1.5 py-0.5 text-[0.5625rem] text-muted-foreground hover:text-foreground border border-dashed border-border/50 rounded-full cursor-pointer transition-colors shrink-0"
-            title="Assign to scopes"
-          >
-            <Tags className="w-2.5 h-2.5" />
-          </button>
-        )}
+        {/* Context toggle — shows summary pill, expands full picker below */}
+        <button
+          onClick={() => setScopePickerOpen((v) => !v)}
+          className={cn(
+            "flex items-center gap-0.5 px-1.5 py-0.5 text-[0.5625rem] rounded-full cursor-pointer transition-colors shrink-0",
+            noteOrgId || noteProjId || noteTaskId
+              ? "bg-primary/10 text-primary"
+              : "text-muted-foreground hover:text-foreground border border-dashed border-border/50",
+          )}
+          title="Set context for this note"
+        >
+          <Building2 className="w-2.5 h-2.5" />
+          {noteTaskId ? (ctxTaskName && noteTaskId === ctxTaskId ? ctxTaskName : "Task")
+            : noteProjId ? (ctxProjName && noteProjId === ctxProjId ? ctxProjName : "Project")
+            : noteOrgId ? (ctxOrgName && noteOrgId === ctxOrgId ? ctxOrgName : "Org")
+            : "Context"}
+        </button>
 
         {/* Tags */}
         <div className="flex items-center gap-1 flex-1 min-w-0 overflow-x-auto">
@@ -274,14 +203,10 @@ export function NoteMetadataBar({ noteId }: NoteMetadataBarProps) {
         </span>
       </div>
 
-      {/* Scope picker popover — rendered below the metadata bar */}
-      {scopePickerOpen && scopeOrgId && (
-        <div className="border-t border-border/20 px-4 py-2 bg-muted/20 shrink-0">
-          <ScopePicker
-            entityType="note"
-            entityId={noteId}
-            orgId={scopeOrgId}
-          />
+      {/* Context picker panel — full hierarchy (org/scopes/project/task) */}
+      {scopePickerOpen && (
+        <div className="border-t border-border/20 px-2 bg-muted/20 shrink-0">
+          <NoteContextPicker noteId={noteId} />
         </div>
       )}
     </>

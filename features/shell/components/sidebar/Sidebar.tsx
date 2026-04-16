@@ -1,17 +1,22 @@
 // Sidebar.tsx — Server component for desktop sidebar
 // Three sections: Brand (top), Nav (middle, scrollable), Footer (bottom)
 // Content-push expansion driven by CSS :has(#shell-sidebar-toggle:checked)
+//
+// Nav section has two containers:
+//   shell-sidebar-main-nav  — standard nav items (always SSR, always in DOM)
+//   shell-sidebar-route-nav — route-specific menu (client island, Large Routes)
+// data-sidebar-view on <nav> controls which is visible (default: "main").
 
 import NavItem from "./NavItem";
+import NavItemGroup from "./NavItemGroup";
+import RouteMenuSlot from "./RouteMenuSlot";
 import ShellIcon from "../ShellIcon";
-import SidebarContextSelector from "./SidebarContextSelector";
-import SidebarRouteExtras from "./SidebarRouteExtras";
+import DirectContextSelection from "./DirectContextSelection";
 import SidebarNotesToggle from "@/features/notes/actions/SidebarNotesToggle";
 import SidebarVoicePadToggle from "../controls/SidebarVoicePadToggle";
 import SidebarAdminIndicatorToggle from "../controls/SidebarAdminIndicatorToggle";
 import SidebarEnvToggle from "../controls/SidebarEnvToggle";
 import SidebarWindowToggle from "@/features/window-panels/SidebarWindowToggle";
-import DirectContextSelection from "./DirectContextSelection";
 import {
   primaryNavItems,
   settingsItem,
@@ -23,13 +28,6 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ pathname }: SidebarProps) {
-  const isActive = (item: ShellNavItem) => {
-    if (item.href === "/ssr/dashboard") {
-      return pathname === "/ssr/dashboard" || pathname === "/ssr";
-    }
-    return pathname.startsWith(item.href);
-  };
-
   return (
     <aside className="shell-sidebar">
       {/* Brand Section — Toggle icon stays in place */}
@@ -43,20 +41,33 @@ export default function Sidebar({ pathname }: SidebarProps) {
         </label>
       </div>
 
-      {/* Navigation — Self-scrolling container */}
-      <nav className="shell-sidebar-nav" aria-label="Main navigation">
-        {/* <SidebarContextSelector /> */}
-        <DirectContextSelection />
+      {/* Navigation — Self-scrolling container with dual-view support */}
+      <nav
+        className="shell-sidebar-nav"
+        aria-label="Main navigation"
+        data-sidebar-view="main"
+      >
+        {/* Route menu switch + content — client island, renders nothing on Small/Medium routes */}
+        <RouteMenuSlot />
 
-        {/* Route-specific extras — client island, updates on every navigation */}
-        <SidebarRouteExtras />
+        {/* Standard nav — always server-rendered */}
+        <div className="shell-sidebar-main-nav">
+          <DirectContextSelection />
 
-        {primaryNavItems.map((item) => (
-          <NavItem key={item.href} item={item} isActive={isActive(item)} />
-        ))}
+          {primaryNavItems.map((item) =>
+            item.children ? (
+              <NavItemGroup key={item.href} item={item} />
+            ) : (
+              <NavItem key={item.href} item={item} />
+            ),
+          )}
 
-        {/* Admin nav items injected here by AdminNavInjector (client component) */}
-        <div id="admin-nav-slot" />
+          {/* Admin nav items injected here by AdminNavInjector (client component) */}
+          <div id="admin-nav-slot" />
+        </div>
+
+        {/* Route menu — populated by RouteMenuSlot client island */}
+        <div className="shell-sidebar-route-nav" />
       </nav>
 
       {/* Footer — Admin indicator (admins), Voice + Settings */}
@@ -66,7 +77,7 @@ export default function Sidebar({ pathname }: SidebarProps) {
         <SidebarWindowToggle />
         <SidebarNotesToggle />
         <SidebarVoicePadToggle />
-        <NavItem item={settingsItem} isActive={isActive(settingsItem)} />
+        <NavItem item={settingsItem} />
       </div>
     </aside>
   );

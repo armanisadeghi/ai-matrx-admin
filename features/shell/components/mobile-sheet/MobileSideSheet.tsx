@@ -1,14 +1,19 @@
 // MobileSideSheet — Server component for off-canvas mobile navigation.
 //
+// Two containers inside the sheet nav:
+//   shell-mobile-main-nav  — standard nav (always SSR)
+//   shell-mobile-route-nav — route menu (client island, Large Routes)
+// data-sidebar-view on .shell-mobile-sheet controls visibility.
+//
 // All links carry data-nav-href. Active state is driven entirely by CSS:
 //   .shell-root[data-pathname^="/ssr/chat"] [data-nav-href="/ssr/chat"] { ... }
 //
 // NavActiveSync keeps .shell-root[data-pathname] live after client navigation.
-// This component has zero knowledge of routing.
 
 import ShellIcon from "../ShellIcon";
 import { primaryNavItems, settingsItem } from "../../constants/nav-data";
 import MobileSheetNavLink from "./MobileSheetNavLink";
+import MobileRouteMenuSlot from "./MobileRouteMenuSlot";
 
 export default function MobileSideSheet() {
   return (
@@ -21,7 +26,10 @@ export default function MobileSideSheet() {
       />
 
       {/* Sheet panel */}
-      <div className="shell-mobile-sheet shell-glass-sheet">
+      <div
+        className="shell-mobile-sheet shell-glass-sheet"
+        data-sidebar-view="main"
+      >
         {/* Close button — absolutely positioned relative to the sheet */}
         <label
           htmlFor="shell-mobile-menu"
@@ -37,27 +45,36 @@ export default function MobileSideSheet() {
           <span className="shell-mobile-sheet-brand-text">AI Matrx</span>
         </div>
 
-        {/* Primary navigation */}
+        {/* Navigation with dual-view support */}
         <nav aria-label="Mobile navigation">
-          {primaryNavItems.map((item) => (
+          {/* Route menu switch + content — client island */}
+          <MobileRouteMenuSlot />
+
+          {/* Standard nav — always server-rendered */}
+          <div className="shell-mobile-main-nav">
+            {primaryNavItems.map((item) => (
+              <MobileSheetNavLink
+                key={item.href}
+                href={item.href}
+                iconName={item.iconName}
+                label={item.label}
+              />
+            ))}
+
+            {/* Settings */}
+            <div className="shell-mobile-section-divider" />
             <MobileSheetNavLink
-              key={item.href}
-              href={item.href}
-              iconName={item.iconName}
-              label={item.label}
+              href={settingsItem.href}
+              iconName={settingsItem.iconName}
+              label={settingsItem.label}
             />
-          ))}
 
-          {/* Settings */}
-          <div className="shell-mobile-section-divider" />
-          <MobileSheetNavLink
-            href={settingsItem.href}
-            iconName={settingsItem.iconName}
-            label={settingsItem.label}
-          />
+            {/* Admin section — injected by AdminNavInjector (client component) */}
+            <div id="admin-nav-mobile-slot" />
+          </div>
 
-          {/* Admin section — injected by AdminNavInjector (client component) */}
-          <div id="admin-nav-mobile-slot" />
+          {/* Route menu — populated by MobileRouteMenuSlot client island */}
+          <div className="shell-mobile-route-nav" />
         </nav>
       </div>
     </div>

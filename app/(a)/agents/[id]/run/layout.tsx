@@ -1,11 +1,6 @@
-// The run page manages its own sidebar via AgentRunnerPage's internal layout.
-// Emit the shell-hide-sidebar sentinel so the CSS collapses the shell sidebar
-// column to zero — prevents dead blank space on the left.
+// Agent Run layout — uses the shell sidebar's Large Route system.
+// No shell-hide-sidebar — the shell sidebar stays visible and shows
+// the AgentRunSidebarMenu via the route-menu-registry.
 export default function RunLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <>
-      <span className="shell-hide-sidebar" aria-hidden="true" />
-      {children}
-    </>
-  );
+  return <>{children}</>;
 }
