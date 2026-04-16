@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useCallback, useMemo } from 'react';
-import { ChevronLeft, FileText, PilcrowRight, Eye, Save, Loader2, Check, FolderOpen, Layers, ChevronDown } from 'lucide-react';
+import { ChevronLeft, FileText, Eye, Save, Loader2, Check, FolderOpen, Layers, ChevronDown } from 'lucide-react';
 import { useNotesRedux } from '../../hooks/useNotesRedux';
 import { PageSpecificHeader } from '@/components/layout/new-layout/PageSpecificHeader';
 import { cn } from '@/lib/utils';
@@ -14,7 +14,6 @@ type MobileView = 'list' | 'editor';
 
 const VIEW_MODES: { mode: MobileEditorMode; icon: React.ReactNode; label: string }[] = [
   { mode: 'plain',   icon: <FileText size={13} />,    label: 'Text' },
-  { mode: 'wysiwyg', icon: <PilcrowRight size={13} />, label: 'Rich' },
   { mode: 'preview', icon: <Eye size={13} />,          label: 'Preview' },
 ];
 
@@ -87,8 +86,6 @@ export default function MobileNotesView() {
       {currentView === 'list' && (
         <PageSpecificHeader>
           <div className="flex items-center gap-2 h-full w-full">
-            <span className="text-sm font-semibold text-foreground flex-shrink-0">Notes</span>
-
             {/* Folder quick-filter pill */}
             <div className="relative">
               <button
@@ -246,9 +243,9 @@ export default function MobileNotesView() {
         />
         </div>
 
-        {/* Editor view — scrolls within its container */}
+        {/* Editor view — split into scrollable content + fixed dock outside transform */}
         <div
-          className={`absolute inset-0 transition-transform duration-300 ease-in-out overflow-y-auto overscroll-contain ${
+          className={`absolute inset-0 flex flex-col transition-transform duration-300 ease-in-out ${
             currentView === 'editor' ? 'translate-x-0' : 'translate-x-full'
           }`}
         >

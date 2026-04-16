@@ -63,31 +63,37 @@ export function NoteEditorDock({
   const [pill, setPill] = useState<{ x: number; width: number; height: number } | null>(null);
   const [sheetOpen, setSheetOpen] = useState<'folder-tags' | 'more' | null>(null);
 
-  // Dock items definition
-  const items: { key: string; label: string; Icon: LucideIcon; onPress: () => void }[] = [
+  // Dock items definition — icons only, no labels
+  const items: { key: string; tooltip: string; Icon: LucideIcon; onPress: () => void }[] = [
     {
       key: 'folder',
-      label: folder,
+      tooltip: folder,
       Icon: FolderOpen,
       onPress: () => { setActiveIndex(0); setSheetOpen('folder-tags'); },
     },
     {
       key: 'tags',
-      label: tags.length > 0 ? `${tags.length} tag${tags.length !== 1 ? 's' : ''}` : 'Tags',
+      tooltip: tags.length > 0 ? `${tags.length} tag${tags.length !== 1 ? 's' : ''}` : 'Tags',
       Icon: Tag,
       onPress: () => { setActiveIndex(1); setSheetOpen('folder-tags'); },
     },
     {
-      key: 'share',
-      label: 'Share',
-      Icon: Share2,
-      onPress: () => { toast.info('Sharing coming soon'); },
+      key: 'copy',
+      tooltip: 'Duplicate',
+      Icon: Copy,
+      onPress: () => { onCopy(); toast.success('Note duplicated'); },
+    },
+    {
+      key: 'export',
+      tooltip: 'Export',
+      Icon: Download,
+      onPress: () => { onExport(); },
     },
     {
       key: 'more',
-      label: 'More',
+      tooltip: 'More',
       Icon: MoreHorizontal,
-      onPress: () => { setActiveIndex(3); setSheetOpen('more'); },
+      onPress: () => { setActiveIndex(4); setSheetOpen('more'); },
     },
   ];
 
@@ -125,7 +131,7 @@ export function NoteEditorDock({
   // ─── Render ────────────────────────────────────────────────────────────────
   return (
     <>
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 pb-safe px-3 pointer-events-none">
+      <nav className="md:hidden absolute bottom-0 left-0 right-0 z-40 pb-safe px-3 pointer-events-none">
         <div
           ref={navRef}
           className="relative flex items-stretch mx-glass-subtle rounded-[22px] shadow-lg border border-white/[0.08] mb-2 pointer-events-auto"
@@ -159,9 +165,10 @@ export function NoteEditorDock({
               >
                 <button
                   onClick={item.onPress}
-                  aria-label={item.label}
+                  aria-label={item.tooltip}
+                  title={item.tooltip}
                   className={cn(
-                    'relative z-10 flex flex-col items-center justify-center gap-0.5 w-full py-3 px-1 transition-colors duration-200',
+                    'relative z-10 flex items-center justify-center w-full py-2.5 px-1 transition-colors duration-200',
                     isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground',
                   )}
                 >
@@ -171,12 +178,6 @@ export function NoteEditorDock({
                       isActive && 'drop-shadow-[0_0_6px_hsl(var(--primary)/0.4)]',
                     )}
                   />
-                  <span className={cn(
-                    'text-[9px] leading-none font-medium truncate max-w-full transition-colors duration-200',
-                    isActive ? 'text-primary' : 'text-muted-foreground',
-                  )}>
-                    {item.label}
-                  </span>
                 </button>
               </div>
             );
@@ -212,13 +213,6 @@ export function NoteEditorDock({
         <BottomSheetBody>
           <div className="px-4 py-2 space-y-1">
             <button
-              onClick={() => { onCopy(); setSheetOpen(null); }}
-              className="flex items-center gap-3 w-full px-4 py-3.5 rounded-xl text-sm font-medium text-foreground hover:bg-accent/50 transition-colors"
-            >
-              <Copy className="h-5 w-5 text-muted-foreground" />
-              Duplicate Note
-            </button>
-            <button
               onClick={() => { toast.info('Sharing coming soon'); setSheetOpen(null); }}
               className="flex items-center gap-3 w-full px-4 py-3.5 rounded-xl text-sm font-medium text-foreground hover:bg-accent/50 transition-colors"
             >
@@ -227,13 +221,6 @@ export function NoteEditorDock({
               <span className="ml-auto text-[10px] bg-muted text-muted-foreground px-1.5 py-0.5 rounded font-normal">
                 Soon
               </span>
-            </button>
-            <button
-              onClick={() => { onExport(); setSheetOpen(null); }}
-              className="flex items-center gap-3 w-full px-4 py-3.5 rounded-xl text-sm font-medium text-foreground hover:bg-accent/50 transition-colors"
-            >
-              <Download className="h-5 w-5 text-muted-foreground" />
-              Export as Markdown
             </button>
             <div className="h-px bg-border/40 my-1" />
             <button

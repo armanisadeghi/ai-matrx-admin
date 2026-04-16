@@ -216,10 +216,10 @@ export default function MobileNoteEditor({ note, editorMode, onBack }: MobileNot
   };
 
   return (
-    // This div is the scroll root — the parent container (in MobileNotesView) has overflow-y-auto
-    <div className="min-h-full bg-background flex flex-col">
-      {/* ── Content area ────────────────────────────────────────────────────── */}
-      <div className="flex-1 px-4 pt-4 pb-32">
+    // Flex column fills the parent — content scrolls, dock stays at bottom
+    <div className="h-full bg-background flex flex-col overflow-hidden relative">
+      {/* ── Scrollable content area ─────────────────────────────────────────── */}
+      <div className="flex-1 overflow-y-auto overscroll-contain px-4 pt-4 pb-32">
 
         {/* Plain text */}
         {editorMode === 'plain' && (
