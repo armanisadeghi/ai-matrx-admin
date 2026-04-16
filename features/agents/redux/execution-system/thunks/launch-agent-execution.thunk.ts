@@ -23,6 +23,7 @@ import type { RootState } from "@/lib/redux/store";
 import type { LLMParams } from "@/features/agents/types/agent-api-types";
 import type {
   JsonExtractionConfig,
+  ManagedAgentOptions,
   ResultDisplayMode,
   SourceFeature,
   VariableInputStyle,
@@ -48,73 +49,6 @@ import {
   openOverlay,
   openAgentGateWindow,
 } from "@/lib/redux/slices/overlaySlice";
-
-// =============================================================================
-// Types
-// =============================================================================
-
-export interface LaunchAgentOptions {
-  agentId?: string;
-  shortcutId?: string;
-  manual?: { label?: string; baseSettings?: Partial<LLMParams> };
-
-  sourceFeature: SourceFeature;
-
-  applicationScope?: ApplicationScope;
-
-  displayMode?: ResultDisplayMode;
-  autoRun?: boolean;
-  allowChat?: boolean;
-
-  /**
-   * Coarse-grained visibility config. When provided, resolves to fine-grained:
-   *   false → showVariablePanel: false, showDefinitionMessages: false
-   *   true  → showVariablePanel: true,  showDefinitionMessages: true, showDefinitionMessageContent: false
-   *
-   * Fine-grained overrides below take precedence over this.
-   */
-  showVariables?: boolean;
-  showVariablePanel?: boolean;
-  showDefinitionMessages?: boolean;
-  showDefinitionMessageContent?: boolean;
-
-  usePreExecutionInput?: boolean;
-
-  /** When true, conversation history is wiped after each submit (builder/test mode). */
-  autoClearConversation?: boolean;
-
-  /**
-   * Controls which execution path and history strategy is used.
-   * "agent"  — Default. Standard agent/conversation routing.
-   * "chat"   — Always hits /api/ai/chat with the full live agent definition.
-   *            Used exclusively by the builder. No other surface should use this.
-   */
-  conversationMode?: "agent" | "conversation" | "chat";
-
-  userInput?: string;
-  variables?: Record<string, unknown>;
-
-  /**
-   * LLM parameter overrides applied on top of the agent's base settings.
-   * Stored in instanceModelOverrides and sent as config_overrides in the request.
-   * NOT used in chat mode (builder reads the full live agent definition).
-   */
-  overrides?: Partial<LLMParams>;
-
-  variableInputStyle?: VariableInputStyle;
-
-  hideReasoning?: boolean;
-  hideToolResults?: boolean;
-  preExecutionMessage?: string | null;
-
-  onComplete?: (result: LaunchResult) => void;
-  onTextReplace?: (text: string) => void;
-  onTextInsertBefore?: (text: string) => void;
-  onTextInsertAfter?: (text: string) => void;
-  originalText?: string;
-
-  jsonExtraction?: JsonExtractionConfig;
-}
 
 export interface LaunchResult {
   /** Client-owned execution instance key (Redux `byConversationId`). */
@@ -185,7 +119,7 @@ async function pollForCompletion(
  * Registers lifecycle callbacks with CallbackManager and returns the group ID.
  * Returns null if no callbacks are provided.
  */
-function registerCallbacks(options: LaunchAgentOptions): string | null {
+function registerCallbacks(options: ManagedAgentOptions): string | null {
   const { onComplete, onTextReplace, onTextInsertBefore, onTextInsertAfter } =
     options;
 
@@ -234,7 +168,7 @@ function registerCallbacks(options: LaunchAgentOptions): string | null {
 
 export const launchAgentExecution = createAsyncThunk<
   LaunchResult,
-  LaunchAgentOptions
+  ManagedAgentOptions
 >("instances/launch", async (options, { dispatch, getState }) => {
   const {
     agentId,

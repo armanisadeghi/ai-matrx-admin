@@ -89,11 +89,13 @@ function InlineViewToolbar({
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  // Close on outside click
+  // Close on outside click — skip Radix portal targets (Select, Popover, etc.)
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
+      const target = e.target as Element;
+      if (ref.current && !ref.current.contains(target)) {
+        if (target.closest?.("[data-radix-portal]")) return;
         setOpen(false);
       }
     };

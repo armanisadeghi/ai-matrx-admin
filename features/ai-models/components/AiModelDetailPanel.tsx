@@ -845,15 +845,19 @@ export default function AiModelDetailPanel({
     }
   }, [isDirty, onClose]);
 
-  // Click-outside: detect clicks on the overlay (left half) when panel is open
+  // Click-outside: detect clicks on the overlay (left half) when panel is open.
+  // Must ignore clicks inside Radix UI portals (Select, Popover, Dialog, etc.)
+  // which render outside the panel's DOM subtree via document.body portals but
+  // are logically "inside" the panel. Radix marks these with [data-radix-portal].
   useEffect(() => {
     const handleMouseDown = (e: MouseEvent) => {
-      const target = e.target as Node;
+      const target = e.target as Element;
       const inner = innerRef.current;
       if (!inner) return;
-      if (!inner.contains(target)) {
-        requestClose();
-      }
+      if (inner.contains(target)) return;
+      // Ignore clicks inside any Radix portal (dropdowns, selects, dialogs, etc.)
+      if (target.closest("[data-radix-portal]")) return;
+      requestClose();
     };
     document.addEventListener("mousedown", handleMouseDown);
     return () => document.removeEventListener("mousedown", handleMouseDown);

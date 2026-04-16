@@ -94,7 +94,9 @@ function WindowNotesInner({ className }: { className?: string }) {
   useEffect(() => {
     if (!pickerOpen) return;
     const handler = (e: MouseEvent) => {
-      if (pickerRef.current && !pickerRef.current.contains(e.target as Node)) {
+      const target = e.target as Element;
+      if (pickerRef.current && !pickerRef.current.contains(target)) {
+        if (target.closest?.("[data-radix-portal]")) return;
         setPickerOpen(false);
       }
     };

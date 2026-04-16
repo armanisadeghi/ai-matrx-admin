@@ -1,5 +1,5 @@
 import type {
-  LaunchAgentOverrides,
+  ManagedAgentOptions,
   ResultDisplayMode,
 } from "@/features/agents/types/instance.types";
 
@@ -41,7 +41,7 @@ export const AGENT_GENERATOR_CONFIG = {
       fuzzyOnFinalize: true,
       maxResults: 5,
     },
-  } satisfies Partial<LaunchAgentOverrides>,
+  } satisfies Partial<ManagedAgentOptions>,
 
   variables: {
     prompt_purpose: "",

@@ -227,7 +227,9 @@ export function WindowPanel({
     : allWindows.find((w) => w.state !== "minimized")?.id === id;
 
   // Mobile sidebar/content toggle (not stored in Redux — purely a view concern)
-  const [activePaneMobile, setActivePaneMobile] = useState<"main" | "sidebar">("main");
+  const [activePaneMobile, setActivePaneMobile] = useState<"main" | "sidebar">(
+    "main",
+  );
 
   useUrlSync(urlSyncKey, urlSyncId, urlSyncArgs);
 
@@ -1081,11 +1083,13 @@ function GreenTrafficLight({
     setDropdownOpen(false);
   };
 
-  // Close dropdown when tapping outside (touch devices)
+  // Close dropdown when tapping outside — skip Radix portal targets
   useEffect(() => {
     if (!dropdownOpen) return;
     const onPointerOutside = (e: PointerEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      const target = e.target as Element;
+      if (containerRef.current && !containerRef.current.contains(target)) {
+        if (target.closest?.("[data-radix-portal]")) return;
         setDropdownOpen(false);
       }
     };

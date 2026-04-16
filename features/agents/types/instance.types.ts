@@ -443,10 +443,22 @@ export interface InstanceUIState {
 }
 
 // =============================================================================
-// Launch Overrides
+// Managed Agent Options
 // =============================================================================
 
-export interface LaunchAgentOverrides {
+export interface ManagedAgentOptions {
+  /** Stable surface key for the focus registry (e.g. "agent-builder", "agent-runner:<id>") */
+  surfaceKey: string;
+  agentId?: string;
+  shortcutId?: string;
+  manual?: { label?: string; baseSettings?: Partial<LLMParams> };
+
+  /** UI surface that triggered the launch. Required for telemetry and attribution. */
+  sourceFeature: SourceFeature;
+
+  /** Delay conversation creation until the caller signals readiness. Default: true */
+  ready?: boolean;
+
   // -- Display Mode ───────────────────────────────────────────────────────────
   /**
    * How the result is presented. "direct" means the caller manages the UI
@@ -466,9 +478,12 @@ export interface LaunchAgentOverrides {
   // true = multi-turn conversation; false = single-shot only.
   allowChat?: boolean;
 
-  /** Determines whether the user has the ability to see the 'form' for capturing variables.
-   * This does Not alter the behavior of the default variable values or the programmatic variable inclusion.
-   * If False, everything proceeds nomally but the user cannot modify the variable values.
+  /**
+   * Coarse-grained visibility config. When provided, resolves to fine-grained:
+   *   false → showVariablePanel: false, showDefinitionMessages: false
+   *   true  → showVariablePanel: true,  showDefinitionMessages: true, showDefinitionMessageContent: false
+   *
+   * Fine-grained overrides below take precedence over this.
    */
   showVariables?: boolean;
 
@@ -480,6 +495,8 @@ export interface LaunchAgentOverrides {
   showDefinitionMessageContent?: boolean;
 
   usePreExecutionInput?: boolean;
+
+  /** When true, conversation history is wiped after each submit (builder/test mode). */
   autoClearConversation?: boolean;
 
   /**
@@ -508,9 +525,10 @@ export interface LaunchAgentOverrides {
    */
   overrides?: Partial<LLMParams>;
 
-  sourceFeature?: SourceFeature;
   applicationScope?: ApplicationScope;
   variableInputStyle?: VariableInputStyle;
+
+  showAutoClearToggle?: boolean;
 
   /** When true, reasoning/thinking blocks are hidden in the message list. */
   hideReasoning?: boolean;
@@ -564,6 +582,8 @@ export interface LaunchAgentOverrides {
 //     is intentionally different from what might seem intuitive.
 //   - Fields that are computed (not a simple scalar) are marked "computed".
 //   - Callback fields default to null/undefined — they are opt-in.
+//   - `sourceFeature` has a fallback default here, but ManagedAgentOptions
+//     requires callers to provide it explicitly for proper attribution.
 // =============================================================================
 
 export const AGENT_EXECUTION_DEFAULTS = {
@@ -583,6 +603,13 @@ export const AGENT_EXECUTION_DEFAULTS = {
   conversationMode: "agent" as "agent" | "conversation" | "chat",
 
   // ── Execution Behavior ─────────────────────────────────────────────────────
+
+  /**
+   * Delay conversation creation until the caller signals readiness.
+   * When true, the instance is created but does not fetch/execute until
+   * the caller flips it to ready. Default true for safety.
+   */
+  ready: true,
 
   /**
    * Should the instance execute immediately after creation without the user
@@ -610,6 +637,12 @@ export const AGENT_EXECUTION_DEFAULTS = {
    * continuing the current conversation. Only meaningful in builder/test mode.
    */
   autoClearConversation: false,
+
+  /**
+   * Whether to show the auto-clear toggle control in the UI. Independent of
+   * autoClearConversation itself — this governs visibility of the toggle.
+   */
+  showAutoClearToggle: false,
 
   // ── Visibility ─────────────────────────────────────────────────────────────
 
@@ -715,7 +748,11 @@ export const AGENT_EXECUTION_DEFAULTS = {
    */
   overrides: null as null,
 
-  /** UI surface that triggered the launch. Stored on ExecutionInstance. */
+  /**
+   * UI surface that triggered the launch. Stored on ExecutionInstance.
+   * Required on ManagedAgentOptions — this fallback is only used by internal
+   * code paths that construct instances without a caller-facing options object.
+   */
   sourceFeature: "agent-runner" as SourceFeature,
 } as const;
 

@@ -9,11 +9,9 @@
  */
 
 import { Loader2 } from "lucide-react";
-import {
-  useAgentLauncher,
-  type ManagedAgentOptions,
-} from "@/features/agents/hooks/useAgentLauncher";
+import { useAgentLauncher } from "@/features/agents/hooks/useAgentLauncher";
 import { AgentConversationColumn } from "../shared/AgentConversationColumn";
+import type { ManagedAgentOptions } from "@/features/agents/types/instance.types";
 
 interface AgentBuilderRightPanelProps {
   agentId: string;
@@ -33,6 +31,8 @@ export function AgentBuilderRightPanel({
     autoRun: false,
     allowChat: true,
     showVariablePanel: true,
+    showAutoClearToggle: true,
+    autoClearConversation: true,
   };
 
   const { conversationId } = useAgentLauncher(agentId, agentOptions);

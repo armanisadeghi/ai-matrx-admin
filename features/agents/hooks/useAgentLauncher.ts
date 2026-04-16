@@ -26,29 +26,17 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import {
-  launchAgentExecution,
-  type LaunchAgentOptions,
-  type LaunchResult,
-} from "@/features/agents/redux/execution-system/thunks/launch-agent-execution.thunk";
 import { destroyInstance } from "@/features/agents/redux/execution-system/execution-instances/execution-instances.slice";
 import {
   setFocus,
   selectFocusedConversation,
 } from "@/features/agents/redux/execution-system/conversation-focus";
 import type { ApplicationScope } from "@/features/agents/utils/scope-mapping";
-import type { LaunchAgentOverrides } from "@/features/agents/types/instance.types";
-
-// =============================================================================
-// Options for managed mode (extends LaunchAgentOverrides)
-// =============================================================================
-
-export interface ManagedAgentOptions extends LaunchAgentOverrides {
-  /** Stable surface key for the focus registry (e.g. "agent-builder", "agent-runner:<id>") */
-  surfaceKey: string;
-  /** Delay conversation creation until the caller signals readiness. Default: true */
-  ready?: boolean;
-}
+import type { ManagedAgentOptions } from "../types/instance.types";
+import {
+  launchAgentExecution,
+  LaunchResult,
+} from "../redux/execution-system/thunks/launch-agent-execution.thunk";
 
 // =============================================================================
 // Return types
@@ -57,16 +45,16 @@ export interface ManagedAgentOptions extends LaunchAgentOverrides {
 interface ImperativeMethods {
   launchAgent: (
     agentId: string,
-    options?: LaunchAgentOverrides,
+    options?: ManagedAgentOptions,
   ) => Promise<LaunchResult>;
 
   launchShortcut: (
     shortcutId: string,
     applicationScope: ApplicationScope,
-    options?: Partial<LaunchAgentOverrides>,
+    options?: Partial<ManagedAgentOptions>,
   ) => Promise<LaunchResult>;
 
-  launchChat: (options?: LaunchAgentOverrides) => Promise<LaunchResult>;
+  launchChat: (options?: ManagedAgentOptions) => Promise<LaunchResult>;
 
   close: (conversationId: string) => void;
 }
@@ -100,9 +88,10 @@ export function useAgentLauncher(
   // ── Imperative methods (always created) ──────────────────────────────────
 
   const launchAgent = useCallback(
-    async (id: string, opts?: LaunchAgentOverrides): Promise<LaunchResult> => {
-      const payload: LaunchAgentOptions = {
+    async (id: string, opts?: ManagedAgentOptions): Promise<LaunchResult> => {
+      const payload: ManagedAgentOptions = {
         agentId: id,
+        surfaceKey: opts?.surfaceKey,
         sourceFeature: opts?.sourceFeature,
         displayMode: opts?.displayMode,
         autoRun: opts?.autoRun,
@@ -112,6 +101,7 @@ export function useAgentLauncher(
         showDefinitionMessages: opts?.showDefinitionMessages,
         showDefinitionMessageContent: opts?.showDefinitionMessageContent,
         usePreExecutionInput: opts?.usePreExecutionInput,
+        showAutoClearToggle: opts?.showAutoClearToggle,
         autoClearConversation: opts?.autoClearConversation,
         conversationMode: opts?.conversationMode,
         userInput: opts?.userInput,
@@ -138,11 +128,12 @@ export function useAgentLauncher(
     async (
       shortcutId: string,
       applicationScope: ApplicationScope,
-      opts?: Partial<LaunchAgentOverrides>,
+      opts?: Partial<ManagedAgentOptions>,
     ): Promise<LaunchResult> => {
-      const payload: LaunchAgentOptions = {
+      const payload: ManagedAgentOptions = {
         shortcutId,
         applicationScope,
+        surfaceKey: opts?.surfaceKey,
         sourceFeature: opts?.sourceFeature,
         displayMode: opts?.displayMode,
         autoRun: opts?.autoRun,
@@ -166,15 +157,16 @@ export function useAgentLauncher(
   );
 
   const launchChat = useCallback(
-    async (opts?: LaunchAgentOverrides): Promise<LaunchResult> => {
+    async (opts?: ManagedAgentOptions): Promise<LaunchResult> => {
       const conversationMode = opts?.conversationMode ?? "chat";
       const allowChat = opts?.allowChat ?? true;
 
-      const payload: LaunchAgentOptions = {
+      const payload: ManagedAgentOptions = {
         manual: {
           label: "Chat",
           baseSettings: opts?.overrides,
         },
+        surfaceKey: opts?.surfaceKey,
         sourceFeature: opts?.sourceFeature,
         displayMode: opts?.displayMode,
         autoRun: opts?.autoRun,
@@ -199,7 +191,7 @@ export function useAgentLauncher(
   );
 
   const launch = useCallback(
-    async (opts: LaunchAgentOverrides): Promise<LaunchResult> => {
+    async (opts: ManagedAgentOptions): Promise<LaunchResult> => {
       if (opts?.conversationMode === "chat") {
         return await launchChat(opts);
       } else if (opts?.conversationMode === "agent") {
@@ -256,6 +248,7 @@ export function useAgentLauncher(
     let createdId: string | null = null;
 
     launchAgent(agentId!, {
+      surfaceKey,
       displayMode,
       autoRun,
       allowChat,
@@ -319,7 +312,7 @@ export function useAgentLauncher(
 
 export async function launchAgentImperative(
   dispatch: ReturnType<typeof useAppDispatch>,
-  options: LaunchAgentOptions,
+  options: ManagedAgentOptions,
 ): Promise<LaunchResult> {
   return dispatch(launchAgentExecution(options)).unwrap();
 }
