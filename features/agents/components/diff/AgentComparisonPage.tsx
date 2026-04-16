@@ -16,8 +16,10 @@ import {
 } from "@/features/agents/redux/agent-definition/selectors";
 import SearchableSelect from "@/components/matrx/SearchableSelect";
 import type { Option } from "@/components/matrx/SearchableSelect";
+import { AgentListDropdown } from "@/features/agents/components/agent-listings/AgentListDropdown";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Loader2 } from "lucide-react";
+import { ChevronDown, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { AgentDiffViewer } from "./AgentDiffViewer";
 
 interface SideState {
@@ -57,13 +59,7 @@ export function AgentComparisonPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const agentOptions: Option[] = allAgents
-    .filter((a) => !a.isVersion)
-    .sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""))
-    .map((a) => ({ value: a.id, label: a.name ?? a.id }));
-
-  const handleAgentChange = (side: "left" | "right", option: Option) => {
-    const agentId = option.value;
+  const handleAgentChange = (side: "left" | "right", agentId: string) => {
     const setter = side === "left" ? setLeft : setRight;
     setter((prev) => ({
       ...prev,
@@ -142,21 +138,19 @@ export function AgentComparisonPage() {
       <div className="shrink-0 border-b border-border bg-card/50">
         <div className="grid grid-cols-2 divide-x divide-border">
           <SideSelector
-            agentOptions={agentOptions}
-            selectedAgentId={left.agentId}
+            selectedAgentName={leftAgent?.name ?? null}
             selectedVersion={left.version}
             versionHistory={left.versionHistory}
             versionsLoading={left.versionsLoading}
-            onAgentChange={(opt) => startTransition(() => handleAgentChange("left", opt))}
+            onAgentSelect={(id) => startTransition(() => handleAgentChange("left", id))}
             onVersionChange={(opt) => startTransition(() => handleVersionChange("left", opt))}
           />
           <SideSelector
-            agentOptions={agentOptions}
-            selectedAgentId={right.agentId}
+            selectedAgentName={rightAgent?.name ?? null}
             selectedVersion={right.version}
             versionHistory={right.versionHistory}
             versionsLoading={right.versionsLoading}
-            onAgentChange={(opt) => startTransition(() => handleAgentChange("right", opt))}
+            onAgentSelect={(id) => startTransition(() => handleAgentChange("right", id))}
             onVersionChange={(opt) => startTransition(() => handleVersionChange("right", opt))}
           />
         </div>
@@ -188,39 +182,54 @@ export function AgentComparisonPage() {
 }
 
 function SideSelector({
-  agentOptions,
-  selectedAgentId,
+  selectedAgentName,
   selectedVersion,
   versionHistory,
   versionsLoading,
-  onAgentChange,
+  onAgentSelect,
   onVersionChange,
 }: {
-  agentOptions: Option[];
-  selectedAgentId: string | null;
+  selectedAgentName: string | null;
   selectedVersion: "current" | number | null;
   versionHistory: AgentVersionHistoryItem[];
   versionsLoading: boolean;
-  onAgentChange: (option: Option) => void;
+  onAgentSelect: (agentId: string) => void;
   onVersionChange: (option: Option) => void;
 }) {
   const versionOptions: Option[] = [
     { value: "current", label: "Current Version" },
     ...versionHistory.map((v) => ({
       value: v.version_number.toString(),
-      label: `v${v.version_number}${v.change_note ? ` — ${v.change_note}` : ""}`,
+      label: `v${v.version_number}${v.change_note ? ` \u2014 ${v.change_note}` : ""}`,
     })),
   ];
 
   return (
     <div className="flex items-center gap-2 px-3 py-2">
       <div className="flex-1 min-w-0">
-        <SearchableSelect
-          options={agentOptions}
-          value={selectedAgentId ?? undefined}
-          onChange={onAgentChange}
-          placeholder="Select agent..."
-          searchPlaceholder="Search agents..."
+        <AgentListDropdown
+          onSelect={onAgentSelect}
+          label={selectedAgentName ?? "Select agent..."}
+          className={cn(
+            "w-full max-w-none justify-between",
+            !selectedAgentName && "text-muted-foreground",
+          )}
+          triggerSlot={
+            <button
+              className={cn(
+                "inline-flex items-center gap-1.5 h-8 px-3 rounded-md text-xs font-medium w-full",
+                "border border-border bg-background hover:bg-muted/50 transition-colors",
+                selectedAgentName
+                  ? "text-foreground"
+                  : "text-muted-foreground",
+              )}
+            >
+              <span className="truncate flex-1 text-left">
+                {selectedAgentName ?? "Select agent..."}
+              </span>
+              <ChevronDown className="w-3 h-3 text-muted-foreground/60 shrink-0" />
+            </button>
+          }
         />
       </div>
       <div className="w-[180px] shrink-0">
