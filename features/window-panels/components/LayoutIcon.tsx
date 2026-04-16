@@ -243,7 +243,7 @@ export function LayoutIconButton({
         className
       )}
       onClick={onClick}
-      onMouseDown={(e) => e.stopPropagation()}
+      onPointerDown={(e) => e.stopPropagation()}
       title={type}
     >
       <LayoutIcon type={type} />

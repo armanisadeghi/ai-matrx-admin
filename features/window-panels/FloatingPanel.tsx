@@ -176,7 +176,7 @@ export function FloatingPanel({
           "flex items-center gap-1 px-2 py-1.5 border-b border-border/50 bg-muted/30 select-none",
           onDragStart ? "cursor-grab active:cursor-grabbing" : "cursor-default",
         )}
-        onMouseDown={onDragStart}
+        onPointerDown={onDragStart}
       >
         {/* Grip icon — visual affordance only */}
         {onDragStart && (
@@ -190,7 +190,7 @@ export function FloatingPanel({
 
         {/* Action slots — each wrapped to stop drag propagation */}
         {actionNodes.map((node, i) => (
-          <div key={i} onMouseDown={(e) => e.stopPropagation()}>
+          <div key={i} onPointerDown={(e) => e.stopPropagation()}>
             {node}
           </div>
         ))}
@@ -199,7 +199,7 @@ export function FloatingPanel({
         <button
           type="button"
           onClick={handleToggleCollapse}
-          onMouseDown={(e) => e.stopPropagation()}
+          onPointerDown={(e) => e.stopPropagation()}
           className="p-0.5 text-muted-foreground hover:text-foreground transition-colors"
           aria-label={isCollapsed ? "Expand" : "Collapse"}
         >
@@ -215,7 +215,7 @@ export function FloatingPanel({
           <button
             type="button"
             onClick={onClose}
-            onMouseDown={(e) => e.stopPropagation()}
+            onPointerDown={(e) => e.stopPropagation()}
             className="p-0.5 text-muted-foreground hover:text-destructive transition-colors"
             aria-label="Close"
           >

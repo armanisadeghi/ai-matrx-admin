@@ -14,7 +14,10 @@ import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { fetchAgentExecutionMinimal } from "@/features/agents/redux/agent-definition/thunks";
-import { selectAgentExecutionPayload } from "@/features/agents/redux/agent-definition/selectors";
+import {
+  selectAgentExecutionPayload,
+  selectAgentName,
+} from "@/features/agents/redux/agent-definition/selectors";
 import { useAgentLauncher } from "@/features/agents/hooks/useAgentLauncher";
 import { createManualInstance } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
 import { fetchConversationHistory } from "@/features/cx-chat/redux/thunks";
@@ -84,6 +87,7 @@ export function AgentRunnerPage({ agentId }: AgentRunnerPageProps) {
     ready: !isInitializing,
   });
 
+  const agentName = useAppSelector((state) => selectAgentName(state, agentId));
   // Sync ?conversationId= URL param → focus registry + load history.
   // When the user clicks a past conversation in the sidebar, the URL updates
   // and this effect creates/reuses an instance keyed by that server UUID,
@@ -132,6 +136,7 @@ export function AgentRunnerPage({ agentId }: AgentRunnerPageProps) {
     <div className="relative flex flex-col h-full overflow-hidden">
       <AgentRunHeader
         agentId={agentId}
+        agentName={agentName}
         conversationId={conversationId}
         surfaceKey={surfaceKey}
         conversationIdFromUrl={conversationIdFromUrl}

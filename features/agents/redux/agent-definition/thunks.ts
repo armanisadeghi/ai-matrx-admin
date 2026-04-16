@@ -342,14 +342,14 @@ export const fetchAgentVersionHistory = createAsyncThunk<
  */
 export const fetchAgentVersionSnapshot = createAsyncThunk<
   void,
-  { agentId: string; versionNumber: number },
+  { agentId: string; version: number },
   ThunkApi
 >(
   "agentDefinition/fetchVersionSnapshot",
-  async ({ agentId, versionNumber }, { dispatch }) => {
+  async ({ agentId, version }, { dispatch }) => {
     const { data, error } = await supabase.rpc("agx_get_version_snapshot", {
       p_agent_id: agentId,
-      p_version_number: versionNumber,
+      p_version_number: version,
     });
 
     if (error) throw error;
@@ -459,7 +459,7 @@ export const createAgent = createAsyncThunk<
       | "updatedAt"
       | "isVersion"
       | "parentAgentId"
-      | "versionNumber"
+      | "version"
       | "changedAt"
       | "changeNote"
     >
@@ -483,7 +483,7 @@ export const createAgent = createAsyncThunk<
     // New agents are never version snapshots
     isVersion: false,
     parentAgentId: null,
-    versionNumber: null,
+    version: null,
     changedAt: null,
     changeNote: null,
 
@@ -571,14 +571,14 @@ export const duplicateAgent = createAsyncThunk<string, string, ThunkApi>(
  */
 export const promoteAgentVersion = createAsyncThunk<
   PromoteVersionResult,
-  { agentId: string; versionNumber: number },
+  { agentId: string; version: number },
   ThunkApi
 >(
   "agentDefinition/promoteVersion",
-  async ({ agentId, versionNumber }, { dispatch }) => {
+  async ({ agentId, version }, { dispatch }) => {
     const { data, error } = await supabase.rpc("agx_promote_version", {
       p_agent_id: agentId,
-      p_version_number: versionNumber,
+      p_version_number: version,
     });
 
     if (error) throw error;

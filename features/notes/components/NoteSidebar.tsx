@@ -51,6 +51,7 @@ import {
   Kanban,
   ListTodo,
   Tag,
+  RotateCcw,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/slices/userSlice";
@@ -73,11 +74,14 @@ import {
   fetchNoteContent,
   copyNote,
   deleteNote,
+  restoreNote,
   moveNoteToFolder,
   fetchAllNoteScopes,
+  fetchDeletedNotes,
 } from "../redux/thunks";
 import {
   selectAllNotesList,
+  selectDeletedNotesList,
   selectInstanceActiveTab,
   selectInstanceTabs,
   selectNotesListStatus,
@@ -183,6 +187,9 @@ export function NoteSidebar({
   const [sortField, setSortField] = useState<NoteSortField>("updated_at");
   const [sortOrder, setSortOrder] = useState<NoteSortOrder>("desc");
   const [groupBy, setGroupBy] = useState<NoteGroupBy | "recent">("folder");
+  const [trashOpen, setTrashOpen] = useState(false);
+  const trashFetchedRef = useRef(false);
+  const deletedNotes = useAppSelector(selectDeletedNotesList);
   const [groupByDropdown, setGroupByDropdown] = useState(false);
 
   // ── Fetch scope assignments when switching to scope mode ────────────
@@ -1063,6 +1070,53 @@ export function NoteSidebar({
             ? createPortal(content, contextMenuPortalTarget)
             : content;
         })()}
+
+      {/* ── Trash section ──────────────────────────────────────────────── */}
+      <div className="shrink-0 border-t border-border/20">
+        <button
+          onClick={() => {
+            setTrashOpen((v) => !v);
+            if (!trashFetchedRef.current) {
+              trashFetchedRef.current = true;
+              dispatch(fetchDeletedNotes());
+            }
+          }}
+          className="flex items-center gap-1.5 w-full px-3 py-1.5 text-[0.625rem] text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+        >
+          <Trash2 className="w-3 h-3" />
+          <span>Trash</span>
+          {deletedNotes.length > 0 && (
+            <span className="text-[0.5rem] bg-muted px-1 rounded">{deletedNotes.length}</span>
+          )}
+          <ChevronDown className={cn("w-2.5 h-2.5 ml-auto transition-transform", trashOpen && "rotate-180")} />
+        </button>
+        {trashOpen && (
+          <div className="max-h-40 overflow-y-auto px-1 pb-1">
+            {deletedNotes.length === 0 ? (
+              <p className="text-[0.5625rem] text-muted-foreground/50 px-3 py-2">Trash is empty</p>
+            ) : (
+              deletedNotes.map((note) => (
+                <div
+                  key={note.id}
+                  className="flex items-center gap-1.5 px-2 py-1 rounded-sm group/trash"
+                >
+                  <FileText className="w-3 h-3 text-muted-foreground/40 shrink-0" />
+                  <span className="text-[0.625rem] text-muted-foreground truncate flex-1">
+                    {note.label || "Untitled"}
+                  </span>
+                  <button
+                    onClick={() => dispatch(restoreNote(note.id))}
+                    className="opacity-0 group-hover/trash:opacity-100 text-muted-foreground hover:text-foreground transition-opacity cursor-pointer [&_svg]:w-3 [&_svg]:h-3"
+                    title="Restore"
+                  >
+                    <RotateCcw />
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+      </div>
 
       {/* ── Dialogs ────────────────────────────────────────────────────── */}
       <CreateFolderDialog

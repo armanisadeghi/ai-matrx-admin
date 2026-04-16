@@ -5,7 +5,18 @@ import dynamic from 'next/dynamic';
 import { Loader2 } from 'lucide-react';
 import { useNotesRedux } from '../../hooks/useNotesRedux';
 import { NoteEditorDock } from './NoteEditorDock';
+import { useNoteDelete } from '../../hooks/useNoteDelete';
 import { useToastManager } from '@/hooks/useToastManager';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from '@/components/ui/alert-dialog';
 import MarkdownStream from '@/components/MarkdownStream';
 import type { Note } from '@/features/notes/types';
 
@@ -40,7 +51,20 @@ export default function MobileNoteEditor({ note, editorMode, onBack }: MobileNot
   const [localTags, setLocalTags] = useState<string[]>(note.tags || []);
   const [isDirty, setIsDirty] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+
+  const {
+    confirmOpen: deleteConfirmOpen,
+    isDeleting,
+    requestDelete,
+    cancelDelete,
+    confirmDelete,
+  } = useNoteDelete({
+    instanceId: "",
+    noteId: note.id,
+    noteLabel: localLabel || "Untitled Note",
+    closeTab: false,
+    onDeleted: onBack,
+  });
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const tuiRef = useRef<any>(null);
@@ -176,19 +200,6 @@ export default function MobileNoteEditor({ note, editorMode, onBack }: MobileNot
     return () => { delete (window as any).__mobileNoteEditorState; };
   });
 
-  const handleDelete = async () => {
-    if (isDeleting) return;
-    setIsDeleting(true);
-    try {
-      await deleteNote(note.id);
-      toast.success('Note deleted');
-      onBack();
-    } catch {
-      toast.error('Failed to delete note');
-    } finally {
-      setIsDeleting(false);
-    }
-  };
 
   const handleCopy = async () => {
     try {
@@ -264,13 +275,32 @@ export default function MobileNoteEditor({ note, editorMode, onBack }: MobileNot
         noteId={note.id}
         folder={localFolder}
         tags={localTags}
+        content={localContent}
         onFolderChange={setLocalFolder}
         onTagsChange={setLocalTags}
-        onCopy={handleCopy}
+        onDuplicate={handleCopy}
         onExport={handleExport}
-        onDelete={handleDelete}
+        onDelete={requestDelete}
         isDeleting={isDeleting}
       />
+
+      {/* Delete confirmation */}
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={(open) => { if (!open) cancelDelete(); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete note?</AlertDialogTitle>
+            <AlertDialogDescription>
+              &ldquo;{localLabel || 'Untitled Note'}&rdquo; will be moved to trash. You can restore it later.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

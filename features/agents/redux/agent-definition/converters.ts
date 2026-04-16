@@ -14,7 +14,7 @@
  *  - source_agent_id    — set only by agx_duplicate_agent() RPC, never by direct writes
  *  - source_snapshot_at — set only by agx_duplicate_agent() RPC, never by direct writes
  *
- * Version-specific frontend fields (isVersion, parentAgentId, versionNumber,
+ * Version-specific frontend fields (isVersion, parentAgentId, version,
  * changedAt, changeNote) are frontend-only runtime fields — never written to DB.
  * Live agent records from dbRowToAgentDefinition() always set these to their
  * false/null defaults.
@@ -101,7 +101,7 @@ export function dbRowToAgentDefinition(row: AgentRow): AgentDefinition {
     // Live agents from the DB are never version snapshots
     isVersion: false,
     parentAgentId: null,
-    versionNumber: null,
+    version: row.version,
     changedAt: null,
     changeNote: null,
 
@@ -238,7 +238,7 @@ export function versionSnapshotRowToAgentDefinition(
     id: row.version_id,
     isVersion: true,
     parentAgentId,
-    versionNumber: row.version_number,
+    version: row.version_number,
     changedAt: row.changed_at,
     changeNote: row.change_note,
 
@@ -270,7 +270,7 @@ export function versionSnapshotRowToAgentDefinition(
     modelTiers: row.model_tiers,
     outputSchema: row.output_schema,
     customTools: row.custom_tools ?? [],
-    mcpServers: [],
+    mcpServers: row.mcp_servers ?? [],
 
     isOwner: null,
     accessLevel: null,

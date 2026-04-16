@@ -22,6 +22,7 @@
 import React, { useCallback, useRef } from "react";
 import { ChevronsUpDown, AppWindow } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   restoreWindow,
@@ -41,9 +42,26 @@ const TRAY_RIGHT = 12;
 
 export function WindowTray() {
   const minimized = useAppSelector(selectTrayWindows);
+  const isMobile = useIsMobile();
 
   if (minimized.length === 0) return null;
 
+  // ── Mobile: horizontal scroll strip pinned to bottom ──────────────────
+  if (isMobile) {
+    return (
+      <div
+        className="fixed bottom-0 left-0 right-0 pb-safe z-[9999]"
+      >
+        <div className="flex overflow-x-auto gap-1.5 px-2 py-1.5 bg-background/80 backdrop-blur-sm border-t border-border/50 scrollbar-none">
+          {minimized.map((win) => (
+            <MobileTrayChip key={win.id} id={win.id} title={win.title} />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // ── Desktop: absolute-positioned chips at bottom-right ────────────────
   return (
     <div
       className="fixed pointer-events-none"
@@ -69,6 +87,26 @@ export function WindowTray() {
   );
 }
 
+// ─── MobileTrayChip ──────────────────────────────────────────────────────────
+
+function MobileTrayChip({ id, title }: { id: string; title: string }) {
+  const dispatch = useAppDispatch();
+  return (
+    <button
+      type="button"
+      className={cn(
+        "shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full",
+        "bg-card border border-border shadow-sm",
+        "text-xs whitespace-nowrap active:bg-accent transition-colors",
+      )}
+      onClick={() => dispatch(restoreWindow(id))}
+    >
+      <AppWindow className="h-3 w-3 shrink-0 text-muted-foreground" />
+      <span className="truncate max-w-[120px]">{title}</span>
+    </button>
+  );
+}
+
 // ─── TrayChip ─────────────────────────────────────────────────────────────────
 
 interface TrayChipProps {
@@ -88,14 +126,14 @@ function TrayChip({ id, title, chipWidth }: TrayChipProps) {
     dispatch(restoreWindow(id));
   }, [dispatch, id]);
 
-  const handleMouseDown = useCallback(
-    (e: React.MouseEvent) => {
+  const handlePointerDown = useCallback(
+    (e: React.PointerEvent) => {
       e.stopPropagation();
       dispatch(focusWindow(id));
       dragStartX.current = e.clientX;
       didDrag.current = false;
 
-      const onMove = (ev: MouseEvent) => {
+      const onMove = (ev: PointerEvent) => {
         if (dragStartX.current === null) return;
         const dx = Math.abs(ev.clientX - dragStartX.current);
         if (dx > 4) didDrag.current = true;
@@ -113,12 +151,14 @@ function TrayChip({ id, title, chipWidth }: TrayChipProps) {
       const onUp = () => {
         dragStartX.current = null;
         dragStartSlot.current = null;
-        document.removeEventListener("mousemove", onMove);
-        document.removeEventListener("mouseup", onUp);
+        document.removeEventListener("pointermove", onMove);
+        document.removeEventListener("pointerup", onUp);
+        document.removeEventListener("pointercancel", onUp);
       };
 
-      document.addEventListener("mousemove", onMove);
-      document.addEventListener("mouseup", onUp);
+      document.addEventListener("pointermove", onMove);
+      document.addEventListener("pointerup", onUp);
+      document.addEventListener("pointercancel", onUp);
     },
     [dispatch, id, chipWidth],
   );
@@ -140,7 +180,8 @@ function TrayChip({ id, title, chipWidth }: TrayChipProps) {
         "overflow-hidden",
       )}
       style={{ width: chipWidth, minWidth: chipWidth }}
-      onMouseDown={handleMouseDown}
+      style={{ touchAction: "none" }}
+      onPointerDown={handlePointerDown}
       onClick={handleClick}
       title="Click to restore"
     >
@@ -153,7 +194,7 @@ function TrayChip({ id, title, chipWidth }: TrayChipProps) {
         <button
           type="button"
           className="p-0.5 text-muted-foreground hover:text-foreground transition-colors"
-          onMouseDown={(e) => e.stopPropagation()}
+          onPointerDown={(e) => e.stopPropagation()}
           onClick={(e) => {
             e.stopPropagation();
             handleRestore();

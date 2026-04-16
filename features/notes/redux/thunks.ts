@@ -504,7 +504,64 @@ export const saveNoteField = createAsyncThunk<
 );
 
 // ---------------------------------------------------------------------------
-// 10. fetchAllNoteScopes
+// 10. restoreNote
+// ---------------------------------------------------------------------------
+
+/**
+ * Restore a soft-deleted note — sets is_deleted back to false and re-adds to Redux.
+ */
+export const restoreNote = createAsyncThunk<void, string>(
+  "notes/restoreNote",
+  async (noteId, { dispatch }) => {
+    const { data, error } = await supabase
+      .from("notes")
+      .update({ is_deleted: false })
+      .eq("id", noteId)
+      .select("*")
+      .single();
+
+    if (error) throw error;
+    if (data) {
+      dispatch(upsertNoteFromServer({ note: data, fetchStatus: "full" }));
+    }
+  },
+);
+
+// ---------------------------------------------------------------------------
+// 11. fetchDeletedNotes
+// ---------------------------------------------------------------------------
+
+/**
+ * Fetch soft-deleted notes for the Trash folder.
+ * Only called on demand when the user opens the Trash.
+ */
+export const fetchDeletedNotes = createAsyncThunk<void, void>(
+  "notes/fetchDeletedNotes",
+  async (_, { dispatch, getState }) => {
+    const userId = getUserId(getState);
+
+    const { data, error } = await supabase
+      .from("notes")
+      .select("id, label, folder_name, folder_id, tags, content, updated_at, position, organization_id, project_id, task_id, is_public, is_deleted, version")
+      .eq("user_id", userId)
+      .eq("is_deleted", true)
+      .order("updated_at", { ascending: false });
+
+    if (error) throw error;
+
+    for (const note of data ?? []) {
+      dispatch(
+        upsertNoteFromServer({
+          note: { ...note, user_id: userId },
+          fetchStatus: "full",
+        }),
+      );
+    }
+  },
+);
+
+// ---------------------------------------------------------------------------
+// 12. fetchAllNoteScopes
 // ---------------------------------------------------------------------------
 
 /**

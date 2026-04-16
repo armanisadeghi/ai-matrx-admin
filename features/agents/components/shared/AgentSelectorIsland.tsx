@@ -5,7 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useAppSelector } from "@/lib/redux/hooks";
 import {
   selectAgentById,
-  selectAgentVersionNumber,
+  selectAgentVersion,
 } from "@/features/agents/redux/agent-definition/selectors";
 import { AgentListDropdown } from "@/features/agents/components/agent-listings/AgentListDropdown";
 
@@ -42,8 +42,8 @@ export function AgentSelectorIsland({
   const liveAgentName = useAppSelector(
     (state) => selectAgentById(state, agentId)?.name,
   );
-  const versionNumber = useAppSelector((state) =>
-    selectAgentVersionNumber(state, agentId),
+  const version = useAppSelector((state) =>
+    selectAgentVersion(state, agentId),
   );
 
   const displayName = liveAgentName ?? initialName;
@@ -58,12 +58,12 @@ export function AgentSelectorIsland({
       <AgentListDropdown
         onSelect={handleAgentSelect}
         label={displayName}
-        className="max-w-[120px] md:max-w-[180px]"
+        className="max-w-[120px] md:max-w-[180px] py-3.5 rounded-full matrx-shell-glass"
         triggerSlot={triggerSlot}
       />
-      {versionNumber != null && (
+      {version != null && (
         <span className="text-[0.625rem] font-medium text-[var(--shell-nav-text)] tabular-nums shrink-0">
-          v{versionNumber}
+          v{version}
         </span>
       )}
     </div>

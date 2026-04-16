@@ -8,7 +8,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import {
   selectAgentIsDirty,
   selectAgentById,
-  selectAgentVersionNumber,
+  selectAgentVersion,
 } from "@/features/agents/redux/agent-definition/selectors";
 import { AgentListDropdown } from "@/features/agents/components/agent-listings/AgentListDropdown";
 import { AgentSaveStatus } from "./AgentSaveStatus";
@@ -53,8 +53,8 @@ export function AgentSharedHeader({ agentId }: { agentId: string }) {
   const [, startTransition] = useTransition();
   const agentName =
     useAppSelector((state) => selectAgentById(state, agentId)?.name) ?? "";
-  const versionNumber = useAppSelector((state) =>
-    selectAgentVersionNumber(state, agentId),
+  const version = useAppSelector((state) =>
+    selectAgentVersion(state, agentId),
   );
   const isDirty = useAppSelector((state) => selectAgentIsDirty(state, agentId));
   const [showDirtyDialog, setShowDirtyDialog] = useState(false);
@@ -121,9 +121,9 @@ export function AgentSharedHeader({ agentId }: { agentId: string }) {
             label={agentName}
             className="max-w-[120px] md:max-w-[180px]"
           />
-          {versionNumber != null && (
+          {version != null && (
             <span className="text-[0.625rem] font-medium text-[var(--shell-nav-text)] tabular-nums shrink-0">
-              v{versionNumber}
+              v{version}
             </span>
           )}
         </div>

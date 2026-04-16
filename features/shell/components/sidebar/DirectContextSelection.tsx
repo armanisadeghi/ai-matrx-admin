@@ -41,7 +41,12 @@ import {
   type PickerOption,
 } from "@/features/agent-context/components/ContextPickerPrimitives";
 
-export function DirectContextSelection() {
+interface DirectContextSelectionProps {
+  /** Start expanded (e.g., when rendered inside a bottom sheet). Default: false */
+  defaultExpanded?: boolean;
+}
+
+export function DirectContextSelection({ defaultExpanded = false }: DirectContextSelectionProps) {
   const dispatch = useAppDispatch();
 
   // ── Redux context state ────────────────────────────────────────────────────
@@ -100,7 +105,7 @@ export function DirectContextSelection() {
   }, [dispatch, defaultCtxPref, orgsFromContext, allProjects, allTasks]);
 
   // ── Collapsible state ──────────────────────────────────────────────────────
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(defaultExpanded);
 
   // ── Scope-filtered project IDs ─────────────────────────────────────────────
   const [scopeFilteredIds, setScopeFilteredIds] = useState<Set<string> | null>(

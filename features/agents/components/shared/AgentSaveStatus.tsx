@@ -6,7 +6,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   selectAgentIsDirty,
   selectAgentIsLoading,
-  selectAgentVersionNumber,
+  selectAgentVersion,
   selectAgentModelMissing,
   selectAgentById,
 } from "@/features/agents/redux/agent-definition/selectors";
@@ -38,8 +38,8 @@ export function AgentSaveStatus({ agentId }: { agentId: string }) {
   const isLoading = useAppSelector((state) =>
     selectAgentIsLoading(state, agentId),
   );
-  const versionNumber = useAppSelector((state) =>
-    selectAgentVersionNumber(state, agentId),
+  const version = useAppSelector((state) =>
+    selectAgentVersion(state, agentId),
   );
   const modelMissing = useAppSelector((state) =>
     selectAgentModelMissing(state, agentId),
@@ -109,9 +109,9 @@ export function AgentSaveStatus({ agentId }: { agentId: string }) {
   return (
     <>
       <div className="flex items-center gap-1.5">
-        {versionNumber != null && (
+        {version != null && (
           <span className="text-[10px] font-medium text-muted-foreground tabular-nums px-1.5 py-0.5 rounded bg-muted/60">
-            v{versionNumber}
+            v{version}
           </span>
         )}
 

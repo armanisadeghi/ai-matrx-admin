@@ -2,6 +2,11 @@
 // Three sections: Brand (top), Nav (middle, scrollable), Footer (bottom)
 // Content-push expansion driven by CSS :has(#shell-sidebar-toggle:checked)
 //
+// Brand section has two layers:
+//   Default: collapse toggle (PanelLeft icon)
+//   Route override: RouteHeaderSlot (back, agent dropdown, new-run, etc.)
+//   When the route header is active, it hides the default toggle via CSS.
+//
 // Nav section has two containers:
 //   shell-sidebar-main-nav  — standard nav items (always SSR, always in DOM)
 //   shell-sidebar-route-nav — route-specific menu (client island, Large Routes)
@@ -10,6 +15,7 @@
 import NavItem from "./NavItem";
 import NavItemGroup from "./NavItemGroup";
 import RouteMenuSlot from "./RouteMenuSlot";
+import RouteHeaderSlot from "./RouteHeaderSlot";
 import ShellIcon from "../ShellIcon";
 import DirectContextSelection from "./DirectContextSelection";
 import SidebarNotesToggle from "@/features/notes/actions/SidebarNotesToggle";
@@ -30,15 +36,23 @@ interface SidebarProps {
 export default function Sidebar({ pathname }: SidebarProps) {
   return (
     <aside className="shell-sidebar">
-      {/* Brand Section — Toggle icon stays in place */}
+      {/* Brand Section — Route header override + default toggle fallback */}
       <div className="shell-sidebar-brand">
-        <label
-          htmlFor="shell-sidebar-toggle"
-          className="shell-sidebar-brand-toggle shell-tactile"
-          aria-label="Toggle sidebar"
-        >
-          <ShellIcon name="PanelLeft" size={18} strokeWidth={1.75} />
-        </label>
+        {/* Route header override — rendered by client island, empty on Small/Medium routes */}
+        <div className="shell-sidebar-brand-route">
+          <RouteHeaderSlot />
+        </div>
+
+        {/* Default: collapse toggle — hidden when route header is active */}
+        <div className="shell-sidebar-brand-default">
+          <label
+            htmlFor="shell-sidebar-toggle"
+            className="shell-sidebar-brand-toggle shell-tactile"
+            aria-label="Toggle sidebar"
+          >
+            <ShellIcon name="PanelLeft" size={18} strokeWidth={1.75} />
+          </label>
+        </div>
       </div>
 
       {/* Navigation — Self-scrolling container with dual-view support */}
@@ -62,7 +76,6 @@ export default function Sidebar({ pathname }: SidebarProps) {
             ),
           )}
 
-          {/* Admin nav items injected here by AdminNavInjector (client component) */}
           <div id="admin-nav-slot" />
         </div>
 

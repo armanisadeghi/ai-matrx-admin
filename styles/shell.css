@@ -450,6 +450,34 @@
   padding: 0 0.5rem;
   gap: 0.5rem;
   flex-shrink: 0;
+  position: relative;
+}
+
+/* Brand dual-layer: route header override (first) + default toggle (second).
+   When the route header has content, it fills the brand area and the
+   subsequent-sibling combinator hides the default toggle. */
+.shell-sidebar-brand-default {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.shell-sidebar-brand-route {
+  display: contents;
+}
+
+/* Route header active → hide default toggle via ~ combinator */
+.shell-sidebar-brand-route:has(> *) ~ .shell-sidebar-brand-default {
+  display: none;
+}
+
+/* Route header active → become a flex container instead of display:contents */
+.shell-sidebar-brand-route:has(> *) {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
 }
 
 .shell-sidebar-brand-toggle {
@@ -815,9 +843,9 @@
   display: none;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  padding: 0.25rem;
-  margin-bottom: 0.125rem;
+  gap: 0.375rem;
+  padding: 0.1875rem 0.25rem;
+  margin-bottom: 0;
   border-radius: 0.25rem;
   cursor: pointer;
   color: var(--shell-nav-icon);

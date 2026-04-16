@@ -29,8 +29,8 @@ export function buildAgentConversationListItemFromExecution(
   const now = new Date().toISOString();
 
   const alsoTouchVersionFilters: number[] =
-    agent?.isVersion === true && typeof agent.versionNumber === "number"
-      ? [agent.versionNumber]
+    agent?.isVersion === true && typeof agent.version === "number"
+      ? [agent.version]
       : [];
 
   const row: AgentConversationListItem = {
@@ -44,7 +44,7 @@ export function buildAgentConversationListItemFromExecution(
     status: overrides?.status ?? "active",
     messageCount: overrides?.messageCount ?? 1,
     agentVersionNumber:
-      overrides?.agentVersionNumber ?? agent?.versionNumber ?? 0,
+      overrides?.agentVersionNumber ?? agent?.version ?? 0,
     initialAgentVersionId:
       overrides?.initialAgentVersionId ??
       (agent?.isVersion === true ? agent.id : ""),

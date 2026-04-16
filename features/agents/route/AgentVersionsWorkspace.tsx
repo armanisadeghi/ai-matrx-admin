@@ -130,7 +130,7 @@ export function AgentVersionsWorkspace({
   );
 
   const snapshot = selectedVersion
-    ? snapshotRecords.find((r) => r.versionNumber === selectedVersion)
+    ? snapshotRecords.find((r) => r.version === selectedVersion)
     : null;
 
   useEffect(() => {
@@ -161,7 +161,7 @@ export function AgentVersionsWorkspace({
   useEffect(() => {
     if (!selectedVersion) return;
     const alreadyLoaded = snapshotRecords.some(
-      (r) => r.versionNumber === selectedVersion,
+      (r) => r.version === selectedVersion,
     );
     if (alreadyLoaded) return;
 
@@ -169,7 +169,7 @@ export function AgentVersionsWorkspace({
     dispatch(
       fetchAgentVersionSnapshot({
         agentId,
-        versionNumber: selectedVersion,
+        version: selectedVersion,
       }),
     )
       .unwrap()
@@ -182,7 +182,7 @@ export function AgentVersionsWorkspace({
     setPromoting(true);
     try {
       const result = await dispatch(
-        promoteAgentVersion({ agentId, versionNumber: selectedVersion }),
+        promoteAgentVersion({ agentId, version: selectedVersion }),
       ).unwrap();
       if (result.success) {
         toast.success(`Promoted v${selectedVersion} to current`);
@@ -270,9 +270,9 @@ export function AgentVersionsWorkspace({
 
         <div className="flex-1" />
 
-        {liveAgent?.versionNumber != null &&
+        {liveAgent?.version != null &&
           selectedVersion != null &&
-          selectedVersion !== liveAgent.versionNumber && (
+          selectedVersion !== liveAgent.version && (
             <Button
               variant="default"
               size="sm"
@@ -289,8 +289,8 @@ export function AgentVersionsWorkspace({
             </Button>
           )}
 
-        {liveAgent?.versionNumber != null &&
-          selectedVersion === liveAgent.versionNumber && (
+        {liveAgent?.version != null &&
+          selectedVersion === liveAgent.version && (
             <Badge
               variant="secondary"
               className="gap-1 text-xs text-emerald-600 dark:text-emerald-400"
@@ -315,7 +315,7 @@ export function AgentVersionsWorkspace({
             icon={<MessageSquare className="w-4 h-4" />}
             oldValue={allMessagesText(snapshot.messages)}
             newValue={allMessagesText(liveMessages)}
-            oldLabel={`v${snapshot.versionNumber}`}
+            oldLabel={`v${snapshot.version}`}
             newLabel="Current"
           />
           <DiffSection
@@ -323,7 +323,7 @@ export function AgentVersionsWorkspace({
             icon={<Webhook className="w-4 h-4" />}
             oldValue={snapshot.modelId ?? "Default"}
             newValue={liveAgent.modelId ?? "Default"}
-            oldLabel={`v${snapshot.versionNumber}`}
+            oldLabel={`v${snapshot.version}`}
             newLabel="Current"
           />
           <DiffSection
@@ -331,7 +331,7 @@ export function AgentVersionsWorkspace({
             icon={<Variable className="w-4 h-4" />}
             oldValue={variablesText(snapshot.variableDefinitions)}
             newValue={variablesText(liveAgent.variableDefinitions)}
-            oldLabel={`v${snapshot.versionNumber}`}
+            oldLabel={`v${snapshot.version}`}
             newLabel="Current"
           />
           <DiffSection
@@ -339,7 +339,7 @@ export function AgentVersionsWorkspace({
             icon={<Wrench className="w-4 h-4" />}
             oldValue={toolsText(snapshot.tools, snapshot.customTools)}
             newValue={toolsText(liveAgent.tools, liveAgent.customTools)}
-            oldLabel={`v${snapshot.versionNumber}`}
+            oldLabel={`v${snapshot.version}`}
             newLabel="Current"
           />
           <DiffSection
@@ -347,7 +347,7 @@ export function AgentVersionsWorkspace({
             icon={<Settings className="w-4 h-4" />}
             oldValue={settingsText(snapshot.settings)}
             newValue={settingsText(liveAgent.settings)}
-            oldLabel={`v${snapshot.versionNumber}`}
+            oldLabel={`v${snapshot.version}`}
             newLabel="Current"
           />
         </div>

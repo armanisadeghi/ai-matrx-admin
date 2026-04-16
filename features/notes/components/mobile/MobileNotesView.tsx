@@ -210,7 +210,7 @@ export default function MobileNotesView() {
         <BottomSheetHeader title="Filter by Context" />
         <BottomSheetBody>
           <div className="px-2 py-2">
-            <DirectContextSelection />
+            <DirectContextSelection defaultExpanded />
           </div>
         </BottomSheetBody>
       </BottomSheet>

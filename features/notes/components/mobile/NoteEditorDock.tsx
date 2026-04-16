@@ -16,6 +16,7 @@ import {
   Share2,
   MoreHorizontal,
   Copy,
+  CopyPlus,
   Download,
   Trash2,
   Loader2,
@@ -33,9 +34,10 @@ interface NoteEditorDockProps {
   noteId: string;
   folder: string;
   tags: string[];
+  content: string;
   onFolderChange: (folder: string) => void;
   onTagsChange: (tags: string[]) => void;
-  onCopy: () => void;
+  onDuplicate: () => void;
   onExport: () => void;
   onDelete: () => void;
   isDeleting?: boolean;
@@ -52,9 +54,10 @@ export function NoteEditorDock({
   noteId,
   folder,
   tags,
+  content,
   onFolderChange,
   onTagsChange,
-  onCopy,
+  onDuplicate,
   onExport,
   onDelete,
   isDeleting,
@@ -83,9 +86,9 @@ export function NoteEditorDock({
     },
     {
       key: 'copy',
-      tooltip: 'Duplicate',
+      tooltip: 'Copy',
       Icon: Copy,
-      onPress: () => { onCopy(); toast.success('Note duplicated'); },
+      onPress: () => { navigator.clipboard.writeText(content).catch(() => {}); toast.success('Copied to clipboard'); },
     },
     {
       key: 'export',
@@ -144,7 +147,7 @@ export function NoteEditorDock({
       <nav className="md:hidden absolute bottom-0 left-0 right-0 z-40 pb-safe px-3 pointer-events-none">
         <div
           ref={navRef}
-          className="relative flex items-stretch mx-glass-subtle rounded-[22px] shadow-lg border border-white/[0.08] mb-2 pointer-events-auto"
+          className="relative flex items-stretch matrx-glass-core rounded-[22px] mb-2 pointer-events-auto"
         >
           {/* Sliding pill indicator */}
           {pill && (
@@ -236,6 +239,13 @@ export function NoteEditorDock({
         <BottomSheetHeader title="Note Actions" />
         <BottomSheetBody>
           <div className="px-4 py-2 space-y-1">
+            <button
+              onClick={() => { onDuplicate(); setSheetOpen(null); }}
+              className="flex items-center gap-3 w-full px-4 py-3.5 rounded-xl text-sm font-medium text-foreground hover:bg-accent/50 transition-colors"
+            >
+              <CopyPlus className="h-5 w-5 text-muted-foreground" />
+              Duplicate Note
+            </button>
             <button
               onClick={() => { toast.info('Sharing coming soon'); setSheetOpen(null); }}
               className="flex items-center gap-3 w-full px-4 py-3.5 rounded-xl text-sm font-medium text-foreground hover:bg-accent/50 transition-colors"

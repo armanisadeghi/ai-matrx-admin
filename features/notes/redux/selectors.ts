@@ -86,6 +86,12 @@ export const selectAllFolders = createSelector(
   },
 );
 
+export const selectDeletedNotesList = createSelector(
+  [selectNotesMap],
+  (notes): NoteRecord[] =>
+    Object.values(notes).filter((n) => n.is_deleted),
+);
+
 export const selectNotesListStatus = createSelector(
   [selectNotesState],
   (slice) => slice.listStatus,

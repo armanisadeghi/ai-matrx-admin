@@ -7,7 +7,7 @@
 
 import React, { useState, useCallback, useMemo } from "react";
 import dynamic from "next/dynamic";
-import { FolderOpen, ChevronDown, X, Plus, Building2 } from "lucide-react";
+import { FolderOpen, ChevronDown, X, Plus, Building2, Network } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   updateNoteFolder,
@@ -30,6 +30,7 @@ import {
   selectProjectId,
   selectTaskId,
 } from "@/features/agent-context/redux/appContextSlice";
+import { ScopeTagsDisplay } from "@/features/agent-context/components/ScopeTagsDisplay";
 import { cn } from "@/lib/utils";
 import { NoteContextPicker } from "./NoteContextPicker";
 
@@ -137,6 +138,7 @@ export function NoteMetadataBar({ noteId }: NoteMetadataBarProps) {
         </div>
 
         {/* Context toggle — shows summary pill, expands full picker below */}
+        {/* Context toggle + scope tags */}
         <button
           onClick={() => setScopePickerOpen((v) => !v)}
           className={cn(
@@ -147,12 +149,17 @@ export function NoteMetadataBar({ noteId }: NoteMetadataBarProps) {
           )}
           title="Set context for this note"
         >
-          <Building2 className="w-2.5 h-2.5" />
+          <Network className="w-2.5 h-2.5" />
           {noteTaskId ? (ctxTaskName && noteTaskId === ctxTaskId ? ctxTaskName : "Task")
             : noteProjId ? (ctxProjName && noteProjId === ctxProjId ? ctxProjName : "Project")
             : noteOrgId ? (ctxOrgName && noteOrgId === ctxOrgId ? ctxOrgName : "Org")
             : "Context"}
         </button>
+        <ScopeTagsDisplay
+          entityType="note"
+          entityId={noteId}
+          className="shrink-0 [&_.badge]:text-[0.5rem] [&_.badge]:py-0 [&_.badge]:px-1"
+        />
 
         {/* Tags */}
         <div className="flex items-center gap-1 flex-1 min-w-0 overflow-x-auto">

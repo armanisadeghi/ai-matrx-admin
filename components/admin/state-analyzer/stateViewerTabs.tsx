@@ -90,6 +90,161 @@ function TabIndex({
   );
 }
 
+/** Slice keys that are explicitly covered by a dedicated tab in contentTabs. */
+const REGISTERED_SLICE_KEYS = new Set<string>([
+  "agentDefinition",
+  "executionInstances",
+  "instanceVariableValues",
+  "instanceUserInput",
+  "instanceUIState",
+  "activeRequests",
+  "instanceConversationHistory",
+  "instanceResources",
+  "agentShortcut",
+  "agentConsumers",
+  "appContext",
+  "instanceModelOverrides",
+  "instanceContext",
+  "instanceClientTools",
+  "overlays",
+  "overlayData",
+  "voicePad",
+  "windowManager",
+  "urlSync",
+  "canvas",
+  "artifacts",
+  "htmlPages",
+  "textDiff",
+  "noteVersions",
+  "user",
+  "userPreferences",
+  "sms",
+  "theme",
+  "fileSystem",
+  "entities",
+  "entityFields",
+  "layout",
+  "form",
+  "testRoutes",
+  "flashcardChat",
+  "globalCache",
+  "ui",
+  "storage",
+  "activeChat",
+  "chatConversations",
+  "messageActions",
+  "socketConnections",
+  "socketResponse",
+  "socketTasks",
+  "componentDefinitions",
+  "appBuilder",
+  "appletBuilder",
+  "containerBuilder",
+  "fieldBuilder",
+  "customAppRuntime",
+  "customAppletRuntime",
+  "broker",
+  "contextMenuCache",
+  "agentCache",
+  "promptCache",
+  "promptConsumers",
+  "promptRunner",
+  "promptExecution",
+  "actionCache",
+  "dbFunctionNode",
+  "workflows",
+  "workflowNodes",
+  "promptEditor",
+  "messaging",
+  "adminPreferences",
+  "entitySystem",
+  "agentSettings",
+  "cxConversations",
+  "modelRegistry",
+  "mcp",
+  "adminDebug",
+  "agentConversations",
+  "apiConfig",
+]);
+
+function OrphanSlicesViewer({
+  state,
+  registeredKeys,
+}: {
+  state: RootState;
+  registeredKeys: Set<string>;
+}) {
+  const [search, setSearch] = useState("");
+  const [selected, setSelected] = useState<string | null>(null);
+
+  const orphanKeys = Object.keys(state).filter(
+    (key) => !registeredKeys.has(key),
+  );
+
+  const filtered = orphanKeys.filter((k) =>
+    k.toLowerCase().includes(search.toLowerCase()),
+  );
+
+  const selectedState = selected
+    ? (state as Record<string, unknown>)[selected]
+    : null;
+
+  return (
+    <div className="h-full flex gap-2 p-2 overflow-hidden">
+      <div className="w-56 shrink-0 flex flex-col gap-1 overflow-hidden">
+        <div className="relative">
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <Input
+            placeholder="Filter slices..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-7 h-7 text-xs"
+          />
+        </div>
+        <p className="text-xs text-muted-foreground px-1">
+          {orphanKeys.length} unregistered slice
+          {orphanKeys.length !== 1 ? "s" : ""}
+          {search && ` · ${filtered.length} shown`}
+        </p>
+        <ScrollArea className="flex-1 border border-border rounded-md">
+          <div className="p-1 space-y-0.5">
+            {filtered.length === 0 && (
+              <p className="text-xs text-muted-foreground p-2 text-center">
+                {orphanKeys.length === 0
+                  ? "No orphaned slices found"
+                  : `No match for "${search}"`}
+              </p>
+            )}
+            {filtered.map((key) => (
+              <button
+                key={key}
+                onClick={() => setSelected(key)}
+                className={cn(
+                  "w-full text-left px-2 py-1 rounded text-xs transition-colors truncate",
+                  selected === key
+                    ? "bg-primary/20 text-primary font-medium"
+                    : "hover:bg-primary/10 text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {key}
+              </button>
+            ))}
+          </div>
+        </ScrollArea>
+      </div>
+      <div className="flex-1 overflow-hidden">
+        {selected ? (
+          <GenericSliceViewer sliceKey={selected} state={selectedState} />
+        ) : (
+          <div className="h-full flex items-center justify-center text-sm text-muted-foreground border border-dashed border-border rounded-md">
+            Select a slice to inspect its state
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function getStateViewerTabs(
   completeState: RootState,
   onSelectTab?: (tabId: string) => void,
@@ -127,7 +282,16 @@ export function getStateViewerTabs(
         />
       ),
     },
-
+    {
+      id: "agentConversations",
+      label: "Agent Conversations",
+      content: (
+        <GenericSliceViewer
+          sliceKey="agentConversations"
+          state={completeState.agentConversations}
+        />
+      ),
+    },
     {
       id: "apiConfig",
       label: "API Config",
@@ -843,6 +1007,30 @@ export function getStateViewerTabs(
       content: <GenericSliceViewer sliceKey="mcp" state={completeState.mcp} />,
     },
   ];
+
+  // Build the complete set of registered keys: static + feature/module schema keys
+  const allRegisteredKeys = new Set<string>([
+    ...REGISTERED_SLICE_KEYS,
+    ...Object.keys(featureSchemas),
+    ...Object.keys(moduleSchemas),
+  ]);
+
+  const hasOrphans = Object.keys(completeState).some(
+    (key) => !allRegisteredKeys.has(key),
+  );
+
+  if (hasOrphans) {
+    contentTabs.push({
+      id: "__orphan_slices__",
+      label: "⚠ Orphaned Slices",
+      content: (
+        <OrphanSlicesViewer
+          state={completeState}
+          registeredKeys={allRegisteredKeys}
+        />
+      ),
+    });
+  }
 
   const tabIndex: TabDefinition = {
     id: TAB_INDEX_ID,

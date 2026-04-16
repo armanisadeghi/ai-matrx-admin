@@ -11,7 +11,7 @@ import {
   selectAgentCustomTools,
   selectAgentContextSlots,
   selectAgentModelId,
-  selectAgentVersionNumber,
+  selectAgentVersion,
   selectAgentTags,
 } from "@/features/agents/redux/agent-definition/selectors";
 import { Badge } from "@/components/ui/badge";
@@ -82,8 +82,8 @@ export function AgentViewContent({ agentId }: { agentId: string }) {
     selectAgentContextSlots(state, agentId),
   );
   const modelId = useAppSelector((state) => selectAgentModelId(state, agentId));
-  const versionNumber = useAppSelector((state) =>
-    selectAgentVersionNumber(state, agentId),
+  const version = useAppSelector((state) =>
+    selectAgentVersion(state, agentId),
   );
   const tags = useAppSelector((state) => selectAgentTags(state, agentId));
 
@@ -119,9 +119,9 @@ export function AgentViewContent({ agentId }: { agentId: string }) {
                 <Webhook className="w-3 h-3" /> {modelId}
               </Badge>
             )}
-            {versionNumber != null && (
+            {version != null && (
               <Badge variant="outline" className="gap-1 tabular-nums">
-                <Hash className="w-3 h-3" /> v{versionNumber}
+                <Hash className="w-3 h-3" /> v{version}
               </Badge>
             )}
             {!agent.isActive && <Badge variant="destructive">Inactive</Badge>}

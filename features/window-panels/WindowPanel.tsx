@@ -47,8 +47,10 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   updateWindowRect,
   selectWindowsHidden,
+  selectAllWindows,
   arrangeActiveWindows,
 } from "@/lib/redux/slices/windowManagerSlice";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { selectIsDebugMode } from "@/lib/redux/slices/adminDebugSlice";
 import { useUrlSync } from "./url-sync/useUrlSync";
 import { useWindowPersistence } from "./WindowPersistenceManager";
@@ -216,6 +218,16 @@ export function WindowPanel({
   const dispatch = useAppDispatch();
   const windowsHidden = useAppSelector(selectWindowsHidden);
   const isDebugMode = useAppSelector(selectIsDebugMode);
+  const isMobile = useIsMobile();
+
+  // On mobile, only the topmost non-minimized window is rendered visible.
+  const allWindows = useAppSelector(selectAllWindows);
+  const isTopWindow = !isMobile
+    ? true
+    : allWindows.find((w) => w.state !== "minimized")?.id === id;
+
+  // Mobile sidebar/content toggle (not stored in Redux — purely a view concern)
+  const [activePaneMobile, setActivePaneMobile] = useState<"main" | "sidebar">("main");
 
   useUrlSync(urlSyncKey, urlSyncId, urlSyncArgs);
 
@@ -272,7 +284,7 @@ export function WindowPanel({
   const fitContentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!fitContent) return;
+    if (!fitContent || isMobile) return;
     const el = fitContentRef.current;
     if (!el) return;
     const ro = new ResizeObserver((entries) => {
@@ -504,7 +516,7 @@ export function WindowPanel({
   const footerBar = hasFooter ? (
     <div
       className="shrink-0 flex items-center gap-1 px-2 py-1 rounded-b-xl border-t border-border/50 bg-muted/40 select-none text-xs [&_svg]:h-3 [&_svg]:w-3 [&_button]:h-5 [&_button]:text-xs"
-      onMouseDown={(e) => e.stopPropagation()}
+      onPointerDown={(e) => e.stopPropagation()}
     >
       {footer ?? (
         <>
@@ -518,6 +530,54 @@ export function WindowPanel({
     </div>
   ) : null;
 
+  // ────────────────────────────────────────────────────────────────────────
+  // MOBILE — full-screen, one window at a time, sidebar toggle
+  // ────────────────────────────────────────────────────────────────────────
+  if (isMobile) {
+    const mobileBody =
+      hasSidebar && activePaneMobile === "sidebar" ? (
+        <div className={cn("h-full overflow-y-auto", sidebarClassName)}>
+          {sidebar}
+        </div>
+      ) : (
+        children
+      );
+
+    const mobileEl = (
+      <div
+        className={cn(
+          "fixed inset-0 flex flex-col",
+          "bg-card/98 backdrop-blur-md",
+          "overflow-hidden",
+          className,
+        )}
+        style={{
+          top: "var(--header-height)",
+          zIndex,
+          display: isTopWindow && !isMinimized ? undefined : "none",
+          visibility: windowsHidden ? "hidden" : undefined,
+        }}
+        onPointerDown={onFocus}
+      >
+        <MobileWindowHeader
+          title={titleNode ?? title}
+          actionsRight={resolvedActionsRight}
+          onMinimize={onMinimize}
+          onClose={handleClose}
+          hasSidebar={hasSidebar}
+          activePaneMobile={activePaneMobile}
+          onSetActivePane={setActivePaneMobile}
+        />
+        {isDebugMode && <DebugStrip rect={rect} zIndex={zIndex} />}
+        <div className={cn("flex-1 overflow-auto min-h-0", bodyClassName)}>
+          {mobileBody}
+        </div>
+        {footerBar}
+      </div>
+    );
+    return portalTarget ? createPortal(mobileEl, portalTarget) : null;
+  }
+
   if (isMaximized) {
     const el = (
       <div
@@ -528,7 +588,7 @@ export function WindowPanel({
           className,
         )}
         style={{ zIndex, visibility: windowsHidden ? "hidden" : undefined }}
-        onMouseDown={onFocus}
+        onPointerDown={onFocus}
       >
         {header}
         <div className={cn("flex-1 overflow-auto", bodyClassName)}>
@@ -565,7 +625,7 @@ export function WindowPanel({
         minHeight: isMinimized ? 0 : (minHeight ?? 80),
         visibility: windowsHidden ? "hidden" : undefined,
       }}
-      onMouseDown={onFocus}
+      onPointerDown={onFocus}
     >
       {!isMinimized &&
         HANDLES.map((h) => (
@@ -575,7 +635,8 @@ export function WindowPanel({
               h.className,
               "z-10 hover:bg-primary/20 transition-colors",
             )}
-            onMouseDown={onResizeStart(h.edge)}
+            style={{ touchAction: "none" }}
+            onPointerDown={onResizeStart(h.edge)}
           />
         ))}
       {header}
@@ -697,7 +758,7 @@ interface WindowHeaderProps {
   title?: React.ReactNode;
   actionsLeft?: React.ReactNode;
   actionsRight?: React.ReactNode;
-  onDragStart: (e: React.MouseEvent) => void;
+  onDragStart: (e: React.PointerEvent) => void;
   onMinimize: () => void;
   onToggleMaximize: () => void;
   onRestore: () => void;
@@ -747,7 +808,8 @@ function WindowHeader({
         isMaximized ? "cursor-default" : "cursor-grab active:cursor-grabbing",
         isMinimized && "border-b-0",
       )}
-      onMouseDown={isMaximized ? undefined : onDragStart}
+      style={isMaximized ? undefined : { touchAction: "none" }}
+      onPointerDown={isMaximized ? undefined : onDragStart}
     >
       {/* macOS-style hot zone: absolutely positioned to cover the full
           left side of the header (top-to-bottom, no padding). The traffic
@@ -758,7 +820,7 @@ function WindowHeader({
           "group/tl absolute top-0 left-0 bottom-0 flex items-center z-20",
           hasSidebar ? "w-28" : "w-24",
         )}
-        onMouseDown={(e) => e.stopPropagation()}
+        onPointerDown={(e) => e.stopPropagation()}
       >
         <div className="pl-2">
           <TrafficLightGroup
@@ -790,7 +852,7 @@ function WindowHeader({
         {!isMinimized && actionsLeft && (
           <div
             className="flex items-center gap-0.5 shrink-0 text-foreground/80 [&_svg]:text-foreground/80"
-            onMouseDown={(e) => e.stopPropagation()}
+            onPointerDown={(e) => e.stopPropagation()}
           >
             {actionsLeft}
           </div>
@@ -809,7 +871,7 @@ function WindowHeader({
         {!isMinimized && actionsRight && (
           <div
             className="flex items-center gap-0.5 shrink-0 text-foreground/80 [&_svg]:text-foreground/80"
-            onMouseDown={(e) => e.stopPropagation()}
+            onPointerDown={(e) => e.stopPropagation()}
           >
             {actionsRight}
           </div>
@@ -957,7 +1019,7 @@ function TrafficLight({
       type="button"
       className={cn(base, colours)}
       onClick={disabled ? undefined : onClick}
-      onMouseDown={(e) => e.stopPropagation()}
+      onPointerDown={(e) => e.stopPropagation()}
       aria-label={label}
       disabled={disabled}
     >
@@ -1002,6 +1064,7 @@ function GreenTrafficLight({
 }: GreenTrafficLightProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const openDropdown = () => {
     if (leaveTimer.current) clearTimeout(leaveTimer.current);
@@ -1015,23 +1078,45 @@ function GreenTrafficLight({
 
   const handleAction = (fn: () => void) => {
     fn();
+    setDropdownOpen(false);
   };
+
+  // Close dropdown when tapping outside (touch devices)
+  useEffect(() => {
+    if (!dropdownOpen) return;
+    const onPointerOutside = (e: PointerEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("pointerdown", onPointerOutside);
+    return () => document.removeEventListener("pointerdown", onPointerOutside);
+  }, [dropdownOpen]);
 
   return (
     <div
+      ref={containerRef}
       className="relative"
       onMouseEnter={openDropdown}
       onMouseLeave={scheduleClose}
     >
-      {/* The dot */}
+      {/* The dot — click toggles maximize on mouse, tap opens dropdown on touch */}
       <button
         type="button"
         className={cn(
           "w-3.5 h-3.5 rounded-full flex items-center justify-center transition-colors shrink-0",
           "bg-green-500 hover:bg-green-400 cursor-pointer",
         )}
-        onClick={() => handleAction(onToggleMaximize)}
-        onMouseDown={(e) => e.stopPropagation()}
+        onClick={(e) => {
+          // On touch devices, open the dropdown instead of immediately maximizing.
+          // Touch has no hover, so this is the only way to access snap/arrange options.
+          if ("ontouchstart" in window || navigator.maxTouchPoints > 0) {
+            setDropdownOpen((prev) => !prev);
+          } else {
+            handleAction(onToggleMaximize);
+          }
+        }}
+        onPointerDown={(e) => e.stopPropagation()}
         aria-label={isMaximized ? "Restore" : "Maximize"}
       >
         <span className="opacity-0 group-hover/tl:opacity-100 transition-opacity duration-100 flex items-center justify-center relative w-full h-full">
@@ -1179,7 +1264,7 @@ function GreenTrafficLight({
             type="button"
             className="flex items-center gap-2.5 w-full px-3 py-1.5 hover:bg-accent transition-colors text-foreground/80"
             onClick={() => handleAction(onToggleMaximize)}
-            onMouseDown={(e) => e.stopPropagation()}
+            onPointerDown={(e) => e.stopPropagation()}
           >
             {isMaximized ? (
               <>
@@ -1198,7 +1283,7 @@ function GreenTrafficLight({
               type="button"
               className="flex items-center gap-2.5 w-full px-3 py-1.5 hover:bg-accent transition-colors text-foreground/80"
               onClick={() => handleAction(onRestore)}
-              onMouseDown={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
             >
               <Maximize2 className="w-3.5 h-3.5 shrink-0" />
               Restore window
@@ -1213,13 +1298,106 @@ function GreenTrafficLight({
                 type="button"
                 className="flex items-center gap-2.5 w-full px-3 py-1.5 hover:bg-accent transition-colors text-foreground/80"
                 onClick={() => handleAction(onSaveWindowState)}
-                onMouseDown={(e) => e.stopPropagation()}
+                onPointerDown={(e) => e.stopPropagation()}
               >
                 <Save className="w-3.5 h-3.5 shrink-0" />
                 Save window state
               </button>
             </>
           )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── MobileWindowHeader ─────────────────────────────────────────────────────
+// Simplified header for mobile: close + minimize, segmented sidebar toggle, actions
+
+interface MobileWindowHeaderProps {
+  title?: React.ReactNode;
+  actionsRight?: React.ReactNode;
+  onMinimize: () => void;
+  onClose?: () => void;
+  hasSidebar: boolean;
+  activePaneMobile: "main" | "sidebar";
+  onSetActivePane: (pane: "main" | "sidebar") => void;
+}
+
+function MobileWindowHeader({
+  title,
+  actionsRight,
+  onMinimize,
+  onClose,
+  hasSidebar,
+  activePaneMobile,
+  onSetActivePane,
+}: MobileWindowHeaderProps) {
+  const titleText = typeof title === "string" ? title : "Content";
+  return (
+    <div className="flex items-center gap-1.5 px-2 py-1.5 min-h-[36px] shrink-0 border-b border-border/50 bg-muted/40 select-none">
+      {/* Close + Minimize */}
+      <div className="flex items-center gap-1.5 shrink-0">
+        {onClose && (
+          <button
+            type="button"
+            className="w-6 h-6 rounded-full bg-red-500 flex items-center justify-center"
+            onClick={onClose}
+            aria-label="Close"
+          >
+            <X className="w-2.5 h-2.5 stroke-[3]" style={{ color: "#000" }} />
+          </button>
+        )}
+        <button
+          type="button"
+          className="w-6 h-6 rounded-full bg-yellow-400 flex items-center justify-center"
+          onClick={onMinimize}
+          aria-label="Minimize"
+        >
+          <Minus className="w-2.5 h-2.5 stroke-[3]" style={{ color: "#000" }} />
+        </button>
+      </div>
+
+      {/* Center: sidebar toggle or title */}
+      <div className="flex-1 flex items-center justify-center min-w-0">
+        {hasSidebar ? (
+          <div className="inline-flex rounded-lg bg-muted/60 p-0.5 text-xs">
+            <button
+              type="button"
+              className={cn(
+                "px-3 py-1 rounded-md transition-colors whitespace-nowrap",
+                activePaneMobile === "sidebar"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground",
+              )}
+              onClick={() => onSetActivePane("sidebar")}
+            >
+              Sidebar
+            </button>
+            <button
+              type="button"
+              className={cn(
+                "px-3 py-1 rounded-md transition-colors truncate max-w-[120px]",
+                activePaneMobile === "main"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground",
+              )}
+              onClick={() => onSetActivePane("main")}
+            >
+              {titleText}
+            </button>
+          </div>
+        ) : (
+          <span className="text-xs font-medium text-foreground/80 truncate">
+            {title ?? ""}
+          </span>
+        )}
+      </div>
+
+      {/* Right actions */}
+      {actionsRight && (
+        <div className="flex items-center gap-0.5 shrink-0 text-foreground/80 [&_svg]:text-foreground/80">
+          {actionsRight}
         </div>
       )}
     </div>
@@ -1245,7 +1423,7 @@ function SnapButton({
       title={label}
       aria-label={label}
       onClick={onClick}
-      onMouseDown={(e) => e.stopPropagation()}
+      onPointerDown={(e) => e.stopPropagation()}
       className={cn(
         "flex items-center justify-center rounded-lg p-1.5",
         "bg-muted/60 hover:bg-accent border border-border/50",

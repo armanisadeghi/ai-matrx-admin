@@ -377,9 +377,9 @@ export const selectAgentParentAgentId = createSelector(
   (record) => record?.parentAgentId ?? null,
 );
 
-export const selectAgentVersionNumber = createSelector(
+export const selectAgentVersion = createSelector(
   [selectAgentById],
-  (record) => record?.versionNumber ?? null,
+  (record) => record?.version ?? null,
 );
 
 export const selectAgentChangeNote = createSelector(
@@ -577,7 +577,7 @@ export const selectVersionsByParentAgentId = createSelector(
   (agents, parentAgentId) =>
     agents
       .filter((a) => a.isVersion && a.parentAgentId === parentAgentId)
-      .sort((a, b) => (a.versionNumber ?? 0) - (b.versionNumber ?? 0)),
+      .sort((a, b) => (a.version ?? 0) - (b.version ?? 0)),
 );
 
 export const selectUserAgents = createSelector([selectLiveAgents], (agents) =>

@@ -85,10 +85,10 @@ export interface ModelTiers {
 // AgentDefinition — single unified type for both live agents and version snapshots.
 //
 // Live agents (agx_agent table):
-//   isVersion = false, parentAgentId = null, versionNumber = current live version
+//   isVersion = false, parentAgentId = null, version = agx_agent.version (the live integer counter)
 //
 // Version snapshots (agx_version table):
-//   isVersion = true, parentAgentId = agx_agent.id, versionNumber = the snapshot number
+//   isVersion = true, parentAgentId = agx_agent.id, version = agx_version.version_number
 //   id = agx_version.id (used as resolved_id for execution)
 //   Some fields that only exist on live agents will be null on version records:
 //   isPublic, isArchived, isFavorite, userId, organizationId,
@@ -110,7 +110,7 @@ export interface AgentDefinition {
   // Version identity — null on live agents, set on snapshots
   isVersion: boolean; // true = this record is from agx_version
   parentAgentId: string | null; // FK → agx_agent.id, only set when isVersion = true
-  versionNumber: number | null; // the snapshot's version_number (or live agents.version)
+  version: number | null; // agx_agent.version for live agents; agx_version.version_number for snapshots
   changedAt: string | null; // agx_version.changed_at, null for live agents
   changeNote: string | null; // agx_version.change_note, null for live agents
 
@@ -283,6 +283,7 @@ export interface AgentVersionSnapshot {
   is_active: boolean;
   changed_at: string;
   change_note: string | null;
+  mcp_servers: string[];
 }
 
 // ---------------------------------------------------------------------------

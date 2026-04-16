@@ -1,9 +1,14 @@
 import { AgentModeController } from "../shared/AgentModeController";
 import { AgentSaveStatus } from "../shared/AgentSaveStatus";
 import { AgentOptionsMenu } from "../shared/AgentOptionsMenu";
+import Link from "next/link";
+import { AgentSelectorIsland } from "../shared/AgentSelectorIsland";
+import { ChevronLeftTapButton } from "@/components/icons/tap-buttons";
+import { AgentNewRunButton } from "../shared/AgentNewRunButton";
 
 interface AgentRunHeaderProps {
   agentId: string;
+  agentName: string;
   conversationId: string;
   surfaceKey: string;
   conversationIdFromUrl?: string;
@@ -11,14 +16,27 @@ interface AgentRunHeaderProps {
 
 export function AgentRunHeader({
   agentId,
+  agentName,
   conversationId,
   surfaceKey,
   conversationIdFromUrl,
 }: AgentRunHeaderProps) {
   return (
-    <div className="hidden lg:flex items-center justify-between w-full gap-2 px-2 pr-12 shrink-0">
-      <div className="flex items-center gap-2"></div>
-      <div className="pt-2">
+    <div className="hidden lg:flex items-center justify-between w-full gap-2 shrink-0 pr-12">
+      <div className="flex items-center">
+        <Link href="/agents" aria-label="Back to Agents">
+          <ChevronLeftTapButton />
+        </Link>
+
+        {/* Agent selector — shows current agent, lets you switch */}
+        <AgentSelectorIsland agentId={agentId} initialName={agentName} />
+        <AgentNewRunButton
+          agentId={agentId}
+          conversationId={conversationId}
+          surfaceKey={surfaceKey}
+        />
+      </div>
+      <div>
         <AgentModeController agentId={agentId} />
       </div>
       <div className="flex items-center gap-1.5 pt-0.5 shrink-0">

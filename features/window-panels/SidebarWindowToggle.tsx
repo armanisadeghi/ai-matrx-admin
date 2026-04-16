@@ -132,7 +132,7 @@ export default function SidebarWindowToggle() {
   // Close on outside click
   useEffect(() => {
     if (!open) return;
-    const onDown = (e: MouseEvent) => {
+    const onDown = (e: PointerEvent) => {
       if (
         triggerRef.current?.contains(e.target as Node) ||
         menuRef.current?.contains(e.target as Node)
@@ -140,8 +140,8 @@ export default function SidebarWindowToggle() {
         return;
       setOpen(false);
     };
-    document.addEventListener("mousedown", onDown);
-    return () => document.removeEventListener("mousedown", onDown);
+    document.addEventListener("pointerdown", onDown);
+    return () => document.removeEventListener("pointerdown", onDown);
   }, [open]);
 
   // Close on Escape

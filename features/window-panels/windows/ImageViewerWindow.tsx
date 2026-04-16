@@ -105,9 +105,9 @@ export function ImageViewer({
     return () => window.removeEventListener("keydown", handler);
   }, [prev, next, zoomIn, zoomOut, resetView]);
 
-  // Pan when zoomed
-  const onMouseDown = useCallback(
-    (e: React.MouseEvent) => {
+  // Pan when zoomed (pointer events for touch + mouse)
+  const onPanStart = useCallback(
+    (e: React.PointerEvent) => {
       if (zoom <= 1) return;
       e.preventDefault();
       setDragging(true);
@@ -115,8 +115,8 @@ export function ImageViewer({
     },
     [zoom, offset],
   );
-  const onMouseMove = useCallback(
-    (e: React.MouseEvent) => {
+  const onPanMove = useCallback(
+    (e: React.PointerEvent) => {
       if (!dragging) return;
       setOffset({
         x: dragStart.ox + e.clientX - dragStart.x,
@@ -125,7 +125,7 @@ export function ImageViewer({
     },
     [dragging, dragStart],
   );
-  const onMouseUp = useCallback(() => setDragging(false), []);
+  const onPanEnd = useCallback(() => setDragging(false), []);
 
   // Scroll to zoom
   const onWheel = useCallback((e: React.WheelEvent) => {
@@ -146,10 +146,12 @@ export function ImageViewer({
           zoom > 1 ? "cursor-grab" : "cursor-default",
           dragging && "cursor-grabbing",
         )}
-        onMouseDown={onMouseDown}
-        onMouseMove={onMouseMove}
-        onMouseUp={onMouseUp}
-        onMouseLeave={onMouseUp}
+        style={zoom > 1 ? { touchAction: "none" } : undefined}
+        onPointerDown={onPanStart}
+        onPointerMove={onPanMove}
+        onPointerUp={onPanEnd}
+        onPointerLeave={onPanEnd}
+        onPointerCancel={onPanEnd}
         onWheel={onWheel}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}

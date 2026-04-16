@@ -17,6 +17,7 @@ import {
 } from "../redux/slice";
 import { getReduxSyncDelay } from "../redux/notes.types";
 import {
+  selectNoteById,
   selectNoteContent,
   selectNoteEditorMode,
   selectNoteIsDirtyById,
@@ -56,6 +57,9 @@ interface NoteContentEditorProps {
 export function NoteContentEditor({ noteId }: NoteContentEditorProps) {
   const dispatch = useAppDispatch();
   const instanceId = useNotesInstanceId();
+
+  // ── Check if note exists in Redux ────────────────────────────────
+  const noteExists = useAppSelector(selectNoteById(noteId));
 
   // ── Redux selectors (cached — stable references) ──────────────────
   const reduxContent = useAppSelector(selectNoteContent(noteId)) ?? "";
@@ -250,6 +254,24 @@ export function NoteContentEditor({ noteId }: NoteContentEditorProps) {
     // Dismiss conflict window — keep local edits as dirty
     setConflictRemote(null);
   }, []);
+
+  // ── Guard: note deleted or not found ───────────────────────────────
+  if (!noteExists) {
+    return (
+      <div className="flex-1 flex items-center justify-center text-muted-foreground">
+        <div className="text-center">
+          <p className="text-sm">Note not found</p>
+          <p className="text-xs mt-1">This note may have been deleted or moved.</p>
+          <button
+            onClick={() => dispatch(removeInstanceTab({ instanceId, noteId }))}
+            className="mt-3 text-xs text-primary hover:text-primary/80 cursor-pointer"
+          >
+            Close this tab
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // ── Render ────────────────────────────────────────────────────────
   return (

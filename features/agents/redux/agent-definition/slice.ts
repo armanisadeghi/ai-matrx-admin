@@ -30,7 +30,7 @@ function makeEmptyRecord(id: string): AgentDefinitionRecord {
 
     isVersion: false,
     parentAgentId: null,
-    versionNumber: null,
+    version: null,
     changedAt: null,
     changeNote: null,
 
@@ -398,7 +398,7 @@ export const agentDefinitionSlice = createSlice({
         agentType: data.agentType ?? "user",
         isVersion: false,
         parentAgentId: null,
-        versionNumber: null,
+        version: null,
         changedAt: null,
         changeNote: null,
         modelId: data.modelId ?? null,

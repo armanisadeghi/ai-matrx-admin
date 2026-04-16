@@ -14,6 +14,7 @@ import React, { useRef, useState, useCallback, useEffect } from "react";
 import {
   Save,
   Copy,
+  CopyPlus,
   Share2,
   FolderInput,
   Trash2,
@@ -21,6 +22,7 @@ import {
   X,
   Download,
   Link2,
+  Network,
 } from "lucide-react";
 import { MicrophoneIconButton } from "@/features/audio/components/MicrophoneIconButton";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -42,8 +44,20 @@ import {
 } from "../redux/selectors";
 import { saveNote, copyNote, deleteNote } from "../redux/thunks";
 import { ShareModal } from "@/features/sharing/components/ShareModal";
+import { NoteContextPicker } from "./NoteContextPicker";
+import { useNoteDelete } from "../hooks/useNoteDelete";
 import { useIsOwner } from "@/utils/permissions";
 import { cn } from "@/lib/utils";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 
 interface NoteTabItemProps {
   noteId: string;
@@ -75,8 +89,10 @@ export function NoteTabItem({ noteId, instanceId }: NoteTabItemProps) {
   const [showFolderDrop, setShowFolderDrop] = useState(false);
   const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number } | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
+  const [contextOpen, setContextOpen] = useState(false);
   const labelTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const folderBtnRef = useRef<HTMLButtonElement>(null);
+  const contextBtnRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Sync Redux label → local
@@ -124,10 +140,12 @@ export function NoteTabItem({ noteId, instanceId }: NoteTabItemProps) {
     [dispatch, noteId],
   );
 
-  const handleDeleteAndClose = useCallback(() => {
-    dispatch(removeInstanceTab({ instanceId, noteId }));
-    dispatch(deleteNote(noteId));
-  }, [dispatch, instanceId, noteId]);
+  const {
+    confirmOpen: deleteConfirmOpen,
+    requestDelete,
+    cancelDelete,
+    confirmDelete,
+  } = useNoteDelete({ instanceId, noteId, noteLabel: label });
 
   const handleExport = useCallback(() => {
     const blob = new Blob([content], { type: "text/markdown" });
@@ -217,7 +235,7 @@ export function NoteTabItem({ noteId, instanceId }: NoteTabItemProps) {
             >
               <Save />
             </button>
-            <button className={actionBtnClass} onClick={() => dispatch(copyNote(noteId))} title="Duplicate">
+            <button className={actionBtnClass} onClick={() => { navigator.clipboard.writeText(content).catch(() => {}); }} title="Copy content">
               <Copy />
             </button>
             <button className={actionBtnClass} onClick={() => setShareOpen(true)} title="Share note">
@@ -232,8 +250,16 @@ export function NoteTabItem({ noteId, instanceId }: NoteTabItemProps) {
               <FolderInput />
             </button>
             <button
+              ref={contextBtnRef}
+              className={cn(actionBtnClass, contextOpen && "text-primary bg-accent")}
+              onClick={() => setContextOpen((v) => !v)}
+              title="Set context"
+            >
+              <Network />
+            </button>
+            <button
               className={cn(actionBtnClass, "hover:text-destructive")}
-              onClick={handleDeleteAndClose}
+              onClick={requestDelete}
               title="Delete"
             >
               <Trash2 />
@@ -278,6 +304,16 @@ export function NoteTabItem({ noteId, instanceId }: NoteTabItemProps) {
         </div>
       )}
 
+      {/* Context picker dropdown */}
+      {contextOpen && isActive && (
+        <>
+          <div className="fixed inset-0 z-[100]" onClick={() => setContextOpen(false)} />
+          <div className="absolute right-0 z-[110] mt-1 w-[260px] py-1 bg-card/95 backdrop-blur-2xl border border-border rounded-lg shadow-lg">
+            <NoteContextPicker noteId={noteId} />
+          </div>
+        </>
+      )}
+
       {/* Right-click context menu */}
       {ctxMenu && (
         <>
@@ -289,7 +325,8 @@ export function NoteTabItem({ noteId, instanceId }: NoteTabItemProps) {
           >
             {[
               { icon: <Save className="w-3 h-3" />, label: "Save", fn: () => dispatch(saveNote(noteId)) },
-              { icon: <Copy className="w-3 h-3" />, label: "Duplicate", fn: () => dispatch(copyNote(noteId)) },
+              { icon: <Copy className="w-3 h-3" />, label: "Copy Content", fn: () => navigator.clipboard.writeText(content).catch(() => {}) },
+              { icon: <CopyPlus className="w-3 h-3" />, label: "Duplicate Note", fn: () => dispatch(copyNote(noteId)) },
               { icon: <Link2 className="w-3 h-3" />, label: "Share Link", fn: () => setShareOpen(true) },
               { icon: <Download className="w-3 h-3" />, label: "Export as Markdown", fn: handleExport },
               null,
@@ -297,7 +334,7 @@ export function NoteTabItem({ noteId, instanceId }: NoteTabItemProps) {
               { icon: <X className="w-3 h-3" />, label: "Close Other Tabs", fn: handleCloseOtherTabs },
               { icon: <X className="w-3 h-3" />, label: "Close All Tabs", fn: handleCloseAllTabs },
               null,
-              { icon: <Trash2 className="w-3 h-3" />, label: "Delete Note", fn: handleDeleteAndClose, destructive: true },
+              { icon: <Trash2 className="w-3 h-3" />, label: "Delete Note", fn: requestDelete, destructive: true },
             ].map((item, i) =>
               item === null ? (
                 <div key={`sep-${i}`} className="h-px bg-border/50 my-1" />
@@ -327,6 +364,24 @@ export function NoteTabItem({ noteId, instanceId }: NoteTabItemProps) {
         resourceName={label}
         isOwner={isOwner}
       />
+
+      {/* Delete confirmation */}
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={(open) => { if (!open) cancelDelete(); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete note?</AlertDialogTitle>
+            <AlertDialogDescription>
+              &ldquo;{label}&rdquo; will be moved to trash. You can restore it later.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

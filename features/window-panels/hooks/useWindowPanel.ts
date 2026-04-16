@@ -6,10 +6,13 @@
  * Connects a single WindowPanel instance to the Redux window-manager slice.
  * Handles:
  *  - Registration / cleanup on mount/unmount
- *  - Drag-to-move (header mousedown → document mousemove/mouseup)
- *  - Resize (edge/corner handles → document mousemove/mouseup)
+ *  - Drag-to-move (header pointerdown → document pointermove/pointerup)
+ *  - Resize (edge/corner handles → document pointermove/pointerup)
  *  - Window state transitions (windowed / maximized / minimized)
  *  - Focus-on-click (brings panel to top of z stack)
+ *
+ * Uses pointer events (not mouse events) so drag/resize works on
+ * touchscreens (iPad, Tesla, etc.) as well as mouse + pen input.
  *
  * Pure CSS resize via inline styles; no Tailwind width classes after mount.
  */
@@ -129,6 +132,9 @@ export interface UseWindowPanelOptions {
   maxHeight?: number;
 }
 
+/** Shared subset of MouseEvent / PointerEvent / TouchEvent we need. */
+type PointerLike = { clientX: number; clientY: number; preventDefault: () => void };
+
 export interface UseWindowPanelReturn {
   /** The stable window id. */
   id: string;
@@ -138,10 +144,10 @@ export interface UseWindowPanelReturn {
   rect: WindowRect;
   /** z-index from Redux. */
   zIndex: number;
-  /** Mousedown handler for the drag handle (header). */
-  onDragStart: (e: React.MouseEvent) => void;
-  /** Mousedown handler factory for resize handles. */
-  onResizeStart: (edge: ResizeEdge) => (e: React.MouseEvent) => void;
+  /** Pointerdown handler for the drag handle (header). Works with mouse + touch + pen. */
+  onDragStart: (e: React.PointerEvent) => void;
+  /** Pointerdown handler factory for resize handles. Works with mouse + touch + pen. */
+  onResizeStart: (edge: ResizeEdge) => (e: React.PointerEvent) => void;
   /** Bring this window to the top. */
   onFocus: () => void;
   /** Transition to windowed state. */
@@ -199,7 +205,7 @@ export function useWindowPanel(
     }
   }, [id, opts.title, dispatch]);
 
-  // ── Drag-to-move ─────────────────────────────────────────────────────────────
+  // ── Drag-to-move (pointer events — works for mouse + touch + pen) ──────────
   const dragStart = useRef<{
     mx: number;
     my: number;
@@ -208,7 +214,7 @@ export function useWindowPanel(
   } | null>(null);
 
   const onDragStart = useCallback(
-    (e: React.MouseEvent) => {
+    (e: React.PointerEvent) => {
       e.preventDefault();
       dispatch(focusWindow(id));
       // Allow drag in windowed AND minimized states (maximized is handled by header)
@@ -220,7 +226,7 @@ export function useWindowPanel(
         wy: entry.windowed.y,
       };
 
-      const onMove = (ev: MouseEvent) => {
+      const onMove = (ev: PointerEvent) => {
         if (!dragStart.current) return;
         const nx = dragStart.current.wx + (ev.clientX - dragStart.current.mx);
         const ny = dragStart.current.wy + (ev.clientY - dragStart.current.my);
@@ -228,18 +234,20 @@ export function useWindowPanel(
       };
       const onUp = () => {
         dragStart.current = null;
-        document.removeEventListener("mousemove", onMove);
-        document.removeEventListener("mouseup", onUp);
+        document.removeEventListener("pointermove", onMove);
+        document.removeEventListener("pointerup", onUp);
+        document.removeEventListener("pointercancel", onUp);
       };
-      document.addEventListener("mousemove", onMove);
-      document.addEventListener("mouseup", onUp);
+      document.addEventListener("pointermove", onMove);
+      document.addEventListener("pointerup", onUp);
+      document.addEventListener("pointercancel", onUp);
     },
     [dispatch, id, entry],
   );
 
-  // ── Resize ────────────────────────────────────────────────────────────────────
+  // ── Resize (pointer events — works for mouse + touch + pen) ────────────────
   const onResizeStart = useCallback(
-    (edge: ResizeEdge) => (e: React.MouseEvent) => {
+    (edge: ResizeEdge) => (e: React.PointerEvent) => {
       e.preventDefault();
       e.stopPropagation();
       dispatch(focusWindow(id));
@@ -249,7 +257,7 @@ export function useWindowPanel(
       const startMy = e.clientY;
       const { x, y, width, height } = entry.windowed;
 
-      const onMove = (ev: MouseEvent) => {
+      const onMove = (ev: PointerEvent) => {
         const dx = ev.clientX - startMx;
         const dy = ev.clientY - startMy;
         let nx = x,
@@ -279,11 +287,13 @@ export function useWindowPanel(
       };
 
       const onUp = () => {
-        document.removeEventListener("mousemove", onMove);
-        document.removeEventListener("mouseup", onUp);
+        document.removeEventListener("pointermove", onMove);
+        document.removeEventListener("pointerup", onUp);
+        document.removeEventListener("pointercancel", onUp);
       };
-      document.addEventListener("mousemove", onMove);
-      document.addEventListener("mouseup", onUp);
+      document.addEventListener("pointermove", onMove);
+      document.addEventListener("pointerup", onUp);
+      document.addEventListener("pointercancel", onUp);
     },
     [dispatch, id, entry, maxWidth, maxHeight],
   );

@@ -16328,6 +16328,7 @@ export type Database = {
           custom_tools: Json
           description: string
           is_active: boolean
+          mcp_servers: string[]
           messages: Json
           model_id: string
           model_tiers: Json
