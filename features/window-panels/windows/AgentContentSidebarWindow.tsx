@@ -102,11 +102,13 @@ function SidebarFooterControls({
     if (!agent) return;
     const dirtyFields = agent._dirtyFields;
     if (!dirtyFields) return;
-    dirtyFields.forEach((field) => {
+    for (const field of Object.keys(
+      dirtyFields,
+    ) as (keyof import("@/features/agents/types/agent-definition.types").AgentDefinition)[]) {
       dispatch(
         saveAgentField({ agentId, field, value: agent[field] as never }),
       );
-    });
+    }
   };
 
   const handleCancel = () => {

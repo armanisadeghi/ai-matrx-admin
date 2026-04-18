@@ -3,11 +3,14 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { supabase } from "@/utils/supabase/client";
 import {
   AlertCircle,
+  Bot,
   Bug,
   Camera,
   Check,
+  CheckCheck,
   Clipboard,
   ExternalLink,
   HelpCircle,
@@ -75,6 +78,38 @@ const FEEDBACK_TYPE_ACTIVE_CLASSES: Record<FeedbackType, string> = {
     "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 [&_svg]:text-amber-600 dark:[&_svg]:text-amber-400",
 };
 
+// ─── Agent prompt builder ─────────────────────────────────────────────────────
+
+function buildAgentPrompt(
+  item: import("@/types/feedback.types").UserFeedback,
+): string {
+  const typeLabel =
+    item.feedback_type.charAt(0).toUpperCase() + item.feedback_type.slice(1);
+  const date = new Date(item.created_at).toLocaleString();
+
+  const imageSection =
+    item.image_urls && item.image_urls.length > 0
+      ? `\n## Screenshots\n${item.image_urls.map((url, i) => `${i + 1}. ${url}`).join("\n")}\n`
+      : "";
+
+  return `\
+## Feedback Item — ${typeLabel}
+**ID:** \`${item.id}\`
+**Submitted:** ${date}
+**Route (where user was):** \`${item.route}\`
+**Status:** ${item.status}
+${imageSection}
+## Description
+${item.description}
+
+---
+This item is in the feedback database. You can use MCP tools to look it up, triage it, and work on it:
+- \`get_feedback_by_id("${item.id}")\` — fetch full details
+- \`triage_feedback_item(...)\` — run triage analysis
+- \`get_agent_work_queue()\` — see all approved items ready to fix
+Note: \`route\` is where the user clicked Submit, not necessarily where the bug lives. Determine the real location from the description and screenshots.`;
+}
+
 // ─── FeedbackWindow ───────────────────────────────────────────────────────────
 
 export interface FeedbackWindowProps extends Omit<
@@ -131,9 +166,17 @@ function FeedbackWindowBody({ onClose }: { onClose: () => void }) {
   const [description, setDescription] = useState("");
   const [attachments, setAttachments] = useState<AttachmentSlot[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSlowConnection, setIsSlowConnection] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [submittedItem, setSubmittedItem] = useState<
+    import("@/types/feedback.types").UserFeedback | null
+  >(null);
   const [stats, setStats] = useState<FeedbackStats | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const submitTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const slowHintTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const abortedRef = useRef(false);
 
   // Derive the final URL list for submission
   const uploadedImages = attachments
@@ -147,6 +190,10 @@ function FeedbackWindowBody({ onClose }: { onClose: () => void }) {
 
   useEffect(() => {
     textareaRef.current?.focus();
+    return () => {
+      if (submitTimeoutRef.current) clearTimeout(submitTimeoutRef.current);
+      if (slowHintTimeoutRef.current) clearTimeout(slowHintTimeoutRef.current);
+    };
   }, []);
 
   // ── Image upload ─────────────────────────────────────────────────────────
@@ -316,22 +363,77 @@ function FeedbackWindowBody({ onClose }: { onClose: () => void }) {
   }, [uploadPastedImage]);
 
   // ── Submit ────────────────────────────────────────────────────────────────
+  const cancelSubmit = useCallback(() => {
+    if (submitTimeoutRef.current) clearTimeout(submitTimeoutRef.current);
+    if (slowHintTimeoutRef.current) clearTimeout(slowHintTimeoutRef.current);
+    abortedRef.current = true;
+    setIsSubmitting(false);
+    setIsSlowConnection(false);
+  }, []);
+
   const handleSubmit = useCallback(async () => {
     if (!description.trim() || isSubmitting) return;
+
+    // Pre-flight: check that the client-side session is still valid before
+    // hitting the server. This catches the "tab left open overnight" case
+    // where the refresh token has expired and the server action would either
+    // hang or return "not authenticated" with no useful feedback to the user.
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!session) {
+      setError(
+        "Your session has expired. Please refresh the page or sign in again — your text is still here.",
+      );
+      return;
+    }
+
+    abortedRef.current = false;
     setIsSubmitting(true);
+    setIsSlowConnection(false);
     setError(null);
 
-    const result = await submitFeedback({
-      feedback_type: feedbackType,
-      route: pathname,
-      description: description.trim(),
-      image_urls: uploadedImages.length > 0 ? uploadedImages : undefined,
-    });
+    // Show a slow-connection hint after 5 s so the user knows it's still working.
+    slowHintTimeoutRef.current = setTimeout(() => {
+      if (!abortedRef.current) setIsSlowConnection(true);
+    }, 5000);
+
+    // Hard timeout after 15 s — reset state and preserve the draft.
+    const timeoutPromise = new Promise<{ success: false; error: string }>(
+      (resolve) =>
+        (submitTimeoutRef.current = setTimeout(
+          () =>
+            resolve({
+              success: false,
+              error:
+                "Request timed out. Your text is preserved — check your connection and try again.",
+            }),
+          15000,
+        )),
+    );
+
+    const result = await Promise.race([
+      submitFeedback({
+        feedback_type: feedbackType,
+        route: pathname,
+        description: description.trim(),
+        image_urls: uploadedImages.length > 0 ? uploadedImages : undefined,
+      }),
+      timeoutPromise,
+    ]);
+
+    if (submitTimeoutRef.current) clearTimeout(submitTimeoutRef.current);
+    if (slowHintTimeoutRef.current) clearTimeout(slowHintTimeoutRef.current);
+
+    // If the user clicked Cancel while we were waiting, ignore the result.
+    if (abortedRef.current) return;
 
     setIsSubmitting(false);
+    setIsSlowConnection(false);
 
     if (result.success) {
       setSubmitted(true);
+      if (result.data) setSubmittedItem(result.data);
       setDescription("");
       setAttachments([]);
       // Fetch stats (non-blocking)
@@ -364,13 +466,30 @@ function FeedbackWindowBody({ onClose }: { onClose: () => void }) {
     [handleSubmit],
   );
 
+  const handleCopyForAgent = useCallback(async () => {
+    if (!submittedItem) return;
+    const prompt = buildAgentPrompt(submittedItem);
+    try {
+      await navigator.clipboard.writeText(prompt);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      toast.error("Clipboard unavailable — copy manually from the console.");
+      console.log("=== Copy for Agent ===\n", prompt);
+    }
+  }, [submittedItem]);
+
   const handleReset = useCallback(() => {
+    abortedRef.current = false;
     setSubmitted(false);
+    setSubmittedItem(null);
     setStats(null);
     setFeedbackType("bug");
     setDescription("");
     setAttachments([]);
     setError(null);
+    setIsSlowConnection(false);
+    setCopied(false);
     setTimeout(() => textareaRef.current?.focus(), 50);
   }, []);
 
@@ -409,6 +528,32 @@ function FeedbackWindowBody({ onClose }: { onClose: () => void }) {
               valueClassName="text-green-500"
             />
           </div>
+        )}
+
+        {/* Copy for Agent — prominent single button */}
+        {submittedItem && (
+          <button
+            type="button"
+            onClick={handleCopyForAgent}
+            className={cn(
+              "flex items-center justify-center gap-2 w-full max-w-[340px] px-4 py-2.5 rounded-xl border text-xs font-medium transition-all",
+              copied
+                ? "border-green-500/40 bg-green-500/10 text-green-600 dark:text-green-400"
+                : "border-border bg-card hover:bg-accent text-muted-foreground hover:text-foreground",
+            )}
+          >
+            {copied ? (
+              <>
+                <CheckCheck className="w-3.5 h-3.5" />
+                Copied — paste into your agent chat
+              </>
+            ) : (
+              <>
+                <Bot className="w-3.5 h-3.5" />
+                Copy for Coding Agent
+              </>
+            )}
+          </button>
         )}
 
         {/* Action tiles */}
@@ -563,37 +708,46 @@ function FeedbackWindowBody({ onClose }: { onClose: () => void }) {
           )}
         </div>
 
-        {error && <p className="text-[11px] text-destructive">{error}</p>}
+        {error && (
+          <p className="text-[11px] text-destructive leading-snug">{error}</p>
+        )}
       </div>
 
       {/* Sticky footer */}
       <div
         data-feedback-overlay
-        className="shrink-0 flex items-center justify-between px-4 py-2.5 border-t border-border bg-muted/20"
+        className="shrink-0 flex flex-col gap-1 px-4 py-2.5 border-t border-border bg-muted/20"
       >
-        <button
-          type="button"
-          className="px-3 py-1.5 text-xs font-medium rounded-lg border border-border text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-          onClick={onClose}
-          disabled={isSubmitting}
-        >
-          Cancel
-        </button>
-        <button
-          type="button"
-          className={cn(
-            "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors",
-            "[&_svg]:w-3.5 [&_svg]:h-3.5",
-            description.trim() && !isSubmitting
-              ? "bg-primary text-primary-foreground hover:bg-primary/90"
-              : "bg-muted text-muted-foreground cursor-not-allowed",
-          )}
-          onClick={handleSubmit}
-          disabled={!description.trim() || isSubmitting}
-        >
-          <Send />
-          {isSubmitting ? "Submitting..." : "Submit"}
-        </button>
+        {isSlowConnection && (
+          <p className="text-[10px] text-amber-500 text-center">
+            Still trying… slow connection detected. You can cancel and your text
+            will be preserved.
+          </p>
+        )}
+        <div className="flex items-center justify-between">
+          <button
+            type="button"
+            className="px-3 py-1.5 text-xs font-medium rounded-lg border border-border text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+            onClick={isSubmitting ? cancelSubmit : onClose}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors",
+              "[&_svg]:w-3.5 [&_svg]:h-3.5",
+              description.trim() && !isSubmitting
+                ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                : "bg-muted text-muted-foreground cursor-not-allowed",
+            )}
+            onClick={handleSubmit}
+            disabled={!description.trim() || isSubmitting}
+          >
+            {isSubmitting ? <Loader2 className="animate-spin" /> : <Send />}
+            {isSubmitting ? "Submitting..." : "Submit"}
+          </button>
+        </div>
       </div>
     </div>
   );

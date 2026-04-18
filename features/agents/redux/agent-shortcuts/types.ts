@@ -3,6 +3,7 @@ import { VariableDefinition } from "@/features/agents/types/agent-definition.typ
 import { ResultDisplay } from "@/features/agents/utils/run-ui-utils";
 import { ShortcutContext } from "@/features/agents/utils/shortcut-context-utils";
 import type { DbRpcRow } from "@/types/supabase-rpc";
+import type { FieldFlags } from "@/features/agents/redux/shared/field-flags";
 
 export type { ResultDisplay, ShortcutContext };
 
@@ -278,15 +279,19 @@ export type ShortcutFieldSnapshot = {
 
 /**
  * Tracks which fields have been explicitly fetched from the DB.
- *   key in set  → field was fetched (null/empty IS the DB value)
- *   key not in set → field has not been fetched yet
+ *   key set to true → field was fetched (null/empty IS the DB value)
+ *   key absent     → field has not been fetched yet
+ *
+ * Uses FieldFlags (a Partial<Record<K, true>>) instead of Set<K> to keep the
+ * Redux state JSON-serializable for persistence and the upcoming shared
+ * agent-state package.
  */
-export type ShortcutLoadedFields = Set<keyof AgentShortcut>;
+export type ShortcutLoadedFields = FieldFlags<keyof AgentShortcut>;
 
 export interface AgentShortcutRecord extends AgentShortcut {
   // Dirty tracking
   _dirty: boolean;
-  _dirtyFields: Set<keyof AgentShortcut>;
+  _dirtyFields: FieldFlags<keyof AgentShortcut>;
   _fieldHistory: ShortcutFieldSnapshot;
 
   // Which fields have been explicitly fetched

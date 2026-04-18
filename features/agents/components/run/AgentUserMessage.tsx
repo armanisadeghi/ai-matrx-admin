@@ -16,6 +16,7 @@ import {
   Copy,
   Check,
   ChevronDown,
+  ChevronUp,
   Image as ImageIcon,
   Music,
   Video,
@@ -28,8 +29,19 @@ import {
   Database,
   Youtube,
   X,
+  Pencil,
+  RefreshCw,
+  ThumbsUp,
+  ThumbsDown,
+  MoreHorizontal,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectTurnByTurnId } from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.selectors";
@@ -449,6 +461,152 @@ function AttachmentChip({ block }: { block: NormalisedBlock }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Hover action bar
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface HoverActionsProps {
+  onCopy: (e: React.MouseEvent) => void;
+  isCopied: boolean;
+  isCollapsed: boolean;
+  shouldBeCollapsible: boolean;
+  onToggleCollapse: (e: React.MouseEvent) => void;
+}
+
+function HoverActions({
+  onCopy,
+  isCopied,
+  isCollapsed,
+  shouldBeCollapsible,
+  onToggleCollapse,
+}: HoverActionsProps) {
+  return (
+    <TooltipProvider delayDuration={300}>
+      <div className="flex items-center gap-0.5 px-1 py-0.5 rounded-md bg-background/90 border border-border shadow-sm backdrop-blur-sm">
+        {/* Copy — fully wired */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onCopy}
+              className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+            >
+              {isCopied ? (
+                <Check className="w-3.5 h-3.5 text-green-500" />
+              ) : (
+                <Copy className="w-3.5 h-3.5" />
+              )}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="top">
+            {isCopied ? "Copied!" : "Copy"}
+          </TooltipContent>
+        </Tooltip>
+
+        {/* Edit — placeholder */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+            >
+              <Pencil className="w-3.5 h-3.5" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="top">Edit (coming soon)</TooltipContent>
+        </Tooltip>
+
+        {/* Regenerate — placeholder */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="top">Regenerate (coming soon)</TooltipContent>
+        </Tooltip>
+
+        <div className="w-px h-3.5 bg-border mx-0.5" />
+
+        {/* Thumbs up — placeholder */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0 text-muted-foreground hover:text-green-500"
+            >
+              <ThumbsUp className="w-3.5 h-3.5" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="top">
+            Good response (coming soon)
+          </TooltipContent>
+        </Tooltip>
+
+        {/* Thumbs down — placeholder */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0 text-muted-foreground hover:text-red-500"
+            >
+              <ThumbsDown className="w-3.5 h-3.5" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="top">Bad response (coming soon)</TooltipContent>
+        </Tooltip>
+
+        <div className="w-px h-3.5 bg-border mx-0.5" />
+
+        {/* Collapse/expand — only shown when the message is collapsible */}
+        {shouldBeCollapsible && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onToggleCollapse}
+                className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+              >
+                {isCollapsed ? (
+                  <ChevronDown className="w-3.5 h-3.5" />
+                ) : (
+                  <ChevronUp className="w-3.5 h-3.5" />
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="top">
+              {isCollapsed ? "Expand" : "Collapse"}
+            </TooltipContent>
+          </Tooltip>
+        )}
+
+        {/* More — placeholder */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+            >
+              <MoreHorizontal className="w-3.5 h-3.5" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="top">More (coming soon)</TooltipContent>
+        </Tooltip>
+      </div>
+    </TooltipProvider>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Main component — collapsible bubble identical in style to PromptUserMessage
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -462,6 +620,7 @@ export function AgentUserMessage({
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [shouldBeCollapsible, setShouldBeCollapsible] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const measureRef = useRef<HTMLDivElement>(null);
   const previousContentRef = useRef<string>("");
 
@@ -501,83 +660,106 @@ export function AgentUserMessage({
     });
   };
 
+  const handleToggleCollapse = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (shouldBeCollapsible) setIsCollapsed((prev) => !prev);
+  };
+
   if (!hasContent) return null;
 
   const containerMargin = compact ? "" : "ml-12";
 
   return (
-    <div className={containerMargin}>
-      <div className="bg-muted border border-border rounded-lg">
-        {/* Header row — copy button + collapse indicator */}
+    <div
+      className={cn("group relative", containerMargin)}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {/* Top-center collapse chevron — only visible on hover when expanded */}
+      {shouldBeCollapsible && !isCollapsed && (
         <div
-          className="flex items-center justify-end px-2 pt-1 pb-0 cursor-pointer rounded-lg"
-          onClick={() => shouldBeCollapsible && setIsCollapsed(!isCollapsed)}
+          className={cn(
+            "absolute -top-3 left-1/2 -translate-x-1/2 z-10 transition-all duration-150",
+            isHovered ? "opacity-100" : "opacity-0 pointer-events-none",
+          )}
         >
-          <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleCopy}
-              className="h-6 w-6 p-0 text-muted-foreground"
-              title="Copy"
-            >
-              {isCopied ? (
-                <Check className="w-3.5 h-3.5" />
-              ) : (
-                <Copy className="w-3.5 h-3.5" />
-              )}
-            </Button>
-          </div>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsCollapsed(true);
+            }}
+            className="flex items-center justify-center h-5 w-5 rounded-full bg-background/90 border border-border shadow-sm text-muted-foreground hover:text-foreground transition-colors"
+            title="Collapse"
+          >
+            <ChevronUp className="w-3 h-3" />
+          </button>
         </div>
+      )}
 
-        {/* Content area */}
-        <div className="px-2 pb-2 relative">
-          <div className="space-y-1.5">
-            {/* Attachment chips row — inside the bubble */}
-            {normalisedBlocks.length > 0 && (
-              <div className="flex flex-wrap gap-1">
-                {normalisedBlocks.map((block) => (
-                  <AttachmentChip key={block.key} block={block} />
-                ))}
-              </div>
-            )}
+      <div className="bg-muted border border-border rounded-lg px-2 py-2">
+        <div className="space-y-1.5">
+          {/* Attachment chips */}
+          {normalisedBlocks.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {normalisedBlocks.map((block) => (
+                <AttachmentChip key={block.key} block={block} />
+              ))}
+            </div>
+          )}
 
-            {/* Text content */}
-            {trimmedText && (
-              <div className="relative">
-                <div
-                  ref={measureRef}
-                  className={cn(
-                    "text-xs text-foreground whitespace-pre-wrap break-words overflow-hidden transition-all duration-300",
-                    shouldBeCollapsible && isCollapsed && "max-h-12",
-                  )}
-                >
-                  {trimmedText}
-                </div>
-
-                {shouldBeCollapsible && isCollapsed && (
-                  <>
-                    <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-muted via-muted/60 to-transparent pointer-events-none" />
-                    <div className="absolute bottom-0 left-0 right-0 flex justify-center pb-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setIsCollapsed(false);
-                        }}
-                        className="h-6 w-6 p-0 rounded-full bg-muted/80 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-                        title="Expand message"
-                      >
-                        <ChevronDown className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </>
+          {/* Text content */}
+          {trimmedText && (
+            <div className="relative">
+              <div
+                ref={measureRef}
+                className={cn(
+                  "text-xs text-foreground whitespace-pre-wrap break-words overflow-hidden transition-all duration-300",
+                  shouldBeCollapsible && isCollapsed && "max-h-12",
                 )}
+              >
+                {trimmedText}
               </div>
-            )}
-          </div>
+
+              {shouldBeCollapsible && isCollapsed && (
+                <>
+                  <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-muted via-muted/60 to-transparent pointer-events-none" />
+                  <div className="absolute bottom-0 left-0 right-0 flex justify-center pb-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsCollapsed(false);
+                      }}
+                      className="h-6 w-6 p-0 rounded-full bg-muted/80 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                      title="Expand message"
+                    >
+                      <ChevronDown className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
         </div>
+      </div>
+
+      {/* Hover action bar — floats below the bubble */}
+      <div
+        className={cn(
+          "absolute -bottom-7 right-0 transition-all duration-150",
+          isHovered
+            ? "opacity-100 translate-y-0"
+            : "opacity-0 -translate-y-1 pointer-events-none",
+        )}
+      >
+        <HoverActions
+          onCopy={handleCopy}
+          isCopied={isCopied}
+          isCollapsed={isCollapsed}
+          shouldBeCollapsible={shouldBeCollapsible}
+          onToggleCollapse={handleToggleCollapse}
+        />
       </div>
     </div>
   );

@@ -3,6 +3,8 @@
 import { createSelector } from "reselect";
 import type { RootState } from "@/lib/redux/store";
 import type { AgentShortcut, AgentShortcutRecord } from "./types";
+import type { FieldFlags } from "../shared/field-flags";
+import { hasField } from "../shared/field-flags";
 
 // ---------------------------------------------------------------------------
 // Slice root
@@ -186,7 +188,7 @@ export const selectShortcutIsDirty = createSelector(
 
 export const selectShortcutDirtyFields = createSelector(
   [selectShortcutById],
-  (record): Set<keyof AgentShortcut> | undefined => record?._dirtyFields,
+  (record): FieldFlags<keyof AgentShortcut> | undefined => record?._dirtyFields,
 );
 
 export const selectShortcutFieldHistory = createSelector(
@@ -196,7 +198,7 @@ export const selectShortcutFieldHistory = createSelector(
 
 export const selectShortcutLoadedFields = createSelector(
   [selectShortcutById],
-  (record): Set<keyof AgentShortcut> | undefined => record?._loadedFields,
+  (record): FieldFlags<keyof AgentShortcut> | undefined => record?._loadedFields,
 );
 
 export const selectShortcutIsLoading = createSelector(
@@ -220,7 +222,8 @@ export const selectShortcutFieldIsLoaded = createSelector(
     selectShortcutById,
     (_state: RootState, _id: string, field: keyof AgentShortcut) => field,
   ],
-  (record, field): boolean => record?._loadedFields.has(field) ?? false,
+  (record, field): boolean =>
+    record ? hasField(record._loadedFields, field) : false,
 );
 
 /** Returns the original (pre-edit) value for a single dirty field. */

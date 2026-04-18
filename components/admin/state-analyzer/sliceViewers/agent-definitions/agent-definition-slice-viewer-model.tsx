@@ -15,8 +15,17 @@ export function safeFormat(value: unknown, space = 2): string {
   }
 }
 
-export function setToSortedArray<T>(s: Set<T>): T[] {
-  return [...s].sort((a, b) => String(a).localeCompare(String(b)));
+/**
+ * Flattens either a Set<T> or a FieldFlags-style object (Partial<Record<K, true>>)
+ * into a sorted string[] for display. Kept backwards-compatible with `Set` so
+ * other viewers can use the same helper if needed.
+ */
+export function setToSortedArray<T extends string>(
+  s: Set<T> | Partial<Record<T, true>> | undefined,
+): T[] {
+  if (!s) return [];
+  const keys = s instanceof Set ? [...s] : (Object.keys(s) as T[]);
+  return keys.sort((a, b) => String(a).localeCompare(String(b)));
 }
 
 export interface AgentDefVarRowData {

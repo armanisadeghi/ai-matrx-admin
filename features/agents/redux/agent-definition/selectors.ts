@@ -7,6 +7,8 @@ import type {
   AgentDefinitionRecord,
   AgentFetchStatus,
 } from "../../types/agent-definition.types";
+import type { FieldFlags } from "../shared/field-flags";
+import { hasField } from "../shared/field-flags";
 
 // ---------------------------------------------------------------------------
 // Slice root
@@ -163,8 +165,8 @@ export const selectAgentCanExecute = createSelector(
   (record): boolean => {
     if (!record) return false;
     return (
-      record._loadedFields.has("variableDefinitions") &&
-      record._loadedFields.has("contextSlots")
+      hasField(record._loadedFields, "variableDefinitions") &&
+      hasField(record._loadedFields, "contextSlots")
     );
   },
 );
@@ -188,8 +190,8 @@ export const selectAgentExecutionPayload = createSelector(
       };
     }
     const isReady =
-      record._loadedFields.has("variableDefinitions") &&
-      record._loadedFields.has("contextSlots");
+      hasField(record._loadedFields, "variableDefinitions") &&
+      hasField(record._loadedFields, "contextSlots");
     return {
       isReady,
       resolvedId: record.id,
@@ -229,7 +231,7 @@ export const selectAgentCustomExecutionPayload = createSelector(
         modelId: null,
       };
     }
-    const isReady = required.every((f) => record._loadedFields.has(f));
+    const isReady = required.every((f) => hasField(record._loadedFields, f));
     return {
       isReady,
       resolvedId: record.id,
@@ -426,7 +428,8 @@ export const selectAgentIsDirty = createSelector(
 
 export const selectAgentDirtyFields = createSelector(
   [selectAgentById],
-  (record): Set<keyof AgentDefinition> | undefined => record?._dirtyFields,
+  (record): FieldFlags<keyof AgentDefinition> | undefined =>
+    record?._dirtyFields,
 );
 
 export const selectAgentFieldHistory = createSelector(
@@ -436,7 +439,8 @@ export const selectAgentFieldHistory = createSelector(
 
 export const selectAgentLoadedFields = createSelector(
   [selectAgentById],
-  (record): Set<keyof AgentDefinition> | undefined => record?._loadedFields,
+  (record): FieldFlags<keyof AgentDefinition> | undefined =>
+    record?._loadedFields,
 );
 
 export const selectAgentIsLoading = createSelector(
@@ -484,7 +488,8 @@ export const selectAgentFieldIsLoaded = createSelector(
     selectAgentById,
     (_state: RootState, _id: string, field: keyof AgentDefinition) => field,
   ],
-  (record, field): boolean => record?._loadedFields.has(field) ?? false,
+  (record, field): boolean =>
+    record ? hasField(record._loadedFields, field) : false,
 );
 
 // ---------------------------------------------------------------------------
@@ -661,8 +666,8 @@ export const selectActiveAgentCanExecute = createSelector(
   (record): boolean => {
     if (!record) return false;
     return (
-      record._loadedFields.has("variableDefinitions") &&
-      record._loadedFields.has("contextSlots")
+      hasField(record._loadedFields, "variableDefinitions") &&
+      hasField(record._loadedFields, "contextSlots")
     );
   },
 );
@@ -681,8 +686,8 @@ export const selectActiveAgentExecutionPayload = createSelector(
       };
     }
     const isReady =
-      record._loadedFields.has("variableDefinitions") &&
-      record._loadedFields.has("contextSlots");
+      hasField(record._loadedFields, "variableDefinitions") &&
+      hasField(record._loadedFields, "contextSlots");
     return {
       isReady,
       resolvedId: record.id,

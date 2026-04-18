@@ -14,6 +14,13 @@ import {
   UNDO_MAX_BYTES,
   UNDO_COALESCE_MS,
 } from "../../types/agent-definition.types";
+import {
+  addField,
+  createFieldFlags,
+  fieldFlagsSize,
+  hasField,
+  removeField,
+} from "../shared/field-flags";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -65,9 +72,9 @@ function makeEmptyRecord(id: string): AgentDefinitionRecord {
     sharedByEmail: null,
 
     _dirty: false,
-    _dirtyFields: new Set(),
+    _dirtyFields: createFieldFlags<keyof AgentDefinition>(),
     _fieldHistory: {},
-    _loadedFields: new Set(),
+    _loadedFields: createFieldFlags<keyof AgentDefinition>(),
     _fetchStatus: null,
     _loading: false,
     _error: null,
@@ -143,7 +150,7 @@ function mergeAndTrack(
     if (normalized[key] !== undefined) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (record as any)[key] = normalized[key];
-      record._loadedFields.add(key);
+      addField(record._loadedFields, key);
     }
   });
 }
@@ -266,7 +273,7 @@ function applyFieldEdit<K extends keyof AgentDefinition>(
 ): void {
   const previousValue = record[field] as AgentDefinition[K];
 
-  if (!record._dirtyFields.has(field)) {
+  if (!hasField(record._dirtyFields, field)) {
     (record._fieldHistory as FieldSnapshot)[field] = previousValue;
   }
 
@@ -274,7 +281,7 @@ function applyFieldEdit<K extends keyof AgentDefinition>(
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (record as any)[field] = value;
-  record._dirtyFields.add(field);
+  addField(record._dirtyFields, field);
   record._dirty = true;
 }
 
@@ -284,7 +291,7 @@ function applyFieldEdit<K extends keyof AgentDefinition>(
  */
 function markRecordClean(record: AgentDefinitionRecord): void {
   record._dirty = false;
-  record._dirtyFields = new Set();
+  record._dirtyFields = createFieldFlags<keyof AgentDefinition>();
   record._fieldHistory = {};
   record._undoPast = [];
   record._undoFuture = [];
@@ -369,7 +376,7 @@ export const agentDefinitionSlice = createSlice({
         mergeAndTrack(existing, normalizedData);
         markRecordClean(existing);
         if (messagesWereNormalized) {
-          existing._dirtyFields.add("messages");
+          addField(existing._dirtyFields, "messages");
           existing._dirty = true;
         }
         applyFetchStatus(existing, status);
@@ -378,7 +385,7 @@ export const agentDefinitionSlice = createSlice({
         mergeAndTrack(record, normalizedData);
         markRecordClean(record);
         if (messagesWereNormalized) {
-          record._dirtyFields.add("messages");
+          addField(record._dirtyFields, "messages");
           record._dirty = true;
         }
         applyFetchStatus(record, status);
@@ -446,7 +453,7 @@ export const agentDefinitionSlice = createSlice({
         mergeAndTrack(record, full);
         markRecordClean(record);
         if (seedMessagesNormalized) {
-          record._dirtyFields.add("messages");
+          addField(record._dirtyFields, "messages");
           record._dirty = true;
         }
         applyFetchStatus(record, "full");
@@ -616,16 +623,16 @@ export const agentDefinitionSlice = createSlice({
     ) {
       const { id, field } = action.payload;
       const record = state.agents[id];
-      if (!record || !record._dirtyFields.has(field)) return;
+      if (!record || !hasField(record._dirtyFields, field)) return;
 
       const original = record._fieldHistory[field];
       if (original !== undefined) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (record as any)[field] = original;
       }
-      record._dirtyFields.delete(field);
+      removeField(record._dirtyFields, field);
       delete record._fieldHistory[field];
-      record._dirty = record._dirtyFields.size > 0;
+      record._dirty = fieldFlagsSize(record._dirtyFields) > 0;
     },
 
     /** Reset ALL dirty fields to their original values. No refetch needed. */
@@ -666,7 +673,7 @@ export const agentDefinitionSlice = createSlice({
           (record as any)[field] = value;
         }
       });
-      record._dirty = record._dirtyFields.size > 0;
+      record._dirty = fieldFlagsSize(record._dirtyFields) > 0;
     },
 
     // ── Undo / Redo ──────────────────────────────────────────────────────────
@@ -696,11 +703,11 @@ export const agentDefinitionSlice = createSlice({
       // Recalculate dirty state: compare against _fieldHistory (the clean baseline)
       const originalValue = record._fieldHistory[entry.field];
       if (originalValue !== undefined && entry.value === originalValue) {
-        record._dirtyFields.delete(entry.field);
-      } else if (!record._dirtyFields.has(entry.field)) {
-        record._dirtyFields.add(entry.field);
+        removeField(record._dirtyFields, entry.field);
+      } else if (!hasField(record._dirtyFields, entry.field)) {
+        addField(record._dirtyFields, entry.field);
       }
-      record._dirty = record._dirtyFields.size > 0;
+      record._dirty = fieldFlagsSize(record._dirtyFields) > 0;
     },
 
     /**
@@ -725,7 +732,7 @@ export const agentDefinitionSlice = createSlice({
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (record as any)[entry.field] = entry.value;
 
-      record._dirtyFields.add(entry.field);
+      addField(record._dirtyFields, entry.field);
       record._dirty = true;
     },
 
@@ -745,7 +752,7 @@ export const agentDefinitionSlice = createSlice({
     ) {
       const record = state.agents[action.payload.id];
       if (!record) return;
-      action.payload.fields.forEach((f) => record._loadedFields.add(f));
+      action.payload.fields.forEach((f) => addField(record._loadedFields, f));
     },
 
     // ── Fetch status ──────────────────────────────────────────────────────────

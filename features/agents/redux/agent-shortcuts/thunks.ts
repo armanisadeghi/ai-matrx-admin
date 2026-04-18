@@ -362,10 +362,12 @@ export const saveShortcut = createAsyncThunk<void, string, ThunkApi>(
     if (!record || !record._dirty) return;
 
     const dirtyPartial: Partial<AgentShortcut> = {};
-    record._dirtyFields.forEach((field) => {
+    for (const field of Object.keys(
+      record._dirtyFields,
+    ) as (keyof AgentShortcut)[]) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (dirtyPartial as any)[field] = record[field];
-    });
+    }
 
     const snapshot = { ...record._fieldHistory };
 

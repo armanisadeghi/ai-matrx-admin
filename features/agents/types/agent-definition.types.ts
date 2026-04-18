@@ -6,6 +6,7 @@ import {
 import { AgentDefinitionMessage } from "@/features/agents/types/agent-message-types";
 import { OutputSchema } from "@/features/agents/types/json-schema";
 import type { DbRpcRow } from "@/types/supabase-rpc";
+import type { FieldFlags } from "@/features/agents/redux/shared/field-flags";
 
 export type AgentType = "user" | "builtin";
 
@@ -402,10 +403,14 @@ export type FieldSnapshot = {
 
 /**
  * Tracks which fields have been explicitly fetched from the DB for this record.
- *   key in set  → field was fetched (null/empty IS the DB value)
- *   key not in set → field has not been fetched yet
+ *   key set to true → field was fetched (null/empty IS the DB value)
+ *   key absent     → field has not been fetched yet
+ *
+ * Shape is `Partial<Record<keyof AgentDefinition, true>>` (via FieldFlags) so
+ * the state remains JSON-serializable for Redux persistence and the upcoming
+ * shared agent-state package.
  */
-export type LoadedFields = Set<keyof AgentDefinition>;
+export type LoadedFields = FieldFlags<keyof AgentDefinition>;
 
 /**
  * A single entry in the per-agent undo/redo stack.
@@ -426,7 +431,7 @@ export const UNDO_COALESCE_MS = 600;
 
 export interface AgentDefinitionRecord extends AgentDefinition {
   _dirty: boolean;
-  _dirtyFields: Set<keyof AgentDefinition>;
+  _dirtyFields: FieldFlags<keyof AgentDefinition>;
   _fieldHistory: FieldSnapshot;
   _loadedFields: LoadedFields;
   _fetchStatus: AgentFetchStatus | null;

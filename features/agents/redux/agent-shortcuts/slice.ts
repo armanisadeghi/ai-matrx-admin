@@ -5,6 +5,13 @@ import type {
   AgentShortcutSliceState,
   ShortcutFieldSnapshot,
 } from "./types";
+import {
+  addField,
+  createFieldFlags,
+  fieldFlagsSize,
+  hasField,
+  removeField,
+} from "../shared/field-flags";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -45,9 +52,9 @@ function makeEmptyRecord(id: string): AgentShortcutRecord {
     updatedAt: "",
 
     _dirty: false,
-    _dirtyFields: new Set(),
+    _dirtyFields: createFieldFlags<keyof AgentShortcut>(),
     _fieldHistory: {},
-    _loadedFields: new Set(),
+    _loadedFields: createFieldFlags<keyof AgentShortcut>(),
     _loading: false,
     _error: null,
   };
@@ -65,7 +72,7 @@ function mergeAndTrack(
     if (partial[key] !== undefined) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (record as any)[key] = partial[key];
-      record._loadedFields.add(key);
+      addField(record._loadedFields, key);
     }
   });
 }
@@ -79,14 +86,14 @@ function applyFieldEdit<K extends keyof AgentShortcut>(
   field: K,
   value: AgentShortcut[K],
 ): void {
-  if (!record._dirtyFields.has(field)) {
+  if (!hasField(record._dirtyFields, field)) {
     (record._fieldHistory as ShortcutFieldSnapshot)[field] = record[
       field
     ] as AgentShortcut[K];
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (record as any)[field] = value;
-  record._dirtyFields.add(field);
+  addField(record._dirtyFields, field);
   record._dirty = true;
 }
 
@@ -96,7 +103,7 @@ function applyFieldEdit<K extends keyof AgentShortcut>(
  */
 function markRecordClean(record: AgentShortcutRecord): void {
   record._dirty = false;
-  record._dirtyFields = new Set();
+  record._dirtyFields = createFieldFlags<keyof AgentShortcut>();
   record._fieldHistory = {};
 }
 
@@ -234,16 +241,16 @@ export const agentShortcutSlice = createSlice({
     ) {
       const { id, field } = action.payload;
       const record = state.shortcuts[id];
-      if (!record || !record._dirtyFields.has(field)) return;
+      if (!record || !hasField(record._dirtyFields, field)) return;
 
       const original = record._fieldHistory[field];
       if (original !== undefined) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (record as any)[field] = original;
       }
-      record._dirtyFields.delete(field);
+      removeField(record._dirtyFields, field);
       delete record._fieldHistory[field];
-      record._dirty = record._dirtyFields.size > 0;
+      record._dirty = fieldFlagsSize(record._dirtyFields) > 0;
     },
 
     /** Reset ALL dirty fields to their original values. No refetch needed. */
@@ -284,7 +291,7 @@ export const agentShortcutSlice = createSlice({
           (record as any)[field] = value;
         }
       });
-      record._dirty = record._dirtyFields.size > 0;
+      record._dirty = fieldFlagsSize(record._dirtyFields) > 0;
     },
 
     // ── Explicitly mark fields as loaded ─────────────────────────────────────
@@ -295,7 +302,7 @@ export const agentShortcutSlice = createSlice({
     ) {
       const record = state.shortcuts[action.payload.id];
       if (!record) return;
-      action.payload.fields.forEach((f) => record._loadedFields.add(f));
+      action.payload.fields.forEach((f) => addField(record._loadedFields, f));
     },
 
     // ── Per-record async state ────────────────────────────────────────────────

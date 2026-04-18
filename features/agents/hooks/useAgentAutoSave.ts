@@ -56,11 +56,11 @@ export function useAgentAutoSave(agentId: string) {
       try {
         const snapshot: Record<string, unknown> = { _dirty: true };
         if (record._dirtyFields) {
-          record._dirtyFields.forEach((field) => {
+          for (const field of Object.keys(record._dirtyFields)) {
             snapshot[field] = (record as unknown as Record<string, unknown>)[
               field
             ];
-          });
+          }
         }
         localStorage.setItem(storageKey, JSON.stringify(snapshot));
       } catch {

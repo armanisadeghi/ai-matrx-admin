@@ -430,10 +430,12 @@ export const saveAgent = createAsyncThunk<void, string, ThunkApi>(
     if (!record || !record._dirty) return;
 
     const dirtyPartial: Partial<AgentDefinition> = {};
-    record._dirtyFields.forEach((field) => {
+    for (const field of Object.keys(
+      record._dirtyFields,
+    ) as (keyof AgentDefinition)[]) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (dirtyPartial as any)[field] = record[field];
-    });
+    }
 
     const snapshot = { ...record._fieldHistory };
 
