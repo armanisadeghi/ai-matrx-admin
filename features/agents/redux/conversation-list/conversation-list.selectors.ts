@@ -5,12 +5,13 @@ import type { RootState } from "@/lib/redux/store";
 import type {
   ConversationListItem,
   ConversationListAgentCacheEntry,
+  ConversationListLoadStatus,
 } from "./conversation-list.types";
-import { agentConversationsCacheKey } from "./conversation-list.types";
 import {
   CONVERSATION_LIST_TTL_MS,
-  type ConversationListLoadStatus,
-} from "./conversation-list.slice";
+  conversationListCacheKey,
+} from "./conversation-list.types";
+import { selectAgentIdFromInstance } from "@/features/agents/redux/execution-system/conversations/conversations.selectors";
 
 const EMPTY_ITEMS: ConversationListItem[] = [];
 const EMPTY_IDS: string[] = [];
@@ -79,7 +80,7 @@ export const selectAgentConversationsCache =
   (agentId: string, versionFilter: number | null) =>
   (state: RootState): ConversationListAgentCacheEntry | undefined =>
     state.conversationList.agentCaches[
-      agentConversationsCacheKey(agentId, versionFilter)
+      conversationListCacheKey(agentId, versionFilter)
     ];
 
 /**
@@ -90,7 +91,7 @@ export function makeSelectAgentConversationList(
   agentId: string,
   versionFilter: number | null,
 ) {
-  const key = agentConversationsCacheKey(agentId, versionFilter);
+  const key = conversationListCacheKey(agentId, versionFilter);
   return createSelector(
     [(state: RootState) => state.conversationList],
     (
@@ -129,5 +130,42 @@ export const selectAgentConversationIds =
   (agentId: string, versionFilter: number | null) =>
   (state: RootState): string[] =>
     state.conversationList.agentCaches[
-      agentConversationsCacheKey(agentId, versionFilter)
+      conversationListCacheKey(agentId, versionFilter)
     ]?.conversationIds ?? EMPTY_IDS;
+
+/**
+ * Drop-in replacement for the legacy `makeSelectAgentConversations` selector
+ * from `features/agents/redux/agent-conversations/...`. Kept under the old
+ * name so consumer sites migrate via import-path rewrite only.
+ */
+export const makeSelectAgentConversations = makeSelectAgentConversationList;
+
+/**
+ * Drop-in replacement for the legacy `selectAgentConversationsEntry` selector.
+ * Returns the full cache entry or undefined. Accepts canonical agx_agent.id.
+ */
+export function selectAgentConversationsEntry(
+  state: RootState,
+  agentId: string,
+  versionFilter: number | null,
+) {
+  return state.conversationList.agentCaches[
+    conversationListCacheKey(agentId, versionFilter)
+  ];
+}
+
+/**
+ * Drop-in replacement for `selectAgentConversationsEntryForInstance`. Resolves
+ * instance → agent map key → canonical agent id, then reads the cache.
+ */
+export function selectAgentConversationsEntryForInstance(
+  state: RootState,
+  instanceId: string,
+  versionFilter: number | null,
+) {
+  const mapKey = selectAgentIdFromInstance(instanceId)(state);
+  if (!mapKey) return undefined;
+  const agent = state.agentDefinition.agents?.[mapKey];
+  const canonicalAgentId = agent?.parentAgentId ?? agent?.id ?? mapKey;
+  return selectAgentConversationsEntry(state, canonicalAgentId, versionFilter);
+}

@@ -31,10 +31,19 @@ import {
 } from "@/components/api-test-config";
 import { cn } from "@/lib/utils";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import {
-  chatConversationsActions,
-  loadConversationHistory,
-} from "@/features/agents/redux/old/OLD-cx-message-actions";
+// Legacy agent demo — stubbed during Redux unification. Demo still renders
+// but chatConversations sync is inert (chat slice removed).
+import { createAsyncThunk } from "@reduxjs/toolkit";
+const chatConversationsActions = {
+  startSession: (_payload: unknown) => ({ type: "noop" as const, payload: _payload }),
+  addMessage: (_payload: unknown) => ({ type: "noop" as const, payload: _payload }),
+  updateMessage: (_payload: unknown) => ({ type: "noop" as const, payload: _payload }),
+  setSessionStatus: (_payload: unknown) => ({ type: "noop" as const, payload: _payload }),
+};
+const loadConversationHistory = createAsyncThunk(
+  "legacy/loadConversationHistory",
+  async (_payload: unknown) => undefined,
+);
 import { AgentWireFoldComparison } from "./AgentWireFoldComparison";
 import { AgentCanonicalDbPanel } from "./AgentCanonicalDbPanel";
 

@@ -508,6 +508,47 @@
         }
       }
     },
+    "/ai/conversation/{conversation_id}/warm": {
+      "post": {
+        "tags": [
+          "AI"
+        ],
+        "summary": "Warm Conversation",
+        "description": "Pre-load a conversation into the in-memory cache.\n\nFire-and-forget from the client's perspective — any error is logged\nbut never returned as a failure. The sole purpose is to shave latency\noff the next real request.",
+        "operationId": "warm_conversation_ai_conversation__conversation_id__warm_post",
+        "parameters": [
+          {
+            "name": "conversation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Conversation Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/ai/conversations/{conversation_id}/warm": {
       "post": {
         "tags": [
@@ -864,6 +905,66 @@
         }
       }
     },
+    "/ai/agent/{agent_id}": {
+      "post": {
+        "tags": [
+          "AI"
+        ],
+        "summary": "Start Agent",
+        "operationId": "start_agent_ai_agent__agent_id__post",
+        "parameters": [
+          {
+            "name": "agent_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Agent Id"
+            }
+          },
+          {
+            "name": "is_version",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Is Version"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AgentStartRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/ai/agents/{agent_id}": {
       "post": {
         "tags": [
@@ -1158,6 +1259,45 @@
         }
       }
     },
+    "/ai/manual": {
+      "post": {
+        "tags": [
+          "AI"
+        ],
+        "summary": "Chat",
+        "operationId": "chat_ai_manual_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/ai/chat": {
       "post": {
         "tags": [
@@ -1174,6 +1314,57 @@
             }
           },
           "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ai/conversation/{conversation_id}": {
+      "post": {
+        "tags": [
+          "AI"
+        ],
+        "summary": "Continue Conversation",
+        "description": "Continue an existing conversation.\n\nResolves the UnifiedConfig from cache or DB via ConversationResolver,\nappends the new user_input, then hands off to the AI engine.\n\nOptional fields (zero impact when absent):\n- ``client_tools``: tool names the client will execute instead of the server.\n- ``ide_state``: per-turn ephemeral editor state (selected_text, diagnostics) appended\n  to user_input for this turn.  Stable session fields (git, workspace, active_file)\n  are ignored here — they were set as variables on the first agent turn.",
+        "operationId": "continue_conversation_ai_conversation__conversation_id__post",
+        "parameters": [
+          {
+            "name": "conversation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Conversation Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConversationContinueRequest"
+              }
+            }
+          }
         },
         "responses": {
           "200": {
@@ -1222,6 +1413,57 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/ConversationContinueRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ai/conversation/{conversation_id}/tool_results": {
+      "post": {
+        "tags": [
+          "AI"
+        ],
+        "summary": "Submit Tool Results",
+        "description": "Submit client-side tool execution results back to the suspended AI loop.\n\nCalled by the VSCode extension (or any other client-side executor) after it\nhas executed one or more client-delegated tool calls.  Each ``call_id`` in\nthe request body must match a ``tool_delegated`` event that was previously\nstreamed to the client.\n\nThe AI loop is automatically unblocked and continues with the provided\nresults as if the tools had been executed server-side.",
+        "operationId": "submit_tool_results_ai_conversation__conversation_id__tool_results_post",
+        "parameters": [
+          {
+            "name": "conversation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Conversation Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ToolResultsRequest"
               }
             }
           }
@@ -5159,6 +5401,254 @@
         }
       }
     },
+    "/cx/conversations/{conversation_id}/invalidate-cache": {
+      "post": {
+        "tags": [
+          "Conversations"
+        ],
+        "summary": "Invalidate Conversation Cache",
+        "description": "Drop every cached artifact for a conversation.\n\nCalled after the client has mutated ``cx_message`` / ``cx_tool_call``\n/ ``cx_media`` directly via Supabase, so the server rebuilds the\n``Agent`` from fresh DB rows on the next AI call. Clears BOTH the\nper-conversation ``AgentCache`` entry AND the ORM ``StateManager``\ncaches for every ``Cx*`` model (StateManager has no FK cascade).",
+        "operationId": "invalidate_conversation_cache_cx_conversations__conversation_id__invalidate_cache_post",
+        "parameters": [
+          {
+            "name": "conversation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Conversation Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cx/conversations/{conversation_id}/messages/{message_id}": {
+      "patch": {
+        "tags": [
+          "Conversations"
+        ],
+        "summary": "Update Message",
+        "description": "Edit a single ``cx_message`` row in place.\n\nUse for lightweight edits where the caller does NOT want to fork\nhistory — e.g. redacting a message, fixing a typo, flipping\nvisibility flags. After the write, both cache layers are busted so\nthe next AI call rebuilds the conversation from fresh rows.",
+        "operationId": "update_message_cx_conversations__conversation_id__messages__message_id__patch",
+        "parameters": [
+          {
+            "name": "conversation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Conversation Id"
+            }
+          },
+          {
+            "name": "message_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Message Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MessageUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Conversations"
+        ],
+        "summary": "Delete Message",
+        "description": "Delete a single ``cx_message`` row.\n\nHard delete — the caller is responsible for understanding that this\nremoves the row from history permanently. After the write, both\ncache layers are busted.",
+        "operationId": "delete_message_cx_conversations__conversation_id__messages__message_id__delete",
+        "parameters": [
+          {
+            "name": "conversation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Conversation Id"
+            }
+          },
+          {
+            "name": "message_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Message Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cx/conversations/{conversation_id}/messages": {
+      "delete": {
+        "tags": [
+          "Conversations"
+        ],
+        "summary": "Delete All Messages",
+        "description": "Hard-delete every message in a conversation (\"clear history\").\n\nThe ``cx_conversation`` row itself is left alone — only its messages\ngo away. Both cache layers are busted after the writes finish.",
+        "operationId": "delete_all_messages_cx_conversations__conversation_id__messages_delete",
+        "parameters": [
+          {
+            "name": "conversation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Conversation Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cx/conversations/{conversation_id}/fork": {
+      "post": {
+        "tags": [
+          "Conversations"
+        ],
+        "summary": "Fork Conversation",
+        "description": "Create a new conversation branched from an existing one.\n\nCopies the source ``cx_conversation`` (as a new row with a fresh UUID\nand ``forked_from_id`` pointing back) and every ``cx_message`` up to\n``up_to_position``. The source is left untouched. Message IDs on the\nfork are freshly generated so the two conversations remain\nindependently editable.",
+        "operationId": "fork_conversation_cx_conversations__conversation_id__fork_post",
+        "parameters": [
+          {
+            "name": "conversation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Conversation Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/ForkRequest"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Request"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/media/podcast/upload-image": {
       "post": {
         "tags": [
@@ -6909,6 +7399,16 @@
             "type": "boolean",
             "title": "Block Mode",
             "default": false
+          },
+          "cache_bypass": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CacheBypass"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -7186,6 +7686,33 @@
           "file"
         ],
         "title": "Body_upload_podcast_video_media_podcast_upload_video_post"
+      },
+      "CacheBypass": {
+        "properties": {
+          "conversation": {
+            "type": "boolean",
+            "title": "Conversation",
+            "default": false
+          },
+          "agent": {
+            "type": "boolean",
+            "title": "Agent",
+            "default": false
+          },
+          "tools": {
+            "type": "boolean",
+            "title": "Tools",
+            "default": false
+          },
+          "models": {
+            "type": "boolean",
+            "title": "Models",
+            "default": false
+          }
+        },
+        "type": "object",
+        "title": "CacheBypass",
+        "description": "Opt-in cache invalidation flags attached to an AI request body.\n\nAll fields default to ``False`` — callers pay nothing for the feature\nwhen they do not use it.\n\nconversation\n    Bust ``AgentCache`` for the current conversation AND flush every\n    ``Cx*`` model in the ORM ``StateManager``. Required when the\n    caller has written to ``cx_message`` / ``cx_tool_call`` /\n    ``cx_media`` directly (e.g. via Supabase client).\nagent\n    Flush ``AgxAgent`` and ``AgxVersion`` caches in the ORM\n    ``StateManager``. Required after the agent definition has been\n    edited.\ntools\n    Flush the ``Tools`` model cache in the ORM ``StateManager``.\n    Required after a tool definition has been edited.\nmodels\n    Flush the ``AiModel`` cache AND rebuild the standalone\n    ``_pricing_lookup_cache``. Required after an AI model row has\n    been added / edited / repriced."
       },
       "CategorizeRequest": {
         "properties": {
@@ -7948,6 +8475,16 @@
             "title": "Block Mode",
             "default": false
           },
+          "cache_bypass": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CacheBypass"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "metadata": {
             "anyOf": [
               {
@@ -8216,6 +8753,16 @@
             "type": "boolean",
             "title": "Block Mode",
             "default": false
+          },
+          "cache_bypass": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CacheBypass"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -8455,6 +9002,35 @@
         },
         "type": "object",
         "title": "ExtractTextRequest"
+      },
+      "ForkRequest": {
+        "properties": {
+          "up_to_position": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Up To Position"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          }
+        },
+        "type": "object",
+        "title": "ForkRequest",
+        "description": "Payload for forking a conversation.\n\n``up_to_position`` — when set, only messages with ``position`` less\nthan or equal to this value are copied to the fork. Callers use this\nto branch mid-conversation. ``None`` copies every message.\n\n``title`` — optional title for the forked conversation. Defaults to\nthe source conversation's title prefixed with ``\"Fork: \"``."
       },
       "HTTPValidationError": {
         "properties": {
@@ -9311,6 +9887,84 @@
         },
         "type": "object",
         "title": "MediaUpdate"
+      },
+      "MessageUpdate": {
+        "properties": {
+          "content": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          },
+          "is_visible_to_user": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Visible To User"
+          },
+          "is_visible_to_model": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Visible To Model"
+          },
+          "metadata": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metadata"
+          }
+        },
+        "type": "object",
+        "title": "MessageUpdate",
+        "description": "Fields the client can edit on an existing ``cx_message`` row.\n\nEvery field is optional — only fields the caller actually sets are\nwritten to the DB. ``content`` accepts the same structured JSON the\nserver would have written (list of parts) — callers that want to\nedit a simple text message should still send the list form."
       },
       "PdfPipelineOptions": {
         "properties": {

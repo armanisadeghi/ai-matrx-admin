@@ -11,15 +11,18 @@ import {
   toggleDebugMode,
   selectIsDebugMode,
 } from "@/lib/redux/slices/adminDebugSlice";
-import { chatConversationsActions } from "@/features/agents/redux/old/OLD-cx-message-actions/slice";
-import {
-  selectShowDebugInfo,
-  selectShowSystemMessages,
-  selectUIState,
-  selectSession,
-  selectMessages,
-  selectResources,
-} from "@/features/agents/redux/old/OLD-cx-message-actions/selectors";
+// Legacy chat debug window — reads removed `chatConversations` slice. Debug
+// UI is non-critical; stubbed to render empty while chat is rebuilt.
+import type { RootState } from "@/lib/redux/store";
+const chatConversationsActions = {
+  updateUIState: (_payload: unknown) => ({ type: "noop" as const, payload: _payload }),
+};
+const selectShowDebugInfo = (_state: RootState, _sessionId: string): boolean => false;
+const selectShowSystemMessages = (_state: RootState, _sessionId: string): boolean => false;
+const selectUIState = (_state: RootState, _sessionId: string): Record<string, unknown> | undefined => undefined;
+const selectSession = (_state: RootState, _sessionId: string): Record<string, unknown> | undefined => undefined;
+const selectMessages = (_state: RootState, _sessionId: string): unknown[] => [];
+const selectResources = (_state: RootState, _sessionId: string): unknown[] => [];
 import { WindowPanel } from "../WindowPanel";
 
 // ─── Window inner ─────────────────────────────────────────────────────────────

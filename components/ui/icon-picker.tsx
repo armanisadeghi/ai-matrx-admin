@@ -1,20 +1,21 @@
-'use client';
+"use client";
 
-import React, { useState, useMemo } from 'react';
-import * as LucideIcons from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Badge } from '@/components/ui/badge';
+import React, { useState, useMemo } from "react";
+import * as LucideIcons from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Search, Check, X } from 'lucide-react';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/dialog";
+import { Search, Check, X } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { isLucideModuleIconExport } from "@/utils/icons/lucide-module-icon";
 
 interface IconPickerProps {
   value: string;
@@ -29,25 +30,39 @@ interface IconValidatorProps {
   className?: string;
 }
 
-// Validate if icon exists in Lucide
+// Validate if icon exists in Lucide (icons are forward-ref objects in current lucide-react)
 export const validateIcon = (iconName: string): boolean => {
-  return Boolean((LucideIcons as any)[iconName]);
+  const ns = LucideIcons as Record<string, unknown> | undefined;
+  if (ns == null) {
+    return false;
+  }
+  return isLucideModuleIconExport(iconName, ns[iconName]);
 };
 
 // Get all available Lucide icon names
 const getAllIconNames = (): string[] => {
-  return Object.keys(LucideIcons).filter(
-    (key) => 
-      key !== 'default' && 
-      key !== 'createLucideIcon' &&
-      typeof (LucideIcons as any)[key] === 'function'
-  );
+  try {
+    const ns = LucideIcons as Record<string, unknown> | undefined;
+    if (ns == null || typeof ns !== "object") {
+      return [];
+    }
+    return Object.keys(ns).filter((key) =>
+      isLucideModuleIconExport(key, ns[key]),
+    );
+  } catch {
+    return [];
+  }
 };
 
 /**
  * Icon Validator - Inline component to validate and preview an icon name
  */
-export function IconValidator({ iconName, onTest, showPreview = true, className }: IconValidatorProps) {
+export function IconValidator({
+  iconName,
+  onTest,
+  showPreview = true,
+  className,
+}: IconValidatorProps) {
   const [validated, setValidated] = useState<boolean | null>(null);
 
   const handleTest = () => {
@@ -73,11 +88,11 @@ export function IconValidator({ iconName, onTest, showPreview = true, className 
   const Icon = validated && iconName ? (LucideIcons as any)[iconName] : null;
 
   return (
-    <div className={cn('space-y-2', className)}>
+    <div className={cn("space-y-2", className)}>
       <div className="flex items-center gap-2">
         {validated !== null && (
-          <Badge 
-            variant={validated ? 'default' : 'destructive'}
+          <Badge
+            variant={validated ? "default" : "destructive"}
             className="text-xs"
           >
             {validated ? (
@@ -103,7 +118,7 @@ export function IconValidator({ iconName, onTest, showPreview = true, className 
           Test Icon
         </Button>
       </div>
-      
+
       {showPreview && validated && Icon && (
         <div className="p-3 bg-muted rounded-md border flex items-center justify-center">
           <Icon className="h-8 w-8" />
@@ -118,32 +133,36 @@ export function IconValidator({ iconName, onTest, showPreview = true, className 
  */
 export function IconPicker({ value, onChange, className }: IconPickerProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedIcon, setSelectedIcon] = useState(value);
 
-  const allIcons = useMemo(() => getAllIconNames(), []);
+  const allIcons = useMemo((): string[] => {
+    const names = getAllIconNames();
+    return Array.isArray(names) ? names : [];
+  }, []);
 
-  const filteredIcons = useMemo(() => {
-    if (!searchQuery) return allIcons;
-    
+  const filteredIcons = useMemo((): string[] => {
+    const list = allIcons;
+    if (!searchQuery.trim()) {
+      return list;
+    }
+
     const query = searchQuery.toLowerCase();
-    return allIcons.filter(name => 
-      name.toLowerCase().includes(query)
-    );
+    return list.filter((name) => name.toLowerCase().includes(query));
   }, [allIcons, searchQuery]);
 
   const handleSelect = (iconName: string) => {
     setSelectedIcon(iconName);
     onChange(iconName);
     setIsOpen(false);
-    setSearchQuery('');
+    setSearchQuery("");
   };
 
   const CurrentIcon = value ? (LucideIcons as any)[value] : null;
 
   return (
     <>
-      <div className={cn('flex items-center gap-2', className)}>
+      <div className={cn("flex items-center gap-2", className)}>
         <Button
           type="button"
           variant="outline"
@@ -190,7 +209,7 @@ export function IconPicker({ value, onChange, className }: IconPickerProps) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setSearchQuery('')}
+                  onClick={() => setSearchQuery("")}
                 >
                   <X className="h-3 w-3 mr-1" />
                   Clear
@@ -201,8 +220,17 @@ export function IconPicker({ value, onChange, className }: IconPickerProps) {
             <ScrollArea className="h-[400px] border rounded-md">
               <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 gap-2 p-4">
                 {filteredIcons.map((iconName) => {
-                  const Icon = (LucideIcons as any)[iconName];
+                  const Icon = (
+                    LucideIcons as unknown as Record<
+                      string,
+                      React.ComponentType<{ className?: string }>
+                    >
+                  )[iconName];
                   const isSelected = iconName === selectedIcon;
+
+                  if (!Icon) {
+                    return null;
+                  }
 
                   return (
                     <button
@@ -210,10 +238,10 @@ export function IconPicker({ value, onChange, className }: IconPickerProps) {
                       type="button"
                       onClick={() => handleSelect(iconName)}
                       className={cn(
-                        'flex flex-col items-center justify-center p-3 rounded-md border-2 transition-all hover:bg-accent',
-                        isSelected 
-                          ? 'border-primary bg-primary/10' 
-                          : 'border-transparent'
+                        "flex flex-col items-center justify-center p-3 rounded-md border-2 transition-all hover:bg-accent",
+                        isSelected
+                          ? "border-primary bg-primary/10"
+                          : "border-transparent",
                       )}
                       title={iconName}
                     >
@@ -246,23 +274,19 @@ interface IconInputProps {
   className?: string;
 }
 
-export function IconInput({ 
-  value, 
-  onChange, 
-  label = 'Icon Name',
-  placeholder = 'Folder',
+export function IconInput({
+  value,
+  onChange,
+  label = "Icon Name",
+  placeholder = "Folder",
   showPicker = true,
   showValidator = true,
-  className 
+  className,
 }: IconInputProps) {
   return (
-    <div className={cn('space-y-2', className)}>
-      {label && (
-        <label className="block text-sm font-medium">
-          {label}
-        </label>
-      )}
-      
+    <div className={cn("space-y-2", className)}>
+      {label && <label className="block text-sm font-medium">{label}</label>}
+
       <div className="flex gap-2">
         <Input
           value={value}
@@ -270,14 +294,10 @@ export function IconInput({
           placeholder={placeholder}
           className="flex-1"
         />
-        {showPicker && (
-          <IconPicker value={value} onChange={onChange} />
-        )}
+        {showPicker && <IconPicker value={value} onChange={onChange} />}
       </div>
 
-      {showValidator && value && (
-        <IconValidator iconName={value} showPreview />
-      )}
+      {showValidator && value && <IconValidator iconName={value} showPreview />}
 
       <p className="text-xs text-muted-foreground">
         Enter a Lucide React icon name or use the picker
@@ -285,4 +305,3 @@ export function IconInput({
     </div>
   );
 }
-

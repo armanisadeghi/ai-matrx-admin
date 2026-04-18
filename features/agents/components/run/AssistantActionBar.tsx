@@ -26,13 +26,12 @@ import {
 import { SpeakerButton } from "@/features/tts/components/SpeakerButton";
 import { copyToClipboard } from "@/components/matrx/buttons/markdown-copy-utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { messageActionsActions } from "@/features/agents/redux/old/OLD-cx-message-actions/messageActionsSlice";
+import { messageActionsActions } from "@/features/agents/redux/execution-system/message-actions";
 import {
   openFullScreenEditor,
   openContentHistory,
   closeOverlay,
 } from "@/lib/redux/slices/overlaySlice";
-import { chatConversationsActions } from "@/features/agents/redux/old/OLD-cx-message-actions/slice";
 import { selectAccumulatedText } from "../../redux/execution-system/active-requests/active-requests.selectors";
 
 const ConversationMessageOptionsMenu = lazy(
@@ -136,16 +135,12 @@ export function AssistantActionBar({
     dispatch(
       openFullScreenEditor({
         content,
-        onSave: (newContent: string) => {
-          if (sessionId && messageId) {
-            dispatch(
-              chatConversationsActions.updateMessage({
-                sessionId,
-                messageId,
-                updates: { content: newContent },
-              }),
-            );
-          }
+        onSave: (_newContent: string) => {
+          // TODO: Re-wire edit to dispatch updateMessageRecord on the new
+          // messages slice once the Runner plumbs conversationId + messageId
+          // through. The legacy session-keyed updateMessage path was removed
+          // as part of the Redux unification — rewriting here was out of
+          // scope when chat was deprecated.
           dispatch(closeOverlay({ overlayId: "fullScreenEditor" }));
         },
         messageId,

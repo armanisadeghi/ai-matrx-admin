@@ -9,9 +9,9 @@ import { Loader2, ChevronRight, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectAgentById } from "@/features/agents/redux/agent-definition/selectors";
-import { fetchAgentConversations } from "@/features/agents/redux/agent-conversations/agent-conversations.thunks";
-import { makeSelectAgentConversations } from "@/features/agents/redux/agent-conversations/agent-conversations.selectors";
-import type { AgentConversationListItem } from "@/features/agents/redux/agent-conversations/agent-conversations.types";
+import { fetchAgentConversations } from "@/features/agents/redux/conversation-list";
+import { makeSelectAgentConversations } from "@/features/agents/redux/conversation-list";
+import type { AgentConversationListItem } from "@/features/agents/redux/conversation-list";
 
 interface AgentRunSidebarMenuProps {
   expanded: boolean;

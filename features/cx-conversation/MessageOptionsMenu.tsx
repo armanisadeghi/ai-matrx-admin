@@ -4,11 +4,26 @@ import React, { useState, useEffect } from "react";
 import AdvancedMenu from "@/components/official/AdvancedMenu";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/slices/userSlice";
-import { selectMessageActionInstance } from "@/features/agents/redux/old/OLD-cx-message-actions/messageActionsSlice";
-import {
-  selectMessageHasUnsavedChanges,
-  selectMessageHasHistory,
-} from "@/features/agents/redux/old/OLD-cx-message-actions/selectors";
+import { selectMessageActionInstance } from "@/features/agents/redux/execution-system/message-actions";
+
+// ── Legacy selectors stubbed during Redux unification ────────────────────────
+// selectMessageHasUnsavedChanges / selectMessageHasHistory used to read the
+// legacy `chatConversations.sessions[sid].messages[]` cache. That cache is
+// gone; per-message unsaved/history state now lives on the DB-faithful
+// `messages` slice (status: "edited", contentHistory). cx-conversation is
+// slated for a full rewrite, so rather than rewire a dying feature we stub
+// these as `false` — the UI falls back to hiding the unsaved indicator and
+// history button until chat is rebuilt on the new slices.
+const selectMessageHasUnsavedChanges = (
+  _state: unknown,
+  _sessionId: string,
+  _messageId: string,
+): boolean => false;
+const selectMessageHasHistory = (
+  _state: unknown,
+  _sessionId: string,
+  _messageId: string,
+): boolean => false;
 import { useCartesiaSpeaker } from "@/features/tts/hooks/useCartesiaSpeaker";
 import {
   getMessageActions,

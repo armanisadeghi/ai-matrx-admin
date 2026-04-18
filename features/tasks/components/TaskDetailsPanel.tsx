@@ -147,15 +147,17 @@ export default function TaskDetailsPanel({
 
   // Load comments when task changes
   useEffect(() => {
-    const loadComments = async () => {
-      setIsLoadingComments(true);
-      const taskComments = await getTaskComments(task.id);
-      setComments(taskComments);
+    let cancelled = false;
+    setIsLoadingComments(true);
+    taskService.getTaskComments(task.id).then((data) => {
+      if (cancelled) return;
+      setComments(data);
       setIsLoadingComments(false);
+    });
+    return () => {
+      cancelled = true;
     };
-
-    loadComments();
-  }, [task.id, getTaskComments]);
+  }, [task.id]);
 
   const handleTitleChange = (newTitle: string) => {
     setTitle(newTitle);

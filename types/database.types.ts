@@ -17140,6 +17140,10 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      cx_fork_conversation: {
+        Args: { p_at_position: number; p_conversation_id: string }
+        Returns: Json
+      }
       cx_message_edit: {
         Args: { p_message_id: string; p_new_content: Json }
         Returns: {
@@ -17165,6 +17169,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      cx_soft_delete_conversation: {
+        Args: { p_conversation_id: string }
+        Returns: boolean
       }
       decrypt_mcp_token: { Args: { p_encrypted: string }; Returns: string }
       delete_arg: { Args: { p_arg_id: string }; Returns: undefined }

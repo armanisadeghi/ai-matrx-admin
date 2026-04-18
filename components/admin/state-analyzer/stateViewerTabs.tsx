@@ -130,8 +130,7 @@ const REGISTERED_SLICE_KEYS = new Set<string>([
   "globalCache",
   "ui",
   "storage",
-  "activeChat",
-  "chatConversations",
+  "conversationList",
   "messageActions",
   "socketConnections",
   "socketResponse",
@@ -159,11 +158,10 @@ const REGISTERED_SLICE_KEYS = new Set<string>([
   "adminPreferences",
   "entitySystem",
   "agentSettings",
-  "cxConversations",
   "modelRegistry",
   "mcp",
   "adminDebug",
-  "agentConversations",
+  "conversationList",
   "apiConfig",
 ]);
 
@@ -283,12 +281,12 @@ export function getStateViewerTabs(
       ),
     },
     {
-      id: "agentConversations",
-      label: "Agent Conversations",
+      id: "conversationList",
+      label: "Conversation List",
       content: (
         <GenericSliceViewer
-          sliceKey="agentConversations"
-          state={completeState.agentConversations}
+          sliceKey="conversationList"
+          state={completeState.conversationList}
         />
       ),
     },
@@ -694,26 +692,6 @@ export function getStateViewerTabs(
       ),
     },
     {
-      id: "activeChat",
-      label: "Active Chat",
-      content: (
-        <GenericSliceViewer
-          sliceKey="activeChat"
-          state={completeState.activeChat}
-        />
-      ),
-    },
-    {
-      id: "chatConversations",
-      label: "Chat Conversations",
-      content: (
-        <GenericSliceViewer
-          sliceKey="chatConversations"
-          state={completeState.chatConversations}
-        />
-      ),
-    },
-    {
       id: "messageActions",
       label: "Message Actions",
       content: (
@@ -977,16 +955,6 @@ export function getStateViewerTabs(
         <GenericSliceViewer
           sliceKey="agentSettings"
           state={completeState.agentSettings}
-        />
-      ),
-    },
-    {
-      id: "cxConversations",
-      label: "CX Conversations",
-      content: (
-        <GenericSliceViewer
-          sliceKey="cxConversations"
-          state={completeState.cxConversations}
         />
       ),
     },

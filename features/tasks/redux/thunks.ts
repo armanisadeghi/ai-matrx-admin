@@ -25,6 +25,7 @@ import {
   setNewProjectName,
   setNewTaskTitle,
   setLastCreatedTaskId,
+  clearTaskEdit,
 } from "./taskUiSlice";
 
 /**
@@ -443,3 +444,30 @@ export const deleteTaskThunk = createAsyncThunk<
     }
   },
 );
+
+/**
+ * Persist the pending draft for a task:
+ * - Core columns → optimistic `updateTaskFieldThunk`
+ * - Labels → `taskService.updateTaskLabels` (stored in settings JSONB)
+ * Clears the draft on success.
+ */
+export const saveTaskEditsThunk = createAsyncThunk<
+  void,
+  { taskId: string },
+  { state: RootState; dispatch: AppDispatch }
+>("tasksUi/saveTaskEdits", async ({ taskId }, { dispatch, getState }) => {
+  const draft = getState().tasksUi.taskEdits[taskId];
+  if (!draft) return;
+
+  const { labels, ...core } = draft;
+  if (Object.keys(core).length > 0) {
+    await dispatch(updateTaskFieldThunk({ taskId, patch: core }));
+  }
+  if (labels !== undefined) {
+    await taskService.updateTaskLabels(
+      taskId,
+      labels as Parameters<typeof taskService.updateTaskLabels>[1],
+    );
+  }
+  dispatch(clearTaskEdit(taskId));
+});

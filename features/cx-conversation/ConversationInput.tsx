@@ -53,8 +53,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
-import { chatConversationsActions } from "@/features/agents/redux/old/OLD-cx-message-actions/slice";
-import { sendMessage } from "@/features/agents/redux/old/OLD-cx-message-actions/thunks/sendMessage";
+import { chatConversationsActions } from "@/features/agents/redux/legacy-shims/cx-message-actions-slice";
+import { sendMessage } from "@/features/agents/redux/legacy-shims/cx-message-actions-thunks";
 import {
   selectCurrentInput,
   selectResources,
@@ -64,14 +64,14 @@ import {
   selectShowVariables,
   selectUIState,
   selectShowDebugInfo,
-} from "@/features/agents/redux/old/OLD-cx-message-actions/selectors";
+} from "@/features/agents/redux/legacy-shims/cx-message-actions-selectors";
 import {
   selectAvailableModels,
   selectModelOptions,
   fetchAvailableModels,
 } from "@/features/ai-models/redux/modelRegistrySlice";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
-import { selectActiveChatAgent } from "@/features/agents/redux/old/activeChatSlice";
+import { selectActiveChatAgent } from "@/features/agents/redux/legacy-shims/active-chat-slice";
 import { selectIsDebugMode } from "@/lib/redux/slices/adminDebugSlice";
 import { ResourceChips } from "@/features/prompts/components/resource-display";
 import { ResourcePickerMenu } from "@/features/resource-manager/resource-picker/ResourcePickerMenu";

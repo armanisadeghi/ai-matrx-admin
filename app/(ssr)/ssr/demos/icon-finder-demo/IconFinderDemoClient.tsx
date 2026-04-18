@@ -57,7 +57,7 @@ const ROWS: {
   {
     key: "lucide",
     label: "Full Lucide browser",
-    hint: "@/components/ui/icon-picker (IconPicker, IconInput, IconValidator)",
+    hint: "@/components/ui/icon-picker — after mount: click the outline button (icon + name, or “Choose Icon”) to open the searchable grid dialog.",
   },
   {
     key: "applet",
@@ -112,6 +112,24 @@ export function IconFinderDemoClient() {
           <p className="text-xs font-mono text-muted-foreground">
             Route: /ssr/demos/icon-finder-demo
           </p>
+          <div className="rounded-md border border-primary/30 bg-primary/5 px-3 py-2 text-sm text-foreground">
+            <p className="font-medium">
+              Searchable discovery (full Lucide grid)
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Mount{" "}
+              <span className="font-medium text-foreground">
+                Full Lucide browser
+              </span>{" "}
+              below, then use the{" "}
+              <span className="font-medium text-foreground">
+                outline button
+              </span>{" "}
+              that shows the current icon and name (or “Choose Icon”). That
+              opens a dialog with search + thousands of icons — not visible
+              until you click it.
+            </p>
+          </div>
         </header>
 
         <section className="rounded-lg border border-border bg-card/50 p-4 space-y-3">

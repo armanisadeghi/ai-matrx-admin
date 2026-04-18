@@ -174,6 +174,7 @@ import {
   FcBusiness,
 } from "react-icons/fc";
 import { FaBrave } from "react-icons/fa6";
+import { isLucideModuleIconExport } from "@/utils/icons/lucide-module-icon";
 
 // Statically imported Lucide icons map (commonly used icons for optimal bundle size)
 const staticLucideIconMap: Record<string, any> = {
@@ -354,9 +355,6 @@ const customIconMap: Record<string, any> = {
 // Cache for dynamically loaded icons to prevent re-importing
 const dynamicIconCache: Record<string, any> = {};
 
-/** Lucide module exports that are not icon components */
-const LUCIDE_NON_ICON_EXPORTS = new Set(["default", "createLucideIcon"]);
-
 /**
  * True if this exact name maps to a known icon (static Lucide, custom map, or
  * previously resolved dynamic Lucide cached under this key).
@@ -393,9 +391,7 @@ export async function isRegisteredOrLucideIconName(
   try {
     const iconModule = await import("lucide-react");
     const Exported = iconModule[iconName as keyof typeof iconModule];
-    return (
-      typeof Exported === "function" && !LUCIDE_NON_ICON_EXPORTS.has(iconName)
-    );
+    return isLucideModuleIconExport(iconName, Exported);
   } catch {
     return false;
   }

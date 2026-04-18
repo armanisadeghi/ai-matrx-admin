@@ -24,7 +24,16 @@
 import { useEffect, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
-import { chatConversationsActions } from "@/features/agents/redux/old/OLD-cx-message-actions/slice";
+// Legacy chat session adapter — feeds Socket.IO stream into chatConversations.
+// `chatConversations` slice removed during Redux unification; socket.io-based
+// chat is being retired. All dispatches stubbed as no-ops.
+const chatConversationsActions = {
+  addMessage: (_payload: unknown) => ({ type: "noop" as const, payload: _payload }),
+  updateMessage: (_payload: unknown) => ({ type: "noop" as const, payload: _payload }),
+  appendStreamChunk: (_payload: unknown) => ({ type: "noop" as const, payload: _payload }),
+  setSessionStatus: (_payload: unknown) => ({ type: "noop" as const, payload: _payload }),
+  setConversationId: (_payload: unknown) => ({ type: "noop" as const, payload: _payload }),
+};
 import {
   selectPrimaryResponseTextByTaskId,
   selectResponseToolUpdatesByListenerId,

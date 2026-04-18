@@ -56,14 +56,14 @@ import messagingReducer from "@/features/messaging/redux/messagingSlice";
 import smsReducer from "@/features/sms/redux/smsSlice";
 import adminPreferencesReducer from "./slices/adminPreferencesSlice";
 import apiConfigReducer from "./slices/apiConfigSlice";
-import activeChatReducer from "../../features/agents/redux/old/activeChatSlice";
+// activeChat — unmounted (Redux unification). File remains on disk.
 import entitySystemReducer from "./slices/entitySystemSlice";
 import urlSyncReducer from "./slices/urlSyncSlice";
 
 // Agent cache — unified slim/core/operational store for user prompts + builtins + shared
 import agentCacheReducer from "./slices/agentCacheSlice";
 import agentDefinitionReducer from "@/features/agents/redux/agent-definition/slice";
-import { agentConversationsReducer } from "@/features/agents/redux/agent-conversations";
+// agentConversations — superseded by conversationList. File remains on disk.
 import { conversationListReducer } from "@/features/agents/redux/conversation-list";
 import agentShortcutReducer from "@/features/agents/redux/agent-shortcuts/slice";
 import { agentAppReducer } from "@/features/agents/redux/agent-apps/slice";
@@ -80,11 +80,11 @@ import promptExecutionReducer from "./prompt-execution/slice";
 import actionCacheReducer from "./prompt-execution/actionCacheSlice";
 import promptEditorReducer from "./slices/promptEditorSlice";
 import modelRegistryReducer from "../../features/ai-models/redux/modelRegistrySlice";
-import { chatConversationsReducer } from "@/features/agents/redux/old/OLD-cx-message-actions";
-import { messageActionsReducer } from "@/features/agents/redux/old/OLD-cx-message-actions/messageActionsSlice";
+// chatConversations — unmounted (Redux unification). File remains on disk.
+import { messageActionsReducer } from "@/features/agents/redux/execution-system/message-actions";
 import { agentSettingsReducer } from "./slices/agent-settings";
 
-import cxConversationsReducer from "@/features/agents/redux/old/OLD-cx-conversation/cx-conversations.slice";
+// cxConversations — superseded by conversationList. File remains on disk.
 import artifactsReducer from "./slices/artifactsSlice";
 import htmlPagesReducer from "./slices/htmlPagesSlice";
 
@@ -100,10 +100,7 @@ import {
   scopeAssignmentsReducer,
   scopeContextReducer,
 } from "@/features/agent-context/redux/scope";
-import {
-  taskUiReducer,
-  quickTasksWindowReducer,
-} from "@/features/tasks/redux";
+import { taskUiReducer, quickTasksWindowReducer } from "@/features/tasks/redux";
 
 import { instanceUIStateReducer } from "@/features/agents/redux/execution-system/instance-ui-state";
 import { instanceClientToolsReducer } from "@/features/agents/redux/execution-system/instance-client-tools";
@@ -239,13 +236,19 @@ export const createRootReducer = (initialState: InitialReduxState) => {
     ui: uiReducer,
     storage: storageReducer,
 
-    // Active chat page state (selected agent, block mode, agent picker)
-    activeChat: activeChatReducer,
-
-    // Unified chat conversation UI slice (replaces ChatContext + prompt-execution for display)
-    chatConversations: chatConversationsReducer,
-
-    // Instance-based message action overlays (Save to Notes, Email, Auth Gate, etc.)
+    // ===== LEGACY CX CHAT SLICES — UNMOUNTED =====
+    // `activeChat`, `chatConversations`, `cxConversations`, `agentConversations`
+    // were removed from the store during the Redux unification. Their files
+    // remain on disk so existing chat-feature imports (cx-chat, cx-conversation,
+    // conversation) still compile; chat pages crash at runtime when accessed,
+    // which is expected — chat is being rebuilt from scratch on the new
+    // `conversations` / `messages` / `conversationList` / `observability`
+    // slices. Runner, Builder, and Widgets do not depend on any of these.
+    //
+    // messageActions stays — it moved to
+    // `features/agents/redux/execution-system/message-actions` and is still
+    // used by the Runner's AssistantActionBar. Legacy imports of the old path
+    // have been repointed; see PHASE-3-MIGRATION.md.
     messageActions: messageActionsReducer,
 
     // ===== OLD SOCKET.IO SYSTEM (DEPRECATED) ====
@@ -295,8 +298,7 @@ export const createRootReducer = (initialState: InitialReduxState) => {
 
     // ==================================== RELATED TO AGENTS: ====================================
 
-    // cx_ conversation sidebar list — Tier 1/2 from cx_conversation table
-    cxConversations: cxConversationsReducer,
+    // (cxConversations unmounted — see note above; superseded by conversationList)
 
     modelRegistry: modelRegistryReducer,
 
@@ -307,10 +309,10 @@ export const createRootReducer = (initialState: InitialReduxState) => {
 
     // Layer 1 — Agent Source
     agentDefinition: agentDefinitionReducer,
-    agentConversations: agentConversationsReducer,
-    // Unified list (global sidebar + per-agent caches). Phase 3 target —
-    // consumers migrate off `cxConversations` / `agentConversations` onto
-    // the selectors in `@/features/agents/redux/conversation-list`.
+    // Unified conversation list — replaces the retired `cxConversations`
+    // (global sidebar) and `agentConversations` (per-agent RPC caches).
+    // Entities live once in `byConversationId`; view selectors project into
+    // global / per-agent lists.
     conversationList: conversationListReducer,
     agentShortcut: agentShortcutReducer,
     // agentApp — scaffolded alongside agentShortcut. Thunks are stubbed until

@@ -51,7 +51,7 @@ import {
   fetchAgentExecutionMinimal,
 } from "@/features/agents/redux/agent-definition/thunks";
 import { launchAgentExecution } from "@/features/agents/redux/execution-system/thunks/launch-agent-execution.thunk";
-import { fetchConversationHistory } from "@/features/agents/redux/old/OLD-cx-conversation/thunks";
+import { loadConversation } from "@/features/agents/redux/execution-system/thunks/load-conversation.thunk";
 import { DEFAULT_AGENT_ID } from "@/features/cx-chat/components/agent/local-agents";
 import type { RootState } from "@/lib/redux/store";
 
@@ -188,9 +188,12 @@ export function useInstanceBootstrap() {
         });
       }
 
-      // 4. Load conversation history for /c/ routes.
+      // 4. Load the full conversation bundle for /c/ routes. loadConversation
+      // rehydrates messages, variables, model overrides, display/context
+      // (from metadata), and observability — superset of the legacy
+      // fetchConversationHistory which only restored messages.
       if (conversationId) {
-        dispatch(fetchConversationHistory({ conversationId }));
+        dispatch(loadConversation({ conversationId }));
       }
     })();
 

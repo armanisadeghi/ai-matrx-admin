@@ -200,11 +200,19 @@ function warnUnsupported(invocation: ConversationInvocation): void {
     // eslint-disable-next-line no-console
     console.warn(
       "[launchConversation] origin.isEphemeral=true is accepted by the " +
-        "invocation contract but not yet routed to the stateless endpoints " +
-        "(POST /ai/agents/{id} with is_new:false,store:false then POST /ai/chat). " +
-        "The branch lands when the backend exposes those flags — for now the " +
-        "call runs through the standard persistent path.",
+        "invocation contract but not yet routed to the stateless endpoints. " +
+        "For now the call runs through the standard persistent path.",
     );
+    // TODO(isEphemeral): route stateless turns.
+    //   Turn 1:  POST /ai/agents/{id} with `is_new:false, store:false`, no
+    //            `conversationId`. Server streams, writes nothing to the DB.
+    //   Turn 2+: POST /ai/chat (NOT /conversations/{id} — that 404s because
+    //            no DB row exists). Client serializes the full accumulated
+    //            history from the `messages/` slice on every turn and sends
+    //            it alongside `is_new:false, store:false`. Redux is the sole
+    //            source of truth for ephemeral conversations.
+    //   See `features/agents/types/conversation-invocation.types.ts` for
+    //   the locked contract and the endpoint routing table.
   }
 
   if (

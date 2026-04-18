@@ -22,7 +22,18 @@
 
 import { useEffect, useRef } from "react";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
-import { chatConversationsActions } from "@/features/agents/redux/old/OLD-cx-message-actions/slice";
+// Legacy prompt → chatConversations adapter.
+// `chatConversations` slice is deprecated (chat rebuild on `messages/`).
+// All dispatches here are stubbed as no-ops during the transition.
+const chatConversationsActions = {
+  startSession: (_payload: unknown) => ({ type: "noop" as const, payload: _payload }),
+  setConversationId: (_payload: unknown) => ({ type: "noop" as const, payload: _payload }),
+  addMessage: (_payload: unknown) => ({ type: "noop" as const, payload: _payload }),
+  updateMessage: (_payload: unknown) => ({ type: "noop" as const, payload: _payload }),
+  appendStreamChunk: (_payload: unknown) => ({ type: "noop" as const, payload: _payload }),
+  setSessionStatus: (_payload: unknown) => ({ type: "noop" as const, payload: _payload }),
+  removeSession: (_payload: unknown) => ({ type: "noop" as const, payload: _payload }),
+};
 import {
   selectIsExecuting,
   selectStreamingTextForInstance,
@@ -31,7 +42,15 @@ import {
   selectMessages,
   EMPTY_MESSAGES,
 } from "@/lib/redux/prompt-execution/slice";
-import type { ConversationMessage as ChatConversationMessage } from "@/features/agents/redux/old/OLD-cx-message-actions/types";
+
+/** Legacy local message shape — chat rebuild replaces this with MessageRecord. */
+interface ChatConversationMessage {
+  id: string;
+  role: "user" | "assistant" | "system";
+  content: string;
+  status: "pending" | "streaming" | "complete" | "error";
+  timestamp: string;
+}
 import { v4 as uuidv4 } from "uuid";
 
 interface UsePromptExecutionAdapterOptions {

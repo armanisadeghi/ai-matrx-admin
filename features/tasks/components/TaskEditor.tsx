@@ -1,0 +1,800 @@
+"use client";
+
+import React, { useEffect, useState } from "react";
+import Link from "next/link";
+import {
+  Calendar,
+  Flag,
+  Folder,
+  User as UserIcon,
+  MessageSquare,
+  CheckSquare,
+  Loader2,
+  Plus,
+  Send,
+  Save,
+  Trash2,
+  Check,
+  ChevronDown,
+  ChevronRight,
+  Copy,
+  ExternalLink,
+  CircleDashed,
+  CheckCircle2,
+  Tag,
+  Info,
+  Clock,
+} from "lucide-react";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import {
+  selectSelectedTaskId,
+  selectTaskEdit,
+  selectTaskIsDirty,
+  selectOperatingTaskId,
+  selectProjects,
+  patchTaskEdit,
+  clearTaskEdit,
+  saveTaskEditsThunk,
+  toggleTaskCompleteThunk,
+  deleteTaskThunk,
+} from "@/features/tasks/redux";
+import { selectTaskById } from "@/features/agent-context/redux/tasksSlice";
+import { selectOrganizationId } from "@/features/agent-context/redux/appContextSlice";
+import * as taskService from "@/features/tasks/services/taskService";
+import { TASK_LABEL_OPTIONS } from "@/features/tasks/services/taskService";
+import type { TaskLabel } from "@/features/tasks/services/taskService";
+import TaskScopeTags from "./TaskScopeTags";
+import TaskAssigneePicker from "./TaskAssigneePicker";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { cn } from "@/utils/cn";
+
+type Priority = "low" | "medium" | "high" | null;
+
+const PRIORITY_STYLES: Record<string, { bg: string; text: string; label: string }> = {
+  high: {
+    bg: "bg-red-500/10 border-red-500/40",
+    text: "text-red-600 dark:text-red-400",
+    label: "High",
+  },
+  medium: {
+    bg: "bg-amber-500/10 border-amber-500/40",
+    text: "text-amber-600 dark:text-amber-400",
+    label: "Medium",
+  },
+  low: {
+    bg: "bg-green-500/10 border-green-500/40",
+    text: "text-green-600 dark:text-green-400",
+    label: "Low",
+  },
+};
+
+export default function TaskEditor() {
+  const taskId = useAppSelector(selectSelectedTaskId);
+
+  if (!taskId) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full text-muted-foreground px-6">
+        <div className="w-16 h-16 rounded-2xl bg-muted/40 flex items-center justify-center mb-3">
+          <CheckSquare className="w-7 h-7 text-muted-foreground/60" />
+        </div>
+        <p className="text-sm font-medium text-foreground">No task selected</p>
+        <p className="text-xs mt-1 text-muted-foreground">
+          Select a task from the list to view and edit.
+        </p>
+      </div>
+    );
+  }
+
+  return <TaskEditorInner taskId={taskId} key={taskId} />;
+}
+
+function TaskEditorInner({ taskId }: { taskId: string }) {
+  const dispatch = useAppDispatch();
+  const task = useAppSelector((s) => selectTaskById(s, taskId));
+  const draft = useAppSelector(selectTaskEdit(taskId));
+  const isDirty = useAppSelector(selectTaskIsDirty(taskId));
+  const operatingTaskId = useAppSelector(selectOperatingTaskId);
+  const projects = useAppSelector(selectProjects);
+  const orgId = useAppSelector(selectOrganizationId);
+
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [idCopied, setIdCopied] = useState(false);
+
+  const [comments, setComments] = useState<
+    { id: string; content: string; user_id: string; created_at: string }[]
+  >([]);
+  const [newComment, setNewComment] = useState("");
+  const [isLoadingComments, setIsLoadingComments] = useState(true);
+  const [isAddingComment, setIsAddingComment] = useState(false);
+
+  const [subtasks, setSubtasks] = useState<
+    Awaited<ReturnType<typeof taskService.getSubtasks>>
+  >([]);
+  const [newSubtask, setNewSubtask] = useState("");
+  const [isAddingSubtask, setIsAddingSubtask] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    setIsLoadingComments(true);
+    taskService.getTaskComments(taskId).then((data) => {
+      if (cancelled) return;
+      setComments(data);
+      setIsLoadingComments(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [taskId]);
+
+  useEffect(() => {
+    let cancelled = false;
+    taskService.getSubtasks(taskId).then((data) => {
+      if (cancelled) return;
+      setSubtasks(data);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [taskId]);
+
+  if (!task) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full text-muted-foreground px-6">
+        <CircleDashed className="w-8 h-8 mb-2 opacity-40" />
+        <p className="text-xs">Task not found</p>
+      </div>
+    );
+  }
+
+  const effective = {
+    title: draft.title ?? task.title,
+    description:
+      draft.description !== undefined
+        ? draft.description
+        : (task.description ?? ""),
+    dueDate: draft.due_date !== undefined ? draft.due_date : task.due_date,
+    priority: (draft.priority !== undefined
+      ? draft.priority
+      : (task.priority as Priority)) as Priority,
+    projectId:
+      draft.project_id !== undefined ? draft.project_id : task.project_id,
+    assigneeId:
+      draft.assignee_id !== undefined ? draft.assignee_id : task.assignee_id,
+    labels:
+      draft.labels !== undefined
+        ? draft.labels
+        : ((task.settings as { labels?: string[] } | null)?.labels ?? []),
+  };
+
+  const completed = task.status === "completed";
+  const isOperating = operatingTaskId === taskId;
+
+  const patch = <K extends keyof typeof draft>(
+    key: K,
+    value: (typeof draft)[K],
+  ) => {
+    dispatch(patchTaskEdit({ taskId, patch: { [key]: value } }));
+  };
+
+  const handleSave = async () => {
+    if (!isDirty || isSaving) return;
+    setIsSaving(true);
+    try {
+      await dispatch(saveTaskEditsThunk({ taskId }));
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDiscard = () => {
+    dispatch(clearTaskEdit(taskId));
+  };
+
+  const handleDelete = async () => {
+    if (isDeleting) return;
+    if (!confirm("Delete this task? This cannot be undone.")) return;
+    setIsDeleting(true);
+    try {
+      await dispatch(
+        deleteTaskThunk({
+          taskId,
+          projectId: task.project_id ?? "__unassigned__",
+        }),
+      );
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleToggleComplete = () => {
+    dispatch(toggleTaskCompleteThunk({ taskId }));
+  };
+
+  const handleCopyId = async () => {
+    await navigator.clipboard.writeText(taskId);
+    setIdCopied(true);
+    setTimeout(() => setIdCopied(false), 1500);
+  };
+
+  const handleAddSubtask = async () => {
+    if (!newSubtask.trim() || isAddingSubtask) return;
+    setIsAddingSubtask(true);
+    try {
+      const created = await taskService.createSubtask(
+        taskId,
+        newSubtask.trim(),
+      );
+      if (created) {
+        setSubtasks((prev) => [...prev, created]);
+        setNewSubtask("");
+      }
+    } finally {
+      setIsAddingSubtask(false);
+    }
+  };
+
+  const handleToggleSubtask = async (
+    subtaskId: string,
+    currentlyCompleted: boolean,
+  ) => {
+    await taskService.updateSubtaskStatus(subtaskId, !currentlyCompleted);
+    setSubtasks((prev) =>
+      prev.map((s) =>
+        s.id === subtaskId
+          ? { ...s, status: !currentlyCompleted ? "completed" : "incomplete" }
+          : s,
+      ),
+    );
+  };
+
+  const handleDeleteSubtask = async (subtaskId: string) => {
+    await taskService.deleteSubtask(subtaskId);
+    setSubtasks((prev) => prev.filter((s) => s.id !== subtaskId));
+  };
+
+  const handleAddComment = async () => {
+    if (!newComment.trim() || isAddingComment) return;
+    setIsAddingComment(true);
+    try {
+      const created = await taskService.createTaskComment(
+        taskId,
+        newComment.trim(),
+      );
+      if (created) {
+        setComments((prev) => [...prev, created]);
+        setNewComment("");
+      }
+    } finally {
+      setIsAddingComment(false);
+    }
+  };
+
+  const toggleLabel = (label: TaskLabel) => {
+    const next = effective.labels.includes(label)
+      ? effective.labels.filter((l) => l !== label)
+      : [...effective.labels, label];
+    patch("labels", next);
+  };
+
+  const completedSubtasks = subtasks.filter((s) => s.status === "completed").length;
+
+  return (
+    <div className="flex flex-col h-full min-h-0 bg-background">
+      {/* Header band */}
+      <div className="shrink-0 border-b border-border/50 bg-card/50 backdrop-blur-sm px-5 py-3">
+        <div className="flex items-start gap-3">
+          <button
+            onClick={handleToggleComplete}
+            disabled={isOperating}
+            className="mt-1 shrink-0 text-muted-foreground hover:text-primary transition-colors"
+            title={completed ? "Mark incomplete" : "Mark complete"}
+          >
+            {completed ? (
+              <CheckCircle2 className="w-6 h-6 text-green-500" />
+            ) : (
+              <CircleDashed className="w-6 h-6" />
+            )}
+          </button>
+
+          <div className="flex-1 min-w-0">
+            <input
+              value={effective.title}
+              onChange={(e) => patch("title", e.target.value)}
+              placeholder="Untitled task"
+              className={cn(
+                "w-full bg-transparent border-none outline-none text-xl font-semibold text-foreground placeholder:text-muted-foreground/40",
+                completed && "line-through text-muted-foreground",
+              )}
+            />
+            {/* Meta pills under title */}
+            <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+              {effective.priority && (
+                <span
+                  className={cn(
+                    "inline-flex items-center gap-1 h-5 px-1.5 rounded-md border text-[10px] font-medium",
+                    PRIORITY_STYLES[effective.priority].bg,
+                    PRIORITY_STYLES[effective.priority].text,
+                  )}
+                >
+                  <Flag className="w-2.5 h-2.5" />
+                  {PRIORITY_STYLES[effective.priority].label}
+                </span>
+              )}
+              {effective.dueDate && (
+                <span className="inline-flex items-center gap-1 h-5 px-1.5 rounded-md bg-muted/60 text-[10px] font-medium text-foreground">
+                  <Calendar className="w-2.5 h-2.5" />
+                  {new Date(effective.dueDate).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </span>
+              )}
+              {subtasks.length > 0 && (
+                <span className="inline-flex items-center gap-1 h-5 px-1.5 rounded-md bg-muted/60 text-[10px] font-medium text-foreground">
+                  <CheckSquare className="w-2.5 h-2.5" />
+                  {completedSubtasks}/{subtasks.length}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1 shrink-0">
+            {isDirty && (
+              <>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={handleDiscard}
+                  disabled={isSaving}
+                  className="h-8 text-xs"
+                >
+                  Discard
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleSave}
+                  disabled={isSaving}
+                  className="h-8 text-xs"
+                >
+                  {isSaving ? (
+                    <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />
+                  ) : (
+                    <Save className="w-3.5 h-3.5 mr-1" />
+                  )}
+                  Save
+                </Button>
+              </>
+            )}
+            <Button
+              size="sm"
+              variant="ghost"
+              asChild
+              className="h-8 w-8 p-0"
+              title="Open in full page"
+            >
+              <Link href={`/tasks/${taskId}`}>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </Link>
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={handleDelete}
+              disabled={isDeleting || isOperating}
+              className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+              title="Delete task"
+            >
+              {isDeleting ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Trash2 className="w-3.5 h-3.5" />
+              )}
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Scrollable body */}
+      <div className="flex-1 overflow-y-auto min-h-0">
+        <div className="max-w-3xl mx-auto px-6 py-5 space-y-6">
+          {/* Scope tags — prominent, directly under header */}
+          {orgId && (
+            <section>
+              <SectionHeader icon={Tag} label="Tags" />
+              <TaskScopeTags taskId={taskId} orgId={orgId} />
+            </section>
+          )}
+
+          {/* Core properties — iOS-style grouped card */}
+          <section className="rounded-xl border border-border/60 bg-card/40 overflow-hidden">
+            <PropertyRow icon={UserIcon} label="Assignee" first>
+              <TaskAssigneePicker
+                assigneeId={effective.assigneeId ?? null}
+                onChange={(id) => patch("assignee_id", id)}
+              />
+            </PropertyRow>
+
+            <PropertyRow icon={Folder} label="Project">
+              <ProjectSelect
+                value={effective.projectId ?? null}
+                onChange={(v) => patch("project_id", v)}
+                options={projects
+                  .filter((p) => p.id !== "__unassigned__")
+                  .map((p) => ({ id: p.id, name: p.name }))}
+              />
+            </PropertyRow>
+
+            <PropertyRow icon={Flag} label="Priority">
+              <PrioritySegmented
+                value={effective.priority ?? null}
+                onChange={(v) => patch("priority", v)}
+              />
+            </PropertyRow>
+
+            <PropertyRow icon={Calendar} label="Due date" last>
+              <input
+                type="date"
+                value={effective.dueDate ?? ""}
+                onChange={(e) => patch("due_date", e.target.value || null)}
+                className="h-8 w-full bg-card border border-border rounded-md px-2 text-xs outline-none hover:border-foreground/30 focus:border-primary/60 transition-colors"
+              />
+            </PropertyRow>
+          </section>
+
+          {/* Description */}
+          <section>
+            <SectionHeader icon={MessageSquare} label="Description" />
+            <Textarea
+              value={effective.description}
+              onChange={(e) => patch("description", e.target.value)}
+              placeholder="Add a description..."
+              className="text-sm min-h-[120px] resize-y bg-card/40 border-border/60"
+            />
+          </section>
+
+          {/* Labels */}
+          <section>
+            <SectionHeader icon={Tag} label="Labels" />
+            <div className="flex flex-wrap gap-1.5">
+              {TASK_LABEL_OPTIONS.map((opt) => {
+                const active = effective.labels.includes(opt.value);
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => toggleLabel(opt.value)}
+                    className={cn(
+                      "h-6 px-2 rounded-full text-[11px] font-medium transition-colors border",
+                      active
+                        ? opt.color + " border-current"
+                        : "text-muted-foreground bg-muted/40 border-transparent hover:bg-accent hover:text-foreground",
+                    )}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+
+          {/* Subtasks */}
+          <section>
+            <SectionHeader
+              icon={CheckSquare}
+              label="Subtasks"
+              count={subtasks.length}
+            />
+            <div className="rounded-xl border border-border/60 bg-card/40 overflow-hidden">
+              {subtasks.length === 0 ? (
+                <p className="px-4 py-3 text-xs text-muted-foreground italic">
+                  No subtasks yet.
+                </p>
+              ) : (
+                subtasks.map((st, i) => (
+                  <div
+                    key={st.id}
+                    className={cn(
+                      "group flex items-center gap-3 px-4 py-2 transition-colors hover:bg-accent/40",
+                      i !== 0 && "border-t border-border/40",
+                    )}
+                  >
+                    <Checkbox
+                      checked={st.status === "completed"}
+                      onCheckedChange={() =>
+                        handleToggleSubtask(st.id, st.status === "completed")
+                      }
+                    />
+                    <span
+                      className={cn(
+                        "flex-1 text-sm",
+                        st.status === "completed" &&
+                          "line-through text-muted-foreground",
+                      )}
+                    >
+                      {st.title}
+                    </span>
+                    <button
+                      onClick={() => handleDeleteSubtask(st.id)}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))
+              )}
+              <div
+                className={cn(
+                  "flex items-center gap-2 px-3 py-2 bg-muted/20",
+                  subtasks.length > 0 && "border-t border-border/40",
+                )}
+              >
+                <Plus className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                <input
+                  type="text"
+                  value={newSubtask}
+                  onChange={(e) => setNewSubtask(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleAddSubtask();
+                    }
+                  }}
+                  placeholder="Add subtask..."
+                  className="flex-1 bg-transparent text-xs outline-none placeholder:text-muted-foreground/50"
+                  style={{ fontSize: "16px" }}
+                  disabled={isAddingSubtask}
+                />
+                {newSubtask.trim() && (
+                  <Button
+                    size="sm"
+                    onClick={handleAddSubtask}
+                    disabled={isAddingSubtask}
+                    className="h-6 px-2 text-[11px]"
+                  >
+                    {isAddingSubtask ? (
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                    ) : (
+                      "Add"
+                    )}
+                  </Button>
+                )}
+              </div>
+            </div>
+          </section>
+
+          {/* Comments */}
+          <section>
+            <SectionHeader
+              icon={MessageSquare}
+              label="Comments"
+              count={comments.length}
+            />
+            {isLoadingComments ? (
+              <div className="flex items-center gap-2 text-xs text-muted-foreground py-2">
+                <Loader2 className="w-3 h-3 animate-spin" /> Loading...
+              </div>
+            ) : comments.length > 0 ? (
+              <div className="space-y-2 mb-2">
+                {comments.map((c) => (
+                  <div
+                    key={c.id}
+                    className="p-3 rounded-lg border border-border/60 bg-card/40"
+                  >
+                    <p className="text-xs text-foreground whitespace-pre-wrap">
+                      {c.content}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground mt-1.5 flex items-center gap-1">
+                      <Clock className="w-2.5 h-2.5" />
+                      {new Date(c.created_at).toLocaleString()}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+            <div className="flex items-start gap-2">
+              <Textarea
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                    e.preventDefault();
+                    handleAddComment();
+                  }
+                }}
+                placeholder="Add a comment... (⌘+Enter to post)"
+                className="text-xs min-h-[60px] resize-y bg-card/40 border-border/60"
+                rows={2}
+              />
+              <Button
+                size="sm"
+                onClick={handleAddComment}
+                disabled={!newComment.trim() || isAddingComment}
+                className="h-auto px-3 py-2 shrink-0"
+              >
+                {isAddingComment ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Send className="w-3.5 h-3.5" />
+                )}
+              </Button>
+            </div>
+          </section>
+
+          {/* Advanced */}
+          <section>
+            <button
+              onClick={() => setShowAdvanced((v) => !v)}
+              className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {showAdvanced ? (
+                <ChevronDown className="w-3 h-3" />
+              ) : (
+                <ChevronRight className="w-3 h-3" />
+              )}
+              <Info className="w-3 h-3" />
+              Advanced
+            </button>
+            {showAdvanced && (
+              <div className="mt-3 rounded-xl border border-border/60 bg-card/40 overflow-hidden">
+                <PropertyRow label="Task ID" first>
+                  <div className="flex items-center gap-1 w-full">
+                    <code className="flex-1 text-[10px] font-mono bg-muted px-2 py-1 rounded truncate">
+                      {taskId}
+                    </code>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={handleCopyId}
+                      className="h-7 w-7 p-0 shrink-0"
+                    >
+                      {idCopied ? (
+                        <Check className="w-3 h-3 text-green-500" />
+                      ) : (
+                        <Copy className="w-3 h-3" />
+                      )}
+                    </Button>
+                  </div>
+                </PropertyRow>
+                <PropertyRow label="Created">
+                  <span className="text-xs text-muted-foreground">
+                    {task.created_at
+                      ? new Date(task.created_at).toLocaleString()
+                      : "—"}
+                  </span>
+                </PropertyRow>
+                <PropertyRow label="Owner" last>
+                  <code className="text-[10px] font-mono bg-muted px-2 py-1 rounded">
+                    {task.user_id ?? "—"}
+                  </code>
+                </PropertyRow>
+              </div>
+            )}
+          </section>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ────────────────────────────────────────────────────────────────────── */
+
+function SectionHeader({
+  icon: Icon,
+  label,
+  count,
+}: {
+  icon?: React.ComponentType<{ className?: string }>;
+  label: string;
+  count?: number;
+}) {
+  return (
+    <div className="flex items-center gap-1.5 mb-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+      {Icon && <Icon className="w-3 h-3" />}
+      <span>{label}</span>
+      {typeof count === "number" && (
+        <span className="text-muted-foreground/60 tabular-nums">({count})</span>
+      )}
+    </div>
+  );
+}
+
+function PropertyRow({
+  icon: Icon,
+  label,
+  children,
+  first,
+  last,
+}: {
+  icon?: React.ComponentType<{ className?: string }>;
+  label: string;
+  children: React.ReactNode;
+  first?: boolean;
+  last?: boolean;
+}) {
+  return (
+    <div
+      className={cn(
+        "flex items-center gap-3 px-4 py-2.5",
+        !first && "border-t border-border/40",
+      )}
+    >
+      <div className="flex items-center gap-1.5 w-20 shrink-0 text-[11px] font-medium text-muted-foreground">
+        {Icon && <Icon className="w-3 h-3" />}
+        <span>{label}</span>
+      </div>
+      <div className="flex-1 min-w-0">{children}</div>
+    </div>
+  );
+}
+
+/* ────────────────────────────────────────────────────────────────────── */
+
+function PrioritySegmented({
+  value,
+  onChange,
+}: {
+  value: Priority;
+  onChange: (v: Priority) => void;
+}) {
+  const options: { val: "low" | "medium" | "high" | null; label: string }[] = [
+    { val: null, label: "None" },
+    { val: "low", label: "Low" },
+    { val: "medium", label: "Med" },
+    { val: "high", label: "High" },
+  ];
+  return (
+    <div className="inline-flex items-center gap-0.5 p-0.5 rounded-md bg-muted/50 border border-border/60 w-fit">
+      {options.map((opt) => {
+        const active = value === opt.val;
+        const style = opt.val ? PRIORITY_STYLES[opt.val] : null;
+        return (
+          <button
+            key={opt.val ?? "none"}
+            type="button"
+            onClick={() => onChange(opt.val)}
+            className={cn(
+              "h-6 px-2 rounded text-[11px] font-medium transition-colors",
+              active
+                ? style
+                  ? `${style.bg} ${style.text}`
+                  : "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            {opt.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function ProjectSelect({
+  value,
+  onChange,
+  options,
+}: {
+  value: string | null;
+  onChange: (v: string | null) => void;
+  options: { id: string; name: string }[];
+}) {
+  return (
+    <select
+      value={value ?? "__none__"}
+      onChange={(e) => onChange(e.target.value === "__none__" ? null : e.target.value)}
+      className="h-8 w-full bg-card border border-border rounded-md px-2 text-xs outline-none hover:border-foreground/30 focus:border-primary/60 transition-colors"
+    >
+      <option value="__none__">Unassigned</option>
+      {options.map((p) => (
+        <option key={p.id} value={p.id}>
+          {p.name}
+        </option>
+      ))}
+    </select>
+  );
+}

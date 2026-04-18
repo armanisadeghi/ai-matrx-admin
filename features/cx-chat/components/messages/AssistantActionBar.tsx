@@ -26,13 +26,13 @@ import {
 import { SpeakerButton } from "@/features/tts/components/SpeakerButton";
 import { copyToClipboard } from "@/components/matrx/buttons/markdown-copy-utils";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { messageActionsActions } from "@/features/agents/redux/old/OLD-cx-message-actions/messageActionsSlice";
+import { messageActionsActions } from "@/features/agents/redux/execution-system/message-actions";
 import {
   openFullScreenEditor,
   openContentHistory,
   closeOverlay,
 } from "@/lib/redux/slices/overlaySlice";
-import { chatConversationsActions } from "@/features/agents/redux/old/OLD-cx-message-actions/slice";
+import { chatConversationsActions } from "@/features/agents/redux/legacy-shims/cx-message-actions-slice";
 
 const ConversationMessageOptionsMenu = lazy(
   () => import("./MessageOptionsMenu"),

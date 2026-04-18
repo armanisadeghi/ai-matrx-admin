@@ -21,7 +21,7 @@ import { useEffect, useRef, useState } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { fetchAgentExecutionMinimal } from "@/features/agents/redux/agent-definition/thunks";
 import { createManualInstance } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
-import { fetchConversationHistory } from "@/features/agents/redux/old/OLD-cx-conversation/thunks";
+import { loadConversation } from "@/features/agents/redux/execution-system/thunks/load-conversation.thunk";
 import { selectConversationExists } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
 import ChatWelcomeClient from "@/features/cx-chat/components/ChatWelcomeClient";
 import ChatConversationClient from "@/features/cx-chat/components/core/ChatConversationClient";
@@ -107,10 +107,13 @@ export function ChatInstanceManager(props: ChatInstanceManagerProps) {
       // 5. Persist for reuse within this session.
       conversationByAgentId.current.set(agentId, newId);
 
-      // 6. Load conversation history from DB (idempotent).
+      // 6. Load conversation bundle from DB (idempotent). loadConversation
+      // rehydrates messages, variables, model overrides, display/context
+      // (from metadata), and observability — superset of the legacy
+      // fetchConversationHistory which only restored messages.
       if (urlConversationId) {
         dispatch(
-          fetchConversationHistory({ conversationId: urlConversationId }),
+          loadConversation({ conversationId: urlConversationId }),
         );
       }
 

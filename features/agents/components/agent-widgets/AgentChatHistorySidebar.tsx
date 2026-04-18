@@ -6,9 +6,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, MessageSquare, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { selectInstanceAgentId } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
-import { fetchAgentConversations } from "@/features/agents/redux/agent-conversations/agent-conversations.thunks";
-import { makeSelectAgentConversations } from "@/features/agents/redux/agent-conversations/agent-conversations.selectors";
-import type { AgentConversationListItem } from "@/features/agents/redux/agent-conversations/agent-conversations.types";
+import { fetchAgentConversations } from "@/features/agents/redux/conversation-list";
+import { makeSelectAgentConversations } from "@/features/agents/redux/conversation-list";
+import type { AgentConversationListItem } from "@/features/agents/redux/conversation-list";
 
 interface AgentChatHistorySidebarProps {
   conversationId: string;

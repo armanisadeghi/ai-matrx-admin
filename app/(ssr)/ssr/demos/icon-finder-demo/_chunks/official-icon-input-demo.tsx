@@ -26,7 +26,15 @@ export default function OfficialIconInputDemo() {
             </Badge>
           </CardTitle>
           <p className="text-xs text-muted-foreground">
-            Typed Lucide name with live validation — no searchable grid.
+            Typed name + validation + link to lucide.dev —{" "}
+            <span className="text-foreground font-medium">
+              no in-app searchable grid
+            </span>
+            . To compare, mount{" "}
+            <span className="font-medium text-foreground">
+              Full Lucide browser
+            </span>{" "}
+            in the list above and click its outline button.
           </p>
         </CardHeader>
         <CardContent className="space-y-4">

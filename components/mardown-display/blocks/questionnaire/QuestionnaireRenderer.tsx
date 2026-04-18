@@ -24,7 +24,15 @@ import { Bug } from "lucide-react";
 import { THEMES } from "../../themes";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { useQuestionnaireContext } from "./QuestionnaireContext";
-import { activeChatActions } from "@/features/agents/redux/old/activeChatSlice";
+// activeChatActions.setContextEntry used to push questionnaire state into
+// legacy activeChat.messageContext. cx-chat is deprecated; rewire into
+// instanceContext (keyed by conversationId) when chat is rebuilt.
+const activeChatActions = {
+  setContextEntry: (payload: { key: string; value: unknown }) => ({
+    type: "activeChat/legacy-setContextEntry-noop" as const,
+    payload,
+  }),
+};
 // Helper function to check if an option is an "Other" option
 const isOtherOption = (option) => {
   if (!option || typeof option !== "object") return false;

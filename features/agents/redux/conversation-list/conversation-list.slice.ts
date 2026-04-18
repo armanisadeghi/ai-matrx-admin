@@ -18,10 +18,13 @@ import type {
   ConversationListLoadStatus,
 } from "./conversation-list.types";
 
-// ── Constants ────────────────────────────────────────────────────────────────
-
-export const CONVERSATION_LIST_TTL_MS = 5 * 60 * 1000;
-export const CONVERSATION_LIST_PAGE_SIZE = 25;
+// Constants moved to conversation-list.types.ts to sidestep circular imports
+// between selectors (which read `CONVERSATION_LIST_TTL_MS`) and the slice.
+// Re-export here for consumers that were reaching into the slice module.
+export {
+  CONVERSATION_LIST_TTL_MS,
+  CONVERSATION_LIST_PAGE_SIZE,
+} from "./conversation-list.types";
 
 // ── Initial state ────────────────────────────────────────────────────────────
 
@@ -241,6 +244,81 @@ const conversationListSlice = createSlice({
       existing.error = action.payload.error;
     },
 
+    /**
+     * Upsert a single conversation row into multiple per-agent caches at once.
+     * Used by the stream commit path — a new conversation appearing during
+     * execution needs to land in the canonical agent's `::all` cache plus any
+     * version-scoped caches that are open.
+     *
+     * This is the merged replacement for the legacy
+     * `upsertAgentConversationInCaches` action.
+     */
+    upsertConversationInCaches(
+      state,
+      action: PayloadAction<{
+        cacheKeys: string[];
+        row: ConversationListItem;
+        /** Each cacheKey's expected (agentId, versionFilter) so a missing
+         * cache can be seeded with the correct request identity. */
+        cacheIdentities?: Record<
+          string,
+          { agentId: string; versionFilter: number | null }
+        >;
+      }>,
+    ) {
+      const { cacheKeys, row, cacheIdentities } = action.payload;
+      mergeItem(state, row);
+      for (const key of cacheKeys) {
+        const existing = state.agentCaches[key];
+        if (existing) {
+          if (!existing.conversationIds.includes(row.conversationId)) {
+            existing.conversationIds.unshift(row.conversationId);
+          }
+          existing.status = "succeeded";
+          existing.fetchedAt = new Date().toISOString();
+        } else {
+          const identity = cacheIdentities?.[key];
+          if (!identity) continue;
+          state.agentCaches[key] = {
+            status: "succeeded",
+            error: null,
+            fetchedAt: new Date().toISOString(),
+            conversationIds: [row.conversationId],
+            request: identity,
+          };
+        }
+      }
+    },
+
+    /**
+     * Patch title/description on a conversation across the entity store. Since
+     * per-agent caches reference into the shared `byConversationId` map, this
+     * single patch is automatically visible from every view.
+     *
+     * Replaces the legacy `patchAgentConversationMetadata` action, which had
+     * to walk every cache because each one owned its own copy of the row.
+     */
+    patchConversationMetadata(
+      state,
+      action: PayloadAction<{
+        conversationId: string;
+        title?: string | null;
+        description?: string | null;
+        keywords?: string[] | null;
+      }>,
+    ) {
+      const { conversationId, title, description, keywords } = action.payload;
+      const existing = state.byConversationId[conversationId];
+      if (!existing) return;
+      state.byConversationId[conversationId] = {
+        ...existing,
+        ...(title !== undefined ? { title } : {}),
+        ...(description !== undefined ? { description } : {}),
+        ...(keywords !== undefined ? { keywords } : {}),
+        updatedAt: new Date().toISOString(),
+      };
+    },
+
     invalidateAgentCache(state, action: PayloadAction<string>) {
       delete state.agentCaches[action.payload];
     },
@@ -274,10 +352,20 @@ export const {
   setAgentCacheLoading,
   setAgentCacheSuccess,
   setAgentCacheError,
+  upsertConversationInCaches,
+  patchConversationMetadata,
   invalidateAgentCache,
   clearAllAgentCaches,
   resetConversationList,
 } = conversationListSlice.actions;
+
+/** @deprecated Legacy name. Prefer `upsertConversationInCaches`. */
+export const upsertAgentConversationInCaches =
+  conversationListSlice.actions.upsertConversationInCaches;
+
+/** @deprecated Legacy name. Prefer `patchConversationMetadata`. */
+export const patchAgentConversationMetadata =
+  conversationListSlice.actions.patchConversationMetadata;
 
 export const conversationListReducer = conversationListSlice.reducer;
 export default conversationListSlice.reducer;

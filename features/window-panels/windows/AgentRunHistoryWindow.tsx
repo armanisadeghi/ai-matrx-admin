@@ -14,13 +14,12 @@ import { cn } from "@/lib/utils";
 import { WindowPanel } from "../WindowPanel";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectAgentById } from "@/features/agents/redux/agent-definition/selectors";
-import { fetchAgentConversations } from "@/features/agents/redux/agent-conversations/agent-conversations.thunks";
-import { makeSelectAgentConversations } from "@/features/agents/redux/agent-conversations/agent-conversations.selectors";
-import type { AgentConversationListItem } from "@/features/agents/redux/agent-conversations/agent-conversations.types";
+import { fetchAgentConversations } from "@/features/agents/redux/conversation-list";
+import { makeSelectAgentConversations } from "@/features/agents/redux/conversation-list";
+import type { AgentConversationListItem } from "@/features/agents/redux/conversation-list";
 import { AgentConversationDisplay } from "@/features/agents/components/run/AgentConversationDisplay";
-import { fetchConversationHistory } from "@/features/agents/redux/old/OLD-cx-conversation/thunks";
+import { loadConversation } from "@/features/agents/redux/execution-system/thunks/load-conversation.thunk";
 import { createManualInstance } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
-import { setFocus } from "@/features/agents/redux/execution-system/conversation-focus/conversation-focus.slice";
 import type { RootState } from "@/lib/redux/store";
 import { useAppStore } from "@/lib/redux/hooks";
 import { AgentListDropdown } from "@/features/agents/components/agent-listings/AgentListDropdown";
@@ -365,8 +364,12 @@ function AgentRunHistoryWindowInner({
         );
       }
 
-      dispatch(fetchConversationHistory({ conversationId }));
-      dispatch(setFocus({ surfaceKey: SURFACE_KEY, conversationId }));
+      dispatch(
+        loadConversation({
+          conversationId,
+          surfaceKey: SURFACE_KEY,
+        }),
+      );
     },
     [agentId, dispatch, store],
   );

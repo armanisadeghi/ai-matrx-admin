@@ -23,7 +23,7 @@ import { ResourcesContainer } from "@/features/prompts/components/resource-displ
 import type {
   ConversationMessage,
   ConversationResource,
-} from "@/features/agents/redux/old/OLD-cx-message-actions/types";
+} from "@/features/agents/redux/legacy-shims/cx-message-actions-types";
 
 // ============================================================================
 // ATTACHED RESOURCES DISPLAY (structured array — images, files, etc.)

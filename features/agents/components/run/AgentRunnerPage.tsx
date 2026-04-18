@@ -20,8 +20,7 @@ import {
 } from "@/features/agents/redux/agent-definition/selectors";
 import { useAgentLauncher } from "@/features/agents/hooks/useAgentLauncher";
 import { createManualInstance } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
-import { fetchConversationHistory } from "@/features/agents/redux/old/OLD-cx-conversation/thunks";
-import { setFocus } from "@/features/agents/redux/execution-system/conversation-focus/conversation-focus.slice";
+import { loadConversation } from "@/features/agents/redux/execution-system/thunks/load-conversation.thunk";
 import { AgentLauncherSidebarTester } from "../run-controls/AgentLauncherSidebarTester";
 import { AgentConversationColumn } from "../shared/AgentConversationColumn";
 import { Loader2, TestTube2 } from "lucide-react";
@@ -116,10 +115,15 @@ export function AgentRunnerPage({ agentId }: AgentRunnerPageProps) {
         );
       }
 
+      // loadConversation rehydrates messages, variables, model overrides,
+      // display/context (from metadata), and observability — superset of the
+      // legacy fetchConversationHistory. Also sets focus when surfaceKey given.
       dispatch(
-        fetchConversationHistory({ conversationId: conversationIdFromUrl }),
+        loadConversation({
+          conversationId: conversationIdFromUrl,
+          surfaceKey,
+        }),
       );
-      dispatch(setFocus({ surfaceKey, conversationId: conversationIdFromUrl }));
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversationIdFromUrl, isInitializing, conversationId]);

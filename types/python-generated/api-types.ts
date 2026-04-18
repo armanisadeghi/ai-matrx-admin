@@ -266,6 +266,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/ai/conversation/{conversation_id}/warm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Warm Conversation
+         * @description Pre-load a conversation into the in-memory cache.
+         *
+         *     Fire-and-forget from the client's perspective — any error is logged
+         *     but never returned as a failure. The sole purpose is to shave latency
+         *     off the next real request.
+         */
+        post: operations["warm_conversation_ai_conversation__conversation_id__warm_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/ai/conversations/{conversation_id}/warm": {
         parameters: {
             query?: never;
@@ -483,6 +507,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/ai/agent/{agent_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Start Agent */
+        post: operations["start_agent_ai_agent__agent_id__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/ai/agents/{agent_id}": {
         parameters: {
             query?: never;
@@ -618,6 +659,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/ai/manual": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Chat */
+        post: operations["chat_ai_manual_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/ai/chat": {
         parameters: {
             query?: never;
@@ -629,6 +687,35 @@ export interface paths {
         put?: never;
         /** Chat */
         post: operations["chat_ai_chat_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ai/conversation/{conversation_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Continue Conversation
+         * @description Continue an existing conversation.
+         *
+         *     Resolves the UnifiedConfig from cache or DB via ConversationResolver,
+         *     appends the new user_input, then hands off to the AI engine.
+         *
+         *     Optional fields (zero impact when absent):
+         *     - ``client_tools``: tool names the client will execute instead of the server.
+         *     - ``ide_state``: per-turn ephemeral editor state (selected_text, diagnostics) appended
+         *       to user_input for this turn.  Stable session fields (git, workspace, active_file)
+         *       are ignored here — they were set as variables on the first agent turn.
+         */
+        post: operations["continue_conversation_ai_conversation__conversation_id__post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -658,6 +745,34 @@ export interface paths {
          *       are ignored here — they were set as variables on the first agent turn.
          */
         post: operations["continue_conversation_ai_conversations__conversation_id__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ai/conversation/{conversation_id}/tool_results": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Submit Tool Results
+         * @description Submit client-side tool execution results back to the suspended AI loop.
+         *
+         *     Called by the VSCode extension (or any other client-side executor) after it
+         *     has executed one or more client-delegated tool calls.  Each ``call_id`` in
+         *     the request body must match a ``tool_delegated`` event that was previously
+         *     streamed to the client.
+         *
+         *     The AI loop is automatically unblocked and continues with the provided
+         *     results as if the tools had been executed server-side.
+         */
+        post: operations["submit_tool_results_ai_conversation__conversation_id__tool_results_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2037,6 +2152,114 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/cx/conversations/{conversation_id}/invalidate-cache": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Invalidate Conversation Cache
+         * @description Drop every cached artifact for a conversation.
+         *
+         *     Called after the client has mutated ``cx_message`` / ``cx_tool_call``
+         *     / ``cx_media`` directly via Supabase, so the server rebuilds the
+         *     ``Agent`` from fresh DB rows on the next AI call. Clears BOTH the
+         *     per-conversation ``AgentCache`` entry AND the ORM ``StateManager``
+         *     caches for every ``Cx*`` model (StateManager has no FK cascade).
+         */
+        post: operations["invalidate_conversation_cache_cx_conversations__conversation_id__invalidate_cache_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cx/conversations/{conversation_id}/messages/{message_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete Message
+         * @description Delete a single ``cx_message`` row.
+         *
+         *     Hard delete — the caller is responsible for understanding that this
+         *     removes the row from history permanently. After the write, both
+         *     cache layers are busted.
+         */
+        delete: operations["delete_message_cx_conversations__conversation_id__messages__message_id__delete"];
+        options?: never;
+        head?: never;
+        /**
+         * Update Message
+         * @description Edit a single ``cx_message`` row in place.
+         *
+         *     Use for lightweight edits where the caller does NOT want to fork
+         *     history — e.g. redacting a message, fixing a typo, flipping
+         *     visibility flags. After the write, both cache layers are busted so
+         *     the next AI call rebuilds the conversation from fresh rows.
+         */
+        patch: operations["update_message_cx_conversations__conversation_id__messages__message_id__patch"];
+        trace?: never;
+    };
+    "/cx/conversations/{conversation_id}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete All Messages
+         * @description Hard-delete every message in a conversation ("clear history").
+         *
+         *     The ``cx_conversation`` row itself is left alone — only its messages
+         *     go away. Both cache layers are busted after the writes finish.
+         */
+        delete: operations["delete_all_messages_cx_conversations__conversation_id__messages_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cx/conversations/{conversation_id}/fork": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Fork Conversation
+         * @description Create a new conversation branched from an existing one.
+         *
+         *     Copies the source ``cx_conversation`` (as a new row with a fresh UUID
+         *     and ``forked_from_id`` pointing back) and every ``cx_message`` up to
+         *     ``up_to_position``. The source is left untouched. Message IDs on the
+         *     fork are freshly generated so the two conversations remain
+         *     independently editable.
+         */
+        post: operations["fork_conversation_cx_conversations__conversation_id__fork_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/media/podcast/upload-image": {
         parameters: {
             query?: never;
@@ -2563,6 +2786,7 @@ export interface components {
              * @default false
              */
             block_mode: boolean;
+            cache_bypass?: components["schemas"]["CacheBypass"] | null;
         };
         /** AnalyzeBulkRequest */
         AnalyzeBulkRequest: {
@@ -2679,6 +2903,52 @@ export interface components {
              * Format: binary
              */
             file: string;
+        };
+        /**
+         * CacheBypass
+         * @description Opt-in cache invalidation flags attached to an AI request body.
+         *
+         *     All fields default to ``False`` — callers pay nothing for the feature
+         *     when they do not use it.
+         *
+         *     conversation
+         *         Bust ``AgentCache`` for the current conversation AND flush every
+         *         ``Cx*`` model in the ORM ``StateManager``. Required when the
+         *         caller has written to ``cx_message`` / ``cx_tool_call`` /
+         *         ``cx_media`` directly (e.g. via Supabase client).
+         *     agent
+         *         Flush ``AgxAgent`` and ``AgxVersion`` caches in the ORM
+         *         ``StateManager``. Required after the agent definition has been
+         *         edited.
+         *     tools
+         *         Flush the ``Tools`` model cache in the ORM ``StateManager``.
+         *         Required after a tool definition has been edited.
+         *     models
+         *         Flush the ``AiModel`` cache AND rebuild the standalone
+         *         ``_pricing_lookup_cache``. Required after an AI model row has
+         *         been added / edited / repriced.
+         */
+        CacheBypass: {
+            /**
+             * Conversation
+             * @default false
+             */
+            conversation: boolean;
+            /**
+             * Agent
+             * @default false
+             */
+            agent: boolean;
+            /**
+             * Tools
+             * @default false
+             */
+            tools: boolean;
+            /**
+             * Models
+             * @default false
+             */
+            models: boolean;
         };
         /** CategorizeRequest */
         CategorizeRequest: {
@@ -2873,6 +3143,7 @@ export interface components {
              * @default false
              */
             block_mode: boolean;
+            cache_bypass?: components["schemas"]["CacheBypass"] | null;
             /** Metadata */
             metadata?: {
                 [key: string]: unknown;
@@ -2994,6 +3265,7 @@ export interface components {
              * @default false
              */
             block_mode: boolean;
+            cache_bypass?: components["schemas"]["CacheBypass"] | null;
         };
         /** DirectChatRequest */
         DirectChatRequest: {
@@ -3089,6 +3361,23 @@ export interface components {
              * @default 100
              */
             use_ocr_threshold: number;
+        };
+        /**
+         * ForkRequest
+         * @description Payload for forking a conversation.
+         *
+         *     ``up_to_position`` — when set, only messages with ``position`` less
+         *     than or equal to this value are copied to the fork. Callers use this
+         *     to branch mid-conversation. ``None`` copies every message.
+         *
+         *     ``title`` — optional title for the forked conversation. Defaults to
+         *     the source conversation's title prefixed with ``"Fork: "``.
+         */
+        ForkRequest: {
+            /** Up To Position */
+            up_to_position?: number | null;
+            /** Title */
+            title?: string | null;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -3298,6 +3587,33 @@ export interface components {
         MediaUpdate: {
             /** Is Relevant */
             is_relevant?: boolean | null;
+        };
+        /**
+         * MessageUpdate
+         * @description Fields the client can edit on an existing ``cx_message`` row.
+         *
+         *     Every field is optional — only fields the caller actually sets are
+         *     written to the DB. ``content`` accepts the same structured JSON the
+         *     server would have written (list of parts) — callers that want to
+         *     edit a simple text message should still send the list form.
+         */
+        MessageUpdate: {
+            /** Content */
+            content?: {
+                [key: string]: unknown;
+            }[] | null;
+            /** Role */
+            role?: string | null;
+            /** Status */
+            status?: string | null;
+            /** Is Visible To User */
+            is_visible_to_user?: boolean | null;
+            /** Is Visible To Model */
+            is_visible_to_model?: boolean | null;
+            /** Metadata */
+            metadata?: {
+                [key: string]: unknown;
+            } | null;
         };
         /** PdfPipelineOptions */
         PdfPipelineOptions: {
@@ -4428,6 +4744,37 @@ export interface operations {
             };
         };
     };
+    warm_conversation_ai_conversation__conversation_id__warm_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     warm_conversation_ai_conversations__conversation_id__warm_post: {
         parameters: {
             query?: never;
@@ -4734,6 +5081,43 @@ export interface operations {
             };
         };
     };
+    start_agent_ai_agent__agent_id__post: {
+        parameters: {
+            query?: {
+                is_version?: boolean;
+            };
+            header?: never;
+            path: {
+                agent_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AgentStartRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     start_agent_ai_agents__agent_id__post: {
         parameters: {
             query?: {
@@ -4942,6 +5326,39 @@ export interface operations {
             };
         };
     };
+    chat_ai_manual_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChatRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     chat_ai_chat_post: {
         parameters: {
             query?: never;
@@ -4952,6 +5369,41 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["ChatRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    continue_conversation_ai_conversation__conversation_id__post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConversationContinueRequest"];
             };
         };
         responses: {
@@ -4987,6 +5439,41 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["ConversationContinueRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    submit_tool_results_ai_conversation__conversation_id__tool_results_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ToolResultsRequest"];
             };
         };
         responses: {
@@ -7743,6 +8230,171 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    invalidate_conversation_cache_cx_conversations__conversation_id__invalidate_cache_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_message_cx_conversations__conversation_id__messages__message_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversation_id: string;
+                message_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_message_cx_conversations__conversation_id__messages__message_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversation_id: string;
+                message_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MessageUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_all_messages_cx_conversations__conversation_id__messages_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    fork_conversation_cx_conversations__conversation_id__fork_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["ForkRequest"] | null;
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {

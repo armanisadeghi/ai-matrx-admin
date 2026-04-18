@@ -18,6 +18,30 @@ export default function LucideFullDemo() {
 
   return (
     <div className="space-y-4">
+      <div className="rounded-md border border-amber-500/40 bg-amber-500/10 dark:bg-amber-500/15 px-3 py-2 text-xs text-foreground">
+        <p className="font-semibold">How to try discovery</p>
+        <ol className="list-decimal list-inside mt-1.5 space-y-1 text-muted-foreground">
+          <li>
+            In the first card, click the{" "}
+            <span className="text-foreground font-medium">outlined button</span>{" "}
+            labeled with the small icon +{" "}
+            <code className="font-mono text-foreground">Folder</code> (or
+            “Choose Icon” if empty).
+          </li>
+          <li>
+            A dialog opens: use the search field, scroll the grid, click an icon
+            to select it.
+          </li>
+          <li>
+            In the second card, the same outline button sits{" "}
+            <span className="text-foreground font-medium">
+              to the right of the text field
+            </span>{" "}
+            — that also opens the full grid.
+          </li>
+        </ol>
+      </div>
+
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm flex flex-wrap items-center gap-2">
@@ -27,7 +51,7 @@ export default function LucideFullDemo() {
             </Badge>
           </CardTitle>
           <p className="text-xs text-muted-foreground">
-            All Lucide exports — search + grid. Selected:{" "}
+            Discovery UI: click the button below (not this text). Selected:{" "}
             <span className="font-mono text-foreground">{pickerIcon}</span>
           </p>
         </CardHeader>

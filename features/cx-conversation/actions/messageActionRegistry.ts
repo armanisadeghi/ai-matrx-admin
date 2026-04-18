@@ -35,8 +35,30 @@ import { printMarkdownContent } from "@/features/conversation/utils/markdown-pri
 import { loadWordPressCSS } from "@/features/html-pages/css/wordpress-styles";
 import { NotesAPI } from "@/features/notes";
 import { toast } from "sonner";
-import { chatConversationsActions } from "@/features/agents/redux/old/OLD-cx-message-actions/slice";
-import { editMessage } from "@/features/agents/redux/old/OLD-cx-message-actions/thunks/editMessage";
+// ── Legacy action shims during Redux unification ─────────────────────────────
+// cx-conversation is deprecated (chat rebuild in progress). The registry is
+// still imported by MessageOptionsMenu which the Runner transitively loads.
+// We stub the legacy dispatches so imports resolve and the menu renders —
+// action handlers are no-ops until chat is rebuilt against `messages/` slice.
+import { createAsyncThunk } from "@reduxjs/toolkit";
+
+const chatConversationsActions = {
+  updateMessage: (_payload: unknown) => ({
+    type: "messageActions/legacy-updateMessage-noop" as const,
+    payload: _payload,
+  }),
+  resetMessageContent: (_payload: unknown) => ({
+    type: "messageActions/legacy-resetMessageContent-noop" as const,
+    payload: _payload,
+  }),
+};
+
+// Proper createAsyncThunk so callers that do `dispatch(editMessage(...)).unwrap()`
+// keep working. Resolves to undefined — no DB write until chat is rebuilt.
+const editMessage = createAsyncThunk<void, unknown>(
+  "legacy/editMessage-cx-registry",
+  async () => undefined,
+);
 import { buildContentBlocksForSave } from "@/features/cx-conversation/utils/buildContentBlocksForSave";
 import {
   openOverlay,

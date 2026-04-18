@@ -72,9 +72,9 @@ export { useAuthenticatedChatProps } from "./hooks/useAuthenticatedChatProps";
 // STATE (actions, selectors, thunks)
 // ============================================================================
 
-export { chatConversationsActions } from "@/features/agents/redux/old/OLD-cx-message-actions/slice";
-export { sendMessage } from "@/features/agents/redux/old/OLD-cx-message-actions/thunks/sendMessage";
-export { loadConversationHistory } from "@/features/agents/redux/old/OLD-cx-message-actions/thunks/loadConversationHistory";
+export { chatConversationsActions } from "@/features/agents/redux/legacy-shims/cx-message-actions-slice";
+export { sendMessage } from "@/features/agents/redux/legacy-shims/cx-message-actions-thunks";
+export { loadConversationHistory } from "@/features/agents/redux/legacy-shims/cx-message-actions-thunks";
 export {
   selectMessages,
   selectIsStreaming,
@@ -88,7 +88,7 @@ export {
   selectUIState,
   selectApiMode,
   selectChatModeConfig,
-} from "@/features/agents/redux/old/OLD-cx-message-actions/selectors";
+} from "@/features/agents/redux/legacy-shims/cx-message-actions-selectors";
 
 // ============================================================================
 // UTILS (internalized)
@@ -130,4 +130,4 @@ export type {
   SessionUIState,
   ApiMode,
   ChatModeConfig,
-} from "@/features/agents/redux/old/OLD-cx-message-actions/types";
+} from "@/features/agents/redux/legacy-shims/cx-message-actions-types";

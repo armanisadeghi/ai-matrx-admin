@@ -48,16 +48,35 @@ import { setFocus } from "../conversation-focus/conversation-focus.slice";
 // =============================================================================
 // Bundle shape
 //
-// Matches the target `get_cx_conversation_bundle` RPC return. Populated either
-// by that RPC (preferred) or by the fallback parallel-queries path below.
+// Matches the `get_cx_conversation_bundle(uuid, int, smallint)` RPC return.
+// The RPC returns JSONB keyed with snake_case table names; this thunk maps
+// them onto the camelCase slice actions.
+//
+// Supported pagination args (exposed by the RPC):
+//   p_message_limit      — default 10, clamped to [1, 200]
+//   p_before_position    — cursor; fetch messages with position < this
+//
+// Artifacts and media are scoped to the returned messages only; older
+// turns are loaded separately via a future `loadOlderMessages` thunk.
 // =============================================================================
 
 interface CxConversationBundle {
   conversation: CxConversationRow;
   messages: CxMessageRow[];
-  toolCalls: CxToolCallRow[];
-  userRequests: CxUserRequestRow[];
-  requests: CxRequestRow[];
+  tool_calls: CxToolCallRow[];
+  artifacts: unknown[];
+  media: unknown[];
+  pagination: {
+    limit: number;
+    returned_count: number;
+    oldest_position: number | null;
+    has_more: boolean;
+  };
+  // Legacy parity fields — unused by the current RPC but populated when the
+  // fallback path (parallel table queries) runs, so the downstream commit
+  // logic can handle observability without branching.
+  userRequests?: CxUserRequestRow[];
+  requests?: CxRequestRow[];
 }
 
 // Minimal row aliases — intentionally loose (the generated types aren't all
@@ -206,26 +225,40 @@ interface CxRequestRow {
 // Bundle fetch — RPC-first with fallback
 // =============================================================================
 
+interface FetchBundleOptions {
+  messageLimit?: number;
+  beforePosition?: number | null;
+}
+
 async function fetchConversationBundle(
   conversationId: string,
+  options: FetchBundleOptions = {},
 ): Promise<CxConversationBundle> {
-  // Preferred: RPC round-trip. Until `get_cx_conversation_bundle` exists in
-  // the generated types, this falls through to the parallel-query path.
+  const { messageLimit = 50, beforePosition = null } = options;
+
+  // Preferred: single-round-trip RPC (`get_cx_conversation_bundle`) — SQL
+  // signature: (p_conversation_id uuid, p_message_limit int, p_before_position smallint).
+  // The RPC isn't in the generated `Functions` block yet so we call it
+  // through an `any` cast until types are regenerated.
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const rpcAny = supabase.rpc as any;
     const { data, error } = await rpcAny("get_cx_conversation_bundle", {
-      conversation_id: conversationId,
+      p_conversation_id: conversationId,
+      p_message_limit: messageLimit,
+      p_before_position: beforePosition,
     });
     if (!error && data) {
+      // RPC omits the legacy observability arrays — downstream code handles
+      // the missing fields gracefully (hydrateObservability tolerates []).
       return data as CxConversationBundle;
     }
   } catch {
-    // RPC not present yet — fall through.
+    // RPC call threw — fall through to the parallel-query fallback.
   }
 
-  // Fallback: parallel table queries. Replace with the RPC call once it lands
-  // (the return shape matches).
+  // Fallback: parallel table queries. Runs if the RPC isn't deployed (dev
+  // DB) or errors transiently. Shape matches the RPC contract.
   const [
     conversationRes,
     messagesRes,
@@ -269,10 +302,20 @@ async function fetchConversationBundle(
     throw new Error(`Conversation ${conversationId} not found`);
   }
 
+  const messages = (messagesRes.data ??
+    []) as unknown as CxMessageRow[];
   return {
     conversation: conversationRes.data as unknown as CxConversationRow,
-    messages: (messagesRes.data ?? []) as unknown as CxMessageRow[],
-    toolCalls: (toolCallsRes.data ?? []) as unknown as CxToolCallRow[],
+    messages,
+    tool_calls: (toolCallsRes.data ?? []) as unknown as CxToolCallRow[],
+    artifacts: [],
+    media: [],
+    pagination: {
+      limit: messageLimit,
+      returned_count: messages.length,
+      oldest_position: messages[0]?.position ?? null,
+      has_more: false,
+    },
     userRequests: (userRequestsRes.data ?? []) as unknown as CxUserRequestRow[],
     requests: (requestsRes.data ?? []) as unknown as CxRequestRow[],
   };
@@ -407,6 +450,17 @@ export interface LoadConversationArgs {
   conversationId: string;
   /** Optional — surface key to set focus on after rehydration. */
   surfaceKey?: string;
+  /**
+   * How many recent messages to fetch. Forwarded to the
+   * `get_cx_conversation_bundle(..., p_message_limit, ...)` RPC arg. RPC
+   * clamps to [1, 200]. Default 50.
+   */
+  messageLimit?: number;
+  /**
+   * Optional cursor: only fetch messages with `position < beforePosition`.
+   * Used for pagination when scrolling older turns into view.
+   */
+  beforePosition?: number | null;
 }
 
 interface ThunkApi {
@@ -430,8 +484,14 @@ export const loadConversation = createAsyncThunk<
   { conversationId: string },
   LoadConversationArgs,
   ThunkApi
->("conversations/load", async ({ conversationId, surfaceKey }, { dispatch }) => {
-  const bundle = await fetchConversationBundle(conversationId);
+>("conversations/load", async (
+  { conversationId, surfaceKey, messageLimit, beforePosition },
+  { dispatch },
+) => {
+  const bundle = await fetchConversationBundle(conversationId, {
+    messageLimit,
+    beforePosition,
+  });
   const conv = bundle.conversation;
 
   // ── 1. Conversation record (includes sidebar + scope + relation fields) ──
@@ -571,9 +631,9 @@ export const loadConversation = createAsyncThunk<
   dispatch(
     hydrateObservability({
       conversationId,
-      userRequests: bundle.userRequests.map(userRequestRowToRecord),
-      requests: bundle.requests.map(requestRowToRecord),
-      toolCalls: bundle.toolCalls.map(toolCallRowToRecord),
+      userRequests: (bundle.userRequests ?? []).map(userRequestRowToRecord),
+      requests: (bundle.requests ?? []).map(requestRowToRecord),
+      toolCalls: bundle.tool_calls.map(toolCallRowToRecord),
     }),
   );
 

@@ -1,45 +1,51 @@
+/**
+ * conversation-list thunks.
+ *
+ * Port of the legacy `agent-conversations` RPC thunks onto the unified
+ * `conversationList` slice. The RPC surface is unchanged (`get_agent_conversations`);
+ * the normalization pipeline now writes into the shared entity store +
+ * per-agent cache references.
+ */
+
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { supabase } from "@/utils/supabase/client";
 import type { Database } from "@/types/database.types";
 import type { AppThunk, RootState } from "@/lib/redux/store";
-import type {
-  AgentConversationListItem,
-  AgentConversationsRequestIdentity,
-} from "./agent-conversations.types";
-import { agentConversationsCacheKey } from "./agent-conversations.types";
+import type { ConversationListItem } from "./conversation-list.types";
+import { conversationListCacheKey } from "./conversation-list.types";
 import { selectAgentIdFromInstance } from "@/features/agents/redux/execution-system/conversations/conversations.selectors";
+import {
+  setAgentCacheLoading,
+  setAgentCacheSuccess,
+  setAgentCacheError,
+} from "./conversation-list.slice";
 
 type GetAgentConversationsReturns =
   Database["public"]["Functions"]["get_agent_conversations"]["Returns"];
 type RpcRow = GetAgentConversationsReturns[number];
 
-/** Pass-through to RPC after normalization (canonical agx_agent.id). */
+// ── Input shapes (legacy parity) ─────────────────────────────────────────────
+
 export interface FetchAgentConversationsNormalizedArgs {
   agentId: string;
   versionFilter: number | null;
 }
 
-/**
- * UI / components: either `agentId` (any id that exists in agentDefinition.agents)
- * or `instanceId`. Map-key ids (including version snapshot ids) are resolved to
- * canonical `p_agent_id` for get_agent_conversations.
- */
 export type FetchAgentConversationsArgInput =
   | { agentId: string; versionFilter?: number | null; instanceId?: never }
   | { instanceId: string; versionFilter?: number | null; agentId?: never };
 
-/** @deprecated Use FetchAgentConversationsArgInput */
+/** @deprecated Use FetchAgentConversationsArgInput. */
 export type FetchAgentConversationsArgs = FetchAgentConversationsArgInput;
 
 export interface FetchAgentConversationsResult {
   cacheKey: string;
-  request: AgentConversationsRequestIdentity;
-  conversations: AgentConversationListItem[];
+  request: { agentId: string; versionFilter: number | null };
+  conversations: ConversationListItem[];
 }
 
-/**
- * Resolve map-key → canonical agx_agent.id for list RPC + cache keys.
- */
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
 export function resolveCanonicalAgentIdForConversationsFetch(
   input: FetchAgentConversationsArgInput,
   state: RootState,
@@ -62,12 +68,9 @@ export function resolveCanonicalAgentIdForConversationsFetch(
   return { canonicalAgentId, versionFilter };
 }
 
-/**
- * Maps one RPC row → app shape (snake_case → camelCase).
- */
-export function mapRpcRowToAgentConversationListItem(
+export function mapRpcRowToConversationListItem(
   row: RpcRow,
-): AgentConversationListItem {
+): ConversationListItem {
   return {
     conversationId: row.conversation_id,
     title: row.title,
@@ -84,48 +87,65 @@ export function mapRpcRowToAgentConversationListItem(
   };
 }
 
-/**
- * Low-level thunk (normalized agent id only). Prefer `fetchAgentConversations` from components.
- */
+/** @deprecated Kept under the legacy name for grep-compatibility. */
+export const mapRpcRowToAgentConversationListItem =
+  mapRpcRowToConversationListItem;
+
+// ── Thunks ───────────────────────────────────────────────────────────────────
+
 export const fetchAgentConversationsNormalized = createAsyncThunk<
   FetchAgentConversationsResult,
   FetchAgentConversationsNormalizedArgs,
   { rejectValue: string }
->("agentConversations/fetchNormalized", async (args, { rejectWithValue }) => {
-  const { agentId, versionFilter } = args;
+>(
+  "conversationList/fetchAgentConversationsNormalized",
+  async (args, { dispatch, rejectWithValue }) => {
+    const { agentId, versionFilter } = args;
+    const cacheKey = conversationListCacheKey(agentId, versionFilter);
 
-  const rpcArgs: Database["public"]["Functions"]["get_agent_conversations"]["Args"] =
-    {
-      p_agent_id: agentId,
-      ...(versionFilter !== null ? { p_version_number: versionFilter } : {}),
+    dispatch(setAgentCacheLoading({ cacheKey, agentId, versionFilter }));
+
+    const rpcArgs: Database["public"]["Functions"]["get_agent_conversations"]["Args"] =
+      {
+        p_agent_id: agentId,
+        ...(versionFilter !== null
+          ? { p_version_number: versionFilter }
+          : {}),
+      };
+
+    const { data, error } = await supabase.rpc(
+      "get_agent_conversations",
+      rpcArgs,
+    );
+
+    if (error) {
+      dispatch(setAgentCacheError({ cacheKey, error: error.message }));
+      return rejectWithValue(error.message);
+    }
+
+    const rows = data ?? [];
+    const conversations = rows.map(mapRpcRowToConversationListItem);
+
+    dispatch(
+      setAgentCacheSuccess({
+        cacheKey,
+        agentId,
+        versionFilter,
+        items: conversations,
+      }),
+    );
+
+    return {
+      cacheKey,
+      request: { agentId, versionFilter },
+      conversations,
     };
-
-  const { data, error } = await supabase.rpc(
-    "get_agent_conversations",
-    rpcArgs,
-  );
-
-  if (error) {
-    return rejectWithValue(error.message);
-  }
-
-  const rows = data ?? [];
-  const conversations = rows.map(mapRpcRowToAgentConversationListItem);
-  const request: AgentConversationsRequestIdentity = {
-    agentId,
-    versionFilter,
-  };
-
-  return {
-    cacheKey: agentConversationsCacheKey(agentId, versionFilter),
-    request,
-    conversations,
-  };
-});
+  },
+);
 
 /**
- * Fetches agent conversation lists using either a canonical/map `agentId` or an `instanceId`
- * (resolved to canonical id via agentDefinition).
+ * Public thunk — accepts agentId OR instanceId. Resolves map-key → canonical
+ * agx_agent.id before dispatching the RPC-backed normalized thunk.
  */
 export function fetchAgentConversations(
   input: FetchAgentConversationsArgInput,

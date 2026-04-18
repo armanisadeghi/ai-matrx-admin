@@ -17,7 +17,7 @@ import overlaySlice from "./slices/overlaySlice";
 import overlayDataReducer from "./slices/overlayDataSlice";
 
 // Message actions instance tracking (registers per-message context for overlay dispatch)
-import { messageActionsReducer } from "@/features/agents/redux/old/OLD-cx-message-actions/messageActionsSlice";
+import { messageActionsReducer } from "@/features/agents/redux/execution-system/message-actions";
 
 // Artifact registry + HTML page sessions (used by HtmlPreviewBridge in OverlayController)
 import artifactsReducer from "./slices/artifactsSlice";
@@ -58,8 +58,7 @@ import messagingReducer from "@/features/messaging/redux/messagingSlice";
 // SMS
 import smsReducer from "@/features/sms/redux/smsSlice";
 
-// Unified conversation system (empty until chat session starts)
-import { chatConversationsReducer } from "@/features/agents/redux/old/OLD-cx-message-actions";
+// chatConversations — unmounted (Redux unification). File remains on disk.
 
 // Chat system (empty until chat page loads)
 import { conversationReducer } from "./features/aiChats/conversationSlice";
@@ -85,8 +84,7 @@ import entitySystemReducer from "./slices/entitySystemSlice";
 // Context menu cache (populated server-side via get_ssr_shell_data RPC)
 import contextMenuCacheReducer from "./slices/contextMenuCacheSlice";
 
-// Active chat page state (selected agent, block mode, agent picker)
-import activeChatReducer from "../../features/agents/redux/old/activeChatSlice";
+// activeChat — unmounted (Redux unification). File remains on disk.
 
 // App context (org/project/task/conversation scope — required by callApi resolveScope)
 import appContextReducer from "../../features/agent-context/redux/appContextSlice";
@@ -194,8 +192,7 @@ export const createLiteRootReducer = () => {
     // SMS
     sms: smsReducer,
 
-    // Unified conversation system (starts empty, initialized per session)
-    chatConversations: chatConversationsReducer,
+    // chatConversations unmounted — superseded by messages/conversations slices.
 
     // Chat system (all start empty, populated when chat pages load)
     conversation: conversationReducer,
@@ -221,8 +218,7 @@ export const createLiteRootReducer = () => {
     // Context menu cache (SSR pre-populated, no client fetch)
     contextMenuCache: contextMenuCacheReducer,
 
-    // Active chat page state (selected agent, block mode, agent picker)
-    activeChat: activeChatReducer,
+    // activeChat unmounted — superseded by conversations slice.
 
     // App context scope — required by callApi.resolveScope() for org/project/task/conversation
     appContext: appContextReducer,

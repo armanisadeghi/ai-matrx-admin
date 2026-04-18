@@ -37,21 +37,58 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ShareModal } from "@/features/sharing";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import {
-  selectCxConversationItems,
-  selectCxConversationListStatus,
-  selectCxConversationHasMore,
-  selectCxConversationIsPending,
-  prependConversation,
-  touchConversation,
-} from "@/features/agents/redux/old/OLD-cx-conversation/cx-conversations.slice";
-import {
-  fetchConversationList,
-  fetchConversationListMore,
-  renameConversationMutation,
-  deleteConversationMutation,
-} from "@/features/agents/redux/old/OLD-cx-conversation/thunks";
-import type { CxConversationListItem } from "@/features/agents/redux/old/OLD-cx-conversation/types";
+// ── Legacy cx-conversation slice stubs ────────────────────────────────────────
+// cx-chat is deprecated (rebuild in progress on `conversation-list/` slice).
+// During the Redux unification we kept this component rendering but inert:
+// selectors return empty state; mutations resolve to no-ops. When chat is
+// rebuilt, swap these for `selectGlobalConversationList`, the
+// `conversationListActions.*` optimistic mutations, and real thunks.
+import { createAsyncThunk } from "@reduxjs/toolkit";
+import type { RootState } from "@/lib/redux/store";
+
+interface CxConversationListItem {
+  id: string;
+  title: string | null;
+  updatedAt: string;
+  messageCount: number;
+  status: "active" | "completed" | "archived";
+}
+const EMPTY_ITEMS: CxConversationListItem[] = [];
+const selectCxConversationItems = (_state: RootState): CxConversationListItem[] =>
+  EMPTY_ITEMS;
+const selectCxConversationListStatus = (
+  _state: RootState,
+): "idle" | "loading" | "success" | "error" => "idle";
+const selectCxConversationHasMore = (_state: RootState): boolean => false;
+const selectCxConversationIsPending =
+  (_id: string) => (_state: RootState): boolean => false;
+const prependConversation = (payload: CxConversationListItem) => ({
+  type: "cxConversations/legacy-prepend-noop" as const,
+  payload,
+});
+const touchConversation = (payload: {
+  id: string;
+  updatedAt?: string;
+}) => ({
+  type: "cxConversations/legacy-touch-noop" as const,
+  payload,
+});
+const fetchConversationList = createAsyncThunk<
+  void,
+  { force?: boolean } | void
+>("legacy/fetchConversationList", async () => undefined);
+const fetchConversationListMore = createAsyncThunk<
+  void,
+  { offset: number; searchTerm?: string }
+>("legacy/fetchConversationListMore", async () => undefined);
+const renameConversationMutation = createAsyncThunk<
+  void,
+  { id: string; title: string }
+>("legacy/renameConversationMutation", async () => undefined);
+const deleteConversationMutation = createAsyncThunk<void, string>(
+  "legacy/deleteConversationMutation",
+  async () => undefined,
+);
 import type { SharedCxConversationSummary } from "@/features/cx-chat/types/cx-tables";
 
 // ── Types ─────────────────────────────────────────────────────────────────────

@@ -1,17 +1,4 @@
 /**
- * Conversation list types — unified shape replacing `agentConversations`
- * (per-agent RPC cache) and `cxConversations` (global sidebar list).
- *
- * Entities live once in `byConversationId`. The global sidebar view reads
- * the ordered `allConversationIds`. Agent-scoped views read `agentCaches`
- * which hold ordered id arrays that reference into the same entity store.
- */
-
-import { agentConversationsCacheKey } from "../agent-conversations/agent-conversations.types";
-
-export { agentConversationsCacheKey };
-
-/**
  * Unified list-item shape — superset of `AgentConversationListItem`
  * (agent-scoped RPC) and `CxConversationListItem` (sidebar direct read).
  * Fields that only one of the two sources populates are optional.
@@ -36,6 +23,9 @@ export interface ConversationListItem {
   sourceApp?: string;
   sourceFeature?: string;
 }
+
+/** @deprecated Legacy name. Prefer `ConversationListItem`. */
+export type AgentConversationListItem = ConversationListItem;
 
 export type ConversationListLoadStatus =
   | "idle"
@@ -81,3 +71,28 @@ export interface ConversationListState {
    */
   pendingOperations: string[];
 }
+
+// ── Tunables ─────────────────────────────────────────────────────────────────
+
+export const CONVERSATION_LIST_TTL_MS = 5 * 60 * 1000; // 5 minutes
+export const CONVERSATION_LIST_PAGE_SIZE = 25;
+
+// ── Cache key helper ─────────────────────────────────────────────────────────
+
+/**
+ * Stable key for the per-agent cache inside `conversationList.agentCaches`.
+ * The key folds in an optional version filter so "all versions" and
+ * "one version" never overwrite each other.
+ */
+export function conversationListCacheKey(
+  agentId: string,
+  versionFilter: number | null,
+): string {
+  if (versionFilter === null) {
+    return `${agentId}::all`;
+  }
+  return `${agentId}::v${versionFilter}`;
+}
+
+/** @deprecated Legacy name. Prefer `conversationListCacheKey`. */
+export const agentConversationsCacheKey = conversationListCacheKey;

@@ -34,8 +34,37 @@ export interface TaskUiState {
   filterScopeIds: string[];
   filterScopeMatchAll: boolean;
 
+  // List grouping + sort direction
+  groupBy: TaskGroupBy;
+  sortOrder: "asc" | "desc";
+
+  // Currently selected task in the middle pane (opens in main editor)
+  selectedTaskId: string | null;
+
+  // Per-task edit drafts. Only fields that diverge from the server live here;
+  // presence of a non-empty entry === dirty.
+  taskEdits: Record<string, TaskEditDraft>;
+
   // Post-create handoff (for non-blocking "Edit details" banner)
   lastCreatedTaskId: string | null;
+}
+
+export type TaskGroupBy =
+  | "project"
+  | "scope"
+  | "priority"
+  | "status"
+  | "dueDate"
+  | "none";
+
+export interface TaskEditDraft {
+  title?: string;
+  description?: string;
+  due_date?: string | null;
+  priority?: "low" | "medium" | "high" | null;
+  project_id?: string | null;
+  assignee_id?: string | null;
+  labels?: string[];
 }
 
 const initialState: TaskUiState = {
@@ -62,6 +91,11 @@ const initialState: TaskUiState = {
 
   filterScopeIds: [],
   filterScopeMatchAll: false,
+
+  groupBy: "project",
+  sortOrder: "desc",
+  selectedTaskId: null,
+  taskEdits: {},
 
   lastCreatedTaskId: null,
 };
@@ -253,6 +287,46 @@ const slice = createSlice({
       state.filterScopeMatchAll = action.payload;
     },
 
+    // ─── Group / sort direction ─────────────────────────────────────────────
+    setGroupBy(state, action: PayloadAction<TaskGroupBy>) {
+      state.groupBy = action.payload;
+    },
+    setSortOrder(state, action: PayloadAction<"asc" | "desc">) {
+      state.sortOrder = action.payload;
+    },
+    toggleSortOrder(state) {
+      state.sortOrder = state.sortOrder === "desc" ? "asc" : "desc";
+    },
+
+    // ─── Selected task (opens in main editor) ───────────────────────────────
+    setSelectedTaskId(state, action: PayloadAction<string | null>) {
+      state.selectedTaskId = action.payload;
+    },
+
+    // ─── Task editor draft (for isDirty tracking + save) ────────────────────
+    patchTaskEdit(
+      state,
+      action: PayloadAction<{ taskId: string; patch: TaskEditDraft }>,
+    ) {
+      const { taskId, patch } = action.payload;
+      const current = state.taskEdits[taskId] ?? {};
+      const next: TaskEditDraft = { ...current };
+      for (const [k, v] of Object.entries(patch) as [
+        keyof TaskEditDraft,
+        TaskEditDraft[keyof TaskEditDraft],
+      ][]) {
+        // @ts-expect-error — keyof narrowing across union
+        next[k] = v;
+      }
+      state.taskEdits[taskId] = next;
+    },
+    clearTaskEdit(state, action: PayloadAction<string>) {
+      delete state.taskEdits[action.payload];
+    },
+    clearAllTaskEdits(state) {
+      state.taskEdits = {};
+    },
+
     // ─── Post-create ────────────────────────────────────────────────────────
     setLastCreatedTaskId(state, action: PayloadAction<string | null>) {
       state.lastCreatedTaskId = action.payload;
@@ -292,6 +366,13 @@ export const {
   toggleFilterScopeId,
   clearFilterScopes,
   setFilterScopeMatchAll,
+  setGroupBy,
+  setSortOrder,
+  toggleSortOrder,
+  setSelectedTaskId,
+  patchTaskEdit,
+  clearTaskEdit,
+  clearAllTaskEdits,
   setLastCreatedTaskId,
 } = slice.actions;
 
@@ -339,3 +420,21 @@ export const selectFilterScopeMatchAll = (s: StateWithTasksUi) =>
   s.tasksUi.filterScopeMatchAll;
 export const selectLastCreatedTaskId = (s: StateWithTasksUi) =>
   s.tasksUi.lastCreatedTaskId;
+export const selectGroupBy = (s: StateWithTasksUi) => s.tasksUi.groupBy;
+export const selectSortOrder = (s: StateWithTasksUi) => s.tasksUi.sortOrder;
+export const selectSelectedTaskId = (s: StateWithTasksUi) =>
+  s.tasksUi.selectedTaskId;
+export const selectTaskEdits = (s: StateWithTasksUi) => s.tasksUi.taskEdits;
+
+const EMPTY_DRAFT: TaskEditDraft = Object.freeze({});
+export const selectTaskEdit =
+  (taskId: string) =>
+  (s: StateWithTasksUi): TaskEditDraft =>
+    s.tasksUi.taskEdits[taskId] ?? EMPTY_DRAFT;
+
+export const selectTaskIsDirty =
+  (taskId: string) =>
+  (s: StateWithTasksUi): boolean => {
+    const draft = s.tasksUi.taskEdits[taskId];
+    return !!draft && Object.keys(draft).length > 0;
+  };

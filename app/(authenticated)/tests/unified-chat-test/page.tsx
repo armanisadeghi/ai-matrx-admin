@@ -14,7 +14,8 @@
 import { useState, useCallback, useRef } from "react";
 import { UnifiedChatWrapper } from "@/features/cx-conversation";
 import type { ConversationSessionReturn } from "@/features/cx-conversation";
-import type { ApiMode } from "@/features/agents/redux/old/OLD-cx-message-actions/types";
+// Legacy ApiMode — chat is being rebuilt; reproduce the enum locally.
+type ApiMode = "agent" | "conversation" | "chat";
 import { Button } from "@/components/ui/button";
 import {
   MessageSquare,

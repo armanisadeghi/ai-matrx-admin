@@ -18,9 +18,9 @@
 import { useEffect, useRef, useCallback, useMemo } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { chatConversationsActions } from "@/features/agents/redux/old/OLD-cx-message-actions/slice";
-import { sendMessage } from "@/features/agents/redux/old/OLD-cx-message-actions/thunks/sendMessage";
-import { loadConversationHistory } from "@/features/agents/redux/old/OLD-cx-message-actions/thunks/loadConversationHistory";
+import { chatConversationsActions } from "@/features/agents/redux/legacy-shims/cx-message-actions-slice";
+import { sendMessage } from "@/features/agents/redux/legacy-shims/cx-message-actions-thunks";
+import { loadConversationHistory } from "@/features/agents/redux/legacy-shims/cx-message-actions-thunks";
 import {
   selectMessages,
   selectIsStreaming,
@@ -33,12 +33,12 @@ import {
   selectVariableDefaults,
   selectUIState,
   selectApiMode,
-} from "@/features/agents/redux/old/OLD-cx-message-actions/selectors";
+} from "@/features/agents/redux/legacy-shims/cx-message-actions-selectors";
 import type {
   ApiMode,
   ChatModeConfig,
   ConversationResource,
-} from "@/features/agents/redux/old/OLD-cx-message-actions/types";
+} from "@/features/agents/redux/legacy-shims/cx-message-actions-types";
 import type { PromptVariable } from "@/features/prompts/types/core";
 import type { Resource } from "@/features/prompts/types/resources";
 

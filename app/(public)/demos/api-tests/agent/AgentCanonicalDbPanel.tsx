@@ -2,15 +2,15 @@
 
 import { Loader2 } from "lucide-react";
 import { useAppSelector } from "@/lib/redux/hooks";
-import {
-  selectAgentId,
-  selectConversationId,
-  selectProtocolCanonicalMessages,
-  selectProtocolDbMessages,
-  selectProtocolDbToolCalls,
-  selectSessionError,
-  selectSessionStatus,
-} from "@/features/agents/redux/old/OLD-cx-message-actions/selectors";
+// Legacy CX canonical panel — stubbed during Redux unification.
+import type { RootState } from "@/lib/redux/store";
+const selectAgentId = (_state: RootState, _sessionId: string): string | null => null;
+const selectConversationId = (_state: RootState, _sessionId: string): string | null => null;
+const selectProtocolCanonicalMessages = (_state: RootState, _sessionId: string): unknown[] => [];
+const selectProtocolDbMessages = (_state: RootState, _sessionId: string): unknown[] => [];
+const selectProtocolDbToolCalls = (_state: RootState, _sessionId: string): unknown[] => [];
+const selectSessionError = (_state: RootState, _sessionId: string): string | null => null;
+const selectSessionStatus = (_state: RootState, _sessionId: string): string => "idle";
 
 const JSON_MAX = 12000;
 

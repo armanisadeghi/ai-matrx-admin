@@ -10,13 +10,14 @@ import {
   selectActiveServerHealth,
   selectRecentApiCalls,
 } from "@/lib/redux/slices/apiConfigSlice";
-import {
-  selectSession,
-  selectMessages,
-  selectUIState,
-  selectIsStreaming,
-  selectAllToolCalls,
-} from "@/features/agents/redux/old/OLD-cx-message-actions/selectors";
+// Legacy chat debug panel — stubbed during Redux unification. Selectors
+// return empty data; the panel still mounts but shows nothing for chat.
+import type { RootState } from "@/lib/redux/store";
+const selectSession = (_state: RootState, _sessionId: string): Record<string, unknown> | undefined => undefined;
+const selectMessages = (_state: RootState, _sessionId: string): unknown[] => [];
+const selectUIState = (_state: RootState, _sessionId: string): Record<string, unknown> | undefined => undefined;
+const selectIsStreaming = (_state: RootState, _sessionId: string): boolean => false;
+const selectAllToolCalls = (_state: RootState, _sessionId: string): Record<string, unknown> => ({});
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {

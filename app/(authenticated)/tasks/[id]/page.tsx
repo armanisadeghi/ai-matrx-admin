@@ -1,29 +1,40 @@
 "use client";
 
+import { useEffect } from "react";
 import { useParams } from "next/navigation";
-import { useAppSelector } from "@/lib/redux/hooks";
+import Link from "next/link";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
-  selectAllTasksFlat,
+  selectSelectedTaskId,
   selectTasksLoading,
+  setSelectedTaskId,
 } from "@/features/tasks/redux";
+import { selectTaskById } from "@/features/agent-context/redux/tasksSlice";
 import { useNavTree } from "@/features/agent-context/hooks/useNavTree";
-import TaskDetailPage from "@/features/tasks/components/TaskDetailPage";
+import TaskEditor from "@/features/tasks/components/TaskEditor";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 
 export default function TaskPage() {
   const params = useParams();
   const taskId = params.id as string;
+  const dispatch = useAppDispatch();
 
-  // Shared, idempotent hydration — fires RPC only if status === 'idle'.
+  // Shared, idempotent hierarchy hydration
   useNavTree();
 
-  const allTasks = useAppSelector(selectAllTasksFlat);
+  const selectedId = useAppSelector(selectSelectedTaskId);
+  const task = useAppSelector((s) => selectTaskById(s, taskId));
   const loading = useAppSelector(selectTasksLoading);
-  const task = allTasks.find((t) => t.id === taskId) ?? null;
 
-  if (loading && !task) {
+  // Sync route param → selected task in Redux so TaskEditor renders it
+  useEffect(() => {
+    if (selectedId !== taskId) {
+      dispatch(setSelectedTaskId(taskId));
+    }
+  }, [dispatch, selectedId, taskId]);
+
+  if (!task && loading) {
     return (
       <div className="flex items-center justify-center h-full">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -34,42 +45,39 @@ export default function TaskPage() {
   if (!task) {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-4 p-8 text-center">
-        <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
-          <svg
-            className="w-8 h-8 text-muted-foreground"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-            />
-          </svg>
-        </div>
-        <div>
-          <h2 className="text-lg font-semibold text-foreground mb-1">
-            Task not found
-          </h2>
-          <p className="text-sm text-muted-foreground mb-4">
-            The task{" "}
-            <code className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded">
-              {taskId}
-            </code>{" "}
-            could not be found.
-          </p>
-          <Button asChild variant="outline">
-            <Link href="/tasks">
-              <ArrowLeft size={16} className="mr-2" />
-              Back to Tasks
-            </Link>
-          </Button>
-        </div>
+        <h2 className="text-lg font-semibold text-foreground">
+          Task not found
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          The task{" "}
+          <code className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded">
+            {taskId}
+          </code>{" "}
+          could not be found.
+        </p>
+        <Button asChild variant="outline">
+          <Link href="/tasks">
+            <ArrowLeft size={16} className="mr-2" />
+            Back to Tasks
+          </Link>
+        </Button>
       </div>
     );
   }
 
-  return <TaskDetailPage task={task} />;
+  return (
+    <div className="h-page flex flex-col min-h-0">
+      <div className="shrink-0 px-4 py-2 border-b border-border/50 flex items-center gap-2">
+        <Button asChild variant="ghost" size="sm" className="h-7">
+          <Link href="/tasks">
+            <ArrowLeft className="w-3.5 h-3.5 mr-1" />
+            Back
+          </Link>
+        </Button>
+      </div>
+      <div className="flex-1 min-h-0">
+        <TaskEditor />
+      </div>
+    </div>
+  );
 }

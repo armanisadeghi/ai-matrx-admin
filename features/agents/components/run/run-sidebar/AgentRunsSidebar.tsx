@@ -10,9 +10,9 @@ import {
   selectAgentName,
 } from "@/features/agents/redux/agent-definition/selectors";
 import { selectLatestConversationId } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
-import { fetchAgentConversations } from "@/features/agents/redux/agent-conversations/agent-conversations.thunks";
-import { makeSelectAgentConversations } from "@/features/agents/redux/agent-conversations/agent-conversations.selectors";
-import type { AgentConversationListItem } from "@/features/agents/redux/agent-conversations/agent-conversations.types";
+import { fetchAgentConversations } from "@/features/agents/redux/conversation-list";
+import { makeSelectAgentConversations } from "@/features/agents/redux/conversation-list";
+import type { AgentConversationListItem } from "@/features/agents/redux/conversation-list";
 import { AgentLauncherSidebarTester } from "../../run-controls/AgentLauncherSidebarTester";
 import { SidebarHeader } from "./SidebarHeader";
 

@@ -29,7 +29,7 @@ export type {
   RemoveResourcePayload,
   UpdateUIStatePayload,
   LoadConversationPayload,
-} from "@/features/agents/redux/old/OLD-cx-message-actions/types";
+} from "@/features/agents/redux/legacy-shims/cx-message-actions-types";
 
 // Stream event types
 export type { TypedStreamEvent } from "@/types/python-generated/stream-events";

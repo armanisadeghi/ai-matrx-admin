@@ -14,6 +14,19 @@ Large-scale Next.js no-code AI app builder and admin dashboard. Desktop-first, m
 - user: admin@admin.com
 - Password: Password1234#
 
+## Dev Auto-Login (localhost only)
+
+Skip the login flow — hit this URL and you'll land on the target route already signed in:
+
+```
+http://localhost:3000/api/dev-login?token=${DEV_LOGIN_TOKEN}&next=/tasks
+```
+
+- `token` — value of `DEV_LOGIN_TOKEN` in `.env.local`
+- `next` — any relative path (e.g. `/tasks`, `/tasks/abc-123`, `/admin/official-components`). Defaults to `/dashboard`.
+- If a session already exists, it just redirects (no re-login).
+- Hard-disabled outside `NODE_ENV !== 'production'` and non-localhost hosts.
+
 ---
 
 ## File Organization

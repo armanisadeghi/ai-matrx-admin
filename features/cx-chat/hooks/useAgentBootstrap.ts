@@ -38,7 +38,7 @@ import {
   activeChatActions,
   selectActiveChatAgent,
   type ActiveChatAgent,
-} from "@/features/agents/redux/old/activeChatSlice";
+} from "@/features/agents/redux/legacy-shims/active-chat-slice";
 import type { LLMParams } from "@/lib/types/agent-chat";
 import { DEFAULT_AGENTS } from "@/features/cx-chat/components/agent/local-agents";
 import type { RootState } from "@/lib/redux/store";

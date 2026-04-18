@@ -80,7 +80,7 @@ import { setInstanceStatus } from "../conversations";
 import {
   patchAgentConversationMetadata,
   upsertAgentConversationFromExecutionAction,
-} from "@/features/agents/redux/agent-conversations";
+} from "@/features/agents/redux/conversation-list";
 import { StreamProfiler } from "@/utils/stream-profiler";
 import { assembleMessageParts } from "../utils/assemble-cx-content-blocks";
 

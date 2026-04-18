@@ -159,14 +159,17 @@ export default function TaskDetailPage({ task }: TaskDetailPageProps) {
   ]);
 
   useEffect(() => {
-    const loadComments = async () => {
-      setIsLoadingComments(true);
-      const data = await getTaskComments(task.id);
+    let cancelled = false;
+    setIsLoadingComments(true);
+    taskService.getTaskComments(task.id).then((data) => {
+      if (cancelled) return;
       setComments(data);
       setIsLoadingComments(false);
+    });
+    return () => {
+      cancelled = true;
     };
-    loadComments();
-  }, [task.id, getTaskComments]);
+  }, [task.id]);
 
   const handleSave = async () => {
     if (!isDirty || isSaving) return;

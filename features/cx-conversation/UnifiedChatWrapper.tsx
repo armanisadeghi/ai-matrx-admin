@@ -50,7 +50,7 @@ import type {
 import type {
   ApiMode,
   ChatModeConfig,
-} from "@/features/agents/redux/old/OLD-cx-message-actions/types";
+} from "@/features/agents/redux/legacy-shims/cx-message-actions-types";
 import type { PromptVariable } from "@/features/prompts/types/core";
 
 // ============================================================================

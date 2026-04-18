@@ -10,9 +10,9 @@
 export {
   chatConversationsReducer,
   chatConversationsActions,
-} from "@/features/agents/redux/old/OLD-cx-message-actions/slice";
+} from "@/features/agents/redux/legacy-shims/cx-message-actions-slice";
 
-export * from "@/features/agents/redux/old/OLD-cx-message-actions/types";
-export * from "@/features/agents/redux/old/OLD-cx-message-actions/selectors";
-export { sendMessage } from "@/features/agents/redux/old/OLD-cx-message-actions/thunks/sendMessage";
-export { loadConversationHistory } from "@/features/agents/redux/old/OLD-cx-message-actions/thunks/loadConversationHistory";
+export * from "@/features/agents/redux/legacy-shims/cx-message-actions-types";
+export * from "@/features/agents/redux/legacy-shims/cx-message-actions-selectors";
+export { sendMessage } from "@/features/agents/redux/legacy-shims/cx-message-actions-thunks";
+export { loadConversationHistory } from "@/features/agents/redux/legacy-shims/cx-message-actions-thunks";
