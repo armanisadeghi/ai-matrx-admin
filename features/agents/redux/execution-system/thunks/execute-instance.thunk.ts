@@ -30,7 +30,7 @@ import { selectResourcePayloads } from "../instance-resources";
 import { selectResolvedVariables } from "../instance-variable-values";
 import { selectSettingsOverridesForApi } from "../instance-model-overrides";
 import { selectContextPayload } from "../instance-context";
-import { selectLatestConversationId } from "../selectors/aggregate.selectors";
+import { selectHasConversationHistory } from "../instance-conversation-history/instance-conversation-history.selectors";
 import {
   selectOrganizationId,
   selectProjectId,
@@ -217,10 +217,11 @@ export const executeInstance = createAsyncThunk<
         headers["X-Fingerprint-ID"] = fingerprintId;
       }
 
-      // Multi-turn routing: if this instance already has a conversationId,
-      // continue the conversation; otherwise start a new agent run.
-      const existingConversationId =
-        selectLatestConversationId(conversationId)(state);
+      // Multi-turn routing: if there's any prior history (committed turns from a
+      // previous send or rehydrated from the database), continue via the
+      // /conversations/{id} endpoint. Otherwise start a fresh agent run via
+      // /agents/{id}. Captured before the optimistic user turn is added below.
+      const isContinuation = selectHasConversationHistory(conversationId)(state);
 
       // Add the user's message to history immediately — before the API call fires.
       // Include resource payload parts so they display even before the DB round-trip.
@@ -254,9 +255,9 @@ export const executeInstance = createAsyncThunk<
       let url: string;
       let routedPayload: Record<string, unknown>;
 
-      if (existingConversationId) {
+      if (isContinuation) {
         // Turn 2+: POST /ai/conversations/{conversationId}
-        url = `${baseUrl}/ai/conversations/${existingConversationId}`;
+        url = `${baseUrl}/ai/conversations/${conversationId}`;
         // Continuation only needs user_input, config_overrides, context, client_tools, stream
         routedPayload = {
           user_input: payload.user_input,

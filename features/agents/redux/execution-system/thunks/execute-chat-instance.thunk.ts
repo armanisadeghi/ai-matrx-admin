@@ -29,7 +29,6 @@ import { selectSettingsForChatApi } from "../instance-model-overrides";
 import { selectResolvedVariables } from "../instance-variable-values";
 import { selectContextPayload } from "../instance-context";
 import { selectResourcePayloads } from "../instance-resources";
-import { selectLatestConversationId } from "../selectors/aggregate.selectors";
 import {
   selectAccessToken,
   selectFingerprintId,
@@ -355,8 +354,6 @@ export const executeChatInstance = createAsyncThunk<
       const resourcePayloads = selectResourcePayloads(conversationId)(state);
       const resourceBlocks = resourcePayloads.filter((b) => b.type !== "text");
       if (userInputText || userMessageParts || resourceBlocks.length > 0) {
-        const existingConversationId =
-          selectLatestConversationId(conversationId)(state);
         dispatch(
           addUserTurn({
             conversationId,
