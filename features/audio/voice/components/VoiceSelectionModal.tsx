@@ -13,6 +13,7 @@ import { useCartesia } from '@/hooks/tts/useCartesia';
 import { VoiceOptions, VoiceSpeed } from '@/lib/cartesia/cartesia.types';
 import { AiVoice } from '@/types/aiAudioTypes';
 import { cn } from '@/lib/utils';
+import { filterAndSortBySearch } from '@/utils/search-scoring';
 
 interface VoiceSelectionModalProps {
     isOpen: boolean;
@@ -41,12 +42,10 @@ export function VoiceSelectionModal({
     // Filter voices based on search
     const filteredVoices = useMemo(() => {
         if (!searchTerm) return voices;
-        
-        const lowerSearch = searchTerm.toLowerCase();
-        return voices.filter(voice => 
-            voice.name.toLowerCase().includes(lowerSearch) ||
-            (voice.description && voice.description.toLowerCase().includes(lowerSearch))
-        );
+        return filterAndSortBySearch(voices, searchTerm, [
+            { get: (v) => v.name, weight: 'title' },
+            { get: (v) => v.description, weight: 'body' },
+        ]);
     }, [voices, searchTerm]);
 
     const handlePlayVoice = useCallback(async (voice: AiVoice) => {

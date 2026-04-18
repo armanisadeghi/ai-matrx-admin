@@ -28,6 +28,7 @@ import { toast } from '@/lib/toast-service';
 import { ScopeMappingEditor } from './ScopeMappingEditor';
 import { fetchPromptBuiltins, updatePromptShortcut } from '../services/admin-service';
 import type { PromptBuiltin, PromptShortcut, ScopeMapping } from '../types/core';
+import { filterAndSortBySearch } from '@/utils/search-scoring';
 
 interface SelectBuiltinForShortcutModalProps {
   isOpen: boolean;
@@ -88,12 +89,10 @@ export function SelectBuiltinForShortcutModal({
 
     // Search filter
     if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (b) =>
-          b.name.toLowerCase().includes(query) ||
-          b.description?.toLowerCase().includes(query)
-      );
+      filtered = filterAndSortBySearch(filtered, searchQuery, [
+        { get: (b) => b.name, weight: 'title' },
+        { get: (b) => b.description, weight: 'body' },
+      ]);
     }
 
     // Source filter

@@ -31,6 +31,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { getConfigEntry, getConfigSelectOptions } from "@/components/mardown-display/markdown-classification/processors/json-config-system/config-registry";
+import { filterAndSortBySearch } from "@/utils/search-scoring";
 
 interface UnifiedBookmarkManagerProps {
   onJumpToBookmark?: (bookmark: Bookmark) => void;
@@ -92,12 +93,11 @@ const UnifiedBookmarkManager: React.FC<UnifiedBookmarkManagerProps> = ({
     
     // Filter by search term
     if (searchTerm) {
-      const lowerTerm = searchTerm.toLowerCase();
-      result = result.filter(bookmark => 
-        bookmark.name.toLowerCase().includes(lowerTerm) || 
-        bookmark.path.toLowerCase().includes(lowerTerm) ||
-        (bookmark.description && bookmark.description.toLowerCase().includes(lowerTerm))
-      );
+      result = filterAndSortBySearch(result, searchTerm, [
+        { get: (b) => b.name, weight: "title" },
+        { get: (b) => b.path, weight: "subtitle" },
+        { get: (b) => b.description, weight: "body" },
+      ]);
     }
     
     // Filter by config key

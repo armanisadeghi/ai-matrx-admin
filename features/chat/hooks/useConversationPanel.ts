@@ -6,6 +6,7 @@ import { createChatSelectors } from "@/lib/redux/entity/custom-selectors/chatSel
 import { getChatActionsWithThunks } from "@/lib/redux/entity/custom-actions/chatActions";
 import formatRelativeTime from "@/features/chat/components/utils/formatRelativeTime";
 import { useConversationRouting } from "@/hooks/ai/chat/useConversationRouting";
+import { matchesSearch } from "@/utils/search-scoring";
 
 export type ConversationModified = {
     id?: string;
@@ -57,18 +58,24 @@ export function useConversationPanel() {
 
     // Filter conversations based on search terms
     const filteredConversations = conversationsArray.filter((convo) => {
-        const matchesLabel = convo.label?.toLowerCase().includes(labelSearch.toLowerCase()) ?? true;
+        const matchesLabel =
+            !labelSearch ||
+            matchesSearch(convo, labelSearch, [
+                { get: (c) => c.label, weight: "title" },
+            ]);
 
         // Enhanced content search to include description and keywords
         const matchesContent =
             !contentSearch ||
-            // Search in label
-            (convo.label?.toLowerCase().includes(contentSearch.toLowerCase()) ?? false) ||
-            // Search in description
-            (convo.description?.toLowerCase().includes(contentSearch.toLowerCase()) ?? false) ||
-            // Search in keywords (if they exist and are an array)
-            (Array.isArray(convo.keywords) &&
-                convo.keywords.some((keyword) => keyword.toLowerCase().includes(contentSearch.toLowerCase())));
+            matchesSearch(convo, contentSearch, [
+                { get: (c) => c.label, weight: "title" },
+                { get: (c) => c.description, weight: "body" },
+                {
+                    get: (c) =>
+                        Array.isArray(c.keywords) ? c.keywords : undefined,
+                    weight: "tag",
+                },
+            ]);
 
         return matchesLabel && matchesContent;
     });

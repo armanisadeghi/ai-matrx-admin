@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Search, Moon, Sun, Filter, Check, X } from "lucide-react";
 import { Category, Integration, mockIntegrations } from "./constants";
+import { matchesSearch } from "@/utils/search-scoring";
 
 // Type definitions
 
@@ -26,17 +27,19 @@ const BusinessIntegrations: React.FC = () => {
 
     // Filter integrations based on search and categories
     const filteredIntegrations = integrations.filter((integration) => {
-        const matchesSearch =
+        const matchesSearchQuery =
             searchQuery === "" ||
-            integration.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            integration.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            integration.category.toLowerCase().includes(searchQuery.toLowerCase());
+            matchesSearch(integration, searchQuery, [
+                { get: (i) => i.name, weight: "title" },
+                { get: (i) => i.category, weight: "subtitle" },
+                { get: (i) => i.description, weight: "body" },
+            ]);
 
         const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(integration.category);
 
         const matchesConnected = !showOnlyConnected || integration.isConnected;
 
-        return matchesSearch && matchesCategory && matchesConnected;
+        return matchesSearchQuery && matchesCategory && matchesConnected;
     });
 
     // Group by category for display

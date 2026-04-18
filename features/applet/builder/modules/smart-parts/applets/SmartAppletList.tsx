@@ -23,6 +23,7 @@ import {
 import { COLOR_VARIANTS, ICON_OPTIONS } from "@/features/applet/styles/StyledComponents";
 import { CustomAppletConfig } from "@/types/customAppTypes";
 import { getAppletColorClasses } from "@/features/applet/styles/styles";
+import { matchesSearch } from "@/utils/search-scoring";
 
 
 export type SmartAppletListRefType = {
@@ -138,13 +139,13 @@ const SmartAppletList = forwardRef<
 
             // Apply search filter
             if (searchTerm.trim()) {
-                const lowercaseTerm = searchTerm.toLowerCase();
-                result = result.filter(
-                    (applet) =>
-                        applet.name?.toLowerCase().includes(lowercaseTerm) ||
-                        applet.description?.toLowerCase().includes(lowercaseTerm) ||
-                        applet.creator?.toLowerCase().includes(lowercaseTerm) ||
-                        applet.slug?.toLowerCase().includes(lowercaseTerm)
+                result = result.filter((applet) =>
+                    matchesSearch(applet, searchTerm, [
+                        { get: (a) => a.name, weight: "title" },
+                        { get: (a) => a.slug, weight: "subtitle" },
+                        { get: (a) => a.creator, weight: "subtitle" },
+                        { get: (a) => a.description, weight: "body" },
+                    ])
                 );
             }
 

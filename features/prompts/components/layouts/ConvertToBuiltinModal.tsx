@@ -46,6 +46,7 @@ import {
   CreatePromptShortcutInput,
 } from '@/features/prompt-builtins/types/core';
 import type { PromptVariable } from '@/features/prompts/types/core';
+import { filterAndSortBySearch } from '@/utils/search-scoring';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -431,12 +432,11 @@ export function ConvertToBuiltinModal({
     
     // Apply search
     if (shortcutSearch.trim()) {
-      const search = shortcutSearch.toLowerCase();
-      filtered = filtered.filter(s => 
-        s.label.toLowerCase().includes(search) ||
-        (s.description && s.description.toLowerCase().includes(search)) ||
-        (s.category?.label && s.category.label.toLowerCase().includes(search))
-      );
+      filtered = filterAndSortBySearch(filtered, shortcutSearch, [
+        { get: (s) => s.label, weight: 'title' },
+        { get: (s) => s.category?.label, weight: 'subtitle' },
+        { get: (s) => s.description, weight: 'body' },
+      ]);
     }
     
     return filtered;

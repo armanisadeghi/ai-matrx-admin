@@ -34,6 +34,7 @@ import {
     Layers
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { matchesSearch as matchesSearchScoring } from '@/utils/search-scoring';
 
 interface RecipeTemplate {
     id: string;
@@ -431,9 +432,11 @@ export function RecipeTemplatesGallery({
 
     const filteredTemplates = recipeTemplates.filter(template => {
         const matchesSearch = searchTerm === '' ||
-            template.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            template.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            template.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+            matchesSearchScoring(template, searchTerm, [
+                { get: (t) => t.name, weight: 'title' },
+                { get: (t) => t.description, weight: 'body' },
+                { get: (t) => t.tags, weight: 'tag' },
+            ]);
 
         const matchesCategory = selectedCategory === 'all' || template.category === selectedCategory;
 

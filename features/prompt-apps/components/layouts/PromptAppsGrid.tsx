@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { CreatePromptAppModal } from "@/features/prompt-apps/components/CreatePromptAppModal";
 import type { PromptApp } from "@/features/prompt-apps/types";
+import { computeSearchScore } from "@/utils/search-scoring";
 
 interface PromptAppsGridProps {
     apps: PromptApp[];
@@ -62,32 +63,23 @@ export function PromptAppsGrid({ apps }: PromptAppsGridProps) {
 
     // Filter and sort
     const filteredApps = useMemo(() => {
+        const searchFields = [
+            { get: (a: PromptApp) => a.name, weight: "title" as const },
+            { get: (a: PromptApp) => a.tagline, weight: "subtitle" as const },
+            { get: (a: PromptApp) => a.description, weight: "body" as const },
+            { get: (a: PromptApp) => a.tags, weight: "tag" as const },
+            { get: (a: PromptApp) => a.category, weight: "tag" as const },
+        ];
+
         let filtered = apps.filter((app) => {
-            // Status filter
             if (statusFilter !== "all" && app.status !== statusFilter) {
                 return false;
             }
-
-            // Search
             if (!searchTerm) return true;
-            const searchLower = searchTerm.toLowerCase();
-            return (
-                app.name.toLowerCase().includes(searchLower) ||
-                (app.tagline &&
-                    app.tagline.toLowerCase().includes(searchLower)) ||
-                (app.description &&
-                    app.description.toLowerCase().includes(searchLower)) ||
-                (app.tags &&
-                    app.tags.some((tag) =>
-                        tag.toLowerCase().includes(searchLower)
-                    )) ||
-                (app.category &&
-                    app.category.toLowerCase().includes(searchLower))
-            );
+            return computeSearchScore(app, searchTerm, searchFields) > 0;
         });
 
-        // Sort
-        filtered.sort((a, b) => {
+        const sortComparator = (a: PromptApp, b: PromptApp) => {
             switch (sortBy) {
                 case "name-asc":
                     return a.name.localeCompare(b.name);
@@ -107,7 +99,22 @@ export function PromptAppsGrid({ apps }: PromptAppsGridProps) {
                         new Date(a.updated_at).getTime()
                     );
             }
-        });
+        };
+
+        if (searchTerm) {
+            const scores = new Map<string, number>();
+            filtered.forEach((a) =>
+                scores.set(a.id, computeSearchScore(a, searchTerm, searchFields))
+            );
+            filtered.sort((a, b) => {
+                const sa = scores.get(a.id) ?? 0;
+                const sb = scores.get(b.id) ?? 0;
+                if (sb !== sa) return sb - sa;
+                return sortComparator(a, b);
+            });
+        } else {
+            filtered.sort(sortComparator);
+        }
 
         return filtered;
     }, [apps, searchTerm, sortBy, statusFilter]);

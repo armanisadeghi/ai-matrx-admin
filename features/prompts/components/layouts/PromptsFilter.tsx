@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, X, SlidersHorizontal } from "lucide-react";
+import { matchesSearch as matchesSearchScoring } from "@/utils/search-scoring";
 
 interface Prompt {
     id: string;
@@ -26,11 +27,12 @@ export function PromptsFilter({ prompts, onFilteredPromptsChange }: PromptsFilte
     const filteredPrompts = useMemo(() => {
         let filtered = prompts.filter((prompt) => {
             // Search filter
-            const searchLower = searchTerm.toLowerCase();
             const matchesSearch =
                 searchTerm === "" ||
-                prompt.name.toLowerCase().includes(searchLower) ||
-                (prompt.description && prompt.description.toLowerCase().includes(searchLower));
+                matchesSearchScoring(prompt, searchTerm, [
+                    { get: (p) => p.name, weight: "title" },
+                    { get: (p) => p.description, weight: "body" },
+                ]);
 
             return matchesSearch;
         });

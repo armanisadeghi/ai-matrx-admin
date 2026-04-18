@@ -29,6 +29,7 @@ import type { AgentDefinitionRecord } from "@/features/agents/types/agent-defini
 import { DEFAULT_AGENTS } from "@/features/cx-chat/components/agent/local-agents";
 import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
 import type { AgentConfig } from "@/features/cx-chat/types/agents";
+import { filterAndSortBySearch } from "@/utils/search-scoring";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -266,31 +267,28 @@ function MobileAgentPicker({
   const filteredSystem = useMemo(() => {
     if (filter === "mine") return [];
     if (!q) return DEFAULT_AGENTS;
-    return DEFAULT_AGENTS.filter(
-      (a) =>
-        a.name.toLowerCase().includes(q) ||
-        a.description?.toLowerCase().includes(q),
-    );
+    return filterAndSortBySearch(DEFAULT_AGENTS, q, [
+      { get: (a) => a.name, weight: "title" },
+      { get: (a) => a.description, weight: "body" },
+    ]);
   }, [q, filter]);
 
   const filteredBuiltins = useMemo(() => {
     if (filter === "mine") return [];
     if (!q) return builtins;
-    return builtins.filter(
-      (a) =>
-        a.name.toLowerCase().includes(q) ||
-        a.description?.toLowerCase().includes(q),
-    );
+    return filterAndSortBySearch(builtins, q, [
+      { get: (a) => a.name, weight: "title" },
+      { get: (a) => a.description, weight: "body" },
+    ]);
   }, [builtins, q, filter]);
 
   const filteredOwned = useMemo(() => {
     if (filter === "system") return [];
     if (!q) return owned;
-    return owned.filter(
-      (a) =>
-        a.name.toLowerCase().includes(q) ||
-        a.description?.toLowerCase().includes(q),
-    );
+    return filterAndSortBySearch(owned, q, [
+      { get: (a) => a.name, weight: "title" },
+      { get: (a) => a.description, weight: "body" },
+    ]);
   }, [owned, q, filter]);
 
   const systemCount = DEFAULT_AGENTS.length + builtins.length;
@@ -475,31 +473,28 @@ function DesktopAgentPicker({
   const filteredSystem = useMemo(() => {
     if (filter === "mine") return [];
     if (!q) return DEFAULT_AGENTS;
-    return DEFAULT_AGENTS.filter(
-      (a) =>
-        a.name.toLowerCase().includes(q) ||
-        a.description?.toLowerCase().includes(q),
-    );
+    return filterAndSortBySearch(DEFAULT_AGENTS, q, [
+      { get: (a) => a.name, weight: "title" },
+      { get: (a) => a.description, weight: "body" },
+    ]);
   }, [q, filter]);
 
   const filteredBuiltins = useMemo(() => {
     if (filter === "mine") return [];
     if (!q) return builtins;
-    return builtins.filter(
-      (a) =>
-        a.name.toLowerCase().includes(q) ||
-        a.description?.toLowerCase().includes(q),
-    );
+    return filterAndSortBySearch(builtins, q, [
+      { get: (a) => a.name, weight: "title" },
+      { get: (a) => a.description, weight: "body" },
+    ]);
   }, [builtins, q, filter]);
 
   const filteredOwned = useMemo(() => {
     if (filter === "system") return [];
     if (!q) return owned;
-    return owned.filter(
-      (a) =>
-        a.name.toLowerCase().includes(q) ||
-        a.description?.toLowerCase().includes(q),
-    );
+    return filterAndSortBySearch(owned, q, [
+      { get: (a) => a.name, weight: "title" },
+      { get: (a) => a.description, weight: "body" },
+    ]);
   }, [owned, q, filter]);
 
   const systemCount = DEFAULT_AGENTS.length + builtins.length;

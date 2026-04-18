@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { usePromptsBasePath } from "../hooks/usePromptsBasePath";
 import { useAgentConsumer } from "@/features/prompts/hooks/useAgentConsumer";
+import { filterAndSortBySearch } from "@/utils/search-scoring";
 
 // ============================================================================
 // TYPES
@@ -125,12 +126,10 @@ function PromptListContent({
 }) {
   const filtered = useMemo(() => {
     if (!searchQuery.trim()) return prompts;
-    const q = searchQuery.toLowerCase();
-    return prompts.filter(
-      (p) =>
-        (p.name || "").toLowerCase().includes(q) ||
-        (p.description || "").toLowerCase().includes(q),
-    );
+    return filterAndSortBySearch(prompts, searchQuery, [
+      { get: (p) => p.name, weight: "title" },
+      { get: (p) => p.description, weight: "body" },
+    ]);
   }, [prompts, searchQuery]);
 
   if (loading) {

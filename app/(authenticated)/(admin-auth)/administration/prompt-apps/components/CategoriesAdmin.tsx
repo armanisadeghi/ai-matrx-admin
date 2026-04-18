@@ -32,6 +32,7 @@ import {
     UpdateCategoryInput
 } from '@/lib/services/prompt-apps-admin-service';
 import { renderIcon } from '@/components/official/IconResolver';
+import { matchesSearch as matchesSearchScoring } from '@/utils/search-scoring';
 
 export function CategoriesAdmin() {
     const [categories, setCategories] = useState<PromptAppCategory[]>([]);
@@ -68,10 +69,12 @@ export function CategoriesAdmin() {
     }, [loadData]);
 
     const filteredCategories = categories.filter(category => {
-        const matchesSearch = searchTerm === '' || 
-            category.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            category.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            category.id?.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesSearch = searchTerm === '' ||
+            matchesSearchScoring(category, searchTerm, [
+                { get: (c) => c.name, weight: 'title' },
+                { get: (c) => c.description, weight: 'body' },
+                { get: (c) => c.id, weight: 'id' },
+            ]);
         return matchesSearch;
     });
 

@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Search, X, SlidersHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { matchesSearch as matchesSearchScoring } from "@/utils/search-scoring";
 
 interface Recipe {
     id: string;
@@ -69,11 +70,12 @@ export function RecipesFilter({ recipes, onFilteredRecipesChange }: RecipesFilte
     const filteredRecipes = useMemo(() => {
         let filtered = recipes.filter(recipe => {
             // Search filter
-            const searchLower = searchTerm.toLowerCase();
-            const matchesSearch = 
+            const matchesSearch =
                 searchTerm === "" ||
-                recipe.name.toLowerCase().includes(searchLower) ||
-                (recipe.description && recipe.description.toLowerCase().includes(searchLower));
+                matchesSearchScoring(recipe, searchTerm, [
+                    { get: (r) => r.name, weight: "title" },
+                    { get: (r) => r.description, weight: "body" },
+                ]);
 
             if (!matchesSearch) return false;
 

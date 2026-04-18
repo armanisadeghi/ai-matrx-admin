@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { useAgentConsumer } from "@/features/prompts/hooks/useAgentConsumer";
 import { DEFAULT_AGENTS } from "./AgentSelector";
 import type { AgentConfig } from "../context/DEPRECATED-ChatContext";
+import { filterAndSortBySearch } from "@/utils/search-scoring";
 
 // ============================================================================
 // TYPES
@@ -74,13 +75,11 @@ export function PromptPickerMenu({
 
   // DEFAULT_AGENTS are not in Redux — filter them locally against the Redux searchTerm
   const filteredSystemAgents = useMemo(() => {
-    const q = searchQuery.toLowerCase().trim();
-    return DEFAULT_AGENTS.filter(
-      (a) =>
-        !q ||
-        a.name.toLowerCase().includes(q) ||
-        a.description?.toLowerCase().includes(q),
-    );
+    if (!searchQuery.trim()) return DEFAULT_AGENTS;
+    return filterAndSortBySearch(DEFAULT_AGENTS, searchQuery, [
+      { get: (a) => a.name, weight: "title" },
+      { get: (a) => a.description, weight: "body" },
+    ]);
   }, [searchQuery]);
 
   // builtins and userAgents are already filtered by the Redux selector

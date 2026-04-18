@@ -13,6 +13,7 @@ import {
 } from "@/features/agent-context/redux/appContextSlice";
 import type { Task, TaskWithProject, Project, TaskSortConfig } from "../types";
 import { sortTasks } from "../utils/taskSorting";
+import { matchesSearch } from "@/utils/search-scoring";
 import {
   selectActiveProject,
   selectShowAllProjects,
@@ -255,12 +256,12 @@ export const selectFilteredTasks = createSelector(
     }
 
     if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase().trim();
-      tasks = tasks.filter(
-        (t) =>
-          t.title.toLowerCase().includes(q) ||
-          t.description?.toLowerCase().includes(q) ||
-          t.projectName.toLowerCase().includes(q),
+      tasks = tasks.filter((t) =>
+        matchesSearch(t, searchQuery, [
+          { get: (x) => x.title, weight: "title" },
+          { get: (x) => x.projectName, weight: "subtitle" },
+          { get: (x) => x.description, weight: "body" },
+        ]),
       );
     }
 

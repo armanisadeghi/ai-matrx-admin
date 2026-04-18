@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/popover';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { filterAndSortBySearch } from '@/utils/search-scoring';
 
 interface Prompt {
   id: string;
@@ -41,13 +42,10 @@ export function SearchablePromptSelect({
   // Filter prompts based on search
   const filteredPrompts = useMemo(() => {
     if (!search.trim()) return prompts;
-    
-    const searchLower = search.toLowerCase().trim();
-    return prompts.filter(
-      (prompt) =>
-        prompt.name.toLowerCase().includes(searchLower) ||
-        prompt.description?.toLowerCase().includes(searchLower)
-    );
+    return filterAndSortBySearch(prompts, search, [
+      { get: (p) => p.name, weight: 'title' },
+      { get: (p) => p.description, weight: 'body' },
+    ]);
   }, [prompts, search]);
 
   const handleSelect = (prompt: Prompt) => {

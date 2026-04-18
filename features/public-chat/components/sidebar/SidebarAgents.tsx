@@ -17,6 +17,7 @@ import type {
 } from "@/features/prompts/hooks/useAgentConsumer";
 import { DEFAULT_AGENTS } from "../AgentSelector";
 import type { AgentConfig } from "../../context/DEPRECATED-ChatContext";
+import { filterAndSortBySearch } from "@/utils/search-scoring";
 
 interface SidebarAgentsProps {
   selectedAgent?: AgentConfig | null;
@@ -102,12 +103,10 @@ function AgentSubsection({
 
   const filteredAgents = useMemo(() => {
     if (!localSearch.trim()) return agents;
-    const q = localSearch.toLowerCase();
-    return agents.filter(
-      (a) =>
-        a.name.toLowerCase().includes(q) ||
-        (a.description ?? "").toLowerCase().includes(q),
-    );
+    return filterAndSortBySearch(agents, localSearch, [
+      { get: (a) => a.name, weight: "title" },
+      { get: (a) => a.description, weight: "body" },
+    ]);
   }, [agents, localSearch]);
 
   const visibleAgents = expanded
@@ -250,12 +249,10 @@ export function SidebarAgents({
 
   const applySearch = (agents: AgentRecord[]) => {
     if (!searchQuery.trim()) return agents;
-    const q = searchQuery.toLowerCase();
-    return agents.filter(
-      (a) =>
-        a.name.toLowerCase().includes(q) ||
-        (a.description ?? "").toLowerCase().includes(q),
-    );
+    return filterAndSortBySearch(agents, searchQuery, [
+      { get: (a) => a.name, weight: "title" },
+      { get: (a) => a.description, weight: "body" },
+    ]);
   };
 
   const filteredOwned = applySearch(owned);

@@ -10,6 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { FieldDefinition, FieldOption } from "@/types/customAppTypes";
 import { CommonFieldProps } from "./core/AppletFieldController";
+import { filterAndSortBySearch } from "@/utils/search-scoring";
 
 export interface SelectedOptionValue extends FieldOption {
     selected: boolean;
@@ -314,10 +315,10 @@ const DependentDropdownField: React.FC<CommonFieldProps> = ({ field, sourceId="n
         const query = searchQuery[level] || "";
         if (!query.trim()) return options;
 
-        return options.filter(
-            (option) =>
-                option.label.toLowerCase().includes(query.toLowerCase()) || option.description?.toLowerCase().includes(query.toLowerCase())
-        );
+        return filterAndSortBySearch(options, query, [
+            { get: (o) => o.label, weight: "title" },
+            { get: (o) => o.description, weight: "body" },
+        ]);
     };
 
     // Check if the selection is complete and valid

@@ -26,6 +26,7 @@ import { AddItemDialog } from "./AddItemDialog";
 import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
 import { deleteListAction } from "../actions/list-actions";
 import { useToastManager } from "@/hooks/useToastManager";
+import { filterAndSortBySearch } from "@/utils/search-scoring";
 
 interface ListsTreeNavProps {
   lists: UserList[];
@@ -147,11 +148,10 @@ export function ListsTreeNav({ lists, activeListData }: ListsTreeNavProps) {
   };
 
   const filtered = query.trim()
-    ? lists.filter(
-        (l) =>
-          l.list_name.toLowerCase().includes(query.toLowerCase()) ||
-          l.description?.toLowerCase().includes(query.toLowerCase()),
-      )
+    ? filterAndSortBySearch(lists, query, [
+        { get: (l) => l.list_name, weight: "title" },
+        { get: (l) => l.description, weight: "body" },
+      ])
     : lists;
 
   // Build groups for the active list if expanded

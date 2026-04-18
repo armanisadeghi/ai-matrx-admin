@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/card';
 import { useOrgProjects, usePersonalProjects } from '@/features/projects';
 import { ProjectCard } from './ProjectCard';
 import { CreateProjectModal } from './CreateProjectModal';
+import { filterAndSortBySearch } from '@/utils/search-scoring';
 
 interface ProjectListProps {
   organizationId?: string | null;
@@ -24,12 +25,13 @@ export function ProjectList({ organizationId, orgSlug, canCreate = false }: Proj
 
   const { projects, loading, error, refresh } = organizationId ? orgResult : personalResult;
 
-  const filteredProjects = projects.filter(
-    (p) =>
-      p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (p.slug ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (p.description ?? '').toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredProjects = searchTerm
+    ? filterAndSortBySearch(projects, searchTerm, [
+        { get: (p) => p.name, weight: 'title' },
+        { get: (p) => p.slug, weight: 'subtitle' },
+        { get: (p) => p.description, weight: 'body' },
+      ])
+    : projects;
 
   if (loading) {
     return (

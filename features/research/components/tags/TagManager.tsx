@@ -17,6 +17,7 @@ import { useResearchApi } from '../../hooks/useResearchApi';
 import { useResearchTags } from '../../hooks/useResearchState';
 import { createTag, updateTag, deleteTag as deleteTagService } from '../../service';
 import type { ResearchTag } from '../../types';
+import { filterAndSortBySearch } from '@/utils/search-scoring';
 
 export default function TagManager() {
     const { topicId } = useTopicContext();
@@ -48,11 +49,10 @@ export default function TagManager() {
 
     const filtered = useMemo(() => {
         if (!search) return tagList;
-        const q = search.toLowerCase();
-        return tagList.filter(t =>
-            t.name.toLowerCase().includes(q) ||
-            (t.description ?? '').toLowerCase().includes(q),
-        );
+        return filterAndSortBySearch(tagList, search, [
+            { get: (t) => t.name, weight: 'title' },
+            { get: (t) => t.description, weight: 'body' },
+        ]);
     }, [tagList, search]);
 
     const openCreate = () => { setName(''); setDescription(''); setEditTag(null); setCreateOpen(true); };

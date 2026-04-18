@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { adminCategories } from "@/app/(authenticated)/(admin-auth)/administration/categories";
 import { Input } from "@/components/ui/input";
+import { filterAndSortBySearch, matchesSearch } from "@/utils/search-scoring";
 
 // IMPORTANT: All features and routes are defined in: app\(authenticated)\(admin-auth)\administration\categories.tsx
 // The top navigation menu automatically extracts routes from categories.tsx via config.ts
@@ -83,9 +84,13 @@ const AdminPage = () => {
         if (!normalizedQuery) return adminCategories;
 
         return adminCategories.map(category => {
-            const filteredFeatures = category.features.filter(f => 
-                f.title.toLowerCase().includes(normalizedQuery) || 
-                f.description?.toLowerCase().includes(normalizedQuery)
+            const filteredFeatures = filterAndSortBySearch(
+                category.features,
+                searchQuery,
+                [
+                    { get: (f) => f.title, weight: "title" },
+                    { get: (f) => f.description, weight: "body" },
+                ],
             );
 
             if (filteredFeatures.length > 0) {
@@ -94,22 +99,28 @@ const AdminPage = () => {
                     features: filteredFeatures
                 };
             }
-            
-            if (category.name.toLowerCase().includes(normalizedQuery)) {
+
+            if (matchesSearch(category, searchQuery, [
+                { get: (c) => c.name, weight: "title" },
+            ])) {
                  return category;
             }
 
             return null;
         }).filter(Boolean) as typeof adminCategories;
-    }, [normalizedQuery]);
+    }, [normalizedQuery, searchQuery]);
 
     const matchingFeatures = React.useMemo(() => {
         if (!normalizedQuery) return [];
-        return adminCategories.flatMap(cat => cat.features).filter(f => 
-            f.title.toLowerCase().includes(normalizedQuery) || 
-            f.description?.toLowerCase().includes(normalizedQuery)
+        return filterAndSortBySearch(
+            adminCategories.flatMap(cat => cat.features),
+            searchQuery,
+            [
+                { get: (f) => f.title, weight: "title" },
+                { get: (f) => f.description, weight: "body" },
+            ],
         );
-    }, [normalizedQuery]);
+    }, [normalizedQuery, searchQuery]);
 
     if (selectedCategory) {
         const category = adminCategories.find((c) => c.name === selectedCategory);

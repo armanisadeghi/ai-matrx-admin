@@ -25,6 +25,7 @@ import {
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { GeneratePromptForBuiltinModal } from './GeneratePromptForBuiltinModal';
+import { filterAndSortBySearch } from '@/utils/search-scoring';
 
 interface UserPrompt {
   id: string;
@@ -127,15 +128,13 @@ export function SelectPromptForBuiltinModal({
   };
 
   // Filter prompts based on search
-  const filteredPrompts = prompts.filter(prompt => {
-    if (!searchQuery) return true;
-    const query = searchQuery.toLowerCase();
-    return (
-      prompt.name.toLowerCase().includes(query) ||
-      prompt.description?.toLowerCase().includes(query) ||
-      prompt.variables.some(v => v.toLowerCase().includes(query))
-    );
-  });
+  const filteredPrompts = searchQuery
+    ? filterAndSortBySearch(prompts, searchQuery, [
+        { get: (p) => p.name, weight: 'title' },
+        { get: (p) => p.description, weight: 'body' },
+        { get: (p) => p.variables, weight: 'tag' },
+      ])
+    : prompts;
 
   return (
     <>

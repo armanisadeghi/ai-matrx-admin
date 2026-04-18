@@ -8,12 +8,13 @@ import { deleteAppThunk } from "@/lib/redux/app-builder/thunks/appBuilderThunks"
 import { Eye, Pencil, AppWindow, Trash2, Check } from "lucide-react";
 import { AppBuilder } from "@/lib/redux/app-builder/types";
 import { ICON_OPTIONS } from "@/features/applet/styles/StyledComponents";
-import GenericDataTable, { 
-    GenericTableHeader, 
-    ColumnConfig, 
+import GenericDataTable, {
+    GenericTableHeader,
+    ColumnConfig,
     ActionConfig,
     CustomTableSettings
 } from "@/components/generic-table";
+import { matchesSearch } from "@/utils/search-scoring";
 
 interface AppListTableProps {
     // Core functionality props
@@ -106,11 +107,12 @@ export default function AppListTable({
         
         // Apply search filter
         if (searchTerm.trim()) {
-            filtered = filtered.filter(
-                (app) =>
-                    app.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    app.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    app.slug?.toLowerCase().includes(searchTerm.toLowerCase())
+            filtered = filtered.filter((app) =>
+                matchesSearch(app, searchTerm, [
+                    { get: (a) => a.name, weight: "title" },
+                    { get: (a) => a.slug, weight: "subtitle" },
+                    { get: (a) => a.description, weight: "body" },
+                ])
             );
         }
         

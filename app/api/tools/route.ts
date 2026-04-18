@@ -2,6 +2,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { serverToolsService } from '@/utils/supabase/server-tools-service';
+import { filterAndSortBySearch } from '@/utils/search-scoring';
 
 export async function GET(request: NextRequest) {
   try {
@@ -34,11 +35,10 @@ export async function GET(request: NextRequest) {
     }
     
     if (search) {
-      const searchLower = search.toLowerCase();
-      filteredTools = filteredTools.filter(tool =>
-        tool.name.toLowerCase().includes(searchLower) ||
-        tool.description.toLowerCase().includes(searchLower)
-      );
+      filteredTools = filterAndSortBySearch(filteredTools, search, [
+        { get: (t) => t.name, weight: 'title' },
+        { get: (t) => t.description, weight: 'body' },
+      ]);
     }
 
     return NextResponse.json({

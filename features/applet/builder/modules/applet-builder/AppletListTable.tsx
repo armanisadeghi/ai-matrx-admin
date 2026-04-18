@@ -16,6 +16,7 @@ import GenericDataTable, {
     CustomTableSettings
 } from "@/components/generic-table";
 import { toast } from "@/components/ui/use-toast";
+import { matchesSearch } from "@/utils/search-scoring";
 
 interface AppletListTableProps {
     // Core functionality props
@@ -133,11 +134,12 @@ export default function AppletListTable({
         
         // Apply search filter
         if (searchTerm.trim()) {
-            filtered = filtered.filter(
-                (applet) =>
-                    applet.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    applet.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    applet.slug?.toLowerCase().includes(searchTerm.toLowerCase())
+            filtered = filtered.filter((applet) =>
+                matchesSearch(applet, searchTerm, [
+                    { get: (a) => a.name, weight: "title" },
+                    { get: (a) => a.slug, weight: "subtitle" },
+                    { get: (a) => a.description, weight: "body" },
+                ])
             );
         }
         

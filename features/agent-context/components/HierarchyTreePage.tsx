@@ -56,6 +56,7 @@ import type {
   HierarchyNode,
   HierarchyNodeType,
 } from "../service/hierarchyService";
+import { matchesSearch } from "@/utils/search-scoring";
 
 type LucideIcon = React.ComponentType<{
   className?: string;
@@ -252,11 +253,12 @@ export function HierarchyTreePage() {
 
   const filteredTree = useMemo(() => {
     if (!search.trim()) return enrichedTree;
-    const q = search.toLowerCase();
     function prune(node: TreeNode): TreeNode | null {
       if (
-        node.name.toLowerCase().includes(q) ||
-        node.description?.toLowerCase().includes(q)
+        matchesSearch(node, search, [
+          { get: (n) => n.name, weight: "title" },
+          { get: (n) => n.description, weight: "body" },
+        ])
       ) {
         return node;
       }

@@ -13,6 +13,7 @@ import {
     getCompiledRecipeByVersionWithNeededBrokers,
     getUserRecipes,
 } from "@/lib/redux/app-builder/service/customAppletService";
+import { matchesSearch as matchesSearchScoring } from "@/utils/search-scoring";
 
 export type RecipeInfo = {
     id: string;
@@ -171,8 +172,10 @@ export const RecipeSelectionList: React.FC<RecipeSelectionListProps> = ({
             // Search term filter
             const matchesSearch =
                 searchTerm === "" ||
-                recipe.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                (recipe.description || "").toLowerCase().includes(searchTerm.toLowerCase());
+                matchesSearchScoring(recipe, searchTerm, [
+                    { get: (r) => r.name, weight: "title" },
+                    { get: (r) => r.description, weight: "body" },
+                ]);
             // Tags filter
             const matchesTags = selectedTags.length === 0 || (recipe.tags && selectedTags.every((tag) => recipe.tags?.includes(tag)));
             return matchesSearch && matchesTags;

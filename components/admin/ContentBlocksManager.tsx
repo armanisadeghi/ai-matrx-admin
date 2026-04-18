@@ -72,6 +72,7 @@ import {
   CategoryWithSubcategories,
 } from "@/types/content-blocks-db";
 import { createClient } from "@/utils/supabase/client";
+import { filterAndSortBySearch } from "@/utils/search-scoring";
 import MarkdownStream from "@/components/MarkdownStream";
 import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
 import { ENDPOINTS } from "@/lib/api/endpoints";
@@ -416,17 +417,17 @@ export function ContentBlocksManager({ className }: ContentBlocksManagerProps) {
   }, []);
 
   // Filtered and searched content blocks
-  const filteredBlocks = contentBlocks.filter((block) => {
-    const matchesCategory =
-      selectedCategory === "all" || block.category_id === selectedCategory;
-    const matchesSearch =
-      searchTerm === "" ||
-      block.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      block.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      block.block_id.toLowerCase().includes(searchTerm.toLowerCase());
-
-    return matchesCategory && matchesSearch;
-  });
+  const categoryMatches = contentBlocks.filter(
+    (block) =>
+      selectedCategory === "all" || block.category_id === selectedCategory,
+  );
+  const filteredBlocks = searchTerm
+    ? filterAndSortBySearch(categoryMatches, searchTerm, [
+        { get: (b) => b.label, weight: "title" },
+        { get: (b) => b.description, weight: "body" },
+        { get: (b) => b.block_id, weight: "id" },
+      ])
+    : categoryMatches;
 
   // Initialize edit data when block is selected
   useEffect(() => {

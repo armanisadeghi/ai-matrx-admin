@@ -15,6 +15,7 @@ import { DesktopSearchBar } from './components/DesktopSearchBar';
 import { FilterModal } from './components/FilterModal';
 import { VoiceSelectionModal } from './components/VoiceSelectionModal';
 import { cn } from '@/lib/utils';
+import { matchesSearch } from '@/utils/search-scoring';
 
 const VoicesList: React.FC = () => {
     const {
@@ -76,10 +77,11 @@ const VoicesList: React.FC = () => {
 
         // Apply search filter
         if (searchTerm) {
-            const lowerSearch = searchTerm.toLowerCase();
-            filtered = filtered.filter(voice => 
-                voice.name.toLowerCase().includes(lowerSearch) ||
-                (voice.description && voice.description.toLowerCase().includes(lowerSearch))
+            filtered = filtered.filter((voice) =>
+                matchesSearch(voice, searchTerm, [
+                    { get: (v) => v.name, weight: 'title' },
+                    { get: (v) => v.description, weight: 'body' },
+                ])
             );
         }
 

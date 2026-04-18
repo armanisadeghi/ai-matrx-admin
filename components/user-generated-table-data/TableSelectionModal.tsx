@@ -29,6 +29,7 @@ import {
 import { format } from "date-fns";
 import TableReferenceOverlay from "./TableReferenceOverlay";
 import { UserDataReference } from "@/components/user-generated-table-data/tableReferences";
+import { filterAndSortBySearch } from "@/utils/search-scoring";
 
 interface UserTable {
   id: string;
@@ -102,13 +103,12 @@ export default function TableSelectionModal({
     if (!searchTerm.trim()) {
       setFilteredTables(tables);
     } else {
-      const filtered = tables.filter(
-        (table) =>
-          table.table_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (table.description &&
-            table.description.toLowerCase().includes(searchTerm.toLowerCase())),
+      setFilteredTables(
+        filterAndSortBySearch(tables, searchTerm, [
+          { get: (t) => t.table_name, weight: "title" },
+          { get: (t) => t.description, weight: "body" },
+        ]),
       );
-      setFilteredTables(filtered);
     }
   }, [tables, searchTerm]);
 

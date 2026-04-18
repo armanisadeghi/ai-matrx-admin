@@ -27,6 +27,7 @@ import {
   upsertTaskWithLevel,
   removeTaskFromSlice,
 } from "@/features/agent-context/redux/tasksSlice";
+import { matchesSearch } from "@/utils/search-scoring";
 
 const KEYS = {
   tree: () => ["hierarchy-tree"] as const,
@@ -352,12 +353,13 @@ export function filterHierarchyTree(
   query: string,
 ): HierarchyNode[] {
   if (!query.trim()) return nodes;
-  const q = query.toLowerCase();
 
   function prune(node: HierarchyNode): HierarchyNode | null {
     if (
-      node.name.toLowerCase().includes(q) ||
-      node.description?.toLowerCase().includes(q)
+      matchesSearch(node, query, [
+        { get: (n) => n.name, weight: "title" },
+        { get: (n) => n.description, weight: "body" },
+      ])
     ) {
       return node;
     }

@@ -12,6 +12,7 @@ import { SCRAPE_STATUS_CONFIG, SOURCE_TYPE_CONFIG } from '../../constants';
 import { ResearchFilterBar, type FilterDef } from '../shared/ResearchFilterBar';
 import type { FilterOption } from '@/components/hierarchy-filter';
 import type { ResearchSource } from '../../types';
+import { filterAndSortBySearch } from '@/utils/search-scoring';
 
 export default function ContentList() {
     const { topicId } = useTopicContext();
@@ -53,13 +54,12 @@ export default function ContentList() {
             items = items.filter(s => s.hostname === hostFilter);
         }
         if (search) {
-            const q = search.toLowerCase();
-            items = items.filter(s =>
-                (s.title ?? '').toLowerCase().includes(q) ||
-                s.url.toLowerCase().includes(q) ||
-                (s.description ?? '').toLowerCase().includes(q) ||
-                (s.hostname ?? '').toLowerCase().includes(q),
-            );
+            items = filterAndSortBySearch(items, search, [
+                { get: (s) => s.title, weight: 'title' },
+                { get: (s) => s.hostname, weight: 'subtitle' },
+                { get: (s) => s.url, weight: 'subtitle' },
+                { get: (s) => s.description, weight: 'body' },
+            ]);
         }
 
         return items;

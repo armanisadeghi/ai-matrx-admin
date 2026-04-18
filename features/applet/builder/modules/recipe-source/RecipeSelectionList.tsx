@@ -17,6 +17,7 @@ import {
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { setTempAppletSourceConfig } from "@/lib/redux/app-builder/slices/appletBuilderSlice";
 import { AppletSourceConfig } from "@/types/customAppTypes";
+import { matchesSearch } from "@/utils/search-scoring";
 
 interface RecipeSelectionListProps {
     initialSelectedRecipe?: string | null;
@@ -120,13 +121,16 @@ export const RecipeSelectionList: React.FC<RecipeSelectionListProps> = ({
     const filteredRecipes = useMemo(() => {
         return extendedRecipes.filter((recipe) => {
             // Search term filter
-            const matchesSearch =
+            const matchesSearchQuery =
                 searchTerm === "" ||
-                recipe.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                (recipe.description || "").toLowerCase().includes(searchTerm.toLowerCase());
+                matchesSearch(recipe, searchTerm, [
+                    { get: (r) => r.name, weight: "title" },
+                    { get: (r) => r.description, weight: "body" },
+                    { get: (r) => r.tags, weight: "tag" },
+                ]);
             // Tags filter
             const matchesTags = selectedTags.length === 0 || (recipe.tags && selectedTags.every((tag) => recipe.tags?.includes(tag)));
-            return matchesSearch && matchesTags;
+            return matchesSearchQuery && matchesTags;
         });
     }, [extendedRecipes, searchTerm, selectedTags]);
 

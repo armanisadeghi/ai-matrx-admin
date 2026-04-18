@@ -5,6 +5,7 @@ import { FiSearch, FiCheck } from 'react-icons/fi';
 import { INTEGRATIONS, CATEGORIES } from './constants';
 import { USER_INTEGRATIONS } from './mockData';
 import { Integration, UserIntegration } from './types';
+import { filterAndSortBySearch } from '@/utils/search-scoring';
 
 const IntegrationPortal: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -30,11 +31,11 @@ const IntegrationPortal: React.FC = () => {
       return;
     }
     
-    const filtered = INTEGRATIONS.filter(integration => 
-      integration.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      integration.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      integration.category.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filtered = filterAndSortBySearch(INTEGRATIONS, searchTerm, [
+      { get: (i) => i.name, weight: 'title' },
+      { get: (i) => i.category, weight: 'subtitle' },
+      { get: (i) => i.description, weight: 'body' },
+    ]);
     setFilteredIntegrations(filtered);
   }, [searchTerm]);
   

@@ -24,6 +24,7 @@ import type { UserList } from "../types";
 import { getListVisibility } from "../types";
 import { ListMetaModal } from "./ListMetaModal";
 import { CreateListDialog } from "./CreateListDialog";
+import { filterAndSortBySearch } from "@/utils/search-scoring";
 
 interface CategoryPanelProps {
   lists: UserList[];
@@ -169,11 +170,10 @@ export function CategoryPanel({ lists }: CategoryPanelProps) {
     : null;
 
   const filtered = query.trim()
-    ? lists.filter(
-        (l) =>
-          l.list_name.toLowerCase().includes(query.toLowerCase()) ||
-          l.description?.toLowerCase().includes(query.toLowerCase()),
-      )
+    ? filterAndSortBySearch(lists, query, [
+        { get: (l) => l.list_name, weight: "title" },
+        { get: (l) => l.description, weight: "body" },
+      ])
     : lists;
 
   const handleNavigate = (id: string) => {

@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/utils/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import UserTableViewer from "@/components/user-generated-table-data/UserTableViewer";
+import { filterAndSortBySearch } from "@/utils/search-scoring";
 
 // Types
 interface UserTable {
@@ -136,32 +137,33 @@ export function TablesResourcePicker({ onBack, onSelect }: TablesResourcePickerP
     // Filter tables by search
     const filteredTables = useMemo(() => {
         if (!searchQuery.trim()) return tables;
-        const query = searchQuery.toLowerCase();
-        return tables.filter(table => 
-            table.table_name.toLowerCase().includes(query) ||
-            table.description?.toLowerCase().includes(query)
-        );
+        return filterAndSortBySearch(tables, searchQuery, [
+            { get: (t) => t.table_name, weight: "title" },
+            { get: (t) => t.description, weight: "body" },
+        ]);
     }, [tables, searchQuery]);
 
-    // Filter rows by search
+    // Filter rows by search — each row's cell values are treated as body-weight fields.
     const filteredRows = useMemo(() => {
         if (!searchQuery.trim()) return rows;
-        const query = searchQuery.toLowerCase();
-        return rows.filter(row => 
-            Object.values(row.data).some(value => 
-                value && value.toString().toLowerCase().includes(query)
-            )
-        );
+        return filterAndSortBySearch(rows, searchQuery, [
+            {
+                get: (row) =>
+                    Object.values(row.data)
+                        .filter((v) => v != null)
+                        .map((v) => String(v)),
+                weight: "body",
+            },
+        ]);
     }, [rows, searchQuery]);
 
     // Filter columns by search
     const filteredColumns = useMemo(() => {
         if (!searchQuery.trim()) return fields;
-        const query = searchQuery.toLowerCase();
-        return fields.filter(field => 
-            field.display_name.toLowerCase().includes(query) ||
-            field.field_name.toLowerCase().includes(query)
-        );
+        return filterAndSortBySearch(fields, searchQuery, [
+            { get: (f) => f.display_name, weight: "title" },
+            { get: (f) => f.field_name, weight: "subtitle" },
+        ]);
     }, [fields, searchQuery]);
 
     // Get display value for a row

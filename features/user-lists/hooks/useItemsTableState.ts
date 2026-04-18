@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import type { UserListItem } from "../types";
+import { matchesSearch } from "@/utils/search-scoring";
 
 export function useItemsTableState(items: UserListItem[]) {
   const [searchTerm, setSearchTerm] = useState("");
@@ -12,13 +13,13 @@ export function useItemsTableState(items: UserListItem[]) {
 
   const filteredItems = useMemo(() => {
     if (!searchTerm.trim()) return items;
-    const q = searchTerm.toLowerCase();
-    return items.filter(
-      (item) =>
-        item.label.toLowerCase().includes(q) ||
-        (item.description ?? "").toLowerCase().includes(q) ||
-        (item.group_name ?? "").toLowerCase().includes(q) ||
-        (item.help_text ?? "").toLowerCase().includes(q),
+    return items.filter((item) =>
+      matchesSearch(item, searchTerm, [
+        { get: (x) => x.label, weight: "title" },
+        { get: (x) => x.group_name, weight: "subtitle" },
+        { get: (x) => x.description, weight: "body" },
+        { get: (x) => x.help_text, weight: "body" },
+      ]),
     );
   }, [items, searchTerm]);
 

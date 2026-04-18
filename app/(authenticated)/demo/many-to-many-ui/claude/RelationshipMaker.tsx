@@ -6,6 +6,7 @@ import { X, Check, AlertCircle, Search, Move, Plus } from "lucide-react";
 import { useCreateManyToMany } from "@/lib/redux/entity/hooks/useCreateManyToMany";
 import { RELATIONSHIP_DEFINITIONS } from "@/app/entities/hooks/relationships/relationshipData";
 import { AiModelDataOptional, AiEndpointDataOptional } from "@/types/AutomationSchemaTypes";
+import { filterAndSortBySearch } from "@/utils/search-scoring";
 
 export const aiModelEndpointDef = RELATIONSHIP_DEFINITIONS.aiModelEndpoint;
 
@@ -170,13 +171,12 @@ const RelationshipMaker = () => {
     
     // Apply search filter
     if (modelSearch) {
-      const lowerQuery = modelSearch.toLowerCase();
-      filtered = filtered.filter(model => 
-        (model.name && model.name.toLowerCase().includes(lowerQuery)) ||
-        (model.commonName && model.commonName.toLowerCase().includes(lowerQuery)) ||
-        (model.modelClass && model.modelClass.toLowerCase().includes(lowerQuery)) ||
-        (model.id && model.id.toLowerCase().includes(lowerQuery))
-      );
+      filtered = filterAndSortBySearch(filtered, modelSearch, [
+        { get: (m) => m.name, weight: "title" },
+        { get: (m) => m.commonName, weight: "subtitle" },
+        { get: (m) => m.modelClass, weight: "meta" },
+        { get: (m) => m.id, weight: "id" },
+      ]);
     }
     
     // Apply relationship filter
@@ -200,12 +200,11 @@ const RelationshipMaker = () => {
     
     // Apply search filter
     if (endpointsearch) {
-      const lowerQuery = endpointsearch.toLowerCase();
-      filtered = filtered.filter(associatedEndpoints => 
-        (associatedEndpoints.name && associatedEndpoints.name.toLowerCase().includes(lowerQuery)) ||
-        (associatedEndpoints.description && associatedEndpoints.description.toLowerCase().includes(lowerQuery)) ||
-        (associatedEndpoints.id && associatedEndpoints.id.toLowerCase().includes(lowerQuery))
-      );
+      filtered = filterAndSortBySearch(filtered, endpointsearch, [
+        { get: (e) => e.name, weight: "title" },
+        { get: (e) => e.description, weight: "body" },
+        { get: (e) => e.id, weight: "id" },
+      ]);
     }
     
     // Apply model filter

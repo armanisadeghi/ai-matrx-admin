@@ -27,6 +27,7 @@ import {
   selectAgentsSliceStatus,
 } from "@/features/agents/redux/agent-definition/selectors";
 import type { AgentDefinitionRecord } from "@/features/agents/types/agent-definition.types";
+import { filterAndSortBySearch } from "@/utils/search-scoring";
 
 // Minimal agent shape needed by the sidebar — agentId drives navigation, name drives display.
 interface SidebarAgent {
@@ -124,12 +125,10 @@ function AgentSubsection({
 
   const filtered = useMemo(() => {
     if (!localSearch.trim()) return agents;
-    const q = localSearch.toLowerCase();
-    return agents.filter(
-      (a) =>
-        a.name.toLowerCase().includes(q) ||
-        (a.description ?? "").toLowerCase().includes(q),
-    );
+    return filterAndSortBySearch(agents, localSearch, [
+      { get: (a) => a.name, weight: "title" },
+      { get: (a) => a.description, weight: "body" },
+    ]);
   }, [agents, localSearch]);
 
   const visible = expanded ? filtered : filtered.slice(0, DEFAULT_VISIBLE);
@@ -240,12 +239,10 @@ export function SsrSidebarAgents({
   // Apply external search query across all sources
   const filterByQuery = (agents: AgentDefinitionRecord[]) => {
     if (!searchQuery.trim()) return agents;
-    const q = searchQuery.toLowerCase();
-    return agents.filter(
-      (a) =>
-        a.name.toLowerCase().includes(q) ||
-        (a.description ?? "").toLowerCase().includes(q),
-    );
+    return filterAndSortBySearch(agents, searchQuery, [
+      { get: (a) => a.name, weight: "title" },
+      { get: (a) => a.description, weight: "body" },
+    ]);
   };
 
   const filteredOwned = useMemo(

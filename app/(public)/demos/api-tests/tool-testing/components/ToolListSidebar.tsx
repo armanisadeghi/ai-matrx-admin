@@ -16,6 +16,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import type { ToolDefinition } from '../types';
+import { filterAndSortBySearch } from '@/utils/search-scoring';
 
 const CATEGORY_ICONS: Record<string, LucideIcon> = {
   web: Globe,
@@ -54,13 +55,11 @@ export function ToolListSidebar({
       result = result.filter((t) => t.category === activeCategory);
     }
     if (search.trim()) {
-      const q = search.toLowerCase();
-      result = result.filter(
-        (t) =>
-          t.name.toLowerCase().includes(q) ||
-          t.description.toLowerCase().includes(q) ||
-          (t.tags ?? []).some((tag) => tag.toLowerCase().includes(q)),
-      );
+      result = filterAndSortBySearch(result, search, [
+        { get: (t) => t.name, weight: 'title' },
+        { get: (t) => t.description, weight: 'body' },
+        { get: (t) => t.tags, weight: 'tag' },
+      ]);
     }
     return result;
   }, [tools, activeCategory, search]);

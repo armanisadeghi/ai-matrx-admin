@@ -89,6 +89,7 @@ import {
 import { formatDistanceToNow, format } from "date-fns";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { filterAndSortBySearch } from "@/utils/search-scoring";
 
 interface FeedbackDetailDialogProps {
   feedback: UserFeedback;
@@ -1514,6 +1515,24 @@ export default function FeedbackDetailDialog({
                   ) : (
                     <div className="relative">
                       {showParentPicker ? (
+                        (() => {
+                          const parentCandidates = allFeedbackItems.filter(
+                            (f) => f.id !== item.id,
+                          );
+                          const parentResults = parentSearchQuery
+                            ? filterAndSortBySearch(
+                                parentCandidates,
+                                parentSearchQuery,
+                                [
+                                  {
+                                    get: (f) => f.description,
+                                    weight: "title",
+                                  },
+                                  { get: (f) => f.id, weight: "id" },
+                                ],
+                              )
+                            : parentCandidates;
+                          return (
                         <div className="border rounded-lg p-2 bg-background shadow-md">
                           <Input
                             placeholder="Search feedback items..."
@@ -1525,18 +1544,7 @@ export default function FeedbackDetailDialog({
                             autoFocus
                           />
                           <div className="max-h-48 overflow-y-auto space-y-1">
-                            {allFeedbackItems
-                              .filter(
-                                (f) =>
-                                  f.id !== item.id &&
-                                  (!parentSearchQuery ||
-                                    f.description
-                                      .toLowerCase()
-                                      .includes(
-                                        parentSearchQuery.toLowerCase(),
-                                      ) ||
-                                    f.id.includes(parentSearchQuery)),
-                              )
+                            {parentResults
                               .slice(0, 20)
                               .map((f) => (
                                 <button
@@ -1556,17 +1564,7 @@ export default function FeedbackDetailDialog({
                                   {f.description.length > 70 ? "…" : ""}
                                 </button>
                               ))}
-                            {allFeedbackItems.filter(
-                              (f) =>
-                                f.id !== item.id &&
-                                (!parentSearchQuery ||
-                                  f.description
-                                    .toLowerCase()
-                                    .includes(
-                                      parentSearchQuery.toLowerCase(),
-                                    ) ||
-                                  f.id.includes(parentSearchQuery)),
-                            ).length === 0 && (
+                            {parentResults.length === 0 && (
                               <p className="text-xs text-muted-foreground px-2 py-2">
                                 No items found
                               </p>
@@ -1585,6 +1583,8 @@ export default function FeedbackDetailDialog({
                             Cancel
                           </Button>
                         </div>
+                          );
+                        })()
                       ) : (
                         <Button
                           type="button"

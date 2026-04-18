@@ -38,6 +38,7 @@ import {
   type ResearchSource,
   tokenUsageFromJson,
 } from "../../types";
+import { filterAndSortBySearch } from "@/utils/search-scoring";
 
 function StatsBar({
   total,
@@ -428,19 +429,15 @@ export default function AnalysisList() {
     if (statusFilter) items = items.filter((a) => a.status === statusFilter);
     if (modelFilter) items = items.filter((a) => a.model_id === modelFilter);
     if (search) {
-      const q = search.toLowerCase();
-      items = items.filter((a) => {
-        const src = sourceMap.get(a.source_id);
-        return (
-          (a.result ?? "").toLowerCase().includes(q) ||
-          (a.error ?? "").toLowerCase().includes(q) ||
-          (a.model_id ?? "").toLowerCase().includes(q) ||
-          (src?.title ?? "").toLowerCase().includes(q) ||
-          (src?.hostname ?? "").toLowerCase().includes(q) ||
-          (src?.url ?? "").toLowerCase().includes(q) ||
-          (src?.description ?? "").toLowerCase().includes(q)
-        );
-      });
+      items = filterAndSortBySearch(items, search, [
+        { get: (a) => sourceMap.get(a.source_id)?.title, weight: "title" },
+        { get: (a) => sourceMap.get(a.source_id)?.hostname, weight: "subtitle" },
+        { get: (a) => sourceMap.get(a.source_id)?.url, weight: "subtitle" },
+        { get: (a) => sourceMap.get(a.source_id)?.description, weight: "body" },
+        { get: (a) => a.result, weight: "body" },
+        { get: (a) => a.error, weight: "body" },
+        { get: (a) => a.model_id, weight: "meta" },
+      ]);
     }
     return items;
   }, [analysisList, statusFilter, modelFilter, search, sourceMap]);

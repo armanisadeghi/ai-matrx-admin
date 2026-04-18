@@ -17,6 +17,7 @@ import { useUserProjects } from "@/features/projects";
 import type { ProjectWithRole } from "@/features/projects";
 import { cn } from "@/lib/utils";
 import { useUserOrganizations } from "@/features/organizations";
+import { filterAndSortBySearch } from "@/utils/search-scoring";
 
 /**
  * User Projects Settings Page
@@ -35,12 +36,13 @@ export default function SettingsProjectsPage() {
     [organizations],
   );
 
-  const filteredProjects = projects.filter(
-    (p) =>
-      p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (p.slug ?? "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (p.description ?? "").toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  const filteredProjects = searchTerm
+    ? filterAndSortBySearch(projects, searchTerm, [
+        { get: (p) => p.name, weight: "title" },
+        { get: (p) => p.slug, weight: "subtitle" },
+        { get: (p) => p.description, weight: "body" },
+      ])
+    : projects;
 
   const getRoleBadge = (role: ProjectWithRole["role"]) => {
     switch (role) {

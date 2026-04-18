@@ -37,6 +37,7 @@ import { useTools } from "@/hooks/useTools";
 import { supabase } from "@/utils/supabase/client";
 import { mapIcon } from "@/utils/icons/icon-mapper";
 import { formatText } from "@/utils/text/text-case-converter";
+import { filterAndSortBySearch } from "@/utils/search-scoring";
 
 interface Tool {
     id: string;
@@ -179,12 +180,7 @@ export function McpToolsManager() {
     };
 
     const filteredTools = React.useMemo(() => {
-        return tools.filter(tool => {
-            const matchesSearch = !searchQuery ||
-                tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                tool.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                tool.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())) ||
-                tool.function_path.toLowerCase().includes(searchQuery.toLowerCase());
+        const nonSearchMatches = tools.filter(tool => {
             const matchesCategory = selectedCategory === "all" || tool.category === selectedCategory;
             const matchesSourceApp = selectedSourceApp === "all" || sourceAppFromPath(tool.function_path) === selectedSourceApp;
             const matchesStatus =
@@ -212,8 +208,17 @@ export function McpToolsManager() {
                 (selectedTestFilter === "has_annotations" && hasAnn) ||
                 (selectedTestFilter === "no_annotations" && !hasAnn);
 
-            return matchesSearch && matchesCategory && matchesSourceApp && matchesStatus && matchesTag && matchesTest;
+            return matchesCategory && matchesSourceApp && matchesStatus && matchesTag && matchesTest;
         });
+
+        if (!searchQuery) return nonSearchMatches;
+        return filterAndSortBySearch(nonSearchMatches, searchQuery, [
+            { get: t => t.name, weight: "title" },
+            { get: t => t.description, weight: "body" },
+            { get: t => t.tags, weight: "tag" },
+            { get: t => t.category, weight: "tag" },
+            { get: t => t.function_path, weight: "meta" },
+        ]);
     }, [tools, toolCounts, searchQuery, selectedCategory, selectedSourceApp, selectedStatus, selectedTag, selectedTestFilter]);
 
     const navigateTo = (path: string) => {

@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/card';
 import { useUserOrganizations } from '@/features/organizations';
 import { OrganizationCard } from './OrganizationCard';
 import { CreateOrgModal } from './CreateOrgModal';
+import { filterAndSortBySearch } from '@/utils/search-scoring';
 
 /**
  * OrganizationList - Main component for displaying user's organizations
@@ -27,11 +28,13 @@ export function OrganizationList() {
   const { organizations, loading, error, refresh } = useUserOrganizations();
 
   // Filter organizations based on search
-  const filteredOrgs = organizations.filter((org) =>
-    org.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    org.slug.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    org.description?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredOrgs = searchTerm
+    ? filterAndSortBySearch(organizations, searchTerm, [
+        { get: (o) => o.name, weight: 'title' },
+        { get: (o) => o.slug, weight: 'subtitle' },
+        { get: (o) => o.description, weight: 'body' },
+      ])
+    : organizations;
 
   // Separate personal and team organizations
   const personalOrg = filteredOrgs.find((org) => org.isPersonal);

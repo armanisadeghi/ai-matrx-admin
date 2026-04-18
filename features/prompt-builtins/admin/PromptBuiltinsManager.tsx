@@ -106,6 +106,7 @@ import {
   validateCategoryFormData,
 } from "../components/CategoryFormFields";
 import { useModels } from "@/features/ai-models/hooks/useModels";
+import { matchesSearch as matchesSearchScoring } from "@/utils/search-scoring";
 
 interface PromptBuiltinsManagerProps {
   className?: string;
@@ -286,7 +287,9 @@ export function PromptBuiltinsManager({
       selectedPlacement === "all" || cat.placement_type === selectedPlacement;
     const matchesSearch =
       searchTerm === "" ||
-      cat.label.toLowerCase().includes(searchTerm.toLowerCase());
+      matchesSearchScoring(cat, searchTerm, [
+        { get: (c) => c.label, weight: "title" },
+      ]);
     const matchesActive = showInactive || cat.is_active;
     return matchesPlacement && matchesSearch && matchesActive;
   });
@@ -1028,7 +1031,9 @@ export function PromptBuiltinsManager({
                   category?.placement_type === selectedPlacement;
                 const matchesSearch =
                   searchTerm === "" ||
-                  item.label.toLowerCase().includes(searchTerm.toLowerCase());
+                  matchesSearchScoring(item, searchTerm, [
+                    { get: (i) => i.label, weight: "title" },
+                  ]);
                 const matchesActive = showInactive || item.is_active;
                 return matchesPlacement && matchesSearch && matchesActive;
               }).length === 0 ? (
@@ -1047,7 +1052,9 @@ export function PromptBuiltinsManager({
                     category?.placement_type === selectedPlacement;
                   const matchesSearch =
                     searchTerm === "" ||
-                    item.label.toLowerCase().includes(searchTerm.toLowerCase());
+                    matchesSearchScoring(item, searchTerm, [
+                      { get: (i) => i.label, weight: "title" },
+                    ]);
                   const matchesActive = showInactive || item.is_active;
                   return matchesPlacement && matchesSearch && matchesActive;
                 })

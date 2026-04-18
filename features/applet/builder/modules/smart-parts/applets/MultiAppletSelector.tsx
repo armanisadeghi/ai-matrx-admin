@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { CustomAppletConfig } from '@/types/customAppTypes';
 import { getAllCustomAppletConfigs, getCustomAppletConfigById } from '@/lib/redux/app-builder/service/customAppletService';
 import { ICON_OPTIONS, COLOR_VARIANTS } from '@/features/applet/styles/StyledComponents';
+import { filterAndSortBySearch } from '@/utils/search-scoring';
 
 // Define type for appletIds
 type AppletId = string;
@@ -86,14 +87,13 @@ const MultiAppletSelector: React.FC<MultiAppletSelectorProps> & {
       return;
     }
     
-    const term = searchTerm.toLowerCase();
-    const filtered = applets.filter(applet => 
-      applet.name?.toLowerCase().includes(term) || 
-      applet.description?.toLowerCase().includes(term) ||
-      applet.creator?.toLowerCase().includes(term) ||
-      applet.slug?.toLowerCase().includes(term)
-    );
-    
+    const filtered = filterAndSortBySearch(applets, searchTerm, [
+      { get: (a) => a.name, weight: 'title' },
+      { get: (a) => a.slug, weight: 'subtitle' },
+      { get: (a) => a.creator, weight: 'subtitle' },
+      { get: (a) => a.description, weight: 'body' },
+    ]);
+
     setFilteredApplets(filtered);
   }, [searchTerm, applets]);
   

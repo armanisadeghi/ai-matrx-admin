@@ -74,6 +74,7 @@ import { BuiltinEditor } from "@/features/prompts/components/universal-editor";
 import { updatePromptShortcut } from "../services/admin-service";
 import type { ScopeMapping } from "../types/core";
 import { useModels } from "@/features/ai-models/hooks/useModels";
+import { matchesSearch } from "@/utils/search-scoring";
 
 type SortField = "name" | "variables" | "usage" | "source" | "active";
 type SortDirection = "asc" | "desc";
@@ -332,12 +333,12 @@ export function PromptBuiltinsTableManager({
 
     // Search filter
     if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (b) =>
-          b.name.toLowerCase().includes(query) ||
-          b.description?.toLowerCase().includes(query) ||
-          b.id.toLowerCase().includes(query),
+      filtered = filtered.filter((b) =>
+        matchesSearch(b, searchQuery, [
+          { get: (x) => x.name, weight: "title" },
+          { get: (x) => x.description, weight: "body" },
+          { get: (x) => x.id, weight: "id" },
+        ]),
       );
     }
 

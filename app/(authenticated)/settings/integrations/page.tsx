@@ -48,6 +48,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { filterAndSortBySearch } from "@/utils/search-scoring";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -142,16 +143,6 @@ export default function IntegrationsPage() {
   const filtered = useMemo(() => {
     let entries = [...catalog];
 
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      entries = entries.filter(
-        (e) =>
-          e.name.toLowerCase().includes(q) ||
-          e.vendor.toLowerCase().includes(q) ||
-          (e.description ?? "").toLowerCase().includes(q),
-      );
-    }
-
     if (activeCategory !== "all") {
       entries = entries.filter((e) => e.category === activeCategory);
     }
@@ -164,6 +155,14 @@ export default function IntegrationsPage() {
       );
     } else if (viewFilter === "coming_soon") {
       entries = entries.filter((e) => e.serverStatus === "coming_soon");
+    }
+
+    if (search.trim()) {
+      entries = filterAndSortBySearch(entries, search, [
+        { get: (e) => e.name, weight: "title" },
+        { get: (e) => e.vendor, weight: "subtitle" },
+        { get: (e) => e.description, weight: "body" },
+      ]);
     }
 
     return entries;

@@ -8,6 +8,7 @@ import { Search, Play, Pencil, Eye, Loader2, MessageSquare } from "lucide-react"
 import { useRouter } from "next/navigation";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { usePromptsBasePath } from "../hooks/usePromptsBasePath";
+import { filterAndSortBySearch } from "@/utils/search-scoring";
 
 interface Prompt {
     id: string;
@@ -33,12 +34,10 @@ export function PromptSearchDialog({ isOpen, onClose, prompts }: PromptSearchDia
             return prompts;
         }
 
-        const query = searchQuery.toLowerCase();
-        return prompts.filter(
-            (prompt) =>
-                prompt.name.toLowerCase().includes(query) ||
-                (prompt.description && prompt.description.toLowerCase().includes(query))
-        );
+        return filterAndSortBySearch(prompts, searchQuery, [
+            { get: (p) => p.name, weight: "title" },
+            { get: (p) => p.description, weight: "body" },
+        ]);
     }, [prompts, searchQuery]);
 
     const handleNavigate = (id: string, path: string) => {

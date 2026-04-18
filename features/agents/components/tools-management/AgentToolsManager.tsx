@@ -95,6 +95,7 @@ import {
   selectAllTools,
   selectToolsStatus,
 } from "@/features/agents/redux/tools/tools.selectors";
+import { filterAndSortBySearch } from "@/utils/search-scoring";
 
 type ToolsTab = "server" | "custom" | "client" | "mcp";
 
@@ -598,12 +599,11 @@ function ServerToolsTab({
         );
       }
       if (debouncedSearch) {
-        const query = debouncedSearch.toLowerCase();
-        filtered = filtered.filter(
-          (t) =>
-            t.name.toLowerCase().includes(query) ||
-            (t.description || "").toLowerCase().includes(query),
-        );
+        filtered = filterAndSortBySearch(filtered, debouncedSearch, [
+          { get: (t) => t.name, weight: "title" },
+          { get: (t) => t.description, weight: "body" },
+          { get: (t) => t.category, weight: "tag" },
+        ]);
       }
       setToolsList({
         items: filtered,
@@ -651,12 +651,11 @@ function ServerToolsTab({
         activeSet.has(t.id),
       );
       if (debouncedSearch) {
-        const query = debouncedSearch.toLowerCase();
-        items = items.filter(
-          (t: any) =>
-            t.name.toLowerCase().includes(query) ||
-            (t.description || "").toLowerCase().includes(query),
-        );
+        items = filterAndSortBySearch(items, debouncedSearch, [
+          { get: (t: any) => t.name, weight: "title" },
+          { get: (t: any) => t.description, weight: "body" },
+          { get: (t: any) => t.category, weight: "tag" },
+        ]);
       }
       return items;
     }
@@ -1866,13 +1865,11 @@ function McpToolsTab({ agentId }: { agentId: string }) {
       )}
 
       <div className="flex-1 overflow-y-auto p-3 space-y-1.5">
-        {agentCatalogEntries
-          .filter(
-            (e) =>
-              !search.trim() ||
-              e.name.toLowerCase().includes(search.toLowerCase()) ||
-              e.vendor.toLowerCase().includes(search.toLowerCase()),
-          )
+        {filterAndSortBySearch(agentCatalogEntries, search, [
+          { get: (e) => e.name, weight: "title" },
+          { get: (e) => e.vendor, weight: "subtitle" },
+          { get: (e) => e.description, weight: "body" },
+        ])
           .map((entry) => (
             <McpAgentServerCard
               key={entry.serverId}
@@ -2619,18 +2616,16 @@ function McpCatalogPicker({
   const [activeCategory, setActiveCategory] = useState<string>("all");
 
   const filtered = useMemo(() => {
-    let list = catalog;
+    let list: McpCatalogEntry[] = catalog;
     if (activeCategory !== "all") {
       list = list.filter((e) => e.category === activeCategory);
     }
     if (search.trim()) {
-      const q = search.toLowerCase();
-      list = list.filter(
-        (e) =>
-          e.name.toLowerCase().includes(q) ||
-          e.vendor.toLowerCase().includes(q) ||
-          (e.description ?? "").toLowerCase().includes(q),
-      );
+      list = filterAndSortBySearch(list, search, [
+        { get: (e) => e.name, weight: "title" },
+        { get: (e) => e.vendor, weight: "subtitle" },
+        { get: (e) => e.description, weight: "body" },
+      ]);
     }
     return list;
   }, [catalog, activeCategory, search]);

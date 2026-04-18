@@ -50,6 +50,7 @@ import {
   sourceTypeFromDb,
   stringArrayFromJson,
 } from "../../types";
+import { filterAndSortBySearch } from "@/utils/search-scoring";
 
 function formatPageAge(pageAge: string | null): {
   display: string;
@@ -388,16 +389,14 @@ export default function SourceList() {
   const allSources = (sources as ResearchSource[]) ?? [];
   const sourceList = useMemo(() => {
     if (!search) return allSources;
-    const q = search.toLowerCase();
-    return allSources.filter(
-      (s) =>
-        (s.title ?? "").toLowerCase().includes(q) ||
-        s.url.toLowerCase().includes(q) ||
-        (s.description ?? "").toLowerCase().includes(q) ||
-        (s.hostname ?? "").toLowerCase().includes(q) ||
-        (s.origin ?? "").toLowerCase().includes(q) ||
-        (s.source_type ?? "").toLowerCase().includes(q),
-    );
+    return filterAndSortBySearch(allSources, search, [
+      { get: (s) => s.title, weight: "title" },
+      { get: (s) => s.hostname, weight: "subtitle" },
+      { get: (s) => s.url, weight: "subtitle" },
+      { get: (s) => s.description, weight: "body" },
+      { get: (s) => s.origin, weight: "meta" },
+      { get: (s) => s.source_type, weight: "meta" },
+    ]);
   }, [allSources, search]);
   const hostnames = useMemo(
     () =>

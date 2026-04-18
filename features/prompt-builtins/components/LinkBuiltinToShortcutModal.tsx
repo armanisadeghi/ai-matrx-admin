@@ -42,6 +42,7 @@ import type {
   CreatePromptShortcutInput,
   ScopeMapping,
 } from '../types/core';
+import { filterAndSortBySearch } from '@/utils/search-scoring';
 
 interface LinkBuiltinToShortcutModalProps {
   isOpen: boolean;
@@ -147,13 +148,11 @@ export function LinkBuiltinToShortcutModal({
       : shortcuts;
 
     if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (s) =>
-          s.label.toLowerCase().includes(query) ||
-          s.description?.toLowerCase().includes(query) ||
-          s.category?.label.toLowerCase().includes(query)
-      );
+      filtered = filterAndSortBySearch(filtered, searchQuery, [
+        { get: (s) => s.label, weight: 'title' },
+        { get: (s) => s.category?.label, weight: 'subtitle' },
+        { get: (s) => s.description, weight: 'body' },
+      ]);
     }
 
     return filtered;

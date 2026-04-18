@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ToolRendererProps } from "../types";
 import { ToolCallObject } from "@/lib/redux/socket-io/socket.types";
+import { filterAndSortBySearch } from "@/utils/search-scoring";
 
 interface UserList {
     id: string;
@@ -139,12 +140,10 @@ export const UserListsOverlay: React.FC<ToolRendererProps> = ({ toolUpdates }) =
 
         // Search filter
         if (search.trim()) {
-            const q = search.toLowerCase();
-            items = items.filter(
-                (l) =>
-                    l.list_name.toLowerCase().includes(q) ||
-                    (l.description ?? "").toLowerCase().includes(q)
-            );
+            items = filterAndSortBySearch(items, search, [
+                { get: (l) => l.list_name, weight: "title" },
+                { get: (l) => l.description, weight: "body" },
+            ]);
         }
 
         // Visibility filter

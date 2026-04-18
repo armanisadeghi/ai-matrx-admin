@@ -17,6 +17,7 @@ import type { AgentRecord } from "@/features/prompts/hooks/useAgentConsumer";
 import { DEFAULT_AGENTS } from "./AgentSelector";
 import type { AgentConfig } from "../context/DEPRECATED-ChatContext";
 import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
+import { filterAndSortBySearch } from "@/utils/search-scoring";
 
 // ============================================================================
 // TYPES
@@ -273,11 +274,10 @@ function MobileAgentPicker({
     const base = DEFAULT_AGENTS;
     if (filter === "mine") return [];
     if (!q) return base;
-    return base.filter(
-      (a) =>
-        a.name.toLowerCase().includes(q) ||
-        a.description?.toLowerCase().includes(q),
-    );
+    return filterAndSortBySearch(base, q, [
+      { get: (a) => a.name, weight: "title" },
+      { get: (a) => a.description, weight: "body" },
+    ]);
   }, [searchTerm, filter]);
 
   // builtins + owned are already filtered by the Redux selector
@@ -474,11 +474,10 @@ function DesktopAgentPicker({
     const base = DEFAULT_AGENTS;
     if (filter === "mine") return [];
     if (!q) return base;
-    return base.filter(
-      (a) =>
-        a.name.toLowerCase().includes(q) ||
-        a.description?.toLowerCase().includes(q),
-    );
+    return filterAndSortBySearch(base, q, [
+      { get: (a) => a.name, weight: "title" },
+      { get: (a) => a.description, weight: "body" },
+    ]);
   }, [searchTerm, filter]);
 
   // builtins + owned already filtered by Redux selector (search + archFilter etc.)

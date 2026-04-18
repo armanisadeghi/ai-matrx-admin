@@ -22,6 +22,7 @@ import {
 import { supabase } from "@/utils/supabase/client";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ZipCodeData } from "../page";
+import { filterAndSortBySearch } from "@/utils/search-scoring";
 
 function isUserTablesRpcResult(
   data: unknown,
@@ -185,12 +186,10 @@ export default function TableDataSource({
   // Filter tables by search
   const filteredTables = useMemo(() => {
     if (!searchQuery.trim()) return tables;
-    const query = searchQuery.toLowerCase();
-    return tables.filter(
-      (table) =>
-        table.table_name.toLowerCase().includes(query) ||
-        table.description?.toLowerCase().includes(query),
-    );
+    return filterAndSortBySearch(tables, searchQuery, [
+      { get: (t) => t.table_name, weight: "title" },
+      { get: (t) => t.description, weight: "body" },
+    ]);
   }, [tables, searchQuery]);
 
   const handleTableSelect = (table: UserTable) => {

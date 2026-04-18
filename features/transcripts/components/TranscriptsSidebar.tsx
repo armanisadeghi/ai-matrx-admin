@@ -22,6 +22,7 @@ import { cn } from '@/lib/utils';
 import type { Transcript } from '../types';
 import { formatDuration, formatRelativeTime } from '../utils/dateFormatting';
 import { DraftIndicator } from './DraftIndicator';
+import { filterAndSortBySearch } from '@/utils/search-scoring';
 
 interface TranscriptsSidebarProps {
     onCreateTranscript?: () => void;
@@ -60,12 +61,11 @@ export function TranscriptsSidebar({ onCreateTranscript }: TranscriptsSidebarPro
         }
 
         if (searchTerm.trim()) {
-            const term = searchTerm.toLowerCase();
-            filtered = filtered.filter(t => 
-                t.title.toLowerCase().includes(term) ||
-                t.description.toLowerCase().includes(term) ||
-                t.tags.some(tag => tag.toLowerCase().includes(term))
-            );
+            filtered = filterAndSortBySearch(filtered, searchTerm, [
+                { get: (t) => t.title, weight: "title" },
+                { get: (t) => t.description, weight: "body" },
+                { get: (t) => t.tags, weight: "tag" },
+            ]);
         }
 
         return filtered;

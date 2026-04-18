@@ -6,6 +6,7 @@ import FloatingSheet from "@/components/official/FloatingSheet";
 import { allInformationBrokers, InformationBroker } from "./constants";
 import useChatBasics from "@/features/chat/hooks/useChatBasics";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { matchesSearch as matchesSearchScoring } from "@/utils/search-scoring";
 
 interface BrokerSheetProps {
     isOpen: boolean;
@@ -45,8 +46,10 @@ const BrokerSheet: React.FC<BrokerSheetProps> = ({ isOpen, onClose, onBrokerSele
         return allInformationBrokers.filter((broker) => {
             const matchesSearch =
                 searchQuery === "" ||
-                broker.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                broker.description.toLowerCase().includes(searchQuery.toLowerCase());
+                matchesSearchScoring(broker, searchQuery, [
+                    { get: (b) => b.name, weight: "title" },
+                    { get: (b) => b.description, weight: "body" },
+                ]);
 
             const matchesCategory = activeCategory === null || broker.category === activeCategory;
 

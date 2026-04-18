@@ -20,6 +20,7 @@ import { useContextKeyboard } from '../hooks/useContextKeyboard';
 import type { ContextItemManifest, ContextItemStatus } from '../types';
 import type { ScopeState } from '../hooks/useContextScope';
 import Link from 'next/link';
+import { matchesSearch } from '@/utils/search-scoring';
 
 type Props = {
   scope: ScopeState;
@@ -55,12 +56,13 @@ export function ContextItemList({ scope }: Props) {
     let result = [...items];
 
     if (filters.search) {
-      const q = filters.search.toLowerCase();
-      result = result.filter(i =>
-        i.display_name.toLowerCase().includes(q) ||
-        i.key.toLowerCase().includes(q) ||
-        i.description?.toLowerCase().includes(q) ||
-        i.tags?.some(t => t.toLowerCase().includes(q))
+      result = result.filter((i) =>
+        matchesSearch(i, filters.search, [
+          { get: (x) => x.display_name, weight: 'title' },
+          { get: (x) => x.key, weight: 'subtitle' },
+          { get: (x) => x.description, weight: 'body' },
+          { get: (x) => x.tags, weight: 'tag' },
+        ]),
       );
     }
     if (filters.statuses.length > 0) {

@@ -32,6 +32,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import Link from "next/link";
+import { filterAndSortBySearch } from "@/utils/search-scoring";
 import CreateTableModal from "./CreateTableModal";
 import EditTableModal from "./EditTableModal";
 import { TableListItem } from "./TableListItem";
@@ -168,13 +169,10 @@ export default function TableCards() {
   // Filter tables based on search
   const filteredTables = useMemo(() => {
     if (!searchTerm) return tables;
-    const searchLower = searchTerm.toLowerCase();
-    return tables.filter(
-      (table) =>
-        table.table_name.toLowerCase().includes(searchLower) ||
-        (table.description &&
-          table.description.toLowerCase().includes(searchLower)),
-    );
+    return filterAndSortBySearch(tables, searchTerm, [
+      { get: (t) => t.table_name, weight: "title" },
+      { get: (t) => t.description, weight: "body" },
+    ]);
   }, [tables, searchTerm]);
 
   // Separate tables into owned and shared

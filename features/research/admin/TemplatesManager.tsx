@@ -61,6 +61,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
+import { filterAndSortBySearch } from "@/utils/search-scoring";
 import type { Json } from "@/types/database.types";
 import type { ResearchTemplate, AutonomyLevel } from "../types";
 import type {
@@ -176,12 +177,12 @@ export function TemplatesManager() {
     loadData();
   }, [loadData]);
 
-  const filtered = templates.filter(
-    (t) =>
-      !searchQuery ||
-      t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      t.description?.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  const filtered = searchQuery
+    ? filterAndSortBySearch(templates, searchQuery, [
+        { get: (t) => t.name, weight: "title" },
+        { get: (t) => t.description, weight: "body" },
+      ])
+    : templates;
 
   const toggleExpand = (id: string) => {
     setExpandedIds((prev) => {

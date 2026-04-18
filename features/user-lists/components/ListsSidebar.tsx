@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import type { UserList } from "../types";
 import { ListCard } from "./ListCard";
+import { filterAndSortBySearch } from "@/utils/search-scoring";
 
 interface ListsSidebarProps {
   lists: UserList[];
@@ -25,11 +26,10 @@ export function ListsSidebar({
   const [navigatingId, setNavigatingId] = useState<string | null>(null);
 
   const filtered = search.trim()
-    ? lists.filter(
-        (l) =>
-          l.list_name.toLowerCase().includes(search.toLowerCase()) ||
-          (l.description ?? "").toLowerCase().includes(search.toLowerCase()),
-      )
+    ? filterAndSortBySearch(lists, search, [
+        { get: (l) => l.list_name, weight: "title" },
+        { get: (l) => l.description, weight: "body" },
+      ])
     : lists;
 
   // All lists come from the owned-lists RPC for now.

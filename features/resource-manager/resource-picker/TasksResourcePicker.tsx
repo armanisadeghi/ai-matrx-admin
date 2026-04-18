@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useProjectsWithTasks } from "@/features/tasks/hooks/useTaskManager";
 import type { ProjectWithTasks, DatabaseTask } from "@/features/tasks/types";
+import { filterAndSortBySearch, matchesSearch } from "@/utils/search-scoring";
 
 interface TasksResourcePickerProps {
     onBack: () => void;
@@ -21,17 +22,24 @@ export function TasksResourcePicker({ onBack, onSelect }: TasksResourcePickerPro
     const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
     const [selectedTaskIds, setSelectedTaskIds] = useState<Set<string>>(new Set());
 
-    // Filter projects by search
+    // Filter projects by search — keep original order; match on project name or any nested task title/description.
     const filteredProjects = useMemo(() => {
         if (!searchQuery.trim()) return projects;
-        const query = searchQuery.toLowerCase();
-        return projects.filter(project => 
-            project.name.toLowerCase().includes(query) ||
-            project.tasks?.some(task => 
-                task.title.toLowerCase().includes(query) || 
-                task.description?.toLowerCase().includes(query)
-            )
-        );
+        return projects.filter((project) => {
+            if (
+                matchesSearch(project, searchQuery, [
+                    { get: (p) => p.name, weight: "title" },
+                ])
+            ) {
+                return true;
+            }
+            return project.tasks?.some((task) =>
+                matchesSearch(task, searchQuery, [
+                    { get: (t) => t.title, weight: "title" },
+                    { get: (t) => t.description, weight: "body" },
+                ]),
+            );
+        });
     }, [projects, searchQuery]);
 
     // Filter tasks by search and completion status
@@ -46,13 +54,12 @@ export function TasksResourcePicker({ onBack, onSelect }: TasksResourcePickerPro
         
         // Filter by search query
         if (searchQuery.trim()) {
-            const query = searchQuery.toLowerCase();
-            tasks = tasks.filter(task => 
-                task.title.toLowerCase().includes(query) || 
-                task.description?.toLowerCase().includes(query)
-            );
+            tasks = filterAndSortBySearch(tasks, searchQuery, [
+                { get: (t) => t.title, weight: "title" },
+                { get: (t) => t.description, weight: "body" },
+            ]);
         }
-        
+
         return tasks;
     }, [selectedProject, searchQuery, showCompleted]);
 

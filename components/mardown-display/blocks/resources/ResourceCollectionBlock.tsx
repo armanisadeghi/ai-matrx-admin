@@ -7,6 +7,7 @@ import {
   Users, Zap, Target, TrendingUp, Heart, Printer
 } from 'lucide-react';
 import { useCanvas } from '@/features/canvas/hooks/useCanvas';
+import { matchesSearch as matchesSearchScoring } from '@/utils/search-scoring';
 
 interface ResourceItem {
   id: string;
@@ -88,13 +89,16 @@ const ResourceCollectionBlock: React.FC<ResourceCollectionBlockProps> = ({ colle
     return collection.categories.map(category => ({
       ...category,
       resources: category.resources.filter(resource => {
-        const matchesSearch = searchQuery === '' || 
-          resource.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          resource.description.toLowerCase().includes(searchQuery.toLowerCase());
-        
+        const matchesSearch = searchQuery === '' ||
+          matchesSearchScoring(resource, searchQuery, [
+            { get: (r) => r.title, weight: 'title' },
+            { get: (r) => r.description, weight: 'body' },
+            { get: (r) => r.tags, weight: 'tag' },
+          ]);
+
         const matchesType = selectedType === 'all' || resource.type === selectedType;
         const matchesDifficulty = selectedDifficulty === 'all' || resource.difficulty === selectedDifficulty;
-        
+
         return matchesSearch && matchesType && matchesDifficulty;
       })
     })).filter(category => category.resources.length > 0);

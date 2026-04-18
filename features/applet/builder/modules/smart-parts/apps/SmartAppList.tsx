@@ -17,6 +17,7 @@ import { IconPicker } from "@/components/ui/IconPicker";
 import { COLOR_VARIANTS } from "@/features/applet/styles/StyledComponents";
 import { CustomAppConfig } from "@/types/customAppTypes";
 import { getAppColorClasses } from "../../../../styles/styles";
+import { matchesSearch } from "@/utils/search-scoring";
 
 export type SmartAppListRefType = {
     refresh: () => Promise<void>;
@@ -108,13 +109,13 @@ const SmartAppList = forwardRef<
 
             // Apply search filter
             if (searchTerm.trim()) {
-                const lowercaseTerm = searchTerm.toLowerCase();
-                result = result.filter(
-                    (app) =>
-                        app.name?.toLowerCase().includes(lowercaseTerm) ||
-                        app.description?.toLowerCase().includes(lowercaseTerm) ||
-                        app.creator?.toLowerCase().includes(lowercaseTerm) ||
-                        app.slug?.toLowerCase().includes(lowercaseTerm)
+                result = result.filter((app) =>
+                    matchesSearch(app, searchTerm, [
+                        { get: (a) => a.name, weight: "title" },
+                        { get: (a) => a.slug, weight: "subtitle" },
+                        { get: (a) => a.creator, weight: "subtitle" },
+                        { get: (a) => a.description, weight: "body" },
+                    ])
                 );
             }
 
