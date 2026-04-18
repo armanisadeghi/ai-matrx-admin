@@ -26,7 +26,7 @@
 import { useEffect, useRef, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectConversationTurns } from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.selectors";
+import { selectConversationTurns } from "@/features/agents/redux/execution-system/messages/messages.selectors";
 import {
   selectStreamPhase,
   selectLatestRequestId,
@@ -47,7 +47,7 @@ const AgentAssistantMessage = dynamic(
 );
 import { AgentPlanningIndicator } from "../shared/AgentPlanningIndicator";
 import { Webhook } from "lucide-react";
-import type { ConversationTurn } from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.slice";
+import type { ConversationTurn } from "@/features/agents/redux/execution-system/messages/messages.slice";
 
 interface DisplayMessage {
   key: string;

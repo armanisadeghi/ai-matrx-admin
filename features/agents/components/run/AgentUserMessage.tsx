@@ -44,7 +44,7 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectTurnByTurnId } from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.selectors";
+import { selectTurnByTurnId } from "@/features/agents/redux/execution-system/messages/messages.selectors";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types

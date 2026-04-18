@@ -2,12 +2,31 @@
 
 import React, { useState } from 'react';
 import { ChevronRight, Plus, MoreVertical, Search, X, Loader2 } from 'lucide-react';
-import { useTaskContext } from '@/features/tasks/context/TaskContext';
+import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
+import {
+  selectFilteredTasks,
+  selectProjects,
+  selectNewTaskTitle,
+  selectIsCreatingTask,
+  selectSearchQuery,
+  selectShowAllProjects,
+  selectActiveProject,
+  setNewTaskTitle,
+  setSearchQuery,
+  createTaskThunk,
+  toggleTaskCompleteThunk,
+} from '@/features/tasks/redux';
+import {
+  selectOrganizationId,
+  selectScopeSelectionsContext,
+} from '@/features/agent-context/redux/appContextSlice';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import MobileFilterMenu from './MobileFilterMenu';
 import MobileProjectSelector from './MobileProjectSelector';
+import { ScopeTagsDisplay } from '@/features/agent-context/components/ScopeTagsDisplay';
+import { ActiveScopeFilterChips } from '../TaskScopeFilter';
 import {
   Sheet,
   SheetContent,
@@ -22,19 +41,16 @@ interface MobileTasksListProps {
 }
 
 export default function MobileTasksList({ onTaskSelect }: MobileTasksListProps) {
-  const {
-    getFilteredTasks,
-    newTaskTitle,
-    setNewTaskTitle,
-    addTask,
-    toggleTaskComplete,
-    isCreatingTask,
-    searchQuery,
-    setSearchQuery,
-    showAllProjects,
-    activeProject,
-    projects,
-  } = useTaskContext();
+  const dispatch = useAppDispatch();
+  const filteredTasks = useAppSelector(selectFilteredTasks);
+  const projects = useAppSelector(selectProjects);
+  const newTaskTitle = useAppSelector(selectNewTaskTitle);
+  const isCreatingTask = useAppSelector(selectIsCreatingTask);
+  const searchQuery = useAppSelector(selectSearchQuery);
+  const showAllProjects = useAppSelector(selectShowAllProjects);
+  const activeProject = useAppSelector(selectActiveProject);
+  const orgId = useAppSelector(selectOrganizationId);
+  const scopeSelections = useAppSelector(selectScopeSelectionsContext);
 
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [showProjectSelector, setShowProjectSelector] = useState(false);
@@ -42,21 +58,28 @@ export default function MobileTasksList({ onTaskSelect }: MobileTasksListProps) 
     activeProject || null
   );
 
-  const filteredTasks = getFilteredTasks();
   const canShowTasks = activeProject || showAllProjects;
 
   const handleAddTask = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTaskTitle.trim()) return;
-
-    await addTask(e, '', '', selectedProjectForTask || undefined);
+    const defaultScopeIds = Object.values(scopeSelections ?? {}).filter(
+      (v): v is string => typeof v === 'string' && v.length > 0,
+    );
+    await dispatch(
+      createTaskThunk({
+        title: newTaskTitle,
+        projectId: selectedProjectForTask ?? null,
+        organizationId: orgId,
+        scopeIds: defaultScopeIds,
+      }),
+    );
     setShowQuickAdd(false);
-    setNewTaskTitle('');
   };
 
-  const handleTaskToggle = (projectId: string, taskId: string, e: React.MouseEvent) => {
+  const handleTaskToggle = (_projectId: string, taskId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    toggleTaskComplete(projectId, taskId);
+    dispatch(toggleTaskCompleteThunk({ taskId }));
   };
 
   const currentProjectName = activeProject
@@ -95,13 +118,13 @@ export default function MobileTasksList({ onTaskSelect }: MobileTasksListProps) 
             <Input
               type="text"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => dispatch(setSearchQuery(e.target.value))}
               placeholder="Search tasks..."
               className="pl-9 pr-9 h-10 bg-muted/50"
             />
             {searchQuery && (
               <button
-                onClick={() => setSearchQuery('')}
+                onClick={() => dispatch(setSearchQuery(''))}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
               >
                 <X size={16} />
@@ -117,7 +140,7 @@ export default function MobileTasksList({ onTaskSelect }: MobileTasksListProps) 
               <Input
                 type="text"
                 value={newTaskTitle}
-                onChange={(e) => setNewTaskTitle(e.target.value)}
+                onChange={(e) => dispatch(setNewTaskTitle(e.target.value))}
                 placeholder="New task..."
                 autoFocus
                 onFocus={(e) => {
@@ -169,6 +192,9 @@ export default function MobileTasksList({ onTaskSelect }: MobileTasksListProps) 
           </div>
         )}
       </div>
+
+      {/* Active scope-filter chips */}
+      <ActiveScopeFilterChips />
 
       {/* Task List */}
       <div className="flex-1 overflow-y-auto overscroll-contain">
@@ -236,6 +262,11 @@ export default function MobileTasksList({ onTaskSelect }: MobileTasksListProps) 
                         </span>
                       )}
                     </div>
+                    <ScopeTagsDisplay
+                      entityType="task"
+                      entityId={task.id}
+                      className="mt-1.5"
+                    />
                   </div>
 
                   {/* Chevron */}

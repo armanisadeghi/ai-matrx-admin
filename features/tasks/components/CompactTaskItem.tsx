@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { TASK_LABEL_OPTIONS } from "@/features/tasks/services/taskService";
+import { ScopeTagsDisplay } from "@/features/agent-context/components/ScopeTagsDisplay";
 
 interface CompactTaskItemProps {
   task: any;
@@ -153,6 +154,13 @@ export default function CompactTaskItem({
               );
             })}
           </div>
+
+          {/* Scope tags */}
+          <ScopeTagsDisplay
+            entityType="task"
+            entityId={task.id}
+            className="mt-1.5"
+          />
         </div>
 
         {/* Open full page button (visible on hover) */}

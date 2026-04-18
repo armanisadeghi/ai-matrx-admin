@@ -13,12 +13,12 @@
 
 import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { setDebugSession } from "@/features/agents/redux/execution-system/execution-instances";
+import { setDebugSession } from "@/features/agents/redux/execution-system/conversations";
 
 export function DebugSessionActivator() {
   const dispatch = useAppDispatch();
   const debugSessionActive = useAppSelector(
-    (state) => state.executionInstances.debugSessionActive,
+    (state) => state.conversations.debugSessionActive,
   );
 
   useEffect(() => {

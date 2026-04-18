@@ -22,7 +22,15 @@ import {
   Copy,
   ExternalLink,
 } from "lucide-react";
-import { useTaskContext } from "@/features/tasks/context/TaskContext";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import {
+  selectProjects,
+  updateTaskFieldThunk,
+  toggleTaskCompleteThunk,
+  deleteTaskThunk,
+  moveTaskThunk,
+} from "@/features/tasks/redux";
+import { invalidateAndRefetchFullContext } from "@/features/agent-context/redux/hierarchyThunks";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/slices/userSlice";
 import * as taskService from "@/features/tasks/services/taskService";
@@ -58,6 +66,8 @@ import {
   EMPTY_SELECTION,
 } from "@/features/agent-context/components/hierarchy-selection";
 import type { HierarchySelection } from "@/features/agent-context/components/hierarchy-selection";
+import { ScopePicker } from "@/features/agent-context/components/ScopePicker";
+import { selectOrganizationId } from "@/features/agent-context/redux/appContextSlice";
 
 interface TaskDetailPageProps {
   task: TaskWithProject;
@@ -80,21 +90,25 @@ export default function TaskDetailPage({ task }: TaskDetailPageProps) {
   const router = useRouter();
   const toast = useToastManager("tasks");
 
-  const {
-    updateTaskDescription,
-    updateTaskDueDate,
-    updateTaskProject,
-    updateTaskTitle,
-    toggleTaskComplete,
-    deleteTask,
-    projects,
-    refresh,
-    createSubtask,
-    updateSubtaskStatus,
-    deleteSubtask,
-    getTaskComments,
-    createTaskComment,
-  } = useTaskContext();
+  const dispatch = useAppDispatch();
+  const projects = useAppSelector(selectProjects);
+  const refresh = () => dispatch(invalidateAndRefetchFullContext());
+  const getTaskComments = (taskId: string) => taskService.getTaskComments(taskId);
+  const createTaskComment = async (taskId: string, content: string) => {
+    await taskService.createTaskComment(taskId, content);
+  };
+  const createSubtask = async (parentTaskId: string, title: string) => {
+    const created = await taskService.createSubtask(parentTaskId, title);
+    if (created) await dispatch(invalidateAndRefetchFullContext());
+  };
+  const updateSubtaskStatus = async (subtaskId: string, completed: boolean) => {
+    const ok = await taskService.updateSubtaskStatus(subtaskId, completed);
+    if (ok) await dispatch(invalidateAndRefetchFullContext());
+  };
+  const deleteSubtask = async (subtaskId: string) => {
+    const ok = await taskService.deleteSubtask(subtaskId);
+    if (ok) await dispatch(invalidateAndRefetchFullContext());
+  };
 
   const [title, setTitle] = useState(task.title || "");
   const [description, setDescription] = useState(task.description || "");
@@ -125,6 +139,7 @@ export default function TaskDetailPage({ task }: TaskDetailPageProps) {
   const [showDescPreview, setShowDescPreview] = useState(false);
 
   const { id: currentUserId } = useAppSelector(selectUser);
+  const orgId = useAppSelector(selectOrganizationId);
 
   // Sync local state when task updates from context
   useEffect(() => {
@@ -158,15 +173,30 @@ export default function TaskDetailPage({ task }: TaskDetailPageProps) {
     setIsSaving(true);
     try {
       if (title !== task.title)
-        await updateTaskTitle(task.projectId, task.id, title);
+        await dispatch(updateTaskFieldThunk({ taskId: task.id, patch: { title } }));
       if (description !== task.description)
-        await updateTaskDescription(task.projectId, task.id, description);
+        await dispatch(
+          updateTaskFieldThunk({ taskId: task.id, patch: { description } }),
+        );
       if (dueDate !== task.dueDate)
-        await updateTaskDueDate(task.projectId, task.id, dueDate);
+        await dispatch(
+          updateTaskFieldThunk({
+            taskId: task.id,
+            patch: { due_date: dueDate || null },
+          }),
+        );
       if (projectId !== task.projectId)
-        await updateTaskProject(task.id, projectId);
+        await dispatch(
+          moveTaskThunk({
+            taskId: task.id,
+            fromProjectId: task.projectId,
+            toProjectId: projectId,
+          }),
+        );
       if (priority !== task.priority)
-        await taskService.updateTask(task.id, { priority });
+        await dispatch(
+          updateTaskFieldThunk({ taskId: task.id, patch: { priority } }),
+        );
       const prevLabels: TaskLabel[] = (task as any).settings?.labels || [];
       if (JSON.stringify(labels) !== JSON.stringify(prevLabels))
         await taskService.updateTaskLabels(task.id, labels);
@@ -180,16 +210,16 @@ export default function TaskDetailPage({ task }: TaskDetailPageProps) {
   };
 
   const handleToggleComplete = async () => {
-    await toggleTaskComplete(task.projectId, task.id);
-    await refresh();
+    await dispatch(toggleTaskCompleteThunk({ taskId: task.id }));
   };
 
   const handleDelete = async () => {
     if (isDeleting) return;
     setIsDeleting(true);
     try {
-      const fakeEvent = { stopPropagation: () => {} } as React.MouseEvent;
-      await deleteTask(task.projectId, task.id, fakeEvent);
+      await dispatch(
+        deleteTaskThunk({ taskId: task.id, projectId: task.projectId }),
+      );
       router.push("/tasks");
     } catch (error) {
       console.error("Error deleting task:", error);
@@ -759,6 +789,20 @@ export default function TaskDetailPage({ task }: TaskDetailPageProps) {
               layout="vertical"
             />
           </div>
+
+          {/* Scopes */}
+          {orgId && (
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
+                Scopes
+              </label>
+              <ScopePicker
+                entityType="task"
+                entityId={task.id}
+                orgId={orgId}
+              />
+            </div>
+          )}
 
           {/* Assignee */}
           <div>

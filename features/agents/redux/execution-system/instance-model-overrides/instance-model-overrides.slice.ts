@@ -22,7 +22,7 @@ import type {
   InstanceModelOverrideState,
   LLMParams,
 } from "@/features/agents/types";
-import { destroyInstance } from "../execution-instances/execution-instances.slice";
+import { destroyInstance } from "../conversations/conversations.slice";
 
 // =============================================================================
 // State

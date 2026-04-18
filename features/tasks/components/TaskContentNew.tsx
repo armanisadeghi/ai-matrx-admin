@@ -10,12 +10,33 @@ import {
   Search,
   X,
 } from "lucide-react";
-import { useTaskContext } from "@/features/tasks/context/TaskContext";
-import { useAppSelector } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   selectProjectId,
   selectProjectName,
+  selectOrganizationId,
+  selectScopeSelectionsContext,
 } from "@/features/agent-context/redux/appContextSlice";
+import {
+  selectProjects,
+  selectActiveProject,
+  selectShowAllProjects,
+  selectNewTaskTitle,
+  selectNewProjectName,
+  selectIsCreatingTask,
+  selectIsCreatingProject,
+  selectTasksLoading,
+  selectSearchQuery,
+  selectSortBy,
+  selectFilteredTasks,
+  setNewTaskTitle,
+  setNewProjectName,
+  setSearchQuery,
+  setSortBy,
+  createTaskThunk,
+  createProjectThunk,
+  toggleTaskCompleteThunk,
+} from "@/features/tasks/redux";
 import {
   HierarchyCascade,
   useHierarchyReduxBridge,
@@ -40,26 +61,20 @@ export default function TaskContentNew() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const {
-    activeProject,
-    showAllProjects,
-    getFilteredTasks,
-    projects,
-    newTaskTitle,
-    setNewTaskTitle,
-    addTask,
-    newProjectName,
-    setNewProjectName,
-    addProject,
-    isCreatingTask,
-    isCreatingProject,
-    loading,
-    toggleTaskComplete,
-    searchQuery,
-    setSearchQuery,
-    sortBy,
-    setSortBy,
-  } = useTaskContext();
+  const dispatch = useAppDispatch();
+  const activeProject = useAppSelector(selectActiveProject);
+  const showAllProjects = useAppSelector(selectShowAllProjects);
+  const projects = useAppSelector(selectProjects);
+  const newTaskTitle = useAppSelector(selectNewTaskTitle);
+  const newProjectName = useAppSelector(selectNewProjectName);
+  const isCreatingTask = useAppSelector(selectIsCreatingTask);
+  const isCreatingProject = useAppSelector(selectIsCreatingProject);
+  const loading = useAppSelector(selectTasksLoading);
+  const searchQuery = useAppSelector(selectSearchQuery);
+  const sortBy = useAppSelector(selectSortBy);
+  const filteredTasks = useAppSelector(selectFilteredTasks);
+  const orgId = useAppSelector(selectOrganizationId);
+  const scopeSelections = useAppSelector(selectScopeSelectionsContext);
 
   const { value: ctxValue, onChange: ctxOnChange } = useHierarchyReduxBridge();
 
@@ -87,7 +102,6 @@ export default function TaskContentNew() {
     }
   }, [appProjectId, activeProject, projects]);
 
-  const filteredTasks = getFilteredTasks();
   const hasProjects = projects.length > 0;
   const canShowTasks = activeProject || showAllProjects;
   const shouldShowProjectSelector = showAllProjects || !activeProject;
@@ -110,8 +124,8 @@ export default function TaskContentNew() {
     router.replace(`/tasks?${params.toString()}`, { scroll: false });
   };
 
-  const handleTaskToggle = (projectId: string, taskId: string) => {
-    toggleTaskComplete(projectId, taskId);
+  const handleTaskToggle = (_projectId: string, taskId: string) => {
+    dispatch(toggleTaskCompleteThunk({ taskId }));
   };
 
   const handleAddTask = async (e: React.FormEvent) => {
@@ -121,27 +135,36 @@ export default function TaskContentNew() {
     if (!trimmedTitle) return;
     if (trimmedTitle.length > 200) return;
 
-    // Add task with description if provided - returns the created task ID
-    const newTaskId = await addTask(
-      e,
-      quickAddDescription.trim(),
-      "",
-      selectedProjectForTask || undefined,
+    const defaultScopeIds = Object.values(scopeSelections ?? {}).filter(
+      (v): v is string => typeof v === "string" && v.length > 0,
     );
 
-    // Open the details panel for the new task
+    const newTaskId = await dispatch(
+      createTaskThunk({
+        title: trimmedTitle,
+        description: quickAddDescription.trim() || null,
+        projectId: selectedProjectForTask ?? null,
+        organizationId: orgId,
+        scopeIds: defaultScopeIds,
+      }),
+    ).unwrap();
+
     if (newTaskId) {
       setSelectedTaskId(newTaskId);
     }
 
-    // Reset description fields
     setQuickAddDescription("");
     setShowQuickAddDescription(false);
   };
 
+  const handleAddProject = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newProjectName.trim()) return;
+    await dispatch(createProjectThunk({ name: newProjectName }));
+  };
+
   const handleTitleChange = (value: string) => {
-    setNewTaskTitle(value);
-    // Show description textarea when user starts typing
+    dispatch(setNewTaskTitle(value));
     if (value.trim() && !showQuickAddDescription) {
       setShowQuickAddDescription(true);
     }
@@ -191,11 +214,11 @@ export default function TaskContentNew() {
                 Get organized by creating your first project.
               </p>
 
-              <form onSubmit={addProject} className="space-y-3">
+              <form onSubmit={handleAddProject} className="space-y-3">
                 <Input
                   type="text"
                   value={newProjectName}
-                  onChange={(e) => setNewProjectName(e.target.value)}
+                  onChange={(e) => dispatch(setNewProjectName(e.target.value))}
                   placeholder="Project name (e.g., Personal, Work)"
                   disabled={isCreatingProject}
                   className="w-full"
@@ -271,13 +294,13 @@ export default function TaskContentNew() {
                       <Input
                         type="text"
                         value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onChange={(e) => dispatch(setSearchQuery(e.target.value))}
                         placeholder="Search tasks by name, description, or project..."
                         className="pl-9 pr-9 h-9 text-sm bg-card"
                       />
                       {searchQuery && (
                         <button
-                          onClick={() => setSearchQuery("")}
+                          onClick={() => dispatch(setSearchQuery(""))}
                           className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
                         >
                           <X size={16} />
@@ -287,7 +310,7 @@ export default function TaskContentNew() {
 
                     <TaskSortControl
                       currentSort={sortBy}
-                      onSortChange={setSortBy}
+                      onSortChange={(s) => dispatch(setSortBy(s))}
                       compact={false}
                     />
                   </div>

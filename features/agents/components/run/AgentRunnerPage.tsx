@@ -102,7 +102,7 @@ export function AgentRunnerPage({ agentId }: AgentRunnerPageProps) {
 
     (async () => {
       const exists =
-        !!store.getState().executionInstances?.byConversationId[
+        !!store.getState().conversations?.byConversationId[
           conversationIdFromUrl
         ];
 

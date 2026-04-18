@@ -69,6 +69,8 @@ export {
   default as scopeContextReducer,
   resolveContext,
   clearScopeContext,
+  EMPTY_SCOPE_CONTEXT_LABELS,
+  EMPTY_SCOPE_CONTEXT_VARIABLES,
   selectResolvedContext,
   selectScopeContextLoading,
   selectScopeContextError,
@@ -79,13 +81,16 @@ export {
 } from "./scopeContextSlice";
 
 export {
+  EMPTY_MATCHING_ENTITY_IDS,
   EMPTY_SCOPE_PICKER_OPTIONS,
   EMPTY_SCOPE_TYPES_LIST,
   EMPTY_SCOPES_LIST,
+  computeMatchingEntityIdsFromAssignments,
   selectEntityScopesWithLabels,
   selectOrgSidebarStructure,
   selectScopePickerOptions,
   selectScopeTypesByOrgIds,
   selectScopesByOrgIds,
   selectProjectsByScopes,
+  selectEntityIdsByScopes,
 } from "./selectors";

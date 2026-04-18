@@ -93,12 +93,12 @@ function TabIndex({
 /** Slice keys that are explicitly covered by a dedicated tab in contentTabs. */
 const REGISTERED_SLICE_KEYS = new Set<string>([
   "agentDefinition",
-  "executionInstances",
-  "instanceVariableValues",
+  "conversations",
+  "variables",
   "instanceUserInput",
   "instanceUIState",
   "activeRequests",
-  "instanceConversationHistory",
+  "messages",
   "instanceResources",
   "agentShortcut",
   "agentConsumers",
@@ -313,12 +313,12 @@ export function getStateViewerTabs(
       ),
     },
     {
-      id: "executionInstances",
-      label: "Execution Instances",
+      id: "conversations",
+      label: "Conversations",
       content: (
         <GenericSliceViewer
-          sliceKey="executionInstances"
-          state={completeState.executionInstances}
+          sliceKey="conversations"
+          state={completeState.conversations}
         />
       ),
     },
@@ -369,12 +369,12 @@ export function getStateViewerTabs(
       ),
     },
     {
-      id: "instanceConversationHistory",
-      label: "Instance Conversation History",
+      id: "messages",
+      label: "Messages",
       content: (
         <GenericSliceViewer
-          sliceKey="instanceConversationHistory"
-          state={completeState.instanceConversationHistory}
+          sliceKey="messages"
+          state={completeState.messages}
         />
       ),
     },

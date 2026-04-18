@@ -164,8 +164,7 @@ export const selectShouldShowInput =
     if (!entry) return false;
     if (entry.allowChat) return true;
     if (!entry.autoRun) {
-      const instance =
-        state.executionInstances.byConversationId[conversationId];
+      const instance = state.conversations.byConversationId[conversationId];
       if (
         instance &&
         (instance.status === "draft" || instance.status === "ready")
@@ -181,7 +180,7 @@ export const selectShouldShowInput =
 export const selectInstanceAgentId =
   (conversationId: string) =>
   (state: RootState): string | undefined => {
-    const inst = state.executionInstances.byConversationId[conversationId];
+    const inst = state.conversations.byConversationId[conversationId];
     console.log(
       "[selectInstanceAgentId] conversationId:",
       conversationId,
@@ -190,7 +189,7 @@ export const selectInstanceAgentId =
       "| agentId:",
       inst?.agentId,
       "| all conversationIds:",
-      Object.keys(state.executionInstances.byConversationId).slice(0, 3),
+      Object.keys(state.conversations.byConversationId).slice(0, 3),
     );
     return inst?.agentId || undefined;
   };
@@ -198,13 +197,12 @@ export const selectInstanceAgentId =
 export const selectInstanceShortcutId =
   (conversationId: string) =>
   (state: RootState): string | null =>
-    state.executionInstances.byConversationId[conversationId]?.shortcutId ??
-    null;
+    state.conversations.byConversationId[conversationId]?.shortcutId ?? null;
 
 export const selectInstanceOrigin =
   (conversationId: string) =>
   (state: RootState): string | undefined =>
-    state.executionInstances.byConversationId[conversationId]?.origin;
+    state.conversations.byConversationId[conversationId]?.origin;
 
 // ── Instance title selectors (three tiers) ───────────────────────────────────
 //
@@ -225,7 +223,7 @@ export const selectInstanceShortcutLabel =
   (conversationId: string) =>
   (state: RootState): string | undefined => {
     const shortcutId =
-      state.executionInstances.byConversationId[conversationId]?.shortcutId;
+      state.conversations.byConversationId[conversationId]?.shortcutId;
     if (!shortcutId) return undefined;
     return state.agentShortcut?.[shortcutId]?.label || undefined;
   };
@@ -239,7 +237,7 @@ export const selectInstanceAgentName =
   (conversationId: string) =>
   (state: RootState): string | undefined => {
     const agentId =
-      state.executionInstances.byConversationId[conversationId]?.agentId;
+      state.conversations.byConversationId[conversationId]?.agentId;
     if (!agentId) return undefined;
     return state.agentDefinition.agents?.[agentId]?.name || undefined;
   };
@@ -254,7 +252,7 @@ export const selectInstanceAgentDescription =
   (conversationId: string) =>
   (state: RootState): string | null | undefined => {
     const agentId =
-      state.executionInstances.byConversationId[conversationId]?.agentId;
+      state.conversations.byConversationId[conversationId]?.agentId;
     if (!agentId) return undefined;
     return state.agentDefinition.agents?.[agentId]?.description;
   };
@@ -266,7 +264,7 @@ export const selectInstanceAgentDescription =
 export const selectInstanceTitle =
   (conversationId: string) =>
   (state: RootState): string | undefined => {
-    const instance = state.executionInstances.byConversationId[conversationId];
+    const instance = state.conversations.byConversationId[conversationId];
     if (!instance) return undefined;
 
     if (instance.shortcutId) {
@@ -293,10 +291,10 @@ export const selectInstanceDisplayTitle =
   (conversationId: string) =>
   (state: RootState): string => {
     const conversationTitle =
-      state.instanceConversationHistory.byConversationId[conversationId]?.title;
+      state.messages.byConversationId[conversationId]?.title;
     if (conversationTitle) return conversationTitle;
 
-    const instance = state.executionInstances.byConversationId[conversationId];
+    const instance = state.conversations.byConversationId[conversationId];
     if (!instance) return "Agent";
 
     if (instance.shortcutId) {
@@ -470,7 +468,7 @@ export const selectAllUIStateConversationIds = createSelector(
 // ── Instances grouped by agent (for tree view) ────────────────────────────────
 //
 // Returns stable references: groups with no instances are omitted.
-// Instances whose executionInstances entry has no agentId go into the
+// Instances whose conversations entry has no agentId go into the
 // "unassigned" bucket (agentId: null).
 
 export interface InstanceAgentGroup {
@@ -481,7 +479,7 @@ export interface InstanceAgentGroup {
 
 export const selectUIStateInstancesByAgent = createSelector(
   (state: RootState) => state.instanceUIState.byConversationId,
-  (state: RootState) => state.executionInstances.byConversationId,
+  (state: RootState) => state.conversations.byConversationId,
   (state: RootState) => state.agentDefinition.agents,
   (byUIConversationId, byExecConversationId, agents): InstanceAgentGroup[] => {
     const groupMap = new Map<string | null, string[]>();

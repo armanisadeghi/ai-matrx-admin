@@ -18,7 +18,7 @@
 
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { VariableDefinition } from "@/features/agents/types/agent-definition.types";
-import { destroyInstance } from "../execution-instances/execution-instances.slice";
+import { destroyInstance } from "../conversations/conversations.slice";
 
 // =============================================================================
 // State

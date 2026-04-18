@@ -89,7 +89,7 @@ export function ChatInstanceManager(props: ChatInstanceManagerProps) {
       if (cached) {
         const stillAlive = await dispatch(
           (_: unknown, getState: () => RootState) =>
-            !!getState().executionInstances.byConversationId[cached],
+            !!getState().conversations.byConversationId[cached],
         );
         if (stillAlive) newId = cached;
       }

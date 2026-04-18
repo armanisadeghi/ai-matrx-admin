@@ -35,7 +35,7 @@ import {
 } from "@/components/ui/collapsible";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { useAgentLauncher } from "@/features/agents/hooks/useAgentLauncher";
-import { selectInstance } from "@/features/agents/redux/execution-system/execution-instances/execution-instances.selectors";
+import { selectInstance } from "@/features/agents/redux/execution-system/conversations/conversations.selectors";
 import { selectResolvedVariables } from "@/features/agents/redux/execution-system/instance-variable-values/instance-variable-values.selectors";
 import { selectUserInputText } from "@/features/agents/redux/execution-system/instance-user-input/instance-user-input.selectors";
 import { selectAgentName } from "@/features/agents/redux/agent-definition/selectors";

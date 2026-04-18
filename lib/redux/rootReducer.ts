@@ -64,6 +64,7 @@ import urlSyncReducer from "./slices/urlSyncSlice";
 import agentCacheReducer from "./slices/agentCacheSlice";
 import agentDefinitionReducer from "@/features/agents/redux/agent-definition/slice";
 import { agentConversationsReducer } from "@/features/agents/redux/agent-conversations";
+import { conversationListReducer } from "@/features/agents/redux/conversation-list";
 import agentShortcutReducer from "@/features/agents/redux/agent-shortcuts/slice";
 import { agentAppReducer } from "@/features/agents/redux/agent-apps/slice";
 import agentConsumersReducer from "@/features/agents/redux/agent-consumers/slice";
@@ -99,6 +100,10 @@ import {
   scopeAssignmentsReducer,
   scopeContextReducer,
 } from "@/features/agent-context/redux/scope";
+import {
+  taskUiReducer,
+  quickTasksWindowReducer,
+} from "@/features/tasks/redux";
 
 import { instanceUIStateReducer } from "@/features/agents/redux/execution-system/instance-ui-state";
 import { instanceClientToolsReducer } from "@/features/agents/redux/execution-system/instance-client-tools";
@@ -107,9 +112,10 @@ import { instanceModelOverridesReducer } from "@/features/agents/redux/execution
 import { instanceVariableValuesReducer } from "@/features/agents/redux/execution-system/instance-variable-values";
 import { instanceResourcesReducer } from "@/features/agents/redux/execution-system/instance-resources";
 import { instanceUserInputReducer } from "@/features/agents/redux/execution-system/instance-user-input";
-import { executionInstancesReducer } from "@/features/agents/redux/execution-system/execution-instances";
+import { conversationsReducer } from "@/features/agents/redux/execution-system/conversations";
 import { activeRequestsReducer } from "@/features/agents/redux/execution-system/active-requests";
-import { instanceConversationHistoryReducer } from "@/features/agents/redux/execution-system/instance-conversation-history";
+import { observabilityReducer } from "@/features/agents/redux/execution-system/observability";
+import { messagesReducer } from "@/features/agents/redux/execution-system/messages";
 import { conversationFocusReducer } from "@/features/agents/redux/execution-system/conversation-focus";
 import agentAssistantMarkdownDraftReducer from "@/features/agents/redux/agent-assistant-markdown-draft.slice";
 
@@ -302,6 +308,10 @@ export const createRootReducer = (initialState: InitialReduxState) => {
     // Layer 1 — Agent Source
     agentDefinition: agentDefinitionReducer,
     agentConversations: agentConversationsReducer,
+    // Unified list (global sidebar + per-agent caches). Phase 3 target —
+    // consumers migrate off `cxConversations` / `agentConversations` onto
+    // the selectors in `@/features/agents/redux/conversation-list`.
+    conversationList: conversationListReducer,
     agentShortcut: agentShortcutReducer,
     // agentApp — scaffolded alongside agentShortcut. Thunks are stubbed until
     // the App DB surface ships; the slice is registered so consumers can
@@ -327,8 +337,12 @@ export const createRootReducer = (initialState: InitialReduxState) => {
     scopeAssignments: scopeAssignmentsReducer,
     scopeContext: scopeContextReducer,
 
-    // Layer 3 — Prompt Instances
-    executionInstances: executionInstancesReducer,
+    // Tasks route — UI state, hierarchical projectsWithTasks, scope filter
+    tasksUi: taskUiReducer,
+    quickTasksWindow: quickTasksWindowReducer,
+
+    // Layer 3 — Conversations (entity) + per-conversation content slices
+    conversations: conversationsReducer,
     instanceModelOverrides: instanceModelOverridesReducer,
     instanceVariableValues: instanceVariableValuesReducer,
     instanceResources: instanceResourcesReducer,
@@ -339,7 +353,10 @@ export const createRootReducer = (initialState: InitialReduxState) => {
 
     // // Layer 4 — Request Execution
     activeRequests: activeRequestsReducer,
-    instanceConversationHistory: instanceConversationHistoryReducer,
+    messages: messagesReducer,
+    // Observability — Runner-only debug data (cx_user_request, cx_request,
+    // cx_tool_call + live stream timelines). Populated by commit path + RPC.
+    observability: observabilityReducer,
 
     // Surface Focus Registry — tracks which conversationId is active per UI surface
     conversationFocus: conversationFocusReducer,

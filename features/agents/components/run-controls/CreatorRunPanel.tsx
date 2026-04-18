@@ -55,8 +55,8 @@ import {
   selectLatestClientMetrics,
   selectAggregateClientMetrics,
   selectConversationTitle,
-} from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.selectors";
-import type { AggregateClientMetrics } from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.selectors";
+} from "@/features/agents/redux/execution-system/messages/messages.selectors";
+import type { AggregateClientMetrics } from "@/features/agents/redux/execution-system/messages/messages.selectors";
 import type { CompletionStats } from "@/features/agents/types/instance.types";
 import type { ClientMetrics } from "@/features/agents/types/request.types";
 import { selectLatestRequestId } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
@@ -64,7 +64,7 @@ import {
   selectTimelineDerivedTiming,
   type TimelineDerivedTiming,
 } from "@/features/agents/redux/execution-system/active-requests/active-requests.selectors";
-import { selectAllInstanceIds } from "@/features/agents/redux/execution-system/execution-instances/execution-instances.selectors";
+import { selectAllInstanceIds } from "@/features/agents/redux/execution-system/conversations/conversations.selectors";
 import { SystemInstructionEditor } from "../builder/message-builders/system-instructions/SystemInstructionEditor";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { StreamDebugPanel } from "../debug/StreamDebugPanel";
@@ -1277,7 +1277,7 @@ export function CreatorRunPanel({
   // Session count across ALL instances for the tab label
   const totalRequestCount = useAppSelector((state) => {
     let count = 0;
-    for (const id of state.executionInstances.allConversationIds) {
+    for (const id of state.conversations.allConversationIds) {
       count += (state.activeRequests.byConversationId[id] ?? []).length;
     }
     return count;

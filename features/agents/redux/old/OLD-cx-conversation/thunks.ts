@@ -20,7 +20,7 @@
  *     SELECT all cx_message columns (1:1 with public.cx_message)
  *     FROM cx_message WHERE conversation_id = $id ORDER BY position ASC
  *     → maps rows → ConversationTurn[] (+ optional cx_* hydration fields)
- *     → stores into instanceConversationHistory via loadConversationHistory action
+ *     → stores into messages via loadConversationHistory action
  *
  *   Privacy rule (Tier 3):
  *     The cx_conversation.system_instruction column MUST NEVER be sent to the client.
@@ -55,7 +55,7 @@ import {
   initInstanceHistory,
   loadConversationHistory,
   type ConversationTurn,
-} from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.slice";
+} from "@/features/agents/redux/execution-system/messages/messages.slice";
 import type { MessagePart } from "@/types/python-generated/stream-events";
 import type { CxConversationListItem } from "./types";
 
@@ -172,7 +172,7 @@ export const fetchConversationListMore = createAsyncThunk<
 // ── Tier 3 — Full message history for a conversation ──────────────────────────
 
 /**
- * Loads the full message history for a conversation into instanceConversationHistory.
+ * Loads the full message history for a conversation into messages.
  *
  * Privacy rules enforced here:
  *   - Messages with role = 'system' are filtered out (never show system prompt)

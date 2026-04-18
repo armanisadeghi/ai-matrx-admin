@@ -24,7 +24,7 @@ import type {
 } from "@/features/agents/types";
 import type { MessagePart } from "@/types/python-generated/stream-events";
 import { generateResourceId } from "../utils";
-import { destroyInstance } from "../execution-instances/execution-instances.slice";
+import { destroyInstance } from "../conversations/conversations.slice";
 
 // =============================================================================
 // State

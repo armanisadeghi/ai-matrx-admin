@@ -1,18 +1,17 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useTaskContext } from '@/features/tasks/context/TaskContext';
+import { useAppSelector } from '@/lib/redux/hooks';
+import { selectFilteredTasks } from '@/features/tasks/redux';
 import MobileTasksList from './MobileTasksList';
 import MobileTaskDetails from './MobileTaskDetails';
 
 type MobileView = 'tasks' | 'details';
 
 export default function MobileTasksView() {
-  const { getFilteredTasks } = useTaskContext();
+  const filteredTasks = useAppSelector(selectFilteredTasks);
   const [currentView, setCurrentView] = useState<MobileView>('tasks');
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
-
-  const filteredTasks = getFilteredTasks();
   const selectedTask = selectedTaskId
     ? filteredTasks.find(t => t.id === selectedTaskId)
     : null;

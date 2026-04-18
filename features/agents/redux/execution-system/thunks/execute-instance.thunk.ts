@@ -16,7 +16,7 @@
  *   4. Resolves the base URL from apiConfigSlice
  *   5. Reads conversation_id from X-Conversation-ID response header
  *   6. Processes the NDJSON stream using canonical stream-events types
- *   7. Appends completed turns to instanceConversationHistory
+ *   7. Appends completed turns to messages
  *   8. Updates request status throughout
  */
 
@@ -25,12 +25,12 @@ import type { RootState } from "@/lib/redux/store";
 import type { AssembledAgentStartRequest } from "@/features/agents/types/request.types";
 import type { MessagePart } from "@/types/python-generated/stream-events";
 import { generateRequestId } from "../utils";
-import { setInstanceStatus } from "../execution-instances";
+import { setInstanceStatus } from "../conversations";
 import { selectResourcePayloads } from "../instance-resources";
 import { selectResolvedVariables } from "../instance-variable-values";
 import { selectSettingsOverridesForApi } from "../instance-model-overrides";
 import { selectContextPayload } from "../instance-context";
-import { selectHasConversationHistory } from "../instance-conversation-history/instance-conversation-history.selectors";
+import { selectHasConversationHistory } from "../messages/messages.selectors";
 import {
   selectOrganizationId,
   selectProjectId,
@@ -45,7 +45,7 @@ import {
   createRequest,
   setRequestStatus,
 } from "../active-requests/active-requests.slice";
-import { addUserTurn } from "../instance-conversation-history/instance-conversation-history.slice";
+import { addUserTurn } from "../messages/messages.slice";
 import { processStream } from "./process-stream";
 import { formatVariablesForDisplay } from "@/features/agents/utils/variable-utils";
 import {
@@ -67,7 +67,7 @@ export function assembleRequest(
   state: RootState,
   conversationId: string,
 ): AssembledAgentStartRequest | null {
-  const instance = state.executionInstances.byConversationId[conversationId];
+  const instance = state.conversations.byConversationId[conversationId];
   if (!instance) return null;
 
   const uiState = state.instanceUIState.byConversationId[conversationId];
@@ -172,8 +172,7 @@ export const executeInstance = createAsyncThunk<
 
     try {
       const state = getState() as RootState;
-      const instance =
-        state.executionInstances.byConversationId[conversationId];
+      const instance = state.conversations.byConversationId[conversationId];
 
       if (!instance) {
         throw new Error(`Conversation ${conversationId} not found`);
@@ -221,7 +220,8 @@ export const executeInstance = createAsyncThunk<
       // previous send or rehydrated from the database), continue via the
       // /conversations/{id} endpoint. Otherwise start a fresh agent run via
       // /agents/{id}. Captured before the optimistic user turn is added below.
-      const isContinuation = selectHasConversationHistory(conversationId)(state);
+      const isContinuation =
+        selectHasConversationHistory(conversationId)(state);
 
       // Add the user's message to history immediately — before the API call fires.
       // Include resource payload parts so they display even before the DB round-trip.

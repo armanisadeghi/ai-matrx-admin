@@ -7,7 +7,7 @@ import type {
   AgentConversationsRequestIdentity,
 } from "./agent-conversations.types";
 import { agentConversationsCacheKey } from "./agent-conversations.types";
-import { selectAgentIdFromInstance } from "@/features/agents/redux/execution-system/execution-instances/execution-instances.selectors";
+import { selectAgentIdFromInstance } from "@/features/agents/redux/execution-system/conversations/conversations.selectors";
 
 type GetAgentConversationsReturns =
   Database["public"]["Functions"]["get_agent_conversations"]["Returns"];

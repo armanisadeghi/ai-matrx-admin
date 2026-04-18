@@ -23,7 +23,7 @@ import {
   type ContentSegment,
   type UnifiedSlot,
 } from "@/features/agents/redux/execution-system/active-requests/active-requests.selectors";
-import { selectTurnInterleavedContent } from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.selectors";
+import { selectTurnInterleavedContent } from "@/features/agents/redux/execution-system/messages/messages.selectors";
 import type { RenderBlockPayload } from "@/types/python-generated/stream-events";
 import { useAppSelector } from "@/lib/redux/hooks";
 import {

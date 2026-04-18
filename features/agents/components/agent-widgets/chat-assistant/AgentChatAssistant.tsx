@@ -18,7 +18,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectInstanceDisplayTitle } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { selectIsExecuting } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
-import { selectTurnCount } from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.selectors";
+import { selectTurnCount } from "@/features/agents/redux/execution-system/messages/messages.selectors";
 import { AssistantCardStack } from "./AssistantCardStack";
 import { CompactAssistantInput } from "./CompactAssistantInput";
 import { AssistantControlBar } from "./AssistantControlBar";

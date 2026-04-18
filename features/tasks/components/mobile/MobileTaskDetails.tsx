@@ -12,7 +12,15 @@ import {
   Loader2,
   MoreVertical,
 } from 'lucide-react';
-import { useTaskContext } from '@/features/tasks/context/TaskContext';
+import { useAppDispatch } from '@/lib/redux/hooks';
+import {
+  selectProjects,
+  updateTaskFieldThunk,
+  toggleTaskCompleteThunk,
+  deleteTaskThunk,
+  moveTaskThunk,
+} from '@/features/tasks/redux';
+import { invalidateAndRefetchFullContext } from '@/features/agent-context/redux/hierarchyThunks';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -32,6 +40,9 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import * as taskService from '@/features/tasks/services/taskService';
+import { ScopePicker } from '@/features/agent-context/components/ScopePicker';
+import { useAppSelector } from '@/lib/redux/hooks';
+import { selectOrganizationId } from '@/features/agent-context/redux/appContextSlice';
 
 interface MobileTaskDetailsProps {
   task: any;
@@ -39,19 +50,23 @@ interface MobileTaskDetailsProps {
 }
 
 export default function MobileTaskDetails({ task, onBack }: MobileTaskDetailsProps) {
-  const {
-    updateTaskTitle,
-    updateTaskDescription,
-    updateTaskDueDate,
-    updateTaskProject,
-    toggleTaskComplete,
-    deleteTask,
-    projects,
-    refresh,
-    createSubtask,
-    updateSubtaskStatus,
-    deleteSubtask,
-  } = useTaskContext();
+  const dispatch = useAppDispatch();
+  const projects = useAppSelector(selectProjects);
+  const orgId = useAppSelector(selectOrganizationId);
+
+  const refresh = () => dispatch(invalidateAndRefetchFullContext());
+  const createSubtask = async (parentTaskId: string, title: string) => {
+    const created = await taskService.createSubtask(parentTaskId, title);
+    if (created) await dispatch(invalidateAndRefetchFullContext());
+  };
+  const updateSubtaskStatus = async (subtaskId: string, completed: boolean) => {
+    const ok = await taskService.updateSubtaskStatus(subtaskId, completed);
+    if (ok) await dispatch(invalidateAndRefetchFullContext());
+  };
+  const deleteSubtask = async (subtaskId: string) => {
+    const ok = await taskService.deleteSubtask(subtaskId);
+    if (ok) await dispatch(invalidateAndRefetchFullContext());
+  };
 
   const [title, setTitle] = useState(task.title || '');
   const [description, setDescription] = useState(task.description || '');
@@ -82,22 +97,35 @@ export default function MobileTaskDetails({ task, onBack }: MobileTaskDetailsPro
     setIsSaving(true);
     try {
       if (title !== task.title) {
-        await updateTaskTitle(task.projectId, task.id, title);
+        await dispatch(updateTaskFieldThunk({ taskId: task.id, patch: { title } }));
       }
       if (description !== task.description) {
-        await updateTaskDescription(task.projectId, task.id, description);
+        await dispatch(
+          updateTaskFieldThunk({ taskId: task.id, patch: { description } }),
+        );
       }
       if (dueDate !== task.dueDate) {
-        await updateTaskDueDate(task.projectId, task.id, dueDate);
+        await dispatch(
+          updateTaskFieldThunk({
+            taskId: task.id,
+            patch: { due_date: dueDate || null },
+          }),
+        );
       }
       if (projectId !== task.projectId) {
-        await updateTaskProject(task.id, projectId);
+        await dispatch(
+          moveTaskThunk({
+            taskId: task.id,
+            fromProjectId: task.projectId,
+            toProjectId: projectId,
+          }),
+        );
       }
       if (priority !== task.priority) {
-        await taskService.updateTask(task.id, { priority });
+        await dispatch(
+          updateTaskFieldThunk({ taskId: task.id, patch: { priority } }),
+        );
       }
-
-      await refresh();
       setIsDirty(false);
     } catch (error) {
       console.error('Error saving task:', error);
@@ -111,8 +139,9 @@ export default function MobileTaskDetails({ task, onBack }: MobileTaskDetailsPro
 
     setIsDeleting(true);
     try {
-      const fakeEvent = { stopPropagation: () => {} } as React.MouseEvent;
-      await deleteTask(task.projectId, task.id, fakeEvent);
+      await dispatch(
+        deleteTaskThunk({ taskId: task.id, projectId: task.projectId }),
+      );
       onBack();
     } catch (error) {
       console.error('Error deleting task:', error);
@@ -185,7 +214,7 @@ export default function MobileTaskDetails({ task, onBack }: MobileTaskDetailsPro
             </Button>
             <Checkbox
               checked={task.completed}
-              onCheckedChange={() => toggleTaskComplete(task.projectId, task.id)}
+              onCheckedChange={() => dispatch(toggleTaskCompleteThunk({ taskId: task.id }))}
               className="flex-shrink-0"
             />
             <h1
@@ -329,6 +358,20 @@ export default function MobileTaskDetails({ task, onBack }: MobileTaskDetailsPro
               </SelectContent>
             </Select>
           </div>
+
+          {/* Scopes */}
+          {orgId && (
+            <div>
+              <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                Scopes
+              </label>
+              <ScopePicker
+                entityType="task"
+                entityId={task.id}
+                orgId={orgId}
+              />
+            </div>
+          )}
 
           {/* Priority */}
           <div>

@@ -16,7 +16,7 @@
 import { useEffect, useRef, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectConversationTurns } from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.selectors";
+import { selectConversationTurns } from "@/features/agents/redux/execution-system/messages/messages.selectors";
 import {
   selectStreamPhase,
   selectLatestRequestId,

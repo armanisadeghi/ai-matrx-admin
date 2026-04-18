@@ -82,7 +82,20 @@ export type SourceFeature =
 
 export const SOURCE_APP = "matrx-admin" as const;
 
+/**
+ * Conversation record shape.
+ *
+ * Fields above the first block break mirror the existing legacy surface.
+ * Fields below mirror the DB `cx_conversation.Row` + ConversationInvocation
+ * semantics and are populated by Phase 2 of the unification (rehydration +
+ * `launchConversation`). They are typed optional so existing call sites that
+ * only set the original field set continue to compile and behave identically.
+ *
+ * `ConversationRecord` is the forward name for this shape, re-exported by
+ * `features/agents/redux/execution-system/conversations/conversations.slice.ts`.
+ */
 export interface ExecutionInstance {
+  // ── Legacy surface (preserved) ──────────────────────────────────────────
   conversationId: string;
   agentId: string;
   agentType: AgentType;
@@ -95,6 +108,70 @@ export interface ExecutionInstance {
   cacheOnly: boolean;
   createdAt: string;
   updatedAt: string;
+
+  // ── Identity mirrors (cx_conversation columns) ──────────────────────────
+  userId?: string;
+  /** Canonical DB column name for the agent that started this conversation. */
+  initialAgentId?: string | null;
+  /** Agent version that started this conversation (pinned for shortcuts/apps). */
+  initialAgentVersionId?: string | null;
+  /** Model id used on the most recent assistant turn. */
+  lastModelId?: string | null;
+
+  // ── Relation (cx_conversation relation columns) ─────────────────────────
+  parentConversationId?: string | null;
+  forkedFromId?: string | null;
+  forkedAtPosition?: number | null;
+
+  // ── Scope (stamped from appContext at creation) ─────────────────────────
+  organizationId?: string | null;
+  projectId?: string | null;
+  taskId?: string | null;
+
+  // ── Invocation origin (ConversationInvocation) ──────────────────────────
+  /** Stable UI-surface key (e.g. "agent-runner:<agentId>", "code-editor"). */
+  surfaceKey?: string;
+  /**
+   * When true, the server persists NOTHING for this conversation. Redux
+   * (specifically the messages slice) is the sole source of truth.
+   *
+   * Routing implication handled by `launchConversation`:
+   *   Turn 1  — POST /ai/agents/{id} with is_new:false, store:false (no convId).
+   *   Turn 2+ — POST /ai/chat (NOT /conversations/{id}; it 404s with no row).
+   *             Client sends the full accumulated history from `messages/`.
+   */
+  isEphemeral?: boolean;
+  isPublic?: boolean;
+
+  // ── Sidebar-list fields (replaces cxConversations.items entries) ────────
+  title?: string | null;
+  description?: string | null;
+  keywords?: string[] | null;
+  /** System instruction snapshot — persisted on cx_conversation. */
+  systemInstruction?: string | null;
+  /** Lifecycle status on the cx_conversation row — "active" | "archived". */
+  persistedStatus?: "active" | "archived";
+  messageCount?: number;
+
+  // ── Continuity routing ──────────────────────────────────────────────────
+  /**
+   * Selects the API path family when dispatching through `launchConversation`.
+   *   "agent"  — full harness API (`agents/{id}` → `conversations/{id}`).
+   *   "manual" — raw prompt-style API (`prompts`). Builder only.
+   *
+   * NOTE: Legacy surface uses "chat" as the second value. "manual" is the
+   * canonical name from the invocation reference. Until Phase 3 retires the
+   * legacy callers the field is typed as the union of both.
+   */
+  conversationMode?: "agent" | "manual" | "chat";
+  /** Only meaningful when `conversationMode === "manual"`. Builder mechanism. */
+  reuseConversationId?: boolean;
+
+  // ── Builder advanced settings (ConversationInvocation.builder) ──────────
+  builderAdvancedSettings?: BuilderAdvancedSettings | null;
+
+  // ── Free-form metadata bag (ConversationInvocation.metadata) ────────────
+  metadata?: Record<string, unknown>;
 }
 
 // =============================================================================
@@ -329,6 +406,13 @@ export interface InstanceUIState {
    * When false, only user-entered values (variables, resources, attachments) render.
    */
   showDefinitionMessageContent: boolean;
+
+  /**
+   * Whether sub-agent turns appear in the transcript. When false,
+   * `selectDisplayMessages` filters them out (data is still stored in the
+   * messages slice — no loss). Default true.
+   */
+  showSubAgents?: boolean;
 
   /**
    * Number of agent-definition messages to hide from the conversation display.

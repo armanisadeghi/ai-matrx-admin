@@ -1,78 +1,113 @@
-'use client';
+"use client";
 
-import React, { JSX } from 'react';
-import { Plus, X, Loader2, Inbox, Calendar, CheckCircle, AlertCircle, Layers, Eye, EyeOff } from 'lucide-react';
-import { useTaskContext } from '@/features/tasks/context/TaskContext';
-import { TaskFilterType } from '@/features/tasks/types';
-import EditableProjectName from './EditableProjectName';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
+import React, { JSX } from "react";
+import {
+  Plus,
+  X,
+  Loader2,
+  Inbox,
+  AlertCircle,
+  Layers,
+  Eye,
+  EyeOff,
+} from "lucide-react";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import type { TaskFilterType } from "@/features/tasks/types";
+import {
+  selectProjects,
+  selectNewProjectName,
+  selectActiveProject,
+  selectShowAllProjects,
+  selectShowCompleted,
+  selectIsCreatingProject,
+  selectOperatingProjectId,
+  selectTasksLoading,
+  selectTaskFilter,
+  setNewProjectName,
+  setActiveProject,
+  setShowAllProjects,
+  setShowCompleted,
+  setFilter,
+  createProjectThunk,
+  updateProjectThunk,
+  deleteProjectThunk,
+} from "@/features/tasks/redux";
+import EditableProjectName from "./EditableProjectName";
+import TaskScopeFilter from "./TaskScopeFilter";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+
+const Circle = ({ size }: { size: number }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+  >
+    <circle cx="12" cy="12" r="10" />
+  </svg>
+);
+
+function getFilterIcon(filterType: TaskFilterType) {
+  switch (filterType) {
+    case "all":
+      return <Inbox size={16} />;
+    case "incomplete":
+      return <Circle size={16} />;
+    case "overdue":
+      return <AlertCircle size={16} />;
+  }
+}
 
 export default function Sidebar(): JSX.Element {
-  const {
-    projects,
-    newProjectName,
-    activeProject,
-    showAllProjects,
-    showCompleted,
-    isCreatingProject,
-    operatingProjectId,
-    loading,
-    setNewProjectName,
-    setActiveProject,
-    setShowAllProjects,
-    setShowCompleted,
-    addProject,
-    deleteProject,
-    updateProject,
-    setFilter,
-    filter
-  } = useTaskContext();
+  const dispatch = useAppDispatch();
+  const projects = useAppSelector(selectProjects);
+  const newProjectName = useAppSelector(selectNewProjectName);
+  const activeProject = useAppSelector(selectActiveProject);
+  const showAllProjects = useAppSelector(selectShowAllProjects);
+  const showCompleted = useAppSelector(selectShowCompleted);
+  const isCreatingProject = useAppSelector(selectIsCreatingProject);
+  const operatingProjectId = useAppSelector(selectOperatingProjectId);
+  const loading = useAppSelector(selectTasksLoading);
+  const filter = useAppSelector(selectTaskFilter);
 
   const handleFilterClick = (filterType: TaskFilterType) => {
-    setFilter(filterType);
+    dispatch(setFilter(filterType));
     if (!showAllProjects && !activeProject) {
-      setShowAllProjects(true);
+      dispatch(setShowAllProjects(true));
     }
   };
 
-  const getFilterIcon = (filterType: TaskFilterType) => {
-    switch (filterType) {
-      case 'all': return <Inbox size={16} />;
-      case 'incomplete': return <Circle size={16} />;
-      case 'overdue': return <AlertCircle size={16} />;
-    }
+  const handleAddProject = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newProjectName.trim()) return;
+    await dispatch(createProjectThunk({ name: newProjectName }));
   };
-
-  const Circle = ({ size }: { size: number }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <circle cx="12" cy="12" r="10" />
-    </svg>
-  );
 
   return (
     <div className="w-64 h-full bg-card border-r border-border flex flex-col overflow-hidden">
-      {/* Header */}
       <div className="flex-shrink-0 px-3 py-3 border-b border-border">
         <h1 className="text-xl font-bold text-foreground">Tasks</h1>
       </div>
 
-      {/* Scrollable Content */}
       <div className="flex-1 overflow-y-auto px-3 py-3 space-y-3">
-        {/* Views Section */}
         <div>
-          <h2 className="text-xs font-semibold text-muted-foreground uppercase mb-1.5">Views</h2>
+          <h2 className="text-xs font-semibold text-muted-foreground uppercase mb-1.5">
+            Views
+          </h2>
           <div className="space-y-0.5">
             <button
               onClick={() => {
-                setShowAllProjects(true);
-                setFilter('all');
+                dispatch(setShowAllProjects(true));
+                dispatch(setFilter("all"));
               }}
               className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors ${
-                showAllProjects && filter === 'all'
-                  ? 'bg-primary/10 text-primary'
-                  : 'text-foreground hover:bg-accent'
+                showAllProjects && filter === "all"
+                  ? "bg-primary/10 text-primary"
+                  : "text-foreground hover:bg-accent"
               }`}
             >
               <Layers size={16} />
@@ -81,18 +116,19 @@ export default function Sidebar(): JSX.Element {
           </div>
         </div>
 
-        {/* Filters Section */}
         <div>
-          <h2 className="text-xs font-semibold text-muted-foreground uppercase mb-1.5">Filters</h2>
+          <h2 className="text-xs font-semibold text-muted-foreground uppercase mb-1.5">
+            Filters
+          </h2>
           <div className="space-y-0.5">
-            {(['incomplete', 'overdue'] as TaskFilterType[]).map((filterType) => (
+            {(["incomplete", "overdue"] as TaskFilterType[]).map((filterType) => (
               <button
                 key={filterType}
                 onClick={() => handleFilterClick(filterType)}
                 className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors ${
                   filter === filterType
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-foreground hover:bg-accent'
+                    ? "bg-primary/10 text-primary"
+                    : "text-foreground hover:bg-accent"
                 }`}
               >
                 {getFilterIcon(filterType)}
@@ -102,9 +138,10 @@ export default function Sidebar(): JSX.Element {
           </div>
         </div>
 
-        {/* Show Completed Toggle */}
         <div>
-          <h2 className="text-xs font-semibold text-muted-foreground uppercase mb-1.5">Display</h2>
+          <h2 className="text-xs font-semibold text-muted-foreground uppercase mb-1.5">
+            Display
+          </h2>
           <div className="flex items-center justify-between px-3 py-2 rounded-md bg-muted">
             <div className="flex items-center gap-2">
               {showCompleted ? (
@@ -116,25 +153,25 @@ export default function Sidebar(): JSX.Element {
             </div>
             <Switch
               checked={showCompleted}
-              onCheckedChange={setShowCompleted}
+              onCheckedChange={(v) => dispatch(setShowCompleted(!!v))}
               className="data-[state=checked]:bg-primary"
             />
           </div>
         </div>
 
-        {/* Projects Section */}
         <div>
           <div className="flex items-center justify-between mb-1.5">
-            <h2 className="text-xs font-semibold text-muted-foreground uppercase">Projects</h2>
+            <h2 className="text-xs font-semibold text-muted-foreground uppercase">
+              Projects
+            </h2>
           </div>
 
-          {/* Add Project Form */}
-          <form onSubmit={addProject} className="mb-2">
+          <form onSubmit={handleAddProject} className="mb-2">
             <div className="flex items-center gap-2">
               <Input
                 type="text"
                 value={newProjectName}
-                onChange={(e) => setNewProjectName(e.target.value)}
+                onChange={(e) => dispatch(setNewProjectName(e.target.value))}
                 placeholder="New project name..."
                 disabled={isCreatingProject}
                 className="flex-1 h-8 text-sm"
@@ -157,12 +194,12 @@ export default function Sidebar(): JSX.Element {
             </div>
           </form>
 
-          {/* Projects List */}
           <div className="space-y-0.5">
-            {projects.map(project => {
+            {projects.map((project) => {
               const isOperating = operatingProjectId === project.id;
-              const isActive = activeProject === project.id && !showAllProjects;
-              
+              const isActive =
+                activeProject === project.id && !showAllProjects;
+
               return (
                 <div key={project.id} className="relative">
                   {isOperating && (
@@ -173,20 +210,25 @@ export default function Sidebar(): JSX.Element {
                   <div
                     onClick={() => {
                       if (!isOperating) {
-                        setActiveProject(project.id);
-                        setShowAllProjects(false);
+                        dispatch(setActiveProject(project.id));
+                        dispatch(setShowAllProjects(false));
                       }
                     }}
                     className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors group cursor-pointer ${
                       isActive
-                        ? 'bg-primary/10 text-primary'
-                        : 'text-foreground hover:bg-accent'
-                    } ${isOperating ? 'opacity-60 pointer-events-none' : ''}`}
+                        ? "bg-primary/10 text-primary"
+                        : "text-foreground hover:bg-accent"
+                    } ${isOperating ? "opacity-60 pointer-events-none" : ""}`}
                   >
                     <EditableProjectName
                       name={project.name}
                       onSave={async (newName) => {
-                        await updateProject(project.id, newName);
+                        await dispatch(
+                          updateProjectThunk({
+                            projectId: project.id,
+                            name: newName,
+                          }),
+                        );
                       }}
                     />
                     <span className="ml-auto text-xs bg-muted px-1.5 py-0.5 rounded">
@@ -195,7 +237,7 @@ export default function Sidebar(): JSX.Element {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        deleteProject(project.id, e);
+                        dispatch(deleteProjectThunk(project.id));
                       }}
                       disabled={isOperating}
                       className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 hover:text-destructive"
@@ -210,10 +252,12 @@ export default function Sidebar(): JSX.Element {
 
           {projects.length === 0 && !loading && (
             <p className="text-xs text-muted-foreground text-center py-4">
-              No projects yet.<br/>Create one above!
+              No projects yet.
+              <br />
+              Create one above!
             </p>
           )}
-          
+
           {projects.length === 0 && loading && (
             <div className="space-y-2 animate-pulse">
               {[...Array(3)].map((_, index) => (
@@ -221,6 +265,10 @@ export default function Sidebar(): JSX.Element {
               ))}
             </div>
           )}
+        </div>
+
+        <div className="-mx-3">
+          <TaskScopeFilter variant="sidebar" />
         </div>
       </div>
     </div>

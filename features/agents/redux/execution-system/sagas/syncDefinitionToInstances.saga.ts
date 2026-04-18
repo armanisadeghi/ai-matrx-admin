@@ -65,8 +65,8 @@ function* handleVariableDefinitionsChanged(
 
   // Read state after the debounce window — guaranteed to be the latest value.
   const state = (yield select()) as RootState;
-  const allIds = state.executionInstances.allConversationIds;
-  const byId = state.executionInstances.byConversationId;
+  const allIds = state.conversations.allConversationIds;
+  const byId = state.conversations.byConversationId;
 
   for (const conversationId of allIds) {
     if (byId[conversationId]?.agentId === agentId) {
@@ -86,8 +86,8 @@ function* handleSettingsChanged(
   const { id: agentId, settings } = action.payload;
 
   const state = (yield select()) as RootState;
-  const allIds = state.executionInstances.allConversationIds;
-  const byId = state.executionInstances.byConversationId;
+  const allIds = state.conversations.allConversationIds;
+  const byId = state.conversations.byConversationId;
 
   for (const conversationId of allIds) {
     if (byId[conversationId]?.agentId === agentId) {

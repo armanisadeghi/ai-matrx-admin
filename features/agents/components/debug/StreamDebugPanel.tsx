@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
-import { setDebugSession } from "@/features/agents/redux/execution-system/execution-instances";
+import { setDebugSession } from "@/features/agents/redux/execution-system/conversations";
 import { shallowEqual } from "react-redux";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -1501,7 +1501,7 @@ function InstanceDebugView({
 
   const instanceStatus = useAppSelector(
     (state) =>
-      state.executionInstances.byConversationId[conversationId]?.status,
+      state.conversations.byConversationId[conversationId]?.status,
   );
 
   const requestIds = useAppSelector(
@@ -1634,7 +1634,7 @@ export function StreamDebugPanel({
   // Activate debug-session mode on first render so all future destroyInstance
   // calls become no-ops and history is preserved for the rest of the session.
   const debugSessionActive = useAppSelector(
-    (state) => state.executionInstances.debugSessionActive,
+    (state) => state.conversations.debugSessionActive,
   );
   useEffect(() => {
     if (!debugSessionActive) {
@@ -1644,7 +1644,7 @@ export function StreamDebugPanel({
 
   // All instances in Redux — so we can show tabs for each one
   const allInstanceIds = useAppSelector(
-    (state) => state.executionInstances.allConversationIds,
+    (state) => state.conversations.allConversationIds,
     shallowEqual,
   );
 
@@ -1769,7 +1769,7 @@ function InstanceTab({
 }) {
   const status = useAppSelector(
     (state) =>
-      state.executionInstances.byConversationId[conversationId]?.status,
+      state.conversations.byConversationId[conversationId]?.status,
   );
   const requestCount = useAppSelector(
     (state) =>

@@ -1,7 +1,12 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
-import { useTaskContext } from "@/features/tasks/context/TaskContext";
+import { useParams } from "next/navigation";
+import { useAppSelector } from "@/lib/redux/hooks";
+import {
+  selectAllTasksFlat,
+  selectTasksLoading,
+} from "@/features/tasks/redux";
+import { useNavTree } from "@/features/agent-context/hooks/useNavTree";
 import TaskDetailPage from "@/features/tasks/components/TaskDetailPage";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,12 +15,15 @@ import Link from "next/link";
 export default function TaskPage() {
   const params = useParams();
   const taskId = params.id as string;
-  const { getAllTasks, loading } = useTaskContext();
 
-  const allTasks = getAllTasks();
+  // Shared, idempotent hydration — fires RPC only if status === 'idle'.
+  useNavTree();
+
+  const allTasks = useAppSelector(selectAllTasksFlat);
+  const loading = useAppSelector(selectTasksLoading);
   const task = allTasks.find((t) => t.id === taskId) ?? null;
 
-  if (loading) {
+  if (loading && !task) {
     return (
       <div className="flex items-center justify-center h-full">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />

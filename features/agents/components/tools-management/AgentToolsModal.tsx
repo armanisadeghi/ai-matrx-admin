@@ -26,6 +26,7 @@ import {
 } from "@/features/agents/redux/agent-definition/selectors";
 import { resetAgentField } from "@/features/agents/redux/agent-definition/slice";
 import { fetchAvailableTools } from "@/features/agents/redux/tools/tools.thunks";
+import { hasField } from "@/features/agents/redux/shared/field-flags";
 
 interface AgentToolsModalProps {
   agentId: string;
@@ -48,9 +49,12 @@ export function AgentToolsModal({ agentId }: AgentToolsModalProps) {
   const hadCustomToolsDirtyOnOpen = useRef(false);
 
   const handleOpen = useCallback(() => {
-    hadToolsDirtyOnOpen.current = dirtyFields?.has("tools") ?? false;
-    hadCustomToolsDirtyOnOpen.current =
-      dirtyFields?.has("customTools") ?? false;
+    hadToolsDirtyOnOpen.current = dirtyFields
+      ? hasField(dirtyFields, "tools")
+      : false;
+    hadCustomToolsDirtyOnOpen.current = dirtyFields
+      ? hasField(dirtyFields, "customTools")
+      : false;
     dispatch(fetchAvailableTools());
     setOpen(true);
   }, [dirtyFields, dispatch]);
@@ -60,18 +64,30 @@ export function AgentToolsModal({ agentId }: AgentToolsModalProps) {
   }, []);
 
   const handleCancel = useCallback(() => {
-    if (!hadToolsDirtyOnOpen.current && dirtyFields.has("tools")) {
+    if (
+      !hadToolsDirtyOnOpen.current &&
+      dirtyFields &&
+      hasField(dirtyFields, "tools")
+    ) {
       dispatch(resetAgentField({ id: agentId, field: "tools" }));
     }
-    if (!hadCustomToolsDirtyOnOpen.current && dirtyFields.has("customTools")) {
+    if (
+      !hadCustomToolsDirtyOnOpen.current &&
+      dirtyFields &&
+      hasField(dirtyFields, "customTools")
+    ) {
       dispatch(resetAgentField({ id: agentId, field: "customTools" }));
     }
     setOpen(false);
   }, [agentId, dirtyFields, dispatch]);
 
   const toolsChangedInSession =
-    (!hadToolsDirtyOnOpen.current && dirtyFields.has("tools")) ||
-    (!hadCustomToolsDirtyOnOpen.current && dirtyFields.has("customTools"));
+    (!hadToolsDirtyOnOpen.current &&
+      !!dirtyFields &&
+      hasField(dirtyFields, "tools")) ||
+    (!hadCustomToolsDirtyOnOpen.current &&
+      !!dirtyFields &&
+      hasField(dirtyFields, "customTools"));
 
   const footer = (
     <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-border shrink-0 bg-background">

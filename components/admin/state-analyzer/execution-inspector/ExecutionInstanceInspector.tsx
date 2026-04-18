@@ -48,12 +48,12 @@ import type {
   InstanceContextEntry,
   InstanceUserInputState,
 } from "@/features/agents/types/instance.types";
-import type { ExecutionInstancesState } from "@/features/agents/redux/execution-system/execution-instances/execution-instances.slice";
+import type { ConversationsState } from "@/features/agents/redux/execution-system/conversations/conversations.slice";
 import type {
   InstanceConversationHistoryState,
   InstanceConversationHistoryEntry,
   ConversationTurn,
-} from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.slice";
+} from "@/features/agents/redux/execution-system/messages/messages.slice";
 import type { InstanceUIStateSlice } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.slice";
 import type {
   InstanceVariableValuesState,
@@ -1088,12 +1088,12 @@ export default function ExecutionInstanceInspector({
   // Typed slice access
   const agentDefSlice = state.agentDefinition as AgentDefinitionSliceState;
   const agents = agentDefSlice.agents;
-  const execSlice = state.executionInstances as ExecutionInstancesState;
+  const execSlice = state.conversations as ConversationsState;
   const instances = execSlice.byConversationId;
   const allConvIds = execSlice.allConversationIds;
 
   const historySlice =
-    state.instanceConversationHistory as InstanceConversationHistoryState;
+    state.messages as InstanceConversationHistoryState;
   const uiStateSlice = state.instanceUIState as InstanceUIStateSlice;
   const varSlice = state.instanceVariableValues as InstanceVariableValuesState;
   const modelSlice =

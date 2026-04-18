@@ -1,7 +1,7 @@
 import { createSelector } from "@reduxjs/toolkit";
 import type { RootState } from "@/lib/redux/store";
 import { agentConversationsCacheKey } from "./agent-conversations.types";
-import { selectAgentIdFromInstance } from "@/features/agents/redux/execution-system/execution-instances/execution-instances.selectors";
+import { selectAgentIdFromInstance } from "@/features/agents/redux/execution-system/conversations/conversations.selectors";
 
 export const selectAgentConversationsState = (state: RootState) =>
   state.agentConversations;

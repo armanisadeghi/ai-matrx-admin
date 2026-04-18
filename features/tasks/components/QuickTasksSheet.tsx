@@ -2,7 +2,34 @@
 "use client";
 
 import React, { useState, useMemo, useCallback, useEffect } from "react";
-import { useTaskContext } from "../context/TaskContext";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import {
+  selectProjects,
+  selectActiveProject,
+  selectShowAllProjects,
+  selectShowCompleted,
+  selectTaskFilter,
+  selectNewTaskTitle,
+  selectIsCreatingTask,
+  selectTasksLoading,
+  selectSortBy,
+  selectSearchQuery,
+  selectFilteredTasks,
+  setActiveProject,
+  setShowAllProjects,
+  setShowCompleted,
+  setFilter,
+  setNewTaskTitle,
+  setSortBy,
+  setSearchQuery,
+  createTaskThunk,
+  toggleTaskCompleteThunk,
+} from "@/features/tasks/redux";
+import {
+  selectOrganizationId,
+  selectScopeSelectionsContext,
+} from "@/features/agent-context/redux/appContextSlice";
+import { useNavTree } from "@/features/agent-context/hooks/useNavTree";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -56,28 +83,20 @@ interface QuickTasksSheetProps {
 }
 
 function QuickTasksSheetContent({ className }: { className?: string }) {
-  const {
-    projects,
-    activeProject,
-    showAllProjects,
-    showCompleted,
-    filter,
-    newTaskTitle,
-    isCreatingTask,
-    loading,
-    sortBy,
-    setActiveProject,
-    setShowAllProjects,
-    setShowCompleted,
-    setFilter,
-    setNewTaskTitle,
-    setSortBy,
-    addTask,
-    getFilteredTasks,
-    toggleTaskComplete,
-    searchQuery,
-    setSearchQuery,
-  } = useTaskContext();
+  const dispatch = useAppDispatch();
+  const projects = useAppSelector(selectProjects);
+  const activeProject = useAppSelector(selectActiveProject);
+  const showAllProjects = useAppSelector(selectShowAllProjects);
+  const showCompleted = useAppSelector(selectShowCompleted);
+  const filter = useAppSelector(selectTaskFilter);
+  const newTaskTitle = useAppSelector(selectNewTaskTitle);
+  const isCreatingTask = useAppSelector(selectIsCreatingTask);
+  const loading = useAppSelector(selectTasksLoading);
+  const sortBy = useAppSelector(selectSortBy);
+  const searchQuery = useAppSelector(selectSearchQuery);
+  const filteredTasks = useAppSelector(selectFilteredTasks);
+  const orgId = useAppSelector(selectOrganizationId);
+  const scopeSelections = useAppSelector(selectScopeSelectionsContext);
 
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [showQuickAddDescription, setShowQuickAddDescription] = useState(false);
@@ -105,7 +124,7 @@ function QuickTasksSheetContent({ className }: { className?: string }) {
       const { title, description, metadataInfo } = overlayData.data.prePopulate;
 
       if (title) {
-        setNewTaskTitle(title);
+        dispatch(setNewTaskTitle(title));
       }
 
       if (description || metadataInfo) {
@@ -127,7 +146,7 @@ function QuickTasksSheetContent({ className }: { className?: string }) {
     }
   }, [activeProject, projects]);
 
-  const filteredTasks = getFilteredTasks();
+  // filteredTasks is sourced from Redux above
 
   // Build selector value - format: "view:all" or "filter:incomplete" or "project:id"
   const selectorValue = useMemo(() => {
@@ -144,17 +163,17 @@ function QuickTasksSheetContent({ className }: { className?: string }) {
       const [type, id] = value.split(":");
 
       if (type === "view") {
-        setShowAllProjects(true);
-        setFilter("all");
+        dispatch(setShowAllProjects(true));
+        dispatch(setFilter("all"));
       } else if (type === "filter") {
-        setShowAllProjects(true);
-        setFilter(id as TaskFilterType);
+        dispatch(setShowAllProjects(true));
+        dispatch(setFilter(id as TaskFilterType));
       } else if (type === "project") {
-        setShowAllProjects(false);
-        setActiveProject(id);
+        dispatch(setShowAllProjects(false));
+        dispatch(setActiveProject(id));
       }
     },
-    [setShowAllProjects, setFilter, setActiveProject],
+    [dispatch],
   );
 
   const Circle = ({
@@ -182,13 +201,21 @@ function QuickTasksSheetContent({ className }: { className?: string }) {
       e.preventDefault();
       if (!newTaskTitle.trim() || !selectedProjectForTask) return;
 
-      const newTaskId = await addTask(
-        e,
-        quickAddDescription.trim(),
-        quickAddDueDate,
-        selectedProjectForTask,
-        quickAddPriority || null,
+      const defaultScopeIds = Object.values(scopeSelections ?? {}).filter(
+        (v): v is string => typeof v === "string" && v.length > 0,
       );
+
+      const newTaskId = await dispatch(
+        createTaskThunk({
+          title: newTaskTitle,
+          description: quickAddDescription.trim() || null,
+          dueDate: quickAddDueDate || null,
+          projectId: selectedProjectForTask,
+          priority: quickAddPriority || null,
+          organizationId: orgId,
+          scopeIds: defaultScopeIds,
+        }),
+      ).unwrap();
 
       if (newTaskId) {
         setSelectedTaskId(newTaskId);
@@ -205,18 +232,21 @@ function QuickTasksSheetContent({ className }: { className?: string }) {
       selectedProjectForTask,
       quickAddDescription,
       quickAddDueDate,
-      addTask,
+      quickAddPriority,
+      dispatch,
+      orgId,
+      scopeSelections,
     ],
   );
 
   const handleTitleChange = useCallback(
     (value: string) => {
-      setNewTaskTitle(value);
+      dispatch(setNewTaskTitle(value));
       if (value.trim() && !showExpandedForm) {
         setShowExpandedForm(true);
       }
     },
-    [setNewTaskTitle, showExpandedForm],
+    [dispatch, showExpandedForm],
   );
 
   const selectedTask = selectedTaskId
@@ -358,7 +388,7 @@ function QuickTasksSheetContent({ className }: { className?: string }) {
                   variant="ghost"
                   size="icon"
                   className="h-7 w-7 rounded-full"
-                  onClick={() => setShowCompleted(!showCompleted)}
+                  onClick={() => dispatch(setShowCompleted(!showCompleted))}
                 >
                   {showCompleted ? (
                     <Eye className="h-3.5 w-3.5" />
@@ -375,7 +405,7 @@ function QuickTasksSheetContent({ className }: { className?: string }) {
 
           <TaskSortControl
             currentSort={sortBy}
-            onSortChange={setSortBy}
+            onSortChange={(s) => dispatch(setSortBy(s))}
             compact={true}
           />
 
@@ -413,13 +443,13 @@ function QuickTasksSheetContent({ className }: { className?: string }) {
                   <Input
                     type="text"
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={(e) => dispatch(setSearchQuery(e.target.value))}
                     placeholder="Search tasks..."
                     className="pl-8 pr-8 h-8 text-xs"
                   />
                   {searchQuery && (
                     <button
-                      onClick={() => setSearchQuery("")}
+                      onClick={() => dispatch(setSearchQuery(""))}
                       className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
                     >
                       <X size={14} />
@@ -545,7 +575,7 @@ function QuickTasksSheetContent({ className }: { className?: string }) {
                           isSelected={false}
                           onSelect={() => setSelectedTaskId(task.id)}
                           onToggleComplete={() =>
-                            toggleTaskComplete(task.projectId, task.id)
+                            dispatch(toggleTaskCompleteThunk({ taskId: task.id }))
                           }
                           hideProjectName={!showAllProjects}
                         />
@@ -575,10 +605,8 @@ function QuickTasksSheetContent({ className }: { className?: string }) {
  * Follows the pattern established by features/notes/actions/QuickNotesSheet
  */
 export function QuickTasksSheet({ onClose, className }: QuickTasksSheetProps) {
-  const { initialize } = useTaskContext();
-  useEffect(() => {
-    initialize();
-  }, [initialize]);
-
+  // Idempotent: fires hierarchy RPC only when status === 'idle'. Shared with
+  // every other consumer in the app — no duplicate fetching.
+  useNavTree();
   return <QuickTasksSheetContent className={className} />;
 }

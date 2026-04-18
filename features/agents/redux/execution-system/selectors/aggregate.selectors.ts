@@ -35,7 +35,7 @@ import type {
   CompletionPayload,
 } from "@/types/python-generated/stream-events";
 import type { ShortcutContext } from "@/features/agents/redux/agent-shortcuts/types";
-import { selectHasConversationHistory } from "../instance-conversation-history/instance-conversation-history.selectors";
+import { selectHasConversationHistory } from "../messages/messages.selectors";
 import {
   selectAutoClearConversation,
   selectShowAutoClearToggle,
@@ -71,7 +71,7 @@ export const selectIsExecuting =
   (conversationId: string) =>
   (state: RootState): boolean => {
     const status =
-      state.executionInstances?.byConversationId[conversationId]?.status;
+      state.conversations?.byConversationId[conversationId]?.status;
     return status === "running" || status === "streaming";
   };
 
@@ -79,14 +79,14 @@ export const selectIsExecuting =
 export const selectIsStreaming =
   (conversationId: string) =>
   (state: RootState): boolean =>
-    state.executionInstances?.byConversationId[conversationId]?.status ===
+    state.conversations?.byConversationId[conversationId]?.status ===
     "streaming";
 
 /** Is this instance paused waiting for client tool results? */
 export const selectIsAwaitingTools =
   (conversationId: string) =>
   (state: RootState): boolean =>
-    state.executionInstances?.byConversationId[conversationId]?.status ===
+    state.conversations?.byConversationId[conversationId]?.status ===
     "paused";
 
 /**
@@ -151,7 +151,7 @@ export const selectLatestAccumulatedText = (conversationId: string) =>
 export const selectLatestConversationId =
   (conversationId: string) =>
   (state: RootState): string | null => {
-    const instance = state.executionInstances?.byConversationId[conversationId];
+    const instance = state.conversations?.byConversationId[conversationId];
     if (!instance) return null;
     if (instance.cacheOnly) return null;
     return conversationId;
@@ -160,7 +160,7 @@ export const selectLatestConversationId =
 /** The current conversation mode for this instance (agent | conversation | chat). */
 export const selectConversationMode =
   (conversationId: string) => (state: RootState) =>
-    state.instanceConversationHistory?.byConversationId[conversationId]?.mode ??
+    state.messages?.byConversationId[conversationId]?.mode ??
     "agent";
 
 /**
@@ -211,7 +211,7 @@ export const selectIsWaitingForFirstToken =
   (conversationId: string) =>
   (state: RootState): boolean => {
     const instanceStatus =
-      state.executionInstances?.byConversationId[conversationId]?.status;
+      state.conversations?.byConversationId[conversationId]?.status;
     if (instanceStatus === "running") return true;
 
     const ids = state.activeRequests?.byConversationId[conversationId];
@@ -299,7 +299,7 @@ export const selectIsInstanceReady =
   (conversationId: string) =>
   (state: RootState): { ready: boolean; reasons: string[] } => {
     const reasons: string[] = [];
-    const instance = state.executionInstances?.byConversationId[conversationId];
+    const instance = state.conversations?.byConversationId[conversationId];
 
     if (!instance) {
       return { ready: false, reasons: ["Instance not found"] };
@@ -366,7 +366,7 @@ export const selectAssembledRequest =
 export const selectInstanceSummary = (conversationId: string) =>
   createSelector(
     (state: RootState) =>
-      state.executionInstances?.byConversationId[conversationId],
+      state.conversations?.byConversationId[conversationId],
     (state: RootState) =>
       state.instanceModelOverrides?.byConversationId[conversationId],
     (state: RootState) =>
@@ -439,12 +439,12 @@ export const selectShouldShowVariables =
     if (!definitions || definitions.length === 0) return false;
 
     const turns =
-      state.instanceConversationHistory?.byConversationId[conversationId]
+      state.messages?.byConversationId[conversationId]
         ?.turns;
     if (turns && turns.length > 0) return false;
 
     const status =
-      state.executionInstances?.byConversationId[conversationId]?.status;
+      state.conversations?.byConversationId[conversationId]?.status;
     if (status === "running" || status === "streaming") return false;
 
     return true;
@@ -464,7 +464,7 @@ export const selectShouldShowVariables =
 export const selectConversationExists =
   (conversationId: string) =>
   (state: RootState): string | null =>
-    state.executionInstances?.byConversationId[conversationId]
+    state.conversations?.byConversationId[conversationId]
       ? conversationId
       : null;
 
@@ -489,7 +489,7 @@ export const makeSelectInstanceDisplaySnapshot = () =>
     (state: RootState, conversationId: string) =>
       state.instanceUIState?.byConversationId[conversationId],
     (state: RootState, conversationId: string) =>
-      state.executionInstances?.byConversationId[conversationId],
+      state.conversations?.byConversationId[conversationId],
     (uiState, instance) => {
       if (!uiState || !instance) return undefined;
       return {
@@ -509,7 +509,7 @@ export const makeSelectInstanceDisplaySnapshot = () =>
  * Returns undefined (not {}) when there are no active instances.
  */
 export const selectActiveInstancesByDisplayMode = createSelector(
-  (state: RootState) => state.executionInstances?.byConversationId,
+  (state: RootState) => state.conversations?.byConversationId,
   (state: RootState) => state.instanceUIState?.byConversationId,
   (executionByConversationId, uiByConversationId) => {
     type DisplayModeMap = Record<string, string[]>;
@@ -545,7 +545,7 @@ export const selectActiveInstancesByDisplayMode = createSelector(
  * "direct" and "background" are excluded — rendered by their host component.
  */
 export const selectOverlayInstancesByDisplayMode = createSelector(
-  (state: RootState) => state.executionInstances?.byConversationId,
+  (state: RootState) => state.conversations?.byConversationId,
   (state: RootState) => state.instanceUIState?.byConversationId,
   (executionByConversationId, uiByConversationId) => {
     type DisplayModeMap = Record<string, string[]>;
@@ -575,7 +575,7 @@ export const selectOverlayInstancesByDisplayMode = createSelector(
  * All conversationIds that should be rendered as modals right now.
  */
 export const selectActiveModalInstanceIds = createSelector(
-  (state: RootState) => state.executionInstances?.byConversationId,
+  (state: RootState) => state.conversations?.byConversationId,
   (state: RootState) => state.instanceUIState?.byConversationId,
   (executionByConversationId, uiByConversationId): string[] | undefined => {
     const ids = Object.keys(executionByConversationId).filter((id) => {
@@ -592,7 +592,7 @@ export const selectActiveModalInstanceIds = createSelector(
  * All conversationIds that should be rendered as persistent panels or chat bubbles.
  */
 export const selectActivePanelInstanceIds = createSelector(
-  (state: RootState) => state.executionInstances?.byConversationId,
+  (state: RootState) => state.conversations?.byConversationId,
   (state: RootState) => state.instanceUIState?.byConversationId,
   (executionByConversationId, uiByConversationId): string[] | undefined => {
     const ids = Object.keys(executionByConversationId).filter((id) => {
@@ -858,7 +858,7 @@ export type StreamPhase =
 export const selectStreamPhase =
   (conversationId: string) =>
   (state: RootState): StreamPhase => {
-    const instance = state.executionInstances?.byConversationId[conversationId];
+    const instance = state.conversations?.byConversationId[conversationId];
     if (!instance) return "idle";
 
     const instanceStatus = instance.status;

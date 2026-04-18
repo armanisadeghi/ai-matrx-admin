@@ -15,7 +15,7 @@
  */
 
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import { destroyInstance } from "../execution-instances/execution-instances.slice";
+import { destroyInstance } from "../conversations/conversations.slice";
 
 export interface ConversationFocusState {
   bySurface: Record<string, string>;

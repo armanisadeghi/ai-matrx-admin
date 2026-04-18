@@ -12,7 +12,19 @@ import {
   EyeOff,
   ChevronRight,
 } from 'lucide-react';
-import { useTaskContext } from '@/features/tasks/context/TaskContext';
+import { useAppDispatch } from '@/lib/redux/hooks';
+import {
+  selectTaskFilter,
+  selectShowCompleted,
+  selectSortBy,
+  selectShowAllProjects,
+  selectActiveProject,
+  setFilter,
+  setShowCompleted,
+  setSortBy,
+  setShowAllProjects,
+  setActiveProject,
+} from '@/features/tasks/redux';
 import { TaskFilterType } from '@/features/tasks/types';
 import { TaskSortField } from '@/features/tasks/types/sort';
 
@@ -37,6 +49,10 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import MobileProjectSelector from './MobileProjectSelector';
+import TaskScopeFilter from '../TaskScopeFilter';
+import { useAppSelector } from '@/lib/redux/hooks';
+import { selectFilterScopeIds } from '@/features/tasks/redux';
+import { Filter as FilterIcon } from 'lucide-react';
 
 const Circle = ({ size }: { size: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -45,20 +61,16 @@ const Circle = ({ size }: { size: number }) => (
 );
 
 export default function MobileFilterMenu() {
-  const {
-    filter,
-    setFilter,
-    showCompleted,
-    setShowCompleted,
-    sortBy,
-    setSortBy,
-    showAllProjects,
-    setShowAllProjects,
-    activeProject,
-    setActiveProject,
-  } = useTaskContext();
+  const dispatch = useAppDispatch();
+  const filter = useAppSelector(selectTaskFilter);
+  const showCompleted = useAppSelector(selectShowCompleted);
+  const sortBy = useAppSelector(selectSortBy);
+  const showAllProjects = useAppSelector(selectShowAllProjects);
+  const activeProject = useAppSelector(selectActiveProject);
 
   const [showProjectSheet, setShowProjectSheet] = React.useState(false);
+  const [showScopeSheet, setShowScopeSheet] = React.useState(false);
+  const activeScopeCount = useAppSelector(selectFilterScopeIds).length;
 
   const getFilterIcon = (filterType: TaskFilterType) => {
     switch (filterType) {
@@ -86,9 +98,9 @@ export default function MobileFilterMenu() {
   };
 
   const handleFilterSelect = (filterType: TaskFilterType) => {
-    setFilter(filterType);
+    dispatch(setFilter(filterType));
     if (filterType !== 'all' && !showAllProjects && !activeProject) {
-      setShowAllProjects(true);
+      dispatch(setShowAllProjects(true));
     }
   };
 
@@ -105,8 +117,8 @@ export default function MobileFilterMenu() {
           <DropdownMenuLabel>View</DropdownMenuLabel>
           <DropdownMenuItem
             onClick={() => {
-              setShowAllProjects(true);
-              setFilter('all');
+              dispatch(setShowAllProjects(true));
+              dispatch(setFilter('all'));
             }}
             className={showAllProjects && filter === 'all' ? 'bg-primary/10' : ''}
           >
@@ -117,6 +129,15 @@ export default function MobileFilterMenu() {
             <Layers size={18} className="mr-2" />
             Select Project
             <ChevronRight size={16} className="ml-auto" />
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setShowScopeSheet(true)}>
+            <FilterIcon size={18} className="mr-2" />
+            Filter by Scope
+            {activeScopeCount > 0 && (
+              <span className="ml-auto text-xs bg-primary text-primary-foreground px-1.5 py-0.5 rounded-full">
+                {activeScopeCount}
+              </span>
+            )}
           </DropdownMenuItem>
 
           <DropdownMenuSeparator />
@@ -167,7 +188,7 @@ export default function MobileFilterMenu() {
                     key={sort}
                     onClick={() => {
                       // @ts-ignore - COMPLEX: setSortBy expects TaskSortField but receives TaskSortOption, may need refactor
-                      setSortBy(field as TaskSortField);
+                      dispatch(setSortBy(field as TaskSortField));
                     }}
                     // @ts-ignore - COMPLEX: Comparison between TaskSortField and TaskSortOption types
                     className={sortBy === field ? 'bg-primary/10' : ''}
@@ -183,7 +204,7 @@ export default function MobileFilterMenu() {
 
           {/* Display Options */}
           <DropdownMenuLabel>Display</DropdownMenuLabel>
-          <DropdownMenuItem onClick={() => setShowCompleted(!showCompleted)}>
+          <DropdownMenuItem onClick={() => dispatch(setShowCompleted(!showCompleted))}>
             {showCompleted ? <Eye size={18} className="mr-2" /> : <EyeOff size={18} className="mr-2" />}
             {showCompleted ? 'Hide' : 'Show'} Completed
           </DropdownMenuItem>
@@ -201,12 +222,27 @@ export default function MobileFilterMenu() {
             selectedProjectId={activeProject}
             onSelectProject={(projectId) => {
               if (projectId) {
-                setActiveProject(projectId);
-                setShowAllProjects(false);
+                dispatch(setActiveProject(projectId));
+                dispatch(setShowAllProjects(false));
               }
               setShowProjectSheet(false);
             }}
           />
+        </SheetContent>
+      </Sheet>
+
+      {/* Scope Filter Sheet */}
+      <Sheet open={showScopeSheet} onOpenChange={setShowScopeSheet}>
+        <SheetContent side="bottom" className="h-[70vh] overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>Filter by Scope</SheetTitle>
+            <SheetDescription>
+              Narrow tasks by the scope values assigned to them.
+            </SheetDescription>
+          </SheetHeader>
+          <div className="mt-4">
+            <TaskScopeFilter variant="sidebar" />
+          </div>
         </SheetContent>
       </Sheet>
     </>

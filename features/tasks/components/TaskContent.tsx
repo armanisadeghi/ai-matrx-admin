@@ -11,7 +11,27 @@ import {
   Loader2,
   Folder,
 } from "lucide-react";
-import { useTaskContext } from "@/features/tasks/context/TaskContext";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import {
+  selectActiveProject,
+  selectShowAllProjects,
+  selectFilteredTasks,
+  selectProjects,
+  selectNewTaskTitle,
+  selectNewProjectName,
+  selectIsCreatingTask,
+  selectIsCreatingProject,
+  selectTasksLoading,
+  setNewTaskTitle,
+  setNewProjectName,
+  createProjectThunk,
+  createTaskThunk,
+  toggleTaskCompleteThunk,
+} from "@/features/tasks/redux";
+import {
+  selectOrganizationId,
+  selectScopeSelectionsContext,
+} from "@/features/agent-context/redux/appContextSlice";
 import TaskHeader from "./TaskHeader";
 import TaskList from "./TaskList";
 import AllTasksView from "./AllTasksView";
@@ -24,22 +44,18 @@ import {
 } from "@/features/agent-context/components/hierarchy-selection";
 
 export default function TaskContent(): JSX.Element {
-  const {
-    activeProject,
-    showAllProjects,
-    getFilteredTasks,
-    projects,
-    newTaskTitle,
-    setNewTaskTitle,
-    addTask,
-    newProjectName,
-    setNewProjectName,
-    addProject,
-    isCreatingTask,
-    isCreatingProject,
-    loading,
-    toggleTaskComplete,
-  } = useTaskContext();
+  const dispatch = useAppDispatch();
+  const activeProject = useAppSelector(selectActiveProject);
+  const showAllProjects = useAppSelector(selectShowAllProjects);
+  const projects = useAppSelector(selectProjects);
+  const newTaskTitle = useAppSelector(selectNewTaskTitle);
+  const newProjectName = useAppSelector(selectNewProjectName);
+  const isCreatingTask = useAppSelector(selectIsCreatingTask);
+  const isCreatingProject = useAppSelector(selectIsCreatingProject);
+  const loading = useAppSelector(selectTasksLoading);
+  const filteredTasks = useAppSelector(selectFilteredTasks);
+  const orgId = useAppSelector(selectOrganizationId);
+  const scopeSelections = useAppSelector(selectScopeSelectionsContext);
 
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [taskDescription, setTaskDescription] = useState("");
@@ -59,7 +75,6 @@ export default function TaskContent(): JSX.Element {
     }
   }, [activeProject, projects]);
 
-  const filteredTasks = getFilteredTasks();
   const hasProjects = projects.length > 0;
   const canShowTasks = activeProject || showAllProjects;
 
@@ -116,12 +131,18 @@ export default function TaskContent(): JSX.Element {
       return;
     }
 
-    // Pass the selected project to addTask
-    await addTask(
-      e,
-      taskDescription.trim(),
-      taskDueDate,
-      selectedProjectForTask || undefined,
+    const defaultScopeIds = Object.values(scopeSelections ?? {}).filter(
+      (v): v is string => typeof v === "string" && v.length > 0,
+    );
+    await dispatch(
+      createTaskThunk({
+        title: newTaskTitle,
+        description: taskDescription.trim() || null,
+        dueDate: taskDueDate || null,
+        projectId: selectedProjectForTask ?? null,
+        organizationId: orgId,
+        scopeIds: defaultScopeIds,
+      }),
     );
 
     // Reset all fields
@@ -132,7 +153,7 @@ export default function TaskContent(): JSX.Element {
 
   // Show advanced options when user starts typing
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNewTaskTitle(e.target.value);
+    dispatch(setNewTaskTitle(e.target.value));
     if (e.target.value.trim() && !showAdvanced) {
       setShowAdvanced(true);
     }
@@ -277,11 +298,19 @@ export default function TaskContent(): JSX.Element {
               </p>
 
               {/* Inline Project Creation */}
-              <form onSubmit={addProject} className="space-y-3">
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  if (newProjectName.trim()) {
+                    await dispatch(createProjectThunk({ name: newProjectName }));
+                  }
+                }}
+                className="space-y-3"
+              >
                 <Input
                   type="text"
                   value={newProjectName}
-                  onChange={(e) => setNewProjectName(e.target.value)}
+                  onChange={(e) => dispatch(setNewProjectName(e.target.value))}
                   placeholder="Project name (e.g., Personal, Work)"
                   disabled={isCreatingProject}
                   className="w-full"

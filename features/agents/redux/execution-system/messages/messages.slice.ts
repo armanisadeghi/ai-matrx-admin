@@ -24,7 +24,7 @@
 
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { v4 as uuidv4 } from "uuid";
-import { destroyInstance } from "../execution-instances/execution-instances.slice";
+import { destroyInstance } from "../conversations/conversations.slice";
 import type { CompletionStats } from "@/features/agents/types/instance.types";
 import type { ClientMetrics } from "@/features/agents/types/request.types";
 import type { Json } from "@/types/database.types";
@@ -146,7 +146,7 @@ export interface InstanceConversationHistoryEntry {
    */
   mode: ConversationMode;
 
-  /** Ordered turn history */
+  /** Ordered turn history (legacy display shape — see MessageRecord below). */
   turns: ConversationTurn[];
 
   /** True if turns were loaded from a previous session (Supabase fetch) */
@@ -156,10 +156,73 @@ export interface InstanceConversationHistoryEntry {
   title: string | null;
   description: string | null;
   keywords: string[] | null;
+
+  // =========================================================================
+  // DB-faithful storage (Phase 1.3 addition)
+  //
+  // Canonical shape mirrors `cx_message.Row` so the CRUD identity test holds:
+  // read → modify → write → re-read round-trips without schema drift. The
+  // legacy `turns[]` field remains while consumers migrate, and is kept in
+  // sync by stream-commit paths.
+  //
+  // Populated by:
+  //   - `hydrateMessages` (from `loadConversation` / `get_cx_conversation_bundle`)
+  //   - `reserveMessage` (on `record_reserved cx_message` stream event)
+  //   - `updateMessageStatus` (on `record_update cx_message` stream event)
+  //   - `commitAssistantTurn` (on stream `completion` — mirrors the turn into byId)
+  // =========================================================================
+
+  /**
+   * Stable ordered message ids (server-assigned `cx_message.id`) — the spine
+   * of the transcript. Use this for iteration order; don't rely on `turns[]`.
+   */
+  orderedIds?: string[];
+
+  /** DB-faithful records keyed by server-assigned `cx_message.id`. */
+  byId?: Record<string, MessageRecord>;
 }
 
 export interface InstanceConversationHistoryState {
   byConversationId: Record<string, InstanceConversationHistoryEntry>;
+}
+
+// =============================================================================
+// DB-faithful MessageRecord — matches `public.cx_message.Row`
+//
+// This is the canonical message shape. Display transforms happen in selectors
+// (see `selectDisplayMessages`) — not at the slice level — so round-tripping
+// through the DB preserves identity.
+// =============================================================================
+
+export interface MessageRecord {
+  // ── cx_message.Row mirror (keep alphabetical so diffs against the DB
+  // regenerated types are easy to review)
+  id: string;
+  conversationId: string;
+  agentId: string | null;
+  role: "system" | "user" | "assistant";
+  /** CxContentBlock[] — NOT a flat string. Render via `selectDisplayMessages`. */
+  content: Json;
+  contentHistory: Json | null;
+  userContent: Json | null;
+  position: number;
+  source: string;
+  /**
+   * Server status on cx_message. Observed values: "reserved" (row just
+   * reserved, no content yet), "streaming", "active", "edited", "deleted".
+   */
+  status: string;
+  isVisibleToModel: boolean;
+  isVisibleToUser: boolean;
+  metadata: Json;
+  createdAt: string;
+  deletedAt: string | null;
+
+  // ── Client-only fields (NOT serialized back to the server on CRUD writes)
+  /** Client-side rollup status — maps to streaming/commit UI states. */
+  _clientStatus?: "pending" | "streaming" | "complete" | "error";
+  /** While a turn is live, points at `activeRequests.byRequestId[_streamRequestId]`. */
+  _streamRequestId?: string;
 }
 
 // =============================================================================
@@ -178,8 +241,8 @@ const initialState: InstanceConversationHistoryState = {
   byConversationId: {},
 };
 
-const instanceConversationHistorySlice = createSlice({
-  name: "instanceConversationHistory",
+const messagesSlice = createSlice({
+  name: "messages",
   initialState,
   reducers: {
     /** Initialize the history entry for a new instance. */
@@ -200,8 +263,118 @@ const instanceConversationHistorySlice = createSlice({
           title: null,
           description: null,
           keywords: null,
+          orderedIds: [],
+          byId: {},
         };
       }
+    },
+
+    // ── DB-faithful storage reducers (Phase 1.3) ─────────────────────────────
+
+    /**
+     * Reserve a placeholder for a server-assigned message id. Fired on the
+     * `record_reserved cx_message` stream event BEFORE any content lands.
+     * The record is created in status "reserved"; subsequent updates flow
+     * through `updateMessageRecord` / `commitAssistantTurn`.
+     */
+    reserveMessage(
+      state,
+      action: PayloadAction<{
+        conversationId: string;
+        messageId: string;
+        role?: MessageRecord["role"];
+        agentId?: string | null;
+        position?: number;
+      }>,
+    ) {
+      const {
+        conversationId,
+        messageId,
+        role = "assistant",
+        agentId = null,
+        position = 0,
+      } = action.payload;
+      const entry = state.byConversationId[conversationId];
+      if (!entry) return;
+      if (!entry.byId) entry.byId = {};
+      if (!entry.orderedIds) entry.orderedIds = [];
+      if (entry.byId[messageId]) return; // already reserved
+      const now = new Date().toISOString();
+      entry.byId[messageId] = {
+        id: messageId,
+        conversationId,
+        agentId,
+        role,
+        content: [] as unknown as Json,
+        contentHistory: null,
+        userContent: null,
+        position,
+        source: "",
+        status: "reserved",
+        isVisibleToModel: true,
+        isVisibleToUser: true,
+        metadata: {} as Json,
+        createdAt: now,
+        deletedAt: null,
+        _clientStatus: "pending",
+      };
+      entry.orderedIds.push(messageId);
+    },
+
+    /** Update one or more fields on a MessageRecord by id. */
+    updateMessageRecord(
+      state,
+      action: PayloadAction<{
+        conversationId: string;
+        messageId: string;
+        patch: Partial<MessageRecord>;
+      }>,
+    ) {
+      const { conversationId, messageId, patch } = action.payload;
+      const entry = state.byConversationId[conversationId];
+      if (!entry?.byId?.[messageId]) return;
+      Object.assign(entry.byId[messageId], patch);
+    },
+
+    /**
+     * Hydrate multiple MessageRecords from the DB. Called by
+     * `loadConversation` after `get_cx_conversation_bundle` returns. Replaces
+     * any existing `byId` + `orderedIds` for this conversation.
+     */
+    hydrateMessages(
+      state,
+      action: PayloadAction<{
+        conversationId: string;
+        messages: MessageRecord[];
+      }>,
+    ) {
+      const { conversationId, messages } = action.payload;
+      let entry = state.byConversationId[conversationId];
+      if (!entry) {
+        entry = {
+          conversationId,
+          mode: "agent",
+          turns: [],
+          loadedFromHistory: true,
+          title: null,
+          description: null,
+          keywords: null,
+          orderedIds: [],
+          byId: {},
+        };
+        state.byConversationId[conversationId] = entry;
+      }
+      const sorted = [...messages].sort((a, b) => a.position - b.position);
+      entry.byId = {};
+      entry.orderedIds = [];
+      for (const msg of sorted) {
+        entry.byId[msg.id] = {
+          ...msg,
+          _clientStatus: "complete",
+        };
+        entry.orderedIds.push(msg.id);
+      }
+      entry.loadedFromHistory = true;
     },
 
     /**
@@ -446,6 +619,10 @@ export const {
   setConversationLabel,
   clearHistory,
   removeInstanceHistory,
-} = instanceConversationHistorySlice.actions;
+  // DB-faithful storage (Phase 1.3)
+  reserveMessage,
+  updateMessageRecord,
+  hydrateMessages,
+} = messagesSlice.actions;
 
-export default instanceConversationHistorySlice.reducer;
+export default messagesSlice.reducer;

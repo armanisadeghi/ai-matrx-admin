@@ -2,8 +2,16 @@
 
 import React, { useState } from 'react';
 import { ChevronDown, ChevronRight, FolderOpen, CheckSquare } from 'lucide-react';
-import { useTaskContext } from '@/features/tasks/context/TaskContext';
+import { useAppSelector } from '@/lib/redux/hooks';
+import {
+  selectProjects,
+  selectTaskFilter,
+  selectShowCompleted,
+  selectTasksLoading,
+  selectSortBy,
+} from '@/features/tasks/redux';
 import CompactTaskItem from './CompactTaskItem';
+import { ActiveScopeFilterChips } from './TaskScopeFilter';
 import { sortTasks } from '../utils/taskSorting';
 import type { TaskSortConfig, TaskWithProject } from '../types';
 
@@ -14,7 +22,11 @@ interface AllTasksViewProps {
 }
 
 export default function AllTasksView({ selectedTaskId, onTaskSelect, onTaskToggle }: AllTasksViewProps) {
-  const { projects, filter, showCompleted, loading, sortBy } = useTaskContext();
+  const projects = useAppSelector(selectProjects);
+  const filter = useAppSelector(selectTaskFilter);
+  const showCompleted = useAppSelector(selectShowCompleted);
+  const loading = useAppSelector(selectTasksLoading);
+  const sortBy = useAppSelector(selectSortBy);
   const [collapsedProjects, setCollapsedProjects] = useState<Set<string>>(new Set());
 
   // Show loading state during initial fetch
@@ -122,6 +134,7 @@ export default function AllTasksView({ selectedTaskId, onTaskSelect, onTaskToggl
 
   return (
     <div className="space-y-3">
+      <ActiveScopeFilterChips className="-mt-3 -mx-3 mb-3 rounded-none" />
       {projectsWithTasks.map(project => {
         const isCollapsed = collapsedProjects.has(project.id);
         const taskCount = project.filteredTasks.length;

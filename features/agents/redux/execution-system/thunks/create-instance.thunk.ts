@@ -22,7 +22,7 @@ import type {
   VariableDefinition,
 } from "@/features/agents/types/agent-definition.types";
 import type { LLMParams } from "@/features/agents/types";
-import type { ConversationMode } from "../instance-conversation-history/instance-conversation-history.slice";
+import type { ConversationMode } from "../messages/messages.slice";
 import { executeInstance } from "./execute-instance.thunk";
 import { executeChatInstance } from "./execute-chat-instance.thunk";
 
@@ -30,7 +30,7 @@ import { generateConversationId } from "../utils";
 import {
   createInstance,
   destroyInstance,
-} from "../execution-instances/execution-instances.slice";
+} from "../conversations/conversations.slice";
 import { setFocus } from "../conversation-focus/conversation-focus.slice";
 import { initInstanceOverrides } from "../instance-model-overrides/instance-model-overrides.slice";
 import {
@@ -48,7 +48,7 @@ import {
 } from "../instance-user-input/instance-user-input.slice";
 import { initInstanceClientTools } from "../instance-client-tools/instance-client-tools.slice";
 import { initInstanceUIState } from "../instance-ui-state/instance-ui-state.slice";
-import { initInstanceHistory } from "../instance-conversation-history/instance-conversation-history.slice";
+import { initInstanceHistory } from "../messages/messages.slice";
 import {
   InstanceOrigin,
   ResultDisplayMode,
@@ -509,7 +509,7 @@ export const startNewConversation = createAsyncThunk<
     const state = getState() as RootState;
 
     const instance =
-      state.executionInstances.byConversationId[currentConversationId];
+      state.conversations.byConversationId[currentConversationId];
     if (!instance) {
       throw new Error(`Conversation ${currentConversationId} not found`);
     }
@@ -635,7 +635,7 @@ export const startNewConversationAndExecute = createAsyncThunk<
 
     // Read the authoritative conversationMode from the history slice
     const currentMode =
-      state.instanceConversationHistory.byConversationId[currentConversationId]
+      state.messages.byConversationId[currentConversationId]
         ?.mode ?? "agent";
     const isChatMode = currentMode === "chat";
 
@@ -643,7 +643,7 @@ export const startNewConversationAndExecute = createAsyncThunk<
     const userValues = currentVariables?.userValues ?? {};
 
     const instance =
-      state.executionInstances.byConversationId[currentConversationId];
+      state.conversations.byConversationId[currentConversationId];
     if (!instance) {
       throw new Error(`Conversation ${currentConversationId} not found`);
     }

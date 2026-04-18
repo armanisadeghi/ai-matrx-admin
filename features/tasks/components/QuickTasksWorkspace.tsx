@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import { useNavTree } from "@/features/agent-context/hooks/useNavTree";
-import { useTaskContext } from "@/features/tasks/context/TaskContext";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Inbox, Plus, Folder, FolderKanban } from "lucide-react";
@@ -12,114 +12,80 @@ import {
   HierarchyCascade,
   EMPTY_SELECTION,
 } from "@/features/agent-context/components/hierarchy-selection";
-import type { HierarchySelection } from "@/features/agent-context/components/hierarchy-selection";
+import {
+  selectActiveProject,
+  selectNewTaskTitle,
+  selectIsCreatingTask,
+  selectFilteredTasks,
+  setActiveProject,
+  setShowAllProjects,
+  setNewTaskTitle,
+  createTaskThunk,
+  toggleTaskCompleteThunk,
+} from "@/features/tasks/redux";
+import {
+  selectQuickTasksSelectedOrgId,
+  selectQuickTasksSelectedTaskId,
+  selectQuickTasksSearchQuery,
+  setQuickTasksSelectedOrgId,
+  setQuickTasksSelectedTaskId,
+  setQuickTasksSearchQuery,
+} from "@/features/tasks/redux";
+import {
+  selectOrganizationId,
+  selectScopeSelectionsContext,
+} from "@/features/agent-context/redux/appContextSlice";
 
-interface QuickTasksWorkspaceContextType {
-  selectedOrgId: string | null;
-  setSelectedOrgId: (id: string | null) => void;
-  selectedProjectId: string | null;
-  setSelectedProjectId: (id: string | null) => void;
-  selectedTaskId: string | null;
-  setSelectedTaskId: (id: string | null) => void;
-  searchQuery: string;
-  setSearchQuery: (q: string) => void;
-}
-
-const WorkspaceContext =
-  React.createContext<QuickTasksWorkspaceContextType | null>(null);
-
-export const useQuickTasksWorkspace = () => {
-  const ctx = React.useContext(WorkspaceContext);
-  if (!ctx)
-    throw new Error("useQuickTasksWorkspace must be used within Provider");
-  return ctx;
-};
-
+/**
+ * Thin Provider-less wrapper: seeds the Quick Tasks window's org/project
+ * selection from the hierarchy on first mount and when the user switches orgs.
+ * All state lives in Redux (quickTasksWindow + tasksUi slices).
+ */
 export function QuickTasksWorkspaceProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const dispatch = useAppDispatch();
   const { orgs, flatProjects, isSuccess } = useNavTree();
-  const { setActiveProject, activeProject, setShowAllProjects } =
-    useTaskContext();
+  const selectedOrgId = useAppSelector(selectQuickTasksSelectedOrgId);
+  const activeProject = useAppSelector(selectActiveProject);
 
-  const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
-  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
-
-  // Auto-select initial org
   useEffect(() => {
     if (isSuccess && !selectedOrgId && orgs.length > 0) {
-      setSelectedOrgId(orgs[0].id);
+      dispatch(setQuickTasksSelectedOrgId(orgs[0].id));
     }
-  }, [isSuccess, orgs, selectedOrgId]);
+  }, [dispatch, isSuccess, orgs, selectedOrgId]);
 
-  // Auto-select project when org changes
   useEffect(() => {
-    if (selectedOrgId) {
-      const projs = flatProjects.filter((p) => p.org_id === selectedOrgId);
-      if (
-        projs.length > 0 &&
-        (!activeProject || !projs.find((p) => p.id === activeProject))
-      ) {
-        setActiveProject(projs[0].id);
-        setShowAllProjects(false);
-      }
+    if (!selectedOrgId) return;
+    const projs = flatProjects.filter((p) => p.org_id === selectedOrgId);
+    if (
+      projs.length > 0 &&
+      (!activeProject || !projs.find((p) => p.id === activeProject))
+    ) {
+      dispatch(setActiveProject(projs[0].id));
+      dispatch(setShowAllProjects(false));
     }
-  }, [
-    selectedOrgId,
-    flatProjects,
-    activeProject,
-    setActiveProject,
-    setShowAllProjects,
-  ]);
+  }, [dispatch, selectedOrgId, flatProjects, activeProject]);
 
-  return (
-    <WorkspaceContext.Provider
-      value={{
-        selectedOrgId,
-        setSelectedOrgId,
-        selectedProjectId: activeProject,
-        setSelectedProjectId: (id) => {
-          setActiveProject(id);
-          if (id) setShowAllProjects(false);
-        },
-        selectedTaskId,
-        setSelectedTaskId,
-        searchQuery,
-        setSearchQuery,
-      }}
-    >
-      {children}
-    </WorkspaceContext.Provider>
-  );
+  return <>{children}</>;
 }
 
 export function QuickTasksSidebar() {
-  const {
-    selectedOrgId,
-    setSelectedOrgId,
-    selectedProjectId,
-    setSelectedProjectId,
-    selectedTaskId,
-    setSelectedTaskId,
-    searchQuery,
-    setSearchQuery,
-  } = useQuickTasksWorkspace();
+  const dispatch = useAppDispatch();
+  const selectedOrgId = useAppSelector(selectQuickTasksSelectedOrgId);
+  const selectedProjectId = useAppSelector(selectActiveProject);
+  const selectedTaskId = useAppSelector(selectQuickTasksSelectedTaskId);
+  const searchQuery = useAppSelector(selectQuickTasksSearchQuery);
+  const filtered = useAppSelector(selectFilteredTasks);
 
-  const { getFilteredTasks, toggleTaskComplete } = useTaskContext();
-
-  // getFilteredTasks uses TaskContext's activeProject and filter settings.
   const tasksToDisplay = useMemo(() => {
-    let tasks = getFilteredTasks();
-    if (searchQuery) {
-      tasks = tasks.filter((t) =>
-        t.title.toLowerCase().includes(searchQuery.toLowerCase()),
-      );
-    }
-    return tasks;
-  }, [getFilteredTasks, searchQuery]);
+    if (!searchQuery) return filtered;
+    return filtered.filter((t) =>
+      t.title.toLowerCase().includes(searchQuery.toLowerCase()),
+    );
+  }, [filtered, searchQuery]);
 
   return (
     <div className="flex flex-col min-h-0 h-full bg-card">
@@ -134,10 +100,13 @@ export function QuickTasksSidebar() {
           }}
           onChange={(sel) => {
             if (sel.organizationId !== selectedOrgId)
-              setSelectedOrgId(sel.organizationId);
-            if (sel.projectId !== selectedProjectId)
-              setSelectedProjectId(sel.projectId);
-            if (sel.taskId !== selectedTaskId) setSelectedTaskId(sel.taskId);
+              dispatch(setQuickTasksSelectedOrgId(sel.organizationId));
+            if (sel.projectId !== selectedProjectId) {
+              dispatch(setActiveProject(sel.projectId));
+              if (sel.projectId) dispatch(setShowAllProjects(false));
+            }
+            if (sel.taskId !== selectedTaskId)
+              dispatch(setQuickTasksSelectedTaskId(sel.taskId));
           }}
           layout="vertical"
         />
@@ -149,7 +118,7 @@ export function QuickTasksSidebar() {
           <Input
             placeholder="Search tasks..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => dispatch(setQuickTasksSearchQuery(e.target.value))}
             className="h-7 pl-7 text-[11px]"
           />
         </div>
@@ -173,9 +142,9 @@ export function QuickTasksSidebar() {
                 key={task.id}
                 task={task}
                 isSelected={selectedTaskId === task.id}
-                onSelect={() => setSelectedTaskId(task.id)}
+                onSelect={() => dispatch(setQuickTasksSelectedTaskId(task.id))}
                 onToggleComplete={() =>
-                  toggleTaskComplete(task.projectId, task.id)
+                  dispatch(toggleTaskCompleteThunk({ taskId: task.id }))
                 }
                 hideProjectName={true}
               />
@@ -188,27 +157,36 @@ export function QuickTasksSidebar() {
 }
 
 export function QuickTasksMain() {
-  const { selectedTaskId, setSelectedTaskId, selectedProjectId } =
-    useQuickTasksWorkspace();
-  const {
-    getFilteredTasks,
-    newTaskTitle,
-    setNewTaskTitle,
-    isCreatingTask,
-    addTask,
-  } = useTaskContext();
+  const dispatch = useAppDispatch();
+  const selectedTaskId = useAppSelector(selectQuickTasksSelectedTaskId);
+  const selectedProjectId = useAppSelector(selectActiveProject);
+  const newTaskTitle = useAppSelector(selectNewTaskTitle);
+  const isCreatingTask = useAppSelector(selectIsCreatingTask);
+  const filtered = useAppSelector(selectFilteredTasks);
+  const orgId = useAppSelector(selectOrganizationId);
+  const scopeSelections = useAppSelector(selectScopeSelectionsContext);
 
   const selectedTask = useMemo(() => {
     if (!selectedTaskId) return null;
-    return getFilteredTasks().find((t) => t.id === selectedTaskId) || null;
-  }, [selectedTaskId, getFilteredTasks]);
+    return filtered.find((t) => t.id === selectedTaskId) || null;
+  }, [selectedTaskId, filtered]);
 
   const handleAddTask = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTaskTitle.trim() || !selectedProjectId) return;
-
-    const newId = await addTask(e, "", "", selectedProjectId, "medium");
-    if (newId) setSelectedTaskId(newId);
+    const defaultScopeIds = Object.values(scopeSelections ?? {}).filter(
+      (v): v is string => typeof v === "string" && v.length > 0,
+    );
+    const newId = await dispatch(
+      createTaskThunk({
+        title: newTaskTitle,
+        projectId: selectedProjectId,
+        organizationId: orgId,
+        priority: "medium",
+        scopeIds: defaultScopeIds,
+      }),
+    ).unwrap();
+    if (newId) dispatch(setQuickTasksSelectedTaskId(newId));
   };
 
   if (!selectedTask) {
@@ -223,7 +201,7 @@ export function QuickTasksMain() {
         <form onSubmit={handleAddTask} className="flex gap-2 w-full max-w-sm">
           <Input
             value={newTaskTitle}
-            onChange={(e) => setNewTaskTitle(e.target.value)}
+            onChange={(e) => dispatch(setNewTaskTitle(e.target.value))}
             placeholder="Enter new task title..."
             className="h-8 text-[13px] flex-1"
             disabled={isCreatingTask || !selectedProjectId}
@@ -251,20 +229,19 @@ export function QuickTasksMain() {
 
   return (
     <div className="flex-1 flex flex-col min-w-0 min-h-0 bg-background overflow-hidden relative">
-      {/* Top subtle bar for moving back on small layouts or showing title */}
       <div className="absolute top-2 right-2 z-10 opacity-0 hover:opacity-100 transition-opacity">
         <Button
           variant="outline"
           size="sm"
           className="h-7 text-xs bg-background/50 backdrop-blur"
-          onClick={() => setSelectedTaskId(null)}
+          onClick={() => dispatch(setQuickTasksSelectedTaskId(null))}
         >
           Close Details
         </Button>
       </div>
       <TaskDetailsPanel
         task={selectedTask}
-        onClose={() => setSelectedTaskId(null)}
+        onClose={() => dispatch(setQuickTasksSelectedTaskId(null))}
       />
     </div>
   );

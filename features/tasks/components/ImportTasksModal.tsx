@@ -22,7 +22,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { CheckSquare, FolderPlus, Loader2 } from "lucide-react";
-import { useTaskContext } from "../context/TaskContext";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { selectProjects } from "@/features/tasks/redux";
+import { invalidateAndRefetchFullContext } from "@/features/agent-context/redux/hierarchyThunks";
 import {
   HierarchyCascade,
   EMPTY_SELECTION,
@@ -45,7 +47,9 @@ export default function ImportTasksModal({
   tasks,
   checkboxState,
 }: ImportTasksModalProps) {
-  const { projects, addProject, refresh } = useTaskContext();
+  const dispatch = useAppDispatch();
+  const projects = useAppSelector(selectProjects);
+  const refresh = () => dispatch(invalidateAndRefetchFullContext());
 
   const [selectedTasks, setSelectedTasks] = useState<SelectionState>({});
   const [projectSelection, setProjectSelection] = useState<

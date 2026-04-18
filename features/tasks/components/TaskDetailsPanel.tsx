@@ -23,9 +23,16 @@ import {
   ExternalLink,
   Copy,
 } from "lucide-react";
-import { useTaskContext } from "@/features/tasks/context/TaskContext";
-import { useAppSelector } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/slices/userSlice";
+import {
+  selectProjects,
+  updateTaskFieldThunk,
+  toggleTaskCompleteThunk,
+  deleteTaskThunk,
+  moveTaskThunk,
+} from "@/features/tasks/redux";
+import { invalidateAndRefetchFullContext } from "@/features/agent-context/redux/hierarchyThunks";
 import * as taskService from "@/features/tasks/services/taskService";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -55,6 +62,8 @@ import {
   EMPTY_SELECTION,
 } from "@/features/agent-context/components/hierarchy-selection";
 import type { HierarchySelection } from "@/features/agent-context/components/hierarchy-selection";
+import { ScopePicker } from "@/features/agent-context/components/ScopePicker";
+import { selectOrganizationId } from "@/features/agent-context/redux/appContextSlice";
 
 interface TaskDetailsPanelProps {
   task: any;
@@ -65,21 +74,25 @@ export default function TaskDetailsPanel({
   task,
   onClose,
 }: TaskDetailsPanelProps) {
-  const {
-    updateTaskDescription,
-    updateTaskDueDate,
-    updateTaskProject,
-    updateTaskTitle,
-    toggleTaskComplete,
-    deleteTask,
-    projects,
-    refresh,
-    createSubtask,
-    updateSubtaskStatus,
-    deleteSubtask,
-    getTaskComments,
-    createTaskComment,
-  } = useTaskContext();
+  const dispatch = useAppDispatch();
+  const projects = useAppSelector(selectProjects);
+  const refresh = () => dispatch(invalidateAndRefetchFullContext());
+  const getTaskComments = (taskId: string) => taskService.getTaskComments(taskId);
+  const createTaskComment = async (taskId: string, content: string) => {
+    await taskService.createTaskComment(taskId, content);
+  };
+  const createSubtask = async (parentTaskId: string, title: string) => {
+    const created = await taskService.createSubtask(parentTaskId, title);
+    if (created) await dispatch(invalidateAndRefetchFullContext());
+  };
+  const updateSubtaskStatus = async (subtaskId: string, completed: boolean) => {
+    const ok = await taskService.updateSubtaskStatus(subtaskId, completed);
+    if (ok) await dispatch(invalidateAndRefetchFullContext());
+  };
+  const deleteSubtask = async (subtaskId: string) => {
+    const ok = await taskService.deleteSubtask(subtaskId);
+    if (ok) await dispatch(invalidateAndRefetchFullContext());
+  };
 
   const [title, setTitle] = useState(task.title || "");
   const [description, setDescription] = useState(task.description || "");
@@ -100,6 +113,7 @@ export default function TaskDetailsPanel({
   const [isAddingSubtask, setIsAddingSubtask] = useState(false);
   const [isAddingComment, setIsAddingComment] = useState(false);
   const { id: currentUserId } = useAppSelector(selectUser);
+  const orgId = useAppSelector(selectOrganizationId);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [idCopied, setIdCopied] = useState(false);
@@ -169,7 +183,7 @@ export default function TaskDetailsPanel({
   };
 
   const handleToggleComplete = async () => {
-    await toggleTaskComplete(task.projectId, task.id);
+    await dispatch(toggleTaskCompleteThunk({ taskId: task.id }));
     await refresh();
   };
 
@@ -178,10 +192,9 @@ export default function TaskDetailsPanel({
 
     setIsDeleting(true);
     try {
-      // Create a fake event for the deleteTask function
-      const fakeEvent = { stopPropagation: () => {} } as React.MouseEvent;
-      await deleteTask(task.projectId, task.id, fakeEvent);
-      // Close the panel after successful deletion
+      await dispatch(
+        deleteTaskThunk({ taskId: task.id, projectId: task.projectId }),
+      );
       onClose();
     } catch (error) {
       console.error("Error deleting task:", error);
@@ -195,21 +208,37 @@ export default function TaskDetailsPanel({
 
     setIsSaving(true);
     try {
-      // Save all changes
       if (title !== task.title) {
-        await updateTaskTitle(task.projectId, task.id, title);
+        await dispatch(
+          updateTaskFieldThunk({ taskId: task.id, patch: { title } }),
+        );
       }
       if (description !== task.description) {
-        await updateTaskDescription(task.projectId, task.id, description);
+        await dispatch(
+          updateTaskFieldThunk({ taskId: task.id, patch: { description } }),
+        );
       }
       if (dueDate !== task.dueDate) {
-        await updateTaskDueDate(task.projectId, task.id, dueDate);
+        await dispatch(
+          updateTaskFieldThunk({
+            taskId: task.id,
+            patch: { due_date: dueDate || null },
+          }),
+        );
       }
       if (projectId !== task.projectId) {
-        await updateTaskProject(task.id, projectId);
+        await dispatch(
+          moveTaskThunk({
+            taskId: task.id,
+            fromProjectId: task.projectId,
+            toProjectId: projectId,
+          }),
+        );
       }
       if (priority !== task.priority) {
-        await taskService.updateTask(task.id, { priority });
+        await dispatch(
+          updateTaskFieldThunk({ taskId: task.id, patch: { priority } }),
+        );
       }
       const prevLabels: TaskLabel[] =
         (task.settings?.labels as TaskLabel[]) || [];
@@ -499,6 +528,20 @@ export default function TaskDetailsPanel({
             requireProject
           />
         </div>
+
+        {/* Scopes — tag this task with scope values for filtering / context */}
+        {orgId && (
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-gray-600 dark:text-gray-400">
+              Scopes
+            </label>
+            <ScopePicker
+              entityType="task"
+              entityId={task.id}
+              orgId={orgId}
+            />
+          </div>
+        )}
 
         {/* Priority */}
         <div>

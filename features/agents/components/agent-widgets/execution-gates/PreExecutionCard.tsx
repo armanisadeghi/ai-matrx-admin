@@ -6,7 +6,7 @@ import { selectPreExecutionMessage } from "@/features/agents/redux/execution-sys
 import { selectInstanceAgentName } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { selectHasUserInput } from "@/features/agents/redux/execution-system/instance-user-input/instance-user-input.selectors";
 import { setPreExecutionSatisfied } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.slice";
-import { destroyInstanceIfAllowed } from "@/features/agents/redux/execution-system/execution-instances";
+import { destroyInstanceIfAllowed } from "@/features/agents/redux/execution-system/conversations";
 import { SmartAgentInput } from "../../inputs/smart-input/SmartAgentInput";
 import { cn } from "@/lib/utils";
 

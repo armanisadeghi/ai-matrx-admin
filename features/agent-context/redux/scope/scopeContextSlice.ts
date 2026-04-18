@@ -15,6 +15,11 @@ const initialState: ScopeContextState = {
   error: null,
 };
 
+/** Stable selector fallbacks when context is null — never mutate. */
+export const EMPTY_SCOPE_CONTEXT_LABELS: Record<string, string> = {};
+export const EMPTY_SCOPE_CONTEXT_VARIABLES: ResolvedScopeContext["variables"] =
+  {};
+
 export const resolveContext = createAsyncThunk(
   "scopeContext/resolve",
   async (params: {
@@ -73,12 +78,12 @@ export const selectScopeContextError = (state: StateWithScopeContext) =>
 
 export const selectScopeLabels = createSelector(
   [selectResolvedContext],
-  (ctx) => ctx?.scope_labels ?? {},
+  (ctx) => ctx?.scope_labels ?? EMPTY_SCOPE_CONTEXT_LABELS,
 );
 
 export const selectContextVariables = createSelector(
   [selectResolvedContext],
-  (ctx) => ctx?.variables ?? {},
+  (ctx) => ctx?.variables ?? EMPTY_SCOPE_CONTEXT_VARIABLES,
 );
 
 export const selectContextVariable = createSelector(

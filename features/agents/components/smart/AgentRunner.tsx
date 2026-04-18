@@ -28,7 +28,7 @@ import {
   selectShowVariablePanel,
 } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { selectInstanceDisplayTitle } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
-import { selectInstanceStatus } from "@/features/agents/redux/execution-system/execution-instances/execution-instances.selectors";
+import { selectInstanceStatus } from "@/features/agents/redux/execution-system/conversations/conversations.selectors";
 import {
   selectIsExecuting,
   selectConversationMode,

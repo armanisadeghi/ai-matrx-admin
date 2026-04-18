@@ -12,7 +12,7 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { InstanceContextEntry } from "@/features/agents/types/instance.types";
 import type { ContextObjectType } from "@/features/agents/types/agent-api-types";
-import { destroyInstance } from "../execution-instances/execution-instances.slice";
+import { destroyInstance } from "../conversations/conversations.slice";
 
 // =============================================================================
 // State

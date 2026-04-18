@@ -21,7 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { WindowPanel } from "../WindowPanel";
 import { StreamDebugPanel } from "@/features/agents/components/debug/StreamDebugPanel";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectInstanceStatus } from "@/features/agents/redux/execution-system/execution-instances/execution-instances.selectors";
+import { selectInstanceStatus } from "@/features/agents/redux/execution-system/conversations/conversations.selectors";
 import { cn } from "@/lib/utils";
 
 // ─── Copy helper ──────────────────────────────────────────────────────────────

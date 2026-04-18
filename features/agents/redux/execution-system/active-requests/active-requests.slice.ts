@@ -49,7 +49,7 @@ import type {
   UntypedDataPayload,
 } from "@/types/python-generated/stream-events";
 import { generateRequestId } from "../utils";
-import { destroyInstance } from "../execution-instances/execution-instances.slice";
+import { destroyInstance } from "../conversations/conversations.slice";
 
 // =============================================================================
 // State

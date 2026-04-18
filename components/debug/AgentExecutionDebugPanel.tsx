@@ -25,7 +25,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import {
   selectInstance,
   selectInstanceStatus,
-} from "@/features/agents/redux/execution-system/execution-instances/execution-instances.selectors";
+} from "@/features/agents/redux/execution-system/conversations/conversations.selectors";
 
 // Conversation history
 import {
@@ -36,7 +36,7 @@ import {
   selectHasConversationHistory,
   selectLatestCompletionStats,
   selectAggregateStats,
-} from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.selectors";
+} from "@/features/agents/redux/execution-system/messages/messages.selectors";
 
 // User input
 import {

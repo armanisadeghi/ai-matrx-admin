@@ -63,7 +63,7 @@ import {
   setCompletion,
   updateExtractedJson,
 } from "../active-requests/active-requests.slice";
-import { confirmServerSync } from "../execution-instances/execution-instances.slice";
+import { confirmServerSync } from "../conversations/conversations.slice";
 import { assertConversationIdMatches } from "../utils/assert-conversation-id";
 import { StreamingJsonTracker } from "@/utils/json/streaming-json-tracker";
 import { StreamBlockAccumulator } from "../utils/stream-block-accumulator";
@@ -72,11 +72,11 @@ import {
   commitAssistantTurn,
   attachClientMetrics,
   setConversationLabel,
-} from "../instance-conversation-history/instance-conversation-history.slice";
+} from "../messages/messages.slice";
 import { clearUserInput } from "../instance-user-input/instance-user-input.slice";
 import { clearAllResources } from "../instance-resources/instance-resources.slice";
 import { resetUserVariableValues } from "../instance-variable-values/instance-variable-values.slice";
-import { setInstanceStatus } from "../execution-instances";
+import { setInstanceStatus } from "../conversations";
 import {
   patchAgentConversationMetadata,
   upsertAgentConversationFromExecutionAction,

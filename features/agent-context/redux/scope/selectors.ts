@@ -9,6 +9,7 @@ import { selectAllScopes } from "./scopesSlice";
 import { selectAllScopeTypes, selectScopeTypesByOrg } from "./scopeTypesSlice";
 import type {
   EntityScopeLabel,
+  ScopeAssignment,
   SidebarScopeSection,
   ScopePickerOption,
   Scope,
@@ -19,6 +20,8 @@ import type {
 export const EMPTY_SCOPE_PICKER_OPTIONS: ScopePickerOption[] = [];
 export const EMPTY_SCOPE_TYPES_LIST: ScopeType[] = [];
 export const EMPTY_SCOPES_LIST: Scope[] = [];
+/** Stable empty result for scope–entity matching selectors — never mutate. */
+export const EMPTY_MATCHING_ENTITY_IDS: string[] = [];
 const EMPTY_SCOPE_TYPES_BY_ORG: Record<string, ScopeType[]> = {};
 const EMPTY_SCOPES_BY_ORG: Record<string, Scope[]> = {};
 
@@ -98,6 +101,35 @@ export const selectOrgSidebarStructure = createSelector(
   },
 );
 
+/**
+ * Pure helper shared by {@link selectEntityIdsByScopes} and task scope filtering.
+ * When `scopeIds` is empty, returns {@link EMPTY_MATCHING_ENTITY_IDS} (stable ref).
+ */
+export function computeMatchingEntityIdsFromAssignments(
+  assignments: readonly ScopeAssignment[],
+  entityType: string,
+  scopeIds: readonly string[],
+  matchAll: boolean,
+): string[] {
+  if (scopeIds.length === 0) return EMPTY_MATCHING_ENTITY_IDS;
+  const entityAssignments = assignments.filter(
+    (a) => a.entity_type === entityType,
+  );
+  const map = new Map<string, Set<string>>();
+  for (const a of entityAssignments) {
+    if (!map.has(a.entity_id)) map.set(a.entity_id, new Set());
+    map.get(a.entity_id)!.add(a.scope_id);
+  }
+  const matching: string[] = [];
+  map.forEach((scopeSet, entityId) => {
+    const hit = matchAll
+      ? scopeIds.every((id) => scopeSet.has(id))
+      : scopeIds.some((id) => scopeSet.has(id));
+    if (hit) matching.push(entityId);
+  });
+  return matching;
+}
+
 export const selectScopePickerOptions = createSelector(
   [
     (state: ScopeRootState, orgId: string) =>
@@ -105,6 +137,7 @@ export const selectScopePickerOptions = createSelector(
     (state: ScopeRootState) => selectAllScopes(state),
   ],
   (types, allScopes): ScopePickerOption[] => {
+    if (types.length === 0) return EMPTY_SCOPE_PICKER_OPTIONS;
     return types.map((type) => ({
       type_id: type.id,
       label: type.label_plural,
@@ -188,4 +221,35 @@ export const selectProjectsByScopes = createSelector(
 
     return matchingProjectIds;
   },
+);
+
+/**
+ * Generic: find entity ids of a given type whose scope assignments match the
+ * given scope ids (intersection when matchAll=true, union when false).
+ * Works for any entity type registered with the scope system ('task',
+ * 'project', 'conversation', etc.).
+ */
+export const selectEntityIdsByScopes = createSelector(
+  [
+    selectAllAssignments,
+    (_state: ScopeRootState, entityType: string) => entityType,
+    (
+      _state: ScopeRootState,
+      _entityType: string,
+      scopeIds: readonly string[],
+    ) => scopeIds,
+    (
+      _state: ScopeRootState,
+      _entityType: string,
+      _scopeIds: readonly string[],
+      matchAll: boolean,
+    ) => matchAll,
+  ],
+  (assignments, entityType, scopeIds, matchAll): string[] =>
+    computeMatchingEntityIdsFromAssignments(
+      assignments,
+      entityType,
+      scopeIds,
+      matchAll,
+    ),
 );

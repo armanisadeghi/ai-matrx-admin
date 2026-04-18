@@ -10,7 +10,7 @@
  *   - Loading + error state for the list
  *
  * It does NOT own individual message data — that lives in
- * instanceConversationHistory (features/agents/redux/execution-system).
+ * messages (features/agents/redux/execution-system).
  */
 
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";

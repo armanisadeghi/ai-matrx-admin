@@ -18,14 +18,14 @@ export function buildAgentConversationListItemFromExecution(
   /** Version-scoped caches to update (in addition to the `::all` list). */
   alsoTouchVersionFilters: number[];
 } | null {
-  const instance = state.executionInstances.byConversationId[instanceId];
+  const instance = state.conversations.byConversationId[instanceId];
   if (!instance) return null;
 
   const agent = state.agentDefinition.agents?.[instance.agentId];
   const canonicalAgentId =
     agent?.parentAgentId ?? agent?.id ?? instance.agentId;
 
-  const hist = state.instanceConversationHistory.byConversationId[instanceId];
+  const hist = state.messages.byConversationId[instanceId];
   const now = new Date().toISOString();
 
   const alsoTouchVersionFilters: number[] =

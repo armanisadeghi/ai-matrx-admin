@@ -9,7 +9,7 @@
  *
  * Data resolution priority:
  *   1. requestId → activeRequests (live streaming or recently committed)
- *   2. turnId → instanceConversationHistory (DB-loaded or committed fallback)
+ *   2. turnId → messages (DB-loaded or committed fallback)
  *
  * For the streaming turn: requestId is set, turnId is null.
  * For committed turns:    requestId may be set (if ActiveRequest still in store),
@@ -30,7 +30,7 @@ import {
   selectRequestStatus,
   selectAllRenderBlocks,
 } from "@/features/agents/redux/execution-system/active-requests/active-requests.selectors";
-import { selectTurnByTurnId } from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.selectors";
+import { selectTurnByTurnId } from "@/features/agents/redux/execution-system/messages/messages.selectors";
 import { AgentToolDisplay } from "./AgentToolDisplay";
 import type { RenderBlockPayload } from "@/types/python-generated/stream-events";
 

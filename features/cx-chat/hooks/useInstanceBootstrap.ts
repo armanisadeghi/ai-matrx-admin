@@ -145,7 +145,7 @@ export function useInstanceBootstrap() {
       if (urlInstanceId) {
         const stillAlive = await dispatch(
           (_: unknown, getState: () => RootState) =>
-            !!getState().executionInstances.byConversationId[urlInstanceId],
+            !!getState().conversations.byConversationId[urlInstanceId],
         );
         if (stillAlive) resolvedId = urlInstanceId;
       }
@@ -156,7 +156,7 @@ export function useInstanceBootstrap() {
         if (cached) {
           const stillAlive = await dispatch(
             (_: unknown, getState: () => RootState) =>
-              !!getState().executionInstances.byConversationId[cached],
+              !!getState().conversations.byConversationId[cached],
           );
           if (stillAlive) resolvedId = cached;
         }

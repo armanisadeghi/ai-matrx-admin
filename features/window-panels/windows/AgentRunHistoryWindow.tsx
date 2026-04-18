@@ -352,7 +352,7 @@ function AgentRunHistoryWindowInner({
 
       if (!agentId) return;
 
-      const exists = !!(store.getState() as RootState).executionInstances
+      const exists = !!(store.getState() as RootState).conversations
         ?.byConversationId?.[conversationId];
 
       if (!exists) {

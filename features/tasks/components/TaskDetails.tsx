@@ -3,7 +3,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { Paperclip, X, Loader2, Maximize2, ExternalLink, Download } from 'lucide-react';
-import { useTaskContext } from '@/features/tasks/context/TaskContext';
+import { useAppDispatch } from '@/lib/redux/hooks';
+import { updateTaskFieldThunk } from '@/features/tasks/redux';
 import { useDebounce } from '../hooks/useDebounce';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -13,11 +14,7 @@ import { FileUploadWithStorage } from '@/components/ui/file-upload/FileUploadWit
 type AttachmentType = string | { name: string; url: string; size: number; type: string };
 
 export default function TaskDetails({ task }: { task: any }) {
-  const { 
-    updateTaskDescription, 
-    updateTaskDueDate, 
-    removeAttachment 
-  } = useTaskContext();
+  const dispatch = useAppDispatch();
 
   // Local state for editing
   const [description, setDescription] = useState(task.description || '');
@@ -70,23 +67,29 @@ export default function TaskDetails({ task }: { task: any }) {
     document.body.removeChild(link);
   };
 
-  // Auto-save description when debounced value changes
   useEffect(() => {
     if (debouncedDescription !== task.description) {
       setIsSaving(true);
-      updateTaskDescription(task.projectId, task.id, debouncedDescription)
-        .finally(() => setIsSaving(false));
+      dispatch(
+        updateTaskFieldThunk({
+          taskId: task.id,
+          patch: { description: debouncedDescription },
+        }),
+      ).finally(() => setIsSaving(false));
     }
-  }, [debouncedDescription]);
+  }, [debouncedDescription, task.id, task.description, dispatch]);
 
-  // Auto-save due date when debounced value changes
   useEffect(() => {
     if (debouncedDueDate !== task.dueDate) {
       setIsSaving(true);
-      updateTaskDueDate(task.projectId, task.id, debouncedDueDate)
-        .finally(() => setIsSaving(false));
+      dispatch(
+        updateTaskFieldThunk({
+          taskId: task.id,
+          patch: { due_date: debouncedDueDate || null },
+        }),
+      ).finally(() => setIsSaving(false));
     }
-  }, [debouncedDueDate]);
+  }, [debouncedDueDate, task.id, task.dueDate, dispatch]);
 
   const detailsContent = (fullScreenMode = false) => (
     <div className={`space-y-3 ${!fullScreenMode ? 'mt-3 pl-6' : ''}`}>

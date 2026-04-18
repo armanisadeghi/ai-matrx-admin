@@ -44,7 +44,7 @@ import { setContextEntries } from "../instance-context/instance-context.slice";
 import { setUserInputText } from "../instance-user-input/instance-user-input.slice";
 import { setDisplayMode as setDisplayModeAction } from "../instance-ui-state/instance-ui-state.slice";
 import { selectRequest } from "../active-requests/active-requests.selectors";
-import { setInstanceStatus } from "../execution-instances/execution-instances.slice";
+import { setInstanceStatus } from "../conversations/conversations.slice";
 import {
   openOverlay,
   openAgentGateWindow,

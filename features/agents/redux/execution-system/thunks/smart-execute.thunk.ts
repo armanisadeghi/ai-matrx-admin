@@ -8,7 +8,7 @@ import { executeInstance } from "./execute-instance.thunk";
 import { executeChatInstance } from "./execute-chat-instance.thunk";
 import { startNewConversationAndExecute } from "./create-instance.thunk";
 import { abortConversation } from "./abort-registry";
-import { setInstanceStatus } from "../execution-instances";
+import { setInstanceStatus } from "../conversations";
 import { setRequestStatus } from "../active-requests/active-requests.slice";
 
 interface SmartExecuteArgs {

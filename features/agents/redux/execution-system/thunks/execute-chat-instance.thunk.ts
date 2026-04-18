@@ -22,9 +22,9 @@ import type {
   SystemInstruction,
 } from "@/features/agents/types/agent-api-types";
 import type { MessagePart } from "@/types/python-generated/stream-events";
-import type { ConversationTurn } from "../instance-conversation-history/instance-conversation-history.slice";
+import type { ConversationTurn } from "../messages/messages.slice";
 import { generateRequestId } from "../utils";
-import { setInstanceStatus } from "../execution-instances";
+import { setInstanceStatus } from "../conversations";
 import { selectSettingsForChatApi } from "../instance-model-overrides";
 import { selectResolvedVariables } from "../instance-variable-values";
 import { selectContextPayload } from "../instance-context";
@@ -38,10 +38,10 @@ import {
   createRequest,
   setRequestStatus,
 } from "../active-requests/active-requests.slice";
-import { addUserTurn } from "../instance-conversation-history/instance-conversation-history.slice";
+import { addUserTurn } from "../messages/messages.slice";
 import { processStream } from "./process-stream";
 import { ENDPOINTS } from "@/lib/api/endpoints";
-import { selectHasConversationHistory } from "../instance-conversation-history/instance-conversation-history.selectors";
+import { selectHasConversationHistory } from "../messages/messages.selectors";
 import {
   registerAbortController,
   unregisterAbortController,
@@ -124,7 +124,7 @@ export function assembleChatRequest(
   state: RootState,
   conversationId: string,
 ): Partial<ChatRequestPayload> | null {
-  const instance = state.executionInstances.byConversationId[conversationId];
+  const instance = state.conversations.byConversationId[conversationId];
   if (!instance) return null;
 
   const preExecState = state.instanceUIState.byConversationId[conversationId];
@@ -180,7 +180,7 @@ export function assembleChatRequest(
 
   // 2. Conversation history turns (already committed user + assistant turns)
   const historyEntry =
-    state.instanceConversationHistory.byConversationId[conversationId];
+    state.messages.byConversationId[conversationId];
   if (historyEntry?.turns && historyEntry.turns.length > 0) {
     messages.push(...turnsToMessages(historyEntry.turns));
   }
@@ -312,7 +312,7 @@ export const executeChatInstance = createAsyncThunk<
     try {
       const state = getState() as RootState;
       const instance =
-        state.executionInstances.byConversationId[conversationId];
+        state.conversations.byConversationId[conversationId];
 
       if (!instance) {
         throw new Error(`Instance ${conversationId} not found`);

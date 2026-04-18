@@ -41,7 +41,7 @@ import {
   selectAllConversationIds,
   selectConversationIdsByAgent,
   selectInstancesByAgent,
-} from "@/features/agents/redux/execution-system/execution-instances/execution-instances.selectors";
+} from "@/features/agents/redux/execution-system/conversations/conversations.selectors";
 
 // ─── Instance variable values selectors ───────────────────────────────────────
 import {
@@ -71,8 +71,8 @@ import {
   selectConversationMode,
   selectTurnCount,
   selectLoadedFromHistory,
-} from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.selectors";
-import type { ConversationTurn } from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.slice";
+} from "@/features/agents/redux/execution-system/messages/messages.selectors";
+import type { ConversationTurn } from "@/features/agents/redux/execution-system/messages/messages.slice";
 
 // ─── Tab definitions ──────────────────────────────────────────────────────────
 
@@ -385,7 +385,7 @@ function InstancesTab({
     <div className="flex flex-col h-full min-h-0">
       <div className="flex items-center gap-2 px-3 py-1.5 border-b border-border shrink-0">
         <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider flex-1">
-          executionInstances
+          conversations
         </span>
         <Badge label={`${allInstances.length} total`} />
       </div>
@@ -631,7 +631,7 @@ function HistoryTab({ conversationId }: { conversationId: string | null }) {
     <div className="flex flex-col h-full min-h-0">
       <div className="flex items-center gap-2 px-3 py-1.5 border-b border-border shrink-0">
         <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider flex-1">
-          instanceConversationHistory
+          messages
         </span>
         <Badge label={`mode: ${mode}`} variant="info" />
         <Badge label={`${turnCount} turns`} />

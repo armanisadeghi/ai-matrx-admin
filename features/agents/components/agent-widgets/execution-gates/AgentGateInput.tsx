@@ -7,7 +7,7 @@ import {
   selectInstanceAgentName,
 } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { setPreExecutionSatisfied } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.slice";
-import { destroyInstanceIfAllowed } from "@/features/agents/redux/execution-system/execution-instances";
+import { destroyInstanceIfAllowed } from "@/features/agents/redux/execution-system/conversations";
 import { closeOverlay, openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { SmartAgentInput } from "../../inputs/smart-input/SmartAgentInput";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";

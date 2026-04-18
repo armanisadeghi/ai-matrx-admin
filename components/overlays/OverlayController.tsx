@@ -39,7 +39,7 @@ import {
   removeToast,
 } from "@/lib/redux/slices/promptRunnerSlice";
 import { selectPrimaryResponseTextByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
-import { destroyInstance } from "@/features/agents/redux/execution-system/execution-instances/execution-instances.slice";
+import { destroyInstance } from "@/features/agents/redux/execution-system/conversations/conversations.slice";
 import dynamic from "next/dynamic";
 import type { ResourceType } from "@/utils/permissions";
 import { updateOverlayData } from "@/lib/redux/slices/overlayDataSlice";

@@ -26,7 +26,7 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { destroyInstanceIfAllowed } from "@/features/agents/redux/execution-system/execution-instances";
+import { destroyInstanceIfAllowed } from "@/features/agents/redux/execution-system/conversations";
 import {
   setFocus,
   selectFocusedConversation,

@@ -4,7 +4,9 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, Check, X, ExternalLink } from "lucide-react";
-import IconResolver, { getIconComponent } from "@/components/official/IconResolver";
+import IconResolver, {
+  isRegisteredOrLucideIconName,
+} from "@/components/official/IconResolver";
 import { cn } from "@/lib/utils";
 
 interface IconInputWithValidationProps {
@@ -28,9 +30,9 @@ type ValidationState = "idle" | "validating" | "valid" | "invalid";
 
 /**
  * IconInputWithValidation - Official Component
- * 
+ *
  * All-in-one icon name input with validation and preview.
- * 
+ *
  * Features:
  * - Real-time icon validation
  * - Visual feedback (green check / red X)
@@ -38,7 +40,7 @@ type ValidationState = "idle" | "validating" | "valid" | "invalid";
  * - Auto-capitalizes first letter for better UX
  * - Link to Lucide icons reference
  * - Seamless integration - replaces standard Input
- * 
+ *
  * @example
  * ```tsx
  * <IconInputWithValidation
@@ -57,69 +59,63 @@ export default function IconInputWithValidation({
   disabled = false,
   showLucideLink = true,
 }: IconInputWithValidationProps) {
-  const [validationState, setValidationState] = useState<ValidationState>("idle");
-  const [validatedIconName, setValidatedIconName] = useState<string | null>(null);
+  const [validationState, setValidationState] =
+    useState<ValidationState>("idle");
+  const [validatedIconName, setValidatedIconName] = useState<string | null>(
+    null,
+  );
   const [lastValidatedValue, setLastValidatedValue] = useState<string>("");
 
   /**
    * Validates an icon name by attempting to load it dynamically
    */
-  const validateIcon = useCallback(async (iconName: string) => {
-    if (!iconName || iconName.trim() === "") {
-      setValidationState("idle");
-      setValidatedIconName(null);
-      return;
-    }
-
-    setValidationState("validating");
-
-    // Helper to check if icon exists
-    const checkIcon = async (name: string): Promise<boolean> => {
-      try {
-        // First check static/cached icons (instant)
-        const staticIcon = getIconComponent(name);
-        if (staticIcon) {
-          return true;
-        }
-
-        // Try dynamic import for other Lucide icons
-        const iconModule = await import("lucide-react");
-        return Boolean(iconModule[name as keyof typeof iconModule]);
-      } catch {
-        return false;
-      }
-    };
-
-    // Try the icon name as-is
-    const isValid = await checkIcon(iconName);
-
-    if (isValid) {
-      setValidationState("valid");
-      setValidatedIconName(iconName);
-      setLastValidatedValue(iconName);
-      return;
-    }
-
-    // If failed and first letter is lowercase, try capitalizing
-    if (iconName[0] === iconName[0].toLowerCase()) {
-      const capitalized = iconName.charAt(0).toUpperCase() + iconName.slice(1);
-      const isCapitalizedValid = await checkIcon(capitalized);
-
-      if (isCapitalizedValid) {
-        setValidationState("valid");
-        setValidatedIconName(capitalized);
-        setLastValidatedValue(capitalized);
-        // Auto-update the value with capitalized version
-        onChange(capitalized);
+  const validateIcon = useCallback(
+    async (iconName: string) => {
+      if (!iconName || iconName.trim() === "") {
+        setValidationState("idle");
+        setValidatedIconName(null);
         return;
       }
-    }
 
-    // Icon not found
-    setValidationState("invalid");
-    setValidatedIconName(null);
-    setLastValidatedValue(iconName);
-  }, [onChange]);
+      setValidationState("validating");
+
+      // Must not use getIconComponent() — it always returns a component (fallback Zap), so it
+      // would mark every non-empty string as "valid". Only real registry / Lucide names pass.
+      const checkIcon = (name: string) => isRegisteredOrLucideIconName(name);
+
+      // Try the icon name as-is
+      const isValid = await checkIcon(iconName);
+
+      if (isValid) {
+        setValidationState("valid");
+        setValidatedIconName(iconName);
+        setLastValidatedValue(iconName);
+        return;
+      }
+
+      // If failed and first letter is lowercase, try capitalizing
+      if (iconName[0] === iconName[0].toLowerCase()) {
+        const capitalized =
+          iconName.charAt(0).toUpperCase() + iconName.slice(1);
+        const isCapitalizedValid = await checkIcon(capitalized);
+
+        if (isCapitalizedValid) {
+          setValidationState("valid");
+          setValidatedIconName(capitalized);
+          setLastValidatedValue(capitalized);
+          // Auto-update the value with capitalized version
+          onChange(capitalized);
+          return;
+        }
+      }
+
+      // Icon not found
+      setValidationState("invalid");
+      setValidatedIconName(null);
+      setLastValidatedValue(iconName);
+    },
+    [onChange],
+  );
 
   // Auto-validate when value changes externally (e.g., form load)
   useEffect(() => {
@@ -141,7 +137,7 @@ export default function IconInputWithValidation({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     onChange(newValue);
-    
+
     // Reset validation state when user types
     if (validationState !== "idle") {
       setValidationState("idle");
@@ -227,7 +223,8 @@ export default function IconInputWithValidation({
       )}
       {validationState === "valid" && validatedIconName !== value && (
         <p className="text-xs text-green-600 dark:text-green-400">
-          Auto-corrected to: <code className="font-mono">{validatedIconName}</code>
+          Auto-corrected to:{" "}
+          <code className="font-mono">{validatedIconName}</code>
         </p>
       )}
     </div>
@@ -244,7 +241,7 @@ export function IconInputCompact({
   className,
   id,
   disabled = false,
-}: Omit<IconInputWithValidationProps, 'showLucideLink'>) {
+}: Omit<IconInputWithValidationProps, "showLucideLink">) {
   return (
     <IconInputWithValidation
       value={value}
@@ -257,4 +254,3 @@ export function IconInputCompact({
     />
   );
 }
-

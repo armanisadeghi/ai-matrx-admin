@@ -1,21 +1,25 @@
 // Task Item Component
 import React from 'react';
 import { CheckCircle, Circle, ChevronDown, ChevronUp, Copy, Paperclip, Trash2, Calendar, Loader2 } from 'lucide-react';
-import { useTaskContext } from '@/features/tasks/context/TaskContext';
+import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
+import {
+  selectShowAllProjects,
+  selectExpandedTasks,
+  selectOperatingTaskId,
+  toggleTaskCompleteThunk,
+  updateTaskFieldThunk,
+  deleteTaskThunk,
+  toggleTaskExpand,
+} from '@/features/tasks/redux';
 import TaskDetails from './TaskDetails';
 import EditableTaskTitle from './EditableTaskTitle';
+import { ScopeTagsDisplay } from '@/features/agent-context/components/ScopeTagsDisplay';
 
 export default function TaskItem({ task, depth = 0 }: { task: any; depth?: number }) {
-  const { 
-    showAllProjects,
-    expandedTasks,
-    operatingTaskId,
-    toggleTaskComplete,
-    toggleTaskExpand,
-    updateTaskTitle,
-    deleteTask,
-    copyTaskToClipboard
-  } = useTaskContext();
+  const dispatch = useAppDispatch();
+  const showAllProjects = useAppSelector(selectShowAllProjects);
+  const expandedTasks = useAppSelector(selectExpandedTasks);
+  const operatingTaskId = useAppSelector(selectOperatingTaskId);
 
   const isOperating = operatingTaskId === task.id;
 
@@ -23,7 +27,19 @@ export default function TaskItem({ task, depth = 0 }: { task: any; depth?: numbe
   const isExpanded = expandedTasks.includes(task.id);
 
   const handleSaveTitle = async (newTitle: string) => {
-    await updateTaskTitle(task.projectId, task.id, newTitle);
+    await dispatch(updateTaskFieldThunk({ taskId: task.id, patch: { title: newTitle } }));
+  };
+
+  const handleCopyTask = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const text = `${task.title}${task.description ? `\n${task.description}` : ""}${
+      task.dueDate ? `\nDue: ${task.dueDate}` : ""
+    }`;
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      /* ignore */
+    }
   };
 
   const handleCardClick = (e: React.MouseEvent) => {
@@ -37,7 +53,7 @@ export default function TaskItem({ task, depth = 0 }: { task: any; depth?: numbe
     ) {
       return;
     }
-    toggleTaskExpand(task.id);
+    dispatch(toggleTaskExpand(task.id));
   };
 
   return (
@@ -56,7 +72,7 @@ export default function TaskItem({ task, depth = 0 }: { task: any; depth?: numbe
           <button
             onClick={(e) => {
               e.stopPropagation();
-              toggleTaskComplete(task.projectId, task.id);
+              dispatch(toggleTaskCompleteThunk({ taskId: task.id }));
             }}
             className="mt-0.5 text-muted-foreground hover:text-primary transition-colors flex-shrink-0"
           >
@@ -79,7 +95,7 @@ export default function TaskItem({ task, depth = 0 }: { task: any; depth?: numbe
                 title={task.title}
                 completed={task.completed}
                 onSave={handleSaveTitle}
-                onToggleComplete={() => toggleTaskComplete(task.projectId, task.id)}
+                onToggleComplete={() => dispatch(toggleTaskCompleteThunk({ taskId: task.id }))}
               />
             </div>
             
@@ -103,6 +119,11 @@ export default function TaskItem({ task, depth = 0 }: { task: any; depth?: numbe
                 )}
               </div>
             )}
+            <ScopeTagsDisplay
+              entityType="task"
+              entityId={task.id}
+              className="mt-1.5"
+            />
           </div>
           
           {/* Action buttons */}
@@ -110,7 +131,7 @@ export default function TaskItem({ task, depth = 0 }: { task: any; depth?: numbe
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                copyTaskToClipboard(task, e);
+                handleCopyTask(e);
               }}
               disabled={isOperating}
               className="p-1 text-muted-foreground hover:text-primary rounded hover:bg-muted transition-colors disabled:cursor-not-allowed disabled:opacity-50"
@@ -121,7 +142,8 @@ export default function TaskItem({ task, depth = 0 }: { task: any; depth?: numbe
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                deleteTask(task.projectId, task.id, e);
+                e.stopPropagation();
+                dispatch(deleteTaskThunk({ taskId: task.id, projectId: task.projectId }));
               }}
               disabled={isOperating}
               className="p-1 text-muted-foreground hover:text-destructive rounded hover:bg-muted transition-colors disabled:cursor-not-allowed disabled:opacity-50"
@@ -132,7 +154,7 @@ export default function TaskItem({ task, depth = 0 }: { task: any; depth?: numbe
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                toggleTaskExpand(task.id);
+                dispatch(toggleTaskExpand(task.id));
               }}
               disabled={isOperating}
               className="p-1 text-muted-foreground hover:text-primary rounded hover:bg-muted transition-colors disabled:cursor-not-allowed disabled:opacity-50"
@@ -161,12 +183,8 @@ export default function TaskItem({ task, depth = 0 }: { task: any; depth?: numbe
 
 // Subtask component - simplified version for nested display
 function SubtaskItem({ subtask, parentTaskId }: { subtask: any; parentTaskId: string }) {
-  const { 
-    operatingTaskId,
-    toggleTaskComplete,
-    updateTaskTitle,
-    deleteTask,
-  } = useTaskContext();
+  const dispatch = useAppDispatch();
+  const operatingTaskId = useAppSelector(selectOperatingTaskId);
 
   const isOperating = operatingTaskId === subtask.id;
 
@@ -186,7 +204,7 @@ function SubtaskItem({ subtask, parentTaskId }: { subtask: any; parentTaskId: st
   };
 
   const handleSaveTitle = async (newTitle: string) => {
-    await updateTaskTitle(parentTaskId, subtask.id, newTitle);
+    await dispatch(updateTaskFieldThunk({ taskId: subtask.id, patch: { title: newTitle } }));
   };
 
   return (
@@ -205,7 +223,7 @@ function SubtaskItem({ subtask, parentTaskId }: { subtask: any; parentTaskId: st
           <button
             onClick={(e) => {
               e.stopPropagation();
-              toggleTaskComplete(parentTaskId, subtask.id);
+              dispatch(toggleTaskCompleteThunk({ taskId: subtask.id }));
             }}
             className="mt-0.5 text-muted-foreground hover:text-primary transition-colors flex-shrink-0"
           >
@@ -222,7 +240,7 @@ function SubtaskItem({ subtask, parentTaskId }: { subtask: any; parentTaskId: st
                 title={subtask.title}
                 completed={subtask.completed}
                 onSave={handleSaveTitle}
-                onToggleComplete={() => toggleTaskComplete(parentTaskId, subtask.id)}
+                onToggleComplete={() => dispatch(toggleTaskCompleteThunk({ taskId: subtask.id }))}
               />
             </div>
             
@@ -245,7 +263,8 @@ function SubtaskItem({ subtask, parentTaskId }: { subtask: any; parentTaskId: st
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                deleteTask(parentTaskId, subtask.id, e);
+                e.stopPropagation();
+                dispatch(deleteTaskThunk({ taskId: subtask.id, projectId: parentTaskId }));
               }}
               disabled={isOperating}
               className="p-1 text-muted-foreground hover:text-destructive rounded hover:bg-accent transition-colors disabled:cursor-not-allowed disabled:opacity-50"

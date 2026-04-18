@@ -3,7 +3,8 @@ import type { RootState } from "@/lib/redux/store";
 import type {
   ConversationTurn,
   ConversationMode,
-} from "./instance-conversation-history.slice";
+  MessageRecord,
+} from "./messages.slice";
 import type { CompletionStats } from "@/features/agents/types/instance.types";
 import type { ClientMetrics } from "@/features/agents/types/request.types";
 import type {
@@ -18,50 +19,121 @@ import type {
 } from "@/types/python-generated/stream-events";
 
 const EMPTY_TURNS: ConversationTurn[] = [];
+const EMPTY_MESSAGE_RECORDS: MessageRecord[] = [];
+const EMPTY_IDS: string[] = [];
 
 export const selectConversationTurns =
   (conversationId: string) =>
   (state: RootState): ConversationTurn[] =>
-    state.instanceConversationHistory.byConversationId[conversationId]?.turns ??
+    state.messages.byConversationId[conversationId]?.turns ??
     EMPTY_TURNS;
+
+// ---------------------------------------------------------------------------
+// DB-faithful selectors (Phase 1.3)
+// ---------------------------------------------------------------------------
+
+/** Raw MessageRecord list (DB-shaped), ordered by `position`. */
+export const selectMessageRecords = (conversationId: string) =>
+  createSelector(
+    (state: RootState) =>
+      state.messages.byConversationId[conversationId]?.orderedIds,
+    (state: RootState) =>
+      state.messages.byConversationId[conversationId]?.byId,
+    (orderedIds, byId): MessageRecord[] => {
+      if (!orderedIds || !byId || orderedIds.length === 0)
+        return EMPTY_MESSAGE_RECORDS;
+      const out: MessageRecord[] = [];
+      for (const id of orderedIds) {
+        const rec = byId[id];
+        if (rec) out.push(rec);
+      }
+      return out.length === 0 ? EMPTY_MESSAGE_RECORDS : out;
+    },
+  );
+
+export const selectOrderedMessageIds =
+  (conversationId: string) =>
+  (state: RootState): string[] =>
+    state.messages.byConversationId[conversationId]?.orderedIds ?? EMPTY_IDS;
+
+export const selectMessageById =
+  (conversationId: string, messageId: string) =>
+  (state: RootState): MessageRecord | undefined =>
+    state.messages.byConversationId[conversationId]?.byId?.[messageId];
+
+/**
+ * `selectDisplayMessages` — the bridge between DB-faithful storage and the
+ * legacy `ConversationTurn` display shape.
+ *
+ * During the migration window this delegates to `turns[]` (the current render
+ * path), because consumers read flat `turn.content` strings, `messageParts`,
+ * `renderBlocks`, etc. Once the UI migrates to read `MessageRecord.content`
+ * (CxContentBlock[]) directly, the implementation flips to produce its result
+ * from `byId + orderedIds` instead. The selector's *contract* — a stable,
+ * ordered list suitable for rendering — does not change.
+ *
+ * Honors `display.showSubAgents`: when `false` (and sub-agent turns are
+ * tagged via `messageMetadata.isSubAgent === true` on the turn or
+ * `metadata.isSubAgent === true` on the record), those turns are filtered
+ * out. Data still lives in the slice — this is rendering only, no loss.
+ */
+export const selectDisplayMessages = (conversationId: string) =>
+  createSelector(
+    (state: RootState) =>
+      state.messages.byConversationId[conversationId]?.turns ?? EMPTY_TURNS,
+    (state: RootState) =>
+      state.instanceUIState?.byConversationId?.[conversationId]
+        ?.showSubAgents ??
+      true,
+    (turns, showSubAgents): ConversationTurn[] => {
+      if (showSubAgents) return turns;
+      const filtered = turns.filter((t) => {
+        const meta =
+          (t.messageMetadata as { isSubAgent?: boolean } | undefined) ??
+          undefined;
+        return meta?.isSubAgent !== true;
+      });
+      return filtered.length === 0 ? EMPTY_TURNS : filtered;
+    },
+  );
 
 /** Look up a single turn by turnId within a conversation. */
 export const selectTurnByTurnId =
   (conversationId: string, turnId: string) =>
   (state: RootState): ConversationTurn | undefined =>
-    state.instanceConversationHistory.byConversationId[
+    state.messages.byConversationId[
       conversationId
     ]?.turns.find((t) => t.turnId === turnId);
 
 export const selectConversationMode =
   (conversationId: string) =>
   (state: RootState): ConversationMode =>
-    state.instanceConversationHistory.byConversationId[conversationId]?.mode ??
+    state.messages.byConversationId[conversationId]?.mode ??
     "agent";
 
 export const selectStoredConversationId =
   (conversationId: string) =>
   (state: RootState): string | null =>
-    state.instanceConversationHistory.byConversationId[conversationId]
+    state.messages.byConversationId[conversationId]
       ? conversationId
       : null;
 
 export const selectTurnCount =
   (conversationId: string) =>
   (state: RootState): number =>
-    state.instanceConversationHistory.byConversationId[conversationId]?.turns
+    state.messages.byConversationId[conversationId]?.turns
       .length ?? 0;
 
 export const selectHasConversationHistory =
   (conversationId: string) =>
   (state: RootState): boolean =>
-    (state.instanceConversationHistory.byConversationId[conversationId]?.turns
+    (state.messages.byConversationId[conversationId]?.turns
       .length ?? 0) > 0;
 
 export const selectLoadedFromHistory =
   (conversationId: string) =>
   (state: RootState): boolean =>
-    state.instanceConversationHistory.byConversationId[conversationId]
+    state.messages.byConversationId[conversationId]
       ?.loadedFromHistory ?? false;
 
 /**
@@ -72,7 +144,7 @@ export const selectLatestCompletionStats =
   (conversationId: string) =>
   (state: RootState): CompletionStats | undefined => {
     const turns =
-      state.instanceConversationHistory.byConversationId[conversationId]?.turns;
+      state.messages.byConversationId[conversationId]?.turns;
     if (!turns) return undefined;
     // Walk backwards to find the last assistant turn that has completionStats
     for (let i = turns.length - 1; i >= 0; i--) {
@@ -115,7 +187,7 @@ const EMPTY_AGGREGATE: AggregateStats = {
 export const selectAggregateStats = (conversationId: string) =>
   createSelector(
     (state: RootState) =>
-      state.instanceConversationHistory.byConversationId[conversationId]?.turns,
+      state.messages.byConversationId[conversationId]?.turns,
     (turns): AggregateStats => {
       if (!turns || turns.length === 0) return EMPTY_AGGREGATE;
 
@@ -170,7 +242,7 @@ export const selectLatestClientMetrics =
   (conversationId: string) =>
   (state: RootState): ClientMetrics | undefined => {
     const turns =
-      state.instanceConversationHistory.byConversationId[conversationId]?.turns;
+      state.messages.byConversationId[conversationId]?.turns;
     if (!turns) return undefined;
     for (let i = turns.length - 1; i >= 0; i--) {
       if (turns[i].role === "assistant" && turns[i].clientMetrics) {
@@ -213,7 +285,7 @@ const EMPTY_AGGREGATE_CLIENT: AggregateClientMetrics = {
 export const selectAggregateClientMetrics = (conversationId: string) =>
   createSelector(
     (state: RootState) =>
-      state.instanceConversationHistory.byConversationId[conversationId]?.turns,
+      state.messages.byConversationId[conversationId]?.turns,
     (turns): AggregateClientMetrics => {
       if (!turns || turns.length === 0) return EMPTY_AGGREGATE_CLIENT;
 
@@ -279,19 +351,19 @@ export const selectAggregateClientMetrics = (conversationId: string) =>
 export const selectConversationTitle =
   (conversationId: string) =>
   (state: RootState): string | null =>
-    state.instanceConversationHistory.byConversationId[conversationId]?.title ??
+    state.messages.byConversationId[conversationId]?.title ??
     null;
 
 export const selectConversationDescription =
   (conversationId: string) =>
   (state: RootState): string | null =>
-    state.instanceConversationHistory.byConversationId[conversationId]
+    state.messages.byConversationId[conversationId]
       ?.description ?? null;
 
 export const selectConversationKeywords =
   (conversationId: string) =>
   (state: RootState): string[] | null =>
-    state.instanceConversationHistory.byConversationId[conversationId]
+    state.messages.byConversationId[conversationId]
       ?.keywords ?? null;
 
 // =============================================================================
@@ -320,7 +392,7 @@ export const selectTurnInterleavedContent = (
 ) =>
   createSelector(
     (state: RootState) =>
-      state.instanceConversationHistory.byConversationId[conversationId]?.turns,
+      state.messages.byConversationId[conversationId]?.turns,
     (turns): ContentSegment[] => {
       if (!turns) return EMPTY_SEGMENTS;
 

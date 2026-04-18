@@ -18,7 +18,7 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { InstanceUserInputState } from "@/features/agents/types";
 import type { MessagePart } from "@/types/python-generated/stream-events";
-import { destroyInstance } from "../execution-instances/execution-instances.slice";
+import { destroyInstance } from "../conversations/conversations.slice";
 
 // =============================================================================
 // Undo types

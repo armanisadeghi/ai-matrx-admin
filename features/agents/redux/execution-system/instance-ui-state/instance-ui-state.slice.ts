@@ -19,7 +19,7 @@ import type {
   VariableInputStyle,
 } from "@/features/agents/types";
 import { DEFAULT_BUILDER_ADVANCED_SETTINGS } from "@/features/agents/types/instance.types";
-import { destroyInstance } from "../execution-instances/execution-instances.slice";
+import { destroyInstance } from "../conversations/conversations.slice";
 import { callbackManager } from "@/utils/callbackManager";
 
 // =============================================================================

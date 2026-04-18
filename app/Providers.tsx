@@ -16,7 +16,6 @@ import { PersistentComponentProvider } from "@/providers/persistance/PersistentC
 import { SelectedImagesProvider } from "@/components/image/context/SelectedImagesProvider";
 import { UniformHeightProvider } from "@/features/applet/runner/layouts/core/UniformHeightWrapper";
 import { ReactQueryProvider } from "@/providers/ReactQueryProvider";
-import { TaskProvider } from "@/features/tasks/context/TaskContext";
 import { TranscriptsProvider } from "@/features/transcripts/context/TranscriptsContext";
 import { AudioRecoveryProvider } from "@/features/audio/providers/AudioRecoveryProvider";
 import DeferredSingletons from "./DeferredSingletons";
@@ -78,14 +77,12 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                         <ModuleHeaderProvider>
                           <UniformHeightProvider>
                             <SelectedImagesProvider>
-                              <TaskProvider>
-                                <TranscriptsProvider>
-                                  <AudioRecoveryProvider>
-                                    {children}
-                                    <DeferredSingletons />
-                                  </AudioRecoveryProvider>
-                                </TranscriptsProvider>
-                              </TaskProvider>
+                              <TranscriptsProvider>
+                                <AudioRecoveryProvider>
+                                  {children}
+                                  <DeferredSingletons />
+                                </AudioRecoveryProvider>
+                              </TranscriptsProvider>
                             </SelectedImagesProvider>
                           </UniformHeightProvider>
                         </ModuleHeaderProvider>
