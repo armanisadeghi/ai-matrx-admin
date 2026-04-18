@@ -223,6 +223,18 @@ export const executeInstance = createAsyncThunk<
       const isContinuation =
         selectHasConversationHistory(conversationId)(state);
 
+      // Ephemeral turn 2+: delegate BEFORE we create an outer request or
+      // optimistic user turn — the inner executeChatInstance owns that work
+      // in the /ai/manual path. Short-circuit here so we don't leak a dead
+      // outer request entry into activeRequests.
+      const isEphemeral = instance.isEphemeral === true;
+      if (isEphemeral && isContinuation) {
+        const { executeChatInstance } = await import(
+          "./execute-chat-instance.thunk"
+        );
+        return dispatch(executeChatInstance({ conversationId })).unwrap();
+      }
+
       // Add the user's message to history immediately — before the API call fires.
       // Include resource payload parts so they display even before the DB round-trip.
       // The condition covers: typed text, content parts, resources, OR variables.
@@ -255,6 +267,26 @@ export const executeInstance = createAsyncThunk<
       let url: string;
       let routedPayload: Record<string, unknown>;
 
+      // Ephemeral turn 2+ was handled via the early short-circuit above.
+      // Here we only need to inject `is_new:false, store:false` into the
+      // turn-1 agent payload when ephemeral — the server then streams
+      // without writing any cx_* rows. See the endpoint routing table in
+      // `features/agents/types/conversation-invocation.types.ts`.
+
+      // Consume any pending cache-bypass flags for this conversation. If
+      // the user edited / forked / deleted a message directly on the DB
+      // since the last outbound call, this ships `cache_bypass` so the
+      // server's agent cache rebuilds from the authoritative DB state.
+      // One-shot: the flags are cleared inside the consumer.
+      const { consumePendingCacheBypass } = await import(
+        "../message-crud/cache-bypass.slice"
+      );
+      const pendingBypass = dispatch(
+        consumePendingCacheBypass(conversationId) as never,
+      ) as unknown as
+        | import("../message-crud/cache-bypass.slice").CacheBypassFlags
+        | null;
+
       if (isContinuation) {
         // Turn 2+: POST /ai/conversations/{conversationId}
         url = `${baseUrl}/ai/conversations/${conversationId}`;
@@ -268,14 +300,19 @@ export const executeInstance = createAsyncThunk<
           ...(payload.context && { context: payload.context }),
           ...(payload.client_tools && { client_tools: payload.client_tools }),
           ...(debug && { debug: true }),
+          ...(pendingBypass && { cache_bypass: pendingBypass }),
         };
       } else {
         // Turn 1: POST /ai/agents/{agentId}
+        // Persistent → is_new:true (server creates the cx_conversation row).
+        // Ephemeral → is_new:false, store:false (server streams without writing).
         url = `${baseUrl}/ai/agents/${instance.agentId}`;
         routedPayload = {
           ...payload,
           conversation_id: conversationId,
-          is_new: true,
+          is_new: !isEphemeral,
+          ...(isEphemeral && { store: false }),
+          ...(pendingBypass && { cache_bypass: pendingBypass }),
         } as Record<string, unknown>;
       }
 

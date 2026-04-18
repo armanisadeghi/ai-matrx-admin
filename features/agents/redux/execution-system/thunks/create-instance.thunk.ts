@@ -22,7 +22,7 @@ import type {
   VariableDefinition,
 } from "@/features/agents/types/agent-definition.types";
 import type { LLMParams } from "@/features/agents/types";
-import type { ConversationMode } from "../messages/messages.slice";
+import type { ApiEndpointMode } from "@/features/agents/types/instance.types";
 import { executeInstance } from "./execute-instance.thunk";
 import { executeChatInstance } from "./execute-chat-instance.thunk";
 
@@ -94,7 +94,7 @@ interface CreateManualInstanceArgs {
   agentType?: AgentType;
   autoClearConversation?: boolean;
   showAutoClearToggle?: boolean;
-  mode?: ConversationMode;
+  apiEndpointMode?: ApiEndpointMode;
   sourceFeature?: SourceFeature;
   autoRun?: boolean;
   allowChat?: boolean;
@@ -110,6 +110,12 @@ interface CreateManualInstanceArgs {
   variableInputStyle?: VariableInputStyle;
   jsonExtraction?: JsonExtractionConfig | null;
   originalText?: string | null;
+  /**
+   * When true the conversation runs statelessly — server writes nothing to
+   * the DB. Stamped onto the conversation record via `createInstance`; the
+   * execute thunks branch on this flag to select endpoints and store flags.
+   */
+  isEphemeral?: boolean;
 }
 
 export const createManualInstance = createAsyncThunk<
@@ -122,7 +128,7 @@ export const createManualInstance = createAsyncThunk<
     agentType,
     autoClearConversation = false,
     showAutoClearToggle,
-    mode = "agent",
+    apiEndpointMode = "manual",
     sourceFeature = "agent-runner",
     autoRun,
     allowChat,
@@ -138,6 +144,7 @@ export const createManualInstance = createAsyncThunk<
     variableInputStyle,
     jsonExtraction,
     originalText,
+    isEphemeral,
   } = args;
 
   const conversationId = providedConversationId ?? generateConversationId();
@@ -153,6 +160,7 @@ export const createManualInstance = createAsyncThunk<
       agentType: resolvedAgentType,
       origin: "manual" as InstanceOrigin,
       sourceFeature,
+      ...(isEphemeral !== undefined ? { isEphemeral } : {}),
     }),
   );
 
@@ -196,7 +204,7 @@ export const createManualInstance = createAsyncThunk<
       originalText,
     }),
   );
-  dispatch(initInstanceHistory({ conversationId, mode }));
+  dispatch(initInstanceHistory({ conversationId, apiEndpointMode }));
 
   return conversationId;
 });
@@ -215,7 +223,7 @@ interface CreateShortcutInstanceArgs {
   usePreExecutionInput?: boolean;
   autoClearConversation?: boolean;
   showAutoClearToggle?: boolean;
-  conversationMode?: ConversationMode;
+  apiEndpointMode?: ApiEndpointMode;
   showVariablePanel?: boolean;
   showDefinitionMessages?: boolean;
   showDefinitionMessageContent?: boolean;
@@ -242,7 +250,7 @@ export const createInstanceFromShortcut = createAsyncThunk<
     usePreExecutionInput,
     autoClearConversation,
     showAutoClearToggle,
-    conversationMode = "agent",
+    apiEndpointMode = "agent",
     showVariablePanel,
     showDefinitionMessages,
     showDefinitionMessageContent,
@@ -331,7 +339,9 @@ export const createInstanceFromShortcut = createAsyncThunk<
     dispatch(setContextEntries({ conversationId, entries: contextEntries }));
   }
 
-  dispatch(initInstanceHistory({ conversationId, mode: conversationMode }));
+  dispatch(
+    initInstanceHistory({ conversationId, apiEndpointMode: apiEndpointMode }),
+  );
 
   return conversationId;
 });
@@ -578,7 +588,10 @@ export const startNewConversation = createAsyncThunk<
       }),
     );
     dispatch(
-      initInstanceHistory({ conversationId: newConversationId, mode: "agent" }),
+      initInstanceHistory({
+        conversationId: newConversationId,
+        apiEndpointMode: "agent",
+      }),
     );
 
     dispatch(setFocus({ surfaceKey, conversationId: newConversationId }));
@@ -633,11 +646,11 @@ export const startNewConversationAndExecute = createAsyncThunk<
     const currentUIState =
       state.instanceUIState.byConversationId[currentConversationId];
 
-    // Read the authoritative conversationMode from the history slice
+    // Read the authoritative apiEndpointMode from the history slice
     const currentMode =
-      state.messages.byConversationId[currentConversationId]
-        ?.mode ?? "agent";
-    const isChatMode = currentMode === "chat";
+      state.messages.byConversationId[currentConversationId]?.apiEndpointMode ??
+      "agent";
+    const isManualMode = currentMode === "manual";
 
     const userInputText = currentInput?.text ?? "";
     const userValues = currentVariables?.userValues ?? {};
@@ -711,7 +724,7 @@ export const startNewConversationAndExecute = createAsyncThunk<
     dispatch(
       initInstanceHistory({
         conversationId: newConversationId,
-        mode: currentMode,
+        apiEndpointMode: currentMode,
       }),
     );
 
@@ -734,7 +747,7 @@ export const startNewConversationAndExecute = createAsyncThunk<
 
     dispatch(setFocus({ surfaceKey, conversationId: newConversationId }));
 
-    const result = isChatMode
+    const result = isManualMode
       ? await dispatch(
           executeChatInstance({ conversationId: newConversationId }),
         ).unwrap()

@@ -31,7 +31,7 @@ import { selectInstanceDisplayTitle } from "@/features/agents/redux/execution-sy
 import { selectInstanceStatus } from "@/features/agents/redux/execution-system/conversations/conversations.selectors";
 import {
   selectIsExecuting,
-  selectConversationMode,
+  selectApiEndpointMode,
 } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
 import { selectHasUserInput } from "@/features/agents/redux/execution-system/instance-user-input/instance-user-input.selectors";
 import { executeInstance } from "@/features/agents/redux/execution-system/thunks/execute-instance.thunk";
@@ -69,9 +69,7 @@ export function AgentRunner({
   const status = useAppSelector(selectInstanceStatus(conversationId));
   const isExecuting = useAppSelector(selectIsExecuting(conversationId));
   const hasUserInput = useAppSelector(selectHasUserInput(conversationId));
-  const conversationMode = useAppSelector(
-    selectConversationMode(conversationId),
-  );
+  const apiEndpointMode = useAppSelector(selectApiEndpointMode(conversationId));
   const showVariablePanel = useAppSelector(
     selectShowVariablePanel(conversationId),
   );
@@ -85,7 +83,7 @@ export function AgentRunner({
 
     autoRunFiredRef.current = true;
 
-    if (conversationMode === "chat") {
+    if (apiEndpointMode === "manual") {
       dispatch(executeChatInstance({ conversationId: conversationId }));
     } else {
       dispatch(executeInstance({ conversationId }));
@@ -96,7 +94,7 @@ export function AgentRunner({
     isExecuting,
     needsPreExecution,
     conversationId,
-    conversationMode,
+    apiEndpointMode,
     dispatch,
   ]);
 

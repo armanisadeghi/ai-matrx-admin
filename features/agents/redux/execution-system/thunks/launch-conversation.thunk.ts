@@ -7,9 +7,9 @@
  * an agent conversation from the client.
  *
  * During the migration, this thunk:
- *   1. Registers CallbackManager functions referenced by
- *      `callbacks.groupId` (the invocation itself is serializable; function
- *      refs live in CallbackManager).
+ *   1. Resolves CallbackManager ids referenced by `callbacks.*Id` (the
+ *      invocation itself is serializable; function refs live in
+ *      CallbackManager and are looked up by id only — never by "context").
  *   2. Adapts the grouped invocation into the flat `ManagedAgentOptions` the
  *      existing `launchAgentExecution` accepts.
  *   3. Delegates. Once the legacy flat shape is retired (Phase 4), the
@@ -24,11 +24,11 @@
 
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import type { AppDispatch, RootState } from "@/lib/redux/store";
+import type { ConversationInvocation } from "@/features/agents/types/conversation-invocation.types";
 import type {
-  ConversationInvocation,
-  ConversationMode,
-} from "@/features/agents/types/conversation-invocation.types";
-import type { ManagedAgentOptions } from "@/features/agents/types/instance.types";
+  ManagedAgentOptions,
+  ApiEndpointMode,
+} from "@/features/agents/types/instance.types";
 import { callbackManager } from "@/utils/callbackManager";
 import {
   launchAgentExecution,
@@ -62,40 +62,34 @@ function invocationToManagedOptions(
 
   // Both "manual" and the legacy "chat" now resolve to POST /ai/manual at
   // the endpoint boundary (see `lib/api/endpoints.ts`). Pass "manual"
-  // through unchanged — the widened ManagedAgentOptions.conversationMode
+  // through unchanged — the widened ManagedAgentOptions.apiEndpointMode
   // type accepts it directly. Emit "agent" or "manual" only; "chat" is no
   // longer produced by new code paths.
-  const forwardedConversationMode: "agent" | "manual" =
-    routing.conversationMode === "manual" ? "manual" : "agent";
+  const forwardedApiEndpointMode: ApiEndpointMode =
+    routing.apiEndpointMode === "manual" ? "manual" : "agent";
 
-  // Resolve function refs from the callback group (they live outside Redux).
-  const onComplete =
-    callbacks?.groupId != null
-      ? callbackManager.findByContext<
-          (result: LaunchResult) => void
-        >(callbacks.groupId, { type: "complete" })
-      : undefined;
-  const onTextReplace =
-    callbacks?.groupId != null
-      ? callbackManager.findByContext<(text: string) => void>(
-          callbacks.groupId,
-          { type: "replace" },
-        )
-      : undefined;
-  const onTextInsertBefore =
-    callbacks?.groupId != null
-      ? callbackManager.findByContext<(text: string) => void>(
-          callbacks.groupId,
-          { type: "insertBefore" },
-        )
-      : undefined;
-  const onTextInsertAfter =
-    callbacks?.groupId != null
-      ? callbackManager.findByContext<(text: string) => void>(
-          callbacks.groupId,
-          { type: "insertAfter" },
-        )
-      : undefined;
+  // Resolve CallbackManager ids into thin wrappers that fire exactly once.
+  // `callbackManager.trigger(id, data)` invokes the registered function and
+  // removes the entry — matching the one-shot semantics every launch site
+  // expects. Ids are the only reference; there is no context/type lookup.
+  const makeUnary =
+    <T>(id: string | undefined) =>
+    (data: T): void => {
+      if (id) callbackManager.trigger<T>(id, data);
+    };
+
+  const onComplete = callbacks?.onCompleteId
+    ? makeUnary<LaunchResult>(callbacks.onCompleteId)
+    : undefined;
+  const onTextReplace = callbacks?.onTextReplaceId
+    ? makeUnary<string>(callbacks.onTextReplaceId)
+    : undefined;
+  const onTextInsertBefore = callbacks?.onTextInsertBeforeId
+    ? makeUnary<string>(callbacks.onTextInsertBeforeId)
+    : undefined;
+  const onTextInsertAfter = callbacks?.onTextInsertAfterId
+    ? makeUnary<string>(callbacks.onTextInsertAfterId)
+    : undefined;
 
   const managed: ManagedAgentOptions = {
     surfaceKey: identity.surfaceKey,
@@ -113,7 +107,13 @@ function invocationToManagedOptions(
       : {}),
 
     // Routing
-    conversationMode: forwardedConversationMode,
+    apiEndpointMode: forwardedApiEndpointMode,
+
+    // Ephemeral — stamped onto the conversation record; execute thunks
+    // branch on `instance.isEphemeral` to select endpoints + store flags.
+    ...(origin.isEphemeral !== undefined
+      ? { isEphemeral: origin.isEphemeral }
+      : {}),
 
     // Scope
     ...(scope?.applicationScope !== undefined
@@ -199,24 +199,16 @@ function warnUnsupported(invocation: ConversationInvocation): void {
     );
   }
 
-  if (invocation.origin.isEphemeral) {
-    // eslint-disable-next-line no-console
-    console.warn(
-      "[launchConversation] origin.isEphemeral=true is accepted by the " +
-        "invocation contract but not yet routed to the stateless endpoints. " +
-        "For now the call runs through the standard persistent path.",
-    );
-    // TODO(isEphemeral): route stateless turns.
-    //   Turn 1:  POST /ai/agents/{id} with `is_new:false, store:false`, no
-    //            `conversationId`. Server streams, writes nothing to the DB.
-    //   Turn 2+: POST /ai/chat (NOT /conversations/{id} — that 404s because
-    //            no DB row exists). Client serializes the full accumulated
-    //            history from the `messages/` slice on every turn and sends
-    //            it alongside `is_new:false, store:false`. Redux is the sole
-    //            source of truth for ephemeral conversations.
-    //   See `features/agents/types/conversation-invocation.types.ts` for
-    //   the locked contract and the endpoint routing table.
-  }
+  // Ephemeral routing is wired end-to-end. The invocation's `isEphemeral`
+  // flag is stamped on the ConversationRecord via `createInstance` and the
+  // execute thunks (`execute-instance`, `execute-chat-instance`) branch on
+  // `instance.isEphemeral`:
+  //   Turn 1:  POST /ai/agents/{id} with `is_new:false, store:false`.
+  //   Turn 2+: delegates to executeChatInstance → POST /ai/manual with full
+  //            accumulated history (`store:false`, `is_new:false`).
+  // No warning needed here — the flag is honored. See
+  // `features/agents/types/conversation-invocation.types.ts` for the
+  // endpoint routing table.
 
   if (
     invocation.relation?.parentConversationId ||
@@ -248,7 +240,7 @@ interface ThunkApi {
  *   - identity.conversationId absent → new conversation, turn 1.
  *   - identity.conversationId present → continuing conversation, turn 2+.
  *   - origin.isEphemeral → (future) stateless routing; see warnUnsupported.
- *   - routing.conversationMode === "manual" → Builder/prompts endpoint.
+ *   - routing.apiEndpointMode === "manual" → Builder/prompts endpoint.
  *
  * Returns the `LaunchResult` from `launchAgentExecution`:
  *   - conversationId (authoritative id, mirrored server-side)
@@ -270,5 +262,5 @@ export const launchConversation = createAsyncThunk<
 // Re-exports for convenience
 // =============================================================================
 
-export type { ConversationInvocation, ConversationMode };
+export type { ConversationInvocation, ApiEndpointMode };
 export type { LaunchResult };

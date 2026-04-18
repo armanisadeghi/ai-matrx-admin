@@ -22,7 +22,7 @@ import { selectConversationTurns } from "@/features/agents/redux/execution-syste
 import {
   selectStreamPhase,
   selectLatestRequestId,
-  selectConversationMode,
+  selectApiEndpointMode,
 } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
 import { selectInstanceVariableDefinitions } from "@/features/agents/redux/execution-system/instance-variable-values/instance-variable-values.selectors";
 import { selectShowVariablePanel } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
@@ -70,9 +70,7 @@ export function AssistantCardStack({
   const variableDefs = useAppSelector(
     selectInstanceVariableDefinitions(conversationId),
   );
-  const conversationMode = useAppSelector(
-    selectConversationMode(conversationId),
-  );
+  const apiEndpointMode = useAppSelector(selectApiEndpointMode(conversationId));
   const showVariablePanel = useAppSelector(
     selectShowVariablePanel(conversationId),
   );
@@ -122,7 +120,7 @@ export function AssistantCardStack({
 
   // ── Variable submit handler ─────────────────────────────────────────────────
   const handleVariableSubmit = () => {
-    if (conversationMode === "chat") {
+    if (apiEndpointMode === "manual") {
       dispatch(executeChatInstance({ conversationId }));
     } else {
       dispatch(executeInstance({ conversationId }));

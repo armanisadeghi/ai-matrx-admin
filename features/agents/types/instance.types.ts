@@ -82,6 +82,8 @@ export type SourceFeature =
 
 export const SOURCE_APP = "matrx-admin" as const;
 
+export type ApiEndpointMode = "agent" | "manual";
+
 /**
  * Conversation record shape.
  *
@@ -163,8 +165,8 @@ export interface ExecutionInstance {
    * canonical name from the invocation reference. Until Phase 3 retires the
    * legacy callers the field is typed as the union of both.
    */
-  conversationMode?: "agent" | "manual" | "chat";
-  /** Only meaningful when `conversationMode === "manual"`. Builder mechanism. */
+  apiEndpointMode?: ApiEndpointMode;
+  /** Only meaningful when `apiEndpointMode === "manual"`. Builder mechanism. */
   reuseConversationId?: boolean;
 
   // ── Builder advanced settings (ConversationInvocation.builder) ──────────
@@ -461,8 +463,8 @@ export interface InstanceUIState {
    * every send starts a fresh agent call with no prior turns. The server never
    * receives a conversationId from a previous turn.
    *
-   * DEFAULT: true in builder/test mode (AgentBuilderRightPanel).
-   * DEFAULT: false in run mode (AgentRunPage) where multi-turn is desired.
+   * DEFAULT: true in builder/test Mode (AgentBuilderRightPanel).
+   * DEFAULT: false in run Mode (AgentRunPage) where multi-turn is desired.
    */
   autoClearConversation: boolean;
 
@@ -475,7 +477,7 @@ export interface InstanceUIState {
   /**
    * When true, subsequent chat calls reuse the conversation_id from the first
    * response. When false (default), each call gets a fresh conversation.
-   * Only applies to chat-mode instances (builder test runs).
+   * Only applies to chat-Mode instances (builder test runs).
    */
   reuseConversationId: boolean;
 
@@ -506,7 +508,7 @@ export interface InstanceUIState {
   variableInputStyle: VariableInputStyle;
 
   /**
-   * Arbitrary UI state specific to the display mode.
+   * Arbitrary UI state specific to the display Mode.
    * E.g., scroll position, active tab, selected card, etc.
    */
   modeState: Record<string, unknown>;
@@ -542,6 +544,17 @@ export interface ManagedAgentOptions {
 
   /** Delay conversation creation until the caller signals readiness. Default: true */
   ready?: boolean;
+
+  /**
+   * When true, the server writes nothing to the DB and Redux becomes the sole
+   * source of truth for the transcript.
+   *   Turn 1:  POST /ai/agents/{id} with `is_new:false, store:false`.
+   *   Turn 2+: delegates to `executeChatInstance` → POST /ai/manual with
+   *            the full accumulated history.
+   * Stamped onto the conversation record via `createInstance`; the execute
+   * thunks read `instance.isEphemeral` to branch.
+   */
+  isEphemeral?: boolean;
 
   // -- Display Mode ───────────────────────────────────────────────────────────
   /**
@@ -583,7 +596,7 @@ export interface ManagedAgentOptions {
 
   usePreExecutionInput?: boolean;
 
-  /** When true, conversation history is wiped after each submit (builder/test mode). */
+  /** When true, conversation history is wiped after each submit (builder/test). */
   autoClearConversation?: boolean;
 
   /**
@@ -597,11 +610,8 @@ export interface ManagedAgentOptions {
    *            on every turn. Used by Builder (LIVE unsaved agent definition) and
    *            by ephemeral conversations (turn 2+, where no DB row exists).
    *
-   * "chat"   — @deprecated legacy alias for "manual". Accepts either on input;
-   *            emit "manual" for all NEW code. The adapter in `launchConversation`
-   *            and the endpoint definition both resolve "chat" to /ai/manual.
    */
-  conversationMode?: "agent" | "manual" | "chat";
+  apiEndpointMode?: ApiEndpointMode;
 
   userInput?: string;
   variables?: Record<string, unknown>;
@@ -610,7 +620,7 @@ export interface ManagedAgentOptions {
    * LLM parameter overrides applied on top of the agent's base settings.
    * These are delta-only — only keys you provide are sent.
    * Use this in the runner, chat, and widgets to adjust temperature, model, etc.
-   * NOT applicable in builder mode (builder always reads the full live agent definition).
+   * NOT applicable in builder system (builder always reads the full live agent definition).
    */
   overrides?: Partial<LLMParams>;
 
@@ -688,7 +698,7 @@ export const AGENT_EXECUTION_DEFAULTS = {
    * "agent" is the standard path for all non-builder surfaces.
    * Set once at invocation time; never mutated.
    */
-  conversationMode: "agent" as "agent" | "chat",
+  apiEndpointMode: "agent" as ApiEndpointMode,
 
   // ── Execution Behavior ─────────────────────────────────────────────────────
 
@@ -722,7 +732,7 @@ export const AGENT_EXECUTION_DEFAULTS = {
 
   /**
    * When true, submitting creates a fresh instance (no history) instead of
-   * continuing the current conversation. Only meaningful in builder/test mode.
+   * continuing the current conversation. Only meaningful in builder/test system.
    */
   autoClearConversation: false,
 
@@ -771,9 +781,9 @@ export const AGENT_EXECUTION_DEFAULTS = {
   submitOnEnter: true,
 
   /**
-   * For chat-mode instances: reuse the server's conversationId across calls
+   * For chat-system instances: reuse the server's conversationId across calls
    * so the server can maintain its own history. When false, each call starts
-   * fresh. Relevant only when conversationMode is "chat".
+   * fresh. Relevant only when apiEndpointMode is "manual".
    */
   reuseConversationId: false,
 
@@ -832,7 +842,7 @@ export const AGENT_EXECUTION_DEFAULTS = {
   /**
    * LLM parameter overrides (delta from agent base settings).
    * Stored in instanceModelOverrides. Applied in execute-instance thunk.
-   * Not used in chat mode (builder reads full live agent definition instead).
+   * Not used in chat Mode (builder reads full live agent definition instead).
    */
   overrides: null as null,
 

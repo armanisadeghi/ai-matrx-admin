@@ -26,7 +26,7 @@ export function AgentBuilderRightPanel({
   const agentOptions: ManagedAgentOptions = {
     surfaceKey,
     sourceFeature,
-    conversationMode: "chat",
+    apiEndpointMode: "manual",
     showVariables: true,
     autoRun: false,
     allowChat: true,

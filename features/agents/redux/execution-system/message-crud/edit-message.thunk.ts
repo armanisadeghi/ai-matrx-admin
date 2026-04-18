@@ -1,0 +1,146 @@
+/**
+ * editMessage — edit a message's content with optimistic update + rollback.
+ *
+ * Flow:
+ *   1. Capture current content for rollback.
+ *   2. Optimistic `updateMessageRecord` → UI reflects the edit instantly.
+ *   3. Call `cx_message_edit(p_message_id, p_new_content)` — the RPC
+ *      auto-archives the previous content into `content_history` on the row,
+ *      so no client-side history management is needed.
+ *   4. On success: patch the slice with the authoritative row fields
+ *      returned by the RPC (status, contentHistory), then mark the
+ *      conversation for a cache-bust so the next outbound AI call rebuilds
+ *      the agent cache from the updated DB.
+ *   5. On failure: rollback content + surface the error.
+ *
+ * Re-render safety: the patches touch `content` (and on success
+ * `contentHistory` + `status` + `_clientStatus`). Per the re-render
+ * contract, only the subscribers of THOSE fields re-run — other messages'
+ * bodies stay mounted without a re-render.
+ */
+
+import { createAsyncThunk } from "@reduxjs/toolkit";
+import { supabase } from "@/utils/supabase/client";
+import type { AppDispatch, RootState } from "@/lib/redux/store";
+import type { Json } from "@/types/database.types";
+import { updateMessageRecord } from "../messages/messages.slice";
+import { markCacheBypass } from "./cache-bypass.slice";
+
+interface EditMessageArgs {
+  conversationId: string;
+  messageId: string;
+  /** The replacement content — must be a CxContentBlock[] JSON array. */
+  newContent: Json;
+}
+
+interface EditMessageResult {
+  conversationId: string;
+  messageId: string;
+}
+
+interface ThunkApi {
+  dispatch: AppDispatch;
+  state: RootState;
+  rejectValue: { message: string };
+}
+
+export const editMessage = createAsyncThunk<
+  EditMessageResult,
+  EditMessageArgs,
+  ThunkApi
+>(
+  "messages/editMessage",
+  async (
+    { conversationId, messageId, newContent },
+    { dispatch, getState, rejectWithValue },
+  ) => {
+    // Capture previous content for rollback on failure. Read the slice
+    // directly — this is the DB-faithful store.
+    const prevRecord =
+      getState().messages.byConversationId[conversationId]?.byId?.[messageId];
+    if (!prevRecord) {
+      return rejectWithValue({
+        message: `Message ${messageId} not found in conversation ${conversationId}`,
+      });
+    }
+    const previousContent = prevRecord.content;
+    const previousContentHistory = prevRecord.contentHistory;
+    const previousStatus = prevRecord.status;
+
+    // ── 1. Optimistic update — UI reflects the edit immediately ─────────
+    dispatch(
+      updateMessageRecord({
+        conversationId,
+        messageId,
+        patch: {
+          content: newContent,
+          status: "edited",
+          _clientStatus: "pending",
+        },
+      }),
+    );
+
+    // ── 2. Fire the DB RPC ──────────────────────────────────────────────
+    const { data, error } = await supabase.rpc("cx_message_edit", {
+      p_message_id: messageId,
+      p_new_content: newContent,
+    });
+
+    if (error) {
+      // Rollback the optimistic patch.
+      dispatch(
+        updateMessageRecord({
+          conversationId,
+          messageId,
+          patch: {
+            content: previousContent,
+            contentHistory: previousContentHistory,
+            status: previousStatus,
+            _clientStatus: "error",
+          },
+        }),
+      );
+      return rejectWithValue({ message: error.message });
+    }
+
+    // ── 3. Patch with authoritative row from the RPC return ─────────────
+    // The RPC returns the full cx_message row after the edit (including the
+    // updated `content_history` with the prior content archived).
+    if (data) {
+      const row = data as {
+        content: Json;
+        content_history: Json | null;
+        status: string;
+        agent_id: string | null;
+        metadata: Json;
+        is_visible_to_model: boolean;
+        is_visible_to_user: boolean;
+      };
+      dispatch(
+        updateMessageRecord({
+          conversationId,
+          messageId,
+          patch: {
+            content: row.content,
+            contentHistory: row.content_history,
+            status: row.status,
+            agentId: row.agent_id,
+            metadata: row.metadata,
+            isVisibleToModel: row.is_visible_to_model,
+            isVisibleToUser: row.is_visible_to_user,
+            _clientStatus: "complete",
+          },
+        }),
+      );
+    }
+
+    // ── 4. Mark conversation for cache-bust — the server's agent cache
+    // for this conversation now includes a stale message snapshot. The
+    // next outbound AI request flips `cache_bypass.conversation = true`
+    // so the server rebuilds from the DB. One-shot: the flag clears
+    // when the next call fires.
+    dispatch(markCacheBypass({ conversationId, conversation: true }));
+
+    return { conversationId, messageId };
+  },
+);

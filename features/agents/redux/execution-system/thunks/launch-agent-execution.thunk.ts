@@ -195,6 +195,7 @@ export const launchAgentExecution = createAsyncThunk<
     jsonExtraction,
     originalText,
     onComplete,
+    isEphemeral,
   } = options;
 
   // =========================================================================
@@ -273,7 +274,7 @@ export const launchAgentExecution = createAsyncThunk<
         sourceFeature,
         autoClearConversation,
         showAutoClearToggle,
-        mode: conversationMode,
+        apiEndpointMode: conversationMode,
         displayMode: resolvedDisplayMode,
         autoRun,
         allowChat,
@@ -288,6 +289,7 @@ export const launchAgentExecution = createAsyncThunk<
         preExecutionMessage,
         jsonExtraction,
         originalText,
+        ...(isEphemeral !== undefined ? { isEphemeral } : {}),
       }),
     ).unwrap();
 
@@ -326,7 +328,10 @@ export const launchAgentExecution = createAsyncThunk<
 
     if (displayModeOverride) {
       dispatch(
-        setDisplayModeAction({ conversationId, mode: resolvedDisplayMode }),
+        setDisplayModeAction({
+          conversationId,
+          displayMode: resolvedDisplayMode,
+        }),
       );
     }
   } else {
@@ -344,7 +349,10 @@ export const launchAgentExecution = createAsyncThunk<
 
     if (displayModeOverride) {
       dispatch(
-        setDisplayModeAction({ conversationId, mode: resolvedDisplayMode }),
+        setDisplayModeAction({
+          conversationId,
+          displayMode: resolvedDisplayMode,
+        }),
       );
     }
   }

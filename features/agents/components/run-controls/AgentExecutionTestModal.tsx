@@ -49,8 +49,10 @@ import type {
   ResultDisplayMode,
   VariableInputStyle,
 } from "@/features/agents/types/instance.types";
+import { ApiEndpointMode } from "@/features/agents/types/instance.types";
 
 interface AgentExecutionTestModalProps {
+  surfaceKey: string;
   isOpen: boolean;
   onClose: () => void;
   testType: "direct" | "inline" | "background";
@@ -60,7 +62,7 @@ interface AgentExecutionTestModalProps {
   allowChat: boolean;
   showVariables: boolean;
   applyVariables: boolean;
-  conversationMode: "agent" | "chat";
+  apiEndpointMode: ApiEndpointMode;
   variableInputStyle?: VariableInputStyle;
   variables: Record<string, unknown>;
   userInput: string;
@@ -72,14 +74,16 @@ interface AgentExecutionTestModalProps {
 
 function DirectTestMode({
   agentId,
+  surfaceKey,
   variables,
   userInput,
-  conversationMode,
+  apiEndpointMode,
 }: {
   agentId: string;
+  surfaceKey: string;
   variables: Record<string, unknown>;
   userInput: string;
-  conversationMode: "agent" | "chat";
+  apiEndpointMode: ApiEndpointMode;
 }) {
   const { launchAgent, close } = useAgentLauncher();
   const [conversationId, setConversationId] = useState<string | null>(null);
@@ -98,10 +102,11 @@ function DirectTestMode({
     if (conversationId) close(conversationId);
     try {
       const result = await launchAgent(agentId, {
+        surfaceKey,
         sourceFeature: "agent-builder",
         displayMode: "direct" as ResultDisplayMode,
         autoRun: true,
-        conversationMode,
+        apiEndpointMode,
         variables,
         userInput: userInput || "Hello, please respond briefly.",
       });
@@ -113,7 +118,7 @@ function DirectTestMode({
     agentId,
     variables,
     userInput,
-    conversationMode,
+    apiEndpointMode,
     launchAgent,
     close,
     conversationId,
@@ -191,14 +196,16 @@ function DirectTestMode({
 
 function InlineTestMode({
   agentId,
+  surfaceKey,
   variables,
   userInput,
-  conversationMode,
+  apiEndpointMode,
 }: {
   agentId: string;
+  surfaceKey: string;
   variables: Record<string, unknown>;
   userInput: string;
-  conversationMode: "agent" | "chat";
+  apiEndpointMode: ApiEndpointMode;
 }) {
   const { launchAgent, close } = useAgentLauncher();
   const [conversationId, setConversationId] = useState<string | null>(null);
@@ -228,10 +235,11 @@ function InlineTestMode({
     if (conversationId) close(conversationId);
     try {
       const result = await launchAgent(agentId, {
+        surfaceKey,
         sourceFeature: "agent-builder",
         displayMode: "inline" as ResultDisplayMode,
         autoRun: true,
-        conversationMode,
+        apiEndpointMode,
         variables: { ...variables, selection: selectedText },
         userInput: userInput || `Process this text: "${selectedText}"`,
       });
@@ -244,7 +252,7 @@ function InlineTestMode({
     variables,
     userInput,
     selectedText,
-    conversationMode,
+    apiEndpointMode,
     launchAgent,
     close,
     conversationId,
@@ -368,14 +376,16 @@ interface BackgroundTask {
 
 function BackgroundTestMode({
   agentId,
+  surfaceKey,
   variables,
   userInput,
-  conversationMode,
+  apiEndpointMode,
 }: {
   agentId: string;
+  surfaceKey: string;
   variables: Record<string, unknown>;
   userInput: string;
-  conversationMode: "agent" | "chat";
+  apiEndpointMode: ApiEndpointMode;
 }) {
   const { launchAgent, close } = useAgentLauncher();
   const [tasks, setTasks] = useState<BackgroundTask[]>([]);
@@ -383,10 +393,11 @@ function BackgroundTestMode({
   const handleExecute = useCallback(async () => {
     try {
       const result = await launchAgent(agentId, {
+        surfaceKey,
         sourceFeature: "agent-builder",
         displayMode: "background" as ResultDisplayMode,
         autoRun: true,
-        conversationMode,
+        apiEndpointMode,
         variables,
         userInput: userInput || "Respond briefly with one sentence.",
         onComplete: (launchResult) => {
@@ -415,7 +426,7 @@ function BackgroundTestMode({
     } catch (err) {
       console.error("Background execution failed:", err);
     }
-  }, [agentId, variables, userInput, conversationMode, launchAgent]);
+  }, [agentId, variables, userInput, apiEndpointMode, launchAgent, surfaceKey]);
 
   useEffect(() => {
     return () => {
@@ -488,13 +499,14 @@ const MODE_TITLES: Record<string, string> = {
 };
 
 export function AgentExecutionTestModal({
+  surfaceKey,
   isOpen,
   onClose,
   testType,
   agentId,
   variables,
   userInput,
-  conversationMode,
+  apiEndpointMode,
 }: AgentExecutionTestModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -508,25 +520,28 @@ export function AgentExecutionTestModal({
         {testType === "direct" && (
           <DirectTestMode
             agentId={agentId}
+            surfaceKey={surfaceKey}
             variables={variables}
             userInput={userInput}
-            conversationMode={conversationMode}
+            apiEndpointMode={apiEndpointMode}
           />
         )}
         {testType === "inline" && (
           <InlineTestMode
             agentId={agentId}
+            surfaceKey={surfaceKey}
             variables={variables}
             userInput={userInput}
-            conversationMode={conversationMode}
+            apiEndpointMode={apiEndpointMode}
           />
         )}
         {testType === "background" && (
           <BackgroundTestMode
             agentId={agentId}
+            surfaceKey={surfaceKey}
             variables={variables}
             userInput={userInput}
-            conversationMode={conversationMode}
+            apiEndpointMode={apiEndpointMode}
           />
         )}
       </DialogContent>

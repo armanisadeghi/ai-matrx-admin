@@ -42,14 +42,10 @@ export const selectRequiresVariableReplacement = (
   _state: RootState,
   _sessionId: string,
 ): boolean => false;
-export const selectApiMode = (
-  _state: RootState,
-  _sessionId: string,
-): string => "agent";
-export const selectChatModeConfig = (
-  _state: RootState,
-  _sessionId: string,
-) => undefined;
+export const selectApiMode = (_state: RootState, _sessionId: string): string =>
+  "agent";
+export const selectChatModeConfig = (_state: RootState, _sessionId: string) =>
+  undefined;
 
 // ── Messages ─────────────────────────────────────────────────────────────────
 
@@ -81,16 +77,14 @@ export const selectCurrentInput = (
 ): string => "";
 export const selectResources = (_state: RootState, _sessionId: string) =>
   EMPTY_RESOURCES;
-export const selectVariableDefaults = (
-  _state: RootState,
-  _sessionId: string,
-) => EMPTY_VARIABLE_DEFAULTS;
+export const selectVariableDefaults = (_state: RootState, _sessionId: string) =>
+  EMPTY_VARIABLE_DEFAULTS;
 export const selectHasVariables = (
   _state: RootState,
   _sessionId: string,
 ): boolean => false;
 export const selectVariableValues = (_state: RootState, _sessionId: string) =>
-  ({} as Record<string, unknown>);
+  ({}) as Record<string, unknown>;
 
 // ── UI state ─────────────────────────────────────────────────────────────────
 
@@ -138,18 +132,16 @@ export const selectEffectiveModelLabel = (
 export const selectSessionPromptSettings = (
   _state: RootState,
   _sessionId: string,
-) => ({} as Record<string, unknown>);
+) => ({}) as Record<string, unknown>;
 export const selectEffectiveSettings = (
   _state: RootState,
   _sessionId: string,
-) => ({} as Record<string, unknown>);
+) => ({}) as Record<string, unknown>;
 
 // ── Tool calls ───────────────────────────────────────────────────────────────
 
-export const selectToolCallsById = (
-  _state: RootState,
-  _sessionId: string,
-) => EMPTY_TOOL_CALLS_BY_ID;
+export const selectToolCallsById = (_state: RootState, _sessionId: string) =>
+  EMPTY_TOOL_CALLS_BY_ID;
 export const selectToolCallByCallId = (
   _state: RootState,
   _sessionId: string,
@@ -203,3 +195,7 @@ export const selectSessionHasUnsavedChanges = (
   _state: RootState,
   _sessionId: string,
 ): boolean => false;
+export const selectDirtyMessages = (
+  _state: RootState,
+  _sessionId: string,
+): unknown[] => [];

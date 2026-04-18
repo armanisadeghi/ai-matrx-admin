@@ -112,6 +112,7 @@ import { instanceUserInputReducer } from "@/features/agents/redux/execution-syst
 import { conversationsReducer } from "@/features/agents/redux/execution-system/conversations";
 import { activeRequestsReducer } from "@/features/agents/redux/execution-system/active-requests";
 import { observabilityReducer } from "@/features/agents/redux/execution-system/observability";
+import { cacheBypassReducer } from "@/features/agents/redux/execution-system/message-crud";
 import { messagesReducer } from "@/features/agents/redux/execution-system/messages";
 import { conversationFocusReducer } from "@/features/agents/redux/execution-system/conversation-focus";
 import agentAssistantMarkdownDraftReducer from "@/features/agents/redux/agent-assistant-markdown-draft.slice";
@@ -359,6 +360,11 @@ export const createRootReducer = (initialState: InitialReduxState) => {
     // Observability — Runner-only debug data (cx_user_request, cx_request,
     // cx_tool_call + live stream timelines). Populated by commit path + RPC.
     observability: observabilityReducer,
+
+    // Cache-bypass — one-shot per-conversation flags flipped after direct
+    // DB writes (edits, forks, deletes). Read + cleared by the execute
+    // thunks so the next outbound AI request carries `cache_bypass`.
+    cacheBypass: cacheBypassReducer,
 
     // Surface Focus Registry — tracks which conversationId is active per UI surface
     conversationFocus: conversationFocusReducer,

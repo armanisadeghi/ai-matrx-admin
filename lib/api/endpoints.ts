@@ -32,7 +32,7 @@ export const ENDPOINTS = {
      *
      * NOTE: this replaces the legacy `/ai/chat` endpoint. The canonical
      * client-side vocabulary is `manual` (see ConversationInvocation.routing
-     * .conversationMode). The legacy `chat` alias below stays for one
+     * .apiEndpointMode). The legacy `chat` alias below stays for one
      * migration cycle.
      */
     manual: "/ai/manual" as const,

@@ -86,8 +86,7 @@ export const selectIsStreaming =
 export const selectIsAwaitingTools =
   (conversationId: string) =>
   (state: RootState): boolean =>
-    state.conversations?.byConversationId[conversationId]?.status ===
-    "paused";
+    state.conversations?.byConversationId[conversationId]?.status === "paused";
 
 /**
  * True only when auto-clear is enabled and this conversation has at least one
@@ -157,10 +156,10 @@ export const selectLatestConversationId =
     return conversationId;
   };
 
-/** The current conversation mode for this instance (agent | conversation | chat). */
-export const selectConversationMode =
+/** The current apiEndpointMode for this instance (agent | manual). */
+export const selectApiEndpointMode =
   (conversationId: string) => (state: RootState) =>
-    state.messages?.byConversationId[conversationId]?.mode ??
+    state.messages?.byConversationId[conversationId]?.apiEndpointMode ??
     "agent";
 
 /**
@@ -365,8 +364,7 @@ export const selectAssembledRequest =
  */
 export const selectInstanceSummary = (conversationId: string) =>
   createSelector(
-    (state: RootState) =>
-      state.conversations?.byConversationId[conversationId],
+    (state: RootState) => state.conversations?.byConversationId[conversationId],
     (state: RootState) =>
       state.instanceModelOverrides?.byConversationId[conversationId],
     (state: RootState) =>
@@ -438,9 +436,7 @@ export const selectShouldShowVariables =
         ?.definitions;
     if (!definitions || definitions.length === 0) return false;
 
-    const turns =
-      state.messages?.byConversationId[conversationId]
-        ?.turns;
+    const turns = state.messages?.byConversationId[conversationId]?.turns;
     if (turns && turns.length > 0) return false;
 
     const status =

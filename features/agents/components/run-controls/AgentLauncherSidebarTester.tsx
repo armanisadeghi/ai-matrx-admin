@@ -67,6 +67,7 @@ import {
 } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import { AgentExecutionTestModal } from "./AgentExecutionTestModal";
+import { ApiEndpointMode } from "@/features/agents/types/instance.types";
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
@@ -83,10 +84,12 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 
 interface AgentLauncherSidebarTesterProps {
   conversationId: string;
+  surfaceKey: string;
 }
 
 export function AgentLauncherSidebarTester({
   conversationId,
+  surfaceKey,
 }: AgentLauncherSidebarTesterProps) {
   const { launchAgent } = useAgentLauncher();
   const [isOpen, setIsOpen] = useState(false);
@@ -102,9 +105,8 @@ export function AgentLauncherSidebarTester({
     useState<VariableInputStyle>("inline");
   const [applyVariables, setApplyVariables] = useState(true);
   const [usePreExecutionInput, setUsePreExecutionInput] = useState(false);
-  const [conversationMode, setConversationMode] = useState<"agent" | "chat">(
-    "agent",
-  );
+  const [apiEndpointMode, setApiEndpointMode] =
+    useState<ApiEndpointMode>("agent");
 
   const [copiedId, setCopiedId] = useState(false);
 
@@ -138,13 +140,14 @@ export function AgentLauncherSidebarTester({
 
     try {
       await launchAgent(instance.agentId, {
+        surfaceKey,
         sourceFeature: "agent-launcher-sidebar",
         displayMode,
         autoRun,
         allowChat,
         showVariables,
         usePreExecutionInput,
-        conversationMode,
+        apiEndpointMode,
         variableInputStyle,
         variables: applyVariables ? currentVariables : undefined,
         userInput: currentInput || undefined,
@@ -355,10 +358,8 @@ export function AgentLauncherSidebarTester({
               Mode
             </Label>
             <Select
-              value={conversationMode}
-              onValueChange={(v) =>
-                setConversationMode(v as "agent" | "chat")
-              }
+              value={apiEndpointMode}
+              onValueChange={(v) => setApiEndpointMode(v as ApiEndpointMode)}
             >
               <SelectTrigger
                 id="conversation-mode"
@@ -411,6 +412,7 @@ export function AgentLauncherSidebarTester({
       {/* Test Modal for Direct/Inline/Background */}
       {instance && (
         <AgentExecutionTestModal
+          surfaceKey={surfaceKey}
           isOpen={testModalOpen}
           onClose={() => setTestModalOpen(false)}
           testType={testModalType}
@@ -420,7 +422,7 @@ export function AgentLauncherSidebarTester({
           allowChat={allowChat}
           showVariables={showVariables}
           applyVariables={applyVariables}
-          conversationMode={conversationMode}
+          apiEndpointMode={apiEndpointMode}
           variableInputStyle={variableInputStyle}
           variables={applyVariables ? currentVariables : {}}
           userInput={currentInput || ""}

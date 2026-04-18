@@ -68,7 +68,7 @@ import {
 // ─── Conversation history selectors ───────────────────────────────────────────
 import {
   selectConversationTurns,
-  selectConversationMode,
+  selectApiEndpointMode,
   selectTurnCount,
   selectLoadedFromHistory,
 } from "@/features/agents/redux/execution-system/messages/messages.selectors";
@@ -611,7 +611,7 @@ function HistoryTab({ conversationId }: { conversationId: string | null }) {
     conversationId ? selectConversationTurns(conversationId) : () => [],
   );
   const mode = useAppSelector(
-    conversationId ? selectConversationMode(conversationId) : () => "agent",
+    conversationId ? selectApiEndpointMode(conversationId) : () => "agent",
   );
   const loadedFromHistory = useAppSelector(
     conversationId ? selectLoadedFromHistory(conversationId) : () => false,

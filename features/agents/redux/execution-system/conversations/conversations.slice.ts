@@ -25,6 +25,7 @@ import type {
 import { SOURCE_APP } from "@/features/agents/types/instance.types";
 import { generateConversationId } from "../utils";
 import { AgentType } from "@/features/agents/types/agent-definition.types";
+import type { ApiEndpointMode } from "@/features/agents/types/instance.types";
 
 // =============================================================================
 // Record alias
@@ -87,7 +88,7 @@ const conversationsSlice = createSlice({
         taskId?: string | null;
         isEphemeral?: boolean;
         isPublic?: boolean;
-        conversationMode?: "agent" | "manual" | "chat";
+        apiEndpointMode?: ApiEndpointMode;
         reuseConversationId?: boolean;
         builderAdvancedSettings?: ConversationRecord["builderAdvancedSettings"];
         metadata?: Record<string, unknown>;
@@ -112,7 +113,7 @@ const conversationsSlice = createSlice({
         taskId,
         isEphemeral,
         isPublic,
-        conversationMode,
+        apiEndpointMode,
         reuseConversationId,
         builderAdvancedSettings,
         metadata,
@@ -150,7 +151,7 @@ const conversationsSlice = createSlice({
         ...(taskId !== undefined ? { taskId } : {}),
         ...(isEphemeral !== undefined ? { isEphemeral } : {}),
         ...(isPublic !== undefined ? { isPublic } : {}),
-        ...(conversationMode !== undefined ? { conversationMode } : {}),
+        ...(apiEndpointMode !== undefined ? { apiEndpointMode } : {}),
         ...(reuseConversationId !== undefined ? { reuseConversationId } : {}),
         ...(builderAdvancedSettings !== undefined
           ? { builderAdvancedSettings }

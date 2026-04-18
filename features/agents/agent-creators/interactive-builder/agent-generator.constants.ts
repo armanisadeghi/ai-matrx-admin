@@ -1,6 +1,7 @@
 import type {
   ManagedAgentOptions,
   ResultDisplayMode,
+  ApiEndpointMode,
 } from "@/features/agents/types/instance.types";
 
 /**
@@ -23,7 +24,7 @@ export const AGENT_GENERATOR_CONFIG = {
 
   launchDefaults: {
     displayMode: "direct" as ResultDisplayMode,
-    conversationMode: "agent" as const,
+    apiEndpointMode: "manual" as ApiEndpointMode,
     autoRun: false,
     allowChat: false,
     showVariables: false,

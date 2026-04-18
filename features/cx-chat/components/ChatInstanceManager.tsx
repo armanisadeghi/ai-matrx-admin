@@ -36,13 +36,13 @@ type WelcomeMode = {
   agentDescription?: string;
 };
 
-type ConversationMode = {
+type NonWelcomeMode = {
   mode: "conversation";
   agentId: string;
   conversationId: string;
 };
 
-type ChatInstanceManagerProps = WelcomeMode | ConversationMode;
+type ChatInstanceManagerProps = WelcomeMode | NonWelcomeMode;
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
@@ -112,9 +112,7 @@ export function ChatInstanceManager(props: ChatInstanceManagerProps) {
       // (from metadata), and observability — superset of the legacy
       // fetchConversationHistory which only restored messages.
       if (urlConversationId) {
-        dispatch(
-          loadConversation({ conversationId: urlConversationId }),
-        );
+        dispatch(loadConversation({ conversationId: urlConversationId }));
       }
 
       // 7. Expose the resolved conversationId — triggers re-render.

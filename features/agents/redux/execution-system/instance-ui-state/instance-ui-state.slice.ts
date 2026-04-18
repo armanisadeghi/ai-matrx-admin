@@ -3,7 +3,7 @@
  *
  * Manages per-instance UI configuration and display state.
  * Controls how the instance's results are rendered (modal, chat bubble,
- * inline, panel, toast) and tracks display-mode-specific state.
+ * inline, panel, toast) and tracks displayMode-specific state.
  *
  * Philosophy: Fine-grained state, coarse-grained config.
  * Each field controls exactly one behavior. Launch options / shortcut configs
@@ -56,7 +56,7 @@ export interface InstanceUIStateSlice {
   byConversationId: Record<string, InstanceUIState>;
 
   /**
-   * Admin/pilot feature — when true, chat renders in "block mode" where each
+   * Admin/pilot feature — when true, chat renders in "block format" where each
    * message is a distinct, collapsible block instead of a continuous thread.
    *
    * Lives here until promoted to a full user preference (userPreferencesSlice).
@@ -176,12 +176,12 @@ const instanceUIStateSlice = createSlice({
       state,
       action: PayloadAction<{
         conversationId: string;
-        mode: ResultDisplayMode;
+        displayMode: ResultDisplayMode;
       }>,
     ) {
       const entry = state.byConversationId[action.payload.conversationId];
       if (entry) {
-        entry.displayMode = action.payload.mode;
+        entry.displayMode = action.payload.displayMode;
         entry.modeState = {};
       }
     },

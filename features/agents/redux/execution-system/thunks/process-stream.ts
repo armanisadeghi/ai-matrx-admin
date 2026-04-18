@@ -79,7 +79,6 @@ import {
   upsertUserRequest,
   patchUserRequest,
   upsertRequest,
-  patchRequest,
   upsertToolCall,
   patchToolCall,
   type CxUserRequestRecord,
@@ -166,6 +165,13 @@ export async function processStream({
   let reservedAssistantPosition: number | null = null;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let reservedUserRequestId: string | null = null;
+
+  // Maps the provider's opaque `call_id` (used by activeRequests.toolLifecycle)
+  // to the DB-side `cx_tool_call.id` (used by observability.toolCalls). Both
+  // ids are known at `record_reserved cx_tool_call` time — we just need to
+  // remember the association so that when the live-stream tool_event fires
+  // later (keyed by call_id) we can patch the right observability row.
+  const toolCallIdByProviderCallId = new Map<string, string>();
 
   let clientFirstChunkAt: number | null = null;
   let totalEvents = 0;
@@ -647,12 +653,15 @@ export async function processStream({
       // renderBlocks into the same `byId` slot. This keeps live stream
       // writes metadata-only — no re-render storm on the message body.
       if (d.table === "cx_message") {
-        const meta = d.metadata as { role?: string; position?: number } | undefined;
-        const parents = d.parent_refs as { conversation_id?: string } | undefined;
+        const meta = d.metadata as
+          | { role?: string; position?: number }
+          | undefined;
+        const parents = d.parent_refs as
+          | { conversation_id?: string }
+          | undefined;
         const role =
           (meta?.role as "user" | "assistant" | "system") ?? "assistant";
-        const position =
-          typeof meta?.position === "number" ? meta.position : 0;
+        const position = typeof meta?.position === "number" ? meta.position : 0;
         dispatch(
           reserveMessage({
             conversationId: parents?.conversation_id ?? conversationId,
@@ -669,7 +678,9 @@ export async function processStream({
         }
       } else if (d.table === "cx_user_request") {
         reservedUserRequestId = d.record_id;
-        const parents = d.parent_refs as { conversation_id?: string } | undefined;
+        const parents = d.parent_refs as
+          | { conversation_id?: string }
+          | undefined;
         const nowIso = new Date().toISOString();
         dispatch(
           upsertUserRequest({
@@ -747,6 +758,12 @@ export async function processStream({
           | { tool_name?: string; call_id?: string; iteration?: number }
           | undefined;
         const nowIso = new Date().toISOString();
+        // Record the call_id → DB id mapping so tool_event patches land on
+        // the correct observability row.
+        const providerCallId = meta?.call_id ?? parents?.call_id;
+        if (providerCallId) {
+          toolCallIdByProviderCallId.set(providerCallId, d.record_id);
+        }
         dispatch(
           upsertToolCall({
             id: d.record_id,
@@ -856,8 +873,6 @@ export async function processStream({
             },
           }),
         );
-      } else if (d.table === "cx_request") {
-        dispatch(patchRequest({ id: d.record_id, patch: { status: d.status } }));
       } else if (d.table === "cx_tool_call") {
         dispatch(
           patchToolCall({
@@ -1098,7 +1113,8 @@ export async function processStream({
         patch: {
           // Cast to the DB Json type: cxContentBlocks is MessagePart[] /
           // CxContentBlock[], which is structurally JSON-serializable.
-          content: cxContentBlocks as unknown as import("@/types/database.types").Json,
+          content:
+            cxContentBlocks as unknown as import("@/types/database.types").Json,
           status: "active",
           _clientStatus: finalErrorMessage ? "error" : "complete",
         },
@@ -1108,28 +1124,46 @@ export async function processStream({
 
   // Flush live tool lifecycle state into the observability slice. Each tool
   // call was reserved earlier (cx_tool_call record_reserved) so the
-  // observability entries already exist — we patch them with the final
-  // live-state results (output, duration, error info).
+  // observability entries already exist — patch them now with the final
+  // live-state results (output, status, duration, error info). We map
+  // provider call_id → DB record_id via the map populated during the
+  // reservation event.
   if (finalRequest?.toolLifecycle) {
     for (const [callId, lc] of Object.entries(finalRequest.toolLifecycle)) {
-      // The DB row id we want is the one from the reservation event, which
-      // the activeRequests slice doesn't surface directly. The
-      // reservation metadata captures `call_id`, and observability's
-      // `upsertToolCall` was keyed by the DB id during Phase 5.1 — so the
-      // reservation + this patch address the same row as long as the
-      // server uses `call_id` as a stable cross-reference. If the DB id
-      // lookup is needed, consumers can resolve via observability
-      // selectors using `callId`.
-      if (lc.status === "completed" || lc.status === "error") {
-        // Find the DB row id from the reservation table (best-effort).
-        // If the reservation wasn't observed (edge case), we skip and the
-        // initial upsert stays with its default fields.
-        // NOTE: keyed by callId in activeRequests.toolLifecycle;
-        // observability uses the cx_tool_call DB id. Patch-by-call_id can
-        // be added once the reservation snapshot index lands.
-        void callId; // explicit — no-op patch until id lookup wires up.
-        void lc;
-      }
+      const dbId = toolCallIdByProviderCallId.get(callId);
+      if (!dbId) continue; // reservation wasn't observed — skip safely
+      const startedAt = lc.startedAt ?? null;
+      const completedAt = lc.completedAt ?? null;
+      const durationMs =
+        startedAt && completedAt
+          ? new Date(completedAt).getTime() - new Date(startedAt).getTime()
+          : 0;
+      const outputStr =
+        lc.result !== undefined && lc.result !== null
+          ? typeof lc.result === "string"
+            ? lc.result
+            : JSON.stringify(lc.result)
+          : null;
+      dispatch(
+        patchToolCall({
+          id: dbId,
+          patch: {
+            status: lc.status,
+            success: lc.status === "completed",
+            isError: lc.status === "error" ? true : null,
+            errorType: lc.errorType ?? null,
+            errorMessage: lc.errorMessage ?? null,
+            arguments: (lc.arguments ?? {}) as CxToolCallRecord["arguments"],
+            output: outputStr,
+            outputChars: outputStr?.length ?? 0,
+            outputPreview: (lc.resultPreview ??
+              null) as CxToolCallRecord["outputPreview"],
+            durationMs,
+            ...(startedAt ? { startedAt } : {}),
+            ...(completedAt ? { completedAt } : {}),
+          },
+        }),
+      );
     }
   }
 

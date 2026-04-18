@@ -17,7 +17,7 @@ import { setUserInputText } from "@/features/agents/redux/execution-system/insta
 import { selectUserInputText } from "@/features/agents/redux/execution-system/instance-user-input/instance-user-input.selectors";
 import {
   selectIsExecuting,
-  selectConversationMode,
+  selectApiEndpointMode,
 } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
 import { selectSubmitOnEnter } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import {
@@ -54,9 +54,7 @@ export function CompactAssistantInput({
   // ── Redux state ─────────────────────────────────────────────────────────────
   const inputText = useAppSelector(selectUserInputText(conversationId));
   const isExecuting = useAppSelector(selectIsExecuting(conversationId));
-  const conversationMode = useAppSelector(
-    selectConversationMode(conversationId),
-  );
+  const apiEndpointMode = useAppSelector(selectApiEndpointMode(conversationId));
   const submitOnEnter = useAppSelector(selectSubmitOnEnter(conversationId));
   const variableDefs = useAppSelector(
     selectInstanceVariableDefinitions(conversationId),
@@ -110,12 +108,12 @@ export function CompactAssistantInput({
   // ── Send logic ──────────────────────────────────────────────────────────────
   const handleSend = useCallback(() => {
     if (isSendDisabled) return;
-    if (conversationMode === "chat") {
+    if (apiEndpointMode === "manual") {
       dispatch(executeChatInstance({ conversationId }));
     } else {
       dispatch(executeInstance({ conversationId }));
     }
-  }, [isSendDisabled, conversationMode, conversationId, dispatch]);
+  }, [isSendDisabled, apiEndpointMode, conversationId, dispatch]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {

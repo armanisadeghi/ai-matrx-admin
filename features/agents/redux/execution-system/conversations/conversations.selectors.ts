@@ -46,9 +46,7 @@ export const selectInstancesByAgent = (agentId: string) =>
     (allIds, byId): ConversationRecord[] => {
       const result = allIds
         .map((id) => byId[id])
-        .filter(
-          (inst): inst is ExecutionInstance => inst?.agentId === agentId,
-        );
+        .filter((inst): inst is ExecutionInstance => inst?.agentId === agentId);
       return result.length === 0 ? EMPTY_INSTANCES : result;
     },
   );
@@ -106,10 +104,9 @@ export const selectConversationIsEphemeral =
   (state: RootState): boolean =>
     state.conversations.byConversationId[conversationId]?.isEphemeral ?? false;
 
-export const selectConversationMode =
-  (conversationId: string) =>
-  (state: RootState) =>
-    state.conversations.byConversationId[conversationId]?.conversationMode ??
+export const selectApiEndpointMode =
+  (conversationId: string) => (state: RootState) =>
+    state.conversations.byConversationId[conversationId]?.apiEndpointMode ??
     null;
 
 export const selectConversationSurfaceKey =
@@ -119,8 +116,7 @@ export const selectConversationSurfaceKey =
 
 export const selectConversationScopeIds = (conversationId: string) =>
   createSelector(
-    (state: RootState) =>
-      state.conversations.byConversationId[conversationId],
+    (state: RootState) => state.conversations.byConversationId[conversationId],
     (record) => ({
       organizationId: record?.organizationId ?? null,
       projectId: record?.projectId ?? null,

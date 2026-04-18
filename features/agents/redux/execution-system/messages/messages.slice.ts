@@ -3,7 +3,7 @@
  *
  * Stores the ordered message history for each execution instance.
  * This is the client-side display record — the server owns the authoritative
- * copy in its database for agent mode.
+ * copy in its database for agent apiEndpointMode.
  *
  * Turn lifecycle:
  *   1. User submits → dispatch(addUserTurn) BEFORE the API call fires
@@ -33,12 +33,11 @@ import type {
   RenderBlockPayload,
 } from "@/types/python-generated/stream-events";
 import type { CxContentBlock } from "@/features/public-chat/types/cx-tables";
+import type { ApiEndpointMode } from "@/features/agents/types/instance.types";
 
 // =============================================================================
 // Types
 // =============================================================================
-
-export type ConversationMode = "agent" | "chat";
 
 export interface TokenUsage {
   input: number;
@@ -144,7 +143,7 @@ export interface InstanceConversationHistoryEntry {
    * The endpoint family — determines whether history is sent on next turn.
    * Set once at instance creation time and never mutated.
    */
-  mode: ConversationMode;
+  apiEndpointMode: ApiEndpointMode;
 
   /** Ordered turn history (legacy display shape — see MessageRecord below). */
   turns: ConversationTurn[];
@@ -250,14 +249,14 @@ const messagesSlice = createSlice({
       state,
       action: PayloadAction<{
         conversationId: string;
-        mode?: ConversationMode;
+        apiEndpointMode?: ApiEndpointMode;
       }>,
     ) {
-      const { conversationId, mode = "agent" } = action.payload;
+      const { conversationId, apiEndpointMode = "agent" } = action.payload;
       if (!state.byConversationId[conversationId]) {
         state.byConversationId[conversationId] = {
           conversationId,
-          mode,
+          apiEndpointMode,
           turns: [],
           loadedFromHistory: false,
           title: null,
@@ -353,7 +352,7 @@ const messagesSlice = createSlice({
       if (!entry) {
         entry = {
           conversationId,
-          mode: "agent",
+          apiEndpointMode: "agent",
           turns: [],
           loadedFromHistory: true,
           title: null,
@@ -505,16 +504,20 @@ const messagesSlice = createSlice({
       action: PayloadAction<{
         conversationId: string;
         turns: ConversationTurn[];
-        mode?: ConversationMode;
+        apiEndpointMode?: ApiEndpointMode;
       }>,
     ) {
-      const { conversationId, turns, mode = "agent" } = action.payload;
+      const {
+        conversationId,
+        turns,
+        apiEndpointMode = "agent",
+      } = action.payload;
 
       const entry = state.byConversationId[conversationId];
       if (!entry) return;
 
       entry.turns = turns;
-      entry.mode = mode;
+      entry.apiEndpointMode = apiEndpointMode;
       entry.loadedFromHistory = true;
     },
 
@@ -589,7 +592,7 @@ const messagesSlice = createSlice({
       if (entry) {
         entry.turns = [];
         entry.loadedFromHistory = false;
-        entry.mode = "agent";
+        entry.apiEndpointMode = "agent";
         entry.title = null;
         entry.description = null;
         entry.keywords = null;

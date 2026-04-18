@@ -18,7 +18,7 @@ export function AgentRunWrapper({
   const { conversationId } = useAgentLauncher(agentId, {
     surfaceKey,
     sourceFeature,
-    conversationMode: "agent",
+    apiEndpointMode: "agent",
     showVariables: true,
     autoRun: false,
     allowChat: true,
@@ -29,5 +29,7 @@ export function AgentRunWrapper({
     autoClearConversation: false,
   });
 
-  return <AgentRunner conversationId={conversationId} />;
+  return (
+    <AgentRunner conversationId={conversationId} surfaceKey={surfaceKey} />
+  );
 }

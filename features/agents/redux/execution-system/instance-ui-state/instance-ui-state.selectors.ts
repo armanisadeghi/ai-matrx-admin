@@ -26,7 +26,7 @@ export const selectInstanceUIState =
   (state: RootState): InstanceUIState | undefined =>
     state.instanceUIState.byConversationId[conversationId];
 
-// ── Display mode ─────────────────────────────────────────────────────────────
+// ── Display Mode ─────────────────────────────────────────────────────────────
 
 export const selectDisplayMode =
   (conversationId: string) =>
@@ -72,9 +72,9 @@ export const selectIsToast =
 export const selectIsAnyModal =
   (conversationId: string) =>
   (state: RootState): boolean => {
-    const mode =
+    const displayMode =
       state.instanceUIState.byConversationId[conversationId]?.displayMode;
-    return mode === "modal-full" || mode === "modal-compact";
+    return displayMode === "modal-full" || displayMode === "modal-compact";
   };
 
 // ── Execution behavior ───────────────────────────────────────────────────────
@@ -423,14 +423,16 @@ export const selectVariableInputStyle =
 export const selectIsBlockMode = (state: RootState): boolean =>
   state.instanceUIState.isBlockMode;
 
-// ── Global registry selectors (keyed by display mode) ────────────────────────
+// ── Global registry selectors (keyed by display Mode) ────────────────────────
 
-export const selectInstanceIdsByMode = (mode: ResultDisplayMode) =>
+export const selectInstanceIdsByDisplayMode = (
+  displayMode: ResultDisplayMode,
+) =>
   createSelector(
     (state: RootState) => state.instanceUIState.byConversationId,
     (byConversationId): string[] | undefined => {
       const ids = Object.keys(byConversationId).filter(
-        (id) => byConversationId[id]?.displayMode === mode,
+        (id) => byConversationId[id]?.displayMode === displayMode,
       );
       return ids.length > 0 ? ids : undefined;
     },
@@ -440,8 +442,8 @@ export const selectModalInstanceIds = createSelector(
   (state: RootState) => state.instanceUIState.byConversationId,
   (byConversationId): string[] | undefined => {
     const ids = Object.keys(byConversationId).filter((id) => {
-      const mode = byConversationId[id]?.displayMode;
-      return mode === "modal-full" || mode === "modal-compact";
+      const displayMode = byConversationId[id]?.displayMode;
+      return displayMode === "modal-full" || displayMode === "modal-compact";
     });
     return ids.length > 0 ? ids : undefined;
   },
@@ -451,8 +453,8 @@ export const selectPersistentInstanceIds = createSelector(
   (state: RootState) => state.instanceUIState.byConversationId,
   (byConversationId): string[] | undefined => {
     const ids = Object.keys(byConversationId).filter((id) => {
-      const mode = byConversationId[id]?.displayMode;
-      return mode === "panel" || mode === "chat-bubble";
+      const displayMode = byConversationId[id]?.displayMode;
+      return displayMode === "panel" || displayMode === "chat-bubble";
     });
     return ids.length > 0 ? ids : undefined;
   },

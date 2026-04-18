@@ -2,7 +2,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import type { AppDispatch, RootState } from "@/lib/redux/store";
 import {
   selectAutoClearWithConversationHistory,
-  selectConversationMode,
+  selectApiEndpointMode,
 } from "../selectors/aggregate.selectors";
 import { executeInstance } from "./execute-instance.thunk";
 import { executeChatInstance } from "./execute-chat-instance.thunk";
@@ -27,7 +27,7 @@ export const smartExecute = createAsyncThunk<
 
     const autoClearWithHistory =
       selectAutoClearWithConversationHistory(conversationId)(state);
-    const conversationMode = selectConversationMode(conversationId)(state);
+    const apiEndpointMode = selectApiEndpointMode(conversationId)(state);
 
     if (autoClearWithHistory) {
       await dispatch(
@@ -36,7 +36,7 @@ export const smartExecute = createAsyncThunk<
           surfaceKey,
         }),
       );
-    } else if (conversationMode === "chat") {
+    } else if (apiEndpointMode === "manual") {
       await dispatch(executeChatInstance({ conversationId }));
     } else {
       await dispatch(executeInstance({ conversationId }));

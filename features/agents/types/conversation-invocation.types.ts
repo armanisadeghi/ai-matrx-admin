@@ -21,6 +21,7 @@ import type {
   InstanceOrigin,
   JsonExtractionConfig,
   ResultDisplayMode,
+  ApiEndpointMode,
   SourceFeature,
 } from "./instance.types";
 import type { VariableInputStyle } from "../components/inputs/variable-input-variations/variable-input-options";
@@ -75,12 +76,6 @@ export interface ConversationInvocationEngine {
   };
 }
 
-// =============================================================================
-// Routing — API call shape
-// =============================================================================
-
-export type ConversationMode = "agent" | "manual";
-
 export interface ConversationInvocationRouting {
   /**
    * Selects the API path family.
@@ -91,9 +86,9 @@ export interface ConversationInvocationRouting {
    * NOTE: Legacy code uses "chat" as the second value of this union. "manual"
    * is the canonical name from the reference doc and the invocation design.
    */
-  conversationMode: ConversationMode;
+  apiEndpointMode: ApiEndpointMode;
   /**
-   * Only meaningful when `conversationMode: "manual"` AND
+   * Only meaningful when `apiEndpointMode: "manual"` AND
    * `display.autoClearConversation: false`.
    *   true  — next call reuses the same conversationId; server REPLACES the
    *           prior conversation (one DB row).
@@ -271,12 +266,18 @@ export interface ConversationInvocationBehavior {
 
 export interface ConversationInvocationCallbacks {
   /**
-   * Key into CallbackManager. The manager holds the actual function refs
-   * (onComplete, onTextReplace, onTextInsertBefore, onTextInsertAfter).
-   * Keeping function refs OUT of the invocation preserves serializability,
-   * which matters for the shared package and any Redux persistence.
+   * CallbackManager ids. Each slot holds the id returned by
+   * `callbackManager.register(...)` for that specific function. Function
+   * refs live in CallbackManager; the invocation stays serializable.
+   *
+   * Every side stores an id and only an id. There is no context/type
+   * lookup — a callback is either registered with a known id or it isn't
+   * wired up. Pass only the ids you want fired.
    */
-  groupId?: string;
+  onCompleteId?: string;
+  onTextReplaceId?: string;
+  onTextInsertBeforeId?: string;
+  onTextInsertAfterId?: string;
   /**
    * Original text payload for text-manipulation callbacks (translate-selection,
    * replace-selection shortcuts). The selection the user had highlighted
@@ -302,7 +303,7 @@ export interface ConversationInvocation {
   callbacks?: ConversationInvocationCallbacks;
   /**
    * Advanced settings for Builder-mode invocations. Populated only when
-   * `routing.conversationMode: "manual"`.
+   * `routing.apiEndpointMode: "manual"`.
    */
   builder?: BuilderAdvancedSettings | null;
   /** Free-form bag for future/experimental fields. Use sparingly. */
@@ -316,7 +317,7 @@ export interface ConversationInvocation {
 /**
  * Endpoint routing table — the canonical mapping for `launchConversation`.
  *
- * | conversationMode | isEphemeral | Turn 1                                   | Turn 2+                                                                   |
+ * | apiEndpointMode | isEphemeral | Turn 1                                   | Turn 2+                                                                   |
  * | ---------------- | ----------- | ---------------------------------------- | ------------------------------------------------------------------------- |
  * | "agent"          | false       | POST /ai/agents/{id}                     | POST /ai/conversations/{id}                                               |
  * | "agent"          | true        | POST /ai/agents/{id}                     | POST /ai/chat                                                             |

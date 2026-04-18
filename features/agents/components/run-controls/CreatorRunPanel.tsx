@@ -1216,7 +1216,11 @@ export function CreatorRunPanel({
             <ClientPanel conversationId={conversationId} />
           )}
           {activeTab === "widget_invoker" && (
-            <AgentWidgetInvokerTester conversationId={conversationId} />
+            <AgentWidgetInvokerTester
+              conversationId={conversationId}
+              sourceFeature="agent-creator-panel"
+              surfaceKey={`creator-widget-tester:${conversationId}`}
+            />
           )}
         </div>
       </div>

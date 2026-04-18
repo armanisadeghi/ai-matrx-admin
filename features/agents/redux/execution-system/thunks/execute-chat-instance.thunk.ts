@@ -243,28 +243,41 @@ export function assembleChatRequest(
   // Source tracking
   const { sourceApp, sourceFeature } = instance;
 
+  // Ephemeral overrides: a conversation flagged `isEphemeral` is stateless on
+  // the server side. `store:false` suppresses all DB writes (cx_conversation,
+  // cx_message, cx_user_request, cx_request, cx_tool_call), and `is_new:false`
+  // skips the new-conversation branch on the server. Redux is the only
+  // source of truth for the transcript — the full history is already in
+  // `messages[]` above (priming + turns).
+  const isEphemeral = instance.isEphemeral === true;
+
   // Assemble the flat payload
   const request: Partial<ChatRequestPayload> = {
     ai_model_id,
     messages: messages as ChatRequestPayload["messages"],
     stream: true,
-    store: advancedSettings?.store ?? true,
+    // Ephemeral forces store:false regardless of builder override.
+    store: isEphemeral ? false : (advancedSettings?.store ?? true),
     debug: advancedSettings?.debug ?? false,
     max_iterations: advancedSettings?.maxIterations ?? 20,
     max_retries_per_iteration: advancedSettings?.maxRetriesPerIteration ?? 2,
     ...fullSettings,
   };
 
-  if (hasHistory && reuseConversationId) {
+  if (isEphemeral) {
+    // No DB row exists; every turn is a fresh stateless call. We still
+    // stamp `conversation_id` so logs can correlate turns, but the server
+    // will not create or update any persistent record.
     request.is_new = false;
     request.conversation_id = conversationId;
-    console.log("[assembleChatRequest] path 1");
+  } else if (hasHistory && reuseConversationId) {
+    request.is_new = false;
+    request.conversation_id = conversationId;
   } else if (hasHistory && !reuseConversationId) {
-    console.log("[assembleChatRequest] path 2");
-    // request.conversation_id = conversationId;
+    // Builder "branch" mode: mint a new conversationId so the prior run
+    // stays intact server-side. `conversation_id` is intentionally omitted.
     request.is_new = true;
   } else {
-    console.log("[assembleChatRequest] path 3");
     request.conversation_id = conversationId;
     request.is_new = true;
   }
@@ -371,16 +384,31 @@ export const executeChatInstance = createAsyncThunk<
       dispatch(setInstanceStatus({ conversationId, status: "running" }));
       dispatch(setRequestStatus({ requestId, status: "connecting" }));
 
+      // Consume any pending cache-bypass flags for this conversation —
+      // direct DB writes (edits, forks, deletes) leave the server's agent
+      // cache stale; this one-shot flag rebuilds it.
+      const { consumePendingCacheBypass } = await import(
+        "../message-crud/cache-bypass.slice"
+      );
+      const pendingBypass = dispatch(
+        consumePendingCacheBypass(conversationId) as never,
+      ) as unknown as
+        | import("../message-crud/cache-bypass.slice").CacheBypassFlags
+        | null;
+      const outboundPayload = pendingBypass
+        ? { ...payload, cache_bypass: pendingBypass }
+        : payload;
+
       const submitAt = performance.now();
 
-      // Always POST to the chat endpoint
+      // Always POST to the manual endpoint
       const url = `${baseUrl}${ENDPOINTS.ai.manual}`;
       const abortController = new AbortController();
       registerAbortController(conversationId, abortController);
       const response = await fetch(url, {
         method: "POST",
         headers,
-        body: JSON.stringify(payload),
+        body: JSON.stringify(outboundPayload),
         signal: abortController.signal,
       });
 

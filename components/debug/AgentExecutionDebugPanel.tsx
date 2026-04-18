@@ -30,7 +30,7 @@ import {
 // Conversation history
 import {
   selectConversationTurns,
-  selectConversationMode,
+  selectApiEndpointMode,
   selectStoredConversationId,
   selectTurnCount,
   selectHasConversationHistory,
@@ -253,7 +253,7 @@ export const AgentExecutionDebugPanel: React.FC<
   const instanceStatus = useAppSelector(selectInstanceStatus(instanceId));
 
   const turns = useAppSelector(selectConversationTurns(instanceId));
-  const conversationMode = useAppSelector(selectConversationMode(instanceId));
+  const apiEndpointMode = useAppSelector(selectApiEndpointMode(instanceId));
   const storedConversationId = useAppSelector(
     selectStoredConversationId(instanceId),
   );
@@ -393,7 +393,7 @@ export const AgentExecutionDebugPanel: React.FC<
                 <span className="text-gray-600 dark:text-gray-400">
                   Conversation Mode:
                 </span>
-                <p className="font-medium">{conversationMode}</p>
+                <p className="font-medium">{apiEndpointMode}</p>
               </div>
               <div>
                 <span className="text-gray-600 dark:text-gray-400">
@@ -580,7 +580,7 @@ export const AgentExecutionDebugPanel: React.FC<
                     storedConversationId ??
                     "Not yet set"}
                   <br />
-                  <strong>Mode:</strong> {conversationMode} |{" "}
+                  <strong>Mode:</strong> {apiEndpointMode} |{" "}
                   <strong>Turns:</strong> {turnCount} |{" "}
                   <strong>Has History:</strong> {String(hasHistory)}
                 </p>

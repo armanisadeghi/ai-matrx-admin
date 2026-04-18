@@ -10,7 +10,7 @@
  *    const { conversationId, launchShortcut, close } = useAgentLauncher(agentId, {
  *      surfaceKey: "agent-builder",
  *      sourceFeature: "agent-builder",
- *      conversationMode: "chat",
+ *      apiEndpointMode: "manual",
  *    });
  *    ```
  *
@@ -103,7 +103,7 @@ export function useAgentLauncher(
         usePreExecutionInput: opts?.usePreExecutionInput,
         showAutoClearToggle: opts?.showAutoClearToggle,
         autoClearConversation: opts?.autoClearConversation,
-        conversationMode: opts?.conversationMode,
+        apiEndpointMode: opts?.apiEndpointMode,
         userInput: opts?.userInput,
         variables: opts?.variables,
         overrides: opts?.overrides,
@@ -158,7 +158,7 @@ export function useAgentLauncher(
 
   const launchChat = useCallback(
     async (opts?: ManagedAgentOptions): Promise<LaunchResult> => {
-      const conversationMode = opts?.conversationMode ?? "chat";
+      const apiEndpointMode = opts?.apiEndpointMode ?? "agent";
       const allowChat = opts?.allowChat ?? true;
 
       const payload: ManagedAgentOptions = {
@@ -178,7 +178,7 @@ export function useAgentLauncher(
         usePreExecutionInput: opts?.usePreExecutionInput,
         userInput: opts?.userInput,
         variables: opts?.variables,
-        conversationMode,
+        apiEndpointMode,
         onComplete: opts?.onComplete,
         onTextReplace: opts?.onTextReplace,
         onTextInsertBefore: opts?.onTextInsertBefore,
@@ -192,12 +192,12 @@ export function useAgentLauncher(
 
   const launch = useCallback(
     async (opts: ManagedAgentOptions): Promise<LaunchResult> => {
-      if (opts?.conversationMode === "chat") {
+      if (opts?.apiEndpointMode === "manual") {
         return await launchChat(opts);
-      } else if (opts?.conversationMode === "agent") {
+      } else if (opts?.apiEndpointMode === "agent") {
         return await launchAgent(agentId!, opts);
       } else {
-        throw new Error("Invalid conversation mode");
+        throw new Error("Invalid API Endpoint Mode");
       }
     },
     [launchAgent, launchChat],
@@ -225,7 +225,7 @@ export function useAgentLauncher(
     usePreExecutionInput,
     showAutoClearToggle,
     autoClearConversation,
-    conversationMode,
+    apiEndpointMode,
     userInput,
     variables,
     overrides,
@@ -260,7 +260,7 @@ export function useAgentLauncher(
       usePreExecutionInput,
       showAutoClearToggle,
       autoClearConversation,
-      conversationMode,
+      apiEndpointMode,
       userInput,
       variables,
       overrides,
