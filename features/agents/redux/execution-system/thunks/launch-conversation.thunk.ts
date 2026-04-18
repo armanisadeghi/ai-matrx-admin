@@ -60,14 +60,6 @@ function invocationToManagedOptions(
     callbacks,
   } = invocation;
 
-  // Both "manual" and the legacy "chat" now resolve to POST /ai/manual at
-  // the endpoint boundary (see `lib/api/endpoints.ts`). Pass "manual"
-  // through unchanged — the widened ManagedAgentOptions.apiEndpointMode
-  // type accepts it directly. Emit "agent" or "manual" only; "chat" is no
-  // longer produced by new code paths.
-  const forwardedApiEndpointMode: ApiEndpointMode =
-    routing.apiEndpointMode === "manual" ? "manual" : "agent";
-
   // Resolve CallbackManager ids into thin wrappers that fire exactly once.
   // `callbackManager.trigger(id, data)` invokes the registered function and
   // removes the entry — matching the one-shot semantics every launch site
@@ -107,7 +99,7 @@ function invocationToManagedOptions(
       : {}),
 
     // Routing
-    apiEndpointMode: forwardedApiEndpointMode,
+    apiEndpointMode: routing.apiEndpointMode,
 
     // Ephemeral — stamped onto the conversation record; execute thunks
     // branch on `instance.isEphemeral` to select endpoints + store flags.

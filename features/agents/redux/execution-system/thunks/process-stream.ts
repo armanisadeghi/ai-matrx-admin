@@ -874,15 +874,15 @@ export async function processStream({
           }),
         );
       } else if (d.table === "cx_tool_call") {
+        // Stamp `completedAt` whenever the tool-call record transitions —
+        // "active" / "completed" / "failed" all mark the row as no longer
+        // reserved and give us the server's timestamp.
         dispatch(
           patchToolCall({
             id: d.record_id,
             patch: {
               status: d.status,
-              completedAt:
-                d.status === "completed" || d.status === "failed"
-                  ? new Date().toISOString()
-                  : new Date().toISOString(),
+              completedAt: new Date().toISOString(),
             },
           }),
         );

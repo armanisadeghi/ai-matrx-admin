@@ -32,6 +32,18 @@
       ],
       "/*": [
         "public/*"
+      ],
+      "@matrx/agents": [
+        "./packages/matrx-agents/src/index.ts"
+      ],
+      "@matrx/agents/adapters": [
+        "./packages/matrx-agents/src/adapters/index.ts"
+      ],
+      "@matrx/agents/config": [
+        "./packages/matrx-agents/src/config/index.ts"
+      ],
+      "@matrx/agents/types": [
+        "./packages/matrx-agents/src/types/index.ts"
       ]
     },
     "incremental": true,
@@ -70,6 +82,8 @@
     "components/**/*",
     "features/**/*",
     "app/**/*",
+    "packages/**/*.ts",
+    "packages/**/*.tsx",
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [
