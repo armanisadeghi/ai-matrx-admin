@@ -35,6 +35,7 @@ import {
   DrawerDescription,
 } from "@/components/ui/drawer";
 import { AgentRunHeader } from "./AgentRunHeader";
+import { DebugSessionActivator } from "@/features/agents/components/debug/DebugSessionActivator";
 
 interface AgentRunnerPageProps {
   agentId: string;
@@ -134,6 +135,7 @@ export function AgentRunnerPage({ agentId }: AgentRunnerPageProps) {
 
   return (
     <div className="relative flex flex-col h-full overflow-hidden">
+      <DebugSessionActivator />
       <AgentRunHeader
         agentId={agentId}
         agentName={agentName}
@@ -166,7 +168,6 @@ export function AgentRunnerPage({ agentId }: AgentRunnerPageProps) {
           smartInputProps={{
             sendButtonVariant: "blue",
             showSubmitOnEnterToggle: true,
-            showAutoClearToggle: true,
           }}
         />
       </div>

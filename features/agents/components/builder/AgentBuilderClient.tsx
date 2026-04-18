@@ -7,6 +7,7 @@ import { selectAgentReadyForBuilder } from "@/features/agents/redux/agent-defini
 import { useAgentAutoSave } from "@/features/agents/hooks/useAgentAutoSave";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileBuilderSkeleton } from "./AgentBuilderSkeletons";
+import { DebugSessionActivator } from "@/features/agents/components/debug/DebugSessionActivator";
 
 const AgentBuilderMobile = dynamic(
   () =>
@@ -45,5 +46,10 @@ export function AgentBuilderClient({
 
   if (isMobile) return <AgentBuilderMobile agentId={agentId} />;
 
-  return <>{desktopContent}</>;
+  return (
+    <>
+      <DebugSessionActivator />
+      {desktopContent}
+    </>
+  );
 }

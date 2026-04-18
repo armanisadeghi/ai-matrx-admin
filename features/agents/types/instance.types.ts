@@ -469,6 +469,9 @@ export interface ManagedAgentOptions {
    */
   displayMode?: ResultDisplayMode;
 
+  // "inline" | "wizard" | "form" | "compact" | "guided" | "cards"
+  variableInputStyle?: VariableInputStyle;
+
   // autoRun means the agent triggers without any user input or variables.
   // used for programmatic triggers where the full context is already assembled
   // (e.g. flashcard "I'm confused" button) or many context menu options.
@@ -526,7 +529,6 @@ export interface ManagedAgentOptions {
   overrides?: Partial<LLMParams>;
 
   applicationScope?: ApplicationScope;
-  variableInputStyle?: VariableInputStyle;
 
   showAutoClearToggle?: boolean;
 

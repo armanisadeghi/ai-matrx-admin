@@ -22,7 +22,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { setPreExecutionSatisfied } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.slice";
 import { selectPreExecutionMessage } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { selectHasUserInput } from "@/features/agents/redux/execution-system/instance-user-input/instance-user-input.selectors";
-import { destroyInstance } from "@/features/agents/redux/execution-system/execution-instances/execution-instances.slice";
+import { destroyInstanceIfAllowed } from "@/features/agents/redux/execution-system/execution-instances";
 import { selectInstanceAgentName } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { SmartAgentInput } from "./smart-input/SmartAgentInput";
 
@@ -48,7 +48,7 @@ export function PreExecutionAgentInput({
   };
 
   const handleCancel = () => {
-    dispatch(destroyInstance(conversationId));
+    dispatch(destroyInstanceIfAllowed(conversationId));
   };
 
   return (

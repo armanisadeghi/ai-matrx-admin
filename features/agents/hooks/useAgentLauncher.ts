@@ -26,7 +26,7 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { destroyInstance } from "@/features/agents/redux/execution-system/execution-instances/execution-instances.slice";
+import { destroyInstanceIfAllowed } from "@/features/agents/redux/execution-system/execution-instances";
 import {
   setFocus,
   selectFocusedConversation,
@@ -205,7 +205,7 @@ export function useAgentLauncher(
 
   const close = useCallback(
     (id: string) => {
-      dispatch(destroyInstance(id));
+      dispatch(destroyInstanceIfAllowed(id));
     },
     [dispatch],
   );
@@ -289,7 +289,7 @@ export function useAgentLauncher(
 
     return () => {
       if (createdId) {
-        dispatch(destroyInstance(createdId));
+        dispatch(destroyInstanceIfAllowed(createdId));
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

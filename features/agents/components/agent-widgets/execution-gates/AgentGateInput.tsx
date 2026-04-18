@@ -7,7 +7,7 @@ import {
   selectInstanceAgentName,
 } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { setPreExecutionSatisfied } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.slice";
-import { destroyInstance } from "@/features/agents/redux/execution-system/execution-instances/execution-instances.slice";
+import { destroyInstanceIfAllowed } from "@/features/agents/redux/execution-system/execution-instances";
 import { closeOverlay, openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { SmartAgentInput } from "../../inputs/smart-input/SmartAgentInput";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
@@ -62,7 +62,7 @@ export function AgentGateBody({
 
   const handleCancel = () => {
     // Destroy the instance — nothing downstream was ever opened, so we just clean up
-    dispatch(destroyInstance(conversationId));
+    dispatch(destroyInstanceIfAllowed(conversationId));
     closeGate();
     onClose();
   };

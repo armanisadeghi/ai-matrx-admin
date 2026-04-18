@@ -27,11 +27,18 @@ import { AgentType } from "@/features/agents/types/agent-definition.types";
 export interface ExecutionInstancesState {
   byConversationId: Record<string, ExecutionInstance>;
   allConversationIds: string[];
+  /**
+   * When true, destroyInstance and destroyInstancesForAgent are no-ops.
+   * Flip this on via setDebugSession(true) to preserve all instance + request
+   * data for the rest of the session (debug panel, agents/build, agents/run).
+   */
+  debugSessionActive: boolean;
 }
 
 const initialState: ExecutionInstancesState = {
   byConversationId: {},
   allConversationIds: [],
+  debugSessionActive: false,
 };
 
 // =============================================================================
@@ -106,10 +113,22 @@ const executionInstancesSlice = createSlice({
     },
 
     /**
+     * Enable or disable debug-session mode.
+     * While active, destroyInstance and destroyInstancesForAgent are no-ops so
+     * all instance + request data is retained for the debug panel.
+     * Once set to true it is intentionally never reset to false for the session.
+     */
+    setDebugSession(state, action: PayloadAction<boolean>) {
+      state.debugSessionActive = action.payload;
+    },
+
+    /**
      * Remove a conversation and free its ID.
      * Sibling slices clean up via extraReducers on this action.
+     * No-op when debugSessionActive is true.
      */
     destroyInstance(state, action: PayloadAction<string>) {
+      if (state.debugSessionActive) return;
       const conversationId = action.payload;
       delete state.byConversationId[conversationId];
       state.allConversationIds = state.allConversationIds.filter(
@@ -118,6 +137,7 @@ const executionInstancesSlice = createSlice({
     },
 
     destroyInstancesForAgent(state, action: PayloadAction<string>) {
+      if (state.debugSessionActive) return;
       const agentId = action.payload;
       const toRemove = state.allConversationIds.filter(
         (id) => state.byConversationId[id]?.agentId === agentId,
@@ -136,6 +156,7 @@ export const {
   createInstance,
   setInstanceStatus,
   confirmServerSync,
+  setDebugSession,
   destroyInstance,
   destroyInstancesForAgent,
 } = executionInstancesSlice.actions;

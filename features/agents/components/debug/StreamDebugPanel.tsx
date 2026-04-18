@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { useAppSelector } from "@/lib/redux/hooks";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
+import { setDebugSession } from "@/features/agents/redux/execution-system/execution-instances";
 import { shallowEqual } from "react-redux";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -1628,6 +1629,19 @@ export function StreamDebugPanel({
   hideChrome = false,
   requestIdOverride,
 }: StreamDebugPanelProps) {
+  const dispatch = useAppDispatch();
+
+  // Activate debug-session mode on first render so all future destroyInstance
+  // calls become no-ops and history is preserved for the rest of the session.
+  const debugSessionActive = useAppSelector(
+    (state) => state.executionInstances.debugSessionActive,
+  );
+  useEffect(() => {
+    if (!debugSessionActive) {
+      dispatch(setDebugSession(true));
+    }
+  }, [dispatch, debugSessionActive]);
+
   // All instances in Redux — so we can show tabs for each one
   const allInstanceIds = useAppSelector(
     (state) => state.executionInstances.allConversationIds,
