@@ -41,6 +41,24 @@ export const isVariableUsedInText = (
 ): boolean => text.includes(`{{${variableName}}}`);
 
 /**
+ * Extracts unique variable names referenced in text via {{name}} syntax.
+ * Returns the names in order of first appearance, trimmed.
+ */
+export const extractVariableReferences = (text: string): string[] => {
+  const matches = text.matchAll(/\{\{([^}]+)\}\}/g);
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const m of matches) {
+    const name = m[1].trim();
+    if (name && !seen.has(name)) {
+      seen.add(name);
+      out.push(name);
+    }
+  }
+  return out;
+};
+
+/**
  * Converts a sanitized variable name back to a human-readable display label.
  *   user_name       → "User Name"
  *   favorite_color  → "Favorite Color"

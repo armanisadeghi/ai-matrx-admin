@@ -16,6 +16,7 @@ import {
   LayoutPanelTop,
   Globe,
   FileText,
+  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { RootState } from "@/lib/redux/store";
@@ -24,6 +25,7 @@ import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 import { selectAgentById } from "@/features/agents/redux/agent-definition/selectors";
 import { ShareModal } from "@/features/sharing";
 import { AgentActionModal } from "./AgentActionModal";
+import { AgentSneakPeekModal } from "./AgentSneakPeekModal";
 import { ComingSoonModal } from "./ComingSoonModal";
 import { FavoriteAgentButton } from "./FavoriteAgentButton";
 import { toast } from "@/lib/toast-service";
@@ -75,6 +77,7 @@ export function AgentListItem({
   const [isConvertToBuiltinModalOpen, setIsConvertToBuiltinModalOpen] =
     useState(false);
   const [isMetadataModalOpen, setIsMetadataModalOpen] = useState(false);
+  const [isSneakPeekOpen, setIsSneakPeekOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
   const [isConvertingToTemplate, setIsConvertingToTemplate] = useState(false);
@@ -112,6 +115,12 @@ export function AgentListItem({
     e?.stopPropagation();
     setIsMenuOpen(false);
     dispatch(openAgentContentWindow({ agentId: id, initialTab: "overview" }));
+  };
+
+  const handleSneakPeek = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setIsMenuOpen(false);
+    setIsSneakPeekOpen(true);
   };
 
   const handleRun = (e?: React.MouseEvent) => {
@@ -259,6 +268,13 @@ export function AgentListItem({
                 </DropdownMenuItem>
               </Link>
               <DropdownMenuItem
+                onClick={handleSneakPeek}
+                disabled={isDisabled}
+              >
+                <Sparkles className="mr-2 h-4 w-4" />
+                Sneak Peek
+              </DropdownMenuItem>
+              <DropdownMenuItem
                 onClick={handleDuplicate}
                 disabled={isDuplicating || isDisabled}
               >
@@ -397,6 +413,14 @@ export function AgentListItem({
           featureName="Edit Agent Details"
         />
       )}
+      <AgentSneakPeekModal
+        agentId={id}
+        isOpen={isSneakPeekOpen}
+        onClose={() => {
+          setIsSneakPeekOpen(false);
+          setLastModalCloseTime(Date.now());
+        }}
+      />
     </>
   );
 }

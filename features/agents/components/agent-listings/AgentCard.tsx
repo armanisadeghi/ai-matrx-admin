@@ -18,6 +18,7 @@ import {
   Webhook,
   FileText,
   Archive,
+  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { RootState } from "@/lib/redux/store";
@@ -26,6 +27,7 @@ import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 import { selectAgentById } from "@/features/agents/redux/agent-definition/selectors";
 import { ShareModal } from "@/features/sharing";
 import { AgentActionModal } from "./AgentActionModal";
+import { AgentSneakPeekModal } from "./AgentSneakPeekModal";
 import { ComingSoonModal } from "./ComingSoonModal";
 import { FavoriteAgentButton } from "./FavoriteAgentButton";
 import { useState } from "react";
@@ -80,6 +82,7 @@ export function AgentCard({
   const [isConvertToBuiltinModalOpen, setIsConvertToBuiltinModalOpen] =
     useState(false);
   const [isMetadataModalOpen, setIsMetadataModalOpen] = useState(false);
+  const [isSneakPeekOpen, setIsSneakPeekOpen] = useState(false);
   const [isConvertingToTemplate, setIsConvertingToTemplate] = useState(false);
   const [lastModalCloseTime, setLastModalCloseTime] = useState(0);
   const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
@@ -199,6 +202,7 @@ export function AgentCard({
       !isCreateAppModalOpen &&
       !isConvertToBuiltinModalOpen &&
       !isMetadataModalOpen &&
+      !isSneakPeekOpen &&
       timeSinceClose > 300
     ) {
       setIsActionModalOpen(true);
@@ -328,6 +332,19 @@ export function AgentCard({
               disabled={isDisabled}
             />
           </Link>
+          <IconButton
+            icon={Sparkles}
+            tooltip={isDisabled ? "Please wait..." : "Sneak Peek"}
+            size="sm"
+            variant="ghost"
+            tooltipSide="top"
+            tooltipAlign="center"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (!isDisabled) setIsSneakPeekOpen(true);
+            }}
+            disabled={isDisabled}
+          />
           <IconButton
             icon={isDuplicating ? Loader2 : Copy}
             tooltip={
@@ -506,6 +523,15 @@ export function AgentCard({
           setLastModalCloseTime(Date.now());
         }}
         featureName="Edit Agent Details"
+      />
+
+      <AgentSneakPeekModal
+        agentId={id}
+        isOpen={isSneakPeekOpen}
+        onClose={() => {
+          setIsSneakPeekOpen(false);
+          setLastModalCloseTime(Date.now());
+        }}
       />
     </Card>
   );

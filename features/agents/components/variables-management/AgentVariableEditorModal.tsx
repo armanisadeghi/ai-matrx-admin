@@ -37,6 +37,9 @@ interface AgentVariableEditorModalProps {
   onAdd?: (variable: VariableDefinition) => void;
   existingNames: string[];
   mode: "add" | "edit";
+  // Optional pre-filled name when opening in "add" mode (e.g. converting an
+  // undeclared {{var}} reference into a real variable).
+  prefillName?: string;
 }
 
 export function AgentVariableEditorModal({
@@ -47,6 +50,7 @@ export function AgentVariableEditorModal({
   onAdd,
   existingNames,
   mode,
+  prefillName,
 }: AgentVariableEditorModalProps) {
   const isMobile = useIsMobile();
 
@@ -61,13 +65,13 @@ export function AgentVariableEditorModal({
 
   useEffect(() => {
     if (isOpen && mode === "add") {
-      setNewName("");
+      setNewName(prefillName ?? "");
       setNewDefaultValue("");
       setNewCustomComponent(undefined);
       setNewRequired(false);
       setNewHelpText("");
     }
-  }, [isOpen, mode]);
+  }, [isOpen, mode, prefillName]);
 
   const sanitizedName = newName.trim() ? sanitizeVariableName(newName) : "";
   const isDuplicate =

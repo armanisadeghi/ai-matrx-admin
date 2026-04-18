@@ -1,9 +1,10 @@
 import React, { useState, useMemo } from 'react';
-import { ChevronDown, Search } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import {
   Command,
   CommandEmpty,
   CommandGroup,
+  CommandInput,
   CommandItem,
 } from '@/components/ui/command';
 import {
@@ -11,7 +12,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { Input } from '@/components/ui/input';
 
 export type Option = {
   value: string;
@@ -71,15 +71,12 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
           align="start"
         >
           <Command className="bg-elevation1" shouldFilter={false}>
-            <div className="relative">
-              <Input 
-                placeholder={searchPlaceholder}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="text-sm pr-8"
-              />
-              <Search className="h-4 w-4 absolute right-2 top-1/2 transform -translate-y-1/2 text-muted-foreground pointer-events-none opacity-50" />
-            </div>
+            <CommandInput
+              placeholder={searchPlaceholder}
+              value={search}
+              onValueChange={setSearch}
+              className="text-sm"
+            />
             <CommandEmpty className="text-sm py-2 px-2">{noResultsText}</CommandEmpty>
             <CommandGroup className="max-h-60 overflow-auto">
               {filteredOptions.map((option) => (

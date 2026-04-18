@@ -18,6 +18,7 @@ import {
 import { setAgentVariableDefinitions } from "@/features/agents/redux/agent-definition/slice";
 import type { VariableDefinition } from "@/features/agents/types/agent-definition.types";
 import { AgentVariableEditorModal } from "./AgentVariableEditorModal";
+import { extractVariableReferences } from "@/features/agents/utils/variable-utils";
 
 interface AgentVariablesManagerProps {
   agentId: string;
@@ -50,15 +51,22 @@ export function AgentVariablesManager({ agentId }: AgentVariablesManagerProps) {
     )
     .join(" ");
 
+  const definedNamesSet = new Set(variables.map((v) => v.name));
+  const undeclaredNames = extractVariableReferences(allText).filter(
+    (n) => !definedNamesSet.has(n),
+  );
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"add" | "edit">("add");
   const [editingVariableName, setEditingVariableName] = useState<
     string | undefined
   >(undefined);
+  const [prefillName, setPrefillName] = useState<string | undefined>(undefined);
 
-  const handleAddClick = () => {
+  const handleAddClick = (prefill?: string) => {
     setModalMode("add");
     setEditingVariableName(undefined);
+    setPrefillName(prefill);
     setIsModalOpen(true);
   };
 
@@ -133,12 +141,35 @@ export function AgentVariablesManager({ agentId }: AgentVariablesManagerProps) {
 
         <button
           className="inline-flex items-center gap-1 px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors"
-          onClick={handleAddClick}
+          onClick={() => handleAddClick()}
         >
           <Plus className="w-3.5 h-3.5" />
           Add
         </button>
       </div>
+
+      {undeclaredNames.length > 0 && (
+        <div className="mt-3 flex items-center gap-2 flex-wrap">
+          <Label className="text-xs text-muted-foreground">
+            Undeclared
+            <span className="ml-1 text-foreground/60">
+              ({undeclaredNames.length})
+            </span>
+          </Label>
+          {undeclaredNames.map((name) => (
+            <button
+              key={name}
+              onClick={() => handleAddClick(name)}
+              className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+              title={`Found in messages — click to define ${name}`}
+            >
+              <AlertCircle className="w-3 h-3 shrink-0" />
+              <span>{name}</span>
+              <Plus className="w-3 h-3 shrink-0 opacity-70" />
+            </button>
+          ))}
+        </div>
+      )}
 
       <AgentVariableEditorModal
         agentId={agentId}
@@ -148,6 +179,7 @@ export function AgentVariablesManager({ agentId }: AgentVariablesManagerProps) {
         onAdd={handleAdd}
         existingNames={existingNames}
         mode={modalMode}
+        prefillName={prefillName}
       />
     </>
   );

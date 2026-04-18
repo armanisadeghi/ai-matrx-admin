@@ -260,6 +260,11 @@ export const selectFindReplaceState = (instanceId: string) =>
     createSelector(selectInstancesMap, (instances): FindReplaceState | null => instances[instanceId]?.findReplace ?? null),
   );
 
+export const selectInstanceSplitNoteId = (instanceId: string) =>
+  cached(`instSplit:${instanceId}`, () =>
+    createSelector(selectInstancesMap, (instances): string | null => instances[instanceId]?.splitNoteId ?? null),
+  );
+
 export const selectIsActiveTab = (instanceId: string, noteId: string): ((state: RootState) => boolean) =>
   (state) => state.notes?.instances?.[instanceId]?.activeTabId === noteId;
 

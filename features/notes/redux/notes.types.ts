@@ -102,6 +102,8 @@ export interface NotesInstance {
   activeTabId: string | null;
   /** Find & Replace state for this instance (null = closed) */
   findReplace: FindReplaceState | null;
+  /** Note ID shown in the split pane (null = no split) */
+  splitNoteId: string | null;
 }
 
 // ── Note Record (extends Note with all runtime tracking) ────────────────────

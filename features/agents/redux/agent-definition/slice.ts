@@ -342,11 +342,29 @@ export const agentDefinitionSlice = createSlice({
       const messagesWereNormalized =
         normalizedMessages !== originalMessages &&
         JSON.stringify(normalizedMessages) !== JSON.stringify(originalMessages);
-      const normalizedData = messagesWereNormalized
-        ? { ...data, messages: normalizedMessages }
-        : data;
 
       const existing = state.agents[data.id];
+
+      // Access metadata (isOwner, accessLevel, sharedByEmail) is only populated
+      // by the agx_get_list / agx_get_access_level RPCs. Direct table fetches
+      // (e.g. fetchFullAgent reading agx_agent.*) yield null for these. If we
+      // already know the access level for this record, NEVER let a null payload
+      // downgrade it — that would silently drop the agent out of "mine"/"shared"
+      // filters and make it vanish from the list.
+      const dataToWrite =
+        existing && existing.accessLevel != null && data.accessLevel == null
+          ? {
+              ...data,
+              isOwner: existing.isOwner,
+              accessLevel: existing.accessLevel,
+              sharedByEmail: existing.sharedByEmail,
+            }
+          : data;
+
+      const normalizedData = messagesWereNormalized
+        ? { ...dataToWrite, messages: normalizedMessages }
+        : dataToWrite;
+
       if (existing) {
         mergeAndTrack(existing, normalizedData);
         markRecordClean(existing);

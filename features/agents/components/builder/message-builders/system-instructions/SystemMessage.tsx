@@ -40,6 +40,14 @@ function extractTextFromBlock(block: Record<string, unknown>): string {
   return (block.text as string | undefined) ?? "";
 }
 
+/** Compute character offset of (node, offset) within `root`'s text content. */
+function getOffsetWithinRoot(root: Node, node: Node, offset: number): number {
+  const range = document.createRange();
+  range.selectNodeContents(root);
+  range.setEnd(node, offset);
+  return range.toString().length;
+}
+
 interface SystemMessageProps {
   agentId: string;
   onOpenFullScreenEditor?: () => void;
@@ -539,6 +547,51 @@ export function SystemMessage({
     [scrollContainerRef],
   );
 
+  // Drag-select handler: when a user releases the mouse with a non-empty
+  // selection inside the view div, enter edit mode and mirror the selection
+  // into the textarea so they can immediately type/replace the selected text.
+  // Pure clicks (no movement → collapsed range) fall through to onClick above.
+  const handleViewMouseUp = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (e.button !== 0 || isEditing) return;
+      const selection =
+        typeof window !== "undefined" ? window.getSelection() : null;
+      if (!selection || selection.rangeCount === 0) return;
+      const range = selection.getRangeAt(0);
+      if (range.collapsed) return;
+      const rootEl = e.currentTarget;
+      if (
+        !rootEl.contains(range.startContainer) ||
+        !rootEl.contains(range.endContainer)
+      ) {
+        return;
+      }
+      const start = getOffsetWithinRoot(
+        rootEl,
+        range.startContainer,
+        range.startOffset,
+      );
+      const end = getOffsetWithinRoot(
+        rootEl,
+        range.endContainer,
+        range.endOffset,
+      );
+      const savedScroll = scrollContainerRef?.current?.scrollTop ?? 0;
+      setIsEditing(true);
+      requestAnimationFrame(() => {
+        if (scrollContainerRef?.current) {
+          scrollContainerRef.current.scrollTop = savedScroll;
+        }
+        const textarea = textareaRefs.current?.[systemMessageIndex];
+        if (textarea) {
+          textarea.focus({ preventScroll: true });
+          textarea.setSelectionRange(start, end);
+        }
+      });
+    },
+    [isEditing, scrollContainerRef],
+  );
+
   const contextMenuData = useMemo(() => {
     return {
       content: developerMessage,
@@ -644,6 +697,7 @@ export function SystemMessage({
             <div
               className="text-xs pb-2 text-gray-600 dark:text-gray-400 whitespace-pre-wrap cursor-text leading-normal"
               onClick={handleViewClick}
+              onMouseUp={handleViewMouseUp}
               style={{
                 minHeight: "240px",
                 lineHeight: "1.5",

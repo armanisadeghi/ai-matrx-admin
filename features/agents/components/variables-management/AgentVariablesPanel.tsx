@@ -25,7 +25,10 @@ import type {
   VariableDefinition,
   VariableCustomComponent,
 } from "@/features/agents/types/agent-definition.types";
-import { sanitizeVariableName } from "@/features/agents/utils/variable-utils";
+import {
+  sanitizeVariableName,
+  extractVariableReferences,
+} from "@/features/agents/utils/variable-utils";
 import { AgentVariableEditor } from "./AgentVariableEditor";
 
 interface AgentVariablesPanelProps {
@@ -69,6 +72,10 @@ export function AgentVariablesPanel({ agentId }: AgentVariablesPanelProps) {
 
   const variables: VariableDefinition[] = rawVariables ?? [];
   const allText = buildAllText(messages);
+  const definedNamesSet = new Set(variables.map((v) => v.name));
+  const undeclaredNames = extractVariableReferences(allText).filter(
+    (n) => !definedNamesSet.has(n),
+  );
 
   // ── Selection ──────────────────────────────────────────────────────────────
   const [selection, setSelection] = useState<SelectionState>(() =>
@@ -94,8 +101,9 @@ export function AgentVariablesPanel({ agentId }: AgentVariablesPanelProps) {
     setNewCustomComponent(undefined);
   };
 
-  const handleStartNew = () => {
+  const handleStartNew = (prefillName?: string) => {
     resetNewForm();
+    if (prefillName) setNewName(prefillName);
     setSelection({ kind: "new" });
   };
 
@@ -200,7 +208,7 @@ export function AgentVariablesPanel({ agentId }: AgentVariablesPanelProps) {
             })}
 
             <button
-              onClick={handleStartNew}
+              onClick={() => handleStartNew()}
               className={cn(
                 "w-full flex items-center gap-2 px-3 py-2 text-left transition-colors",
                 selection.kind === "new"
@@ -211,6 +219,49 @@ export function AgentVariablesPanel({ agentId }: AgentVariablesPanelProps) {
               <Plus className="w-3.5 h-3.5 shrink-0" />
               <span className="text-xs">Add New Variable</span>
             </button>
+
+            {undeclaredNames.length > 0 && (
+              <div className="mt-2 border-t border-border pt-1">
+                <p className="px-3 py-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+                  Undeclared
+                  <span className="ml-1 text-foreground/60">
+                    ({undeclaredNames.length})
+                  </span>
+                </p>
+                <p className="px-3 pb-1.5 text-[10px] text-muted-foreground/80 leading-tight">
+                  Found in messages but not defined. Click to create.
+                </p>
+                {undeclaredNames.map((name) => {
+                  const sanitized = sanitizeVariableName(name);
+                  const collides =
+                    !!sanitized && definedNamesSet.has(sanitized);
+                  return (
+                    <button
+                      key={name}
+                      onClick={() => handleStartNew(name)}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-left transition-colors hover:bg-muted/60 text-foreground group"
+                      title={
+                        sanitized && sanitized !== name
+                          ? `Will be saved as ${sanitized}`
+                          : `Create variable: ${name}`
+                      }
+                    >
+                      <AlertCircle className="w-3.5 h-3.5 shrink-0 text-red-500" />
+                      <span className="flex-1 text-xs font-mono truncate text-red-600 dark:text-red-400">
+                        {name}
+                      </span>
+                      {collides ? (
+                        <span className="text-[9px] text-amber-500 shrink-0">
+                          dup
+                        </span>
+                      ) : (
+                        <Plus className="w-3 h-3 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </ScrollArea>
       </div>
