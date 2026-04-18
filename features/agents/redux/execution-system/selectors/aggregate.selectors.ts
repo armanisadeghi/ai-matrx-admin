@@ -135,20 +135,26 @@ export const selectLatestAccumulatedText = (conversationId: string) =>
   );
 
 /**
- * Returns the conversationId if the execution instance exists, else null.
+ * Returns the conversationId once the server has confirmed it exists in the
+ * database (cx_conversation row reserved via the stream's record_reserved
+ * event, OR loaded from a previous session).
  *
- * The client generates `conversationId` up-front and the server honors it, so
- * there is only one id. This selector's historical job of reconciling a
- * client id with a server-returned id is obsolete; callers that already know
- * the conversationId can use it directly. Kept for existence checks.
+ * The id is always the client-generated UUID — the server honors it. This
+ * selector's job is to gate consumers (URL navigation, sidebar highlighting,
+ * conversation list sync) until the row exists in the DB so dependent
+ * fetches don't race the first write.
+ *
+ * For routing decisions inside execution thunks, use
+ * `selectHasConversationHistory` instead — the agents/{id} vs conversations/{id}
+ * choice depends on whether prior turns exist, not on server confirmation.
  */
 export const selectLatestConversationId =
   (conversationId: string) =>
   (state: RootState): string | null => {
-    if (state.executionInstances?.byConversationId[conversationId]) {
-      return conversationId;
-    }
-    return null;
+    const instance = state.executionInstances?.byConversationId[conversationId];
+    if (!instance) return null;
+    if (instance.cacheOnly) return null;
+    return conversationId;
   };
 
 /** The current conversation mode for this instance (agent | conversation | chat). */
