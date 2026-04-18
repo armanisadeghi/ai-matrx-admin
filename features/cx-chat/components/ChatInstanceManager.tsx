@@ -21,7 +21,7 @@ import { useEffect, useRef, useState } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { fetchAgentExecutionMinimal } from "@/features/agents/redux/agent-definition/thunks";
 import { createManualInstance } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
-import { fetchConversationHistory } from "@/features/cx-chat/redux/thunks";
+import { fetchConversationHistory } from "@/features/agents/redux/old/OLD-cx-conversation/thunks";
 import { selectConversationExists } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
 import ChatWelcomeClient from "@/features/cx-chat/components/ChatWelcomeClient";
 import ChatConversationClient from "@/features/cx-chat/components/core/ChatConversationClient";

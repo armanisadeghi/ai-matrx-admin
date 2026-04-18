@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
-import { useAppSelector } from '@/lib/redux/hooks';
-import { selectSessionHasUnsavedChanges } from '@/features/cx-conversation/redux/selectors';
+import { useEffect } from "react";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectSessionHasUnsavedChanges } from "@/features/agents/redux/old/OLD-cx-message-actions/selectors";
 
 /**
  * Registers a `beforeunload` listener that warns the user when they try to
@@ -9,18 +9,18 @@ import { selectSessionHasUnsavedChanges } from '@/features/cx-conversation/redux
  * Only active when `selectSessionHasUnsavedChanges` is true.
  */
 export function useUnsavedChangesGuard(sessionId: string) {
-    const hasUnsavedChanges = useAppSelector((state) =>
-        selectSessionHasUnsavedChanges(state, sessionId)
-    );
+  const hasUnsavedChanges = useAppSelector((state) =>
+    selectSessionHasUnsavedChanges(state, sessionId),
+  );
 
-    useEffect(() => {
-        if (!hasUnsavedChanges) return;
+  useEffect(() => {
+    if (!hasUnsavedChanges) return;
 
-        const handler = (e: BeforeUnloadEvent) => {
-            e.preventDefault();
-        };
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+    };
 
-        window.addEventListener('beforeunload', handler);
-        return () => window.removeEventListener('beforeunload', handler);
-    }, [hasUnsavedChanges]);
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [hasUnsavedChanges]);
 }

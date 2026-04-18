@@ -11,7 +11,7 @@ import {
   toggleDebugMode,
   selectIsDebugMode,
 } from "@/lib/redux/slices/adminDebugSlice";
-import { chatConversationsActions } from "@/features/cx-conversation/redux/slice";
+import { chatConversationsActions } from "@/features/agents/redux/old/OLD-cx-message-actions/slice";
 import {
   selectShowDebugInfo,
   selectShowSystemMessages,
@@ -19,7 +19,7 @@ import {
   selectSession,
   selectMessages,
   selectResources,
-} from "@/features/cx-conversation/redux/selectors";
+} from "@/features/agents/redux/old/OLD-cx-message-actions/selectors";
 import { WindowPanel } from "../WindowPanel";
 
 // ─── Window inner ─────────────────────────────────────────────────────────────

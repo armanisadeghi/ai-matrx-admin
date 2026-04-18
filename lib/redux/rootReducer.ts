@@ -56,7 +56,7 @@ import messagingReducer from "@/features/messaging/redux/messagingSlice";
 import smsReducer from "@/features/sms/redux/smsSlice";
 import adminPreferencesReducer from "./slices/adminPreferencesSlice";
 import apiConfigReducer from "./slices/apiConfigSlice";
-import activeChatReducer from "./slices/activeChatSlice";
+import activeChatReducer from "../../features/agents/redux/old/activeChatSlice";
 import entitySystemReducer from "./slices/entitySystemSlice";
 import urlSyncReducer from "./slices/urlSyncSlice";
 
@@ -78,11 +78,11 @@ import promptExecutionReducer from "./prompt-execution/slice";
 import actionCacheReducer from "./prompt-execution/actionCacheSlice";
 import promptEditorReducer from "./slices/promptEditorSlice";
 import modelRegistryReducer from "../../features/ai-models/redux/modelRegistrySlice";
-import { chatConversationsReducer } from "@/features/cx-conversation/redux";
-import { messageActionsReducer } from "@/features/cx-conversation/redux/messageActionsSlice";
+import { chatConversationsReducer } from "@/features/agents/redux/old/OLD-cx-message-actions";
+import { messageActionsReducer } from "@/features/agents/redux/old/OLD-cx-message-actions/messageActionsSlice";
 import { agentSettingsReducer } from "./slices/agent-settings";
 
-import cxConversationsReducer from "@/features/cx-chat/redux/cx-conversations.slice";
+import cxConversationsReducer from "@/features/agents/redux/old/OLD-cx-conversation/cx-conversations.slice";
 import artifactsReducer from "./slices/artifactsSlice";
 import htmlPagesReducer from "./slices/htmlPagesSlice";
 

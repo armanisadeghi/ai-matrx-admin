@@ -17,12 +17,15 @@
  * For DB-loaded turns:    requestId is null, turnId is set.
  */
 
+import { useCallback } from "react";
 import MarkdownStream from "@/components/MarkdownStream";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { useDebugContext } from "@/hooks/useDebugContext";
 import { selectErrorIsFatal } from "@/features/agents/redux/execution-system/active-requests/active-requests.selectors";
 import { selectTurnByTurnId } from "@/features/agents/redux/execution-system/instance-conversation-history/instance-conversation-history.selectors";
 import { AssistantError } from "./AssistantError";
+import { AssistantActionBar } from "@/features/cx-conversation/AssistantActionBar";
+import { useDomCapturePrint } from "@/features/conversation/hooks/useDomCapturePrint";
 
 interface AgentAssistantMessageProps {
   conversationId: string;
@@ -41,6 +44,14 @@ export function AgentAssistantMessage({
 }: AgentAssistantMessageProps) {
   useDebugContext("AgentAssistantMessage");
 
+  // DOM-capture print (Tier 2 — captures all rendered blocks)
+  const { captureRef, isCapturing, captureAsPDF } = useDomCapturePrint();
+  const handleFullPrint = useCallback(() => {
+    captureAsPDF({
+      filename: `agent-${conversationId}-${turnId ?? requestId ?? ""}`,
+    });
+  }, [captureAsPDF, conversationId, turnId, requestId]);
+
   // ── Data Resolution ──────────────────────────────────────────────────────
   // Priority: activeRequest (live/recent) → committed turn (DB/history)
 
@@ -57,7 +68,7 @@ export function AgentAssistantMessage({
   }
 
   return (
-    <div>
+    <div ref={captureRef}>
       <MarkdownStream
         requestId={requestId}
         turnId={turnId}
@@ -67,6 +78,15 @@ export function AgentAssistantMessage({
         hideCopyButton={true}
         allowFullScreenEditor={false}
       />
+      {!isStreamActive && (
+        <AssistantActionBar
+          content={turn?.content ?? ""}
+          messageId={turnId ?? requestId ?? ""}
+          conversationId={conversationId}
+          onFullPrint={handleFullPrint}
+          isCapturing={isCapturing}
+        />
+      )}
 
       {isFatalError && (
         <AssistantError

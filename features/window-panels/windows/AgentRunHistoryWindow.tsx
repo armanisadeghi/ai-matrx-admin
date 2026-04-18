@@ -18,7 +18,7 @@ import { fetchAgentConversations } from "@/features/agents/redux/agent-conversat
 import { makeSelectAgentConversations } from "@/features/agents/redux/agent-conversations/agent-conversations.selectors";
 import type { AgentConversationListItem } from "@/features/agents/redux/agent-conversations/agent-conversations.types";
 import { AgentConversationDisplay } from "@/features/agents/components/run/AgentConversationDisplay";
-import { fetchConversationHistory } from "@/features/cx-chat/redux/thunks";
+import { fetchConversationHistory } from "@/features/agents/redux/old/OLD-cx-conversation/thunks";
 import { createManualInstance } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
 import { setFocus } from "@/features/agents/redux/execution-system/conversation-focus/conversation-focus.slice";
 import type { RootState } from "@/lib/redux/store";

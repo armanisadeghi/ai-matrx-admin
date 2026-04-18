@@ -8,11 +8,11 @@
  */
 
 export {
-    chatConversationsReducer,
-    chatConversationsActions,
-} from '@/features/cx-conversation/redux/slice';
+  chatConversationsReducer,
+  chatConversationsActions,
+} from "@/features/agents/redux/old/OLD-cx-message-actions/slice";
 
-export * from '@/features/cx-conversation/redux/types';
-export * from '@/features/cx-conversation/redux/selectors';
-export { sendMessage } from '@/features/cx-conversation/redux/thunks/sendMessage';
-export { loadConversationHistory } from '@/features/cx-conversation/redux/thunks/loadConversationHistory';
+export * from "@/features/agents/redux/old/OLD-cx-message-actions/types";
+export * from "@/features/agents/redux/old/OLD-cx-message-actions/selectors";
+export { sendMessage } from "@/features/agents/redux/old/OLD-cx-message-actions/thunks/sendMessage";
+export { loadConversationHistory } from "@/features/agents/redux/old/OLD-cx-message-actions/thunks/loadConversationHistory";

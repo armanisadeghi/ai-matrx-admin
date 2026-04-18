@@ -1,12 +1,6 @@
 "use client";
 
-import React, {
-  useState,
-  useEffect,
-  useCallback,
-  lazy,
-  Suspense,
-} from "react";
+import React, { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import {
   Volume2,
   Download,
@@ -18,12 +12,15 @@ import { Button } from "@/components/ui/button";
 import MarkdownStream from "@/components/MarkdownStream";
 import { useDomCapturePrint } from "@/features/conversation/hooks/useDomCapturePrint";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
-import { selectMessageHasUnsavedChanges, selectMessageHasHistory } from "@/features/cx-conversation/redux/selectors";
-import { editMessage } from "@/features/cx-conversation/redux/thunks/editMessage";
+import {
+  selectMessageHasUnsavedChanges,
+  selectMessageHasHistory,
+} from "@/features/agents/redux/old/OLD-cx-message-actions/selectors";
+import { editMessage } from "@/features/agents/redux/old/OLD-cx-message-actions/thunks/editMessage";
 import { buildContentBlocksForSave } from "@/features/cx-conversation/utils/buildContentBlocksForSave";
-import { chatConversationsActions } from "@/features/cx-conversation/redux/slice";
+import { chatConversationsActions } from "@/features/agents/redux/old/OLD-cx-message-actions/slice";
 import { AssistantActionBar } from "@/features/cx-conversation/AssistantActionBar";
-import type { ConversationMessage } from "@/features/cx-conversation/redux/types";
+import type { ConversationMessage } from "@/features/agents/redux/old/OLD-cx-message-actions/types";
 
 const ToolCallVisualization = lazy(
   () => import("@/features/cx-conversation/ToolCallVisualization"),
@@ -63,10 +60,12 @@ export function AssistantMessage({
 
   const dispatch = useAppDispatch();
   const hasUnsavedChanges = useAppSelector((state) =>
-    sessionId ? selectMessageHasUnsavedChanges(state, sessionId, message.id) : false
+    sessionId
+      ? selectMessageHasUnsavedChanges(state, sessionId, message.id)
+      : false,
   );
   const hasHistory = useAppSelector((state) =>
-    sessionId ? selectMessageHasHistory(state, sessionId, message.id) : false
+    sessionId ? selectMessageHasHistory(state, sessionId, message.id) : false,
   );
 
   const { captureRef, isCapturing, captureAsPDF } = useDomCapturePrint();
@@ -85,10 +84,14 @@ export function AssistantMessage({
     try {
       const contentBlocks = buildContentBlocksForSave(
         message.content,
-        message.rawContent as unknown[] | undefined
+        message.rawContent as unknown[] | undefined,
       );
       await dispatch(
-        editMessage({ sessionId, messageId: message.id, newContent: contentBlocks })
+        editMessage({
+          sessionId,
+          messageId: message.id,
+          newContent: contentBlocks,
+        }),
       ).unwrap();
     } catch {
       /* toast handled by thunk */
@@ -110,8 +113,11 @@ export function AssistantMessage({
     onContentChange?.(messageId, newContent);
   };
 
-  const audioUrl = (message as ConversationMessage & { audioUrl?: string }).audioUrl;
-  const audioMimeType = (message as ConversationMessage & { audioMimeType?: string }).audioMimeType;
+  const audioUrl = (message as ConversationMessage & { audioUrl?: string })
+    .audioUrl;
+  const audioMimeType = (
+    message as ConversationMessage & { audioMimeType?: string }
+  ).audioMimeType;
 
   const handleDownloadAudio = async () => {
     if (!audioUrl || isDownloading) return;
@@ -159,11 +165,22 @@ export function AssistantMessage({
         {showLoading && (
           <div className="flex items-center gap-2 text-muted-foreground">
             <div className="flex gap-1">
-              <span className="w-1.5 h-1.5 bg-primary/50 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-              <span className="w-1.5 h-1.5 bg-primary/50 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-              <span className="w-1.5 h-1.5 bg-primary/50 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+              <span
+                className="w-1.5 h-1.5 bg-primary/50 rounded-full animate-bounce"
+                style={{ animationDelay: "0ms" }}
+              />
+              <span
+                className="w-1.5 h-1.5 bg-primary/50 rounded-full animate-bounce"
+                style={{ animationDelay: "150ms" }}
+              />
+              <span
+                className="w-1.5 h-1.5 bg-primary/50 rounded-full animate-bounce"
+                style={{ animationDelay: "300ms" }}
+              />
             </div>
-            <span className="text-sm text-muted-foreground/80">Planning...</span>
+            <span className="text-sm text-muted-foreground/80">
+              Planning...
+            </span>
           </div>
         )}
 
@@ -179,15 +196,29 @@ export function AssistantMessage({
           <div className="rounded-lg border bg-card p-3 space-y-2">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Volume2 className="w-4 h-4 text-primary flex-shrink-0" />
-              <span className="font-medium text-foreground">Audio Response</span>
+              <span className="font-medium text-foreground">
+                Audio Response
+              </span>
               {audioMimeType && (
-                <span className="text-xs font-mono px-1.5 py-0.5 rounded bg-muted">{audioMimeType}</span>
+                <span className="text-xs font-mono px-1.5 py-0.5 rounded bg-muted">
+                  {audioMimeType}
+                </span>
               )}
             </div>
             <audio controls autoPlay src={audioUrl} className="w-full" />
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" onClick={handleDownloadAudio} disabled={isDownloading} className="h-6 gap-1 px-2 text-xs text-primary hover:text-primary">
-                {isDownloading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3" />}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleDownloadAudio}
+                disabled={isDownloading}
+                className="h-6 gap-1 px-2 text-xs text-primary hover:text-primary"
+              >
+                {isDownloading ? (
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                ) : (
+                  <Download className="w-3 h-3" />
+                )}
                 {isDownloading ? "Downloading\u2026" : "Download audio"}
               </Button>
               <Button
@@ -202,65 +233,87 @@ export function AssistantMessage({
                 className="h-6 gap-1 px-2 text-xs text-muted-foreground hover:text-foreground"
                 title="Copy audio link"
               >
-                {isAudioLinkCopied ? <Check className="w-3 h-3" /> : <LinkIcon className="w-3 h-3" />}
+                {isAudioLinkCopied ? (
+                  <Check className="w-3 h-3" />
+                ) : (
+                  <LinkIcon className="w-3 h-3" />
+                )}
                 {isAudioLinkCopied ? "Copied!" : "Copy link"}
               </Button>
             </div>
           </div>
         )}
 
-        {!showLoading && !isError && !isAudioResponse && isStreamActive && !message.content && isTtsRequest && (
-          <div className="relative flex items-center gap-2 text-sm py-2 px-3 rounded-lg border bg-card overflow-hidden">
-            <div className="absolute inset-0 animate-[audio-shimmer_1.6s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-primary/10 to-transparent" />
-            <Volume2 className="w-4 h-4 text-primary flex-shrink-0 relative z-10" />
-            <span className="text-muted-foreground relative z-10">Generating audio\u2026</span>
-          </div>
-        )}
-
-        {!showLoading && !isError && !isAudioResponse && !(isStreamActive && !message.content && isTtsRequest) && (
-          <>
-            {hasDbToolUpdates && (
-              <Suspense fallback={null}>
-                <ToolCallVisualization
-                  toolUpdates={message.toolUpdates as Parameters<typeof ToolCallVisualization>[0]["toolUpdates"]}
-                  hasContent={!!message.content}
-                  className="mb-2"
-                />
-              </Suspense>
-            )}
-
-            <div ref={captureRef}>
-              <MarkdownStream
-                content={message.content}
-                events={message.streamEvents}
-                type="message"
-                role="assistant"
-                isStreamActive={isStreamActive && message.status === "streaming"}
-                hideCopyButton={true}
-                allowFullScreenEditor={false}
-                className={markdownClassName}
-                onContentChange={(newContent) => handleInlineContentChange(message.id, newContent)}
-              />
+        {!showLoading &&
+          !isError &&
+          !isAudioResponse &&
+          isStreamActive &&
+          !message.content &&
+          isTtsRequest && (
+            <div className="relative flex items-center gap-2 text-sm py-2 px-3 rounded-lg border bg-card overflow-hidden">
+              <div className="absolute inset-0 animate-[audio-shimmer_1.6s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-primary/10 to-transparent" />
+              <Volume2 className="w-4 h-4 text-primary flex-shrink-0 relative z-10" />
+              <span className="text-muted-foreground relative z-10">
+                Generating audio\u2026
+              </span>
             </div>
+          )}
 
-            {!isStreamActive && !isOverlay && message.content && (
-              <div className={buttonMargin}>
-                <AssistantActionBar
+        {!showLoading &&
+          !isError &&
+          !isAudioResponse &&
+          !(isStreamActive && !message.content && isTtsRequest) && (
+            <>
+              {hasDbToolUpdates && (
+                <Suspense fallback={null}>
+                  <ToolCallVisualization
+                    toolUpdates={
+                      message.toolUpdates as Parameters<
+                        typeof ToolCallVisualization
+                      >[0]["toolUpdates"]
+                    }
+                    hasContent={!!message.content}
+                    className="mb-2"
+                  />
+                </Suspense>
+              )}
+
+              <div ref={captureRef}>
+                <MarkdownStream
                   content={message.content}
-                  messageId={message.id}
-                  sessionId={sessionId}
-                  hasUnsavedChanges={hasUnsavedChanges}
-                  hasHistory={hasHistory}
-                  isSaving={isSaving}
-                  rawContent={message.rawContent as unknown[]}
-                  onQuickSave={handleQuickSave}
-                  onFullPrint={handleFullPrint}
-                  isCapturing={isCapturing}
+                  events={message.streamEvents}
+                  type="message"
+                  role="assistant"
+                  isStreamActive={
+                    isStreamActive && message.status === "streaming"
+                  }
+                  hideCopyButton={true}
+                  allowFullScreenEditor={false}
+                  className={markdownClassName}
+                  onContentChange={(newContent) =>
+                    handleInlineContentChange(message.id, newContent)
+                  }
                 />
               </div>
-            )}
-          </>
-        )}
+
+              {!isStreamActive && !isOverlay && message.content && (
+                <div className={buttonMargin}>
+                  <AssistantActionBar
+                    content={message.content}
+                    messageId={message.id}
+                    sessionId={sessionId}
+                    hasUnsavedChanges={hasUnsavedChanges}
+                    hasHistory={hasHistory}
+                    isSaving={isSaving}
+                    rawContent={message.rawContent as unknown[]}
+                    onQuickSave={handleQuickSave}
+                    onFullPrint={handleFullPrint}
+                    isCapturing={isCapturing}
+                  />
+                </div>
+              )}
+            </>
+          )}
       </div>
     </div>
   );

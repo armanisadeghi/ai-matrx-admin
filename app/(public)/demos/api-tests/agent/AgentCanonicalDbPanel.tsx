@@ -10,7 +10,7 @@ import {
   selectProtocolDbToolCalls,
   selectSessionError,
   selectSessionStatus,
-} from "@/features/cx-conversation/redux/selectors";
+} from "@/features/agents/redux/old/OLD-cx-message-actions/selectors";
 
 const JSON_MAX = 12000;
 

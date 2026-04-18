@@ -35,7 +35,7 @@
 - `components/admin/hooks/useToolComponentAgent.ts`
 - `features/applet/runner/response/AppletFollowUpInput.tsx`
 
-**Store registration:** `lib/redux/rootReducer.ts`, `lib/redux/liteRootReducer.ts` (`adminPreferences`).
+**Store registration:** `lib/redux/rootReducer.ts` (`adminPreferences`).
 
 ### Overlapping / separate “server choice” (not this slice)
 
@@ -61,7 +61,7 @@
 - **Indicators:** `SmartPromptInput`, `DynamicContextMenu`, `DebugIndicatorManager`, `LargeIndicator`, `PromptBuilder` (`updateDebugData`).
 - **Display gated on debug:** `AutoCreatePromptAppForm`, `ResponseColumn` (see overlap below).
 
-**Store:** `rootReducer` + `liteRootReducer` as `adminDebug`.
+**Store:** `rootReducer` key `adminDebug`.
 
 ### Overlap — second “debug mode” on **chat / conversation** entity
 

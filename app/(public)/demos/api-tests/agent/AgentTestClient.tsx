@@ -34,7 +34,7 @@ import { useAppDispatch } from "@/lib/redux/hooks";
 import {
   chatConversationsActions,
   loadConversationHistory,
-} from "@/features/cx-conversation/redux";
+} from "@/features/agents/redux/old/OLD-cx-message-actions";
 import { AgentWireFoldComparison } from "./AgentWireFoldComparison";
 import { AgentCanonicalDbPanel } from "./AgentCanonicalDbPanel";
 

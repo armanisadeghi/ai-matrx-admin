@@ -145,8 +145,6 @@ features/scraper/parts/recipes/FactChecker.tsx
 features/scraper/parts/recipes/useRenQuickRecipe.ts
 features/workflows/components/menus/NodeMenuCore.tsx
 lib/redux/features/aiChats/thunks/entity/createConversationAndMessage.ts
-lib/redux/liteRootReducer.ts
-lib/redux/liteStore.ts
 lib/redux/prompt-execution/selectors.ts
 lib/redux/prompt-execution/thunks/executeMessageFastAPIThunk.ts
 lib/redux/prompt-execution/thunks/executeMessageThunk.ts

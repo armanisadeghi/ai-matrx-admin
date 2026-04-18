@@ -72,9 +72,9 @@ export { useAuthenticatedChatProps } from "./hooks/useAuthenticatedChatProps";
 // STATE (actions, selectors, thunks)
 // ============================================================================
 
-export { chatConversationsActions } from "@/features/cx-conversation/redux/slice";
-export { sendMessage } from "@/features/cx-conversation/redux/thunks/sendMessage";
-export { loadConversationHistory } from "@/features/cx-conversation/redux/thunks/loadConversationHistory";
+export { chatConversationsActions } from "@/features/agents/redux/old/OLD-cx-message-actions/slice";
+export { sendMessage } from "@/features/agents/redux/old/OLD-cx-message-actions/thunks/sendMessage";
+export { loadConversationHistory } from "@/features/agents/redux/old/OLD-cx-message-actions/thunks/loadConversationHistory";
 export {
   selectMessages,
   selectIsStreaming,
@@ -88,7 +88,7 @@ export {
   selectUIState,
   selectApiMode,
   selectChatModeConfig,
-} from "@/features/cx-conversation/redux/selectors";
+} from "@/features/agents/redux/old/OLD-cx-message-actions/selectors";
 
 // ============================================================================
 // UTILS (internalized)
@@ -130,4 +130,4 @@ export type {
   SessionUIState,
   ApiMode,
   ChatModeConfig,
-} from "@/features/cx-conversation/redux/types";
+} from "@/features/agents/redux/old/OLD-cx-message-actions/types";

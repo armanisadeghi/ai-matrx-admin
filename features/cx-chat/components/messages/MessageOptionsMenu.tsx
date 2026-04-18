@@ -4,11 +4,11 @@ import React, { useState, useEffect } from "react";
 import AdvancedMenu from "@/components/official/AdvancedMenu";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/slices/userSlice";
-import { selectMessageActionInstance } from "@/features/cx-conversation/redux/messageActionsSlice";
+import { selectMessageActionInstance } from "@/features/agents/redux/old/OLD-cx-message-actions/messageActionsSlice";
 import {
   selectMessageHasUnsavedChanges,
   selectMessageHasHistory,
-} from "@/features/cx-conversation/redux/selectors";
+} from "@/features/agents/redux/old/OLD-cx-message-actions/selectors";
 import { useCartesiaSpeaker } from "@/features/tts/hooks/useCartesiaSpeaker";
 import {
   getMessageActions,

@@ -51,7 +51,7 @@ import {
   fetchAgentExecutionMinimal,
 } from "@/features/agents/redux/agent-definition/thunks";
 import { launchAgentExecution } from "@/features/agents/redux/execution-system/thunks/launch-agent-execution.thunk";
-import { fetchConversationHistory } from "@/features/cx-chat/redux/thunks";
+import { fetchConversationHistory } from "@/features/agents/redux/old/OLD-cx-conversation/thunks";
 import { DEFAULT_AGENT_ID } from "@/features/cx-chat/components/agent/local-agents";
 import type { RootState } from "@/lib/redux/store";
 
@@ -190,9 +190,7 @@ export function useInstanceBootstrap() {
 
       // 4. Load conversation history for /c/ routes.
       if (conversationId) {
-        dispatch(
-          fetchConversationHistory({ conversationId }),
-        );
+        dispatch(fetchConversationHistory({ conversationId }));
       }
     })();
 

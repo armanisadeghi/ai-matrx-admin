@@ -8,15 +8,18 @@ import {
   selectMessages,
   selectIsStreaming,
   selectUIState,
-} from "@/features/cx-conversation/redux/selectors";
-import { chatConversationsActions } from "@/features/cx-conversation/redux/slice";
+} from "@/features/agents/redux/old/OLD-cx-message-actions/selectors";
+import { chatConversationsActions } from "@/features/agents/redux/old/OLD-cx-message-actions/slice";
 import dynamic from "next/dynamic";
 import { MessageErrorBoundary } from "@/features/cx-conversation/MessageErrorBoundary";
 import { UserMessage } from "@/features/cx-conversation/UserMessage";
 
 const AssistantMessage = dynamic(
-  () => import("@/features/cx-conversation/AssistantMessage").then((m) => m.AssistantMessage),
-  { ssr: false }
+  () =>
+    import("@/features/cx-conversation/AssistantMessage").then(
+      (m) => m.AssistantMessage,
+    ),
+  { ssr: false },
 );
 
 interface MessageListProps {
@@ -69,9 +72,13 @@ export function MessageList({
 }: MessageListProps) {
   const dispatch = useAppDispatch();
   // Grouped messages: consecutive assistant messages merged into single turns for display
-  const messages = useAppSelector((state) => selectGroupedMessages(state, sessionId));
+  const messages = useAppSelector((state) =>
+    selectGroupedMessages(state, sessionId),
+  );
   // Raw messages: unmerged, needed for streaming detection (to find actual streaming message ID)
-  const rawMessages = useAppSelector((state) => selectMessages(state, sessionId));
+  const rawMessages = useAppSelector((state) =>
+    selectMessages(state, sessionId),
+  );
   const isStreaming = useAppSelector((state) =>
     selectIsStreaming(state, sessionId),
   );

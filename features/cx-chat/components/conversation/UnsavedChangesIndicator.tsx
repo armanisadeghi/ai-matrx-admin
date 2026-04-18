@@ -6,8 +6,8 @@ import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import {
   selectSessionHasUnsavedChanges,
   selectDirtyMessages,
-} from "@/features/cx-conversation/redux/selectors";
-import { editMessage } from "@/features/cx-conversation/redux/thunks/editMessage";
+} from "@/features/agents/redux/old/OLD-cx-message-actions/selectors";
+import { editMessage } from "@/features/agents/redux/old/OLD-cx-message-actions/thunks/editMessage";
 import { buildContentBlocksForSave } from "../../utils/buildContentBlocksForSave";
 
 interface UnsavedChangesIndicatorProps {

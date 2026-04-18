@@ -44,14 +44,14 @@ import {
   selectCxConversationIsPending,
   prependConversation,
   touchConversation,
-} from "@/features/cx-chat/redux/cx-conversations.slice";
+} from "@/features/agents/redux/old/OLD-cx-conversation/cx-conversations.slice";
 import {
   fetchConversationList,
   fetchConversationListMore,
   renameConversationMutation,
   deleteConversationMutation,
-} from "@/features/cx-chat/redux/thunks";
-import type { CxConversationListItem } from "@/features/cx-chat/redux/types";
+} from "@/features/agents/redux/old/OLD-cx-conversation/thunks";
+import type { CxConversationListItem } from "@/features/agents/redux/old/OLD-cx-conversation/types";
 import type { SharedCxConversationSummary } from "@/features/cx-chat/types/cx-tables";
 
 // ── Types ─────────────────────────────────────────────────────────────────────

@@ -20,7 +20,7 @@ import {
 } from "@/features/agents/redux/agent-definition/selectors";
 import { useAgentLauncher } from "@/features/agents/hooks/useAgentLauncher";
 import { createManualInstance } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
-import { fetchConversationHistory } from "@/features/cx-chat/redux/thunks";
+import { fetchConversationHistory } from "@/features/agents/redux/old/OLD-cx-conversation/thunks";
 import { setFocus } from "@/features/agents/redux/execution-system/conversation-focus/conversation-focus.slice";
 import { AgentLauncherSidebarTester } from "../run-controls/AgentLauncherSidebarTester";
 import { AgentConversationColumn } from "../shared/AgentConversationColumn";

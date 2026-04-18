@@ -16,7 +16,7 @@ import {
   selectUIState,
   selectIsStreaming,
   selectAllToolCalls,
-} from "@/features/cx-conversation/redux/selectors";
+} from "@/features/agents/redux/old/OLD-cx-message-actions/selectors";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {

@@ -8,8 +8,8 @@ import {
   selectMessages,
   selectIsStreaming,
   selectUIState,
-} from "@/features/cx-conversation/redux/selectors";
-import { chatConversationsActions } from "@/features/cx-conversation/redux/slice";
+} from "@/features/agents/redux/old/OLD-cx-message-actions/selectors";
+import { chatConversationsActions } from "@/features/agents/redux/old/OLD-cx-message-actions/slice";
 import dynamic from "next/dynamic";
 import { MessageErrorBoundary } from "./MessageErrorBoundary";
 import { UserMessage } from "./UserMessage";

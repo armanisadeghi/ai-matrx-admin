@@ -33,11 +33,11 @@ export {
   messageActionsActions,
   messageActionsReducer,
   selectMessageActionInstance,
-} from "./redux/messageActionsSlice";
+} from "./OLD-cx-message-actions/messageActionsSlice";
 export type {
   MessageActionInstance,
   MessageActionsState,
-} from "./redux/messageActionsSlice";
+} from "./OLD-cx-message-actions/messageActionsSlice";
 export {
   getMessageActions,
   resumePendingAuthAction,

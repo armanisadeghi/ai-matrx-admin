@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectSessionHasUnsavedChanges } from "@/features/cx-conversation/redux/selectors";
+import { selectSessionHasUnsavedChanges } from "@/features/agents/redux/old/OLD-cx-message-actions/selectors";
 
 /**
  * Registers a `beforeunload` listener that warns the user when they try to

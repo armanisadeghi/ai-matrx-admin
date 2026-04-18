@@ -44,7 +44,6 @@ These files call `.from('workspaces')` and must be rewritten to scope RPCs / new
 | `features/context/hooks/useContextScope.ts` | Scope resolution |
 | `features/context/index.ts` | Barrel exports for workspace/hierarchy APIs |
 | `lib/redux/rootReducer.ts` | Registers hierarchy slice |
-| `lib/redux/liteRootReducer.ts` | Comments + `appContext` / hierarchy wiring |
 | `lib/redux/slices/overlaySlice.ts` | `workspace_id` on overlay payload types |
 | `lib/redux/prompt-execution/thunks/fetchScopedVariablesThunk.ts` | Comments + scoped variable fetch paths |
 | `lib/redux/thunks/artifactThunks.ts` | Org/workspace/project/task scope comments + logic |
