@@ -360,7 +360,7 @@ function AgentRunHistoryWindowInner({
           createManualInstance({
             agentId,
             conversationId,
-            mode: "conversation",
+            mode: "agent",
           }),
         );
       }

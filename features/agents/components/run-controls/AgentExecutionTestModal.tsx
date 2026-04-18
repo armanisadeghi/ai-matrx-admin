@@ -60,7 +60,7 @@ interface AgentExecutionTestModalProps {
   allowChat: boolean;
   showVariables: boolean;
   applyVariables: boolean;
-  conversationMode: "agent" | "conversation" | "chat";
+  conversationMode: "agent" | "chat";
   variableInputStyle?: VariableInputStyle;
   variables: Record<string, unknown>;
   userInput: string;
@@ -79,7 +79,7 @@ function DirectTestMode({
   agentId: string;
   variables: Record<string, unknown>;
   userInput: string;
-  conversationMode: "agent" | "conversation" | "chat";
+  conversationMode: "agent" | "chat";
 }) {
   const { launchAgent, close } = useAgentLauncher();
   const [conversationId, setConversationId] = useState<string | null>(null);
@@ -198,7 +198,7 @@ function InlineTestMode({
   agentId: string;
   variables: Record<string, unknown>;
   userInput: string;
-  conversationMode: "agent" | "conversation" | "chat";
+  conversationMode: "agent" | "chat";
 }) {
   const { launchAgent, close } = useAgentLauncher();
   const [conversationId, setConversationId] = useState<string | null>(null);
@@ -375,7 +375,7 @@ function BackgroundTestMode({
   agentId: string;
   variables: Record<string, unknown>;
   userInput: string;
-  conversationMode: "agent" | "conversation" | "chat";
+  conversationMode: "agent" | "chat";
 }) {
   const { launchAgent, close } = useAgentLauncher();
   const [tasks, setTasks] = useState<BackgroundTask[]>([]);

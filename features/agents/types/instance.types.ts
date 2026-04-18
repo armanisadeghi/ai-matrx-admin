@@ -501,18 +501,16 @@ export interface ManagedAgentOptions {
 
   /**
    * Controls which execution path and history strategy is used.
+   * Set once at invocation; never mutated.
    *
-   * "agent"        — Default. Turn 1 → POST /ai/agents/{id}. Turn 2+ → POST /ai/conversations/{id}.
-   *                  Server owns history. Client only stores for display.
+   * "agent" — Default. Turn 1 → POST /ai/agents/{id}. Turn 2+ → POST /ai/conversations/{id}.
+   *           Server owns history and the agent definition. Client only stores for display.
    *
-   * "conversation" — Same routing as "agent" after the first server turn commits a conversationId.
-   *                  Transition: history slice auto-promotes "agent" → "conversation" on first assistant turn.
-   *
-   * "chat"         — Always POST /api/ai/chat. Client owns history and sends full messages[] on every turn.
-   *                  Used exclusively by the builder so it reads the LIVE unsaved agent definition.
-   *                  No other surface should use this mode.
+   * "chat"  — Always POST /api/ai/chat. Client owns history and sends full messages[]
+   *           on every turn. Used exclusively by the builder so it reads the LIVE
+   *           unsaved agent definition. No other surface should use this mode.
    */
-  conversationMode?: "agent" | "conversation" | "chat";
+  conversationMode?: "agent" | "chat";
 
   userInput?: string;
   variables?: Record<string, unknown>;
@@ -598,9 +596,9 @@ export const AGENT_EXECUTION_DEFAULTS = {
   /**
    * Which execution path and history strategy to use.
    * "agent" is the standard path for all non-builder surfaces.
-   * The slice auto-promotes to "conversation" after the first server turn.
+   * Set once at invocation time; never mutated.
    */
-  conversationMode: "agent" as "agent" | "conversation" | "chat",
+  conversationMode: "agent" as "agent" | "chat",
 
   // ── Execution Behavior ─────────────────────────────────────────────────────
 
