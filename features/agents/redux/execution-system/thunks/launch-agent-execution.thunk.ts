@@ -20,15 +20,10 @@
 
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import type { RootState } from "@/lib/redux/store";
-import type { LLMParams } from "@/features/agents/types/agent-api-types";
 import type {
-  JsonExtractionConfig,
   ManagedAgentOptions,
   ResultDisplayMode,
-  SourceFeature,
-  VariableInputStyle,
 } from "@/features/agents/types/instance.types";
-import type { ApplicationScope } from "@/features/agents/utils/scope-mapping";
 import { mapScopeToInstance } from "@/features/agents/utils/scope-mapping";
 import { callbackManager } from "@/utils/callbackManager";
 import { resolveVisibilitySettings } from "../instance-ui-state/instance-ui-state.slice";
@@ -70,8 +65,8 @@ const INTERACTIVE_MODES: ReadonlySet<ResultDisplayMode> = new Set([
   "chat-bubble",
 ]);
 
-function isInteractive(mode: ResultDisplayMode): boolean {
-  return INTERACTIVE_MODES.has(mode);
+function isInteractive(resultDisplayMode: ResultDisplayMode): boolean {
+  return INTERACTIVE_MODES.has(resultDisplayMode);
 }
 
 const DISPLAY_MODE_TO_OVERLAY_ID: Partial<Record<ResultDisplayMode, string>> = {
@@ -184,7 +179,7 @@ export const launchAgentExecution = createAsyncThunk<
     usePreExecutionInput,
     showAutoClearToggle,
     autoClearConversation,
-    conversationMode = "agent",
+    apiEndpointMode = "agent",
     userInput,
     variables,
     overrides,
@@ -244,7 +239,7 @@ export const launchAgentExecution = createAsyncThunk<
         usePreExecutionInput,
         showAutoClearToggle,
         autoClearConversation,
-        conversationMode,
+        apiEndpointMode,
         showVariablePanel: resolvedShowVariablePanel,
         showDefinitionMessages: resolvedShowDefinitionMessages,
         showDefinitionMessageContent: resolvedShowDefinitionMessageContent,
@@ -274,7 +269,7 @@ export const launchAgentExecution = createAsyncThunk<
         sourceFeature,
         autoClearConversation,
         showAutoClearToggle,
-        apiEndpointMode: conversationMode,
+        apiEndpointMode,
         displayMode: resolvedDisplayMode,
         autoRun,
         allowChat,
@@ -400,7 +395,7 @@ export const launchAgentExecution = createAsyncThunk<
   }
 
   // =========================================================================
-  // Step 4: Open the overlay for the resolved display mode.
+  // Step 4: Open the overlay for the resolved display Mode.
   // Always runs (regardless of autoRun) so the component renders immediately.
   // =========================================================================
 
@@ -423,14 +418,14 @@ export const launchAgentExecution = createAsyncThunk<
     return { conversationId };
   }
 
-  const isChatMode = conversationMode === "chat";
+  const isManualMode = apiEndpointMode === "manual";
 
   if (
     resolvedDisplayMode === "direct" ||
     resolvedDisplayMode === "background" ||
     resolvedDisplayMode === "inline"
   ) {
-    const executeThunk = isChatMode ? executeChatInstance : executeInstance;
+    const executeThunk = isManualMode ? executeChatInstance : executeInstance;
     const result = await dispatch(executeThunk({ conversationId })).unwrap();
 
     const responseText = await pollForCompletion(getState, result.requestId);
@@ -447,7 +442,7 @@ export const launchAgentExecution = createAsyncThunk<
   }
 
   if (isInteractive(resolvedDisplayMode) || resolvedDisplayMode === "toast") {
-    const executeThunk = isChatMode ? executeChatInstance : executeInstance;
+    const executeThunk = isManualMode ? executeChatInstance : executeInstance;
     const result = await dispatch(executeThunk({ conversationId })).unwrap();
 
     return {

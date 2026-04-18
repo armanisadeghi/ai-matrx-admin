@@ -28,16 +28,6 @@ export type { ConversationInputProps } from "./ConversationInput";
 export type { AssistantMessageProps } from "./AssistantMessage";
 export type { MessageOptionsMenuProps } from "./MessageOptionsMenu";
 
-// ── Message actions (Redux-driven overlays) ─────────────────────────────────
-export {
-  messageActionsActions,
-  messageActionsReducer,
-  selectMessageActionInstance,
-} from "./OLD-cx-message-actions/messageActionsSlice";
-export type {
-  MessageActionInstance,
-  MessageActionsState,
-} from "./OLD-cx-message-actions/messageActionsSlice";
 export {
   getMessageActions,
   resumePendingAuthAction,
