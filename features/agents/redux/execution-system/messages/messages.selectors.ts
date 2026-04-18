@@ -61,6 +61,74 @@ export const selectMessageById =
   (state: RootState): MessageRecord | undefined =>
     state.messages.byConversationId[conversationId]?.byId?.[messageId];
 
+// ---------------------------------------------------------------------------
+// Narrow field selectors — re-render safety
+// ---------------------------------------------------------------------------
+//
+// Message-body components do expensive work: markdown parsing, renderBlock
+// compilation, tool-call visualization, LaTeX, etc. We must NOT re-render
+// those components when only bookkeeping fields (status, _clientStatus)
+// change — which happens frequently during a live stream (record_reserved
+// → record_update "active" → completion). These narrow selectors return
+// a referentially-stable value per field: only the exact subscribers of
+// the changed field rerun.
+//
+// Usage:
+//   const content = useAppSelector(selectMessageContent(cid, mid));
+//   const status  = useAppSelector(selectMessageStatus(cid, mid));
+//   <MessageBody content={content} />  // only rerenders on content change
+//   <StatusDot status={status} />      // only rerenders on status change
+//
+// IMPORTANT: `selectMessageById` returns the full record, so subscribing
+// to it WILL re-render on every field change. Prefer these narrow
+// selectors for anything involving heavy rendering.
+// ---------------------------------------------------------------------------
+
+export const selectMessageContent =
+  (conversationId: string, messageId: string) =>
+  (state: RootState): MessageRecord["content"] | undefined =>
+    state.messages.byConversationId[conversationId]?.byId?.[messageId]?.content;
+
+export const selectMessageStatus =
+  (conversationId: string, messageId: string) =>
+  (state: RootState): MessageRecord["status"] | undefined =>
+    state.messages.byConversationId[conversationId]?.byId?.[messageId]?.status;
+
+export const selectMessageClientStatus =
+  (conversationId: string, messageId: string) =>
+  (state: RootState): MessageRecord["_clientStatus"] | undefined =>
+    state.messages.byConversationId[conversationId]?.byId?.[messageId]
+      ?._clientStatus;
+
+export const selectMessageRole =
+  (conversationId: string, messageId: string) =>
+  (state: RootState): MessageRecord["role"] | undefined =>
+    state.messages.byConversationId[conversationId]?.byId?.[messageId]?.role;
+
+export const selectMessagePosition =
+  (conversationId: string, messageId: string) =>
+  (state: RootState): MessageRecord["position"] | undefined =>
+    state.messages.byConversationId[conversationId]?.byId?.[messageId]
+      ?.position;
+
+export const selectMessageAgentId =
+  (conversationId: string, messageId: string) =>
+  (state: RootState): MessageRecord["agentId"] | undefined =>
+    state.messages.byConversationId[conversationId]?.byId?.[messageId]
+      ?.agentId;
+
+export const selectMessageMetadata =
+  (conversationId: string, messageId: string) =>
+  (state: RootState): MessageRecord["metadata"] | undefined =>
+    state.messages.byConversationId[conversationId]?.byId?.[messageId]
+      ?.metadata;
+
+export const selectMessageContentHistoryRecord =
+  (conversationId: string, messageId: string) =>
+  (state: RootState): MessageRecord["contentHistory"] | undefined =>
+    state.messages.byConversationId[conversationId]?.byId?.[messageId]
+      ?.contentHistory;
+
 /**
  * `selectDisplayMessages` — the bridge between DB-faithful storage and the
  * legacy `ConversationTurn` display shape.

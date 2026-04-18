@@ -18,12 +18,27 @@ export const ENDPOINTS = {
   /** AI endpoints — chat, agents, conversations */
   ai: {
     /**
-     * POST — Custom one-shot or managed chat (Guest OK)
-     * POST /ai/chat
-     * conversation_id is optional in the body (for labeling/storage only).
-     * You must send the full message history in `messages` every time.
+     * POST — Manual-mode execution (Builder + ephemeral conversations).
+     * POST /ai/manual
+     *
+     * Accepts full message history in `messages` on every call. Used by:
+     *   • Builder — reads the LIVE agent definition (incl. unsaved edits) and
+     *     sends it as the system instruction + priming messages.
+     *   • Ephemeral conversations (turn 2+) — no DB row exists, so the client
+     *     is the source of truth for history; sends it with each turn.
+     *
+     * `conversation_id` is optional in the body (for labeling/storage only);
+     * pair with `is_new:false, store:false` for fully stateless runs.
+     *
+     * NOTE: this replaces the legacy `/ai/chat` endpoint. The canonical
+     * client-side vocabulary is `manual` (see ConversationInvocation.routing
+     * .conversationMode). The legacy `chat` alias below stays for one
+     * migration cycle.
      */
-    chat: "/ai/chat" as const,
+    manual: "/ai/manual" as const,
+
+    /** @deprecated Use `ENDPOINTS.ai.manual`. Kept for one migration cycle. */
+    chat: "/ai/manual" as const,
 
     /**
      * POST — Start a new agent conversation (Guest OK)

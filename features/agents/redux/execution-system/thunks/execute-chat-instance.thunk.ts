@@ -374,7 +374,7 @@ export const executeChatInstance = createAsyncThunk<
       const submitAt = performance.now();
 
       // Always POST to the chat endpoint
-      const url = `${baseUrl}${ENDPOINTS.ai.chat}`;
+      const url = `${baseUrl}${ENDPOINTS.ai.manual}`;
       const abortController = new AbortController();
       registerAbortController(conversationId, abortController);
       const response = await fetch(url, {

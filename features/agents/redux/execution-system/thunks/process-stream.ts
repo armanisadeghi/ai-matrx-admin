@@ -72,7 +72,20 @@ import {
   commitAssistantTurn,
   attachClientMetrics,
   setConversationLabel,
+  reserveMessage,
+  updateMessageRecord,
 } from "../messages/messages.slice";
+import {
+  upsertUserRequest,
+  patchUserRequest,
+  upsertRequest,
+  patchRequest,
+  upsertToolCall,
+  patchToolCall,
+  type CxUserRequestRecord,
+  type CxRequestRecord,
+  type CxToolCallRecord,
+} from "../observability";
 import { clearUserInput } from "../instance-user-input/instance-user-input.slice";
 import { clearAllResources } from "../instance-resources/instance-resources.slice";
 import { resetUserVariableValues } from "../instance-variable-values/instance-variable-values.slice";
@@ -142,6 +155,17 @@ export async function processStream({
   let tokenUsage: { input: number; output: number; total: number } | undefined;
   let finishReason: string | undefined;
   let completionStats: CompletionStats | undefined;
+
+  // Server-assigned ids captured from `record_reserved` events. Threaded into
+  // the commit path so the final assistant turn (and any DB-faithful mirror)
+  // use the server ids — never fake client-generated ones. Position +
+  // userRequestId are captured but not consumed yet; the next wave
+  // (Phase 8: message CRUD + observability flush) picks them up.
+  let reservedAssistantMessageId: string | null = null;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  let reservedAssistantPosition: number | null = null;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  let reservedUserRequestId: string | null = null;
 
   let clientFirstChunkAt: number | null = null;
   let totalEvents = 0;
@@ -610,7 +634,158 @@ export async function processStream({
         }),
       );
 
-      if (d.table === "cx_conversation") {
+      // ── Per-table dispatch into the DB-faithful slices ─────────────────
+      //
+      // record_reserved arrives BEFORE any content lands. We seed:
+      //   • messages.byId[record_id]     with status "reserved" (empty content)
+      //   • observability.userRequests   (cx_user_request)
+      //   • observability.requests       (cx_request)
+      //   • observability.toolCalls      (cx_tool_call)
+      //
+      // The content of an assistant message is committed later in the
+      // `completion` / `end` path via `commitAssistantTurn`, which mirrors
+      // renderBlocks into the same `byId` slot. This keeps live stream
+      // writes metadata-only — no re-render storm on the message body.
+      if (d.table === "cx_message") {
+        const meta = d.metadata as { role?: string; position?: number } | undefined;
+        const parents = d.parent_refs as { conversation_id?: string } | undefined;
+        const role =
+          (meta?.role as "user" | "assistant" | "system") ?? "assistant";
+        const position =
+          typeof meta?.position === "number" ? meta.position : 0;
+        dispatch(
+          reserveMessage({
+            conversationId: parents?.conversation_id ?? conversationId,
+            messageId: d.record_id,
+            role,
+            position,
+          }),
+        );
+        // Track the assistant reservation so the commit path can mirror the
+        // final renderBlocks into messages.byId[record_id].content.
+        if (role === "assistant") {
+          reservedAssistantMessageId = d.record_id;
+          reservedAssistantPosition = position;
+        }
+      } else if (d.table === "cx_user_request") {
+        reservedUserRequestId = d.record_id;
+        const parents = d.parent_refs as { conversation_id?: string } | undefined;
+        const nowIso = new Date().toISOString();
+        dispatch(
+          upsertUserRequest({
+            id: d.record_id,
+            conversationId: parents?.conversation_id ?? conversationId,
+            // Fields unknown at reservation time; server fills them in on
+            // record_update / completion. Sensible zeros keep selectors safe.
+            userId: "",
+            agentId: null,
+            agentVersionId: null,
+            status: "pending",
+            iterations: 0,
+            finishReason: null,
+            error: null,
+            triggerMessagePosition: null,
+            resultStartPosition: null,
+            resultEndPosition: null,
+            totalInputTokens: 0,
+            totalOutputTokens: 0,
+            totalCachedTokens: 0,
+            totalTokens: 0,
+            totalToolCalls: 0,
+            totalCost: null,
+            totalDurationMs: null,
+            apiDurationMs: null,
+            toolDurationMs: null,
+            sourceApp: "",
+            sourceFeature: "",
+            metadata: (d.metadata ?? {}) as CxUserRequestRecord["metadata"],
+            createdAt: nowIso,
+            completedAt: null,
+            deletedAt: null,
+          }),
+        );
+      } else if (d.table === "cx_request") {
+        const parents = d.parent_refs as
+          | { conversation_id?: string; user_request_id?: string }
+          | undefined;
+        const meta = d.metadata as { iteration?: number } | undefined;
+        const nowIso = new Date().toISOString();
+        dispatch(
+          upsertRequest({
+            id: d.record_id,
+            conversationId: parents?.conversation_id ?? conversationId,
+            userRequestId: parents?.user_request_id ?? "",
+            aiModelId: "",
+            apiClass: null,
+            iteration: typeof meta?.iteration === "number" ? meta.iteration : 0,
+            responseId: null,
+            finishReason: null,
+            inputTokens: null,
+            cachedTokens: null,
+            outputTokens: null,
+            totalTokens: null,
+            cost: null,
+            totalDurationMs: null,
+            apiDurationMs: null,
+            toolDurationMs: null,
+            toolCallsCount: null,
+            toolCallsDetails: null,
+            metadata: (d.metadata ?? {}) as CxRequestRecord["metadata"],
+            createdAt: nowIso,
+            deletedAt: null,
+          }),
+        );
+      } else if (d.table === "cx_tool_call") {
+        const parents = d.parent_refs as
+          | {
+              conversation_id?: string;
+              user_request_id?: string;
+              call_id?: string;
+            }
+          | undefined;
+        const meta = d.metadata as
+          | { tool_name?: string; call_id?: string; iteration?: number }
+          | undefined;
+        const nowIso = new Date().toISOString();
+        dispatch(
+          upsertToolCall({
+            id: d.record_id,
+            conversationId: parents?.conversation_id ?? conversationId,
+            userRequestId: parents?.user_request_id ?? null,
+            messageId: null,
+            userId: "",
+            callId: meta?.call_id ?? parents?.call_id ?? "",
+            toolName: meta?.tool_name ?? "",
+            toolType: "",
+            iteration: typeof meta?.iteration === "number" ? meta.iteration : 0,
+            status: "pending",
+            success: false,
+            isError: null,
+            errorType: null,
+            errorMessage: null,
+            arguments: {} as CxToolCallRecord["arguments"],
+            output: null,
+            outputChars: 0,
+            outputPreview: null,
+            outputType: null,
+            inputTokens: null,
+            outputTokens: null,
+            totalTokens: null,
+            costUsd: null,
+            durationMs: 0,
+            startedAt: nowIso,
+            completedAt: nowIso,
+            parentCallId: null,
+            retryCount: null,
+            persistKey: null,
+            filePath: null,
+            executionEvents: null,
+            metadata: (d.metadata ?? {}) as CxToolCallRecord["metadata"],
+            createdAt: nowIso,
+            deletedAt: null,
+          }),
+        );
+      } else if (d.table === "cx_conversation") {
         assertConversationIdMatches(
           conversationId,
           d.record_id,
@@ -655,6 +830,49 @@ export async function processStream({
           metadata: d.metadata,
         }),
       );
+
+      // Per-table status patch into the DB-faithful slices. These updates
+      // deliberately ONLY touch the `status` field — never content —
+      // so subscribers rendering message bodies don't re-render on
+      // bookkeeping status changes. (See Phase 5.3 re-render audit.)
+      if (d.table === "cx_message") {
+        dispatch(
+          updateMessageRecord({
+            conversationId,
+            messageId: d.record_id,
+            patch: { status: d.status },
+          }),
+        );
+      } else if (d.table === "cx_user_request") {
+        dispatch(
+          patchUserRequest({
+            id: d.record_id,
+            patch: {
+              status: d.status,
+              completedAt:
+                d.status === "completed" || d.status === "failed"
+                  ? new Date().toISOString()
+                  : null,
+            },
+          }),
+        );
+      } else if (d.table === "cx_request") {
+        dispatch(patchRequest({ id: d.record_id, patch: { status: d.status } }));
+      } else if (d.table === "cx_tool_call") {
+        dispatch(
+          patchToolCall({
+            id: d.record_id,
+            patch: {
+              status: d.status,
+              completedAt:
+                d.status === "completed" || d.status === "failed"
+                  ? new Date().toISOString()
+                  : new Date().toISOString(),
+            },
+          }),
+        );
+      }
+
       dispatch(
         appendTimeline({
           requestId,
@@ -858,6 +1076,62 @@ export async function processStream({
       ...(finalErrorMessage && { errorMessage: finalErrorMessage }),
     }),
   );
+
+  // ── Phase 5.2: mirror the final assistant content into messages.byId ────
+  //
+  // The assistant's cx_message row was reserved earlier in the stream via
+  // `record_reserved cx_message` (role=assistant). At that point we seeded
+  // an empty record in messages.byId[reservedAssistantMessageId] with
+  // status="reserved". Now that the stream has completed, patch that same
+  // entry with the final CxContentBlock[] + status=active so any consumer
+  // reading the DB-faithful shape sees the authoritative content.
+  //
+  // We patch ONE field group (content + status + client bookkeeping) in a
+  // single action — Redux batches the re-render to the message with that
+  // id only (memoized selector), so the other messages' bodies stay
+  // referentially stable.
+  if (reservedAssistantMessageId && cxContentBlocks.length > 0) {
+    dispatch(
+      updateMessageRecord({
+        conversationId,
+        messageId: reservedAssistantMessageId,
+        patch: {
+          // Cast to the DB Json type: cxContentBlocks is MessagePart[] /
+          // CxContentBlock[], which is structurally JSON-serializable.
+          content: cxContentBlocks as unknown as import("@/types/database.types").Json,
+          status: "active",
+          _clientStatus: finalErrorMessage ? "error" : "complete",
+        },
+      }),
+    );
+  }
+
+  // Flush live tool lifecycle state into the observability slice. Each tool
+  // call was reserved earlier (cx_tool_call record_reserved) so the
+  // observability entries already exist — we patch them with the final
+  // live-state results (output, duration, error info).
+  if (finalRequest?.toolLifecycle) {
+    for (const [callId, lc] of Object.entries(finalRequest.toolLifecycle)) {
+      // The DB row id we want is the one from the reservation event, which
+      // the activeRequests slice doesn't surface directly. The
+      // reservation metadata captures `call_id`, and observability's
+      // `upsertToolCall` was keyed by the DB id during Phase 5.1 — so the
+      // reservation + this patch address the same row as long as the
+      // server uses `call_id` as a stable cross-reference. If the DB id
+      // lookup is needed, consumers can resolve via observability
+      // selectors using `callId`.
+      if (lc.status === "completed" || lc.status === "error") {
+        // Find the DB row id from the reservation table (best-effort).
+        // If the reservation wasn't observed (edge case), we skip and the
+        // initial upsert stays with its default fields.
+        // NOTE: keyed by callId in activeRequests.toolLifecycle;
+        // observability uses the cx_tool_call DB id. Patch-by-call_id can
+        // be added once the reservation snapshot index lands.
+        void callId; // explicit — no-op patch until id lookup wires up.
+        void lc;
+      }
+    }
+  }
 
   dispatch(clearUserInput(conversationId));
   dispatch(clearAllResources(conversationId));

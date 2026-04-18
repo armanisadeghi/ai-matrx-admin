@@ -60,10 +60,13 @@ function invocationToManagedOptions(
     callbacks,
   } = invocation;
 
-  // The legacy type uses "agent" | "chat" — the new contract uses
-  // "agent" | "manual" (per the invocation reference doc). Translate.
-  const legacyConversationMode: "agent" | "chat" =
-    routing.conversationMode === "manual" ? "chat" : "agent";
+  // Both "manual" and the legacy "chat" now resolve to POST /ai/manual at
+  // the endpoint boundary (see `lib/api/endpoints.ts`). Pass "manual"
+  // through unchanged — the widened ManagedAgentOptions.conversationMode
+  // type accepts it directly. Emit "agent" or "manual" only; "chat" is no
+  // longer produced by new code paths.
+  const forwardedConversationMode: "agent" | "manual" =
+    routing.conversationMode === "manual" ? "manual" : "agent";
 
   // Resolve function refs from the callback group (they live outside Redux).
   const onComplete =
@@ -110,7 +113,7 @@ function invocationToManagedOptions(
       : {}),
 
     // Routing
-    conversationMode: legacyConversationMode,
+    conversationMode: forwardedConversationMode,
 
     // Scope
     ...(scope?.applicationScope !== undefined

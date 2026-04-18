@@ -590,14 +590,18 @@ export interface ManagedAgentOptions {
    * Controls which execution path and history strategy is used.
    * Set once at invocation; never mutated.
    *
-   * "agent" — Default. Turn 1 → POST /ai/agents/{id}. Turn 2+ → POST /ai/conversations/{id}.
-   *           Server owns history and the agent definition. Client only stores for display.
+   * "agent"  — Default. Turn 1 → POST /ai/agents/{id}. Turn 2+ → POST /ai/conversations/{id}.
+   *            Server owns history and the agent definition. Client only stores for display.
    *
-   * "chat"  — Always POST /api/ai/chat. Client owns history and sends full messages[]
-   *           on every turn. Used exclusively by the builder so it reads the LIVE
-   *           unsaved agent definition. No other surface should use this mode.
+   * "manual" — Always POST /ai/manual. Client owns history and sends full messages[]
+   *            on every turn. Used by Builder (LIVE unsaved agent definition) and
+   *            by ephemeral conversations (turn 2+, where no DB row exists).
+   *
+   * "chat"   — @deprecated legacy alias for "manual". Accepts either on input;
+   *            emit "manual" for all NEW code. The adapter in `launchConversation`
+   *            and the endpoint definition both resolve "chat" to /ai/manual.
    */
-  conversationMode?: "agent" | "chat";
+  conversationMode?: "agent" | "manual" | "chat";
 
   userInput?: string;
   variables?: Record<string, unknown>;
