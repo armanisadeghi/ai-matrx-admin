@@ -21,6 +21,7 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
+  CommandList,
 } from "@/components/ui/command";
 import { Columns2, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -89,16 +90,37 @@ export function SplitNotePicker({ children }: SplitNotePickerProps) {
             onValueChange={setSearch}
           />
 
-          {openTabs.length > 0 && (
-            <CommandGroup heading="Open Tabs">
-              {openTabs.map((note) => (
+          <CommandList>
+            {openTabs.length > 0 && (
+              <CommandGroup heading="Open Tabs">
+                {openTabs.map((note) => (
+                  <CommandItem
+                    key={note.id}
+                    value={note.id}
+                    onSelect={() => handleSelect(note.id)}
+                    className="gap-2 cursor-pointer"
+                  >
+                    <FileText className="w-3.5 h-3.5 shrink-0 text-primary/60" />
+                    <span className="truncate text-xs">{note.label}</span>
+                    {note.folder_name && (
+                      <span className="ml-auto text-[0.5625rem] text-muted-foreground/50 truncate max-w-[60px]">
+                        {note.folder_name}
+                      </span>
+                    )}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
+
+            <CommandGroup heading="All Notes">
+              {otherNotes.slice(0, 50).map((note) => (
                 <CommandItem
                   key={note.id}
                   value={note.id}
                   onSelect={() => handleSelect(note.id)}
                   className="gap-2 cursor-pointer"
                 >
-                  <FileText className="w-3.5 h-3.5 shrink-0 text-primary/60" />
+                  <FileText className="w-3.5 h-3.5 shrink-0 opacity-50" />
                   <span className="truncate text-xs">{note.label}</span>
                   {note.folder_name && (
                     <span className="ml-auto text-[0.5625rem] text-muted-foreground/50 truncate max-w-[60px]">
@@ -108,30 +130,11 @@ export function SplitNotePicker({ children }: SplitNotePickerProps) {
                 </CommandItem>
               ))}
             </CommandGroup>
-          )}
 
-          <CommandGroup heading="All Notes">
-            {otherNotes.slice(0, 30).map((note) => (
-              <CommandItem
-                key={note.id}
-                value={note.id}
-                onSelect={() => handleSelect(note.id)}
-                className="gap-2 cursor-pointer"
-              >
-                <FileText className="w-3.5 h-3.5 shrink-0 opacity-50" />
-                <span className="truncate text-xs">{note.label}</span>
-                {note.folder_name && (
-                  <span className="ml-auto text-[0.5625rem] text-muted-foreground/50 truncate max-w-[60px]">
-                    {note.folder_name}
-                  </span>
-                )}
-              </CommandItem>
-            ))}
-          </CommandGroup>
-
-          <CommandEmpty className="text-xs py-3 text-center">
-            No notes found
-          </CommandEmpty>
+            <CommandEmpty className="text-xs py-3 text-center">
+              No notes found
+            </CommandEmpty>
+          </CommandList>
         </Command>
       </PopoverContent>
     </Popover>

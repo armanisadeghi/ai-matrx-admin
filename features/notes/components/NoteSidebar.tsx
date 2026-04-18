@@ -257,6 +257,8 @@ export function NoteSidebar({
   // Refs
   const folderTreeRef = useRef<HTMLDivElement>(null);
   const ctxMenuRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchFocusedRef = useRef(false);
 
   // ── Auto-expand folder of active note ──────────────────────────────
   useEffect(() => {
@@ -280,6 +282,19 @@ export function NoteSidebar({
     );
     el?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }, [activeTabId]);
+
+  // ── Auto-scroll first search result into view ─────────────────────
+  useEffect(() => {
+    if (!searchQuery || !folderTreeRef.current) return;
+    // Small delay to let the filtered list render
+    const timer = setTimeout(() => {
+      const firstNote = folderTreeRef.current?.querySelector("[data-note-id]");
+      if (firstNote) {
+        firstNote.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   // ── Close context menus on outside click ──────────────────────────
   useEffect(() => {
@@ -633,9 +648,24 @@ export function NoteSidebar({
         <div className="flex items-center gap-1.5 px-2 py-1 bg-muted/50 rounded-md">
           <Search className="w-3 h-3 text-muted-foreground shrink-0" />
           <input
+            ref={searchInputRef}
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            onFocus={() => { searchFocusedRef.current = true; }}
+            onBlur={() => {
+              // Defer the blur check — if focus was stolen by a re-render,
+              // restore it on the next frame
+              const wasFocused = searchFocusedRef.current;
+              searchFocusedRef.current = false;
+              if (wasFocused && searchQuery) {
+                requestAnimationFrame(() => {
+                  if (document.activeElement?.tagName === "TEXTAREA" || document.activeElement?.tagName === "BODY") {
+                    searchInputRef.current?.focus();
+                  }
+                });
+              }
+            }}
             placeholder="Search notes..."
             className="flex-1 min-w-0 bg-transparent text-xs outline-none placeholder:text-muted-foreground/50"
             style={{ fontSize: "16px" }}
