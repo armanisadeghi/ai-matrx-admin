@@ -43,17 +43,16 @@ import {
 import { selectResolvedBaseUrl } from "@/lib/redux/slices/apiConfigSlice";
 import {
   createRequest,
-  setConversationId,
   setRequestStatus,
 } from "../active-requests/active-requests.slice";
 import { addUserTurn } from "../instance-conversation-history/instance-conversation-history.slice";
 import { processStream } from "./process-stream";
-import { upsertAgentConversationFromExecutionAction } from "@/features/agents/redux/agent-conversations";
 import { formatVariablesForDisplay } from "@/features/agents/utils/variable-utils";
 import {
   registerAbortController,
   unregisterAbortController,
 } from "./abort-registry";
+import { assertConversationIdMatches } from "../utils/assert-conversation-id";
 
 // =============================================================================
 // Assemble Request (pure selector logic, extracted for testability)
@@ -243,7 +242,6 @@ export const executeInstance = createAsyncThunk<
               [...(userMessageParts ?? []), ...resourceBlocks].length > 0
                 ? [...(userMessageParts ?? []), ...resourceBlocks]
                 : undefined,
-            serverConversationId: existingConversationId,
           }),
         );
       }
@@ -314,25 +312,13 @@ export const executeInstance = createAsyncThunk<
         throw new Error(`API error: ${serverMessage}`);
       }
 
-      const conversationIdFromHeader =
-        response.headers.get("X-Conversation-ID");
-      let headerConversationId: string | null = conversationIdFromHeader;
+      const headerConversationId = response.headers.get("X-Conversation-ID");
+      assertConversationIdMatches(
+        conversationId,
+        headerConversationId,
+        "x-conversation-id-header",
+      );
       const conversationIdAt = headerConversationId ? performance.now() : null;
-
-      if (headerConversationId) {
-        dispatch(
-          setConversationId({
-            requestId,
-            conversationId: headerConversationId,
-          }),
-        );
-        const syncList = upsertAgentConversationFromExecutionAction(
-          getState() as RootState,
-          conversationId,
-          headerConversationId,
-        );
-        if (syncList) dispatch(syncList);
-      }
 
       dispatch(setInstanceStatus({ conversationId, status: "streaming" }));
       dispatch(setRequestStatus({ requestId, status: "streaming" }));
@@ -340,13 +326,12 @@ export const executeInstance = createAsyncThunk<
       const currentUiState = (getState() as RootState).instanceUIState
         ?.byConversationId[conversationId];
 
-      const streamResult = await processStream({
+      await processStream({
         requestId,
         conversationId,
         response,
         submitAt,
         conversationIdAt,
-        initialConversationId: headerConversationId,
         dispatch,
         getState: getState as () => RootState,
         jsonExtraction: currentUiState?.jsonExtraction ?? undefined,
@@ -355,7 +340,7 @@ export const executeInstance = createAsyncThunk<
       unregisterAbortController(conversationId);
       return {
         requestId,
-        conversationId: streamResult.conversationId ?? conversationId,
+        conversationId,
       };
     } catch (error) {
       unregisterAbortController(conversationId);

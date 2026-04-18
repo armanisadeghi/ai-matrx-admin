@@ -135,29 +135,19 @@ export const selectLatestAccumulatedText = (conversationId: string) =>
   );
 
 /**
- * The conversation ID for this instance.
- * Primary source: latest activeRequest serverConversationId (available mid-stream).
- * Fallback: instanceConversationHistory turns (persists across request resets).
+ * Returns the conversationId if the execution instance exists, else null.
+ *
+ * The client generates `conversationId` up-front and the server honors it, so
+ * there is only one id. This selector's historical job of reconciling a
+ * client id with a server-returned id is obsolete; callers that already know
+ * the conversationId can use it directly. Kept for existence checks.
  */
 export const selectLatestConversationId =
   (conversationId: string) =>
   (state: RootState): string | null => {
-    const ids = state.activeRequests?.byConversationId[conversationId];
-    if (ids && ids.length > 0) {
-      const latest = state.activeRequests?.byRequestId[ids[ids.length - 1]];
-      if (latest?.serverConversationId) return latest.serverConversationId;
+    if (state.executionInstances?.byConversationId[conversationId]) {
+      return conversationId;
     }
-
-    const turns =
-      state.instanceConversationHistory?.byConversationId[conversationId]
-        ?.turns;
-    if (turns) {
-      for (let i = turns.length - 1; i >= 0; i--) {
-        const cid = turns[i].conversationId;
-        if (cid) return cid;
-      }
-    }
-
     return null;
   };
 
@@ -461,28 +451,16 @@ export const selectShouldShowVariables =
 /**
  * Check if a conversationId exists in the execution system.
  * Returns the conversationId if found, or null.
+ *
+ * With client-generated conversationIds honored end-to-end, the slice key IS
+ * the canonical id — no secondary lookup through active requests is needed.
  */
 export const selectConversationExists =
   (conversationId: string) =>
-  (state: RootState): string | null => {
-    if (state.executionInstances?.byConversationId[conversationId]) {
-      return conversationId;
-    }
-
-    const allIds = state.executionInstances?.allConversationIds ?? [];
-    for (const cid of allIds) {
-      const requestIds = state.activeRequests?.byConversationId[cid];
-      if (!requestIds) continue;
-      for (const requestId of requestIds) {
-        const req = state.activeRequests?.byRequestId[requestId];
-        if (req?.serverConversationId === conversationId) {
-          return cid;
-        }
-      }
-    }
-
-    return null;
-  };
+  (state: RootState): string | null =>
+    state.executionInstances?.byConversationId[conversationId]
+      ? conversationId
+      : null;
 
 /** @deprecated Use selectConversationExists */
 export const selectInstanceIdByConversationId = selectConversationExists;

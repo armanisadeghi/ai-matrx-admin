@@ -214,7 +214,6 @@ const instanceConversationHistorySlice = createSlice({
         content: string;
         messageParts?: MessagePart[];
         cxContentBlocks?: CxContentBlock[];
-        serverConversationId?: string | null;
         systemGenerated?: boolean;
       }>,
     ) {
@@ -223,7 +222,6 @@ const instanceConversationHistorySlice = createSlice({
         content,
         messageParts,
         cxContentBlocks,
-        serverConversationId = null,
         systemGenerated,
       } = action.payload;
 
@@ -239,7 +237,7 @@ const instanceConversationHistorySlice = createSlice({
           cxContentBlocks.length > 0 && { cxContentBlocks }),
         timestamp: new Date().toISOString(),
         requestId: null,
-        conversationId: serverConversationId,
+        conversationId,
         ...(systemGenerated && { systemGenerated }),
       });
     },
@@ -254,7 +252,6 @@ const instanceConversationHistorySlice = createSlice({
         conversationId: string;
         requestId: string;
         content: string;
-        serverConversationId: string | null;
         messageParts?: MessagePart[];
         cxContentBlocks?: CxContentBlock[];
         renderBlocks?: RenderBlockPayload[];
@@ -268,7 +265,6 @@ const instanceConversationHistorySlice = createSlice({
         conversationId,
         requestId,
         content,
-        serverConversationId,
         messageParts,
         cxContentBlocks,
         renderBlocks,
@@ -281,17 +277,13 @@ const instanceConversationHistorySlice = createSlice({
       const entry = state.byConversationId[conversationId];
       if (!entry) return;
 
-      if (serverConversationId && entry.mode === "agent") {
-        entry.mode = "conversation";
-      }
-
       entry.turns.push({
         turnId: newTurnId(),
         role: "assistant",
         content,
         timestamp: new Date().toISOString(),
         requestId,
-        conversationId: serverConversationId,
+        conversationId,
         ...(messageParts && { messageParts }),
         ...(cxContentBlocks &&
           cxContentBlocks.length > 0 && { cxContentBlocks }),

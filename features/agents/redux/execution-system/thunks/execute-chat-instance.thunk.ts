@@ -37,18 +37,17 @@ import {
 import { selectResolvedBaseUrl } from "@/lib/redux/slices/apiConfigSlice";
 import {
   createRequest,
-  setConversationId,
   setRequestStatus,
 } from "../active-requests/active-requests.slice";
 import { addUserTurn } from "../instance-conversation-history/instance-conversation-history.slice";
 import { processStream } from "./process-stream";
 import { ENDPOINTS } from "@/lib/api/endpoints";
-import { upsertAgentConversationFromExecutionAction } from "@/features/agents/redux/agent-conversations";
 import { selectHasConversationHistory } from "../instance-conversation-history/instance-conversation-history.selectors";
 import {
   registerAbortController,
   unregisterAbortController,
 } from "./abort-registry";
+import { assertConversationIdMatches } from "../utils/assert-conversation-id";
 
 // =============================================================================
 // Turn Conversion Utility
@@ -366,7 +365,6 @@ export const executeChatInstance = createAsyncThunk<
               [...(userMessageParts ?? []), ...resourceBlocks].length > 0
                 ? [...(userMessageParts ?? []), ...resourceBlocks]
                 : undefined,
-            serverConversationId: existingConversationId,
           }),
         );
       }
@@ -411,25 +409,12 @@ export const executeChatInstance = createAsyncThunk<
       }
 
       const headerConversationId = response.headers.get("X-Conversation-ID");
-      let serverConversationIdFromHeader: string | null = headerConversationId;
-      const conversationIdAt = serverConversationIdFromHeader
-        ? performance.now()
-        : null;
-
-      if (serverConversationIdFromHeader) {
-        dispatch(
-          setConversationId({
-            requestId,
-            conversationId: serverConversationIdFromHeader,
-          }),
-        );
-        const syncList = upsertAgentConversationFromExecutionAction(
-          getState() as RootState,
-          conversationId,
-          serverConversationIdFromHeader,
-        );
-        if (syncList) dispatch(syncList);
-      }
+      assertConversationIdMatches(
+        conversationId,
+        headerConversationId,
+        "x-conversation-id-header",
+      );
+      const conversationIdAt = headerConversationId ? performance.now() : null;
 
       dispatch(setInstanceStatus({ conversationId, status: "streaming" }));
       dispatch(setRequestStatus({ requestId, status: "streaming" }));
@@ -437,13 +422,12 @@ export const executeChatInstance = createAsyncThunk<
       const currentUiState = (getState() as RootState).instanceUIState
         ?.byConversationId[conversationId];
 
-      const streamResult = await processStream({
+      await processStream({
         requestId,
         conversationId,
         response,
         submitAt,
         conversationIdAt,
-        initialConversationId: serverConversationIdFromHeader,
         dispatch,
         getState: getState as () => RootState,
         jsonExtraction: currentUiState?.jsonExtraction ?? undefined,
@@ -452,7 +436,7 @@ export const executeChatInstance = createAsyncThunk<
       unregisterAbortController(conversationId);
       return {
         requestId,
-        conversationId: streamResult.conversationId,
+        conversationId,
       };
     } catch (error) {
       unregisterAbortController(conversationId);
