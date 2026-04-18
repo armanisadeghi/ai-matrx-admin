@@ -18323,6 +18323,14 @@ export type Database = {
         Args: { p_id?: string; p_slug?: string }
         Returns: Json
       }
+      get_cx_conversation_bundle: {
+        Args: {
+          p_before_position?: number
+          p_conversation_id: string
+          p_message_limit?: number
+        }
+        Returns: Json
+      }
       get_cx_conversations_shared_with_me: {
         Args: never
         Returns: {
