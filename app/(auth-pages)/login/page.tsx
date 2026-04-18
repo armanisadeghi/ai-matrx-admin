@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { IconBrandGithub, IconBrandGoogle, IconBrandApple } from "@tabler/icons-react";
 import AuthPageContainer from "@/components/auth/auth-page-container";
+import GoogleOneTap from "@/components/auth/google-one-tap";
 import { AuthMessageType } from '@/components/form-message';
 
 interface SignInProps {
@@ -57,7 +58,9 @@ export default async function SignIn({ searchParams }: SignInProps) {
     const githubLoginWithRedirect = loginWithGithub.bind(null, redirectTo);
 
     return (
-        <AuthPageContainer
+        <>
+            <GoogleOneTap redirectTo={redirectTo} context="signin" />
+            <AuthPageContainer
             title="Sign in to your account"
             subtitle={
                 <>
@@ -180,5 +183,6 @@ export default async function SignIn({ searchParams }: SignInProps) {
                 </div>
             </div>
         </AuthPageContainer>
+        </>
     );
 }

@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { IconBrandGithub, IconBrandGoogle, IconBrandApple } from "@tabler/icons-react";
 import AuthPageContainer from "@/components/auth/auth-page-container";
+import GoogleOneTap from "@/components/auth/google-one-tap";
 
 
 interface SignUpProps {
@@ -41,7 +42,9 @@ export default async function SignUp({ searchParams }: SignUpProps) {
     console.log("Message:", message);
 
     return (
-        <AuthPageContainer
+        <>
+            <GoogleOneTap redirectTo={redirectTo} context="signup" />
+            <AuthPageContainer
             title="Create your account"
             subtitle={
                 <>
@@ -177,5 +180,6 @@ export default async function SignUp({ searchParams }: SignUpProps) {
                 </div>
             </div>
         </AuthPageContainer>
+        </>
     );
 }
