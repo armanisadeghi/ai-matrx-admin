@@ -25,9 +25,9 @@ export function useAgentLauncherTester(
   const [showVariables, setShowVariables] = useState(false);
   const [applyVariables, setApplyVariables] = useState(true);
   const [usePreExecutionInput, setUsePreExecutionInput] = useState(false);
-  const [conversationMode, setConversationMode] = useState<
-    "agent" | "conversation" | "chat"
-  >("agent");
+  const [conversationMode, setConversationMode] = useState<"agent" | "chat">(
+    "agent",
+  );
   const [variableInputStyle, setVariableInputStyle] =
     useState<VariableInputStyle>("inline");
 

@@ -111,7 +111,7 @@ export function AgentRunnerPage({ agentId }: AgentRunnerPageProps) {
           createManualInstance({
             agentId,
             conversationId: conversationIdFromUrl,
-            mode: "conversation",
+            mode: "agent",
           }),
         );
       }

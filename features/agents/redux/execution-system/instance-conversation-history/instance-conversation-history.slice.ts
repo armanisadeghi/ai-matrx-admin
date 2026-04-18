@@ -3,7 +3,7 @@
  *
  * Stores the ordered message history for each execution instance.
  * This is the client-side display record — the server owns the authoritative
- * copy in its database for agent/conversation modes.
+ * copy in its database for agent mode.
  *
  * Turn lifecycle:
  *   1. User submits → dispatch(addUserTurn) BEFORE the API call fires
@@ -13,12 +13,13 @@
  *      (streaming message is replaced by the permanent turn)
  *
  * Mode determines how history is used on subsequent sends:
- *   'agent'        — server owns history; client only stores for display
- *   'conversation' — server owns history; client only stores for display
- *   'chat'         — client owns history; turns[] is serialized into messages[]
+ *   'agent' — server owns history; client only stores for display.
+ *             Turn 1 POSTs /ai/agents/{id}; turn 2+ POSTs /ai/conversations/{id}.
+ *   'chat'  — builder-only. Client owns history; turns[] is serialized into
+ *             messages[] every call so the builder reads the LIVE unsaved
+ *             agent definition.
  *
- * For 'agent' and 'conversation' modes we never send history back.
- * For 'chat' mode, assembleRequest reads turns[] to build the messages[] array.
+ * Mode is set once at instance creation and never mutated.
  */
 
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
@@ -37,7 +38,7 @@ import type { CxContentBlock } from "@/features/public-chat/types/cx-tables";
 // Types
 // =============================================================================
 
-export type ConversationMode = "agent" | "conversation" | "chat";
+export type ConversationMode = "agent" | "chat";
 
 export interface TokenUsage {
   input: number;
@@ -140,8 +141,8 @@ export interface InstanceConversationHistoryEntry {
   conversationId: string;
 
   /**
-   * The endpoint mode — determines whether history is sent on next turn.
-   * Set at instance creation time and updated if the mode switches.
+   * The endpoint family — determines whether history is sent on next turn.
+   * Set once at instance creation time and never mutated.
    */
   mode: ConversationMode;
 
@@ -334,7 +335,7 @@ const instanceConversationHistorySlice = createSlice({
         mode?: ConversationMode;
       }>,
     ) {
-      const { conversationId, turns, mode = "conversation" } = action.payload;
+      const { conversationId, turns, mode = "agent" } = action.payload;
 
       const entry = state.byConversationId[conversationId];
       if (!entry) return;

@@ -1139,9 +1139,7 @@ function TestDisplaysTab({ conversationId }: { conversationId: string }) {
             <Select
               value={tester.conversationMode}
               onValueChange={(v) =>
-                tester.setConversationMode(
-                  v as "agent" | "conversation" | "chat",
-                )
+                tester.setConversationMode(v as "agent" | "chat")
               }
             >
               <SelectTrigger

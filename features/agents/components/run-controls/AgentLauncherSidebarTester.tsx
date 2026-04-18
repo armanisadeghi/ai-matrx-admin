@@ -102,9 +102,9 @@ export function AgentLauncherSidebarTester({
     useState<VariableInputStyle>("inline");
   const [applyVariables, setApplyVariables] = useState(true);
   const [usePreExecutionInput, setUsePreExecutionInput] = useState(false);
-  const [conversationMode, setConversationMode] = useState<
-    "agent" | "conversation" | "chat"
-  >("agent");
+  const [conversationMode, setConversationMode] = useState<"agent" | "chat">(
+    "agent",
+  );
 
   const [copiedId, setCopiedId] = useState(false);
 
@@ -357,7 +357,7 @@ export function AgentLauncherSidebarTester({
             <Select
               value={conversationMode}
               onValueChange={(v) =>
-                setConversationMode(v as "agent" | "conversation" | "chat")
+                setConversationMode(v as "agent" | "chat")
               }
             >
               <SelectTrigger

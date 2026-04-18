@@ -199,7 +199,7 @@ export const fetchConversationHistory = createAsyncThunk<
   { conversationId: string },
   ThunkApi
 >("cxConversations/fetchHistory", async ({ conversationId }, { dispatch }) => {
-  dispatch(initInstanceHistory({ conversationId, mode: "conversation" }));
+  dispatch(initInstanceHistory({ conversationId, mode: "agent" }));
 
   const [messagesResult, toolCallsResult] = await Promise.all([
     supabase
@@ -294,7 +294,7 @@ export const fetchConversationHistory = createAsyncThunk<
     loadConversationHistory({
       conversationId,
       turns,
-      mode: "conversation",
+      mode: "agent",
     }),
   );
 });
