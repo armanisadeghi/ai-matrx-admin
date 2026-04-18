@@ -51,7 +51,6 @@ import {
   closeReasoningRun,
   finalizeAccumulatedReasoning,
   finalizeClientMetrics,
-  setConversationId,
   setRequestStatus,
   setCurrentPhase,
   trackOperationInit,
@@ -64,6 +63,8 @@ import {
   setCompletion,
   updateExtractedJson,
 } from "../active-requests/active-requests.slice";
+import { confirmServerSync } from "../execution-instances/execution-instances.slice";
+import { assertConversationIdMatches } from "../utils/assert-conversation-id";
 import { StreamingJsonTracker } from "@/utils/json/streaming-json-tracker";
 import { StreamBlockAccumulator } from "../utils/stream-block-accumulator";
 import type { ExtractedJsonSnapshot } from "@/features/agents/types/request.types";
@@ -101,7 +102,6 @@ interface ProcessStreamArgs {
   response: Response;
   submitAt: number;
   conversationIdAt: number | null;
-  initialConversationId: string | null;
   dispatch: (action: unknown) => unknown;
   getState: () => RootState;
   jsonExtraction?: JsonExtractionConfig;
@@ -124,7 +124,6 @@ export async function processStream({
   response,
   submitAt,
   conversationIdAt,
-  initialConversationId,
   dispatch,
   getState,
   jsonExtraction,
@@ -139,7 +138,7 @@ export async function processStream({
     : null;
   let lastJsonRevision = 0;
 
-  let streamServerConversationId = initialConversationId;
+  let cxConversationConfirmed = false;
   let tokenUsage: { input: number; output: number; total: number } | undefined;
   let finishReason: string | undefined;
   let completionStats: CompletionStats | undefined;
@@ -397,21 +396,11 @@ export async function processStream({
 
       if (d.type === "conversation_id") {
         const convData = d as ConversationIdData;
-        if (convData.conversation_id && !streamServerConversationId) {
-          streamServerConversationId = convData.conversation_id;
-          dispatch(
-            setConversationId({
-              requestId,
-              conversationId: streamServerConversationId,
-            }),
-          );
-          const syncList = upsertAgentConversationFromExecutionAction(
-            getState(),
-            conversationId,
-            streamServerConversationId,
-          );
-          if (syncList) dispatch(syncList);
-        }
+        assertConversationIdMatches(
+          conversationId,
+          convData.conversation_id,
+          "conversation_id-data-event",
+        );
       } else if (d.type === "conversation_labeled") {
         const labeled = d as ConversationLabeledData;
         dispatch(
@@ -621,20 +610,22 @@ export async function processStream({
         }),
       );
 
-      if (d.table === "cx_conversation" && !streamServerConversationId) {
-        streamServerConversationId = d.record_id;
-        dispatch(
-          setConversationId({
-            requestId,
-            conversationId: streamServerConversationId,
-          }),
-        );
-        const syncListCx = upsertAgentConversationFromExecutionAction(
-          getState(),
+      if (d.table === "cx_conversation") {
+        assertConversationIdMatches(
           conversationId,
-          streamServerConversationId,
+          d.record_id,
+          "record_reserved-cx_conversation",
         );
-        if (syncListCx) dispatch(syncListCx);
+        if (!cxConversationConfirmed) {
+          cxConversationConfirmed = true;
+          dispatch(confirmServerSync(conversationId));
+          const syncListCx = upsertAgentConversationFromExecutionAction(
+            getState(),
+            conversationId,
+            conversationId,
+          );
+          if (syncListCx) dispatch(syncListCx);
+        }
       }
 
       dispatch(
@@ -832,8 +823,6 @@ export async function processStream({
         .map((id) => finalRequest.renderBlocks[id]?.content ?? "")
         .join("\n")
     : "";
-  const finalConversationId =
-    finalRequest?.serverConversationId ?? streamServerConversationId ?? null;
   const finalErrorMessage =
     finalRequest?.status === "error"
       ? (finalRequest.errorMessage ?? null)
@@ -859,7 +848,6 @@ export async function processStream({
       conversationId,
       requestId,
       content: completedText,
-      serverConversationId: finalConversationId,
       ...(cxContentBlocks.length > 0 && { cxContentBlocks }),
       ...(finalContentBlocks.length > 0 && {
         renderBlocks: finalContentBlocks,
@@ -925,7 +913,7 @@ export async function processStream({
   dispatch(attachClientMetrics({ conversationId, requestId, clientMetrics }));
 
   return {
-    conversationId: finalConversationId,
+    conversationId,
     completionStats,
     tokenUsage,
     finishReason,

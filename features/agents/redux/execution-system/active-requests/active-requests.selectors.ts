@@ -123,7 +123,7 @@ export const selectRequestConversationId =
   (state: RootState): string | null => {
     const r = state.activeRequests.byRequestId[requestId];
     if (!r) return null;
-    return r.serverConversationId ?? r.conversationId;
+    return r.conversationId;
   };
 
 export const selectHasActiveRequests = createSelector(

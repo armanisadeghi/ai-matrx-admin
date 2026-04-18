@@ -141,9 +141,6 @@ export interface ActiveRequest {
   requestId: string;
   conversationId: string;
 
-  /** Server-confirmed conversation ID (may differ from client-generated if server overrides) */
-  serverConversationId: string | null;
-
   /** If this is a sub-agent request, the parent's conversationId */
   parentConversationId: string | null;
 

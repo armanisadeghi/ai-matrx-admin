@@ -92,7 +92,6 @@ const activeRequestsSlice = createSlice({
       state.byRequestId[requestId] = {
         requestId,
         conversationId,
-        serverConversationId: null,
         parentConversationId,
         status: "pending",
         chunkCount: 0,
@@ -157,19 +156,6 @@ const activeRequestsSlice = createSlice({
         ) {
           request.completedAt = new Date().toISOString();
         }
-      }
-    },
-
-    setConversationId(
-      state,
-      action: PayloadAction<{
-        requestId: string;
-        conversationId: string;
-      }>,
-    ) {
-      const request = state.byRequestId[action.payload.requestId];
-      if (request) {
-        request.serverConversationId = action.payload.conversationId;
       }
     },
 
@@ -730,7 +716,6 @@ const activeRequestsSlice = createSlice({
 export const {
   createRequest,
   setRequestStatus,
-  setConversationId,
   appendChunk,
   appendReasoningChunk,
   finalizeAccumulatedReasoning,

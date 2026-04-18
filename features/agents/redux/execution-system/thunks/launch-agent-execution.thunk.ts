@@ -51,11 +51,9 @@ import {
 } from "@/lib/redux/slices/overlaySlice";
 
 export interface LaunchResult {
-  /** Client-owned execution instance key (Redux `byConversationId`). */
+  /** The conversation id — client-generated, honored by the server end-to-end. */
   conversationId: string;
   requestId?: string;
-  /** Server-assigned conversation id from the stream / API when available. */
-  serverConversationId?: string | null;
   responseText?: string;
 }
 
@@ -432,7 +430,6 @@ export const launchAgentExecution = createAsyncThunk<
     const launchResult: LaunchResult = {
       conversationId,
       requestId: result.requestId,
-      serverConversationId: result.conversationId,
       responseText,
     };
 
@@ -448,7 +445,6 @@ export const launchAgentExecution = createAsyncThunk<
     return {
       conversationId,
       requestId: result.requestId,
-      serverConversationId: result.conversationId,
     };
   }
 
