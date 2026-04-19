@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import { useMemo } from 'react';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
+import { useMemo } from "react";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 import {
   Loader2,
   Sparkles,
@@ -24,14 +24,20 @@ import {
   Check,
   File,
   GitCompare,
-} from 'lucide-react';
-import CodeBlock from '@/features/code-editor/components/code-block/CodeBlock';
-import MarkdownStream from '@/components/MarkdownStream';
-import { DiffView } from './DiffView';
-import { SmartPromptInput } from '@/features/prompts/components/smart';
-import { cn } from '@/lib/utils';
-import { useAICodeEditor, type UseAICodeEditorProps } from '@/features/code-editor/hooks/useAICodeEditor';
-import { PROMPT_BUILTINS, PromptBuiltin } from '@/lib/redux/prompt-execution/builtins';
+} from "lucide-react";
+import CodeBlock from "@/features/code-editor/components/code-block/CodeBlock";
+import MarkdownStream from "@/components/MarkdownStream";
+import { DiffView } from "./DiffView";
+import { SmartPromptInput } from "@/features/prompts/components/smart";
+import { cn } from "@/lib/utils";
+import {
+  useAICodeEditor,
+  type UseAICodeEditorProps,
+} from "@/features/code-editor/hooks/useAICodeEditor";
+import {
+  PROMPT_BUILTINS,
+  PromptBuiltin,
+} from "@/lib/redux/prompt-execution/builtins";
 
 export type AICodeEditorProps = UseAICodeEditorProps & {
   title?: string;
@@ -46,9 +52,9 @@ export function AICodeEditor({
   currentCode,
   language: rawLanguage,
   builtinId,
-  promptKey = 'generic-code-editor',
+  promptKey = "generic-code-editor",
   onCodeChange,
-  title = 'AI Code Editor',
+  title = "AI Code Editor",
   allowPromptSelection = false,
   showHeader = true,
   className,
@@ -93,28 +99,33 @@ export function AICodeEditor({
   const availableBuiltins = Object.values(PROMPT_BUILTINS) as PromptBuiltin[];
 
   // Memoize CodeBlock to prevent re-rendering
-  const memoizedCodeDisplay = useMemo(() => (
-    <>
-      <div className="px-2 py-1 flex items-center justify-between shrink-0">
-        <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">Current Code</span>
-      </div>
-      <div className="flex-1 overflow-auto relative">
-        <CodeBlock
-          code={currentCode}
-          language={language}
-          showLineNumbers={true}
-        />
-      </div>
-    </>
-  ), [currentCode, language]);
+  const memoizedCodeDisplay = useMemo(
+    () => (
+      <>
+        <div className="px-2 py-1 flex items-center justify-between shrink-0">
+          <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
+            Current Code
+          </span>
+        </div>
+        <div className="flex-1 overflow-auto relative">
+          <CodeBlock
+            code={currentCode}
+            language={language}
+            showLineNumbers={true}
+          />
+        </div>
+      </>
+    ),
+    [currentCode, language],
+  );
 
   return (
     <div className={cn("h-full flex flex-col overflow-hidden", className)}>
       {/* Compact Header - Only show when needed */}
-      {showHeader && (allowPromptSelection || title !== 'AI Code Editor') && (
+      {showHeader && (allowPromptSelection || title !== "AI Code Editor") && (
         <div className="px-3 py-2 border-b shrink-0 bg-muted/30">
           <div className="flex items-center justify-between gap-2">
-            {title !== 'AI Code Editor' && (
+            {title !== "AI Code Editor" && (
               <div className="flex items-center gap-1.5 text-sm font-medium">
                 <Code2 className="w-3.5 h-3.5 text-muted-foreground" />
                 <span className="truncate">{title}</span>
@@ -123,13 +134,21 @@ export function AICodeEditor({
 
             <div className="flex items-center gap-2 ml-auto">
               {allowPromptSelection && (
-                <Select value={selectedBuiltinId} onValueChange={setSelectedBuiltinId} disabled={isLoadingPrompt}>
+                <Select
+                  value={selectedBuiltinId}
+                  onValueChange={setSelectedBuiltinId}
+                  disabled={isLoadingPrompt}
+                >
                   <SelectTrigger className="w-[160px] h-7 text-xs">
                     <SelectValue placeholder="Select mode" />
                   </SelectTrigger>
                   <SelectContent>
                     {availableBuiltins.map((builtin) => (
-                      <SelectItem key={builtin.id} value={builtin.id} className="text-xs">
+                      <SelectItem
+                        key={builtin.id}
+                        value={builtin.id}
+                        className="text-xs"
+                      >
                         {builtin.name} ({builtin.key})
                       </SelectItem>
                     ))}
@@ -144,17 +163,19 @@ export function AICodeEditor({
       {/* Main Content - Two-column layout */}
       <div className="flex-1 overflow-hidden min-h-0 flex gap-2 p-2">
         {/* Left: Main Content Area (changes based on state) */}
-        <div className={cn(
-          "flex flex-col min-h-0 gap-2",
-          messages && messages.length > 0 ? "flex-[2] min-w-0" : "flex-1"
-        )}>
+        <div
+          className={cn(
+            "flex flex-col min-h-0 gap-2",
+            messages && messages.length > 0 ? "flex-[2] min-w-0" : "flex-1",
+          )}
+        >
           {/* Code Display (input/processing states) */}
-          {(state === 'input' || state === 'processing') && (
+          {(state === "input" || state === "processing") && (
             <div className="flex-1 flex flex-col min-h-0 overflow-hidden bg-background relative">
               {memoizedCodeDisplay}
 
               {/* Processing Overlay - Compact */}
-              {state === 'processing' && (
+              {state === "processing" && (
                 <div className="absolute inset-0 bg-background/90 backdrop-blur-sm flex flex-col items-center justify-center z-10">
                   <Loader2 className="w-10 h-10 animate-spin text-primary mb-3" />
                   <p className="text-sm font-medium">AI is responding...</p>
@@ -162,8 +183,10 @@ export function AICodeEditor({
                   {streamingText && (
                     <div className="mt-4 w-full max-w-xl px-4">
                       <div className="bg-muted/50 rounded border p-2 max-h-[450px] overflow-y-auto font-mono text-[10px]">
-                        <p className="text-muted-foreground mb-1 text-[9px] uppercase tracking-wider font-semibold">Live Response</p>
-                        <MarkdownStream content={streamingText} type="message" role="assistant" />
+                        <p className="text-muted-foreground mb-1 text-[9px] uppercase tracking-wider font-semibold">
+                          Live Response
+                        </p>
+                        <MarkdownStream content={streamingText} />
                       </div>
                     </div>
                   )}
@@ -173,21 +196,28 @@ export function AICodeEditor({
           )}
 
           {/* Review Stage */}
-          {state === 'review' && parsedEdits && (
+          {state === "review" && parsedEdits && (
             <div className="flex-1 flex flex-col min-h-0">
               <div className="flex items-center justify-between mb-2 shrink-0">
                 <div className="flex items-center gap-3">
                   <span className="text-sm font-semibold">Review Changes</span>
                   <span className="text-xs text-muted-foreground">
-                    {parsedEdits.edits.length} edit{parsedEdits.edits.length !== 1 ? 's' : ''}
+                    {parsedEdits.edits.length} edit
+                    {parsedEdits.edits.length !== 1 ? "s" : ""}
                   </span>
                 </div>
                 {diffStats && (
                   <div className="flex gap-1.5">
-                    <Badge variant="outline" className="text-[10px] h-5 px-1.5 text-green-600 border-green-600 bg-green-50 dark:bg-green-950/30">
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] h-5 px-1.5 text-green-600 border-green-600 bg-green-50 dark:bg-green-950/30"
+                    >
                       +{diffStats.additions}
                     </Badge>
-                    <Badge variant="outline" className="text-[10px] h-5 px-1.5 text-red-600 border-red-600 bg-red-50 dark:bg-red-950/30">
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] h-5 px-1.5 text-red-600 border-red-600 bg-red-50 dark:bg-red-950/30"
+                    >
                       -{diffStats.deletions}
                     </Badge>
                   </div>
@@ -197,11 +227,16 @@ export function AICodeEditor({
               {parsedEdits.explanation && (
                 <Alert className="mb-2 shrink-0 py-2">
                   <Sparkles className="w-3.5 h-3.5 text-primary" />
-                  <AlertDescription className="text-xs">{parsedEdits.explanation}</AlertDescription>
+                  <AlertDescription className="text-xs">
+                    {parsedEdits.explanation}
+                  </AlertDescription>
                 </Alert>
               )}
 
-              <Tabs defaultValue="diff" className="flex-1 flex flex-col min-h-0">
+              <Tabs
+                defaultValue="diff"
+                className="flex-1 flex flex-col min-h-0"
+              >
                 <TabsList className="w-full justify-start border-b rounded-none bg-transparent p-0 h-auto shrink-0 gap-0">
                   <TabsTrigger
                     value="diff"
@@ -234,7 +269,10 @@ export function AICodeEditor({
                 </TabsList>
 
                 <div className="flex-1 mt-2 min-h-0 border rounded overflow-hidden bg-background">
-                  <TabsContent value="diff" className="h-full m-0 p-0 overflow-hidden">
+                  <TabsContent
+                    value="diff"
+                    className="h-full m-0 p-0 overflow-hidden"
+                  >
                     <DiffView
                       originalCode={currentCode}
                       modifiedCode={modifiedCode}
@@ -243,7 +281,10 @@ export function AICodeEditor({
                     />
                   </TabsContent>
 
-                  <TabsContent value="original" className="h-full m-0 p-0 overflow-hidden">
+                  <TabsContent
+                    value="original"
+                    className="h-full m-0 p-0 overflow-hidden"
+                  >
                     <div className="h-full overflow-auto">
                       <CodeBlock
                         code={currentCode}
@@ -253,7 +294,10 @@ export function AICodeEditor({
                     </div>
                   </TabsContent>
 
-                  <TabsContent value="after" className="h-full m-0 p-0 overflow-hidden">
+                  <TabsContent
+                    value="after"
+                    className="h-full m-0 p-0 overflow-hidden"
+                  >
                     <div className="h-full overflow-auto">
                       <CodeBlock
                         code={modifiedCode}
@@ -263,12 +307,13 @@ export function AICodeEditor({
                     </div>
                   </TabsContent>
 
-                  <TabsContent value="response" className="h-full m-0 p-0 overflow-hidden">
+                  <TabsContent
+                    value="response"
+                    className="h-full m-0 p-0 overflow-hidden"
+                  >
                     <div className="h-full overflow-auto p-3">
                       <MarkdownStream
                         content={rawAIResponse}
-                        type="message"
-                        role="assistant"
                         hideCopyButton={false}
                         allowFullScreenEditor={false}
                       />
@@ -280,7 +325,7 @@ export function AICodeEditor({
           )}
 
           {/* Applying Stage - Compact */}
-          {state === 'applying' && (
+          {state === "applying" && (
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center space-y-2">
                 <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto" />
@@ -290,7 +335,7 @@ export function AICodeEditor({
           )}
 
           {/* Complete Stage - Compact */}
-          {state === 'complete' && (
+          {state === "complete" && (
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center space-y-2">
                 <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto">
@@ -302,7 +347,7 @@ export function AICodeEditor({
           )}
 
           {/* Error Stage - Compact */}
-          {state === 'error' && (
+          {state === "error" && (
             <div className="flex-1 flex flex-col min-h-0 gap-2">
               <Alert variant="destructive" className="shrink-0 py-2">
                 <AlertCircle className="w-3.5 h-3.5" />
@@ -313,13 +358,19 @@ export function AICodeEditor({
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 flex-1 min-h-0">
                 <div className="border rounded p-2 overflow-auto bg-destructive/5">
-                  <h4 className="font-semibold text-destructive mb-1 text-xs">Error Details</h4>
-                  <pre className="text-[10px] whitespace-pre-wrap font-mono text-destructive/80">{errorMessage}</pre>
+                  <h4 className="font-semibold text-destructive mb-1 text-xs">
+                    Error Details
+                  </h4>
+                  <pre className="text-[10px] whitespace-pre-wrap font-mono text-destructive/80">
+                    {errorMessage}
+                  </pre>
                 </div>
 
                 <div className="border rounded flex flex-col overflow-hidden">
                   <div className="px-2 py-1 bg-muted/50 border-b flex items-center justify-between shrink-0">
-                    <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">Raw AI Response</span>
+                    <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
+                      Raw AI Response
+                    </span>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -341,7 +392,9 @@ export function AICodeEditor({
                     </Button>
                   </div>
                   <div className="flex-1 overflow-auto p-2 bg-background">
-                    <pre className="text-[10px] whitespace-pre-wrap font-mono">{rawAIResponse}</pre>
+                    <pre className="text-[10px] whitespace-pre-wrap font-mono">
+                      {rawAIResponse}
+                    </pre>
                   </div>
                 </div>
               </div>
@@ -353,19 +406,28 @@ export function AICodeEditor({
         {messages && messages.length > 0 && (
           <div className="flex-1 min-w-[280px] max-w-[400px] flex flex-col min-h-0 border rounded overflow-hidden bg-background">
             <div className="px-2 py-1 border-b bg-muted/20 shrink-0">
-              <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">Conversation</span>
+              <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
+                Conversation
+              </span>
             </div>
             <div className="flex-1 overflow-y-auto p-2 space-y-2">
               {messages.map((msg, idx) => (
-                <div key={idx} className={cn(
-                  "p-2 rounded text-xs",
-                  msg.role === 'user' ? 'bg-primary/10 ml-4' : 'bg-muted mr-4'
-                )}>
+                <div
+                  key={idx}
+                  className={cn(
+                    "p-2 rounded text-xs",
+                    msg.role === "user"
+                      ? "bg-primary/10 ml-4"
+                      : "bg-muted mr-4",
+                  )}
+                >
                   <div className="font-semibold text-[10px] uppercase tracking-wide mb-1 text-muted-foreground">
-                    {msg.role === 'user' ? 'You' : 'Assistant'}
+                    {msg.role === "user" ? "You" : "Assistant"}
                   </div>
                   <div className="whitespace-pre-wrap break-words">
-                    {typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content)}
+                    {typeof msg.content === "string"
+                      ? msg.content
+                      : JSON.stringify(msg.content)}
                   </div>
                 </div>
               ))}
@@ -388,24 +450,36 @@ export function AICodeEditor({
       {/* Fixed Footer - Input Area - Compact */}
       <div className="px-2 py-2 border-t shrink-0 bg-background z-20">
         <div className="w-full">
-          {state === 'review' ? (
+          {state === "review" ? (
             <div className="flex items-center justify-between w-full">
-              <Button variant="ghost" size="sm" onClick={() => setState('input')}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setState("input")}
+              >
                 Retry
               </Button>
               <div className="flex gap-1.5">
-                <Button variant="outline" size="sm" onClick={() => setState('input')}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setState("input")}
+                >
                   Discard
                 </Button>
-                <Button size="sm" onClick={handleApplyChanges} className="bg-green-600 hover:bg-green-700 text-white">
+                <Button
+                  size="sm"
+                  onClick={handleApplyChanges}
+                  className="bg-green-600 hover:bg-green-700 text-white"
+                >
                   <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />
                   Apply
                 </Button>
               </div>
             </div>
-          ) : state === 'error' ? (
+          ) : state === "error" ? (
             <div className="flex justify-end w-full">
-              <Button size="sm" onClick={() => setState('input')}>
+              <Button size="sm" onClick={() => setState("input")}>
                 Continue Conversation
               </Button>
             </div>
@@ -435,4 +509,3 @@ export function AICodeEditor({
     </div>
   );
 }
-

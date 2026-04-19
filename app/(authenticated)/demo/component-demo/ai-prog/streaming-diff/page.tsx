@@ -1,13 +1,19 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Play, RotateCcw, Zap } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import MarkdownStream from '@/components/MarkdownStream';
+import { useState, useEffect } from "react";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Play, RotateCcw, Zap } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import MarkdownStream from "@/components/MarkdownStream";
 
 // Sample SEARCH/REPLACE content that would come from AI
 const SAMPLE_SEARCH_REPLACE = `Here are the edits to convert the button to green and add the React import:
@@ -98,30 +104,33 @@ REPLACE:
 \`\`\``;
 
 const SAMPLES = {
-  'basic': { 
-    name: 'Basic SEARCH/REPLACE', 
+  basic: {
+    name: "Basic SEARCH/REPLACE",
     content: SAMPLE_SEARCH_REPLACE,
-    description: 'Two simple edits with explanations'
+    description: "Two simple edits with explanations",
   },
-  'multiple': { 
-    name: 'Multiple Edits', 
+  multiple: {
+    name: "Multiple Edits",
     content: SAMPLE_MULTIPLE_EDITS,
-    description: 'Multiple refactoring edits'
+    description: "Multiple refactoring edits",
   },
 };
 
 export default function StreamingDiffDemoPage() {
-  const [selectedSample, setSelectedSample] = useState<keyof typeof SAMPLES>('basic');
-  const [displayedContent, setDisplayedContent] = useState('');
+  const [selectedSample, setSelectedSample] =
+    useState<keyof typeof SAMPLES>("basic");
+  const [displayedContent, setDisplayedContent] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
-  const [streamSpeed, setStreamSpeed] = useState<'slow' | 'medium' | 'fast' | 'instant'>('medium');
+  const [streamSpeed, setStreamSpeed] = useState<
+    "slow" | "medium" | "fast" | "instant"
+  >("medium");
 
   const currentSample = SAMPLES[selectedSample];
 
   // Simulate streaming
   const simulateStreaming = () => {
     const content = currentSample.content;
-    setDisplayedContent('');
+    setDisplayedContent("");
     setIsStreaming(true);
 
     const speedMap = {
@@ -144,7 +153,8 @@ export default function StreamingDiffDemoPage() {
     const intervalId = setInterval(() => {
       if (index < content.length) {
         // Stream in chunks for more realistic behavior
-        const chunkSize = streamSpeed === 'slow' ? 1 : streamSpeed === 'medium' ? 3 : 10;
+        const chunkSize =
+          streamSpeed === "slow" ? 1 : streamSpeed === "medium" ? 3 : 10;
         setDisplayedContent(content.substring(0, index + chunkSize));
         index += chunkSize;
       } else {
@@ -155,7 +165,7 @@ export default function StreamingDiffDemoPage() {
   };
 
   const handleReset = () => {
-    setDisplayedContent('');
+    setDisplayedContent("");
     setIsStreaming(false);
   };
 
@@ -180,7 +190,8 @@ export default function StreamingDiffDemoPage() {
               Streaming Diff Block Demo
             </h1>
             <p className="text-muted-foreground mt-2">
-              Demonstrates the new streaming diff component with SEARCH/REPLACE blocks
+              Demonstrates the new streaming diff component with SEARCH/REPLACE
+              blocks
             </p>
           </div>
 
@@ -191,7 +202,12 @@ export default function StreamingDiffDemoPage() {
               {/* Sample Selection */}
               <div className="space-y-2">
                 <Label>Sample</Label>
-                <Select value={selectedSample} onValueChange={(v) => setSelectedSample(v as keyof typeof SAMPLES)}>
+                <Select
+                  value={selectedSample}
+                  onValueChange={(v) =>
+                    setSelectedSample(v as keyof typeof SAMPLES)
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -203,13 +219,18 @@ export default function StreamingDiffDemoPage() {
                     ))}
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-muted-foreground">{currentSample.description}</p>
+                <p className="text-xs text-muted-foreground">
+                  {currentSample.description}
+                </p>
               </div>
 
               {/* Speed Selection */}
               <div className="space-y-2">
                 <Label>Streaming Speed</Label>
-                <Select value={streamSpeed} onValueChange={(v) => setStreamSpeed(v as any)}>
+                <Select
+                  value={streamSpeed}
+                  onValueChange={(v) => setStreamSpeed(v as any)}
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -226,11 +247,20 @@ export default function StreamingDiffDemoPage() {
               <div className="space-y-2">
                 <Label>Actions</Label>
                 <div className="flex gap-2">
-                  <Button onClick={simulateStreaming} disabled={isStreaming} className="flex-1">
+                  <Button
+                    onClick={simulateStreaming}
+                    disabled={isStreaming}
+                    className="flex-1"
+                  >
                     <Play className="w-4 h-4 mr-2" />
                     Stream
                   </Button>
-                  <Button onClick={handleInstantShow} disabled={isStreaming} variant="secondary" className="flex-1">
+                  <Button
+                    onClick={handleInstantShow}
+                    disabled={isStreaming}
+                    variant="secondary"
+                    className="flex-1"
+                  >
                     <Zap className="w-4 h-4 mr-2" />
                     Instant
                   </Button>
@@ -255,8 +285,6 @@ export default function StreamingDiffDemoPage() {
                   {displayedContent ? (
                     <MarkdownStream
                       content={displayedContent}
-                      type="message"
-                      role="assistant"
                       isStreamActive={isStreaming}
                       hideCopyButton={false}
                       allowFullScreenEditor={false}
@@ -272,7 +300,7 @@ export default function StreamingDiffDemoPage() {
               <TabsContent value="raw" className="mt-4">
                 <Card className="p-4 bg-muted/50">
                   <pre className="text-xs whitespace-pre-wrap font-mono">
-                    {displayedContent || 'No content yet...'}
+                    {displayedContent || "No content yet..."}
                   </pre>
                 </Card>
               </TabsContent>
@@ -285,23 +313,38 @@ export default function StreamingDiffDemoPage() {
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li className="flex gap-2">
                 <span className="text-primary">1.</span>
-                <span><strong>Detection:</strong> System detects SEARCH/REPLACE blocks in streaming content</span>
+                <span>
+                  <strong>Detection:</strong> System detects SEARCH/REPLACE
+                  blocks in streaming content
+                </span>
               </li>
               <li className="flex gap-2">
                 <span className="text-primary">2.</span>
-                <span><strong>Buffering:</strong> SEARCH content is buffered silently (shows loading indicator)</span>
+                <span>
+                  <strong>Buffering:</strong> SEARCH content is buffered
+                  silently (shows loading indicator)
+                </span>
               </li>
               <li className="flex gap-2">
                 <span className="text-primary">3.</span>
-                <span><strong>Streaming:</strong> Once SEARCH closes, REPLACE content streams as code</span>
+                <span>
+                  <strong>Streaming:</strong> Once SEARCH closes, REPLACE
+                  content streams as code
+                </span>
               </li>
               <li className="flex gap-2">
                 <span className="text-primary">4.</span>
-                <span><strong>Diff View:</strong> When complete, instantly switches to unified diff view</span>
+                <span>
+                  <strong>Diff View:</strong> When complete, instantly switches
+                  to unified diff view
+                </span>
               </li>
               <li className="flex gap-2">
                 <span className="text-primary">✨</span>
-                <span><strong>Custom Styling:</strong> Diff blocks display with a special "Updates" icon and emerald green color</span>
+                <span>
+                  <strong>Custom Styling:</strong> Diff blocks display with a
+                  special "Updates" icon and emerald green color
+                </span>
               </li>
             </ul>
           </Card>
@@ -310,4 +353,3 @@ export default function StreamingDiffDemoPage() {
     </div>
   );
 }
-

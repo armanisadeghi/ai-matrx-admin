@@ -58,23 +58,20 @@ const RenameFolderDialog = dynamic(
   { ssr: false },
 );
 
-const CreateFolderDialog = dynamic(
-  () => import("./CreateFolderDialog"),
-  { ssr: false },
-);
+const CreateFolderDialog = dynamic(() => import("./CreateFolderDialog"), {
+  ssr: false,
+});
 
-const MobileNoteCards = dynamic(
-  () => import("./MobileNoteCards"),
-  { ssr: false },
-);
+const MobileNoteCards = dynamic(() => import("./MobileNoteCards"), {
+  ssr: false,
+});
 
-const MobileFilterSheet = dynamic(
-  () => import("./MobileFilterSheet"),
-  { ssr: false },
-);
+const MobileFilterSheet = dynamic(() => import("./MobileFilterSheet"), {
+  ssr: false,
+});
 
 import { getCategoryIconAndColor } from "@/features/notes/constants/folderCategories";
-import { getIconComponent } from "@/components/official/IconResolver";
+import { getIconComponent } from "@/components/official/icons/IconResolver";
 
 // Folder icon mapping (defaults)
 const FOLDER_ICONS: Record<string, typeof FileText> = {
@@ -623,7 +620,11 @@ export default function SidebarClient({
               }}
               onDragLeave={(e) => {
                 // Only clear if leaving the folder container entirely
-                if (!(e.currentTarget as HTMLElement).contains(e.relatedTarget as Node)) {
+                if (
+                  !(e.currentTarget as HTMLElement).contains(
+                    e.relatedTarget as Node,
+                  )
+                ) {
                   setDragOverFolder(null);
                 }
               }}
@@ -643,7 +644,8 @@ export default function SidebarClient({
                   "group flex items-center gap-1 w-full px-2 py-1 text-[0.6875rem] font-semibold uppercase tracking-wider text-muted-foreground cursor-pointer transition-colors",
                   "hover:text-foreground hover:bg-accent/50",
                   "[&_svg]:w-3 [&_svg]:h-3 [&_svg]:shrink-0",
-                  dragOverFolder === folder && "bg-primary/10 ring-1 ring-dashed ring-primary/40",
+                  dragOverFolder === folder &&
+                    "bg-primary/10 ring-1 ring-dashed ring-primary/40",
                 )}
                 onClick={() => toggleFolder(folder)}
                 onContextMenu={(e) => {
@@ -659,9 +661,15 @@ export default function SidebarClient({
                   <ChevronRight className="w-3.5! h-3.5! opacity-60" />
                 )}
                 {isExpanded ? (
-                  <FolderOpen className="opacity-70" style={folderColor ? { color: folderColor } : undefined} />
+                  <FolderOpen
+                    className="opacity-70"
+                    style={folderColor ? { color: folderColor } : undefined}
+                  />
                 ) : (
-                  <Icon className="opacity-70" style={folderColor ? { color: folderColor } : undefined} />
+                  <Icon
+                    className="opacity-70"
+                    style={folderColor ? { color: folderColor } : undefined}
+                  />
                 )}
                 <span className="flex-1 text-left truncate">{folder}</span>
                 <span className="text-[0.625rem] font-normal opacity-50 tabular-nums">

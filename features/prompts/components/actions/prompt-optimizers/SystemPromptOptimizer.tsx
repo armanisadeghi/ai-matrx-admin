@@ -344,8 +344,6 @@ export function SystemPromptOptimizer({
                       <MarkdownStream
                         content={streamingText}
                         isStreamActive={isOptimizing}
-                        role="assistant"
-                        type="text"
                         hideCopyButton={false}
                         className="text-sm"
                       />

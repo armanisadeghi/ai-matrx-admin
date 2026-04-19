@@ -8,12 +8,25 @@ import {
   ContentEditorStack,
   ContentEditorTabs,
   ContentEditorList,
+  ContentEditorTree,
+  ContentEditorBrowser,
   ContentEditorTabsWithList,
   type ContentEditorTab,
   type ContentEditorDocument,
+  type ContentEditorTreeNode,
+  type ContentEditorFilter,
   type HeaderAction,
 } from "@/components/official/content-editor";
-import { Download, FileText, BookOpen, Sparkles, Flag } from "lucide-react";
+import {
+  Download,
+  FileText,
+  BookOpen,
+  Sparkles,
+  Flag,
+  Code,
+  Settings,
+  Image as ImageIcon,
+} from "lucide-react";
 import HtmlPreviewModal from "@/features/html-pages/components/HtmlPreviewModal";
 
 interface ComponentDisplayProps {
@@ -127,6 +140,225 @@ export default function ContentEditorDisplay({
   const [combinedActiveId, setCombinedActiveId] = useState<string | undefined>(
     "d1",
   );
+
+  // Fade-collapse demo state
+  const [fadeContent, setFadeContent] = useState(
+    "# Fade Collapse Demo\n\nWhen collapsed, this editor shrinks to a preview strip with a soft bottom fade. Click the round chevron that appears at the bottom of the preview to expand — or use the chevron in the header to toggle.\n\n## Lots of content\n\n" +
+      Array.from({ length: 10 }, (_, i) => `- Bullet item ${i + 1}`).join("\n"),
+  );
+
+  // Tree demo state
+  const treeNodes: ContentEditorTreeNode[] = [
+    {
+      id: "src",
+      title: "src",
+      icon: BookOpen,
+      children: [
+        {
+          id: "src/components",
+          title: "components",
+          icon: BookOpen,
+          children: [
+            {
+              id: "src/components/Button.tsx",
+              title: "Button.tsx",
+              description: "Primary button component",
+              icon: Code,
+            },
+            {
+              id: "src/components/Input.tsx",
+              title: "Input.tsx",
+              description: "Form input",
+              icon: Code,
+            },
+          ],
+        },
+        {
+          id: "src/hooks",
+          title: "hooks",
+          icon: BookOpen,
+          children: [
+            {
+              id: "src/hooks/useAuth.ts",
+              title: "useAuth.ts",
+              description: "Authentication hook",
+              icon: Code,
+            },
+          ],
+        },
+        {
+          id: "src/index.ts",
+          title: "index.ts",
+          description: "Package entry",
+          icon: Code,
+        },
+      ],
+    },
+    {
+      id: "docs",
+      title: "docs",
+      icon: BookOpen,
+      children: [
+        {
+          id: "docs/README.md",
+          title: "README.md",
+          description: "Project overview",
+          icon: FileText,
+        },
+        {
+          id: "docs/CHANGELOG.md",
+          title: "CHANGELOG.md",
+          description: "Release notes",
+          icon: FileText,
+        },
+      ],
+    },
+    {
+      id: "package.json",
+      title: "package.json",
+      description: "Manifest",
+      icon: Settings,
+    },
+  ];
+  const [treeActiveId, setTreeActiveId] = useState<string>(
+    "src/components/Button.tsx",
+  );
+  const [treeOpenIds, setTreeOpenIds] = useState<string[]>([
+    "src/components/Button.tsx",
+    "src/hooks/useAuth.ts",
+  ]);
+
+  // VSCode-style workspace demo — tree + tabs with shared mode + fade collapse
+  const workspaceDocuments: ContentEditorDocument[] = [
+    {
+      id: "w/welcome",
+      title: "Welcome.md",
+      description: "Landing page",
+      icon: BookOpen,
+      value:
+        "# Welcome\n\nStart by opening a file from the explorer on the left.",
+    },
+    {
+      id: "w/button",
+      title: "Button.tsx",
+      description: "Primary button",
+      icon: Code,
+      value:
+        "```tsx\nexport function Button(props) {\n  return <button {...props} />\n}\n```",
+    },
+    {
+      id: "w/input",
+      title: "Input.tsx",
+      description: "Form input",
+      icon: Code,
+      value:
+        "```tsx\nexport function Input(props) {\n  return <input {...props} />\n}\n```",
+    },
+    {
+      id: "w/auth",
+      title: "useAuth.ts",
+      description: "Auth hook",
+      icon: Code,
+      value:
+        "```ts\nexport function useAuth() {\n  return { user: null, loading: false }\n}\n```",
+    },
+    {
+      id: "w/readme",
+      title: "README.md",
+      description: "Project overview",
+      icon: FileText,
+      value: "# README\n\nA modern content editor workspace.",
+    },
+    {
+      id: "w/changelog",
+      title: "CHANGELOG.md",
+      description: "Release notes",
+      icon: FileText,
+      value: "# Changelog\n\n- **v1.0** First release",
+    },
+    {
+      id: "w/package",
+      title: "package.json",
+      description: "Manifest",
+      icon: Settings,
+      value: '```json\n{\n  "name": "workspace",\n  "version": "1.0.0"\n}\n```',
+    },
+    {
+      id: "w/assets/logo",
+      title: "logo.svg",
+      description: "Brand asset",
+      icon: ImageIcon,
+      value: "<!-- svg preview not rendered -->",
+    },
+  ];
+  const workspaceTree: ContentEditorTreeNode[] = [
+    {
+      id: "folder:src",
+      title: "src",
+      children: [
+        {
+          id: "folder:src/components",
+          title: "components",
+          children: [
+            { id: "w/button", title: "Button.tsx", icon: Code },
+            { id: "w/input", title: "Input.tsx", icon: Code },
+          ],
+        },
+        {
+          id: "folder:src/hooks",
+          title: "hooks",
+          children: [{ id: "w/auth", title: "useAuth.ts", icon: Code }],
+        },
+      ],
+    },
+    {
+      id: "folder:docs",
+      title: "docs",
+      children: [
+        { id: "w/readme", title: "README.md", icon: FileText },
+        { id: "w/changelog", title: "CHANGELOG.md", icon: FileText },
+      ],
+    },
+    {
+      id: "folder:assets",
+      title: "assets",
+      children: [{ id: "w/assets/logo", title: "logo.svg", icon: ImageIcon }],
+    },
+    { id: "w/welcome", title: "Welcome.md", icon: BookOpen },
+    { id: "w/package", title: "package.json", icon: Settings },
+  ];
+  const [workspaceDocs, setWorkspaceDocs] = useState(workspaceDocuments);
+  const [workspaceOpenIds, setWorkspaceOpenIds] = useState<string[]>([
+    "w/welcome",
+    "w/button",
+  ]);
+  const [workspaceActiveId, setWorkspaceActiveId] = useState<
+    string | undefined
+  >("w/welcome");
+
+  const workspaceFilters: ContentEditorFilter[] = [
+    { id: "code", label: "Code", tone: "blue" },
+    { id: "docs", label: "Docs", tone: "emerald" },
+    { id: "config", label: "Config", tone: "amber" },
+    { id: "assets", label: "Assets", tone: "violet" },
+  ];
+
+  // Filter predicate for the workspace browser — matches by icon or id prefix.
+  const workspaceFilterPredicate = (
+    item: { id: string; icon?: React.ComponentType<{ className?: string }> },
+    activeFilterIds: string[],
+  ) => {
+    if (activeFilterIds.length === 0) return true;
+    // Folder nodes (children defined) aren't passed here — filter predicate is
+    // only invoked for leaves in the tree, and for every item in lists.
+    if (activeFilterIds.includes("code") && item.icon === Code) return true;
+    if (activeFilterIds.includes("docs") && item.icon === FileText) return true;
+    if (activeFilterIds.includes("config") && item.icon === Settings)
+      return true;
+    if (activeFilterIds.includes("assets") && item.icon === ImageIcon)
+      return true;
+    return false;
+  };
 
   // Single Editor Example
   const singleEditorCode = `import { ContentEditor } from '@/components/content-editor';
@@ -298,8 +530,12 @@ const customActions: HeaderAction[] = [
           {/* Tabs Demo */}
           <div>
             <h3 className="text-sm font-semibold mb-3 text-zinc-700 dark:text-zinc-300">
-              ContentEditorTabs — Browser-style tabs
+              ContentEditorTabs — Browser-style tabs with shared mode selector
             </h3>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-3">
+              The mode selector sits in the tab bar (far right) and applies to
+              every tab — per-tab selectors are hidden automatically.
+            </p>
             <ContentEditorTabs
               tabs={tabs}
               onTabsChange={setTabs}
@@ -313,10 +549,157 @@ const customActions: HeaderAction[] = [
               })}
               availableModes={["plain", "matrx-split", "preview"]}
               initialMode="matrx-split"
+              sharedModeSelector
               showCopyButton
               showContentManager
               onShowHtmlPreview={handleShowHtmlPreview}
               placeholder="Write something..."
+            />
+          </div>
+
+          {/* Fade Collapse Demo */}
+          <div>
+            <h3 className="text-sm font-semibold mb-3 text-zinc-700 dark:text-zinc-300">
+              Fade Collapse — shrink to a preview instead of hiding
+            </h3>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-3">
+              Set{" "}
+              <code className="text-[11px] bg-zinc-100 dark:bg-zinc-800 px-1 rounded">
+                collapseMode="fade"
+              </code>{" "}
+              to keep a small preview strip with a bottom fade and a round
+              expand chevron.
+            </p>
+            <ContentEditor
+              value={fadeContent}
+              onChange={setFadeContent}
+              collapsible
+              collapseMode="fade"
+              defaultCollapsed
+              collapsedPreviewHeight={140}
+              availableModes={["plain", "preview", "matrx-split"]}
+              initialMode="preview"
+              title="Fade Collapse Editor"
+              showCopyButton
+              onShowHtmlPreview={handleShowHtmlPreview}
+            />
+          </div>
+
+          {/* Tree Demo */}
+          <div>
+            <h3 className="text-sm font-semibold mb-3 text-zinc-700 dark:text-zinc-300">
+              ContentEditorTree — VSCode-style hierarchical view
+            </h3>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-3">
+              Folders expand/collapse; leaves use the same three-state system as{" "}
+              <code>ContentEditorList</code>.
+            </p>
+            <div className="flex gap-4 items-start">
+              <div className="w-72">
+                <ContentEditorTree
+                  nodes={treeNodes}
+                  activeId={treeActiveId}
+                  openIds={treeOpenIds}
+                  defaultExpandedIds={["src", "src/components"]}
+                  title="Explorer"
+                  onItemClick={(id) => {
+                    if (!treeOpenIds.includes(id)) {
+                      setTreeOpenIds([...treeOpenIds, id]);
+                    }
+                    setTreeActiveId(id);
+                  }}
+                />
+              </div>
+              <div className="flex-1 text-xs text-zinc-600 dark:text-zinc-400 space-y-2 bg-zinc-50 dark:bg-zinc-900/40 border border-border rounded-lg p-3">
+                <div>
+                  <span className="font-semibold">Active:</span> {treeActiveId}
+                </div>
+                <div>
+                  <span className="font-semibold">Open:</span>{" "}
+                  {treeOpenIds.join(", ") || "(none)"}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Browser (searchable list) Demo */}
+          <div>
+            <h3 className="text-sm font-semibold mb-3 text-zinc-700 dark:text-zinc-300">
+              ContentEditorBrowser — searchable & filterable
+            </h3>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-3">
+              Wraps any list or tree with search + filter chips. Filters are
+              declarative — pass a{" "}
+              <code className="text-[11px] bg-zinc-100 dark:bg-zinc-800 px-1 rounded">
+                filterPredicate
+              </code>{" "}
+              and chip tones.
+            </p>
+            <div className="flex gap-4 items-start">
+              <div className="w-72">
+                <ContentEditorBrowser
+                  variant="list"
+                  items={listDemoItems}
+                  activeId={listActiveId}
+                  openIds={listOpenIds}
+                  title="Sections"
+                  searchPlaceholder="Search sections…"
+                  filters={[
+                    { id: "open", label: "Open only", tone: "emerald" },
+                  ]}
+                  filterPredicate={(item, ids) =>
+                    !ids.includes("open") || listOpenIds.includes(item.id)
+                  }
+                  onItemClick={(id) => {
+                    if (!listOpenIds.includes(id))
+                      setListOpenIds([...listOpenIds, id]);
+                    setListActiveId(id);
+                  }}
+                  contentClassName="max-h-72"
+                />
+              </div>
+              <div className="flex-1 text-xs text-zinc-600 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-900/40 border border-border rounded-lg p-3">
+                Type to search. Toggle{" "}
+                <span className="font-medium">Open only</span> to hide items you
+                haven't opened yet.
+              </div>
+            </div>
+          </div>
+
+          {/* VSCode-style workspace Demo */}
+          <div>
+            <h3 className="text-sm font-semibold mb-3 text-zinc-700 dark:text-zinc-300">
+              Workspace — tree explorer + tabs + shared mode + fade collapse
+            </h3>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-3">
+              All the new pieces composed together: a searchable tree sidebar, a
+              single shared mode selector in the tab bar, fade-style collapse on
+              the editor area, and filter chips for file kinds.
+            </p>
+            <ContentEditorTabsWithList
+              documents={workspaceDocs}
+              onDocumentsChange={setWorkspaceDocs}
+              openIds={workspaceOpenIds}
+              onOpenIdsChange={setWorkspaceOpenIds}
+              activeId={workspaceActiveId}
+              onActiveIdChange={setWorkspaceActiveId}
+              sidebarMode="tree-browser"
+              treeNodes={workspaceTree}
+              filters={workspaceFilters}
+              filterPredicate={workspaceFilterPredicate}
+              listTitle="Explorer"
+              listWidth="w-72"
+              collapsible
+              collapseMode="fade"
+              collapsedPreviewHeight={160}
+              allowCloseTab
+              sharedModeSelector
+              defaultSharedMode="preview"
+              availableModes={["plain", "matrx-split", "preview"]}
+              initialMode="preview"
+              showCopyButton
+              showContentManager
+              onShowHtmlPreview={handleShowHtmlPreview}
             />
           </div>
 

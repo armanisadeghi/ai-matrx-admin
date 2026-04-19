@@ -263,8 +263,6 @@ export function AssistantMessage({
                   toolUpdates={
                     message.toolUpdates as ToolCallObject[] | undefined
                   }
-                  type="message"
-                  role="assistant"
                   isStreamActive={
                     isStreamActive && message.status === "streaming"
                   }

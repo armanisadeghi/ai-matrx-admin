@@ -41,7 +41,7 @@ import {
 } from "@/features/scraper/utils/scraper-floating-helpers";
 import { cn } from "@/lib/utils";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openImageViewer } from "@/features/window-panels/windows/ImageViewerWindow";
+import { openImageViewer } from "@/features/window-panels/windows/image/ImageViewerWindow";
 
 type WorkspaceMode = "web" | "url" | "batch";
 

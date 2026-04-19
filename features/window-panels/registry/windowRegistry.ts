@@ -455,6 +455,49 @@ const REGISTRY: WindowRegistryEntry[] = [
     label: "Import Agent",
     defaultData: { selectedSource: "agent-json", pastedText: "" },
   },
+
+  // ── Content Editor (single, no tabs, no sidebar) ──────────────────────────
+  {
+    slug: "content-editor-window",
+    overlayId: "contentEditorWindow",
+    label: "Content Editor",
+    // callbackGroupId is omitted from persisted data — live callbacks cannot
+    // survive a reload; the reopened window restores value but emits no events
+    // until a new caller re-registers.
+    defaultData: {
+      documentId: "default",
+      documentTitle: null,
+      value: "",
+      title: null,
+    },
+  },
+
+  // ── Content Editor List (sidebar + single editor, no tabs) ────────────────
+  {
+    slug: "content-editor-list-window",
+    overlayId: "contentEditorListWindow",
+    label: "Content List Editor",
+    defaultData: {
+      documents: [],
+      activeDocumentId: null,
+      listTitle: null,
+      title: null,
+    },
+  },
+
+  // ── Content Editor Workspace (sidebar + tabs, full featured) ──────────────
+  {
+    slug: "content-editor-workspace-window",
+    overlayId: "contentEditorWorkspaceWindow",
+    label: "Content Workspace",
+    defaultData: {
+      documents: [],
+      openDocumentIds: [],
+      activeDocumentId: null,
+      listTitle: null,
+      title: null,
+    },
+  },
 ];
 
 // ─── Lookup helpers ───────────────────────────────────────────────────────────

@@ -26,7 +26,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { openSaveToNotes } from "@/lib/redux/slices/overlaySlice";
-import { openFilePreview } from "@/features/window-panels/windows/FilePreviewWindow";
+import { openFilePreview } from "@/features/window-panels/windows/files/FilePreviewWindow";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import {
   usePdfExtractor,
@@ -98,9 +98,7 @@ export function PdfExtractorFloatingWorkspace({
             onClick={handleSaveToNotes}
           />
           {activeTab.document.content && (
-            <CopyFooterButton
-              onCopy={() => extractor.copyText(activeTab.id)}
-            />
+            <CopyFooterButton onCopy={() => extractor.copyText(activeTab.id)} />
           )}
         </div>
       </>
@@ -394,8 +392,7 @@ function NewExtractionContent({
                 <span className="text-primary underline">browse</span>
               </p>
               <p className="text-[10px] text-muted-foreground mt-1">
-                PDF, PNG, JPG, WEBP — select multiple files for batch
-                extraction
+                PDF, PNG, JPG, WEBP — select multiple files for batch extraction
               </p>
             </div>
           </button>
@@ -539,12 +536,7 @@ function ExtractionTabContent({
         {subTab === "text" && <RawTextView content={doc.content} />}
         {subTab === "preview" && <PreviewView content={doc.content} />}
         {subTab === "metadata" && <MetadataView doc={doc} />}
-        {subTab === "clean" && (
-          <AiCleanView
-            tab={tab}
-            onClean={onClean}
-          />
-        )}
+        {subTab === "clean" && <AiCleanView tab={tab} onClean={onClean} />}
       </div>
     </div>
   );
@@ -553,7 +545,8 @@ function ExtractionTabContent({
 // ─── Sub-tab Content Views ───────────────────────────────────────────────────
 
 function RawTextView({ content }: { content: string | null }) {
-  if (!content) return <EmptyState message="No text extracted from this file" />;
+  if (!content)
+    return <EmptyState message="No text extracted from this file" />;
   return (
     <div className="p-3">
       <pre className="text-[11px] font-mono text-foreground/80 whitespace-pre-wrap leading-relaxed">
@@ -589,8 +582,14 @@ function MetadataView({ doc }: { doc: PdfDocument }) {
       <MetaRow label="Document ID" value={doc.id} mono />
       <MetaRow label="Characters" value={doc.charCount.toLocaleString()} />
       <MetaRow label="Words" value={doc.wordCount.toLocaleString()} />
-      <MetaRow label="Created" value={new Date(doc.createdAt).toLocaleString()} />
-      <MetaRow label="Updated" value={new Date(doc.updatedAt).toLocaleString()} />
+      <MetaRow
+        label="Created"
+        value={new Date(doc.createdAt).toLocaleString()}
+      />
+      <MetaRow
+        label="Updated"
+        value={new Date(doc.updatedAt).toLocaleString()}
+      />
       {doc.source && (
         <div className="flex items-start gap-2 px-2.5 py-1.5 bg-card border border-border rounded-md">
           <span className="text-[10px] font-medium text-muted-foreground shrink-0 w-28">
@@ -665,11 +664,7 @@ function AiCleanView({
           and return structured output.
         </p>
       </div>
-      <Button
-        size="sm"
-        className="h-7 text-xs"
-        onClick={() => onClean(tab.id)}
-      >
+      <Button size="sm" className="h-7 text-xs" onClick={() => onClean(tab.id)}>
         <Sparkles className="w-3 h-3 mr-1.5" />
         Run AI Cleanup
       </Button>

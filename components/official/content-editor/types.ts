@@ -1,6 +1,11 @@
 // components/content-editor/types.ts
 
-export type EditorMode = 'plain' | 'wysiwyg' | 'markdown' | 'matrx-split' | 'preview';
+export type EditorMode =
+  | "plain"
+  | "wysiwyg"
+  | "markdown"
+  | "matrx-split"
+  | "preview";
 
 export interface HeaderAction {
   id: string;
@@ -13,31 +18,40 @@ export interface ContentEditorProps {
   // Content
   value: string;
   onChange: (value: string) => void;
-  
+
   // Editor modes
   availableModes?: EditorMode[];
   initialMode?: EditorMode;
   mode?: EditorMode; // Controlled mode from parent
   onModeChange?: (mode: EditorMode) => void;
-  
+
   // Auto-save
   autoSave?: boolean;
   autoSaveDelay?: number;
   onSave?: (content: string) => Promise<void> | void;
-  
+
   // Collapsible
   collapsible?: boolean;
   defaultCollapsed?: boolean;
+  /**
+   * How the collapse animates when collapsible is true:
+   * - "hide"  (default): content is fully hidden, only the header remains
+   * - "fade": content is clipped to `collapsedPreviewHeight` with a bottom
+   *   fade-out gradient and a pull-down chevron affordance
+   */
+  collapseMode?: "hide" | "fade";
+  /** Height of the visible preview strip when collapseMode === "fade". */
+  collapsedPreviewHeight?: number | string;
   title?: string;
-  
+
   // Header actions
   headerActions?: HeaderAction[];
-  
+
   // Built-in features
   showCopyButton?: boolean;
   showContentManager?: boolean;
   onShowHtmlPreview?: (html: string, title?: string) => void;
-  
+
   // UI
   placeholder?: string;
   showModeSelector?: boolean;
@@ -50,4 +64,3 @@ export interface EditorModeConfig {
   label: string;
   description: string;
 }
-

@@ -15,10 +15,17 @@ import {
 // UI is non-critical; stubbed to render empty while chat is rebuilt.
 import type { RootState } from "@/lib/redux/store";
 const chatConversationsActions = {
-  updateUIState: (_payload: unknown) => ({ type: "noop" as const, payload: _payload }),
+  updateUIState: (_payload: unknown) => ({
+    type: "noop" as const,
+    payload: _payload,
+  }),
 };
-const selectShowDebugInfo = (_state: RootState, _sessionId: string): boolean => false;
-const selectShowSystemMessages = (_state: RootState, _sessionId: string): boolean => false;
+const selectShowDebugInfo = (_state: RootState, _sessionId: string): boolean =>
+  false;
+const selectShowSystemMessages = (
+  _state: RootState,
+  _sessionId: string,
+): boolean => false;
 type ChatDebugUIState = {
   useLocalhost?: boolean;
   isBlockMode?: boolean;
@@ -31,11 +38,20 @@ type ChatDebugSession = {
   apiMode?: string | null;
   status?: string | null;
 };
-const selectUIState = (_state: RootState, _sessionId: string): ChatDebugUIState => ({});
-const selectSession = (_state: RootState, _sessionId: string): ChatDebugSession | undefined => undefined;
+const selectUIState = (
+  _state: RootState,
+  _sessionId: string,
+): ChatDebugUIState => ({});
+const selectSession = (
+  _state: RootState,
+  _sessionId: string,
+): ChatDebugSession | undefined => undefined;
 const selectMessages = (_state: RootState, _sessionId: string): unknown[] => [];
-const selectResources = (_state: RootState, _sessionId: string): unknown[] => [];
-import { WindowPanel } from "../WindowPanel";
+const selectResources = (
+  _state: RootState,
+  _sessionId: string,
+): unknown[] => [];
+import { WindowPanel } from "@/features/window-panels/WindowPanel";
 
 // ─── Window inner ─────────────────────────────────────────────────────────────
 

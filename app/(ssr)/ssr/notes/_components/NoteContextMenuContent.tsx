@@ -66,7 +66,7 @@ import {
   Redo2,
 } from "lucide-react";
 import dynamic from "next/dynamic";
-import { getIconComponent } from "@/components/official/IconResolver";
+import { getIconComponent } from "@/components/official/icons/IconResolver";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 import {
@@ -300,8 +300,9 @@ export function NoteContextMenuHeavy({
   const dispatch = useAppDispatch();
   const isAdmin = useAppSelector(selectIsAdmin);
   const isDebugMode = useAppSelector(selectIsDebugMode);
-  const { canUndo, canRedo, undo, redo, undoHint, redoHint } =
-    useNoteUndoRedo({ noteId });
+  const { canUndo, canRedo, undo, redo, undoHint, redoHint } = useNoteUndoRedo({
+    noteId,
+  });
   const isAdminIndicatorOpen = useAppSelector((state) =>
     selectIsOverlayOpen(state, "adminIndicator"),
   );
@@ -641,7 +642,8 @@ export function NoteContextMenuHeavy({
   const handleCleanupText = useCallback(() => {
     if (!selectionRange) return;
     const element = selectionRange.element;
-    const hasSelection = selectedText && selectionRange.start !== selectionRange.end;
+    const hasSelection =
+      selectedText && selectionRange.start !== selectionRange.end;
     const start = hasSelection ? selectionRange.start : 0;
     const end = hasSelection ? selectionRange.end : element.value.length;
     const original = element.value.substring(start, end);
@@ -657,12 +659,17 @@ export function NoteContextMenuHeavy({
     cleaned = cleaned.replace(/\n+$/, "\n");
 
     if (cleaned === original) {
-      toast({ title: "Already clean", description: "No extra whitespace found." });
+      toast({
+        title: "Already clean",
+        description: "No extra whitespace found.",
+      });
       return;
     }
 
     const newValue =
-      element.value.substring(0, start) + cleaned + element.value.substring(end);
+      element.value.substring(0, start) +
+      cleaned +
+      element.value.substring(end);
     nativeSetValue(element, newValue);
     element.setSelectionRange(start, start + cleaned.length);
 
@@ -791,7 +798,9 @@ export function NoteContextMenuHeavy({
       const element = selectionRange.element;
       const { start, end } = selectionRange;
       const newValue =
-        element.value.substring(0, start) + newText + element.value.substring(end);
+        element.value.substring(0, start) +
+        newText +
+        element.value.substring(end);
       nativeSetValue(element, newValue);
       element.setSelectionRange(start, start + newText.length);
     },
@@ -806,9 +815,14 @@ export function NoteContextMenuHeavy({
       const { start } = selectionRange;
       const insertText = text + "\n\n";
       const newValue =
-        element.value.substring(0, start) + insertText + element.value.substring(start);
+        element.value.substring(0, start) +
+        insertText +
+        element.value.substring(start);
       nativeSetValue(element, newValue);
-      element.setSelectionRange(start + insertText.length, start + insertText.length);
+      element.setSelectionRange(
+        start + insertText.length,
+        start + insertText.length,
+      );
     },
     [selectionRange],
   );
@@ -821,9 +835,14 @@ export function NoteContextMenuHeavy({
       const { end } = selectionRange;
       const insertText = "\n\n" + text;
       const newValue =
-        element.value.substring(0, end) + insertText + element.value.substring(end);
+        element.value.substring(0, end) +
+        insertText +
+        element.value.substring(end);
       nativeSetValue(element, newValue);
-      element.setSelectionRange(end + insertText.length, end + insertText.length);
+      element.setSelectionRange(
+        end + insertText.length,
+        end + insertText.length,
+      );
     },
     [selectionRange],
   );
@@ -997,7 +1016,9 @@ export function NoteContextMenuHeavy({
           disabled={!canUndo}
         >
           <Undo2 /> Undo
-          <span className="ml-auto text-[0.6rem] text-muted-foreground">{undoHint}</span>
+          <span className="ml-auto text-[0.6rem] text-muted-foreground">
+            {undoHint}
+          </span>
         </Item>
         <Item
           className="flex items-center gap-2 text-xs [&_svg]:w-3.5 [&_svg]:h-3.5"
@@ -1005,7 +1026,9 @@ export function NoteContextMenuHeavy({
           disabled={!canRedo}
         >
           <Redo2 /> Redo
-          <span className="ml-auto text-[0.6rem] text-muted-foreground">{redoHint}</span>
+          <span className="ml-auto text-[0.6rem] text-muted-foreground">
+            {redoHint}
+          </span>
         </Item>
 
         <Separator />
@@ -1364,14 +1387,23 @@ export function NoteContextMenuHeavy({
           <Item
             className="flex items-center gap-2 text-xs text-destructive focus:text-destructive [&_svg]:w-3.5 [&_svg]:h-3.5"
             onSelect={async () => {
-              if (!window.confirm("Permanently delete this note? This cannot be undone.")) return;
+              if (
+                !window.confirm(
+                  "Permanently delete this note? This cannot be undone.",
+                )
+              )
+                return;
               try {
-                const { permanentlyDeleteNote } = await import("@/features/notes/service/notesService");
+                const { permanentlyDeleteNote } =
+                  await import("@/features/notes/service/notesService");
                 await permanentlyDeleteNote(noteId);
                 onDelete();
                 toast({ title: "Note permanently deleted" });
               } catch (err) {
-                toast({ title: "Failed to permanently delete", variant: "destructive" });
+                toast({
+                  title: "Failed to permanently delete",
+                  variant: "destructive",
+                });
               }
             }}
           >

@@ -54,8 +54,6 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({
         <MarkdownStream
           content={content}
           taskId={taskId}
-          type="message"
-          role="assistant"
           className="bg-textured"
           isStreamActive={isStreamActive}
           analysisData={metadata}

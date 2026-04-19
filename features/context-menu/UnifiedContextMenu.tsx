@@ -92,7 +92,7 @@ import {
   toggleOverlay,
 } from "@/lib/redux/slices/overlaySlice";
 import { ContextDebugModal } from "@/components/debug/ContextDebugModal";
-import { getIconComponent } from "@/components/official/IconResolver";
+import { getIconComponent } from "@/components/official/icons/IconResolver";
 import { toast } from "@/components/ui/use-toast";
 
 interface UnifiedContextMenuProps {

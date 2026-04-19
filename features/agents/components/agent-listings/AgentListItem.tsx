@@ -38,7 +38,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { openAgentContentWindow } from "@/lib/redux/slices/overlaySlice";
-import { AgentContentTab } from "@/features/window-panels/windows/AgentContentWindow";
+import { AgentContentTab } from "@/features/window-panels/windows/agents/AgentContentWindow";
 
 interface AgentListItemProps {
   id: string;
@@ -267,10 +267,7 @@ export function AgentListItem({
                   View
                 </DropdownMenuItem>
               </Link>
-              <DropdownMenuItem
-                onClick={handleSneakPeek}
-                disabled={isDisabled}
-              >
+              <DropdownMenuItem onClick={handleSneakPeek} disabled={isDisabled}>
                 <Sparkles className="mr-2 h-4 w-4" />
                 Sneak Peek
               </DropdownMenuItem>

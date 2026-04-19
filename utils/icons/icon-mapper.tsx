@@ -1,7 +1,7 @@
 // utils/icon-mapper.tsx
 
 import React from "react";
-import { getIconComponent } from "@/components/official/IconResolver";
+import { getIconComponent } from "@/components/official/icons/IconResolver";
 import { isLucideModuleIconExport } from "@/utils/icons/lucide-module-icon";
 import {
   Code,

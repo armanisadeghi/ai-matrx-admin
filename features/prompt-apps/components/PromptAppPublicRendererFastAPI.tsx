@@ -665,7 +665,6 @@ export function PromptAppPublicRendererFastAPI({
                 <MarkdownStream
                   events={streamEvents}
                   isStreamActive={isExecuting && !isStreamComplete}
-                  role="assistant"
                   onError={(err) =>
                     setError({ type: "render_error", message: err })
                   }

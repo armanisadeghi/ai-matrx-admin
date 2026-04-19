@@ -14,7 +14,7 @@
 // All existing callers that omit instanceId continue to work with zero changes.
 
 import { createSlice, createSelector } from "@reduxjs/toolkit";
-import { AgentContentTab } from "@/features/window-panels/windows/AgentContentWindow";
+import { AgentContentTab } from "@/features/window-panels/windows/agents/AgentContentWindow";
 
 export const DEFAULT_INSTANCE_ID = "default";
 
@@ -103,6 +103,9 @@ const initialState: OverlayState = {
     agentAssistantMarkdownDebugWindow: makeDefaultInstance(),
     agentImportWindow: makeDefaultInstance(),
     notesBetaWindow: makeDefaultInstance(),
+    contentEditorWindow: makeDefaultInstance(),
+    contentEditorListWindow: makeDefaultInstance(),
+    contentEditorWorkspaceWindow: makeDefaultInstance(),
     // Agent execution widget overlays — each is autonomous, instanced
     agentFullModal: makeDefaultInstance(),
     agentCompactModal: makeDefaultInstance(),

@@ -282,8 +282,6 @@ export function AssistantMessage({
                 <MarkdownStream
                   content={message.content}
                   events={message.streamEvents}
-                  type="message"
-                  role="assistant"
                   isStreamActive={
                     isStreamActive && message.status === "streaming"
                   }

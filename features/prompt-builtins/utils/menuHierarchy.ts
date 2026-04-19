@@ -1,7 +1,10 @@
-import { getIconComponent } from '@/components/official/IconResolver';
-import { FileText } from 'lucide-react';
-import type { CategoryGroup, MenuItem } from '@/features/prompt-builtins/types/menu';
-import type { PlacementType } from '@/features/prompt-builtins/constants';
+import { getIconComponent } from "@/components/official/icons/IconResolver";
+import { FileText } from "lucide-react";
+import type {
+  CategoryGroup,
+  MenuItem,
+} from "@/features/prompt-builtins/types/menu";
+import type { PlacementType } from "@/features/prompt-builtins/constants";
 
 interface FlatCategory {
   category: {
@@ -23,27 +26,29 @@ interface FlatCategory {
 /**
  * Filters categories and their items by enabled_contexts.
  * Only returns categories and items that include the specified context.
- * 
+ *
  * @param flatData - Flat array of categories with items
  * @param contextFilter - Context to filter by (e.g., 'code-editor', 'note-editor')
  * @returns Filtered flat array with only relevant categories/items
  */
 export function filterByContext(
   flatData: FlatCategory[],
-  contextFilter?: string
+  contextFilter?: string,
 ): FlatCategory[] {
   // If no filter specified, return all data
   if (!contextFilter) return flatData;
 
   return flatData
-    .map(category => {
+    .map((category) => {
       // Check if category is enabled for this context
-      const categoryEnabled = category.category.enabled_contexts?.includes(contextFilter) ?? true;
+      const categoryEnabled =
+        category.category.enabled_contexts?.includes(contextFilter) ?? true;
       if (!categoryEnabled) return null;
 
       // Filter items that are enabled for this context
-      const filteredItems = category.items.filter(item => {
-        const itemEnabled = item.enabled_contexts?.includes(contextFilter) ?? true;
+      const filteredItems = category.items.filter((item) => {
+        const itemEnabled =
+          item.enabled_contexts?.includes(contextFilter) ?? true;
         return itemEnabled;
       });
 
@@ -61,14 +66,14 @@ export function filterByContext(
 /**
  * Builds a hierarchical tree structure from a flat array of categories.
  * Each category can have children nested inside it.
- * 
+ *
  * @param flatData - Flat array of categories with items
  * @param contextFilter - Optional context to filter by (e.g., 'code-editor')
  * @returns Hierarchical array of CategoryGroup nodes
  */
 export function buildCategoryHierarchy(
   flatData: FlatCategory[],
-  contextFilter?: string
+  contextFilter?: string,
 ): CategoryGroup[] {
   if (!flatData || flatData.length === 0) return [];
 
@@ -80,7 +85,7 @@ export function buildCategoryHierarchy(
   const roots: CategoryGroup[] = [];
 
   // First pass: Create all nodes with hydrated icons
-  filteredData.forEach(item => {
+  filteredData.forEach((item) => {
     const hydratedItems = hydrateIcons(item.items || []);
 
     const node: CategoryGroup = {
@@ -93,7 +98,7 @@ export function buildCategoryHierarchy(
   });
 
   // Second pass: Link children to parents
-  filteredData.forEach(item => {
+  filteredData.forEach((item) => {
     const node = idMap.get(item.category.id);
     if (!node) return;
 
@@ -116,13 +121,13 @@ export function buildCategoryHierarchy(
 /**
  * Hydrates Lucide icon components for content block items.
  * Lucide icons can't be stored in the database, so we inject them here.
- * 
+ *
  * @param items - Array of menu items
  * @returns Items with hydrated icon components
  */
 function hydrateIcons(items: any[]): MenuItem[] {
   return items.map((item: any) => {
-    if (item.type === 'content_block' && item.icon_name) {
+    if (item.type === "content_block" && item.icon_name) {
       const IconComponent = getIconComponent(item.icon_name, "FileText");
       return { ...item, icon: IconComponent };
     }
@@ -133,7 +138,7 @@ function hydrateIcons(items: any[]): MenuItem[] {
 /**
  * Recursively sorts a category hierarchy by sort_order.
  * Sorts both the current level and all nested children.
- * 
+ *
  * @param nodes - Array of category nodes to sort
  */
 function sortHierarchyRecursive(nodes: CategoryGroup[]): void {
@@ -141,7 +146,7 @@ function sortHierarchyRecursive(nodes: CategoryGroup[]): void {
   nodes.sort((a, b) => a.category.sort_order - b.category.sort_order);
 
   // Recursively sort children
-  nodes.forEach(node => {
+  nodes.forEach((node) => {
     if (node.children && node.children.length > 0) {
       sortHierarchyRecursive(node.children);
     }

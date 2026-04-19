@@ -36,7 +36,7 @@ export function ScrapedContentPretty({
 
   return (
     <div className={cn("min-w-0 bg-background p-4 text-foreground", className)}>
-      <MarkdownStreamImpl content={trimmed} role="assistant" type="markdown" />
+      <MarkdownStreamImpl content={trimmed} />
     </div>
   );
 }

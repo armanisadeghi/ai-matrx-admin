@@ -30,8 +30,6 @@ export function StreamingContentBlocks({
   return (
     <MarkdownStream
       events={streamEvents}
-      type="message"
-      role="assistant"
       isStreamActive={isStreaming}
       hideCopyButton={true}
       allowFullScreenEditor={false}

@@ -201,22 +201,26 @@ const FeedbackWindow = dynamic(
 
 const ImageViewerWindow = dynamic(
   () =>
-    import("@/features/window-panels/windows/ImageViewerWindow").then((m) => ({
-      default: m.ImageViewerWindow,
-    })),
+    import("@/features/window-panels/windows/image/ImageViewerWindow").then(
+      (m) => ({
+        default: m.ImageViewerWindow,
+      }),
+    ),
   { ssr: false },
 );
 
 const FilePreviewWindow = dynamic(
   () =>
-    import("@/features/window-panels/windows/FilePreviewWindow").then((m) => ({
-      default: m.FilePreviewWindow,
-    })),
+    import("@/features/window-panels/windows/files/FilePreviewWindow").then(
+      (m) => ({
+        default: m.FilePreviewWindow,
+      }),
+    ),
   { ssr: false },
 );
 
 const FileUploadWindow = dynamic(
-  () => import("@/features/window-panels/windows/FileUploadWindow"),
+  () => import("@/features/window-panels/windows/files/FileUploadWindow"),
   { ssr: false },
 );
 
@@ -245,7 +249,8 @@ const StreamDebugFloating = dynamic(
 );
 
 const StreamDebugHistoryWindow = dynamic(
-  () => import("@/features/window-panels/windows/StreamDebugHistoryWindow"),
+  () =>
+    import("@/features/window-panels/windows/admin/StreamDebugHistoryWindow"),
   { ssr: false },
 );
 
@@ -409,12 +414,13 @@ const UserPreferencesWindow = dynamic(
 );
 
 const QuickTasksWindow = dynamic(
-  () => import("@/features/window-panels/windows/QuickTasksWindow"),
+  () =>
+    import("@/features/window-panels/windows/context-scopes/QuickTasksWindow"),
   { ssr: false },
 );
 
-const QuickFilesWindow = dynamic(
-  () => import("@/features/window-panels/windows/QuickFilesWindow"),
+const QuickFiles = dynamic(
+  () => import("@/features/window-panels/windows/files/QuickFilesWindow"),
   { ssr: false },
 );
 
@@ -440,7 +446,7 @@ const ScraperWindow = dynamic(
 
 const NotesWindow = dynamic(
   () =>
-    import("@/features/window-panels/windows/NotesWindow").then((m) => ({
+    import("@/features/window-panels/windows/notes/NotesWindow").then((m) => ({
       default: m.NotesWindow,
     })),
   { ssr: false },
@@ -448,9 +454,35 @@ const NotesWindow = dynamic(
 
 const NotesBetaWindow = dynamic(
   () =>
-    import("@/features/window-panels/windows/NotesBetaWindow").then((m) => ({
-      default: m.NotesBetaWindow,
-    })),
+    import("@/features/window-panels/windows/notes/NotesBetaWindow").then(
+      (m) => ({
+        default: m.NotesBetaWindow,
+      }),
+    ),
+  { ssr: false },
+);
+
+const ContentEditorWindow = dynamic(
+  () =>
+    import("@/features/window-panels/windows/content-editors/ContentEditorWindow").then(
+      (m) => ({ default: m.ContentEditorWindow }),
+    ),
+  { ssr: false },
+);
+
+const ContentEditorListWindow = dynamic(
+  () =>
+    import("@/features/window-panels/windows/content-editors/ContentEditorListWindow").then(
+      (m) => ({ default: m.ContentEditorListWindow }),
+    ),
+  { ssr: false },
+);
+
+const ContentEditorWorkspaceWindow = dynamic(
+  () =>
+    import("@/features/window-panels/windows/content-editors/ContentEditorWorkspaceWindow").then(
+      (m) => ({ default: m.ContentEditorWorkspaceWindow }),
+    ),
   { ssr: false },
 );
 
@@ -462,7 +494,7 @@ const VoicePadAdvanced = dynamic(
 
 const ContextSwitcherWindow = dynamic(
   () =>
-    import("@/features/window-panels/windows/ContextSwitcherWindow").then(
+    import("@/features/window-panels/windows/context-scopes/ContextSwitcherWindow").then(
       (m) => ({ default: m.ContextSwitcherWindow }),
     ),
   { ssr: false },
@@ -487,17 +519,18 @@ const NewsWindow = dynamic(
 );
 
 const BrowserFrameWindow = dynamic(
-  () => import("@/features/window-panels/windows/BrowserFrameWindow"),
+  () => import("@/features/window-panels/windows/iframe/BrowserFrameWindow"),
   { ssr: false },
 );
 
 const BrowserWorkbenchWindow = dynamic(
-  () => import("@/features/window-panels/windows/BrowserWorkbenchWindow"),
+  () =>
+    import("@/features/window-panels/windows/iframe/BrowserWorkbenchWindow"),
   { ssr: false },
 );
 
 const GalleryWindow = dynamic(
-  () => import("@/features/window-panels/windows/GalleryWindow"),
+  () => import("@/features/window-panels/windows/image/GalleryWindow"),
   { ssr: false },
 );
 
@@ -507,27 +540,28 @@ const ListManagerWindow = dynamic(
 );
 
 const AiVoiceWindow = dynamic(
-  () => import("@/features/window-panels/windows/AiVoiceWindow"),
+  () => import("@/features/window-panels/windows/voice/AiVoiceWindow"),
   { ssr: false },
 );
 
 const AgentGateWindow = dynamic(
-  () => import("@/features/window-panels/windows/AgentGateWindow"),
+  () => import("@/features/window-panels/windows/agents/AgentGateWindow"),
   { ssr: false },
 );
 
 const HierarchyCreationWindow = dynamic(
-  () => import("@/features/window-panels/windows/HierarchyCreationWindow"),
+  () =>
+    import("@/features/window-panels/windows/context-scopes/HierarchyCreationWindow"),
   { ssr: false },
 );
 
 const AgentSettingsWindow = dynamic(
-  () => import("@/features/window-panels/windows/AgentSettingsWindow"),
+  () => import("@/features/window-panels/windows/agents/AgentSettingsWindow"),
   { ssr: false },
 );
 
 const AgentRunHistoryWindow = dynamic(
-  () => import("@/features/window-panels/windows/AgentRunHistoryWindow"),
+  () => import("@/features/window-panels/windows/agents/AgentRunHistoryWindow"),
   { ssr: false },
 );
 
@@ -537,38 +571,40 @@ const AgentImportWindow = dynamic(
 );
 
 const AgentContentWindow = dynamic(
-  () => import("@/features/window-panels/windows/AgentContentWindow"),
+  () => import("@/features/window-panels/windows/agents/AgentContentWindow"),
   { ssr: false },
 );
 
 const AgentContentSidebarWindow = dynamic(
-  () => import("@/features/window-panels/windows/AgentContentSidebarWindow"),
+  () =>
+    import("@/features/window-panels/windows/agents/AgentContentSidebarWindow"),
   { ssr: false },
 );
 
 const ExecutionInspectorWindow = dynamic(
-  () => import("@/features/window-panels/windows/ExecutionInspectorWindow"),
+  () =>
+    import("@/features/window-panels/windows/admin/ExecutionInspectorWindow"),
   { ssr: false },
 );
 
 const InstanceUIStateWindow = dynamic(
-  () => import("@/features/window-panels/windows/InstanceUIStateWindow"),
+  () => import("@/features/window-panels/windows/admin/InstanceUIStateWindow"),
   { ssr: false },
 );
 
 const AgentDebugWindow = dynamic(
-  () => import("@/features/window-panels/windows/AgentDebugWindow"),
+  () => import("@/features/window-panels/windows/agents/AgentDebugWindow"),
   { ssr: false },
 );
 
 const ChatDebugWindow = dynamic(
-  () => import("@/features/window-panels/windows/ChatDebugWindow"),
+  () => import("@/features/window-panels/windows/admin/ChatDebugWindow"),
   { ssr: false },
 );
 
 const AgentAssistantMarkdownDebugWindow = dynamic(
   () =>
-    import("@/features/window-panels/windows/AgentAssistantMarkdownDebugWindow"),
+    import("@/features/window-panels/windows/agents/AgentAssistantMarkdownDebugWindow"),
   { ssr: false },
 );
 
@@ -720,6 +756,16 @@ export const OverlayController: React.FC = () => {
 
   const notesBetaWindowInstances = useAppSelector((s) =>
     selectOpenInstances(s, "notesBetaWindow"),
+  );
+
+  const contentEditorWindowInstances = useAppSelector((s) =>
+    selectOpenInstances(s, "contentEditorWindow"),
+  );
+  const contentEditorListWindowInstances = useAppSelector((s) =>
+    selectOpenInstances(s, "contentEditorListWindow"),
+  );
+  const contentEditorWorkspaceWindowInstances = useAppSelector((s) =>
+    selectOpenInstances(s, "contentEditorWorkspaceWindow"),
   );
 
   const isScraperWindowOpen = useAppSelector((s) =>
@@ -1235,10 +1281,7 @@ export const OverlayController: React.FC = () => {
       )}
 
       {isQuickFilesWindowOpen && (
-        <QuickFilesWindow
-          isOpen={true}
-          onClose={() => close("quickFilesWindow")}
-        />
+        <QuickFiles isOpen={true} onClose={() => close("quickFilesWindow")} />
       )}
 
       {isScraperWindowOpen && (
@@ -1392,6 +1435,46 @@ export const OverlayController: React.FC = () => {
           key={instanceId}
           windowInstanceId={instanceId}
           onClose={() => close("notesBetaWindow", instanceId)}
+        />
+      ))}
+
+      {contentEditorWindowInstances.map(({ instanceId, data }) => (
+        <ContentEditorWindow
+          key={instanceId}
+          windowInstanceId={instanceId}
+          callbackGroupId={data?.callbackGroupId ?? null}
+          documentId={data?.documentId ?? "default"}
+          documentTitle={data?.documentTitle ?? undefined}
+          initialValue={data?.initialValue ?? data?.value ?? ""}
+          title={data?.title ?? null}
+          onClose={() => close("contentEditorWindow", instanceId)}
+        />
+      ))}
+
+      {contentEditorListWindowInstances.map(({ instanceId, data }) => (
+        <ContentEditorListWindow
+          key={instanceId}
+          windowInstanceId={instanceId}
+          callbackGroupId={data?.callbackGroupId ?? null}
+          documents={data?.documents ?? []}
+          activeDocumentId={data?.activeDocumentId ?? null}
+          listTitle={data?.listTitle ?? null}
+          title={data?.title ?? null}
+          onClose={() => close("contentEditorListWindow", instanceId)}
+        />
+      ))}
+
+      {contentEditorWorkspaceWindowInstances.map(({ instanceId, data }) => (
+        <ContentEditorWorkspaceWindow
+          key={instanceId}
+          windowInstanceId={instanceId}
+          callbackGroupId={data?.callbackGroupId ?? null}
+          documents={data?.documents ?? []}
+          openDocumentIds={data?.openDocumentIds ?? undefined}
+          activeDocumentId={data?.activeDocumentId ?? null}
+          listTitle={data?.listTitle ?? null}
+          title={data?.title ?? null}
+          onClose={() => close("contentEditorWorkspaceWindow", instanceId)}
         />
       ))}
 

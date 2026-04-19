@@ -30,21 +30,6 @@ const MarkdownStreamImpl: React.FC<MarkdownStreamProps> = ({
   serverProcessedBlocks,
   strictServerData = false,
 }) => {
-  if (process.env.NODE_ENV !== "production") {
-    if (type !== undefined) {
-      console.warn(
-        "[MarkdownStream] `type` prop is deprecated and no longer forwarded — still passed by a caller:",
-        { requestId, turnId, conversationId, messageId, type },
-      );
-    }
-    if (role !== undefined) {
-      console.warn(
-        "[MarkdownStream] `role` prop is deprecated and no longer forwarded — still passed by a caller:",
-        { requestId, turnId, conversationId, messageId, role },
-      );
-    }
-  }
-
   return (
     <BlockRenderingProvider strictServerData={strictServerData}>
       <MarkdownErrorBoundary

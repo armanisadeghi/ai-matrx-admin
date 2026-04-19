@@ -665,6 +665,55 @@ export default function SidebarWindowToggle() {
                     }
                   />
                   <MenuGridItem
+                    icon={<FileCode2 className="w-3.5 h-3.5" />}
+                    label="Content Editor"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(
+                          openOverlay({
+                            overlayId: "contentEditorWindow",
+                            instanceId: `content-editor-${Date.now()}`,
+                            data: {
+                              documentId: "scratch",
+                              documentTitle: "Scratch",
+                              initialValue: "",
+                            },
+                          }),
+                        ),
+                      )
+                    }
+                  />
+                  <MenuGridItem
+                    icon={<FileStack className="w-3.5 h-3.5" />}
+                    label="Content List"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(
+                          openOverlay({
+                            overlayId: "contentEditorListWindow",
+                            instanceId: `content-editor-list-${Date.now()}`,
+                            data: { documents: [] },
+                          }),
+                        ),
+                      )
+                    }
+                  />
+                  <MenuGridItem
+                    icon={<Layers className="w-3.5 h-3.5" />}
+                    label="Content Workspace"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(
+                          openOverlay({
+                            overlayId: "contentEditorWorkspaceWindow",
+                            instanceId: `content-editor-workspace-${Date.now()}`,
+                            data: { documents: [], openDocumentIds: [] },
+                          }),
+                        ),
+                      )
+                    }
+                  />
+                  <MenuGridItem
                     icon={<Mic className="w-3.5 h-3.5" />}
                     label="AI Voice"
                     onClick={() =>

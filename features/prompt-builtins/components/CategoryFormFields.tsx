@@ -14,7 +14,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Folder, AlertCircle } from "lucide-react";
-import IconInputWithValidation from "@/components/official/IconInputWithValidation.dynamic";
+import IconInputWithValidation from "@/components/official/icons/IconInputWithValidation.dynamic";
 import {
   ShortcutCategory,
   CreateShortcutCategoryInput,

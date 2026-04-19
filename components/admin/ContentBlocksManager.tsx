@@ -38,7 +38,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
-import IconInputWithValidation from "@/components/official/IconInputWithValidation.dynamic";
+import IconInputWithValidation from "@/components/official/icons/IconInputWithValidation.dynamic";
 import {
   Plus,
   Trash2,

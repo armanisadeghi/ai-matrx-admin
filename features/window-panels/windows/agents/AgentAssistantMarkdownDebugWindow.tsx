@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useState, useEffect } from "react";
-import { WindowPanel } from "../WindowPanel";
+import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import MarkdownStream from "@/components/MarkdownStream";
 import { Button } from "@/components/ui/button";
 import {
@@ -114,8 +114,6 @@ export default function AgentAssistantMarkdownDebugWindow({
               {baseMarkdown ? (
                 <MarkdownStream
                   content={baseMarkdown}
-                  type="message"
-                  role="assistant"
                   hideCopyButton
                   allowFullScreenEditor={false}
                   className="text-xs bg-textured"
@@ -133,8 +131,6 @@ export default function AgentAssistantMarkdownDebugWindow({
               {draftMarkdown ? (
                 <MarkdownStream
                   content={draftMarkdown}
-                  type="message"
-                  role="assistant"
                   hideCopyButton
                   allowFullScreenEditor={false}
                   className="text-xs bg-textured"

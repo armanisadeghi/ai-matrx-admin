@@ -607,8 +607,6 @@ export default function BlockProcessingClient() {
                     </p>
                     <MarkdownStream
                       content={content}
-                      type="message"
-                      role="assistant"
                       isStreamActive={false}
                       hideCopyButton={false}
                       allowFullScreenEditor={false}
@@ -687,8 +685,6 @@ export default function BlockProcessingClient() {
                     <MarkdownStream
                       content=""
                       events={processedEvents}
-                      type="message"
-                      role="assistant"
                       isStreamActive={isRunning || isReplaying}
                       hideCopyButton={false}
                       allowFullScreenEditor={false}

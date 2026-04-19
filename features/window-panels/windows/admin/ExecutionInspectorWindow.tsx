@@ -1,6 +1,6 @@
 "use client";
 
-import { WindowPanel } from "../WindowPanel";
+import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import ExecutionInstanceInspector from "@/components/admin/state-analyzer/execution-inspector/ExecutionInstanceInspector";
 
 interface ExecutionInspectorWindowProps {

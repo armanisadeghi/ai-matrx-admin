@@ -1103,7 +1103,6 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
           placeholder="Start writing markdown..."
           textareaClassName="bg-textured text-base font-mono"
           previewClassName="bg-textured"
-          streamType="message"
           analysisData={analysisData}
           messageId={messageId}
           allowFullScreenEditor={false}
@@ -1161,8 +1160,6 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
             <div className="max-w-[750px] w-full p-6 border-x-3 border-gray-500 dark:border-gray-500 shadow-sm min-h-full">
               <MarkdownStream
                 content={editedContent}
-                type="message"
-                role="assistant"
                 className="bg-textured p-4"
                 isStreamActive={false}
                 analysisData={analysisData}

@@ -1,11 +1,11 @@
-import { 
-  Play, 
-  Database, 
-  Video, 
-  FileText, 
-  Workflow, 
-  Brain, 
-  Code, 
+import {
+  Play,
+  Database,
+  Video,
+  FileText,
+  Workflow,
+  Brain,
+  Code,
   Settings,
   Zap,
   Globe,
@@ -13,12 +13,18 @@ import {
   Share2,
   Sparkles,
   ArrowRightLeft,
-  type LucideIcon
+  type LucideIcon,
 } from "lucide-react";
 
-import { DbNodeData, isUserInputNode, isBrokerRelayNode, isBaseFunctionNode, DbFunctionNode } from "@/features/workflows/types";
+import {
+  DbNodeData,
+  isUserInputNode,
+  isBrokerRelayNode,
+  isBaseFunctionNode,
+  DbFunctionNode,
+} from "@/features/workflows/types";
 import { useCombinedFunctionsWithArgs } from "@/lib/redux/entity/hooks/functions-and-args";
-import { getIconComponent } from "@/components/official/IconResolver";
+import { getIconComponent } from "@/components/official/icons/IconResolver";
 
 /**
  * Mapping of specific function IDs to their custom icons
@@ -34,16 +40,16 @@ const FUNCTION_ID_ICON_MAP: Record<string, LucideIcon> = {
  * Fallback icon mapping based on function names, step names, or types
  * Used when no specific function ID mapping is found
  */
-const KEYWORD_ICON_MAP: Array<{ keywords: string[], icon: LucideIcon }> = [
-  { keywords: ['recipe', 'run'], icon: Play },
-  { keywords: ['database', 'schema'], icon: Database },
-  { keywords: ['video', 'youtube'], icon: Video },
-  { keywords: ['pdf', 'document'], icon: FileText },
-  { keywords: ['workflow', 'orchestrator'], icon: Workflow },
-  { keywords: ['ai', 'brain'], icon: Brain },
-  { keywords: ['code', 'function'], icon: Code },
-  { keywords: ['web', 'url'], icon: Globe },
-  { keywords: ['process', 'execute'], icon: Zap },
+const KEYWORD_ICON_MAP: Array<{ keywords: string[]; icon: LucideIcon }> = [
+  { keywords: ["recipe", "run"], icon: Play },
+  { keywords: ["database", "schema"], icon: Database },
+  { keywords: ["video", "youtube"], icon: Video },
+  { keywords: ["pdf", "document"], icon: FileText },
+  { keywords: ["workflow", "orchestrator"], icon: Workflow },
+  { keywords: ["ai", "brain"], icon: Brain },
+  { keywords: ["code", "function"], icon: Code },
+  { keywords: ["web", "url"], icon: Globe },
+  { keywords: ["process", "execute"], icon: Zap },
 ];
 
 /**
@@ -54,48 +60,59 @@ const KEYWORD_ICON_MAP: Array<{ keywords: string[], icon: LucideIcon }> = [
  * 3. Keyword matching on step name and function type
  * 4. Default icon (lowest priority)
  */
-export function getWorkflowNodeIcon(nodeData: DbNodeData, type: string): LucideIcon {
+export function getWorkflowNodeIcon(
+  nodeData: DbNodeData,
+  type: string,
+): LucideIcon {
   // Check for specific node types first
   if (type === "userInput") {
     return User;
   }
-  
+
   if (type === "brokerRelay") {
     return ArrowRightLeft;
   }
-  
+
   // For BaseNode types, check function ID mapping first
-  if (type === "workflowNode" || type === "functionNode" || type === "recipeNode" || type === "registeredFunction") {
+  if (
+    type === "workflowNode" ||
+    type === "functionNode" ||
+    type === "recipeNode" ||
+    type === "registeredFunction"
+  ) {
     const functionNodeData = nodeData as DbFunctionNode;
     const { combinedFunctions } = useCombinedFunctionsWithArgs();
-    const coreFunction = combinedFunctions.find(func => func.id === functionNodeData.function_id);
+    const coreFunction = combinedFunctions.find(
+      (func) => func.id === functionNodeData.function_id,
+    );
     const icon = coreFunction?.icon;
     if (icon) {
       return getIconComponent(icon);
     }
-    if (functionNodeData.function_id && FUNCTION_ID_ICON_MAP[functionNodeData.function_id]) {
+    if (
+      functionNodeData.function_id &&
+      FUNCTION_ID_ICON_MAP[functionNodeData.function_id]
+    ) {
       return FUNCTION_ID_ICON_MAP[functionNodeData.function_id];
     }
-    
+
     // Priority 2: Check keyword matching
-    const stepName = (functionNodeData.step_name || '').toLowerCase();
-    const funcType = (functionNodeData.function_type || '').toLowerCase();
-    
+    const stepName = (functionNodeData.step_name || "").toLowerCase();
+    const funcType = (functionNodeData.function_type || "").toLowerCase();
+
     for (const mapping of KEYWORD_ICON_MAP) {
-      const hasMatch = mapping.keywords.some(keyword => 
-        stepName.includes(keyword) || funcType.includes(keyword)
+      const hasMatch = mapping.keywords.some(
+        (keyword) => stepName.includes(keyword) || funcType.includes(keyword),
       );
-      
+
       if (hasMatch) {
         return mapping.icon;
       }
     }
-  }
-
-  else {
+  } else {
     console.error(`Invalid node type: ${type}`);
   }
-  
+
   // Default fallback
   return Settings;
 }
@@ -104,7 +121,10 @@ export function getWorkflowNodeIcon(nodeData: DbNodeData, type: string): LucideI
  * Add a new function ID to icon mapping
  * Useful for dynamically adding icons for new functions
  */
-export function addFunctionIconMapping(functionId: string, icon: LucideIcon): void {
+export function addFunctionIconMapping(
+  functionId: string,
+  icon: LucideIcon,
+): void {
   FUNCTION_ID_ICON_MAP[functionId] = icon;
 }
 
@@ -121,4 +141,4 @@ export function getFunctionIconMappings(): Record<string, LucideIcon> {
  */
 export function hasFunctionIconMapping(functionId: string): boolean {
   return functionId in FUNCTION_ID_ICON_MAP;
-} 
+}

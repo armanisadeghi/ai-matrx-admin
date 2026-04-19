@@ -14,6 +14,6 @@ export { WindowNotesBody } from "./WindowNotesBody";
 export type { WindowNotesBodyProps } from "./WindowNotesBody";
 export { NotesTreeView } from "./NotesTreeView";
 export type { NotesTreeViewProps } from "./NotesTreeView";
-export { NotesWindow } from "../../window-panels/windows/NotesWindow";
-export type { NotesWindowProps } from "../../window-panels/windows/NotesWindow";
+export { NotesWindow } from "../../window-panels/windows/notes/NotesWindow";
+export type { NotesWindowProps } from "../../window-panels/windows/notes/NotesWindow";
 export { default as SidebarNotesToggle } from "./SidebarNotesToggle";

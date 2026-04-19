@@ -1476,8 +1476,6 @@ export function ToolUiComponentGenerator({
                 <MarkdownStream
                   content={agent.accumulatedText || rawResponse}
                   isStreamActive={agent.isStreaming}
-                  type="message"
-                  role="assistant"
                 />
               ) : (
                 <p className="text-xs text-muted-foreground italic">

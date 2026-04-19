@@ -78,7 +78,7 @@ import { SelectPromptForBuiltinModal } from "./SelectPromptForBuiltinModal";
 import { SelectBuiltinForShortcutModal } from "../components/SelectBuiltinForShortcutModal";
 import { PromptSettingsModal } from "@/features/prompts/components/PromptSettingsModal";
 import { DuplicateShortcutModal } from "../components/DuplicateShortcutModal";
-import { getIconComponent } from "@/components/official/IconResolver";
+import { getIconComponent } from "@/components/official/icons/IconResolver";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -114,9 +114,7 @@ interface ShortcutsTableManagerProps {
  * Get result display metadata WITHOUT masking invalid values
  * Returns null for invalid values so we can show warnings
  */
-function getResultDisplayMeta(
-  display: string | null | undefined,
-): {
+function getResultDisplayMeta(display: string | null | undefined): {
   label: string;
   description?: string;
   icon?: string;

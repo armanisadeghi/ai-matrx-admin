@@ -154,8 +154,6 @@ export function PromptAssistantMessage({
               <MarkdownStream
                 content={content}
                 taskId={taskId}
-                type="message"
-                role="assistant"
                 isStreamActive={isStreamActive}
                 hideCopyButton={true}
                 allowFullScreenEditor={false}

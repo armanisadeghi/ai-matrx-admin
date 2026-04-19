@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useCallback, useState } from "react";
+import { useCallback, useState } from "react";
 import { LayoutDashboard, X, Code2, Copy, Check } from "lucide-react";
-import { WindowPanel } from "../WindowPanel";
+import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { InstanceUIStateList } from "@/features/agents/redux/execution-system/instance-ui-state/components/InstanceUIStateList";
 import { InstanceUIStateCore } from "@/features/agents/redux/execution-system/instance-ui-state/components/InstanceUIStateCore";
 import { useAppSelector } from "@/lib/redux/hooks";

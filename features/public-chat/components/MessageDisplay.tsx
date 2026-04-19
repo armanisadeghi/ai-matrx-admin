@@ -143,8 +143,6 @@ function StreamingContentBlocks({
             <MarkdownStream
               key={`stream-text-${index}`}
               content={block.content}
-              type="message"
-              role="assistant"
               isStreamActive={isLastBlock && isStreaming}
               hideCopyButton={true}
               allowFullScreenEditor={false}
@@ -525,8 +523,6 @@ function AssistantMessage({
         <MarkdownStream
           content={message.content}
           events={message.streamEvents}
-          type="message"
-          role="assistant"
           isStreamActive={isStreaming && message.status === "streaming"}
           hideCopyButton={true}
           allowFullScreenEditor={false}
@@ -541,8 +537,6 @@ function AssistantMessage({
       ) : (
         <MarkdownStream
           content={message.content}
-          type="message"
-          role="assistant"
           isStreamActive={isStreaming && message.status === "streaming"}
           hideCopyButton={true}
           allowFullScreenEditor={false}

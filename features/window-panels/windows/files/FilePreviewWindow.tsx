@@ -27,8 +27,8 @@ import {
   Edit,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { WindowPanel } from "../WindowPanel";
 import FileSystemManager from "@/utils/file-operations/FileSystemManager";
+import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import {
   getFileDetailsByUrl,
   type EnhancedFileDetails,

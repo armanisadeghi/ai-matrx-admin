@@ -1,36 +1,43 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useRef } from 'react';
-import { Button } from '@/components/ui/button';
-import { BasicInput } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2 } from 'lucide-react';
-import { get_prompt_sample, TEST_ADMIN_TOKEN } from './sample-prompt';
-import CodeBlock from '@/features/code-editor/components/code-block/CodeBlock';
-import MarkdownStream from '@/components/MarkdownStream';
-import { BACKEND_URLS, ENDPOINTS } from '@/lib/api/endpoints';
-import { parseNdjsonStream } from '@/lib/api/stream-parser';
-import { isChunkEvent } from '@/types/python-generated/stream-events';
+import { useState, useEffect, useRef } from "react";
+import { Button } from "@/components/ui/button";
+import { BasicInput } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Loader2 } from "lucide-react";
+import { get_prompt_sample, TEST_ADMIN_TOKEN } from "./sample-prompt";
+import CodeBlock from "@/features/code-editor/components/code-block/CodeBlock";
+import MarkdownStream from "@/components/MarkdownStream";
+import { BACKEND_URLS, ENDPOINTS } from "@/lib/api/endpoints";
+import { parseNdjsonStream } from "@/lib/api/stream-parser";
+import { isChunkEvent } from "@/types/python-generated/stream-events";
 
-type ServerType = 'local' | 'production';
+type ServerType = "local" | "production";
 
 const PROMPT_OPTIONS = [
-  { value: 'small_test_prompt', label: 'Small Test Prompt' },
-  { value: 'tools_test_prompt', label: 'Tools Test Prompt' },
+  { value: "small_test_prompt", label: "Small Test Prompt" },
+  { value: "tools_test_prompt", label: "Tools Test Prompt" },
 ];
 
 export default function DirectChatClient() {
-  const [serverType, setServerType] = useState<ServerType>('production');
+  const [serverType, setServerType] = useState<ServerType>("production");
   const [authToken, setAuthToken] = useState<string>(TEST_ADMIN_TOKEN);
-  const [selectedPrompt, setSelectedPrompt] = useState<string>('small_test_prompt');
-  const [requestJson, setRequestJson] = useState<string>('');
-  const [responseJson, setResponseJson] = useState<string>('');
+  const [selectedPrompt, setSelectedPrompt] =
+    useState<string>("small_test_prompt");
+  const [requestJson, setRequestJson] = useState<string>("");
+  const [responseJson, setResponseJson] = useState<string>("");
   const [isStreaming, setIsStreaming] = useState(false);
-  const [streamText, setStreamText] = useState<string>('');
+  const [streamText, setStreamText] = useState<string>("");
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const getBaseUrl = () => {
-    if (serverType === 'local') {
+    if (serverType === "local") {
       return BACKEND_URLS.localhost;
     }
     return BACKEND_URLS.production;
@@ -68,8 +75,8 @@ export default function DirectChatClient() {
     // Create new abort controller
     abortControllerRef.current = new AbortController();
 
-    setResponseJson('');
-    setStreamText('');
+    setResponseJson("");
+    setStreamText("");
     setIsStreaming(true);
 
     try {
@@ -77,7 +84,9 @@ export default function DirectChatClient() {
       try {
         requestBody = JSON.parse(requestJson);
       } catch (e) {
-        setResponseJson(JSON.stringify({ error: 'Invalid JSON in request body' }, null, 2));
+        setResponseJson(
+          JSON.stringify({ error: "Invalid JSON in request body" }, null, 2),
+        );
         setIsStreaming(false);
         return;
       }
@@ -85,34 +94,43 @@ export default function DirectChatClient() {
       const url = `${getBaseUrl()}${ENDPOINTS.ai.chat}`;
 
       const response = await fetch(url, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`,
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authToken}`,
         },
         body: JSON.stringify(requestBody),
         signal: abortControllerRef.current.signal,
       });
 
       if (!response.ok) {
-        const errorText = await response.text().catch(() => 'Unknown error');
-        setResponseJson(JSON.stringify({ 
-          error: `HTTP ${response.status}`,
-          message: errorText 
-        }, null, 2));
+        const errorText = await response.text().catch(() => "Unknown error");
+        setResponseJson(
+          JSON.stringify(
+            {
+              error: `HTTP ${response.status}`,
+              message: errorText,
+            },
+            null,
+            2,
+          ),
+        );
         setIsStreaming(false);
         return;
       }
 
       if (!response.body) {
-        setResponseJson(JSON.stringify({ error: 'No response body' }, null, 2));
+        setResponseJson(JSON.stringify({ error: "No response body" }, null, 2));
         setIsStreaming(false);
         return;
       }
 
       // Handle streaming response
       const jsonEvents: unknown[] = [];
-      const { events } = parseNdjsonStream(response, abortControllerRef.current?.signal);
+      const { events } = parseNdjsonStream(
+        response,
+        abortControllerRef.current?.signal,
+      );
 
       for await (const event of events) {
         jsonEvents.push(event);
@@ -122,16 +140,30 @@ export default function DirectChatClient() {
           setStreamText((prev) => prev + event.data.text);
         }
       }
-
     } catch (error: any) {
-      if (error.name === 'AbortError') {
-        setResponseJson(prev => prev + (prev ? '\n\n' : '') + JSON.stringify({ 
-          error: 'Request aborted' 
-        }, null, 2));
+      if (error.name === "AbortError") {
+        setResponseJson(
+          (prev) =>
+            prev +
+            (prev ? "\n\n" : "") +
+            JSON.stringify(
+              {
+                error: "Request aborted",
+              },
+              null,
+              2,
+            ),
+        );
       } else {
-        setResponseJson(JSON.stringify({ 
-          error: error.message || 'Unknown error' 
-        }, null, 2));
+        setResponseJson(
+          JSON.stringify(
+            {
+              error: error.message || "Unknown error",
+            },
+            null,
+            2,
+          ),
+        );
       }
     } finally {
       setIsStreaming(false);
@@ -158,16 +190,16 @@ export default function DirectChatClient() {
               <div className="flex items-center gap-1.5">
                 <Button
                   size="sm"
-                  variant={serverType === 'local' ? 'default' : 'outline'}
-                  onClick={() => setServerType('local')}
+                  variant={serverType === "local" ? "default" : "outline"}
+                  onClick={() => setServerType("local")}
                   className="h-7 text-xs px-2"
                 >
                   Localhost
                 </Button>
                 <Button
                   size="sm"
-                  variant={serverType === 'production' ? 'default' : 'outline'}
-                  onClick={() => setServerType('production')}
+                  variant={serverType === "production" ? "default" : "outline"}
+                  onClick={() => setServerType("production")}
                   className="h-7 text-xs px-2"
                 >
                   Production
@@ -221,7 +253,7 @@ export default function DirectChatClient() {
                       Streaming...
                     </>
                   ) : (
-                    'Send Request'
+                    "Send Request"
                   )}
                 </Button>
                 {isStreaming && (
@@ -236,7 +268,7 @@ export default function DirectChatClient() {
                 )}
               </div>
               <CodeBlock
-                code={requestJson || '// Select a prompt or edit JSON manually'}
+                code={requestJson || "// Select a prompt or edit JSON manually"}
                 language="json"
                 fontSize={12}
                 showLineNumbers={true}
@@ -257,12 +289,11 @@ export default function DirectChatClient() {
                 )}
               </div>
               <CodeBlock
-                code={responseJson || '// Response will appear here'}
+                code={responseJson || "// Response will appear here"}
                 language="json"
                 wrapLines={true}
                 allowEdit={false}
                 isStreamActive={isStreaming}
-              
               />
             </div>
           </div>
@@ -280,14 +311,15 @@ export default function DirectChatClient() {
           </div>
           <div className="flex-1 overflow-y-auto bg-textured p-3 rounded-md min-h-0">
             {streamText ? (
-              <MarkdownStream 
-                content={streamText} 
+              <MarkdownStream
+                content={streamText}
                 isStreamActive={isStreaming}
-                role="assistant"
                 className="text-xs"
               />
             ) : (
-              <div className="text-xs text-muted-foreground">No streaming text yet...</div>
+              <div className="text-xs text-muted-foreground">
+                No streaming text yet...
+              </div>
             )}
           </div>
         </div>
@@ -295,4 +327,3 @@ export default function DirectChatClient() {
     </div>
   );
 }
-

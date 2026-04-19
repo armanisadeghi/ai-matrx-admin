@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import IconInputWithValidation from "@/components/official/IconInputWithValidation.dynamic";
+import IconInputWithValidation from "@/components/official/icons/IconInputWithValidation.dynamic";
 import { CategorySelector } from "./CategorySelector";
 import { ScopeMappingEditor } from "./ScopeMappingEditor";
 import type {

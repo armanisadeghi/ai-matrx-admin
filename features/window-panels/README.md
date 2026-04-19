@@ -366,6 +366,54 @@ Shared iframe chrome and sandbox/allow list live in `components/EmbedSiteFrame.t
 
 ---
 
+## Content Editor windows (callback-driven family)
+
+Three overlay variants live in `windows/content-editors/` and all talk back to
+the page that opened them via `callbackManager` groups (see
+`utils/callbackManager.ts`). No editor content or callbacks are shoved into
+Redux — Redux only tracks "is open" + initial / persisted data.
+
+| overlayId | Variant | Body |
+|-----------|---------|------|
+| `contentEditorWindow` | Pure editor — no tabs, no sidebar | `<ContentEditor>` |
+| `contentEditorListWindow` | Sidebar list + one active editor (no tabs) | `<ContentEditorList>` + `<ContentEditor>` |
+| `contentEditorWorkspaceWindow` | Sidebar list + browser-style tabs | `<ContentEditorTabsWithList>` with `sharedModeSelector` |
+
+All three variants:
+
+- Support multiple simultaneous instances (pass a unique `instanceId`).
+- Persist their content to `window_sessions.data` via `onCollectData`.
+- Emit a typed event stream back to the caller: `ready`, `change`, `save`,
+  `mode-change`, `active-change`, `open`, `close-tab`, `documents-change`,
+  `window-close`.
+
+Preferred way to open them — use the imperative hook, not raw `openOverlay`:
+
+```tsx
+const openEditor = useOpenContentEditorWindow();
+
+const handle = openEditor({
+  variant: "workspace",
+  documents: [
+    { id: "readme", title: "README", value: readmeText },
+    { id: "todo",   title: "TODO",   value: todoText },
+  ],
+  onChange: ({ documentId, value }) => saveDraft(documentId, value),
+  onSave:   ({ documentId, value }) => persistToBackend(documentId, value),
+  onCloseTab: ({ documentId }) => markClosed(documentId),
+});
+
+// later
+handle.close();        // closes window + disposes callback group
+handle.dispose();      // leaves window open; stops listening
+```
+
+The hook returns a `ContentEditorWindowHandle` and cleans up any dangling
+callback groups on unmount. Variants `"editor"` and `"list"` accept the same
+handler surface — you only subscribe to the events your caller cares about.
+
+---
+
 ## Multi-Window Pattern
 
 A window can open a secondary window (e.g., clicking an image in Gallery opens ImageViewer). Use `openOverlay` from Redux — the secondary window does not need its own `onCollectData` unless it also needs persistence.

@@ -34,7 +34,7 @@ import {
   Database,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { WindowPanel } from "../WindowPanel";
+import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import FileSystemManager from "@/utils/file-operations/FileSystemManager";
 import { useFileSystem } from "@/lib/redux/fileSystem/Provider";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";

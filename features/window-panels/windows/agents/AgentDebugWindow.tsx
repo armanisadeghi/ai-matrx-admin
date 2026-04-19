@@ -17,7 +17,7 @@ import {
   History,
   LayoutDashboard,
 } from "lucide-react";
-import { WindowPanel } from "../WindowPanel";
+import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { cn } from "@/lib/utils";
 import { formatJson } from "@/utils/json/json-cleaner-utility";

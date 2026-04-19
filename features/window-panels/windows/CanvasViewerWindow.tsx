@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { WindowPanel } from "../WindowPanel";
+import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { SharedCanvasView } from "@/features/canvas/shared/SharedCanvasView";
 import { Search } from "lucide-react";
 

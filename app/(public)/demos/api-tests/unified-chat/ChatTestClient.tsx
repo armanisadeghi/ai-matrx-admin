@@ -994,7 +994,6 @@ export default function ChatTestClient() {
                     <MarkdownStream
                       events={streamEvents}
                       isStreamActive={isRunning}
-                      role="assistant"
                       className="text-sm"
                       onError={(error) => setErrorMessage(error)}
                       hideCopyButton={false}

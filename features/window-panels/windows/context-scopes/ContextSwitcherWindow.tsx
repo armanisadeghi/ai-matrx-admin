@@ -1,7 +1,6 @@
 "use client";
 
-import React from "react";
-import { WindowPanel } from "../WindowPanel";
+import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import {
   HierarchyTree,
   useHierarchyReduxBridge,

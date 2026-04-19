@@ -40,7 +40,7 @@ import {
 import type { FeedbackType } from "@/types/feedback.types";
 import { toast } from "sonner";
 import { useScreenCapture } from "@/hooks/useScreenCapture";
-import { openImageViewer } from "@/features/window-panels/windows/ImageViewerWindow";
+import { openImageViewer } from "@/features/window-panels/windows/image/ImageViewerWindow";
 import { VoiceTextarea } from "@/components/official/VoiceTextarea";
 
 // ─── Types ────────────────────────────────────────────────────────────────────

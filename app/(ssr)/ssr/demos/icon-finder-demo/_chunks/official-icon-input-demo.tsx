@@ -3,7 +3,7 @@
 import { useState } from "react";
 import IconInputWithValidation, {
   IconInputCompact,
-} from "@/components/official/IconInputWithValidation.dynamic";
+} from "@/components/official/icons/IconInputWithValidation.dynamic";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";

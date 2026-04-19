@@ -7,8 +7,18 @@ import { ContentEditorTabs, type ContentEditorTab } from "./ContentEditorTabs";
 import {
   ContentEditorList,
   type ContentEditorListItem,
+  type ContentEditorListItemState,
 } from "./ContentEditorList";
-import type { ContentEditorProps } from "./types";
+import {
+  ContentEditorTree,
+  flattenTreeLeaves,
+  type ContentEditorTreeNode,
+} from "./ContentEditorTree";
+import {
+  ContentEditorBrowser,
+  type ContentEditorFilter,
+} from "./ContentEditorBrowser";
+import type { ContentEditorProps, EditorMode } from "./types";
 
 type SharedEditorProps = Omit<
   ContentEditorProps,
@@ -17,13 +27,30 @@ type SharedEditorProps = Omit<
   | "title"
   | "collapsible"
   | "defaultCollapsed"
+  | "collapseMode"
+  | "collapsedPreviewHeight"
   | "mode"
   | "onModeChange"
+  | "showModeSelector"
   | "className"
 >;
 
 export interface ContentEditorDocument extends ContentEditorListItem {
   value: string;
+}
+
+export type SidebarMode = "list" | "tree" | "list-browser" | "tree-browser";
+
+/**
+ * Shape of the argument passed to a custom `sidebar` renderer. Contains
+ * everything a sidebar needs to drive the tab state from the outside.
+ */
+export interface ContentEditorSidebarContext {
+  documents: ContentEditorDocument[];
+  listItems: ContentEditorListItem[];
+  activeId?: string;
+  openIds: string[];
+  onItemClick: (id: string, state: ContentEditorListItemState) => void;
 }
 
 export interface ContentEditorTabsWithListProps extends SharedEditorProps {
@@ -39,12 +66,31 @@ export interface ContentEditorTabsWithListProps extends SharedEditorProps {
   activeId?: string;
   onActiveIdChange?: (id: string | undefined) => void;
 
-  /** Collapse applies to the whole tab area (not the list). */
+  /** Collapse settings — apply only to the tab area, not the sidebar. */
   collapsible?: boolean;
   defaultCollapsed?: boolean;
+  collapseMode?: "hide" | "fade";
+  collapsedPreviewHeight?: number | string;
 
-  /** Allow closing tabs (removes from openIds, document stays available in the list). */
+  /** Allow closing tabs (removes from openIds, document stays in the list). */
   allowCloseTab?: boolean;
+
+  /** Place the shared mode selector in the tab bar instead of per-tab. */
+  sharedModeSelector?: boolean;
+  defaultSharedMode?: EditorMode;
+
+  // ── Sidebar configuration ──────────────────────────────
+  sidebarMode?: SidebarMode;
+  /** Tree nodes — required when sidebarMode is "tree" or "tree-browser". */
+  treeNodes?: ContentEditorTreeNode[];
+  /** Filter chips for list-browser / tree-browser modes. */
+  filters?: ContentEditorFilter[];
+  filterPredicate?: (
+    item: ContentEditorListItem,
+    activeFilterIds: string[],
+  ) => boolean;
+  /** Custom sidebar — overrides sidebarMode completely. */
+  sidebar?: (ctx: ContentEditorSidebarContext) => React.ReactNode;
 
   listTitle?: string;
   listWidth?: string; // Tailwind width class
@@ -61,9 +107,18 @@ export function ContentEditorTabsWithList({
   onActiveIdChange,
   collapsible,
   defaultCollapsed,
+  collapseMode,
+  collapsedPreviewHeight,
   allowCloseTab = true,
+  sharedModeSelector,
+  defaultSharedMode,
+  sidebarMode = "list",
+  treeNodes,
+  filters,
+  filterPredicate,
+  sidebar,
   listTitle = "Documents",
-  listWidth = "w-56",
+  listWidth = "w-64",
   maxTabTitleLength,
   className,
   ...sharedEditorProps
@@ -81,7 +136,9 @@ export function ContentEditorTabsWithList({
     [controlledActiveId, onActiveIdChange],
   );
 
-  // Build the tabs array from openIds (preserving their order).
+  // Build the tabs array from openIds (preserving their order). When a tree is
+  // provided, we still want leaves' values from `documents`, which is the
+  // canonical store.
   const tabs = useMemo<ContentEditorTab[]>(() => {
     return openIds
       .map((id) => {
@@ -91,13 +148,10 @@ export function ContentEditorTabsWithList({
       .filter(Boolean) as ContentEditorTab[];
   }, [openIds, documents]);
 
-  // When the user edits a tab's content, flow the change back into documents.
   const handleTabsChange = useCallback(
     (nextTabs: ContentEditorTab[]) => {
-      // Detect content edits by id.
       const byId = new Map(nextTabs.map((t) => [t.id, t]));
 
-      // Update document values for any tab whose content changed.
       let docsChanged = false;
       const nextDocs = documents.map((doc) => {
         const t = byId.get(doc.id);
@@ -108,7 +162,6 @@ export function ContentEditorTabsWithList({
         return doc;
       });
 
-      // Detect close (tabs list shrank).
       const nextOpenIds = nextTabs.map((t) => t.id);
       const openIdsChanged =
         nextOpenIds.length !== openIds.length ||
@@ -117,7 +170,6 @@ export function ContentEditorTabsWithList({
       if (docsChanged) onDocumentsChange(nextDocs);
       if (openIdsChanged) onOpenIdsChange(nextOpenIds);
 
-      // If the active tab was closed, fall back to the first remaining tab.
       if (activeId && !nextOpenIds.includes(activeId)) {
         setActiveId(nextOpenIds[0]);
       }
@@ -132,8 +184,8 @@ export function ContentEditorTabsWithList({
     ],
   );
 
-  // List click: open a closed doc (and activate), or activate an already-open one.
-  const handleListClick = useCallback(
+  // Shared click-on-sidebar-item handler (covers list, tree, browser variants).
+  const handleItemClick = useCallback(
     (id: string) => {
       if (!openIds.includes(id)) {
         onOpenIdsChange([...openIds, id]);
@@ -143,26 +195,89 @@ export function ContentEditorTabsWithList({
     [openIds, onOpenIdsChange, setActiveId],
   );
 
-  const listItems: ContentEditorListItem[] = documents.map(
-    ({ id, title, description, icon }) => ({ id, title, description, icon }),
+  const listItems: ContentEditorListItem[] = useMemo(
+    () =>
+      documents.map(({ id, title, description, icon }) => ({
+        id,
+        title,
+        description,
+        icon,
+      })),
+    [documents],
   );
+
+  // ── Sidebar rendering ──────────────────────────────────
+
+  const sidebarCtx: ContentEditorSidebarContext = {
+    documents,
+    listItems,
+    activeId,
+    openIds,
+    onItemClick: (id) => handleItemClick(id),
+  };
+
+  let sidebarEl: React.ReactNode;
+  if (sidebar) {
+    sidebarEl = sidebar(sidebarCtx);
+  } else if (sidebarMode === "tree" && treeNodes) {
+    sidebarEl = (
+      <ContentEditorTree
+        nodes={treeNodes}
+        activeId={activeId}
+        openIds={openIds}
+        onItemClick={(id) => handleItemClick(id)}
+        title={listTitle}
+        defaultExpandedIds={treeNodes
+          .filter((n) => n.children !== undefined)
+          .map((n) => n.id)}
+      />
+    );
+  } else if (sidebarMode === "tree-browser" && treeNodes) {
+    sidebarEl = (
+      <ContentEditorBrowser
+        variant="tree"
+        nodes={treeNodes}
+        activeId={activeId}
+        openIds={openIds}
+        onItemClick={(id) => handleItemClick(id)}
+        title={listTitle}
+        filters={filters}
+        filterPredicate={filterPredicate}
+      />
+    );
+  } else if (sidebarMode === "list-browser") {
+    sidebarEl = (
+      <ContentEditorBrowser
+        variant="list"
+        items={listItems}
+        activeId={activeId}
+        openIds={openIds}
+        onItemClick={(id) => handleItemClick(id)}
+        title={listTitle}
+        filters={filters}
+        filterPredicate={filterPredicate}
+      />
+    );
+  } else {
+    sidebarEl = (
+      <ContentEditorList
+        items={listItems}
+        activeId={activeId}
+        openIds={openIds}
+        onItemClick={(id) => handleItemClick(id)}
+        title={listTitle}
+      />
+    );
+  }
 
   return (
     <div className={cn("flex gap-3 items-start", className)}>
-      <div className={cn("flex-none", listWidth)}>
-        <ContentEditorList
-          items={listItems}
-          activeId={activeId}
-          openIds={openIds}
-          onItemClick={handleListClick}
-          title={listTitle}
-        />
-      </div>
+      <div className={cn("flex-none", listWidth)}>{sidebarEl}</div>
 
       <div className="flex-1 min-w-0">
         {tabs.length === 0 ? (
           <div className="flex items-center justify-center h-48 border border-dashed border-border rounded-lg text-xs text-zinc-500 dark:text-zinc-400">
-            Select a document from the list to open it.
+            Select a document from the sidebar to open it.
           </div>
         ) : (
           <ContentEditorTabs
@@ -172,8 +287,12 @@ export function ContentEditorTabsWithList({
             onActiveTabChange={setActiveId}
             collapsible={collapsible}
             defaultCollapsed={defaultCollapsed}
+            collapseMode={collapseMode}
+            collapsedPreviewHeight={collapsedPreviewHeight}
             allowCloseTab={allowCloseTab}
             maxTabTitleLength={maxTabTitleLength}
+            sharedModeSelector={sharedModeSelector}
+            defaultSharedMode={defaultSharedMode}
             {...sharedEditorProps}
           />
         )}
@@ -181,3 +300,54 @@ export function ContentEditorTabsWithList({
     </div>
   );
 }
+
+/** Convenience helper: turn a flat documents array into a tree by `folder` path. */
+export function buildTreeFromDocuments(
+  documents: (ContentEditorDocument & { folder?: string })[],
+): ContentEditorTreeNode[] {
+  interface FolderNode extends ContentEditorTreeNode {
+    children: ContentEditorTreeNode[];
+  }
+  const root: FolderNode = {
+    id: "__root__",
+    title: "",
+    children: [],
+  };
+
+  const ensureFolder = (parts: string[]): FolderNode => {
+    let node = root;
+    let pathAccum = "";
+    for (const part of parts) {
+      pathAccum = pathAccum ? `${pathAccum}/${part}` : part;
+      let existing = node.children.find(
+        (c) => c.children !== undefined && c.title === part,
+      ) as FolderNode | undefined;
+      if (!existing) {
+        existing = {
+          id: `folder:${pathAccum}`,
+          title: part,
+          children: [],
+        };
+        node.children.push(existing);
+      }
+      node = existing;
+    }
+    return node;
+  };
+
+  for (const doc of documents) {
+    const parts = (doc.folder ?? "").split("/").filter(Boolean);
+    const parent = ensureFolder(parts);
+    parent.children.push({
+      id: doc.id,
+      title: doc.title,
+      description: doc.description,
+      icon: doc.icon,
+    });
+  }
+
+  return root.children;
+}
+
+/** Re-exported helper for consumers who need it. */
+export { flattenTreeLeaves };

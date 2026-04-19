@@ -1,19 +1,19 @@
 /**
  * CategorySelector
- * 
+ *
  * Enhanced category selector that shows placement_type context to avoid confusion
  * with duplicate category names across different placement types.
- * 
+ *
  * Display format: [Context Menu] > Parent > Child Category
  * Groups by placement_type with visual separation
  */
 
-'use client';
+"use client";
 
-import React, { useMemo } from 'react';
-import { ShortcutCategory } from '../types/core';
-import { getPlacementTypeMeta, PlacementType } from '../constants';
-import { getIconComponent } from '@/components/official/IconResolver';
+import React, { useMemo } from "react";
+import { ShortcutCategory } from "../types/core";
+import { getPlacementTypeMeta, PlacementType } from "../constants";
+import { getIconComponent } from "@/components/official/icons/IconResolver";
 import {
   Select,
   SelectContent,
@@ -22,9 +22,9 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { ChevronRight } from 'lucide-react';
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { ChevronRight } from "lucide-react";
 
 interface CategorySelectorProps {
   categories: ShortcutCategory[];
@@ -56,38 +56,47 @@ export function CategorySelector({
   categories,
   value,
   onValueChange,
-  placeholder = 'Select category...',
+  placeholder = "Select category...",
   className,
   disabled = false,
   compact = false,
   allowedPlacementTypes,
   excludedPlacementTypes,
 }: CategorySelectorProps) {
-  
   // Build hierarchy path for each category
-  const buildHierarchyPath = (category: ShortcutCategory, allCategories: ShortcutCategory[]): string => {
+  const buildHierarchyPath = (
+    category: ShortcutCategory,
+    allCategories: ShortcutCategory[],
+  ): string => {
     const parents: string[] = [];
     let current: ShortcutCategory | undefined = category;
-    
+
     while (current && current.parent_category_id) {
-      const parent = allCategories.find(c => c.id === current!.parent_category_id);
+      const parent = allCategories.find(
+        (c) => c.id === current!.parent_category_id,
+      );
       if (!parent) break;
       parents.unshift(parent.label);
       current = parent;
     }
-    
-    return parents.length > 0 ? `${parents.join(' > ')} > ${category.label}` : category.label;
+
+    return parents.length > 0
+      ? `${parents.join(" > ")} > ${category.label}`
+      : category.label;
   };
 
-  const getLevel = (category: ShortcutCategory, allCategories: ShortcutCategory[]): number => {
+  const getLevel = (
+    category: ShortcutCategory,
+    allCategories: ShortcutCategory[],
+  ): number => {
     let level = 0;
     let current: ShortcutCategory | undefined = category;
-    
+
     while (current && current.parent_category_id) {
       level++;
-      current = allCategories.find(c => c.id === current!.parent_category_id);
+      current = allCategories.find((c) => c.id === current!.parent_category_id);
     }
-    
+
     return level;
   };
 
@@ -95,14 +104,20 @@ export function CategorySelector({
   const groupedCategories = useMemo(() => {
     const groups = new Map<string, CategoryGroup>();
 
-    categories.forEach(category => {
+    categories.forEach((category) => {
       const placementType = category.placement_type;
-      
+
       // Filter by allowed/excluded placement types
-      if (allowedPlacementTypes && !allowedPlacementTypes.includes(placementType)) {
+      if (
+        allowedPlacementTypes &&
+        !allowedPlacementTypes.includes(placementType)
+      ) {
         return;
       }
-      if (excludedPlacementTypes && excludedPlacementTypes.includes(placementType)) {
+      if (
+        excludedPlacementTypes &&
+        excludedPlacementTypes.includes(placementType)
+      ) {
         return;
       }
 
@@ -127,7 +142,7 @@ export function CategorySelector({
     });
 
     // Sort categories within each group
-    groups.forEach(group => {
+    groups.forEach((group) => {
       group.categories.sort((a, b) => {
         if (a.sort_order !== b.sort_order) {
           return a.sort_order - b.sort_order;
@@ -137,20 +152,22 @@ export function CategorySelector({
     });
 
     // Convert to array and sort by placement type label
-    return Array.from(groups.values()).sort((a, b) => 
-      a.placementLabel.localeCompare(b.placementLabel)
+    return Array.from(groups.values()).sort((a, b) =>
+      a.placementLabel.localeCompare(b.placementLabel),
     );
   }, [categories, allowedPlacementTypes, excludedPlacementTypes]);
 
   // Get selected category for display
-  const selectedCategory = categories.find(c => c.id === value);
-  const selectedPlacementMeta = selectedCategory 
+  const selectedCategory = categories.find((c) => c.id === value);
+  const selectedPlacementMeta = selectedCategory
     ? getPlacementTypeMeta(selectedCategory.placement_type)
     : null;
   const selectedHierarchyPath = selectedCategory
     ? buildHierarchyPath(selectedCategory, categories)
     : null;
-  const selectedLevel = selectedCategory ? getLevel(selectedCategory, categories) : 0;
+  const selectedLevel = selectedCategory
+    ? getLevel(selectedCategory, categories)
+    : 0;
 
   return (
     <Select value={value} onValueChange={onValueChange} disabled={disabled}>
@@ -158,16 +175,16 @@ export function CategorySelector({
         <SelectValue placeholder={placeholder}>
           {selectedCategory && (
             <div className="flex items-center gap-1.5">
-              <Badge 
-                variant="secondary" 
-                className={`${compact ? 'text-[10px] px-1 py-0' : 'text-xs px-1.5 py-0.5'} font-medium shrink-0`}
+              <Badge
+                variant="secondary"
+                className={`${compact ? "text-[10px] px-1 py-0" : "text-xs px-1.5 py-0.5"} font-medium shrink-0`}
               >
                 {selectedPlacementMeta?.label}
               </Badge>
               {selectedLevel > 0 && (
                 <ChevronRight className="h-3 w-3 text-muted-foreground shrink-0" />
               )}
-              <span className={`truncate ${compact ? 'text-xs' : ''}`}>
+              <span className={`truncate ${compact ? "text-xs" : ""}`}>
                 {selectedCategory.label}
               </span>
             </div>
@@ -179,24 +196,33 @@ export function CategorySelector({
           const IconComponent = getIconComponent(group.placementIconName);
           return (
             <React.Fragment key={group.placementType}>
-              {groupIndex > 0 && (
-                <div className="h-px bg-border my-2" />
-              )}
+              {groupIndex > 0 && <div className="h-px bg-border my-2" />}
               <SelectGroup>
                 <SelectLabel className="flex items-center gap-2 text-xs font-semibold text-foreground uppercase py-2 px-2 bg-background sticky top-0 z-10 border-b">
                   <IconComponent className="h-4 w-4" />
                   {group.placementLabel}
                 </SelectLabel>
-                {group.categories.map(category => (
-                  <SelectItem key={category.id} value={category.id} className="pl-2">
+                {group.categories.map((category) => (
+                  <SelectItem
+                    key={category.id}
+                    value={category.id}
+                    className="pl-2"
+                  >
                     <div className="flex items-start gap-1.5 py-0.5">
                       <div className="flex items-center text-muted-foreground shrink-0 pt-0.5">
-                        <span className="text-xs" style={{ paddingLeft: `${(category.level + 1) * 12}px` }}>
-                          {category.level === 0 ? '├' : '└'}
+                        <span
+                          className="text-xs"
+                          style={{
+                            paddingLeft: `${(category.level + 1) * 12}px`,
+                          }}
+                        >
+                          {category.level === 0 ? "├" : "└"}
                         </span>
                       </div>
                       <div className="flex flex-col flex-1 min-w-0">
-                        <span className="font-medium truncate">{category.label}</span>
+                        <span className="font-medium truncate">
+                          {category.label}
+                        </span>
                       </div>
                     </div>
                   </SelectItem>
@@ -209,4 +235,3 @@ export function CategorySelector({
     </Select>
   );
 }
-

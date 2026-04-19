@@ -1463,8 +1463,6 @@ Right-click for content block templates!"
                       <MarkdownStream
                         content={renderedContent}
                         className="bg-textured"
-                        type="message"
-                        role="assistant"
                         isStreamActive={false}
                         hideCopyButton={true}
                         allowFullScreenEditor={true}
@@ -1563,8 +1561,6 @@ Right-click for content block templates!"
                             content=""
                             events={processedEvents}
                             className="bg-textured"
-                            type="message"
-                            role="assistant"
                             isStreamActive={false}
                             hideCopyButton={true}
                             allowFullScreenEditor={true}
@@ -1651,8 +1647,6 @@ Right-click for content block templates!"
                             content=""
                             events={processedEvents}
                             className="bg-textured"
-                            type="message"
-                            role="assistant"
                             isStreamActive={isProcessing}
                             hideCopyButton={true}
                             allowFullScreenEditor={true}

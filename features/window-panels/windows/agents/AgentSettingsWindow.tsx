@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { fetchFullAgent } from "@/features/agents/redux/agent-definition/thunks";
-import { WindowPanel } from "../WindowPanel";
+import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { AgentSettingsForm } from "@/features/agents/components/settings/AgentSettingsForm";
 import {
   AgentSidebar,

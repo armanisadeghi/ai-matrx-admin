@@ -4,7 +4,21 @@ export { ContentEditor } from "./ContentEditor";
 export { ContentEditorStack } from "./ContentEditorStack";
 export { ContentEditorTabs } from "./ContentEditorTabs";
 export { ContentEditorList } from "./ContentEditorList";
-export { ContentEditorTabsWithList } from "./ContentEditorTabsWithList";
+export {
+  ContentEditorTree,
+  flattenTreeLeaves,
+  findAncestorIds,
+} from "./ContentEditorTree";
+export {
+  ContentEditorBrowser,
+  filterListItems,
+  filterTreeNodes,
+  collectFolderIds,
+} from "./ContentEditorBrowser";
+export {
+  ContentEditorTabsWithList,
+  buildTreeFromDocuments,
+} from "./ContentEditorTabsWithList";
 export { CopyDropdownButton } from "./CopyDropdownButton.lazy";
 export { ContentManagerMenu } from "./ContentManagerMenu.lazy";
 export type {
@@ -24,6 +38,18 @@ export type {
   ContentEditorListProps,
 } from "./ContentEditorList";
 export type {
+  ContentEditorTreeNode,
+  ContentEditorTreeProps,
+} from "./ContentEditorTree";
+export type {
+  ContentEditorFilter,
+  ContentEditorBrowserProps,
+  ContentEditorListBrowserProps,
+  ContentEditorTreeBrowserProps,
+} from "./ContentEditorBrowser";
+export type {
   ContentEditorDocument,
   ContentEditorTabsWithListProps,
+  ContentEditorSidebarContext,
+  SidebarMode,
 } from "./ContentEditorTabsWithList";

@@ -3,7 +3,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import AccordionWrapper from "../../matrx/matrx-collapsible/AccordionWrapper";
-import IconInputWithValidation from "@/components/official/IconInputWithValidation.dynamic";
+import IconInputWithValidation from "@/components/official/icons/IconInputWithValidation.dynamic";
 import * as LucideIcons from "lucide-react";
 import {
   SchemaField,

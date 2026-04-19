@@ -1,17 +1,22 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { ComponentEntry } from '../parts/component-list';
-import { ComponentDisplayWrapper } from '../component-usage';
-import IconResolver, { getIconComponent, DynamicIcon } from '@/components/official/IconResolver';
+import React from "react";
+import { ComponentEntry } from "../parts/component-list";
+import { ComponentDisplayWrapper } from "../component-usage";
+import IconResolver, {
+  getIconComponent,
+  DynamicIcon,
+} from "@/components/official/icons/IconResolver";
 
 interface ComponentDisplayProps {
   component?: ComponentEntry;
 }
 
-export default function IconResolverDisplay({ component }: ComponentDisplayProps) {
+export default function IconResolverDisplay({
+  component,
+}: ComponentDisplayProps) {
   if (!component) return null;
-  
+
   // Example code with all available props and their default values
   const code = `import IconResolver, { getIconComponent, DynamicIcon } from '@/components/official/IconResolver';
 
@@ -70,31 +75,57 @@ const Icon = getIconComponent("Settings", "Zap");
       <div className="w-full space-y-6">
         {/* IconResolver Component Demo */}
         <div className="space-y-3">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">IconResolver Component</h3>
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+            IconResolver Component
+          </h3>
           <div className="flex flex-wrap gap-4 p-4 border rounded-lg bg-white dark:bg-gray-800">
             <div className="flex flex-col items-center gap-2">
               <IconResolver iconName="Home" className="h-8 w-8 text-blue-500" />
-              <span className="text-xs text-gray-600 dark:text-gray-400">Static (Home)</span>
+              <span className="text-xs text-gray-600 dark:text-gray-400">
+                Static (Home)
+              </span>
             </div>
             <div className="flex flex-col items-center gap-2">
-              <IconResolver iconName="Settings" className="h-8 w-8 text-green-500" />
-              <span className="text-xs text-gray-600 dark:text-gray-400">Static (Settings)</span>
+              <IconResolver
+                iconName="Settings"
+                className="h-8 w-8 text-green-500"
+              />
+              <span className="text-xs text-gray-600 dark:text-gray-400">
+                Static (Settings)
+              </span>
             </div>
             <div className="flex flex-col items-center gap-2">
-              <IconResolver iconName="Sparkles" className="h-8 w-8 text-purple-500" />
-              <span className="text-xs text-gray-600 dark:text-gray-400">Dynamic (Sparkles)</span>
+              <IconResolver
+                iconName="Sparkles"
+                className="h-8 w-8 text-purple-500"
+              />
+              <span className="text-xs text-gray-600 dark:text-gray-400">
+                Dynamic (Sparkles)
+              </span>
             </div>
             <div className="flex flex-col items-center gap-2">
-              <IconResolver iconName="Rocket" className="h-8 w-8 text-orange-500" />
-              <span className="text-xs text-gray-600 dark:text-gray-400">Dynamic (Rocket)</span>
+              <IconResolver
+                iconName="Rocket"
+                className="h-8 w-8 text-orange-500"
+              />
+              <span className="text-xs text-gray-600 dark:text-gray-400">
+                Dynamic (Rocket)
+              </span>
             </div>
           </div>
         </div>
 
         {/* DynamicIcon with Tailwind Colors */}
         <div className="space-y-3">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">DynamicIcon with Tailwind Colors</h3>
-          <p className="text-xs text-gray-600 dark:text-gray-400">Uses Tailwind classes like <code className="px-1 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">text-blue-600 dark:text-blue-400</code></p>
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+            DynamicIcon with Tailwind Colors
+          </h3>
+          <p className="text-xs text-gray-600 dark:text-gray-400">
+            Uses Tailwind classes like{" "}
+            <code className="px-1 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">
+              text-blue-600 dark:text-blue-400
+            </code>
+          </p>
           <div className="flex flex-wrap gap-4 p-4 border rounded-lg bg-white dark:bg-gray-800">
             <div className="flex flex-col items-center gap-1">
               <DynamicIcon name="Star" color="yellow" size={8} />
@@ -121,8 +152,16 @@ const Icon = getIconComponent("Settings", "Zap");
 
         {/* DynamicIcon with Hex Colors */}
         <div className="space-y-3">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">DynamicIcon with Hex Colors</h3>
-          <p className="text-xs text-gray-600 dark:text-gray-400">Uses inline styles like <code className="px-1 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">style=&#123;&#123; color: '#ff6b6b' &#125;&#125;</code> - perfect for database colors!</p>
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+            DynamicIcon with Hex Colors
+          </h3>
+          <p className="text-xs text-gray-600 dark:text-gray-400">
+            Uses inline styles like{" "}
+            <code className="px-1 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">
+              style=&#123;&#123; color: '#ff6b6b' &#125;&#125;
+            </code>{" "}
+            - perfect for database colors!
+          </p>
           <div className="flex flex-wrap gap-4 p-4 border rounded-lg bg-white dark:bg-gray-800">
             <div className="flex flex-col items-center gap-1">
               <DynamicIcon name="Folder" color="#ff6b6b" size={8} />
@@ -153,33 +192,46 @@ const Icon = getIconComponent("Settings", "Zap");
 
         {/* Custom Icons (react-icons) */}
         <div className="space-y-3">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Custom Icons (react-icons)</h3>
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+            Custom Icons (react-icons)
+          </h3>
           <div className="flex flex-wrap gap-4 p-4 border rounded-lg bg-white dark:bg-gray-800">
             <div className="flex flex-col items-center gap-2">
               <IconResolver iconName="FcGoogle" className="h-8 w-8" />
-              <span className="text-xs text-gray-600 dark:text-gray-400">FcGoogle</span>
+              <span className="text-xs text-gray-600 dark:text-gray-400">
+                FcGoogle
+              </span>
             </div>
             <div className="flex flex-col items-center gap-2">
               <IconResolver iconName="FaBrave" className="h-8 w-8" />
-              <span className="text-xs text-gray-600 dark:text-gray-400">FaBrave</span>
+              <span className="text-xs text-gray-600 dark:text-gray-400">
+                FaBrave
+              </span>
             </div>
             <div className="flex flex-col items-center gap-2">
               <IconResolver iconName="FcDocument" className="h-8 w-8" />
-              <span className="text-xs text-gray-600 dark:text-gray-400">FcDocument</span>
+              <span className="text-xs text-gray-600 dark:text-gray-400">
+                FcDocument
+              </span>
             </div>
             <div className="flex flex-col items-center gap-2">
               <IconResolver iconName="FcCalendar" className="h-8 w-8" />
-              <span className="text-xs text-gray-600 dark:text-gray-400">FcCalendar</span>
+              <span className="text-xs text-gray-600 dark:text-gray-400">
+                FcCalendar
+              </span>
             </div>
           </div>
         </div>
 
         {/* getIconComponent Utility */}
         <div className="space-y-3">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">getIconComponent() Utility</h3>
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+            getIconComponent() Utility
+          </h3>
           <div className="p-4 border rounded-lg bg-white dark:bg-gray-800">
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-              Synchronous utility for getting icon components directly. Only works with static/cached icons.
+              Synchronous utility for getting icon components directly. Only
+              works with static/cached icons.
             </p>
             <div className="flex flex-wrap gap-4">
               {(() => {
@@ -200,24 +252,32 @@ const Icon = getIconComponent("Settings", "Zap");
 
         {/* Practical Use Case: Database Colors */}
         <div className="space-y-3">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Real-World Example: Category Icons from Database</h3>
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+            Real-World Example: Category Icons from Database
+          </h3>
           <p className="text-xs text-gray-600 dark:text-gray-400">
-            Perfect for rendering icons with colors stored in your database. The component automatically detects hex codes and applies them correctly.
+            Perfect for rendering icons with colors stored in your database. The
+            component automatically detects hex codes and applies them
+            correctly.
           </p>
           <div className="p-4 border rounded-lg bg-white dark:bg-gray-800">
             <div className="flex flex-wrap gap-6">
               {[
-                { icon: 'FolderOpen', color: '#3b82f6', label: 'Projects' },
-                { icon: 'FileText', color: '#10b981', label: 'Documents' },
-                { icon: 'Image', color: '#f59e0b', label: 'Media' },
-                { icon: 'Code', color: '#8b5cf6', label: 'Code' },
-                { icon: 'Database', color: '#ef4444', label: 'Data' },
-              ].map(item => (
+                { icon: "FolderOpen", color: "#3b82f6", label: "Projects" },
+                { icon: "FileText", color: "#10b981", label: "Documents" },
+                { icon: "Image", color: "#f59e0b", label: "Media" },
+                { icon: "Code", color: "#8b5cf6", label: "Code" },
+                { icon: "Database", color: "#ef4444", label: "Data" },
+              ].map((item) => (
                 <div key={item.label} className="flex items-center gap-2">
                   <DynamicIcon name={item.icon} color={item.color} size={5} />
                   <div>
-                    <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{item.label}</div>
-                    <div className="text-xs font-mono text-gray-500">{item.color}</div>
+                    <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      {item.label}
+                    </div>
+                    <div className="text-xs font-mono text-gray-500">
+                      {item.color}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -227,14 +287,34 @@ const Icon = getIconComponent("Settings", "Zap");
 
         {/* Bundle Size Info */}
         <div className="p-4 border rounded-lg bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950 dark:to-purple-950">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Key Features & Benefits</h3>
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
+            Key Features & Benefits
+          </h3>
           <div className="space-y-1 text-sm text-gray-700 dark:text-gray-300">
-            <p>✅ <strong>Bundle Size:</strong> <code className="px-1 py-0.5 bg-white dark:bg-gray-800 rounded">import * as LucideIcons</code> = ~600KB → IconResolver = ~50KB (99% reduction)</p>
-            <p>✅ <strong>Smart Colors:</strong> Auto-detects Tailwind names vs hex codes, applies appropriate styling</p>
-            <p>✅ <strong>Database Ready:</strong> Perfect for dynamic icons with colors from database (no Tailwind purge issues)</p>
-            <p>✅ <strong>Performance:</strong> Static imports for common icons, dynamic loading + caching for rare ones</p>
+            <p>
+              ✅ <strong>Bundle Size:</strong>{" "}
+              <code className="px-1 py-0.5 bg-white dark:bg-gray-800 rounded">
+                import * as LucideIcons
+              </code>{" "}
+              = ~600KB → IconResolver = ~50KB (99% reduction)
+            </p>
+            <p>
+              ✅ <strong>Smart Colors:</strong> Auto-detects Tailwind names vs
+              hex codes, applies appropriate styling
+            </p>
+            <p>
+              ✅ <strong>Database Ready:</strong> Perfect for dynamic icons with
+              colors from database (no Tailwind purge issues)
+            </p>
+            <p>
+              ✅ <strong>Performance:</strong> Static imports for common icons,
+              dynamic loading + caching for rare ones
+            </p>
             <p className="mt-2 text-xs">
-              <strong>How it works:</strong> 140+ common icons statically imported. Rare icons load dynamically once and cached forever. Color detection: Tailwind classes for names, inline styles for hex.
+              <strong>How it works:</strong> 140+ common icons statically
+              imported. Rare icons load dynamically once and cached forever.
+              Color detection: Tailwind classes for names, inline styles for
+              hex.
             </p>
           </div>
         </div>
@@ -242,4 +322,3 @@ const Icon = getIconComponent("Settings", "Zap");
     </ComponentDisplayWrapper>
   );
 }
-

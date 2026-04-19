@@ -48,7 +48,7 @@ const TuiEditorContent = dynamic(
 );
 
 // Mode configurations
-const MODE_CONFIGS: EditorModeConfig[] = [
+export const MODE_CONFIGS: EditorModeConfig[] = [
   {
     value: "plain",
     icon: FileText,
@@ -93,6 +93,8 @@ export function ContentEditor({
   onSave,
   collapsible = false,
   defaultCollapsed = false,
+  collapseMode = "hide",
+  collapsedPreviewHeight = 120,
   title,
   headerActions = [],
   showCopyButton = true,
@@ -396,9 +398,26 @@ export function ContentEditor({
         </div>
       )}
 
-      {/* Editor Area - Hidden when collapsed */}
-      {!isCollapsed && (
-        <div className="bg-textured rounded-none overflow-visible">
+      {/* Editor Area */}
+      {(!isCollapsed || collapseMode === "fade") && (
+        <div
+          className={cn(
+            "relative bg-textured rounded-none",
+            isCollapsed && collapseMode === "fade"
+              ? "overflow-hidden"
+              : "overflow-visible",
+          )}
+          style={
+            isCollapsed && collapseMode === "fade"
+              ? {
+                  maxHeight:
+                    typeof collapsedPreviewHeight === "number"
+                      ? `${collapsedPreviewHeight}px`
+                      : collapsedPreviewHeight,
+                }
+              : undefined
+          }
+        >
           {/* Plain Text Mode */}
           {currentMode === "plain" && (
             <PromptEditorContextMenu
@@ -486,6 +505,27 @@ export function ContentEditor({
                 </div>
               )}
             </div>
+          )}
+
+          {/* Fade overlay + expand affordance when collapsed in fade mode */}
+          {isCollapsed && collapseMode === "fade" && (
+            <>
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-transparent to-white dark:to-zinc-900"
+              />
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsCollapsed(false);
+                }}
+                className="absolute left-1/2 bottom-1 -translate-x-1/2 flex items-center justify-center h-6 w-6 rounded-full bg-white dark:bg-zinc-800 border border-border shadow-sm hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors"
+                title="Expand"
+              >
+                <ChevronDown className="h-3.5 w-3.5 text-zinc-600 dark:text-zinc-300" />
+              </button>
+            </>
           )}
         </div>
       )}

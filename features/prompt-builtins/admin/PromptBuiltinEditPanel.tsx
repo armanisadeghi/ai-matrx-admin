@@ -23,7 +23,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Plus, Edit2 } from "lucide-react";
-import IconInputWithValidation from "@/components/official/IconInputWithValidation.dynamic";
+import IconInputWithValidation from "@/components/official/icons/IconInputWithValidation.dynamic";
 import { ShortcutCategory, PromptBuiltin, PromptShortcut } from "../types";
 import { PLACEMENT_TYPES, getPlacementTypeMeta } from "../constants";
 import { RESULT_DISPLAY_META, type ResultDisplay } from "../types";

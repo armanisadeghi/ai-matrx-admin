@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import IconResolver, {
   isRegisteredOrLucideIconName,
-} from "@/components/official/IconResolver";
+} from "@/components/official/icons/IconResolver";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { cn } from "@/lib/utils";

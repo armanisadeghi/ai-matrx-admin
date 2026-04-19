@@ -40,8 +40,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/components/ui/use-toast";
-import IconInputWithValidation from "@/components/official/IconInputWithValidation.dynamic";
-import { DynamicIcon } from "@/components/official/IconResolver";
+import IconInputWithValidation from "@/components/official/icons/IconInputWithValidation.dynamic";
+import { DynamicIcon } from "@/components/official/icons/IconResolver";
 import {
   Plus,
   Trash2,

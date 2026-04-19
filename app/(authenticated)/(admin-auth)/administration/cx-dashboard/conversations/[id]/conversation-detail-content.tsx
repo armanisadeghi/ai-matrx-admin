@@ -8,18 +8,39 @@ import { CxJsonViewer } from "@/features/cx-dashboard/components/CxJsonViewer";
 import { CxEmptyState } from "@/features/cx-dashboard/components/CxEmptyState";
 import { CxDashboardErrorBoundary } from "@/features/cx-dashboard/components/CxDashboardErrorBoundary";
 import {
-  formatDate, formatDateFull, formatCost, formatTokens, formatDuration,
-  statusBadgeVariant, truncateId, computeDuration,
+  formatDate,
+  formatDateFull,
+  formatCost,
+  formatTokens,
+  formatDuration,
+  statusBadgeVariant,
+  truncateId,
+  computeDuration,
 } from "@/features/cx-dashboard/utils/format";
-import { exportToCSV, exportToJSON } from "@/features/cx-dashboard/utils/export";
-import type { CxConversation, CxMessage, CxUserRequest } from "@/features/cx-dashboard/types";
 import {
-  ArrowLeft, GitBranch, Clock, Send, ExternalLink, Download,
-  MessageSquare, ChevronRight,
+  exportToCSV,
+  exportToJSON,
+} from "@/features/cx-dashboard/utils/export";
+import type {
+  CxConversation,
+  CxMessage,
+  CxUserRequest,
+} from "@/features/cx-dashboard/types";
+import {
+  ArrowLeft,
+  GitBranch,
+  Clock,
+  Send,
+  ExternalLink,
+  Download,
+  MessageSquare,
+  ChevronRight,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 
-const MarkdownStream = dynamic(() => import("@/components/MarkdownStream"), { ssr: false });
+const MarkdownStream = dynamic(() => import("@/components/MarkdownStream"), {
+  ssr: false,
+});
 
 type Detail = {
   conversation: CxConversation;
@@ -30,23 +51,46 @@ type Detail = {
 
 export function ConversationDetailContent({ detail }: { detail: Detail }) {
   const router = useRouter();
-  const { conversation: conv, messages, user_requests, child_conversations } = detail;
+  const {
+    conversation: conv,
+    messages,
+    user_requests,
+    child_conversations,
+  } = detail;
 
   return (
     <div className="p-4 space-y-4">
       {/* Header */}
       <div className="flex items-start gap-3">
-        <Button variant="ghost" size="sm" className="h-7 px-2 mt-0.5" onClick={() => router.back()}>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-7 px-2 mt-0.5"
+          onClick={() => router.back()}
+        >
           <ArrowLeft className="w-3.5 h-3.5" />
         </Button>
         <div className="flex-1 min-w-0">
           <h2 className="text-sm font-semibold truncate">
-            {conv.title || <span className="italic text-muted-foreground">Untitled Conversation</span>}
+            {conv.title || (
+              <span className="italic text-muted-foreground">
+                Untitled Conversation
+              </span>
+            )}
           </h2>
           <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
             <span className="font-mono">{truncateId(conv.id, 12)}</span>
-            <Badge variant={statusBadgeVariant(conv.status)} className="text-[10px]">{conv.status}</Badge>
-            {conv.model_name && <span>{conv.model_name} ({conv.provider})</span>}
+            <Badge
+              variant={statusBadgeVariant(conv.status)}
+              className="text-[10px]"
+            >
+              {conv.status}
+            </Badge>
+            {conv.model_name && (
+              <span>
+                {conv.model_name} ({conv.provider})
+              </span>
+            )}
             <span>{formatDateFull(conv.created_at)}</span>
           </div>
         </div>
@@ -55,7 +99,9 @@ export function ConversationDetailContent({ detail }: { detail: Detail }) {
             variant="outline"
             size="sm"
             className="h-7 text-xs"
-            onClick={() => exportToJSON(messages as any[], "conversation-messages")}
+            onClick={() =>
+              exportToJSON(messages as any[], "conversation-messages")
+            }
           >
             <Download className="w-3 h-3 mr-1" />
             Export
@@ -71,7 +117,9 @@ export function ConversationDetailContent({ detail }: { detail: Detail }) {
         >
           <GitBranch className="w-3.5 h-3.5" />
           <span>Sub-agent of conversation</span>
-          <span className="font-mono">{truncateId(conv.parent_conversation_id, 12)}</span>
+          <span className="font-mono">
+            {truncateId(conv.parent_conversation_id, 12)}
+          </span>
           <ExternalLink className="w-3 h-3 ml-auto" />
         </Link>
       )}
@@ -90,12 +138,20 @@ export function ConversationDetailContent({ detail }: { detail: Detail }) {
                 href={`/administration/cx-dashboard/conversations/${child.id}`}
                 className="flex items-center gap-3 text-xs p-2 rounded hover:bg-muted/50 transition-colors group"
               >
-                <span className="font-mono text-muted-foreground">{truncateId(child.id)}</span>
-                <span className="flex-1 truncate">{child.title || "Untitled"}</span>
+                <span className="font-mono text-muted-foreground">
+                  {truncateId(child.id)}
+                </span>
+                <span className="flex-1 truncate">
+                  {child.title || "Untitled"}
+                </span>
                 {child.model_name && (
-                  <span className="text-muted-foreground">{child.model_name}</span>
+                  <span className="text-muted-foreground">
+                    {child.model_name}
+                  </span>
                 )}
-                <span className="text-muted-foreground">{child.message_count} msgs</span>
+                <span className="text-muted-foreground">
+                  {child.message_count} msgs
+                </span>
                 <ChevronRight className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100" />
               </Link>
             ))}
@@ -112,20 +168,37 @@ export function ConversationDetailContent({ detail }: { detail: Detail }) {
           </h3>
           <div className="space-y-1">
             {user_requests.map((ur) => {
-              const dur = computeDuration(ur.created_at, ur.completed_at, ur.total_duration_ms);
+              const dur = computeDuration(
+                ur.created_at,
+                ur.completed_at,
+                ur.total_duration_ms,
+              );
               return (
                 <Link
                   key={ur.id}
                   href={`/administration/cx-dashboard/requests/${ur.id}`}
                   className="flex items-center gap-3 text-xs p-2 rounded hover:bg-muted/50 transition-colors group"
                 >
-                  <span className="font-mono text-muted-foreground">{truncateId(ur.id)}</span>
-                  <Badge variant={statusBadgeVariant(ur.status)} className="text-[10px]">{ur.status}</Badge>
+                  <span className="font-mono text-muted-foreground">
+                    {truncateId(ur.id)}
+                  </span>
+                  <Badge
+                    variant={statusBadgeVariant(ur.status)}
+                    className="text-[10px]"
+                  >
+                    {ur.status}
+                  </Badge>
                   <span>{ur.iterations} iter</span>
                   <span>{ur.total_tool_calls} tools</span>
-                  <span className="font-mono">{formatCost(Number(ur.total_cost))}</span>
-                  <span className="text-muted-foreground">{formatTokens(ur.total_tokens)} tok</span>
-                  <span className="text-muted-foreground ml-auto">{formatDuration(dur)}</span>
+                  <span className="font-mono">
+                    {formatCost(Number(ur.total_cost))}
+                  </span>
+                  <span className="text-muted-foreground">
+                    {formatTokens(ur.total_tokens)} tok
+                  </span>
+                  <span className="text-muted-foreground ml-auto">
+                    {formatDuration(dur)}
+                  </span>
                   <ChevronRight className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100" />
                 </Link>
               );
@@ -138,14 +211,22 @@ export function ConversationDetailContent({ detail }: { detail: Detail }) {
       <div className="border border-border rounded-md bg-card">
         <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
           <MessageSquare className="w-3.5 h-3.5 text-muted-foreground" />
-          <h3 className="text-xs font-medium text-muted-foreground">Messages ({messages.length})</h3>
+          <h3 className="text-xs font-medium text-muted-foreground">
+            Messages ({messages.length})
+          </h3>
         </div>
         {messages.length === 0 ? (
-          <CxEmptyState title="No messages" description="This conversation has no messages yet." />
+          <CxEmptyState
+            title="No messages"
+            description="This conversation has no messages yet."
+          />
         ) : (
           <div className="divide-y divide-border/50">
             {messages.map((msg) => (
-              <CxDashboardErrorBoundary key={msg.id} fallbackMessage={`Failed to render message ${msg.id}`}>
+              <CxDashboardErrorBoundary
+                key={msg.id}
+                fallbackMessage={`Failed to render message ${msg.id}`}
+              >
                 <MessageRow message={msg} />
               </CxDashboardErrorBoundary>
             ))}
@@ -155,7 +236,15 @@ export function ConversationDetailContent({ detail }: { detail: Detail }) {
 
       {/* Debug JSON views */}
       <CxJsonViewer data={conv} label="Conversation Raw Data" />
-      <CxJsonViewer data={{ config: conv.config, variables: conv.variables, overrides: conv.overrides, metadata: conv.metadata }} label="Config / Variables / Metadata" />
+      <CxJsonViewer
+        data={{
+          config: conv.config,
+          variables: conv.variables,
+          overrides: conv.overrides,
+          metadata: conv.metadata,
+        }}
+        label="Config / Variables / Metadata"
+      />
     </div>
   );
 }
@@ -195,9 +284,15 @@ function MessageRow({ message }: { message: CxMessage }) {
         >
           {message.role}
         </Badge>
-        <span className="text-[10px] text-muted-foreground">pos: {message.position}</span>
-        <span className="text-[10px] text-muted-foreground font-mono">{truncateId(message.id)}</span>
-        <span className="text-[10px] text-muted-foreground ml-auto">{formatDate(message.created_at)}</span>
+        <span className="text-[10px] text-muted-foreground">
+          pos: {message.position}
+        </span>
+        <span className="text-[10px] text-muted-foreground font-mono">
+          {truncateId(message.id)}
+        </span>
+        <span className="text-[10px] text-muted-foreground ml-auto">
+          {formatDate(message.created_at)}
+        </span>
       </div>
 
       {/* Thinking blocks (collapsed by default) */}
@@ -207,7 +302,10 @@ function MessageRow({ message }: { message: CxMessage }) {
             Thinking ({thinkingContent.length.toLocaleString()} chars)
           </summary>
           <div className="mt-1 pl-2 border-l-2 border-purple-500/20 text-xs text-muted-foreground max-h-[200px] overflow-auto">
-            <pre className="whitespace-pre-wrap font-mono text-[11px]">{thinkingContent.slice(0, 2000)}{thinkingContent.length > 2000 ? "..." : ""}</pre>
+            <pre className="whitespace-pre-wrap font-mono text-[11px]">
+              {thinkingContent.slice(0, 2000)}
+              {thinkingContent.length > 2000 ? "..." : ""}
+            </pre>
           </div>
         </details>
       )}
@@ -217,8 +315,6 @@ function MessageRow({ message }: { message: CxMessage }) {
         <div className="text-sm prose prose-sm dark:prose-invert max-w-none">
           <MarkdownStream
             content={textContent}
-            type="message"
-            role={message.role}
             isStreamActive={false}
             hideCopyButton={false}
             allowFullScreenEditor={false}
@@ -229,9 +325,13 @@ function MessageRow({ message }: { message: CxMessage }) {
       ) : null}
 
       {/* Non-text/thinking blocks as JSON */}
-      {contentBlocks.some((b) => b.type !== "text" && b.type !== "thinking") && (
+      {contentBlocks.some(
+        (b) => b.type !== "text" && b.type !== "thinking",
+      ) && (
         <CxJsonViewer
-          data={contentBlocks.filter((b) => b.type !== "text" && b.type !== "thinking")}
+          data={contentBlocks.filter(
+            (b) => b.type !== "text" && b.type !== "thinking",
+          )}
           label={`Other Content Blocks (${contentBlocks.filter((b) => b.type !== "text" && b.type !== "thinking").length})`}
           maxHeight="150px"
         />

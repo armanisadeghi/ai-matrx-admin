@@ -5,7 +5,7 @@ import { ComponentEntry } from "../parts/component-list";
 import { ComponentDisplayWrapper } from "../component-usage";
 import IconInputWithValidation, {
   IconInputCompact,
-} from "@/components/official/IconInputWithValidation.dynamic";
+} from "@/components/official/icons/IconInputWithValidation.dynamic";
 import { Label } from "@/components/ui/label";
 
 interface ComponentDisplayProps {

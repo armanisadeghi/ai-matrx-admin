@@ -18,7 +18,7 @@ import React, { useCallback, useState } from "react";
 import { shallowEqual } from "react-redux";
 import { Activity, MessageSquare, Copy, Check, Radio } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { WindowPanel } from "../WindowPanel";
+import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { StreamDebugPanel } from "@/features/agents/components/debug/StreamDebugPanel";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectInstanceStatus } from "@/features/agents/redux/execution-system/conversations/conversations.selectors";

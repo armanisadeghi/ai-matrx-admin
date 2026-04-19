@@ -2,10 +2,16 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { ChevronDown, ChevronRight, Plus, X } from "lucide-react";
+import { ChevronDown, ChevronRight, Plus, X, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ContentEditor } from "./ContentEditor";
-import type { EditorMode, HeaderAction, ContentEditorProps } from "./types";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "@/components/ui/select";
+import { ContentEditor, MODE_CONFIGS } from "./ContentEditor";
+import type { EditorMode, ContentEditorProps } from "./types";
 
 export interface ContentEditorTab {
   id: string;
@@ -20,8 +26,11 @@ type SharedEditorProps = Omit<
   | "title"
   | "collapsible"
   | "defaultCollapsed"
+  | "collapseMode"
+  | "collapsedPreviewHeight"
   | "mode"
   | "onModeChange"
+  | "showModeSelector"
   | "className"
 >;
 
@@ -37,12 +46,25 @@ export interface ContentEditorTabsProps extends SharedEditorProps {
   // Collapse applies to the whole group (not per tab)
   collapsible?: boolean;
   defaultCollapsed?: boolean;
+  collapseMode?: "hide" | "fade";
+  collapsedPreviewHeight?: number | string;
 
   // Tab management
   allowAddTab?: boolean;
   allowCloseTab?: boolean;
   onAddTab?: () => ContentEditorTab; // factory for new tab
   maxTabTitleLength?: number;
+
+  /**
+   * When true, the mode selector is rendered once in the tab bar (right side)
+   * and applies to every tab. Per-tab selectors are hidden.
+   */
+  sharedModeSelector?: boolean;
+  /**
+   * Initial shared mode when sharedModeSelector is true.
+   * Defaults to `initialMode` or "matrx-split".
+   */
+  defaultSharedMode?: EditorMode;
 
   className?: string;
 }
@@ -55,10 +77,16 @@ export function ContentEditorTabs({
   onActiveTabChange,
   collapsible = false,
   defaultCollapsed = false,
+  collapseMode = "hide",
+  collapsedPreviewHeight = 120,
   allowAddTab = false,
   allowCloseTab = false,
   onAddTab,
   maxTabTitleLength = 24,
+  sharedModeSelector = false,
+  defaultSharedMode,
+  availableModes = ["plain", "matrx-split", "wysiwyg", "markdown", "preview"],
+  initialMode = "matrx-split",
   className,
   ...sharedEditorProps
 }: ContentEditorTabsProps) {
@@ -66,6 +94,9 @@ export function ContentEditorTabs({
     defaultActiveTabId ?? tabs[0]?.id ?? "",
   );
   const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
+  const [sharedMode, setSharedMode] = useState<EditorMode>(
+    defaultSharedMode ?? initialMode,
+  );
 
   const activeTabId = controlledActiveId ?? internalActiveId;
 
@@ -118,6 +149,17 @@ export function ContentEditorTabs({
     s.length > maxTabTitleLength ? s.slice(0, maxTabTitleLength - 1) + "…" : s;
 
   const activeTab = tabs.find((t) => t.id === activeTabId);
+
+  const filteredModes = MODE_CONFIGS.filter((c) =>
+    availableModes.includes(c.value),
+  );
+  const sharedModeConfig =
+    MODE_CONFIGS.find((c) => c.value === sharedMode) ?? MODE_CONFIGS[0];
+  const SharedModeIcon = sharedModeConfig?.icon ?? FileText;
+
+  // When collapsed-in-fade: editor body stays mounted but clipped with fade.
+  // When collapsed-in-hide: editor body is unmounted completely.
+  const showBody = !isCollapsed || collapseMode === "fade";
 
   return (
     <div
@@ -191,20 +233,105 @@ export function ContentEditorTabs({
             </button>
           )}
         </div>
+
+        {/* Shared mode selector — sits at the far right of the tab bar */}
+        {sharedModeSelector && filteredModes.length > 1 && (
+          <div className="flex-none flex items-center pr-2">
+            <Select
+              value={sharedMode}
+              onValueChange={(v) => setSharedMode(v as EditorMode)}
+            >
+              <SelectTrigger
+                hideArrow
+                size="sm"
+                className="w-auto gap-1 px-2 py-1 h-auto border-0 bg-transparent shadow-none rounded hover:bg-zinc-200 dark:hover:bg-zinc-800 hover:border-0 focus:ring-0 focus:border-0"
+                title={`Mode: ${sharedModeConfig?.label ?? ""}`}
+              >
+                <SharedModeIcon className="h-3.5 w-3.5" />
+                <ChevronDown className="h-3 w-3" />
+              </SelectTrigger>
+              <SelectContent>
+                {filteredModes.map((config) => (
+                  <SelectItem
+                    key={config.value}
+                    value={config.value}
+                    className="text-xs"
+                  >
+                    <div className="flex items-center gap-2">
+                      <config.icon className="h-3.5 w-3.5" />
+                      <div className="flex flex-col">
+                        <span className="font-medium">{config.label}</span>
+                        <span className="text-[10px] text-zinc-500">
+                          {config.description}
+                        </span>
+                      </div>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
       </div>
 
       {/* Active tab content */}
-      {!isCollapsed && activeTab && (
-        <ContentEditor
-          // Remount when switching tabs so internal state (mode, etc.) stays tab-local.
-          key={activeTab.id}
-          value={activeTab.value}
-          onChange={handleContentChange(activeTab.id)}
-          title={undefined}
-          collapsible={false}
-          {...sharedEditorProps}
-          className="border-0 rounded-none"
-        />
+      {showBody && activeTab && (
+        <div
+          className={cn(
+            "relative",
+            isCollapsed && collapseMode === "fade"
+              ? "overflow-hidden"
+              : "overflow-visible",
+          )}
+          style={
+            isCollapsed && collapseMode === "fade"
+              ? {
+                  maxHeight:
+                    typeof collapsedPreviewHeight === "number"
+                      ? `${collapsedPreviewHeight}px`
+                      : collapsedPreviewHeight,
+                }
+              : undefined
+          }
+        >
+          <ContentEditor
+            // Remount when switching tabs so internal state stays tab-local.
+            // (When sharedModeSelector is on, mode is controlled so remounting is fine.)
+            key={activeTab.id}
+            value={activeTab.value}
+            onChange={handleContentChange(activeTab.id)}
+            title={undefined}
+            collapsible={false}
+            availableModes={availableModes}
+            initialMode={initialMode}
+            {...(sharedModeSelector
+              ? {
+                  mode: sharedMode,
+                  onModeChange: setSharedMode,
+                  showModeSelector: false,
+                }
+              : {})}
+            {...sharedEditorProps}
+            className="border-0 rounded-none"
+          />
+
+          {isCollapsed && collapseMode === "fade" && (
+            <>
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-transparent to-white dark:to-zinc-900"
+              />
+              <button
+                type="button"
+                onClick={() => setIsCollapsed(false)}
+                className="absolute left-1/2 bottom-1 -translate-x-1/2 flex items-center justify-center h-6 w-6 rounded-full bg-white dark:bg-zinc-800 border border-border shadow-sm hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors"
+                title="Expand"
+              >
+                <ChevronDown className="h-3.5 w-3.5 text-zinc-600 dark:text-zinc-300" />
+              </button>
+            </>
+          )}
+        </div>
       )}
     </div>
   );

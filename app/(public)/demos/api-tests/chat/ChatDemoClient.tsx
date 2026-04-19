@@ -800,7 +800,6 @@ export default function ChatDemoClient() {
                   <MarkdownStream
                     content={streamText}
                     isStreamActive={isRunning}
-                    role="assistant"
                     className="text-sm"
                   />
                 ) : !errorMessage ? (

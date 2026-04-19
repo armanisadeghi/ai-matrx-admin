@@ -6,7 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import IconResolver, {
   getCuratedIconIdsForPicker,
-} from "@/components/official/IconResolver";
+} from "@/components/official/icons/IconResolver";
 import { TapTargetButton } from "@/components/icons/TapTargetButton";
 import { TapTargetLabeled } from "@/components/icons/TapTargetLabeled";
 import {
