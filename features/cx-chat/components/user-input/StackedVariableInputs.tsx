@@ -143,7 +143,7 @@ export function StackedVariableInputs({
                       handleVariableChange(variable.name, newValue)
                     }
                     variableName={variable.name}
-                    customComponent={variable.customComponent}
+                    customComponent={variable.customComponent as unknown as never}
                     onRequestClose={() => handleExpandedVariableChange(null)}
                     helpText={variable.helpText}
                     compact={compact}

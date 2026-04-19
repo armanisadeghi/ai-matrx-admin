@@ -53,8 +53,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
-import { chatConversationsActions } from "@/features/agents/redux/legacy-shims/cx-message-actions-slice";
-import { sendMessage } from "@/features/agents/redux/legacy-shims/cx-message-actions-thunks";
+import { chatConversationsActions } from "./_legacy-stubs";
+import { sendMessage } from "./_legacy-stubs";
 import {
   selectCurrentInput,
   selectResources,
@@ -64,14 +64,14 @@ import {
   selectShowVariables,
   selectUIState,
   selectShowDebugInfo,
-} from "@/features/agents/redux/legacy-shims/cx-message-actions-selectors";
+} from "./_legacy-stubs";
 import {
   selectAvailableModels,
   selectModelOptions,
   fetchAvailableModels,
 } from "@/features/ai-models/redux/modelRegistrySlice";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
-import { selectActiveChatAgent } from "@/features/agents/redux/legacy-shims/active-chat-slice";
+import { selectActiveChatAgent } from "./_legacy-stubs";
 import { selectIsDebugMode } from "@/lib/redux/slices/adminDebugSlice";
 import { ResourceChips } from "@/features/prompts/components/resource-display";
 import { ResourcePickerMenu } from "@/features/resource-manager/resource-picker/ResourcePickerMenu";
@@ -220,7 +220,18 @@ export function ConversationInput({
   const uiState = useAppSelector((state) => selectUIState(state, sessionId));
 
   const session = useAppSelector(
-    (state) => state.chatConversations.sessions[sessionId],
+    // TEMPORARY STUB — cx refactor removed chatConversations slice.
+    (state) =>
+      (
+        state as unknown as {
+          chatConversations?: {
+            sessions?: Record<
+              string,
+              { agentId?: string; conversationId?: string | null }
+            >;
+          };
+        }
+      ).chatConversations?.sessions?.[sessionId],
   );
   const agentId = session?.agentId ?? "";
   const conversationId = session?.conversationId ?? null;

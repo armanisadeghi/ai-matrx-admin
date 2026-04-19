@@ -32,7 +32,7 @@ import {
   openContentHistory,
   closeOverlay,
 } from "@/lib/redux/slices/overlaySlice";
-import { chatConversationsActions } from "@/features/agents/redux/legacy-shims/cx-message-actions-slice";
+import { chatConversationsActions } from "../../_legacy-stubs";
 
 const ConversationMessageOptionsMenu = lazy(
   () => import("./MessageOptionsMenu"),

@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState } from 'react';
 import { Search, Plus, MoreVertical, Edit, Trash2, ExternalLink, Share2, Archive } from 'lucide-react';
+import { toast } from 'sonner';
 import clsx from 'clsx';
 import { useConversationPanel } from '@/features/chat/hooks/useConversationPanel';
 import { useSidebarState } from '@/hooks/useSidebarState';
@@ -162,22 +163,22 @@ export const ChatSidebarContent: React.FC = () => {
                           <ExternalLink className="h-3 w-3 mr-1.5" />
                           Open
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => {/* TODO: Edit functionality */}} className="text-[11px] py-1">
+                        <DropdownMenuItem onClick={() => toast.info("Editing conversations is coming soon.")} className="text-[11px] py-1">
                           <Edit className="h-3 w-3 mr-1.5" />
                           Edit
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => {/* TODO: Share functionality */}} className="text-[11px] py-1">
+                        <DropdownMenuItem onClick={() => toast.info("Conversation sharing is coming soon.")} className="text-[11px] py-1">
                           <Share2 className="h-3 w-3 mr-1.5" />
                           Share
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => {/* TODO: Archive functionality */}} className="text-[11px] py-1">
+                        <DropdownMenuItem onClick={() => toast.info("Conversation archive is coming soon.")} className="text-[11px] py-1">
                           <Archive className="h-3 w-3 mr-1.5" />
                           Archive
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem 
-                          onClick={() => {/* TODO: Delete functionality */}}
+                        <DropdownMenuItem
+                          onClick={() => toast.info("Delete conversation from the conversation view itself — that flow is wired.")}
                           className="text-red-600 dark:text-red-400 text-[11px] py-1"
                         >
                           <Trash2 className="h-3 w-3 mr-1.5" />

@@ -8,8 +8,8 @@ import {
   selectMessages,
   selectIsStreaming,
   selectUIState,
-} from "@/features/agents/redux/legacy-shims/cx-message-actions-selectors";
-import { chatConversationsActions } from "@/features/agents/redux/legacy-shims/cx-message-actions-slice";
+} from "./_legacy-stubs";
+import { chatConversationsActions } from "./_legacy-stubs";
 import dynamic from "next/dynamic";
 import { MessageErrorBoundary } from "@/features/cx-conversation/MessageErrorBoundary";
 import { UserMessage } from "@/features/cx-conversation/UserMessage";
@@ -45,7 +45,14 @@ function StreamingAssistantMessage({
   compact,
 }: StreamingAssistantMessageProps) {
   const message = useAppSelector((state) => {
-    const messages = state.chatConversations.sessions[sessionId]?.messages;
+    // TEMPORARY STUB — cx refactor removed chatConversations slice.
+    const messages = (
+      state as unknown as {
+        chatConversations?: {
+          sessions?: Record<string, { messages?: Array<{ id: string }> }>;
+        };
+      }
+    ).chatConversations?.sessions?.[sessionId]?.messages;
     return messages?.find((m) => m.id === messageId);
   });
 

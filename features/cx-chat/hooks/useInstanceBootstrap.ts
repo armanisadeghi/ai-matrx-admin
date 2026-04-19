@@ -167,7 +167,7 @@ export function useInstanceBootstrap() {
         const result = await dispatch(
           launchAgentExecution({
             agentId,
-            sourceFeature: "chat",
+            sourceFeature: "chat-interface",
             autoRun: false,
             displayMode: "direct",
           }),

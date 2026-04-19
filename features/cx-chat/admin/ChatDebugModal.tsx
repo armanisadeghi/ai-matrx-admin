@@ -28,7 +28,7 @@ import {
   toggleDebugMode,
   selectIsDebugMode,
 } from "@/lib/redux/slices/adminDebugSlice";
-import { chatConversationsActions } from "@/features/agents/redux/legacy-shims/cx-message-actions-slice";
+import { chatConversationsActions } from "../_legacy-stubs";
 import {
   selectShowDebugInfo,
   selectShowSystemMessages,
@@ -36,7 +36,7 @@ import {
   selectSession,
   selectMessages,
   selectResources,
-} from "@/features/agents/redux/legacy-shims/cx-message-actions-selectors";
+} from "../_legacy-stubs";
 
 interface ChatDebugModalProps {
   sessionId: string;

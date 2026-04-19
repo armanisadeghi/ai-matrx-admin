@@ -25,7 +25,6 @@ import {
 } from "@/components/icons/tap-buttons";
 import { SpeakerButton } from "@/features/tts/components/SpeakerButton";
 import { copyToClipboard } from "@/components/matrx/buttons/markdown-copy-utils";
-import TaskChipRow from "@/features/tasks/widgets/TaskChipRow";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import {
   openFullScreenEditor,
@@ -114,18 +113,6 @@ export function AssistantActionBar({
 
   return (
     <>
-      {/* Task links attached to this message — hidden when empty so we don't clutter */}
-      {messageId && (
-        <TaskChipRow
-          entityType="message"
-          entityId={messageId}
-          label={content.slice(0, 160)}
-          showAddButton={false}
-          hideIfEmpty
-          size="xs"
-          className="mb-1.5"
-        />
-      )}
       <TapTargetButtonGroup>
         <ThumbsUpTapButton
           variant="group"

@@ -8,7 +8,7 @@ import { selectMessageActionInstance } from "@/features/agents/redux/execution-s
 import {
   selectMessageHasUnsavedChanges,
   selectMessageHasHistory,
-} from "@/features/agents/redux/legacy-shims/cx-message-actions-selectors";
+} from "../../_legacy-stubs";
 import { useCartesiaSpeaker } from "@/features/tts/hooks/useCartesiaSpeaker";
 import {
   getMessageActions,

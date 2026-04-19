@@ -15,10 +15,10 @@ import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import {
   selectMessageHasUnsavedChanges,
   selectMessageHasHistory,
-} from "@/features/agents/redux/legacy-shims/cx-message-actions-selectors";
-import { editMessage } from "@/features/agents/redux/legacy-shims/cx-message-actions-thunks";
+} from "../../_legacy-stubs";
+import { editMessage } from "../../_legacy-stubs";
 import { buildContentBlocksForSave } from "@/features/cx-chat/utils/buildContentBlocksForSave";
-import { chatConversationsActions } from "@/features/agents/redux/legacy-shims/cx-message-actions-slice";
+import { chatConversationsActions } from "../../_legacy-stubs";
 import { AssistantActionBar } from "./AssistantActionBar";
 import type { ConversationMessage } from "@/features/cx-chat/types/conversation";
 import type { ToolCallObject } from "@/lib/api/tool-call.types";

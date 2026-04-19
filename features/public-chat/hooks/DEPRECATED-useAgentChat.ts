@@ -163,10 +163,11 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
         executeUrl = `${BACKEND_URL}${ENDPOINTS.ai.conversationContinue(state.dbConversationId)}`;
         requestBody = {
           user_input: userInput,
+          store: true,
           stream: true,
           debug: true,
           client_tools: [] as string[],
-          custom_tools: [],
+          custom_tools: [] as Array<Record<string, unknown>>,
           context: {},
         } satisfies ConversationContinueRequestBody;
         console.log("[useAgentChat] CONTINUE conversation →", executeUrl);
@@ -178,6 +179,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
         executeUrl = `${BACKEND_URL}${startEndpoint}`;
         requestBody = {
           user_input: userInput,
+          store: true,
           variables: Object.keys(variables).length > 0 ? variables : undefined,
           config_overrides:
             Object.keys(configOverrides).length > 0
@@ -186,7 +188,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
           stream: true,
           debug: true,
           client_tools: [] as string[],
-          custom_tools: [],
+          custom_tools: [] as Array<Record<string, unknown>>,
           context: {},
         } satisfies AgentStartRequestBody;
         console.log(

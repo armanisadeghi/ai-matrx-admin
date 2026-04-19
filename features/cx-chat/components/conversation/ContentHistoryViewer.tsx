@@ -4,8 +4,8 @@ import React, { useState } from "react";
 import { History, RotateCcw, Clock, ChevronRight } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
-import { selectMessageContentHistory } from "@/features/agents/redux/legacy-shims/cx-message-actions-selectors";
-import { editMessage } from "@/features/agents/redux/legacy-shims/cx-message-actions-thunks";
+import { selectMessageContentHistory } from "../../_legacy-stubs";
+import { editMessage } from "../../_legacy-stubs";
 import { convertCxContentToDisplay } from "@/features/cx-chat/utils/cx-content-converter";
 import type {
   CxContentHistoryEntry,

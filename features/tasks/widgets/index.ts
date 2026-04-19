@@ -8,3 +8,5 @@ export { default as TaskChip } from "./TaskChip";
 export { default as TaskChipRow } from "./TaskChipRow";
 export { default as TaskQuickAddBar } from "./TaskQuickAddBar";
 export { default as GlobalTaskShortcut } from "./GlobalTaskShortcut";
+export { default as TaskTapButton } from "./TaskTapButton";
+export type { TaskTapButtonProps } from "./TaskTapButton";

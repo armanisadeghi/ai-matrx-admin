@@ -35,8 +35,8 @@ import { printMarkdownContent } from "@/features/conversation/utils/markdown-pri
 import { loadWordPressCSS } from "@/features/html-pages/css/wordpress-styles";
 import { NotesAPI } from "@/features/notes";
 import { toast } from "sonner";
-import { chatConversationsActions } from "@/features/agents/redux/legacy-shims/cx-message-actions-slice";
-import { editMessage } from "@/features/agents/redux/legacy-shims/cx-message-actions-thunks";
+import { chatConversationsActions } from "../_legacy-stubs";
+import { editMessage } from "../_legacy-stubs";
 import { buildContentBlocksForSave } from "@/features/cx-chat/utils/buildContentBlocksForSave";
 import {
   openOverlay,
