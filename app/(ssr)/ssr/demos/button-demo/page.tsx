@@ -71,7 +71,7 @@ import {
   RunTapButton,
   HistoryTapButton,
 } from "@/components/icons/tap-buttons";
-import { Labeled } from "./ButtonShowcase";
+import { TapTargetLabeled as Labeled } from "@/components/icons/TapTargetLabeled";
 import { createRouteMetadata } from "@/utils/route-metadata";
 
 export const metadata = createRouteMetadata("/ssr/demos/button-demo", {

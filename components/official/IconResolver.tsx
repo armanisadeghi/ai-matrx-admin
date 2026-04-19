@@ -178,6 +178,7 @@ import { FaBrave } from "react-icons/fa6";
 import { isLucideModuleIconExport } from "@/utils/icons/lucide-module-icon";
 import {
   isMatrxSvgIconValue,
+  listMatrxSvgIconValues,
   parseMatrxSvgPublicPath,
 } from "@/utils/icons/matrx-public-svg-registry";
 
@@ -359,6 +360,26 @@ const customIconMap: Record<string, any> = {
 
 // Cache for dynamically loaded icons to prevent re-importing
 const dynamicIconCache: Record<string, any> = {};
+
+/**
+ * Finite list for the curated icon gallery: every statically bundled Lucide name,
+ * custom registry ids (react-icons), and all `svg:…` public assets.
+ */
+export function getCuratedIconIdsForPicker(): string[] {
+  const set = new Set<string>();
+  for (const k of Object.keys(staticLucideIconMap)) {
+    set.add(k);
+  }
+  for (const k of Object.keys(customIconMap)) {
+    set.add(k);
+  }
+  for (const id of listMatrxSvgIconValues()) {
+    set.add(id);
+  }
+  return Array.from(set).sort((a, b) =>
+    a.localeCompare(b, undefined, { sensitivity: "base" }),
+  );
+}
 
 /**
  * True if this exact name maps to a known icon (static Lucide, custom map, or

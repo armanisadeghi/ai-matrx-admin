@@ -486,6 +486,16 @@ const NewsWindow = dynamic(
   { ssr: false },
 );
 
+const BrowserFrameWindow = dynamic(
+  () => import("@/features/window-panels/windows/BrowserFrameWindow"),
+  { ssr: false },
+);
+
+const BrowserWorkbenchWindow = dynamic(
+  () => import("@/features/window-panels/windows/BrowserWorkbenchWindow"),
+  { ssr: false },
+);
+
 const GalleryWindow = dynamic(
   () => import("@/features/window-panels/windows/GalleryWindow"),
   { ssr: false },
@@ -734,6 +744,20 @@ export const OverlayController: React.FC = () => {
 
   const isNewsWindowOpen = useAppSelector((s) =>
     selectIsOverlayOpen(s, "newsWindow"),
+  );
+
+  const isBrowserFrameWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "browserFrameWindow"),
+  );
+  const browserFrameWindowData = useAppSelector((s) =>
+    selectOverlayData(s, "browserFrameWindow"),
+  );
+
+  const isBrowserWorkbenchWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "browserWorkbenchWindow"),
+  );
+  const browserWorkbenchWindowData = useAppSelector((s) =>
+    selectOverlayData(s, "browserWorkbenchWindow"),
   );
 
   const isGalleryWindowOpen = useAppSelector((s) =>
@@ -1245,6 +1269,37 @@ export const OverlayController: React.FC = () => {
 
       {isNewsWindowOpen && (
         <NewsWindow isOpen={true} onClose={() => close("newsWindow")} />
+      )}
+
+      {isBrowserFrameWindowOpen && (
+        <BrowserFrameWindow
+          isOpen={true}
+          onClose={() => close("browserFrameWindow")}
+          initialUrl={
+            typeof browserFrameWindowData?.url === "string"
+              ? browserFrameWindowData.url
+              : null
+          }
+          initialWindowTitle={
+            typeof browserFrameWindowData?.windowTitle === "string"
+              ? browserFrameWindowData.windowTitle
+              : null
+          }
+        />
+      )}
+
+      {isBrowserWorkbenchWindowOpen && (
+        <BrowserWorkbenchWindow
+          isOpen={true}
+          onClose={() => close("browserWorkbenchWindow")}
+          initialBookmarks={browserWorkbenchWindowData?.bookmarks}
+          initialTabs={browserWorkbenchWindowData?.tabs}
+          initialActiveTabId={
+            typeof browserWorkbenchWindowData?.activeTabId === "string"
+              ? browserWorkbenchWindowData.activeTabId
+              : null
+          }
+        />
       )}
 
       {isGalleryWindowOpen && (

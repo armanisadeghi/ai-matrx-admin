@@ -4,6 +4,25 @@
  * to validate against `lucide-react` exports.
  */
 
+/**
+ * If the user pasted Lucide's JSX snippet (e.g. `'<BugPlay />'` or `<AlignCenterHorizontal />`),
+ * return the component name only. Otherwise return null.
+ *
+ * Supports optional outer quotes and optional attributes before the closing `/>`.
+ */
+export function extractLucideJsxIconName(raw: string): string | null {
+  let s = raw.trim();
+  if (!s) return null;
+  if (
+    (s.startsWith("'") && s.endsWith("'") && s.length >= 2) ||
+    (s.startsWith('"') && s.endsWith('"') && s.length >= 2)
+  ) {
+    s = s.slice(1, -1).trim();
+  }
+  const m = s.match(/^<\s*([A-Za-z][A-Za-z0-9]*)(?:\s[^>]*)?\s*\/\s*>$/);
+  return m?.[1] ?? null;
+}
+
 /** `alarm-clock` → `AlarmClock`, `a-arrow-down` → `AArrowDown` */
 export function kebabCaseToLucidePascalCase(raw: string): string {
   const s = raw.trim();

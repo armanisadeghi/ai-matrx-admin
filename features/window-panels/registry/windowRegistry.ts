@@ -153,6 +153,27 @@ const REGISTRY: WindowRegistryEntry[] = [
     defaultData: { category: "general", country: "us" },
   },
 
+  // ── Embedded browser (iframe) ────────────────────────────────────────────
+  {
+    slug: "browser-frame-window",
+    overlayId: "browserFrameWindow",
+    label: "Site frame",
+    defaultData: {
+      url: "https://lucide.dev/icons/",
+      windowTitle: null,
+    },
+  },
+  {
+    slug: "browser-workbench-window",
+    overlayId: "browserWorkbenchWindow",
+    label: "Site workbench",
+    defaultData: {
+      bookmarks: [],
+      tabs: [],
+      activeTabId: null,
+    },
+  },
+
   // ── List Manager ──────────────────────────────────────────────────────────
   {
     slug: "list-manager-window",

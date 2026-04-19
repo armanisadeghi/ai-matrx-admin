@@ -48,6 +48,8 @@ import {
   ShieldAlert,
   BugPlay,
   List,
+  Frame,
+  BookMarked,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -827,6 +829,34 @@ export default function SidebarWindowToggle() {
                       act(() =>
                         dispatch(
                           openOverlay({ overlayId: "fileUploadWindow" }),
+                        ),
+                      )
+                    }
+                  />
+                  <MenuGridItem
+                    icon={<Frame className="w-3.5 h-3.5" />}
+                    label="Site frame"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(
+                          openOverlay({
+                            overlayId: "browserFrameWindow",
+                            data: {
+                              url: "https://lucide.dev/icons/",
+                              windowTitle: "Lucide",
+                            },
+                          }),
+                        ),
+                      )
+                    }
+                  />
+                  <MenuGridItem
+                    icon={<BookMarked className="w-3.5 h-3.5" />}
+                    label="Site workbench"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(
+                          openOverlay({ overlayId: "browserWorkbenchWindow" }),
                         ),
                       )
                     }

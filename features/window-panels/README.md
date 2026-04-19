@@ -321,6 +321,8 @@ Set `ephemeral: true` in the registry for windows that should never write to the
 | `pdfExtractorWindow` | `pdf-extractor-window` | No | `PdfExtractorWindow.tsx` |
 | `galleryWindow` | `gallery-window` | No | `GalleryWindow.tsx` |
 | `newsWindow` | `news-window` | No | `NewsWindow.tsx` |
+| `browserFrameWindow` | `browser-frame-window` | No | `BrowserFrameWindow.tsx` |
+| `browserWorkbenchWindow` | `browser-workbench-window` | No | `BrowserWorkbenchWindow.tsx` |
 | `listManagerWindow` | `list-manager-window` | No | `ListManagerWindow.tsx` |
 | `userPreferencesWindow` | `user-preferences-window` | No | `UserPreferencesWindow.tsx` |
 | `agentSettingsWindow` | `agent-settings-window` | No | `AgentSettingsWindow.tsx` |
@@ -346,6 +348,21 @@ Set `ephemeral: true` in the registry for windows that should never write to the
 | `jsonTruncator` | `json-truncator` | **Yes** | — |
 | `resourcePickerWindow` | `resource-picker-window` | **Yes** | `ResourcePickerWindow.tsx` |
 | `agentAssistantMarkdownDebugWindow` | `agent-md-debug-window` | **Yes** | `AgentAssistantMarkdownDebugWindow.tsx` |
+
+---
+
+## Embedded browser windows (iframe)
+
+General-purpose reference browsing without leaving the app:
+
+| overlayId | Use case |
+|-----------|----------|
+| `browserFrameWindow` | **Site frame** — one URL, address bar in the footer. Good for a single reference site (e.g. Lucide). Open from **Tools → Site frame** or `openOverlay({ overlayId: "browserFrameWindow", data: { url, windowTitle } })`. |
+| `browserWorkbenchWindow` | **Site workbench** — bookmark list in `WindowPanel` sidebar + multi-tab strip (same UX idea as Notes Beta: sidebar + tabs). Open from **Tools → Site workbench**. |
+
+Shared iframe chrome and sandbox/allow list live in `components/EmbedSiteFrame.tsx`. URL normalization helpers: `utils/embed-site-url.ts`.
+
+`IconInputWithValidation` uses **Search Lucide** (opens `browserFrameWindow`), accepts pasted JSX such as `<BugPlay />`, and can open **Icon gallery** (`CuratedIconPickerWindow`). The gallery uses a **horizontal tab strip** (not Radix `Tabs` on mobile): **All**, **Matrx SVG**, **Icons**, **AI brands** (button-demo provider row / brand colors), **AI actions** (lightning-style row). Filter applies to the active tab; AI tabs map each tile to a suggested storable id (footer explains refinement via Icons).
 
 ---
 

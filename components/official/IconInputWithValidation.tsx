@@ -1,113 +1,63 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useId } from "react";
+import dynamic from "next/dynamic";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/components/ui/drawer";
-import { RefreshCw, Check, X, ExternalLink, PanelsTopLeft } from "lucide-react";
+  RefreshCw,
+  Check,
+  X,
+  ExternalLink,
+  Search,
+  LayoutGrid,
+} from "lucide-react";
 import IconResolver, {
   isRegisteredOrLucideIconName,
 } from "@/components/official/IconResolver";
-import {
-  TapTargetButton,
-  TapTargetButtonSolid,
-  TapTargetButtonTransparent,
-} from "@/components/icons/TapTargetButton";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { cn } from "@/lib/utils";
-import { listMatrxSvgIconValues } from "@/utils/icons/matrx-public-svg-registry";
-import { collectLucideIconNameCandidates } from "@/utils/icons/lucide-name-normalize";
+import {
+  collectLucideIconNameCandidates,
+  extractLucideJsxIconName,
+} from "@/utils/icons/lucide-name-normalize";
 
 const LUCIDE_ICONS_URL = "https://lucide.dev/icons/";
 
-const MATRX_SVG_QUICK_PICK = listMatrxSvgIconValues().slice(0, 10);
+const CuratedIconPickerWindowLazy = dynamic(
+  () =>
+    import("@/features/window-panels/windows/CuratedIconPickerWindow").then(
+      (m) => ({ default: m.CuratedIconPickerWindow }),
+    ),
+  { ssr: false },
+);
 
 export interface IconInputWithValidationProps {
-  /** Current icon name value */
   value: string;
-  /** Callback when icon name changes */
   onChange: (iconName: string) => void;
-  /** Input placeholder text */
   placeholder?: string;
-  /** Additional className for the input */
   className?: string;
-  /** Input ID for label association */
   id?: string;
-  /** Disable the input */
   disabled?: boolean;
-  /** Show link to Lucide icons site */
+  /**
+   * Fine print: “Search Lucide” (opens site frame) + link to lucide.dev
+   */
   showLucideLink?: boolean;
-  /** Open Lucide.dev in an embedded panel (dialog on desktop, drawer on mobile) */
-  showLucideEmbed?: boolean;
-  /** Show glass / transparent / solid tap-target previews when the value validates */
-  showTapTargetPreviews?: boolean;
-  /** Show quick-pick chips for Matrx `svg:…` public assets */
-  showMatrxSvgQuickPick?: boolean;
+  /**
+   * Fine print: “Icon gallery” opens a floating window with every bundled Lucide name,
+   * registry icon, and Matrx `svg:…` asset (finite list; filter only).
+   */
+  showCuratedIconGallery?: boolean;
 }
 
 type ValidationState = "idle" | "validating" | "valid" | "invalid";
 
-function LucideEmbedFrame({ className }: { className?: string }) {
-  return (
-    <div
-      className={cn(
-        "relative w-full overflow-hidden rounded-md border border-border bg-muted/30",
-        className,
-      )}
-    >
-      <iframe
-        title="Lucide icons"
-        src={LUCIDE_ICONS_URL}
-        className="h-[min(70dvh,560px)] w-full border-0 bg-background"
-        sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
-        allow="clipboard-read; clipboard-write; fullscreen"
-        referrerPolicy="no-referrer-when-downgrade"
-      />
-      <p className="border-t border-border bg-muted/50 px-3 py-2 text-[11px] text-muted-foreground">
-        Paste from Lucide works best when the site can use the clipboard inside
-        this panel (browser may still ask permission). Kebab names like{" "}
-        <code className="font-mono text-foreground">alarm-clock</code> normalize
-        to PascalCase automatically. If the frame is blank, use &quot;Open
-        Lucide&quot; below.
-      </p>
-    </div>
-  );
-}
-
 /**
- * IconInputWithValidation - Official Component
+ * IconInputWithValidation — compact icon name field with validation.
  *
- * All-in-one icon name input with validation and preview.
- *
- * Features:
- * - Real-time icon validation (Lucide, IconResolver registry, Matrx `svg:path/id` assets)
- * - Visual feedback (green check / red X)
- * - Live icon preview when valid
- * - Auto-normalizes Lucide labels: lowercase first letter, kebab-case → PascalCase
- * - Optional embedded Lucide reference (iframe)
- * - Optional tap-target (glass / transparent / solid) previews
- *
- * @example
- * ```tsx
- * <IconInputWithValidation
- *   value={iconName}
- *   onChange={setIconName}
- *   placeholder="e.g., Sparkles"
- * />
- * ```
+ * Core row: text input, validate control, preview when valid.
+ * Optional fine print: Search Lucide (floating window), lucide.dev link, and curated gallery.
  */
 export default function IconInputWithValidation({
   value,
@@ -117,18 +67,17 @@ export default function IconInputWithValidation({
   id,
   disabled = false,
   showLucideLink = true,
-  showLucideEmbed = true,
-  showTapTargetPreviews = true,
-  showMatrxSvgQuickPick = true,
+  showCuratedIconGallery = false,
 }: IconInputWithValidationProps) {
-  const isMobile = useIsMobile();
+  const dispatch = useAppDispatch();
+  const galleryInstanceId = useId().replace(/:/g, "");
+  const [galleryOpen, setGalleryOpen] = useState(false);
   const [validationState, setValidationState] =
     useState<ValidationState>("idle");
   const [validatedIconName, setValidatedIconName] = useState<string | null>(
     null,
   );
   const [lastValidatedValue, setLastValidatedValue] = useState<string>("");
-  const [lucidePanelOpen, setLucidePanelOpen] = useState(false);
 
   const validateIcon = useCallback(
     async (iconName: string) => {
@@ -181,13 +130,27 @@ export default function IconInputWithValidation({
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
+    const raw = e.target.value;
+    const extracted = extractLucideJsxIconName(raw);
+    const newValue = extracted ?? raw;
     onChange(newValue);
 
     if (validationState !== "idle") {
       setValidationState("idle");
       setValidatedIconName(null);
     }
+  };
+
+  const openLucideFrame = () => {
+    dispatch(
+      openOverlay({
+        overlayId: "browserFrameWindow",
+        data: {
+          url: LUCIDE_ICONS_URL,
+          windowTitle: "Lucide icons",
+        },
+      }),
+    );
   };
 
   const getStatusIcon = () => {
@@ -203,42 +166,10 @@ export default function IconInputWithValidation({
     }
   };
 
-  const lucidePanel = isMobile ? (
-    <Drawer open={lucidePanelOpen} onOpenChange={setLucidePanelOpen}>
-      <DrawerContent className="max-h-[92dvh] pb-safe">
-        <DrawerHeader className="text-left">
-          <DrawerTitle>Lucide icons</DrawerTitle>
-          <DrawerDescription>
-            Search on lucide.dev; use the PascalCase name in the field above.
-          </DrawerDescription>
-        </DrawerHeader>
-        <div className="px-4 pb-4">
-          <LucideEmbedFrame />
-        </div>
-      </DrawerContent>
-    </Drawer>
-  ) : (
-    <Dialog open={lucidePanelOpen} onOpenChange={setLucidePanelOpen}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col gap-0 p-0">
-        <DialogHeader className="px-6 pt-6 pb-2 shrink-0">
-          <DialogTitle>Lucide icons</DialogTitle>
-          <DialogDescription>
-            Embedded reference — search here, then paste the{" "}
-            <code className="font-mono text-foreground">PascalCase</code> name
-            into your field.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="px-6 pb-6 min-h-0 flex-1 overflow-auto">
-          <LucideEmbedFrame />
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-
   return (
-    <div className="space-y-2">
+    <div className="space-y-1.5">
       <div className="flex items-center gap-2">
-        <div className="relative flex-1">
+        <div className="relative flex-1 min-w-0">
           <Input
             id={id}
             value={value}
@@ -277,116 +208,65 @@ export default function IconInputWithValidation({
         )}
       </div>
 
-      {showTapTargetPreviews &&
-        validationState === "valid" &&
-        validatedIconName && (
-          <div className="flex flex-wrap items-center gap-3 rounded-md border border-border/60 bg-muted/20 px-2 py-2">
-            <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-              Tap targets
-            </span>
-            <div className="flex flex-wrap items-center gap-2">
-              <TapTargetButton
-                type="button"
-                icon={
-                  <IconResolver
-                    iconName={validatedIconName}
-                    className="h-4 w-4"
-                  />
-                }
-                ariaLabel="Glass tap target preview"
-                disabled
-              />
-              <TapTargetButtonTransparent
-                type="button"
-                icon={
-                  <IconResolver
-                    iconName={validatedIconName}
-                    className="h-4 w-4"
-                  />
-                }
-                ariaLabel="Transparent tap target preview"
-                disabled
-              />
-              <TapTargetButtonSolid
-                type="button"
-                icon={
-                  <IconResolver
-                    iconName={validatedIconName}
-                    className="h-4 w-4"
-                  />
-                }
-                ariaLabel="Solid tap target preview"
-                disabled
-              />
-            </div>
-          </div>
-        )}
-
-      {showLucideLink && (
-        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-          <span>Lucide (PascalCase or kebab-case), registry id, or</span>
-          <code className="rounded bg-muted px-1 py-0.5 font-mono text-[10px] text-foreground">
-            svg:icons/Home
-          </code>
-          <span>•</span>
-          <a
-            href={LUCIDE_ICONS_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-primary hover:underline"
-          >
-            Open Lucide
-            <ExternalLink className="h-3 w-3" />
-          </a>
-          {showLucideEmbed ? (
+      {showLucideLink || showCuratedIconGallery ? (
+        <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] leading-snug text-muted-foreground">
+          {showLucideLink ? (
             <>
-              <span>•</span>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="h-7 gap-1 px-2 text-xs text-primary"
-                onClick={() => setLucidePanelOpen(true)}
-              >
-                <PanelsTopLeft className="h-3.5 w-3.5" />
-                Lucide in panel
-              </Button>
-            </>
-          ) : null}
-        </div>
-      )}
-
-      {showMatrxSvgQuickPick ? (
-        <div className="space-y-1">
-          <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-            Matrx SVG quick pick
-          </p>
-          <div className="flex flex-wrap gap-1.5">
-            {MATRX_SVG_QUICK_PICK.map((id) => (
               <button
-                key={id}
                 type="button"
                 disabled={disabled}
-                onClick={() => onChange(id)}
+                onClick={openLucideFrame}
                 className={cn(
-                  "rounded-full border border-border bg-background px-2 py-0.5 font-mono text-[10px] text-foreground transition-colors",
-                  "hover:bg-accent disabled:opacity-50",
-                  value === id && "border-primary bg-primary/10",
+                  "inline-flex items-center gap-1 text-primary underline-offset-2 hover:underline disabled:pointer-events-none disabled:opacity-50",
                 )}
               >
-                {id}
+                <Search className="h-3 w-3 shrink-0" aria-hidden />
+                Search Lucide
               </button>
-            ))}
-          </div>
-        </div>
+              <a
+                href={LUCIDE_ICONS_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-primary underline-offset-2 hover:underline"
+              >
+                lucide.dev
+                <ExternalLink className="h-3 w-3" aria-hidden />
+              </a>
+            </>
+          ) : null}
+          {showCuratedIconGallery ? (
+            <button
+              type="button"
+              disabled={disabled}
+              onClick={() => setGalleryOpen(true)}
+              className={cn(
+                "inline-flex items-center gap-1 text-primary underline-offset-2 hover:underline disabled:pointer-events-none disabled:opacity-50",
+              )}
+            >
+              <LayoutGrid className="h-3 w-3 shrink-0" aria-hidden />
+              Icon gallery
+            </button>
+          ) : null}
+        </p>
       ) : null}
 
-      {lucidePanel}
+      {showCuratedIconGallery ? (
+        <CuratedIconPickerWindowLazy
+          isOpen={galleryOpen}
+          onClose={() => setGalleryOpen(false)}
+          windowInstanceId={galleryInstanceId}
+          onSelectIcon={(iconId) => {
+            onChange(iconId);
+            setGalleryOpen(false);
+          }}
+        />
+      ) : null}
 
       {validationState === "invalid" && (
         <p className="text-xs text-red-600 dark:text-red-400">
-          Icon not found. Try Lucide PascalCase, a registry id, or an{" "}
-          <code className="font-mono">svg:…</code> id from the list above.
+          Unknown icon. Use the gallery, Search Lucide, or type a name /{" "}
+          <code className="font-mono">&lt;Icon /&gt;</code> /{" "}
+          <code className="font-mono">svg:…</code>.
         </p>
       )}
       {validationState === "valid" && validatedIconName !== value && (
@@ -400,21 +280,17 @@ export default function IconInputWithValidation({
 }
 
 /**
- * Compact variant — Lucide helper row hidden; optional embed / tap / SVG chips via props.
+ * Compact variant — hides Lucide fine print; optional curated gallery only via prop.
  */
 export function IconInputCompact({
-  showLucideEmbed = false,
-  showTapTargetPreviews = false,
-  showMatrxSvgQuickPick = false,
+  showCuratedIconGallery = false,
   ...rest
 }: Omit<IconInputWithValidationProps, "showLucideLink">) {
   return (
     <IconInputWithValidation
       {...rest}
       showLucideLink={false}
-      showLucideEmbed={showLucideEmbed}
-      showTapTargetPreviews={showTapTargetPreviews}
-      showMatrxSvgQuickPick={showMatrxSvgQuickPick}
+      showCuratedIconGallery={showCuratedIconGallery}
     />
   );
 }

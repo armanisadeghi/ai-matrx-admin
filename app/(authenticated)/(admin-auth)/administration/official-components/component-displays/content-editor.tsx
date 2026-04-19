@@ -1,29 +1,37 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { ComponentEntry } from '../parts/component-list';
-import { ComponentDisplayWrapper } from '../component-usage';
-import { ContentEditor, ContentEditorStack, type HeaderAction } from '@/components/content-editor';
-import { Download } from 'lucide-react';
-import HtmlPreviewModal from '@/features/html-pages/components/HtmlPreviewModal';
+import React, { useState } from "react";
+import { ComponentEntry } from "../parts/component-list";
+import { ComponentDisplayWrapper } from "../component-usage";
+import {
+  ContentEditor,
+  ContentEditorStack,
+  type HeaderAction,
+} from "@/components/content-editor";
+import { Download } from "lucide-react";
+import HtmlPreviewModal from "@/features/html-pages/components/HtmlPreviewModal";
 
 interface ComponentDisplayProps {
   component?: ComponentEntry;
 }
 
-export default function ContentEditorDisplay({ component }: ComponentDisplayProps) {
+export default function ContentEditorDisplay({
+  component,
+}: ComponentDisplayProps) {
   if (!component) return null;
-  
+
   // Demo state
-  const [content, setContent] = useState('# Welcome\n\nThis is a **powerful** content editor!');
+  const [content, setContent] = useState(
+    "# Welcome\n\nThis is a **powerful** content editor!",
+  );
   const [stackContents, setStackContents] = useState([
-    '# Section 1\n\nFirst section content...',
-    '# Section 2\n\nSecond section content...',
-    '# Section 3\n\nThird section content...'
+    "# Section 1\n\nFirst section content...",
+    "# Section 2\n\nSecond section content...",
+    "# Section 3\n\nThird section content...",
   ]);
   const [htmlModal, setHtmlModal] = useState(false);
-  const [htmlContent, setHtmlContent] = useState('');
-  const [htmlTitle, setHtmlTitle] = useState('');
+  const [htmlContent, setHtmlContent] = useState("");
+  const [htmlTitle, setHtmlTitle] = useState("");
 
   // Single Editor Example
   const singleEditorCode = `import { ContentEditor } from '@/components/content-editor';
@@ -115,27 +123,27 @@ const customActions: HeaderAction[] = [
 
   const handleShowHtmlPreview = (html: string, title?: string) => {
     setHtmlContent(html);
-    setHtmlTitle(title || 'HTML Preview');
+    setHtmlTitle(title || "HTML Preview");
     setHtmlModal(true);
   };
 
   const customActions: HeaderAction[] = [
     {
-      id: 'download',
+      id: "download",
       icon: Download,
-      label: 'Download as markdown',
+      label: "Download as markdown",
       onClick: (content) => {
-        const blob = new Blob([content], { type: 'text/markdown' });
+        const blob = new Blob([content], { type: "text/markdown" });
         const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
+        const a = document.createElement("a");
         a.href = url;
-        a.download = 'content.md';
+        a.download = "content.md";
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-      }
-    }
+      },
+    },
   ];
 
   return (
@@ -155,7 +163,7 @@ const customActions: HeaderAction[] = [
               <ContentEditor
                 value={content}
                 onChange={setContent}
-                availableModes={['plain', 'wysiwyg', 'markdown', 'preview']}
+                // availableModes={['plain', 'wysiwyg', 'markdown', 'preview']}
                 initialMode="plain"
                 collapsible={false}
                 title="Content Editor Demo"
@@ -178,12 +186,12 @@ const customActions: HeaderAction[] = [
               <ContentEditorStack
                 contents={stackContents}
                 onContentsChange={setStackContents}
-                availableModes={['plain', 'preview']}
+                availableModes={["plain", "preview"]}
                 initialMode="preview"
                 collapsible={true}
                 defaultCollapsed={true}
                 generateTitle={(index) => {
-                  const titles = ['Introduction', 'Main Content', 'Conclusion'];
+                  const titles = ["Introduction", "Main Content", "Conclusion"];
                   return titles[index] || `Section ${index + 1}`;
                 }}
                 showCopyButton={true}
@@ -228,4 +236,3 @@ const customActions: HeaderAction[] = [
     </>
   );
 }
-

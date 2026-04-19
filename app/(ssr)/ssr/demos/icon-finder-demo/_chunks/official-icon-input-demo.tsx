@@ -26,15 +26,15 @@ export default function OfficialIconInputDemo() {
             </Badge>
           </CardTitle>
           <p className="text-xs text-muted-foreground">
-            Typed name + validation + link to lucide.dev —{" "}
-            <span className="text-foreground font-medium">
-              no in-app searchable grid
-            </span>
-            . To compare, mount{" "}
+            Compact row + fine print: Search Lucide and lucide.dev. Optional{" "}
+            <code className="font-mono text-foreground">
+              showCuratedIconGallery
+            </code>{" "}
+            adds a finite bundled + SVG window. Full Lucide catalog: mount{" "}
             <span className="font-medium text-foreground">
               Full Lucide browser
             </span>{" "}
-            in the list above and click its outline button.
+            above.
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
