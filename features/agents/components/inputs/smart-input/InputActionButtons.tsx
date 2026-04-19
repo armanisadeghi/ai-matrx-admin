@@ -233,12 +233,7 @@ export function InputActionButtons({
           />
         )}
 
-        <AgentMicrophoneButton
-          conversationId={conversationId}
-          surfaceKey={surfaceKey}
-          disableSend={disableSend}
-          size="sm"
-        />
+        <AgentMicrophoneButton conversationId={conversationId} size="sm" />
 
         {showSendButton && (
           <Button

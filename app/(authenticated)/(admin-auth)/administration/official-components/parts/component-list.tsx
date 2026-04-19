@@ -671,7 +671,7 @@ export const componentList: ComponentEntry[] = [
     name: "Icon Input with Validation",
     path: "components/official/IconInputWithValidation.tsx",
     description:
-      "All-in-one icon name input with real-time validation, live preview, auto-capitalization, and visual feedback. Seamlessly replaces standard Input for icon name entry",
+      "All-in-one icon name input with real-time validation, live preview, auto-capitalization, and visual feedback. Import from IconInputWithValidation.dynamic (next/dynamic, client-only) so Lucide/icon-picker stay out of the main bundle",
     categories: ["inputs", "utilities", "feedback"],
     tags: [
       "icon",

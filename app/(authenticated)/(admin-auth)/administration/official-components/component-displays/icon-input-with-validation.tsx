@@ -1,24 +1,28 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { ComponentEntry } from '../parts/component-list';
-import { ComponentDisplayWrapper } from '../component-usage';
-import IconInputWithValidation, { IconInputCompact } from '@/components/official/IconInputWithValidation';
-import { Label } from '@/components/ui/label';
+import React, { useState } from "react";
+import { ComponentEntry } from "../parts/component-list";
+import { ComponentDisplayWrapper } from "../component-usage";
+import IconInputWithValidation, {
+  IconInputCompact,
+} from "@/components/official/IconInputWithValidation.dynamic";
+import { Label } from "@/components/ui/label";
 
 interface ComponentDisplayProps {
   component?: ComponentEntry;
 }
 
-export default function IconInputWithValidationDisplay({ component }: ComponentDisplayProps) {
+export default function IconInputWithValidationDisplay({
+  component,
+}: ComponentDisplayProps) {
   if (!component) return null;
 
-  const [iconName1, setIconName1] = useState('Home');
-  const [iconName2, setIconName2] = useState('');
-  const [iconName3, setIconName3] = useState('sparkles'); // lowercase to demonstrate auto-capitalize
-  
+  const [iconName1, setIconName1] = useState("Home");
+  const [iconName2, setIconName2] = useState("");
+  const [iconName3, setIconName3] = useState("sparkles"); // lowercase to demonstrate auto-capitalize
+
   // Example code with all available props
-  const code = `import IconInputWithValidation, { IconInputCompact } from '@/components/official/IconInputWithValidation';
+  const code = `import IconInputWithValidation, { IconInputCompact } from '@/components/official/IconInputWithValidation.dynamic';
 
 // Full Version - With helper text and Lucide link
 <IconInputWithValidation
@@ -84,8 +88,9 @@ export default function IconInputWithValidationDisplay({ component }: ComponentD
               />
             </div>
             <p className="text-xs text-muted-foreground">
-              Current value: <code className="px-1 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">
-                {iconName1 || '(empty)'}
+              Current value:{" "}
+              <code className="px-1 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">
+                {iconName1 || "(empty)"}
               </code>
             </p>
           </div>
@@ -108,8 +113,9 @@ export default function IconInputWithValidationDisplay({ component }: ComponentD
             </div>
             <div className="space-y-1 text-xs">
               <p className="text-muted-foreground">
-                💡 <strong>Tip:</strong> Type a lowercase icon name (like "star" or "heart") and click validate.
-                The component will automatically try capitalizing it if the lowercase version fails.
+                💡 <strong>Tip:</strong> Type a lowercase icon name (like "star"
+                or "heart") and click validate. The component will automatically
+                try capitalizing it if the lowercase version fails.
               </p>
             </div>
           </div>
@@ -132,7 +138,8 @@ export default function IconInputWithValidationDisplay({ component }: ComponentD
               />
             </div>
             <p className="text-xs text-muted-foreground">
-              Perfect for forms with limited space. Same validation, no helper text.
+              Perfect for forms with limited space. Same validation, no helper
+              text.
             </p>
           </div>
         </div>
@@ -196,4 +203,3 @@ export default function IconInputWithValidationDisplay({ component }: ComponentD
     </ComponentDisplayWrapper>
   );
 }
-

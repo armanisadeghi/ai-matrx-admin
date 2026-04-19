@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import {
   Star,
@@ -10,21 +11,23 @@ import {
   Globe,
   ExternalLink,
   Sparkles,
+  CircleCheck,
 } from "lucide-react";
 import type { AgentDefinitionRecord } from "@/features/agents/types/agent-definition.types";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
+import { AgentSneakPeekContent } from "../AgentSneakPeekModal";
 
 export interface AgentDetailCardProps {
   agent: AgentDefinitionRecord;
   onSelect: () => void;
-  /** Optional — when provided, renders a Sneak Peek button in the footer. */
-  onSneakPeek?: () => void;
 }
 
-export function AgentDetailCard({
-  agent,
-  onSelect,
-  onSneakPeek,
-}: AgentDetailCardProps) {
+export function AgentDetailCard({ agent, onSelect }: AgentDetailCardProps) {
+  const [peekOpen, setPeekOpen] = useState(false);
   const updatedDate = agent.updatedAt ? new Date(agent.updatedAt) : null;
   const createdDate = agent.createdAt ? new Date(agent.createdAt) : null;
 
@@ -160,19 +163,44 @@ export function AgentDetailCard({
         >
           Select
         </button>
-        {onSneakPeek && (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onSneakPeek();
-            }}
-            title="Sneak Peek"
-            className="flex items-center justify-center h-7 w-7 rounded-md border border-border bg-background text-muted-foreground hover:text-primary hover:bg-muted/50 transition-colors shrink-0"
+        <HoverCard open={peekOpen} onOpenChange={setPeekOpen} openDelay={200} closeDelay={120}>
+          <HoverCardTrigger asChild>
+            <button
+              type="button"
+              onClick={(e) => e.stopPropagation()}
+              title="Sneak Peek — hover to preview"
+              className="flex items-center justify-center h-7 w-7 rounded-md border border-border bg-background text-muted-foreground hover:text-primary hover:bg-muted/50 transition-colors shrink-0"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+            </button>
+          </HoverCardTrigger>
+          <HoverCardContent
+            side="right"
+            align="end"
+            sideOffset={12}
+            className="w-[420px] max-h-[70vh] overflow-y-auto p-4 bg-card border border-border"
           >
-            <Sparkles className="w-3.5 h-3.5" />
-          </button>
-        )}
+            <div className="flex flex-col gap-3">
+              <div className="text-sm font-semibold text-foreground pr-2">
+                {agent.name || "Untitled"}
+              </div>
+              <AgentSneakPeekContent agentId={agent.id} active={peekOpen} />
+              <div className="border-t border-border pt-3 flex justify-end">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setPeekOpen(false);
+                    onSelect();
+                  }}
+                  className="inline-flex items-center gap-1.5 h-7 px-3 rounded-md bg-primary text-primary-foreground text-[11px] font-medium hover:bg-primary/90 active:bg-primary/80 transition-colors"
+                >
+                  <CircleCheck className="w-3.5 h-3.5" />
+                  Select Agent
+                </button>
+              </div>
+            </div>
+          </HoverCardContent>
+        </HoverCard>
         <Link
           href={`/agents/${agent.id}`}
           target="_blank"

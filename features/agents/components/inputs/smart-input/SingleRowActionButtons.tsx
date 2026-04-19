@@ -145,12 +145,7 @@ export function SingleRowActionButtons({
 
       {extraRightControls}
 
-      <AgentMicrophoneButton
-        conversationId={conversationId}
-        surfaceKey={surfaceKey}
-        disableSend={disableSend}
-        size="xs"
-      />
+      <AgentMicrophoneButton conversationId={conversationId} size="xs" />
 
       {showSendButton && (
         <Button

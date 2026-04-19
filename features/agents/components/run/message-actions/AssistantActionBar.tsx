@@ -31,6 +31,43 @@ import {
   closeOverlay,
 } from "@/lib/redux/slices/overlaySlice";
 import type { Json } from "@/types/database.types";
+import { toast } from "sonner";
+
+function serializeSaveError(error: unknown): {
+  logPayload: Record<string, unknown>;
+  message: string;
+} {
+  if (error instanceof Error) {
+    return {
+      logPayload: {
+        name: error.name,
+        message: error.message,
+        stack: error.stack,
+      },
+      message: error.message || "Save failed",
+    };
+  }
+  if (error && typeof error === "object") {
+    const e = error as Record<string, unknown>;
+    const message =
+      (typeof e.message === "string" && e.message) ||
+      (typeof e.details === "string" && e.details) ||
+      (typeof e.hint === "string" && e.hint) ||
+      "Save failed";
+    return {
+      logPayload: {
+        code: e.code ?? null,
+        message: e.message ?? null,
+        details: e.details ?? null,
+        hint: e.hint ?? null,
+        status: e.status ?? null,
+        name: e.name ?? null,
+      },
+      message,
+    };
+  }
+  return { logPayload: { raw: String(error) }, message: "Save failed" };
+}
 
 const MessageOptionsMenu = lazy(() =>
   import("./MessageOptionsMenu").then((m) => ({
@@ -98,8 +135,15 @@ export function AssistantActionBar({
                 newContent: nextContent,
               }),
             ).unwrap();
+            toast.success("Message saved");
           } catch (err) {
-            console.error("[AssistantActionBar] edit save failed", err);
+            const { logPayload, message } = serializeSaveError(err);
+            // eslint-disable-next-line no-console
+            console.error(
+              "[AssistantActionBar] edit save failed",
+              JSON.stringify(logPayload, null, 2),
+            );
+            toast.error(message);
           }
           dispatch(
             closeOverlay({

@@ -195,7 +195,7 @@ This component replaced wildcard imports in 11 files, saving ~6.5MB. With 20+ mo
 
 ## Icon Input with Validation
 
-**Path:** `components/official/IconInputWithValidation.tsx`  
+**Implementation:** `components/official/IconInputWithValidation.tsx` — **import in app code:** `components/official/IconInputWithValidation.dynamic.tsx` (always `next/dynamic`, `ssr: false`)  
 **Category:** Inputs, Utilities, Feedback  
 **Dependencies:** IconResolver
 
@@ -218,7 +218,7 @@ An all-in-one input component for entering and validating Lucide icon names. Fea
 #### Full Version (with helper text)
 
 ```tsx
-import IconInputWithValidation from '@/components/official/IconInputWithValidation';
+import IconInputWithValidation from '@/components/official/IconInputWithValidation.dynamic';
 
 <IconInputWithValidation
   value={iconName}
@@ -233,7 +233,7 @@ import IconInputWithValidation from '@/components/official/IconInputWithValidati
 Perfect for forms with limited space:
 
 ```tsx
-import { IconInputCompact } from '@/components/official/IconInputWithValidation';
+import { IconInputCompact } from '@/components/official/IconInputWithValidation.dynamic';
 
 <IconInputCompact
   value={iconName}

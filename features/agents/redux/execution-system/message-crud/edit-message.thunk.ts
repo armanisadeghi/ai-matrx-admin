@@ -59,6 +59,11 @@ export const editMessage = createAsyncThunk<
     const prevRecord =
       getState().messages.byConversationId[conversationId]?.byId?.[messageId];
     if (!prevRecord) {
+      // eslint-disable-next-line no-console
+      console.error(
+        "[editMessage] prevRecord not found",
+        JSON.stringify({ conversationId, messageId }),
+      );
       return rejectWithValue({
         message: `Message ${messageId} not found in conversation ${conversationId}`,
       });
@@ -66,6 +71,16 @@ export const editMessage = createAsyncThunk<
     const previousContent = prevRecord.content;
     const previousContentHistory = prevRecord.contentHistory;
     const previousStatus = prevRecord.status;
+
+    // eslint-disable-next-line no-console
+    console.log(
+      "[editMessage] START cid=%s mid=%s role=%s status=%s contentType=%s",
+      conversationId,
+      messageId,
+      prevRecord.role,
+      prevRecord.status,
+      Array.isArray(newContent) ? "array" : typeof newContent,
+    );
 
     // ── 1. Optimistic update — UI reflects the edit immediately ─────────
     dispatch(
@@ -100,8 +115,46 @@ export const editMessage = createAsyncThunk<
           },
         }),
       );
-      return rejectWithValue({ message: error.message });
+      // Supabase `PostgrestError` doesn't own enumerable props so default
+      // serialization gives `{}`. Manually extract every field we've seen
+      // come back from the RPC layer so the failure is visible in logs.
+      const err = error as {
+        code?: string;
+        message?: string;
+        details?: string;
+        hint?: string;
+        status?: number;
+        name?: string;
+      };
+      const serializedError = {
+        code: err.code ?? null,
+        message: err.message ?? null,
+        details: err.details ?? null,
+        hint: err.hint ?? null,
+        status: err.status ?? null,
+        name: err.name ?? null,
+      };
+      // eslint-disable-next-line no-console
+      console.error(
+        "[editMessage] cx_message_edit RPC failed:",
+        JSON.stringify(serializedError, null, 2),
+      );
+      return rejectWithValue({
+        message:
+          serializedError.message ??
+          serializedError.details ??
+          serializedError.hint ??
+          "cx_message_edit RPC returned an error with no message",
+      });
     }
+
+    // eslint-disable-next-line no-console
+    console.log(
+      "[editMessage] RPC success, received row fields:",
+      data && typeof data === "object"
+        ? Object.keys(data as Record<string, unknown>).join(", ")
+        : typeof data,
+    );
 
     // ── 3. Patch with authoritative row from the RPC return ─────────────
     // The RPC returns the full cx_message row after the edit (including the

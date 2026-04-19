@@ -139,52 +139,6 @@ export const EnhancedChatMarkdownInternal: React.FC<
       : _selectEmptySegments,
   );
 
-  console.log(
-    "[EnhancedChatMarkdownInternal] ===================================================================",
-  );
-  console.log("[EnhancedChatMarkdownInternal] messageId:", messageId);
-  console.log("[EnhancedChatMarkdownInternal] conversationId:", conversationId);
-  console.log(
-    "[EnhancedChatMarkdownInternal] messageInterleavedContent:",
-    JSON.stringify(messageInterleavedContent, null, 2),
-  );
-  console.log(
-    "[EnhancedChatMarkdownInternal] unifiedSlots:",
-    JSON.stringify(unifiedSlots, null, 2),
-  );
-  console.log("[EnhancedChatMarkdownInternal] requestText:", requestText);
-  console.log("[EnhancedChatMarkdownInternal] content:", content);
-  console.log("[EnhancedChatMarkdownInternal] taskId:", taskId);
-  console.log("[EnhancedChatMarkdownInternal] className:", className);
-  console.log("[EnhancedChatMarkdownInternal] isStreamActive:", isStreamActive);
-  console.log(
-    "[EnhancedChatMarkdownInternal] onContentChange:",
-    onContentChange,
-  );
-  console.log("[EnhancedChatMarkdownInternal] analysisData:", analysisData);
-  console.log(
-    "[EnhancedChatMarkdownInternal] allowFullScreenEditor:",
-    allowFullScreenEditor,
-  );
-  console.log("[EnhancedChatMarkdownInternal] hideCopyButton:", hideCopyButton);
-  console.log("[EnhancedChatMarkdownInternal] toolUpdates:", toolUpdatesProp);
-  console.log(
-    "[EnhancedChatMarkdownInternal] serverProcessedBlocks:",
-    serverProcessedBlocks,
-  );
-  console.log(
-    "[EnhancedChatMarkdownInternal] applyLocalEdits:",
-    applyLocalEdits,
-  );
-  console.log(
-    "[EnhancedChatMarkdownInternal] hasReduxProvider:",
-    hasReduxProvider,
-  );
-
-  console.log(
-    "[EnhancedChatMarkdownInternal] ===================================================================",
-  );
-
   const renderBlocksSelector = useMemo(
     () =>
       requestId ? selectAllRenderBlocks(requestId) : _selectEmptyRenderBlocks,

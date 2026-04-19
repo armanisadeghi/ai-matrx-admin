@@ -97,7 +97,47 @@ export interface MessageActionContext {
 function getErrorMessage(error: unknown, fallback: string): string {
   if (error instanceof Error) return error.message || fallback;
   if (typeof error === "string") return error || fallback;
+  if (error && typeof error === "object") {
+    // `createAsyncThunk`'s `rejectWithValue({ message })` surfaces the
+    // payload as-is on `.unwrap()` rejection; Supabase `PostgrestError`
+    // also lives on error objects with non-enumerable keys.
+    const e = error as Record<string, unknown>;
+    const msg =
+      (typeof e.message === "string" && e.message) ||
+      (typeof e.details === "string" && e.details) ||
+      (typeof e.hint === "string" && e.hint) ||
+      null;
+    if (msg) return msg;
+  }
   return fallback;
+}
+
+/**
+ * Serialize any thrown value into a log-friendly object. Supabase errors
+ * and thunk `rejectWithValue` payloads are often class instances with
+ * non-enumerable fields that default to `{}` on `JSON.stringify`, which
+ * hides the actual failure.
+ */
+function serializeError(error: unknown): Record<string, unknown> {
+  if (error instanceof Error) {
+    return {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+    };
+  }
+  if (error && typeof error === "object") {
+    const e = error as Record<string, unknown>;
+    return {
+      code: e.code ?? null,
+      message: e.message ?? null,
+      details: e.details ?? null,
+      hint: e.hint ?? null,
+      status: e.status ?? null,
+      name: e.name ?? null,
+    };
+  }
+  return { raw: String(error) };
 }
 
 function requireAuth(
@@ -541,21 +581,34 @@ function editContentItem(ctx: MessageActionContext): MenuItem {
           content,
           instanceId,
           onSave: async (newContent: string) => {
-            if (conversationId && messageId) {
-              try {
-                const { editMessage } =
-                  await import("@/features/agents/redux/execution-system/message-crud");
-                await dispatch(
-                  editMessage({
-                    conversationId,
-                    messageId,
-                    newContent: wrapTextAsContent(newContent),
-                  }),
-                ).unwrap();
-              } catch (err) {
-                // eslint-disable-next-line no-console
-                console.error("[edit-content] save failed", err);
-              }
+            if (!conversationId || !messageId) {
+              toast.error("Can't save — missing conversation/message id");
+              dispatch(
+                closeOverlay({ overlayId: "fullScreenEditor", instanceId }),
+              );
+              return;
+            }
+            try {
+              const { editMessage } =
+                await import("@/features/agents/redux/execution-system/message-crud");
+              await dispatch(
+                editMessage({
+                  conversationId,
+                  messageId,
+                  newContent: wrapTextAsContent(newContent),
+                }),
+              ).unwrap();
+              toast.success("Changes saved");
+            } catch (err) {
+              const serialized = serializeError(err);
+              // eslint-disable-next-line no-console
+              console.error(
+                "[edit-content] save failed",
+                JSON.stringify(serialized, null, 2),
+              );
+              toast.error(
+                getErrorMessage(err, "Failed to save changes"),
+              );
             }
             dispatch(
               closeOverlay({ overlayId: "fullScreenEditor", instanceId }),
@@ -633,9 +686,17 @@ function editAndResubmitItem(ctx: MessageActionContext): MenuItem {
                   newContent: wrapTextAsContent(newContent),
                 }),
               ).unwrap();
+              toast.success("Forked — edit saved on the new branch");
             } catch (err) {
+              const serialized = serializeError(err);
               // eslint-disable-next-line no-console
-              console.error("[edit-resubmit] failed", err);
+              console.error(
+                "[edit-resubmit] failed",
+                JSON.stringify(serialized, null, 2),
+              );
+              toast.error(
+                getErrorMessage(err, "Failed to edit & resubmit"),
+              );
             } finally {
               dispatch(
                 closeOverlay({ overlayId: "fullScreenEditor", instanceId }),

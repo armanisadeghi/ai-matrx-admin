@@ -26,6 +26,7 @@ import {
   Loader2,
   Pencil,
   Play,
+  CircleCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -132,17 +133,27 @@ function MetaRow({
   );
 }
 
-interface AgentSneakPeekModalProps {
+interface AgentSneakPeekContentProps {
   agentId: string;
-  isOpen: boolean;
-  onClose: () => void;
+  /**
+   * Whether the surrounding container is "active" (e.g. modal is open,
+   * hover popover is open). Controls whether the fetch effect runs.
+   * Defaults to true.
+   */
+  active?: boolean;
+  className?: string;
 }
 
-export function AgentSneakPeekModal({
+/**
+ * Pure body content for the Sneak Peek view — sections + advanced + copy.
+ * Used by both the modal (click-to-open) and the hover popover in the
+ * agent selection dropdown. Triggers idempotent fetches when `active`.
+ */
+export function AgentSneakPeekContent({
   agentId,
-  isOpen,
-  onClose,
-}: AgentSneakPeekModalProps) {
+  active = true,
+  className,
+}: AgentSneakPeekContentProps) {
   const dispatch = useAppDispatch();
 
   const record = useAppSelector((state) => selectAgentById(state, agentId));
@@ -174,13 +185,13 @@ export function AgentSneakPeekModal({
   };
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!active) return;
     if (!isReady) {
       dispatch(fetchFullAgent(agentId));
     }
     dispatch(fetchModelOptions());
     dispatch(fetchAvailableTools());
-  }, [isOpen, isReady, agentId, dispatch]);
+  }, [active, isReady, agentId, dispatch]);
 
   const systemPromptText = useMemo(() => {
     const sys = record?.messages?.find((m) => m.role === "system");
@@ -206,7 +217,235 @@ export function AgentSneakPeekModal({
     return [...builtin, ...custom];
   }, [record?.tools, record?.customTools, allTools]);
 
-  const loading = !isReady;
+  if (!isReady || !record) {
+    return (
+      <div
+        className={cn(
+          "flex items-center gap-2 text-sm text-muted-foreground py-6",
+          className,
+        )}
+      >
+        <Loader2 className="w-4 h-4 animate-spin" />
+        Loading agent details…
+      </div>
+    );
+  }
+
+  return (
+    <div className={cn("space-y-4", className)}>
+      <Section label="Description">
+        {record.description ? (
+          <p className="text-sm text-foreground whitespace-pre-wrap break-words">
+            {record.description}
+          </p>
+        ) : (
+          <EmptyValue />
+        )}
+      </Section>
+
+      <Section label="System Prompt">
+        {systemPromptText ? (
+          <TruncatedText
+            text={systemPromptText}
+            previewChars={SYSTEM_PROMPT_PREVIEW_CHARS}
+          />
+        ) : (
+          <EmptyValue />
+        )}
+      </Section>
+
+      <Section label="Model">
+        {modelLabel ? (
+          <span className="text-sm text-foreground">{modelLabel}</span>
+        ) : record.modelId ? (
+          <span className="text-sm text-muted-foreground italic">
+            Loading…
+          </span>
+        ) : (
+          <EmptyValue />
+        )}
+      </Section>
+
+      <Section
+        label={`Variables${variableNames.length ? ` (${variableNames.length})` : ""}`}
+      >
+        {variableNames.length ? (
+          <div className="flex flex-wrap gap-1.5">
+            {variableNames.map((n) => (
+              <span
+                key={n}
+                className="inline-flex items-center rounded-md bg-muted px-2 py-0.5 text-xs font-mono text-foreground"
+              >
+                {n}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <EmptyValue />
+        )}
+      </Section>
+
+      <Section
+        label={`Tools${toolNames.length ? ` (${toolNames.length})` : ""}`}
+      >
+        {toolNames.length ? (
+          <div className="flex flex-wrap gap-1.5">
+            {toolNames.map((n, i) => (
+              <span
+                key={`${n}-${i}`}
+                className={cn(
+                  "inline-flex items-center rounded-md bg-muted px-2 py-0.5 text-xs text-foreground",
+                  !toolsReady && "opacity-70",
+                )}
+              >
+                {n}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <EmptyValue />
+        )}
+      </Section>
+
+      <Section
+        label={`Additional Messages${additionalMessages.length ? ` (${additionalMessages.length})` : ""}`}
+      >
+        {additionalMessages.length ? (
+          <div className="space-y-2">
+            {additionalMessages.map((m, i) => {
+              const text = extractTextContent(m);
+              return (
+                <div
+                  key={i}
+                  className="rounded-md border border-border bg-muted/30 p-2.5"
+                >
+                  <div className="text-[0.625rem] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+                    {m.role}
+                  </div>
+                  {text ? (
+                    <TruncatedText
+                      text={text}
+                      previewChars={MESSAGE_PREVIEW_CHARS}
+                    />
+                  ) : (
+                    <EmptyValue />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <EmptyValue />
+        )}
+      </Section>
+
+      <div className="border-t border-border pt-3">
+        <div className="flex items-center justify-between gap-2">
+          <button
+            type="button"
+            onClick={() => setAdvancedOpen((v) => !v)}
+            className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground focus:outline-none"
+          >
+            {advancedOpen ? (
+              <ChevronDown className="w-3.5 h-3.5" />
+            ) : (
+              <ChevronRight className="w-3.5 h-3.5" />
+            )}
+            Advanced
+          </button>
+          <button
+            type="button"
+            onClick={handleCopyDefinition}
+            disabled={!definition}
+            className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground focus:outline-none disabled:opacity-50"
+            title="Copy full agent definition as JSON"
+          >
+            {copied ? (
+              <Check className="w-3.5 h-3.5 text-success" />
+            ) : (
+              <Copy className="w-3.5 h-3.5" />
+            )}
+            {copied ? "Copied" : "Copy JSON"}
+          </button>
+        </div>
+
+        {advancedOpen && (
+          <div className="mt-2 rounded-md bg-muted/30 p-3">
+            <MetaRow label="ID" value={record.id} mono />
+            <MetaRow label="Type" value={record.agentType} />
+            <MetaRow label="Version" value={record.version ?? "—"} />
+            <MetaRow label="Category" value={record.category ?? "—"} />
+            <MetaRow
+              label="Tags"
+              value={record.tags?.length ? record.tags.join(", ") : "—"}
+            />
+            <MetaRow
+              label="Active"
+              value={record.isActive ? "Yes" : "No"}
+            />
+            <MetaRow
+              label="Public"
+              value={record.isPublic ? "Yes" : "No"}
+            />
+            <MetaRow
+              label="Archived"
+              value={record.isArchived ? "Yes" : "No"}
+            />
+            <MetaRow
+              label="Favorite"
+              value={record.isFavorite ? "Yes" : "No"}
+            />
+            <MetaRow label="Access" value={record.accessLevel ?? "—"} />
+            <MetaRow
+              label="Created"
+              value={formatDateTime(record.createdAt)}
+            />
+            <MetaRow
+              label="Updated"
+              value={formatDateTime(record.updatedAt)}
+            />
+            <MetaRow
+              label="Model ID"
+              value={record.modelId ?? "—"}
+              mono
+            />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+interface AgentSneakPeekModalProps {
+  agentId: string;
+  isOpen: boolean;
+  onClose: () => void;
+  /**
+   * When provided, renders a primary "Select" button that calls this handler
+   * and closes the modal. Useful when the modal is opened from a context that
+   * wants the user to pick the agent (e.g. an agent picker dropdown).
+   */
+  onSelect?: () => void;
+  selectLabel?: string;
+}
+
+export function AgentSneakPeekModal({
+  agentId,
+  isOpen,
+  onClose,
+  onSelect,
+  selectLabel = "Select Agent",
+}: AgentSneakPeekModalProps) {
+  const record = useAppSelector((state) => selectAgentById(state, agentId));
+  const isReady = useAppSelector((state) =>
+    selectAgentReadyForBuilder(state, agentId),
+  );
+  const showFooter = isReady && !!record;
+
+  const handleSelect = () => {
+    onSelect?.();
+    onClose();
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -218,214 +457,33 @@ export function AgentSneakPeekModal({
           {record?.name ?? "Agent"}
         </DialogTitle>
 
-        {loading && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground py-6">
-            <Loader2 className="w-4 h-4 animate-spin" />
-            Loading agent details…
-          </div>
-        )}
+        <div className="overflow-y-auto max-h-[65vh] -mr-2 pr-2">
+          <AgentSneakPeekContent agentId={agentId} active={isOpen} />
+        </div>
 
-        {!loading && record && (
-          <div className="space-y-4 overflow-y-auto max-h-[65vh] -mr-2 pr-2">
-            <Section label="Description">
-              {record.description ? (
-                <p className="text-sm text-foreground whitespace-pre-wrap break-words">
-                  {record.description}
-                </p>
-              ) : (
-                <EmptyValue />
-              )}
-            </Section>
-
-            <Section label="System Prompt">
-              {systemPromptText ? (
-                <TruncatedText
-                  text={systemPromptText}
-                  previewChars={SYSTEM_PROMPT_PREVIEW_CHARS}
-                />
-              ) : (
-                <EmptyValue />
-              )}
-            </Section>
-
-            <Section label="Model">
-              {modelLabel ? (
-                <span className="text-sm text-foreground">{modelLabel}</span>
-              ) : record.modelId ? (
-                <span className="text-sm text-muted-foreground italic">
-                  Loading…
-                </span>
-              ) : (
-                <EmptyValue />
-              )}
-            </Section>
-
-            <Section
-              label={`Variables${variableNames.length ? ` (${variableNames.length})` : ""}`}
-            >
-              {variableNames.length ? (
-                <div className="flex flex-wrap gap-1.5">
-                  {variableNames.map((n) => (
-                    <span
-                      key={n}
-                      className="inline-flex items-center rounded-md bg-muted px-2 py-0.5 text-xs font-mono text-foreground"
-                    >
-                      {n}
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                <EmptyValue />
-              )}
-            </Section>
-
-            <Section
-              label={`Tools${toolNames.length ? ` (${toolNames.length})` : ""}`}
-            >
-              {toolNames.length ? (
-                <div className="flex flex-wrap gap-1.5">
-                  {toolNames.map((n, i) => (
-                    <span
-                      key={`${n}-${i}`}
-                      className={cn(
-                        "inline-flex items-center rounded-md bg-muted px-2 py-0.5 text-xs text-foreground",
-                        !toolsReady && "opacity-70",
-                      )}
-                    >
-                      {n}
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                <EmptyValue />
-              )}
-            </Section>
-
-            <Section
-              label={`Additional Messages${additionalMessages.length ? ` (${additionalMessages.length})` : ""}`}
-            >
-              {additionalMessages.length ? (
-                <div className="space-y-2">
-                  {additionalMessages.map((m, i) => {
-                    const text = extractTextContent(m);
-                    return (
-                      <div
-                        key={i}
-                        className="rounded-md border border-border bg-muted/30 p-2.5"
-                      >
-                        <div className="text-[0.625rem] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
-                          {m.role}
-                        </div>
-                        {text ? (
-                          <TruncatedText
-                            text={text}
-                            previewChars={MESSAGE_PREVIEW_CHARS}
-                          />
-                        ) : (
-                          <EmptyValue />
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <EmptyValue />
-              )}
-            </Section>
-
-            <div className="border-t border-border pt-3">
-              <div className="flex items-center justify-between gap-2">
-                <button
-                  type="button"
-                  onClick={() => setAdvancedOpen((v) => !v)}
-                  className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground focus:outline-none"
-                >
-                  {advancedOpen ? (
-                    <ChevronDown className="w-3.5 h-3.5" />
-                  ) : (
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  )}
-                  Advanced
-                </button>
-                <button
-                  type="button"
-                  onClick={handleCopyDefinition}
-                  disabled={!definition}
-                  className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground focus:outline-none disabled:opacity-50"
-                  title="Copy full agent definition as JSON"
-                >
-                  {copied ? (
-                    <Check className="w-3.5 h-3.5 text-success" />
-                  ) : (
-                    <Copy className="w-3.5 h-3.5" />
-                  )}
-                  {copied ? "Copied" : "Copy JSON"}
-                </button>
-              </div>
-
-              {advancedOpen && (
-                <div className="mt-2 rounded-md bg-muted/30 p-3">
-                  <MetaRow label="ID" value={record.id} mono />
-                  <MetaRow label="Type" value={record.agentType} />
-                  <MetaRow label="Version" value={record.version ?? "—"} />
-                  <MetaRow label="Category" value={record.category ?? "—"} />
-                  <MetaRow
-                    label="Tags"
-                    value={record.tags?.length ? record.tags.join(", ") : "—"}
-                  />
-                  <MetaRow
-                    label="Active"
-                    value={record.isActive ? "Yes" : "No"}
-                  />
-                  <MetaRow
-                    label="Public"
-                    value={record.isPublic ? "Yes" : "No"}
-                  />
-                  <MetaRow
-                    label="Archived"
-                    value={record.isArchived ? "Yes" : "No"}
-                  />
-                  <MetaRow
-                    label="Favorite"
-                    value={record.isFavorite ? "Yes" : "No"}
-                  />
-                  <MetaRow label="Access" value={record.accessLevel ?? "—"} />
-                  <MetaRow
-                    label="Created"
-                    value={formatDateTime(record.createdAt)}
-                  />
-                  <MetaRow
-                    label="Updated"
-                    value={formatDateTime(record.updatedAt)}
-                  />
-                  <MetaRow
-                    label="Model ID"
-                    value={record.modelId ?? "—"}
-                    mono
-                  />
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {!loading && record && (
+        {showFooter && (
           <div className="flex items-center justify-end gap-2 border-t border-border pt-3">
             <Button variant="ghost" size="sm" onClick={onClose}>
               Close
             </Button>
             <Link href={`/agents/${agentId}/build`} onClick={onClose}>
-              <Button variant="outline" size="sm">
+              <Button variant={onSelect ? "ghost" : "outline"} size="sm">
                 <Pencil className="w-3.5 h-3.5 mr-1.5" />
                 Edit
               </Button>
             </Link>
             <Link href={`/agents/${agentId}/run`} onClick={onClose}>
-              <Button size="sm">
+              <Button variant={onSelect ? "outline" : "default"} size="sm">
                 <Play className="w-3.5 h-3.5 mr-1.5" />
                 Run
               </Button>
             </Link>
+            {onSelect && (
+              <Button size="sm" onClick={handleSelect}>
+                <CircleCheck className="w-3.5 h-3.5 mr-1.5" />
+                {selectLabel}
+              </Button>
+            )}
           </div>
         )}
       </DialogContent>

@@ -72,7 +72,7 @@ const ROWS: {
   {
     key: "official",
     label: "IconInputWithValidation",
-    hint: "@/components/official/IconInputWithValidation (no grid)",
+    hint: "@/components/official/IconInputWithValidation.dynamic (next/dynamic, no grid)",
   },
 ];
 

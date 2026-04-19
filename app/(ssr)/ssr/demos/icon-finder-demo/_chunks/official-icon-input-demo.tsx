@@ -3,7 +3,7 @@
 import { useState } from "react";
 import IconInputWithValidation, {
   IconInputCompact,
-} from "@/components/official/IconInputWithValidation";
+} from "@/components/official/IconInputWithValidation.dynamic";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
@@ -22,7 +22,7 @@ export default function OfficialIconInputDemo() {
           <CardTitle className="text-sm flex flex-wrap items-center gap-2">
             IconInputWithValidation
             <Badge variant="secondary" className="font-mono text-[10px]">
-              @/components/official/IconInputWithValidation
+              @/components/official/IconInputWithValidation.dynamic
             </Badge>
           </CardTitle>
           <p className="text-xs text-muted-foreground">

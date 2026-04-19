@@ -29,6 +29,7 @@ import {
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { listMatrxSvgIconValues } from "@/utils/icons/matrx-public-svg-registry";
+import { collectLucideIconNameCandidates } from "@/utils/icons/lucide-name-normalize";
 
 const LUCIDE_ICONS_URL = "https://lucide.dev/icons/";
 
@@ -72,12 +73,15 @@ function LucideEmbedFrame({ className }: { className?: string }) {
         src={LUCIDE_ICONS_URL}
         className="h-[min(70dvh,560px)] w-full border-0 bg-background"
         sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+        allow="clipboard-read; clipboard-write; fullscreen"
         referrerPolicy="no-referrer-when-downgrade"
       />
       <p className="border-t border-border bg-muted/50 px-3 py-2 text-[11px] text-muted-foreground">
-        If this area stays blank, lucide.dev may block embedding in iframes —
-        use &quot;Open Lucide&quot; below, then copy the icon name here (
-        <code className="font-mono text-foreground">PascalCase</code>).
+        Paste from Lucide works best when the site can use the clipboard inside
+        this panel (browser may still ask permission). Kebab names like{" "}
+        <code className="font-mono text-foreground">alarm-clock</code> normalize
+        to PascalCase automatically. If the frame is blank, use &quot;Open
+        Lucide&quot; below.
       </p>
     </div>
   );
@@ -92,7 +96,7 @@ function LucideEmbedFrame({ className }: { className?: string }) {
  * - Real-time icon validation (Lucide, IconResolver registry, Matrx `svg:path/id` assets)
  * - Visual feedback (green check / red X)
  * - Live icon preview when valid
- * - Auto-capitalizes first letter for better UX
+ * - Auto-normalizes Lucide labels: lowercase first letter, kebab-case → PascalCase
  * - Optional embedded Lucide reference (iframe)
  * - Optional tap-target (glass / transparent / solid) previews
  *
@@ -108,7 +112,7 @@ function LucideEmbedFrame({ className }: { className?: string }) {
 export default function IconInputWithValidation({
   value,
   onChange,
-  placeholder = "e.g. Sparkles or svg:icons/Home",
+  placeholder = "e.g. Sparkles, alarm-clock, or svg:icons/Home",
   className,
   id,
   disabled = false,
@@ -128,7 +132,8 @@ export default function IconInputWithValidation({
 
   const validateIcon = useCallback(
     async (iconName: string) => {
-      if (!iconName || iconName.trim() === "") {
+      const trimmed = iconName.trim();
+      if (!trimmed) {
         setValidationState("idle");
         setValidatedIconName(null);
         return;
@@ -138,32 +143,25 @@ export default function IconInputWithValidation({
 
       const checkIcon = (name: string) => isRegisteredOrLucideIconName(name);
 
-      const isValid = await checkIcon(iconName);
+      const candidates = trimmed.startsWith("svg:")
+        ? [trimmed]
+        : collectLucideIconNameCandidates(trimmed);
 
-      if (isValid) {
-        setValidationState("valid");
-        setValidatedIconName(iconName);
-        setLastValidatedValue(iconName);
-        return;
-      }
-
-      if (iconName[0] === iconName[0].toLowerCase()) {
-        const capitalized =
-          iconName.charAt(0).toUpperCase() + iconName.slice(1);
-        const isCapitalizedValid = await checkIcon(capitalized);
-
-        if (isCapitalizedValid) {
+      for (const name of candidates) {
+        if (await checkIcon(name)) {
           setValidationState("valid");
-          setValidatedIconName(capitalized);
-          setLastValidatedValue(capitalized);
-          onChange(capitalized);
+          setValidatedIconName(name);
+          setLastValidatedValue(name);
+          if (name !== trimmed) {
+            onChange(name);
+          }
           return;
         }
       }
 
       setValidationState("invalid");
       setValidatedIconName(null);
-      setLastValidatedValue(iconName);
+      setLastValidatedValue(trimmed);
     },
     [onChange],
   );
@@ -326,7 +324,7 @@ export default function IconInputWithValidation({
 
       {showLucideLink && (
         <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-          <span>Lucide name, registry id, or</span>
+          <span>Lucide (PascalCase or kebab-case), registry id, or</span>
           <code className="rounded bg-muted px-1 py-0.5 font-mono text-[10px] text-foreground">
             svg:icons/Home
           </code>

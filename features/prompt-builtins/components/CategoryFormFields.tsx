@@ -1,18 +1,32 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
-import { Folder, AlertCircle } from 'lucide-react';
-import IconInputWithValidation from '@/components/official/IconInputWithValidation';
-import { ShortcutCategory, CreateShortcutCategoryInput, UpdateShortcutCategoryInput } from '../types';
-import { PLACEMENT_TYPES, getPlacementTypeMeta, PlacementType } from '../constants';
-import { CategorySelector } from './CategorySelector';
-import { CategoryColorPicker } from './CategoryColorPicker';
+import React, { useState, useEffect } from "react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
+import { Folder, AlertCircle } from "lucide-react";
+import IconInputWithValidation from "@/components/official/IconInputWithValidation.dynamic";
+import {
+  ShortcutCategory,
+  CreateShortcutCategoryInput,
+  UpdateShortcutCategoryInput,
+} from "../types";
+import {
+  PLACEMENT_TYPES,
+  getPlacementTypeMeta,
+  PlacementType,
+} from "../constants";
+import { CategorySelector } from "./CategorySelector";
+import { CategoryColorPicker } from "./CategoryColorPicker";
 
 export interface CategoryFormData {
   label: string;
@@ -50,9 +64,9 @@ export function CategoryFormFields({
   disabled = false,
 }: CategoryFormFieldsProps) {
   // Filter available parent categories (same placement type, not self)
-  const availableParents = allCategories.filter(c => 
-    c.placement_type === formData.placement_type && 
-    c.id !== initialData?.id
+  const availableParents = allCategories.filter(
+    (c) =>
+      c.placement_type === formData.placement_type && c.id !== initialData?.id,
   );
 
   const handleChange = (field: keyof CategoryFormData, value: any) => {
@@ -67,7 +81,7 @@ export function CategoryFormFields({
           <Label className="text-xs font-medium">Label *</Label>
           <Input
             value={formData.label}
-            onChange={(e) => handleChange('label', e.target.value)}
+            onChange={(e) => handleChange("label", e.target.value)}
             placeholder="Category name"
             disabled={disabled}
             className="h-8 text-sm"
@@ -84,12 +98,14 @@ export function CategoryFormFields({
           <Select
             value={formData.placement_type}
             onValueChange={(value) => {
-              handleChange('placement_type', value);
+              handleChange("placement_type", value);
               // Reset parent if changing placement type
               if (formData.parent_category_id) {
-                const parent = allCategories.find(c => c.id === formData.parent_category_id);
+                const parent = allCategories.find(
+                  (c) => c.id === formData.parent_category_id,
+                );
                 if (parent && parent.placement_type !== value) {
-                  handleChange('parent_category_id', null);
+                  handleChange("parent_category_id", null);
                 }
               }
             }}
@@ -102,10 +118,16 @@ export function CategoryFormFields({
               {Object.entries(PLACEMENT_TYPES).map(([key, value]) => {
                 const meta = getPlacementTypeMeta(value);
                 return (
-                  <SelectItem key={value} value={value} className="text-sm py-1.5">
+                  <SelectItem
+                    key={value}
+                    value={value}
+                    className="text-sm py-1.5"
+                  >
                     <div className="flex items-center gap-2">
                       <span className="font-medium">{meta.label}</span>
-                      <span className="text-xs text-muted-foreground">({value})</span>
+                      <span className="text-xs text-muted-foreground">
+                        ({value})
+                      </span>
                     </div>
                   </SelectItem>
                 );
@@ -113,7 +135,9 @@ export function CategoryFormFields({
             </SelectContent>
           </Select>
           {errors.placement_type && (
-            <p className="text-xs text-red-600 dark:text-red-400 mt-0.5">{errors.placement_type}</p>
+            <p className="text-xs text-red-600 dark:text-red-400 mt-0.5">
+              {errors.placement_type}
+            </p>
           )}
         </div>
       </div>
@@ -127,8 +151,10 @@ export function CategoryFormFields({
               <div className="flex-1">
                 <CategorySelector
                   categories={availableParents}
-                  value={formData.parent_category_id || ''}
-                  onValueChange={(value) => handleChange('parent_category_id', value || null)}
+                  value={formData.parent_category_id || ""}
+                  onValueChange={(value) =>
+                    handleChange("parent_category_id", value || null)
+                  }
                   placeholder="None (Root Level)"
                   disabled={disabled}
                   compact={true}
@@ -139,7 +165,7 @@ export function CategoryFormFields({
               {formData.parent_category_id && (
                 <button
                   type="button"
-                  onClick={() => handleChange('parent_category_id', null)}
+                  onClick={() => handleChange("parent_category_id", null)}
                   disabled={disabled}
                   className="text-xs text-muted-foreground hover:text-foreground px-2 py-1 rounded border border-border hover:bg-muted transition-colors"
                 >
@@ -165,7 +191,7 @@ export function CategoryFormFields({
         <Label className="text-xs font-medium">Description</Label>
         <Textarea
           value={formData.description}
-          onChange={(e) => handleChange('description', e.target.value)}
+          onChange={(e) => handleChange("description", e.target.value)}
           placeholder="Optional description"
           rows={2}
           disabled={disabled}
@@ -176,11 +202,13 @@ export function CategoryFormFields({
       {/* Icon, Color, Sort Order - Visual & Ordering */}
       <div className="grid grid-cols-3 gap-3">
         <div>
-          <Label htmlFor="icon-name-input" className="text-xs font-medium">Icon Name</Label>
+          <Label htmlFor="icon-name-input" className="text-xs font-medium">
+            Icon Name
+          </Label>
           <IconInputWithValidation
             id="icon-name-input"
             value={formData.icon_name}
-            onChange={(value) => handleChange('icon_name', value)}
+            onChange={(value) => handleChange("icon_name", value)}
             placeholder="e.g., Folder"
             disabled={disabled}
             className="h-8 text-sm"
@@ -191,7 +219,7 @@ export function CategoryFormFields({
           <Label className="text-xs font-medium">Color</Label>
           <CategoryColorPicker
             value={formData.color}
-            onChange={(color) => handleChange('color', color)}
+            onChange={(color) => handleChange("color", color)}
             disabled={disabled}
           />
         </div>
@@ -200,7 +228,9 @@ export function CategoryFormFields({
           <Input
             type="number"
             value={formData.sort_order}
-            onChange={(e) => handleChange('sort_order', parseInt(e.target.value) || 0)}
+            onChange={(e) =>
+              handleChange("sort_order", parseInt(e.target.value) || 0)
+            }
             disabled={disabled}
             className="h-8 text-sm"
           />
@@ -211,27 +241,36 @@ export function CategoryFormFields({
       {/* Active Status */}
       <div className="flex items-center justify-between p-2.5 rounded-md bg-muted/50">
         <div className="flex items-center gap-2">
-          <Label className="text-xs font-medium cursor-pointer">Active Status</Label>
-          <Badge variant={formData.is_active ? 'default' : 'secondary'} className="text-[10px] h-4">
-            {formData.is_active ? 'Active' : 'Inactive'}
+          <Label className="text-xs font-medium cursor-pointer">
+            Active Status
+          </Label>
+          <Badge
+            variant={formData.is_active ? "default" : "secondary"}
+            className="text-[10px] h-4"
+          >
+            {formData.is_active ? "Active" : "Inactive"}
           </Badge>
         </div>
         <Switch
           checked={formData.is_active}
-          onCheckedChange={(checked) => handleChange('is_active', checked)}
+          onCheckedChange={(checked) => handleChange("is_active", checked)}
           disabled={disabled}
         />
       </div>
 
       {/* Preview Box */}
       <div className="p-2.5 rounded-md border border-border bg-card">
-        <p className="text-xs font-medium text-muted-foreground mb-1.5">Preview</p>
+        <p className="text-xs font-medium text-muted-foreground mb-1.5">
+          Preview
+        </p>
         <div className="flex items-center gap-2">
-          <Folder 
-            className="w-4 h-4 flex-shrink-0" 
-            style={{ color: formData.color || '#666666' }} 
+          <Folder
+            className="w-4 h-4 flex-shrink-0"
+            style={{ color: formData.color || "#666666" }}
           />
-          <span className="text-sm font-medium">{formData.label || 'Category Name'}</span>
+          <span className="text-sm font-medium">
+            {formData.label || "Category Name"}
+          </span>
           {formData.parent_category_id && (
             <Badge variant="outline" className="text-[10px] h-4">
               Child Category
@@ -239,7 +278,9 @@ export function CategoryFormFields({
           )}
         </div>
         {formData.description && (
-          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{formData.description}</p>
+          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+            {formData.description}
+          </p>
         )}
       </div>
     </div>
@@ -250,7 +291,7 @@ export function CategoryFormFields({
  * Helper hook to manage form state
  */
 export function useCategoryFormData(
-  initialData?: ShortcutCategory
+  initialData?: ShortcutCategory,
 ): [CategoryFormData, (data: CategoryFormData) => void] {
   const [formData, setFormData] = useState<CategoryFormData>(() => {
     if (initialData) {
@@ -258,7 +299,7 @@ export function useCategoryFormData(
         label: initialData.label,
         placement_type: initialData.placement_type,
         parent_category_id: initialData.parent_category_id,
-        description: initialData.description || '',
+        description: initialData.description || "",
         icon_name: initialData.icon_name,
         color: initialData.color,
         sort_order: initialData.sort_order,
@@ -267,12 +308,12 @@ export function useCategoryFormData(
       };
     }
     return {
-      label: '',
+      label: "",
       placement_type: Object.values(PLACEMENT_TYPES)[0],
       parent_category_id: null,
-      description: '',
-      icon_name: 'Folder',
-      color: '#666666',
+      description: "",
+      icon_name: "Folder",
+      color: "#666666",
       sort_order: 999,
       is_active: true,
       metadata: {},
@@ -285,7 +326,9 @@ export function useCategoryFormData(
 /**
  * Convert form data to create/update input
  */
-export function formDataToCreateInput(data: CategoryFormData): CreateShortcutCategoryInput {
+export function formDataToCreateInput(
+  data: CategoryFormData,
+): CreateShortcutCategoryInput {
   return {
     label: data.label,
     placement_type: data.placement_type as any,
@@ -301,7 +344,7 @@ export function formDataToCreateInput(data: CategoryFormData): CreateShortcutCat
 
 export function formDataToUpdateInput(
   id: string,
-  data: CategoryFormData
+  data: CategoryFormData,
 ): UpdateShortcutCategoryInput {
   return {
     id,
@@ -320,23 +363,25 @@ export function formDataToUpdateInput(
 /**
  * Validate form data
  */
-export function validateCategoryFormData(data: CategoryFormData): Record<string, string> {
+export function validateCategoryFormData(
+  data: CategoryFormData,
+): Record<string, string> {
   const errors: Record<string, string> = {};
 
   if (!data.label?.trim()) {
-    errors.label = 'Label is required';
+    errors.label = "Label is required";
   }
 
   if (!data.placement_type) {
-    errors.placement_type = 'Placement type is required';
+    errors.placement_type = "Placement type is required";
   }
 
   if (!data.icon_name?.trim()) {
-    errors.icon_name = 'Icon name is required';
+    errors.icon_name = "Icon name is required";
   }
 
   if (!data.color?.trim()) {
-    errors.color = 'Color is required';
+    errors.color = "Color is required";
   }
 
   return errors;
