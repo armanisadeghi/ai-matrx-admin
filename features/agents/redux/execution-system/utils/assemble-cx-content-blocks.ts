@@ -153,52 +153,69 @@ export function assembleMessageParts(request: ActiveRequest): CxContentBlock[] {
   // Track tool callIds already emitted (tool_result events reference them)
   const emittedToolCallIds = new Set<string>();
 
-  // ── Pass 1: Walk the timeline in order ──────────────────────────────────
+  // ── Pass 1: Walk the timeline, merging adjacent text runs ───────────────
+  //
+  // The bug this pass fixes: every `phase`, `info`, `heartbeat`, `warning`,
+  // `record_reserved`, etc. event auto-closes the current text run in the
+  // slice's `appendTimeline` reducer. A single flowing paragraph (or a
+  // table with 30 rows) that the model emitted as one run gets shredded
+  // into N `text_end` entries, one per passive interruption. If we emit
+  // one `CxTextContent` per `text_end`, the DB-load renderer parses each
+  // fragment through `splitContentIntoBlocksV2` in isolation — and a
+  // table row split between two fragments becomes two broken tables.
+  //
+  // Fix: accumulate raw text across consecutive text runs and flush it as
+  // a single `CxTextContent` only when we hit a STRUCTURAL break —
+  // reasoning (thinking), tool call, or the end of the timeline. Media
+  // blocks within the text region are emitted inline at flush time, in
+  // the order they arrived.
+  //
+  // This mirrors how the server stores content: one big text block per
+  // contiguous region, never fragmented by status events.
+
+  let pendingText = "";
+  const pendingMedia: CxMediaContent[] = [];
+
+  const flushPendingText = () => {
+    if (pendingText.length > 0) {
+      blocks.push({ type: "text", text: pendingText } as CxTextContent);
+      pendingText = "";
+    }
+    if (pendingMedia.length > 0) {
+      for (const m of pendingMedia) blocks.push(m);
+      pendingMedia.length = 0;
+    }
+  };
+
   for (const entry of request.timeline) {
-    // ── Reasoning run ended → emit CxThinkingContent ──────────────────────
-    // DATA CONTRACT: store the joined reasoning chunks verbatim. We skip
-    // empty runs (nothing to render) but never alter whitespace.
+    // ── Reasoning run ended → flush text, then emit CxThinkingContent ─────
     if (isReasoningEnd(entry)) {
+      flushPendingText();
       const reasoningChunks = request.reasoningChunks.slice(
         entry.chunkStartIndex,
         entry.chunkEndIndex,
       );
       const text = reasoningChunks.join("");
       if (text.length > 0) {
-        const thinkingBlock: CxThinkingContent = {
-          type: "thinking",
-          text,
-        };
-        blocks.push(thinkingBlock);
+        blocks.push({ type: "thinking", text } as CxThinkingContent);
       }
       continue;
     }
 
-    // ── Text run ended → emit CxTextContent from the raw chunk text ─────
-    // The timeline entry carries the exact markdown emitted by the model
-    // (fences, pipes, XML tags, etc.) — committing that verbatim is the
-    // only way code/table/XML-tagged blocks round-trip through the DB and
-    // re-parse into typed render blocks on reload. The block accumulator
-    // strips those structural markers when building typed render blocks,
-    // so reading from `renderBlocks[].content` would write de-fenced
-    // plain text into `cx_message.content` and the post-stream renderer
-    // would show code as text.
+    // ── Text run ended → ACCUMULATE (do not flush yet) ──────────────────
+    // The raw chunk text is appended to `pendingText` verbatim. Media
+    // blocks found in this run's renderBlock range get queued for
+    // emission at flush time. Flushing happens when we reach the next
+    // structural event (reasoning/tool) or the end of the timeline.
     if (isTextEnd(entry)) {
       for (let i = entry.blockStartIndex; i < entry.blockEndIndex; i++) {
         consumedRenderBlockIndices.add(i);
       }
 
-      // DATA CONTRACT: NEVER mutate text. The committed CxTextContent
-      // receives `rawText` byte-for-byte. `rawText.length > 0` is the
-      // only guard — we skip empty runs but do not strip whitespace, do
-      // not normalize, do not trim, do not collapse.
       const rawText = entry.rawText;
       if (rawText && rawText.length > 0) {
-        blocks.push({ type: "text", text: rawText } as CxTextContent);
+        pendingText += rawText;
 
-        // Still emit any media blocks that landed in this text run —
-        // media arrives as a dedicated render_block event, not via
-        // chunk text, so it isn't in `rawText`.
         const rangeIds = request.renderBlockOrder.slice(
           entry.blockStartIndex,
           entry.blockEndIndex,
@@ -208,62 +225,42 @@ export function assembleMessageParts(request: ActiveRequest): CxContentBlock[] {
           if (!block) continue;
           if (MEDIA_BLOCK_TYPES.has(block.type)) {
             const mediaBlock = renderBlockToMediaBlock(block);
-            if (mediaBlock) blocks.push(mediaBlock);
+            if (mediaBlock) pendingMedia.push(mediaBlock);
           }
         }
         continue;
       }
 
       // Fallback for entries missing `rawText` (render_block-event streams
-      // with no chunks, or reasoning-only runs): reconstruct markdown
-      // from the typed render blocks so code/table/XML-tagged blocks
-      // re-parse into the same typed blocks on reload. Each reconstructed
-      // fragment is pushed verbatim — the only separator between
-      // non-adjacent fragments is `\n\n`, never a trim.
+      // with no chunks): reconstruct markdown from the typed render
+      // blocks. Reconstructed fragments are appended to pendingText
+      // verbatim with `\n\n` separators between non-adjacent blocks.
       const rangeIds = request.renderBlockOrder.slice(
         entry.blockStartIndex,
         entry.blockEndIndex,
       );
-      const textParts: string[] = [];
       for (const blockId of rangeIds) {
         const block = request.renderBlocks[blockId];
         if (!block) continue;
         if (MEDIA_BLOCK_TYPES.has(block.type)) {
-          if (textParts.length > 0) {
-            const joined = textParts.join("\n\n");
-            if (joined.length > 0) {
-              blocks.push({ type: "text", text: joined } as CxTextContent);
-            }
-            textParts.length = 0;
-          }
           const mediaBlock = renderBlockToMediaBlock(block);
-          if (mediaBlock) blocks.push(mediaBlock);
+          if (mediaBlock) pendingMedia.push(mediaBlock);
         } else {
           const reconstructed = reconstructBlockMarkdown({
             type: block.type,
             content: block.content ?? null,
             data: block.data ?? null,
           });
-          if (reconstructed.length > 0) textParts.push(reconstructed);
-        }
-      }
-      if (textParts.length > 0) {
-        const joined = textParts.join("\n\n");
-        if (joined.length > 0) {
-          blocks.push({ type: "text", text: joined } as CxTextContent);
+          if (reconstructed.length > 0) {
+            if (pendingText.length > 0) pendingText += "\n\n";
+            pendingText += reconstructed;
+          }
         }
       }
       continue;
     }
 
-    // ── Tool event ─────────────────────────────────────────────────────────
-    // Timeline entries carry the server's `tool_started` / `tool_completed`
-    // / `tool_error` sub-events verbatim (see process-stream `tool_event`
-    // dispatch — `subEvent: toolData.event`). Match on that exact wire
-    // form. Previously this check used the unprefixed `"started"`/etc.
-    // strings and silently dropped every tool block from the committed
-    // `cx_message.content`, which is why tools disappeared when a stream
-    // ended.
+    // ── Tool event → flush text, emit tool blocks ──────────────────────
     if (isToolEvent(entry)) {
       const lifecycle = request.toolLifecycle[entry.callId];
       if (!lifecycle) continue;
@@ -272,14 +269,14 @@ export function assembleMessageParts(request: ActiveRequest): CxContentBlock[] {
         entry.subEvent === "tool_started" &&
         !emittedToolCallIds.has(entry.callId)
       ) {
+        flushPendingText();
         emittedToolCallIds.add(entry.callId);
-        const toolCallBlock: CxToolCallContent = {
+        blocks.push({
           type: "tool_call",
           id: lifecycle.callId,
           name: lifecycle.toolName,
           arguments: lifecycle.arguments,
-        };
-        blocks.push(toolCallBlock);
+        } as CxToolCallContent);
       }
 
       if (
@@ -288,28 +285,37 @@ export function assembleMessageParts(request: ActiveRequest): CxContentBlock[] {
         lifecycle.result !== undefined &&
         lifecycle.result !== null
       ) {
-        const toolResultBlock: CxToolResultContent = {
+        flushPendingText();
+        blocks.push({
           type: "tool_result",
           call_id: lifecycle.callId,
           name: lifecycle.toolName,
           content: lifecycle.result,
           is_error: false,
-        };
-        blocks.push(toolResultBlock);
+        } as CxToolResultContent);
       }
 
       if (entry.subEvent === "tool_error") {
-        const toolResultBlock: CxToolResultContent = {
+        flushPendingText();
+        blocks.push({
           type: "tool_result",
           call_id: lifecycle.callId,
           name: lifecycle.toolName,
           content: lifecycle.errorMessage ?? "Tool error",
           is_error: true,
-        };
-        blocks.push(toolResultBlock);
+        } as CxToolResultContent);
       }
+      continue;
     }
+
+    // Passive events (phase, info, heartbeat, warning, record_reserved,
+    // record_update, completion, init, broker, data, error, end, unknown)
+    // do NOT flush pendingText. They carry no user-visible content for the
+    // committed message; the text run must remain contiguous across them.
   }
+
+  // Final flush — any trailing text + media go at the end of the message.
+  flushPendingText();
 
   // ── Pass 2: Emit any renderBlocks not covered by timeline text runs ──────
   // This catches blocks from streams that had no text_start/end timeline entries
