@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useCallback, useState } from "react";
+import React, { useRef, useCallback, useState, useEffect } from "react";
 import {
   ResizablePanelGroup,
   ResizablePanel,
@@ -105,6 +105,67 @@ export function MatrxSplit({
   const previewRef = useRef<HTMLDivElement | null>(null);
   const isSyncing = useRef(false);
 
+  // ── Local textarea state ──────────────────────────────────────────────
+  // The textarea is driven from `localValue`, not from the `value` prop.
+  // This decouples keystroke paint from the preview pane: the textarea
+  // re-renders instantly from local state, while the preview pane consumes
+  // a debounced copy (`previewValue`) so a 400KB document's re-render doesn't
+  // fire on every keystroke. `useDeferredValue` was tried here first — it
+  // was a net loss, because with a sufficiently expensive preview subtree,
+  // React never finds idle time and just stacks up deferred attempts, each
+  // costing hundreds of ms. A simple time-based debounce is the right tool.
+  //
+  // `onChange(newValue)` is still fired on every keystroke so the parent's
+  // Redux sync is unchanged — this is purely a preview-render optimization.
+  const [localValue, setLocalValue] = useState(value);
+  const [previewValue, setPreviewValue] = useState(value);
+  const lastEmittedRef = useRef(value);
+  const previewTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Accept external value changes (realtime updates, undo, note switch,
+  // programmatic edits). Self-echoes — where the parent's debounced sync
+  // comes back carrying what we just typed — are ignored to avoid
+  // unnecessary re-renders.
+  useEffect(() => {
+    if (value === lastEmittedRef.current) return;
+    lastEmittedRef.current = value;
+    setLocalValue(value);
+    // External update: flush to preview immediately so the preview is in
+    // sync with the authoritative value. No debounce — external changes are
+    // infrequent and the user isn't typing when they arrive.
+    if (previewTimerRef.current) {
+      clearTimeout(previewTimerRef.current);
+      previewTimerRef.current = null;
+    }
+    setPreviewValue(value);
+  }, [value]);
+
+  // Cleanup pending preview debounce on unmount.
+  useEffect(() => {
+    return () => {
+      if (previewTimerRef.current) clearTimeout(previewTimerRef.current);
+    };
+  }, []);
+
+  const handleLocalChange = useCallback(
+    (next: string) => {
+      setLocalValue(next);
+      lastEmittedRef.current = next;
+      onChange(next);
+
+      // Debounced preview update. 400ms matches typical "stopped typing"
+      // thresholds — short enough to feel live, long enough that even on
+      // very large documents the preview doesn't get stuck re-rendering
+      // during an active typing burst.
+      if (previewTimerRef.current) clearTimeout(previewTimerRef.current);
+      previewTimerRef.current = setTimeout(() => {
+        previewTimerRef.current = null;
+        setPreviewValue(next);
+      }, 400);
+    },
+    [onChange],
+  );
+
   const mergedTextareaRef = useCallback(
     (node: HTMLTextAreaElement | null) => {
       internalTextareaRef.current = node;
@@ -187,17 +248,21 @@ export function MatrxSplit({
           </button>
         </div>
 
-        {/* Content area — single scroll region, no nesting */}
-        <div className="flex-1 overflow-hidden relative">
+        {/* Content area — single scroll region, no nesting.
+            Use absolute-inset children so the textarea/preview reliably fill
+            the available space on iOS Safari (where `h-full` on a <textarea>
+            inside a flex-column can collapse to the textarea's intrinsic
+            row-based height). */}
+        <div className="flex-1 overflow-hidden relative min-h-0">
           {mobileView === "edit" ? (
             <textarea
               ref={mergedTextareaRef}
-              value={value}
-              onChange={(e) => onChange(e.target.value)}
+              value={localValue}
+              onChange={(e) => handleLocalChange(e.target.value)}
               placeholder={placeholder}
               aria-label="Markdown editor"
               className={cn(
-                "h-full w-full resize-none border-none bg-transparent p-4 leading-[1.7] font-[inherit] text-foreground outline-none placeholder:text-muted-foreground overflow-y-auto scrollbar-thin-auto",
+                "absolute inset-0 h-full w-full resize-none border-none bg-transparent p-4 leading-[1.7] font-[inherit] text-foreground outline-none placeholder:text-muted-foreground overflow-y-auto scrollbar-thin-auto",
                 textareaClassName,
               )}
               style={{ fontSize: "16px" }}
@@ -206,13 +271,13 @@ export function MatrxSplit({
             <div
               ref={previewRef}
               className={cn(
-                "h-full overflow-y-auto py-2 px-4 pb-safe scrollbar-thin-auto",
+                "absolute inset-0 overflow-y-auto py-2 px-4 pb-safe scrollbar-thin-auto",
                 previewClassName,
               )}
             >
-              {value.trim() ? (
+              {previewValue.trim() ? (
                 <MarkdownStream
-                  content={value}
+                  content={previewValue}
                   isStreamActive={false}
                   hideCopyButton={hideCopyButton}
                   analysisData={analysisData}
@@ -241,8 +306,8 @@ export function MatrxSplit({
       <ResizablePanel defaultSize={defaultLayout[0]} minSize={20}>
         <textarea
           ref={mergedTextareaRef}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
+          value={localValue}
+          onChange={(e) => handleLocalChange(e.target.value)}
           onScroll={handleEditorScroll}
           placeholder={placeholder}
           aria-label="Markdown editor"
@@ -264,9 +329,9 @@ export function MatrxSplit({
             previewClassName,
           )}
         >
-          {value.trim() ? (
+          {previewValue.trim() ? (
             <MarkdownStream
-              content={value}
+              content={previewValue}
               isStreamActive={false}
               hideCopyButton={hideCopyButton}
               analysisData={analysisData}

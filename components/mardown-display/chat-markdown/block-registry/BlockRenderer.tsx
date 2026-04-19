@@ -506,16 +506,22 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
           />
         );
       }
-      const trimmedCode = block.content.trim();
-      const lineCount = trimmedCode.split("\n").length;
-      const isSmallBlock = lineCount <= 2 && trimmedCode.length < 120;
+      // DATA CONTRACT: do NOT mutate the code string. The trim below is
+      // used ONLY for size classification (is this small enough to render
+      // inline?). The content passed to the renderer is `block.content`
+      // verbatim — leading/trailing whitespace, blank lines, everything
+      // preserved.
+      const sizingProbe = block.content.trim();
+      const lineCount = sizingProbe.split("\n").length;
+      const isSmallBlock = lineCount <= 2 && sizingProbe.length < 120;
 
-      if (!trimmedCode || isSmallBlock) {
-        if (!trimmedCode) return null;
+      if (!sizingProbe) return null;
+
+      if (isSmallBlock) {
         return (
           <InlineCodeSnippet
             key={index}
-            code={trimmedCode}
+            code={block.content}
             language={block.language}
             className="my-3"
           />

@@ -23,6 +23,11 @@ interface CodeProps {
 // Define code rendering component with proper typing
 export const CodeComponent = ({ mode, node, inline, className, children, ...props }: CodeProps) => {
     const match = /language-(\w+)/.exec(className || "");
+    // DATA CONTRACT: code renders verbatim. Previously we stripped the
+    // trailing newline via `.replace(/\n$/, "")`, which breaks the "never
+    // mutate content" contract — round-tripping an edit would silently
+    // lose the final newline.
+    const codeString = String(children);
     return !inline && match ? (
         <div style={{ marginTop: "1rem", marginBottom: "1rem" }}>
             {/* We need to render this conditionally to avoid type errors with the dynamic import */}
@@ -30,14 +35,14 @@ export const CodeComponent = ({ mode, node, inline, className, children, ...prop
                 <div className="rounded-md overflow-hidden">
                     {/* @ts-ignore - TypeScript doesn't properly handle dynamic components */}
                     <SyntaxHighlighter language={match[1]} style={dracula} PreTag="div" showLineNumbers useInlineStyles>
-                        {String(children).replace(/\n$/, "")}
+                        {codeString}
                     </SyntaxHighlighter>
                 </div>
             ) : (
                 <div className="rounded-md overflow-hidden">
                     {/* @ts-ignore - TypeScript doesn't properly handle dynamic components */}
                     <SyntaxHighlighter language={match[1]} style={prism} PreTag="div" showLineNumbers useInlineStyles>
-                        {String(children).replace(/\n$/, "")}
+                        {codeString}
                     </SyntaxHighlighter>
                 </div>
             )}

@@ -10,7 +10,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ChevronLeft, Save } from "lucide-react";
+import { ChevronLeft, Save, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface TabDefinition {
@@ -358,8 +358,9 @@ const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
                   key={`content-${tab.id}`}
                   value={tab.id}
                   className={cn(
-                    "flex-grow mt-0 border-none overflow-auto outline-none ring-0 min-h-0",
-                    isMobile ? "px-2" : "",
+                    "flex-grow mt-0 border-none overflow-auto outline-none ring-0 min-h-0 data-[state=active]:flex data-[state=active]:flex-col",
+                    isMobile ? "px-0" : "",
+                    tab.className,
                   )}
                 >
                   {tab.content}
@@ -384,15 +385,17 @@ const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
           footerContent) && (
           <DialogFooter
             className={cn(
-              "border-t flex items-center justify-end flex-shrink-0",
-              isMobile ? "p-2 pb-safe gap-2 flex-col sm:flex-row" : "p-1 pr-3",
+              "border-t flex-shrink-0",
+              isMobile
+                ? "flex flex-row items-center justify-between gap-1 p-1.5 pb-safe"
+                : "flex items-center justify-end p-1 pr-3",
             )}
           >
             {additionalButtons && (
               <div
                 className={cn(
-                  "flex items-center gap-2",
-                  isMobile ? "w-full" : "mr-1",
+                  "flex items-center gap-1",
+                  isMobile ? "shrink-0" : "mr-1 gap-2",
                 )}
               >
                 {additionalButtons}
@@ -401,31 +404,45 @@ const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
             {footerContent}
             <div
               className={cn(
-                "flex items-center gap-2",
-                isMobile ? "w-full" : "",
+                "flex items-center",
+                isMobile ? "gap-1 shrink-0" : "gap-2",
               )}
             >
-              {showCancelButton && (
-                <Button
-                  variant="outline"
-                  onClick={handleCancel}
-                  className={cn(isMobile && "flex-1 min-h-[44px] text-base")}
-                >
-                  {cancelButtonLabel}
-                </Button>
-              )}
-              {showSaveButton && (
-                <Button
-                  onClick={handleSave}
-                  disabled={saveButtonDisabled}
-                  className={cn(isMobile && "flex-1 min-h-[44px] text-base")}
-                >
-                  <Save
-                    className={cn(isMobile ? "h-5 w-5 mr-2" : "h-4 w-4 mr-2")}
-                  />
-                  {saveButtonLabel}
-                </Button>
-              )}
+              {showCancelButton &&
+                (isMobile ? (
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={handleCancel}
+                    aria-label={cancelButtonLabel}
+                    title={cancelButtonLabel}
+                    className="h-9 w-9"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                ) : (
+                  <Button variant="outline" onClick={handleCancel}>
+                    {cancelButtonLabel}
+                  </Button>
+                ))}
+              {showSaveButton &&
+                (isMobile ? (
+                  <Button
+                    size="icon"
+                    onClick={handleSave}
+                    disabled={saveButtonDisabled}
+                    aria-label={saveButtonLabel}
+                    title={saveButtonLabel}
+                    className="h-9 w-9"
+                  >
+                    <Save className="h-4 w-4" />
+                  </Button>
+                ) : (
+                  <Button onClick={handleSave} disabled={saveButtonDisabled}>
+                    <Save className="h-4 w-4 mr-2" />
+                    {saveButtonLabel}
+                  </Button>
+                ))}
             </div>
           </DialogFooter>
         )}

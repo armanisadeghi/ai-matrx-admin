@@ -35,17 +35,18 @@ export const InlineCodeSnippet: React.FC<InlineCodeSnippetProps> = ({
   className,
 }) => {
   const [copied, setCopied] = useState(false);
-  const trimmed = code.trim();
 
-  if (!trimmed) {
-    return null;
-  }
+  // DATA CONTRACT: render code verbatim. A code block's leading/trailing
+  // whitespace is meaningful (blank lines, alignment, significant
+  // spaces). Previously we trimmed here for copy + display; that altered
+  // what the user saw and copied relative to what the model produced.
+  if (code.length === 0) return null;
 
   const langColor = language ? LANGUAGE_COLORS[language] : undefined;
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(trimmed);
+      await navigator.clipboard.writeText(code);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
@@ -82,7 +83,7 @@ export const InlineCodeSnippet: React.FC<InlineCodeSnippetProps> = ({
         </button>
       </div>
       <pre className="px-3 py-2 text-sm font-mono leading-relaxed text-foreground whitespace-pre-wrap break-words">
-        <code>{trimmed}</code>
+        <code>{code}</code>
       </pre>
     </div>
   );

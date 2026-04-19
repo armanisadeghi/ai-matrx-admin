@@ -11,7 +11,7 @@
  *   Actions | Run Settings | System Prompt | Last Request | Session | Client
  */
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useMemo } from "react";
 import {
   ChevronDown,
   ChevronUp,
@@ -19,7 +19,14 @@ import {
   AppWindow,
   SlidersHorizontal,
 } from "lucide-react";
+import { createSelector } from "@reduxjs/toolkit";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
+import type { RootState } from "@/lib/redux/store";
+import type { ActiveRequest } from "@/features/agents/types/request.types";
+import type {
+  UserRequestResult,
+  UsageTotals,
+} from "@/types/python-generated/stream-events";
 import {
   restoreWindow,
   focusWindow,
@@ -205,35 +212,419 @@ function SystemPromptTab({ conversationId }: { conversationId: string }) {
 // =============================================================================
 // Tab 4 / 5 / 6: Stats panels
 //
-// The previous implementation pulled per-turn completion stats + aggregated
-// client metrics from the messages slice. Those selectors (and the turn-level
-// fields they relied on) are gone; stats now live on `activeRequests` /
-// `observability`. Until these panels are rewired against those sources, the
-// tabs render a clear placeholder instead of fake data.
+// Source of truth: `activeRequests`. Each ActiveRequest carries both:
+//   • completion.result (UserRequestResult) — server-side aggregated stats:
+//     tokens, cost, duration, iterations, finish_reason, tool_call_stats.
+//     Populated on the `completion` event at the end of the user-request.
+//   • clientMetrics — client-side perf: TTFT, stream duration, render delay,
+//     event counts, payload bytes. Populated on the `end` event.
 //
-// TODO: wire to activeRequests / observability for last-request, session,
-// and client-metrics displays.
+// ActiveRequest entries are never removed (no `removeRequest` dispatch) so
+// they persist after stream completion and can be inspected here.
+// Observability (cx_user_request / cx_request / cx_tool_call) is the DB
+// mirror; the panels below read from activeRequests because it has the
+// completion payload the DB rows don't carry as first-class columns.
 // =============================================================================
 
-function StatsPlaceholder({ label }: { label: string }) {
+// ── Shared selectors (defined outside components so they're stable) ─────────
+
+/**
+ * Returns ALL ActiveRequest records for this conversation, oldest first.
+ * Memoized so callers re-render only when the record set actually changes.
+ */
+function makeSelectConversationRequests(conversationId: string) {
+  return createSelector(
+    (state: RootState) => state.activeRequests.byConversationId[conversationId],
+    (state: RootState) => state.activeRequests.byRequestId,
+    (ids, byId): ActiveRequest[] => {
+      if (!ids || ids.length === 0) return EMPTY_REQUEST_LIST;
+      const out: ActiveRequest[] = [];
+      for (const id of ids) {
+        const rec = byId[id];
+        if (rec) out.push(rec);
+      }
+      return out.length === 0 ? EMPTY_REQUEST_LIST : out;
+    },
+  );
+}
+
+/** Picks the newest ActiveRequest for this conversation, or undefined. */
+function makeSelectLastConversationRequest(conversationId: string) {
+  return (state: RootState): ActiveRequest | undefined => {
+    const ids = state.activeRequests.byConversationId[conversationId];
+    if (!ids || ids.length === 0) return undefined;
+    return state.activeRequests.byRequestId[ids[ids.length - 1]];
+  };
+}
+
+const EMPTY_REQUEST_LIST: ActiveRequest[] = [];
+
+// ── Formatting helpers (shared across the three panels) ─────────────────────
+
+function fmtMs(ms: number | null | undefined): string {
+  if (ms == null) return "—";
+  if (ms < 1000) return `${ms.toFixed(0)}ms`;
+  return `${(ms / 1000).toFixed(2)}s`;
+}
+
+function fmtTokens(n: number | null | undefined): string {
+  if (n == null) return "—";
+  return n.toLocaleString();
+}
+
+function fmtCost(cost: number | null | undefined): string {
+  if (cost == null) return "—";
+  if (cost === 0) return "$0";
+  if (cost < 0.01) return `$${cost.toFixed(4)}`;
+  return `$${cost.toFixed(4)}`;
+}
+
+function fmtBytes(bytes: number | null | undefined): string {
+  if (bytes == null) return "—";
+  if (bytes < 1024) return `${bytes}B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)}KB`;
+  return `${(bytes / 1024 / 1024).toFixed(2)}MB`;
+}
+
+// Pulls `UserRequestResult` (the server's stats payload) out of an
+// ActiveRequest's completion event. `null` means the request hasn't reached
+// `completion` yet or it wasn't a user_request operation.
+function getUserRequestResult(
+  request: ActiveRequest | undefined,
+): UserRequestResult | null {
+  if (!request?.completion) return null;
+  if (request.completion.operation !== "user_request") return null;
+  const result = request.completion.result;
+  if (!result || typeof result !== "object") return null;
+  return result as UserRequestResult;
+}
+
+// Sums `UsageTotals` from one AggregatedUsageResult in-place into an
+// accumulator. Skips null/undefined inputs gracefully.
+function addUsageTotals(acc: MutableTotals, usage: UsageTotals | undefined) {
+  if (!usage) return;
+  acc.input += usage.input_tokens ?? 0;
+  acc.output += usage.output_tokens ?? 0;
+  acc.cached += usage.cached_input_tokens ?? 0;
+  acc.total += usage.total_tokens ?? 0;
+  acc.cost += usage.total_cost ?? 0;
+  acc.requests += usage.total_requests ?? 0;
+}
+
+interface MutableTotals {
+  input: number;
+  output: number;
+  cached: number;
+  total: number;
+  cost: number;
+  requests: number;
+}
+
+// ── Stat row primitive ──────────────────────────────────────────────────────
+
+function StatRow({
+  label,
+  value,
+  valueClassName,
+}: {
+  label: string;
+  value: React.ReactNode;
+  valueClassName?: string;
+}) {
   return (
-    <div className="p-4 text-xs text-muted-foreground text-center">
-      {label} stats are temporarily unavailable while the stats pipeline is
-      being rewired onto activeRequests / observability.
+    <div className="flex items-center justify-between gap-3 py-0.5 text-[11px]">
+      <span className="text-muted-foreground">{label}</span>
+      <span className={cn("font-mono text-foreground/90", valueClassName)}>
+        {value}
+      </span>
     </div>
   );
 }
 
-function LastRequestPanel(_props: { conversationId: string }) {
-  return <StatsPlaceholder label="Last request" />;
+function StatSection({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="space-y-0.5">
+      <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 pb-0.5 border-b border-border/40 mb-1">
+        {title}
+      </div>
+      {children}
+    </div>
+  );
 }
 
-function SessionPanel(_props: { conversationId: string }) {
-  return <StatsPlaceholder label="Session" />;
+function EmptyStats({ text }: { text: string }) {
+  return (
+    <div className="p-4 text-xs text-muted-foreground text-center">{text}</div>
+  );
 }
 
-function ClientPanel(_props: { conversationId: string }) {
-  return <StatsPlaceholder label="Client metrics" />;
+// ── Last request panel ─────────────────────────────────────────────────────
+
+function LastRequestPanel({ conversationId }: { conversationId: string }) {
+  const selector = useMemo(
+    () => makeSelectLastConversationRequest(conversationId),
+    [conversationId],
+  );
+  const request = useAppSelector(selector);
+
+  if (!request) {
+    return <EmptyStats text="No requests yet. Fire a turn to see stats here." />;
+  }
+
+  const result = getUserRequestResult(request);
+  const usage = result?.total_usage?.total;
+  const timing = result?.timing_stats ?? undefined;
+  const toolStats = result?.tool_call_stats ?? undefined;
+  const isComplete =
+    request.status === "complete" || request.status === "error";
+
+  return (
+    <div className="px-3 py-2 grid grid-cols-2 gap-x-6 gap-y-3 overflow-y-auto h-full">
+      <StatSection title="Status">
+        <StatRow label="Request" value={request.status} />
+        <StatRow
+          label="Finish reason"
+          value={result?.finish_reason ?? "—"}
+        />
+        <StatRow
+          label="Iterations"
+          value={result?.iterations != null ? String(result.iterations) : "—"}
+        />
+        {request.errorMessage && (
+          <StatRow
+            label="Error"
+            value={request.errorMessage}
+            valueClassName="text-destructive text-[10px]"
+          />
+        )}
+      </StatSection>
+
+      <StatSection title="Tokens">
+        <StatRow label="Input" value={fmtTokens(usage?.input_tokens)} />
+        <StatRow
+          label="Cached in"
+          value={fmtTokens(usage?.cached_input_tokens)}
+        />
+        <StatRow label="Output" value={fmtTokens(usage?.output_tokens)} />
+        <StatRow label="Total" value={fmtTokens(usage?.total_tokens)} />
+      </StatSection>
+
+      <StatSection title="Cost & duration">
+        <StatRow label="Cost" value={fmtCost(usage?.total_cost)} />
+        <StatRow label="Total" value={fmtMs(timing?.total_duration)} />
+        <StatRow label="API" value={fmtMs(timing?.api_duration)} />
+        <StatRow label="Tools" value={fmtMs(timing?.tool_duration)} />
+      </StatSection>
+
+      <StatSection title="Tools">
+        <StatRow
+          label="Tool calls"
+          value={toolStats?.total_tool_calls != null ? String(toolStats.total_tool_calls) : "—"}
+        />
+        <StatRow
+          label="Iters w/ tools"
+          value={
+            toolStats?.iterations_with_tools != null
+              ? String(toolStats.iterations_with_tools)
+              : "—"
+          }
+        />
+        <StatRow
+          label="Tool types"
+          value={
+            toolStats?.by_tool ? Object.keys(toolStats.by_tool).length : "—"
+          }
+        />
+        {!isComplete && (
+          <StatRow
+            label="State"
+            value="streaming…"
+            valueClassName="text-blue-500 text-[10px]"
+          />
+        )}
+      </StatSection>
+    </div>
+  );
+}
+
+// ── Session panel ──────────────────────────────────────────────────────────
+
+function SessionPanel({ conversationId }: { conversationId: string }) {
+  const selector = useMemo(
+    () => makeSelectConversationRequests(conversationId),
+    [conversationId],
+  );
+  const requests = useAppSelector(selector);
+
+  const stats = useMemo(() => {
+    const totals: MutableTotals = {
+      input: 0,
+      output: 0,
+      cached: 0,
+      total: 0,
+      cost: 0,
+      requests: 0,
+    };
+    let totalDurationMs = 0;
+    let apiDurationMs = 0;
+    let toolDurationMs = 0;
+    let totalToolCalls = 0;
+    let iterationsSum = 0;
+    let completedRounds = 0;
+    let errorRounds = 0;
+
+    for (const request of requests) {
+      const result = getUserRequestResult(request);
+      if (result) {
+        addUsageTotals(totals, result.total_usage?.total);
+        const timing = result.timing_stats;
+        totalDurationMs += timing?.total_duration ?? 0;
+        apiDurationMs += timing?.api_duration ?? 0;
+        toolDurationMs += timing?.tool_duration ?? 0;
+        totalToolCalls += result.tool_call_stats?.total_tool_calls ?? 0;
+        iterationsSum += result.iterations ?? 0;
+      }
+      if (request.status === "complete") completedRounds++;
+      else if (request.status === "error") errorRounds++;
+    }
+
+    return {
+      totals,
+      totalDurationMs,
+      apiDurationMs,
+      toolDurationMs,
+      totalToolCalls,
+      iterationsSum,
+      completedRounds,
+      errorRounds,
+      totalRounds: requests.length,
+    };
+  }, [requests]);
+
+  if (requests.length === 0) {
+    return <EmptyStats text="No requests yet in this conversation." />;
+  }
+
+  return (
+    <div className="px-3 py-2 grid grid-cols-2 gap-x-6 gap-y-3 overflow-y-auto h-full">
+      <StatSection title="Rounds">
+        <StatRow label="Total turns" value={stats.totalRounds} />
+        <StatRow label="Completed" value={stats.completedRounds} />
+        {stats.errorRounds > 0 && (
+          <StatRow
+            label="Errored"
+            value={stats.errorRounds}
+            valueClassName="text-destructive"
+          />
+        )}
+        <StatRow label="Σ Iterations" value={stats.iterationsSum || "—"} />
+      </StatSection>
+
+      <StatSection title="Tokens (all turns)">
+        <StatRow label="Input" value={fmtTokens(stats.totals.input)} />
+        <StatRow label="Cached" value={fmtTokens(stats.totals.cached)} />
+        <StatRow label="Output" value={fmtTokens(stats.totals.output)} />
+        <StatRow label="Total" value={fmtTokens(stats.totals.total)} />
+      </StatSection>
+
+      <StatSection title="Cost & duration">
+        <StatRow label="Cost" value={fmtCost(stats.totals.cost)} />
+        <StatRow label="Total" value={fmtMs(stats.totalDurationMs)} />
+        <StatRow label="API" value={fmtMs(stats.apiDurationMs)} />
+        <StatRow label="Tools" value={fmtMs(stats.toolDurationMs)} />
+      </StatSection>
+
+      <StatSection title="Tool calls">
+        <StatRow label="Σ Tool calls" value={stats.totalToolCalls || "—"} />
+        <StatRow
+          label="LLM calls"
+          value={stats.totals.requests || "—"}
+        />
+      </StatSection>
+    </div>
+  );
+}
+
+// ── Client metrics panel ───────────────────────────────────────────────────
+
+function ClientPanel({ conversationId }: { conversationId: string }) {
+  const selector = useMemo(
+    () => makeSelectLastConversationRequest(conversationId),
+    [conversationId],
+  );
+  const request = useAppSelector(selector);
+  const metrics = request?.clientMetrics ?? null;
+
+  if (!metrics) {
+    return (
+      <EmptyStats text="Client metrics populate at stream end. No completed request yet for this conversation." />
+    );
+  }
+
+  return (
+    <div className="px-3 py-2 grid grid-cols-2 gap-x-6 gap-y-3 overflow-y-auto h-full">
+      <StatSection title="Timing">
+        <StatRow
+          label="Internal latency"
+          value={fmtMs(metrics.internalLatencyMs)}
+        />
+        <StatRow label="TTFT" value={fmtMs(metrics.ttftMs)} />
+        <StatRow
+          label="Stream duration"
+          value={fmtMs(metrics.streamDurationMs)}
+        />
+        <StatRow label="Render delay" value={fmtMs(metrics.renderDelayMs)} />
+        <StatRow
+          label="Total client"
+          value={fmtMs(metrics.totalClientDurationMs)}
+        />
+      </StatSection>
+
+      <StatSection title="Payload">
+        <StatRow
+          label="Accumulated text"
+          value={fmtBytes(metrics.accumulatedTextBytes)}
+        />
+        <StatRow label="Total" value={fmtBytes(metrics.totalPayloadBytes)} />
+      </StatSection>
+
+      <StatSection title="Event counts">
+        <StatRow label="Total" value={metrics.totalEvents} />
+        <StatRow label="Chunks" value={metrics.chunkEvents} />
+        <StatRow label="Reasoning" value={metrics.reasoningChunkEvents} />
+        <StatRow label="Phases" value={metrics.phaseEvents} />
+        <StatRow label="Tool events" value={metrics.toolEvents} />
+        <StatRow label="Render blocks" value={metrics.renderBlockEvents} />
+      </StatSection>
+
+      <StatSection title="Records">
+        <StatRow label="Init" value={metrics.initEvents} />
+        <StatRow label="Completion" value={metrics.completionEvents} />
+        <StatRow label="Data" value={metrics.dataEvents} />
+        <StatRow label="Reserved" value={metrics.recordReservedEvents} />
+        <StatRow label="Updated" value={metrics.recordUpdateEvents} />
+        {metrics.warningEvents > 0 && (
+          <StatRow
+            label="Warnings"
+            value={metrics.warningEvents}
+            valueClassName="text-amber-500"
+          />
+        )}
+        {metrics.infoEvents > 0 && (
+          <StatRow label="Info" value={metrics.infoEvents} />
+        )}
+        {metrics.otherEvents > 0 && (
+          <StatRow label="Other" value={metrics.otherEvents} />
+        )}
+      </StatSection>
+    </div>
+  );
 }
 
 // =============================================================================

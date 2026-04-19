@@ -20,7 +20,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/ButtonMine";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -38,6 +38,7 @@ import { NotesAPI } from "../service/notesApi";
 import { useToastManager } from "@/hooks/useToastManager";
 import { useNotes } from "../hooks/useNotes";
 import type { Note } from "../types";
+import LightSwitchToggle from "@/components/matrx/LightSwitchToggle";
 
 interface QuickNoteSaveModalProps {
   open: boolean;
@@ -230,36 +231,35 @@ export function QuickNoteSaveModal({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-[650px] max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90vh] p-3 overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Quick Save to Notes</DialogTitle>
             <DialogDescription className="sr-only">
               Save or append quick-captured text to a note in your library.
             </DialogDescription>
           </DialogHeader>
+          {/* Content */}
+          <div className="grid gap-2">
+            <Textarea
+              id="content"
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder="Enter your note content..."
+              className="min-h-[300px] resize-none text-sm"
+              style={{ fontSize: "14px" }}
+              autoFocus
+            />
+          </div>
 
           <div className="grid gap-4 py-4">
-            {/* Mode Selection - Toggle Buttons */}
-            <div className="grid grid-cols-2 gap-2">
-              <Button
-                type="button"
-                variant={saveMode === "create" ? "default" : "outline"}
-                onClick={() => setSaveMode("create")}
-                className="h-12 w-full border border-border rounded-md"
-              >
-                <FilePlus className="h-4 w-4 mr-2" />
-                Create New Note
-              </Button>
-              <Button
-                type="button"
-                variant={saveMode === "update" ? "default" : "outline"}
-                onClick={() => setSaveMode("update")}
-                className="h-12 w-full border border-border rounded-md"
-              >
-                <FileEdit className="h-4 w-4 mr-2" />
-                Update Existing
-              </Button>
-            </div>
+            <LightSwitchToggle
+              value={saveMode === "create"}
+              onChange={(value) => setSaveMode(value ? "create" : "update")}
+              labels={{ on: "New Note", off: "Existing Note" }}
+              variant="geometric"
+              width="w-64"
+              height="h-10"
+            />
 
             {/* Folder Selection */}
             <div className="grid gap-2">
@@ -369,20 +369,6 @@ export function QuickNoteSaveModal({
                 )}
               </>
             )}
-
-            {/* Content */}
-            <div className="grid gap-2">
-              <Label htmlFor="content">Content</Label>
-              <Textarea
-                id="content"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder="Enter your note content..."
-                className="min-h-[200px] resize-none text-sm"
-                style={{ fontSize: "14px" }}
-                autoFocus
-              />
-            </div>
           </div>
 
           <DialogFooter>

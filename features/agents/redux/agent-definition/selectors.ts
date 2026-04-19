@@ -8,7 +8,7 @@ import type {
   AgentFetchStatus,
 } from "../../types/agent-definition.types";
 import type { FieldFlags } from "../shared/field-flags";
-import { hasField } from "../shared/field-flags";
+import { fieldFlagsSize, hasField } from "../shared/field-flags";
 
 // ---------------------------------------------------------------------------
 // Slice root
@@ -421,9 +421,16 @@ export const selectAgentRedoDepth = createSelector(
 // Status flags
 // ---------------------------------------------------------------------------
 
+/**
+ * True if the agent has unsaved edits. Derived from `_dirtyFields` rather than
+ * reading the `_dirty` bit directly so the flag can never drift out of sync
+ * with the actual list of changed fields (which is what the diff viewer uses).
+ * If `_dirtyFields` is empty, the record is clean — period.
+ */
 export const selectAgentIsDirty = createSelector(
   [selectAgentById],
-  (record): boolean => record?._dirty ?? false,
+  (record): boolean =>
+    record ? fieldFlagsSize(record._dirtyFields) > 0 : false,
 );
 
 export const selectAgentDirtyFields = createSelector(

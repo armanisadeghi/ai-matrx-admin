@@ -115,14 +115,21 @@ export function NoteContentEditor({ noteId }: NoteContentEditorProps) {
   const syncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastReduxRef = useRef(reduxContent);
   const noteIdRef = useRef(noteId);
+  const localContentRef = useRef(localContent);
+  useEffect(() => {
+    localContentRef.current = localContent;
+  }, [localContent]);
 
-  // ── Reset generation — bumps whenever we accept an authoritative
+  // ── Reset generation — bumps ONLY when we accept an authoritative
   // external content value (note switch, realtime update, undo, fetch).
-  // Downstream rich editors (MarkdownStream) use this as a `key` so their
-  // local edit overlays reset when the canonical content changes.
+  // Self-originated Redux echoes (our own debounced dispatch coming back
+  // through the selector) must NOT bump this — otherwise every debounce
+  // cycle would remount the rich editors via `resetKey`.
   const [resetGen, setResetGen] = useState(0);
 
-  // ── When noteId changes, reset local content from Redux immediately
+  // ── Note switch: reset local content from Redux immediately.
+  // Done during render because it must happen before children render with
+  // the wrong noteId's content; the guard makes it strictly one-shot.
   if (noteId !== noteIdRef.current) {
     noteIdRef.current = noteId;
     lastReduxRef.current = reduxContent;
@@ -130,15 +137,28 @@ export function NoteContentEditor({ noteId }: NoteContentEditorProps) {
     setResetGen((n) => n + 1);
   }
 
-  // ── When Redux content changes externally (undo, realtime, fetch completion)
-  // update local state — but NOT if we caused the change ourselves
-  if (reduxContent !== lastReduxRef.current) {
-    lastReduxRef.current = reduxContent;
-    if (!syncTimerRef.current) {
-      setLocalContent(reduxContent);
-      setResetGen((n) => n + 1);
+  // ── External Redux updates (realtime, undo, fetch completion).
+  // Runs in an effect, not during render, to avoid cascading set-state during
+  // the keystroke path. Self-originated echoes are detected by comparing
+  // against our local content — those only update `lastReduxRef` and do NOT
+  // touch state, so they don't trigger any extra renders.
+  useEffect(() => {
+    if (reduxContent === lastReduxRef.current) return;
+
+    // Self-echo: our own dispatch came back through the selector. Just
+    // update the high-water mark; no state changes, no remount.
+    if (reduxContent === localContentRef.current) {
+      lastReduxRef.current = reduxContent;
+      return;
     }
-  }
+
+    // Don't clobber in-flight local edits.
+    if (syncTimerRef.current) return;
+
+    lastReduxRef.current = reduxContent;
+    setLocalContent(reduxContent);
+    setResetGen((n) => n + 1);
+  }, [reduxContent]);
 
   // ── Debounced sync: local -> Redux ─────────────────────────────────
   const syncToRedux = useCallback(
@@ -185,11 +205,6 @@ export function NoteContentEditor({ noteId }: NoteContentEditorProps) {
   // If a debounced sync is still pending when the component unmounts
   // (tab close, navigation, instance unregister), flush it synchronously
   // so the user's in-flight keystrokes aren't silently dropped.
-  const localContentRef = useRef(localContent);
-  useEffect(() => {
-    localContentRef.current = localContent;
-  }, [localContent]);
-
   useEffect(() => {
     return () => {
       if (syncTimerRef.current) {

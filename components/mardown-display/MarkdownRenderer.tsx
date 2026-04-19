@@ -147,9 +147,14 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
       const match = /language-(\w+)/.exec(className || "");
       const language = match ? match[1] : "";
       if (!inline && language) {
+        // DATA CONTRACT: render the code exactly as received. The previous
+        // `.replace(/\n$/, "")` stripped trailing newlines, which breaks
+        // round-tripping (user edit → save → re-render would lose the
+        // final newline) and is visibly wrong for languages where the
+        // trailing newline is significant.
         return (
           <CodeBlock
-            code={String(children).replace(/\n$/, "")}
+            code={String(children)}
             language={language}
             fontSize={fontSize}
             className="my-4"

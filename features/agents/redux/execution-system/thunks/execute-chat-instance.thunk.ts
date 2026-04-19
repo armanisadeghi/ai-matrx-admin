@@ -201,9 +201,10 @@ export function assembleChatRequest(
   }
 
   // 3. Current user input (the new message being sent)
+  // DATA CONTRACT: send the user's input verbatim. Whitespace is meaningful.
   const userInputState =
     state.instanceUserInput.byConversationId[conversationId];
-  const textInput = userInputState?.text?.trim() ?? "";
+  const textInput = userInputState?.text ?? "";
   const userMessageParts = userInputState?.messageParts;
   const resourcePayloads = selectResourcePayloads(conversationId)(state);
 
@@ -352,10 +353,11 @@ export const executeChatInstance = createAsyncThunk<
         throw new Error(`Instance ${conversationId} not found`);
       }
 
-      // Capture user input BEFORE assembling (for history + display)
+      // Capture user input BEFORE assembling (for history + display).
+      // Verbatim — never trim/normalize the user's typed text.
       const userInputEntry =
         state.instanceUserInput.byConversationId[conversationId];
-      const userInputText = userInputEntry?.text?.trim() ?? "";
+      const userInputText = userInputEntry?.text ?? "";
       const userMessageParts = userInputEntry?.messageParts ?? undefined;
 
       // Assemble the chat request — reads FRESH from agent definition

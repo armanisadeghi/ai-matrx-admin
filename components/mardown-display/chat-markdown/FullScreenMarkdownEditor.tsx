@@ -32,6 +32,7 @@ import SuspenseLoader from "@/components/loaders/SuspenseLoader";
 import { LazyEntityGate } from "@/providers/packs/LazyEntityGate";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   AlertTriangle,
   ChevronDown,
@@ -888,9 +889,14 @@ function AdminCodeBlock({
 interface AdminTabOpenerProps {
   activeTabIds: Set<TabId>;
   onOpenTab: (tabId: TabId) => void;
+  compact?: boolean;
 }
 
-function AdminTabOpener({ activeTabIds, onOpenTab }: AdminTabOpenerProps) {
+function AdminTabOpener({
+  activeTabIds,
+  onOpenTab,
+  compact = false,
+}: AdminTabOpenerProps) {
   const unavailableTabs = ALL_TAB_IDS.filter((id) => !activeTabIds.has(id));
 
   return (
@@ -898,12 +904,23 @@ function AdminTabOpener({ activeTabIds, onOpenTab }: AdminTabOpenerProps) {
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
-          size="sm"
-          className="h-7 rounded-full px-3 text-xs gap-1.5 border-primary/40 text-primary hover:bg-primary/10 hover:text-primary"
+          size={compact ? "icon" : "sm"}
+          aria-label="Dev Tabs"
+          title="Dev Tabs"
+          className={cn(
+            "border-primary/40 text-primary hover:bg-primary/10 hover:text-primary",
+            compact
+              ? "h-9 w-9 rounded-full"
+              : "h-7 rounded-full px-3 text-xs gap-1.5",
+          )}
         >
-          <FlaskConical className="h-3.5 w-3.5" />
-          Dev Tabs
-          <ChevronDown className="h-3 w-3 opacity-60" />
+          <FlaskConical className={cn(compact ? "h-4 w-4" : "h-3.5 w-3.5")} />
+          {!compact && (
+            <>
+              Dev Tabs
+              <ChevronDown className="h-3 w-3 opacity-60" />
+            </>
+          )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
@@ -997,6 +1014,7 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
   onChangeRef.current = onChange;
   const { mode } = useTheme();
   const isAdmin = useAppSelector(selectIsAdmin);
+  const isMobile = useIsMobile();
   const route =
     typeof window !== "undefined" ? window.location.href : "unknown";
 
@@ -1449,12 +1467,14 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
         <AdminTabOpener
           activeTabIds={activeTabIds}
           onOpenTab={handleForceOpenTab}
+          compact={isMobile}
         />
       )}
       {showCopyButton && (
         <MarkdownCopyButton
           markdownContent={editedContent}
           className="bg-inherit text-inherit"
+          iconOnly={isMobile}
         />
       )}
     </>

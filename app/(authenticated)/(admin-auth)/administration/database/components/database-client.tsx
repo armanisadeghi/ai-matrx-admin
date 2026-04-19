@@ -1,22 +1,22 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { useDatabaseAdmin } from '@/app/(authenticated)/admin/hooks/use-database-admin';
-import { EnhancedSQLEditor } from './enhanced-sql-editor';
+import { useDatabaseAdmin } from "@/app/(authenticated)/admin/hooks/use-database-admin";
+import { EnhancedSQLEditor } from "./enhanced-sql-editor";
 
 export default function DatabaseClient() {
-  const { 
-    loading, 
-    error, 
+  const {
+    loading,
+    error,
     isTimeout,
-    executeQuery, 
-    cancelQuery, 
+    executeQuery,
+    cancelQuery,
     clearCache,
-    queryCache 
+    queryCache,
   } = useDatabaseAdmin();
 
   return (
-    <EnhancedSQLEditor 
+    <EnhancedSQLEditor
+      className="flex-1 min-h-0"
       loading={loading}
       error={error}
       isTimeout={isTimeout}
@@ -26,4 +26,4 @@ export default function DatabaseClient() {
       queryCache={queryCache}
     />
   );
-} 
+}

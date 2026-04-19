@@ -156,13 +156,15 @@ export function assembleMessageParts(request: ActiveRequest): CxContentBlock[] {
   // ── Pass 1: Walk the timeline in order ──────────────────────────────────
   for (const entry of request.timeline) {
     // ── Reasoning run ended → emit CxThinkingContent ──────────────────────
+    // DATA CONTRACT: store the joined reasoning chunks verbatim. We skip
+    // empty runs (nothing to render) but never alter whitespace.
     if (isReasoningEnd(entry)) {
       const reasoningChunks = request.reasoningChunks.slice(
         entry.chunkStartIndex,
         entry.chunkEndIndex,
       );
       const text = reasoningChunks.join("");
-      if (text.trim()) {
+      if (text.length > 0) {
         const thinkingBlock: CxThinkingContent = {
           type: "thinking",
           text,
@@ -186,8 +188,12 @@ export function assembleMessageParts(request: ActiveRequest): CxContentBlock[] {
         consumedRenderBlockIndices.add(i);
       }
 
+      // DATA CONTRACT: NEVER mutate text. The committed CxTextContent
+      // receives `rawText` byte-for-byte. `rawText.length > 0` is the
+      // only guard — we skip empty runs but do not strip whitespace, do
+      // not normalize, do not trim, do not collapse.
       const rawText = entry.rawText;
-      if (rawText && rawText.trim()) {
+      if (rawText && rawText.length > 0) {
         blocks.push({ type: "text", text: rawText } as CxTextContent);
 
         // Still emit any media blocks that landed in this text run —
@@ -211,7 +217,9 @@ export function assembleMessageParts(request: ActiveRequest): CxContentBlock[] {
       // Fallback for entries missing `rawText` (render_block-event streams
       // with no chunks, or reasoning-only runs): reconstruct markdown
       // from the typed render blocks so code/table/XML-tagged blocks
-      // re-parse into the same typed blocks on reload.
+      // re-parse into the same typed blocks on reload. Each reconstructed
+      // fragment is pushed verbatim — the only separator between
+      // non-adjacent fragments is `\n\n`, never a trim.
       const rangeIds = request.renderBlockOrder.slice(
         entry.blockStartIndex,
         entry.blockEndIndex,
@@ -222,8 +230,8 @@ export function assembleMessageParts(request: ActiveRequest): CxContentBlock[] {
         if (!block) continue;
         if (MEDIA_BLOCK_TYPES.has(block.type)) {
           if (textParts.length > 0) {
-            const joined = textParts.join("\n\n").trim();
-            if (joined) {
+            const joined = textParts.join("\n\n");
+            if (joined.length > 0) {
               blocks.push({ type: "text", text: joined } as CxTextContent);
             }
             textParts.length = 0;
@@ -236,12 +244,12 @@ export function assembleMessageParts(request: ActiveRequest): CxContentBlock[] {
             content: block.content ?? null,
             data: block.data ?? null,
           });
-          if (reconstructed.trim()) textParts.push(reconstructed);
+          if (reconstructed.length > 0) textParts.push(reconstructed);
         }
       }
       if (textParts.length > 0) {
-        const joined = textParts.join("\n\n").trim();
-        if (joined) {
+        const joined = textParts.join("\n\n");
+        if (joined.length > 0) {
           blocks.push({ type: "text", text: joined } as CxTextContent);
         }
       }
@@ -316,13 +324,15 @@ export function assembleMessageParts(request: ActiveRequest): CxContentBlock[] {
     if (MEDIA_BLOCK_TYPES.has(block.type)) {
       const mediaBlock = renderBlockToMediaBlock(block);
       if (mediaBlock) blocks.push(mediaBlock);
-    } else if (block.content?.trim()) {
+    } else if (typeof block.content === "string" && block.content.length > 0) {
+      // DATA CONTRACT: the reconstructed markdown is pushed verbatim. We
+      // only skip a completely empty reconstruction; no trim, no collapse.
       const reconstructed = reconstructBlockMarkdown({
         type: block.type,
         content: block.content,
         data: block.data ?? null,
       });
-      if (reconstructed.trim()) {
+      if (reconstructed.length > 0) {
         blocks.push({ type: "text", text: reconstructed } as CxTextContent);
       }
     }

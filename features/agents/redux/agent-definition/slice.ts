@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import isEqual from "lodash/isEqual";
 import type {
   AgentDefinition,
   AgentDefinitionRecord,
@@ -272,8 +273,9 @@ function applyFieldEdit<K extends keyof AgentDefinition>(
   value: AgentDefinition[K],
 ): void {
   const previousValue = record[field] as AgentDefinition[K];
+  const wasDirty = hasField(record._dirtyFields, field);
 
-  if (!hasField(record._dirtyFields, field)) {
+  if (!wasDirty) {
     (record._fieldHistory as FieldSnapshot)[field] = previousValue;
   }
 
@@ -281,8 +283,19 @@ function applyFieldEdit<K extends keyof AgentDefinition>(
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (record as any)[field] = value;
-  addField(record._dirtyFields, field);
-  record._dirty = true;
+
+  // Reconcile dirty state against the saved baseline. If the user edited the
+  // field back to its original value, the record is no longer dirty on this
+  // field — don't leave a stale "unsaved" flag behind. Deep equality is
+  // required because most fields are objects/arrays.
+  const baseline = record._fieldHistory[field];
+  if (wasDirty && isEqual(value, baseline)) {
+    removeField(record._dirtyFields, field);
+    delete record._fieldHistory[field];
+  } else {
+    addField(record._dirtyFields, field);
+  }
+  record._dirty = fieldFlagsSize(record._dirtyFields) > 0;
 }
 
 /**
@@ -702,8 +715,9 @@ export const agentDefinitionSlice = createSlice({
 
       // Recalculate dirty state: compare against _fieldHistory (the clean baseline)
       const originalValue = record._fieldHistory[entry.field];
-      if (originalValue !== undefined && entry.value === originalValue) {
+      if (originalValue !== undefined && isEqual(entry.value, originalValue)) {
         removeField(record._dirtyFields, entry.field);
+        delete record._fieldHistory[entry.field];
       } else if (!hasField(record._dirtyFields, entry.field)) {
         addField(record._dirtyFields, entry.field);
       }

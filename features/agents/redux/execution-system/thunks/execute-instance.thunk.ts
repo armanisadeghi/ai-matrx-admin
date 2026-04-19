@@ -88,9 +88,13 @@ export function assembleRequest(
   }
 
   // User input
+  // DATA CONTRACT: never modify the user's typed text. Whitespace,
+  // trailing newlines, leading spaces — all of it is meaningful
+  // (e.g. fenced code blocks, indented markdown, deliberate blank lines).
+  // We send exactly what the user typed.
   const userInputState =
     state.instanceUserInput.byConversationId[conversationId];
-  const textInput = userInputState?.text?.trim() ?? "";
+  const textInput = userInputState?.text ?? "";
   const messageParts = userInputState?.messageParts;
 
   // Resources → ContentBlock[]
@@ -199,9 +203,10 @@ export const executeInstance = createAsyncThunk<
       }
 
       // Capture the user's input BEFORE assembling (for history + display).
+      // Verbatim — never trim/normalize the user's typed text.
       const userInputEntry =
         state.instanceUserInput.byConversationId[conversationId];
-      const userInputText = userInputEntry?.text?.trim() ?? "";
+      const userInputText = userInputEntry?.text ?? "";
       const userMessageParts = userInputEntry?.messageParts ?? undefined;
 
       // Assemble the request
