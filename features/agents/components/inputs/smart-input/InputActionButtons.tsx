@@ -5,14 +5,17 @@
  *
  * Left and right toolbar buttons for the agent input.
  * Only requires conversationId — everything else comes from Redux or config props.
- * Config props are stable values that don't live in Redux (bucket names, feature flags).
+ *
+ * Voice recording is delegated to <AgentMicrophoneButton>, which owns the
+ * recorder lifecycle, permissions UI, and recovery toasts internally. This
+ * component has no idea whether recording is happening — it just renders
+ * the button in its mic slot.
  */
 
 import React, { useCallback } from "react";
 import {
   ArrowUp,
   CornerDownLeft,
-  Mic,
   ChevronDown,
   RefreshCcw,
   Braces,
@@ -21,14 +24,13 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
-import { TranscriptionLoader } from "@/features/audio";
 import { SmartAgentResourcePickerButton } from "../resources/SmartAgentResourcePickerButton";
+import { AgentMicrophoneButton } from "./AgentMicrophoneButton";
 import {
   selectSubmitOnEnter,
   selectShowVariablePanel,
   selectIsCreator,
   selectShowCreatorDebug,
-  selectShowAutoClearToggle,
 } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import {
   setSubmitOnEnter,
@@ -83,13 +85,6 @@ export function InputButton({
 
 interface InputActionButtonsProps {
   conversationId: string;
-  // Voice state — passed from AgentTextarea which owns the voice hook
-  isRecording: boolean;
-  isTranscribing: boolean;
-  duration: number;
-  onMicClick: () => void;
-  onStopRecording: () => void;
-  // Config — stable, not in Redux
   uploadBucket?: string;
   uploadPath?: string;
   showSendButton?: boolean;
@@ -105,11 +100,6 @@ interface InputActionButtonsProps {
 
 export function InputActionButtons({
   conversationId,
-  isRecording,
-  isTranscribing,
-  duration,
-  onMicClick,
-  onStopRecording,
   uploadBucket = "userContent",
   uploadPath = "agent-attachments",
   showSendButton = true,
@@ -162,81 +152,47 @@ export function InputActionButtons({
 
   return (
     <div className="flex items-center justify-between px-2 pb-1.5 mt-1 shrink-0">
-      {/* Left: voice state / resource picker / debug / variable toggle */}
+      {/* Left: resource picker / debug / variable toggle */}
       <div className="flex items-center gap-0.5">
-        {isTranscribing && !isRecording ? (
-          <div className="px-2">
-            <TranscriptionLoader
-              message="Transcribing"
-              duration={duration}
-              size="sm"
-            />
-          </div>
-        ) : isRecording ? (
-          <div className="flex items-center gap-2 bg-blue-50 dark:bg-blue-900/20 rounded-md px-2 py-1 animate-pulse">
-            <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-            <span className="text-xs font-medium text-blue-700 dark:text-blue-300">
-              Recording...
-            </span>
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              onClick={onStopRecording}
-              className="h-7 px-2 text-blue-600 hover:text-blue-700"
-            >
-              <Mic className="h-3.5 w-3.5" />
-              <span className="text-xs">
-                Stop ({Math.floor(duration / 60)}:
-                {String(duration % 60).padStart(2, "0")})
-              </span>
-            </Button>
-          </div>
-        ) : (
-          <>
-            <SmartAgentResourcePickerButton
-              conversationId={conversationId}
-              uploadBucket={uploadBucket}
-              uploadPath={uploadPath}
-            />
+        <SmartAgentResourcePickerButton
+          conversationId={conversationId}
+          uploadBucket={uploadBucket}
+          uploadPath={uploadPath}
+        />
 
-            {isAdmin && isDebugMode && (
-              <InputButton
-                icon={Bug}
-                tooltip="Debug instance state"
-                onClick={() =>
-                  dispatch(
-                    openOverlay({
-                      overlayId: "chatDebugWindow",
-                      data: { sessionId: conversationId },
-                    }),
-                  )
-                }
-                className="text-orange-500"
-              />
-            )}
+        {isAdmin && isDebugMode && (
+          <InputButton
+            icon={Bug}
+            tooltip="Debug instance state"
+            onClick={() =>
+              dispatch(
+                openOverlay({
+                  overlayId: "chatDebugWindow",
+                  data: { sessionId: conversationId },
+                }),
+              )
+            }
+            className="text-orange-500"
+          />
+        )}
 
-            {isCreator && (
-              <InputButton
-                icon={ChevronDown}
-                tooltip={showCreatorDebug ? "Hide debug" : "Show debug"}
-                onClick={() => dispatch(toggleCreatorDebug(conversationId))}
-                active={showCreatorDebug}
-                className="text-amber-500"
-              />
-            )}
+        {isCreator && (
+          <InputButton
+            icon={ChevronDown}
+            tooltip={showCreatorDebug ? "Hide debug" : "Show debug"}
+            onClick={() => dispatch(toggleCreatorDebug(conversationId))}
+            active={showCreatorDebug}
+            className="text-amber-500"
+          />
+        )}
 
-            {shouldShowVariables && showVariableIcon && (
-              <InputButton
-                icon={Braces}
-                tooltip={
-                  showVariablePanel ? "Hide variables" : "Show variables"
-                }
-                onClick={() => dispatch(toggleVariablePanel(conversationId))}
-                active={showVariablePanel}
-              />
-            )}
-          </>
+        {shouldShowVariables && showVariableIcon && (
+          <InputButton
+            icon={Braces}
+            tooltip={showVariablePanel ? "Hide variables" : "Show variables"}
+            onClick={() => dispatch(toggleVariablePanel(conversationId))}
+            active={showVariablePanel}
+          />
         )}
       </div>
 
@@ -277,10 +233,11 @@ export function InputActionButtons({
           />
         )}
 
-        <InputButton
-          icon={Mic}
-          tooltip="Record voice message"
-          onClick={onMicClick}
+        <AgentMicrophoneButton
+          conversationId={conversationId}
+          surfaceKey={surfaceKey}
+          disableSend={disableSend}
+          size="sm"
         />
 
         {showSendButton && (

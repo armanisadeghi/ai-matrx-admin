@@ -161,9 +161,7 @@ function copyItems(ctx: MessageActionContext): MenuItem[] {
           formatForGoogleDocs: true,
           onSuccess: () => {},
           onError: (error) => {
-            throw new Error(
-              getErrorMessage(error, "Failed to copy for Docs"),
-            );
+            throw new Error(getErrorMessage(error, "Failed to copy for Docs"));
           },
         });
       },
@@ -182,9 +180,7 @@ function copyItems(ctx: MessageActionContext): MenuItem[] {
           formatForGoogleDocs: true,
           onSuccess: () => {},
           onError: (error) => {
-            throw new Error(
-              getErrorMessage(error, "Failed to copy for Word"),
-            );
+            throw new Error(getErrorMessage(error, "Failed to copy for Word"));
           },
         });
       },
@@ -216,11 +212,33 @@ function exportItems(ctx: MessageActionContext): MenuItem[] {
       iconColor: "text-indigo-500 dark:text-indigo-400",
       label: "HTML preview",
       action: () => {
+        const instanceId = `html-preview-${messageId ?? "default"}`;
         dispatch(
           openHtmlPreview({
             content,
             messageId: messageId ?? undefined,
             conversationId: conversationId ?? undefined,
+            instanceId,
+            showSaveButton: Boolean(conversationId && messageId),
+            onSave: async (newContent: string) => {
+              if (conversationId && messageId) {
+                try {
+                  const { editMessage } =
+                    await import("@/features/agents/redux/execution-system/message-crud");
+                  await dispatch(
+                    editMessage({
+                      conversationId,
+                      messageId,
+                      newContent: wrapTextAsContent(newContent),
+                    }),
+                  ).unwrap();
+                } catch (err) {
+                  // eslint-disable-next-line no-console
+                  console.error("[html-preview] save failed", err);
+                }
+              }
+              dispatch(closeOverlay({ overlayId: "htmlPreview", instanceId }));
+            },
           }),
         );
         onClose();
@@ -526,15 +544,16 @@ function editContentItem(ctx: MessageActionContext): MenuItem {
     iconColor: "text-emerald-500 dark:text-emerald-400",
     label: "Edit content",
     action: () => {
+      const instanceId = `edit-content-${messageId}`;
       dispatch(
         openFullScreenEditor({
           content,
+          instanceId,
           onSave: async (newContent: string) => {
             if (conversationId && messageId) {
               try {
-                const { editMessage } = await import(
-                  "@/features/agents/redux/execution-system/message-crud"
-                );
+                const { editMessage } =
+                  await import("@/features/agents/redux/execution-system/message-crud");
                 await dispatch(
                   editMessage({
                     conversationId,
@@ -547,7 +566,9 @@ function editContentItem(ctx: MessageActionContext): MenuItem {
                 console.error("[edit-content] save failed", err);
               }
             }
-            dispatch(closeOverlay({ overlayId: "fullScreenEditor" }));
+            dispatch(
+              closeOverlay({ overlayId: "fullScreenEditor", instanceId }),
+            );
           },
           messageId: messageId ?? undefined,
           analysisData: metadata as Record<string, unknown> | undefined,
@@ -583,21 +604,19 @@ function editAndResubmitItem(ctx: MessageActionContext): MenuItem {
         onClose();
         return;
       }
+      const instanceId = `edit-resubmit-${messageId}`;
       dispatch(
         openFullScreenEditor({
           content,
+          instanceId,
           onSave: async (newContent: string) => {
             try {
-              const { forkConversation, editMessage } = await import(
-                "@/features/agents/redux/execution-system/message-crud"
-              );
+              const { forkConversation, editMessage } =
+                await import("@/features/agents/redux/execution-system/message-crud");
               // Read position from state right before firing. Fork at
               // (position - 1) so the user's new message becomes the next
               // turn on the branch, replacing whatever originally came after.
-              const positionThunk = (
-                _: unknown,
-                getState: () => RootState,
-              ) => {
+              const positionThunk = (_: unknown, getState: () => RootState) => {
                 const entry =
                   getState().messages.byConversationId[conversationId];
                 const msg = entry?.byId?.[messageId];
@@ -627,7 +646,9 @@ function editAndResubmitItem(ctx: MessageActionContext): MenuItem {
               // eslint-disable-next-line no-console
               console.error("[edit-resubmit] failed", err);
             } finally {
-              dispatch(closeOverlay({ overlayId: "fullScreenEditor" }));
+              dispatch(
+                closeOverlay({ overlayId: "fullScreenEditor", instanceId }),
+              );
             }
           },
           messageId: messageId ?? undefined,
@@ -662,15 +683,10 @@ function forkAtMessageItem(ctx: MessageActionContext): MenuItem {
         return;
       }
       try {
-        const { forkConversation } = await import(
-          "@/features/agents/redux/execution-system/message-crud"
-        );
-        const positionThunk = (
-          _: unknown,
-          getState: () => RootState,
-        ) => {
-          const entry =
-            getState().messages.byConversationId[conversationId];
+        const { forkConversation } =
+          await import("@/features/agents/redux/execution-system/message-crud");
+        const positionThunk = (_: unknown, getState: () => RootState) => {
+          const entry = getState().messages.byConversationId[conversationId];
           const msg = entry?.byId?.[messageId];
           const position = msg?.position ?? 0;
           return dispatch(
@@ -840,8 +856,7 @@ export function resumePendingAuthAction(
       dispatch(openSaveToNotes({ content: savedContent }));
     } else if (action === "add-to-tasks") {
       const preview = savedContent.slice(0, 160);
-      const title =
-        preview.split("\n")[0]?.slice(0, 80) || "Task from message";
+      const title = preview.split("\n")[0]?.slice(0, 80) || "Task from message";
       (
         dispatch as unknown as (
           action: ReturnType<typeof createTaskWithAssociation>,

@@ -135,6 +135,7 @@ export function AssistantActionBar({
     dispatch(
       openFullScreenEditor({
         content,
+        instanceId: `cx-assistant-edit-${messageId}`,
         onSave: (newContent: string) => {
           if (sessionId && messageId) {
             dispatch(
@@ -145,7 +146,12 @@ export function AssistantActionBar({
               }),
             );
           }
-          dispatch(closeOverlay({ overlayId: "fullScreenEditor" }));
+          dispatch(
+            closeOverlay({
+              overlayId: "fullScreenEditor",
+              instanceId: `cx-assistant-edit-${messageId}`,
+            }),
+          );
         },
         messageId,
       }),

@@ -61,10 +61,6 @@ export function AssistantActionBar({
   isCapturing,
 }: AssistantActionBarProps) {
   const dispatch = useAppDispatch();
-
-  console.log("[AssistantActionBar] messageId:", messageId);
-  console.log("[AssistantActionBar] conversationId:", conversationId);
-
   const [isCopied, setIsCopied] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [isDisliked, setIsDisliked] = useState(false);

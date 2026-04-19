@@ -4,11 +4,15 @@
  * AgentTextarea
  *
  * The composing surface for agent input — textarea, auto-resize, expand toggle,
- * voice recording, clipboard paste, and undo/redo keyboard shortcuts.
+ * clipboard paste, and undo/redo keyboard shortcuts.
  *
- * Only requires conversationId. Everything else comes from Redux or config props.
- * Exposes voice state via `onVoiceStateChange` so InputActionButtons can render
- * the recording indicator without owning the hook.
+ * Voice input is NOT handled here. The microphone button lives in the action
+ * bar beside this textarea and writes transcripts into the same
+ * `userInputText` Redux slice that this component reads — there's no voice
+ * state plumbed through this component or its parents.
+ *
+ * Only requires conversationId. Everything else comes from Redux or config
+ * props.
  */
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
@@ -22,7 +26,6 @@ import {
 import { setUserInputText } from "@/features/agents/redux/execution-system/instance-user-input/instance-user-input.slice";
 import { selectSubmitOnEnter } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { selectIsExecuting } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
-import { useRecordAndTranscribe } from "@/features/audio";
 import { useClipboardPaste } from "@/components/ui/file-upload/useClipboardPaste";
 import { useFileUploadWithStorage } from "@/components/ui/file-upload/useFileUploadWithStorage";
 import {
@@ -34,16 +37,6 @@ import {
   smartExecute,
   cancelExecution,
 } from "@/features/agents/redux/execution-system/thunks/smart-execute.thunk";
-
-// ── Voice state surface ──────────────────────────────────────────────────────
-
-export interface VoiceState {
-  isRecording: boolean;
-  isTranscribing: boolean;
-  duration: number;
-  onMicClick: () => void;
-  onStopRecording: () => void;
-}
 
 // ── Props ────────────────────────────────────────────────────────────────────
 
@@ -58,8 +51,6 @@ interface AgentTextareaProps {
   enablePasteImages?: boolean;
   surfaceKey?: string;
   disableSend?: boolean;
-  /** Receives voice state so parent can pass it to InputActionButtons */
-  onVoiceStateChange: (state: VoiceState) => void;
 }
 
 // ── Component ────────────────────────────────────────────────────────────────
@@ -74,12 +65,10 @@ export function AgentTextarea({
   enablePasteImages = true,
   surfaceKey,
   disableSend = false,
-  onVoiceStateChange,
 }: AgentTextareaProps) {
   const dispatch = useAppDispatch();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const pendingVoiceSubmitRef = useRef(false);
 
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -108,59 +97,6 @@ export function AgentTextarea({
     uploadPath,
   );
 
-  // ── Voice ───────────────────────────────────────────────────────────────────
-  const {
-    isRecording,
-    isTranscribing,
-    duration,
-    startRecording,
-    stopRecording,
-  } = useRecordAndTranscribe({
-    onTranscriptionComplete: (result) => {
-      if (result.success && result.text) {
-        const newText = inputText
-          ? `${inputText}\n${result.text}`
-          : result.text;
-        pendingVoiceSubmitRef.current = true;
-        dispatch(
-          setUserInputText({
-            conversationId,
-            text: newText,
-            userValues: currentUserValues,
-          }),
-        );
-      }
-    },
-    onError: (error) => {
-      toast.error("Transcription failed", { description: error });
-    },
-    autoTranscribe: true,
-  });
-
-  const handleMicClick = useCallback(() => {
-    if (isRecording) stopRecording();
-    else if (!isTranscribing) startRecording();
-  }, [isRecording, isTranscribing, startRecording, stopRecording]);
-
-  // Publish voice state to parent on every change
-  useEffect(() => {
-    onVoiceStateChange({
-      isRecording,
-      isTranscribing,
-      duration,
-      onMicClick: handleMicClick,
-      onStopRecording: stopRecording,
-    });
-  }, [
-    isRecording,
-    isTranscribing,
-    duration,
-    handleMicClick,
-    stopRecording,
-    onVoiceStateChange,
-  ]);
-
-  // Submit after voice transcription settles
   const handleSend = useCallback(() => {
     if (disableSend) return;
     if (isExecuting) {
@@ -169,13 +105,6 @@ export function AgentTextarea({
       dispatch(smartExecute({ conversationId, surfaceKey }));
     }
   }, [disableSend, isExecuting, conversationId, surfaceKey, dispatch]);
-
-  useEffect(() => {
-    if (pendingVoiceSubmitRef.current && inputText.trim()) {
-      pendingVoiceSubmitRef.current = false;
-      setTimeout(() => handleSend(), 50);
-    }
-  }, [inputText, handleSend]);
 
   // ── Paste image ─────────────────────────────────────────────────────────────
   const handlePasteImage = useCallback(

@@ -2,10 +2,16 @@
 .cursor/mcp.json
 
 # dependencies
-/node_modules
+node_modules/
 /.pnp
 .pnp.js
 .yarn/install-state.gz
+
+# workspace package build outputs
+packages/*/dist/
+packages/*/build/
+packages/*/.turbo/
+packages/*/tsconfig.tsbuildinfo
 
 # testing
 /coverage

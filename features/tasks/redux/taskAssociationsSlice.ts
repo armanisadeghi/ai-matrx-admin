@@ -149,7 +149,16 @@ export const associateWithTask = createAsyncThunk<
       p_label: label ?? null,
       p_metadata: metadata ?? {},
     });
-    if (error) throw error;
+    if (error) {
+      console.error("[associateWithTask] RPC error:", {
+        message: error.message,
+        code: (error as { code?: string }).code,
+        hint: (error as { hint?: string }).hint,
+        details: (error as { details?: string }).details,
+        args: { taskId, entityType, entityId, label },
+      });
+      throw error;
+    }
     // Refresh both sides of the linkage
     await Promise.all([
       dispatch(fetchTaskAssociations(taskId)),
@@ -218,7 +227,18 @@ export const createTaskWithAssociation = createAsyncThunk<
     p_label: input.label ?? null,
     p_metadata: input.metadata ?? {},
   });
-  if (error) throw error;
+  if (error) {
+    // Surface the full error so the browser console shows the RPC message
+    // (code, hint, details) rather than the opaque "AsyncThunk rejected".
+    console.error("[createTaskWithAssociation] RPC error:", {
+      message: error.message,
+      code: (error as { code?: string }).code,
+      hint: (error as { hint?: string }).hint,
+      details: (error as { details?: string }).details,
+      input,
+    });
+    throw error;
+  }
   const payload = (data ?? {}) as {
     task?: Record<string, unknown>;
     association?: Record<string, unknown> | null;
@@ -304,7 +324,16 @@ export const createTasksBulk = createAsyncThunk<
     p_entity_id: input.entity_id ?? null,
     p_metadata: input.metadata ?? {},
   });
-  if (error) throw error;
+  if (error) {
+    console.error("[createTasksBulk] RPC error:", {
+      message: error.message,
+      code: (error as { code?: string }).code,
+      hint: (error as { hint?: string }).hint,
+      details: (error as { details?: string }).details,
+      itemCount: input.items.length,
+    });
+    throw error;
+  }
   const payload = (data ?? {}) as { tasks?: Record<string, unknown>[] };
   const tasks: TaskRecord[] = (payload.tasks ?? []).map((t) => {
     const r = t as {

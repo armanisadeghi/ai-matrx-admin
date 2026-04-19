@@ -4,14 +4,18 @@
  * SingleRowActionButtons
  *
  * Compact action buttons for the single-row input layout.
- * Renders mic + optional extra controls + send button side-by-side with the textarea.
- * Omits submit-on-enter toggle and auto-clear toggle (not applicable in single-row mode).
+ * Renders the mic + optional extra controls + send button side-by-side with
+ * the textarea. Omits submit-on-enter toggle and auto-clear toggle (not
+ * applicable in single-row mode).
+ *
+ * Voice recording is delegated to <AgentMicrophoneButton>. This component
+ * does not know whether recording is active — the mic button manages its
+ * own lifecycle and error UI.
  */
 
 import React, { useCallback } from "react";
 import {
   ArrowUp,
-  Mic,
   Braces,
   ChevronDown,
   Bug,
@@ -19,9 +23,9 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
-import { TranscriptionLoader } from "@/features/audio";
 import { SmartAgentResourcePickerButton } from "../resources/SmartAgentResourcePickerButton";
 import { InputButton } from "./InputActionButtons";
+import { AgentMicrophoneButton } from "./AgentMicrophoneButton";
 import {
   selectShowVariablePanel,
   selectIsCreator,
@@ -45,11 +49,6 @@ import {
 
 interface SingleRowActionButtonsProps {
   conversationId: string;
-  isRecording: boolean;
-  isTranscribing: boolean;
-  duration: number;
-  onMicClick: () => void;
-  onStopRecording: () => void;
   uploadBucket?: string;
   uploadPath?: string;
   showSendButton?: boolean;
@@ -62,11 +61,6 @@ interface SingleRowActionButtonsProps {
 
 export function SingleRowActionButtons({
   conversationId,
-  isRecording,
-  isTranscribing,
-  duration,
-  onMicClick,
-  onStopRecording,
   uploadBucket = "userContent",
   uploadPath = "agent-attachments",
   showSendButton = true,
@@ -108,76 +102,54 @@ export function SingleRowActionButtons({
 
   return (
     <div className="flex items-center gap-0.5 shrink-0">
-      {/* Transcribing / recording state */}
-      {isTranscribing && !isRecording ? (
-        <div className="px-1">
-          <TranscriptionLoader message="" duration={duration} size="sm" />
-        </div>
-      ) : isRecording ? (
-        <div className="flex items-center gap-1 bg-blue-50 dark:bg-blue-900/20 rounded-full px-2 py-0.5 animate-pulse">
-          <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            onClick={onStopRecording}
-            className="h-5 px-1 text-blue-600 hover:text-blue-700 text-xs"
-          >
-            <Mic className="h-3 w-3 mr-0.5" />
-            {Math.floor(duration / 60)}:{String(duration % 60).padStart(2, "0")}
-          </Button>
-        </div>
-      ) : (
-        <>
-          <SmartAgentResourcePickerButton
-            conversationId={conversationId}
-            uploadBucket={uploadBucket}
-            uploadPath={uploadPath}
-          />
+      <SmartAgentResourcePickerButton
+        conversationId={conversationId}
+        uploadBucket={uploadBucket}
+        uploadPath={uploadPath}
+      />
 
-          {isAdmin && isDebugMode && (
-            <InputButton
-              icon={Bug}
-              tooltip="Debug instance state"
-              onClick={() =>
-                dispatch(
-                  openOverlay({
-                    overlayId: "chatDebugWindow",
-                    data: { sessionId: conversationId },
-                  }),
-                )
-              }
-              className="text-orange-500"
-            />
-          )}
+      {isAdmin && isDebugMode && (
+        <InputButton
+          icon={Bug}
+          tooltip="Debug instance state"
+          onClick={() =>
+            dispatch(
+              openOverlay({
+                overlayId: "chatDebugWindow",
+                data: { sessionId: conversationId },
+              }),
+            )
+          }
+          className="text-orange-500"
+        />
+      )}
 
-          {isCreator && (
-            <InputButton
-              icon={ChevronDown}
-              tooltip={showCreatorDebug ? "Hide debug" : "Show debug"}
-              onClick={() => dispatch(toggleCreatorDebug(conversationId))}
-              active={showCreatorDebug}
-              className="text-amber-500"
-            />
-          )}
+      {isCreator && (
+        <InputButton
+          icon={ChevronDown}
+          tooltip={showCreatorDebug ? "Hide debug" : "Show debug"}
+          onClick={() => dispatch(toggleCreatorDebug(conversationId))}
+          active={showCreatorDebug}
+          className="text-amber-500"
+        />
+      )}
 
-          {shouldShowVariables && showVariableIcon && (
-            <InputButton
-              icon={Braces}
-              tooltip={showVariablePanel ? "Hide variables" : "Show variables"}
-              onClick={() => dispatch(toggleVariablePanel(conversationId))}
-              active={showVariablePanel}
-            />
-          )}
-        </>
+      {shouldShowVariables && showVariableIcon && (
+        <InputButton
+          icon={Braces}
+          tooltip={showVariablePanel ? "Hide variables" : "Show variables"}
+          onClick={() => dispatch(toggleVariablePanel(conversationId))}
+          active={showVariablePanel}
+        />
       )}
 
       {extraRightControls}
 
-      <InputButton
-        icon={Mic}
-        tooltip="Record voice message"
-        onClick={onMicClick}
+      <AgentMicrophoneButton
+        conversationId={conversationId}
+        surfaceKey={surfaceKey}
+        disableSend={disableSend}
+        size="xs"
       />
 
       {showSendButton && (

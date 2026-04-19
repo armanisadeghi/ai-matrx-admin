@@ -3,25 +3,27 @@
 /**
  * SmartAgentInput
  *
- * Thin wrapper that composes AgentVariableSection + AgentTextarea + InputActionButtons.
- * No logic lives here — each child component is fully self-contained via Redux.
- * The only "prop drilling" is voice state (isRecording etc.) which is ephemeral UI
- * that doesn't belong in Redux — it flows from AgentTextarea → InputActionButtons
- * through this component's local state.
+ * Thin wrapper that composes AgentVariableSection + AgentTextarea +
+ * InputActionButtons. No logic lives here — each child component is fully
+ * self-contained via Redux. Voice input lives inside the action bar's
+ * <AgentMicrophoneButton>, which writes transcripts into the same Redux
+ * input text this component's textarea reads from, so no voice state flows
+ * through this component.
  *
  * Layout modes:
- *   default        — stacked: variables → chips → textarea → toolbar
- *   singleRowTextarea — horizontal row: textarea left, buttons right (compact pill look)
+ *   default           — stacked: variables → chips → textarea → toolbar
+ *   singleRowTextarea — horizontal row: textarea left, buttons right
+ *                       (compact pill look)
  *
  * Required prop: conversationId.
  */
 
-import React, { useState, useCallback } from "react";
+import React from "react";
 import { ArrowUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SmartAgentResourceChips } from "../resources/SmartAgentResourceChips";
 import { SmartAgentVariables } from "../variable-input-variations/SmartAgentVariables";
-import { AgentTextarea, type VoiceState } from "./AgentTextarea";
+import { AgentTextarea } from "./AgentTextarea";
 import { InputActionButtons } from "./InputActionButtons";
 import { SingleRowActionButtons } from "./SingleRowActionButtons";
 import { smartExecute } from "@/features/agents/redux/execution-system/thunks/smart-execute.thunk";
@@ -47,16 +49,6 @@ interface SmartAgentInputProps {
   variableInputStyle?: VariableInputStyle;
   extraRightControls?: React.ReactNode;
 }
-
-// ── Default voice state (before AgentTextarea mounts) ────────────────────────
-
-const DEFAULT_VOICE_STATE: VoiceState = {
-  isRecording: false,
-  isTranscribing: false,
-  duration: 0,
-  onMicClick: () => {},
-  onStopRecording: () => {},
-};
 
 // ── Uninitialized shell ──────────────────────────────────────────────────────
 
@@ -125,12 +117,6 @@ export function SmartAgentInput({
 }: SmartAgentInputProps) {
   const dispatch = useAppDispatch();
 
-  // Voice state flows up from AgentTextarea, down into InputActionButtons
-  const [voiceState, setVoiceState] = useState<VoiceState>(DEFAULT_VOICE_STATE);
-  const handleVoiceStateChange = useCallback((state: VoiceState) => {
-    setVoiceState(state);
-  }, []);
-
   const sendBtnClass =
     sendButtonVariant === "blue"
       ? "h-7 w-7 p-0 shrink-0 rounded-full bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 disabled:opacity-40 text-white"
@@ -177,7 +163,6 @@ export function SmartAgentInput({
               enablePasteImages={enablePasteImages}
               surfaceKey={surfaceKey}
               disableSend={disableSend}
-              onVoiceStateChange={handleVoiceStateChange}
               singleRow
             />
           </div>
@@ -185,11 +170,6 @@ export function SmartAgentInput({
           {/* Action buttons pinned to the right */}
           <SingleRowActionButtons
             conversationId={conversationId}
-            isRecording={voiceState.isRecording}
-            isTranscribing={voiceState.isTranscribing}
-            duration={voiceState.duration}
-            onMicClick={voiceState.onMicClick}
-            onStopRecording={voiceState.onStopRecording}
             uploadBucket={uploadBucket}
             uploadPath={uploadPath}
             showSendButton={showSendButton}
@@ -230,17 +210,11 @@ export function SmartAgentInput({
         enablePasteImages={enablePasteImages}
         surfaceKey={surfaceKey}
         disableSend={disableSend}
-        onVoiceStateChange={handleVoiceStateChange}
       />
 
       {/* Toolbar — always pinned at the bottom */}
       <InputActionButtons
         conversationId={conversationId}
-        isRecording={voiceState.isRecording}
-        isTranscribing={voiceState.isTranscribing}
-        duration={voiceState.duration}
-        onMicClick={voiceState.onMicClick}
-        onStopRecording={voiceState.onStopRecording}
         uploadBucket={uploadBucket}
         uploadPath={uploadPath}
         showSendButton={showSendButton}

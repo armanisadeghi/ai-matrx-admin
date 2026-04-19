@@ -73,16 +73,17 @@ export function UserActionBar({
 
   const handleEdit = () => {
     // Plain edit — overwrite the stored content, no fork, no resubmit.
+    const instanceId = `user-edit-${messageId}`;
     dispatch(
       openFullScreenEditor({
         content,
+        instanceId,
         messageId,
         analysisData: metadata ?? undefined,
         onSave: async (newContent: string) => {
           try {
-            const { editMessage } = await import(
-              "@/features/agents/redux/execution-system/message-crud"
-            );
+            const { editMessage } =
+              await import("@/features/agents/redux/execution-system/message-crud");
             const nextContent = [
               { type: "text", text: newContent },
             ] as unknown as Json;
@@ -97,7 +98,7 @@ export function UserActionBar({
             // eslint-disable-next-line no-console
             console.error("[UserActionBar] edit save failed", err);
           }
-          dispatch(closeOverlay({ overlayId: "fullScreenEditor" }));
+          dispatch(closeOverlay({ overlayId: "fullScreenEditor", instanceId }));
         },
       }),
     );
@@ -106,23 +107,21 @@ export function UserActionBar({
   const handleEditAndResubmit = () => {
     // Fork + edit + surface the fork head. The user can hit Send from the
     // input bar to launch the new AI turn on the branch.
+    const instanceId = `user-edit-resubmit-${messageId}`;
     dispatch(
       openFullScreenEditor({
         content,
+        instanceId,
         messageId,
         analysisData: metadata ?? undefined,
         onSave: async (newContent: string) => {
           try {
-            const { forkConversation, editMessage } = await import(
-              "@/features/agents/redux/execution-system/message-crud"
-            );
+            const { forkConversation, editMessage } =
+              await import("@/features/agents/redux/execution-system/message-crud");
             // Read position right before firing. Fork at (position - 1) so
             // this message becomes the next turn on the branch, replacing
             // whatever originally came after.
-            const positionThunk = (
-              _: unknown,
-              getState: () => RootState,
-            ) => {
+            const positionThunk = (_: unknown, getState: () => RootState) => {
               const entry =
                 getState().messages.byConversationId[conversationId];
               const msg = entry?.byId?.[messageId];
@@ -150,7 +149,7 @@ export function UserActionBar({
             // eslint-disable-next-line no-console
             console.error("[UserActionBar] edit & resubmit failed", err);
           }
-          dispatch(closeOverlay({ overlayId: "fullScreenEditor" }));
+          dispatch(closeOverlay({ overlayId: "fullScreenEditor", instanceId }));
         },
       }),
     );

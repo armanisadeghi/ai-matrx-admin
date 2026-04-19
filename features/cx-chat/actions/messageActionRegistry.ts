@@ -151,9 +151,11 @@ export function getMessageActions(ctx: MessageActionContext): MenuItem[] {
       iconColor: "text-emerald-500 dark:text-emerald-400",
       label: "Edit content",
       action: () => {
+        const instanceId = `cx-edit-content-${messageId}`;
         dispatch(
           openFullScreenEditor({
             content,
+            instanceId,
             onSave: (newContent: string) => {
               if (sessionId && messageId) {
                 dispatch(
@@ -164,7 +166,9 @@ export function getMessageActions(ctx: MessageActionContext): MenuItem[] {
                   }),
                 );
               }
-              dispatch(closeOverlay({ overlayId: "fullScreenEditor" }));
+              dispatch(
+                closeOverlay({ overlayId: "fullScreenEditor", instanceId }),
+              );
             },
             messageId: messageId ?? undefined,
             analysisData: metadata as Record<string, unknown> | undefined,
@@ -398,11 +402,26 @@ export function getMessageActions(ctx: MessageActionContext): MenuItem[] {
       iconColor: "text-indigo-500 dark:text-indigo-400",
       label: "HTML preview",
       action: () => {
+        const instanceId = `cx-html-preview-${messageId ?? "default"}`;
         dispatch(
           openHtmlPreview({
             content,
             messageId: messageId ?? undefined,
             conversationId: conversationId ?? undefined,
+            instanceId,
+            showSaveButton: Boolean(sessionId && messageId),
+            onSave: (newContent: string) => {
+              if (sessionId && messageId) {
+                dispatch(
+                  chatConversationsActions.updateMessage({
+                    sessionId,
+                    messageId,
+                    updates: { content: newContent },
+                  }),
+                );
+              }
+              dispatch(closeOverlay({ overlayId: "htmlPreview", instanceId }));
+            },
           }),
         );
         onClose();
