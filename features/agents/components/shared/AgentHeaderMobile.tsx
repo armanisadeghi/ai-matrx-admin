@@ -105,24 +105,24 @@ export function AgentHeaderMobile({ agentId }: AgentHeaderMobileProps) {
 
   return (
     <>
-      <div className="flex items-center w-full">
+      <div className="flex items-center w-full gap-0.5 min-w-0">
         {/* Left: Agent selector — Webhook icon opens the drawer (no name label; icons-only to save mobile space) */}
         <AgentListDropdown
           onSelect={handleAgentSelect}
           triggerSlot={
             <button
-              className="flex h-11 w-11 items-center justify-center bg-transparent transition-transform active:scale-95 outline-none cursor-pointer"
+              className="flex h-9 w-9 shrink-0 items-center justify-center bg-transparent transition-transform active:scale-95 outline-none cursor-pointer"
               aria-label="Select agent"
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-full matrx-shell-glass transition-colors">
-                <Webhook className="w-4 h-4" />
+              <div className="flex h-6 w-6 items-center justify-center rounded-full matrx-shell-glass transition-colors">
+                <Webhook className="w-3.5 h-3.5" />
               </div>
             </button>
           }
         />
 
         {/* Center: 5-icon mode group */}
-        <div className="flex-1 flex justify-center">
+        <div className="flex-1 flex justify-center min-w-0">
           <TapTargetButtonGroup>
             {MODES.map(({ id, label, icon: Icon }) => {
               const isActive = id === mode;
