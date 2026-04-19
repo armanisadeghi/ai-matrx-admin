@@ -1,13 +1,20 @@
 /**
- * StreamingSpeakerButtonCore — single play/pause toggle (dynamically imported)
+ * StreamingSpeakerLive
  *
- * Same shape and UX as SpeakerButtonCore, but uses useCartesiaStreamingSpeaker
- * under the hood so the first audio byte arrives ~200-300ms after click even
- * for multi-paragraph inputs.
+ * The "live" part of the speaker — everything that needs the Cartesia SDK,
+ * the streaming hook, and real audio state. Designed to live behind a
+ * dynamic import in the lightweight shell (StreamingSpeakerButton), so the
+ * SDK chunk only ships when the user actually clicks play.
  *
- * This file imports the Cartesia SDK transitively via the streaming hook.
- * Consumers must load this module behind React.lazy / next/dynamic so the
- * SDK is NOT pulled into the initial bundle.
+ * First render state: because the hook is initialised with `initialLoading: true`,
+ * the very first frame rendered by this component is the disabled "Connecting…"
+ * icon — exactly matching the placeholder the shell shows while the dynamic
+ * chunk is fetching. That means the DOM transition from "shell's placeholder"
+ * to "this component's first render" is visually a no-op: same button, same
+ * variant, same disabled/aria state. No flicker.
+ *
+ * On mount we auto-call speak(text) once. Subsequent clicks toggle play/pause
+ * via the hook's own controls.
  */
 
 'use client';
@@ -17,30 +24,28 @@ import { Volume2TapButton, PauseTapButton } from '@/components/icons/tap-buttons
 import { useCartesiaStreamingSpeaker } from '../hooks/useCartesiaStreamingSpeaker';
 import type { SpeakerVariant } from '../types';
 
-export interface StreamingSpeakerButtonCoreProps {
+export interface StreamingSpeakerLiveProps {
   text: string;
   processMarkdown?: boolean;
-  autoStart?: boolean;
   variant?: SpeakerVariant;
   className?: string;
   disabled?: boolean;
 }
 
-export default function StreamingSpeakerButtonCore({
+export function StreamingSpeakerLive({
   text,
   processMarkdown = true,
-  autoStart = false,
   variant,
   className,
   disabled = false,
-}: StreamingSpeakerButtonCoreProps) {
+}: StreamingSpeakerLiveProps) {
   const { isLoading, isPlaying, isPaused, speak, pause, resume } =
-    useCartesiaStreamingSpeaker({ processMarkdown });
+    useCartesiaStreamingSpeaker({ processMarkdown, initialLoading: true });
 
   const autoStartFired = useRef(false);
 
   useEffect(() => {
-    if (!autoStart || autoStartFired.current) return;
+    if (autoStartFired.current) return;
     autoStartFired.current = true;
     speak(text);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -75,3 +80,5 @@ export default function StreamingSpeakerButtonCore({
     />
   );
 }
+
+export default StreamingSpeakerLive;

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Search, PenSquare, ChevronLeft, ChevronRight, MoreVertical, Edit, Trash2, ExternalLink, Share2, Archive } from 'lucide-react';
+import { toast } from 'sonner';
 import clsx from 'clsx';
 import { useConversationPanel } from '@/features/chat/hooks/useConversationPanel';
 import {
@@ -190,22 +191,22 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                           <ExternalLink className="h-3.5 w-3.5 mr-2" />
                           Open
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => {/* TODO: Edit functionality */}}>
+                        <DropdownMenuItem onClick={() => toast.info("Editing conversations is coming soon.")}>
                           <Edit className="h-3.5 w-3.5 mr-2" />
                           Edit
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => {/* TODO: Share functionality */}}>
+                        <DropdownMenuItem onClick={() => toast.info("Conversation sharing is coming soon.")}>
                           <Share2 className="h-3.5 w-3.5 mr-2" />
                           Share
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => {/* TODO: Archive functionality */}}>
+                        <DropdownMenuItem onClick={() => toast.info("Conversation archive is coming soon.")}>
                           <Archive className="h-3.5 w-3.5 mr-2" />
                           Archive
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem 
-                          onClick={() => {/* TODO: Delete functionality */}}
+                        <DropdownMenuItem
+                          onClick={() => toast.info("Delete conversation from the conversation view itself — that flow is wired.")}
                           className="text-red-600 dark:text-red-400"
                         >
                           <Trash2 className="h-3.5 w-3.5 mr-2" />

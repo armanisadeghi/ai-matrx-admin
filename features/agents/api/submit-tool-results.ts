@@ -17,10 +17,11 @@
  */
 
 import { callApi } from "@/lib/api/call-api";
-import type { AppDispatch } from "@/lib/redux/store";
-import type { ThunkAction } from "redux-thunk";
-import type { Action } from "redux";
+import type { ThunkAction, ThunkDispatch } from "redux-thunk";
+import type { UnknownAction } from "@reduxjs/toolkit";
 import type { RootState } from "@/lib/redux/store";
+
+type ToolResultsDispatch = ThunkDispatch<RootState, unknown, UnknownAction>;
 import type { components } from "@/types/python-generated/api-types";
 
 type ClientToolResult = components["schemas"]["ClientToolResult"];
@@ -34,13 +35,13 @@ export interface PendingToolResult extends ClientToolResult {
 const queue: Map<string, ClientToolResult[]> = new Map();
 let scheduled = false;
 
-function scheduleFlush(dispatch: AppDispatch): void {
+function scheduleFlush(dispatch: ToolResultsDispatch): void {
   if (scheduled) return;
   scheduled = true;
   queueMicrotask(() => flushQueue(dispatch));
 }
 
-function flushQueue(dispatch: AppDispatch): void {
+function flushQueue(dispatch: ToolResultsDispatch): void {
   scheduled = false;
   if (queue.size === 0) return;
 
@@ -56,7 +57,7 @@ function flushQueue(dispatch: AppDispatch): void {
 function postToolResults(
   conversationId: string,
   results: ClientToolResult[],
-): ThunkAction<Promise<void>, RootState, unknown, Action> {
+): ThunkAction<Promise<void>, RootState, unknown, UnknownAction> {
   return async (dispatch) => {
     try {
       const result = await dispatch(
@@ -100,7 +101,7 @@ function postToolResults(
  */
 export const submitToolResult = (
   pending: PendingToolResult,
-): ThunkAction<void, RootState, unknown, Action> => {
+): ThunkAction<void, RootState, unknown, UnknownAction> => {
   return (dispatch) => {
     const { conversationId, ...rest } = pending;
     const bucket = queue.get(conversationId) ?? [];
@@ -118,7 +119,7 @@ export const flushToolResults = (): ThunkAction<
   void,
   RootState,
   unknown,
-  Action
+  UnknownAction
 > => {
   return (dispatch) => {
     flushQueue(dispatch);

@@ -82,7 +82,10 @@ import { ModelSettingsDialog } from "@/features/prompts/components/configuration
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { toast } from "sonner";
 import type { Resource } from "@/features/prompts/types/resources";
-import type { PromptSettings } from "@/features/prompts/types/core";
+import type {
+  PromptSettings,
+  PromptVariable,
+} from "@/features/prompts/types/core";
 
 // ============================================================================
 // PROPS
@@ -265,10 +268,10 @@ export function ConversationInput({
   }, [useGuidedVars, searchParams, pathname]);
 
   // Flat values map from variableDefaults — for variable input components
-  const variableValues = useMemo(
+  const variableValues = useMemo<Record<string, string>>(
     () =>
       Object.fromEntries(
-        variableDefaults.map((v) => [v.name, v.defaultValue ?? ""]),
+        variableDefaults.map((v) => [v.name, String(v.defaultValue ?? "")]),
       ),
     [variableDefaults],
   );
@@ -399,7 +402,10 @@ export function ConversationInput({
 
       // Welcome screen override — intercepts submit before sendMessage
       if (onSubmitOverride) {
-        const shouldClear = await onSubmitOverride(finalContent, resources);
+        const shouldClear = await onSubmitOverride(
+          finalContent,
+          resources as unknown as Resource[],
+        );
         if (shouldClear) {
           dispatch(
             chatConversationsActions.setCurrentInput({ sessionId, input: "" }),
@@ -542,7 +548,7 @@ export function ConversationInput({
       {/* ── Variables (above the bordered input box) ──────────────────── */}
       {hasVariables && useGuidedVars && (
         <GuidedVariableInputs
-          variableDefaults={variableDefaults}
+          variableDefaults={variableDefaults as unknown as PromptVariable[]}
           values={variableValues}
           onChange={handleVariableChange}
           disabled={isExecuting}
@@ -554,7 +560,7 @@ export function ConversationInput({
       {hasVariables && !useGuidedVars && (
         <div className="max-h-[30vh] md:max-h-[45vh] overflow-y-auto overscroll-contain rounded-xl mb-1">
           <PublicVariableInputs
-            variableDefaults={variableDefaults}
+            variableDefaults={variableDefaults as unknown as PromptVariable[]}
             values={variableValues}
             onChange={handleVariableChange}
             disabled={isExecuting}
@@ -591,7 +597,7 @@ export function ConversationInput({
         {resources.length > 0 && (
           <div className="px-3">
             <ResourceChips
-              resources={resources}
+              resources={resources as unknown as Resource[]}
               onRemove={(resource) => {
                 const r = resource as unknown as { id: string };
                 dispatch(

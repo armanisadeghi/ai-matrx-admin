@@ -3,130 +3,56 @@
 // typed no-op placeholders so TypeScript compiles. Dispatched actions are
 // harmless (no reducer handles them); selectors return empty defaults.
 
+import type { VariableDefinition } from "@/features/agents/types/agent-definition.types";
+import type { Resource } from "@/features/prompts/types/resources";
+import type { CxContentHistoryEntry } from "./types/cx-tables";
+
 // ────────────────────────────────────────────────────────────────────────────
-// Types
+// Re-export real types where canonical definitions still exist. Using the
+// real types prevents TS2741/TS2322 mismatches at component boundaries.
 // ────────────────────────────────────────────────────────────────────────────
 
-export type ApiMode = "agent" | "chat" | "prompt" | string;
+export type {
+  ApiMode,
+  ChatModeConfig,
+  MessageRole,
+  MessageStatus,
+  SessionStatus,
+  SessionUIState,
+  ConversationMessage,
+  ConversationResource,
+  ConversationSession,
+  ChatConversationsState,
+  StartSessionPayload,
+  AddMessagePayload,
+  UpdateMessagePayload,
+  AppendStreamChunkPayload,
+  PushStreamEventPayload,
+  SetConversationIdPayload,
+  SetCurrentInputPayload,
+  UpdateVariablePayload,
+  SetExpandedVariablePayload,
+  AddResourcePayload,
+  RemoveResourcePayload,
+  UpdateUIStatePayload,
+  LoadConversationPayload,
+} from "./types/conversation";
 
-export interface ChatModeConfig {
-  systemPrompt?: string;
-  model?: string;
-  [key: string]: unknown;
-}
-
-export type MessageRole = "user" | "assistant" | "system" | "tool";
-export type MessageStatus =
-  | "pending"
-  | "streaming"
-  | "complete"
-  | "error"
-  | string;
-export type SessionStatus = "idle" | "active" | "error" | string;
-
-export interface ConversationResource {
-  id: string;
-  type?: string;
-  name?: string;
-  [key: string]: unknown;
-}
-
-export interface ConversationMessage {
-  id: string;
-  role?: MessageRole;
-  content?: string;
-  rawContent?: unknown;
-  status?: MessageStatus;
-  [key: string]: unknown;
-}
-
-export interface SessionUIState {
-  showDebugInfo?: boolean;
-  showSystemMessages?: boolean;
-  showVariables?: boolean;
-  expandedVariable?: string | null;
-  [key: string]: unknown;
-}
-
-export interface ConversationSession {
-  id: string;
-  status?: SessionStatus;
-  messages?: ConversationMessage[];
-  resources?: ConversationResource[];
-  ui?: SessionUIState;
-  [key: string]: unknown;
-}
-
-export interface ChatConversationsState {
-  sessions: Record<string, ConversationSession>;
-}
-
-// Payload placeholders — permissive shapes matching caller usage.
-export interface StartSessionPayload {
-  sessionId: string;
-  [key: string]: unknown;
-}
-export interface AddMessagePayload {
-  sessionId: string;
-  message: ConversationMessage;
-}
-export interface UpdateMessagePayload {
-  sessionId?: string;
-  messageId: string;
-  id?: string;
-  updates?: Partial<ConversationMessage>;
-  content?: unknown;
-  [key: string]: unknown;
-}
-export interface AppendStreamChunkPayload {
-  sessionId: string;
-  messageId: string;
-  chunk: string;
-}
-export interface PushStreamEventPayload {
-  sessionId: string;
-  event: unknown;
-}
-export interface SetConversationIdPayload {
-  sessionId: string;
-  conversationId: string;
-}
-export interface SetCurrentInputPayload {
-  sessionId: string;
-  input: string;
-}
-export interface UpdateVariablePayload {
-  sessionId: string;
-  name: string;
-  value: unknown;
-}
-export interface SetExpandedVariablePayload {
-  sessionId: string;
-  name: string | null;
-}
-export interface AddResourcePayload {
-  sessionId: string;
-  resource: ConversationResource;
-}
-export interface RemoveResourcePayload {
-  sessionId: string;
-  resourceId: string;
-}
-export interface UpdateUIStatePayload {
-  sessionId: string;
-  updates: Partial<SessionUIState>;
-}
-export interface LoadConversationPayload {
-  sessionId: string;
-  conversationId: string;
-}
+import type {
+  SessionUIState,
+  ConversationMessage,
+  ConversationResource,
+  ConversationSession,
+  ApiMode,
+  SessionStatus,
+} from "./types/conversation";
 
 export interface ActiveChatAgent {
   promptId?: string;
   name?: string;
   description?: string;
   configFetched?: boolean;
-  variableDefaults?: unknown;
+  variableDefaults?: VariableDefinition[];
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -134,42 +60,58 @@ export interface ActiveChatAgent {
 // ────────────────────────────────────────────────────────────────────────────
 
 export const chatConversationsReducer = (
-  state: ChatConversationsState = { sessions: {} },
+  state: { sessions: Record<string, ConversationSession> } = { sessions: {} },
   _action: { type: string; payload?: unknown },
-): ChatConversationsState => state;
+): { sessions: Record<string, ConversationSession> } => state;
 
 // ────────────────────────────────────────────────────────────────────────────
 // Action creators — return PayloadAction-shaped objects. No reducer handles
-// them; dispatching is a harmless no-op.
+// them; dispatching is a harmless no-op. Payloads are permissive (`unknown`)
+// so caller-specific shapes (e.g. extra fields) flow through without TS2353.
 // ────────────────────────────────────────────────────────────────────────────
 
 const makeAction =
-  <P>(type: string) =>
+  <P = unknown>(type: string) =>
   (payload: P) =>
-    ({ type: `cx/stub/${type}` as const, payload }) as const;
+    ({ type: `cx/stub/${type}`, payload }) as { type: string; payload: P };
 
+// `addResource`/`updateVariable` payloads are widened to accept either the
+// strict real type or the looser shapes callers actually pass today.
 export const chatConversationsActions = {
-  startSession: makeAction<StartSessionPayload>("startSession"),
+  startSession: makeAction<unknown>("startSession"),
   removeSession: makeAction<string>("removeSession"),
   clearMessages: makeAction<string>("clearMessages"),
-  addMessage: makeAction<AddMessagePayload>("addMessage"),
-  updateMessage: makeAction<UpdateMessagePayload>("updateMessage"),
+  addMessage: makeAction<unknown>("addMessage"),
+  updateMessage: makeAction<unknown>("updateMessage"),
   resetMessageContent: makeAction<{ sessionId?: string; messageId: string }>(
     "resetMessageContent",
   ),
-  appendStreamChunk: makeAction<AppendStreamChunkPayload>("appendStreamChunk"),
-  pushStreamEvent: makeAction<PushStreamEventPayload>("pushStreamEvent"),
-  setConversationId: makeAction<SetConversationIdPayload>("setConversationId"),
-  setCurrentInput: makeAction<SetCurrentInputPayload>("setCurrentInput"),
-  updateVariable: makeAction<UpdateVariablePayload>("updateVariable"),
-  setExpandedVariable: makeAction<SetExpandedVariablePayload>(
-    "setExpandedVariable",
+  appendStreamChunk: makeAction<unknown>("appendStreamChunk"),
+  pushStreamEvent: makeAction<unknown>("pushStreamEvent"),
+  setConversationId: makeAction<unknown>("setConversationId"),
+  setCurrentInput: makeAction<{ sessionId: string; input: string }>(
+    "setCurrentInput",
   ),
-  addResource: makeAction<AddResourcePayload>("addResource"),
-  removeResource: makeAction<RemoveResourcePayload>("removeResource"),
+  updateVariable: makeAction<{
+    sessionId: string;
+    variableName?: string;
+    name?: string;
+    value: unknown;
+  }>("updateVariable"),
+  setExpandedVariable: makeAction<unknown>("setExpandedVariable"),
+  addResource: makeAction<{
+    sessionId: string;
+    resource: Resource | ConversationResource;
+  }>("addResource"),
+  removeResource: makeAction<{ sessionId: string; resourceId: string }>(
+    "removeResource",
+  ),
   clearResources: makeAction<string>("clearResources"),
-  updateUIState: makeAction<UpdateUIStatePayload>("updateUIState"),
-  loadConversation: makeAction<LoadConversationPayload>("loadConversation"),
+  updateUIState: makeAction<{
+    sessionId: string;
+    updates: Partial<SessionUIState>;
+  }>("updateUIState"),
+  loadConversation: makeAction<unknown>("loadConversation"),
 };
 
 export const activeChatActions = {
@@ -179,49 +121,87 @@ export const activeChatActions = {
 };
 
 // ────────────────────────────────────────────────────────────────────────────
-// Thunks — async no-ops. Callers `await dispatch(thunk(args))`.
+// Thunks — async no-ops. Callers do `await dispatch(thunk(args)).unwrap()`,
+// `await dispatch(thunk(args))`, or just `dispatch(thunk(args))`.
+//
+// Returning a Redux-thunk function (`(dispatch, getState) => Promise`) means
+// `dispatch(stubThunk(...))` returns the inner promise. We attach an
+// `.unwrap()` method to that promise so the RTK call-pattern works too.
 // ────────────────────────────────────────────────────────────────────────────
 
-type Thunk<A, R = void> = (
+type UnwrappablePromise<T> = Promise<T> & { unwrap: () => Promise<T> };
+
+type StubThunk<A> = (
   args: A,
-) => (...rest: unknown[]) => Promise<R>;
+) => (dispatch: unknown, getState: unknown) => UnwrappablePromise<void>;
 
 const stubThunk =
-  <A, R = void>(): Thunk<A, R> =>
+  <A>(_type: string): StubThunk<A> =>
   (_args: A) =>
-  async () =>
-    undefined as R;
+  (_dispatch: unknown, _getState: unknown) => {
+    const promise = Promise.resolve() as UnwrappablePromise<void>;
+    promise.unwrap = () => Promise.resolve();
+    return promise;
+  };
 
 export const sendMessage = stubThunk<{
   sessionId: string;
   input?: string;
+  content?: string;
+  resources?: unknown;
+  variables?: unknown;
+  signal?: AbortSignal;
   [key: string]: unknown;
-}>();
+}>("sendMessage");
 
 export const loadConversationHistory = stubThunk<{
   sessionId: string;
   conversationId: string;
-}>();
+  agentId?: string;
+  [key: string]: unknown;
+}>("loadConversationHistory");
 
 export const editMessage = stubThunk<{
   sessionId?: string;
   messageId: string;
   contentBlocks?: unknown;
+  newContent?: unknown;
   [key: string]: unknown;
-}>();
+}>("editMessage");
 
 // ────────────────────────────────────────────────────────────────────────────
-// Selectors — empty defaults. State typed as `unknown` so callers pass the
-// app RootState without conflict.
+// Selectors — empty defaults with concrete return types so callers don't see
+// `unknown`. State typed as `unknown` so the app RootState passes without
+// conflict.
 // ────────────────────────────────────────────────────────────────────────────
 
-const EMPTY_ARRAY: readonly never[] = Object.freeze([]);
-const EMPTY_UI: SessionUIState = Object.freeze({});
+const EMPTY_ARRAY: readonly unknown[] = Object.freeze([]);
+
+const EMPTY_UI: SessionUIState = Object.freeze({
+  expandedVariable: null,
+  showVariables: false,
+  showSystemMessages: false,
+  modelOverride: null,
+  modelSettings: {},
+  useLocalhost: false,
+  isBlockMode: false,
+  showDebugInfo: false,
+}) as SessionUIState;
+
 const EMPTY_SESSION: ConversationSession = Object.freeze({
-  id: "",
+  sessionId: "",
+  conversationId: null,
+  agentId: "",
+  apiMode: "agent",
+  chatModeConfig: null,
+  status: "idle",
+  error: null,
+  variableDefaults: [],
+  requiresVariableReplacement: false,
   messages: [],
-  resources: [],
-  ui: {},
+  toolCallsById: {},
+  createdAt: 0,
+  updatedAt: 0,
 }) as ConversationSession;
 
 export const selectSession = (
@@ -232,17 +212,17 @@ export const selectSession = (
 export const selectMessages = (
   _state: unknown,
   _sessionId?: string,
-): ConversationMessage[] => EMPTY_ARRAY as unknown as ConversationMessage[];
+): ConversationMessage[] => EMPTY_ARRAY as ConversationMessage[];
 
 export const selectGroupedMessages = (
   _state: unknown,
   _sessionId?: string,
-): ConversationMessage[] => EMPTY_ARRAY as unknown as ConversationMessage[];
+): ConversationMessage[] => EMPTY_ARRAY as ConversationMessage[];
 
 export const selectResources = (
   _state: unknown,
   _sessionId?: string,
-): ConversationResource[] => EMPTY_ARRAY as unknown as ConversationResource[];
+): ConversationResource[] => EMPTY_ARRAY as ConversationResource[];
 
 export const selectUIState = (
   _state: unknown,
@@ -282,7 +262,7 @@ export const selectCurrentInput = (
 export const selectVariableDefaults = (
   _state: unknown,
   _sessionId?: string,
-): unknown[] => EMPTY_ARRAY as unknown as unknown[];
+): VariableDefinition[] => EMPTY_ARRAY as VariableDefinition[];
 
 export const selectApiMode = (
   _state: unknown,
@@ -317,7 +297,7 @@ export const selectSessionHasUnsavedChanges = (
 export const selectDirtyMessages = (
   _state: unknown,
   _sessionId?: string,
-): ConversationMessage[] => EMPTY_ARRAY as unknown as ConversationMessage[];
+): ConversationMessage[] => EMPTY_ARRAY as ConversationMessage[];
 
 export const selectMessageHasUnsavedChanges = (
   _state: unknown,
@@ -335,7 +315,7 @@ export const selectMessageContentHistory = (
   _state: unknown,
   _sessionId?: string,
   _messageId?: string,
-): unknown[] => EMPTY_ARRAY as unknown as unknown[];
+): CxContentHistoryEntry[] => EMPTY_ARRAY as CxContentHistoryEntry[];
 
 export const selectActiveChatAgent = (_state: unknown): ActiveChatAgent => ({
   promptId: undefined,

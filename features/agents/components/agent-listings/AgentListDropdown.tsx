@@ -28,6 +28,7 @@ import {
   LIST_MAX_HEIGHT,
 } from "./core";
 import type { RightPanel } from "./core";
+import { AgentSneakPeekModal } from "./AgentSneakPeekModal";
 
 const CONSUMER_ID = "agent-list-dropdown";
 
@@ -57,6 +58,7 @@ export function AgentListDropdown({
   const [mobileSubView, setMobileSubView] = useState<
     "sort" | "categories" | "tags" | null
   >(null);
+  const [sneakPeekAgentId, setSneakPeekAgentId] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const {
@@ -93,6 +95,12 @@ export function AgentListDropdown({
   const handleSelectAgent = (agent: AgentDefinitionRecord) => {
     coreSelectAgent(agent);
     setOpen(false);
+  };
+
+  const handleSneakPeek = (agent: AgentDefinitionRecord) => {
+    setSneakPeekAgentId(agent.id);
+    setOpen(false);
+    setMobileDetailAgent(null);
   };
 
   const handleFilterChipClick = (panel: "sort" | "categories" | "tags") => {
@@ -172,9 +180,18 @@ export function AgentListDropdown({
     />
   );
 
+  const sneakPeekModal = sneakPeekAgentId && (
+    <AgentSneakPeekModal
+      agentId={sneakPeekAgentId}
+      isOpen={true}
+      onClose={() => setSneakPeekAgentId(null)}
+    />
+  );
+
   // ── Mobile ──
   if (isMobile) {
     return (
+      <>
       <Drawer open={open} onOpenChange={handleOpen}>
         <DrawerTrigger asChild>{trigger}</DrawerTrigger>
         <DrawerContent className="max-h-[85dvh]">
@@ -193,6 +210,7 @@ export function AgentListDropdown({
                   <AgentDetailCard
                     agent={mobileDetailAgent}
                     onSelect={() => handleSelectAgent(mobileDetailAgent)}
+                    onSneakPeek={() => handleSneakPeek(mobileDetailAgent)}
                   />
                 </div>
               </div>
@@ -218,11 +236,14 @@ export function AgentListDropdown({
           </div>
         </DrawerContent>
       </Drawer>
+      {sneakPeekModal}
+      </>
     );
   }
 
   // ── Desktop ──
   return (
+    <>
     <Popover open={open} onOpenChange={handleOpen}>
       <PopoverTrigger asChild>{trigger}</PopoverTrigger>
       <PopoverContent
@@ -267,6 +288,7 @@ export function AgentListDropdown({
                 <AgentDetailCard
                   agent={hoveredAgent}
                   onSelect={() => handleSelectAgent(hoveredAgent)}
+                  onSneakPeek={() => handleSneakPeek(hoveredAgent)}
                 />
               )}
               {rightPanel === "sort" && (
@@ -304,5 +326,7 @@ export function AgentListDropdown({
         </div>
       </PopoverContent>
     </Popover>
+    {sneakPeekModal}
+    </>
   );
 }

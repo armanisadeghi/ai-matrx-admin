@@ -23,7 +23,7 @@ import {
   PencilTapButton,
   MoreHorizontalTapButton,
 } from "@/components/icons/tap-buttons";
-import { SpeakerButton } from "@/features/tts/components/SpeakerButton";
+import { StreamingSpeakerButton } from "@/features/tts/components/StreamingSpeakerButton";
 import { copyToClipboard } from "@/components/matrx/buttons/markdown-copy-utils";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import {
@@ -87,6 +87,7 @@ export function AssistantActionBar({
         content,
         messageId,
         analysisData: metadata ?? undefined,
+        instanceId: `assistant-edit-${messageId}`,
         onSave: async (newContent: string) => {
           try {
             const { editMessage } =
@@ -102,10 +103,14 @@ export function AssistantActionBar({
               }),
             ).unwrap();
           } catch (err) {
-            // eslint-disable-next-line no-console
             console.error("[AssistantActionBar] edit save failed", err);
           }
-          dispatch(closeOverlay({ overlayId: "fullScreenEditor" }));
+          dispatch(
+            closeOverlay({
+              overlayId: "fullScreenEditor",
+              instanceId: `assistant-edit-${messageId}`,
+            }),
+          );
         },
       }),
     );
@@ -158,7 +163,7 @@ export function AssistantActionBar({
           />
         )}
 
-        <SpeakerButton text={content} variant="group" />
+        <StreamingSpeakerButton text={content} variant="group" />
 
         <PencilTapButton
           variant="group"

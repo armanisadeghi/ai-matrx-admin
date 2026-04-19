@@ -9,15 +9,22 @@ import {
   Clock,
   Globe,
   ExternalLink,
+  Sparkles,
 } from "lucide-react";
 import type { AgentDefinitionRecord } from "@/features/agents/types/agent-definition.types";
 
 export interface AgentDetailCardProps {
   agent: AgentDefinitionRecord;
   onSelect: () => void;
+  /** Optional — when provided, renders a Sneak Peek button in the footer. */
+  onSneakPeek?: () => void;
 }
 
-export function AgentDetailCard({ agent, onSelect }: AgentDetailCardProps) {
+export function AgentDetailCard({
+  agent,
+  onSelect,
+  onSneakPeek,
+}: AgentDetailCardProps) {
   const updatedDate = agent.updatedAt ? new Date(agent.updatedAt) : null;
   const createdDate = agent.createdAt ? new Date(agent.createdAt) : null;
 
@@ -153,6 +160,19 @@ export function AgentDetailCard({ agent, onSelect }: AgentDetailCardProps) {
         >
           Select
         </button>
+        {onSneakPeek && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onSneakPeek();
+            }}
+            title="Sneak Peek"
+            className="flex items-center justify-center h-7 w-7 rounded-md border border-border bg-background text-muted-foreground hover:text-primary hover:bg-muted/50 transition-colors shrink-0"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+          </button>
+        )}
         <Link
           href={`/agents/${agent.id}`}
           target="_blank"

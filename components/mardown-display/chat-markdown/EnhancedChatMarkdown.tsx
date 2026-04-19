@@ -54,16 +54,6 @@ export interface ChatMarkdownDisplayProps {
   conversationId?: string;
   content: string;
   taskId?: string;
-  type?:
-    | "flashcard"
-    | "message"
-    | "text"
-    | "image"
-    | "audio"
-    | "video"
-    | "file"
-    | string;
-  role?: "user" | "assistant" | "system" | "tool" | string;
   className?: string;
   isStreamActive?: boolean;
   onContentChange?: (newContent: string) => void;
@@ -112,8 +102,6 @@ export const EnhancedChatMarkdownInternal: React.FC<
   conversationId,
   content,
   taskId,
-  type = "message",
-  role = "assistant",
   className,
   isStreamActive,
   onContentChange,
@@ -167,8 +155,6 @@ export const EnhancedChatMarkdownInternal: React.FC<
   console.log("[EnhancedChatMarkdownInternal] requestText:", requestText);
   console.log("[EnhancedChatMarkdownInternal] content:", content);
   console.log("[EnhancedChatMarkdownInternal] taskId:", taskId);
-  console.log("[EnhancedChatMarkdownInternal] type:", type);
-  console.log("[EnhancedChatMarkdownInternal] role:", role);
   console.log("[EnhancedChatMarkdownInternal] className:", className);
   console.log("[EnhancedChatMarkdownInternal] isStreamActive:", isStreamActive);
   console.log(
@@ -539,8 +525,6 @@ export const EnhancedChatMarkdownInternal: React.FC<
         requestId={requestId}
         content={currentContent}
         className={className}
-        role={role}
-        type={type}
       />
     );
   }
@@ -559,9 +543,7 @@ export const EnhancedChatMarkdownInternal: React.FC<
 
     if (hasReduxTaskId) {
       return (
-        <div
-          className={`${type === "message" ? "mb-1 w-full min-w-0" : ""} ${role === "user" ? "text-right" : "text-left"} overflow-x-hidden`}
-        >
+        <div className="mb-1 w-full min-w-0 text-left overflow-x-hidden">
           <MarkdownErrorBoundary
             fallback={null}
             onError={(error) =>
@@ -588,9 +570,7 @@ export const EnhancedChatMarkdownInternal: React.FC<
 
     try {
       return (
-        <div
-          className={`${type === "message" ? "mb-1 w-full min-w-0" : ""} ${role === "user" ? "text-right" : "text-left"} overflow-x-hidden`}
-        >
+        <div className="mb-1 w-full min-w-0 text-left overflow-x-hidden">
           <div className={containerStyles}>
             <div className="flex items-center justify-start py-6">
               <MatrxMiniLoader />
@@ -600,22 +580,13 @@ export const EnhancedChatMarkdownInternal: React.FC<
       );
     } catch (error) {
       console.error("[MarkdownStream] Error rendering loading state:", error);
-      return (
-        <PlainTextFallback
-          content="Loading..."
-          className={className}
-          role={role}
-          type={type}
-        />
-      );
+      return <PlainTextFallback content="Loading..." className={className} />;
     }
   }
 
   try {
     return (
-      <div
-        className={`${type === "message" ? "mb-1 w-full min-w-0" : ""} ${role === "user" ? "text-right" : "text-left"} overflow-x-hidden`}
-      >
+      <div className="mb-1 w-full min-w-0 text-left overflow-x-hidden">
         {/* Redux-based tool updates: isolated subscriber, only re-renders on tool events */}
         {hasReduxProvider && taskId && toolUpdatesProp === undefined && (
           <MarkdownErrorBoundary
@@ -780,13 +751,6 @@ export const EnhancedChatMarkdownInternal: React.FC<
     );
   } catch (error) {
     console.error("[MarkdownStream] Critical error in render:", error);
-    return (
-      <PlainTextFallback
-        content={currentContent}
-        className={className}
-        role={role}
-        type={type}
-      />
-    );
+    return <PlainTextFallback content={currentContent} className={className} />;
   }
 };

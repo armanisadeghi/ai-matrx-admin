@@ -100,8 +100,6 @@ export const StreamAwareChatMarkdown: React.FC<
   onPhaseUpdate,
   serverProcessedBlocks: serverBlocksProp,
   taskId,
-  type,
-  role,
   className,
   isStreamActive,
   onContentChange,
@@ -113,22 +111,10 @@ export const StreamAwareChatMarkdown: React.FC<
   applyLocalEdits,
 }) => {
   if (process.env.NODE_ENV !== "production") {
-    if (role !== undefined) {
-      console.warn(
-        "[StreamAwareChatMarkdown] `role` prop is a removal candidate — still in use:",
-        { requestId, turnId, conversationId, messageId, role },
-      );
-    }
     if (taskId !== undefined) {
       console.warn(
         "[StreamAwareChatMarkdown] `taskId` prop is a removal candidate — still in use:",
         { requestId, turnId, conversationId, messageId, taskId },
-      );
-    }
-    if (type !== undefined) {
-      console.warn(
-        "[StreamAwareChatMarkdown] `type` prop is a removal candidate — still in use:",
-        { requestId, turnId, conversationId, messageId, type },
       );
     }
   }
@@ -378,8 +364,6 @@ export const StreamAwareChatMarkdown: React.FC<
                 conversationId={conversationId}
                 content={textBlock.content}
                 taskId={taskId}
-                type={type}
-                role={role}
                 className={className}
                 isStreamActive={isLastBlock ? isStreamActive : false}
                 onContentChange={onContentChange}
@@ -441,8 +425,6 @@ export const StreamAwareChatMarkdown: React.FC<
       conversationId={conversationId}
       content={processedContent}
       taskId={taskId}
-      type={type}
-      role={role}
       className={className}
       isStreamActive={isStreamActive}
       onContentChange={onContentChange}

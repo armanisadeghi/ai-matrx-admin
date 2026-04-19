@@ -166,6 +166,7 @@ export function useInstanceBootstrap() {
       if (!resolvedId) {
         const result = await dispatch(
           launchAgentExecution({
+            surfaceKey: `cx-chat:${agentId}`,
             agentId,
             sourceFeature: "chat-interface",
             autoRun: false,

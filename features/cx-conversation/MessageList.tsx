@@ -49,7 +49,14 @@ function StreamingAssistantMessage({
     const messages = (
       state as unknown as {
         chatConversations?: {
-          sessions?: Record<string, { messages?: Array<{ id: string }> }>;
+          sessions?: Record<
+            string,
+            {
+              messages?: Array<
+                import("@/features/cx-chat/types/conversation").ConversationMessage
+              >;
+            }
+          >;
         };
       }
     ).chatConversations?.sessions?.[sessionId]?.messages;

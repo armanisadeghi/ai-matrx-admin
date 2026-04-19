@@ -63,7 +63,7 @@ export const dispatchWidgetAction = createAsyncThunk<
       };
     } else {
       const methodKey = WIDGET_TOOL_NAME_TO_HANDLE_METHOD[toolName];
-      const method = handle[methodKey] as
+      const method = handle[methodKey] as unknown as
         | ((p: Record<string, unknown>) => void | Promise<void>)
         | undefined;
 
@@ -102,47 +102,59 @@ export const dispatchWidgetAction = createAsyncThunk<
     // Update the UI's tool-lifecycle state so the transcript reflects the
     // outcome. Matches what the server-driven tool_completed/tool_error
     // branch would dispatch for a non-delegated tool.
-    dispatch(
-      upsertToolLifecycle({
-        requestId,
-        callId,
-        toolName,
-        status: result.ok ? "completed" : "error",
-        isDelegated: true,
-        ...(result.ok
-          ? { result: { ok: true, applied: result.applied } }
-          : {
-              errorType: result.reason,
-              errorMessage: result.message,
-              result: {
-                ok: false,
-                reason: result.reason,
-                message: result.message,
-              },
-            }),
-      }),
-    );
-
-    // POST the result back. The batcher coalesces with any other widget
-    // results queued in the same microtask.
-    dispatch(
-      submitToolResult({
-        conversationId,
-        call_id: callId,
-        tool_name: toolName,
-        is_error: !result.ok,
-        ...(result.ok
-          ? { output: { ok: true, applied: result.applied } }
-          : {
-              output: {
-                ok: false,
-                reason: result.reason,
-                message: result.message,
-              },
-              error_message: result.message ?? result.reason,
-            }),
-      }),
-    );
+    const finalResult: WidgetActionResult = result;
+    if (finalResult.ok === true) {
+      dispatch(
+        upsertToolLifecycle({
+          requestId,
+          callId,
+          toolName,
+          status: "completed",
+          isDelegated: true,
+          result: { ok: true, applied: finalResult.applied },
+        }),
+      );
+      dispatch(
+        submitToolResult({
+          conversationId,
+          call_id: callId,
+          tool_name: toolName,
+          is_error: false,
+          output: { ok: true, applied: finalResult.applied },
+        }),
+      );
+    } else {
+      dispatch(
+        upsertToolLifecycle({
+          requestId,
+          callId,
+          toolName,
+          status: "error",
+          isDelegated: true,
+          errorType: finalResult.reason,
+          errorMessage: finalResult.message,
+          result: {
+            ok: false,
+            reason: finalResult.reason,
+            message: finalResult.message,
+          },
+        }),
+      );
+      dispatch(
+        submitToolResult({
+          conversationId,
+          call_id: callId,
+          tool_name: toolName,
+          is_error: true,
+          output: {
+            ok: false,
+            reason: finalResult.reason,
+            message: finalResult.message,
+          },
+          error_message: finalResult.message ?? finalResult.reason,
+        }),
+      );
+    }
 
     return result;
   },

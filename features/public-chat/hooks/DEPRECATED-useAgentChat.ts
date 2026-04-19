@@ -169,6 +169,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
           client_tools: [] as string[],
           custom_tools: [] as Array<Record<string, unknown>>,
           context: {},
+          block_mode: blockMode,
         } satisfies ConversationContinueRequestBody;
         console.log("[useAgentChat] CONTINUE conversation →", executeUrl);
         console.log("[useAgentChat] dbConversationId:", state.dbConversationId);
@@ -190,6 +191,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
           client_tools: [] as string[],
           custom_tools: [] as Array<Record<string, unknown>>,
           context: {},
+          block_mode: blockMode,
         } satisfies AgentStartRequestBody;
         console.log(
           `[useAgentChat] START ${blockMode ? "BLOCK MODE" : "normal"} agent conversation →`,

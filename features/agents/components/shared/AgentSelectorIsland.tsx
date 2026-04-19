@@ -13,6 +13,7 @@ function deriveModeSuffix(pathname: string, agentId: string): string {
   const base = `/agents/${agentId}`;
   if (pathname.startsWith(`${base}/run`)) return "/run";
   if (pathname.startsWith(`${base}/build`)) return "/build";
+  if (pathname.startsWith(`${base}/widgets`)) return "/widgets";
   if (
     pathname.startsWith(`${base}/latest`) ||
     /^\/agents\/[^/]+\/\d+$/.test(pathname)

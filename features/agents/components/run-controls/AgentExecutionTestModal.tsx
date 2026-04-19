@@ -19,6 +19,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { useAgentLauncher } from "@/features/agents/hooks/useAgentLauncher";
+import { useWidgetHandle } from "@/features/agents/hooks/useWidgetHandle";
 import {
   selectLatestAccumulatedText,
   selectLatestRequestStatus,
@@ -390,6 +391,22 @@ function BackgroundTestMode({
   const { launchAgent, close } = useAgentLauncher();
   const [tasks, setTasks] = useState<BackgroundTask[]>([]);
 
+  const widgetHandleId = useWidgetHandle({
+    onComplete: (launchResult) => {
+      setTasks((prev) =>
+        prev.map((t) =>
+          t.conversationId === launchResult.conversationId
+            ? {
+                ...t,
+                status: "complete" as const,
+                preview: launchResult.responseText?.substring(0, 200),
+              }
+            : t,
+        ),
+      );
+    },
+  });
+
   const handleExecute = useCallback(async () => {
     try {
       const result = await launchAgent(agentId, {
@@ -400,19 +417,7 @@ function BackgroundTestMode({
         apiEndpointMode,
         variables,
         userInput: userInput || "Respond briefly with one sentence.",
-        onComplete: (launchResult) => {
-          setTasks((prev) =>
-            prev.map((t) =>
-              t.conversationId === launchResult.conversationId
-                ? {
-                    ...t,
-                    status: "complete" as const,
-                    preview: launchResult.responseText?.substring(0, 200),
-                  }
-                : t,
-            ),
-          );
-        },
+        widgetHandleId,
       });
 
       setTasks((prev) => [
@@ -426,7 +431,7 @@ function BackgroundTestMode({
     } catch (err) {
       console.error("Background execution failed:", err);
     }
-  }, [agentId, variables, userInput, apiEndpointMode, launchAgent, surfaceKey]);
+  }, [agentId, variables, userInput, apiEndpointMode, launchAgent, surfaceKey, widgetHandleId]);
 
   useEffect(() => {
     return () => {

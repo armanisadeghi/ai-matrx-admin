@@ -152,12 +152,19 @@ export function assembleMessageParts(request: ActiveRequest): CxContentBlock[] {
     }
 
     // ── Tool event ─────────────────────────────────────────────────────────
+    // Timeline entries carry the server's `tool_started` / `tool_completed`
+    // / `tool_error` sub-events verbatim (see process-stream `tool_event`
+    // dispatch — `subEvent: toolData.event`). Match on that exact wire
+    // form. Previously this check used the unprefixed `"started"`/etc.
+    // strings and silently dropped every tool block from the committed
+    // `cx_message.content`, which is why tools disappeared when a stream
+    // ended.
     if (isToolEvent(entry)) {
       const lifecycle = request.toolLifecycle[entry.callId];
       if (!lifecycle) continue;
 
       if (
-        entry.subEvent === "started" &&
+        entry.subEvent === "tool_started" &&
         !emittedToolCallIds.has(entry.callId)
       ) {
         emittedToolCallIds.add(entry.callId);
@@ -171,7 +178,7 @@ export function assembleMessageParts(request: ActiveRequest): CxContentBlock[] {
       }
 
       if (
-        entry.subEvent === "completed" &&
+        entry.subEvent === "tool_completed" &&
         lifecycle.status === "completed" &&
         lifecycle.result !== undefined &&
         lifecycle.result !== null
@@ -186,7 +193,7 @@ export function assembleMessageParts(request: ActiveRequest): CxContentBlock[] {
         blocks.push(toolResultBlock);
       }
 
-      if (entry.subEvent === "error") {
+      if (entry.subEvent === "tool_error") {
         const toolResultBlock: CxToolResultContent = {
           type: "tool_result",
           call_id: lifecycle.callId,

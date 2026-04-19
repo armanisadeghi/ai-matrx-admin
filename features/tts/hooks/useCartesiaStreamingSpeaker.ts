@@ -19,31 +19,30 @@
  *      audio chunks into that same source. The player begins playback as soon
  *      as the first byte arrives — we never await full generation.
  *
- *   3. **SDK lazy-load.** The @cartesia/cartesia-js SDK is imported dynamically
- *      inside `ensureConnection()`. Mounting this hook does NOT pull the SDK
- *      into the bundle — only calling `speak()` does. The consumer component
- *      should still use its own lazy shell (React.lazy / next/dynamic) so the
- *      hook itself isn't even evaluated until the user clicks play.
- *
- *   4. **Abortable.** Each speak session gets an AbortController. stop() aborts
+ *   3. **Abortable.** Each speak session gets an AbortController. stop() aborts
  *      any in-flight continue sends, closes the source, stops the player.
  *
- * Public surface and return type match useCartesiaSpeaker so existing consumers
- * can swap with no further changes.
+ *   4. **initialLoading.** Option to start the `phase` at `"fetching-token"`
+ *      instead of `"idle"`. Lets consumers that auto-start on mount render the
+ *      "Connecting…" button on the very first frame, avoiding a flash of the
+ *      idle play icon before the speak() effect fires.
+ *
+ * Bundle cost: this hook is expected to live inside a dynamically-imported
+ * module (see StreamingSpeakerLive). The @cartesia/cartesia-js SDK is imported
+ * statically here — it's pulled in with the code-split chunk the consumer
+ * already has to lazy-load, so there's no second roundtrip.
  */
 
 'use client';
 
 import { useEffect, useRef, useCallback, useState } from 'react';
+import { CartesiaClient, WebPlayer } from '@cartesia/cartesia-js';
 import { useAppSelector } from '@/lib/redux/hooks';
 import { parseMarkdownToText } from '@/utils/markdown-processors/parse-markdown-for-speech';
 import { toast } from 'sonner';
 import { chunkTextForSpeech } from '../utils/chunk-text-for-speech';
 
-// Opaque types — we never inspect these at runtime, only pass them through.
-// Imported as `type` so TypeScript pulls the shape but the runtime bundle
-// does NOT eagerly require the SDK.
-import type { CartesiaClient as CartesiaClientType, WebPlayer as WebPlayerType } from '@cartesia/cartesia-js';
+const DEFAULT_VOICE_ID = '156fb8d2-335b-4950-9cb3-a2d33befec77';
 
 export type SpeakerPhase =
   | 'idle'
@@ -56,37 +55,46 @@ export type SpeakerPhase =
 
 export interface UseCartesiaStreamingSpeakerOptions {
   processMarkdown?: boolean;
+  /** Start the hook in a loading phase so the very first render shows the
+   *  "Connecting…" button instead of the idle play icon. Use this when the
+   *  consumer triggers speak() on mount. */
+  initialLoading?: boolean;
   /** Override the small-first-chunk size (default 160 chars). */
   firstChunkMax?: number;
   /** Override the subsequent-chunk size (default 400 chars). */
   nextChunkMax?: number;
 }
 
-type CartesiaWs = ReturnType<CartesiaClientType['tts']['websocket']>;
+type CartesiaWs = ReturnType<CartesiaClient['tts']['websocket']>;
 
 export function useCartesiaStreamingSpeaker(
   {
     processMarkdown = true,
+    initialLoading = false,
     firstChunkMax,
     nextChunkMax,
   }: UseCartesiaStreamingSpeakerOptions = {},
 ) {
-  const [phase, setPhase] = useState<SpeakerPhase>('idle');
+  const [phase, setPhase] = useState<SpeakerPhase>(
+    initialLoading ? 'fetching-token' : 'idle',
+  );
 
   const websocketRef = useRef<CartesiaWs | null>(null);
-  const playerRef = useRef<WebPlayerType | null>(null);
+  const playerRef = useRef<WebPlayer | null>(null);
   const hasPlayedRef = useRef(false);
   const mountedRef = useRef(true);
   /** AbortController for the current speak session. */
   const sessionRef = useRef<AbortController | null>(null);
 
-  /** SDK module, lazily imported on first speak() call. */
-  const sdkRef = useRef<typeof import('@cartesia/cartesia-js') | null>(null);
-
-  const voicePrefs = useAppSelector((s) => s.userPreferences.voice);
-  const voiceId = voicePrefs.voice || '156fb8d2-335b-4950-9cb3-a2d33befec77';
-  const language = voicePrefs.language || 'en';
-  const speed = voicePrefs.speed || 0;
+  // Primitive selectors — each returns a scalar so unrelated userPreferences
+  // updates don't re-render the speaker.
+  const voiceId = useAppSelector(
+    (s) => s.userPreferences.voice?.voice || DEFAULT_VOICE_ID,
+  );
+  const language = useAppSelector(
+    (s) => s.userPreferences.voice?.language || 'en',
+  );
+  const speed = useAppSelector((s) => s.userPreferences.voice?.speed ?? 0);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -113,19 +121,11 @@ export function useCartesiaStreamingSpeaker(
   }, []);
 
   /**
-   * Ensures the Cartesia SDK is loaded, a token is fetched, and the WebSocket
-   * is connected. Idempotent — cheap on subsequent calls once established.
-   * The SDK import is the expensive step; it only happens on the very first
-   * call across the hook's lifetime.
+   * Fetches a token, opens the WebSocket, and ensures a WebPlayer exists.
+   * Idempotent — subsequent calls are no-ops once the WS is open.
    */
   const ensureConnection = useCallback(async () => {
     if (websocketRef.current) return;
-
-    if (!sdkRef.current) {
-      // Dynamic import keeps the ~30KB Cartesia SDK out of the initial
-      // bundle. It only loads when the user actually clicks play.
-      sdkRef.current = await import('@cartesia/cartesia-js');
-    }
 
     setPhaseIfMounted('fetching-token');
     let tokenData: { token: string };
@@ -143,7 +143,6 @@ export function useCartesiaStreamingSpeaker(
 
     setPhaseIfMounted('connecting');
     try {
-      const { CartesiaClient } = sdkRef.current;
       const client = new CartesiaClient();
       const ws = client.tts.websocket({
         container: 'raw',
@@ -162,16 +161,14 @@ export function useCartesiaStreamingSpeaker(
       setPhaseIfMounted('error');
       throw err;
     }
-  }, [setPhaseIfMounted]);
 
-  const ensurePlayer = useCallback(() => {
-    if (playerRef.current || !sdkRef.current) return;
-    const { WebPlayer } = sdkRef.current;
-    // bufferDuration 0.1 — start playing as soon as ~100ms of audio has
-    // arrived. Lower = faster start, but too low risks underruns if the
-    // network hiccups. 0.1 is a good balance for Cartesia's sub-300ms TTFB.
-    playerRef.current = new WebPlayer({ bufferDuration: 0.1 });
-  }, []);
+    if (!playerRef.current) {
+      // bufferDuration 0.1 — start playing as soon as ~100ms of audio has
+      // arrived. Lower = faster start, but too low risks underruns. 0.1 is
+      // a good balance for Cartesia's sub-300ms TTFB.
+      playerRef.current = new WebPlayer({ bufferDuration: 0.1 });
+    }
+  }, [setPhaseIfMounted]);
 
   /**
    * Speak the given text with progressive streaming. Any prior speak() session
@@ -187,7 +184,6 @@ export function useCartesiaStreamingSpeaker(
         return;
       }
 
-      // Cancel any prior session and start a new one.
       sessionRef.current?.abort();
       const session = new AbortController();
       sessionRef.current = session;
@@ -195,7 +191,6 @@ export function useCartesiaStreamingSpeaker(
       try {
         await ensureConnection();
         if (session.signal.aborted) return;
-        ensurePlayer();
 
         setPhaseIfMounted('sending');
 
@@ -224,7 +219,6 @@ export function useCartesiaStreamingSpeaker(
         const ws = websocketRef.current!;
         const player = playerRef.current!;
 
-        // First send — creates the context and returns the streaming source.
         const firstResp = await ws.send({
           ...baseRequest,
           transcript: chunks[0],
@@ -236,16 +230,12 @@ export function useCartesiaStreamingSpeaker(
         hasPlayedRef.current = true;
         setPhaseIfMounted('playing');
 
-        // Fire-and-forget: play resolves when the source closes (all audio
-        // consumed). Errors surface via the catch below.
         const playPromise = player.play(firstResp.source).catch((err: unknown) => {
           if (!session.signal.aborted) {
             console.error('[useCartesiaStreamingSpeaker] play failed:', err);
           }
         });
 
-        // Stream the rest of the chunks into the same context. Each continue
-        // is tiny on the wire — the server has already started generating.
         for (let i = 1; i < chunks.length; i++) {
           if (session.signal.aborted) return;
           await ws.continue({
@@ -255,7 +245,6 @@ export function useCartesiaStreamingSpeaker(
           });
         }
 
-        // Wait for playback to drain.
         await playPromise;
 
         if (!session.signal.aborted) setPhaseIfMounted('idle');
@@ -275,7 +264,6 @@ export function useCartesiaStreamingSpeaker(
       firstChunkMax,
       nextChunkMax,
       ensureConnection,
-      ensurePlayer,
       setPhaseIfMounted,
     ],
   );

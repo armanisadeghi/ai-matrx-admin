@@ -20,7 +20,11 @@ export interface MarkdownStreamProps {
   turnId?: string;
   /** Conversation ID for DB-loaded turn rendering */
   conversationId?: string;
-  /** Content type (flashcard, message, text, etc.) */
+  /**
+   * @deprecated No longer used — `MarkdownStream` now always renders in
+   * `message` mode. This prop is kept on the interface for backward
+   * compatibility only and is ignored. Remove from callers.
+   */
   type?:
     | "flashcard"
     | "message"
@@ -30,7 +34,11 @@ export interface MarkdownStreamProps {
     | "video"
     | "file"
     | string;
-  /** Message role (user, assistant, system, tool) */
+  /**
+   * @deprecated No longer used — `MarkdownStream` now always renders as
+   * `assistant`. This prop is kept on the interface for backward
+   * compatibility only and is ignored. Remove from callers.
+   */
   role?: "user" | "assistant" | "system" | "tool" | string;
   /** Additional CSS classes */
   className?: string;
