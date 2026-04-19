@@ -1462,7 +1462,6 @@ Right-click for content block templates!"
                     >
                       <MarkdownStream
                         content={renderedContent}
-                        className="bg-textured"
                         isStreamActive={false}
                         hideCopyButton={true}
                         allowFullScreenEditor={true}

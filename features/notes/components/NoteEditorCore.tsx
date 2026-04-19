@@ -63,8 +63,16 @@ export type EditorMode =
 export interface NoteEditorCoreProps {
   /** Current note content (controlled) */
   content: string;
-  /** Called on every content change */
+  /** Called on every content change (keystroke-rate; parent typically debounces) */
   onChange: (content: string) => void;
+  /**
+   * Called on discrete, non-keystroke edits (preview block edits, voice
+   * transcription, WYSIWYG changes). When provided, the parent is expected
+   * to flush the change immediately — bypassing any keystroke debounce —
+   * so Redux/persistence stay in perfect sync with what's on screen.
+   * Falls back to `onChange` when omitted.
+   */
+  onChangeFlush?: (content: string) => void;
   /** Active editor mode */
   editorMode: EditorMode;
   /** Ref to the underlying textarea (plain + split modes). Parent uses for cursor ops. */
@@ -87,6 +95,13 @@ export interface NoteEditorCoreProps {
   previewClassName?: string;
   /** Sync scroll in split mode (default: true) */
   syncScroll?: boolean;
+  /**
+   * Forces rich editors (MarkdownStream in preview / MatrxSplit preview pane)
+   * to remount when this value changes. Parents use this to discard any local
+   * edit overlay inside the rich editor when an authoritative external content
+   * update arrives (note switch, realtime update, undo, fetch).
+   */
+  resetKey?: string;
 }
 
 /**
@@ -99,6 +114,7 @@ export interface NoteEditorCoreProps {
 export function NoteEditorCore({
   content,
   onChange,
+  onChangeFlush,
   editorMode,
   textareaRef: externalTextareaRef,
   tuiEditorRef: externalTuiRef,
@@ -110,9 +126,14 @@ export function NoteEditorCore({
   textareaClassName,
   previewClassName,
   syncScroll = true,
+  resetKey,
 }: NoteEditorCoreProps) {
   const internalTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const internalTuiRef = useRef<any>(null);
+
+  // Discrete-edit handler: prefer `onChangeFlush` if the parent provides one,
+  // otherwise fall back to `onChange`.
+  const flushChange = onChangeFlush ?? onChange;
 
   // Use external refs if provided, otherwise internal
   const textareaRef = externalTextareaRef || internalTextareaRef;
@@ -139,7 +160,7 @@ export function NoteEditorCore({
       const current = contentRef.current;
       const separator = current.length > 0 ? "\n\n" : "";
       const newContent = current + separator + text;
-      onChange(newContent);
+      flushChange(newContent);
 
       // Move cursor to end
       const textarea = textareaRef.current;
@@ -151,7 +172,7 @@ export function NoteEditorCore({
         });
       }
     },
-    [onVoiceTranscription, onChange, textareaRef],
+    [onVoiceTranscription, flushChange, textareaRef],
   );
 
   // TUI editor change handler
@@ -180,7 +201,9 @@ export function NoteEditorCore({
         <Textarea
           ref={(el) => {
             if (textareaRef && "current" in textareaRef) {
-              (textareaRef as React.MutableRefObject<HTMLTextAreaElement | null>).current = el;
+              (
+                textareaRef as React.MutableRefObject<HTMLTextAreaElement | null>
+              ).current = el;
             }
           }}
           value={content}
@@ -199,28 +222,36 @@ export function NoteEditorCore({
       {/* ── Split View (MatrxSplit) ─────────────────────────────────── */}
       {editorMode === "split" && (
         <MatrxSplit
+          key={resetKey}
           value={content}
           onChange={readOnly ? () => {} : onChange}
-          textareaRef={textareaRef as React.RefObject<HTMLTextAreaElement | null>}
+          textareaRef={
+            textareaRef as React.RefObject<HTMLTextAreaElement | null>
+          }
           placeholder={placeholder}
           className="absolute inset-0"
           syncScroll={syncScroll}
+          allowFullScreenEditor={true}
         />
       )}
 
-      {/* ── Preview (Read-Only Markdown) ────────────────────────────── */}
+      {/* ── Preview (Markdown with full edit-through) ───────────────── */}
       {editorMode === "preview" && (
-        <ScrollArea className="absolute inset-0 w-full h-full">
-          <div className={cn("p-6 pb-[50vh] bg-textured", previewClassName)}>
-            {content.trim() ? (
-              <MarkdownStream content={content} />
-            ) : (
-              <p className="text-muted-foreground text-sm italic">
-                Nothing to preview
-              </p>
-            )}
-          </div>
-        </ScrollArea>
+        <div
+          className={cn(
+            "h-full overflow-y-auto max-w-3xl mx-auto py-2 px-4 pb-safe scrollbar-thin-auto",
+            previewClassName,
+          )}
+        >
+          <MarkdownStream
+            key={resetKey}
+            content={content}
+            isStreamActive={false}
+            hideCopyButton={true}
+            allowFullScreenEditor={true}
+            onContentChange={readOnly ? undefined : onChange}
+          />
+        </div>
       )}
 
       {/* ── WYSIWYG (TUI Editor) ────────────────────────────────────── */}

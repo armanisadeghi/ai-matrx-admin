@@ -27,7 +27,13 @@ import {
   selectInstanceTabs,
   selectNoteSaveState,
 } from "../redux/selectors";
-import { saveNote, copyNote, deleteNote, moveNoteToFolder, fetchNoteContent } from "../redux/thunks";
+import {
+  saveNote,
+  copyNote,
+  deleteNote,
+  moveNoteToFolder,
+  fetchNoteContent,
+} from "../redux/thunks";
 import { useNotesInstanceId } from "../context/NotesInstanceContext";
 import { analyzeDiff } from "../utils/diffAnalysis";
 import { supabase } from "@/utils/supabase/client";
@@ -39,9 +45,10 @@ import { useIsOwner } from "@/utils/permissions";
 import { selectFindReplaceState } from "../redux/selectors";
 
 const NoteConflictWindow = dynamic(
-  () => import("@/app/(ssr)/ssr/notes/_components/NoteConflictWindow").then(
-    (mod) => ({ default: mod.NoteConflictWindow }),
-  ),
+  () =>
+    import("@/app/(ssr)/ssr/notes/_components/NoteConflictWindow").then(
+      (mod) => ({ default: mod.NoteConflictWindow }),
+    ),
   { ssr: false },
 );
 
@@ -63,7 +70,8 @@ export function NoteContentEditor({ noteId }: NoteContentEditorProps) {
 
   // ── Redux selectors (cached — stable references) ──────────────────
   const reduxContent = useAppSelector(selectNoteContent(noteId)) ?? "";
-  const editorMode = (useAppSelector(selectNoteEditorMode(noteId)) ?? "plain") as EditorMode;
+  const editorMode = (useAppSelector(selectNoteEditorMode(noteId)) ??
+    "plain") as EditorMode;
   const isDirty = useAppSelector(selectNoteIsDirtyById(noteId));
   const allFolders = useAppSelector(selectAllFolders);
   const currentFolder = useAppSelector(selectNoteFolder(noteId)) ?? "Draft";
@@ -108,11 +116,18 @@ export function NoteContentEditor({ noteId }: NoteContentEditorProps) {
   const lastReduxRef = useRef(reduxContent);
   const noteIdRef = useRef(noteId);
 
+  // ── Reset generation — bumps whenever we accept an authoritative
+  // external content value (note switch, realtime update, undo, fetch).
+  // Downstream rich editors (MarkdownStream) use this as a `key` so their
+  // local edit overlays reset when the canonical content changes.
+  const [resetGen, setResetGen] = useState(0);
+
   // ── When noteId changes, reset local content from Redux immediately
   if (noteId !== noteIdRef.current) {
     noteIdRef.current = noteId;
     lastReduxRef.current = reduxContent;
     setLocalContent(reduxContent);
+    setResetGen((n) => n + 1);
   }
 
   // ── When Redux content changes externally (undo, realtime, fetch completion)
@@ -121,6 +136,7 @@ export function NoteContentEditor({ noteId }: NoteContentEditorProps) {
     lastReduxRef.current = reduxContent;
     if (!syncTimerRef.current) {
       setLocalContent(reduxContent);
+      setResetGen((n) => n + 1);
     }
   }
 
@@ -147,12 +163,46 @@ export function NoteContentEditor({ noteId }: NoteContentEditorProps) {
     [syncToRedux],
   );
 
+  // ── Flush sync: local -> Redux immediately (no debounce) ───────────
+  // Used for discrete edits (preview block edits, voice transcription,
+  // full-screen markdown editor commits) where waiting for a keystroke
+  // debounce would leave Redux transiently out of sync with what the
+  // user just committed.
+  const handleChangeFlush = useCallback(
+    (content: string) => {
+      if (syncTimerRef.current) {
+        clearTimeout(syncTimerRef.current);
+        syncTimerRef.current = null;
+      }
+      setLocalContent(content);
+      lastReduxRef.current = content;
+      dispatch(updateNoteContent({ id: noteId, content }));
+    },
+    [dispatch, noteId],
+  );
+
   // ── Cleanup timer on unmount ──────────────────────────────────────
+  // If a debounced sync is still pending when the component unmounts
+  // (tab close, navigation, instance unregister), flush it synchronously
+  // so the user's in-flight keystrokes aren't silently dropped.
+  const localContentRef = useRef(localContent);
+  useEffect(() => {
+    localContentRef.current = localContent;
+  }, [localContent]);
+
   useEffect(() => {
     return () => {
-      if (syncTimerRef.current) clearTimeout(syncTimerRef.current);
+      if (syncTimerRef.current) {
+        clearTimeout(syncTimerRef.current);
+        syncTimerRef.current = null;
+        const pending = localContentRef.current;
+        if (pending !== lastReduxRef.current) {
+          lastReduxRef.current = pending;
+          dispatch(updateNoteContent({ id: noteId, content: pending }));
+        }
+      }
     };
-  }, []);
+  }, [dispatch, noteId]);
 
   // ── Context menu handlers ─────────────────────────────────────────
   const handleSave = useCallback(() => {
@@ -261,7 +311,9 @@ export function NoteContentEditor({ noteId }: NoteContentEditorProps) {
       <div className="flex-1 flex items-center justify-center text-muted-foreground">
         <div className="text-center">
           <p className="text-sm">Note not found</p>
-          <p className="text-xs mt-1">This note may have been deleted or moved.</p>
+          <p className="text-xs mt-1">
+            This note may have been deleted or moved.
+          </p>
           <button
             onClick={() => dispatch(removeInstanceTab({ instanceId, noteId }))}
             className="mt-3 text-xs text-primary hover:text-primary/80 cursor-pointer"
@@ -314,11 +366,13 @@ export function NoteContentEditor({ noteId }: NoteContentEditorProps) {
           <NoteEditorCore
             content={localContent}
             onChange={handleChange}
+            onChangeFlush={handleChangeFlush}
             editorMode={editorMode}
             textareaRef={textareaRef}
             showVoiceButton={editorMode !== "preview"}
             placeholder="Start typing..."
             className="flex-1 min-h-0"
+            resetKey={`${noteId}:${resetGen}`}
           />
         </div>
       </NoteContextMenu>

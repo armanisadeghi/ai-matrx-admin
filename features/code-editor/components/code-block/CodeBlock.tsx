@@ -321,194 +321,200 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
           }}
         />
       )}
-    <div
-      ref={containerRef}
-      className={cn(
-        "w-full my-4 rounded-t-xl rounded-b-lg overflow-hidden border border-neutral-200 dark:border-neutral-700",
-        isFullScreen &&
-          "fixed w-[95vw] h-[90vh] z-[9999] bg-textured flex flex-col shadow-2xl rounded-xl overflow-hidden",
-        className,
-      )}
-      style={isFullScreen ? {
-        top: "50%",
-        left: "50%",
-        transform: "translate(-50%, -50%)",
-      } : undefined}
-    >
-      <CodeBlockHeader
-        language={rawLanguage}
-        linesCount={code.split("\n").length}
-        isEditing={isEditing}
-        isFullScreen={isFullScreen}
-        isCollapsed={isCollapsed}
-        code={code}
-        handleCopy={handleCopy}
-        handleDownload={handleDownload}
-        toggleEdit={toggleEdit}
-        toggleFullScreen={toggleFullScreen}
-        toggleCollapse={toggleCollapse}
-        toggleLineNumbers={toggleLineNumbers}
-        toggleWrapLines={toggleWrapLines}
-        isCopied={isCopied}
-        isMobile={isMobile}
-        isCompleteHTML={isCompleteHTMLDocument(code)}
-        handleViewHTML={handleViewHTML}
-        isCreatingPage={isCreatingPage}
-        showWrapLines={showWrapLines}
-        handleFormat={handleFormat}
-        handleReset={handleReset}
-        minimapEnabled={minimapEnabled}
-        toggleMinimap={toggleMinimap}
-        showLineNumbers={lineNumbers}
-        onAIEdit={handleOpenAIModal}
-        allowEdit={allowEdit}
-        customBuiltinKeys={customBuiltinKeys}
-      />
-      {showStickyButtons && (
-        <StickyButtons
-          linesCount={code.split("\n").length}
-          isCollapsed={isCollapsed}
-          isCopied={isCopied}
-          handleCopy={handleCopy}
-          toggleCollapse={toggleCollapse}
-          isMobile={isMobile}
-        />
-      )}
-      <div className={cn("relative", isFullScreen && "flex-1 overflow-hidden")}>
-        {isEditing ? (
-          <div className="w-full">
-            <SmallCodeEditor
-              language={monacoLanguage}
-              fileExtension={monacoFileExtension}
-              initialCode={code}
-              onChange={handleCodeChange}
-              mode={mode}
-              height={
-                isFullScreen
-                  ? "calc(100vh - 15rem)"
-                  : `${Math.max(400, code.split("\n").length * 20 + 100)}px`
+      <div
+        ref={containerRef}
+        className={cn(
+          "w-full my-4 rounded-t-xl rounded-b-lg overflow-hidden border border-neutral-200 dark:border-neutral-700",
+          isFullScreen &&
+            "fixed w-[95vw] h-[90vh] z-[9999] bg-textured flex flex-col shadow-2xl rounded-xl overflow-hidden",
+          className,
+        )}
+        style={
+          isFullScreen
+            ? {
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
               }
-              showCopyButton={false}
-              showFormatButton={false}
-              showResetButton={false}
-              showWordWrapToggle={false}
-              showMinimapToggle={false}
-              formatTrigger={formatTrigger}
-              controlledWordWrap={showWrapLines ? "on" : "off"}
-              controlledMinimap={minimapEnabled}
-            />
-          </div>
-        ) : (
-          // Code View
-          <div className={cn("relative", isFullScreen && "h-full")}>
-            <div ref={topRef} style={{ height: "1px" }} />
-            <div
-              ref={bottomRef}
-              className={cn(
-                "transition-all duration-300 ease-in-out relative",
-                isCollapsed ? "max-h-[150px]" : "max-h-none",
-                isFullScreen ? "h-full overflow-auto" : "overflow-hidden",
-                showWrapLines && "overflow-x-hidden",
-              )}
-            >
-              <SyntaxHighlighter
-                language={prismLanguage}
-                style={mode === "dark" ? vscDarkPlus : vs}
-                showLineNumbers={lineNumbers}
-                wrapLines={showWrapLines}
-                wrapLongLines={showWrapLines}
-                customStyle={{
-                  paddingTop: "1rem",
-                  paddingRight: "1rem",
-                  paddingBottom: "1rem",
-                  paddingLeft: "1rem",
-                  fontSize: `${fontSize}px`,
-                  height: "auto",
-                  minHeight: "auto",
-                  maxWidth: "100%",
-                  overflowX: showWrapLines ? "hidden" : "auto",
-                  margin: 0,
-                }}
+            : undefined
+        }
+      >
+        <CodeBlockHeader
+          language={rawLanguage}
+          linesCount={code.split("\n").length}
+          isEditing={isEditing}
+          isFullScreen={isFullScreen}
+          isCollapsed={isCollapsed}
+          code={code}
+          handleCopy={handleCopy}
+          handleDownload={handleDownload}
+          toggleEdit={toggleEdit}
+          toggleFullScreen={toggleFullScreen}
+          toggleCollapse={toggleCollapse}
+          toggleLineNumbers={toggleLineNumbers}
+          toggleWrapLines={toggleWrapLines}
+          isCopied={isCopied}
+          isMobile={isMobile}
+          isCompleteHTML={isCompleteHTMLDocument(code)}
+          handleViewHTML={handleViewHTML}
+          isCreatingPage={isCreatingPage}
+          showWrapLines={showWrapLines}
+          handleFormat={handleFormat}
+          handleReset={handleReset}
+          minimapEnabled={minimapEnabled}
+          toggleMinimap={toggleMinimap}
+          showLineNumbers={lineNumbers}
+          onAIEdit={handleOpenAIModal}
+          allowEdit={allowEdit}
+          customBuiltinKeys={customBuiltinKeys}
+        />
+        {showStickyButtons && (
+          <StickyButtons
+            linesCount={code.split("\n").length}
+            isCollapsed={isCollapsed}
+            isCopied={isCopied}
+            handleCopy={handleCopy}
+            toggleCollapse={toggleCollapse}
+            isMobile={isMobile}
+          />
+        )}
+        <div
+          className={cn("relative", isFullScreen && "flex-1 overflow-hidden")}
+        >
+          {isEditing ? (
+            <div className="w-full">
+              <SmallCodeEditor
+                language={monacoLanguage}
+                fileExtension={monacoFileExtension}
+                initialCode={code}
+                onChange={handleCodeChange}
+                mode={mode}
+                height={
+                  isFullScreen
+                    ? "calc(100vh - 15rem)"
+                    : `${Math.max(400, code.split("\n").length * 20 + 100)}px`
+                }
+                showCopyButton={false}
+                showFormatButton={false}
+                showResetButton={false}
+                showWordWrapToggle={false}
+                showMinimapToggle={false}
+                formatTrigger={formatTrigger}
+                controlledWordWrap={showWrapLines ? "on" : "off"}
+                controlledMinimap={minimapEnabled}
+              />
+            </div>
+          ) : (
+            // Code View
+            <div className={cn("relative", isFullScreen && "h-full")}>
+              <div ref={topRef} style={{ height: "1px" }} />
+              <div
+                ref={bottomRef}
+                className={cn(
+                  "transition-all duration-300 ease-in-out relative",
+                  isCollapsed ? "max-h-[150px]" : "max-h-none",
+                  isFullScreen ? "h-full overflow-auto" : "overflow-hidden",
+                  showWrapLines && "overflow-x-hidden",
+                )}
               >
-                {code}
-              </SyntaxHighlighter>
-
-              {/* Floating View Button for HTML Documents - Opens in Canvas */}
-              {isCompleteHTMLDocument(code) && !isCollapsed && (
-                <button
-                  onClick={handleViewHTML}
-                  disabled={isCreatingPage}
-                  className={cn(
-                    "absolute bottom-4 right-4 z-20",
-                    "flex items-center gap-2 px-4 py-2 rounded-full",
-                    "bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-600",
-                    "text-white text-sm font-medium",
-                    "shadow-lg hover:shadow-xl",
-                    "transition-all duration-200 ease-in-out",
-                    "transform hover:scale-105",
-                    isCreatingPage && "opacity-50 cursor-not-allowed",
-                  )}
-                  title="Open HTML Preview in Side Panel"
+                <SyntaxHighlighter
+                  language={prismLanguage}
+                  style={mode === "dark" ? vscDarkPlus : vs}
+                  showLineNumbers={lineNumbers}
+                  wrapLines={showWrapLines}
+                  wrapLongLines={showWrapLines}
+                  customStyle={{
+                    paddingTop: "1rem",
+                    paddingRight: "1rem",
+                    paddingBottom: "1rem",
+                    paddingLeft: "1rem",
+                    fontSize: `${fontSize}px`,
+                    height: "auto",
+                    minHeight: "auto",
+                    maxWidth: "100%",
+                    overflowX: showWrapLines ? "hidden" : "auto",
+                    margin: 0,
+                  }}
                 >
-                  {isCreatingPage ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Creating...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Globe className="w-4 h-4" />
-                      <span>Preview</span>
-                    </>
-                  )}
-                </button>
+                  {code}
+                </SyntaxHighlighter>
+
+                {/* Floating View Button for HTML Documents - Opens in Canvas */}
+                {isCompleteHTMLDocument(code) && !isCollapsed && (
+                  <button
+                    onClick={handleViewHTML}
+                    disabled={isCreatingPage}
+                    className={cn(
+                      "absolute bottom-4 right-4 z-20",
+                      "flex items-center gap-2 px-4 py-2 rounded-full",
+                      "bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-600",
+                      "text-white text-sm font-medium",
+                      "shadow-lg hover:shadow-xl",
+                      "transition-all duration-200 ease-in-out",
+                      "transform hover:scale-105",
+                      isCreatingPage && "opacity-50 cursor-not-allowed",
+                    )}
+                    title="Open HTML Preview in Canvas"
+                  >
+                    {isCreatingPage ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Creating...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Globe className="w-4 h-4" />
+                        <span>Preview</span>
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
+              {isCollapsed && (
+                <div
+                  className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-neutral-900 to-transparent opacity-80 cursor-pointer"
+                  onClick={toggleCollapse}
+                >
+                  <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 text-neutral-400 text-sm">
+                    Click to expand {code.split("\n").length - 3} more lines
+                  </div>
+                </div>
               )}
             </div>
-            {isCollapsed && (
-              <div
-                className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-neutral-900 to-transparent opacity-80 cursor-pointer"
-                onClick={toggleCollapse}
-              >
-                <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 text-neutral-400 text-sm">
-                  Click to expand {code.split("\n").length - 3} more lines
-                </div>
-              </div>
-            )}
-          </div>
+          )}
+        </div>
+
+        {/* AI Code Editor Modal V2 - Non-Context Aware (using AICodeEditorModal) */}
+        {aiModalConfig?.version === "v2" && (
+          <AICodeEditorModal
+            open={true}
+            onOpenChange={(open) => {
+              if (!open) handleCloseAIModal();
+            }}
+            currentCode={code}
+            language={monacoLanguage}
+            builtinId={aiModalConfig.builtinId}
+            onCodeChange={(newCode) => handleAICodeChange(newCode)}
+            title={aiModalConfig.title}
+            allowPromptSelection={false}
+          />
+        )}
+
+        {/* AI Code Editor Modal V3 (Context-Aware) - KEEP THIS! IT WORKS! */}
+        {aiModalConfig?.version === "v3" && (
+          <ContextAwareCodeEditorModal
+            open={true}
+            onOpenChange={handleCloseAIModal}
+            code={code}
+            language={monacoLanguage}
+            builtinId={aiModalConfig.builtinId}
+            onCodeChange={(newCode: string, version: number) =>
+              handleAICodeChange(newCode, version)
+            }
+            title={aiModalConfig.title}
+          />
         )}
       </div>
-
-      {/* AI Code Editor Modal V2 - Non-Context Aware (using AICodeEditorModal) */}
-      {aiModalConfig?.version === "v2" && (
-        <AICodeEditorModal
-          open={true}
-          onOpenChange={(open) => {
-            if (!open) handleCloseAIModal();
-          }}
-          currentCode={code}
-          language={monacoLanguage}
-          builtinId={aiModalConfig.builtinId}
-          onCodeChange={(newCode) => handleAICodeChange(newCode)}
-          title={aiModalConfig.title}
-          allowPromptSelection={false}
-        />
-      )}
-
-      {/* AI Code Editor Modal V3 (Context-Aware) - KEEP THIS! IT WORKS! */}
-      {aiModalConfig?.version === "v3" && (
-        <ContextAwareCodeEditorModal
-          open={true}
-          onOpenChange={handleCloseAIModal}
-          code={code}
-          language={monacoLanguage}
-          builtinId={aiModalConfig.builtinId}
-          onCodeChange={(newCode: string, version: number) =>
-            handleAICodeChange(newCode, version)
-          }
-          title={aiModalConfig.title}
-        />
-      )}
-    </div>
     </>
   );
 };

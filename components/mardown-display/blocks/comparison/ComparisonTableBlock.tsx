@@ -1,17 +1,43 @@
 "use client";
-import React, { useState, useMemo, useRef, useCallback } from 'react';
-import { 
-  Table, ArrowUpDown, ArrowUp, ArrowDown, Star, DollarSign, Check, X,
-  Maximize2, Minimize2, Search, Filter, Trophy, Medal, Award,
-  TrendingUp, TrendingDown, Minus, Plus, Eye, EyeOff, Sparkles,
-  Crown, Zap, Target, ThumbsUp, ThumbsDown, AlertCircle, ExternalLink, Printer
-} from 'lucide-react';
-import { useCanvas } from '@/features/canvas/hooks/useCanvas';
+import React, { useState, useMemo, useRef, useCallback } from "react";
+import {
+  Table,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  Star,
+  DollarSign,
+  Check,
+  X,
+  Maximize2,
+  Minimize2,
+  Search,
+  Filter,
+  Trophy,
+  Medal,
+  Award,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  Plus,
+  Eye,
+  EyeOff,
+  Sparkles,
+  Crown,
+  Zap,
+  Target,
+  ThumbsUp,
+  ThumbsDown,
+  AlertCircle,
+  ExternalLink,
+  Printer,
+} from "lucide-react";
+import { useCanvas } from "@/features/canvas/hooks/useCanvas";
 
 interface ComparisonCriterion {
   name: string;
   values: (string | number | boolean)[];
-  type: 'cost' | 'rating' | 'text' | 'boolean';
+  type: "cost" | "rating" | "text" | "boolean";
   weight?: number;
   higherIsBetter?: boolean;
 }
@@ -28,9 +54,12 @@ interface ComparisonTableBlockProps {
   taskId?: string; // Task ID for canvas deduplication
 }
 
-type SortDirection = 'asc' | 'desc' | null;
+type SortDirection = "asc" | "desc" | null;
 
-const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison, taskId }) => {
+const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({
+  comparison,
+  taskId,
+}) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const blockContentRef = useRef<HTMLDivElement>(null);
   const [isPrinting, setIsPrinting] = useState(false);
@@ -38,10 +67,14 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison,
     if (!blockContentRef.current || isPrinting) return;
     setIsPrinting(true);
     try {
-      const { captureBlockElement } = await import('@/features/chat/utils/dom-capture-block-printer');
-      await captureBlockElement(blockContentRef.current, comparison.title.replace(/\s+/g, '-').toLowerCase() || 'comparison');
+      const { captureBlockElement } =
+        await import("@/features/chat/utils/dom-capture-block-printer");
+      await captureBlockElement(
+        blockContentRef.current,
+        comparison.title.replace(/\s+/g, "-").toLowerCase() || "comparison",
+      );
     } catch (err) {
-      console.error('[ComparisonTableBlock] Print failed:', err);
+      console.error("[ComparisonTableBlock] Print failed:", err);
     } finally {
       setIsPrinting(false);
     }
@@ -49,7 +82,7 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison,
   const [sortBy, setSortBy] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
   const [hiddenColumns, setHiddenColumns] = useState<Set<string>>(new Set());
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [highlightedItem, setHighlightedItem] = useState<string | null>(null);
   const [showScores, setShowScores] = useState(false);
   const { open: openCanvas } = useCanvas();
@@ -57,131 +90,155 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison,
   // Calculate scores for each item based on criteria
   const itemScores = useMemo(() => {
     const scores: Record<string, number> = {};
-    
+
     comparison.items.forEach((item, itemIndex) => {
       let totalScore = 0;
       let totalWeight = 0;
-      
-      comparison.criteria.forEach(criterion => {
+
+      comparison.criteria.forEach((criterion) => {
         const value = criterion.values[itemIndex];
         const weight = criterion.weight || 1;
         let score = 0;
-        
+
         switch (criterion.type) {
-          case 'rating':
-            score = typeof value === 'number' ? (value / 5) * 100 : 0;
+          case "rating":
+            score = typeof value === "number" ? (value / 5) * 100 : 0;
             break;
-          case 'cost':
+          case "cost":
             // For cost, lower is usually better (inverse scoring)
-            const costValues = criterion.values.filter(v => typeof v === 'number') as number[];
+            const costValues = criterion.values.filter(
+              (v) => typeof v === "number",
+            ) as number[];
             if (costValues.length > 0) {
               const maxCost = Math.max(...costValues);
               const minCost = Math.min(...costValues);
-              if (typeof value === 'number' && maxCost > minCost) {
-                score = criterion.higherIsBetter 
+              if (typeof value === "number" && maxCost > minCost) {
+                score = criterion.higherIsBetter
                   ? ((value - minCost) / (maxCost - minCost)) * 100
                   : ((maxCost - value) / (maxCost - minCost)) * 100;
               }
             }
             break;
-          case 'boolean':
+          case "boolean":
             score = value === true ? 100 : 0;
             break;
-          case 'text':
+          case "text":
             // Simple text scoring based on positive keywords
-            if (typeof value === 'string') {
-              const positiveWords = ['excellent', 'great', 'good', 'high', 'fast', 'easy', 'yes'];
-              const negativeWords = ['poor', 'bad', 'low', 'slow', 'hard', 'difficult', 'no'];
+            if (typeof value === "string") {
+              const positiveWords = [
+                "excellent",
+                "great",
+                "good",
+                "high",
+                "fast",
+                "easy",
+                "yes",
+              ];
+              const negativeWords = [
+                "poor",
+                "bad",
+                "low",
+                "slow",
+                "hard",
+                "difficult",
+                "no",
+              ];
               const lowerValue = value.toLowerCase();
-              
-              if (positiveWords.some(word => lowerValue.includes(word))) score = 80;
-              else if (negativeWords.some(word => lowerValue.includes(word))) score = 20;
+
+              if (positiveWords.some((word) => lowerValue.includes(word)))
+                score = 80;
+              else if (negativeWords.some((word) => lowerValue.includes(word)))
+                score = 20;
               else score = 50; // neutral
             }
             break;
         }
-        
+
         totalScore += score * weight;
         totalWeight += weight;
       });
-      
+
       scores[item] = totalWeight > 0 ? Math.round(totalScore / totalWeight) : 0;
     });
-    
+
     return scores;
   }, [comparison]);
 
   // Sort items based on current sort criteria
   const sortedItemIndices = useMemo(() => {
     let indices = comparison.items.map((_, index) => index);
-    
+
     if (sortBy && sortDirection) {
       indices.sort((a, b) => {
         let aValue: any;
         let bValue: any;
-        
-        if (sortBy === 'name') {
+
+        if (sortBy === "name") {
           aValue = comparison.items[a];
           bValue = comparison.items[b];
-        } else if (sortBy === 'score') {
+        } else if (sortBy === "score") {
           aValue = itemScores[comparison.items[a]];
           bValue = itemScores[comparison.items[b]];
         } else {
-          const criterion = comparison.criteria.find(c => c.name === sortBy);
+          const criterion = comparison.criteria.find((c) => c.name === sortBy);
           if (criterion) {
             aValue = criterion.values[a];
             bValue = criterion.values[b];
           }
         }
-        
+
         // Handle different data types
-        if (typeof aValue === 'number' && typeof bValue === 'number') {
-          return sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
-        } else if (typeof aValue === 'boolean' && typeof bValue === 'boolean') {
+        if (typeof aValue === "number" && typeof bValue === "number") {
+          return sortDirection === "asc" ? aValue - bValue : bValue - aValue;
+        } else if (typeof aValue === "boolean" && typeof bValue === "boolean") {
           const aNum = aValue ? 1 : 0;
           const bNum = bValue ? 1 : 0;
-          return sortDirection === 'asc' ? aNum - bNum : bNum - aNum;
+          return sortDirection === "asc" ? aNum - bNum : bNum - aNum;
         } else {
           const aStr = String(aValue).toLowerCase();
           const bStr = String(bValue).toLowerCase();
-          return sortDirection === 'asc' ? aStr.localeCompare(bStr) : bStr.localeCompare(aStr);
+          return sortDirection === "asc"
+            ? aStr.localeCompare(bStr)
+            : bStr.localeCompare(aStr);
         }
       });
     }
-    
+
     return indices;
   }, [comparison, sortBy, sortDirection, itemScores]);
 
   // Filter items based on search query
   const filteredIndices = useMemo(() => {
     if (!searchQuery) return sortedItemIndices;
-    
-    return sortedItemIndices.filter(index => {
+
+    return sortedItemIndices.filter((index) => {
       const item = comparison.items[index];
-      const itemMatches = item.toLowerCase().includes(searchQuery.toLowerCase());
-      
-      const criteriaMatch = comparison.criteria.some(criterion => {
+      const itemMatches = item
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
+
+      const criteriaMatch = comparison.criteria.some((criterion) => {
         const value = criterion.values[index];
         return String(value).toLowerCase().includes(searchQuery.toLowerCase());
       });
-      
+
       return itemMatches || criteriaMatch;
     });
   }, [sortedItemIndices, searchQuery, comparison]);
 
   const handleSort = (columnName: string) => {
     if (sortBy === columnName) {
-      if (sortDirection === 'asc') {
-        setSortDirection('desc');
-      } else if (sortDirection === 'desc') {
+      if (sortDirection === "asc") {
+        setSortDirection("desc");
+      } else if (sortDirection === "desc") {
         setSortBy(null);
         setSortDirection(null);
       } else {
-        setSortDirection('asc');
+        setSortDirection("asc");
       }
     } else {
       setSortBy(columnName);
-      setSortDirection('asc');
+      setSortDirection("asc");
     }
   };
 
@@ -195,21 +252,25 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison,
     setHiddenColumns(newHidden);
   };
 
-  const renderCellValue = (criterion: ComparisonCriterion, value: any, itemIndex: number) => {
+  const renderCellValue = (
+    criterion: ComparisonCriterion,
+    value: any,
+    itemIndex: number,
+  ) => {
     const isHighlighted = highlightedItem === comparison.items[itemIndex];
-    
+
     switch (criterion.type) {
-      case 'rating':
-        if (typeof value === 'number') {
+      case "rating":
+        if (typeof value === "number") {
           return (
             <div className="flex items-center gap-1">
               {[1, 2, 3, 4, 5].map((star) => (
                 <Star
                   key={star}
                   className={`h-4 w-4 ${
-                    star <= value 
-                      ? 'text-yellow-500 fill-yellow-500' 
-                      : 'text-gray-300 dark:text-gray-600'
+                    star <= value
+                      ? "text-yellow-500 fill-yellow-500"
+                      : "text-gray-300 dark:text-gray-600"
                   }`}
                 />
               ))}
@@ -220,9 +281,9 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison,
           );
         }
         break;
-        
-      case 'cost':
-        if (typeof value === 'string') {
+
+      case "cost":
+        if (typeof value === "string") {
           const costLevel = value.length; // $ = 1, $$ = 2, $$$ = 3
           return (
             <div className="flex items-center gap-1">
@@ -230,15 +291,15 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison,
                 <DollarSign
                   key={level}
                   className={`h-4 w-4 ${
-                    level <= costLevel 
-                      ? 'text-green-600 dark:text-green-400' 
-                      : 'text-gray-300 dark:text-gray-600'
+                    level <= costLevel
+                      ? "text-green-600 dark:text-green-400"
+                      : "text-gray-300 dark:text-gray-600"
                   }`}
                 />
               ))}
             </div>
           );
-        } else if (typeof value === 'number') {
+        } else if (typeof value === "number") {
           return (
             <span className="font-medium text-green-600 dark:text-green-400">
               ${value}
@@ -246,8 +307,8 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison,
           );
         }
         break;
-        
-      case 'boolean':
+
+      case "boolean":
         return (
           <div className="flex justify-center">
             {value ? (
@@ -257,16 +318,16 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison,
             )}
           </div>
         );
-        
-      case 'text':
+
+      case "text":
       default:
         return (
-          <span className={`text-sm ${isHighlighted ? 'font-semibold' : ''}`}>
+          <span className={`text-sm ${isHighlighted ? "font-semibold" : ""}`}>
             {String(value)}
           </span>
         );
     }
-    
+
     return <span className="text-sm">{String(value)}</span>;
   };
 
@@ -274,13 +335,13 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison,
     if (sortBy !== columnName) {
       return <ArrowUpDown className="h-4 w-4 text-gray-400" />;
     }
-    
-    if (sortDirection === 'asc') {
+
+    if (sortDirection === "asc") {
       return <ArrowUp className="h-4 w-4 text-blue-600 dark:text-blue-400" />;
-    } else if (sortDirection === 'desc') {
+    } else if (sortDirection === "desc") {
       return <ArrowDown className="h-4 w-4 text-blue-600 dark:text-blue-400" />;
     }
-    
+
     return <ArrowUpDown className="h-4 w-4 text-gray-400" />;
   };
 
@@ -288,15 +349,15 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison,
     const scores = Object.entries(itemScores).map(([item, score]) => ({
       item,
       score,
-      index: comparison.items.indexOf(item)
+      index: comparison.items.indexOf(item),
     }));
-    
+
     scores.sort((a, b) => b.score - a.score);
-    
+
     return {
       winner: scores[0]?.index,
       runnerUp: scores[1]?.index,
-      third: scores[2]?.index
+      third: scores[2]?.index,
     };
   };
 
@@ -306,21 +367,26 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison,
     <>
       {/* Fullscreen Backdrop */}
       {isFullScreen && (
-        <div 
+        <div
           className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
           onClick={() => setIsFullScreen(false)}
         />
       )}
 
-      <div className={`w-full ${isFullScreen ? 'fixed inset-0 z-50 flex items-center justify-center p-4' : 'py-6'}`}>
-        <div className={`max-w-7xl mx-auto ${isFullScreen ? 'bg-textured rounded-2xl shadow-2xl h-full max-h-[95vh] w-full flex flex-col overflow-hidden' : ''}`}>
-          
+      <div
+        className={`w-full ${isFullScreen ? "fixed inset-0 z-50 flex items-center justify-center p-4" : "py-6"}`}
+      >
+        <div
+          className={`max-w-7xl mx-auto ${isFullScreen ? "bg-textured rounded-2xl shadow-2xl h-full max-h-[95vh] w-full flex flex-col overflow-hidden" : ""}`}
+        >
           {/* Fullscreen Header */}
           {isFullScreen && (
             <div className="flex-shrink-0 px-6 py-4 border-b border-border flex items-center justify-between bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30">
               <div className="flex items-center gap-3">
                 <Table className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
-                <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200">Comparison Table</h3>
+                <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200">
+                  Comparison Table
+                </h3>
               </div>
               <div className="flex items-center gap-2">
                 <button
@@ -329,7 +395,7 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison,
                   className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-500 dark:bg-slate-600 text-white text-sm font-medium transition-all shadow-sm hover:bg-slate-600 dark:hover:bg-slate-700 disabled:opacity-50"
                 >
                   <Printer className="h-4 w-4" />
-                  <span>{isPrinting ? 'Saving…' : 'Print'}</span>
+                  <span>{isPrinting ? "Saving…" : "Print"}</span>
                 </button>
                 <button
                   onClick={() => setIsFullScreen(false)}
@@ -343,9 +409,8 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison,
           )}
 
           {/* Scrollable Content */}
-          <div className={isFullScreen ? 'flex-1 overflow-y-auto' : ''}>
+          <div className={isFullScreen ? "flex-1 overflow-y-auto" : ""}>
             <div className="p-6 space-y-6">
-
               {/* Header Section */}
               <div className="bg-gradient-to-br from-emerald-100 via-teal-50 to-cyan-100 dark:from-emerald-950/40 dark:via-teal-950/30 dark:to-cyan-950/40 rounded-2xl p-6 shadow-lg border-2 border-emerald-200 dark:border-emerald-800/50">
                 <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-6">
@@ -369,18 +434,20 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison,
                     {!isFullScreen && (
                       <>
                         <button
-                          onClick={() => openCanvas({
-                            type: 'comparison',
-                            data: comparison,
-                            metadata: { 
-                              title: comparison.title,
-                              sourceTaskId: taskId
-                            }
-                          })}
+                          onClick={() =>
+                            openCanvas({
+                              type: "comparison",
+                              data: comparison,
+                              metadata: {
+                                title: comparison.title,
+                                sourceTaskId: taskId,
+                              },
+                            })
+                          }
                           className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-purple-500 dark:bg-purple-600 text-white text-sm font-semibold shadow-md hover:bg-purple-600 dark:hover:bg-purple-700 hover:shadow-lg transform hover:scale-105 transition-all"
                         >
                           <ExternalLink className="h-4 w-4" />
-                          <span>Side Panel</span>
+                          <span>Canvas</span>
                         </button>
                         <button
                           onClick={handlePrint}
@@ -388,7 +455,7 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison,
                           className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-slate-500 dark:bg-slate-600 text-white text-sm font-semibold shadow-md hover:bg-slate-600 dark:hover:bg-slate-700 hover:shadow-lg transform hover:scale-105 transition-all disabled:opacity-50"
                         >
                           <Printer className="h-4 w-4" />
-                          <span>{isPrinting ? 'Saving…' : 'Print'}</span>
+                          <span>{isPrinting ? "Saving…" : "Print"}</span>
                         </button>
                         <button
                           onClick={() => setIsFullScreen(true)}
@@ -415,19 +482,19 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison,
                         className="pl-10 pr-4 py-2 rounded-lg border-border bg-textured text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm"
                       />
                     </div>
-                    
+
                     <button
                       onClick={() => setShowScores(!showScores)}
                       className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        showScores 
-                          ? 'bg-emerald-100 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700'
-                          : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-border'
+                        showScores
+                          ? "bg-emerald-100 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700"
+                          : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-border"
                       }`}
                     >
-                      {showScores ? 'Hide Scores' : 'Show Scores'}
+                      {showScores ? "Hide Scores" : "Show Scores"}
                     </button>
                   </div>
-                  
+
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-gray-600 dark:text-gray-400">
                       Comparing {comparison.items.length} items
@@ -459,7 +526,7 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison,
                         <div className="text-xs text-gray-400">2nd</div>
                       </div>
                     )}
-                    
+
                     {/* Winner (1st place) */}
                     {winners.winner !== undefined && (
                       <div className="text-center">
@@ -472,10 +539,12 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison,
                         <div className="text-sm text-yellow-700 dark:text-yellow-300">
                           {itemScores[comparison.items[winners.winner]]}%
                         </div>
-                        <div className="text-xs text-yellow-600 dark:text-yellow-400">1st</div>
+                        <div className="text-xs text-yellow-600 dark:text-yellow-400">
+                          1st
+                        </div>
                       </div>
                     )}
-                    
+
                     {/* Third place */}
                     {winners.third !== undefined && (
                       <div className="text-center">
@@ -500,7 +569,9 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison,
                 <div className="flex items-center gap-4 flex-wrap">
                   <div className="flex items-center gap-2">
                     <Filter className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Show/Hide Columns:</span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Show/Hide Columns:
+                    </span>
                   </div>
                   {comparison.criteria.map((criterion) => (
                     <button
@@ -508,8 +579,8 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison,
                       onClick={() => toggleColumnVisibility(criterion.name)}
                       className={`flex items-center gap-2 px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
                         hiddenColumns.has(criterion.name)
-                          ? 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
-                          : 'bg-emerald-100 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300'
+                          ? "bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400"
+                          : "bg-emerald-100 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300"
                       }`}
                     >
                       {hiddenColumns.has(criterion.name) ? (
@@ -524,44 +595,51 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison,
               </div>
 
               {/* Comparison Table */}
-              <div ref={blockContentRef} className="bg-textured rounded-xl shadow-lg border-border overflow-hidden">
+              <div
+                ref={blockContentRef}
+                className="bg-textured rounded-xl shadow-lg border-border overflow-hidden"
+              >
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead className="bg-gray-50 dark:bg-gray-900/50">
                       <tr>
                         <th className="px-6 py-4 text-left">
                           <button
-                            onClick={() => handleSort('name')}
+                            onClick={() => handleSort("name")}
                             className="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-gray-100 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
                           >
                             Item
-                            {getSortIcon('name')}
+                            {getSortIcon("name")}
                           </button>
                         </th>
                         {showScores && (
                           <th className="px-6 py-4 text-center">
                             <button
-                              onClick={() => handleSort('score')}
+                              onClick={() => handleSort("score")}
                               className="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-gray-100 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
                             >
                               Score
-                              {getSortIcon('score')}
+                              {getSortIcon("score")}
                             </button>
                           </th>
                         )}
-                        {comparison.criteria.map((criterion) => (
-                          !hiddenColumns.has(criterion.name) && (
-                            <th key={criterion.name} className="px-6 py-4 text-center">
-                              <button
-                                onClick={() => handleSort(criterion.name)}
-                                className="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-gray-100 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
+                        {comparison.criteria.map(
+                          (criterion) =>
+                            !hiddenColumns.has(criterion.name) && (
+                              <th
+                                key={criterion.name}
+                                className="px-6 py-4 text-center"
                               >
-                                {criterion.name}
-                                {getSortIcon(criterion.name)}
-                              </button>
-                            </th>
-                          )
-                        ))}
+                                <button
+                                  onClick={() => handleSort(criterion.name)}
+                                  className="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-gray-100 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
+                                >
+                                  {criterion.name}
+                                  {getSortIcon(criterion.name)}
+                                </button>
+                              </th>
+                            ),
+                        )}
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -570,28 +648,44 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison,
                         const isWinner = itemIndex === winners.winner;
                         const isRunnerUp = itemIndex === winners.runnerUp;
                         const isThird = itemIndex === winners.third;
-                        
+
                         return (
                           <tr
                             key={itemIndex}
                             className={`hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors ${
-                              highlightedItem === item ? 'bg-emerald-50 dark:bg-emerald-950/20' : ''
+                              highlightedItem === item
+                                ? "bg-emerald-50 dark:bg-emerald-950/20"
+                                : ""
                             } ${
-                              isWinner ? 'bg-yellow-50 dark:bg-yellow-950/20' : 
-                              isRunnerUp ? 'bg-gray-50 dark:bg-gray-950/20' :
-                              isThird ? 'bg-orange-50 dark:bg-orange-950/20' : ''
+                              isWinner
+                                ? "bg-yellow-50 dark:bg-yellow-950/20"
+                                : isRunnerUp
+                                  ? "bg-gray-50 dark:bg-gray-950/20"
+                                  : isThird
+                                    ? "bg-orange-50 dark:bg-orange-950/20"
+                                    : ""
                             }`}
                             onMouseEnter={() => setHighlightedItem(item)}
                             onMouseLeave={() => setHighlightedItem(null)}
                           >
                             <td className="px-6 py-4">
                               <div className="flex items-center gap-3">
-                                {isWinner && <Crown className="h-4 w-4 text-yellow-500" />}
-                                {isRunnerUp && <Medal className="h-4 w-4 text-gray-500" />}
-                                {isThird && <Award className="h-4 w-4 text-orange-500" />}
-                                <span className={`font-medium text-gray-900 dark:text-gray-100 ${
-                                  isWinner ? 'text-yellow-800 dark:text-yellow-200' : ''
-                                }`}>
+                                {isWinner && (
+                                  <Crown className="h-4 w-4 text-yellow-500" />
+                                )}
+                                {isRunnerUp && (
+                                  <Medal className="h-4 w-4 text-gray-500" />
+                                )}
+                                {isThird && (
+                                  <Award className="h-4 w-4 text-orange-500" />
+                                )}
+                                <span
+                                  className={`font-medium text-gray-900 dark:text-gray-100 ${
+                                    isWinner
+                                      ? "text-yellow-800 dark:text-yellow-200"
+                                      : ""
+                                  }`}
+                                >
                                   {item}
                                 </span>
                               </div>
@@ -599,24 +693,38 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison,
                             {showScores && (
                               <td className="px-6 py-4 text-center">
                                 <div className="flex items-center justify-center gap-2">
-                                  <div className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                                    itemScores[item] >= 80 ? 'bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-300' :
-                                    itemScores[item] >= 60 ? 'bg-yellow-100 dark:bg-yellow-950/30 text-yellow-700 dark:text-yellow-300' :
-                                    'bg-red-100 dark:bg-red-950/30 text-red-700 dark:text-red-300'
-                                  }`}>
+                                  <div
+                                    className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                                      itemScores[item] >= 80
+                                        ? "bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-300"
+                                        : itemScores[item] >= 60
+                                          ? "bg-yellow-100 dark:bg-yellow-950/30 text-yellow-700 dark:text-yellow-300"
+                                          : "bg-red-100 dark:bg-red-950/30 text-red-700 dark:text-red-300"
+                                    }`}
+                                  >
                                     {itemScores[item]}%
                                   </div>
-                                  {itemScores[item] >= 80 && <Zap className="h-4 w-4 text-green-500" />}
+                                  {itemScores[item] >= 80 && (
+                                    <Zap className="h-4 w-4 text-green-500" />
+                                  )}
                                 </div>
                               </td>
                             )}
-                            {comparison.criteria.map((criterion) => (
-                              !hiddenColumns.has(criterion.name) && (
-                                <td key={criterion.name} className="px-6 py-4 text-center">
-                                  {renderCellValue(criterion, criterion.values[itemIndex], itemIndex)}
-                                </td>
-                              )
-                            ))}
+                            {comparison.criteria.map(
+                              (criterion) =>
+                                !hiddenColumns.has(criterion.name) && (
+                                  <td
+                                    key={criterion.name}
+                                    className="px-6 py-4 text-center"
+                                  >
+                                    {renderCellValue(
+                                      criterion,
+                                      criterion.values[itemIndex],
+                                      itemIndex,
+                                    )}
+                                  </td>
+                                ),
+                            )}
                           </tr>
                         );
                       })}
@@ -630,34 +738,43 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({ comparison,
                 <div className="bg-textured rounded-lg p-4 border-border">
                   <div className="flex items-center gap-3 mb-2">
                     <Target className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                    <span className="font-semibold text-gray-900 dark:text-gray-100">Items Compared</span>
+                    <span className="font-semibold text-gray-900 dark:text-gray-100">
+                      Items Compared
+                    </span>
                   </div>
                   <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                     {comparison.items.length}
                   </div>
                 </div>
-                
+
                 <div className="bg-textured rounded-lg p-4 border-border">
                   <div className="flex items-center gap-3 mb-2">
                     <Table className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                    <span className="font-semibold text-gray-900 dark:text-gray-100">Criteria</span>
+                    <span className="font-semibold text-gray-900 dark:text-gray-100">
+                      Criteria
+                    </span>
                   </div>
                   <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
                     {comparison.criteria.length}
                   </div>
                 </div>
-                
+
                 <div className="bg-textured rounded-lg p-4 border-border">
                   <div className="flex items-center gap-3 mb-2">
                     <Sparkles className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                    <span className="font-semibold text-gray-900 dark:text-gray-100">Avg Score</span>
+                    <span className="font-semibold text-gray-900 dark:text-gray-100">
+                      Avg Score
+                    </span>
                   </div>
                   <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                    {Math.round(Object.values(itemScores).reduce((a, b) => a + b, 0) / Object.values(itemScores).length)}%
+                    {Math.round(
+                      Object.values(itemScores).reduce((a, b) => a + b, 0) /
+                        Object.values(itemScores).length,
+                    )}
+                    %
                   </div>
                 </div>
               </div>
-
             </div>
           </div>
         </div>

@@ -258,7 +258,7 @@ const ResearchBlock: React.FC<ResearchBlockProps> = ({ research, taskId }) => {
                         className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-purple-500 dark:bg-purple-600 text-white text-sm font-semibold shadow-md hover:bg-purple-600 dark:hover:bg-purple-700 hover:shadow-lg transform hover:scale-105 transition-all"
                       >
                         <ExternalLink className="h-4 w-4" />
-                        <span>Side Panel</span>
+                        <span>Canvas</span>
                       </button>
                       <button
                         onClick={handlePrint}

@@ -42,6 +42,18 @@ export interface MatrxSplitProps {
   allowFullScreenEditor?: boolean;
   /** Extra className on the MarkdownStream in the preview pane */
   previewMarkdownClassName?: string;
+  /**
+   * Called when an edit originates inside the preview pane's MarkdownStream
+   * (full-screen editor, block edits, etc.). Receives the full updated
+   * markdown. If omitted, defaults to `onChange` so the editor and preview
+   * stay in lockstep — which is the correct behavior for any consumer that
+   * treats the textarea value and the preview as the same document.
+   *
+   * Pass a distinct handler only when you need to flush synchronously on
+   * preview-originated edits (e.g. to skip a debounce) — keystroke edits
+   * still go through `onChange`.
+   */
+  onPreviewChange?: (value: string) => void;
 }
 
 /**
@@ -83,7 +95,9 @@ export function MatrxSplit({
   messageId,
   allowFullScreenEditor,
   previewMarkdownClassName,
+  onPreviewChange,
 }: MatrxSplitProps) {
+  const previewChange = onPreviewChange ?? onChange;
   const isMobile = useIsMobile();
   const [mobileView, setMobileView] = useState<"edit" | "preview">("edit");
 
@@ -199,11 +213,13 @@ export function MatrxSplit({
               {value.trim() ? (
                 <MarkdownStream
                   content={value}
+                  isStreamActive={false}
                   hideCopyButton={hideCopyButton}
                   analysisData={analysisData}
                   messageId={messageId}
                   allowFullScreenEditor={allowFullScreenEditor}
                   className={previewMarkdownClassName}
+                  onContentChange={previewChange}
                 />
               ) : (
                 <p className="py-2 text-sm italic text-muted-foreground">
@@ -251,11 +267,13 @@ export function MatrxSplit({
           {value.trim() ? (
             <MarkdownStream
               content={value}
+              isStreamActive={false}
               hideCopyButton={hideCopyButton}
               analysisData={analysisData}
               messageId={messageId}
               allowFullScreenEditor={allowFullScreenEditor}
               className={previewMarkdownClassName}
+              onContentChange={previewChange}
             />
           ) : (
             <p className="py-2 text-sm italic text-muted-foreground">
