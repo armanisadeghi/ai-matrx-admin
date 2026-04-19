@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
+import { selectIsDebugMode } from "@/lib/redux/slices/adminDebugSlice";
 
 const AdminNavInjector = dynamic(
   () => import("@/features/shell/components/sidebar/AdminNavInjector"),
@@ -37,6 +38,7 @@ const DevPerfOverlay =
 
 export default function AdminFeatureProvider() {
   const isAdmin = useAppSelector(selectIsAdmin);
+  const isDebugMode = useAppSelector(selectIsDebugMode);
 
   if (!isAdmin) return null;
 
@@ -46,7 +48,7 @@ export default function AdminFeatureProvider() {
       <AdminIndicatorWrapper />
       <AppleKeyExpiryBanner />
       <DebugIndicatorManager />
-      <DevPerfOverlay />
+      {isDebugMode && <DevPerfOverlay />}
     </>
   );
 }

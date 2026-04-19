@@ -66,10 +66,14 @@ export function MarkdownCopyButton({
   const [copied, setCopied] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState("below");
+  // Inline style applied to the dropdown to keep it clamped inside the
+  // viewport (important on mobile when the button isn't flush with a screen
+  // edge — a plain `right-0` would push the menu off the left side).
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
   const [showHtmlModal, setShowHtmlModal] = useState(false);
   const [htmlContent, setHtmlContent] = useState("");
   const [htmlTitle, setHtmlTitle] = useState("");
-  const buttonRef = useRef(null);
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
 
   // Close dropdown when clicking outside
   const dropdownRef = useOnClickOutside<HTMLDivElement>(() =>
@@ -77,16 +81,34 @@ export function MarkdownCopyButton({
   );
 
   useEffect(() => {
-    if (showOptions && buttonRef.current) {
-      const rect = buttonRef.current.getBoundingClientRect();
-      const spaceBelow = window.innerHeight - rect.bottom;
-      // If space below is less than 100px, show dropdown above
-      if (spaceBelow < 100) {
-        setDropdownPosition("above");
-      } else {
-        setDropdownPosition("below");
-      }
-    }
+    if (!showOptions || !buttonRef.current) return;
+
+    const rect = buttonRef.current.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - rect.bottom;
+    setDropdownPosition(spaceBelow < 160 ? "above" : "below");
+
+    // Horizontal clamp: the dropdown is absolutely positioned relative to the
+    // button's wrapper. We compute a `left` offset (relative to the button's
+    // left edge) that keeps the 224px-wide menu fully inside the viewport with
+    // an 8px gutter on both sides.
+    const dropdownWidth = 224; // min-w-56 = 14rem
+    const gutter = 8;
+    const viewportWidth = window.innerWidth;
+
+    // Default anchor: right edge of the dropdown lines up with the right edge
+    // of the button (the original `right-0` behavior).
+    let desiredLeft = rect.right - dropdownWidth;
+
+    // Clamp so the dropdown stays within [gutter, viewportWidth - gutter].
+    const minLeft = gutter;
+    const maxLeft = viewportWidth - dropdownWidth - gutter;
+    const clampedLeft = Math.max(minLeft, Math.min(desiredLeft, maxLeft));
+
+    // Convert viewport `left` back to an offset relative to the button's
+    // positioned parent (the wrapping .relative div, which shares the button's
+    // left edge).
+    const offsetFromButton = clampedLeft - rect.left;
+    setDropdownStyle({ left: `${offsetFromButton}px`, right: "auto" });
   }, [showOptions]);
 
   const handleRegularCopy = async () => {
@@ -175,11 +197,12 @@ export function MarkdownCopyButton({
           {showOptions && (
             <div
               ref={dropdownRef}
+              style={dropdownStyle}
               className={`absolute ${
                 dropdownPosition === "above"
                   ? "bottom-full mb-1"
                   : "top-full mt-1"
-              } min-w-56 right-0 bg-textured border-border rounded shadow-lg z-30`}
+              } min-w-56 bg-textured border-border rounded shadow-lg z-30`}
             >
               <button
                 onClick={handleRegularCopy}

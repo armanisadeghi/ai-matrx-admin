@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { Eye, Pencil, Play, History, Plus } from "lucide-react";
+import { Eye, Pencil, Play, History, Plus, LayoutGrid } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAgentIsDirty } from "@/features/agents/redux/agent-definition/selectors";
@@ -18,7 +18,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-type AgentPageMode = "view" | "edit" | "run" | "versions";
+type AgentPageMode = "view" | "edit" | "run" | "versions" | "widgets";
 type ModeOption = AgentPageMode | "new";
 
 const MODES: { id: ModeOption; label: string; icon: typeof Eye }[] = [
@@ -26,6 +26,7 @@ const MODES: { id: ModeOption; label: string; icon: typeof Eye }[] = [
   { id: "edit", label: "Build", icon: Pencil },
   { id: "run", label: "Run", icon: Play },
   { id: "versions", label: "Versions", icon: History },
+  { id: "widgets", label: "Widgets", icon: LayoutGrid },
   { id: "new", label: "New", icon: Plus },
 ];
 
@@ -33,6 +34,7 @@ function deriveMode(pathname: string, agentId: string): AgentPageMode {
   const base = `/agents/${agentId}`;
   if (pathname.startsWith(`${base}/run`)) return "run";
   if (pathname.startsWith(`${base}/build`)) return "edit";
+  if (pathname.startsWith(`${base}/widgets`)) return "widgets";
   if (
     pathname.startsWith(`${base}/latest`) ||
     /^\/agents\/[^/]+\/v\/\d+$/.test(pathname)
@@ -73,6 +75,7 @@ export function AgentModeController({ agentId }: { agentId: string }) {
       edit: `/agents/${agentId}/build`,
       run: `/agents/${agentId}/run`,
       versions: `/agents/${agentId}/latest`,
+      widgets: `/agents/${agentId}/widgets`,
     };
     navigateTo(pathMap[next]);
   };
@@ -84,6 +87,7 @@ export function AgentModeController({ agentId }: { agentId: string }) {
       edit: `/agents/${agentId}/build`,
       run: `/agents/${agentId}/run`,
       versions: `/agents/${agentId}/latest`,
+      widgets: `/agents/${agentId}/widgets`,
     };
     return map[id];
   };

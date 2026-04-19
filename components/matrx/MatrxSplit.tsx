@@ -248,12 +248,8 @@ export function MatrxSplit({
           </button>
         </div>
 
-        {/* Content area — single scroll region, no nesting.
-            Use absolute-inset children so the textarea/preview reliably fill
-            the available space on iOS Safari (where `h-full` on a <textarea>
-            inside a flex-column can collapse to the textarea's intrinsic
-            row-based height). */}
-        <div className="flex-1 overflow-hidden relative min-h-0">
+        {/* Content area — single scroll region, no nesting */}
+        <div className="flex-1 min-h-0 relative">
           {mobileView === "edit" ? (
             <textarea
               ref={mergedTextareaRef}

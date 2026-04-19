@@ -59,13 +59,12 @@ function deriveModeSuffix(pathname: string, agentId: string): string {
 
 interface AgentHeaderMobileProps {
   agentId: string;
-  agentName: string;
+  /** Agent name — currently unused in mobile layout (icons-only to save space).
+   *  Kept in the props for API symmetry with desktop and for future label use. */
+  agentName?: string;
 }
 
-export function AgentHeaderMobile({
-  agentId,
-  agentName,
-}: AgentHeaderMobileProps) {
+export function AgentHeaderMobile({ agentId }: AgentHeaderMobileProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [, startTransition] = useTransition();
@@ -107,10 +106,9 @@ export function AgentHeaderMobile({
   return (
     <>
       <div className="flex items-center w-full">
-        {/* Left: Agent selector — Webhook icon opens the drawer */}
+        {/* Left: Agent selector — Webhook icon opens the drawer (no name label; icons-only to save mobile space) */}
         <AgentListDropdown
           onSelect={handleAgentSelect}
-          label={agentName}
           triggerSlot={
             <button
               className="flex h-11 w-11 items-center justify-center bg-transparent transition-transform active:scale-95 outline-none cursor-pointer"

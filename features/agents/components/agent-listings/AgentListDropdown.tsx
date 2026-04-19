@@ -177,9 +177,9 @@ export function AgentListDropdown({
     return (
       <Drawer open={open} onOpenChange={handleOpen}>
         <DrawerTrigger asChild>{trigger}</DrawerTrigger>
-        <DrawerContent className="max-h-[85dvh]">
+        <DrawerContent className="h-[85dvh]">
           <DrawerTitle className="sr-only">Select Agent</DrawerTitle>
-          <div className="flex flex-col overflow-hidden max-h-[calc(85dvh-2rem)]">
+          <div className="flex flex-col overflow-hidden flex-1 min-h-0">
             {mobileDetailAgent ? (
               <div className="flex flex-col overflow-hidden">
                 <button

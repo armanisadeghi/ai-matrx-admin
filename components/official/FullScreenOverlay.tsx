@@ -9,8 +9,14 @@ import {
   DialogFooter,
   DialogDescription,
 } from "@/components/ui/dialog";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerTitle,
+  DrawerDescription,
+} from "@/components/ui/drawer";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ChevronLeft, Save, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Save, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface TabDefinition {
@@ -147,6 +153,12 @@ const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
   const [activeTab, setActiveTab] = React.useState<string>(
     initialTab || (tabs.length > 0 ? tabs[0].id : ""),
   );
+  // Mobile two-level navigation: null = show the tab index (iOS Settings style),
+  // non-null = show that tab's content with a back chevron. Reset to null on
+  // each open so the user always lands on the index.
+  const [mobileSelectedTab, setMobileSelectedTab] = useState<string | null>(
+    null,
+  );
   const [isMobile, setIsMobile] = useState(false);
   const [viewportHeight, setViewportHeight] = useState<number | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -157,6 +169,11 @@ const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
       setActiveTab(initialTab);
     }
   }, [isOpen, initialTab]);
+
+  // Reset mobile drill-in state whenever the drawer opens.
+  useEffect(() => {
+    if (isOpen) setMobileSelectedTab(null);
+  }, [isOpen]);
 
   // Detect mobile screen size
   useEffect(() => {
@@ -251,75 +268,300 @@ const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
     leftSidePanel && !isMobile ? leftSidePanelRatio * 100 : 0;
   const contentWidth = 100 - rightSidePanelWidth - leftSidePanelWidth;
 
-  // On mobile, use visualViewport height (pixel-accurate even with keyboard)
-  // to guarantee the overlay fits within reachable screen area.
-  // Position is handled by Tailwind classes (!top-0 !left-0 !translate-x/y-0)
-  // to properly override the base DialogContent centering transform.
-  const mobileStyle = isMobile
-    ? {
-        height: viewportHeight ? `${viewportHeight}px` : "100dvh",
-        maxHeight: viewportHeight ? `${viewportHeight}px` : "100dvh",
-      }
-    : undefined;
+  // ── Shared header (title + tab bar) ─────────────────────────────────────
+  const headerInner = (
+    <>
+      <div
+        className={cn(
+          "flex flex-row items-center pr-10",
+          isMobile ? "px-3 pt-1 pb-1" : "px-4 pt-2.5 pb-0",
+        )}
+      >
+        {isMobile ? (
+          <DrawerTitle
+            className={cn(
+              "shrink-0 text-base font-semibold",
+              hideTitle && "sr-only",
+            )}
+          >
+            {title}
+          </DrawerTitle>
+        ) : (
+          <DialogTitle
+            className={cn("shrink-0 text-sm", hideTitle && "sr-only")}
+          >
+            {title}
+          </DialogTitle>
+        )}
+      </div>
 
+      <div
+        className={cn(
+          "max-w-full overflow-y-hidden pb-2",
+          isMobile ? "px-2" : "",
+        )}
+      >
+        <div className="inline-flex items-center">
+          <ScrollableTabBar
+            tabs={tabs}
+            activeTab={activeTab}
+            onTabChange={handleTabChange}
+            compact={compactTabs}
+            homeTabId={homeTabId}
+          />
+        </div>
+      </div>
+    </>
+  );
+
+  // ── Shared body (side panels + tab content) ─────────────────────────────
+  const bodyInner = (
+    <div
+      ref={contentRef}
+      className={cn(
+        "flex flex-1 overflow-hidden min-h-0",
+        isMobile ? "flex-col" : "flex-row",
+      )}
+    >
+      {leftSidePanel && !isMobile && (
+        <div
+          className={cn("border-r overflow-auto", leftSidePanelClassName)}
+          style={{ width: `${leftSidePanelWidth}%` }}
+        >
+          {leftSidePanel}
+        </div>
+      )}
+
+      <div
+        className="flex flex-col overflow-hidden min-h-0"
+        style={!isMobile ? { width: `${contentWidth}%` } : { width: "100%" }}
+      >
+        <Tabs
+          value={activeTab}
+          className="flex-grow flex flex-col overflow-hidden min-h-0 border border-border"
+        >
+          {tabs.map((tab) => (
+            <TabsContent
+              key={`content-${tab.id}`}
+              value={tab.id}
+              className={cn(
+                "flex-grow mt-0 border-none overflow-auto outline-none ring-0 min-h-0 data-[state=active]:flex data-[state=active]:flex-col",
+                isMobile ? "px-0" : "",
+                tab.className,
+              )}
+            >
+              {tab.content}
+            </TabsContent>
+          ))}
+        </Tabs>
+      </div>
+
+      {sidePanel && !isMobile && (
+        <div
+          className={cn("border-l overflow-auto", sidePanelClassName)}
+          style={{ width: `${rightSidePanelWidth}%` }}
+        >
+          {sidePanel}
+        </div>
+      )}
+    </div>
+  );
+
+  // ── Shared footer ──────────────────────────────────────────────────────
+  const hasFooter =
+    showSaveButton || showCancelButton || additionalButtons || footerContent;
+
+  const footerInner = hasFooter ? (
+    <div
+      className={cn(
+        "border-t flex-shrink-0 bg-background",
+        isMobile
+          ? "flex flex-row items-center justify-between gap-1 p-1.5 pb-safe"
+          : "flex items-center justify-end p-1 pr-3",
+      )}
+    >
+      {additionalButtons && (
+        <div
+          className={cn(
+            "flex items-center gap-1",
+            isMobile ? "shrink-0" : "mr-1 gap-2",
+          )}
+        >
+          {additionalButtons}
+        </div>
+      )}
+      {footerContent}
+      <div
+        className={cn(
+          "flex items-center",
+          isMobile ? "gap-1 shrink-0" : "gap-2",
+        )}
+      >
+        {showCancelButton &&
+          (isMobile ? (
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleCancel}
+              aria-label={cancelButtonLabel}
+              title={cancelButtonLabel}
+              className="h-9 w-9"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          ) : (
+            <Button variant="outline" onClick={handleCancel}>
+              {cancelButtonLabel}
+            </Button>
+          ))}
+        {showSaveButton &&
+          (isMobile ? (
+            <Button
+              size="icon"
+              onClick={handleSave}
+              disabled={saveButtonDisabled}
+              aria-label={saveButtonLabel}
+              title={saveButtonLabel}
+              className="h-9 w-9"
+            >
+              <Save className="h-4 w-4" />
+            </Button>
+          ) : (
+            <Button onClick={handleSave} disabled={saveButtonDisabled}>
+              <Save className="h-4 w-4 mr-2" />
+              {saveButtonLabel}
+            </Button>
+          ))}
+      </div>
+    </div>
+  ) : null;
+
+  // ── Mobile: Drawer with iOS Settings–style two-level navigation ────────
+  if (isMobile) {
+    // On mobile we ignore the desktop `homeTabId` concept — every tab is shown
+    // in the index list. The drill-in view shows exactly one tab's content.
+    const selectedTab = mobileSelectedTab
+      ? tabs.find((t) => t.id === mobileSelectedTab)
+      : null;
+
+    return (
+      <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
+        <DrawerContent
+          className={cn(
+            "flex flex-col p-0 gap-0 bg-background border-t-2 border-border rounded-t-2xl",
+            "h-[95dvh] max-h-[95dvh]",
+          )}
+        >
+          <DrawerDescription className="sr-only">
+            {description ?? title}
+          </DrawerDescription>
+
+          {/* Header: index shows title, detail shows back chevron + tab label */}
+          <div className="w-full flex-shrink-0 border-b">
+            {selectedTab ? (
+              <div className="flex flex-row items-center px-2 pt-1 pb-2 pr-10">
+                <button
+                  type="button"
+                  onClick={() => setMobileSelectedTab(null)}
+                  className="shrink-0 h-8 w-8 -ml-1 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                  aria-label="Back"
+                  title="Back"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
+                <DrawerTitle className="text-base font-semibold truncate">
+                  {selectedTab.label}
+                </DrawerTitle>
+              </div>
+            ) : (
+              <div className="flex flex-row items-center px-3 pt-1 pb-2 pr-10">
+                <DrawerTitle
+                  className={cn(
+                    "text-base font-semibold",
+                    hideTitle && "sr-only",
+                  )}
+                >
+                  {title}
+                </DrawerTitle>
+              </div>
+            )}
+          </div>
+
+          {/* Body: either the iOS-style list of tabs, or a single tab's content */}
+          {selectedTab ? (
+            <>
+              {sharedHeader && (
+                <div
+                  className={cn(
+                    "border-b py-2 flex-shrink-0 px-2",
+                    sharedHeaderClassName,
+                  )}
+                >
+                  {sharedHeader}
+                </div>
+              )}
+              <div
+                ref={contentRef}
+                className="flex flex-1 flex-col overflow-hidden min-h-0"
+              >
+                <div
+                  className={cn(
+                    "flex flex-1 flex-col overflow-auto min-h-0 outline-none",
+                    selectedTab.className,
+                  )}
+                >
+                  {selectedTab.content}
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="flex-1 overflow-y-auto">
+              <ul className="divide-y divide-border">
+                {tabs.map((tab) => (
+                  <li key={`mobile-index-${tab.id}`}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMobileSelectedTab(tab.id);
+                        handleTabChange(tab.id);
+                      }}
+                      className="w-full flex items-center justify-between px-4 py-3.5 text-left hover:bg-muted/60 active:bg-muted transition-colors"
+                    >
+                      <span className="text-base text-foreground">
+                        {tab.label}
+                      </span>
+                      <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {footerInner}
+        </DrawerContent>
+      </Drawer>
+    );
+  }
+
+  // ── Desktop: Dialog ─────────────────────────────────────────────────────
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
-        className={cn(
-          "flex flex-col p-0 gap-0 bg-background border-solid",
-          isMobile
-            ? "!fixed !top-0 !left-0 !right-0 !bottom-0 !translate-x-0 !translate-y-0 w-full max-w-full rounded-none border-2 border-border"
-            : "rounded-3xl border-2 border-border",
-        )}
-        style={
-          isMobile
-            ? mobileStyle
-            : { width, maxWidth: width, height, maxHeight: height }
-        }
+        className="flex flex-col p-0 gap-0 bg-background border-solid rounded-3xl border-2 border-border"
+        style={{ width, maxWidth: width, height, maxHeight: height }}
       >
-        {/* Header — explicit width:100% so calc() children have a reference point.
-            DialogTitle is required for a11y; DialogDescription stays sr-only. */}
-        <DialogHeader
-          className={cn("w-full pl-2 pr-10", isMobile ? "pt-safe" : "")}
-        >
-          <div
-            className={cn(
-              "flex flex-row items-center pr-10",
-              isMobile ? "px-2 pt-2 pb-1" : "px-4 pt-2.5 pb-0",
-            )}
-          >
-            <DialogTitle
-              className={cn(
-                "shrink-0",
-                isMobile ? "text-base font-semibold" : "text-sm",
-                hideTitle && "sr-only",
-              )}
-            >
-              {title}
-            </DialogTitle>
-            <DialogDescription className="sr-only">
-              {description ?? title}
-            </DialogDescription>
-          </div>
-
-          <div className="max-w-full overflow-y-hidden pb-2">
-            <div className="inline-flex items-center">
-              <ScrollableTabBar
-                tabs={tabs}
-                activeTab={activeTab}
-                onTabChange={handleTabChange}
-                compact={compactTabs}
-                homeTabId={homeTabId}
-              />
-            </div>
-          </div>
+        <DialogHeader className="w-full pl-2 pr-10">
+          {headerInner}
+          <DialogDescription className="sr-only">
+            {description ?? title}
+          </DialogDescription>
         </DialogHeader>
 
         {sharedHeader && (
           <div
             className={cn(
-              "border-b py-2 flex-shrink-0",
-              isMobile ? "px-2" : "px-4",
+              "border-b py-2 flex-shrink-0 px-4",
               sharedHeaderClassName,
             )}
           >
@@ -327,124 +569,10 @@ const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
           </div>
         )}
 
-        <div
-          ref={contentRef}
-          className={cn(
-            "flex flex-1 overflow-hidden min-h-0",
-            isMobile ? "flex-col" : "flex-row",
-          )}
-        >
-          {leftSidePanel && !isMobile && (
-            <div
-              className={cn("border-r overflow-auto", leftSidePanelClassName)}
-              style={{ width: `${leftSidePanelWidth}%` }}
-            >
-              {leftSidePanel}
-            </div>
-          )}
+        {bodyInner}
 
-          <div
-            className="flex flex-col overflow-hidden min-h-0 "
-            style={
-              !isMobile ? { width: `${contentWidth}%` } : { width: "100%" }
-            }
-          >
-            <Tabs
-              value={activeTab}
-              className="flex-grow flex flex-col overflow-hidden min-h-0 border border-border"
-            >
-              {tabs.map((tab) => (
-                <TabsContent
-                  key={`content-${tab.id}`}
-                  value={tab.id}
-                  className={cn(
-                    "flex-grow mt-0 border-none overflow-auto outline-none ring-0 min-h-0 data-[state=active]:flex data-[state=active]:flex-col",
-                    isMobile ? "px-0" : "",
-                    tab.className,
-                  )}
-                >
-                  {tab.content}
-                </TabsContent>
-              ))}
-            </Tabs>
-          </div>
-
-          {sidePanel && !isMobile && (
-            <div
-              className={cn("border-l overflow-auto", sidePanelClassName)}
-              style={{ width: `${rightSidePanelWidth}%` }}
-            >
-              {sidePanel}
-            </div>
-          )}
-        </div>
-
-        {(showSaveButton ||
-          showCancelButton ||
-          additionalButtons ||
-          footerContent) && (
-          <DialogFooter
-            className={cn(
-              "border-t flex-shrink-0",
-              isMobile
-                ? "flex flex-row items-center justify-between gap-1 p-1.5 pb-safe"
-                : "flex items-center justify-end p-1 pr-3",
-            )}
-          >
-            {additionalButtons && (
-              <div
-                className={cn(
-                  "flex items-center gap-1",
-                  isMobile ? "shrink-0" : "mr-1 gap-2",
-                )}
-              >
-                {additionalButtons}
-              </div>
-            )}
-            {footerContent}
-            <div
-              className={cn(
-                "flex items-center",
-                isMobile ? "gap-1 shrink-0" : "gap-2",
-              )}
-            >
-              {showCancelButton &&
-                (isMobile ? (
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={handleCancel}
-                    aria-label={cancelButtonLabel}
-                    title={cancelButtonLabel}
-                    className="h-9 w-9"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                ) : (
-                  <Button variant="outline" onClick={handleCancel}>
-                    {cancelButtonLabel}
-                  </Button>
-                ))}
-              {showSaveButton &&
-                (isMobile ? (
-                  <Button
-                    size="icon"
-                    onClick={handleSave}
-                    disabled={saveButtonDisabled}
-                    aria-label={saveButtonLabel}
-                    title={saveButtonLabel}
-                    className="h-9 w-9"
-                  >
-                    <Save className="h-4 w-4" />
-                  </Button>
-                ) : (
-                  <Button onClick={handleSave} disabled={saveButtonDisabled}>
-                    <Save className="h-4 w-4 mr-2" />
-                    {saveButtonLabel}
-                  </Button>
-                ))}
-            </div>
-          </DialogFooter>
+        {hasFooter && (
+          <DialogFooter className="p-0">{footerInner}</DialogFooter>
         )}
       </DialogContent>
     </Dialog>

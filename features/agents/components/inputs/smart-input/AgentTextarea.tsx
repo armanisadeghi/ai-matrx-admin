@@ -192,10 +192,12 @@ export function AgentTextarea({
         wrapper.style.height = `${target}px`;
       });
     } else {
-      el.style.height = `${wrapper.offsetHeight}px`;
-      const natural = Math.min(el.scrollHeight, 200);
+      const minH = compact ? 20 : 40;
+      const startHeight = wrapper.offsetHeight;
+      el.style.height = "auto";
+      const natural = Math.max(minH, Math.min(el.scrollHeight, 200));
       wrapper.style.transition = "none";
-      wrapper.style.height = `${wrapper.offsetHeight}px`;
+      wrapper.style.height = `${startHeight}px`;
       requestAnimationFrame(() => {
         wrapper.style.transition = "height 300ms cubic-bezier(0.4, 0, 0.2, 1)";
         wrapper.style.height = `${natural}px`;

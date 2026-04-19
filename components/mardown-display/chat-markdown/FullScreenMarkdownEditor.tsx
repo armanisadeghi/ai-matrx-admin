@@ -1117,17 +1117,14 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
         <MatrxSplit
           value={editedContent}
           onChange={handleContentChange}
-          className="h-full bg-textured"
           placeholder="Start writing markdown..."
-          textareaClassName="bg-textured text-base font-mono"
-          previewClassName="bg-textured"
+          textareaClassName="text-base font-mono"
           analysisData={analysisData}
           messageId={messageId}
           allowFullScreenEditor={false}
-          previewMarkdownClassName="bg-textured p-4"
         />,
       ),
-      className: "overflow-hidden p-0 bg-textured",
+      className: "overflow-hidden p-0",
     });
   }
 
@@ -1175,10 +1172,16 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
         "preview",
         <div className="w-full h-full overflow-auto bg-textured">
           <div className="flex justify-center min-h-full">
-            <div className="max-w-[750px] w-full p-6 border-x-3 border-gray-500 dark:border-gray-500 shadow-sm min-h-full">
+            <div
+              className={cn(
+                "w-full min-h-full",
+                isMobile
+                  ? "px-2 py-2"
+                  : "max-w-[750px] p-6 border-x-3 border-gray-500 dark:border-gray-500 shadow-sm",
+              )}
+            >
               <MarkdownStream
                 content={editedContent}
-                className="bg-textured p-4"
                 isStreamActive={false}
                 analysisData={analysisData}
                 messageId={messageId}
