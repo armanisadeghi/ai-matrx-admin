@@ -64,6 +64,8 @@ export function useAgentLauncherTester(
   const [hideToolResults, setHideToolResults] = useState(false);
 
   // ── Simulated editor context (mimics UnifiedContextMenu scope) ───────────
+  // Default OFF so the sample values never ship unless the user opts in.
+  const [includeEditorContext, setIncludeEditorContext] = useState(false);
   const [editorSelection, setEditorSelection] = useState<string>(
     DEFAULT_EDITOR_SELECTION,
   );
@@ -141,14 +143,17 @@ export function useAgentLauncherTester(
       }
     }
 
-    // Compose the application scope from editor context + optional app
-    // context + manual JSON override (last wins, field-by-field).
+    // Compose the application scope. Editor context is opt-in — the sample
+    // values stay dormant unless the user enables the toggle. App context
+    // and manual JSON override still apply when editor context is off.
     const scope: Record<string, unknown> = {};
-    if (editorSelection) scope.selection = editorSelection;
-    if (editorTextBefore) scope.text_before = editorTextBefore;
-    if (editorTextAfter) scope.text_after = editorTextAfter;
-    if (editorContent) scope.content = editorContent;
-    if (editorContext) scope.context = editorContext;
+    if (includeEditorContext) {
+      if (editorSelection) scope.selection = editorSelection;
+      if (editorTextBefore) scope.text_before = editorTextBefore;
+      if (editorTextAfter) scope.text_after = editorTextAfter;
+      if (editorContent) scope.content = editorContent;
+      if (editorContext) scope.context = editorContext;
+    }
 
     if (applyAppContext) {
       scope.app_context = {
@@ -214,7 +219,9 @@ export function useAgentLauncherTester(
     };
 
     if (preExecutionMessage) options.preExecutionMessage = preExecutionMessage;
-    if (editorSelection) options.originalText = editorSelection;
+    if (includeEditorContext && editorSelection) {
+      options.originalText = editorSelection;
+    }
     if (overrides) options.overrides = overrides;
     if (applicationScope) options.applicationScope = applicationScope;
     if (jsonExtraction) options.jsonExtraction = jsonExtraction;
@@ -260,6 +267,8 @@ export function useAgentLauncherTester(
     hideToolResults,
     setHideToolResults,
     // Editor context
+    includeEditorContext,
+    setIncludeEditorContext,
     editorSelection,
     setEditorSelection,
     editorTextBefore,

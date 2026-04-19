@@ -119,6 +119,8 @@ export function AgentWidgetsPage({
   const [hideToolResults, setHideToolResults] = useState(false);
 
   // ── Editor context ─────────────────────────────────────────────────────
+  // Default OFF — the sample values never ship unless the user opts in.
+  const [includeEditorContext, setIncludeEditorContext] = useState(false);
   const [editorSelection, setEditorSelection] = useState(
     DEFAULT_EDITOR_SELECTION,
   );
@@ -162,6 +164,8 @@ export function AgentWidgetsPage({
     setHideReasoning,
     hideToolResults,
     setHideToolResults,
+    includeEditorContext,
+    setIncludeEditorContext,
     editorSelection,
     setEditorSelection,
     editorTextBefore,
@@ -232,11 +236,13 @@ export function AgentWidgetsPage({
     }
 
     const scope: Record<string, unknown> = {};
-    if (editorSelection) scope.selection = editorSelection;
-    if (editorTextBefore) scope.text_before = editorTextBefore;
-    if (editorTextAfter) scope.text_after = editorTextAfter;
-    if (editorContent) scope.content = editorContent;
-    if (editorContext) scope.context = editorContext;
+    if (includeEditorContext) {
+      if (editorSelection) scope.selection = editorSelection;
+      if (editorTextBefore) scope.text_before = editorTextBefore;
+      if (editorTextAfter) scope.text_after = editorTextAfter;
+      if (editorContent) scope.content = editorContent;
+      if (editorContext) scope.context = editorContext;
+    }
 
     if (applicationScopeJson.trim()) {
       try {
@@ -290,7 +296,9 @@ export function AgentWidgetsPage({
 
     if (userInput) options.userInput = userInput;
     if (preExecutionMessage) options.preExecutionMessage = preExecutionMessage;
-    if (editorSelection) options.originalText = editorSelection;
+    if (includeEditorContext && editorSelection) {
+      options.originalText = editorSelection;
+    }
     if (overrides) options.overrides = overrides;
     if (applicationScope) options.applicationScope = applicationScope;
     if (jsonExtraction) options.jsonExtraction = jsonExtraction;

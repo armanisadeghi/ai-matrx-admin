@@ -34,13 +34,24 @@ export interface TaskAssociationsBundle {
     storage_path: string;
     created_at: string;
   }[];
+  /** Generic (non-AI) messages from the `messages` table */
   messages: {
     id: string;
     conversation_id: string;
     preview: string;
     created_at: string;
   }[];
+  /** AI chat messages from `cx_message` */
+  cx_messages: {
+    id: string;
+    conversation_id: string;
+    role: string | null;
+    preview: string;
+    created_at: string;
+  }[];
   conversations: { id: string; name: string; type: string }[];
+  /** AI chat conversations from `cx_conversation` */
+  cx_conversations: { id: string; title: string }[];
   agent_conversations: { id: string; title: string | null }[];
   blocks: {
     id: string;
@@ -101,7 +112,9 @@ export const fetchTaskAssociations = createAsyncThunk<
     notes: raw.notes ?? [],
     files: raw.files ?? [],
     messages: raw.messages ?? [],
+    cx_messages: raw.cx_messages ?? [],
     conversations: raw.conversations ?? [],
+    cx_conversations: raw.cx_conversations ?? [],
     agent_conversations: raw.agent_conversations ?? [],
     blocks: raw.blocks ?? [],
     other: raw.other ?? [],
@@ -449,7 +462,9 @@ const EMPTY_BUNDLE: TaskAssociationsBundle = {
   notes: [],
   files: [],
   messages: [],
+  cx_messages: [],
   conversations: [],
+  cx_conversations: [],
   agent_conversations: [],
   blocks: [],
   other: [],
@@ -474,7 +489,9 @@ export const selectAssociationCount =
       b.notes.length +
       b.files.length +
       b.messages.length +
+      b.cx_messages.length +
       b.conversations.length +
+      b.cx_conversations.length +
       b.agent_conversations.length +
       b.blocks.length +
       b.other.length

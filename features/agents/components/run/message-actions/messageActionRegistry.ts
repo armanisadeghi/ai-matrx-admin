@@ -45,6 +45,7 @@ import { NotesAPI } from "@/features/notes";
 import {
   createTaskWithAssociation,
   setSelectedTaskId,
+  setPendingSource,
 } from "@/features/tasks/redux";
 import { toast } from "sonner";
 import {
@@ -418,7 +419,7 @@ function saveItems(ctx: MessageActionContext): MenuItem[] {
       icon: CheckSquare,
       iconColor: "text-blue-500 dark:text-blue-400",
       label: "Create task from message",
-      action: async () => {
+      action: () => {
         if (
           !requireAuth(
             ctx,
@@ -428,51 +429,41 @@ function saveItems(ctx: MessageActionContext): MenuItem[] {
           )
         )
           return;
-        const preview = content.slice(0, 160);
-        const title =
-          preview.split("\n")[0]?.slice(0, 80) || "Task from message";
-        try {
-          const res = await (
-            dispatch as unknown as (
-              action: ReturnType<typeof createTaskWithAssociation>,
-            ) => Promise<{
-              payload: { taskId: string } | null;
-              meta: { requestStatus: string };
-            }>
-          )(
-            createTaskWithAssociation({
-              title,
+        const preview = content.slice(0, 400);
+        // Seed a sensible title from the first line, but let the user edit
+        // it in the dialog — this is the UX fix the user asked for.
+        const seedTitle =
+          content
+            .trim()
+            .split(/\n+/)[0]
+            ?.replace(/^[#>*\-\s]+/, "")
+            .slice(0, 100) || "";
+
+        dispatch(
+          setPendingSource({
+            entity_type: "cx_message",
+            entity_id: ctx.messageId ?? "",
+            label: preview,
+            metadata: {
+              // Also attach the whole conversation when available so the
+              // resulting task is reachable from either side.
+              ...(ctx.conversationId
+                ? {
+                    parent: {
+                      entity_type: "cx_conversation",
+                      entity_id: ctx.conversationId,
+                      label: preview.slice(0, 120),
+                    },
+                  }
+                : {}),
+              ...(ctx.metadata ?? {}),
+            },
+            prePopulate: {
+              title: seedTitle,
               description: content,
-              entity_type: ctx.messageId ? "message" : null,
-              entity_id: ctx.messageId,
-              label: preview,
-              metadata: ctx.metadata ?? {},
-            }),
-          );
-          const taskId =
-            res &&
-            "payload" in res &&
-            res.payload &&
-            typeof res.payload === "object"
-              ? (res.payload as { taskId?: string }).taskId
-              : undefined;
-          if (taskId) {
-            dispatch(setSelectedTaskId(taskId));
-            toast.success("Task created", {
-              description: "Linked to this message",
-              action: {
-                label: "Open",
-                onClick: () => {
-                  window.location.href = `/tasks?task=${taskId}`;
-                },
-              },
-            });
-          } else {
-            toast.error("Could not create task");
-          }
-        } catch (err) {
-          toast.error(getErrorMessage(err, "Could not create task"));
-        }
+            },
+          }),
+        );
         onClose();
       },
       category: "Actions",
@@ -855,27 +846,22 @@ export function resumePendingAuthAction(
     } else if (action === "save-notes") {
       dispatch(openSaveToNotes({ content: savedContent }));
     } else if (action === "add-to-tasks") {
-      const preview = savedContent.slice(0, 160);
-      const title = preview.split("\n")[0]?.slice(0, 80) || "Task from message";
-      (
-        dispatch as unknown as (
-          action: ReturnType<typeof createTaskWithAssociation>,
-        ) => Promise<{ payload: { taskId?: string } | null }>
-      )(
-        createTaskWithAssociation({
-          title,
-          description: savedContent,
+      const preview = savedContent.slice(0, 400);
+      const seedTitle =
+        savedContent
+          .trim()
+          .split(/\n+/)[0]
+          ?.replace(/^[#>*\-\s]+/, "")
+          .slice(0, 100) || "";
+      // Post-auth resume — open the same dialog the action opens normally
+      dispatch(
+        setPendingSource({
+          entity_type: "cx_message",
+          entity_id: "",
           label: preview,
+          prePopulate: { title: seedTitle, description: savedContent },
         }),
-      )
-        .then((res) => {
-          const taskId = res?.payload?.taskId;
-          if (taskId) {
-            dispatch(setSelectedTaskId(taskId));
-            toast.success("Task created");
-          }
-        })
-        .catch(() => toast.error("Could not create task"));
+      );
     }
   } catch {
     /* ignore parse errors */

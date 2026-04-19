@@ -70,6 +70,69 @@ function renderBlockTypeToMediaKind(
   return "document";
 }
 
+/**
+ * Wraps a non-text render block's content back into the markdown shape it
+ * was streamed in, so the committed `CxTextContent.text` parses into the
+ * same typed block on reload.
+ *
+ * Only used on the fallback path — when `text_end.rawText` is missing (pure
+ * `render_block`-event streams, or reasoning-only runs). The preferred path
+ * uses the raw chunk text stored on the timeline entry and never enters
+ * here.
+ */
+function reconstructBlockMarkdown(block: {
+  type: string;
+  content: string | null;
+  data?: Record<string, unknown> | null;
+}): string {
+  const content = block.content ?? "";
+  const data = block.data ?? {};
+
+  switch (block.type) {
+    case "text":
+      return content;
+    case "code": {
+      const language =
+        typeof data.language === "string" ? data.language : "";
+      return `\`\`\`${language}\n${content}\n\`\`\``;
+    }
+    case "reasoning":
+    case "thinking":
+      return `<thinking>\n${content}\n</thinking>`;
+    case "artifact":
+    case "decision": {
+      const attrs = Object.entries(data)
+        .filter(([k, v]) => k !== "content" && typeof v !== "object")
+        .map(([k, v]) => ` ${k}="${String(v).replace(/"/g, "&quot;")}"`)
+        .join("");
+      return `<${block.type}${attrs}>\n${content}\n</${block.type}>`;
+    }
+    // XML-tagged blocks (task, flashcards, timeline, etc.) — wrap with the
+    // matching tag so the reload parser re-detects the structured block.
+    case "task":
+    case "database":
+    case "private":
+    case "plan":
+    case "event":
+    case "tool":
+    case "questionnaire":
+    case "flashcards":
+    case "cooking_recipe":
+    case "timeline":
+    case "progress_tracker":
+    case "troubleshooting":
+    case "resources":
+    case "research":
+    case "info":
+      return `<${block.type}>\n${content}\n</${block.type}>`;
+    default:
+      // Unknown types fall back to content — may lose structure but text
+      // survives. Server-side render_block streams with novel types
+      // should either extend this switch or move to chunk streaming.
+      return content;
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
@@ -109,41 +172,75 @@ export function assembleMessageParts(request: ActiveRequest): CxContentBlock[] {
       continue;
     }
 
-    // ── Text run ended → emit CxTextContent for each renderBlock in range ─
+    // ── Text run ended → emit CxTextContent from the raw chunk text ─────
+    // The timeline entry carries the exact markdown emitted by the model
+    // (fences, pipes, XML tags, etc.) — committing that verbatim is the
+    // only way code/table/XML-tagged blocks round-trip through the DB and
+    // re-parse into typed render blocks on reload. The block accumulator
+    // strips those structural markers when building typed render blocks,
+    // so reading from `renderBlocks[].content` would write de-fenced
+    // plain text into `cx_message.content` and the post-stream renderer
+    // would show code as text.
     if (isTextEnd(entry)) {
+      for (let i = entry.blockStartIndex; i < entry.blockEndIndex; i++) {
+        consumedRenderBlockIndices.add(i);
+      }
+
+      const rawText = entry.rawText;
+      if (rawText && rawText.trim()) {
+        blocks.push({ type: "text", text: rawText } as CxTextContent);
+
+        // Still emit any media blocks that landed in this text run —
+        // media arrives as a dedicated render_block event, not via
+        // chunk text, so it isn't in `rawText`.
+        const rangeIds = request.renderBlockOrder.slice(
+          entry.blockStartIndex,
+          entry.blockEndIndex,
+        );
+        for (const blockId of rangeIds) {
+          const block = request.renderBlocks[blockId];
+          if (!block) continue;
+          if (MEDIA_BLOCK_TYPES.has(block.type)) {
+            const mediaBlock = renderBlockToMediaBlock(block);
+            if (mediaBlock) blocks.push(mediaBlock);
+          }
+        }
+        continue;
+      }
+
+      // Fallback for entries missing `rawText` (render_block-event streams
+      // with no chunks, or reasoning-only runs): reconstruct markdown
+      // from the typed render blocks so code/table/XML-tagged blocks
+      // re-parse into the same typed blocks on reload.
       const rangeIds = request.renderBlockOrder.slice(
         entry.blockStartIndex,
         entry.blockEndIndex,
       );
       const textParts: string[] = [];
-
-      for (let i = entry.blockStartIndex; i < entry.blockEndIndex; i++) {
-        consumedRenderBlockIndices.add(i);
-      }
-
       for (const blockId of rangeIds) {
         const block = request.renderBlocks[blockId];
         if (!block) continue;
-
         if (MEDIA_BLOCK_TYPES.has(block.type)) {
-          // Flush any accumulated text first
           if (textParts.length > 0) {
-            const joined = textParts.join("").trim();
+            const joined = textParts.join("\n\n").trim();
             if (joined) {
               blocks.push({ type: "text", text: joined } as CxTextContent);
             }
             textParts.length = 0;
           }
-          // Emit media block
           const mediaBlock = renderBlockToMediaBlock(block);
           if (mediaBlock) blocks.push(mediaBlock);
-        } else if (block.content) {
-          textParts.push(block.content);
+        } else {
+          const reconstructed = reconstructBlockMarkdown({
+            type: block.type,
+            content: block.content ?? null,
+            data: block.data ?? null,
+          });
+          if (reconstructed.trim()) textParts.push(reconstructed);
         }
       }
-
       if (textParts.length > 0) {
-        const joined = textParts.join("").trim();
+        const joined = textParts.join("\n\n").trim();
         if (joined) {
           blocks.push({ type: "text", text: joined } as CxTextContent);
         }
@@ -220,7 +317,14 @@ export function assembleMessageParts(request: ActiveRequest): CxContentBlock[] {
       const mediaBlock = renderBlockToMediaBlock(block);
       if (mediaBlock) blocks.push(mediaBlock);
     } else if (block.content?.trim()) {
-      blocks.push({ type: "text", text: block.content } as CxTextContent);
+      const reconstructed = reconstructBlockMarkdown({
+        type: block.type,
+        content: block.content,
+        data: block.data ?? null,
+      });
+      if (reconstructed.trim()) {
+        blocks.push({ type: "text", text: reconstructed } as CxTextContent);
+      }
     }
   }
 

@@ -13,6 +13,7 @@ import {
   ExternalLink,
   Loader2,
   PlusCircle,
+  Sparkles,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
@@ -29,14 +30,6 @@ interface TaskAttachmentsPanelProps {
   className?: string;
 }
 
-/**
- * Renders everything attached to a task: notes, files, messages,
- * conversations, agent conversations, chat blocks, plus any "other"
- * entity types the system grows into. Powered by a single RPC
- * (`get_task_associations`) so no N+1 fetching.
- *
- * Individual × buttons dissociate on click (optimistic via the slice).
- */
 export default function TaskAttachmentsPanel({
   taskId,
   className,
@@ -67,9 +60,7 @@ export default function TaskAttachmentsPanel({
 
       {count === 0 && !isLoading ? (
         <div className="rounded-lg border border-dashed border-border/60 px-3 py-4 text-center">
-          <p className="text-xs text-muted-foreground">
-            Nothing attached yet.
-          </p>
+          <p className="text-xs text-muted-foreground">Nothing attached yet.</p>
           <p className="text-[10px] text-muted-foreground/70 mt-0.5">
             Link notes, messages, files and more from anywhere in the app.
           </p>
@@ -99,6 +90,32 @@ export default function TaskAttachmentsPanel({
               onRemove: () => handleRemove("user_file", f.id),
             }))}
           />
+          {/* AI messages from cx_message — linked back to the conversation */}
+          <Section
+            icon={Sparkles}
+            label="AI Messages"
+            count={bundle.cx_messages.length}
+            items={bundle.cx_messages.map((m) => ({
+              key: m.id,
+              primary: m.preview || "AI message",
+              secondary: `${m.role ?? "message"} · ${new Date(m.created_at).toLocaleString()}`,
+              href: `/ssr/chat/c/${m.conversation_id}#m-${m.id}`,
+              onRemove: () => handleRemove("cx_message", m.id),
+            }))}
+          />
+          {/* AI conversations from cx_conversation */}
+          <Section
+            icon={MessagesSquare}
+            label="AI Conversations"
+            count={bundle.cx_conversations.length}
+            items={bundle.cx_conversations.map((c) => ({
+              key: c.id,
+              primary: c.title,
+              href: `/ssr/chat/c/${c.id}`,
+              onRemove: () => handleRemove("cx_conversation", c.id),
+            }))}
+          />
+          {/* Generic messages (other messaging systems) */}
           <Section
             icon={MessageSquare}
             label="Messages"
@@ -123,11 +140,11 @@ export default function TaskAttachmentsPanel({
           />
           <Section
             icon={Bot}
-            label="AI Conversations"
+            label="Agent Conversations"
             count={bundle.agent_conversations.length}
             items={bundle.agent_conversations.map((a) => ({
               key: a.id,
-              primary: a.title || "Untitled chat",
+              primary: a.title || "Untitled agent chat",
               onRemove: () => handleRemove("agent_conversation", a.id),
             }))}
           />
@@ -198,43 +215,52 @@ function Section({
       </button>
       {open && (
         <div>
-          {items.map((it, i) => (
-            <div
-              key={it.key}
-              className={cn(
-                "group flex items-center gap-2 px-3 py-1.5 text-xs transition-colors hover:bg-accent/30",
-                i !== items.length - 1 && "border-b border-border/20",
-              )}
-            >
-              <div className="flex-1 min-w-0">
-                <p className="truncate text-foreground">{it.primary}</p>
-                {it.secondary && (
-                  <p className="truncate text-[10px] text-muted-foreground">
-                    {it.secondary}
-                  </p>
+          {items.map((it, i) => {
+            const rowContent = (
+              <>
+                <div className="flex-1 min-w-0">
+                  <p className="truncate text-foreground">{it.primary}</p>
+                  {it.secondary && (
+                    <p className="truncate text-[10px] text-muted-foreground">
+                      {it.secondary}
+                    </p>
+                  )}
+                </div>
+                {it.href && (
+                  <ExternalLink className="w-3 h-3 text-muted-foreground shrink-0 opacity-60 group-hover:opacity-100 transition-opacity" />
                 )}
+                {it.onRemove && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      it.onRemove?.();
+                    }}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive shrink-0"
+                    title="Remove link"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                )}
+              </>
+            );
+
+            const rowClass = cn(
+              "group flex items-center gap-2 px-3 py-1.5 text-xs transition-colors hover:bg-accent/30",
+              i !== items.length - 1 && "border-b border-border/20",
+            );
+
+            return it.href ? (
+              <Link key={it.key} href={it.href} className={rowClass}>
+                {rowContent}
+              </Link>
+            ) : (
+              <div key={it.key} className={rowClass}>
+                {rowContent}
               </div>
-              {it.href && (
-                <Link
-                  href={it.href}
-                  className="text-muted-foreground hover:text-foreground shrink-0"
-                  title="Open"
-                >
-                  <ExternalLink className="w-3 h-3" />
-                </Link>
-              )}
-              {it.onRemove && (
-                <button
-                  type="button"
-                  onClick={it.onRemove}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive shrink-0"
-                  title="Remove link"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              )}
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

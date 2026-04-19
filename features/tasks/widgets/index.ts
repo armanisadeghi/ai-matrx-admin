@@ -10,3 +10,4 @@ export { default as TaskQuickAddBar } from "./TaskQuickAddBar";
 export { default as GlobalTaskShortcut } from "./GlobalTaskShortcut";
 export { default as TaskTapButton } from "./TaskTapButton";
 export type { TaskTapButtonProps } from "./TaskTapButton";
+export { default as CreateTaskFromSourceDialog } from "./CreateTaskFromSourceDialog";

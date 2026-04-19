@@ -19,7 +19,10 @@ import { ReactQueryProvider } from "@/providers/ReactQueryProvider";
 import { TranscriptsProvider } from "@/features/transcripts/context/TranscriptsContext";
 import { AudioRecoveryProvider } from "@/features/audio/providers/AudioRecoveryProvider";
 import DeferredSingletons from "./DeferredSingletons";
-import { GlobalTaskShortcut } from "@/features/tasks/widgets";
+import {
+  GlobalTaskShortcut,
+  CreateTaskFromSourceDialog,
+} from "@/features/tasks/widgets";
 
 /*
 
@@ -83,6 +86,7 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                                   {children}
                                   <DeferredSingletons />
                                   <GlobalTaskShortcut />
+                                  <CreateTaskFromSourceDialog />
                                 </AudioRecoveryProvider>
                               </TranscriptsProvider>
                             </SelectedImagesProvider>

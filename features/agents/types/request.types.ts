@@ -242,6 +242,18 @@ export interface ActiveRequest {
    */
   textRunBlockStart: number;
 
+  /**
+   * Raw chunk text accumulated since the current text run opened. Preserves
+   * the original markdown as emitted by the model — fences, table pipes,
+   * XML tags, etc. — which the block accumulator strips when building
+   * typed render blocks. At `text_end` time this snapshot is written onto
+   * the timeline entry so the stream-commit path can emit it as the
+   * authoritative `CxTextContent` text. Without this the committed DB
+   * content is stripped of structure and code blocks re-render as plain
+   * text after the stream ends.
+   */
+  currentTextRunRaw: string;
+
   // ── Raw Event Log (absolute truth) ──────────────────────────
   /**
    * Every single event yielded by the NDJSON parser, captured BEFORE
@@ -356,6 +368,15 @@ export interface TimelineTextEnd extends TimelineBase {
   blockStartIndex: number;
   blockEndIndex: number;
   blockCount: number;
+  /**
+   * Raw chunk text accumulated between the preceding `text_start` and this
+   * `text_end`, with the original markdown markers (fences, pipes, XML
+   * tags) preserved. `assembleMessageParts` emits this verbatim as
+   * `CxTextContent.text`, so code blocks and tables round-trip correctly
+   * through `cx_message.content` back into typed render blocks on reload.
+   * Optional for back-compat with entries that predated the raw-text capture.
+   */
+  rawText?: string;
 }
 
 export interface TimelineReasoningStart extends TimelineBase {

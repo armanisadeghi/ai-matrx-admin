@@ -4139,6 +4139,47 @@ export type Database = {
           },
         ]
       }
+      ctx_task_associations: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          entity_id: string
+          entity_type: string
+          id: string
+          label: string | null
+          metadata: Json
+          task_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          entity_id: string
+          entity_type: string
+          id?: string
+          label?: string | null
+          metadata?: Json
+          task_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          label?: string | null
+          metadata?: Json
+          task_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ctx_task_associations_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "ctx_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ctx_task_attachments: {
         Row: {
           file_name: string
@@ -16366,6 +16407,16 @@ export type Database = {
         Args: never
         Returns: undefined
       }
+      associate_with_task: {
+        Args: {
+          p_entity_id: string
+          p_entity_type: string
+          p_label?: string
+          p_metadata?: Json
+          p_task_id: string
+        }
+        Returns: Json
+      }
       auth_is_org_admin: {
         Args: { org_id: string; user_id: string }
         Returns: boolean
@@ -16788,6 +16839,34 @@ export type Database = {
         }
         Returns: Json
       }
+      create_task_with_association: {
+        Args: {
+          p_description?: string
+          p_due_date?: string
+          p_entity_id?: string
+          p_entity_type?: string
+          p_label?: string
+          p_metadata?: Json
+          p_organization_id?: string
+          p_priority?: string
+          p_project_id?: string
+          p_scope_ids?: string[]
+          p_title: string
+        }
+        Returns: Json
+      }
+      create_tasks_bulk: {
+        Args: {
+          p_entity_id?: string
+          p_entity_type?: string
+          p_items: Json
+          p_metadata?: Json
+          p_organization_id?: string
+          p_project_id?: string
+          p_scope_ids?: string[]
+        }
+        Returns: Json
+      }
       create_user_list: {
         Args: {
           p_authenticated_read?: boolean
@@ -17205,6 +17284,10 @@ export type Database = {
       disconnect_mcp_server: {
         Args: { p_server_id: string }
         Returns: undefined
+      }
+      dissociate_from_task: {
+        Args: { p_entity_id: string; p_entity_type: string; p_task_id: string }
+        Returns: Json
       }
       duplicate_row: {
         Args: {
@@ -18846,6 +18929,11 @@ export type Database = {
           data_type: string
           table_name: string
         }[]
+      }
+      get_task_associations: { Args: { p_task_id: string }; Returns: Json }
+      get_tasks_for_entity: {
+        Args: { p_entity_id: string; p_entity_type: string }
+        Returns: Json
       }
       get_tool_detail: { Args: { p_tool_id: string }; Returns: Json }
       get_tools_list: {

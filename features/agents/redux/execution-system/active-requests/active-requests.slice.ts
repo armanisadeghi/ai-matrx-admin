@@ -118,6 +118,7 @@ const activeRequestsSlice = createSlice({
         rawEvents: [],
         isTextStreaming: false,
         textRunBlockStart: 0,
+        currentTextRunRaw: "",
         extractedJson: null,
         jsonExtractionRevision: 0,
         jsonExtractionComplete: false,
@@ -166,11 +167,18 @@ const activeRequestsSlice = createSlice({
       action: PayloadAction<{ requestId: string; content: string }>,
     ) {
       const request = state.byRequestId[action.payload.requestId];
-      if (request) {
-        if (!request.firstChunkAt) {
-          request.firstChunkAt = new Date().toISOString();
-        }
-        request.chunkCount++;
+      if (!request) return;
+      if (!request.firstChunkAt) {
+        request.firstChunkAt = new Date().toISOString();
+      }
+      request.chunkCount++;
+      // Preserve the raw markdown per text run so the stream-commit path
+      // can write the exact wire-format text into `cx_message.content`.
+      // The block accumulator strips fences, table pipes, and XML markers
+      // when it builds typed render blocks — if we lose the raw text here
+      // the committed content comes back as plain text after reload.
+      if (request.isTextStreaming) {
+        request.currentTextRunRaw += action.payload.content;
       }
     },
 
@@ -564,8 +572,10 @@ const activeRequestsSlice = createSlice({
           blockEndIndex: request.renderBlockOrder.length,
           blockCount:
             request.renderBlockOrder.length - request.textRunBlockStart,
+          rawText: request.currentTextRunRaw,
         });
         request.isTextStreaming = false;
+        request.currentTextRunRaw = "";
       }
 
       if (request.isReasoningStreaming) {
@@ -617,6 +627,7 @@ const activeRequestsSlice = createSlice({
 
       request.isTextStreaming = true;
       request.textRunBlockStart = request.renderBlockOrder.length;
+      request.currentTextRunRaw = "";
 
       request.timeline.push({
         kind: "text_start",
@@ -647,8 +658,10 @@ const activeRequestsSlice = createSlice({
         blockStartIndex: request.textRunBlockStart,
         blockEndIndex: request.renderBlockOrder.length,
         blockCount: request.renderBlockOrder.length - request.textRunBlockStart,
+        rawText: request.currentTextRunRaw,
       });
       request.isTextStreaming = false;
+      request.currentTextRunRaw = "";
     },
 
     // ── Client Metrics ─────────────────────────────────────────

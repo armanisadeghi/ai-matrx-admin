@@ -12,6 +12,7 @@ import {
   type VariableInputStyle,
 } from "@/features/agents/types";
 import { ApiEndpointMode } from "@/features/agents/types/instance.types";
+import { VoiceTextarea } from "@/features/audio";
 
 // =============================================================================
 // Shared settings panel used by both the sidebar and widget-invoker testers.
@@ -47,6 +48,9 @@ export interface TesterSettingsController {
   hideToolResults: boolean;
   setHideToolResults: (v: boolean) => void;
   // Editor context (simulated selection)
+  /** Gate — when false, the editor fields below are ignored on launch. */
+  includeEditorContext: boolean;
+  setIncludeEditorContext: (v: boolean) => void;
   editorSelection: string;
   setEditorSelection: (v: string) => void;
   editorTextBefore: string;
@@ -192,7 +196,9 @@ export function TesterSettingsPanel({
         </Label>
         <Select
           value={c.variableInputStyle}
-          onValueChange={(v) => c.setVariableInputStyle(v as VariableInputStyle)}
+          onValueChange={(v) =>
+            c.setVariableInputStyle(v as VariableInputStyle)
+          }
           disabled={!c.showVariablePanel}
         >
           <SelectTrigger
@@ -268,44 +274,67 @@ export function TesterSettingsPanel({
         onCheckedChange={c.setHideToolResults}
       />
 
-      {/* ── Editor Context ─────────────────────────────────────────── */}
-      <SectionLabel>Editor Context</SectionLabel>
+      {/* ── Editor Context (gated — defaults OFF so the sample never leaks) */}
+      <div className="pt-2 pb-0.5 flex items-center justify-between gap-2">
+        <Label
+          htmlFor={`${idPrefix}-include-editor-context`}
+          className="text-[9.5px] font-semibold uppercase tracking-wider text-primary cursor-pointer"
+        >
+          Editor Context
+        </Label>
+        <Switch
+          id={`${idPrefix}-include-editor-context`}
+          checked={c.includeEditorContext}
+          onCheckedChange={c.setIncludeEditorContext}
+          className="scale-75 shrink-0"
+        />
+      </div>
 
-      <EditorContextField
-        id={`${idPrefix}-editor-selection`}
-        label="Selection"
-        value={c.editorSelection}
-        onChange={c.setEditorSelection}
-        rows={2}
-      />
-      <EditorContextField
-        id={`${idPrefix}-editor-before`}
-        label="Text Before"
-        value={c.editorTextBefore}
-        onChange={c.setEditorTextBefore}
-        rows={2}
-      />
-      <EditorContextField
-        id={`${idPrefix}-editor-after`}
-        label="Text After"
-        value={c.editorTextAfter}
-        onChange={c.setEditorTextAfter}
-        rows={2}
-      />
-      <EditorContextField
-        id={`${idPrefix}-editor-content`}
-        label="Full Content"
-        value={c.editorContent}
-        onChange={c.setEditorContent}
-        rows={3}
-      />
-      <EditorContextField
-        id={`${idPrefix}-editor-context`}
-        label="Context"
-        value={c.editorContext}
-        onChange={c.setEditorContext}
-        rows={2}
-      />
+      <div
+        className={`space-y-1.5 ${c.includeEditorContext ? "" : "opacity-50"}`}
+        aria-disabled={!c.includeEditorContext}
+        title={
+          c.includeEditorContext
+            ? undefined
+            : "Turn on the Editor Context switch to include these values in the request"
+        }
+      >
+        <EditorContextField
+          id={`${idPrefix}-editor-selection`}
+          label="Selection"
+          value={c.editorSelection}
+          onChange={c.setEditorSelection}
+          rows={2}
+        />
+        <EditorContextField
+          id={`${idPrefix}-editor-before`}
+          label="Text Before"
+          value={c.editorTextBefore}
+          onChange={c.setEditorTextBefore}
+          rows={2}
+        />
+        <EditorContextField
+          id={`${idPrefix}-editor-after`}
+          label="Text After"
+          value={c.editorTextAfter}
+          onChange={c.setEditorTextAfter}
+          rows={2}
+        />
+        <EditorContextField
+          id={`${idPrefix}-editor-content`}
+          label="Full Content"
+          value={c.editorContent}
+          onChange={c.setEditorContent}
+          rows={3}
+        />
+        <EditorContextField
+          id={`${idPrefix}-editor-context`}
+          label="Context"
+          value={c.editorContext}
+          onChange={c.setEditorContext}
+          rows={2}
+        />
+      </div>
 
       {/* ── Quick Test Features (optional) ──────────────────────────── */}
       {quickTest && (
@@ -461,12 +490,12 @@ function EditorContextField({
       >
         {label}
       </Label>
-      <textarea
+      <VoiceTextarea
         id={id}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         rows={rows}
-        className="w-full resize-y rounded-md border border-border bg-background px-1.5 py-1 text-[11px] leading-tight placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+        className="pl-1.5 py-1 text-[11px] leading-tight placeholder:text-muted-foreground"
       />
     </div>
   );
