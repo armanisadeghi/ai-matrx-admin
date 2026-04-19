@@ -286,7 +286,7 @@ export function PromptAppPublicRenderer({
 
   // OPTIMIZATION: Client-side chat config building (instant, no API call)
   const buildChatConfig = useCallback(
-    (resolvedMessages: ResolutionMessage[]) => {
+    (resolvedMessages: PromptResolutionMessage[]) => {
       if (!app.prompt?.settings?.model_id) {
         throw new Error("No model specified in prompt settings");
       }
@@ -364,6 +364,14 @@ export function PromptAppPublicRenderer({
           return;
         }
 
+        if (!isPromptResolutionMessageArray(app.prompt.messages)) {
+          setError({
+            type: "execution_error",
+            message: "Prompt messages are invalid",
+          });
+          setIsExecuting(false);
+          return;
+        }
         const resolvedMessages = resolveVariablesInMessages(
           app.prompt.messages,
           validVariables,

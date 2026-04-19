@@ -20,22 +20,34 @@ import { useToastManager } from '@/hooks/useToastManager';
 /** Sentinel ID for the phantom (unsaved) note shown before any real note is active. */
 const PHANTOM_NOTE_ID = '__phantom__';
 
-/** Create a fresh local-only placeholder note. Never persisted until the user edits it. */
+/** Create a fresh local-only placeholder note. Never persisted until the user edits it.
+ * Must contain every column of the DB row so this satisfies the Note (= NoteRow) type —
+ * if the schema adds a column, TypeScript will flag this spot. */
 function createPhantomNote(): Note {
     const now = new Date().toISOString();
     return {
         id: PHANTOM_NOTE_ID,
         label: '',
         content: '',
+        content_hash: null,
+        file_path: null,
+        folder_id: null,
         folder_name: 'Draft',
         tags: [],
         user_id: '',
         created_at: now,
         updated_at: now,
         is_deleted: false,
-        shared_with: [],
+        is_public: false,
+        last_device_id: null,
+        shared_with: {},
+        organization_id: null,
+        project_id: null,
+        task_id: null,
         position: 0,
         metadata: {},
+        sync_version: 0,
+        version: 1,
     };
 }
 

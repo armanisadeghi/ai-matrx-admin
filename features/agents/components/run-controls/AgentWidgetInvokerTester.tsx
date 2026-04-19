@@ -95,6 +95,7 @@ export function AgentWidgetInvokerTester({
     surfaceKey,
   );
   const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [editorContextOpen, setEditorContextOpen] = useState(false);
 
   const displayTypes = getAllDisplayTypes().map((displayMode) => {
     const meta = getDisplayMeta(displayMode);
@@ -216,28 +217,112 @@ export function AgentWidgetInvokerTester({
             onCheckedChange={tester.setHideReasoning}
           />
           <SwitchRow
-            id="widget-test-hide-tool-calls"
-            label="Hide Tool Calls"
+            id="widget-test-hide-tool-results"
+            label="Hide Tool Results"
             checked={tester.hideToolResults}
             onCheckedChange={tester.setHideToolResults}
           />
 
-          <div className="space-y-0.5">
-            <Label
-              htmlFor="widget-test-original-text"
-              className="text-[11px] cursor-pointer leading-tight"
-            >
-              Original Text
-            </Label>
-            <textarea
-              id="widget-test-original-text"
-              value={tester.originalText}
-              onChange={(e) => tester.setOriginalText(e.target.value)}
-              rows={2}
-              placeholder="Text selected in the simulated editor"
-              className="w-full resize-y rounded-md border border-border bg-background px-1.5 py-1 text-[11px] leading-tight placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          {/* ── Editor Context (click to expand) ────────────────────────── */}
+          <button
+            type="button"
+            onClick={() => setEditorContextOpen((v) => !v)}
+            className="mt-1 flex w-full items-center gap-1 text-[11px] text-foreground hover:text-primary"
+            title="Simulates selection + surrounding text + content + context for the widget"
+          >
+            <ChevronRight
+              className={`h-2.5 w-2.5 transition-transform ${
+                editorContextOpen ? "rotate-90" : ""
+              }`}
             />
-          </div>
+            <span className="leading-tight">Editor Context</span>
+            {!editorContextOpen && tester.editorSelection && (
+              <span className="ml-auto truncate text-[10px] text-muted-foreground italic">
+                &ldquo;{tester.editorSelection.slice(0, 22)}
+                {tester.editorSelection.length > 22 ? "…" : ""}&rdquo;
+              </span>
+            )}
+          </button>
+
+          {editorContextOpen && (
+            <div className="space-y-1.5 pl-2 border-l border-border/60">
+              <div className="space-y-0.5">
+                <Label
+                  htmlFor="widget-test-editor-selection"
+                  className="text-[10.5px] text-muted-foreground cursor-pointer leading-tight"
+                >
+                  Selection
+                </Label>
+                <textarea
+                  id="widget-test-editor-selection"
+                  value={tester.editorSelection}
+                  onChange={(e) => tester.setEditorSelection(e.target.value)}
+                  rows={2}
+                  className="w-full resize-y rounded-md border border-border bg-background px-1.5 py-1 text-[11px] leading-tight placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                />
+              </div>
+              <div className="space-y-0.5">
+                <Label
+                  htmlFor="widget-test-editor-before"
+                  className="text-[10.5px] text-muted-foreground cursor-pointer leading-tight"
+                >
+                  Text Before
+                </Label>
+                <textarea
+                  id="widget-test-editor-before"
+                  value={tester.editorTextBefore}
+                  onChange={(e) => tester.setEditorTextBefore(e.target.value)}
+                  rows={2}
+                  className="w-full resize-y rounded-md border border-border bg-background px-1.5 py-1 text-[11px] leading-tight placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                />
+              </div>
+              <div className="space-y-0.5">
+                <Label
+                  htmlFor="widget-test-editor-after"
+                  className="text-[10.5px] text-muted-foreground cursor-pointer leading-tight"
+                >
+                  Text After
+                </Label>
+                <textarea
+                  id="widget-test-editor-after"
+                  value={tester.editorTextAfter}
+                  onChange={(e) => tester.setEditorTextAfter(e.target.value)}
+                  rows={2}
+                  className="w-full resize-y rounded-md border border-border bg-background px-1.5 py-1 text-[11px] leading-tight placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                />
+              </div>
+              <div className="space-y-0.5">
+                <Label
+                  htmlFor="widget-test-editor-content"
+                  className="text-[10.5px] text-muted-foreground cursor-pointer leading-tight"
+                >
+                  Full Content
+                </Label>
+                <textarea
+                  id="widget-test-editor-content"
+                  value={tester.editorContent}
+                  onChange={(e) => tester.setEditorContent(e.target.value)}
+                  rows={3}
+                  className="w-full resize-y rounded-md border border-border bg-background px-1.5 py-1 text-[11px] leading-tight placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                />
+              </div>
+              <div className="space-y-0.5">
+                <Label
+                  htmlFor="widget-test-editor-context"
+                  className="text-[10.5px] text-muted-foreground cursor-pointer leading-tight"
+                >
+                  Context
+                </Label>
+                <textarea
+                  id="widget-test-editor-context"
+                  value={tester.editorContext}
+                  onChange={(e) => tester.setEditorContext(e.target.value)}
+                  rows={2}
+                  className="w-full resize-y rounded-md border border-border bg-background px-1.5 py-1 text-[11px] leading-tight placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                />
+              </div>
+            </div>
+          )}
 
           {/* ── Quick Test Features ─────────────────────────────────────── */}
           <GroupLabel>Quick Test Features</GroupLabel>

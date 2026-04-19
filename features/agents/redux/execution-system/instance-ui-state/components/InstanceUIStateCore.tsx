@@ -377,10 +377,10 @@ export function InstanceUIStateCore({
             </div>
             <div className="px-4 pb-2">
               <UuidField value={state.conversationId} label="conversationId" />
-              {state.callbackGroupId && (
+              {state.widgetHandleId && (
                 <UuidField
-                  value={state.callbackGroupId}
-                  label="callbackGroupId"
+                  value={state.widgetHandleId}
+                  label="widgetHandleId"
                 />
               )}
               {state.expandedVariableId && (

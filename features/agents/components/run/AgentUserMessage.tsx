@@ -13,8 +13,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import {
-  Copy,
-  Check,
   ChevronDown,
   ChevronUp,
   Image as ImageIcon,
@@ -29,22 +27,16 @@ import {
   Database,
   Youtube,
   X,
-  Pencil,
-  RefreshCw,
-  ThumbsUp,
-  ThumbsDown,
-  MoreHorizontal,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectTurnByTurnId } from "@/features/agents/redux/execution-system/messages/messages.selectors";
+import {
+  selectMessageById,
+  extractFlatText,
+  extractContentBlocks,
+} from "@/features/agents/redux/execution-system/messages/messages.selectors";
+import { UserActionBar } from "./message-actions/UserActionBar";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -56,7 +48,8 @@ type ContentBlock = RenderBlockPayload;
 
 interface AgentUserMessageProps {
   conversationId: string;
-  turnId: string;
+  /** Server-assigned `cx_message.id` or client temp id for an optimistic user message. */
+  messageId: string;
   compact?: boolean;
 }
 
@@ -461,178 +454,41 @@ function AttachmentChip({ block }: { block: NormalisedBlock }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Hover action bar
-// ─────────────────────────────────────────────────────────────────────────────
-
-interface HoverActionsProps {
-  onCopy: (e: React.MouseEvent) => void;
-  isCopied: boolean;
-  isCollapsed: boolean;
-  shouldBeCollapsible: boolean;
-  onToggleCollapse: (e: React.MouseEvent) => void;
-}
-
-function HoverActions({
-  onCopy,
-  isCopied,
-  isCollapsed,
-  shouldBeCollapsible,
-  onToggleCollapse,
-}: HoverActionsProps) {
-  return (
-    <TooltipProvider delayDuration={300}>
-      <div className="flex items-center gap-0.5 px-1 py-0.5 rounded-md bg-background/90 border border-border shadow-sm backdrop-blur-sm">
-        {/* Copy — fully wired */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onCopy}
-              className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
-            >
-              {isCopied ? (
-                <Check className="w-3.5 h-3.5 text-green-500" />
-              ) : (
-                <Copy className="w-3.5 h-3.5" />
-              )}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="top">
-            {isCopied ? "Copied!" : "Copy"}
-          </TooltipContent>
-        </Tooltip>
-
-        {/* Edit — placeholder */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
-            >
-              <Pencil className="w-3.5 h-3.5" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="top">Edit (coming soon)</TooltipContent>
-        </Tooltip>
-
-        {/* Regenerate — placeholder */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="top">Regenerate (coming soon)</TooltipContent>
-        </Tooltip>
-
-        <div className="w-px h-3.5 bg-border mx-0.5" />
-
-        {/* Thumbs up — placeholder */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 w-6 p-0 text-muted-foreground hover:text-green-500"
-            >
-              <ThumbsUp className="w-3.5 h-3.5" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="top">
-            Good response (coming soon)
-          </TooltipContent>
-        </Tooltip>
-
-        {/* Thumbs down — placeholder */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 w-6 p-0 text-muted-foreground hover:text-red-500"
-            >
-              <ThumbsDown className="w-3.5 h-3.5" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="top">Bad response (coming soon)</TooltipContent>
-        </Tooltip>
-
-        <div className="w-px h-3.5 bg-border mx-0.5" />
-
-        {/* Collapse/expand — only shown when the message is collapsible */}
-        {shouldBeCollapsible && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onToggleCollapse}
-                className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
-              >
-                {isCollapsed ? (
-                  <ChevronDown className="w-3.5 h-3.5" />
-                ) : (
-                  <ChevronUp className="w-3.5 h-3.5" />
-                )}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="top">
-              {isCollapsed ? "Expand" : "Collapse"}
-            </TooltipContent>
-          </Tooltip>
-        )}
-
-        {/* More — placeholder */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
-            >
-              <MoreHorizontal className="w-3.5 h-3.5" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="top">More (coming soon)</TooltipContent>
-        </Tooltip>
-      </div>
-    </TooltipProvider>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
 // Main component — collapsible bubble identical in style to PromptUserMessage
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function AgentUserMessage({
   conversationId,
-  turnId,
+  messageId,
   compact = false,
 }: AgentUserMessageProps) {
-  const turn = useAppSelector(selectTurnByTurnId(conversationId, turnId));
+  const record = useAppSelector(selectMessageById(conversationId, messageId));
 
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [shouldBeCollapsible, setShouldBeCollapsible] = useState(false);
-  const [isCopied, setIsCopied] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const measureRef = useRef<HTMLDivElement>(null);
   const previousContentRef = useRef<string>("");
 
-  const content = turn?.content ?? "";
-  const renderBlocks = turn?.renderBlocks;
+  const content = extractFlatText(record);
+  // Non-text content blocks (images, audio, tables, etc.) render as chips.
+  // Filter out plain text blocks since those are already rendered as the
+  // main content line.
+  const contentBlocks = extractContentBlocks(record);
+  const renderBlocks = contentBlocks.filter(
+    (b) => (b as { type?: string }).type !== "text",
+  ) as unknown as ContentBlock[];
 
-  const normalisedBlocks: NormalisedBlock[] = (renderBlocks ?? [])
+  const normalisedBlocks: NormalisedBlock[] = renderBlocks
     .map((b, i) => normaliseBlock(b, i))
     .filter((b): b is NormalisedBlock => b !== null);
 
   const trimmedText = content.trim();
   const hasContent = trimmedText || normalisedBlocks.length > 0;
+  const metadata =
+    record?.metadata && typeof record.metadata === "object"
+      ? (record.metadata as Record<string, unknown>)
+      : null;
 
   useEffect(() => {
     if (measureRef.current) {
@@ -647,23 +503,6 @@ export function AgentUserMessage({
       }
     }
   }, [trimmedText]);
-
-  const handleCopy = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    const parts = [
-      ...normalisedBlocks.map((b) => `[${b.label}: ${b.title}]`),
-      trimmedText,
-    ].filter(Boolean);
-    navigator.clipboard.writeText(parts.join("\n")).then(() => {
-      setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2000);
-    });
-  };
-
-  const handleToggleCollapse = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (shouldBeCollapsible) setIsCollapsed((prev) => !prev);
-  };
 
   if (!hasContent) return null;
 
@@ -744,7 +583,8 @@ export function AgentUserMessage({
         </div>
       </div>
 
-      {/* Hover action bar — floats below the bubble */}
+      {/* Action bar — floats below the bubble, visible on hover. Uses the
+          full role="user" action registry, including Edit & Resubmit. */}
       <div
         className={cn(
           "absolute -bottom-7 right-0 transition-all duration-150",
@@ -753,12 +593,11 @@ export function AgentUserMessage({
             : "opacity-0 -translate-y-1 pointer-events-none",
         )}
       >
-        <HoverActions
-          onCopy={handleCopy}
-          isCopied={isCopied}
-          isCollapsed={isCollapsed}
-          shouldBeCollapsible={shouldBeCollapsible}
-          onToggleCollapse={handleToggleCollapse}
+        <UserActionBar
+          content={trimmedText}
+          messageId={messageId}
+          conversationId={conversationId}
+          metadata={metadata}
         />
       </div>
     </div>

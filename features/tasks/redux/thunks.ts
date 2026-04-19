@@ -3,6 +3,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import type { AppDispatch, RootState } from "@/lib/redux/store";
 import * as taskService from "../services/taskService";
+import type { UpdateTaskInput } from "../services/taskService";
 import * as projectService from "../services/projectService";
 import {
   fetchFullContext,
@@ -301,14 +302,7 @@ export const updateTaskFieldThunk = createAsyncThunk<
   void,
   {
     taskId: string;
-    patch: {
-      title?: string;
-      description?: string | null;
-      due_date?: string | null;
-      priority?: "low" | "medium" | "high" | null;
-      assignee_id?: string | null;
-      status?: string;
-    };
+    patch: UpdateTaskInput;
   },
   { state: RootState; dispatch: AppDispatch }
 >("tasksUi/updateTaskField", async ({ taskId, patch }, { dispatch, getState }) => {

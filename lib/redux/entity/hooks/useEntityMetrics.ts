@@ -59,9 +59,15 @@ export const useEntityMetrics = <TEntity extends EntityKeys>(entityKey: TEntity)
 
     // Calculate derived metrics
     const calculateAverageResponseTime = useCallback(() => {
-        if (!responseTimeMetrics?.length) return 0;
-        const sum = responseTimeMetrics.reduce(
-            (acc, curr) => acc + curr.avgResponseTime,
+        if (!Array.isArray(responseTimeMetrics) || responseTimeMetrics.length === 0) return 0;
+        const sum = responseTimeMetrics.reduce<number>(
+            (acc, curr) => {
+                const value =
+                    typeof curr === 'object' && curr !== null && 'avgResponseTime' in curr
+                        ? (curr as { avgResponseTime?: unknown }).avgResponseTime
+                        : 0;
+                return acc + (typeof value === 'number' ? value : 0);
+            },
             0
         );
         return sum / responseTimeMetrics.length;

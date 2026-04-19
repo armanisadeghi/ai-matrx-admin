@@ -157,7 +157,7 @@ const ArtifactBlock: React.FC<ArtifactBlockProps> = ({
             case "code":
                 return (
                     <Suspense fallback={<MatrxMiniLoader />}>
-                        <CodeBlock code={content} fontSize={14} className="my-0" isStreamActive={isStreamActive} />
+                        <CodeBlock code={content} language="text" fontSize={14} className="my-0" isStreamActive={isStreamActive} />
                     </Suspense>
                 );
 

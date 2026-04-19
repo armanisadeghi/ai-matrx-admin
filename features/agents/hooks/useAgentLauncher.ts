@@ -113,10 +113,7 @@ export function useAgentLauncher(
         hideToolResults: opts?.hideToolResults,
         preExecutionMessage: opts?.preExecutionMessage,
         jsonExtraction: opts?.jsonExtraction,
-        onComplete: opts?.onComplete,
-        onTextReplace: opts?.onTextReplace,
-        onTextInsertBefore: opts?.onTextInsertBefore,
-        onTextInsertAfter: opts?.onTextInsertAfter,
+        widgetHandleId: opts?.widgetHandleId,
         originalText: opts?.originalText,
       };
       return dispatch(launchAgentExecution(payload)).unwrap();
@@ -145,10 +142,7 @@ export function useAgentLauncher(
         usePreExecutionInput: opts?.usePreExecutionInput,
         userInput: opts?.userInput,
         variables: opts?.variables,
-        onComplete: opts?.onComplete,
-        onTextReplace: opts?.onTextReplace,
-        onTextInsertBefore: opts?.onTextInsertBefore,
-        onTextInsertAfter: opts?.onTextInsertAfter,
+        widgetHandleId: opts?.widgetHandleId,
         originalText: opts?.originalText,
       };
       return dispatch(launchAgentExecution(payload)).unwrap();
@@ -179,10 +173,7 @@ export function useAgentLauncher(
         userInput: opts?.userInput,
         variables: opts?.variables,
         apiEndpointMode,
-        onComplete: opts?.onComplete,
-        onTextReplace: opts?.onTextReplace,
-        onTextInsertBefore: opts?.onTextInsertBefore,
-        onTextInsertAfter: opts?.onTextInsertAfter,
+        widgetHandleId: opts?.widgetHandleId,
         originalText: opts?.originalText,
       };
       return dispatch(launchAgentExecution(payload)).unwrap();
@@ -236,10 +227,7 @@ export function useAgentLauncher(
     hideToolResults,
     preExecutionMessage,
     jsonExtraction,
-    onComplete,
-    onTextReplace,
-    onTextInsertBefore,
-    onTextInsertAfter,
+    widgetHandleId,
     originalText,
   } = options ?? {};
 
@@ -271,10 +259,7 @@ export function useAgentLauncher(
       hideToolResults,
       preExecutionMessage,
       jsonExtraction,
-      onComplete,
-      onTextReplace,
-      onTextInsertBefore,
-      onTextInsertAfter,
+      widgetHandleId,
       originalText,
     })
       .then((result) => {

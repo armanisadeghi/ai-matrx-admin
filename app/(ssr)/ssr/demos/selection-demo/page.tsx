@@ -205,7 +205,6 @@ export default function HierarchySelectionDemoPage() {
                 value={hoverOrgsVal}
                 onChange={setHoverOrgsVal}
                 viewMode="flat"
-                showOrgs
                 placeholder="Hover to select..."
               />
               <SelectionDebug label="with orgs" value={hoverOrgsVal} />

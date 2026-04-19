@@ -359,7 +359,7 @@ function AgentRunHistoryWindowInner({
           createManualInstance({
             agentId,
             conversationId,
-            mode: "agent",
+            apiEndpointMode: "agent",
           }),
         );
       }

@@ -28,23 +28,19 @@ import {
   AlertTriangle,
 } from "lucide-react";
 
-// Pull sessionId from activeChatSlice
-const selectSessionId = (state: { activeChat: { sessionId: string | null } }) =>
-  state.activeChat.sessionId;
+// Pull sessionId from activeChatSlice — activeChat slice has been removed, stubbed here.
+const selectSessionId = (_state: RootState): string | null => null;
 
-const selectSelectedAgent = (state: {
-  activeChat: {
-    selectedAgent: {
-      promptId: string;
-      name: string;
-      tools?: string[];
-      configFetched?: boolean;
-    };
-  };
-}) => state.activeChat.selectedAgent;
+const selectSelectedAgent = (
+  _state: RootState,
+): {
+  promptId: string;
+  name: string;
+  tools?: string[];
+  configFetched?: boolean;
+} => ({ promptId: "", name: "", tools: [], configFetched: false });
 
-const selectIsBlockMode = (state: { activeChat: { isBlockMode: boolean } }) =>
-  state.activeChat.isBlockMode;
+const selectIsBlockMode = (_state: RootState): boolean => false;
 
 function HealthDot({ status }: { status: string }) {
   if (status === "healthy")
@@ -219,7 +215,7 @@ export default function ChatDebug() {
                           : "text-slate-300"
                   }
                 >
-                  {session.status}
+                  {String(session.status ?? "")}
                   {isStreaming && (
                     <Loader2 className="inline h-3 w-3 ml-1 animate-spin" />
                   )}
@@ -230,15 +226,17 @@ export default function ChatDebug() {
             <Row
               label="Conversation ID"
               value={
-                session.conversationId ?? (
+                session.conversationId ? (
+                  String(session.conversationId)
+                ) : (
                   <span className="text-slate-500">not yet persisted</span>
                 )
               }
             />
-            <Row label="Agent ID" value={session.agentId} />
-            <Row label="API Mode" value={session.apiMode} />
+            <Row label="Agent ID" value={String(session.agentId ?? "")} />
+            <Row label="API Mode" value={String(session.apiMode ?? "")} />
             <Row label="Messages" value={String(messages.length)} />
-            <Row label="Tool Calls" value={String(toolCalls.length)} />
+            <Row label="Tool Calls" value={String(Object.keys(toolCalls).length)} />
             <Row
               label="Show Debug Info"
               value={String(uiState?.showDebugInfo ?? false)}
@@ -246,15 +244,17 @@ export default function ChatDebug() {
             <Row
               label="Model Override"
               value={
-                uiState?.modelOverride ?? (
+                uiState?.modelOverride ? (
+                  String(uiState.modelOverride)
+                ) : (
                   <span className="text-slate-500">none</span>
                 )
               }
             />
-            {session.error && (
+            {session.error != null && (
               <Row
                 label="Error"
-                value={<span className="text-red-400">{session.error}</span>}
+                value={<span className="text-red-400">{String(session.error)}</span>}
               />
             )}
           </div>

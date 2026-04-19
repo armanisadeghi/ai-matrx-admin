@@ -58,7 +58,15 @@ async function callArtifactsApi(
  * Reads appContextSlice automatically — callers only need to supply
  * message-level and artifact-specific fields.
  *
- * Returns the created CxArtifactRecord on success, or throws on failure.
+ * Idempotent on the natural key
+ *   (messageId, artifactType, externalSystem).
+ * If an artifact with that tuple already exists in Redux, the thunk
+ * short-circuits and returns it without hitting the API. The server
+ * itself also dedups on the same key, so even if the Redux cache is
+ * cold (first open before `fetchArtifactsForMessageThunk` resolves)
+ * the round-trip can't produce a duplicate row.
+ *
+ * Returns the resulting CxArtifactRecord on success, or throws on failure.
  */
 export const registerArtifactThunk = createAsyncThunk<
   CxArtifactRecord,
@@ -66,6 +74,33 @@ export const registerArtifactThunk = createAsyncThunk<
   { state: RootState; dispatch: AppDispatch }
 >("artifacts/register", async (payload, { getState, dispatch }) => {
   const state = getState();
+
+  // Client-side short-circuit: if a matching artifact is already in
+  // Redux AND the caller isn't trying to push new mutable fields, skip
+  // the network round-trip. When the caller supplies a fresh
+  // `externalId`/`externalUrl`/`title`/`description`/`thumbnailUrl`,
+  // defer to the server so the dedup-and-update path there keeps the
+  // record current.
+  const wantsUpdate =
+    payload.externalId !== undefined ||
+    payload.externalUrl !== undefined ||
+    payload.title !== undefined ||
+    payload.description !== undefined ||
+    payload.thumbnailUrl !== undefined;
+  if (!wantsUpdate) {
+    const artifactsById = state.artifacts.artifacts;
+    const idsForMessage =
+      state.artifacts.byMessageId[payload.messageId] ?? [];
+    const existing = idsForMessage
+      .map((id) => artifactsById[id])
+      .find(
+        (a) =>
+          a != null &&
+          a.artifactType === payload.artifactType &&
+          (a.externalSystem ?? null) === (payload.externalSystem ?? null),
+      );
+    if (existing) return existing;
+  }
 
   // Read context from appContextSlice at dispatch time
   const context = {

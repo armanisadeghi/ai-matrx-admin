@@ -18,7 +18,7 @@
 import { useEffect, useRef, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
-import { selectConversationTurns } from "@/features/agents/redux/execution-system/messages/messages.selectors";
+import { selectConversationMessages } from "@/features/agents/redux/execution-system/messages/messages.selectors";
 import {
   selectStreamPhase,
   selectLatestRequestId,
@@ -47,7 +47,7 @@ const AgentAssistantMessage = dynamic(
 interface DisplayMessage {
   key: string;
   role: "user" | "assistant" | "system" | "status";
-  turnId: string | null;
+  messageId: string | null;
   requestId: string | null;
   isStreamActive: boolean;
 }
@@ -64,7 +64,7 @@ export function AssistantCardStack({
   conversationId,
 }: AssistantCardStackProps) {
   const dispatch = useAppDispatch();
-  const turns = useAppSelector(selectConversationTurns(conversationId));
+  const messages = useAppSelector(selectConversationMessages(conversationId));
   const phase = useAppSelector(selectStreamPhase(conversationId));
   const latestRequestId = useAppSelector(selectLatestRequestId(conversationId));
   const variableDefs = useAppSelector(
@@ -89,11 +89,11 @@ export function AssistantCardStack({
   // This pattern (from AgentConversationDisplay) ensures the streaming message
   // never unmounts when the stream completes and the turn is committed.
   const displayMessages = useMemo((): DisplayMessage[] => {
-    const msgs: DisplayMessage[] = turns.map((turn) => ({
-      key: turn.turnId,
-      role: turn.role,
-      turnId: turn.turnId,
-      requestId: turn.requestId ?? null,
+    const msgs: DisplayMessage[] = messages.map((record) => ({
+      key: record.id,
+      role: record.role,
+      messageId: record.id,
+      requestId: record._streamRequestId ?? null,
       isStreamActive: false,
     }));
 
@@ -104,14 +104,14 @@ export function AssistantCardStack({
           phase === "connecting" || phase === "pre_token"
             ? "status"
             : "assistant",
-        turnId: null,
+        messageId: null,
         requestId: latestRequestId ?? null,
         isStreamActive: true,
       });
     }
 
     return msgs;
-  }, [turns, isActive, phase, latestRequestId]);
+  }, [messages, isActive, phase, latestRequestId]);
 
   // ── Auto-scroll on new messages ─────────────────────────────────────────────
   useEffect(() => {
@@ -148,12 +148,12 @@ export function AssistantCardStack({
       {hasMessages ? (
         <div className="flex-1 space-y-3 px-3 py-2">
           {displayMessages.map((msg) => {
-            if (msg.role === "user" && msg.turnId) {
+            if (msg.role === "user" && msg.messageId) {
               return (
                 <AgentUserMessage
                   key={msg.key}
                   conversationId={conversationId}
-                  turnId={msg.turnId}
+                  messageId={msg.messageId}
                   compact
                 />
               );
@@ -173,7 +173,7 @@ export function AssistantCardStack({
                   key={msg.key}
                   conversationId={conversationId}
                   requestId={msg.requestId ?? undefined}
-                  turnId={msg.turnId ?? undefined}
+                  messageId={msg.messageId ?? undefined}
                   isStreamActive={msg.isStreamActive}
                   compact
                 />

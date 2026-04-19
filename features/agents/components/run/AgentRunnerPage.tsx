@@ -87,6 +87,9 @@ export function AgentRunnerPage({ agentId }: AgentRunnerPageProps) {
     ready: !isInitializing,
   });
 
+  // Completely unrelated to the normal run.
+  const sidebarSurfaceKey = `${sourceFeature}-sidebar:${agentId}`;
+
   const agentName = useAppSelector((state) => selectAgentName(state, agentId));
   // Sync ?conversationId= URL param → focus registry + load history.
   // When the user clicks a past conversation in the sidebar, the URL updates
@@ -94,6 +97,14 @@ export function AgentRunnerPage({ agentId }: AgentRunnerPageProps) {
   // loads the full message history, and switches focus.
   const lastSyncedUrl = useRef<string | null>(null);
   useEffect(() => {
+    // eslint-disable-next-line no-console
+    console.log(
+      "[AgentRunnerPage] URL-sync effect fired: urlCid=%s isInitializing=%s currentCid=%s lastSynced=%s",
+      conversationIdFromUrl ?? "(none)",
+      isInitializing,
+      conversationId ?? "(none)",
+      lastSyncedUrl.current ?? "(none)",
+    );
     if (!conversationIdFromUrl || isInitializing) return;
     if (conversationIdFromUrl === lastSyncedUrl.current) return;
     if (conversationIdFromUrl === conversationId) return;
@@ -104,26 +115,57 @@ export function AgentRunnerPage({ agentId }: AgentRunnerPageProps) {
         !!store.getState().conversations?.byConversationId[
           conversationIdFromUrl
         ];
+      // eslint-disable-next-line no-console
+      console.log(
+        "[AgentRunnerPage] syncing %s (instance exists in conversations slice: %s)",
+        conversationIdFromUrl,
+        exists,
+      );
 
       if (!exists) {
-        await dispatch(
-          createManualInstance({
-            agentId,
-            conversationId: conversationIdFromUrl,
-            mode: "agent",
-          }),
+        // eslint-disable-next-line no-console
+        console.log(
+          "[AgentRunnerPage] createManualInstance agentId=%s conversationId=%s apiEndpointMode=agent",
+          agentId,
+          conversationIdFromUrl,
         );
+        try {
+          await dispatch(
+            createManualInstance({
+              agentId,
+              conversationId: conversationIdFromUrl,
+              apiEndpointMode: "agent",
+            }),
+          ).unwrap();
+        } catch (err) {
+          // eslint-disable-next-line no-console
+          console.error("[AgentRunnerPage] createManualInstance failed", err);
+          return;
+        }
       }
 
-      // loadConversation rehydrates messages, variables, model overrides,
-      // display/context (from metadata), and observability — superset of the
-      // legacy fetchConversationHistory. Also sets focus when surfaceKey given.
-      dispatch(
-        loadConversation({
-          conversationId: conversationIdFromUrl,
-          surfaceKey,
-        }),
+      // eslint-disable-next-line no-console
+      console.log(
+        "[AgentRunnerPage] dispatching loadConversation conversationId=%s surfaceKey=%s",
+        conversationIdFromUrl,
+        surfaceKey,
       );
+      try {
+        await dispatch(
+          loadConversation({
+            conversationId: conversationIdFromUrl,
+            surfaceKey,
+          }),
+        ).unwrap();
+        // eslint-disable-next-line no-console
+        console.log(
+          "[AgentRunnerPage] loadConversation resolved for %s",
+          conversationIdFromUrl,
+        );
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error("[AgentRunnerPage] loadConversation failed", err);
+      }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversationIdFromUrl, isInitializing, conversationId]);
@@ -190,7 +232,10 @@ export function AgentRunnerPage({ agentId }: AgentRunnerPageProps) {
               </DrawerDescription>
             </DrawerHeader>
             <div className="flex-1 overflow-y-auto min-h-0 pb-safe">
-              <AgentLauncherSidebarTester conversationId={conversationId} />
+              <AgentLauncherSidebarTester
+                conversationId={conversationId}
+                surfaceKey={sidebarSurfaceKey}
+              />
             </div>
           </DrawerContent>
         </Drawer>

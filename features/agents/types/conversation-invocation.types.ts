@@ -206,9 +206,9 @@ export interface ConversationInvocationDisplay {
    */
   showDefinitionMessageContent?: boolean;
   /**
-   * When false, sub-agent turns are filtered out of the transcript selector
-   * (`selectDisplayMessages`) but still live in the `messages/` slice —
-   * purely a rendering filter, no data loss.
+   * When false, sub-agent turns are filtered out at the component level when
+   * projecting the `messages/` slice into the transcript — they still live on
+   * the record, purely a rendering filter, no data loss.
    */
   showSubAgents?: boolean;
   /** Hide the model's reasoning/thinking output mid-run. */
@@ -266,18 +266,17 @@ export interface ConversationInvocationBehavior {
 
 export interface ConversationInvocationCallbacks {
   /**
-   * CallbackManager ids. Each slot holds the id returned by
-   * `callbackManager.register(...)` for that specific function. Function
-   * refs live in CallbackManager; the invocation stays serializable.
+   * CallbackManager id returned by `callbackManager.registerWidgetHandle(handle)`.
+   * The handle is a single object carrying both capability methods (onTextReplace,
+   * onAttachMedia, ...) and lifecycle methods (onComplete, onCancel, onError).
+   * The launch path looks the handle up by id, derives per-request `client_tools`
+   * from its method set, and routes `tool_delegated` events back through it.
    *
-   * Every side stores an id and only an id. There is no context/type
-   * lookup — a callback is either registered with a known id or it isn't
-   * wired up. Pass only the ids you want fired.
+   * Function refs live in CallbackManager; the invocation stays serializable.
+   * See `features/agents/types/widget-handle.types.ts` for the handle contract
+   * and `WIDGET_HANDLE_SYSTEM.md` for the end-to-end flow.
    */
-  onCompleteId?: string;
-  onTextReplaceId?: string;
-  onTextInsertBeforeId?: string;
-  onTextInsertAfterId?: string;
+  widgetHandleId?: string;
   /**
    * Original text payload for text-manipulation callbacks (translate-selection,
    * replace-selection shortcuts). The selection the user had highlighted

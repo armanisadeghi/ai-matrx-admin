@@ -18,7 +18,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectInstanceDisplayTitle } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { selectIsExecuting } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
-import { selectTurnCount } from "@/features/agents/redux/execution-system/messages/messages.selectors";
+import { selectMessageCount } from "@/features/agents/redux/execution-system/messages/messages.selectors";
 import { AssistantCardStack } from "./AssistantCardStack";
 import { CompactAssistantInput } from "./CompactAssistantInput";
 import { AssistantControlBar } from "./AssistantControlBar";
@@ -38,7 +38,7 @@ export function AgentChatAssistant({
 }: AgentChatAssistantProps) {
   const title = useAppSelector(selectInstanceDisplayTitle(conversationId));
   const isExecuting = useAppSelector(selectIsExecuting(conversationId));
-  const turnCount = useAppSelector(selectTurnCount(conversationId));
+  const messageCount = useAppSelector(selectMessageCount(conversationId));
 
   const { heartbeatInterval, increaseHeartbeat, decreaseHeartbeat } =
     useAssistantHeartbeat(conversationId);
@@ -46,15 +46,15 @@ export function AgentChatAssistant({
   const [isOpen, setIsOpen] = useState(true);
   const [isExiting, setIsExiting] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
-  const prevTurnCountRef = useRef(turnCount);
+  const prevMessageCountRef = useRef(messageCount);
 
   useEffect(() => {
-    const delta = turnCount - prevTurnCountRef.current;
-    prevTurnCountRef.current = turnCount;
+    const delta = messageCount - prevMessageCountRef.current;
+    prevMessageCountRef.current = messageCount;
     if (!isOpen && delta > 0) {
       setUnreadCount((c) => c + delta);
     }
-  }, [turnCount, isOpen]);
+  }, [messageCount, isOpen]);
 
   // ── Drag state ───────────────────────────────────────────────────────────
   const [position, setPosition] = useState({ x: 0, y: 0 });

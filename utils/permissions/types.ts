@@ -17,12 +17,11 @@
  * Legacy types use singular form (e.g., 'prompt' -> 'prompts' table).
  */
 export type ResourceType =
-  // Legacy types (singular form, mapped to plural table names)
+  // Legacy types (singular form, mapped to table names)
   | "prompt"
   | "workflow"
   | "note"
   | "recipe"
-  | "document"
   | "conversation"
   | "applet"
   | "broker_value"
@@ -282,7 +281,6 @@ export function getResourceTypeLabel(type: ResourceType): string {
     workflow: "Workflow",
     note: "Note",
     recipe: "Recipe",
-    document: "Document",
     conversation: "Conversation",
     applet: "Applet",
     broker_value: "Broker Value",

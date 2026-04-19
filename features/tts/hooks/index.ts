@@ -6,7 +6,9 @@
 
 export { useTextToSpeech } from './useTextToSpeech';
 export { useCartesiaSpeaker } from './useCartesiaSpeaker';
+export { useCartesiaStreamingSpeaker } from './useCartesiaStreamingSpeaker';
 
 export type { UseTextToSpeechProps } from './useTextToSpeech';
 export type { SpeakerPhase, UseCartesiaSpeakerOptions } from './useCartesiaSpeaker';
+export type { UseCartesiaStreamingSpeakerOptions } from './useCartesiaStreamingSpeaker';
 

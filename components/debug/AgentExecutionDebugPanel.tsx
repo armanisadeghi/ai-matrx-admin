@@ -29,13 +29,11 @@ import {
 
 // Conversation history
 import {
-  selectConversationTurns,
+  selectConversationMessages,
   selectApiEndpointMode,
-  selectStoredConversationId,
-  selectTurnCount,
-  selectHasConversationHistory,
-  selectLatestCompletionStats,
-  selectAggregateStats,
+  selectMessageCount,
+  selectHasMessages,
+  extractFlatText,
 } from "@/features/agents/redux/execution-system/messages/messages.selectors";
 
 // User input
@@ -252,17 +250,12 @@ export const AgentExecutionDebugPanel: React.FC<
   const instance = useAppSelector(selectInstance(instanceId));
   const instanceStatus = useAppSelector(selectInstanceStatus(instanceId));
 
-  const turns = useAppSelector(selectConversationTurns(instanceId));
+  const messages = useAppSelector(selectConversationMessages(instanceId));
   const apiEndpointMode = useAppSelector(selectApiEndpointMode(instanceId));
-  const storedConversationId = useAppSelector(
-    selectStoredConversationId(instanceId),
-  );
-  const turnCount = useAppSelector(selectTurnCount(instanceId));
-  const hasHistory = useAppSelector(selectHasConversationHistory(instanceId));
-  const latestCompletionStats = useAppSelector(
-    selectLatestCompletionStats(instanceId),
-  );
-  const aggregateStats = useAppSelector(selectAggregateStats(instanceId));
+  const messageCount = useAppSelector(selectMessageCount(instanceId));
+  const hasHistory = useAppSelector(selectHasMessages(instanceId));
+  // TODO: wire to activeRequests/observability — completion stats are no
+  // longer stored on the messages slice.
 
   const userInputText = useAppSelector(selectUserInputText(instanceId));
   const userInputContentBlocks = useAppSelector(
@@ -409,8 +402,10 @@ export const AgentExecutionDebugPanel: React.FC<
                 </p>
               </div>
               <div>
-                <span className="text-gray-600 dark:text-gray-400">Turns:</span>
-                <p className="font-medium">{turnCount} committed</p>
+                <span className="text-gray-600 dark:text-gray-400">
+                  Messages:
+                </span>
+                <p className="font-medium">{messageCount} committed</p>
               </div>
               <div>
                 <span className="text-gray-600 dark:text-gray-400">
@@ -576,64 +571,30 @@ export const AgentExecutionDebugPanel: React.FC<
               <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded p-3">
                 <p className="text-xs text-blue-800 dark:text-blue-200">
                   <strong>conversationId:</strong>{" "}
-                  {latestConversationId ??
-                    storedConversationId ??
-                    "Not yet set"}
+                  {latestConversationId ?? instanceId ?? "Not yet set"}
                   <br />
                   <strong>Mode:</strong> {apiEndpointMode} |{" "}
-                  <strong>Turns:</strong> {turnCount} |{" "}
+                  <strong>Messages:</strong> {messageCount} |{" "}
                   <strong>Has History:</strong> {String(hasHistory)}
                 </p>
               </div>
 
-              {aggregateStats && (
-                <div className="grid grid-cols-3 gap-2 text-xs">
-                  <div className="bg-white dark:bg-zinc-800 rounded p-2">
-                    <p className="text-gray-500">Total Tokens</p>
-                    <p className="font-bold">
-                      {aggregateStats.totalTokens.toLocaleString()}
-                    </p>
-                  </div>
-                  <div className="bg-white dark:bg-zinc-800 rounded p-2">
-                    <p className="text-gray-500">Total Cost</p>
-                    <p className="font-bold">
-                      ${aggregateStats.totalCost.toFixed(4)}
-                    </p>
-                  </div>
-                  <div className="bg-white dark:bg-zinc-800 rounded p-2">
-                    <p className="text-gray-500">Tool Calls</p>
-                    <p className="font-bold">{aggregateStats.totalToolCalls}</p>
-                  </div>
-                </div>
-              )}
+              {/* TODO: wire aggregate/completion stats to activeRequests/observability */}
 
-              {latestCompletionStats && (
-                <div>
-                  <h5 className="text-xs font-semibold mb-2">
-                    Latest Completion Stats
-                  </h5>
-                  <CodeBlock
-                    content={JSON.stringify(latestCompletionStats, null, 2)}
-                    label="Latest Completion Stats (JSON)"
-                    {...codeBlockProps}
-                  />
-                </div>
-              )}
-
-              {turns.length === 0 ? (
-                <p className="text-xs text-gray-500">No committed turns yet</p>
+              {messages.length === 0 ? (
+                <p className="text-xs text-gray-500">No committed messages yet</p>
               ) : (
                 <div className="space-y-3">
-                  {turns.map((turn, idx) => (
+                  {messages.map((record, idx) => (
                     <div
-                      key={turn.turnId ?? idx}
+                      key={record.id}
                       className="border border-border rounded p-3"
                     >
                       <div className="flex items-center gap-2 mb-2">
-                        <RoleBadge role={turn.role} />
-                        {turn.timestamp && (
+                        <RoleBadge role={record.role} />
+                        {record.createdAt && (
                           <span className="text-xs text-gray-500">
-                            {new Date(turn.timestamp).toLocaleString()}
+                            {new Date(record.createdAt).toLocaleString()}
                           </span>
                         )}
                         <span className="text-xs text-gray-400 ml-auto">
@@ -641,30 +602,17 @@ export const AgentExecutionDebugPanel: React.FC<
                         </span>
                       </div>
                       <pre className="text-xs whitespace-pre-wrap break-words bg-white dark:bg-black p-2 rounded max-h-40 overflow-y-auto">
-                        {typeof turn.content === "string"
-                          ? turn.content
-                          : JSON.stringify(turn.content, null, 2)}
+                        {extractFlatText(record) ||
+                          JSON.stringify(record.content, null, 2)}
                       </pre>
-                      {turn.completionStats && (
-                        <p className="text-[10px] text-gray-400 mt-1">
-                          Tokens:{" "}
-                          {turn.completionStats.total_usage?.total
-                            ?.total_tokens ?? "?"}{" "}
-                          | Cost: $
-                          {(
-                            turn.completionStats.total_usage?.total
-                              ?.total_cost ?? 0
-                          ).toFixed(4)}
-                        </p>
-                      )}
                     </div>
                   ))}
                 </div>
               )}
 
               <CodeBlock
-                content={JSON.stringify(turns, null, 2)}
-                label="All Turns (JSON)"
+                content={JSON.stringify(messages, null, 2)}
+                label="All Messages (JSON)"
                 {...codeBlockProps}
               />
             </div>

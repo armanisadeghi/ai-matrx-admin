@@ -1,5 +1,28 @@
 import { supabase } from "@/utils/supabase/client";
-import { Workflow, WorkflowCreateInput, WorkflowUpdateInput } from './types';
+import {
+  Workflow,
+  WorkflowCreateInput,
+  WorkflowRow,
+  WorkflowRowInsert,
+  WorkflowRowUpdate,
+  WorkflowUpdateInput,
+} from './types';
+
+/**
+ * JSON columns come back as `unknown` from the generated DB types. At the
+ * service boundary we tag them with the app-level shape — callers can then
+ * work with the narrowed union without per-call casts. The narrowing is a
+ * pure type assertion; if a non-JSON DB column is renamed or removed, the
+ * Workflow shape (derived from the DB row) surfaces the drift at compile time.
+ */
+const narrowWorkflow = (row: WorkflowRow): Workflow =>
+  row as unknown as Workflow;
+
+const toInsert = (workflow: WorkflowCreateInput): WorkflowRowInsert =>
+  workflow as unknown as WorkflowRowInsert;
+
+const toUpdate = (updates: WorkflowUpdateInput): WorkflowRowUpdate =>
+  updates as unknown as WorkflowRowUpdate;
 
 export const workflowService = {
   async fetchAll(): Promise<Workflow[]> {
@@ -11,7 +34,7 @@ export const workflowService = {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      return (data ?? []).map(narrowWorkflow);
     } catch (error) {
       console.error('Error fetching workflows:', error);
       throw error;
@@ -29,7 +52,7 @@ export const workflowService = {
 
       if (error) throw error;
       if (!data) throw new Error('Workflow not found');
-      return data;
+      return narrowWorkflow(data);
     } catch (error) {
       console.error('Error fetching workflow:', error);
       throw error;
@@ -40,13 +63,13 @@ export const workflowService = {
     try {
       const { data, error } = await supabase
         .from('workflow_data')
-        .insert([workflow])
+        .insert([toInsert(workflow)])
         .select()
         .single();
 
       if (error) throw error;
       if (!data) throw new Error('Failed to create workflow');
-      return data;
+      return narrowWorkflow(data);
     } catch (error) {
       console.error('Error creating workflow:', error);
       throw error;
@@ -57,14 +80,14 @@ export const workflowService = {
     try {
       const { data, error } = await supabase
         .from('workflow_data')
-        .update(updates)
+        .update(toUpdate(updates))
         .eq('id', id)
         .select()
         .single();
 
       if (error) throw error;
       if (!data) throw new Error('Failed to update workflow');
-      return data;
+      return narrowWorkflow(data);
     } catch (error) {
       console.error('Error updating workflow:', error);
       throw error;

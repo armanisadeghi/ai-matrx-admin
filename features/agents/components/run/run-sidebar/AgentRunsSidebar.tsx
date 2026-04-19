@@ -105,6 +105,10 @@ export function AgentRunsSidebar({
   const conversationSectionLoading = convStatus === "loading";
   const conversationSectionFailed = convStatus === "failed";
 
+  const sourceFeature = "agent-runs-sidebar";
+
+  const launcherSurfaceKey = `${sourceFeature}-launcher:${agentId}`;
+
   return (
     <div className="flex flex-col flex-1 min-h-0">
       <SidebarHeader
@@ -150,7 +154,10 @@ export function AgentRunsSidebar({
         </div>
       </div>
       <div className="shrink-0 border-t border-border pb-2">
-        <AgentLauncherSidebarTester conversationId={conversationId} />
+        <AgentLauncherSidebarTester
+          conversationId={conversationId}
+          surfaceKey={launcherSurfaceKey}
+        />
       </div>
     </div>
   );

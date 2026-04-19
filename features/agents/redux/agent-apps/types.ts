@@ -15,7 +15,7 @@
  * `thunks.ts` are stubs that throw.
  */
 
-import type { DbRpcRow } from "@/types/supabase-rpc";
+import type { JsonToUnknown } from "@/types/supabase-rpc";
 import type { FieldFlags } from "@/features/agents/redux/shared/field-flags";
 
 // ---------------------------------------------------------------------------
@@ -107,7 +107,10 @@ export interface AgentAppInitialRow {
   updated_at: string;
 }
 
-export type AgentAppInitialRpcRow = DbRpcRow<AgentAppInitialRow>;
+// NOTE: When the backing RPC lands (e.g. `agx_get_apps_initial()`), replace
+// this with `DbRpcRow<"agx_get_apps_initial">` so the type is derived from
+// the generated DB function signature instead of the manual row interface.
+export type AgentAppInitialRpcRow = JsonToUnknown<AgentAppInitialRow>;
 
 // ---------------------------------------------------------------------------
 // Runtime records & slice state

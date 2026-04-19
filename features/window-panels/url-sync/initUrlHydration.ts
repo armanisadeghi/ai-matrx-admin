@@ -12,7 +12,7 @@ export function initUrlHydration() {
     dispatch(
       setDisplayMode({
         conversationId: id,
-        mode:
+        displayMode:
           (args.m as "floating-chat" | "modal-full" | "panel") ||
           "floating-chat",
       }),

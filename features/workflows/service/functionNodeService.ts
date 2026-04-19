@@ -273,13 +273,14 @@ export async function saveWorkflowNode(
   if (isUpdate) {
     const { data: node, error } = await supabase
       .from("workflow_node")
-      .update(nodeData)
+      .update(nodeData as never)
       .eq("id", nodeData.id)
       .select()
       .single();
 
     if (error) throw new Error(`Failed to update node: ${error.message}`);
-    return node;
+    // DB row uses `unknown` for JSON columns; DbFunctionNode narrows them.
+    return node as unknown as DbFunctionNode;
   } else {
     const { data: node, error } = await supabase
       .from("workflow_node")
@@ -287,12 +288,12 @@ export async function saveWorkflowNode(
         ...nodeData,
         workflow_id: workflowId,
         user_id: userId,
-      })
+      } as never)
       .select()
       .single();
 
     if (error) throw new Error(`Failed to create node: ${error.message}`);
-    return node;
+    return node as unknown as DbFunctionNode;
   }
 }
 

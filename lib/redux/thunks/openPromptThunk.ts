@@ -122,13 +122,15 @@ export const openPrompt = createAsyncThunk<
           id: prompt.id,
           name: prompt.name,
           description: prompt.description,
-          messages: prompt.messages || [],
-          variableDefaults: prompt.variable_defaults || [],
-          settings: prompt.settings || {},
+          messages: (Array.isArray(prompt.messages) ? prompt.messages : []) as CachedPrompt['messages'],
+          variableDefaults: (Array.isArray(prompt.variable_defaults) ? prompt.variable_defaults : []) as CachedPrompt['variableDefaults'],
+          settings: (prompt.settings && typeof prompt.settings === 'object' && !Array.isArray(prompt.settings)
+            ? prompt.settings
+            : {}) as CachedPrompt['settings'],
           userId: prompt.user_id,
           source: 'prompts',
           fetchedAt: Date.now(),
-          status: 'cached', 
+          status: 'cached',
         };
 
         dispatch(cachePrompt(cachedPromptData));
@@ -207,9 +209,11 @@ export const prefetchPrompt = createAsyncThunk<
         id: prompt.id,
         name: prompt.name,
         description: prompt.description,
-        messages: prompt.messages || [],
-        variableDefaults: prompt.variable_defaults || [],
-        settings: prompt.settings || {},
+        messages: (Array.isArray(prompt.messages) ? prompt.messages : []) as CachedPrompt['messages'],
+        variableDefaults: (Array.isArray(prompt.variable_defaults) ? prompt.variable_defaults : []) as CachedPrompt['variableDefaults'],
+        settings: (prompt.settings && typeof prompt.settings === 'object' && !Array.isArray(prompt.settings)
+          ? prompt.settings
+          : {}) as CachedPrompt['settings'],
         userId: prompt.user_id,
         source: 'prompts',
         fetchedAt: Date.now(),

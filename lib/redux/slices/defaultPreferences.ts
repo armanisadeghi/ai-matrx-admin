@@ -125,4 +125,11 @@ export const defaultUserPreferences: UserPreferences = {
         notificationVolume: 50,
         showDesktopNotifications: false,
     },
-}; 
+    agentContext: {
+        level: 'none',
+        organizationId: null,
+        scopeSelections: {},
+        projectId: null,
+        taskId: null,
+    },
+};

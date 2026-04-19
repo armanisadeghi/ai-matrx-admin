@@ -93,7 +93,8 @@ function variablesText(vars: AgentDefinition["variableDefinitions"]): string {
   return vars
     .map((v) => {
       let line = `{{${v.name}}}`;
-      if (v.type) line += ` [${v.type}]`;
+      const compType = v.customComponent?.type;
+      if (compType) line += ` [${compType}]`;
       if (v.defaultValue) line += ` = ${String(v.defaultValue)}`;
       return line;
     })

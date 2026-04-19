@@ -25,7 +25,6 @@ import type {
   ResultDisplayMode,
 } from "@/features/agents/types/instance.types";
 import { mapScopeToInstance } from "@/features/agents/utils/scope-mapping";
-import { callbackManager } from "@/utils/callbackManager";
 import { resolveVisibilitySettings } from "../instance-ui-state/instance-ui-state.slice";
 import {
   createManualInstance,
@@ -108,53 +107,6 @@ async function pollForCompletion(
   return "";
 }
 
-/**
- * Registers lifecycle callbacks with CallbackManager and returns the group ID.
- * Returns null if no callbacks are provided.
- */
-function registerCallbacks(options: ManagedAgentOptions): string | null {
-  const { onComplete, onTextReplace, onTextInsertBefore, onTextInsertAfter } =
-    options;
-
-  if (
-    !onComplete &&
-    !onTextReplace &&
-    !onTextInsertBefore &&
-    !onTextInsertAfter
-  ) {
-    return null;
-  }
-
-  const groupId = callbackManager.createGroup();
-
-  if (onComplete) {
-    callbackManager.registerWithContext(onComplete, {
-      groupId,
-      context: { type: "complete" },
-    });
-  }
-  if (onTextReplace) {
-    callbackManager.registerWithContext(onTextReplace, {
-      groupId,
-      context: { type: "replace" },
-    });
-  }
-  if (onTextInsertBefore) {
-    callbackManager.registerWithContext(onTextInsertBefore, {
-      groupId,
-      context: { type: "insertBefore" },
-    });
-  }
-  if (onTextInsertAfter) {
-    callbackManager.registerWithContext(onTextInsertAfter, {
-      groupId,
-      context: { type: "insertAfter" },
-    });
-  }
-
-  return groupId;
-}
-
 // =============================================================================
 // Orchestrator Thunk
 // =============================================================================
@@ -189,15 +141,20 @@ export const launchAgentExecution = createAsyncThunk<
     preExecutionMessage,
     jsonExtraction,
     originalText,
-    onComplete,
+    widgetHandleId,
     isEphemeral,
   } = options;
 
   // =========================================================================
-  // Step 0: Register callbacks and resolve visibility
+  // Step 0: Resolve visibility.
+  //
+  // Widget handle: the caller passes `widgetHandleId` (returned by
+  // `useWidgetHandle` at the widget). The submit-body assembler reads the
+  // handle live per-turn via `callbackManager.get` to derive `client_tools`;
+  // `process-stream.ts` fires `handle.onComplete` / `handle.onError` at
+  // stream end. Nothing to register or wrap here.
   // =========================================================================
 
-  const callbackGroupId = registerCallbacks(options);
   const visibilityFromConfig = resolveVisibilitySettings(showVariables);
 
   const resolvedShowVariablePanel =
@@ -243,7 +200,7 @@ export const launchAgentExecution = createAsyncThunk<
         showVariablePanel: resolvedShowVariablePanel,
         showDefinitionMessages: resolvedShowDefinitionMessages,
         showDefinitionMessageContent: resolvedShowDefinitionMessageContent,
-        callbackGroupId,
+        widgetHandleId,
         variableInputStyle,
         hideReasoning,
         hideToolResults,
@@ -277,7 +234,7 @@ export const launchAgentExecution = createAsyncThunk<
         showVariablePanel: resolvedShowVariablePanel,
         showDefinitionMessages: resolvedShowDefinitionMessages,
         showDefinitionMessageContent: resolvedShowDefinitionMessageContent,
-        callbackGroupId,
+        widgetHandleId,
         variableInputStyle,
         hideReasoning,
         hideToolResults,
@@ -335,6 +292,7 @@ export const launchAgentExecution = createAsyncThunk<
         label: manual?.label,
         baseSettings: manual?.baseSettings,
         sourceFeature,
+        widgetHandleId,
       }),
     ).unwrap();
 
@@ -430,15 +388,14 @@ export const launchAgentExecution = createAsyncThunk<
 
     const responseText = await pollForCompletion(getState, result.requestId);
 
-    const launchResult: LaunchResult = {
+    // Note: widget handle's onComplete is fired from process-stream.ts at
+    // stream-end, not here — so it also fires for non-direct/non-background
+    // modes (sidebar, panel, modal-full, etc.) which previously missed it.
+    return {
       conversationId,
       requestId: result.requestId,
       responseText,
     };
-
-    onComplete?.(launchResult);
-
-    return launchResult;
   }
 
   if (isInteractive(resolvedDisplayMode) || resolvedDisplayMode === "toast") {

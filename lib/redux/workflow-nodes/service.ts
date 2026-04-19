@@ -1,5 +1,28 @@
 import { supabase } from "@/utils/supabase/client";
-import { WorkflowNode, WorkflowNodeCreateInput, WorkflowNodeUpdateInput } from './types';
+import {
+  WorkflowNode,
+  WorkflowNodeCreateInput,
+  WorkflowNodeRow,
+  WorkflowNodeRowInsert,
+  WorkflowNodeRowUpdate,
+  WorkflowNodeUpdateInput,
+} from './types';
+
+/**
+ * JSON columns come back as `unknown` from the generated DB types. At the
+ * service boundary we tag them with the app-level shape — callers can then
+ * work with the narrowed union without per-call casts. The narrowing is a
+ * pure type assertion; if the DB column is renamed or removed, the WorkflowNode
+ * shape (derived from the DB row) will surface the drift at compile time.
+ */
+const narrowNode = (row: WorkflowNodeRow): WorkflowNode =>
+  row as unknown as WorkflowNode;
+
+const toInsert = (node: WorkflowNodeCreateInput): WorkflowNodeRowInsert =>
+  node as unknown as WorkflowNodeRowInsert;
+
+const toUpdate = (updates: WorkflowNodeUpdateInput): WorkflowNodeRowUpdate =>
+  updates as unknown as WorkflowNodeRowUpdate;
 
 export const workflowNodeService = {
   async fetchAll(): Promise<WorkflowNode[]> {
@@ -10,7 +33,7 @@ export const workflowNodeService = {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      return (data ?? []).map(narrowNode);
     } catch (error) {
       console.error('Error fetching workflow nodes:', error);
       throw error;
@@ -27,7 +50,7 @@ export const workflowNodeService = {
 
       if (error) throw error;
       if (!data) throw new Error('Workflow node not found');
-      return data;
+      return narrowNode(data);
     } catch (error) {
       console.error('Error fetching workflow node:', error);
       throw error;
@@ -43,7 +66,7 @@ export const workflowNodeService = {
         .order('created_at', { ascending: true });
 
       if (error) throw error;
-      return data || [];
+      return (data ?? []).map(narrowNode);
     } catch (error) {
       console.error('Error fetching workflow nodes by workflow ID:', error);
       throw error;
@@ -54,13 +77,13 @@ export const workflowNodeService = {
     try {
       const { data, error } = await supabase
         .from('workflow_node_data')
-        .insert([node])
+        .insert([toInsert(node)])
         .select()
         .single();
 
       if (error) throw error;
       if (!data) throw new Error('Failed to create workflow node');
-      return data;
+      return narrowNode(data);
     } catch (error) {
       console.error('Error creating workflow node:', error);
       throw error;
@@ -71,14 +94,14 @@ export const workflowNodeService = {
     try {
       const { data, error } = await supabase
         .from('workflow_node_data')
-        .update(updates)
+        .update(toUpdate(updates))
         .eq('id', id)
         .select()
         .single();
 
       if (error) throw error;
       if (!data) throw new Error('Failed to update workflow node');
-      return data;
+      return narrowNode(data);
     } catch (error) {
       console.error('Error updating workflow node:', error);
       throw error;

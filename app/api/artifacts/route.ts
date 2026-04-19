@@ -28,6 +28,13 @@ export async function POST(request: NextRequest) {
 
     switch (action) {
       // ── create ───────────────────────────────────────────────────────
+      // Idempotent on the natural key
+      //   (user_id, message_id, artifact_type, external_system).
+      // If an artifact already exists for that tuple, return it (optionally
+      // applying any non-null fields from the payload as an update). This
+      // makes repeat opens of the HTML preview overlay — and other
+      // multi-click / double-mount races — produce a single row rather than
+      // a duplicate on every attempt.
       case "create": {
         const {
           messageId,
@@ -52,6 +59,71 @@ export async function POST(request: NextRequest) {
             },
             { status: 400 },
           );
+        }
+
+        // Look up any existing artifact for this (user, message, type,
+        // external_system) tuple. `external_system` is nullable so we
+        // normalize NULL via .is() when not provided.
+        let existingQuery = supabase
+          .from("cx_artifact")
+          .select("*")
+          .eq("user_id", user.id)
+          .eq("message_id", messageId)
+          .eq("artifact_type", artifactType)
+          .is("deleted_at", null)
+          .limit(1);
+
+        if (externalSystem) {
+          existingQuery = existingQuery.eq("external_system", externalSystem);
+        } else {
+          existingQuery = existingQuery.is("external_system", null);
+        }
+
+        const { data: existing, error: lookupError } = await existingQuery;
+
+        if (lookupError) {
+          console.error("[artifacts API] create lookup error:", lookupError);
+          return NextResponse.json(
+            { error: lookupError.message },
+            { status: 500 },
+          );
+        }
+
+        if (existing && existing.length > 0) {
+          // Apply a lightweight update with the caller-provided fields so
+          // the returned row reflects the latest publish (external_id can
+          // change when the underlying html_page row is re-created).
+          const updates: Record<string, unknown> = {};
+          if (externalId !== undefined) updates.external_id = externalId;
+          if (externalUrl !== undefined) updates.external_url = externalUrl;
+          if (title !== undefined) updates.title = title;
+          if (description !== undefined) updates.description = description;
+          if (thumbnailUrl !== undefined) updates.thumbnail_url = thumbnailUrl;
+
+          if (Object.keys(updates).length === 0) {
+            return NextResponse.json({ artifact: existing[0] });
+          }
+
+          const { data: updated, error: updateError } = await supabase
+            .from("cx_artifact")
+            .update(updates)
+            .eq("id", existing[0].id)
+            .eq("user_id", user.id)
+            .select()
+            .single();
+
+          if (updateError) {
+            console.error(
+              "[artifacts API] create->update error:",
+              updateError,
+            );
+            return NextResponse.json(
+              { error: updateError.message },
+              { status: 500 },
+            );
+          }
+
+          return NextResponse.json({ artifact: updated });
         }
 
         const { data, error } = await supabase

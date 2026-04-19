@@ -141,13 +141,24 @@ export const selectHiddenMessageCount =
     state.instanceUIState.byConversationId[conversationId]
       ?.hiddenMessageCount ?? 0;
 
-// ── Callback integration ─────────────────────────────────────────────────────
+// ── Widget handle integration ────────────────────────────────────────────────
 
-export const selectCallbackGroupId =
+export const selectWidgetHandleId =
   (conversationId: string) =>
   (state: RootState): string | null =>
-    state.instanceUIState.byConversationId[conversationId]?.callbackGroupId ??
+    state.instanceUIState.byConversationId[conversationId]?.widgetHandleId ??
     null;
+
+/**
+ * Non-currying variant for thunks that have the state in hand and just need
+ * the id. Selectors are cheap enough that curried + direct coexist.
+ */
+export const selectWidgetHandleIdFor = (
+  state: RootState,
+  conversationId: string,
+): string | null =>
+  state.instanceUIState.byConversationId[conversationId]?.widgetHandleId ??
+  null;
 
 // ── Derived: should input be visible ─────────────────────────────────────────
 

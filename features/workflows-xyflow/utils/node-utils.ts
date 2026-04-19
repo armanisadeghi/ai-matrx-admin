@@ -122,6 +122,7 @@ export function getNormalizedRegisteredFunctionNode(
         node_type: nodeType,
         step_name: `New ${functionData.name}`,
         execution_required: true,
+        arguments: null,
         inputs: generateNodeInputs(functionData),
         outputs: generateNodeOutputs(functionData),
         user_id: userId,
@@ -139,7 +140,6 @@ export function getNormalizedRegisteredFunctionNode(
             registered_function: functionData,
         },
         is_public: false,
-        authenticated_read: true,
         public_read: false,
     };
 }

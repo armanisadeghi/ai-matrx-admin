@@ -89,7 +89,9 @@ const RecipeNodeInitializer: React.FC<RecipeNodeInitializerProps> = ({ nodeData,
             }
             if (neededBrokers && neededBrokers.length > 0) {
                 console.log("setting needed brokers", neededBrokers);
-                updatedNode = setNeededBrokerDependenciesWithCallback(updatedNode, handleNodeUpdate, neededBrokers);
+                // `setNeededBrokerDependenciesWithCallback` widens to WorkflowNodePersistShape;
+                // the editor only ever holds the saved DbFunctionNode row, so narrow back.
+                updatedNode = setNeededBrokerDependenciesWithCallback(updatedNode, handleNodeUpdate, neededBrokers) as DbFunctionNode;
             } else {
                 updatedNode = clearReturnBrokerOverrides(updatedNode, handleNodeUpdate);
             }

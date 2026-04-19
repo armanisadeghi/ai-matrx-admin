@@ -59,10 +59,16 @@ export const loadPreferences = (): AppThunk => async (dispatch, getState) => {
         if (error) {
             console.error('Error loading preferences from Supabase:', error);
         } else if (data) {
-            const preferences = data.preferences;
+            // The `preferences` column is JSONB (typed as `unknown` by the DB
+            // type generator). Narrow at the boundary, then patch in-place.
+            const preferences = (
+                data.preferences && typeof data.preferences === 'object' && !Array.isArray(data.preferences)
+                    ? data.preferences
+                    : {}
+            ) as Record<string, unknown>;
 
             // Convert any Date fields to strings
-            if (preferences.lastUpdated && preferences.lastUpdated instanceof Date) {
+            if (preferences.lastUpdated instanceof Date) {
                 preferences.lastUpdated = preferences.lastUpdated.toISOString();
             }
 

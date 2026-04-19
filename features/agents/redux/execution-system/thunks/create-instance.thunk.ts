@@ -48,7 +48,7 @@ import {
 } from "../instance-user-input/instance-user-input.slice";
 import { initInstanceClientTools } from "../instance-client-tools/instance-client-tools.slice";
 import { initInstanceUIState } from "../instance-ui-state/instance-ui-state.slice";
-import { initInstanceHistory } from "../messages/messages.slice";
+import { initInstanceMessages } from "../messages/messages.slice";
 import {
   InstanceOrigin,
   ResultDisplayMode,
@@ -103,7 +103,7 @@ interface CreateManualInstanceArgs {
   showDefinitionMessages?: boolean;
   showDefinitionMessageContent?: boolean;
   displayMode?: ResultDisplayMode;
-  callbackGroupId?: string | null;
+  widgetHandleId?: string | null;
   hideReasoning?: boolean;
   hideToolResults?: boolean;
   preExecutionMessage?: string | null;
@@ -137,7 +137,7 @@ export const createManualInstance = createAsyncThunk<
     showDefinitionMessages,
     showDefinitionMessageContent,
     displayMode,
-    callbackGroupId,
+    widgetHandleId,
     hideReasoning,
     hideToolResults,
     preExecutionMessage,
@@ -195,7 +195,7 @@ export const createManualInstance = createAsyncThunk<
         showVariablePanel ?? snapshot.variableDefinitions.length > 0,
       showDefinitionMessages,
       showDefinitionMessageContent,
-      callbackGroupId,
+      widgetHandleId,
       hideReasoning,
       hideToolResults,
       preExecutionMessage,
@@ -204,7 +204,7 @@ export const createManualInstance = createAsyncThunk<
       originalText,
     }),
   );
-  dispatch(initInstanceHistory({ conversationId, apiEndpointMode }));
+  dispatch(initInstanceMessages({ conversationId, apiEndpointMode }));
 
   return conversationId;
 });
@@ -227,7 +227,7 @@ interface CreateShortcutInstanceArgs {
   showVariablePanel?: boolean;
   showDefinitionMessages?: boolean;
   showDefinitionMessageContent?: boolean;
-  callbackGroupId?: string | null;
+  widgetHandleId?: string | null;
   hideReasoning?: boolean;
   hideToolResults?: boolean;
   preExecutionMessage?: string | null;
@@ -254,7 +254,7 @@ export const createInstanceFromShortcut = createAsyncThunk<
     showVariablePanel,
     showDefinitionMessages,
     showDefinitionMessageContent,
-    callbackGroupId,
+    widgetHandleId,
     hideReasoning,
     hideToolResults,
     preExecutionMessage,
@@ -313,7 +313,7 @@ export const createInstanceFromShortcut = createAsyncThunk<
       showVariablePanel: showVariablePanel ?? shortcut.showVariables,
       showDefinitionMessages,
       showDefinitionMessageContent,
-      callbackGroupId,
+      widgetHandleId,
       isCreator: snapshot.isCreator,
       hideReasoning,
       hideToolResults,
@@ -340,7 +340,7 @@ export const createInstanceFromShortcut = createAsyncThunk<
   }
 
   dispatch(
-    initInstanceHistory({ conversationId, apiEndpointMode: apiEndpointMode }),
+    initInstanceMessages({ conversationId, apiEndpointMode: apiEndpointMode }),
   );
 
   return conversationId;
@@ -415,7 +415,7 @@ export const createTestInstance = createAsyncThunk<
         showVariablePanel: snapshot.variableDefinitions.length > 0,
       }),
     );
-    dispatch(initInstanceHistory({ conversationId }));
+    dispatch(initInstanceMessages({ conversationId }));
 
     if (variables && Object.keys(variables).length > 0) {
       dispatch(setUserVariableValues({ conversationId, values: variables }));
@@ -442,6 +442,7 @@ interface CreateManualInstanceNoAgentArgs {
   baseSettings?: Partial<LLMParams>;
   userInput?: string;
   sourceFeature?: SourceFeature;
+  widgetHandleId?: string | null;
 }
 
 export const createManualInstanceNoAgent = createAsyncThunk<
@@ -456,6 +457,7 @@ export const createManualInstanceNoAgent = createAsyncThunk<
       baseSettings = {},
       userInput,
       sourceFeature,
+      widgetHandleId,
     },
     { dispatch },
   ) => {
@@ -486,10 +488,11 @@ export const createManualInstanceNoAgent = createAsyncThunk<
     dispatch(
       initInstanceUIState({
         conversationId,
+        widgetHandleId,
         showVariablePanel: variableDefinitions.length > 0,
       }),
     );
-    dispatch(initInstanceHistory({ conversationId }));
+    dispatch(initInstanceMessages({ conversationId }));
 
     return conversationId;
   },
@@ -575,7 +578,7 @@ export const startNewConversation = createAsyncThunk<
         showDefinitionMessageContent:
           currentUIState?.showDefinitionMessageContent,
         hiddenMessageCount: currentUIState?.hiddenMessageCount,
-        callbackGroupId: currentUIState?.callbackGroupId,
+        widgetHandleId: currentUIState?.widgetHandleId,
         submitOnEnter: currentUIState?.submitOnEnter,
         reuseConversationId: currentUIState?.reuseConversationId,
         builderAdvancedSettings: currentUIState?.builderAdvancedSettings,
@@ -588,7 +591,7 @@ export const startNewConversation = createAsyncThunk<
       }),
     );
     dispatch(
-      initInstanceHistory({
+      initInstanceMessages({
         conversationId: newConversationId,
         apiEndpointMode: "agent",
       }),
@@ -709,7 +712,7 @@ export const startNewConversationAndExecute = createAsyncThunk<
         showDefinitionMessageContent:
           currentUIState?.showDefinitionMessageContent,
         hiddenMessageCount: currentUIState?.hiddenMessageCount,
-        callbackGroupId: currentUIState?.callbackGroupId,
+        widgetHandleId: currentUIState?.widgetHandleId,
         submitOnEnter: currentUIState?.submitOnEnter ?? true,
         reuseConversationId: currentUIState?.reuseConversationId ?? false,
         builderAdvancedSettings: currentUIState?.builderAdvancedSettings,
@@ -722,7 +725,7 @@ export const startNewConversationAndExecute = createAsyncThunk<
       }),
     );
     dispatch(
-      initInstanceHistory({
+      initInstanceMessages({
         conversationId: newConversationId,
         apiEndpointMode: currentMode,
       }),

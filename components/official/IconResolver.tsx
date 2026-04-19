@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { cn } from "@/lib/utils";
 // Statically import commonly used Lucide icons to reduce bundle size
 import {
   Zap,
@@ -175,6 +176,10 @@ import {
 } from "react-icons/fc";
 import { FaBrave } from "react-icons/fa6";
 import { isLucideModuleIconExport } from "@/utils/icons/lucide-module-icon";
+import {
+  isMatrxSvgIconValue,
+  parseMatrxSvgPublicPath,
+} from "@/utils/icons/matrx-public-svg-registry";
 
 // Statically imported Lucide icons map (commonly used icons for optimal bundle size)
 const staticLucideIconMap: Record<string, any> = {
@@ -385,6 +390,9 @@ export async function isRegisteredOrLucideIconName(
   if (!iconName || iconName.trim() === "") {
     return false;
   }
+  if (isMatrxSvgIconValue(iconName)) {
+    return true;
+  }
   if (isIconRegisteredSync(iconName)) {
     return true;
   }
@@ -435,6 +443,7 @@ const IconResolver: React.FC<IconResolverProps> = ({
   fallbackIcon = "Zap",
   style,
 }) => {
+  const svgSrc = iconName ? parseMatrxSvgPublicPath(iconName) : null;
   const [DynamicIcon, setDynamicIcon] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -442,6 +451,13 @@ const IconResolver: React.FC<IconResolverProps> = ({
     const loadIcon = async () => {
       if (!iconName) {
         setDynamicIcon(null);
+        setIsLoading(false);
+        return;
+      }
+
+      if (parseMatrxSvgPublicPath(iconName)) {
+        setDynamicIcon(null);
+        setIsLoading(false);
         return;
       }
 
@@ -486,6 +502,20 @@ const IconResolver: React.FC<IconResolverProps> = ({
 
     loadIcon();
   }, [iconName, fallbackIcon]);
+
+  if (svgSrc) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element -- static public SVG assets
+      <img
+        src={svgSrc}
+        alt=""
+        className={cn("object-contain shrink-0", className)}
+        width={size}
+        height={size}
+        style={style}
+      />
+    );
+  }
 
   // Get the icon component to render
   const IconComponent = DynamicIcon || staticLucideIconMap[fallbackIcon] || Zap;

@@ -3,11 +3,12 @@ import { useDomCapturePrint } from "@/features/chat/hooks/useDomCapturePrint";
 import MarkdownStream from "@/components/MarkdownStream";
 import { ClassifiedMetadata } from "@/components/mardown-display/chat-markdown/analyzer/types";
 import { localMessage } from "@/features/chat/components/response/MessageItem";
-import { AssistantActionBar } from "@/features/cx-conversation/AssistantActionBar";
+import { AssistantActionBar } from "@/features/agents/components/run/message-actions/AssistantActionBar";
 
 interface AssistantMessageProps {
   message: localMessage;
   taskId: string;
+  conversationId?: string;
   isStreamActive?: boolean;
   onScrollToBottom?: () => void;
   onContentUpdate?: (newContent: string) => void;
@@ -18,6 +19,7 @@ interface AssistantMessageProps {
 const AssistantMessage: React.FC<AssistantMessageProps> = ({
   message,
   taskId,
+  conversationId,
   isStreamActive = false,
   onScrollToBottom,
   onContentUpdate,
@@ -65,6 +67,7 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({
           <AssistantActionBar
             content={content}
             messageId={message.id}
+            conversationId={conversationId ?? ""}
             onFullPrint={handleFullPrint}
             isCapturing={isCapturing}
           />

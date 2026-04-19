@@ -160,15 +160,25 @@ export const fetchPromptFromTable = createAsyncThunk<
         throw new Error(`Failed to fetch prompt ${promptId} from ${source}: ${error?.message || 'Not found'}`);
       }
 
+      // Owner column differs per table: `prompts` uses `user_id`, while
+      // `prompt_builtins` uses `created_by_user_id`. Read the right one by
+      // source so the cache always holds the actual owner.
+      const userId =
+        source === 'prompts'
+          ? (prompt as { user_id: string | null }).user_id
+          : (prompt as { created_by_user_id: string | null }).created_by_user_id;
+
       // Build cached prompt object
       const cachedPromptData: CachedPrompt = {
         id: prompt.id,
         name: prompt.name,
         description: prompt.description,
-        messages: prompt.messages || [],
-        variableDefaults: prompt.variable_defaults || [],
-        settings: prompt.settings || {},
-        userId: prompt.user_id,
+        messages: (Array.isArray(prompt.messages) ? prompt.messages : []) as CachedPrompt['messages'],
+        variableDefaults: (Array.isArray(prompt.variable_defaults) ? prompt.variable_defaults : []) as CachedPrompt['variableDefaults'],
+        settings: (prompt.settings && typeof prompt.settings === 'object' && !Array.isArray(prompt.settings)
+          ? prompt.settings
+          : {}) as CachedPrompt['settings'],
+        userId: userId ?? '',
         source,
         fetchedAt: Date.now(),
         status: 'cached',

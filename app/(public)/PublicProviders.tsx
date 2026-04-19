@@ -4,7 +4,7 @@ import React from "react";
 import { ReactQueryProvider } from "@/providers/ReactQueryProvider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import StoreProvider from "@/providers/StoreProvider";
-import { LiteInitialReduxState } from "@/types/reduxTypes";
+import { InitialReduxState, LiteInitialReduxState } from "@/types/reduxTypes";
 import { PublicAuthSync } from "./PublicAuthSync";
 import OverlayController from "@/components/overlays/OverlayController";
 import { ThemeProvider } from "@/styles/themes/ThemeProvider";
@@ -30,7 +30,7 @@ export function PublicProviders({
 }: PublicProvidersProps) {
   return (
     <ReactQueryProvider>
-      <StoreProvider initialState={initialState}>
+      <StoreProvider initialState={initialState as Partial<InitialReduxState> & LiteInitialReduxState}>
         <ThemeProvider>
           <TooltipProvider delayDuration={200}>
             <PublicAuthSync />

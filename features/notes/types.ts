@@ -11,59 +11,44 @@ export type NoteFolderRow = Database["public"]["Tables"]["note_folders"]["Row"];
 export type NoteVersionRow = Database["public"]["Tables"]["note_versions"]["Row"];
 export type NoteShareRow = Database["public"]["Tables"]["note_shares"]["Row"];
 
-// ── Note type — derived from DB Row, with non-nullable normalizations ───────
-// Null fields are retained as `null` (not coerced to empty strings) so callers
-// can distinguish "not set" from "empty string". The one exception is `id` and
-// `user_id` which are always present per the schema.
-//
-// IMPORTANT: This interface must stay structurally compatible with NoteRow.
-// The compile-time check below enforces this — add fields here AND in NoteRow.
-export interface Note {
-    // ── Always-present identifiers ──────────────────────────────────────
-    id: string;
-    user_id: string;
+// ── Note type — direct alias of the DB Row ─────────────────────────────────
+// The DB schema is the single source of truth. If the schema changes and we
+// regenerate types via `pnpm types`, every consumer of `Note` updates
+// automatically and any shape drift surfaces as a compile error.
+export type Note = NoteRow;
 
-    // ── Core content ────────────────────────────────────────────────────
-    label: string;
-    content: string | null;
-    folder_name: string | null;
-    tags: string[] | null;
-    metadata: Record<string, unknown> | null;
-    shared_with: Record<string, unknown> | null;
-
-    // ── Context relationships (FK columns) ──────────────────────────────
-    folder_id: string | null;         // FK → note_folders.id
-    organization_id: string | null;   // FK → organizations.id
-    project_id: string | null;        // FK → ctx_projects.id
-    task_id: string | null;           // FK → ctx_tasks.id
-
-    // ── State flags ─────────────────────────────────────────────────────
-    is_deleted: boolean | null;
-    is_public: boolean;
-
-    // ── Sync / versioning ───────────────────────────────────────────────
-    version: number;
-    sync_version: number;
-    content_hash: string | null;
-    file_path: string | null;
-    last_device_id: string | null;
-    position: number | null;
-
-    // ── Timestamps ──────────────────────────────────────────────────────
-    created_at: string | null;
-    updated_at: string | null;
+// ── Narrowed shapes for JSON columns ────────────────────────────────────────
+// `metadata` and `shared_with` are Json columns — the generated type is
+// `unknown`. Consumers use these helpers to read them as a structured object.
+export interface NoteMetadata {
+    lastEditorMode?: string;
+    [key: string]: unknown;
 }
 
-// ── Compile-time structural compatibility check ─────────────────────────────
-// If NoteRow gains or loses fields this will produce a TypeScript error,
-// forcing an update to the Note interface above. No runtime cost.
-type _NoteCompatCheck = {
-    [K in keyof NoteRow]: NoteRow[K] extends Note[K]
-        ? Note[K] extends NoteRow[K]
-            ? true
-            : false
-        : false;
-};
+export interface NoteSharedWith {
+    userIds?: string[];
+    [key: string]: unknown;
+}
+
+export function getNoteMetadata(
+    note: Pick<Note, "metadata"> | null | undefined,
+): NoteMetadata {
+    const raw = note?.metadata;
+    if (raw && typeof raw === "object" && !Array.isArray(raw)) {
+        return raw as NoteMetadata;
+    }
+    return {};
+}
+
+export function getNoteSharedWith(
+    note: Pick<Note, "shared_with"> | null | undefined,
+): NoteSharedWith {
+    const raw = note?.shared_with;
+    if (raw && typeof raw === "object" && !Array.isArray(raw)) {
+        return raw as NoteSharedWith;
+    }
+    return {};
+}
 
 // ── Sidebar list projection (subset returned by fetchNotesList) ─────────────
 // Only fields selected in the list query — keep in sync with thunks.ts.
@@ -100,33 +85,37 @@ export const NOTE_VIEW_MODES: readonly NoteViewMode[] = [
 ];
 
 // ── Input types ─────────────────────────────────────────────────────────────
-export interface CreateNoteInput {
-    label?: string;
-    content?: string;
-    folder_name?: string;
-    folder_id?: string;
-    organization_id?: string;
-    project_id?: string;
-    task_id?: string;
-    tags?: string[];
-    metadata?: Record<string, unknown>;
-    position?: number;
-    is_public?: boolean;
-}
+// Derived from the DB Insert/Update shapes so new columns flow automatically
+// and removed columns break callers.
+export type CreateNoteInput = Pick<
+    NoteInsert,
+    | "label"
+    | "content"
+    | "folder_name"
+    | "folder_id"
+    | "organization_id"
+    | "project_id"
+    | "task_id"
+    | "tags"
+    | "metadata"
+    | "position"
+    | "is_public"
+>;
 
-export interface UpdateNoteInput {
-    label?: string;
-    content?: string;
-    folder_name?: string;
-    folder_id?: string;
-    organization_id?: string;
-    project_id?: string;
-    task_id?: string;
-    tags?: string[];
-    metadata?: Record<string, unknown>;
-    position?: number;
-    is_public?: boolean;
-}
+export type UpdateNoteInput = Pick<
+    NoteUpdate,
+    | "label"
+    | "content"
+    | "folder_name"
+    | "folder_id"
+    | "organization_id"
+    | "project_id"
+    | "task_id"
+    | "tags"
+    | "metadata"
+    | "position"
+    | "is_public"
+>;
 
 export interface FolderGroup {
     folder_name: string;

@@ -4,6 +4,7 @@ import { useAgentLauncher } from "@/features/agents/hooks/useAgentLauncher";
 import { selectInstance } from "@/features/agents/redux/execution-system/conversations/conversations.selectors";
 import { selectResolvedVariables } from "@/features/agents/redux/execution-system/instance-variable-values/instance-variable-values.selectors";
 import { selectUserInputText } from "@/features/agents/redux/execution-system/instance-user-input/instance-user-input.selectors";
+import { selectAppContext } from "@/features/agent-context/redux/appContextSlice";
 import type {
   ResultDisplayMode,
   SourceFeature,
@@ -17,14 +18,22 @@ import type { ManagedAgentOptions } from "@/features/agents/types/instance.types
 import type { ApplicationScope } from "@/features/agents/utils/scope-mapping";
 import { ApiEndpointMode } from "@/features/agents/types/instance.types";
 
+// Defaults for the simulated editor context (matches the user-supplied sample).
+const DEFAULT_EDITOR_SELECTION = "The capital of France is Paris.";
+const DEFAULT_EDITOR_BEFORE = "Many people confuse capital cities.";
+const DEFAULT_EDITOR_AFTER = "It is known for the Eiffel Tower.";
+const DEFAULT_EDITOR_CONTENT =
+  "Many people confuse capital cities. The capital of France is Paris. It is known for the Eiffel Tower. Some also mix it up with other European landmarks.";
+const DEFAULT_EDITOR_CONTEXT =
+  "This is part of a geography quiz about European capitals and common misconceptions.";
+
 /**
  * Test harness state + launcher.
  *
- * The `sourceFeature` is identified by the host UI (passed in as an arg),
- * not configurable from inside the tester.
- *
- * Every launch gets a unique surfaceKey derived from `surfaceKeyPrefix`
- * so parallel widgets never collide in the focus registry.
+ * `sourceFeature` is identified by the host UI (passed in as an arg), not
+ * configurable from inside the tester. Every launch gets a unique surfaceKey
+ * derived from `surfaceKeyPrefix` so parallel widgets never collide in the
+ * focus registry.
  */
 export function useAgentLauncherTester(
   conversationId: string,
@@ -53,7 +62,23 @@ export function useAgentLauncherTester(
   const [allowChat, setAllowChat] = useState(true);
   const [hideReasoning, setHideReasoning] = useState(false);
   const [hideToolResults, setHideToolResults] = useState(false);
-  const [originalText, setOriginalText] = useState("");
+
+  // ── Simulated editor context (mimics UnifiedContextMenu scope) ───────────
+  const [editorSelection, setEditorSelection] = useState<string>(
+    DEFAULT_EDITOR_SELECTION,
+  );
+  const [editorTextBefore, setEditorTextBefore] = useState<string>(
+    DEFAULT_EDITOR_BEFORE,
+  );
+  const [editorTextAfter, setEditorTextAfter] = useState<string>(
+    DEFAULT_EDITOR_AFTER,
+  );
+  const [editorContent, setEditorContent] = useState<string>(
+    DEFAULT_EDITOR_CONTENT,
+  );
+  const [editorContext, setEditorContext] = useState<string>(
+    DEFAULT_EDITOR_CONTEXT,
+  );
 
   // ── Quick test features (local borrow toggles) ───────────────────────────
   const [applyVariables, setApplyVariables] = useState(true);
@@ -73,12 +98,13 @@ export function useAgentLauncherTester(
   const [applicationScopeJson, setApplicationScopeJson] = useState("");
   const [jsonError, setJsonError] = useState<string | null>(null);
 
-  // ── Sourced from the active conversation ──────────────────────────────────
+  // ── Sourced from Redux ────────────────────────────────────────────────────
   const instance = useAppSelector(selectInstance(conversationId));
   const currentVariables = useAppSelector(
     selectResolvedVariables(conversationId),
   );
   const currentInput = useAppSelector(selectUserInputText(conversationId));
+  const appContext = useAppSelector(selectAppContext);
 
   const openWithDisplayType = async (displayMode: ResultDisplayMode) => {
     if (!instance) {
@@ -115,9 +141,28 @@ export function useAgentLauncherTester(
       }
     }
 
-    // Manual Advanced > Application Scope JSON wins if present. Otherwise
-    // the "Apply Local App Context" toggle constructs one from local state.
-    let applicationScope: ApplicationScope | undefined;
+    // Compose the application scope from editor context + optional app
+    // context + manual JSON override (last wins, field-by-field).
+    const scope: Record<string, unknown> = {};
+    if (editorSelection) scope.selection = editorSelection;
+    if (editorTextBefore) scope.text_before = editorTextBefore;
+    if (editorTextAfter) scope.text_after = editorTextAfter;
+    if (editorContent) scope.content = editorContent;
+    if (editorContext) scope.context = editorContext;
+
+    if (applyAppContext) {
+      scope.app_context = {
+        organization_id: appContext.organization_id,
+        organization_name: appContext.organization_name,
+        scope_selections: appContext.scope_selections,
+        project_id: appContext.project_id,
+        project_name: appContext.project_name,
+        task_id: appContext.task_id,
+        task_name: appContext.task_name,
+        conversation_id: appContext.conversation_id,
+      };
+    }
+
     if (applicationScopeJson.trim()) {
       try {
         const parsed = JSON.parse(applicationScopeJson);
@@ -125,22 +170,17 @@ export function useAgentLauncherTester(
           setJsonError("Application scope must be a JSON object");
           return;
         }
-        applicationScope = parsed;
+        Object.assign(scope, parsed);
       } catch (e) {
         setJsonError(
           `Scope JSON: ${e instanceof Error ? e.message : "invalid"}`,
         );
         return;
       }
-    } else if (applyAppContext) {
-      const scope: ApplicationScope = {};
-      if (originalText) scope.selection = originalText;
-      if (currentInput) scope.content = currentInput;
-      if (currentVariables && Object.keys(currentVariables).length > 0) {
-        scope.context = currentVariables;
-      }
-      if (Object.keys(scope).length > 0) applicationScope = scope;
     }
+
+    const applicationScope: ApplicationScope | undefined =
+      Object.keys(scope).length > 0 ? (scope as ApplicationScope) : undefined;
 
     const maxResults = jsonExtractionMaxResults.trim()
       ? Number(jsonExtractionMaxResults)
@@ -174,7 +214,7 @@ export function useAgentLauncherTester(
     };
 
     if (preExecutionMessage) options.preExecutionMessage = preExecutionMessage;
-    if (originalText) options.originalText = originalText;
+    if (editorSelection) options.originalText = editorSelection;
     if (overrides) options.overrides = overrides;
     if (applicationScope) options.applicationScope = applicationScope;
     if (jsonExtraction) options.jsonExtraction = jsonExtraction;
@@ -219,8 +259,17 @@ export function useAgentLauncherTester(
     setHideReasoning,
     hideToolResults,
     setHideToolResults,
-    originalText,
-    setOriginalText,
+    // Editor context
+    editorSelection,
+    setEditorSelection,
+    editorTextBefore,
+    setEditorTextBefore,
+    editorTextAfter,
+    setEditorTextAfter,
+    editorContent,
+    setEditorContent,
+    editorContext,
+    setEditorContext,
     // Quick test features
     applyVariables,
     setApplyVariables,
@@ -250,6 +299,7 @@ export function useAgentLauncherTester(
     instance,
     currentVariables,
     currentInput,
+    appContext,
     // Action
     openWithDisplayType,
   };

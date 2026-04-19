@@ -46,7 +46,7 @@ export default function TaskListPane() {
   const loading = useAppSelector(selectTasksLoading);
   const orgId = useAppSelector(selectOrganizationId);
   const scopeSelections = useAppSelector(selectScopeSelectionsContext);
-  const scopeNameMap = useAppSelector(selectScopeNameMap);
+  const scopeNameMap = useAppSelector((state) => selectScopeNameMap(state, orgId ?? ""));
 
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
 

@@ -46,11 +46,12 @@ export type {
   ResourceBlockType,
   ResourceOptions,
   InstanceContextEntry,
-  ContextObjectType,
   InstanceUserInputState,
-  InstanceVariableValuesEntry,
   ManagedAgentOptions,
 } from "@/features/agents/types/instance.types";
+
+export type { ContextObjectType } from "@/features/agents/types/agent-api-types";
+export type { InstanceVariableValuesEntry } from "@/features/agents/redux/execution-system/instance-variable-values/instance-variable-values.slice";
 
 // ── Agent definition types ──────────────────────────────────────────────────
 export type {
@@ -73,11 +74,8 @@ export type {
 
 export type {
   MessageRecord,
-  ConversationTurn,
-  ConversationMode,
-  TokenUsage,
-  InstanceConversationHistoryEntry,
-  InstanceConversationHistoryState,
+  MessagesEntry,
+  MessagesState,
 } from "@/features/agents/redux/execution-system/messages/messages.slice";
 
 export type {

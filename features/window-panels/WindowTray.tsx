@@ -179,8 +179,7 @@ function TrayChip({ id, title, chipWidth }: TrayChipProps) {
         "hover:bg-accent/60 transition-colors duration-150",
         "overflow-hidden",
       )}
-      style={{ width: chipWidth, minWidth: chipWidth }}
-      style={{ touchAction: "none" }}
+      style={{ width: chipWidth, minWidth: chipWidth, touchAction: "none" }}
       onPointerDown={handlePointerDown}
       onClick={handleClick}
       title="Click to restore"

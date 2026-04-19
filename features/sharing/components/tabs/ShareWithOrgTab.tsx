@@ -158,10 +158,6 @@ export function ShareWithOrgTab({
                           <Check className="w-3 h-3" />
                           Shared
                         </span>
-                      ) : org.memberCount ? (
-                        <span className="text-xs text-muted-foreground">
-                          ({org.memberCount} members)
-                        </span>
                       ) : null}
                     </div>
                   </SelectItem>

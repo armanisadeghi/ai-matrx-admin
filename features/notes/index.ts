@@ -15,8 +15,23 @@ export { useAutoSave } from "./hooks/useAutoSave";
 export { useActiveNote } from "./hooks/useActiveNote";
 export { useAutoLabel } from "./hooks/useAutoLabel";
 
-// Service
-export * from "./service/notesService";
+// Service (exclude copyNote/deleteNote which are already re-exported from redux thunks)
+export {
+  fetchNotes,
+  fetchNoteById,
+  createNote,
+  updateNote,
+  permanentlyDeleteNote,
+  generateShareLink,
+  acceptSharedNote,
+  fetchSharedNotes,
+  fetchFolderNames,
+  fetchTags,
+  createFolder,
+  renameFolder,
+  deleteFolderNotes,
+  ensureFolderMaterialized,
+} from "./service/notesService";
 
 // Public API (for external use)
 export { NotesAPI } from "./service/notesApi";

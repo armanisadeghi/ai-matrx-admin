@@ -25,11 +25,44 @@ export interface ArgumentMapping {
   target_arg_name: string; // Official argument name for this specific Registered Function.
 }
 
-export type DbFunctionNode =
+// Raw DB shapes — change automatically on `pnpm types` regeneration.
+export type DbFunctionNodeRow =
   Database["public"]["Tables"]["workflow_node"]["Row"];
-
-export type WorkflowNodeInsert =
+export type DbFunctionNodeInsert =
   Database["public"]["Tables"]["workflow_node"]["Insert"];
+
+// JSON column names asserted against the live schema — a rename or removal
+// upstream collapses `_AssertJsonCols` to `never`.
+type DbFunctionNodeJsonCols =
+  | "additional_dependencies"
+  | "arg_mapping"
+  | "arg_overrides"
+  | "return_broker_overrides"
+  | "metadata"
+  | "ui_node_data";
+type _AssertDbFunctionNodeJsonCols = DbFunctionNodeJsonCols extends keyof DbFunctionNodeRow
+  ? DbFunctionNodeJsonCols
+  : never;
+
+// App-level function-node shape — DB row with JSON columns narrowed to the
+// structures editors and validators read. Non-JSON columns flow through.
+export type DbFunctionNode = Omit<DbFunctionNodeRow, _AssertDbFunctionNodeJsonCols> & {
+  additional_dependencies: WorkflowDependency[] | null;
+  arg_mapping: ArgumentMapping[] | null;
+  arg_overrides: ArgumentOverride[] | null;
+  return_broker_overrides: string[] | null;
+  metadata: Record<string, unknown> | null;
+  ui_node_data: ReactFlowUIMetadata | null;
+};
+
+export type WorkflowNodeInsert = Omit<DbFunctionNodeInsert, _AssertDbFunctionNodeJsonCols> & {
+  additional_dependencies?: WorkflowDependency[] | null;
+  arg_mapping?: ArgumentMapping[] | null;
+  arg_overrides?: ArgumentOverride[] | null;
+  return_broker_overrides?: string[] | null;
+  metadata?: Record<string, unknown> | null;
+  ui_node_data?: ReactFlowUIMetadata | null;
+};
 
 /** Saved row or insert payload — both carry the fields validators and editors read */
 export type WorkflowNodePersistShape = DbFunctionNode | WorkflowNodeInsert;

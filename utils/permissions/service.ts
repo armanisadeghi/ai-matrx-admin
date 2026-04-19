@@ -94,7 +94,17 @@ export async function getResourceVisibility(
 ): Promise<ResourceVisibility> {
   try {
     const tableName = getTableName(resourceType);
-    const { data, error } = await supabase
+    // Cast supabase client to loosen dynamic table type inference (huge union causes TS2589).
+    const client = supabase as unknown as {
+      from: (t: string) => {
+        select: (col: string) => {
+          eq: (k: string, v: string) => {
+            maybeSingle: <T>() => Promise<{ data: T | null; error: unknown }>;
+          };
+        };
+      };
+    };
+    const { data, error } = await client
       .from(tableName)
       .select('is_public')
       .eq('id', resourceId)
@@ -389,8 +399,17 @@ export async function isResourceOwner(
 ): Promise<boolean> {
   try {
     const tableName = getTableName(resourceType);
+    const client = supabase as unknown as {
+      from: (t: string) => {
+        select: (col: string) => {
+          eq: (k: string, v: string) => {
+            maybeSingle: <T>() => Promise<{ data: T | null; error: unknown }>;
+          };
+        };
+      };
+    };
     const [{ data: row }, { data: { user } }] = await Promise.all([
-      supabase
+      client
         .from(tableName)
         .select('user_id')
         .eq('id', resourceId)
@@ -535,23 +554,24 @@ function transformPermissionFromTableRow(row: PermissionsTableRow): Permission {
 }
 
 /**
- * Maps legacy singular resource type names to their actual Postgres table names.
- * New resource types should use the table name directly (e.g. 'cx_conversations').
+ * Maps resource-type aliases to their actual Postgres table names. Each
+ * target must be a live table in the DB schema — if a table is renamed or
+ * removed the mapping breaks at compile time rather than at runtime.
+ * New resource types should use the table name directly.
  */
 function getTableName(resourceType: ResourceType): TableName {
   const legacyMap: Partial<Record<ResourceType, TableName>> = {
     prompt: 'prompts',
-    workflow: 'workflows',
+    workflow: 'workflow',
     note: 'notes',
-    recipe: 'recipes',
-    document: 'documents',
+    recipe: 'recipe',
     conversation: 'conversations',
-    applet: 'applets',
+    applet: 'applet',
     broker_value: 'broker_values',
     message: 'messages',
     organization: 'organizations',
-    scrape_domain: 'scrape_domains',
-    agent: "agx_agent",
+    scrape_domain: 'scrape_domain',
+    agent: 'agx_agent',
   };
   return (legacyMap[resourceType] ?? (resourceType as TableName)) as TableName;
 }

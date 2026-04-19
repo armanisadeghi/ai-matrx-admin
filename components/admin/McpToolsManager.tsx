@@ -39,22 +39,15 @@ import { mapIcon } from "@/utils/icons/icon-mapper";
 import { formatText } from "@/utils/text/text-case-converter";
 import { filterAndSortBySearch } from "@/utils/search-scoring";
 
-interface Tool {
-    id: string;
-    name: string;
-    description: string;
+import type { DatabaseTool } from "@/utils/supabase/tools-service";
+
+// Local view type — derived from the DB row, with narrow runtime shapes for
+// the JSON columns. If the DB row changes, the derivation surfaces the drift.
+type Tool = Omit<DatabaseTool, "parameters" | "output_schema" | "annotations"> & {
     parameters: Record<string, unknown>;
-    output_schema?: Record<string, unknown>;
-    annotations?: unknown[];
-    function_path: string;
-    category?: string;
-    tags?: string[];
-    icon?: string;
-    is_active?: boolean;
-    version?: string;
-    created_at?: string;
-    updated_at?: string;
-}
+    output_schema?: Record<string, unknown> | null;
+    annotations?: unknown[] | null;
+};
 
 /** tool_name → sample count, ui component count */
 interface ToolCounts {
@@ -110,7 +103,18 @@ export function McpToolsManager() {
     }>({ isOpen: false, toolId: null, toolName: null });
 
     useEffect(() => {
-        setTools(databaseTools.map(tool => ({ ...tool })));
+        // DB returns JSON columns as `unknown`. Narrow at the boundary — the
+        // runtime shape is an object/array per column by construction.
+        setTools(
+            databaseTools.map<Tool>(tool => ({
+                ...tool,
+                parameters: (tool.parameters ?? {}) as Record<string, unknown>,
+                output_schema: (tool.output_schema ?? null) as
+                    | Record<string, unknown>
+                    | null,
+                annotations: (tool.annotations ?? null) as unknown[] | null,
+            })),
+        );
     }, [databaseTools]);
 
     // Fetch sample + UI component counts for all tools in one go

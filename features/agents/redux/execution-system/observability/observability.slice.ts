@@ -295,7 +295,7 @@ const observabilitySlice = createSlice({
     // ── Reservations ──────────────────────────────────────────────────────────
 
     upsertReservation(state, action: PayloadAction<ReservationRecord>) {
-      state.reservations[action.payload.id] = action.payload;
+      state.reservations[action.payload.recordId] = action.payload;
     },
 
     // ── Bulk hydration ────────────────────────────────────────────────────────

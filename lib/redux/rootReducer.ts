@@ -100,7 +100,11 @@ import {
   scopeAssignmentsReducer,
   scopeContextReducer,
 } from "@/features/agent-context/redux/scope";
-import { taskUiReducer, quickTasksWindowReducer } from "@/features/tasks/redux";
+import {
+  taskUiReducer,
+  quickTasksWindowReducer,
+  taskAssociationsReducer,
+} from "@/features/tasks/redux";
 
 import { instanceUIStateReducer } from "@/features/agents/redux/execution-system/instance-ui-state";
 import { instanceClientToolsReducer } from "@/features/agents/redux/execution-system/instance-client-tools";
@@ -343,6 +347,7 @@ export const createRootReducer = (initialState: InitialReduxState) => {
     // Tasks route — UI state, hierarchical projectsWithTasks, scope filter
     tasksUi: taskUiReducer,
     quickTasksWindow: quickTasksWindowReducer,
+    taskAssociations: taskAssociationsReducer,
 
     // Layer 3 — Conversations (entity) + per-conversation content slices
     conversations: conversationsReducer,

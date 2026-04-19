@@ -46,9 +46,12 @@ export async function fetchWorkflowById(workflowId: string): Promise<DbCompleteW
     if (relaysResult.error) throw new Error(`Failed to fetch relays: ${relaysResult.error.message}`);
     if (edgesResult.error) throw new Error(`Failed to fetch edges: ${edgesResult.error.message}`);
 
+    // DB rows carry `unknown` for JSON columns; the app-level types narrow
+    // them. Cast at this boundary rather than per-call; if a JSON column is
+    // renamed/removed in the DB, the type definition will catch it upstream.
     return {
         workflow: workflowResult.data,
-        functionNodes: nodesResult.data || [],
+        functionNodes: (nodesResult.data || []) as unknown as DbFunctionNode[],
         userInputs: userInputsResult.data || [],
         relays: relaysResult.data || [],
         edges: edgesResult.data || [],

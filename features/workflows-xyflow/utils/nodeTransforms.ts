@@ -172,7 +172,6 @@ export const createNewNode = (
             height: 150,
         } as any, // The ui_data type is complex, cast for now
         is_public: false,
-        authenticated_read: true,
         public_read: false,
     };
 };

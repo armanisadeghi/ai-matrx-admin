@@ -35,7 +35,7 @@ import type {
   CompletionPayload,
 } from "@/types/python-generated/stream-events";
 import type { ShortcutContext } from "@/features/agents/redux/agent-shortcuts/types";
-import { selectHasConversationHistory } from "../messages/messages.selectors";
+import { selectHasMessages } from "../messages/messages.selectors";
 import {
   selectAutoClearConversation,
   selectShowAutoClearToggle,
@@ -96,14 +96,14 @@ export const selectAutoClearWithConversationHistory =
   (conversationId: string) =>
   (state: RootState): boolean => {
     if (!selectAutoClearConversation(conversationId)(state)) return false;
-    return selectHasConversationHistory(conversationId)(state);
+    return selectHasMessages(conversationId)(state);
   };
 
 export const selectShouldShowAutoClearToggle =
   (conversationId: string) =>
   (state: RootState): boolean => {
     if (!selectShowAutoClearToggle(conversationId)(state)) return false;
-    return selectHasConversationHistory(conversationId)(state);
+    return selectHasMessages(conversationId)(state);
   };
 
 // =============================================================================
@@ -144,7 +144,7 @@ export const selectLatestAccumulatedText = (conversationId: string) =>
  * fetches don't race the first write.
  *
  * For routing decisions inside execution thunks, use
- * `selectHasConversationHistory` instead — the agents/{id} vs conversations/{id}
+ * `selectHasMessages` instead — the agents/{id} vs conversations/{id}
  * choice depends on whether prior turns exist, not on server confirmation.
  */
 export const selectLatestConversationId =
@@ -436,8 +436,9 @@ export const selectShouldShowVariables =
         ?.definitions;
     if (!definitions || definitions.length === 0) return false;
 
-    const turns = state.messages?.byConversationId[conversationId]?.turns;
-    if (turns && turns.length > 0) return false;
+    const orderedIds =
+      state.messages?.byConversationId[conversationId]?.orderedIds;
+    if (orderedIds && orderedIds.length > 0) return false;
 
     const status =
       state.conversations?.byConversationId[conversationId]?.status;

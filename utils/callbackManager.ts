@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
+import type { WidgetHandle } from "@/features/agents/types/widget-handle.types";
 export type CallbackContext = Record<string, any>;
 export interface ProgressInfo {
   progress?: number;
@@ -203,6 +204,42 @@ class CallbackManager {
   remove(callbackId: string): void {
     this.callbacks.delete(callbackId);
     this.removeFromGroups(callbackId);
+  }
+
+  /**
+   * Alias of `remove`. Preferred call-site name when unregistering a single
+   * entry (e.g. on widget unmount) — reads more clearly than `remove` and
+   * grep-separates widget-handle unregistrations from callback lifecycle.
+   */
+  unregister(callbackId: string): void {
+    this.remove(callbackId);
+  }
+
+  /**
+   * Look up a stored callback or object by id without invoking it.
+   * Used by the widget dispatcher to resolve the WidgetHandle on demand,
+   * and by the submit-body assembler to derive `client_tools` per turn.
+   * Returns undefined if the id is unknown or already unregistered.
+   */
+  get<T = unknown>(callbackId: string): T | undefined {
+    const entry = this.callbacks.get(callbackId);
+    return entry?.callback as T | undefined;
+  }
+
+  /**
+   * Register a WidgetHandle. Typed wrapper around `register` so call sites
+   * stay declarative, `grep registerWidgetHandle` finds all widget handles,
+   * and the handle is stored directly in the `callback` slot (never
+   * invoked via `trigger` — always retrieved via `get`).
+   */
+  registerWidgetHandle(handle: WidgetHandle): string {
+    const callbackId = uuidv4();
+    // The handle object itself occupies the `callback` slot. `trigger` is
+    // never called on it; only `get` retrieves it.
+    this.callbacks.set(callbackId, {
+      callback: handle as unknown as Callback,
+    });
+    return callbackId;
   }
   /**
    * Remove a group and all its callbacks

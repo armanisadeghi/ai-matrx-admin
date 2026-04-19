@@ -22,7 +22,8 @@ import type {
   SystemInstruction,
 } from "@/features/agents/types/agent-api-types";
 import type { MessagePart } from "@/types/python-generated/stream-events";
-import type { ConversationTurn } from "../messages/messages.slice";
+import type { MessageRecord } from "../messages/messages.slice";
+import { extractContentBlocks, extractFlatText } from "../messages/messages.selectors";
 import { generateRequestId } from "../utils";
 import { setInstanceStatus } from "../conversations";
 import { selectSettingsForChatApi } from "../instance-model-overrides";
@@ -38,46 +39,54 @@ import {
   createRequest,
   setRequestStatus,
 } from "../active-requests/active-requests.slice";
-import { addUserTurn } from "../messages/messages.slice";
+import { addOptimisticUserMessage } from "../messages/messages.slice";
 import { processStream } from "./process-stream";
 import { ENDPOINTS } from "@/lib/api/endpoints";
-import { selectHasConversationHistory } from "../messages/messages.selectors";
+import {
+  selectHasMessages,
+  selectMessageCount,
+} from "../messages/messages.selectors";
+import { v4 as uuidv4 } from "uuid";
+import type { CxContentBlock } from "@/features/public-chat/types/cx-tables";
 import {
   registerAbortController,
   unregisterAbortController,
 } from "./abort-registry";
 import { assertConversationIdMatches } from "../utils/assert-conversation-id";
+import { callbackManager } from "@/utils/callbackManager";
+import {
+  deriveClientToolsFromHandle,
+  isWidgetActionName,
+  type WidgetHandle,
+} from "@/features/agents/types/widget-handle.types";
+import { selectWidgetHandleIdFor } from "../instance-ui-state/instance-ui-state.selectors";
 
 // =============================================================================
 // Turn Conversion Utility
 // =============================================================================
 
 /**
- * Converts ConversationTurn[] to the wire format the chat endpoint expects.
- * Each turn becomes { role, content } where content is a CxContentBlock[].
- *
- * Priority:
- *   1. turn.cxContentBlocks — DB-compatible format assembled at commit time
- *      or loaded from the database. Most accurate — preserves tool calls,
- *      thinking blocks, and media exactly as the server stored them.
- *   2. turn.messageParts — from DB-loaded turns (older loading path).
- *   3. Fallback: plain text wrapped in a single text block.
- *
- * renderBlocks are intentionally NOT used here — they are a UI-rendering
- * format, not the wire/DB format.
+ * Converts `MessageRecord[]` to the wire format the chat endpoint expects.
+ * Each record becomes `{ role, content }` where content is a `CxContentBlock[]`
+ * — the same shape `cx_message.content` stores, pulled directly from the
+ * record via `extractContentBlocks`. Falls back to a single text block
+ * synthesised from flat text when a record has no structured blocks yet
+ * (e.g. an optimistic user message pre-reservation).
  */
-function turnsToMessages(
-  turns: ConversationTurn[],
+function recordsToMessages(
+  records: MessageRecord[],
 ): Array<{ role: string; content: unknown }> {
-  return turns.map((turn) => ({
-    role: turn.role,
-    content:
-      turn.cxContentBlocks && turn.cxContentBlocks.length > 0
-        ? turn.cxContentBlocks
-        : turn.messageParts && turn.messageParts.length > 0
-          ? turn.messageParts
-          : [{ type: "text", text: turn.content }],
-  }));
+  return records.map((record) => {
+    const blocks = extractContentBlocks(record);
+    if (blocks.length > 0) {
+      return { role: record.role, content: blocks };
+    }
+    const text = extractFlatText(record);
+    return {
+      role: record.role,
+      content: [{ type: "text", text }],
+    };
+  });
 }
 
 // =============================================================================
@@ -178,11 +187,17 @@ export function assembleChatRequest(
     }
   }
 
-  // 2. Conversation history turns (already committed user + assistant turns)
-  const historyEntry =
-    state.messages.byConversationId[conversationId];
-  if (historyEntry?.turns && historyEntry.turns.length > 0) {
-    messages.push(...turnsToMessages(historyEntry.turns));
+  // 2. Conversation history (already committed user + assistant messages)
+  const messagesEntry = state.messages.byConversationId[conversationId];
+  if (messagesEntry) {
+    const orderedRecords: MessageRecord[] = [];
+    for (const id of messagesEntry.orderedIds) {
+      const record = messagesEntry.byId[id];
+      if (record && record.role !== "system") orderedRecords.push(record);
+    }
+    if (orderedRecords.length > 0) {
+      messages.push(...recordsToMessages(orderedRecords));
+    }
   }
 
   // 3. Current user input (the new message being sent)
@@ -224,18 +239,24 @@ export function assembleChatRequest(
       ? (agent.customTools as unknown as Array<Record<string, unknown>>)
       : undefined;
 
-  // Client tools
-  const clientToolsState =
-    state.instanceClientTools.byConversationId[conversationId];
+  // Client tools — per-turn derivation from widget handle + slice (see
+  // execute-instance.thunk.ts for full rationale).
+  const nonWidgetClientTools = (
+    state.instanceClientTools.byConversationId[conversationId] ?? []
+  ).filter((name) => !isWidgetActionName(name));
+  const widgetHandleId = selectWidgetHandleIdFor(state, conversationId);
+  const widgetHandle = widgetHandleId
+    ? callbackManager.get<WidgetHandle>(widgetHandleId)
+    : null;
+  const widgetClientTools = deriveClientToolsFromHandle(widgetHandle);
+  const mergedClientTools = [...nonWidgetClientTools, ...widgetClientTools];
   const client_tools =
-    clientToolsState && clientToolsState.length > 0
-      ? clientToolsState
-      : undefined;
+    mergedClientTools.length > 0 ? mergedClientTools : undefined;
 
   // Conversation ID (reuse if configured)
   // const reuseConversationId = uiState?.reuseConversationId ?? true;
   const reuseConversationId = true;
-  const hasHistory = selectHasConversationHistory(conversationId)(state);
+  const hasHistory = selectHasMessages(conversationId)(state);
 
   console.log("[assembleChatRequest] hasHistory", hasHistory);
   console.log("[assembleChatRequest] reuseConversationId", reuseConversationId);
@@ -363,18 +384,30 @@ export const executeChatInstance = createAsyncThunk<
         headers["X-Fingerprint-ID"] = fingerprintId;
       }
 
-      // Optimistic user turn — add to history before the API call
+      // Optimistic user message — push to messages.byId before the API
+      // call. When `record_reserved cx_message role=user` lands, the stream
+      // promotes the temp id to the server `cx_message.id`.
       const resourcePayloads = selectResourcePayloads(conversationId)(state);
       const resourceBlocks = resourcePayloads.filter((b) => b.type !== "text");
+      let userMessageClientTempId: string | undefined;
       if (userInputText || userMessageParts || resourceBlocks.length > 0) {
+        const content: CxContentBlock[] = [
+          ...(userInputText
+            ? [{ type: "text", text: userInputText } as unknown as CxContentBlock]
+            : []),
+          ...(userMessageParts as unknown as CxContentBlock[] | undefined ?? []),
+          ...(resourceBlocks as unknown as CxContentBlock[]),
+        ];
+        userMessageClientTempId = uuidv4();
+        const nextPosition = selectMessageCount(conversationId)(
+          getState() as RootState,
+        );
         dispatch(
-          addUserTurn({
+          addOptimisticUserMessage({
             conversationId,
-            content: userInputText,
-            messageParts:
-              [...(userMessageParts ?? []), ...resourceBlocks].length > 0
-                ? [...(userMessageParts ?? []), ...resourceBlocks]
-                : undefined,
+            clientTempId: userMessageClientTempId,
+            content,
+            position: nextPosition,
           }),
         );
       }
@@ -456,6 +489,7 @@ export const executeChatInstance = createAsyncThunk<
         dispatch,
         getState: getState as () => RootState,
         jsonExtraction: currentUiState?.jsonExtraction ?? undefined,
+        userMessageClientTempId,
       });
 
       unregisterAbortController(conversationId);

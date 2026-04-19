@@ -232,3 +232,20 @@ If we want a "set it once, forget it" story for DB tools, the cleanest addition 
 - When the registry loads a row with `execution_side = 'client'`, the executor auto-delegates even if the name isn't in the request's `client_tools`.
 
 **This change has not been made yet — flag it if you want it and we'll add the column + type regeneration in one pass.** For now: just include the tool name in `client_tools` per request.
+
+---
+
+## Widget Actions — the canonical widget_* family
+
+For UI-driven agent actions (replace selected text, insert text, update a record field, attach media, create an artifact), **don't hand-build the `client_tools` array**. Use the **WidgetHandle** system:
+
+1. 10 canonical `widget_*` tools are seeded in `public.tools` (tag: `widget-capable`). See [`WIDGET_TOOLS_SEED.sql`](WIDGET_TOOLS_SEED.sql).
+2. A widget registers a `WidgetHandle` object once via `useWidgetHandle()`. The handle exposes method implementations (`onTextReplace`, `onAttachMedia`, ...) plus lifecycle (`onComplete`, `onError`).
+3. The submit-body assembler in `execute-instance.thunk.ts` reads the handle live per-turn and derives `client_tools = deriveClientToolsFromHandle(handle)`. **You do not manage `client_tools` manually for widget tools.**
+4. When the model invokes a `widget_*` tool, `process-stream.ts` branches to `dispatchWidgetAction`, which calls the matching handle method and POSTs the result through a microtask batcher that coalesces concurrent tool calls into one request.
+
+**Full contract + example:** [`../docs/WIDGET_HANDLE_SYSTEM.md`](../docs/WIDGET_HANDLE_SYSTEM.md).
+
+**Why a per-turn derivation** (instead of dispatching `setClientTools` once at launch): a rehydrated conversation that attaches a widget post-reopen, a widget that adds a method between turns, or a widget that unmounts mid-conversation — all three "just work" because the handle is the source of truth every turn, not a frozen snapshot from launch time.
+
+**Non-widget client tools** (custom inline `custom_tools`, or any DB-registered tool you want delegated per-request) still live in the `instanceClientTools` slice and are merged with the widget-derived list at assembly time. The two are orthogonal.

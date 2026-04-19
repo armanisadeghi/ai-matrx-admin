@@ -179,9 +179,9 @@ export default function AgentDefinitionSliceViewer({
               <KvRow label="parentAgentId">
                 {record.parentAgentId ?? "null"}
               </KvRow>
-              <KvRow label="versionNumber">
-                {record.versionNumber != null
-                  ? String(record.versionNumber)
+              <KvRow label="version">
+                {record.version != null
+                  ? String(record.version)
                   : "null"}
               </KvRow>
               <KvRow label="changedAt">{record.changedAt ?? "null"}</KvRow>

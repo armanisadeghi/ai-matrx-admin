@@ -579,3 +579,53 @@ export function PaperclipTapButton(props: TapButtonProps) {
     </Wrap>
   );
 }
+
+// lucide: thumbs-up v0.577.0
+export function ThumbsUpTapButton(props: TapButtonProps) {
+  return (
+    <Wrap ariaLabel="Like" {...props}>
+      <path d="M7 10v12" />
+      <path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z" />
+    </Wrap>
+  );
+}
+
+// lucide: thumbs-down v0.577.0
+export function ThumbsDownTapButton(props: TapButtonProps) {
+  return (
+    <Wrap ariaLabel="Dislike" {...props}>
+      <path d="M17 14V2" />
+      <path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z" />
+    </Wrap>
+  );
+}
+
+// lucide: check v0.577.0
+export function CheckTapButton(props: TapButtonProps) {
+  return (
+    <Wrap ariaLabel="Done" {...props}>
+      <path d="M20 6 9 17l-5-5" />
+    </Wrap>
+  );
+}
+
+// lucide: pencil v0.577.0
+export function PencilTapButton(props: TapButtonProps) {
+  return (
+    <Wrap ariaLabel="Edit" {...props}>
+      <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" />
+      <path d="m15 5 4 4" />
+    </Wrap>
+  );
+}
+
+// lucide: ellipsis (more-horizontal) v0.577.0
+export function MoreHorizontalTapButton(props: TapButtonProps) {
+  return (
+    <Wrap ariaLabel="More options" {...props}>
+      <circle cx="12" cy="12" r="1" />
+      <circle cx="19" cy="12" r="1" />
+      <circle cx="5" cy="12" r="1" />
+    </Wrap>
+  );
+}

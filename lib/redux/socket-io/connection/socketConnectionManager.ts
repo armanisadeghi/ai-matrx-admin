@@ -116,12 +116,14 @@ export class SocketConnectionManager {
     namespace: string,
   ): Promise<any> {
     // Socket.io disabled — server no longer supports it.
-    console.warn(
-      `[SOCKET] Connection attempt blocked — socket.io is disabled (connectionId: ${connectionId})`,
-    );
-    return null;
+    const SOCKET_IO_ENABLED = false as boolean;
+    if (!SOCKET_IO_ENABLED) {
+      console.warn(
+        `[SOCKET] Connection attempt blocked — socket.io is disabled (connectionId: ${connectionId})`,
+      );
+      return null;
+    }
 
-    // eslint-disable-next-line no-unreachable
     while (!this.isClientSide) {
       await new Promise((resolve) => setTimeout(resolve, 100));
     }

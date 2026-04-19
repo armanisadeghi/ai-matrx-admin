@@ -1,23 +1,10 @@
 // utils/supabase/tools-service.ts
 
+import type { Database } from "@/types/database.types";
 import { createClient } from "./client";
 
-export interface DatabaseTool {
-  id: string;
-  name: string;
-  description: string;
-  parameters: any;
-  output_schema?: any;
-  annotations?: any[];
-  function_path: string;
-  category?: string;
-  tags?: string[];
-  icon?: string;
-  is_active?: boolean;
-  version?: string;
-  created_at?: string;
-  updated_at?: string;
-}
+// Source of truth: the DB row. Any schema change surfaces here automatically.
+export type DatabaseTool = Database["public"]["Tables"]["tools"]["Row"];
 
 export interface Tool {
   id: string;

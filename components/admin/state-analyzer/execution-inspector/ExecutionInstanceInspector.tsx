@@ -50,10 +50,11 @@ import type {
 } from "@/features/agents/types/instance.types";
 import type { ConversationsState } from "@/features/agents/redux/execution-system/conversations/conversations.slice";
 import type {
-  InstanceConversationHistoryState,
-  InstanceConversationHistoryEntry,
-  ConversationTurn,
+  MessagesState,
+  MessagesEntry,
+  MessageRecord,
 } from "@/features/agents/redux/execution-system/messages/messages.slice";
+import { extractFlatText } from "@/features/agents/redux/execution-system/messages/messages.selectors";
 import type { InstanceUIStateSlice } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.slice";
 import type {
   InstanceVariableValuesState,
@@ -452,13 +453,15 @@ function AgentTab({
 // Detail Tab: History
 // ---------------------------------------------------------------------------
 
-function HistoryTab({
-  data,
-}: {
-  data: InstanceConversationHistoryEntry | undefined;
-}) {
-  const [expandedTurn, setExpandedTurn] = useState<string | null>(null);
+function HistoryTab({ data }: { data: MessagesEntry | undefined }) {
+  const [expandedMessage, setExpandedMessage] = useState<string | null>(null);
   if (!data) return <EmptyState text="No conversation history" />;
+
+  const orderedRecords: MessageRecord[] = [];
+  for (const id of data.orderedIds) {
+    const rec = data.byId[id];
+    if (rec) orderedRecords.push(rec);
+  }
 
   return (
     <div className="space-y-3">
@@ -491,133 +494,97 @@ function HistoryTab({
           <KVRow label="Conversation ID" mono>
             <IdWithTooltip id={data.conversationId} />
           </KVRow>
-          <KVRow label="Mode">
-            <StatusBadge className={statusClasses(data.mode)}>
-              {data.mode}
+          <KVRow label="API Endpoint Mode">
+            <StatusBadge className={statusClasses(data.apiEndpointMode)}>
+              {data.apiEndpointMode}
             </StatusBadge>
-          </KVRow>
-          <KVRow label="loadedFromHistory">
-            <BoolIndicator
-              value={data.loadedFromHistory}
-              label={String(data.loadedFromHistory)}
-            />
           </KVRow>
         </div>
       </Section>
 
-      <Section title={`Turns (${data.turns.length})`}>
-        {data.turns.length === 0 && (
-          <p className="text-sm text-muted-foreground py-2">No turns yet</p>
+      <Section title={`Messages (${orderedRecords.length})`}>
+        {orderedRecords.length === 0 && (
+          <p className="text-sm text-muted-foreground py-2">No messages yet</p>
         )}
         <div className="space-y-1.5">
-          {data.turns.map((turn: ConversationTurn) => {
-            const isExpanded = expandedTurn === turn.turnId;
+          {orderedRecords.map((record) => {
+            const isExpanded = expandedMessage === record.id;
+            const preview = extractFlatText(record);
             return (
               <div
-                key={turn.turnId}
+                key={record.id}
                 className="border border-border rounded-md p-2.5 hover:bg-accent/50 transition-colors cursor-pointer"
-                onClick={() => setExpandedTurn(isExpanded ? null : turn.turnId)}
+                onClick={() =>
+                  setExpandedMessage(isExpanded ? null : record.id)
+                }
               >
                 <div className="flex items-center gap-2 flex-wrap">
-                  <StatusBadge className={roleClasses(turn.role)}>
-                    {turn.role}
+                  <StatusBadge className={roleClasses(record.role)}>
+                    {record.role}
+                  </StatusBadge>
+                  <StatusBadge className={statusClasses(record.status)}>
+                    {record.status}
                   </StatusBadge>
                   <span className="text-xs text-muted-foreground">
-                    {relativeTime(turn.timestamp)}
+                    {relativeTime(record.createdAt)}
                   </span>
-                  {turn.tokenUsage && (
-                    <span className="text-xs text-muted-foreground">
-                      {turn.tokenUsage.input}in / {turn.tokenUsage.output}out (
-                      {turn.tokenUsage.total} total)
-                    </span>
-                  )}
-                  {turn.finishReason && (
-                    <StatusBadge className="bg-muted text-muted-foreground border-border">
-                      {turn.finishReason}
-                    </StatusBadge>
-                  )}
-                  {turn.requestId && (
+                  <span className="text-xs text-muted-foreground">
+                    pos {record.position}
+                  </span>
+                  {record._streamRequestId && (
                     <span className="text-xs text-muted-foreground font-mono">
-                      {shortId(turn.requestId)}
+                      req {shortId(record._streamRequestId)}
                     </span>
                   )}
                 </div>
-                {!isExpanded && turn.content && (
+                {!isExpanded && preview && (
                   <p className="text-sm text-foreground mt-1.5 line-clamp-2">
-                    {turn.content.slice(0, 300)}
+                    {preview.slice(0, 300)}
                   </p>
                 )}
                 {isExpanded && (
                   <div className="mt-2 space-y-3">
                     <div className="space-y-1">
-                      <KVRow label="turnId" mono>
-                        <IdWithTooltip id={turn.turnId} />
+                      <KVRow label="id" mono>
+                        <IdWithTooltip id={record.id} />
                       </KVRow>
-                      {turn.requestId && (
-                        <KVRow label="requestId" mono>
-                          <IdWithTooltip id={turn.requestId} />
+                      {record._streamRequestId && (
+                        <KVRow label="_streamRequestId" mono>
+                          <IdWithTooltip id={record._streamRequestId} />
                         </KVRow>
                       )}
-                      <KVRow label="timestamp">
-                        {formatTimestamp(turn.timestamp)}
+                      <KVRow label="createdAt">
+                        {formatTimestamp(record.createdAt)}
                       </KVRow>
-                      {turn.systemGenerated !== undefined && (
-                        <KVRow label="systemGenerated">
-                          <BoolIndicator
-                            value={!!turn.systemGenerated}
-                            label={String(turn.systemGenerated)}
-                          />
-                        </KVRow>
-                      )}
+                      <KVRow label="isVisibleToUser">
+                        <BoolIndicator
+                          value={record.isVisibleToUser}
+                          label={String(record.isVisibleToUser)}
+                        />
+                      </KVRow>
+                      <KVRow label="isVisibleToModel">
+                        <BoolIndicator
+                          value={record.isVisibleToModel}
+                          label={String(record.isVisibleToModel)}
+                        />
+                      </KVRow>
                     </div>
-                    {turn.content && (
-                      <Section title="Content">
+                    {preview && (
+                      <Section title="Flat Text">
                         <pre className="text-sm text-foreground whitespace-pre-wrap break-words font-mono bg-muted/50 rounded-md p-3 max-h-80 overflow-y-auto">
-                          {turn.content}
+                          {preview}
                         </pre>
                       </Section>
                     )}
-                    {turn.tokenUsage && (
-                      <Section title="Token Usage">
-                        <div className="grid grid-cols-3 gap-3">
-                          <div>
-                            <span className="text-xs text-muted-foreground">
-                              Input
-                            </span>
-                            <p className="text-sm font-medium text-foreground">
-                              {turn.tokenUsage.input}
-                            </p>
-                          </div>
-                          <div>
-                            <span className="text-xs text-muted-foreground">
-                              Output
-                            </span>
-                            <p className="text-sm font-medium text-foreground">
-                              {turn.tokenUsage.output}
-                            </p>
-                          </div>
-                          <div>
-                            <span className="text-xs text-muted-foreground">
-                              Total
-                            </span>
-                            <p className="text-sm font-medium text-foreground">
-                              {turn.tokenUsage.total}
-                            </p>
-                          </div>
-                        </div>
-                      </Section>
-                    )}
-                    {turn.completionStats && (
-                      <Section title="Completion Stats" defaultOpen={false}>
+                    <Section title="Content Blocks" defaultOpen={false}>
+                      <div className="text-sm">
+                        <JsonTreeViewer data={record.content} />
+                      </div>
+                    </Section>
+                    {record.metadata && (
+                      <Section title="Metadata" defaultOpen={false}>
                         <div className="text-sm">
-                          <JsonTreeViewer data={turn.completionStats} />
-                        </div>
-                      </Section>
-                    )}
-                    {turn.clientMetrics && (
-                      <Section title="Client Metrics" defaultOpen={false}>
-                        <div className="text-sm">
-                          <JsonTreeViewer data={turn.clientMetrics} />
+                          <JsonTreeViewer data={record.metadata} />
                         </div>
                       </Section>
                     )}
@@ -1092,8 +1059,7 @@ export default function ExecutionInstanceInspector({
   const instances = execSlice.byConversationId;
   const allConvIds = execSlice.allConversationIds;
 
-  const historySlice =
-    state.messages as InstanceConversationHistoryState;
+  const historySlice = state.messages as MessagesState;
   const uiStateSlice = state.instanceUIState as InstanceUIStateSlice;
   const varSlice = state.instanceVariableValues as InstanceVariableValuesState;
   const modelSlice =
@@ -1173,8 +1139,9 @@ export default function ExecutionInstanceInspector({
   const selectedAgentName = selectedAgentData?.name || "Unknown";
 
   // Per-instance slice data
-  const convHistory: InstanceConversationHistoryEntry | undefined =
-    selectedConvId ? historySlice.byConversationId[selectedConvId] : undefined;
+  const convHistory: MessagesEntry | undefined = selectedConvId
+    ? historySlice.byConversationId[selectedConvId]
+    : undefined;
   const uiState: InstanceUIState | undefined = selectedConvId
     ? uiStateSlice.byConversationId[selectedConvId]
     : undefined;

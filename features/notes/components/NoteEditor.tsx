@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/select";
 import { TagInput } from "./TagInput";
 import type { Note } from "../types";
+import { getNoteMetadata } from "../types";
 import { useAutoSave } from "../hooks/useAutoSave";
 import { useAllFolders } from "../utils/folderUtils";
 import { useNotesRedux } from "../hooks/useNotesRedux";
@@ -116,7 +117,7 @@ export function NoteEditor({
             folder_name: localFolder,
             tags: localTags,
             metadata: {
-              ...note.metadata,
+              ...getNoteMetadata(note),
               lastEditorMode: editorMode,
             },
           });
@@ -158,13 +159,14 @@ export function NoteEditor({
   const availableFolders = useAllFolders(allNotes);
 
   // Load editor mode from note metadata - update when metadata changes
+  const noteMetadata = getNoteMetadata(note);
   useEffect(() => {
-    if (note?.metadata?.lastEditorMode) {
-      setEditorMode(note.metadata.lastEditorMode as EditorMode);
+    if (noteMetadata.lastEditorMode) {
+      setEditorMode(noteMetadata.lastEditorMode as EditorMode);
     } else {
       setEditorMode("plain");
     }
-  }, [note?.id, note?.metadata?.lastEditorMode]); // Update when note ID or mode changes
+  }, [note?.id, noteMetadata.lastEditorMode]); // Update when note ID or mode changes
 
   // Save current content before switching notes
   useEffect(() => {
@@ -186,7 +188,7 @@ export function NoteEditor({
             content: markdown,
             folder_name: localFolderRef.current,
             tags: localTagsRef.current,
-            metadata: { ...currentNote.metadata, lastEditorMode: currentMode },
+            metadata: { ...getNoteMetadata(currentNote), lastEditorMode: currentMode },
           });
         }
       }
@@ -243,7 +245,7 @@ export function NoteEditor({
           content: currentContent,
           folder_name: localFolderRef.current,
           tags: localTagsRef.current,
-          metadata: { ...note.metadata, lastEditorMode: currentMode },
+          metadata: { ...getNoteMetadata(note), lastEditorMode: currentMode },
         });
 
         // Force immediate save
@@ -288,7 +290,7 @@ export function NoteEditor({
         content: value,
         folder_name: localFolder,
         tags: localTags,
-        metadata: { ...note.metadata, lastEditorMode: editorMode },
+        metadata: { ...getNoteMetadata(note), lastEditorMode: editorMode },
       });
       // For phantom notes (id === '__phantom__'), updateWithAutoSave is a no-op.
       // We must call onUpdate so NotesLayout can materialise the real DB note.
@@ -314,7 +316,7 @@ export function NoteEditor({
           folder_name: localFolderRef.current,
           tags: localTagsRef.current,
           metadata: {
-            ...currentNote.metadata,
+            ...getNoteMetadata(currentNote),
             lastEditorMode: editorModeRef.current,
           },
         });
@@ -358,7 +360,7 @@ export function NoteEditor({
         content: localContent,
         folder_name: value,
         tags: localTags,
-        metadata: { ...note.metadata, lastEditorMode: editorMode }, // Include mode
+        metadata: { ...getNoteMetadata(note), lastEditorMode: editorMode }, // Include mode
       });
       // Immediate update to parent for sidebar refresh
       onUpdate?.(note.id, { folder_name: value });
@@ -373,7 +375,7 @@ export function NoteEditor({
         content: localContent,
         folder_name: localFolder,
         tags,
-        metadata: { ...note.metadata, lastEditorMode: editorMode }, // Include mode
+        metadata: { ...getNoteMetadata(note), lastEditorMode: editorMode }, // Include mode
       });
       // Immediate update to parent
       onUpdate?.(note.id, { tags });
@@ -409,7 +411,7 @@ export function NoteEditor({
           content: localContent,
           folder_name: localFolder,
           tags: localTags,
-          metadata: { ...note.metadata, lastEditorMode: editorMode },
+          metadata: { ...getNoteMetadata(note), lastEditorMode: editorMode },
         });
       }
       labelSaveTimeoutRef.current = null;
@@ -430,7 +432,7 @@ export function NoteEditor({
         content: localContent,
         folder_name: localFolder,
         tags: localTags,
-        metadata: { ...note.metadata, lastEditorMode: editorMode },
+        metadata: { ...getNoteMetadata(note), lastEditorMode: editorMode },
       });
       forceSave();
     }

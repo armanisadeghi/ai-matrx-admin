@@ -226,6 +226,7 @@ export function AgentGenerator({ onComplete }: AgentGeneratorProps) {
     try {
       const result = await launchAgent(AGENT_GENERATOR_CONFIG.agentId, {
         ...AGENT_GENERATOR_CONFIG.launchDefaults,
+        surfaceKey: "agent-generator",
         autoRun: true,
         variables: { prompt_purpose: promptPurpose },
         userInput: additionalContext || undefined,

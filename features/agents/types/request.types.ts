@@ -60,7 +60,8 @@ export interface ClientMetrics {
   streamEndAt: number | null;
 
   /**
-   * When commitAssistantTurn completed (Redux + React render settled).
+   * When the final `updateMessageRecord` for the assistant message landed
+   * (Redux + React render settled).
    *   renderDelay = renderCompleteAt - streamEndAt
    */
   renderCompleteAt: number | null;

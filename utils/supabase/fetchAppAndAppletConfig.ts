@@ -49,7 +49,7 @@ function parseAppAndAppletRpcPayload(
   if (typeof ac.name !== "string") {
     return null;
   }
-  return root as AppAndAppletRpcPayload;
+  return root as unknown as AppAndAppletRpcPayload;
 }
 
 export async function fetchAppAndAppletConfig(
@@ -98,8 +98,8 @@ export async function fetchAppBySlug(slug: string): Promise<CustomAppConfig> {
     creator: data.creator,
     primaryColor: data.primary_color,
     accentColor: data.accent_color,
-    appletList: data.applet_list, // Assuming applet_list is already in { appletId: string; label: string }[] format
-    extraButtons: data.extra_buttons, // Assuming extra_buttons is already in the correct format
+    appletList: (data.applet_list ?? []) as CustomAppConfig["appletList"],
+    extraButtons: (data.extra_buttons ?? []) as CustomAppConfig["extraButtons"],
     layoutType: data.layout_type as AppLayoutOptions, // Cast to AppLayoutOptions
     imageUrl: data.image_url,
   };

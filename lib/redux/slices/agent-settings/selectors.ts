@@ -109,11 +109,11 @@ export const selectEffectiveModelName = createSelector(
       state.agentSettings?.entries[agentId]?.overrides?.model_id ??
       state.agentSettings?.entries[agentId]?.defaults?.model_id ??
       null,
-    (state: RootState) => state.modelRegistry?.availableModels,
+    (state: RootState) => state.modelRegistry?.entities,
   ],
-  (modelId, availableModels): string | null => {
-    if (!modelId || !availableModels) return null;
-    const model = availableModels.find((m) => m.id === modelId);
+  (modelId, entities): string | null => {
+    if (!modelId || !entities) return null;
+    const model = entities[modelId];
     if (!model) return null;
     return model.common_name || model.name || model.id;
   },

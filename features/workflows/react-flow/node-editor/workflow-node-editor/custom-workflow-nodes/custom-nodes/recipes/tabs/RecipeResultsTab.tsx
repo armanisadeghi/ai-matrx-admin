@@ -88,9 +88,8 @@ const RecipeResultsTab: React.FC<RecipeResultsTabProps> = ({ nodeData, enrichedB
                                     isStreamActive={false}
                                     onScrollToBottom={() => {}}
                                     onContentUpdate={() => {}}
-                                    metadata={null}
+                                    metadata={undefined}
                                     isOverlay={false}
-                                    audioControls={null}
                                 />
                             </CardContent>
                         </Card>

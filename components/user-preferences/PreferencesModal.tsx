@@ -31,6 +31,7 @@ import FlashcardPreferences from './FlashcardPreferences';
 import PlaygroundPreferences from './PlaygroundPreferences';
 import AiModelsPreferences from './AiModelsPreferences';
 import MessagingPreferences from './MessagingPreferences';
+import AgentContextPreferences from './AgentContextPreferences';
 import { PreferenceTab } from './PreferencesPage';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -84,6 +85,7 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
         playground: <PlaygroundPreferences />,
         aiModels: <AiModelsPreferences />,
         messaging: <MessagingPreferences />,
+        agentContext: <AgentContextPreferences />,
     };
 
     const tabLabels: Record<PreferenceTab, string> = {
@@ -102,6 +104,7 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
         playground: 'Playground',
         messaging: 'Messaging',
         aiModels: 'AI Models',
+        agentContext: 'Agent Context',
     };
 
     const handleSave = async () => {

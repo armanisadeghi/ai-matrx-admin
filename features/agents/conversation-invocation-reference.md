@@ -4,6 +4,12 @@ Everything a caller needs to pass when invoking an agent, shortcut, or manual pr
 
 For each field: **type**, **default**, and a plain-English description of what it does and when you'd actually set it.
 
+> **Authoritative source:** [`features/agents/types/conversation-invocation.types.ts`](features/agents/types/conversation-invocation.types.ts). This doc is a plain-English mirror of that file — if the two diverge, the type file wins.
+>
+> **Single entry point:** every invocation goes through [`launchConversation`](features/agents/redux/execution-system/thunks/launch-conversation.thunk.ts). No per-surface launch functions.
+>
+> **Related:** [`agent-system-mental-model.md`](agent-system-mental-model.md) for the why · [`ROADMAP-agent-ecosystem-rebuild.md`](ROADMAP-agent-ecosystem-rebuild.md) for what's next · [`audits/`](audits/) for tactical checklists (salvage, type duplication, legacy deletion waves).
+
 ---
 
 ## Final shape (at a glance)
@@ -12,15 +18,15 @@ For each field: **type**, **default**, and a plain-English description of what i
 interface ConversationInvocation {
   identity:  { conversationId?; surfaceKey }
   engine:    { kind; agentId?; isVersion?; shortcutId?; manual? }
-  routing:   { conversationMode; reuseConversationId? }
+  routing:   { apiEndpointMode; reuseConversationId? }
   origin:    { origin; sourceApp?; sourceFeature; isEphemeral? }
-  inputs:    { variables?; userInput?; overrides? }
-  scope:     { applicationScope? }
-  relation:  { parentConversationId?; forkedFromId?; forkedAtPosition? }
-  display:   { ...presentation flags... }
-  behavior:  { allowChat?; autoRun?; usePreExecutionInput?; jsonExtraction? }
-  callbacks: { groupId?; originalText? }
-  builder:   BuilderAdvancedSettings | null
+  inputs?:   { variables?; userInput?; overrides? }
+  scope?:    { applicationScope? }
+  relation?: { parentConversationId?; forkedFromId?; forkedAtPosition? }
+  display?:  { ...presentation flags... }
+  behavior?: { allowChat?; autoRun?; usePreExecutionInput?; jsonExtraction? }
+  callbacks?:{ onCompleteId?; onTextReplaceId?; onTextInsertBeforeId?; onTextInsertAfterId?; originalText? }
+  builder?:  BuilderAdvancedSettings | null
   metadata?: Record<string, unknown>
 }
 ```
@@ -33,8 +39,8 @@ Who this invocation is and where it's coming from.
 
 | Field | Type | Default | What it does |
 |---|---|---|---|
-| `conversationId` | `string?` | `undefined` | If present, this is a **continuing** conversation — request goes to `conversations/{id}`. If absent, it's a **first turn** — request goes to `agents/{id}`. |
-| `surfaceKey` | `string` (required) | — | Identifies **which surface is making the call** (code editor, Notes, a specific user-built app, etc.). The system uses this to know which UI context contract applies — i.e., which universal + surface-specific keys the caller is providing. |
+| `conversationId` | `string?` | `undefined` | If present, this is a **continuing** conversation — request routes to `conversations/{id}`. If absent, it's a **first turn** — request routes to `agents/{id}`. |
+| `surfaceKey` | `string` (required) | — | Stable key for the UI surface making the call (e.g. `"agent-builder"`, `"agent-runner:<agentId>"`, `"code-editor"`). Used for focus tracking and to resolve which UI-context contract applies for variable binding. |
 
 ---
 
@@ -42,13 +48,13 @@ Who this invocation is and where it's coming from.
 
 **The brain of the operation** — the source of the execution logic. What's actually driving this invocation? A stored agent definition, a stored shortcut, or a raw object passed in directly?
 
-*Independent of `routing.conversationMode`, which is about the API call shape.*
+*Independent of `routing.apiEndpointMode`, which is about the API call shape.*
 
 | Field | Type | Default | What it does |
 |---|---|---|---|
 | `kind` | `"agent" \| "shortcut" \| "manual"` | — | Where the execution logic comes from. **agent** = resolve from a stored agent definition. **shortcut** = resolve from a stored shortcut (which pins a specific agent version + bindings). **manual** = the logic object is passed in directly, not looked up. |
 | `agentId` | `string?` | `undefined` | The agent to run, when `kind === "agent"` or `"shortcut"`. |
-| `isVersion` | `boolean?` | `false` | When `true`, `agentId` is interpreted as a specific version ID rather than a pointer to the current version. **Shortcuts and Apps must always set this `true`** — they only work with pinned versions to prevent drift. Chat/Runner default to `false` (current pointer). Terminology matches the server API. |
+| `isVersion` | `boolean?` | `false` | When `true`, `agentId` is interpreted as a specific version ID rather than a pointer to the current version. **Shortcuts and Apps must always set this `true`** — they only work with pinned versions to prevent drift. Chat/Runner default to `false` (current pointer). |
 | `shortcutId` | `string?` | `undefined` | Which shortcut triggered this, when `kind === "shortcut"`. |
 | `manual.label` | `string?` | `undefined` | Display label for a manual invocation (no agent definition to pull one from). |
 | `manual.baseSettings` | `Partial<LLMParams>?` | `undefined` | Model params for a manual invocation. |
@@ -59,12 +65,22 @@ Who this invocation is and where it's coming from.
 
 The **API call mode** — a different question from `engine.kind`.
 
-`engine.kind` = *where the logic comes from*. `routing.conversationMode` = *which API call shape to use*.
+`engine.kind` = *where the logic comes from*. `routing.apiEndpointMode` = *which API call shape to use*.
 
 | Field | Type | Default | What it does |
 |---|---|---|---|
-| `conversationMode` | `"agent" \| "manual"` | — | Selects the API path/behavior. **agent** = full harness API (`agents/{id}` → `conversations/{id}`), with variable filling, context slots, tool registration, all managed machinery. **manual** = raw prompt-style API (`prompts` endpoint) — what the Builder uses. |
-| `reuseConversationId` | `boolean?` | `false` | **Only meaningful when `conversationMode === "manual"` and `display.autoClearConversation === false`.** A Builder-mode tool for engineers iterating on a prompt chain. `true` → the next call sends the *same* `conversationId` and the server **replaces** the previous conversation (one DB row; engineer overwrites their last try). `false` → the next call generates a *new* `conversationId` and the previous chain stays in the DB untouched (two DB rows; engineer keeps the old chain and branches). In `agent` mode this flag has no effect — the conversationId is always reused. |
+| `apiEndpointMode` | `"agent" \| "manual"` | — | Selects the API path family. **agent** = full harness API (`POST /ai/agents/{id}` on turn 1 → `POST /ai/conversations/{id}` on turn 2+). **manual** = raw prompt-style API (`POST /prompts`) — what the Builder uses. Ephemeral invocations (see `origin.isEphemeral`) override the turn-2+ destination to `POST /ai/chat`. Legacy surfaces sometimes use `"chat"` as a second value; per [audit 01](audits/01-new-work-audit.md) the `launch-conversation.thunk.ts` adapter maps `"chat"` → `"manual"` (same as the endpoint swap `/ai/chat → /ai/manual`). |
+| `reuseConversationId` | `boolean?` | `false` | **Only meaningful when `apiEndpointMode === "manual"` and `display.autoClearConversation === false`.** A Builder-mode tool for engineers iterating on a prompt chain. `true` → the next call sends the *same* `conversationId` and the server **replaces** the previous conversation (one DB row; engineer overwrites their last try). `false` → the next call generates a *new* `conversationId` and the previous chain stays in the DB untouched (two DB rows; engineer keeps the old chain and branches). In `agent` mode this flag has no effect — the conversationId is always reused. |
+
+### Endpoint routing table (from the type file)
+
+| `apiEndpointMode` | `isEphemeral` | Turn 1 | Turn 2+ |
+|---|---|---|---|
+| `"agent"` | `false` | `POST /ai/agents/{id}` | `POST /ai/conversations/{id}` |
+| `"agent"` | `true` | `POST /ai/agents/{id}` (`is_new:false, store:false`, no conversationId) | `POST /ai/chat` (`is_new:false, store:false`, full accumulated history from the `messages/` slice) |
+| `"manual"` | any | `POST /prompts` | `POST /prompts` (`reuseConversationId` toggles server REPLACE vs BRANCH) |
+
+Callers never construct this table manually — `launchConversation` reads from the invocation and picks the endpoint.
 
 ---
 
@@ -74,10 +90,10 @@ Where the invocation is coming from *inside the product*. Used for logging, anal
 
 | Field | Type | Default | What it does |
 |---|---|---|---|
-| `origin` | `InstanceOrigin` (required) | — | Typed enum of **trigger source**: `"manual"` (user opened a runner/chat surface and typed), `"shortcut"` (triggered by a Shortcut), `"test"` (parallel testing harness), `"sub-agent"` (spawned by a parent request). Independent of `engine.kind` — a sub-agent can come from any engine type. |
+| `origin` | `InstanceOrigin` (required) | — | Typed trigger source. One of **`"manual"`** (user opened a runner/chat surface and typed), **`"shortcut"`** (triggered by a Shortcut), **`"test"`** (parallel testing harness), **`"sub-agent"`** (spawned by a parent request). Independent of `engine.kind` — a sub-agent can come from any engine type. |
 | `sourceApp` | `string?` | `undefined` | Which AI Matrx app initiated this (e.g., `"flashcard-generator"`, `"quiz-app"`). |
-| `sourceFeature` | `SourceFeature` (required) | — | Which feature *within* the source app (e.g., `"missed-questions-study-aids"`). Typed enum. |
-| `isEphemeral` | `boolean?` | **❓ — needs definition** | New field. I don't know what this gates yet. |
+| `sourceFeature` | `SourceFeature` (required) | — | Which feature *within* the source app. Typed enum; current values: `"agent-builder"`, `"agent-runner"`, `"agent-tester"`, `"agent-launcher-sidebar"`, `"agent-creator-panel"`, `"agent-generator"`, `"chat-interface"`, `"context-menu"`, `"prompt-app"`, `"research"`, `"code-editor"`, `"agent-content-window"`. |
+| `isEphemeral` | `boolean?` | `false` | When `true`, **no rows are persisted to the database** for this invocation. The Redux `messages/` slice is the only source of truth. Routing implication: turn 1 fires `POST /ai/agents/{id}` with `is_new:false, store:false` and no `conversationId`; turn 2+ fires `POST /ai/chat` (not `/conversations/{id}`, which would 404). Client sends the full accumulated history each turn. Use for fire-and-forget shortcuts, test runs, and any surface that shouldn't leave a DB trail. |
 
 ---
 
@@ -89,7 +105,7 @@ What the caller is actually providing for this turn.
 |---|---|---|---|
 | `variables` | `Record<string, unknown>?` | `undefined` | Values for the agent's declared variables. Keyed by variable name. |
 | `userInput` | `string?` | `undefined` | Optional free-text message. On first turn this is the opening message; on subsequent turns it's the new message. Can be absent when a shortcut is fully variable-driven. |
-| `overrides` | `Partial<LLMParams>?` | `undefined` | Caller-supplied overrides of model settings. Only applied for settings the agent's engineer has marked as overridable. (The permission mechanism itself is a future concern — today the system already ensures invalid settings can't reach the model.) |
+| `overrides` | `Partial<LLMParams>?` | `undefined` | Caller-supplied overrides of model settings. Delta-only — only the keys provided are sent. Applied only for settings the agent's engineer has marked as overridable. |
 
 ---
 
@@ -99,7 +115,7 @@ The active org/project/task scope context for this invocation.
 
 | Field | Type | Default | What it does |
 |---|---|---|---|
-| `applicationScope` | `ApplicationScope?` | `undefined` | The scope context (org / project / task) the invocation inherits. Stamped onto `cx_conversation.organization_id` / `project_id` / `task_id`, and surfaced to **context resolvers** so context slots can pull org-scoped data. Read at invocation time from `appContextSlice`. Type lives at `features/agents/utils/scope-mapping`. |
+| `applicationScope` | `ApplicationScope?` | `undefined` | The scope context (org / project / task) the invocation inherits. Stamped onto `cx_conversation.organization_id` / `project_id` / `task_id`, and surfaced to **context resolvers** so context slots can pull org-scoped data. Read at invocation time from `appContextSlice`. Type lives at [`features/agents/utils/scope-mapping.ts`](features/agents/utils/scope-mapping.ts); shape is `{ selection?; content?; context?; [key: string]: unknown }`. |
 
 ---
 
@@ -123,12 +139,12 @@ How the invocation is rendered. This is the largest group because it's where mos
 
 | Field | Type | Default | What it does |
 |---|---|---|---|
-| `displayMode` | `ResultDisplayMode?` | caller-defined | One of 13 presentation styles — where/how the result shows up. Values: `inline`, `sidebar`, `modal-full`, `modal-compact`, `chat-bubble`, `flexible-panel`, `panel`, `toast`, `floating-chat`, `chat-collapsible`, `chat-assistant`, `background`, `direct` *(caller manages the UI itself)*. |
+| `displayMode` | `ResultDisplayMode?` | caller-defined | One of 13 presentation styles — where/how the result shows up. Values: `modal-full`, `modal-compact`, `chat-bubble`, `inline`, `sidebar`, `flexible-panel`, `panel`, `toast`, `floating-chat`, `direct` *(caller manages the UI itself)*, `background`, `chat-collapsible`, `chat-assistant`. |
 | `variableInputStyle` | `VariableInputStyle?` | varies by display mode | One of 6 layouts for variable collection: `inline`, `wizard`, `form`, `compact`, `guided`, `cards`. Layers on top of most `displayMode`s; unsupported combinations fall back to a default. |
 | `showVariablePanel` | `boolean?` | `false` | Whether to **show the variable inputs to the user** — regardless of whether those values came from the user or were programmatically supplied by a shortcut. Set `true` when you want the user to see (and potentially edit) what's being sent. |
 | `showDefinitionMessages` | `boolean?` | `true` | Whether messages baked into the agent definition (the ones containing variable placeholders) are **shown at all** in the transcript. Set `false` for shortcuts where you want the user to see only their own message (e.g., "I'm confused") rather than the full injected payload. |
 | `showDefinitionMessageContent` | `boolean?` | `false` | Only relevant when `showDefinitionMessages` is `true`. If `true`, show the **fully rendered** message (all variables substituted). If `false`, show only the parts the user actually typed and hide the programmatically-injected content. |
-| `showSubAgents` | `boolean?` | **❓ — needs definition** | New flag related to sub-agent display. I don't know the exact semantics yet. |
+| `showSubAgents` | `boolean?` | `true` | When `false`, sub-agent turns are filtered out of the transcript selector (`selectDisplayMessages`) but still live in the `messages/` slice — **purely a rendering filter, no data loss**. Set `false` when a parent agent spawned helpers whose internal back-and-forth isn't useful to the end user. |
 | `hideReasoning` | `boolean?` | `false` | Hide the model's reasoning/thinking output mid-run. |
 | `hideToolResults` | `boolean?` | `false` | Hide raw tool-call results from the transcript. Useful when tool output is noisy and the final summary is what the user actually wants to see. |
 | `showAutoClearToggle` | `boolean?` | `false` | Whether to expose the auto-clear toggle in the UI so the user can flip it themselves. |
@@ -161,12 +177,14 @@ How the conversation runs. **`allowChat`, `autoRun`, and `usePreExecutionInput` 
 
 ## 10. `callbacks`
 
-Callback wiring. Function references never live on the invocation itself — they're registered separately via `CallbackManager`, and the invocation just carries the key to look them up (plus any raw payload the callbacks need).
+Callback wiring. Function references never live on the invocation itself — they're registered via [`CallbackManager`](utils/callbackManager.ts), and the invocation just carries the ID.
 
 | Field | Type | Default | What it does |
 |---|---|---|---|
-| `groupId` | `string?` | `undefined` | Key into `CallbackManager`. The manager holds the actual function refs (`onComplete`, `onTextReplace`, `onTextInsertBefore`, `onTextInsertAfter`). Separating them this way keeps the invocation serializable. |
-| `originalText` | `string?` | `undefined` | Original text payload for text-manipulation callbacks (e.g., translate-selection, replace-selection shortcuts). The selection the user had highlighted before the shortcut fired. |
+| `widgetHandleId` | `string?` | `undefined` | ID returned by `callbackManager.registerWidgetHandle(handle)` — or by the `useWidgetHandle(handle)` React hook, which wraps it. The handle is **one object** carrying both capability methods (`onTextReplace`, `onAttachMedia`, `onCreateArtifact`, ...) and lifecycle (`onComplete`, `onCancel`, `onError`). The launch path reads the handle live on every turn to derive `client_tools`; `process-stream.ts` routes `tool_delegated` events for `widget_*` tools to the matching method and fires `onComplete` at stream end. |
+| `originalText` | `string?` | `undefined` | Original text payload for text-manipulation widgets (translate-selection, replace-selection shortcuts). The selection the user had highlighted before the shortcut fired. Forwarded to the handle's text methods alongside the agent's response. |
+
+**Everything collapsed into one handle.** Before this refactor there were four per-action ID fields plus `originalText`. Capability + lifecycle now live in a single object; the invocation just points to it. See [`docs/WIDGET_HANDLE_SYSTEM.md`](docs/WIDGET_HANDLE_SYSTEM.md) for the handle contract and [`components/tools-management/CLIENT_SIDE_TOOLS.md`](components/tools-management/CLIENT_SIDE_TOOLS.md) for the underlying stream/POST protocol.
 
 ---
 
@@ -176,7 +194,7 @@ Advanced settings specific to Builder-mode invocations.
 
 | Field | Type | Default | What it does |
 |---|---|---|---|
-| `builder` | `BuilderAdvancedSettings \| null` | `null` | Populated only when `routing.conversationMode === "manual"`. Holds Builder-specific advanced settings. |
+| `builder` | `BuilderAdvancedSettings \| null` | `null` | Populated only when `routing.apiEndpointMode === "manual"`. Shape: `{ debug, store, maxIterations, maxRetriesPerIteration, useStructuredSystemInstruction, structuredInstruction }`. Defaults: `{ debug: false, store: true, maxIterations: 20, maxRetriesPerIteration: 2, useStructuredSystemInstruction: false, structuredInstruction: {} }`. |
 
 ---
 
@@ -190,7 +208,7 @@ Open escape hatch for future or experimental fields that don't warrant a dedicat
 
 ---
 
-# What got dropped (and why)
+## What got dropped (and why)
 
 Three fields were previously hanging around on the invocation that shouldn't have been:
 
@@ -202,14 +220,17 @@ Three fields were previously hanging around on the invocation that shouldn't hav
 
 ---
 
-# Still-open questions (last round before final)
+## What changed from the prior draft of this doc
 
-Only two things left before we can lock this.
+Two questions the old draft left open are now locked:
 
-1. **`origin.isEphemeral`** — new field I don't have a definition for. What does this gate? My guess: "don't persist this conversation to the DB" (fire-and-forget shortcuts, test runs). Confirm or correct.
+1. **`origin.isEphemeral`** — confirmed to gate DB persistence. `true` → no rows written; turn 2+ goes to `POST /ai/chat` with the full history from the `messages/` slice. See the routing table in §3.
+2. **`display.showSubAgents`** — confirmed as a transcript rendering filter only. When `false`, sub-agent turns are hidden in `selectDisplayMessages` but remain in the `messages/` slice. No data loss.
 
-2. **`display.showSubAgents`** — also new. I know sub-agents are now first-class with flat display, but I don't have the exact semantics. What does this flag control — whether sub-agent turns appear in the transcript? Whether their reasoning is visible? Both?
+One name change:
 
----
+- **`routing.conversationMode` → `routing.apiEndpointMode`**. The legacy `"chat"` value of this enum is gone; the canonical values are `"agent"` and `"manual"`.
 
-*Answer these two and this is locked.*
+And one group is scheduled to be rewritten:
+
+- **`callbacks`** — currently holds four per-action IDs + `originalText`. Per [`TODO-widget-tools-plan.md`](TODO-widget-tools-plan.md), this will collapse to `{ widgetHandleId?; originalText? }` once the Widget Handle + Client Tools system ships. No other invocation group changes as part of that refactor.

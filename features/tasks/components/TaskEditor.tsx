@@ -45,6 +45,7 @@ import { TASK_LABEL_OPTIONS } from "@/features/tasks/services/taskService";
 import type { TaskLabel } from "@/features/tasks/services/taskService";
 import TaskScopeTags from "./TaskScopeTags";
 import TaskAssigneePicker from "./TaskAssigneePicker";
+import TaskAttachmentsPanel from "./TaskAttachmentsPanel";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -565,6 +566,11 @@ function TaskEditorInner({ taskId }: { taskId: string }) {
                 )}
               </div>
             </div>
+          </section>
+
+          {/* Attachments — notes, files, messages, conversations, chat blocks */}
+          <section>
+            <TaskAttachmentsPanel taskId={taskId} />
           </section>
 
           {/* Comments */}

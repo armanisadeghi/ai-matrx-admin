@@ -47,6 +47,22 @@ export interface TaskUiState {
 
   // Post-create handoff (for non-blocking "Edit details" banner)
   lastCreatedTaskId: string | null;
+
+  // Transient "source" for widgets that are about to create or link a task
+  // from some other entity (chat message, note, file, chat block, ...)
+  pendingSource: PendingSource | null;
+}
+
+export interface PendingSource {
+  entity_type: string;
+  entity_id: string;
+  label?: string;
+  metadata?: Record<string, unknown>;
+  prePopulate?: {
+    title?: string;
+    description?: string;
+    priority?: "low" | "medium" | "high";
+  };
 }
 
 export type TaskGroupBy =
@@ -98,6 +114,7 @@ const initialState: TaskUiState = {
   taskEdits: {},
 
   lastCreatedTaskId: null,
+  pendingSource: null,
 };
 
 const slice = createSlice({
@@ -331,6 +348,14 @@ const slice = createSlice({
     setLastCreatedTaskId(state, action: PayloadAction<string | null>) {
       state.lastCreatedTaskId = action.payload;
     },
+
+    // ─── Pending source (for "associate from X" widgets) ───────────────────
+    setPendingSource(state, action: PayloadAction<PendingSource | null>) {
+      state.pendingSource = action.payload;
+    },
+    clearPendingSource(state) {
+      state.pendingSource = null;
+    },
   },
 });
 
@@ -374,6 +399,8 @@ export const {
   clearTaskEdit,
   clearAllTaskEdits,
   setLastCreatedTaskId,
+  setPendingSource,
+  clearPendingSource,
 } = slice.actions;
 
 export default slice.reducer;
@@ -438,3 +465,5 @@ export const selectTaskIsDirty =
     const draft = s.tasksUi.taskEdits[taskId];
     return !!draft && Object.keys(draft).length > 0;
   };
+export const selectPendingSource = (s: StateWithTasksUi) =>
+  s.tasksUi.pendingSource;

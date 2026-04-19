@@ -20,6 +20,7 @@ export const DEFAULT_WORKFLOW_NODE: Omit<WorkflowNode, "id" | "created_at" | "up
     step_name: null,
     node_type: null,
     execution_required: false,
+    arguments: null,
     inputs: null,
     outputs: null,
     dependencies: null,
@@ -27,7 +28,6 @@ export const DEFAULT_WORKFLOW_NODE: Omit<WorkflowNode, "id" | "created_at" | "up
     metadata: null,
     ui_data: null,
     is_public: false,
-    authenticated_read: true,
     public_read: true,
 };
 
@@ -282,8 +282,13 @@ const workflowNodeSlice = createSlice({
         },
         addInputsToNodeDefinition: (state, action: PayloadAction<{ id: string; inputs: NodeInput[] }>) => {
             const { id, inputs } = action.payload;
-            if (state.entities[id]) {
-                state.entities[id].metadata.nodeDefinition.inputs = [...(state.entities[id].metadata.nodeDefinition.inputs || []), ...inputs];
+            const entity = state.entities[id];
+            if (entity) {
+                if (!entity.metadata) entity.metadata = {};
+                if (!entity.metadata.nodeDefinition) entity.metadata.nodeDefinition = {};
+                const existing = entity.metadata.nodeDefinition.inputs;
+                const existingArr = Array.isArray(existing) ? existing : [];
+                entity.metadata.nodeDefinition.inputs = [...existingArr, ...inputs];
                 state.isDirty[id] = true;
             }
         },

@@ -180,11 +180,14 @@ const AuthGateDialog = dynamic(
   { ssr: false },
 );
 
+// TODO: Broken after agents refactor.
 const ContentHistoryViewer = dynamic(
   () =>
-    import("@/features/cx-conversation/ContentHistoryViewer").then((m) => ({
-      default: m.ContentHistoryViewer,
-    })),
+    import("@/features/agents/components/TO-BE-ORGANIZED/ContentHistoryViewer").then(
+      (m) => ({
+        default: m.ContentHistoryViewer,
+      }),
+    ),
   { ssr: false },
 );
 

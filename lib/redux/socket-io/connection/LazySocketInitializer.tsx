@@ -23,9 +23,9 @@ export default function LazySocketInitializer() {
 
   useEffect(() => {
     // Socket.io disabled — server no longer supports it.
-    return;
+    const SOCKET_IO_ENABLED = false as boolean;
+    if (!SOCKET_IO_ENABLED) return;
 
-    // eslint-disable-next-line no-unreachable
     if (!connectionRequested || !userId || initialized.current) return;
     initialized.current = true;
 

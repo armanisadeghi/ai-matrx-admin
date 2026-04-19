@@ -50,8 +50,11 @@ export async function createFile(filename: string, content: string) {
 // Function to fetch and transform the schema
 export async function fetchAndGenerateSchema() {
     try {
-        // Fetch the database schema from Supabase
-        const client = await supabase;
+        // Fetch the database schema from Supabase. `information_schema.*` is a
+        // Postgres system relation outside the generated `public` types, so we
+        // go through an untyped client view for these reads.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const client = (await supabase) as any;
         const { data: tables, error } = await client
             .from('information_schema.tables')
             .select('table_name')
@@ -64,7 +67,7 @@ export async function fetchAndGenerateSchema() {
         const outputSchema: OutputSchema = {};
 
         // Iterate over the tables to build their structures
-        for (const table of tables || []) {
+        for (const table of (tables as { table_name: string }[]) || []) {
             const tableName = table.table_name;
 
             // Fetch columns of the table

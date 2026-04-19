@@ -35,7 +35,6 @@ export const AGENT_GENERATOR_CONFIG = {
     autoClearConversation: false,
     hideReasoning: true,
     hideToolResults: true,
-    overrides: null,
     sourceFeature: "agent-generator" as const,
     jsonExtraction: {
       enabled: true,

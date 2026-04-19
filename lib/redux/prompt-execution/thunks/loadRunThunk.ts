@@ -104,7 +104,10 @@ export const loadRun = createAsyncThunk<
                 },
 
                 variables: {
-                    userValues: run.variable_values || {},
+                    userValues:
+                        run.variable_values && typeof run.variable_values === 'object' && !Array.isArray(run.variable_values)
+                            ? (run.variable_values as Record<string, string>)
+                            : {},
                     scopedValues: {},
                     computedValues: {},
                 },
@@ -150,12 +153,13 @@ export const loadRun = createAsyncThunk<
             }
 
             // Restore dynamic contexts if they were saved
-            if (run.dynamic_contexts && typeof run.dynamic_contexts === 'object') {
+            if (run.dynamic_contexts && typeof run.dynamic_contexts === 'object' && !Array.isArray(run.dynamic_contexts)) {
+                const contexts = run.dynamic_contexts as import('../types/dynamic-context').DynamicContextsMap;
                 dispatch(setDynamicContexts({
                     runId,
-                    contexts: run.dynamic_contexts
+                    contexts
                 }));
-                console.log('✅ Dynamic contexts restored:', Object.keys(run.dynamic_contexts));
+                console.log('✅ Dynamic contexts restored:', Object.keys(contexts));
             }
 
             // Set run ID tracking

@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { DbFunctionNode } from "@/features/workflows/types";
+import React, { useState, useEffect, useCallback } from "react";
+import { DbFunctionNode, WorkflowNodePersistShape } from "@/features/workflows/types";
 
 // Import all our centralized utilities
 import * as NodeUtils from "../utils";
@@ -30,11 +30,22 @@ const SimplifiedCustomNodeEditor: React.FC<SimplifiedCustomNodeEditorProps> = ({
     setEditingNode(nodeData);
   }, [nodeData]);
 
+  // NodeUtils helpers accept WorkflowNodePersistShape (DbFunctionNode |
+  // WorkflowNodeInsert). setState is typed to DbFunctionNode — the editor's
+  // current state is always a full saved row — so wrap the dispatcher to
+  // accept the wider input and cast on the way in.
+  const applyPersistShape = useCallback(
+    (next: WorkflowNodePersistShape) => {
+      setEditingNode(next as DbFunctionNode);
+    },
+    [],
+  );
+
   // Create a utilities object that child components can use
   const nodeUtilities = {
     // Pass the current node and update callback to all utility functions
     node: editingNode,
-    updateNode: setEditingNode,
+    updateNode: applyPersistShape,
 
     // Basic node updates
     updateStepName: (stepName: string) => {
@@ -57,7 +68,7 @@ const SimplifiedCustomNodeEditor: React.FC<SimplifiedCustomNodeEditorProps> = ({
     ) => {
       NodeUtils.updateArgOverride(
         editingNode,
-        setEditingNode,
+        applyPersistShape,
         argName,
         field,
         value,
@@ -67,27 +78,27 @@ const SimplifiedCustomNodeEditor: React.FC<SimplifiedCustomNodeEditorProps> = ({
     handleArgValueChange: (arg: any, inputValue: string) => {
       NodeUtils.handleArgValueChange(
         editingNode,
-        setEditingNode,
+        applyPersistShape,
         arg,
         inputValue,
       );
     },
 
     addBrokerMapping: (argName: string) => {
-      NodeUtils.addBrokerMapping(editingNode, setEditingNode, argName);
+      NodeUtils.addBrokerMapping(editingNode, applyPersistShape, argName);
     },
 
     updateBrokerMapping: (index: number, value: string) => {
-      NodeUtils.updateBrokerMapping(editingNode, setEditingNode, index, value);
+      NodeUtils.updateBrokerMapping(editingNode, applyPersistShape, index, value);
     },
 
     removeBrokerMapping: (index: number) => {
-      NodeUtils.removeBrokerMapping(editingNode, setEditingNode, index);
+      NodeUtils.removeBrokerMapping(editingNode, applyPersistShape, index);
     },
 
     // Dependency utilities
     addWorkflowDependency: () => {
-      NodeUtils.addWorkflowDependency(editingNode, setEditingNode);
+      NodeUtils.addWorkflowDependency(editingNode, applyPersistShape);
     },
 
     updateWorkflowDependency: (
@@ -97,7 +108,7 @@ const SimplifiedCustomNodeEditor: React.FC<SimplifiedCustomNodeEditorProps> = ({
     ) => {
       NodeUtils.updateWorkflowDependency(
         editingNode,
-        setEditingNode,
+        applyPersistShape,
         index,
         field,
         value,
@@ -105,12 +116,12 @@ const SimplifiedCustomNodeEditor: React.FC<SimplifiedCustomNodeEditorProps> = ({
     },
 
     removeWorkflowDependency: (index: number) => {
-      NodeUtils.removeWorkflowDependency(editingNode, setEditingNode, index);
+      NodeUtils.removeWorkflowDependency(editingNode, applyPersistShape, index);
     },
 
     // Mapping utilities
     addArgumentMapping: () => {
-      NodeUtils.addArgumentMapping(editingNode, setEditingNode);
+      NodeUtils.addArgumentMapping(editingNode, applyPersistShape);
     },
 
     updateArgumentMapping: (
@@ -120,7 +131,7 @@ const SimplifiedCustomNodeEditor: React.FC<SimplifiedCustomNodeEditorProps> = ({
     ) => {
       NodeUtils.updateArgumentMapping(
         editingNode,
-        setEditingNode,
+        applyPersistShape,
         index,
         field,
         value,
@@ -128,7 +139,7 @@ const SimplifiedCustomNodeEditor: React.FC<SimplifiedCustomNodeEditorProps> = ({
     },
 
     removeArgumentMapping: (index: number) => {
-      NodeUtils.removeArgumentMapping(editingNode, setEditingNode, index);
+      NodeUtils.removeArgumentMapping(editingNode, applyPersistShape, index);
     },
 
     // Data helpers - use our centralized functions

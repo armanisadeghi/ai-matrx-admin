@@ -69,11 +69,10 @@ import { StreamingJsonTracker } from "@/utils/json/streaming-json-tracker";
 import { StreamBlockAccumulator } from "../utils/stream-block-accumulator";
 import type { ExtractedJsonSnapshot } from "@/features/agents/types/request.types";
 import {
-  commitAssistantTurn,
-  attachClientMetrics,
   setConversationLabel,
   reserveMessage,
   updateMessageRecord,
+  promoteMessageId,
 } from "../messages/messages.slice";
 import {
   upsertUserRequest,
@@ -95,6 +94,14 @@ import {
 } from "@/features/agents/redux/conversation-list";
 import { StreamProfiler } from "@/utils/stream-profiler";
 import { assembleMessageParts } from "../utils/assemble-cx-content-blocks";
+import { callbackManager } from "@/utils/callbackManager";
+import {
+  isWidgetActionName,
+  type WidgetActionName,
+  type WidgetHandle,
+} from "@/features/agents/types/widget-handle.types";
+import { selectWidgetHandleIdFor } from "../instance-ui-state/instance-ui-state.selectors";
+import { dispatchWidgetAction } from "./dispatch-widget-action.thunk";
 
 // =============================================================================
 // Types
@@ -117,6 +124,14 @@ interface ProcessStreamArgs {
   dispatch: (action: unknown) => unknown;
   getState: () => RootState;
   jsonExtraction?: JsonExtractionConfig;
+  /**
+   * The client-generated id under which the user's optimistic message was
+   * pushed into `messages.byId` before the API call fired. When the server
+   * streams `record_reserved cx_message` with role=user, the processor
+   * uses this to `promoteMessageId(clientTempId → serverId)` so the same
+   * Redux record carries the final server id with no duplication.
+   */
+  userMessageClientTempId?: string;
 }
 
 export interface ProcessStreamResult {
@@ -139,6 +154,7 @@ export async function processStream({
   dispatch,
   getState,
   jsonExtraction,
+  userMessageClientTempId,
 }: ProcessStreamArgs): Promise<ProcessStreamResult> {
   const { events } = parseNdjsonStream(response);
 
@@ -525,7 +541,28 @@ export async function processStream({
             isDelegated: true,
           }),
         );
-        dispatch(setInstanceStatus({ conversationId, status: "paused" }));
+
+        if (isWidgetActionName(toolData.tool_name)) {
+          // Widget actions resolve fast and fire-and-forget from the stream's
+          // POV — the microtask batcher posts results back so the server can
+          // resume without us having to flip the instance to "paused".
+          dispatch(
+            dispatchWidgetAction({
+              conversationId,
+              requestId,
+              callId: toolData.call_id,
+              toolName: toolData.tool_name as WidgetActionName,
+              args:
+                ((toolData.data as Record<string, unknown>)
+                  ?.arguments as Record<string, unknown>) ?? {},
+            }),
+          );
+        } else {
+          // Non-widget delegated tool — preserve the legacy pause for any
+          // server-coordinated flow that still expects the client to
+          // suspend the instance while it executes.
+          dispatch(setInstanceStatus({ conversationId, status: "paused" }));
+        }
       } else {
         const lifecycleStatus = toolData.event.replace(
           "tool_",
@@ -649,9 +686,10 @@ export async function processStream({
       //   • observability.toolCalls      (cx_tool_call)
       //
       // The content of an assistant message is committed later in the
-      // `completion` / `end` path via `commitAssistantTurn`, which mirrors
-      // renderBlocks into the same `byId` slot. This keeps live stream
-      // writes metadata-only — no re-render storm on the message body.
+      // `completion` / `end` path via `updateMessageRecord`, which writes
+      // the final `CxContentBlock[]` into the same `byId` slot. Live
+      // stream writes here are metadata-only — no re-render storm on the
+      // message body.
       if (d.table === "cx_message") {
         const meta = d.metadata as
           | { role?: string; position?: number }
@@ -662,16 +700,32 @@ export async function processStream({
         const role =
           (meta?.role as "user" | "assistant" | "system") ?? "assistant";
         const position = typeof meta?.position === "number" ? meta.position : 0;
-        dispatch(
-          reserveMessage({
-            conversationId: parents?.conversation_id ?? conversationId,
-            messageId: d.record_id,
-            role,
-            position,
-          }),
-        );
-        // Track the assistant reservation so the commit path can mirror the
-        // final renderBlocks into messages.byId[record_id].content.
+        const owningConversationId =
+          parents?.conversation_id ?? conversationId;
+
+        if (role === "user" && userMessageClientTempId) {
+          // Promote the optimistic user record to the server id. The record
+          // already carries the user's content, so no further patch needed
+          // here — the stream just swaps the key.
+          dispatch(
+            promoteMessageId({
+              conversationId: owningConversationId,
+              oldId: userMessageClientTempId,
+              newId: d.record_id,
+              position,
+            }),
+          );
+        } else {
+          dispatch(
+            reserveMessage({
+              conversationId: owningConversationId,
+              messageId: d.record_id,
+              role,
+              position,
+            }),
+          );
+        }
+
         if (role === "assistant") {
           reservedAssistantMessageId = d.record_id;
           reservedAssistantPosition = position;
@@ -904,11 +958,12 @@ export async function processStream({
     } else if (isErrorEvent(event)) {
       otherEvents++;
       const isFatal = true;
+      const errorMessage = event.data.user_message ?? event.data.message;
       dispatch(
         setRequestStatus({
           requestId,
           status: "error",
-          errorMessage: event.data.user_message ?? event.data.message,
+          errorMessage,
           isFatal,
         }),
       );
@@ -921,11 +976,25 @@ export async function processStream({
             seq: 0,
             timestamp: now,
             errorType: event.data.error_type,
-            message: event.data.user_message ?? event.data.message,
+            message: errorMessage,
             isFatal,
           },
         }),
       );
+
+      // Widget handle lifecycle: fire onError at stream-level errors too,
+      // not only for widget_* tool failures (dispatcher fires those already).
+      const errWidgetHandleId = selectWidgetHandleIdFor(
+        getState(),
+        conversationId,
+      );
+      if (errWidgetHandleId) {
+        const handle = callbackManager.get<WidgetHandle>(errWidgetHandleId);
+        handle?.onError?.({
+          reason: event.data.error_type ?? "stream_error",
+          message: errorMessage ?? undefined,
+        });
+      }
     } else if (isEndEvent(event)) {
       otherEvents++;
       const currentState = getState();
@@ -933,6 +1002,29 @@ export async function processStream({
       if (currentRequest?.status !== "error") {
         dispatch(setRequestStatus({ requestId, status: "complete" }));
         dispatch(setInstanceStatus({ conversationId, status: "complete" }));
+
+        // Widget handle lifecycle: fire onComplete at stream end (success
+        // path only). Fires for EVERY display mode — the previous call site
+        // in launch-agent-execution.thunk.ts:439 only fired in the narrow
+        // autoRun + direct/background/inline branch.
+        const endWidgetHandleId = selectWidgetHandleIdFor(
+          getState(),
+          conversationId,
+        );
+        if (endWidgetHandleId) {
+          const handle = callbackManager.get<WidgetHandle>(endWidgetHandleId);
+          if (handle?.onComplete) {
+            const responseText =
+              currentRequest?.renderBlockOrder
+                .map((id) => currentRequest.renderBlocks[id]?.content ?? "")
+                .join("\n") || "";
+            handle.onComplete({
+              conversationId,
+              requestId,
+              responseText,
+            });
+          }
+        }
       }
       dispatch(
         appendTimeline({
@@ -1051,72 +1143,34 @@ export async function processStream({
 
   const finalState = getState();
   const finalRequest = finalState.activeRequests.byRequestId[requestId];
-  const completedText = finalRequest
-    ? finalRequest.renderBlockOrder
-        .map((id) => finalRequest.renderBlocks[id]?.content ?? "")
-        .join("\n")
-    : "";
   const finalErrorMessage =
     finalRequest?.status === "error"
       ? (finalRequest.errorMessage ?? null)
       : null;
 
-  // Snapshot content blocks from the active request so they persist on the
-  // committed turn even after the active request is eventually cleaned up.
-  const finalContentBlocks = finalRequest
-    ? finalRequest.renderBlockOrder
-        .map((id) => finalRequest.renderBlocks[id])
-        .filter(Boolean)
-    : [];
-
-  // Assemble DB-compatible CxContentBlock[] from the completed request.
-  // This is the authoritative format for persistence and editing — it mirrors
-  // exactly what cx_message.content[] stores in the database.
+  // Assemble the DB-compatible CxContentBlock[] from the completed request.
+  // This is the single source of truth for the persisted assistant content —
+  // exactly what cx_message.content stores. We write it to messages.byId
+  // (keyed by the server-assigned cx_message.id reserved earlier in the
+  // stream) via `updateMessageRecord`. No parallel legacy path.
   const cxContentBlocks = finalRequest
     ? assembleMessageParts(finalRequest)
     : [];
 
-  dispatch(
-    commitAssistantTurn({
-      conversationId,
-      requestId,
-      content: completedText,
-      ...(cxContentBlocks.length > 0 && { cxContentBlocks }),
-      ...(finalContentBlocks.length > 0 && {
-        renderBlocks: finalContentBlocks,
-      }),
-      ...(tokenUsage && { tokenUsage }),
-      ...(finishReason && { finishReason }),
-      ...(completionStats && { completionStats }),
-      ...(finalErrorMessage && { errorMessage: finalErrorMessage }),
-    }),
-  );
-
-  // ── Phase 5.2: mirror the final assistant content into messages.byId ────
-  //
-  // The assistant's cx_message row was reserved earlier in the stream via
-  // `record_reserved cx_message` (role=assistant). At that point we seeded
-  // an empty record in messages.byId[reservedAssistantMessageId] with
-  // status="reserved". Now that the stream has completed, patch that same
-  // entry with the final CxContentBlock[] + status=active so any consumer
-  // reading the DB-faithful shape sees the authoritative content.
-  //
-  // We patch ONE field group (content + status + client bookkeeping) in a
-  // single action — Redux batches the re-render to the message with that
-  // id only (memoized selector), so the other messages' bodies stay
-  // referentially stable.
-  if (reservedAssistantMessageId && cxContentBlocks.length > 0) {
+  if (reservedAssistantMessageId) {
     dispatch(
       updateMessageRecord({
         conversationId,
         messageId: reservedAssistantMessageId,
         patch: {
-          // Cast to the DB Json type: cxContentBlocks is MessagePart[] /
-          // CxContentBlock[], which is structurally JSON-serializable.
-          content:
-            cxContentBlocks as unknown as import("@/types/database.types").Json,
+          content: cxContentBlocks as unknown as import(
+            "@/types/database.types"
+          ).Json,
           status: "active",
           _clientStatus: finalErrorMessage ? "error" : "complete",
+          ...(typeof reservedAssistantPosition === "number" && {
+            position: reservedAssistantPosition,
+          }),
         },
       }),
     );
@@ -1182,6 +1236,19 @@ export async function processStream({
   const renderDelayMs = renderCompleteAt - streamEndAt;
   const totalClientDurationMs = renderCompleteAt - submitAt;
 
+  // Derive completed text from the assembled content blocks — the active
+  // request no longer stores an `accumulatedText` field (textChunks are
+  // folded directly into content blocks).
+  const completedText = cxContentBlocks
+    .filter(
+      (b): b is { type: "text"; text: string } =>
+        typeof b === "object" &&
+        b !== null &&
+        (b as { type?: unknown }).type === "text" &&
+        typeof (b as { text?: unknown }).text === "string",
+    )
+    .map((b) => b.text)
+    .join("");
   const completedReasoning = finalRequest?.accumulatedReasoning ?? "";
   const encoder = new TextEncoder();
   const accumulatedTextBytes = encoder.encode(completedText).length;
@@ -1218,7 +1285,6 @@ export async function processStream({
   };
 
   dispatch(finalizeClientMetrics({ requestId, metrics: clientMetrics }));
-  dispatch(attachClientMetrics({ conversationId, requestId, clientMetrics }));
 
   return {
     conversationId,

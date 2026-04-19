@@ -134,13 +134,66 @@ export interface WorkflowMetadata {
   [key: string]: unknown;
 }
 
-export type Workflow = Database["public"]["Tables"]["workflow_data"]["Row"];
-
-export type WorkflowCreateInput =
+// Raw Supabase rows. These change automatically on `pnpm types` regeneration.
+export type WorkflowRow = Database["public"]["Tables"]["workflow_data"]["Row"];
+export type WorkflowRowInsert =
   Database["public"]["Tables"]["workflow_data"]["Insert"];
-
-export type WorkflowUpdateInput =
+export type WorkflowRowUpdate =
   Database["public"]["Tables"]["workflow_data"]["Update"];
+
+// JSON column names are asserted against the DB schema — a rename/removal
+// upstream surfaces here (`_AssertJsonCols` resolves to `never`).
+type WorkflowJsonCols =
+  | "inputs"
+  | "outputs"
+  | "dependencies"
+  | "sources"
+  | "destinations"
+  | "actions"
+  | "metadata"
+  | "viewport"
+  | "tags";
+type _AssertJsonCols = WorkflowJsonCols extends keyof WorkflowRow
+  ? WorkflowJsonCols
+  : never;
+
+// App-level Workflow — same as the DB row, but JSON columns are narrowed to
+// the runtime shapes the app uses. Non-JSON columns flow through from the DB.
+export type Workflow = Omit<WorkflowRow, _AssertJsonCols> & {
+  inputs: InputMapping[] | null;
+  outputs: Output[] | null;
+  dependencies: Dependency[] | null;
+  sources: BrokerSourceConfig[] | null;
+  destinations: BrokerDestination[] | null;
+  actions: unknown[] | null;
+  metadata: WorkflowMetadata | null;
+  viewport: Viewport | null;
+  tags: string[] | null;
+};
+
+export type WorkflowCreateInput = Omit<WorkflowRowInsert, _AssertJsonCols> & {
+  inputs?: InputMapping[] | null;
+  outputs?: Output[] | null;
+  dependencies?: Dependency[] | null;
+  sources?: BrokerSourceConfig[] | null;
+  destinations?: BrokerDestination[] | null;
+  actions?: unknown[] | null;
+  metadata?: WorkflowMetadata | null;
+  viewport?: Viewport | null;
+  tags?: string[] | null;
+};
+
+export type WorkflowUpdateInput = Omit<WorkflowRowUpdate, _AssertJsonCols> & {
+  inputs?: InputMapping[] | null;
+  outputs?: Output[] | null;
+  dependencies?: Dependency[] | null;
+  sources?: BrokerSourceConfig[] | null;
+  destinations?: BrokerDestination[] | null;
+  actions?: unknown[] | null;
+  metadata?: WorkflowMetadata | null;
+  viewport?: Viewport | null;
+  tags?: string[] | null;
+};
 
 export interface WorkflowState {
   entities: Record<string, Workflow>;

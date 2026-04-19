@@ -67,6 +67,14 @@ interface BlockRendererProps {
   index: number;
   isStreamActive?: boolean;
   onContentChange?: (newContent: string) => void;
+  /**
+   * conversationId + messageId identify the owning cx_message row. Stateful
+   * render blocks (quiz, flashcards, form, editable table, etc.) use these
+   * via `useMessageBlockPersistence` to round-trip their state into the DB
+   * through the `cx_message_edit` RPC. Optional — blocks that don't need
+   * persistence ignore them.
+   */
+  conversationId?: string;
   messageId?: string;
   taskId?: string;
   isLastReasoningBlock?: boolean;
@@ -122,6 +130,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
   index,
   isStreamActive,
   onContentChange,
+  conversationId,
   messageId,
   taskId,
   isLastReasoningBlock,
@@ -553,7 +562,15 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
       );
 
     case "tasks":
-      return <BlockComponents.TasksBlock key={index} content={block.content} />;
+      return (
+        <BlockComponents.TasksBlock
+          key={index}
+          content={block.content}
+          messageId={messageId}
+          conversationId={conversationId}
+          blockIndex={index}
+        />
+      );
 
     case "structured_info":
       return (
@@ -652,6 +669,9 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
             key={index}
             quizData={block.serverData as any}
             taskId={taskId}
+            conversationId={conversationId}
+            messageId={messageId}
+            blockIndex={index}
           />
         );
       }
@@ -694,6 +714,9 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
               key={index}
               quizData={normalised}
               taskId={taskId}
+              conversationId={conversationId}
+              messageId={messageId}
+              blockIndex={index}
             />
           );
         }

@@ -37,20 +37,7 @@ import {
 // DB Row Interfaces
 // ============================================================================
 
-interface ProjectMemberWithUserRow {
-  id: string;
-  invited_by: string;
-  joined_at: string;
-  project_id: string;
-  role: string;
-  user_avatar_url: string;
-  user_display_name: string;
-  user_email: string;
-  user_id: string;
-}
-type _CheckProjectMemberWithUserRow = ProjectMemberWithUserRow extends DbRpcRow<"get_project_members_with_users"> ? true : false;
-declare const _projectMemberWithUserRow: _CheckProjectMemberWithUserRow;
-true satisfies typeof _projectMemberWithUserRow;
+type ProjectMemberWithUserRow = DbRpcRow<"get_project_members_with_users">;
 
 // ============================================================================
 // Project CRUD Operations

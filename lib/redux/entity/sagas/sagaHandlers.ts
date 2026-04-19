@@ -1483,30 +1483,12 @@ function* handleFetchMetrics<TEntity extends EntityKeys>({
         //         count: 'exact'
         //     });
 
-        // Fetch performance metrics
-        const performanceMetrics = yield call(async () => {
-            const response = await supabase.rpc("get_entity_performance_metrics", {
-                entity_name: entityKey,
-            });
-            return response.data;
-        });
-
-        // Fetch cache statistics
-        const cacheStats = yield call(async () => {
-            const response = await supabase.rpc("get_entity_cache_stats", {
-                entity_name: entityKey,
-            });
-            return response.data;
-        });
-
-        // Fetch error rates
-        const errorRates = yield call(async () => {
-            const response = await supabase.rpc("get_entity_error_rates", {
-                entity_name: entityKey,
-                time_range: "24h",
-            });
-            return response.data;
-        });
+        // STUBBED: the `get_entity_performance_metrics`, `get_entity_cache_stats`,
+        // and `get_entity_error_rates` RPCs were removed from the DB. Callers
+        // receive null for now; restore the RPC calls when the functions land.
+        const performanceMetrics = null;
+        const cacheStats = null;
+        const errorRates = null;
 
         yield put(
             actions.setMetrics({

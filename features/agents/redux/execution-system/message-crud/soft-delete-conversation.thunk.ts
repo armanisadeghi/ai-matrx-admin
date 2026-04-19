@@ -8,8 +8,8 @@
  * This thunk:
  *   1. Calls the RPC.
  *   2. On success, removes the conversation from every client slice that
- *      holds its state (conversationList, messages, the conversations
- *      entity, observability, and the focus registry).
+ *      holds its state (conversationList, messages via `clearMessages`,
+ *      the conversations entity via `destroyInstance`, and observability).
  *   3. Rejects when the RPC returns false so the caller can surface "not found".
  */
 
@@ -17,7 +17,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import { supabase } from "@/utils/supabase/client";
 import type { AppDispatch, RootState } from "@/lib/redux/store";
 import { destroyInstance } from "../conversations/conversations.slice";
-import { removeInstanceHistory } from "../messages/messages.slice";
+import { clearMessages } from "../messages/messages.slice";
 import { clearForConversation as clearObservabilityForConversation } from "../observability/observability.slice";
 import { removeConversation as removeFromConversationList } from "../../conversation-list/conversation-list.slice";
 
@@ -62,7 +62,7 @@ export const softDeleteConversation = createAsyncThunk<
     // Purge from every slice that holds this conversation's state. Each
     // action is a no-op if the slice has no entry for this id.
     dispatch(removeFromConversationList(conversationId));
-    dispatch(removeInstanceHistory(conversationId));
+    dispatch(clearMessages(conversationId));
     dispatch(clearObservabilityForConversation(conversationId));
     dispatch(destroyInstance(conversationId));
 

@@ -9,6 +9,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import AdvancedMenu, { MenuItem } from '@/components/official/AdvancedMenu';
 import type { Note } from '../types';
+import { getNoteMetadata } from '../types';
 
 type EditorMode = 'plain' | 'wysiwyg' | 'markdown' | 'matrx-split' | 'preview';
 
@@ -158,7 +159,7 @@ export function NoteTabs({
 
     // Get current editor mode from active note
     const getCurrentMode = (note: Note): EditorMode => {
-        return (note.metadata?.lastEditorMode as EditorMode) || 'plain';
+        return (getNoteMetadata(note).lastEditorMode as EditorMode) || 'plain';
     };
 
     // Get icon for current mode
@@ -177,7 +178,7 @@ export function NoteTabs({
     const handleViewModeChange = (mode: EditorMode) => {
         if (activeNote) {
             onUpdateNote(activeNote.id, {
-                metadata: { ...activeNote.metadata, lastEditorMode: mode }
+                metadata: { ...getNoteMetadata(activeNote), lastEditorMode: mode }
             });
         }
         setViewMenuOpen(false);

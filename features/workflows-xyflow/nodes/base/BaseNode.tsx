@@ -198,8 +198,8 @@ const BaseNodeComponent: React.FC<BaseNodeProps> = ({ config, selected, dragging
             updateNodeInternals(nodeId);
         }
     }, [
-        effectiveNodeData?.metadata?.nodeDefinition?.inputs?.length,
-        effectiveNodeData?.metadata?.nodeDefinition?.outputs?.length,
+        Array.isArray(effectiveNodeData?.metadata?.nodeDefinition?.inputs) ? effectiveNodeData?.metadata?.nodeDefinition?.inputs.length : 0,
+        Array.isArray(effectiveNodeData?.metadata?.nodeDefinition?.outputs) ? effectiveNodeData?.metadata?.nodeDefinition?.outputs.length : 0,
         nodeId,
         updateNodeInternals,
     ]);

@@ -5,58 +5,20 @@
  * compiled at runtime, so new tool UIs can be added without code deploys.
  */
 
+import type { Database } from "@/types/database.types";
+
 // ---------------------------------------------------------------------------
-// Database row types
+// Database row types — derived from the generated Supabase schema so schema
+// changes surface at compile time without manual type drift.
 // ---------------------------------------------------------------------------
 
 /** Row from `tool_ui_components` table */
-export interface ToolUiComponentRow {
-    id: string;
-    tool_id: string | null;
-    tool_name: string;
-    display_name: string;
-    results_label: string | null;
-
-    inline_code: string;
-    overlay_code: string | null;
-    utility_code: string | null;
-    header_extras_code: string | null;
-    header_subtitle_code: string | null;
-
-    keep_expanded_on_stream: boolean;
-    allowed_imports: string[];
-    language: "tsx" | "jsx";
-
-    is_active: boolean;
-    version: string;
-
-    notes: string | null;
-    created_by: string | null;
-    created_at: string;
-    updated_at: string;
-}
+export type ToolUiComponentRow =
+    Database["public"]["Tables"]["tool_ui_components"]["Row"];
 
 /** Row from `tool_ui_incidents` table */
-export interface ToolUiIncidentRow {
-    id: string;
-    tool_name: string;
-    component_id: string | null;
-    component_type: ComponentSlot;
-    error_type: IncidentErrorType;
-    error_message: string;
-    error_stack: string | null;
-    tool_update_snapshot: unknown | null;
-    component_version: string | null;
-    browser_info: string | null;
-    session_id: string | null;
-
-    resolved: boolean;
-    resolved_at: string | null;
-    resolved_by: string | null;
-    resolution_notes: string | null;
-
-    created_at: string;
-}
+export type ToolUiIncidentRow =
+    Database["public"]["Tables"]["tool_ui_incidents"]["Row"];
 
 // ---------------------------------------------------------------------------
 // Enums / unions

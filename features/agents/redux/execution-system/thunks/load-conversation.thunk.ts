@@ -37,7 +37,10 @@ import {
   initInstanceVariables,
   setUserVariableValues,
 } from "../instance-variable-values/instance-variable-values.slice";
-import { initInstanceOverrides, setOverrides } from "../instance-model-overrides/instance-model-overrides.slice";
+import {
+  initInstanceOverrides,
+  setOverrides,
+} from "../instance-model-overrides/instance-model-overrides.slice";
 import { initInstanceUIState } from "../instance-ui-state/instance-ui-state.slice";
 import {
   initInstanceContext,
@@ -238,23 +241,27 @@ async function fetchConversationBundle(
 
   // Preferred: single-round-trip RPC (`get_cx_conversation_bundle`) — SQL
   // signature: (p_conversation_id uuid, p_message_limit int, p_before_position smallint).
-  // The RPC isn't in the generated `Functions` block yet so we call it
-  // through an `any` cast until types are regenerated.
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const rpcAny = supabase.rpc as any;
-    const { data, error } = await rpcAny("get_cx_conversation_bundle", {
+    const { data, error } = await supabase.rpc("get_cx_conversation_bundle", {
       p_conversation_id: conversationId,
       p_message_limit: messageLimit,
-      p_before_position: beforePosition,
+      p_before_position: beforePosition ?? undefined,
     });
     if (!error && data) {
-      // RPC omits the legacy observability arrays — downstream code handles
-      // the missing fields gracefully (hydrateObservability tolerates []).
-      return data as CxConversationBundle;
+      const bundle = data as unknown as CxConversationBundle;
+      return bundle;
     }
-  } catch {
-    // RPC call threw — fall through to the parallel-query fallback.
+    // eslint-disable-next-line no-console
+    console.warn(
+      "[loadConversation] RPC unavailable — falling back to parallel queries. error=%o",
+      error,
+    );
+  } catch (rpcErr) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      "[loadConversation] RPC threw — falling back to parallel queries. error=%o",
+      rpcErr,
+    );
   }
 
   // Fallback: parallel table queries. Runs if the RPC isn't deployed (dev
@@ -297,13 +304,34 @@ async function fetchConversationBundle(
       .order("created_at", { ascending: true }),
   ]);
 
-  if (conversationRes.error) throw conversationRes.error;
+  if (conversationRes.error) {
+    // eslint-disable-next-line no-console
+    console.error(
+      "[loadConversation] cx_conversation query error:",
+      conversationRes.error,
+    );
+    throw conversationRes.error;
+  }
   if (!conversationRes.data) {
     throw new Error(`Conversation ${conversationId} not found`);
   }
 
-  const messages = (messagesRes.data ??
-    []) as unknown as CxMessageRow[];
+  const messages = (messagesRes.data ?? []) as unknown as CxMessageRow[];
+  // eslint-disable-next-line no-console
+  console.log(
+    "[loadConversation] Fallback queries: messages=%d toolCalls=%d userRequests=%d requests=%d",
+    messages.length,
+    toolCallsRes.data?.length ?? 0,
+    userRequestsRes.data?.length ?? 0,
+    requestsRes.data?.length ?? 0,
+  );
+  if (messagesRes.error) {
+    // eslint-disable-next-line no-console
+    console.error(
+      "[loadConversation] cx_message query error:",
+      messagesRes.error,
+    );
+  }
   return {
     conversation: conversationRes.data as unknown as CxConversationRow,
     messages,
@@ -484,163 +512,209 @@ export const loadConversation = createAsyncThunk<
   { conversationId: string },
   LoadConversationArgs,
   ThunkApi
->("conversations/load", async (
-  { conversationId, surfaceKey, messageLimit, beforePosition },
-  { dispatch },
-) => {
-  const bundle = await fetchConversationBundle(conversationId, {
-    messageLimit,
-    beforePosition,
-  });
-  const conv = bundle.conversation;
-
-  // ── 1. Conversation record (includes sidebar + scope + relation fields) ──
-  dispatch(
-    hydrateConversation({
+>(
+  "conversations/load",
+  async (
+    { conversationId, surfaceKey, messageLimit, beforePosition },
+    { dispatch },
+  ) => {
+    // eslint-disable-next-line no-console
+    console.log(
+      "[loadConversation] START cid=%s surfaceKey=%s",
       conversationId,
-      agentId: conv.initial_agent_id ?? "",
-      agentType: "user",
-      origin: "manual",
-      shortcutId: null,
-      status: "ready",
-      sourceApp: conv.source_app,
-      // Cast is safe — source_feature is stored as a plain string on the row
-      // but the client-side type narrows to a known enum.
-      sourceFeature: conv.source_feature as never,
-      createdAt: conv.created_at,
-      updatedAt: conv.updated_at,
-      userId: conv.user_id,
-      initialAgentId: conv.initial_agent_id,
-      initialAgentVersionId: conv.initial_agent_version_id,
-      lastModelId: conv.last_model_id,
-      parentConversationId: conv.parent_conversation_id,
-      forkedFromId: conv.forked_from_id,
-      forkedAtPosition: conv.forked_at_position,
-      organizationId: conv.organization_id,
-      projectId: conv.project_id,
-      taskId: conv.task_id,
-      isEphemeral: conv.is_ephemeral,
-      isPublic: conv.is_public,
-      title: conv.title,
-      description: conv.description,
-      keywords: conv.keywords,
-      systemInstruction: conv.system_instruction,
-      persistedStatus:
-        conv.status === "archived" ? "archived" : "active",
-      messageCount: conv.message_count,
-      metadata:
-        typeof conv.metadata === "object" && conv.metadata !== null
-          ? (conv.metadata as Record<string, unknown>)
-          : undefined,
-    }),
-  );
+      surfaceKey ?? "(none)",
+    );
+    let bundle: CxConversationBundle;
+    try {
+      bundle = await fetchConversationBundle(conversationId, {
+        messageLimit,
+        beforePosition,
+      });
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error("[loadConversation] fetchConversationBundle failed:", err);
+      throw err;
+    }
+    const conv = bundle.conversation;
+    // eslint-disable-next-line no-console
+    console.log(
+      "[loadConversation] bundle received: conv=%s messages=%d toolCalls=%d",
+      conv?.id ?? "(none)",
+      bundle.messages?.length ?? 0,
+      bundle.tool_calls?.length ?? 0,
+    );
 
-  // Label (title/description/keywords) — already set above, but also fire the
-  // dedicated action so any subscribers waiting on that signal get notified.
-  dispatch(
-    setConversationLabel({
-      conversationId,
-      title: conv.title,
-      description: conv.description,
-      keywords: conv.keywords,
-    }),
-  );
-
-  // ── 2. Messages (DB-faithful) ────────────────────────────────────────────
-  const messageRecords = bundle.messages.map(messageRowToRecord);
-  dispatch(hydrateMessages({ conversationId, messages: messageRecords }));
-
-  // ── 3. Variables — stamp the DB `variables` JSON into userValues so the
-  // user picks up right where they left off. A future pass can introduce a
-  // dedicated `persistedValues` field on the entry to distinguish "server
-  // said this was last-set" from "user just typed it"; today they're the
-  // same on the reload path by construction.
-  dispatch(
-    initInstanceVariables({
-      conversationId,
-      definitions: [],
-      scopeValues: {},
-    }),
-  );
-  const persistedVariables =
-    typeof conv.variables === "object" && conv.variables !== null
-      ? (conv.variables as Record<string, unknown>)
-      : {};
-  if (Object.keys(persistedVariables).length > 0) {
+    // ── 1. Conversation record (includes sidebar + scope + relation fields) ──
     dispatch(
-      setUserVariableValues({
+      hydrateConversation({
         conversationId,
-        values: persistedVariables,
+        agentId: conv.initial_agent_id ?? "",
+        agentType: "user",
+        origin: "manual",
+        shortcutId: null,
+        status: "ready",
+        sourceApp: conv.source_app,
+        // Cast is safe — source_feature is stored as a plain string on the row
+        // but the client-side type narrows to a known enum.
+        sourceFeature: conv.source_feature as never,
+        createdAt: conv.created_at,
+        updatedAt: conv.updated_at,
+        userId: conv.user_id,
+        initialAgentId: conv.initial_agent_id,
+        initialAgentVersionId: conv.initial_agent_version_id,
+        lastModelId: conv.last_model_id,
+        parentConversationId: conv.parent_conversation_id,
+        forkedFromId: conv.forked_from_id,
+        forkedAtPosition: conv.forked_at_position,
+        organizationId: conv.organization_id,
+        projectId: conv.project_id,
+        taskId: conv.task_id,
+        isEphemeral: conv.is_ephemeral,
+        isPublic: conv.is_public,
+        title: conv.title,
+        description: conv.description,
+        keywords: conv.keywords,
+        systemInstruction: conv.system_instruction,
+        persistedStatus: conv.status === "archived" ? "archived" : "active",
+        messageCount: conv.message_count,
+        metadata:
+          typeof conv.metadata === "object" && conv.metadata !== null
+            ? (conv.metadata as Record<string, unknown>)
+            : undefined,
       }),
     );
-  }
 
-  // ── 4. Model config (overrides + last model id) ──────────────────────────
-  dispatch(
-    initInstanceOverrides({
-      conversationId,
-      baseSettings: {},
-    }),
-  );
-  if (
-    typeof conv.overrides === "object" &&
-    conv.overrides !== null &&
-    Object.keys(conv.overrides as Record<string, unknown>).length > 0
-  ) {
+    // Label (title/description/keywords) — already set above, but also fire the
+    // dedicated action so any subscribers waiting on that signal get notified.
     dispatch(
-      setOverrides({
+      setConversationLabel({
         conversationId,
-        changes: conv.overrides as Record<string, unknown>,
+        title: conv.title,
+        description: conv.description,
+        keywords: conv.keywords,
       }),
     );
-  }
 
-  // ── 5. Display + context (stored under metadata.display / metadata.context
-  //      per the Phase 7 decision — config is server-strict) ────────────────
-  const metaObj =
-    typeof conv.metadata === "object" && conv.metadata !== null
-      ? (conv.metadata as Record<string, unknown>)
-      : {};
-  const displayMeta =
-    (metaObj.display as Record<string, unknown> | undefined) ?? undefined;
-  if (displayMeta) {
-    dispatch(
-      initInstanceUIState({
-        conversationId,
-        ...displayMeta,
-      } as never),
+    // ── 2. Messages (DB-faithful) ────────────────────────────────────────────
+    const messageRecords = bundle.messages.map(messageRowToRecord);
+    // eslint-disable-next-line no-console
+    console.log(
+      "[loadConversation] hydrateMessages dispatching %d records. first=%o last=%o",
+      messageRecords.length,
+      messageRecords[0]
+        ? {
+            id: messageRecords[0].id,
+            role: messageRecords[0].role,
+            pos: messageRecords[0].position,
+          }
+        : null,
+      messageRecords[messageRecords.length - 1]
+        ? {
+            id: messageRecords[messageRecords.length - 1].id,
+            role: messageRecords[messageRecords.length - 1].role,
+            pos: messageRecords[messageRecords.length - 1].position,
+          }
+        : null,
     );
-  }
+    dispatch(hydrateMessages({ conversationId, messages: messageRecords }));
 
-  const contextMeta =
-    (metaObj.context as Record<string, unknown> | undefined) ?? undefined;
-  if (contextMeta) {
-    dispatch(initInstanceContext({ conversationId }));
+    // ── 3. Variables — stamp the DB `variables` JSON into userValues so the
+    // user picks up right where they left off. A future pass can introduce a
+    // dedicated `persistedValues` field on the entry to distinguish "server
+    // said this was last-set" from "user just typed it"; today they're the
+    // same on the reload path by construction.
     dispatch(
-      setContextEntries({
+      initInstanceVariables({
         conversationId,
-        entries: Object.entries(contextMeta).map(([key, value]) => ({
-          key,
-          value,
-        })),
+        definitions: [],
+        scopeValues: {},
       }),
     );
-  }
+    const persistedVariables =
+      typeof conv.variables === "object" && conv.variables !== null
+        ? (conv.variables as Record<string, unknown>)
+        : {};
+    if (Object.keys(persistedVariables).length > 0) {
+      dispatch(
+        setUserVariableValues({
+          conversationId,
+          values: persistedVariables,
+        }),
+      );
+    }
 
-  // ── 6. Observability ─────────────────────────────────────────────────────
-  dispatch(
-    hydrateObservability({
+    // ── 4. Model config (overrides + last model id) ──────────────────────────
+    dispatch(
+      initInstanceOverrides({
+        conversationId,
+        baseSettings: {},
+      }),
+    );
+    if (
+      typeof conv.overrides === "object" &&
+      conv.overrides !== null &&
+      Object.keys(conv.overrides as Record<string, unknown>).length > 0
+    ) {
+      dispatch(
+        setOverrides({
+          conversationId,
+          changes: conv.overrides as Record<string, unknown>,
+        }),
+      );
+    }
+
+    // ── 5. Display + context (stored under metadata.display / metadata.context
+    //      per the Phase 7 decision — config is server-strict) ────────────────
+    const metaObj =
+      typeof conv.metadata === "object" && conv.metadata !== null
+        ? (conv.metadata as Record<string, unknown>)
+        : {};
+    const displayMeta =
+      (metaObj.display as Record<string, unknown> | undefined) ?? undefined;
+    if (displayMeta) {
+      dispatch(
+        initInstanceUIState({
+          conversationId,
+          ...displayMeta,
+        } as never),
+      );
+    }
+
+    const contextMeta =
+      (metaObj.context as Record<string, unknown> | undefined) ?? undefined;
+    if (contextMeta) {
+      dispatch(initInstanceContext({ conversationId }));
+      dispatch(
+        setContextEntries({
+          conversationId,
+          entries: Object.entries(contextMeta).map(([key, value]) => ({
+            key,
+            value,
+          })),
+        }),
+      );
+    }
+
+    // ── 6. Observability ─────────────────────────────────────────────────────
+    dispatch(
+      hydrateObservability({
+        conversationId,
+        userRequests: (bundle.userRequests ?? []).map(userRequestRowToRecord),
+        requests: (bundle.requests ?? []).map(requestRowToRecord),
+        toolCalls: bundle.tool_calls.map(toolCallRowToRecord),
+      }),
+    );
+
+    // ── 7. Focus (if a surface was given) ────────────────────────────────────
+    if (surfaceKey) {
+      dispatch(setFocus({ surfaceKey, conversationId }));
+    }
+
+    // eslint-disable-next-line no-console
+    console.log(
+      "[loadConversation] DONE cid=%s — all 7 dimensions hydrated",
       conversationId,
-      userRequests: (bundle.userRequests ?? []).map(userRequestRowToRecord),
-      requests: (bundle.requests ?? []).map(requestRowToRecord),
-      toolCalls: bundle.tool_calls.map(toolCallRowToRecord),
-    }),
-  );
-
-  // ── 7. Focus (if a surface was given) ────────────────────────────────────
-  if (surfaceKey) {
-    dispatch(setFocus({ surfaceKey, conversationId }));
-  }
-
-  return { conversationId };
-});
+    );
+    return { conversationId };
+  },
+);

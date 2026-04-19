@@ -31,6 +31,7 @@ import {
   selectTaskId,
 } from "@/features/agent-context/redux/appContextSlice";
 import { ScopeTagsDisplay } from "@/features/agent-context/components/ScopeTagsDisplay";
+import TaskChipRow from "@/features/tasks/widgets/TaskChipRow";
 import { cn } from "@/lib/utils";
 import { NoteContextPicker } from "./NoteContextPicker";
 
@@ -159,6 +160,14 @@ export function NoteMetadataBar({ noteId }: NoteMetadataBarProps) {
           entityType="note"
           entityId={noteId}
           className="shrink-0 [&_.badge]:text-[0.5rem] [&_.badge]:py-0 [&_.badge]:px-1"
+        />
+        {/* Task links + quick attach */}
+        <TaskChipRow
+          entityType="note"
+          entityId={noteId}
+          label={undefined}
+          size="xs"
+          className="shrink-0"
         />
 
         {/* Tags */}

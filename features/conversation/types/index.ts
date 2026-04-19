@@ -53,7 +53,7 @@ export type { UnifiedChatWrapperProps } from "@/features/cx-conversation/Unified
 export type { ConversationShellProps } from "@/features/cx-conversation/ConversationShell";
 export type { ConversationInputProps } from "@/features/cx-conversation/ConversationInput";
 export type { AssistantMessageProps } from "@/features/cx-conversation/AssistantMessage";
-export type { MessageOptionsMenuProps } from "@/features/cx-conversation/MessageOptionsMenu";
+export type { MessageOptionsMenuProps } from "@/features/agents/components/run/message-actions/MessageOptionsMenu";
 
 // Internalized utility types
 export type { ParsedResource } from "@/features/conversation/utils/resource-parsing";

@@ -395,7 +395,7 @@ export const fetchSharedPrompts = createAsyncThunk<
             description:     row.description ?? null,
             permissionLevel: row.permission_level as SharedPromptRecord['permissionLevel'],
             ownerEmail:      row.owner_email,
-            canEdit:         satisfiesPermissionLevel(row.permission_level, 'editor'),
+            canEdit:         satisfiesPermissionLevel(row.permission_level as SharedPromptRecord['permissionLevel'], 'editor'),
             canDelete:       row.permission_level === 'admin',
         }));
 

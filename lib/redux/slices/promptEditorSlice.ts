@@ -199,9 +199,14 @@ export const switchModel = createAsyncThunk(
           (mergedSettings as any)[key] = currentSettings[key];
         } else if (key === "tools") {
           // Only preserve tools if new model supports tools
-          const toolsControl = newModel.controls?.tools as
-            | Record<string, unknown>
-            | undefined;
+          const controls =
+            typeof newModel.controls === 'object' && newModel.controls !== null
+              ? (newModel.controls as Record<string, unknown>)
+              : undefined;
+          const toolsControl =
+            controls && typeof controls.tools === 'object' && controls.tools !== null
+              ? (controls.tools as Record<string, unknown>)
+              : undefined;
           if (toolsControl?.allowed || toolsControl?.default) {
             mergedSettings.tools = currentSettings.tools;
           } else {
@@ -314,8 +319,8 @@ const promptEditorSlice = createSlice({
           state.id = action.payload.id;
           state.name = action.payload.name || "";
           state.description = action.payload.description || "";
-          state.messages = action.payload.messages || [];
-          state.variableDefaults = action.payload.variable_defaults || [];
+          state.messages = (Array.isArray(action.payload.messages) ? action.payload.messages : []) as PromptMessage[];
+          state.variableDefaults = (Array.isArray(action.payload.variable_defaults) ? action.payload.variable_defaults : []) as PromptVariable[];
           state.settings = action.payload.settings || {};
           state.lastSavedAt = action.payload.updated_at;
         } else {

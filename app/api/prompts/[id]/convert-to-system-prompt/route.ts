@@ -2,6 +2,7 @@ import { createClient } from "@/utils/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 import { checkIsUserAdmin } from "@/utils/supabase/userSessionData";
 import { collectMustacheVariableNamesFromMessagesJson } from "@/features/prompts/utils/collect-template-variables-from-messages-json";
+import { getFunctionalityById } from "@/lib/services/functionality-helpers";
 
 /**
  * Convert a prompt to a system prompt
@@ -119,17 +120,12 @@ export async function POST(
       );
     }
 
-    const { data: functionality, error: funcError } = await supabase
-      .from("system_prompt_functionality_configs")
-      .select("*")
-      .eq("functionality_id", body.functionality_id)
-      .single();
+    const functionality = await getFunctionalityById(body.functionality_id);
 
-    if (funcError || !functionality) {
+    if (!functionality) {
       console.error(
         "Invalid functionality_id:",
         body.functionality_id,
-        funcError,
       );
       return NextResponse.json(
         { error: "Invalid functionality_id provided - not found in database" },
@@ -139,14 +135,11 @@ export async function POST(
 
     // Validate variables
     const promptVars = new Set(promptSnapshot.variables);
-    const missing = (functionality.required_variables || []).filter(
-      (v: string) => !promptVars.has(v),
-    );
+    const requiredVars: string[] = functionality.required_variables ?? [];
+    const optionalVars: string[] = functionality.optional_variables ?? [];
+    const missing = requiredVars.filter((v) => !promptVars.has(v));
     const valid = missing.length === 0;
-    const allowed = [
-      ...(functionality.required_variables || []),
-      ...(functionality.optional_variables || []),
-    ];
+    const allowed = [...requiredVars, ...optionalVars];
     const extra = promptSnapshot.variables.filter(
       (v: string) => !allowed.includes(v),
     );

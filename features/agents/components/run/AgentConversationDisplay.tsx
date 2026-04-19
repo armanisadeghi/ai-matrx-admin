@@ -3,20 +3,29 @@
 /**
  * AgentConversationDisplay
  *
- * Renders the full conversation history for an execution instance.
+ * Renders the conversation transcript. Reads ONLY from `messages.byId +
+ * orderedIds` (MessageRecord shape) — there is no legacy turn array.
  *
- * ID-ONLY DESIGN: No content or data flows through this component as props.
- * Each child receives only the identifiers it needs to subscribe to its own
- * data in Redux. This ensures:
- *   - Committed turns never re-render when a new streaming turn arrives
- *   - Streaming components subscribe to exactly the data they need
- *   - DB-loaded history and live-streamed turns use the same component tree
+ * Child components receive identifiers only (messageId, conversationId,
+ * requestId) and subscribe to their own data:
+ *
+ *   - Committed messages:        byId[messageId] (status "active")
+ *   - Reserved assistant skel:   byId[messageId] (status "reserved", empty content)
+ *   - Live streaming turn:       activeRequests[requestId] (text appears here
+ *                                as chunks stream in; byId gets the final
+ *                                content on completion)
+ *
+ * During a live stream the reserved assistant record exists in byId but has
+ * empty content; we skip it in the list and push a `__streaming__` entry
+ * that renders from activeRequests. When completion lands,
+ * `updateMessageRecord` writes the final `CxContentBlock[]` to the same byId
+ * entry and the streaming entry disappears.
  */
 
-import { useEffect, useRef, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import dynamic from "next/dynamic";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectConversationTurns } from "@/features/agents/redux/execution-system/messages/messages.selectors";
+import { selectConversationMessages } from "@/features/agents/redux/execution-system/messages/messages.selectors";
 import {
   selectStreamPhase,
   selectLatestRequestId,
@@ -39,12 +48,12 @@ const AgentEmptyMessageDisplay = dynamic(
   { ssr: false },
 );
 
-interface DisplayMessage {
+interface DisplayEntry {
   key: string;
   role: "user" | "assistant" | "system";
-  /** turnId for committed turns (used by user/assistant to look up their own data) */
-  turnId: string | null;
-  /** requestId for assistant turns that have activeRequest data in Redux */
+  /** Server-assigned `cx_message.id` for committed rows; null for the live entry. */
+  messageId: string | null;
+  /** Live stream request id — set only on the `__streaming__` entry. */
   requestId: string | null;
   isStreamActive: boolean;
 }
@@ -54,11 +63,21 @@ interface AgentConversationDisplayProps {
   compact?: boolean;
 }
 
+function isEmptyReservedAssistant(record: {
+  role: string;
+  status: string;
+  content: unknown;
+}): boolean {
+  if (record.role !== "assistant") return false;
+  if (record.status !== "reserved") return false;
+  return Array.isArray(record.content) && record.content.length === 0;
+}
+
 export function AgentConversationDisplay({
   conversationId,
   compact = false,
 }: AgentConversationDisplayProps) {
-  const turns = useAppSelector(selectConversationTurns(conversationId));
+  const messages = useAppSelector(selectConversationMessages(conversationId));
   const phase = useAppSelector(selectStreamPhase(conversationId));
   const latestRequestId = useAppSelector(selectLatestRequestId(conversationId));
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -70,37 +89,55 @@ export function AgentConversationDisplay({
     phase === "interstitial" ||
     phase === "error";
 
-  const displayMessages = useMemo((): DisplayMessage[] => {
-    const msgs: DisplayMessage[] = turns.map((turn) => ({
-      key: turn.turnId,
-      role: turn.role,
-      turnId: turn.turnId,
-      requestId: turn.requestId ?? null,
-      isStreamActive: false,
-    }));
+  const displayEntries = useMemo((): DisplayEntry[] => {
+    const entries: DisplayEntry[] = [];
+    for (const rec of messages) {
+      if (isEmptyReservedAssistant(rec)) continue;
+      entries.push({
+        key: rec.id,
+        role: rec.role,
+        messageId: rec.id,
+        requestId: rec._streamRequestId ?? null,
+        isStreamActive: false,
+      });
+    }
 
     if (isActive) {
-      msgs.push({
+      entries.push({
         key: "__streaming__",
         role: "assistant",
-        turnId: null,
+        messageId: null,
         requestId: latestRequestId ?? null,
         isStreamActive: true,
       });
     }
 
-    return msgs;
-  }, [turns, isActive, phase, latestRequestId]);
+    return entries;
+  }, [messages, isActive, latestRequestId]);
 
-  const prevLengthRef = useRef(displayMessages.length);
+  // Diagnostic logging — unconditional (not behind NODE_ENV check) so the
+  // single path "Runner loads conversation" can be observed from production.
   useEffect(() => {
-    if (displayMessages.length > prevLengthRef.current) {
+    // eslint-disable-next-line no-console
+    console.log(
+      "[AgentConversationDisplay] cid=%s messages=%d phase=%s active=%s entries=%d",
+      conversationId,
+      messages.length,
+      phase ?? "idle",
+      isActive,
+      displayEntries.length,
+    );
+  }, [conversationId, messages.length, phase, isActive, displayEntries.length]);
+
+  const prevLengthRef = useRef(displayEntries.length);
+  useEffect(() => {
+    if (displayEntries.length > prevLengthRef.current) {
       bottomRef.current?.scrollIntoView({ behavior: "smooth" });
     }
-    prevLengthRef.current = displayMessages.length;
-  }, [displayMessages.length]);
+    prevLengthRef.current = displayEntries.length;
+  }, [displayEntries.length]);
 
-  if (displayMessages.length === 0) {
+  if (displayEntries.length === 0) {
     return <AgentEmptyMessageDisplay conversationId={conversationId} />;
   }
 
@@ -108,26 +145,26 @@ export function AgentConversationDisplay({
 
   return (
     <div className={`${spacingClass} p-2 scrollbar-hide`}>
-      {displayMessages.map((msg) => {
-        if (msg.role === "user" && msg.turnId) {
+      {displayEntries.map((entry) => {
+        if (entry.role === "user" && entry.messageId) {
           return (
             <AgentUserMessage
-              key={msg.key}
+              key={entry.key}
               conversationId={conversationId}
-              turnId={msg.turnId}
+              messageId={entry.messageId}
               compact={compact}
             />
           );
         }
 
-        if (msg.role === "assistant") {
+        if (entry.role === "assistant") {
           return (
             <AgentAssistantMessage
-              key={msg.key}
+              key={entry.key}
               conversationId={conversationId}
-              requestId={msg.requestId ?? undefined}
-              turnId={msg.turnId ?? undefined}
-              isStreamActive={msg.isStreamActive}
+              requestId={entry.requestId ?? undefined}
+              messageId={entry.messageId ?? undefined}
+              isStreamActive={entry.isStreamActive}
               compact={compact}
             />
           );

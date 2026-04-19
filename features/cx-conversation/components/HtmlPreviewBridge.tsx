@@ -55,7 +55,11 @@ export function HtmlPreviewBridge({
   }, [existingArtifact?.id]);
 
   // On mount: if we have a messageId, fetch artifacts for it so the bridge
-  // immediately knows whether an HTML page was already published from this message.
+  // immediately knows whether an HTML page was already published from
+  // this message. Duplicate prevention lives in the API + thunk layer
+  // (natural-key dedupe on user_id + message_id + artifact_type +
+  // external_system), so the fetch here is purely for UX — it flips the
+  // publish button from "Generate" to "Update" once resolved.
   useEffect(() => {
     if (messageId) {
       dispatch(fetchArtifactsForMessageThunk(messageId));

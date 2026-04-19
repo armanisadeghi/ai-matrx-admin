@@ -19,8 +19,20 @@ const chatConversationsActions = {
 };
 const selectShowDebugInfo = (_state: RootState, _sessionId: string): boolean => false;
 const selectShowSystemMessages = (_state: RootState, _sessionId: string): boolean => false;
-const selectUIState = (_state: RootState, _sessionId: string): Record<string, unknown> | undefined => undefined;
-const selectSession = (_state: RootState, _sessionId: string): Record<string, unknown> | undefined => undefined;
+type ChatDebugUIState = {
+  useLocalhost?: boolean;
+  isBlockMode?: boolean;
+  modelOverride?: string | null;
+  modelSettings?: Record<string, unknown>;
+};
+type ChatDebugSession = {
+  conversationId?: string | null;
+  agentId?: string | null;
+  apiMode?: string | null;
+  status?: string | null;
+};
+const selectUIState = (_state: RootState, _sessionId: string): ChatDebugUIState => ({});
+const selectSession = (_state: RootState, _sessionId: string): ChatDebugSession | undefined => undefined;
 const selectMessages = (_state: RootState, _sessionId: string): unknown[] => [];
 const selectResources = (_state: RootState, _sessionId: string): unknown[] => [];
 import { WindowPanel } from "../WindowPanel";

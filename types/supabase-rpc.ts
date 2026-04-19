@@ -35,16 +35,19 @@
  *   const row = (data as unknown[])[0] as AgentExecutionFull;
  */
 
-import type { Database, Json } from "./database.types";
+import type { Database } from "./database.types";
 
-/** Replace every `Json` occurrence in T with `unknown`. */
-export type JsonToUnknown<T> = T extends Json
-  ? unknown
-  : T extends Array<infer U>
-    ? Array<JsonToUnknown<U>>
-    : T extends object
-      ? { [K in keyof T]: JsonToUnknown<T[K]> }
-      : T;
+/**
+ * Identity type — preserved for historical call sites and docs.
+ *
+ * The generated `Json` alias is patched to `unknown` (see `scripts/patch-db-types.sh`),
+ * so the row types already use `unknown` wherever the DB has a JSON column. No
+ * per-field substitution is needed, which means this type is effectively the
+ * identity transform. The old recursive `T extends Json` mapping short-circuited
+ * to `unknown` for every `T` once `Json` became `unknown`, so keeping it around
+ * would silently wipe every field's type — hence the rewrite.
+ */
+export type JsonToUnknown<T> = T;
 
 /**
  * The single row type returned by a Supabase RPC function,

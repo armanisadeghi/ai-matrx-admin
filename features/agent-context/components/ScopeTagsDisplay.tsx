@@ -14,7 +14,7 @@ function resolveIcon(name: string): LucideIcon {
         .split(/[-_\s]+/)
         .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
         .join('');
-    const Icon = (icons as Record<string, LucideIcon>)[pascalName];
+    const Icon = (icons as unknown as Record<string, LucideIcon>)[pascalName];
     return Icon ?? Folder;
 }
 

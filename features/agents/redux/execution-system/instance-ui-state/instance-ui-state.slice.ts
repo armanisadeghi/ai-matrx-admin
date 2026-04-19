@@ -85,7 +85,7 @@ export interface InitInstanceUIStatePayload {
   showDefinitionMessages?: boolean;
   showDefinitionMessageContent?: boolean;
   hiddenMessageCount?: number;
-  callbackGroupId?: string | null;
+  widgetHandleId?: string | null;
   isCreator?: boolean;
   submitOnEnter?: boolean;
   showAutoClearToggle?: boolean;
@@ -123,7 +123,7 @@ const instanceUIStateSlice = createSlice({
         showDefinitionMessages = true,
         showDefinitionMessageContent = false,
         hiddenMessageCount = 0,
-        callbackGroupId = null,
+        widgetHandleId = null,
         isCreator = false,
         submitOnEnter = true,
         showAutoClearToggle = false,
@@ -149,7 +149,7 @@ const instanceUIStateSlice = createSlice({
         showDefinitionMessages,
         showDefinitionMessageContent,
         hiddenMessageCount,
-        callbackGroupId,
+        widgetHandleId,
         isExpanded: true,
         expandedVariableId: null,
         isCreator,
@@ -299,15 +299,18 @@ const instanceUIStateSlice = createSlice({
       }
     },
 
-    // ── Callback management ──────────────────────────────────────────────────
+    // ── Widget handle ────────────────────────────────────────────────────────
 
-    setCallbackGroupId(
+    setWidgetHandleId(
       state,
-      action: PayloadAction<{ conversationId: string; groupId: string | null }>,
+      action: PayloadAction<{
+        conversationId: string;
+        widgetHandleId: string | null;
+      }>,
     ) {
       const entry = state.byConversationId[action.payload.conversationId];
       if (entry) {
-        entry.callbackGroupId = action.payload.groupId;
+        entry.widgetHandleId = action.payload.widgetHandleId;
       }
     },
 
@@ -504,8 +507,10 @@ const instanceUIStateSlice = createSlice({
     builder.addCase(destroyInstance, (state, action) => {
       const conversationId = action.payload;
       const entry = state.byConversationId[conversationId];
-      if (entry?.callbackGroupId) {
-        callbackManager.removeGroup(entry.callbackGroupId);
+      if (entry?.widgetHandleId) {
+        // Widget handles are SINGLE entries (not groups) — use unregister,
+        // not removeGroup. removeGroup here would silently no-op and leak.
+        callbackManager.unregister(entry.widgetHandleId);
       }
       delete state.byConversationId[conversationId];
     });
@@ -525,7 +530,7 @@ export const {
   setShowDefinitionMessageContent,
   setHiddenMessageCount,
   applyShowVariablesConfig,
-  setCallbackGroupId,
+  setWidgetHandleId,
   toggleExpanded,
   updateModeState,
   setExpandedVariableId,

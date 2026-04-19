@@ -38,7 +38,7 @@ interface NewConversationDialogProps {
 interface SearchResult extends UserBasicInfo {
   match_score?: number;
 }
-type _CheckSearchResult = SearchResult extends DbRpcRow<"search_users_intelligent"> ? true : false;
+type _CheckSearchResult = DbRpcRow<"search_users_intelligent"> extends SearchResult ? true : false;
 declare const _searchResult: _CheckSearchResult;
 true satisfies typeof _searchResult;
 

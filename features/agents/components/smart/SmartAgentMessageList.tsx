@@ -26,7 +26,7 @@
 import { useEffect, useRef, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectConversationTurns } from "@/features/agents/redux/execution-system/messages/messages.selectors";
+import { selectConversationMessages } from "@/features/agents/redux/execution-system/messages/messages.selectors";
 import {
   selectStreamPhase,
   selectLatestRequestId,
@@ -46,13 +46,12 @@ const AgentAssistantMessage = dynamic(
   { ssr: false },
 );
 import { AgentPlanningIndicator } from "../shared/AgentPlanningIndicator";
-import { Webhook } from "lucide-react";
-import type { ConversationTurn } from "@/features/agents/redux/execution-system/messages/messages.slice";
+import type { MessageRecord } from "@/features/agents/redux/execution-system/messages/messages.slice";
 
 interface DisplayMessage {
   key: string;
   role: "user" | "assistant" | "system" | "status";
-  turnId: string | null;
+  messageId: string | null;
   requestId: string | null;
   isStreamActive: boolean;
   isDefinitionTurn: boolean;
@@ -64,26 +63,36 @@ interface SmartAgentMessageListProps {
   emptyStateMessage?: string;
 }
 
-function filterVisibleTurns(
-  turns: ConversationTurn[],
+/**
+ * Filters `MessageRecord[]` down to what the user should see.
+ *
+ * The V2 DB shape no longer carries a `systemGenerated` flag on each record,
+ * so "definition messages" (priming turns produced during agent setup) are
+ * identified purely by position: when `showDefinitionMessages` is false,
+ * hide the first `hiddenMessageCount` non-system messages. Server-provided
+ * `isVisibleToUser` is still honored when present.
+ */
+function filterVisibleMessages(
+  records: MessageRecord[],
   showDefinitionMessages: boolean,
   hiddenMessageCount: number,
-): ConversationTurn[] {
-  let hidden = 0;
+): Array<{ record: MessageRecord; isDefinitionTurn: boolean }> {
+  const out: Array<{ record: MessageRecord; isDefinitionTurn: boolean }> = [];
+  let nonSystemSeen = 0;
 
-  return turns.filter((turn) => {
-    if (turn.role === "system") return false;
-    if (turn.isVisibleToUser === false) return false;
+  for (const record of records) {
+    if (record.role === "system") continue;
+    if (record.isVisibleToUser === false) continue;
 
-    if (!showDefinitionMessages && hidden < hiddenMessageCount) {
-      if (turn.systemGenerated) {
-        hidden++;
-        return false;
-      }
-    }
+    const isDefinitionTurn = nonSystemSeen < hiddenMessageCount;
+    nonSystemSeen++;
 
-    return true;
-  });
+    if (!showDefinitionMessages && isDefinitionTurn) continue;
+
+    out.push({ record, isDefinitionTurn });
+  }
+
+  return out;
 }
 
 export function SmartAgentMessageList({
@@ -91,7 +100,7 @@ export function SmartAgentMessageList({
   compact = false,
   emptyStateMessage = "Ready to run",
 }: SmartAgentMessageListProps) {
-  const turns = useAppSelector(selectConversationTurns(conversationId));
+  const records = useAppSelector(selectConversationMessages(conversationId));
   const phase = useAppSelector(selectStreamPhase(conversationId));
   const latestRequestId = useAppSelector(selectLatestRequestId(conversationId));
   const showDefinitionMessages = useAppSelector(
@@ -115,24 +124,26 @@ export function SmartAgentMessageList({
     phase === "interstitial" ||
     phase === "error";
 
-  const visibleTurns = filterVisibleTurns(
-    turns,
+  const visibleRecords = filterVisibleMessages(
+    records,
     showDefinitionMessages,
     hiddenMessageCount,
   );
 
   const displayMessages = useMemo((): DisplayMessage[] => {
-    const msgs: DisplayMessage[] = visibleTurns.map((turn) => ({
-      key: turn.turnId,
-      role: turn.role,
-      turnId: turn.turnId,
-      requestId: turn.requestId ?? null,
-      isStreamActive: false,
-      isDefinitionTurn:
-        showDefinitionMessages &&
-        !showDefinitionMessageContent &&
-        !!turn.systemGenerated,
-    }));
+    const msgs: DisplayMessage[] = visibleRecords.map(
+      ({ record, isDefinitionTurn }) => ({
+        key: record.id,
+        role: record.role,
+        messageId: record.id,
+        requestId: record._streamRequestId ?? null,
+        isStreamActive: false,
+        isDefinitionTurn:
+          showDefinitionMessages &&
+          !showDefinitionMessageContent &&
+          isDefinitionTurn,
+      }),
+    );
 
     if (isActive) {
       msgs.push({
@@ -141,7 +152,7 @@ export function SmartAgentMessageList({
           phase === "connecting" || phase === "pre_token"
             ? "status"
             : "assistant",
-        turnId: null,
+        messageId: null,
         requestId: latestRequestId ?? null,
         isStreamActive: true,
         isDefinitionTurn: false,
@@ -150,7 +161,7 @@ export function SmartAgentMessageList({
 
     return msgs;
   }, [
-    visibleTurns,
+    visibleRecords,
     isActive,
     phase,
     latestRequestId,
@@ -197,13 +208,13 @@ export function SmartAgentMessageList({
   return (
     <div ref={containerRef} className={`${spacingClass} px-4`}>
       {displayMessages.map((msg, idx) => {
-        if (msg.role === "user" && msg.turnId) {
+        if (msg.role === "user" && msg.messageId) {
           const isLastUser = idx === lastUserIndex;
           return (
             <div key={msg.key} ref={isLastUser ? lastUserRef : undefined}>
               <AgentUserMessage
                 conversationId={conversationId}
-                turnId={msg.turnId}
+                messageId={msg.messageId}
                 compact={compact}
               />
             </div>
@@ -220,7 +231,7 @@ export function SmartAgentMessageList({
               key={msg.key}
               conversationId={conversationId}
               requestId={msg.requestId ?? undefined}
-              turnId={msg.turnId ?? undefined}
+              messageId={msg.messageId ?? undefined}
               isStreamActive={msg.isStreamActive}
               compact={compact}
             />

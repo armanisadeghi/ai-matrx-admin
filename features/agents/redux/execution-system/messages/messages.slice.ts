@@ -1,214 +1,52 @@
 /**
- * Instance Conversation History Slice
+ * messages slice — DB-faithful storage of conversation messages.
  *
- * Stores the ordered message history for each execution instance.
- * This is the client-side display record — the server owns the authoritative
- * copy in its database for agent apiEndpointMode.
+ * One canonical shape: `MessageRecord`, a 1:1 mirror of `cx_message.Row` plus
+ * two client-only fields (`_clientStatus`, `_streamRequestId`). Records are
+ * keyed in `byId` by the server-assigned `cx_message.id`; `orderedIds` is
+ * the ordered spine of the transcript, sorted by `position`.
  *
- * Turn lifecycle:
- *   1. User submits → dispatch(addUserTurn) BEFORE the API call fires
- *      (message appears immediately in the UI)
- *   2. Stream starts → AgentStreamingMessage renders live via accumulatedText
- *   3. isEndEvent fires → dispatch(commitAssistantTurn) with completed text
- *      (streaming message is replaced by the permanent turn)
+ * Write paths:
+ *   1. Hydration — `loadConversation` → `hydrateMessages`.
+ *   2. Live stream — optimistic user submit via `addOptimisticUserMessage`
+ *      (client-generated id) → `record_reserved cx_message` renames it to
+ *      the server id via `promoteMessageId`. The assistant reservation is
+ *      created fresh by `reserveMessage`. Content arrives via
+ *      `updateMessageRecord` as the stream produces it and settles at
+ *      completion.
+ *   3. Edit / fork — CRUD thunks patch `byId` via `updateMessageRecord`
+ *      and mirror DB state on success.
  *
- * Mode determines how history is used on subsequent sends:
- *   'agent' — server owns history; client only stores for display.
- *             Turn 1 POSTs /ai/agents/{id}; turn 2+ POSTs /ai/conversations/{id}.
- *   'chat'  — builder-only. Client owns history; turns[] is serialized into
- *             messages[] every call so the builder reads the LIVE unsaved
- *             agent definition.
- *
- * Mode is set once at instance creation and never mutated.
+ * There is no separate display shape and no legacy `turns[]` array. Any
+ * component that needs a view projection reads `selectConversationMessages`
+ * and derives display text from `MessageRecord.content` (which is the
+ * `CxContentBlock[]` the server stores).
  */
 
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import { v4 as uuidv4 } from "uuid";
 import { destroyInstance } from "../conversations/conversations.slice";
-import type { CompletionStats } from "@/features/agents/types/instance.types";
-import type { ClientMetrics } from "@/features/agents/types/request.types";
 import type { Json } from "@/types/database.types";
-import type {
-  MessagePart,
-  RenderBlockPayload,
-} from "@/types/python-generated/stream-events";
 import type { CxContentBlock } from "@/features/public-chat/types/cx-tables";
 import type { ApiEndpointMode } from "@/features/agents/types/instance.types";
 
 // =============================================================================
-// Types
-// =============================================================================
-
-export interface TokenUsage {
-  input: number;
-  output: number;
-  total: number;
-}
-
-export interface ConversationTurn {
-  /** Client-generated UUID for this turn */
-  turnId: string;
-
-  /** Role — determines bubble style in the UI */
-  role: "user" | "assistant" | "system";
-
-  /** The text content of this turn */
-  content: string;
-
-  /**
-   * Raw message parts from the database (cx_message.content[]).
-   * Stored as-is — selectors convert to ContentSegment[] for rendering.
-   * Only present on DB-loaded turns; streaming turns use activeRequests.
-   */
-  messageParts?: MessagePart[];
-
-  /**
-   * DB-compatible content blocks in cx_message.content[] format.
-   * Assembled from activeRequests at commitAssistantTurn time, or
-   * copied verbatim from CxMessage.content on DB-loaded turns.
-   * This is the authoritative format for edits, API requests, and persistence.
-   * Use this (not renderBlocks) when calling cx_message_edit or assembling chat messages.
-   */
-  cxContentBlocks?: CxContentBlock[];
-
-  /**
-   * Streaming-path renderBlocks (Pre-processed, parsed items like Flashcards, Quiz, Timeline, etc.) attached during
-   * addUserTurn or commitAssistantTurn. Used by AgentUserMessage for
-   * inline attachment rendering. Separate from cxContentBlocks (DB path).
-   */
-  renderBlocks?: RenderBlockPayload[];
-
-  /** ISO timestamp when this turn was added/committed */
-  timestamp: string;
-
-  /** Links to activeRequests for extended metadata (assistant turns only) */
-  requestId: string | null;
-
-  /** Which server conversation this message belongs to */
-  conversationId: string | null;
-
-  /** Token usage for this turn (from completion event) */
-  tokenUsage?: TokenUsage;
-
-  /** Why the model stopped generating */
-  finishReason?: string;
-
-  /** Full completion stats from the server (usage, timing, tools) — assistant turns only */
-  completionStats?: CompletionStats;
-
-  /** Client-side performance metrics (timing, data volume) — assistant turns only */
-  clientMetrics?: ClientMetrics;
-
-  /**
-   * True for turns fabricated from the agent definition (priming messages,
-   * auto-generated user messages with variable interpolation).
-   * Used by SmartAgentMessageList to hide these when showDefinitionMessages is false.
-   */
-  systemGenerated?: boolean;
-
-  /** Error message when the stream failed (fatal errors) — assistant turns only */
-  errorMessage?: string | null;
-
-  /** Editing / forking support (future) */
-  isEdited?: boolean;
-  originalContent?: string;
-  isFork?: boolean;
-  parentTurnId?: string | null;
-
-  /**
-   * Fields below mirror `public.cx_message` when a turn is loaded from Supabase
-   * or once the stream/API provides row ids and flags. Omitted for purely
-   * client-optimistic turns.
-   */
-  cxMessageId?: string;
-  agentId?: string | null;
-  position?: number;
-  contentHistory?: Json | null;
-  deletedAt?: string | null;
-  isVisibleToModel?: boolean;
-  isVisibleToUser?: boolean;
-  /** cx_message.metadata */
-  messageMetadata?: Record<string, unknown>;
-  /** cx_message.source */
-  source?: string;
-  /** cx_message.status */
-  messageStatus?: string;
-  userContent?: Json | null;
-}
-
-export interface InstanceConversationHistoryEntry {
-  conversationId: string;
-
-  /**
-   * The endpoint family — determines whether history is sent on next turn.
-   * Set once at instance creation time and never mutated.
-   */
-  apiEndpointMode: ApiEndpointMode;
-
-  /** Ordered turn history (legacy display shape — see MessageRecord below). */
-  turns: ConversationTurn[];
-
-  /** True if turns were loaded from a previous session (Supabase fetch) */
-  loadedFromHistory: boolean;
-
-  /** Server-assigned conversation label (from conversation_labeled data event) */
-  title: string | null;
-  description: string | null;
-  keywords: string[] | null;
-
-  // =========================================================================
-  // DB-faithful storage (Phase 1.3 addition)
-  //
-  // Canonical shape mirrors `cx_message.Row` so the CRUD identity test holds:
-  // read → modify → write → re-read round-trips without schema drift. The
-  // legacy `turns[]` field remains while consumers migrate, and is kept in
-  // sync by stream-commit paths.
-  //
-  // Populated by:
-  //   - `hydrateMessages` (from `loadConversation` / `get_cx_conversation_bundle`)
-  //   - `reserveMessage` (on `record_reserved cx_message` stream event)
-  //   - `updateMessageStatus` (on `record_update cx_message` stream event)
-  //   - `commitAssistantTurn` (on stream `completion` — mirrors the turn into byId)
-  // =========================================================================
-
-  /**
-   * Stable ordered message ids (server-assigned `cx_message.id`) — the spine
-   * of the transcript. Use this for iteration order; don't rely on `turns[]`.
-   */
-  orderedIds?: string[];
-
-  /** DB-faithful records keyed by server-assigned `cx_message.id`. */
-  byId?: Record<string, MessageRecord>;
-}
-
-export interface InstanceConversationHistoryState {
-  byConversationId: Record<string, InstanceConversationHistoryEntry>;
-}
-
-// =============================================================================
-// DB-faithful MessageRecord — matches `public.cx_message.Row`
-//
-// This is the canonical message shape. Display transforms happen in selectors
-// (see `selectDisplayMessages`) — not at the slice level — so round-tripping
-// through the DB preserves identity.
+// MessageRecord — mirrors `public.cx_message.Row` one-to-one
 // =============================================================================
 
 export interface MessageRecord {
-  // ── cx_message.Row mirror (keep alphabetical so diffs against the DB
-  // regenerated types are easy to review)
   id: string;
   conversationId: string;
   agentId: string | null;
   role: "system" | "user" | "assistant";
-  /** CxContentBlock[] — NOT a flat string. Render via `selectDisplayMessages`. */
+  /** CxContentBlock[] as stored in cx_message.content. */
   content: Json;
   contentHistory: Json | null;
   userContent: Json | null;
   position: number;
   source: string;
   /**
-   * Server status on cx_message. Observed values: "reserved" (row just
-   * reserved, no content yet), "streaming", "active", "edited", "deleted".
+   * Server status on cx_message. Observed values: "reserved", "streaming",
+   * "active", "edited", "deleted".
    */
   status: string;
   isVisibleToModel: boolean;
@@ -217,35 +55,70 @@ export interface MessageRecord {
   createdAt: string;
   deletedAt: string | null;
 
-  // ── Client-only fields (NOT serialized back to the server on CRUD writes)
-  /** Client-side rollup status — maps to streaming/commit UI states. */
+  // ── Client-only (never serialized back on CRUD writes) ───────────────────
+  /** Client rollup — pending (optimistic), streaming, complete, or error. */
   _clientStatus?: "pending" | "streaming" | "complete" | "error";
   /** While a turn is live, points at `activeRequests.byRequestId[_streamRequestId]`. */
   _streamRequestId?: string;
 }
 
 // =============================================================================
-// Helpers
+// Entry / State
 // =============================================================================
 
-function newTurnId(): string {
-  return uuidv4();
+export interface MessagesEntry {
+  conversationId: string;
+  /** Routing hint cached from `createInstance` — informs turn-2+ endpoint selection. */
+  apiEndpointMode: ApiEndpointMode;
+  /** DB-faithful records keyed by `cx_message.id` (or a client temp id pre-reservation). */
+  byId: Record<string, MessageRecord>;
+  /** Ordered transcript spine — ids in `position` order. */
+  orderedIds: string[];
+  /** Server-assigned conversation label. */
+  title: string | null;
+  description: string | null;
+  keywords: string[] | null;
+}
+
+export interface MessagesState {
+  byConversationId: Record<string, MessagesEntry>;
 }
 
 // =============================================================================
 // Slice
 // =============================================================================
 
-const initialState: InstanceConversationHistoryState = {
+const initialState: MessagesState = {
   byConversationId: {},
 };
+
+function getOrCreate(
+  state: MessagesState,
+  conversationId: string,
+  apiEndpointMode: ApiEndpointMode = "agent",
+): MessagesEntry {
+  let entry = state.byConversationId[conversationId];
+  if (!entry) {
+    entry = {
+      conversationId,
+      apiEndpointMode,
+      byId: {},
+      orderedIds: [],
+      title: null,
+      description: null,
+      keywords: null,
+    };
+    state.byConversationId[conversationId] = entry;
+  }
+  return entry;
+}
 
 const messagesSlice = createSlice({
   name: "messages",
   initialState,
   reducers: {
-    /** Initialize the history entry for a new instance. */
-    initInstanceHistory(
+    /** Initialize (or touch) the entry for a conversation. */
+    initInstanceMessages(
       state,
       action: PayloadAction<{
         conversationId: string;
@@ -253,28 +126,96 @@ const messagesSlice = createSlice({
       }>,
     ) {
       const { conversationId, apiEndpointMode = "agent" } = action.payload;
-      if (!state.byConversationId[conversationId]) {
-        state.byConversationId[conversationId] = {
-          conversationId,
-          apiEndpointMode,
-          turns: [],
-          loadedFromHistory: false,
-          title: null,
-          description: null,
-          keywords: null,
-          orderedIds: [],
-          byId: {},
-        };
-      }
+      const entry = getOrCreate(state, conversationId, apiEndpointMode);
+      // If the entry already exists, keep its byId but refresh the mode
+      // (callers rely on create-instance being idempotent).
+      entry.apiEndpointMode = apiEndpointMode;
     },
 
-    // ── DB-faithful storage reducers (Phase 1.3) ─────────────────────────────
+    /**
+     * Optimistic user submit. Writes a `MessageRecord` to `byId` under the
+     * caller-provided `clientTempId` so the UI can render the user's message
+     * instantly. When `record_reserved cx_message` lands during the stream,
+     * `promoteMessageId` replaces the temp id with the real `cx_message.id`.
+     */
+    addOptimisticUserMessage(
+      state,
+      action: PayloadAction<{
+        conversationId: string;
+        clientTempId: string;
+        /** CxContentBlock[] — the same shape cx_message.content uses. */
+        content: CxContentBlock[];
+        position: number;
+        agentId?: string | null;
+      }>,
+    ) {
+      const {
+        conversationId,
+        clientTempId,
+        content,
+        position,
+        agentId = null,
+      } = action.payload;
+      const entry = getOrCreate(state, conversationId);
+      if (entry.byId[clientTempId]) return; // idempotent
+      const now = new Date().toISOString();
+      entry.byId[clientTempId] = {
+        id: clientTempId,
+        conversationId,
+        agentId,
+        role: "user",
+        content: content as unknown as Json,
+        contentHistory: null,
+        userContent: null,
+        position,
+        source: "client",
+        status: "reserved",
+        isVisibleToModel: true,
+        isVisibleToUser: true,
+        metadata: {} as Json,
+        createdAt: now,
+        deletedAt: null,
+        _clientStatus: "pending",
+      };
+      entry.orderedIds.push(clientTempId);
+    },
 
     /**
-     * Reserve a placeholder for a server-assigned message id. Fired on the
-     * `record_reserved cx_message` stream event BEFORE any content lands.
-     * The record is created in status "reserved"; subsequent updates flow
-     * through `updateMessageRecord` / `commitAssistantTurn`.
+     * Rename a message id. Used to swap a client temp id for the server id
+     * once `record_reserved cx_message` lands for a user message. Preserves
+     * content + metadata; updates `position` if provided.
+     */
+    promoteMessageId(
+      state,
+      action: PayloadAction<{
+        conversationId: string;
+        oldId: string;
+        newId: string;
+        position?: number;
+      }>,
+    ) {
+      const { conversationId, oldId, newId, position } = action.payload;
+      const entry = state.byConversationId[conversationId];
+      if (!entry?.byId[oldId]) return;
+      if (oldId === newId) return;
+      const record = entry.byId[oldId];
+      delete entry.byId[oldId];
+      entry.byId[newId] = {
+        ...record,
+        id: newId,
+        ...(typeof position === "number" && { position }),
+        status: "active",
+        _clientStatus: "complete",
+      };
+      entry.orderedIds = entry.orderedIds.map((id) =>
+        id === oldId ? newId : id,
+      );
+    },
+
+    /**
+     * Reserve a placeholder for a server-assigned message id. Fired on a
+     * `record_reserved cx_message` stream event that does NOT already
+     * correspond to an optimistic user entry (i.e. the assistant reservation).
      */
     reserveMessage(
       state,
@@ -293,11 +234,8 @@ const messagesSlice = createSlice({
         agentId = null,
         position = 0,
       } = action.payload;
-      const entry = state.byConversationId[conversationId];
-      if (!entry) return;
-      if (!entry.byId) entry.byId = {};
-      if (!entry.orderedIds) entry.orderedIds = [];
-      if (entry.byId[messageId]) return; // already reserved
+      const entry = getOrCreate(state, conversationId);
+      if (entry.byId[messageId]) return;
       const now = new Date().toISOString();
       entry.byId[messageId] = {
         id: messageId,
@@ -320,7 +258,7 @@ const messagesSlice = createSlice({
       entry.orderedIds.push(messageId);
     },
 
-    /** Update one or more fields on a MessageRecord by id. */
+    /** Patch one or more fields on a MessageRecord by id. */
     updateMessageRecord(
       state,
       action: PayloadAction<{
@@ -331,14 +269,13 @@ const messagesSlice = createSlice({
     ) {
       const { conversationId, messageId, patch } = action.payload;
       const entry = state.byConversationId[conversationId];
-      if (!entry?.byId?.[messageId]) return;
+      if (!entry?.byId[messageId]) return;
       Object.assign(entry.byId[messageId], patch);
     },
 
     /**
-     * Hydrate multiple MessageRecords from the DB. Called by
-     * `loadConversation` after `get_cx_conversation_bundle` returns. Replaces
-     * any existing `byId` + `orderedIds` for this conversation.
+     * Replace (or seed) the records for a conversation from the DB bundle.
+     * Called by `loadConversation` after `get_cx_conversation_bundle`.
      */
     hydrateMessages(
       state,
@@ -348,21 +285,7 @@ const messagesSlice = createSlice({
       }>,
     ) {
       const { conversationId, messages } = action.payload;
-      let entry = state.byConversationId[conversationId];
-      if (!entry) {
-        entry = {
-          conversationId,
-          apiEndpointMode: "agent",
-          turns: [],
-          loadedFromHistory: true,
-          title: null,
-          description: null,
-          keywords: null,
-          orderedIds: [],
-          byId: {},
-        };
-        state.byConversationId[conversationId] = entry;
-      }
+      const entry = getOrCreate(state, conversationId);
       const sorted = [...messages].sort((a, b) => a.position - b.position);
       entry.byId = {};
       entry.orderedIds = [];
@@ -373,201 +296,24 @@ const messagesSlice = createSlice({
         };
         entry.orderedIds.push(msg.id);
       }
-      entry.loadedFromHistory = true;
     },
 
-    /**
-     * Add the user's message immediately when they submit.
-     * Called BEFORE the API call fires so the message appears instantly.
-     */
-    addUserTurn(
+    /** Remove a message from the transcript (e.g. after soft-delete). */
+    removeMessage(
       state,
       action: PayloadAction<{
         conversationId: string;
-        content: string;
-        messageParts?: MessagePart[];
-        cxContentBlocks?: CxContentBlock[];
-        systemGenerated?: boolean;
+        messageId: string;
       }>,
     ) {
-      const {
-        conversationId,
-        content,
-        messageParts,
-        cxContentBlocks,
-        systemGenerated,
-      } = action.payload;
-
+      const { conversationId, messageId } = action.payload;
       const entry = state.byConversationId[conversationId];
       if (!entry) return;
-
-      entry.turns.push({
-        turnId: newTurnId(),
-        role: "user",
-        content,
-        ...(messageParts && { messageParts }),
-        ...(cxContentBlocks &&
-          cxContentBlocks.length > 0 && { cxContentBlocks }),
-        timestamp: new Date().toISOString(),
-        requestId: null,
-        conversationId,
-        ...(systemGenerated && { systemGenerated }),
-      });
+      delete entry.byId[messageId];
+      entry.orderedIds = entry.orderedIds.filter((id) => id !== messageId);
     },
 
-    /**
-     * Commit the completed assistant response after the stream ends.
-     * Replaces what AgentStreamingMessage was showing.
-     */
-    commitAssistantTurn(
-      state,
-      action: PayloadAction<{
-        conversationId: string;
-        requestId: string;
-        content: string;
-        messageParts?: MessagePart[];
-        cxContentBlocks?: CxContentBlock[];
-        renderBlocks?: RenderBlockPayload[];
-        tokenUsage?: TokenUsage;
-        finishReason?: string;
-        completionStats?: CompletionStats;
-        errorMessage?: string;
-      }>,
-    ) {
-      const {
-        conversationId,
-        requestId,
-        content,
-        messageParts,
-        cxContentBlocks,
-        renderBlocks,
-        tokenUsage,
-        finishReason,
-        completionStats,
-        errorMessage,
-      } = action.payload;
-
-      const entry = state.byConversationId[conversationId];
-      if (!entry) return;
-
-      entry.turns.push({
-        turnId: newTurnId(),
-        role: "assistant",
-        content,
-        timestamp: new Date().toISOString(),
-        requestId,
-        conversationId,
-        ...(messageParts && { messageParts }),
-        ...(cxContentBlocks &&
-          cxContentBlocks.length > 0 && { cxContentBlocks }),
-        ...(renderBlocks && { renderBlocks }),
-        ...(tokenUsage && { tokenUsage }),
-        ...(finishReason && { finishReason }),
-        ...(completionStats && { completionStats }),
-        ...(errorMessage && { errorMessage }),
-      });
-    },
-
-    /**
-     * Attach client-side performance metrics to the most recent assistant turn.
-     * Dispatched once after finalizeClientMetrics — fire-and-forget.
-     * Keyed by requestId so it always lands on the correct turn even if
-     * multiple concurrent requests are in flight.
-     */
-    attachClientMetrics(
-      state,
-      action: PayloadAction<{
-        conversationId: string;
-        requestId: string;
-        clientMetrics: ClientMetrics;
-      }>,
-    ) {
-      const { conversationId, requestId, clientMetrics } = action.payload;
-      const entry = state.byConversationId[conversationId];
-      if (!entry) return;
-
-      const turn = entry.turns
-        .slice()
-        .reverse()
-        .find((t) => t.role === "assistant" && t.requestId === requestId);
-      if (turn) {
-        turn.clientMetrics = clientMetrics;
-      }
-    },
-
-    /**
-     * Load history from a previous session (Supabase fetch).
-     * Replaces existing turns.
-     */
-    loadConversationHistory(
-      state,
-      action: PayloadAction<{
-        conversationId: string;
-        turns: ConversationTurn[];
-        apiEndpointMode?: ApiEndpointMode;
-      }>,
-    ) {
-      const {
-        conversationId,
-        turns,
-        apiEndpointMode = "agent",
-      } = action.payload;
-
-      const entry = state.byConversationId[conversationId];
-      if (!entry) return;
-
-      entry.turns = turns;
-      entry.apiEndpointMode = apiEndpointMode;
-      entry.loadedFromHistory = true;
-    },
-
-    /**
-     * Store raw MessagePart[] on an existing turn by turnId.
-     * Used for DB-loaded turns that need their full parts array attached.
-     */
-    setTurnMessageParts(
-      state,
-      action: PayloadAction<{
-        conversationId: string;
-        turnId: string;
-        messageParts: MessagePart[];
-      }>,
-    ) {
-      const { conversationId, turnId, messageParts } = action.payload;
-      const entry = state.byConversationId[conversationId];
-      if (!entry) return;
-
-      const turn = entry.turns.find((t) => t.turnId === turnId);
-      if (turn) {
-        turn.messageParts = messageParts;
-      }
-    },
-
-    /**
-     * Store DB-compatible CxContentBlock[] on an existing turn by turnId.
-     * Used for DB-loaded turns and after cx_message_edit to keep the turn
-     * in sync with the persisted state. This is the authoritative copy for
-     * edits and API request assembly.
-     */
-    setTurnCxContentBlocks(
-      state,
-      action: PayloadAction<{
-        conversationId: string;
-        turnId: string;
-        cxContentBlocks: CxContentBlock[];
-      }>,
-    ) {
-      const { conversationId, turnId, cxContentBlocks } = action.payload;
-      const entry = state.byConversationId[conversationId];
-      if (!entry) return;
-
-      const turn = entry.turns.find((t) => t.turnId === turnId);
-      if (turn) {
-        turn.cxContentBlocks = cxContentBlocks;
-      }
-    },
-
-    /** Set conversation label from server's conversation_labeled data event. */
+    /** Server-provided title/description/keywords for the conversation. */
     setConversationLabel(
       state,
       action: PayloadAction<{
@@ -579,28 +325,21 @@ const messagesSlice = createSlice({
     ) {
       const { conversationId, title, description, keywords } = action.payload;
       const entry = state.byConversationId[conversationId];
-      if (entry) {
-        entry.title = title;
-        entry.description = description;
-        entry.keywords = keywords;
-      }
+      if (!entry) return;
+      entry.title = title;
+      entry.description = description;
+      entry.keywords = keywords;
     },
 
-    /** Clear all turns (reset for a new run on the same instance). */
-    clearHistory(state, action: PayloadAction<string>) {
+    /** Clear the transcript (e.g. auto-clear on a new run). */
+    clearMessages(state, action: PayloadAction<string>) {
       const entry = state.byConversationId[action.payload];
-      if (entry) {
-        entry.turns = [];
-        entry.loadedFromHistory = false;
-        entry.apiEndpointMode = "agent";
-        entry.title = null;
-        entry.description = null;
-        entry.keywords = null;
-      }
-    },
-
-    removeInstanceHistory(state, action: PayloadAction<string>) {
-      delete state.byConversationId[action.payload];
+      if (!entry) return;
+      entry.byId = {};
+      entry.orderedIds = [];
+      entry.title = null;
+      entry.description = null;
+      entry.keywords = null;
     },
   },
 
@@ -612,20 +351,15 @@ const messagesSlice = createSlice({
 });
 
 export const {
-  initInstanceHistory,
-  addUserTurn,
-  commitAssistantTurn,
-  attachClientMetrics,
-  loadConversationHistory,
-  setTurnMessageParts,
-  setTurnCxContentBlocks,
-  setConversationLabel,
-  clearHistory,
-  removeInstanceHistory,
-  // DB-faithful storage (Phase 1.3)
+  initInstanceMessages,
+  addOptimisticUserMessage,
+  promoteMessageId,
   reserveMessage,
   updateMessageRecord,
   hydrateMessages,
+  removeMessage,
+  setConversationLabel,
+  clearMessages,
 } = messagesSlice.actions;
 
 export default messagesSlice.reducer;

@@ -15,6 +15,7 @@ import {
   selectPrimaryResponseEndedByTaskId,
 } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 import { createClient } from "@/utils/supabase/client";
+import { getFunctionalityById } from "@/lib/services/functionality-helpers";
 import { v4 as uuidv4 } from "uuid";
 import {
   Dialog,
@@ -96,16 +97,12 @@ export function GeneratePromptForSystemModal({
   useEffect(() => {
     if (isOpen && systemPrompt?.functionality_id) {
       async function fetchFunctionality() {
-        const { data } = await supabase
-          .from("system_prompt_functionality_configs")
-          .select("*")
-          .eq("functionality_id", systemPrompt.functionality_id)
-          .single();
+        const data = await getFunctionalityById(systemPrompt.functionality_id);
         setFunctionalityConfig(data);
       }
       fetchFunctionality();
     }
-  }, [isOpen, systemPrompt, supabase]);
+  }, [isOpen, systemPrompt]);
 
   // Initialize with system prompt context
   useEffect(() => {

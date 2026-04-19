@@ -2,6 +2,7 @@ import { createClient } from "@/utils/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 import { checkIsUserAdmin } from "@/utils/supabase/userSessionData";
 import { collectMustacheVariableNamesFromMessagesJson } from "@/features/prompts/utils/collect-template-variables-from-messages-json";
+import { getFunctionalityById } from "@/lib/services/functionality-helpers";
 
 /**
  * GET /api/system-prompts/[id]/compatible-prompts
@@ -75,13 +76,9 @@ export async function GET(
       );
     }
 
-    const { data: functionality, error: funcError } = await supabase
-      .from("system_prompt_functionality_configs")
-      .select("*")
-      .eq("functionality_id", systemPrompt.functionality_id)
-      .single();
+    const functionality = await getFunctionalityById(systemPrompt.functionality_id);
 
-    if (funcError || !functionality) {
+    if (!functionality) {
       return NextResponse.json(
         {
           error: "Functionality not found",
@@ -95,6 +92,9 @@ export async function GET(
         { status: 404 },
       );
     }
+
+    const requiredVars: string[] = functionality.required_variables ?? [];
+    const optionalVars: string[] = functionality.optional_variables ?? [];
 
     // Fetch all prompts (we'll filter for compatibility)
     const { data: allPrompts, error: promptsError } = await supabase
@@ -134,13 +134,8 @@ export async function GET(
       };
 
       // Validate against functionality
-      const missing = (functionality.required_variables || []).filter(
-        (v: string) => !variables.has(v),
-      );
-      const allowed = [
-        ...(functionality.required_variables || []),
-        ...(functionality.optional_variables || []),
-      ];
+      const missing = requiredVars.filter((v) => !variables.has(v));
+      const allowed = [...requiredVars, ...optionalVars];
       const extra = Array.from(variables).filter((v) => !allowed.includes(v));
 
       const validation = {
@@ -192,8 +187,8 @@ export async function GET(
         id: functionality.id,
         name: functionality.label,
         description: functionality.description,
-        required_variables: functionality.required_variables ?? [],
-        optional_variables: functionality.optional_variables ?? [],
+        required_variables: requiredVars,
+        optional_variables: optionalVars,
         placement_types: functionality.placement_types ?? [],
       },
       compatible: compatible,

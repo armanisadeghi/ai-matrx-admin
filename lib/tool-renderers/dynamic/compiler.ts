@@ -354,7 +354,8 @@ function compileHeaderFunction(
 export function compileToolUiComponent(
     row: ToolUiComponentRow
 ): CompiledToolRenderer {
-    const { language, allowed_imports } = row;
+    const { allowed_imports } = row;
+    const language: "jsx" | "tsx" = row.language === "jsx" ? "jsx" : "tsx";
 
     // 1. Compile utility code first (if any) so its exports are in scope
     let sharedScope: Record<string, any> | undefined;
@@ -438,7 +439,7 @@ export function compileToolUiComponent(
         displayName: row.display_name,
         resultsLabel: row.results_label,
         keepExpandedOnStream: row.keep_expanded_on_stream,
-        version: row.version,
+        version: String(row.version),
         componentId: row.id,
         InlineComponent,
         OverlayComponent,

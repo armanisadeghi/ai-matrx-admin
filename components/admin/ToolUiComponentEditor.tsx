@@ -227,9 +227,9 @@ export function ToolUiComponentEditor({
             header_subtitle_code: comp.header_subtitle_code || "",
             keep_expanded_on_stream: comp.keep_expanded_on_stream,
             allowed_imports: comp.allowed_imports,
-            language: comp.language,
+            language: (comp.language === "jsx" ? "jsx" : "tsx") as "tsx" | "jsx",
             is_active: comp.is_active,
-            version: comp.version,
+            version: String(comp.version),
             notes: comp.notes || "",
           });
         }

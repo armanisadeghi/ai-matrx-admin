@@ -29,10 +29,11 @@ export {
 
 // ── Messages — narrow selectors for re-render safety ──────────────────────
 export {
-  selectConversationTurns,
-  selectMessageRecords,
+  selectConversationMessages,
   selectOrderedMessageIds,
   selectMessageById,
+  selectMessageCount,
+  selectHasMessages,
   selectMessageContent,
   selectMessageStatus,
   selectMessageClientStatus,
@@ -40,8 +41,11 @@ export {
   selectMessagePosition,
   selectMessageAgentId,
   selectMessageMetadata,
-  selectMessageContentHistoryRecord,
-  selectDisplayMessages,
+  selectMessageContentHistory,
+  selectMessageStreamRequestId,
+  selectMessageInterleavedContent,
+  extractFlatText,
+  extractContentBlocks,
 } from "@/features/agents/redux/execution-system/messages/messages.selectors";
 
 // ── Conversation list ──────────────────────────────────────────────────────

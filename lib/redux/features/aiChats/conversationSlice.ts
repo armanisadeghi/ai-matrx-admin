@@ -1,6 +1,5 @@
 // conversationSlice.ts
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { createNewConversation, setExistingConversation } from './thunks/conversationThunks';
 
 export type ChatMode = 'general' | 'research' | 'brainstorm' | 'analyze' | 'images' | 'video' | 'code' | 'recipe';
 export type Status = 'pending' | 'initializing' | 'initialized' | 'transitioning' | 'submitting' | 'submitted' | 'error';
@@ -106,27 +105,6 @@ const conversationSlice = createSlice({
     clearConversation() {
       return initialState;
     },
-  },
-  extraReducers: (builder) => {
-    builder
-      .addCase(createNewConversation.pending, (state) => {
-        state.status = 'initializing';
-      })
-      .addCase(createNewConversation.fulfilled, (state) => {
-        state.status = 'initialized';
-      })
-      .addCase(createNewConversation.rejected, (state) => {
-        state.status = 'error';
-      })
-      .addCase(setExistingConversation.pending, (state) => {
-        state.status = 'initializing';
-      })
-      .addCase(setExistingConversation.fulfilled, (state) => {
-        state.status = 'initialized';
-      })
-      .addCase(setExistingConversation.rejected, (state) => {
-        state.status = 'error';
-      });
   },
 });
 

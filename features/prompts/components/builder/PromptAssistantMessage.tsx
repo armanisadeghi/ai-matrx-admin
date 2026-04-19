@@ -3,7 +3,7 @@ import React, { useState, useRef, useCallback } from "react";
 import { Volume2, Download, Loader2, Link, Copy, Check } from "lucide-react";
 import { useDomCapturePrint } from "@/features/chat/hooks/useDomCapturePrint";
 import MarkdownStream from "@/components/MarkdownStream";
-import { AssistantActionBar } from "@/features/cx-conversation/AssistantActionBar";
+import { AssistantActionBar } from "@/features/agents/components/run/message-actions/AssistantActionBar";
 import { PromptErrorMessage } from "../PromptErrorMessage";
 import { Button } from "@/components/ui/button";
 
@@ -168,6 +168,7 @@ export function PromptAssistantMessage({
             <AssistantActionBar
               content={content}
               messageId={`prompt-${taskId ?? messageIndex}`}
+              conversationId=""
               onFullPrint={handleFullPrint}
               isCapturing={isCapturing}
             />

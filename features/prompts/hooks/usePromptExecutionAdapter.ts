@@ -50,6 +50,7 @@ interface ChatConversationMessage {
   content: string;
   status: "pending" | "streaming" | "complete" | "error";
   timestamp: string;
+  metadata?: unknown;
 }
 import { v4 as uuidv4 } from "uuid";
 

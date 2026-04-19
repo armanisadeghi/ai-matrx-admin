@@ -376,7 +376,9 @@ export default function TaskContent(): JSX.Element {
               <AllTasksView
                 selectedTaskId={selectedTaskId}
                 onTaskSelect={setSelectedTaskId}
-                onTaskToggle={toggleTaskComplete}
+                onTaskToggle={(_projectId, taskId) => {
+                  dispatch(toggleTaskCompleteThunk({ taskId }));
+                }}
               />
             ) : (
               <TaskList tasks={filteredTasks} />

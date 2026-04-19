@@ -62,7 +62,7 @@ export function ShareNoteDialog({
     const handleTogglePublic = useCallback(async () => {
         setLoading(true);
         if (isPublic) {
-            const result = await makePrivate({ resourceType: 'note', resourceId: noteId });
+            const result = await makePrivate('note', noteId);
             if (result.success) setIsPublic(false);
             setMessage(result.success ? 'Made private' : result.error || 'Failed');
         } else {

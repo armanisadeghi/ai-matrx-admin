@@ -7,7 +7,7 @@
  *
  *   {
  *     conversations,               // entity
- *     messages,                    // DB-faithful turns
+ *     messages,                    // DB-faithful message records
  *     conversationList,            // unified list (global + agent-scoped)
  *     observability,               // cx_user_request + cx_request + cx_tool_call + timelines
  *     cacheBypass,                 // one-shot per-conversation bust flags
@@ -49,23 +49,19 @@ export {
 
 export {
   default as messagesReducer,
-  initInstanceHistory,
-  addUserTurn,
-  commitAssistantTurn,
-  attachClientMetrics,
-  loadConversationHistory,
-  setTurnMessageParts,
-  setTurnCxContentBlocks,
-  setConversationLabel as setMessagesConversationLabel,
-  clearHistory,
-  removeInstanceHistory,
+  initInstanceMessages,
+  addOptimisticUserMessage,
+  promoteMessageId,
   reserveMessage,
   updateMessageRecord,
   hydrateMessages,
+  removeMessage,
+  setConversationLabel as setMessagesConversationLabel,
+  clearMessages,
 } from "@/features/agents/redux/execution-system/messages/messages.slice";
 
 export {
-  default as observabilityReducer,
+  observabilityReducer,
   upsertUserRequest,
   patchUserRequest,
   upsertRequest,

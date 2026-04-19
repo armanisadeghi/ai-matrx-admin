@@ -62,6 +62,7 @@ const FlashcardPreferences = lazy(() => import("./FlashcardPreferences"));
 const PlaygroundPreferences = lazy(() => import("./PlaygroundPreferences"));
 const AiModelsPreferences = lazy(() => import("./AiModelsPreferences"));
 const MessagingPreferences = lazy(() => import("./MessagingPreferences"));
+const AgentContextPreferences = lazy(() => import("./AgentContextPreferences"));
 
 interface CategoryDef {
   value: PreferenceTab;
@@ -161,6 +162,12 @@ const categories: CategoryDef[] = [
     icon: Gamepad2,
     description: "Playground defaults",
   },
+  {
+    value: "agentContext",
+    label: "Agent Context",
+    icon: Bot,
+    description: "Agent context settings",
+  },
 ];
 
 const tabComponents: Record<
@@ -182,6 +189,7 @@ const tabComponents: Record<
   playground: PlaygroundPreferences,
   aiModels: AiModelsPreferences,
   messaging: MessagingPreferences,
+  agentContext: AgentContextPreferences,
 };
 
 function LoadingFallback() {

@@ -3,18 +3,18 @@
 /**
  * AgentAssistantMessage
  *
- * ID-ONLY DESIGN: This component receives only identifiers (requestId, turnId,
- * conversationId) and subscribes to its own data in Redux. No content flows
- * through props from the parent.
+ * Reads ONLY identifiers (requestId, messageId, conversationId) from props
+ * and subscribes to its own data in Redux. No content flows through props
+ * from the parent.
  *
- * Data resolution priority:
- *   1. requestId → activeRequests (live streaming or recently committed)
- *   2. turnId → messages (DB-loaded or committed fallback)
+ * Data resolution:
+ *   1. requestId → activeRequests (live streaming bubble)
+ *   2. messageId → messages.byId (DB-loaded or just-committed record)
  *
- * For the streaming turn: requestId is set, turnId is null.
- * For committed turns:    requestId may be set (if ActiveRequest still in store),
- *                         turnId is always set.
- * For DB-loaded turns:    requestId is null, turnId is set.
+ * Streaming turn:    requestId is set, messageId is null.
+ * Committed turn:    messageId is always set. requestId may also be set
+ *                    while the ActiveRequest entry hasn't been cleaned up.
+ * DB-loaded turn:    messageId is set, requestId is null.
  */
 
 import { useCallback } from "react";
@@ -22,15 +22,19 @@ import MarkdownStream from "@/components/MarkdownStream";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { useDebugContext } from "@/hooks/useDebugContext";
 import { selectErrorIsFatal } from "@/features/agents/redux/execution-system/active-requests/active-requests.selectors";
-import { selectTurnByTurnId } from "@/features/agents/redux/execution-system/messages/messages.selectors";
+import {
+  selectMessageById,
+  extractFlatText,
+} from "@/features/agents/redux/execution-system/messages/messages.selectors";
 import { AssistantError } from "./AssistantError";
-import { AssistantActionBar } from "@/features/cx-conversation/AssistantActionBar";
+import { AssistantActionBar } from "@/features/agents/components/run/message-actions/AssistantActionBar";
 import { useDomCapturePrint } from "@/features/conversation/hooks/useDomCapturePrint";
 
 interface AgentAssistantMessageProps {
   conversationId: string;
   requestId?: string;
-  turnId?: string;
+  /** Server-assigned `cx_message.id` — present for committed and DB-loaded turns. */
+  messageId?: string;
   isStreamActive?: boolean;
   compact?: boolean;
 }
@@ -38,30 +42,28 @@ interface AgentAssistantMessageProps {
 export function AgentAssistantMessage({
   conversationId,
   requestId,
-  turnId,
+  messageId,
   isStreamActive = false,
   compact = false,
 }: AgentAssistantMessageProps) {
   useDebugContext("AgentAssistantMessage");
 
-  // DOM-capture print (Tier 2 — captures all rendered blocks)
   const { captureRef, isCapturing, captureAsPDF } = useDomCapturePrint();
   const handleFullPrint = useCallback(() => {
     captureAsPDF({
-      filename: `agent-${conversationId}-${turnId ?? requestId ?? ""}`,
+      filename: `agent-${conversationId}-${messageId ?? requestId ?? ""}`,
     });
-  }, [captureAsPDF, conversationId, turnId, requestId]);
-
-  // ── Data Resolution ──────────────────────────────────────────────────────
-  // Priority: activeRequest (live/recent) → committed turn (DB/history)
+  }, [captureAsPDF, conversationId, messageId, requestId]);
 
   const isFatalError = useAppSelector(
     requestId ? selectErrorIsFatal(requestId) : () => undefined,
   );
 
-  const turn = useAppSelector(
-    turnId ? selectTurnByTurnId(conversationId, turnId) : () => undefined,
+  const record = useAppSelector(
+    messageId ? selectMessageById(conversationId, messageId) : () => undefined,
   );
+
+  const content = extractFlatText(record);
 
   if (isFatalError) {
     return <AssistantError error="An error occurred during streaming." />;
@@ -71,26 +73,26 @@ export function AgentAssistantMessage({
     <div ref={captureRef}>
       <MarkdownStream
         requestId={requestId}
-        turnId={turnId}
+        turnId={messageId}
         conversationId={conversationId}
-        content={turn?.content ?? ""}
+        messageId={messageId ?? undefined}
+        content={content}
         isStreamActive={isStreamActive}
         hideCopyButton={true}
         allowFullScreenEditor={false}
       />
-      {!isStreamActive && (
+      {!isStreamActive && messageId && (
         <AssistantActionBar
-          content={turn?.content ?? ""}
-          messageId={turnId ?? requestId ?? ""}
+          content={content}
+          messageId={messageId}
           conversationId={conversationId}
+          metadata={
+            record?.metadata
+              ? (record.metadata as Record<string, unknown>)
+              : null
+          }
           onFullPrint={handleFullPrint}
           isCapturing={isCapturing}
-        />
-      )}
-
-      {isFatalError && (
-        <AssistantError
-          error={turn?.errorMessage ?? "An error occurred during streaming."}
         />
       )}
     </div>

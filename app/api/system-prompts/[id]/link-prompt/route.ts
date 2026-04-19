@@ -5,6 +5,7 @@ import {
   collectMustacheVariableNamesFromMessagesJson,
   promptSnapshotHasPlaceholder,
 } from "@/features/prompts/utils/collect-template-variables-from-messages-json";
+import { getFunctionalityById } from "@/lib/services/functionality-helpers";
 
 /**
  * POST /api/system-prompts/[id]/link-prompt
@@ -105,14 +106,9 @@ export async function POST(
 
     // Validate against functionality requirements if functionality_id exists
     if (systemPrompt.functionality_id) {
-      // Fetch functionality config from database
-      const { data: functionality, error: funcError } = await supabase
-        .from("system_prompt_functionality_configs")
-        .select("*")
-        .eq("functionality_id", systemPrompt.functionality_id)
-        .single();
+      const functionality = await getFunctionalityById(systemPrompt.functionality_id);
 
-      if (funcError || !functionality) {
+      if (!functionality) {
         return NextResponse.json(
           {
             error: "Invalid functionality_id on system prompt",
@@ -127,14 +123,11 @@ export async function POST(
       }
 
       // Validate variables
-      const missing = (functionality.required_variables || []).filter(
-        (v: string) => !variables.has(v),
-      );
+      const requiredVars: string[] = functionality.required_variables ?? [];
+      const optionalVars: string[] = functionality.optional_variables ?? [];
+      const missing = requiredVars.filter((v) => !variables.has(v));
       const valid = missing.length === 0;
-      const allowed = [
-        ...(functionality.required_variables || []),
-        ...(functionality.optional_variables || []),
-      ];
+      const allowed = [...requiredVars, ...optionalVars];
       const extra = Array.from(variables).filter((v) => !allowed.includes(v));
 
       if (!valid) {
@@ -145,8 +138,8 @@ export async function POST(
             validation: {
               functionality_id: systemPrompt.functionality_id,
               functionality_name: functionality.label,
-              required_variables: functionality.required_variables,
-              optional_variables: functionality.optional_variables || [],
+              required_variables: requiredVars,
+              optional_variables: optionalVars,
               prompt_variables: Array.from(variables),
               missing_variables: missing,
               extra_variables: extra,

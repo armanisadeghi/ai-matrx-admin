@@ -99,8 +99,39 @@ export const StreamAwareChatMarkdown: React.FC<
   onError,
   onPhaseUpdate,
   serverProcessedBlocks: serverBlocksProp,
-  ...restProps
+  taskId,
+  type,
+  role,
+  className,
+  isStreamActive,
+  onContentChange,
+  analysisData,
+  messageId,
+  allowFullScreenEditor,
+  hideCopyButton,
+  toolUpdates,
+  applyLocalEdits,
 }) => {
+  if (process.env.NODE_ENV !== "production") {
+    if (role !== undefined) {
+      console.warn(
+        "[StreamAwareChatMarkdown] `role` prop is a removal candidate — still in use:",
+        { requestId, turnId, conversationId, messageId, role },
+      );
+    }
+    if (taskId !== undefined) {
+      console.warn(
+        "[StreamAwareChatMarkdown] `taskId` prop is a removal candidate — still in use:",
+        { requestId, turnId, conversationId, messageId, taskId },
+      );
+    }
+    if (type !== undefined) {
+      console.warn(
+        "[StreamAwareChatMarkdown] `type` prop is a removal candidate — still in use:",
+        { requestId, turnId, conversationId, messageId, type },
+      );
+    }
+  }
   const [processedContent, setProcessedContent] = useState<string>(
     content || "",
   );
@@ -341,13 +372,23 @@ export const StreamAwareChatMarkdown: React.FC<
             const textBlock = block as TextBlock;
             return (
               <EnhancedChatMarkdownInternal
+                key={`text-${index}`}
                 requestId={requestId}
                 turnId={turnId}
                 conversationId={conversationId}
-                key={`text-${index}`}
-                {...restProps}
                 content={textBlock.content}
-                isStreamActive={isLastBlock ? restProps.isStreamActive : false}
+                taskId={taskId}
+                type={type}
+                role={role}
+                className={className}
+                isStreamActive={isLastBlock ? isStreamActive : false}
+                onContentChange={onContentChange}
+                analysisData={analysisData}
+                messageId={messageId}
+                allowFullScreenEditor={allowFullScreenEditor}
+                hideCopyButton={hideCopyButton}
+                toolUpdates={toolUpdates}
+                applyLocalEdits={applyLocalEdits}
                 serverProcessedBlocks={
                   isLastBlock ? effectiveServerBlocks : undefined
                 }
@@ -395,11 +436,22 @@ export const StreamAwareChatMarkdown: React.FC<
   // ── Legacy mode or event mode with no tool calls: single renderer ──
   return (
     <EnhancedChatMarkdownInternal
-      {...restProps}
       requestId={requestId}
       turnId={turnId}
       conversationId={conversationId}
       content={processedContent}
+      taskId={taskId}
+      type={type}
+      role={role}
+      className={className}
+      isStreamActive={isStreamActive}
+      onContentChange={onContentChange}
+      analysisData={analysisData}
+      messageId={messageId}
+      allowFullScreenEditor={allowFullScreenEditor}
+      hideCopyButton={hideCopyButton}
+      toolUpdates={toolUpdates}
+      applyLocalEdits={applyLocalEdits}
       serverProcessedBlocks={effectiveServerBlocks}
     />
   );

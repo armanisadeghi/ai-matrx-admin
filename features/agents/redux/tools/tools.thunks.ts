@@ -20,5 +20,5 @@ export const fetchAvailableTools = createAsyncThunk<
     .order("name", { ascending: true });
 
   if (error) throw error;
-  return (data ?? []) as DatabaseTool[];
+  return data ?? [];
 });

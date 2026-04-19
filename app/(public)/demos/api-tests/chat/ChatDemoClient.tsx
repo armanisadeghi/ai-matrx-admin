@@ -378,7 +378,7 @@ export default function ChatDemoClient() {
         if (json.event === "error") {
           const errData = json.data;
           if (typeof errData === "object" && errData !== null) {
-            const d = errData as Record<string, unknown>;
+            const d = errData as unknown as Record<string, unknown>;
             setErrorMessage(
               (d.user_message ||
                 d.message ||

@@ -19,7 +19,7 @@ import {
 import { editMessage } from "@/features/agents/redux/legacy-shims/cx-message-actions-thunks";
 import { buildContentBlocksForSave } from "@/features/cx-conversation/utils/buildContentBlocksForSave";
 import { chatConversationsActions } from "@/features/agents/redux/legacy-shims/cx-message-actions-slice";
-import { AssistantActionBar } from "@/features/cx-conversation/AssistantActionBar";
+import { AssistantActionBar } from "@/features/agents/components/run/message-actions/AssistantActionBar";
 import type { ConversationMessage } from "@/features/agents/redux/legacy-shims/cx-message-actions-types";
 
 const ToolCallVisualization = lazy(

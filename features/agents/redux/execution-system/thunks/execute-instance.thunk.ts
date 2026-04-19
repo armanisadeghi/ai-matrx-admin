@@ -30,7 +30,6 @@ import { selectResourcePayloads } from "../instance-resources";
 import { selectResolvedVariables } from "../instance-variable-values";
 import { selectSettingsOverridesForApi } from "../instance-model-overrides";
 import { selectContextPayload } from "../instance-context";
-import { selectHasConversationHistory } from "../messages/messages.selectors";
 import {
   selectOrganizationId,
   selectProjectId,
@@ -45,9 +44,19 @@ import {
   createRequest,
   setRequestStatus,
 } from "../active-requests/active-requests.slice";
-import { addUserTurn } from "../messages/messages.slice";
+import { addOptimisticUserMessage } from "../messages/messages.slice";
+import { selectMessageCount } from "../messages/messages.selectors";
+import { v4 as uuidv4 } from "uuid";
+import type { CxContentBlock } from "@/features/public-chat/types/cx-tables";
 import { processStream } from "./process-stream";
 import { formatVariablesForDisplay } from "@/features/agents/utils/variable-utils";
+import { callbackManager } from "@/utils/callbackManager";
+import {
+  deriveClientToolsFromHandle,
+  isWidgetActionName,
+  type WidgetHandle,
+} from "@/features/agents/types/widget-handle.types";
+import { selectWidgetHandleIdFor } from "../instance-ui-state/instance-ui-state.selectors";
 import {
   registerAbortController,
   unregisterAbortController,
@@ -112,13 +121,24 @@ export function assembleRequest(
   // Context dict
   const context = selectContextPayload(conversationId)(state);
 
-  // Client tools
-  const clientToolsState =
-    state.instanceClientTools.byConversationId[conversationId];
+  // Client tools — per-turn derivation.
+  //
+  // The widget handle is the source of truth for widget_* capabilities: we
+  // read it LIVE from CallbackManager on every turn so a rehydrated
+  // conversation that just attached a widget, or a widget that just gained a
+  // method, takes effect without re-launching. The `instanceClientTools`
+  // slice still holds non-widget client-delegated tools.
+  const nonWidgetClientTools = (
+    state.instanceClientTools.byConversationId[conversationId] ?? []
+  ).filter((name) => !isWidgetActionName(name));
+  const widgetHandleId = selectWidgetHandleIdFor(state, conversationId);
+  const widgetHandle = widgetHandleId
+    ? callbackManager.get<WidgetHandle>(widgetHandleId)
+    : null;
+  const widgetClientTools = deriveClientToolsFromHandle(widgetHandle);
+  const mergedClientTools = [...nonWidgetClientTools, ...widgetClientTools];
   const client_tools =
-    clientToolsState && clientToolsState.length > 0
-      ? clientToolsState
-      : undefined;
+    mergedClientTools.length > 0 ? mergedClientTools : undefined;
 
   // Scope — snapshot from appContextSlice at the moment of execution
   const organization_id = selectOrganizationId(state) ?? undefined;
@@ -220,8 +240,7 @@ export const executeInstance = createAsyncThunk<
       // previous send or rehydrated from the database), continue via the
       // /conversations/{id} endpoint. Otherwise start a fresh agent run via
       // /agents/{id}. Captured before the optimistic user turn is added below.
-      const isContinuation =
-        selectHasConversationHistory(conversationId)(state);
+      const isContinuation = selectMessageCount(conversationId)(state) > 0;
 
       // Ephemeral turn 2+: delegate BEFORE we create an outer request or
       // optimistic user turn — the inner executeChatInstance owns that work
@@ -229,9 +248,8 @@ export const executeInstance = createAsyncThunk<
       // outer request entry into activeRequests.
       const isEphemeral = instance.isEphemeral === true;
       if (isEphemeral && isContinuation) {
-        const { executeChatInstance } = await import(
-          "./execute-chat-instance.thunk"
-        );
+        const { executeChatInstance } =
+          await import("./execute-chat-instance.thunk");
         return dispatch(executeChatInstance({ conversationId })).unwrap();
       }
 
@@ -246,15 +264,35 @@ export const executeInstance = createAsyncThunk<
         .filter(Boolean)
         .join("\n");
 
+      let userMessageClientTempId: string | undefined;
       if (displayContent || userMessageParts || resourceBlocks.length > 0) {
+        // Optimistically push the user's message into messages.byId under a
+        // client-generated UUID. When `record_reserved cx_message role=user`
+        // lands on the stream, process-stream promotes this temp id to the
+        // real server `cx_message.id` — one Redux record, no duplicates.
+        const content: CxContentBlock[] = [
+          ...(displayContent
+            ? [
+                {
+                  type: "text",
+                  text: displayContent,
+                } as unknown as CxContentBlock,
+              ]
+            : []),
+          ...((userMessageParts as unknown as CxContentBlock[] | undefined) ??
+            []),
+          ...(resourceBlocks as unknown as CxContentBlock[]),
+        ];
+        userMessageClientTempId = uuidv4();
+        const nextPosition = selectMessageCount(conversationId)(
+          getState() as RootState,
+        );
         dispatch(
-          addUserTurn({
+          addOptimisticUserMessage({
             conversationId,
-            content: displayContent,
-            messageParts:
-              [...(userMessageParts ?? []), ...resourceBlocks].length > 0
-                ? [...(userMessageParts ?? []), ...resourceBlocks]
-                : undefined,
+            clientTempId: userMessageClientTempId,
+            content,
+            position: nextPosition,
           }),
         );
       }
@@ -278,9 +316,8 @@ export const executeInstance = createAsyncThunk<
       // since the last outbound call, this ships `cache_bypass` so the
       // server's agent cache rebuilds from the authoritative DB state.
       // One-shot: the flags are cleared inside the consumer.
-      const { consumePendingCacheBypass } = await import(
-        "../message-crud/cache-bypass.slice"
-      );
+      const { consumePendingCacheBypass } =
+        await import("../message-crud/cache-bypass.slice");
       const pendingBypass = dispatch(
         consumePendingCacheBypass(conversationId) as never,
       ) as unknown as
@@ -373,6 +410,7 @@ export const executeInstance = createAsyncThunk<
         dispatch,
         getState: getState as () => RootState,
         jsonExtraction: currentUiState?.jsonExtraction ?? undefined,
+        userMessageClientTempId,
       });
 
       unregisterAbortController(conversationId);

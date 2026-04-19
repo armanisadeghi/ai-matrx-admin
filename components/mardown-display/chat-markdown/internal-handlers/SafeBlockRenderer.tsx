@@ -21,6 +21,13 @@ interface SafeBlockRendererProps {
   index: number;
   isStreamActive?: boolean;
   onContentChange?: (newContent: string) => void;
+  /**
+   * conversationId + messageId are the cx_conversation.id / cx_message.id
+   * pair that identifies the owning message. Threaded through so stateful
+   * render blocks can call `useMessageBlockPersistence` and round-trip
+   * their state into the DB via `cx_message_edit`.
+   */
+  conversationId?: string;
   messageId?: string;
   taskId?: string;
   isLastReasoningBlock?: boolean;
@@ -35,6 +42,7 @@ export const SafeBlockRenderer: React.FC<SafeBlockRendererProps> = ({
   index,
   isStreamActive,
   onContentChange,
+  conversationId,
   messageId,
   taskId,
   isLastReasoningBlock,
@@ -56,6 +64,7 @@ export const SafeBlockRenderer: React.FC<SafeBlockRendererProps> = ({
           index={index}
           isStreamActive={isStreamActive}
           onContentChange={onContentChange}
+          conversationId={conversationId}
           messageId={messageId}
           taskId={taskId}
           isLastReasoningBlock={isLastReasoningBlock}

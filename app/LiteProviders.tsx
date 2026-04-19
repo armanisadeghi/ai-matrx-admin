@@ -8,7 +8,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { ThemeProvider } from '@/styles/themes/ThemeProvider';
 import StoreProvider from '@/providers/StoreProvider';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { LiteInitialReduxState } from '@/types/reduxTypes';
+import { InitialReduxState, LiteInitialReduxState } from '@/types/reduxTypes';
 import { ToastProvider } from '@/providers/toast-context';
 import { ReactQueryProvider } from '@/providers/ReactQueryProvider';
 
@@ -46,7 +46,7 @@ interface LiteProvidersProps {
 export function LiteProviders({ children, initialState }: LiteProvidersProps) {
     return (
         <ReactQueryProvider>
-            <StoreProvider initialState={initialState}>
+            <StoreProvider initialState={initialState as Partial<InitialReduxState> & LiteInitialReduxState}>
                 <ThemeProvider>
                     <ToastProvider>
                         <TooltipProvider delayDuration={200}>

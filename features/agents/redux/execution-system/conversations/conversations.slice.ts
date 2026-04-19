@@ -311,15 +311,14 @@ const conversationsSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    // When history is loaded from the database (reload path), the conversation
-    // is by definition already persisted server-side — flip cacheOnly off so
-    // selectors that gate on server confirmation (URL nav, sidebar highlight)
-    // see the conversation as ready. Action type is matched by string to
-    // avoid a circular import with messages.slice.
+    // When messages are hydrated from the database (reload path), the
+    // conversation is by definition already persisted server-side — flip
+    // cacheOnly off so selectors that gate on server confirmation (URL nav,
+    // sidebar highlight) see the conversation as ready. Action type is
+    // matched by string to avoid a circular import with messages.slice.
     builder.addMatcher(
       (action): action is PayloadAction<{ conversationId: string }> =>
-        (action as { type?: string }).type ===
-        "messages/loadConversationHistory",
+        (action as { type?: string }).type === "messages/hydrateMessages",
       (state, action) => {
         const instance = state.byConversationId[action.payload.conversationId];
         if (instance) instance.cacheOnly = false;

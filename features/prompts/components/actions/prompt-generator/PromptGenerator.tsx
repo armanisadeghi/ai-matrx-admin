@@ -99,8 +99,12 @@ export function PromptGenerator({ isOpen, onClose }: PromptGeneratorProps) {
         setExtractionError(null);
 
         // Auto-populate the prompt name if available
-        if (result.data.name && typeof result.data.name === "string") {
-          setPromptName(result.data.name);
+        const maybeName =
+          typeof result.data === "object" && result.data !== null && "name" in result.data
+            ? (result.data as { name?: unknown }).name
+            : undefined;
+        if (maybeName && typeof maybeName === "string") {
+          setPromptName(maybeName);
         }
 
         toast.success("Prompt generated successfully", {

@@ -52,7 +52,7 @@ export function AgentInlineControls({
         <SmartModelSelect value={modelId} onValueChange={handleModelChange} />
       </div>
       <AgentVariablesModal agentId={agentId} />
-      <AgentToolsModal agentId={agentId} availableTools={availableTools} />
+      <AgentToolsModal agentId={agentId} />
       <AgentSettingsModal agentId={agentId} />
     </div>
   );

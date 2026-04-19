@@ -115,23 +115,28 @@ export function HierarchyEntityModal({ entityType, mode = 'create', existingNode
         );
         break;
 
-      case 'project':
+      case 'project': {
+        const resolvedOrgId = parentType === 'organization' ? parentId : orgId;
+        if (!resolvedOrgId) return;
         createProj.mutate(
           {
             name: name.trim(),
-            organization_id: parentType === 'organization' ? parentId : orgId,
+            organization_id: resolvedOrgId,
             description: description || undefined,
           },
           opts
         );
         break;
+      }
 
-      case 'task':
+      case 'task': {
         if (!parentId) return;
+        if (!orgId) return;
         createTask.mutate(
           {
             title: name.trim(),
             project_id: parentType === 'task' ? '' : parentId,
+            organization_id: orgId,
             parent_task_id: parentType === 'task' ? parentId : undefined,
             description: description || undefined,
             status,
@@ -140,6 +145,7 @@ export function HierarchyEntityModal({ entityType, mode = 'create', existingNode
           opts
         );
         break;
+      }
     }
   }, [entityType, name, slug, description, status, priority, dueDate, website, parentId, parentType, orgId, onClose, isEdit, existingNode, createOrg, createProj, createTask, updateEntity]);
 

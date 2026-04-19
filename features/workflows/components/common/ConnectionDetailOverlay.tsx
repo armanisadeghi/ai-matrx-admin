@@ -136,7 +136,11 @@ const handleAddAdditionalDependency = ({ node, matrxEdge, handleUpdateNode }: Co
         target_broker_name: "",
     };
 
-    upsertWorkflowDependency(node, partialDependency, handleUpdateNode);
+    // upsertWorkflowDependency passes back a WorkflowNodePersistShape; the
+    // callsite expects the narrower DbNodeData union, so adapt on the way through.
+    upsertWorkflowDependency(node, partialDependency, (updated) =>
+        handleUpdateNode(updated as DbNodeData),
+    );
 };
 
 const handleUpdateWorkflowNodeSource = ({ node, matrxEdge, handleUpdateNode }: CommonSingleNodeUpdateProps) => {

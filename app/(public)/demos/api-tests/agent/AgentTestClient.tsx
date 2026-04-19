@@ -39,6 +39,7 @@ const chatConversationsActions = {
   addMessage: (_payload: unknown) => ({ type: "noop" as const, payload: _payload }),
   updateMessage: (_payload: unknown) => ({ type: "noop" as const, payload: _payload }),
   setSessionStatus: (_payload: unknown) => ({ type: "noop" as const, payload: _payload }),
+  clearProtocolDbSnapshot: (_payload: unknown) => ({ type: "noop" as const, payload: _payload }),
 };
 const loadConversationHistory = createAsyncThunk(
   "legacy/loadConversationHistory",

@@ -32,7 +32,11 @@ const DEBUG = false;
 const RecipeNodeInitializer: React.FC<RecipeNodeInitializerProps> = ({ nodeId, onCancel, open, onConfirm }) => {
     const dispatch = useAppDispatch();
     const node = useAppSelector((state) => workflowNodesSelectors.nodeById(state, nodeId));
-    const nodeDefinitioninputs = useMemo(() => node?.metadata?.nodeDefinition?.inputs || [], [node]);
+    const nodeDefinitioninputs = useMemo(() => {
+        // metadata is JSON at the DB level; narrow enough to read `nodeDefinition.inputs`.
+        const meta = node?.metadata as { nodeDefinition?: { inputs?: unknown[] } } | null | undefined;
+        return meta?.nodeDefinition?.inputs ?? [];
+    }, [node]);
     const { dataBrokerRecordsById } = useDataBrokerWithFetch();
 
     const allReturnBrokers = RECIPE_NODE_DEFINITION.predefined_brokers;

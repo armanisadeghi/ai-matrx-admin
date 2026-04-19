@@ -504,7 +504,7 @@ const AdvancedMenu: React.FC<AdvancedMenuProps> = ({
           left: menuPosition ? `${menuPosition.left}px` : undefined,
         }}
         className={cn(
-          "bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl",
+          "bg-white/95 dark:bg-zinc-900/95 backdrop-blur-sm",
           "shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] dark:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.8)]",
           "rounded-lg border border-zinc-300 dark:border-zinc-600",
           "flex flex-col",

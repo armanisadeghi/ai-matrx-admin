@@ -92,7 +92,6 @@ export function PreExecutionCard({
             compact
             placeholder="Additional instructions (optional)..."
             showSubmitOnEnterToggle={false}
-            showAutoClearToggle={false}
             disableSend
           />
         </div>

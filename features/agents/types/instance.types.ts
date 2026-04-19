@@ -410,9 +410,9 @@ export interface InstanceUIState {
   showDefinitionMessageContent: boolean;
 
   /**
-   * Whether sub-agent turns appear in the transcript. When false,
-   * `selectDisplayMessages` filters them out (data is still stored in the
-   * messages slice — no loss). Default true.
+   * Whether sub-agent turns appear in the transcript. When false, consumer
+   * components filter them out when projecting the messages slice into the
+   * display list (data is still stored on the record — no loss). Default true.
    */
   showSubAgents?: boolean;
 
@@ -425,14 +425,19 @@ export interface InstanceUIState {
    */
   hiddenMessageCount: number;
 
-  // ── Callback integration ─────────────────────────────────────────────────
+  // ── Widget handle integration ────────────────────────────────────────────
   /**
-   * CallbackManager group ID for this instance's lifecycle callbacks
-   * (onComplete, onTextReplace, onTextInsertBefore, onTextInsertAfter, etc.).
-   * Stored as a string so Redux stays serializable. Actual function refs
-   * live in the CallbackManager singleton.
+   * CallbackManager id for this instance's WidgetHandle — a single object
+   * carrying capability methods (onTextReplace, onAttachMedia, ...) and
+   * lifecycle methods (onComplete, onCancel, onError). The submit-body
+   * assembler reads the handle per-turn via `callbackManager.get(id)` to
+   * derive `client_tools`; the tool_delegated dispatcher routes widget_*
+   * calls to the corresponding method.
+   *
+   * Stored as a string so Redux stays serializable. See
+   * `features/agents/types/widget-handle.types.ts` for the contract.
    */
-  callbackGroupId: string | null;
+  widgetHandleId: string | null;
 
   // ── Layout & interaction ─────────────────────────────────────────────────
   isExpanded: boolean;
@@ -640,23 +645,19 @@ export interface ManagedAgentOptions {
    */
   preExecutionMessage?: string | null;
 
-  /** Called once when the execution completes (all modes). */
-  onComplete?: (result: LaunchResult) => void;
-
   /**
-   * Text-manipulation callbacks for context-menu / editor integrations.
-   * When provided, they are registered with CallbackManager and invoked
-   * once the AI response is ready. (Connection to the editor/notes trigger
-   * points is the next integration milestone — these are wired but not yet
-   * triggered by any UI surface.)
+   * CallbackManager id for a WidgetHandle registered via `useWidgetHandle`.
+   * Carries both capability methods (onTextReplace, onAttachMedia, ...) and
+   * lifecycle methods (onComplete, onCancel, onError). The submit-body
+   * assembler reads the handle per-turn to derive `client_tools`; the
+   * tool_delegated dispatcher routes widget_* calls back through it.
    */
-  onTextReplace?: (text: string) => void;
-  onTextInsertBefore?: (text: string) => void;
-  onTextInsertAfter?: (text: string) => void;
+  widgetHandleId?: string;
 
   /**
    * The original text from the editor/notes that was selected before launch.
-   * Stored for use by the text-manipulation callbacks above.
+   * Forwarded to the widget handle's onTextReplace / onTextInsert* methods
+   * alongside the agent's response.
    */
   originalText?: string;
 
@@ -804,23 +805,18 @@ export const AGENT_EXECUTION_DEFAULTS = {
   /** How many definition messages to hide (fetched from agx_get_defined_data). */
   hiddenMessageCount: 0,
 
-  // ── Callbacks ──────────────────────────────────────────────────────────────
-
-  /** Called once when execution completes. Registered in CallbackManager. */
-  onComplete: null as null,
+  // ── Widget handle ──────────────────────────────────────────────────────────
 
   /**
-   * Text-manipulation callbacks for editor/notes context-menu integrations.
-   * Not yet connected to any trigger surface — these are the future entry points.
+   * CallbackManager id for a WidgetHandle. See widget-handle.types.ts.
+   * Null by default; set by callers that use `useWidgetHandle`.
    */
-  onTextReplace: null as null,
-  onTextInsertBefore: null as null,
-  onTextInsertAfter: null as null,
+  widgetHandleId: null as null,
 
   /**
    * The text that was selected in the editor when the launch was triggered.
-   * Stored in instanceUIState.originalText. Passed through to text-manipulation
-   * callbacks (onTextReplace, onTextInsertBefore, onTextInsertAfter).
+   * Stored in instanceUIState.originalText. Forwarded to the widget handle's
+   * text-manipulation methods alongside the agent's response.
    */
   originalText: null as null,
 

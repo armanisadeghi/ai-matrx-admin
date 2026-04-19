@@ -23,7 +23,7 @@ import {
   type ContentSegment,
   type UnifiedSlot,
 } from "@/features/agents/redux/execution-system/active-requests/active-requests.selectors";
-import { selectTurnInterleavedContent } from "@/features/agents/redux/execution-system/messages/messages.selectors";
+import { selectMessageInterleavedContent } from "@/features/agents/redux/execution-system/messages/messages.selectors";
 import type { RenderBlockPayload } from "@/types/python-generated/stream-events";
 import { useAppSelector } from "@/lib/redux/hooks";
 import {
@@ -145,10 +145,58 @@ export const EnhancedChatMarkdownInternal: React.FC<
   );
   const unifiedSlots = useAppSelector(unifiedSlotsSelector);
 
-  const dbTurnSegments = useAppSelector(
-    turnId && conversationId
-      ? selectTurnInterleavedContent(conversationId, turnId)
+  const messageInterleavedContent = useAppSelector(
+    messageId && conversationId
+      ? selectMessageInterleavedContent(conversationId, messageId)
       : _selectEmptySegments,
+  );
+
+  console.log(
+    "[EnhancedChatMarkdownInternal] ===================================================================",
+  );
+  console.log("[EnhancedChatMarkdownInternal] messageId:", messageId);
+  console.log("[EnhancedChatMarkdownInternal] conversationId:", conversationId);
+  console.log(
+    "[EnhancedChatMarkdownInternal] messageInterleavedContent:",
+    JSON.stringify(messageInterleavedContent, null, 2),
+  );
+  console.log(
+    "[EnhancedChatMarkdownInternal] unifiedSlots:",
+    JSON.stringify(unifiedSlots, null, 2),
+  );
+  console.log("[EnhancedChatMarkdownInternal] requestText:", requestText);
+  console.log("[EnhancedChatMarkdownInternal] content:", content);
+  console.log("[EnhancedChatMarkdownInternal] taskId:", taskId);
+  console.log("[EnhancedChatMarkdownInternal] type:", type);
+  console.log("[EnhancedChatMarkdownInternal] role:", role);
+  console.log("[EnhancedChatMarkdownInternal] className:", className);
+  console.log("[EnhancedChatMarkdownInternal] isStreamActive:", isStreamActive);
+  console.log(
+    "[EnhancedChatMarkdownInternal] onContentChange:",
+    onContentChange,
+  );
+  console.log("[EnhancedChatMarkdownInternal] analysisData:", analysisData);
+  console.log(
+    "[EnhancedChatMarkdownInternal] allowFullScreenEditor:",
+    allowFullScreenEditor,
+  );
+  console.log("[EnhancedChatMarkdownInternal] hideCopyButton:", hideCopyButton);
+  console.log("[EnhancedChatMarkdownInternal] toolUpdates:", toolUpdatesProp);
+  console.log(
+    "[EnhancedChatMarkdownInternal] serverProcessedBlocks:",
+    serverProcessedBlocks,
+  );
+  console.log(
+    "[EnhancedChatMarkdownInternal] applyLocalEdits:",
+    applyLocalEdits,
+  );
+  console.log(
+    "[EnhancedChatMarkdownInternal] hasReduxProvider:",
+    hasReduxProvider,
+  );
+
+  console.log(
+    "[EnhancedChatMarkdownInternal] ===================================================================",
   );
 
   const renderBlocksSelector = useMemo(
@@ -183,7 +231,7 @@ export const EnhancedChatMarkdownInternal: React.FC<
     (s) => s.kind === "tool" || s.kind === "status",
   );
 
-  const hasDbInterleavedSpecial = dbTurnSegments.some(
+  const hasDbInterleavedSpecial = messageInterleavedContent.some(
     (s) => s.type === "db_tool" || s.type === "thinking",
   );
 
@@ -441,6 +489,7 @@ export const EnhancedChatMarkdownInternal: React.FC<
             index={index}
             isStreamActive={isStreamActive}
             onContentChange={onContentChange}
+            conversationId={conversationId}
             messageId={messageId}
             requestId={requestId}
             taskId={taskId}
@@ -634,7 +683,7 @@ export const EnhancedChatMarkdownInternal: React.FC<
                 return null;
               })
             : hasDbInterleavedSpecial
-              ? dbTurnSegments.map((segment, segIdx) => {
+              ? messageInterleavedContent.map((segment, segIdx) => {
                   if (segment.type === "db_tool") {
                     return (
                       <DbToolCard

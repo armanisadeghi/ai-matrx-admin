@@ -61,7 +61,8 @@ export function newNodeFunction(
         node_type: categoryName,
         step_name: nodeDefinition.name,
         execution_required: true,
-        inputs: Array.isArray(normalizeInputMapping(nodeDefinition.inputs)) 
+        arguments: null,
+        inputs: Array.isArray(normalizeInputMapping(nodeDefinition.inputs))
             ? normalizeInputMapping(nodeDefinition.inputs) as InputMapping[]
             : [normalizeInputMapping(nodeDefinition.inputs) as InputMapping],
         outputs: outputs,
@@ -81,7 +82,6 @@ export function newNodeFunction(
             nodeDefinition: nodeDefinition,
         },
         is_public: false,
-        authenticated_read: true,
         public_read: false,
     };
 }
@@ -117,6 +117,7 @@ export function createCustomInputNode(
         node_type: nodeType,
         step_name: nodeDefinition.name,
         execution_required: false,
+        arguments: null,
         inputs: [],
         outputs: outputs,
         user_id: userId,
@@ -135,7 +136,6 @@ export function createCustomInputNode(
             nodeDefinition: nodeDefinition,
         },
         is_public: false,
-        authenticated_read: true,
         public_read: false,
     };
 }

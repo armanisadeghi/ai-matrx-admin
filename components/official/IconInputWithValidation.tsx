@@ -3,13 +3,38 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, Check, X, ExternalLink } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
+import { RefreshCw, Check, X, ExternalLink, PanelsTopLeft } from "lucide-react";
 import IconResolver, {
   isRegisteredOrLucideIconName,
 } from "@/components/official/IconResolver";
+import {
+  TapTargetButton,
+  TapTargetButtonSolid,
+  TapTargetButtonTransparent,
+} from "@/components/icons/TapTargetButton";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import { listMatrxSvgIconValues } from "@/utils/icons/matrx-public-svg-registry";
 
-interface IconInputWithValidationProps {
+const LUCIDE_ICONS_URL = "https://lucide.dev/icons/";
+
+const MATRX_SVG_QUICK_PICK = listMatrxSvgIconValues().slice(0, 10);
+
+export interface IconInputWithValidationProps {
   /** Current icon name value */
   value: string;
   /** Callback when icon name changes */
@@ -24,9 +49,39 @@ interface IconInputWithValidationProps {
   disabled?: boolean;
   /** Show link to Lucide icons site */
   showLucideLink?: boolean;
+  /** Open Lucide.dev in an embedded panel (dialog on desktop, drawer on mobile) */
+  showLucideEmbed?: boolean;
+  /** Show glass / transparent / solid tap-target previews when the value validates */
+  showTapTargetPreviews?: boolean;
+  /** Show quick-pick chips for Matrx `svg:…` public assets */
+  showMatrxSvgQuickPick?: boolean;
 }
 
 type ValidationState = "idle" | "validating" | "valid" | "invalid";
+
+function LucideEmbedFrame({ className }: { className?: string }) {
+  return (
+    <div
+      className={cn(
+        "relative w-full overflow-hidden rounded-md border border-border bg-muted/30",
+        className,
+      )}
+    >
+      <iframe
+        title="Lucide icons"
+        src={LUCIDE_ICONS_URL}
+        className="h-[min(70dvh,560px)] w-full border-0 bg-background"
+        sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+        referrerPolicy="no-referrer-when-downgrade"
+      />
+      <p className="border-t border-border bg-muted/50 px-3 py-2 text-[11px] text-muted-foreground">
+        If this area stays blank, lucide.dev may block embedding in iframes —
+        use &quot;Open Lucide&quot; below, then copy the icon name here (
+        <code className="font-mono text-foreground">PascalCase</code>).
+      </p>
+    </div>
+  );
+}
 
 /**
  * IconInputWithValidation - Official Component
@@ -34,12 +89,12 @@ type ValidationState = "idle" | "validating" | "valid" | "invalid";
  * All-in-one icon name input with validation and preview.
  *
  * Features:
- * - Real-time icon validation
+ * - Real-time icon validation (Lucide, IconResolver registry, Matrx `svg:path/id` assets)
  * - Visual feedback (green check / red X)
  * - Live icon preview when valid
  * - Auto-capitalizes first letter for better UX
- * - Link to Lucide icons reference
- * - Seamless integration - replaces standard Input
+ * - Optional embedded Lucide reference (iframe)
+ * - Optional tap-target (glass / transparent / solid) previews
  *
  * @example
  * ```tsx
@@ -53,22 +108,24 @@ type ValidationState = "idle" | "validating" | "valid" | "invalid";
 export default function IconInputWithValidation({
   value,
   onChange,
-  placeholder = "e.g., Sparkles",
+  placeholder = "e.g. Sparkles or svg:icons/Home",
   className,
   id,
   disabled = false,
   showLucideLink = true,
+  showLucideEmbed = true,
+  showTapTargetPreviews = true,
+  showMatrxSvgQuickPick = true,
 }: IconInputWithValidationProps) {
+  const isMobile = useIsMobile();
   const [validationState, setValidationState] =
     useState<ValidationState>("idle");
   const [validatedIconName, setValidatedIconName] = useState<string | null>(
     null,
   );
   const [lastValidatedValue, setLastValidatedValue] = useState<string>("");
+  const [lucidePanelOpen, setLucidePanelOpen] = useState(false);
 
-  /**
-   * Validates an icon name by attempting to load it dynamically
-   */
   const validateIcon = useCallback(
     async (iconName: string) => {
       if (!iconName || iconName.trim() === "") {
@@ -79,11 +136,8 @@ export default function IconInputWithValidation({
 
       setValidationState("validating");
 
-      // Must not use getIconComponent() — it always returns a component (fallback Zap), so it
-      // would mark every non-empty string as "valid". Only real registry / Lucide names pass.
       const checkIcon = (name: string) => isRegisteredOrLucideIconName(name);
 
-      // Try the icon name as-is
       const isValid = await checkIcon(iconName);
 
       if (isValid) {
@@ -93,7 +147,6 @@ export default function IconInputWithValidation({
         return;
       }
 
-      // If failed and first letter is lowercase, try capitalizing
       if (iconName[0] === iconName[0].toLowerCase()) {
         const capitalized =
           iconName.charAt(0).toUpperCase() + iconName.slice(1);
@@ -103,13 +156,11 @@ export default function IconInputWithValidation({
           setValidationState("valid");
           setValidatedIconName(capitalized);
           setLastValidatedValue(capitalized);
-          // Auto-update the value with capitalized version
           onChange(capitalized);
           return;
         }
       }
 
-      // Icon not found
       setValidationState("invalid");
       setValidatedIconName(null);
       setLastValidatedValue(iconName);
@@ -117,13 +168,10 @@ export default function IconInputWithValidation({
     [onChange],
   );
 
-  // Auto-validate when value changes externally (e.g., form load)
   useEffect(() => {
-    // Only validate if value has changed and hasn't been validated yet
     if (value && value.trim() !== "" && value !== lastValidatedValue) {
       validateIcon(value);
     } else if (!value || value.trim() === "") {
-      // Reset validation state if value is cleared
       setValidationState("idle");
       setValidatedIconName(null);
       setLastValidatedValue("");
@@ -138,7 +186,6 @@ export default function IconInputWithValidation({
     const newValue = e.target.value;
     onChange(newValue);
 
-    // Reset validation state when user types
     if (validationState !== "idle") {
       setValidationState("idle");
       setValidatedIconName(null);
@@ -158,10 +205,41 @@ export default function IconInputWithValidation({
     }
   };
 
+  const lucidePanel = isMobile ? (
+    <Drawer open={lucidePanelOpen} onOpenChange={setLucidePanelOpen}>
+      <DrawerContent className="max-h-[92dvh] pb-safe">
+        <DrawerHeader className="text-left">
+          <DrawerTitle>Lucide icons</DrawerTitle>
+          <DrawerDescription>
+            Search on lucide.dev; use the PascalCase name in the field above.
+          </DrawerDescription>
+        </DrawerHeader>
+        <div className="px-4 pb-4">
+          <LucideEmbedFrame />
+        </div>
+      </DrawerContent>
+    </Drawer>
+  ) : (
+    <Dialog open={lucidePanelOpen} onOpenChange={setLucidePanelOpen}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col gap-0 p-0">
+        <DialogHeader className="px-6 pt-6 pb-2 shrink-0">
+          <DialogTitle>Lucide icons</DialogTitle>
+          <DialogDescription>
+            Embedded reference — search here, then paste the{" "}
+            <code className="font-mono text-foreground">PascalCase</code> name
+            into your field.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="px-6 pb-6 min-h-0 flex-1 overflow-auto">
+          <LucideEmbedFrame />
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-2">
       <div className="flex items-center gap-2">
-        {/* Input with validation button */}
         <div className="relative flex-1">
           <Input
             id={id}
@@ -169,7 +247,8 @@ export default function IconInputWithValidation({
             onChange={handleInputChange}
             placeholder={placeholder}
             disabled={disabled}
-            className={cn("pr-10", className)}
+            className={cn("pr-10 text-base", className)}
+            style={{ fontSize: "16px" }}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 e.preventDefault();
@@ -190,35 +269,126 @@ export default function IconInputWithValidation({
           </Button>
         </div>
 
-        {/* Icon preview when valid */}
         {validationState === "valid" && validatedIconName && (
-          <div className="flex-shrink-0 w-10 h-10 border rounded-md flex items-center justify-center bg-gray-50 dark:bg-gray-800">
-            <IconResolver iconName={validatedIconName} className="h-5 w-5" />
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border bg-muted/40">
+            <IconResolver
+              iconName={validatedIconName}
+              className="h-5 w-5 text-foreground"
+            />
           </div>
         )}
       </div>
 
-      {/* Helper text with Lucide link */}
+      {showTapTargetPreviews &&
+        validationState === "valid" &&
+        validatedIconName && (
+          <div className="flex flex-wrap items-center gap-3 rounded-md border border-border/60 bg-muted/20 px-2 py-2">
+            <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+              Tap targets
+            </span>
+            <div className="flex flex-wrap items-center gap-2">
+              <TapTargetButton
+                type="button"
+                icon={
+                  <IconResolver
+                    iconName={validatedIconName}
+                    className="h-4 w-4"
+                  />
+                }
+                ariaLabel="Glass tap target preview"
+                disabled
+              />
+              <TapTargetButtonTransparent
+                type="button"
+                icon={
+                  <IconResolver
+                    iconName={validatedIconName}
+                    className="h-4 w-4"
+                  />
+                }
+                ariaLabel="Transparent tap target preview"
+                disabled
+              />
+              <TapTargetButtonSolid
+                type="button"
+                icon={
+                  <IconResolver
+                    iconName={validatedIconName}
+                    className="h-4 w-4"
+                  />
+                }
+                ariaLabel="Solid tap target preview"
+                disabled
+              />
+            </div>
+          </div>
+        )}
+
       {showLucideLink && (
-        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-          <span>Lucide icon name</span>
+        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+          <span>Lucide name, registry id, or</span>
+          <code className="rounded bg-muted px-1 py-0.5 font-mono text-[10px] text-foreground">
+            svg:icons/Home
+          </code>
           <span>•</span>
           <a
-            href="https://lucide.dev/icons/"
+            href={LUCIDE_ICONS_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:underline"
+            className="inline-flex items-center gap-1 text-primary hover:underline"
           >
-            Browse icons
+            Open Lucide
             <ExternalLink className="h-3 w-3" />
           </a>
+          {showLucideEmbed ? (
+            <>
+              <span>•</span>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-7 gap-1 px-2 text-xs text-primary"
+                onClick={() => setLucidePanelOpen(true)}
+              >
+                <PanelsTopLeft className="h-3.5 w-3.5" />
+                Lucide in panel
+              </Button>
+            </>
+          ) : null}
         </div>
       )}
 
-      {/* Validation feedback messages */}
+      {showMatrxSvgQuickPick ? (
+        <div className="space-y-1">
+          <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+            Matrx SVG quick pick
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {MATRX_SVG_QUICK_PICK.map((id) => (
+              <button
+                key={id}
+                type="button"
+                disabled={disabled}
+                onClick={() => onChange(id)}
+                className={cn(
+                  "rounded-full border border-border bg-background px-2 py-0.5 font-mono text-[10px] text-foreground transition-colors",
+                  "hover:bg-accent disabled:opacity-50",
+                  value === id && "border-primary bg-primary/10",
+                )}
+              >
+                {id}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      {lucidePanel}
+
       {validationState === "invalid" && (
         <p className="text-xs text-red-600 dark:text-red-400">
-          Icon not found. Try a different name or browse available icons.
+          Icon not found. Try Lucide PascalCase, a registry id, or an{" "}
+          <code className="font-mono">svg:…</code> id from the list above.
         </p>
       )}
       {validationState === "valid" && validatedIconName !== value && (
@@ -232,25 +402,21 @@ export default function IconInputWithValidation({
 }
 
 /**
- * Compact variant without helper text - perfect for forms with limited space
+ * Compact variant — Lucide helper row hidden; optional embed / tap / SVG chips via props.
  */
 export function IconInputCompact({
-  value,
-  onChange,
-  placeholder = "Icon name",
-  className,
-  id,
-  disabled = false,
+  showLucideEmbed = false,
+  showTapTargetPreviews = false,
+  showMatrxSvgQuickPick = false,
+  ...rest
 }: Omit<IconInputWithValidationProps, "showLucideLink">) {
   return (
     <IconInputWithValidation
-      value={value}
-      onChange={onChange}
-      placeholder={placeholder}
-      className={className}
-      id={id}
-      disabled={disabled}
+      {...rest}
       showLucideLink={false}
+      showLucideEmbed={showLucideEmbed}
+      showTapTargetPreviews={showTapTargetPreviews}
+      showMatrxSvgQuickPick={showMatrxSvgQuickPick}
     />
   );
 }

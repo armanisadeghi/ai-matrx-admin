@@ -67,12 +67,12 @@ import {
 
 // ─── Conversation history selectors ───────────────────────────────────────────
 import {
-  selectConversationTurns,
+  selectConversationMessages,
   selectApiEndpointMode,
-  selectTurnCount,
-  selectLoadedFromHistory,
+  selectMessageCount,
+  extractFlatText,
 } from "@/features/agents/redux/execution-system/messages/messages.selectors";
-import type { ConversationTurn } from "@/features/agents/redux/execution-system/messages/messages.slice";
+import type { MessageRecord } from "@/features/agents/redux/execution-system/messages/messages.slice";
 
 // ─── Tab definitions ──────────────────────────────────────────────────────────
 
@@ -229,8 +229,8 @@ function OverviewTab({
   const instance = useAppSelector(
     conversationId ? selectInstance(conversationId) : () => undefined,
   );
-  const turns = useAppSelector(
-    conversationId ? selectConversationTurns(conversationId) : () => [],
+  const messages = useAppSelector(
+    conversationId ? selectConversationMessages(conversationId) : () => [],
   );
   const uiState = useAppSelector(
     conversationId ? selectInstanceUIState(conversationId) : () => undefined,
@@ -310,7 +310,7 @@ function OverviewTab({
               mono
               dim
             />
-            <KvRow label="turns" value={String(turns.length)} />
+            <KvRow label="messages" value={String(messages.length)} />
             <KvRow
               label="displayMode"
               value={uiState?.displayMode ?? "—"}
@@ -542,20 +542,25 @@ function UIStateTab({ conversationId }: { conversationId: string | null }) {
 
 // ─── Tab: Conversation History ────────────────────────────────────────────────
 
-function TurnCard({ turn, index }: { turn: ConversationTurn; index: number }) {
+function MessageCard({
+  record,
+  index,
+}: {
+  record: MessageRecord;
+  index: number;
+}) {
   const [open, setOpen] = useState(index === 0);
-  const json = formatJson(turn, 2);
+  const json = formatJson(record, 2);
   const { copied, copy } = useCopyText(json);
 
   const roleColor =
-    turn.role === "user"
+    record.role === "user"
       ? "text-blue-400"
-      : turn.role === "assistant"
+      : record.role === "assistant"
         ? "text-emerald-400"
         : "text-muted-foreground";
 
-  const preview =
-    typeof turn.content === "string" ? turn.content.slice(0, 120) : "";
+  const preview = extractFlatText(record).slice(0, 120);
 
   return (
     <div className="border-b border-border/50 last:border-0">
@@ -574,7 +579,7 @@ function TurnCard({ turn, index }: { turn: ConversationTurn; index: number }) {
           <ChevronRight className="h-3 w-3 text-muted-foreground shrink-0" />
         )}
         <span className={cn("text-xs font-semibold w-16 shrink-0", roleColor)}>
-          {turn.role}
+          {record.role}
         </span>
         <span className="text-xs text-muted-foreground flex-1 min-w-0 truncate">
           {preview}
@@ -607,17 +612,14 @@ function TurnCard({ turn, index }: { turn: ConversationTurn; index: number }) {
 }
 
 function HistoryTab({ conversationId }: { conversationId: string | null }) {
-  const turns = useAppSelector(
-    conversationId ? selectConversationTurns(conversationId) : () => [],
+  const messages = useAppSelector(
+    conversationId ? selectConversationMessages(conversationId) : () => [],
   );
   const mode = useAppSelector(
     conversationId ? selectApiEndpointMode(conversationId) : () => "agent",
   );
-  const loadedFromHistory = useAppSelector(
-    conversationId ? selectLoadedFromHistory(conversationId) : () => false,
-  );
-  const turnCount = useAppSelector(
-    conversationId ? selectTurnCount(conversationId) : () => 0,
+  const messageCount = useAppSelector(
+    conversationId ? selectMessageCount(conversationId) : () => 0,
   );
 
   if (!conversationId)
@@ -634,18 +636,17 @@ function HistoryTab({ conversationId }: { conversationId: string | null }) {
           messages
         </span>
         <Badge label={`mode: ${mode}`} variant="info" />
-        <Badge label={`${turnCount} turns`} />
-        {loadedFromHistory && <Badge label="loaded" variant="success" />}
+        <Badge label={`${messageCount} messages`} />
       </div>
       <div className="flex-1 min-h-0 overflow-y-auto">
-        {turns.length === 0 ? (
+        {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-32 text-muted-foreground gap-1">
             <MessageSquare className="h-6 w-6 opacity-20" />
-            <span className="text-xs">No turns yet</span>
+            <span className="text-xs">No messages yet</span>
           </div>
         ) : (
-          turns.map((turn, i) => (
-            <TurnCard key={turn.turnId} turn={turn} index={i} />
+          messages.map((record, i) => (
+            <MessageCard key={record.id} record={record} index={i} />
           ))
         )}
       </div>

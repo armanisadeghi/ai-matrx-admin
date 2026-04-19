@@ -28,9 +28,9 @@ export function UnsavedChangesDiff({ agentId }: UnsavedChangesDiffProps) {
     const current: Record<string, unknown> = {};
     const saved: Record<string, unknown> = {};
 
-    for (const field of dirtyFields) {
+    for (const field of Object.keys(dirtyFields) as Array<keyof AgentDefinition>) {
       current[field] = (agent as unknown as Record<string, unknown>)[field];
-      saved[field] = fieldHistory[field];
+      saved[field] = (fieldHistory as unknown as Record<string, unknown>)[field];
     }
 
     return {
@@ -39,7 +39,7 @@ export function UnsavedChangesDiff({ agentId }: UnsavedChangesDiffProps) {
     };
   }, [agent, dirtyFields, fieldHistory]);
 
-  if (!agent || !dirtyFields || dirtyFields.size === 0) {
+  if (!agent || !dirtyFields || Object.keys(dirtyFields).length === 0) {
     return (
       <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
         No unsaved changes

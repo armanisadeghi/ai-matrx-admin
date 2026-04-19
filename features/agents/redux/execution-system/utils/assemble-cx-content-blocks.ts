@@ -5,8 +5,9 @@
  * format stored in cx_message.content[] in the database.
  *
  * This is the inverse of normalizeContentBlocks (DB → RenderBlockPayload[]).
- * Call this once at the end of a stream, right before commitAssistantTurn,
- * while the ActiveRequest data is still in Redux.
+ * Call this once at the end of a stream, right before the final
+ * `updateMessageRecord` lands for the assistant message, while the
+ * ActiveRequest data is still in Redux.
  *
  * Ordering is driven by the timeline so reasoning → tool calls → text blocks
  * appear in the exact sequence the model produced them, not in insertion order.

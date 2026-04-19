@@ -77,8 +77,11 @@ export default function HierarchyCreationWindow({
       } else if (entityType === "task") {
         if (!presetContext?.project_id)
           throw new Error("Project ID is required");
+        if (!presetContext?.organization_id)
+          throw new Error("Organization ID is required");
         await createTask.mutateAsync({
           project_id: presetContext.project_id,
+          organization_id: presetContext.organization_id,
           title: name,
           description: description,
         });

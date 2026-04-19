@@ -177,7 +177,9 @@ export default function DiffExperimentalPage() {
         .update({
           content: currentText,
           metadata: {
-            ...activeNote.metadata,
+            ...(activeNote.metadata && typeof activeNote.metadata === 'object' && !Array.isArray(activeNote.metadata)
+              ? (activeNote.metadata as Record<string, unknown>)
+              : {}),
             last_change_source: 'ai',
             last_change_type: 'ai_diff',
             last_diff_metadata: {

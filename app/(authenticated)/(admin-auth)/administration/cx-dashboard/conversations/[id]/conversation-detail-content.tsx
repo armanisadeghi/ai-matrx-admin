@@ -169,12 +169,19 @@ function MessageRow({ message }: { message: CxMessage }) {
   };
 
   // Extract text content from content blocks
-  const textContent = message.content
+  // cx_message.content is Json — narrow to an array of block-shaped records.
+  const contentBlocks: Array<{ type?: string; text?: string }> = Array.isArray(
+    message.content,
+  )
+    ? (message.content as Array<{ type?: string; text?: string }>)
+    : [];
+
+  const textContent = contentBlocks
     .filter((block) => block.type === "text" && block.text)
     .map((block) => block.text!)
     .join("\n\n");
 
-  const thinkingContent = message.content
+  const thinkingContent = contentBlocks
     .filter((block) => block.type === "thinking" && block.text)
     .map((block) => block.text!)
     .join("\n\n");
@@ -217,15 +224,15 @@ function MessageRow({ message }: { message: CxMessage }) {
             allowFullScreenEditor={false}
           />
         </div>
-      ) : message.content.length === 0 ? (
+      ) : contentBlocks.length === 0 ? (
         <p className="text-xs text-muted-foreground italic">Empty message</p>
       ) : null}
 
       {/* Non-text/thinking blocks as JSON */}
-      {message.content.some((b) => b.type !== "text" && b.type !== "thinking") && (
+      {contentBlocks.some((b) => b.type !== "text" && b.type !== "thinking") && (
         <CxJsonViewer
-          data={message.content.filter((b) => b.type !== "text" && b.type !== "thinking")}
-          label={`Other Content Blocks (${message.content.filter((b) => b.type !== "text" && b.type !== "thinking").length})`}
+          data={contentBlocks.filter((b) => b.type !== "text" && b.type !== "thinking")}
+          label={`Other Content Blocks (${contentBlocks.filter((b) => b.type !== "text" && b.type !== "thinking").length})`}
           maxHeight="150px"
         />
       )}

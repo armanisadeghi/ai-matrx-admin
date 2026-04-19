@@ -1,25 +1,22 @@
 /**
  * launchConversation — unified entry point for every invocation path.
  *
- * Accepts a `ConversationInvocation` (the locked Phase 0 contract) and drives
- * the existing execution machinery. Every surface — Chat, Runner, Shortcut,
- * App, Builder — funnels through this thunk. There is no other way to start
- * an agent conversation from the client.
+ * Accepts a `ConversationInvocation` and drives the existing execution
+ * machinery. Every surface — Chat, Runner, Shortcut, App, Builder — funnels
+ * through this thunk. There is no other way to start an agent conversation
+ * from the client.
  *
- * During the migration, this thunk:
- *   1. Resolves CallbackManager ids referenced by `callbacks.*Id` (the
- *      invocation itself is serializable; function refs live in
- *      CallbackManager and are looked up by id only — never by "context").
- *   2. Adapts the grouped invocation into the flat `ManagedAgentOptions` the
- *      existing `launchAgentExecution` accepts.
- *   3. Delegates. Once the legacy flat shape is retired (Phase 4), the
- *      conversion step drops and this becomes the real implementation.
+ * This thunk:
+ *   1. Adapts the grouped invocation into the flat `ManagedAgentOptions`
+ *      the execution thunk accepts.
+ *   2. Forwards the widget handle id (and `originalText`) straight through.
+ *      Capability + lifecycle semantics live on the handle — the submit
+ *      assembler reads it per-turn to derive `client_tools`; process-stream
+ *      fires onComplete/onError at stream end.
+ *   3. Delegates to `launchAgentExecution`.
  *
- * Ephemeral routing (no DB writes) is flagged in the adapter so the execution
- * path can branch to the stateless endpoints. The full ephemeral plumbing
- * lands when the backend exposes `/ai/agents/{id}` with `is_new:false,
- * store:false` and `/ai/chat` with an explicit history payload; this thunk
- * is where the branch is wired.
+ * Ephemeral routing (no DB writes) is flagged in the adapter so execute
+ * thunks can branch to the stateless endpoints.
  */
 
 import { createAsyncThunk } from "@reduxjs/toolkit";
@@ -29,7 +26,6 @@ import type {
   ManagedAgentOptions,
   ApiEndpointMode,
 } from "@/features/agents/types/instance.types";
-import { callbackManager } from "@/utils/callbackManager";
 import {
   launchAgentExecution,
   type LaunchResult,
@@ -60,28 +56,11 @@ function invocationToManagedOptions(
     callbacks,
   } = invocation;
 
-  // Resolve CallbackManager ids into thin wrappers that fire exactly once.
-  // `callbackManager.trigger(id, data)` invokes the registered function and
-  // removes the entry — matching the one-shot semantics every launch site
-  // expects. Ids are the only reference; there is no context/type lookup.
-  const makeUnary =
-    <T>(id: string | undefined) =>
-    (data: T): void => {
-      if (id) callbackManager.trigger<T>(id, data);
-    };
-
-  const onComplete = callbacks?.onCompleteId
-    ? makeUnary<LaunchResult>(callbacks.onCompleteId)
-    : undefined;
-  const onTextReplace = callbacks?.onTextReplaceId
-    ? makeUnary<string>(callbacks.onTextReplaceId)
-    : undefined;
-  const onTextInsertBefore = callbacks?.onTextInsertBeforeId
-    ? makeUnary<string>(callbacks.onTextInsertBeforeId)
-    : undefined;
-  const onTextInsertAfter = callbacks?.onTextInsertAfterId
-    ? makeUnary<string>(callbacks.onTextInsertAfterId)
-    : undefined;
+  // The WidgetHandle (capabilities + lifecycle) is stored in CallbackManager;
+  // the invocation carries only its id. `launchAgentExecution` threads it
+  // through to the instance; the submit assembler reads it per-turn to derive
+  // `client_tools`; `process-stream.ts` fires onComplete/onError at stream
+  // end by looking up the handle via `callbackManager.get`.
 
   const managed: ManagedAgentOptions = {
     surfaceKey: identity.surfaceKey,
@@ -161,11 +140,10 @@ function invocationToManagedOptions(
       ? { jsonExtraction: behavior.jsonExtraction }
       : {}),
 
-    // Callbacks (resolved above)
-    ...(onComplete ? { onComplete } : {}),
-    ...(onTextReplace ? { onTextReplace } : {}),
-    ...(onTextInsertBefore ? { onTextInsertBefore } : {}),
-    ...(onTextInsertAfter ? { onTextInsertAfter } : {}),
+    // Widget handle + originalText passthrough (the whole callbacks surface)
+    ...(callbacks?.widgetHandleId !== undefined
+      ? { widgetHandleId: callbacks.widgetHandleId }
+      : {}),
     ...(callbacks?.originalText !== undefined
       ? { originalText: callbacks.originalText }
       : {}),
@@ -186,7 +164,7 @@ function warnUnsupported(invocation: ConversationInvocation): void {
     console.warn(
       "[launchConversation] identity.conversationId is passed through to the " +
         "execution thunk, but turn-2+ routing currently still goes through " +
-        "executeInstance's existing `selectHasConversationHistory` branch. " +
+        "executeInstance's existing `selectHasMessages` branch. " +
         "The explicit conversationId-in-invocation path lands in Phase 3.",
     );
   }

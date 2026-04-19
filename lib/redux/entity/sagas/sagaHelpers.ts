@@ -37,7 +37,12 @@ export type SagaHandler<TEntity extends EntityKeys> = (context: BaseSagaContext<
 export type WithFullConversionSagaHandler<TEntity extends EntityKeys> = (context: WithFullConversionSagaContext<TEntity>) => Generator;
 
 function* initializeDatabaseApi(tableName: AnyEntityDatabaseTable) {
-    return supabase.from(tableName);
+    // The entity system's `AnyEntityDatabaseTable` union is broader than the
+    // generated `public.Tables` keys (it includes computed views), so we go
+    // through an untyped handle for the generic `from()` call. The entity
+    // layer validates the table name separately.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (supabase as any).from(tableName);
 }
 
 export function* withConversion<TEntity extends EntityKeys>(

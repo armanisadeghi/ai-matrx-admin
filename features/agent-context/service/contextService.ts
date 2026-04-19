@@ -2,6 +2,9 @@
 
 import { supabase } from "@/utils/supabase/client";
 import type { Database } from "@/types/database.types";
+
+type CtxContextItemsInsert =
+  Database["public"]["Tables"]["ctx_context_items"]["Insert"];
 import type {
   ContextItem,
   ContextItemManifest,
@@ -168,8 +171,10 @@ export const contextService = {
     formData: ContextItemFormData,
     orgId?: string,
   ): Promise<ContextItem> {
-    const insertPayload: Record<string, unknown> = { ...formData };
-    if (orgId) insertPayload.organization_id = orgId;
+    const insertPayload: CtxContextItemsInsert = {
+      ...formData,
+      ...(orgId ? { organization_id: orgId } : {}),
+    };
 
     const { data: item, error: itemErr } = await supabase
       .from("ctx_context_items")
@@ -505,21 +510,18 @@ export const contextService = {
     const skipped = templateItems.length - toCreate.length;
 
     if (toCreate.length > 0) {
-      const rows = toCreate.map((t) => {
-        const row: Record<string, unknown> = {
-          key: t.item_key,
-          display_name: t.item_display_name,
-          description: t.item_description,
-          value_type: t.default_value_type,
-          fetch_hint: t.default_fetch_hint,
-          sensitivity: t.default_sensitivity,
-          status: "stub" as const,
-          template_item_key: t.item_key,
-          review_interval_days: t.suggested_review_interval_days,
-        };
-        if (orgId) row.organization_id = orgId;
-        return row;
-      });
+      const rows: CtxContextItemsInsert[] = toCreate.map((t) => ({
+        key: t.item_key,
+        display_name: t.item_display_name,
+        description: t.item_description,
+        value_type: t.default_value_type,
+        fetch_hint: t.default_fetch_hint,
+        sensitivity: t.default_sensitivity,
+        status: "stub",
+        template_item_key: t.item_key,
+        review_interval_days: t.suggested_review_interval_days,
+        ...(orgId ? { organization_id: orgId } : {}),
+      }));
 
       const { data: created, error } = await supabase
         .from("ctx_context_items")

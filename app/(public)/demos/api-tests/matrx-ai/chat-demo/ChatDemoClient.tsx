@@ -499,7 +499,7 @@ export default function ChatDemoClient() {
           }
         }
         if (evt.event === "error") {
-          const d = evt.data as Record<string, string> | null;
+          const d = evt.data as unknown as Record<string, string> | null;
           setErrorMessage(d?.user_message || d?.message || "Stream error");
         }
       }
