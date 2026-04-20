@@ -24,6 +24,10 @@ interface TapButtonProps {
   bgColor?: string;
   iconColor?: string;
   hoverBgColor?: string;
+  // Tooltip support — defaults to `ariaLabel`. Pass `false` to opt out.
+  tooltip?: string | false;
+  tooltipSide?: "top" | "right" | "bottom" | "left";
+  tooltipAlign?: "start" | "center" | "end";
 }
 
 // ---------------------------------------------------------------------------
@@ -380,7 +384,14 @@ export function SaveTapButton(props: TapButtonProps) {
         strokeLinejoin="round"
         d="M8.5 4v4.5a.5.5 0 00.5.5h6a.5.5 0 00.5-.5V4"
       />
-      <rect x="8" y="14" width="8" height="5.5" rx="0.5" strokeLinejoin="round" />
+      <rect
+        x="8"
+        y="14"
+        width="8"
+        height="5.5"
+        rx="0.5"
+        strokeLinejoin="round"
+      />
     </Wrap>
   );
 }

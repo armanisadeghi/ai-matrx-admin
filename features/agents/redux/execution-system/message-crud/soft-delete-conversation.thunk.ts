@@ -20,6 +20,8 @@ import { destroyInstance } from "../conversations/conversations.slice";
 import { clearMessages } from "../messages/messages.slice";
 import { clearForConversation as clearObservabilityForConversation } from "../observability/observability.slice";
 import { removeConversation as removeFromConversationList } from "../../conversation-list/conversation-list.slice";
+import { clearCacheBypass } from "./cache-bypass.slice";
+import { invalidateConversationCache } from "./invalidate-conversation-cache.thunk";
 
 interface SoftDeleteArgs {
   conversationId: string;
@@ -58,6 +60,13 @@ export const softDeleteConversation = createAsyncThunk<
         message: `Conversation ${conversationId} not found or already deleted`,
       });
     }
+
+    // Fire the server-side cache invalidation BEFORE purging client state.
+    // Fire-and-forget: even if the endpoint fails, the deletion is already
+    // in the DB. Clear any pending cache-bypass flag afterwards since the
+    // conversation won't be resurrected from a stale flag later.
+    void dispatch(invalidateConversationCache({ conversationId }));
+    dispatch(clearCacheBypass(conversationId));
 
     // Purge from every slice that holds this conversation's state. Each
     // action is a no-op if the slice has no entry for this id.

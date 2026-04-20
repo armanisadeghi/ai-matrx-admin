@@ -1,4 +1,12 @@
-import { forwardRef, type ButtonHTMLAttributes } from "react";
+"use client";
+
+import {
+  forwardRef,
+  type ButtonHTMLAttributes,
+  type ReactElement,
+} from "react";
+import * as TooltipPrimitive from "@radix-ui/react-tooltip";
+import { TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface TapTargetButtonProps {
   icon?: React.ReactNode;
@@ -10,6 +18,15 @@ interface TapTargetButtonProps {
   htmlFor?: string;
   ariaLabel?: string;
   disabled?: boolean;
+  /**
+   * Tooltip text. Defaults to `ariaLabel` when omitted.
+   * Pass `false` to explicitly disable the tooltip.
+   */
+  tooltip?: string | false;
+  /** Tooltip placement. Defaults to "top". */
+  tooltipSide?: "top" | "right" | "bottom" | "left";
+  /** Tooltip alignment along its side. Defaults to "center". */
+  tooltipAlign?: "start" | "center" | "end";
 }
 
 interface TapTargetButtonSolidProps extends TapTargetButtonProps {
@@ -41,6 +58,50 @@ function IconContent({
   );
 }
 
+/**
+ * Wraps a trigger element in a Tooltip when a tooltip label is available.
+ * Falls back to `ariaLabel` when `tooltip` is not explicitly set. If both
+ * are absent (or `tooltip === false`), the trigger is returned unwrapped.
+ */
+function withTooltip(
+  trigger: ReactElement,
+  {
+    tooltip,
+    ariaLabel,
+    disabled,
+    tooltipSide = "top",
+    tooltipAlign = "center",
+  }: {
+    tooltip?: string | false;
+    ariaLabel?: string;
+    disabled?: boolean;
+    tooltipSide?: "top" | "right" | "bottom" | "left";
+    tooltipAlign?: "start" | "center" | "end";
+  },
+): ReactElement {
+  if (tooltip === false) return trigger;
+  const label =
+    typeof tooltip === "string" && tooltip.length > 0 ? tooltip : ariaLabel;
+  if (!label) return trigger;
+  return (
+    <TooltipPrimitive.Root>
+      <TooltipTrigger asChild>
+        {disabled ? (
+          // Radix Tooltip triggers need a hoverable element; a disabled button
+          // does not dispatch pointer events, so we wrap in a span for the
+          // trigger target while keeping the disabled visual state.
+          <span className="inline-flex">{trigger}</span>
+        ) : (
+          trigger
+        )}
+      </TooltipTrigger>
+      <TooltipContent side={tooltipSide} align={tooltipAlign}>
+        {label}
+      </TooltipContent>
+    </TooltipPrimitive.Root>
+  );
+}
+
 export const TapTargetButton = forwardRef<
   HTMLButtonElement,
   TapTargetButtonProps & ButtonHTMLAttributes<HTMLButtonElement>
@@ -55,13 +116,16 @@ export const TapTargetButton = forwardRef<
     htmlFor,
     ariaLabel,
     disabled,
+    tooltip,
+    tooltipSide,
+    tooltipAlign,
     ...rest
   },
   ref,
 ) {
   const color = className ?? "text-foreground";
   if (as === "label") {
-    return (
+    const labelEl = (
       <label
         htmlFor={htmlFor}
         aria-label={ariaLabel}
@@ -78,8 +142,15 @@ export const TapTargetButton = forwardRef<
         </div>
       </label>
     );
+    return withTooltip(labelEl, {
+      tooltip,
+      ariaLabel,
+      disabled,
+      tooltipSide,
+      tooltipAlign,
+    });
   }
-  return (
+  const buttonEl = (
     <button
       ref={ref}
       onClick={onClick}
@@ -99,6 +170,13 @@ export const TapTargetButton = forwardRef<
       </div>
     </button>
   );
+  return withTooltip(buttonEl, {
+    tooltip,
+    ariaLabel,
+    disabled,
+    tooltipSide,
+    tooltipAlign,
+  });
 });
 
 export const TapTargetButtonTransparent = forwardRef<
@@ -113,12 +191,15 @@ export const TapTargetButtonTransparent = forwardRef<
     className,
     ariaLabel,
     disabled,
+    tooltip,
+    tooltipSide,
+    tooltipAlign,
     ...rest
   },
   ref,
 ) {
   const color = className ?? "text-foreground";
-  return (
+  const buttonEl = (
     <button
       ref={ref}
       onClick={onClick}
@@ -138,6 +219,13 @@ export const TapTargetButtonTransparent = forwardRef<
       </div>
     </button>
   );
+  return withTooltip(buttonEl, {
+    tooltip,
+    ariaLabel,
+    disabled,
+    tooltipSide,
+    tooltipAlign,
+  });
 });
 
 export const TapTargetButtonSolid = forwardRef<
@@ -154,11 +242,14 @@ export const TapTargetButtonSolid = forwardRef<
     bgColor = "bg-primary",
     iconColor = "text-primary-foreground",
     hoverBgColor = "hover:bg-primary/80",
+    tooltip,
+    tooltipSide,
+    tooltipAlign,
     ...rest
   },
   ref,
 ) {
-  return (
+  const buttonEl = (
     <button
       ref={ref}
       onClick={onClick}
@@ -180,6 +271,13 @@ export const TapTargetButtonSolid = forwardRef<
       </div>
     </button>
   );
+  return withTooltip(buttonEl, {
+    tooltip,
+    ariaLabel,
+    disabled,
+    tooltipSide,
+    tooltipAlign,
+  });
 });
 
 export const TapTargetButtonForGroup = forwardRef<
@@ -194,12 +292,15 @@ export const TapTargetButtonForGroup = forwardRef<
     className,
     ariaLabel,
     disabled,
+    tooltip,
+    tooltipSide,
+    tooltipAlign,
     ...rest
   },
   ref,
 ) {
   const color = className ?? "text-foreground";
-  return (
+  const buttonEl = (
     <button
       ref={ref}
       onClick={onClick}
@@ -219,6 +320,13 @@ export const TapTargetButtonForGroup = forwardRef<
       </div>
     </button>
   );
+  return withTooltip(buttonEl, {
+    tooltip,
+    ariaLabel,
+    disabled,
+    tooltipSide,
+    tooltipAlign,
+  });
 });
 
 export function TapTargetButtonGroup({

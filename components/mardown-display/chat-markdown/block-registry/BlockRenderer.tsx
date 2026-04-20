@@ -7,6 +7,11 @@ import { useBlockRenderingConfig } from "@/components/mardown-display/chat-markd
 import { InlineCodeSnippet } from "../InlineCodeSnippet";
 import type { TypedRenderBlock } from "@/types/python-generated/stream-events";
 import type { MissingBlockType } from "@/types/python-generated/missing-types";
+import { useAppSelector } from "@/lib/redux/hooks";
+import {
+  selectHideReasoning,
+  selectHideToolResults,
+} from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 
 /**
  * Shown in strict-mode when block.serverData is null — means Python did not
@@ -139,6 +144,22 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
 }) => {
   const { strictServerData } = useBlockRenderingConfig();
 
+  // Per-conversation display flags. When a surface has `hideReasoning` or
+  // `hideToolResults` set on its `instanceUIState`, the matching block
+  // types self-gate here so there's exactly one source of truth — no
+  // scattered conditional-render sites, no missed branches, no need for
+  // parents to remember to filter.
+  const hideReasoning = useAppSelector(
+    conversationId
+      ? selectHideReasoning(conversationId)
+      : () => false,
+  );
+  const hideToolResults = useAppSelector(
+    conversationId
+      ? selectHideToolResults(conversationId)
+      : () => false,
+  );
+
   const renderFallbackContent = useCallback(
     (content: string, language: string = "json") => {
       return (
@@ -190,6 +211,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
 
     case "thinking":
     case "reasoning":
+      if (hideReasoning) return null;
       return (
         <BlockComponents.ReasoningVisualization
           key={index}
@@ -200,6 +222,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
       );
 
     case "consolidated_reasoning":
+      if (hideReasoning) return null;
       return (
         <BlockComponents.ConsolidatedReasoningVisualization
           key={index}
@@ -1320,6 +1343,12 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
     case "plan":
     case "event":
     case "tool":
+      // `tool` here is the generic XML-tagged `<tool>...</tool>` markdown
+      // block, not a `tool_call` content block (those render via
+      // ToolHandlers.InlineToolCard / DbToolCard). Still, respect the
+      // same visibility flag so the surface is silent about tools end
+      // to end.
+      if (block.type === "tool" && hideToolResults) return null;
       return block.content ? renderBasicMarkdown(block.content) : null;
 
     default:

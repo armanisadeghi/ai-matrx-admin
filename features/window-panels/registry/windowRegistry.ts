@@ -80,6 +80,15 @@ const REGISTRY: WindowRegistryEntry[] = [
     defaultData: { openNoteId: null },
   },
 
+  // ── Quick Note Save (ephemeral capture surface) ───────────────────────────
+  {
+    slug: "quick-note-save-window",
+    overlayId: "quickNoteSaveWindow",
+    label: "Quick Save Note",
+    defaultData: { initialContent: "", defaultFolder: "Scratch" },
+    ephemeral: true,
+  },
+
   // ── Quick Data ────────────────────────────────────────────────────────────
   {
     slug: "quick-data-window",

@@ -4,6 +4,23 @@
 export { QuickCaptureButton } from "./QuickCaptureButton";
 export { QuickNoteSaveModal } from "./QuickNoteSaveModal";
 export { QuickNoteSaveModal as QuickSaveModal } from "./QuickNoteSaveModal";
+export {
+  QuickNoteSaveCore,
+  QuickNoteSaveDialog,
+  QuickNoteSaveOverlay,
+  QuickNoteSavePopover,
+  useQuickNoteSave,
+  stripThinking,
+  hasThinkingTags,
+  applyTrim,
+} from "./quick-save";
+export type {
+  QuickNoteSaveCoreProps,
+  QuickNoteSaveDialogProps,
+  QuickNoteSaveOverlayProps,
+  QuickNoteSavePopoverProps,
+  PostSaveAction,
+} from "./quick-save";
 export { SaveToScratchButton } from "./SaveToScratchButton";
 export { SaveSelectionButton } from "./SaveSelectionButton";
 export { QuickNotesButton } from "./QuickNotesButton";

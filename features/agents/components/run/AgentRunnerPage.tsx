@@ -190,21 +190,6 @@ export function AgentRunnerPage({ agentId }: AgentRunnerPageProps) {
         conversationIdFromUrl={conversationIdFromUrl}
       />
 
-      {/* Mobile toolbar — Test Modes only (History is in shell sidebar) */}
-      {isMobile && (
-        <div className="shrink-0 flex items-center gap-1 px-2 py-1 border-b border-border bg-background">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 px-2 text-xs gap-1.5"
-            onClick={() => setTestModesDrawerOpen(true)}
-          >
-            <TestTube2 className="w-3.5 h-3.5" />
-            Test Modes
-          </Button>
-        </div>
-      )}
-
       {/* Main conversation area */}
       <div className="flex-1 overflow-hidden flex justify-center min-w-0">
         <AgentConversationColumn
@@ -217,29 +202,6 @@ export function AgentRunnerPage({ agentId }: AgentRunnerPageProps) {
           }}
         />
       </div>
-
-      {/* Mobile Test Modes drawer */}
-      {isMobile && (
-        <Drawer
-          open={testModesDrawerOpen}
-          onOpenChange={setTestModesDrawerOpen}
-        >
-          <DrawerContent className="max-h-[80dvh]">
-            <DrawerHeader className="pb-2">
-              <DrawerTitle className="text-sm">Test Display Modes</DrawerTitle>
-              <DrawerDescription className="text-xs">
-                Launch the agent in different display modes
-              </DrawerDescription>
-            </DrawerHeader>
-            <div className="flex-1 overflow-y-auto min-h-0 pb-safe">
-              <AgentLauncherSidebarTester
-                conversationId={conversationId}
-                surfaceKey={sidebarSurfaceKey}
-              />
-            </div>
-          </DrawerContent>
-        </Drawer>
-      )}
     </div>
   );
 }

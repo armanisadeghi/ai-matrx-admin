@@ -462,6 +462,20 @@ const NotesBetaWindow = dynamic(
   { ssr: false },
 );
 
+const QuickNoteSaveWindow = dynamic(
+  () =>
+    import("@/features/window-panels/windows/notes/QuickNoteSaveWindow"),
+  { ssr: false },
+);
+
+const QuickNoteSaveOverlay = dynamic(
+  () =>
+    import("@/features/notes/actions/quick-save/QuickNoteSaveOverlay").then(
+      (m) => ({ default: m.QuickNoteSaveOverlay }),
+    ),
+  { ssr: false },
+);
+
 const ContentEditorWindow = dynamic(
   () =>
     import("@/features/window-panels/windows/content-editors/ContentEditorWindow").then(
@@ -756,6 +770,17 @@ export const OverlayController: React.FC = () => {
 
   const notesBetaWindowInstances = useAppSelector((s) =>
     selectOpenInstances(s, "notesBetaWindow"),
+  );
+
+  const isQuickNoteSaveWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "quickNoteSaveWindow"),
+  );
+  const quickNoteSaveWindowData = useAppSelector((s) =>
+    selectOverlayData(s, "quickNoteSaveWindow"),
+  );
+
+  const saveToNotesFullscreenInstances = useAppSelector((s) =>
+    selectOpenInstances(s, "saveToNotesFullscreen"),
   );
 
   const contentEditorWindowInstances = useAppSelector((s) =>
@@ -1437,6 +1462,35 @@ export const OverlayController: React.FC = () => {
           onClose={() => close("notesBetaWindow", instanceId)}
         />
       ))}
+
+      {isQuickNoteSaveWindowOpen && (
+        <QuickNoteSaveWindow
+          isOpen={true}
+          onClose={() => close("quickNoteSaveWindow")}
+          initialContent={
+            (quickNoteSaveWindowData?.initialContent as string | undefined) ?? ""
+          }
+          defaultFolder={
+            (quickNoteSaveWindowData?.defaultFolder as string | undefined) ??
+            "Scratch"
+          }
+        />
+      )}
+
+      {saveToNotesFullscreenInstances.map(({ instanceId, data }) => {
+        const d = data as { content: string; defaultFolder?: string } | null;
+        if (!d) return null;
+        return (
+          <QuickNoteSaveOverlay
+            key={instanceId}
+            isOpen={true}
+            onClose={() => close("saveToNotesFullscreen", instanceId)}
+            initialContent={d.content}
+            defaultFolder={d.defaultFolder ?? "Scratch"}
+            onSaved={() => close("saveToNotesFullscreen", instanceId)}
+          />
+        );
+      })}
 
       {contentEditorWindowInstances.map(({ instanceId, data }) => (
         <ContentEditorWindow

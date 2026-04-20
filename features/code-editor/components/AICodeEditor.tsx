@@ -422,7 +422,17 @@ export function AICodeEditor({
                   )}
                 >
                   <div className="font-semibold text-[10px] uppercase tracking-wide mb-1 text-muted-foreground">
-                    {msg.role === "user" ? "You" : "Assistant"}
+                    {msg.role === "user"
+                      ? "You"
+                      : msg.role === "assistant"
+                        ? "Assistant"
+                        : msg.role === "system"
+                          ? "System"
+                          : msg.role === "tool"
+                            ? "Tool"
+                            : msg.role === "function"
+                              ? "Function"
+                              : "Unknown"}
                   </div>
                   <div className="whitespace-pre-wrap break-words">
                     {typeof msg.content === "string"

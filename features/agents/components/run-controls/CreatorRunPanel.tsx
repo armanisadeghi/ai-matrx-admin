@@ -374,7 +374,9 @@ function LastRequestPanel({ conversationId }: { conversationId: string }) {
   const request = useAppSelector(selector);
 
   if (!request) {
-    return <EmptyStats text="No requests yet. Fire a turn to see stats here." />;
+    return (
+      <EmptyStats text="No requests yet. Fire a turn to see stats here." />
+    );
   }
 
   const result = getUserRequestResult(request);
@@ -385,13 +387,10 @@ function LastRequestPanel({ conversationId }: { conversationId: string }) {
     request.status === "complete" || request.status === "error";
 
   return (
-    <div className="px-3 py-2 grid grid-cols-2 gap-x-6 gap-y-3 overflow-y-auto h-full">
+    <div className="px-3 py-2 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 overflow-y-auto h-full">
       <StatSection title="Status">
         <StatRow label="Request" value={request.status} />
-        <StatRow
-          label="Finish reason"
-          value={result?.finish_reason ?? "—"}
-        />
+        <StatRow label="Finish reason" value={result?.finish_reason ?? "—"} />
         <StatRow
           label="Iterations"
           value={result?.iterations != null ? String(result.iterations) : "—"}
@@ -425,7 +424,11 @@ function LastRequestPanel({ conversationId }: { conversationId: string }) {
       <StatSection title="Tools">
         <StatRow
           label="Tool calls"
-          value={toolStats?.total_tool_calls != null ? String(toolStats.total_tool_calls) : "—"}
+          value={
+            toolStats?.total_tool_calls != null
+              ? String(toolStats.total_tool_calls)
+              : "—"
+          }
         />
         <StatRow
           label="Iters w/ tools"
@@ -512,7 +515,7 @@ function SessionPanel({ conversationId }: { conversationId: string }) {
   }
 
   return (
-    <div className="px-3 py-2 grid grid-cols-2 gap-x-6 gap-y-3 overflow-y-auto h-full">
+    <div className="px-3 py-2 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 overflow-y-auto h-full">
       <StatSection title="Rounds">
         <StatRow label="Total turns" value={stats.totalRounds} />
         <StatRow label="Completed" value={stats.completedRounds} />
@@ -542,10 +545,7 @@ function SessionPanel({ conversationId }: { conversationId: string }) {
 
       <StatSection title="Tool calls">
         <StatRow label="Σ Tool calls" value={stats.totalToolCalls || "—"} />
-        <StatRow
-          label="LLM calls"
-          value={stats.totals.requests || "—"}
-        />
+        <StatRow label="LLM calls" value={stats.totals.requests || "—"} />
       </StatSection>
     </div>
   );
@@ -568,7 +568,7 @@ function ClientPanel({ conversationId }: { conversationId: string }) {
   }
 
   return (
-    <div className="px-3 py-2 grid grid-cols-2 gap-x-6 gap-y-3 overflow-y-auto h-full">
+    <div className="px-3 py-2 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 overflow-y-auto h-full">
       <StatSection title="Timing">
         <StatRow
           label="Internal latency"
@@ -817,8 +817,8 @@ export function CreatorRunPanel({
           </button>
         </div>
 
-        {/* Tab content — fixed height */}
-        <div className="h-72 overflow-y-auto">
+        {/* Tab content — fixed height (shorter on mobile so it doesn't dominate the viewport) */}
+        <div className="h-[50dvh] sm:h-72 overflow-y-auto">
           {activeTab === "actions" && (
             <ActionsTab
               conversationId={conversationId}

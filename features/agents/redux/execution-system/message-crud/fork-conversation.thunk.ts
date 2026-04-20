@@ -28,6 +28,8 @@ import {
   type MessageRecord,
 } from "../messages/messages.slice";
 import { setFocus } from "../conversation-focus/conversation-focus.slice";
+import { markCacheBypass } from "./cache-bypass.slice";
+import { invalidateConversationCache } from "./invalidate-conversation-cache.thunk";
 
 // Row shape for a cx_message read from the bundle (matches the RPC's JSONB).
 interface CxMessageRow {
@@ -205,6 +207,28 @@ export const forkConversation = createAsyncThunk<
     if (surfaceKey) {
       dispatch(setFocus({ surfaceKey, conversationId: newConversationId }));
     }
+
+    // Invalidate server-side cache for BOTH conversations:
+    //   • source: the server's agent cache may have a snapshot that
+    //     doesn't include the new `forked_from_id` backref / child
+    //     relationship. Bust it.
+    //   • new:    no prior cache exists, but flipping the bypass flag
+    //     guarantees the very first outbound call on the fork rebuilds
+    //     from the DB rather than trusting anything lazily cached from
+    //     the source's messages.
+    // Standalone endpoint fires fire-and-forget so a cache-invalidate
+    // failure never fails the fork.
+    dispatch(markCacheBypass({ conversationId, conversation: true }));
+    dispatch(
+      markCacheBypass({
+        conversationId: newConversationId,
+        conversation: true,
+      }),
+    );
+    void dispatch(invalidateConversationCache({ conversationId }));
+    void dispatch(
+      invalidateConversationCache({ conversationId: newConversationId }),
+    );
 
     return {
       conversationId: newConversationId,
