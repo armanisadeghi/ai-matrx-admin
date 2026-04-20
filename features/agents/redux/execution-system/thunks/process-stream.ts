@@ -17,6 +17,7 @@ import type { CompletionStats } from "@/features/agents/types/instance.types";
 import type { ClientMetrics } from "@/features/agents/types/request.types";
 import type { ToolLifecycleStatus } from "@/features/agents/types/request.types";
 import { parseNdjsonStream } from "@/lib/api/stream-parser";
+import { monitorStream } from "@/lib/net/stream-monitor";
 import {
   isChunkEvent,
   isReasoningChunkEvent,
@@ -84,7 +85,10 @@ import {
   type CxRequestRecord,
   type CxToolCallRecord,
 } from "../observability";
-import { clearUserInput } from "../instance-user-input/instance-user-input.slice";
+import {
+  clearUserInput,
+  markInputPersisted,
+} from "../instance-user-input/instance-user-input.slice";
 import { clearAllResources } from "../instance-resources/instance-resources.slice";
 import { resetUserVariableValues } from "../instance-variable-values/instance-variable-values.slice";
 import { setInstanceStatus } from "../conversations";
@@ -125,6 +129,29 @@ interface ProcessStreamArgs {
   getState: () => RootState;
   jsonExtraction?: JsonExtractionConfig;
   /**
+   * Called once per incoming event, before domain processing. Used by the
+   * request-recovery / netRequests system to beat a heartbeat and keep the
+   * connection-health watchdog armed. Intentionally void/return — must not
+   * throw or mutate the event.
+   */
+  onEvent?: (event: unknown) => void;
+  /**
+   * Optional controller for the underlying fetch. If provided, the stream is
+   * wrapped with `monitorStream` so that heartbeat/total timeouts can abort
+   * the fetch (not just throw out of the loop).
+   */
+  abortController?: AbortController;
+  /**
+   * Max ms between events before the stream is declared dead. Default 30_000.
+   * Only takes effect when `abortController` is provided.
+   */
+  heartbeatTimeoutMs?: number;
+  /**
+   * Max ms total stream lifetime regardless of heartbeats. Default 600_000.
+   * Only takes effect when `abortController` is provided.
+   */
+  maxLifetimeMs?: number;
+  /**
    * The client-generated id under which the user's optimistic message was
    * pushed into `messages.byId` before the API call fired. When the server
    * streams `record_reserved cx_message` with role=user, the processor
@@ -154,9 +181,24 @@ export async function processStream({
   dispatch,
   getState,
   jsonExtraction,
+  onEvent,
+  abortController,
+  heartbeatTimeoutMs,
+  maxLifetimeMs,
   userMessageClientTempId,
 }: ProcessStreamArgs): Promise<ProcessStreamResult> {
-  const { events } = parseNdjsonStream(response);
+  const { events: rawEvents } = parseNdjsonStream(response);
+  // When an abortController is provided, wrap the raw NDJSON iterator with
+  // the stream-monitor so a silent server (headers-only-then-nothing, dead
+  // TCP socket, tab-sleep induced stall) throws HeartbeatTimeoutError and
+  // aborts the fetch instead of hanging forever.
+  const events = abortController
+    ? monitorStream(rawEvents, {
+        heartbeatTimeoutMs,
+        maxLifetimeMs,
+        abortController,
+      })
+    : rawEvents;
 
   const jsonTracker = jsonExtraction?.enabled
     ? new StreamingJsonTracker({
@@ -268,6 +310,13 @@ export async function processStream({
   for await (const event of events) {
     totalEvents++;
     const now = performance.now();
+    if (onEvent) {
+      try {
+        onEvent(event);
+      } catch {
+        /* heartbeat observer must never break the stream */
+      }
+    }
 
     // Chunk and reasoning_chunk are the hot path (thousands per stream).
     // They skip appendRawEvent — their data lives in textChunks/reasoningChunks.
@@ -736,6 +785,9 @@ export async function processStream({
           | { conversation_id?: string }
           | undefined;
         const nowIso = new Date().toISOString();
+        // Phase 2 — server has persisted the user's request. Safe to visually
+        // clear the input field; lastSubmittedText is retained in the slice.
+        dispatch(markInputPersisted(conversationId));
         dispatch(
           upsertUserRequest({
             id: d.record_id,

@@ -10,6 +10,10 @@ import { startNewConversationAndExecute } from "./create-instance.thunk";
 import { abortConversation } from "./abort-registry";
 import { setInstanceStatus } from "../conversations";
 import { setRequestStatus } from "../active-requests/active-requests.slice";
+import {
+  markInputSubmitted,
+  resetSubmissionPhase,
+} from "../instance-user-input/instance-user-input.slice";
 
 interface SmartExecuteArgs {
   conversationId: string;
@@ -28,6 +32,14 @@ export const smartExecute = createAsyncThunk<
     const autoClearWithHistory =
       selectAutoClearWithConversationHistory(conversationId)(state);
     const apiEndpointMode = selectApiEndpointMode(conversationId)(state);
+
+    // Phase 1 — capture the current text + userValues so we can re-apply after
+    // a reset, but keep the textarea visible until the server confirms that
+    // cx_user_request has been persisted (handled in process-stream).
+    const userValues =
+      state.instanceVariableValues?.byConversationId[conversationId]
+        ?.userValues ?? {};
+    dispatch(markInputSubmitted({ conversationId, userValues }));
 
     if (autoClearWithHistory) {
       await dispatch(
@@ -62,5 +74,8 @@ export const cancelExecution = createAsyncThunk<
       );
     }
     dispatch(setInstanceStatus({ conversationId, status: "cancelled" }));
+    // Return the input phase to idle so the user can edit/re-submit without
+    // appearing stuck in "pending". Keep any `text` they had in place.
+    dispatch(resetSubmissionPhase(conversationId));
   },
 );

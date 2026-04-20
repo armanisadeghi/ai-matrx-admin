@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { setDebugSession } from "@/features/agents/redux/execution-system/conversations";
 import { shallowEqual } from "react-redux";
@@ -457,6 +457,7 @@ function TimelineRow({
   renderBlockOrder,
   reasoningChunks,
   forceExpanded = false,
+  rawEvent,
 }: {
   entry: TimelineEntry;
   baseTime: number;
@@ -467,13 +468,18 @@ function TimelineRow({
   renderBlockOrder: string[];
   reasoningChunks?: string[];
   forceExpanded?: boolean;
+  /** Matching raw stream event (by timestamp) — included in copy payload. */
+  rawEvent?: RawStreamEvent;
 }) {
   const [localExpanded, setLocalExpanded] = useState(false);
   const expanded = forceExpanded || localExpanded;
   const relativeMs = entry.timestamp - baseTime;
   const colorClass = getTimelineColor(entry.kind);
   const icon = getTimelineIcon(entry.kind);
-  const json = JSON.stringify(entry, null, 2);
+  // Copy payload includes the full raw event (with every server field) alongside
+  // the timeline projection, so consumers never lose information.
+  const copyPayload = rawEvent ? { timeline: entry, raw: rawEvent } : entry;
+  const json = JSON.stringify(copyPayload, null, 2);
   const summary = timelineSummary(
     entry,
     renderBlocks,
@@ -789,6 +795,17 @@ function TimelineTab({ request }: { request: ActiveRequest }) {
     counts[entry.kind] = (counts[entry.kind] ?? 0) + 1;
   }
 
+  // Map raw events by timestamp so a TimelineRow can attach the full raw
+  // payload (which preserves every field the server emitted) to its copy
+  // action. Collisions are rare — the raw event carries an `idx` disambiguator.
+  const rawByTimestamp = useMemo(() => {
+    const map = new Map<number, RawStreamEvent>();
+    for (const raw of request.rawEvents) {
+      map.set(raw.timestamp, raw);
+    }
+    return map;
+  }, [request.rawEvents]);
+
   const filtered = request.timeline.filter((e) => filters.has(e.kind));
   const baseTime =
     request.timeline.length > 0 ? request.timeline[0].timestamp : 0;
@@ -857,8 +874,20 @@ function TimelineTab({ request }: { request: ActiveRequest }) {
           auto-scroll {autoScroll ? "ON" : "OFF"}
         </button>
         <CopyBtn
-          text={JSON.stringify(request.timeline, null, 2)}
+          text={JSON.stringify(
+            request.timeline.map((entry) => {
+              const raw = rawByTimestamp.get(entry.timestamp);
+              return raw ? { timeline: entry, raw } : entry;
+            }),
+            null,
+            2,
+          )}
           id="all-timeline"
+        />
+        <CopyBtn
+          text={JSON.stringify(request.rawEvents, null, 2)}
+          id="all-raw-events"
+          className="ml-0.5"
         />
       </div>
       <div
@@ -874,6 +903,7 @@ function TimelineTab({ request }: { request: ActiveRequest }) {
             renderBlockOrder={request.renderBlockOrder}
             reasoningChunks={request.reasoningChunks}
             forceExpanded={allExpanded}
+            rawEvent={rawByTimestamp.get(entry.timestamp)}
           />
         ))}
         {filtered.length === 0 && (

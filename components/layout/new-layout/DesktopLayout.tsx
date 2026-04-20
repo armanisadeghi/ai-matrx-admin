@@ -24,7 +24,7 @@ import FeedbackButton from "@/features/feedback/FeedbackButton";
 import type { RootState } from "@/lib/redux/store";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 import Image from "next/image";
-import { useVoicePad } from "@/components/official-candidate/voice-pad";
+import { useVoicePadAdvanced } from "@/components/official-candidate/voice-pad/hooks/useVoicePad";
 
 // Lazy-loaded admin icon — never imported for non-admin users
 const ShieldIcon = lazy(() =>
@@ -63,7 +63,7 @@ export default function DesktopLayout({
   const isAdminIndicatorVisible = useAppSelector((state) =>
     selectIsOverlayOpen(state, "adminIndicator"),
   );
-  const voicePad = useVoicePad();
+  const voicePad = useVoicePadAdvanced();
 
   // Get user data from Redux
   const user = useAppSelector((state: RootState) => state.user);

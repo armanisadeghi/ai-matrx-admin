@@ -13,16 +13,19 @@ export interface QuickNoteSaveWindowProps {
   onClose: () => void;
   initialContent?: string;
   defaultFolder?: string;
+  /** Optional instance id so multiple captures can open concurrently. */
+  instanceId?: string;
 }
 
 const OVERLAY_ID = "quickNoteSaveWindow";
-const WINDOW_ID = "quick-note-save-window";
+const BASE_WINDOW_ID = "quick-note-save-window";
 
 export default function QuickNoteSaveWindow({
   isOpen,
   onClose,
   initialContent = "",
   defaultFolder = "Scratch",
+  instanceId,
 }: QuickNoteSaveWindowProps) {
   if (!isOpen) return null;
   return (
@@ -30,6 +33,7 @@ export default function QuickNoteSaveWindow({
       onClose={onClose}
       initialContent={initialContent}
       defaultFolder={defaultFolder}
+      instanceId={instanceId}
     />
   );
 }
@@ -38,27 +42,30 @@ function QuickNoteSaveWindowInner({
   onClose,
   initialContent,
   defaultFolder,
+  instanceId,
 }: {
   onClose: () => void;
   initialContent: string;
   defaultFolder: string;
+  instanceId?: string;
 }) {
+  const windowId = instanceId
+    ? `${BASE_WINDOW_ID}-${instanceId}`
+    : BASE_WINDOW_ID;
+
   const handleSaved = (_note: Note, action: PostSaveAction) => {
-    if (action !== "none") {
-      // User chose an action that navigates or spawns — close this window.
-      onClose();
-    }
+    if (action !== "none") onClose();
   };
 
   return (
     <WindowPanel
       title="Quick Save Note"
-      id={WINDOW_ID}
+      id={windowId}
       overlayId={OVERLAY_ID}
-      minWidth={420}
-      minHeight={360}
-      width={640}
-      height={540}
+      minWidth={520}
+      minHeight={420}
+      width={1080}
+      height={760}
       position="center"
       onClose={onClose}
     >

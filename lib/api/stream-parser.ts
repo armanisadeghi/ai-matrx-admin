@@ -182,11 +182,13 @@ async function* _parseNdjsonStream(
         }
       }
     } catch (err) {
-      console.error("[stream-parser] readLoop error:", err);
       if (err instanceof BackendApiError) {
         pushItem(err);
+      } else if (!(err instanceof Error && err.name === "AbortError")) {
+        // AbortError is the normal cancellation path — suppress it.
+        // Only log unexpected errors (network failures, etc.).
+        console.error("[stream-parser] readLoop error:", err);
       }
-      // Other errors (AbortError, network errors) just end the loop cleanly.
     } finally {
       reader.releaseLock();
       pushItem(null); // sentinel: stream finished

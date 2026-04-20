@@ -76,6 +76,8 @@ import {
 } from "@/features/agent-context/redux/appContextSlice";
 // BACKEND_URLS no longer needed here — URL resolution is owned by apiConfigSlice
 import { parseNdjsonStream } from "@/lib/api/stream-parser";
+import { resilientFetch } from "@/lib/net/resilient-fetch";
+import { isNetError } from "@/lib/net/errors";
 
 // ─── Auto-generated types (source of truth for all request/response shapes) ──
 
@@ -637,6 +639,28 @@ function normalizeError(err: unknown): ApiCallError {
     return { type: "abort_error", message: "Request was cancelled." };
   }
 
+  if (isNetError(err)) {
+    if (err.code === "aborted") {
+      return { type: "abort_error", message: err.message };
+    }
+    if (
+      err.code === "connect-timeout" ||
+      err.code === "total-timeout" ||
+      err.code === "heartbeat-timeout"
+    ) {
+      return { type: "network_error", message: err.message };
+    }
+    if (err.code === "http") {
+      const status = err.status ?? 0;
+      return {
+        type: status >= 400 && status < 500 ? "validation_error" : "http_error",
+        message: err.message,
+        status,
+      };
+    }
+    return { type: "network_error", message: err.message };
+  }
+
   if (err instanceof Error) {
     // HTTP error format from existing infrastructure: "HTTP 422: ..."
     const httpMatch = err.message.match(/HTTP (\d+):\s*(.*)/);
@@ -668,12 +692,20 @@ async function executeJsonRequest<T>(
 ): Promise<ApiCallResult<T>> {
   const hasBody = method !== "GET" && method !== "HEAD";
 
-  const response = await fetch(url, {
-    method,
-    headers,
-    body: hasBody ? JSON.stringify(body) : undefined,
-    signal,
-  });
+  const { response } = await resilientFetch(
+    url,
+    {
+      method,
+      headers,
+      body: hasBody ? JSON.stringify(body) : undefined,
+    },
+    {
+      signal,
+      connectTimeoutMs: 15_000,
+      totalTimeoutMs: 30_000,
+      throwOnHttpError: false,
+    },
+  );
 
   const requestId = response.headers.get("X-Request-ID") ?? undefined;
   const conversationId = response.headers.get("X-Conversation-ID") ?? undefined;
@@ -717,12 +749,20 @@ async function executeStreamingRequest(
     | "onStreamError"
   >,
 ): Promise<ApiCallResult> {
-  const response = await fetch(url, {
-    method,
-    headers,
-    body: JSON.stringify(body),
-    signal: config.signal,
-  });
+  const { response } = await resilientFetch(
+    url,
+    {
+      method,
+      headers,
+      body: JSON.stringify(body),
+    },
+    {
+      signal: config.signal,
+      connectTimeoutMs: 15_000,
+      totalTimeoutMs: null,
+      throwOnHttpError: false,
+    },
+  );
 
   if (!response.ok) {
     const serverDetail = await response.json().catch(() => undefined);

@@ -385,6 +385,18 @@ const REGISTRY: WindowRegistryEntry[] = [
     label: "Voice Pad",
     defaultData: { transcript: null },
   },
+  {
+    slug: "voice-pad-advanced",
+    overlayId: "voicePadAdvanced",
+    label: "Advanced Voice Pad",
+    defaultData: { transcript: null },
+  },
+  {
+    slug: "voice-pad-ai",
+    overlayId: "voicePadAi",
+    label: "AI Voice Pad",
+    defaultData: { transcript: null },
+  },
 
   // ── Quick AI Results ──────────────────────────────────────────────────────
   {

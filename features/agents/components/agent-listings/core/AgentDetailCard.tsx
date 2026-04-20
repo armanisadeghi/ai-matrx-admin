@@ -19,7 +19,11 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
-import { AgentSneakPeekContent } from "../AgentSneakPeekModal";
+import {
+  AgentSneakPeekContent,
+  AgentSneakPeekCopyMenu,
+} from "../AgentSneakPeekModal";
+import { Button } from "@/components/ui/button";
 
 export interface AgentDetailCardProps {
   agent: AgentDefinitionRecord;
@@ -178,26 +182,28 @@ export function AgentDetailCard({ agent, onSelect }: AgentDetailCardProps) {
             side="right"
             align="end"
             sideOffset={12}
-            className="w-[420px] max-h-[70vh] overflow-y-auto p-4 bg-card border border-border"
+            className="w-[420px] max-h-[70vh] p-4 bg-card border border-border flex flex-col gap-3"
           >
-            <div className="flex flex-col gap-3">
-              <div className="text-sm font-semibold text-foreground pr-2">
-                {agent.name || "Untitled"}
-              </div>
+            <div className="text-sm font-semibold text-foreground pr-2 shrink-0">
+              {agent.name || "Untitled"}
+            </div>
+            <div className="flex-1 overflow-y-auto min-h-0 -mr-2 pr-2">
               <AgentSneakPeekContent agentId={agent.id} active={peekOpen} />
-              <div className="border-t border-border pt-3 flex justify-end">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setPeekOpen(false);
-                    onSelect();
-                  }}
-                  className="inline-flex items-center gap-1.5 h-7 px-3 rounded-md bg-primary text-primary-foreground text-[11px] font-medium hover:bg-primary/90 active:bg-primary/80 transition-colors"
-                >
-                  <CircleCheck className="w-3.5 h-3.5" />
-                  Select Agent
-                </button>
-              </div>
+            </div>
+            <div className="border-t border-border pt-3 flex items-center gap-2 shrink-0">
+              <AgentSneakPeekCopyMenu agentId={agent.id} />
+              <Button
+                size="sm"
+                className="ml-auto"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setPeekOpen(false);
+                  onSelect();
+                }}
+              >
+                <CircleCheck />
+                Select Agent
+              </Button>
             </div>
           </HoverCardContent>
         </HoverCard>

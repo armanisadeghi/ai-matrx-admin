@@ -78,7 +78,8 @@ export type SourceFeature =
   | "prompt-app"
   | "research"
   | "code-editor"
-  | "agent-content-window";
+  | "agent-content-window"
+  | "voice-pad-ai";
 
 export const SOURCE_APP = "matrx-admin" as const;
 
@@ -289,6 +290,8 @@ export interface InstanceContextEntry {
 // User Input — message composition
 // =============================================================================
 
+export type InputSubmissionPhase = "idle" | "pending" | "persisted";
+
 export interface InstanceUserInputState {
   conversationId: string;
 
@@ -300,6 +303,22 @@ export interface InstanceUserInputState {
    * this holds the structured parts. When null, `text` is the only input.
    */
   messageParts: MessagePart[] | null;
+
+  /**
+   * Phase of the most recent submission lifecycle.
+   *   idle      — not submitting
+   *   pending   — submit dispatched, server has not yet confirmed persistence
+   *   persisted — server confirmed cx_user_request record reserved; text visually cleared
+   */
+  submissionPhase: InputSubmissionPhase;
+
+  /**
+   * Snapshot of the text/userValues captured at submit time. Preserved through
+   * the "persisted" phase so we can re-apply after a conversation reset.
+   * Cleared on full completion.
+   */
+  lastSubmittedText: string;
+  lastSubmittedUserValues: Record<string, unknown>;
 }
 
 // =============================================================================

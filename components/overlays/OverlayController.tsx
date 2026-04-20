@@ -158,15 +158,6 @@ const AnnouncementsViewer = dynamic(
   { ssr: false },
 );
 
-// QuickSaveModal — wraps in NotesProvider so it works outside the notes page
-const QuickSaveModalWithProvider = dynamic(
-  () =>
-    import("@/features/notes/actions/QuickNoteSaveModal").then((mod) => ({
-      default: mod.QuickNoteSaveModal,
-    })),
-  { ssr: false },
-);
-
 const EmailInputDialog = dynamic(
   () => import("@/components/dialogs/EmailInputDialog"),
   { ssr: false },
@@ -463,8 +454,7 @@ const NotesBetaWindow = dynamic(
 );
 
 const QuickNoteSaveWindow = dynamic(
-  () =>
-    import("@/features/window-panels/windows/notes/QuickNoteSaveWindow"),
+  () => import("@/features/window-panels/windows/notes/QuickNoteSaveWindow"),
   { ssr: false },
 );
 
@@ -497,12 +487,6 @@ const ContentEditorWorkspaceWindow = dynamic(
     import("@/features/window-panels/windows/content-editors/ContentEditorWorkspaceWindow").then(
       (m) => ({ default: m.ContentEditorWorkspaceWindow }),
     ),
-  { ssr: false },
-);
-
-const VoicePadAdvanced = dynamic(
-  () =>
-    import("@/components/official-candidate/voice-pad/components/VoicePadAdvanced"),
   { ssr: false },
 );
 
@@ -795,10 +779,6 @@ export const OverlayController: React.FC = () => {
 
   const isScraperWindowOpen = useAppSelector((s) =>
     selectIsOverlayOpen(s, "scraperWindow"),
-  );
-
-  const isVoicePadOpen = useAppSelector((s) =>
-    selectIsOverlayOpen(s, "voicePad"),
   );
 
   const isContextSwitcherWindowOpen = useAppSelector((s) =>
@@ -1452,13 +1432,17 @@ export const OverlayController: React.FC = () => {
           initialActiveTab={
             (notesWindowData?.activeTabId as string | null | undefined) ?? null
           }
+          singleNoteId={
+            (notesWindowData?.singleNoteId as string | null | undefined) ?? null
+          }
         />
       )}
 
-      {notesBetaWindowInstances.map(({ instanceId }) => (
+      {notesBetaWindowInstances.map(({ instanceId, data }) => (
         <NotesBetaWindow
           key={instanceId}
           windowInstanceId={instanceId}
+          title={(data as { title?: string } | null)?.title ?? "Notes Beta"}
           onClose={() => close("notesBetaWindow", instanceId)}
         />
       ))}
@@ -1468,7 +1452,8 @@ export const OverlayController: React.FC = () => {
           isOpen={true}
           onClose={() => close("quickNoteSaveWindow")}
           initialContent={
-            (quickNoteSaveWindowData?.initialContent as string | undefined) ?? ""
+            (quickNoteSaveWindowData?.initialContent as string | undefined) ??
+            ""
           }
           defaultFolder={
             (quickNoteSaveWindowData?.defaultFolder as string | undefined) ??
@@ -1531,8 +1516,6 @@ export const OverlayController: React.FC = () => {
           onClose={() => close("contentEditorWorkspaceWindow", instanceId)}
         />
       ))}
-
-      {isVoicePadOpen && <VoicePadAdvanced />}
 
       {/* ── Instanced overlays — .map() renders each open instance ─────── */}
       {/* Each instance gets a stable key so React correctly reconciles them. */}
@@ -1666,20 +1649,18 @@ export const OverlayController: React.FC = () => {
           />
         ))}
 
-      {/* Save to Notes — instanced so multiple saves can be open at once */}
+      {/* Save to Notes — renders as a floating Window (default target). */}
       {saveToNotesInstances.map(({ instanceId, data }) => {
         const d = data as { content: string; defaultFolder?: string } | null;
         if (!d) return null;
         return (
-          <QuickSaveModalWithProvider
+          <QuickNoteSaveWindow
             key={instanceId}
-            open={true}
-            onOpenChange={(open: boolean) => {
-              if (!open) close("saveToNotes", instanceId);
-            }}
+            instanceId={instanceId}
+            isOpen={true}
+            onClose={() => close("saveToNotes", instanceId)}
             initialContent={d.content}
             defaultFolder={d.defaultFolder ?? "Scratch"}
-            onSaved={() => close("saveToNotes", instanceId)}
           />
         );
       })}

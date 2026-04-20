@@ -630,7 +630,6 @@ export default function SidebarWindowToggle() {
             {/* ── Tab Content: Tools ───────────────────────────────────────── */}
             {activeTab === "tools" && (
               <div className="flex-1 flex flex-col overflow-y-auto">
-                <MenuSection label="System Tools" />
                 <div className="grid grid-cols-2 gap-1.5 px-2 pb-2 mt-1">
                   <MenuGridItem
                     icon={<FileJson className="w-3.5 h-3.5" />}
@@ -646,7 +645,13 @@ export default function SidebarWindowToggle() {
                     label="Notes"
                     onClick={() =>
                       act(() =>
-                        dispatch(openOverlay({ overlayId: "notesWindow" })),
+                        dispatch(
+                          openOverlay({
+                            overlayId: "notesBetaWindow",
+                            instanceId: "default",
+                            data: { title: "Notes" },
+                          }),
+                        ),
                       )
                     }
                   />
@@ -728,6 +733,26 @@ export default function SidebarWindowToggle() {
                     onClick={() =>
                       act(() =>
                         dispatch(openOverlay({ overlayId: "voicePad" })),
+                      )
+                    }
+                  />
+                  <MenuGridItem
+                    icon={<AudioLines className="w-3.5 h-3.5" />}
+                    label="Advanced Voice Pad"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(
+                          openOverlay({ overlayId: "voicePadAdvanced" }),
+                        ),
+                      )
+                    }
+                  />
+                  <MenuGridItem
+                    icon={<AudioLines className="w-3.5 h-3.5" />}
+                    label="AI Voice Pad"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(openOverlay({ overlayId: "voicePadAi" })),
                       )
                     }
                   />
@@ -1072,7 +1097,6 @@ export default function SidebarWindowToggle() {
             {/* ── Tab Content: Admin ───────────────────────────────────────── */}
             {activeTab === "admin" && isAdmin && (
               <div className="flex-1 flex flex-col overflow-y-auto">
-                <MenuSection label="Agent Debugging" />
                 <div className="grid grid-cols-2 gap-1.5 px-2 pb-2 mt-1">
                   <MenuGridItem
                     icon={<BugPlay className="w-3.5 h-3.5" />}

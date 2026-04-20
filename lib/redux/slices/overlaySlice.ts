@@ -70,6 +70,8 @@ const initialState: OverlayState = {
     feedbackDialog: makeDefaultInstance(),
     shareModal: makeDefaultInstance(),
     voicePad: makeDefaultInstance(),
+    voicePadAdvanced: makeDefaultInstance(),
+    voicePadAi: makeDefaultInstance(),
     undoHistory: makeDefaultInstance(),
     streamDebug: makeDefaultInstance(),
     jsonTruncator: makeDefaultInstance(),

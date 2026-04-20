@@ -23,7 +23,7 @@ import { createManualInstance } from "@/features/agents/redux/execution-system/t
 import { loadConversation } from "@/features/agents/redux/execution-system/thunks/load-conversation.thunk";
 import { AgentLauncherSidebarTester } from "../run-controls/AgentLauncherSidebarTester";
 import { AgentConversationColumn } from "../shared/AgentConversationColumn";
-import { Loader2, TestTube2 } from "lucide-react";
+import { AlertTriangle, Loader2, RotateCw, TestTube2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
@@ -51,6 +51,8 @@ export function AgentRunnerPage({ agentId }: AgentRunnerPageProps) {
   );
 
   const [isInitializing, setIsInitializing] = useState(true);
+  const [initError, setInitError] = useState<string | null>(null);
+  const [initAttempt, setInitAttempt] = useState(0);
 
   // Mobile drawer state
   const [testModesDrawerOpen, setTestModesDrawerOpen] = useState(false);
@@ -61,12 +63,18 @@ export function AgentRunnerPage({ agentId }: AgentRunnerPageProps) {
     let cancelled = false;
     const init = async () => {
       setIsInitializing(true);
+      setInitError(null);
       try {
         if (!executionPayload.isReady) {
           await dispatch(fetchAgentExecutionMinimal(agentId)).unwrap();
         }
       } catch (err) {
         console.error("Failed to load agent execution payload:", err);
+        if (!cancelled) {
+          setInitError(
+            err instanceof Error ? err.message : "Failed to load agent.",
+          );
+        }
       } finally {
         if (!cancelled) setIsInitializing(false);
       }
@@ -76,7 +84,7 @@ export function AgentRunnerPage({ agentId }: AgentRunnerPageProps) {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [agentId]);
+  }, [agentId, initAttempt]);
 
   const sourceFeature = "agent-runner";
   const surfaceKey = `${sourceFeature}:${agentId}`;
@@ -169,6 +177,34 @@ export function AgentRunnerPage({ agentId }: AgentRunnerPageProps) {
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversationIdFromUrl, isInitializing, conversationId]);
+
+  if (initError && !isInitializing) {
+    return (
+      <div className="flex items-center justify-center h-full p-6">
+        <div className="max-w-md w-full rounded-lg border border-destructive/40 bg-destructive/5 p-5 flex flex-col gap-3">
+          <div className="flex items-center gap-2 text-destructive">
+            <AlertTriangle className="w-5 h-5" />
+            <span className="font-medium">Couldn&apos;t reach the agent service</span>
+          </div>
+          <p className="text-sm text-muted-foreground leading-snug">
+            {initError}
+          </p>
+          <p className="text-xs text-muted-foreground leading-snug">
+            Your work is safe — anything you had typed will be restored once the
+            agent loads.
+          </p>
+          <Button
+            size="sm"
+            className="self-start gap-1.5"
+            onClick={() => setInitAttempt((n) => n + 1)}
+          >
+            <RotateCw className="w-3.5 h-3.5" />
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   if (isInitializing || !conversationId) {
     return (

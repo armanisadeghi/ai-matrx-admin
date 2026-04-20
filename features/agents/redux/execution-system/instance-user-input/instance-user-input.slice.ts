@@ -96,13 +96,26 @@ const instanceUserInputSlice = createSlice({
   reducers: {
     initInstanceUserInput(
       state,
-      action: PayloadAction<{ conversationId: string; text?: string }>,
+      action: PayloadAction<{
+        conversationId: string;
+        text?: string;
+        lastSubmittedText?: string;
+        lastSubmittedUserValues?: Record<string, unknown>;
+      }>,
     ) {
-      const { conversationId, text = "" } = action.payload;
+      const {
+        conversationId,
+        text = "",
+        lastSubmittedText = "",
+        lastSubmittedUserValues = {},
+      } = action.payload;
       state.byConversationId[conversationId] = {
         conversationId,
         text,
         messageParts: null,
+        submissionPhase: "idle",
+        lastSubmittedText,
+        lastSubmittedUserValues: { ...lastSubmittedUserValues },
         _undoPast: [],
         _undoFuture: [],
       };
@@ -125,6 +138,10 @@ const instanceUserInputSlice = createSlice({
       pushSnapshot(entry, snapshot);
 
       entry.text = text;
+      // User is composing new content — exit any lingering pending/persisted phase.
+      if (entry.submissionPhase !== "idle") {
+        entry.submissionPhase = "idle";
+      }
     },
 
     setUserInputMessageParts(
@@ -209,8 +226,89 @@ const instanceUserInputSlice = createSlice({
       if (entry) {
         entry.text = "";
         entry.messageParts = null;
-        // Clear future on send but preserve past so user can undo back
+        entry.submissionPhase = "idle";
+        // Intentionally KEEP lastSubmittedText/lastSubmittedUserValues so the
+        // /build "Re-apply last input" affordance survives stream completion.
+        // They are overwritten on the next submit and fully dropped when the
+        // instance is destroyed.
         entry._undoFuture = [];
+      }
+    },
+
+    /**
+     * Phase 1 → pending. Captures the text + userValues being submitted
+     * without clearing the textarea (data-protection window before the
+     * server has acknowledged persistence).
+     */
+    markInputSubmitted(
+      state,
+      action: PayloadAction<{
+        conversationId: string;
+        userValues: Record<string, unknown>;
+      }>,
+    ) {
+      const { conversationId, userValues } = action.payload;
+      const entry = state.byConversationId[conversationId];
+      if (!entry) return;
+      entry.submissionPhase = "pending";
+      entry.lastSubmittedText = entry.text;
+      entry.lastSubmittedUserValues = { ...userValues };
+    },
+
+    /**
+     * Phase 2 → persisted. Server confirmed cx_user_request record reserved —
+     * safe to clear the textarea. lastSubmittedText is intentionally preserved
+     * so a "re-apply" action can restore it if the user (or an auto-clear
+     * reset) wants to resubmit the same content.
+     */
+    markInputPersisted(state, action: PayloadAction<string>) {
+      const entry = state.byConversationId[action.payload];
+      if (!entry) return;
+      entry.submissionPhase = "persisted";
+      entry.text = "";
+      entry.messageParts = null;
+      entry._undoFuture = [];
+    },
+
+    /**
+     * Error/abort path. Returns phase to idle but keeps `text` intact so
+     * the user doesn't lose their input on a failed submission.
+     */
+    resetSubmissionPhase(state, action: PayloadAction<string>) {
+      const entry = state.byConversationId[action.payload];
+      if (!entry) return;
+      entry.submissionPhase = "idle";
+    },
+
+    /**
+     * Carry the last-submitted snapshot onto a new conversation id (used when
+     * `startNewConversation` replaces the conversation id after a reset).
+     */
+    transferLastSubmittedInput(
+      state,
+      action: PayloadAction<{
+        fromConversationId: string;
+        toConversationId: string;
+      }>,
+    ) {
+      const { fromConversationId, toConversationId } = action.payload;
+      const from = state.byConversationId[fromConversationId];
+      if (!from || !from.lastSubmittedText) return;
+      const to = state.byConversationId[toConversationId];
+      if (to) {
+        to.lastSubmittedText = from.lastSubmittedText;
+        to.lastSubmittedUserValues = { ...from.lastSubmittedUserValues };
+      } else {
+        state.byConversationId[toConversationId] = {
+          conversationId: toConversationId,
+          text: "",
+          messageParts: null,
+          submissionPhase: "idle",
+          lastSubmittedText: from.lastSubmittedText,
+          lastSubmittedUserValues: { ...from.lastSubmittedUserValues },
+          _undoPast: [],
+          _undoFuture: [],
+        };
       }
     },
 
@@ -234,6 +332,10 @@ export const {
   undoInputEdit,
   redoInputEdit,
   clearUserInput,
+  markInputSubmitted,
+  markInputPersisted,
+  resetSubmissionPhase,
+  transferLastSubmittedInput,
   removeInstanceUserInput,
 } = instanceUserInputSlice.actions;
 

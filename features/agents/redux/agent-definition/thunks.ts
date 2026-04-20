@@ -31,6 +31,8 @@
 
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { supabase } from "@/utils/supabase/client";
+import { withRetry } from "@/lib/net/retry";
+import { ConnectTimeoutError } from "@/lib/net/errors";
 import type { AppDispatch, RootState } from "@/lib/redux/store";
 import type { DbRpcRow } from "@/types/supabase-rpc";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
@@ -195,9 +197,29 @@ export const fetchAgentExecutionMinimal = createAsyncThunk<
 
     dispatch(setAgentLoading({ id: agentId, loading: true }));
 
-    const { data, error } = await supabase.rpc("agx_get_execution_minimal", {
-      p_agent_id: agentId,
-    });
+    const { data, error } = await withRetry(
+      () =>
+        new Promise<
+          Awaited<ReturnType<typeof supabase.rpc<"agx_get_execution_minimal">>>
+        >((resolve, reject) => {
+          const timer = setTimeout(() => {
+            reject(new ConnectTimeoutError(15_000));
+          }, 15_000);
+          supabase
+            .rpc("agx_get_execution_minimal", { p_agent_id: agentId })
+            .then(
+              (result) => {
+                clearTimeout(timer);
+                resolve(result);
+              },
+              (err) => {
+                clearTimeout(timer);
+                reject(err);
+              },
+            );
+        }),
+      { attempts: 2, initialDelayMs: 400 },
+    );
 
     dispatch(setAgentLoading({ id: agentId, loading: false }));
 

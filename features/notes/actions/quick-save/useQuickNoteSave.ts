@@ -18,6 +18,8 @@ import type { NoteRecord } from "@/features/notes/redux/notes.types";
 import { useToastManager } from "@/hooks/useToastManager";
 import { stripThinking, hasThinkingTags } from "./utils/stripThinking";
 import { applyTrim } from "./utils/trimContent";
+import { payloadSafetyStore } from "@/lib/persistence/payloadSafetyStore";
+import { runTrackedRequest } from "@/lib/redux/net/runTrackedRequest";
 
 export type SaveMode = "create" | "update";
 export type UpdateMethod = "append" | "overwrite";
@@ -68,11 +70,11 @@ export function useQuickNoteSave({
   // null = derive from initialContent + transforms; string = user has edited.
   const [editedContent, setEditedContent] = useState<string | null>(null);
 
+  // Trim is applied to the raw input first; other transforms (strip-thinking, etc)
+  // then operate on the trimmed slice.
   const basePostTransform = useMemo(() => {
-    const stripped = stripThinkingEnabled
-      ? stripThinking(initialContent)
-      : initialContent;
-    return applyTrim(stripped, trimStart, trimEnd);
+    const trimmed = applyTrim(initialContent, trimStart, trimEnd);
+    return stripThinkingEnabled ? stripThinking(trimmed) : trimmed;
   }, [initialContent, stripThinkingEnabled, trimStart, trimEnd]);
 
   const workingContent = editedContent ?? basePostTransform;
@@ -82,12 +84,8 @@ export function useQuickNoteSave({
     setEditedContent(null);
   }, [initialContent, stripThinkingEnabled, trimStart, trimEnd]);
 
-  const maxTrim = useMemo(() => {
-    const stripped = stripThinkingEnabled
-      ? stripThinking(initialContent)
-      : initialContent;
-    return stripped.length;
-  }, [initialContent, stripThinkingEnabled]);
+  // Trim sliders operate on the original content length.
+  const maxTrim = initialContent.length;
 
   // Target fields
   const [noteName, setNoteName] = useState(defaultNoteName());
@@ -120,55 +118,99 @@ export function useQuickNoteSave({
       return null;
     }
 
+    if (mode === "update" && (!selectedNoteId || !selectedNote)) {
+      toast.error("Please select a note to update");
+      return null;
+    }
+
+    const requestId = `note_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+    const trimmedContent = workingContent.trim();
+    const isCreate = mode === "create";
+    const label = isCreate
+      ? `Note: ${noteName.trim() || "Quick Note"}`
+      : `Note update: ${selectedNote?.label || "note"}`;
+    const routeHref =
+      typeof window !== "undefined" ? window.location.pathname : "/notes";
+
+    const payload = isCreate
+      ? {
+          op: "create" as const,
+          label: noteName.trim() || "Quick Note",
+          content: trimmedContent,
+          folder_name: folder,
+        }
+      : {
+          op: "update" as const,
+          noteId: selectedNoteId,
+          updateMethod,
+          content: trimmedContent,
+        };
+
+    const recoveryId = await payloadSafetyStore
+      .savePending({
+        id: requestId,
+        kind: "note",
+        label,
+        routeHref,
+        payload,
+        rawUserInput: initialContent,
+      })
+      .catch(() => requestId);
+
     setIsSaving(true);
     try {
-      if (mode === "create") {
-        const note = await dispatch(
-          createNewNote({
-            label: noteName.trim() || "Quick Note",
-            content: workingContent.trim(),
-            folder_name: folder,
-            tags: [],
-          }),
-        ).unwrap();
+      const result = await runTrackedRequest<Note>(dispatch, {
+        id: requestId,
+        kind: "crud",
+        label,
+        recoveryId,
+        run: async () => {
+          if (isCreate) {
+            const note = await dispatch(
+              createNewNote({
+                label: noteName.trim() || "Quick Note",
+                content: trimmedContent,
+                folder_name: folder,
+                tags: [],
+              }),
+            ).unwrap();
+            return note;
+          }
+
+          const finalContent =
+            updateMethod === "append"
+              ? `${selectedNote!.content ?? ""}\n\n${trimmedContent}`.trim()
+              : trimmedContent;
+
+          await dispatch(
+            saveNoteField({
+              noteId: selectedNoteId,
+              field: "content",
+              value: finalContent,
+            }),
+          ).unwrap();
+
+          return {
+            ...(selectedNote as unknown as Note),
+            content: finalContent,
+          };
+        },
+      });
+
+      if (isCreate) {
         toast.success(`Created in ${folder}!`);
-        setSavedNote(note);
-        return note;
+      } else {
+        toast.success(
+          `Content ${updateMethod === "append" ? "appended to" : "overwrote"} ${
+            selectedNote?.label || "note"
+          }!`,
+        );
       }
-
-      if (!selectedNoteId || !selectedNote) {
-        toast.error("Please select a note to update");
-        return null;
-      }
-
-      const finalContent =
-        updateMethod === "append"
-          ? `${selectedNote.content ?? ""}\n\n${workingContent.trim()}`.trim()
-          : workingContent.trim();
-
-      await dispatch(
-        saveNoteField({
-          noteId: selectedNoteId,
-          field: "content",
-          value: finalContent,
-        }),
-      ).unwrap();
-
-      toast.success(
-        `Content ${updateMethod === "append" ? "appended to" : "overwrote"} ${
-          selectedNote.label || "note"
-        }!`,
-      );
-      // Build a Note-shaped result for callers
-      const result: Note = {
-        ...(selectedNote as unknown as Note),
-        content: finalContent,
-      };
       setSavedNote(result);
       return result;
     } catch (err) {
       console.error("QuickNoteSave: save failed", err);
-      toast.error("Failed to save");
+      toast.error("Failed to save — saved to Recovery");
       return null;
     } finally {
       setIsSaving(false);
@@ -180,6 +222,7 @@ export function useQuickNoteSave({
     noteName,
     folder,
     workingContent,
+    initialContent,
     selectedNoteId,
     selectedNote,
     updateMethod,

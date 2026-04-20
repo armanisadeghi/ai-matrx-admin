@@ -155,6 +155,12 @@ export function AgentsGrid() {
   const ownedAgents = filteredAgents.filter((a) => a.isOwner !== false);
   const sharedAgents = filteredAgents.filter((a) => a.isOwner === false);
   const hasShared = sharedAgents.length > 0;
+  // Ordered list of all filtered agent ids — drives prev/next navigation in
+  // the sneak-peek modal so the user can cycle through their current results.
+  const navigationIds = useMemo(
+    () => filteredAgents.map((a) => a.id),
+    [filteredAgents],
+  );
 
   // Sentinel for mobile infinite scroll
   const listSentinelRef = useRef<HTMLDivElement>(null);
@@ -265,6 +271,7 @@ export function AgentsGrid() {
           isDuplicating={duplicatingIds.has(a.id)}
           isNavigating={navigatingId === a.id}
           isAnyNavigating={navigatingId !== null}
+          navigationIds={navigationIds}
         />
       ))}
     </div>
@@ -283,6 +290,7 @@ export function AgentsGrid() {
           isDuplicating={duplicatingIds.has(a.id)}
           isNavigating={navigatingId === a.id}
           isAnyNavigating={navigatingId !== null}
+          navigationIds={navigationIds}
         />
       ))}
     </div>

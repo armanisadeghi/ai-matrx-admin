@@ -530,6 +530,8 @@ export const startNewConversation = createAsyncThunk<
     const { agentId, sourceFeature } = instance;
     const currentUIState =
       state.instanceUIState.byConversationId[currentConversationId];
+    const currentInputEntry =
+      state.instanceUserInput.byConversationId[currentConversationId];
 
     const snapshot = agentId ? readAgentSnapshot(state, agentId) : null;
     const newConversationId = generateConversationId();
@@ -559,7 +561,15 @@ export const startNewConversation = createAsyncThunk<
     );
     dispatch(initInstanceResources({ conversationId: newConversationId }));
     dispatch(initInstanceContext({ conversationId: newConversationId }));
-    dispatch(initInstanceUserInput({ conversationId: newConversationId }));
+    // Carry the last-submitted snapshot across reset so /build engineers can
+    // re-apply the same input with tweaked settings.
+    dispatch(
+      initInstanceUserInput({
+        conversationId: newConversationId,
+        lastSubmittedText: currentInputEntry?.lastSubmittedText,
+        lastSubmittedUserValues: currentInputEntry?.lastSubmittedUserValues,
+      }),
+    );
     dispatch(initInstanceClientTools({ conversationId: newConversationId }));
     dispatch(
       initInstanceUIState({
@@ -693,7 +703,15 @@ export const startNewConversationAndExecute = createAsyncThunk<
     );
     dispatch(initInstanceResources({ conversationId: newConversationId }));
     dispatch(initInstanceContext({ conversationId: newConversationId }));
-    dispatch(initInstanceUserInput({ conversationId: newConversationId }));
+    // Carry the last-submitted snapshot across the autoClear boundary so the
+    // re-apply affordance remains available on the new conversation.
+    dispatch(
+      initInstanceUserInput({
+        conversationId: newConversationId,
+        lastSubmittedText: currentInput?.lastSubmittedText,
+        lastSubmittedUserValues: currentInput?.lastSubmittedUserValues,
+      }),
+    );
     dispatch(initInstanceClientTools({ conversationId: newConversationId }));
     dispatch(
       initInstanceUIState({
