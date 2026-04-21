@@ -14,7 +14,7 @@
 - [ ] **1.5** — RTK extensions for categories + content blocks + unified-menu thunk
 - [x] **1.6** — REST API routes. Files: `app/api/agent-shortcuts/route.ts`, `app/api/agent-shortcuts/[id]/route.ts`, `app/api/agent-shortcut-categories/route.ts`, `app/api/agent-shortcut-categories/[id]/route.ts`, `app/api/agent-content-blocks/route.ts`, `app/api/agent-content-blocks/[id]/route.ts`, `app/api/agent-context-menu/route.ts`.
 - [ ] **1.7** — `features/agent-shortcuts/` shared CRUD feature directory
-- [ ] **1.8** — Unit tests for `scope-mapping.ts`
+- [x] **1.8** — `mapScopeToAgentVariables` port + unit tests. Files: `features/agent-shortcuts/utils/scope-mapping.ts`, `features/agent-shortcuts/utils/scope-mapping.test.ts` (28 assertions, 0 failures via `npx tsx`).
 - [ ] **1.9** — Regenerate `types/database.types.ts` + doc sweep
 
 ## Goal
@@ -231,3 +231,4 @@ After applying, run `npm run types` to regenerate `types/database.types.ts`.
 | 2026-04-20 | initial plan | Phase created |
 | 2026-04-20 | main agent | Tasks 1.1–1.4 shipped: 4 migrations + RLS pre-flight test. Helpers `is_platform_admin`, `is_org_admin`, `is_org_member` added. Content-blocks decision landed in DECISIONS.md (extend existing table, not parallel). `agx_shortcut` RLS rewritten scope-aware — required because the view relies on row-level visibility at the source tables. |
 | 2026-04-21 | main agent | Task 1.6 shipped: seven REST endpoints under `app/api/agent-shortcuts`, `app/api/agent-shortcut-categories`, `app/api/agent-content-blocks` (each with list + `[id]` CRUD) plus `app/api/agent-context-menu` (read-only view surface). Scope handling via `?scope=global\|user\|organization\|project\|task` + `scopeId` query params; RLS enforces write authority at the DB. Response shape standardised to `{ data }` / `{ error, details }`. Routes are scope-agnostic where possible — the client chooses scope explicitly on POST/PATCH payloads and RLS validates. |
+| 2026-04-21 | main agent | Task 1.8 shipped: `mapScopeToAgentVariables` ported to `features/agent-shortcuts/utils/scope-mapping.ts` with typed `ScopeData` / `ScopeMappings` / `ScopeMappingLogger` surfaces. Preserves legacy semantics (defaults seeded first, null/undefined sources never overwrite, empty string does) and adds two hot-path guarantees: unknown target variables are skipped with a logger warning instead of throwing, and a `scopeData.custom` bag wins over the named scopes. Unit tests in `scope-mapping.test.ts` — 28 assertions pass, 0 fail, runnable via `npx tsx features/agent-shortcuts/utils/scope-mapping.test.ts`. Does not touch `features/prompt-builtins/utils/execution.ts` (deletion is Phase 18). |
