@@ -10,6 +10,7 @@
 
 import { Loader2 } from "lucide-react";
 import { useAgentLauncher } from "@/features/agents/hooks/useAgentLauncher";
+import { useBuilderContextSeed } from "@/features/agents/hooks/useBuilderContextSeed";
 import { AgentConversationColumn } from "../shared/AgentConversationColumn";
 import type { ManagedAgentOptions } from "@/features/agents/types/instance.types";
 
@@ -39,6 +40,11 @@ export function AgentBuilderRightPanel({
     agentId,
     agentOptions,
   );
+
+  // Seed the builder's saved context-slot values into every new conversation
+  // (initial + reset + autoclear split) so the engineer's test data travels
+  // with the instance without having to re-enter it.
+  useBuilderContextSeed(conversationId, agentId);
 
   if (!conversationId) {
     return (

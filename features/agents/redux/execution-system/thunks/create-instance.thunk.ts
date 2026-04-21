@@ -46,6 +46,7 @@ import {
   initInstanceContext,
   setContextEntries,
 } from "../instance-context/instance-context.slice";
+import type { InstanceContextEntry } from "@/features/agents/types/instance.types";
 import {
   initInstanceUserInput,
   setUserInputText,
@@ -876,6 +877,32 @@ export const splitInputIntoNewConversation = createAsyncThunk<
     );
     dispatch(initInstanceResources({ conversationId: newConversationId }));
     dispatch(initInstanceContext({ conversationId: newConversationId }));
+
+    // Carry context entries forward onto the fresh conversation so the
+    // engineer's slot values persist across the autoclear boundary. The
+    // builder-side localStorage seed will also attempt this, but doing it
+    // here removes the race with the hook's useEffect.
+    const currentContextMap =
+      state.instanceContext.byConversationId[currentConversationId];
+    if (currentContextMap) {
+      const carriedEntries: InstanceContextEntry[] =
+        Object.values(currentContextMap);
+      if (carriedEntries.length > 0) {
+        dispatch(
+          setContextEntries({
+            conversationId: newConversationId,
+            entries: carriedEntries.map((e) => ({
+              key: e.key,
+              value: e.value,
+              slotMatched: e.slotMatched,
+              type: e.type,
+              label: e.label,
+            })),
+          }),
+        );
+      }
+    }
+
     dispatch(
       initInstanceUserInput({
         conversationId: newConversationId,

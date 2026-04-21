@@ -38,6 +38,7 @@ import { startNewConversation } from "@/features/agents/redux/execution-system/t
 import { setBuilderAdvancedSettings } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.slice";
 import { selectUseStructuredSystemInstruction } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { RunSettingsEditor } from "./RunSettingsEditor";
+import { ContextSlotsTab } from "./ContextSlotsTab";
 import { selectConversationTitle } from "@/features/agents/redux/execution-system/messages/messages.selectors";
 import { SystemInstructionEditor } from "../builder/message-builders/system-instructions/SystemInstructionEditor";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
@@ -51,6 +52,7 @@ import { cn } from "@/lib/utils";
 
 type TabId =
   | "actions"
+  | "context"
   | "widget_invoker"
   | "settings"
   | "sysprompt"
@@ -633,6 +635,7 @@ function ClientPanel({ conversationId }: { conversationId: string }) {
 
 const ALL_TABS: TabId[] = [
   "actions",
+  "context",
   "widget_invoker",
   "settings",
   "sysprompt",
@@ -771,6 +774,7 @@ export function CreatorRunPanel({
 
   const allTabDefs: Array<{ id: TabId; label: string }> = [
     { id: "actions", label: "Actions" },
+    { id: "context", label: "Context" },
     { id: "widget_invoker", label: "Widgets" },
     { id: "settings", label: "Run" },
     { id: "sysprompt", label: "System" },
@@ -826,6 +830,9 @@ export function CreatorRunPanel({
               onOpenStreamDebugWindow={openStreamDebugWindow}
               onOpenRunSettingsWindow={openRunSettingsWindow}
             />
+          )}
+          {activeTab === "context" && (
+            <ContextSlotsTab conversationId={conversationId} />
           )}
           {activeTab === "settings" && (
             <RunSettingsTab conversationId={conversationId} />
