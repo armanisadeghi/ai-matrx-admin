@@ -35,7 +35,10 @@ export function AgentBuilderRightPanel({
     autoClearConversation: true,
   };
 
-  const { conversationId } = useAgentLauncher(agentId, agentOptions);
+  const { conversationId, displayConversationId } = useAgentLauncher(
+    agentId,
+    agentOptions,
+  );
 
   if (!conversationId) {
     return (
@@ -49,6 +52,7 @@ export function AgentBuilderRightPanel({
   return (
     <AgentConversationColumn
       conversationId={conversationId}
+      displayConversationId={displayConversationId ?? undefined}
       surfaceKey={surfaceKey}
       smartInputProps={{
         showSubmitOnEnterToggle: true,

@@ -14,6 +14,7 @@ Related: `decisions.md` (principles + roadmap), `phase-0-theme-capabilities.md` 
 - **D1.1** `jest.config.js.ts` `testEnvironment` flips from `"node"` to `"jsdom"` in Phase 1.
 - **D1.5** One-shot legacy key migration (`localStorage['theme']` → `'matrx:theme'`) runs in `bootSync`; covered by `engine.boot.test.ts`.
 - **D1.6** `zod` 4.3.6 is already installed — no package.json change for it.
+- **D1.8 (added during PR 1.B execution)** Phase 0 undercounted legacy theme consumers (real count: 48 call sites across `hooks/useTheme` + `ThemeProvider`'s context hook + `ThemeProvider` component). PR 1.B now uses a **shim strategy** — the two `useTheme` implementations and the `ThemeProvider` component are replaced with thin adapters that route to the sync-engine-owned Redux state. Call sites migrate in a follow-up PR 1.C (mechanical) and the shim is deleted in PR 1.D. Full plan + consumer manifest: `phase-1b-shim-cleanup.md`. Constitution V/VI compliance is preserved because the migration window is explicitly named and grep-verified on close.
 
 ---
 

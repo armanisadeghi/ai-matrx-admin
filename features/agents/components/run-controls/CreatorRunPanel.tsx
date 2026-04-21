@@ -18,7 +18,6 @@ import {
   RotateCcw,
   AppWindow,
   SlidersHorizontal,
-  Undo2,
 } from "lucide-react";
 import { createSelector } from "@reduxjs/toolkit";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
@@ -36,8 +35,6 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { startNewConversation } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
-import { reapplyLastSubmittedInput } from "@/features/agents/redux/execution-system/thunks/reapply-last-input.thunk";
-import { selectHasReapplyableInput } from "@/features/agents/redux/execution-system/instance-user-input/instance-user-input.selectors";
 import { setBuilderAdvancedSettings } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.slice";
 import { selectUseStructuredSystemInstruction } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { RunSettingsEditor } from "./RunSettingsEditor";
@@ -89,11 +86,6 @@ function ActionsTab({
       .catch((err) => console.error("Failed to reset test instance:", err));
   }, [conversationId, surfaceKey, dispatch]);
 
-  const canReapply = useAppSelector(selectHasReapplyableInput(conversationId));
-  const handleReapply = useCallback(() => {
-    dispatch(reapplyLastSubmittedInput(conversationId));
-  }, [conversationId, dispatch]);
-
   const ActionButton = ({
     onClick,
     icon: Icon,
@@ -131,20 +123,6 @@ function ActionsTab({
           </>
         }
       />
-      {canReapply && (
-        <ActionButton
-          onClick={handleReapply}
-          icon={Undo2}
-          iconClassName="text-purple-500"
-          label={
-            <>
-              Re-apply
-              <br />
-              Last Input
-            </>
-          }
-        />
-      )}
       <ActionButton
         onClick={onOpenStreamDebugWindow}
         icon={AppWindow}

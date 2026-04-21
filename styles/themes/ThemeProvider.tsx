@@ -1,86 +1,42 @@
-// File: styles/themes/ThemeProvider.tsx
+/**
+ * styles/themes/ThemeProvider.tsx — SHIM.
+ *
+ * Pass-through provider component + re-exported `useTheme` hook. Exists only
+ * to keep the 36 legacy imports (`import { useTheme } from
+ * "@/styles/themes/ThemeProvider"`) and 3 `<ThemeProvider>` mounts working
+ * while Phase 1.C mechanically migrates consumers to direct Redux selectors.
+ *
+ * Post-shim behavior:
+ *   - `<ThemeProvider>` renders children only. NO React context, NO Redux
+ *     dispatches, NO DOM mutations, NO cookie writes, NO localStorage writes.
+ *     The sync engine owns all of that now (`SyncBootScript` pre-paints; the
+ *     middleware broadcasts + persists; `bootSync` rehydrates).
+ *   - `useTheme` is re-exported from `@/hooks/useTheme` so both import paths
+ *     return the identical union shape.
+ *
+ * **Scheduled for deletion.** Phase 1.D removes this file and the three
+ * `<ThemeProvider>` JSX mounts. See
+ * `docs/concepts/full-sync-boardcast-storage/phase-1b-shim-cleanup.md`.
+ *
+ * Do NOT add new consumers.
+ */
+
 "use client";
-import React, { createContext, useContext, useEffect, useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import type { RootState } from "@/lib/redux/store";
-import { setMode } from "./themeSlice";
+
+import React from "react";
 
 export type ThemeMode = "light" | "dark";
 
-interface ThemeContextProps {
-  mode: ThemeMode;
-  toggleMode: () => void;
+export interface ThemeProviderProps {
+    children: React.ReactNode;
+    /** Accepted for backwards compat; ignored by the shim. */
+    defaultTheme?: ThemeMode;
+    /** Accepted for backwards compat; ignored by the shim. */
+    enableSystem?: boolean;
 }
 
-const ThemeContext = createContext<ThemeContextProps | undefined>(undefined);
-
-export const ThemeProvider: React.FC<{
-  children: React.ReactNode;
-  defaultTheme?: ThemeMode;
-  enableSystem?: boolean;
-}> = ({ children, defaultTheme, enableSystem = false }) => {
-  const dispatch = useDispatch();
-  const { mode } = useSelector((state: RootState) => state.theme);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-    const savedTheme = document.cookie
-      .split("; ")
-      .find((row) => row.startsWith("theme="))
-      ?.split("=")[1] as ThemeMode | undefined;
-    if (savedTheme) {
-      dispatch(setMode(savedTheme));
-    } else if (defaultTheme) {
-      dispatch(setMode(defaultTheme));
-    } else {
-      const systemPrefersDark = window.matchMedia(
-        "(prefers-color-scheme: dark)",
-      ).matches;
-      dispatch(setMode(systemPrefersDark ? "dark" : "light"));
-    }
-  }, [dispatch, defaultTheme]);
-
-  useEffect(() => {
-    if (mounted) {
-      document.cookie = `theme=${mode};path=/`;
-      document.documentElement.setAttribute("data-theme", mode);
-      document.documentElement.classList.toggle("dark", mode === "dark");
-    }
-  }, [mode, mounted]);
-
-  const toggleMode = () => {
-    const newMode = mode === "light" ? "dark" : "light";
-    dispatch(setMode(newMode));
-  };
-
-  const contextValue: ThemeContextProps = {
-    mode,
-    toggleMode,
-  };
-
-  return (
-    <ThemeContext.Provider value={contextValue}>
-      {children}
-    </ThemeContext.Provider>
-  );
+export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
+    return <>{children}</>;
 };
 
-export const useTheme = () => {
-  const context = useContext(ThemeContext);
-  if (!context) {
-    // Gracefully handle missing ThemeProvider (e.g., in public app context)
-    // Return safe defaults instead of throwing
-    console.warn(
-      "[useTheme] ThemeProvider not found, using default light mode",
-    );
-    return {
-      mode: "light" as const,
-      setMode: () => {},
-      theme: {
-        // Add basic theme defaults if needed
-      },
-    };
-  }
-  return context;
-};
+export { useTheme } from "@/hooks/useTheme";

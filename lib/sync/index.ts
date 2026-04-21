@@ -14,6 +14,8 @@ export { definePolicy } from "./policies/define";
 export { createSyncMiddleware } from "./engine/middleware";
 export { bootSync } from "./engine/boot";
 export { SyncBootScript } from "./components/SyncBootScript";
+export { openSyncChannel } from "./channel";
+export type { SyncChannel } from "./channel";
 export { deriveIdentity, identityEquals, GUEST_UNKNOWN_KEY } from "./identity";
 export { REHYDRATE_ACTION_TYPE, isRehydrateAction } from "./engine/rehydrate";
 export { syncPolicies } from "./registry";

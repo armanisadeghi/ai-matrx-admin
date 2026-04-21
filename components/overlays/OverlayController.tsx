@@ -1630,22 +1630,30 @@ export const OverlayController: React.FC = () => {
       })}
 
       {smartCodeEditorWindowInstances.map(({ instanceId, data }) => {
-        // Skip instances opened without an agentId — the window requires one
-        // to launch. This also guards against stale ephemeral overlay state.
-        if (!data?.agentId || typeof data.agentId !== "string") return null;
+        // The 4-column editor takes an `agents` array rather than a single
+        // agentId — each entry carries its own `codeVariableKey` mapping.
+        const agents = Array.isArray(data?.agents) ? data.agents : null;
+        if (!agents || agents.length === 0) return null;
         return (
           <SmartCodeEditorWindow
             key={instanceId}
             windowInstanceId={instanceId}
             callbackGroupId={data?.callbackGroupId ?? null}
-            agentId={data.agentId}
+            agents={agents}
+            defaultPickerAgentId={data?.defaultPickerAgentId ?? undefined}
             initialCode={data?.initialCode ?? ""}
             language={data?.language ?? "plaintext"}
+            files={data?.files ?? undefined}
+            initialActiveFileId={data?.initialActiveFileId ?? undefined}
             filePath={data?.filePath ?? undefined}
             selection={data?.selection ?? undefined}
             diagnostics={data?.diagnostics ?? undefined}
+            workspaceName={data?.workspaceName ?? undefined}
+            workspaceFolders={data?.workspaceFolders ?? undefined}
+            gitBranch={data?.gitBranch ?? undefined}
+            gitStatus={data?.gitStatus ?? undefined}
+            agentSkills={data?.agentSkills ?? undefined}
             title={data?.title ?? null}
-            variables={data?.variables ?? null}
             onClose={() => close("smartCodeEditorWindow", instanceId)}
           />
         );

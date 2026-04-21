@@ -12,6 +12,14 @@ import { entitySagaMiddleware } from "./entity/entitySagaMiddleware";
 import { socketMiddleware } from "./socket-io/connection/socketMiddleware";
 import { autoSaveMiddleware } from "@/features/notes/redux/autoSaveMiddleware";
 import { codeFilesAutoSaveMiddleware } from "@/features/code-files/redux/autoSaveMiddleware";
+import {
+  createSyncMiddleware,
+  openSyncChannel,
+  deriveIdentity,
+  syncPolicies,
+  type SyncChannel,
+} from "@/lib/sync";
+import type { IdentityKey } from "@/lib/sync";
 import { mapUserData } from "@/utils/userDataMapper";
 import { getEmptyGlobalCache } from "@/utils/schema/schema-processing/emptyGlobalCache";
 import { InitialReduxState, LiteInitialReduxState } from "@/types/reduxTypes";
@@ -25,6 +33,17 @@ const sagaMiddleware = createSagaMiddleware();
 
 // Store reference for utility access
 let storeInstance: AppStore | null = null;
+
+/**
+ * Sync engine context attached to the store as `_sync`. Consumed by
+ * `StoreProvider` to drive `bootSync` without double-opening the channel.
+ */
+export interface StoreSyncContext {
+  channel: SyncChannel;
+  identity: IdentityKey;
+  /** Runtime identity swap (auth flip). Phase 4 wires a reactive listener. */
+  setIdentity: (next: IdentityKey) => void;
+}
 
 function resolveUserPreferencesForBootstrap(
   input: Partial<InitialReduxState> & LiteInitialReduxState,
@@ -101,6 +120,24 @@ export const makeStore = (
 
   const rootReducer = createRootReducer(resolved as InitialReduxState);
 
+  // --- Sync engine wiring (PR 1.B) -----------------------------------------
+  // Identity + channel are created here so the middleware closure owns them.
+  // StoreProvider calls `bootSync` post-construction, passing the same channel
+  // back via `openChannel` override so nothing is double-opened.
+  // `_sync` is attached to the returned store and consumed by StoreProvider.
+  const initialBootUserId =
+    (resolved.user as { id?: string | null } | undefined)?.id ?? null;
+  const initialIdentity: IdentityKey = deriveIdentity({
+    userId: initialBootUserId,
+  });
+  let currentIdentity: IdentityKey = initialIdentity;
+  const syncChannel: SyncChannel = openSyncChannel(initialIdentity);
+  const syncMiddleware = createSyncMiddleware({
+    policies: syncPolicies,
+    channel: syncChannel,
+    getIdentity: () => currentIdentity,
+  });
+
   const store = configureStore({
     reducer: rootReducer,
     preloadedState: resolved as unknown as Parameters<
@@ -116,6 +153,7 @@ export const makeStore = (
         loggerMiddleware,
         socketMiddleware,
         storageMiddleware,
+        syncMiddleware,
         entitySagaMiddleware,
         autoSaveMiddleware,
         codeFilesAutoSaveMiddleware,
@@ -124,15 +162,27 @@ export const makeStore = (
     devTools: process.env.NODE_ENV !== "production",
   });
 
+  const syncContext: StoreSyncContext = {
+    channel: syncChannel,
+    identity: initialIdentity,
+    setIdentity: (next: IdentityKey) => {
+      currentIdentity = next;
+      syncChannel.setIdentity(next);
+    },
+  };
+  // Attach sync context so StoreProvider can call bootSync with the same
+  // channel + identity getter/setter that the middleware closed over.
+  const storeWithSync = Object.assign(store, { _sync: syncContext });
+
   const rootSagaInstance = createRootSaga(
     resolved.globalCache.entityNames ?? [],
   );
   sagaMiddleware.run(rootSagaInstance);
 
   // Keep reference for utility access
-  storeInstance = store;
+  storeInstance = storeWithSync;
 
-  return store;
+  return storeWithSync;
 };
 
 export type AppStore = ReturnType<typeof makeStore>;

@@ -22,11 +22,14 @@ class GlobalMenuItemsClass {
         }));
 
         this.register("theme", () => {
-            // Get current theme from document or localStorage
-            const isDark = typeof window !== 'undefined' && 
-                (document.documentElement.getAttribute('data-theme') === 'dark' ||
-                 localStorage.getItem('theme') === 'dark');
-            
+            // Sync engine owns the canonical theme state now. The factory
+            // runs outside of React, so we read the pre-paint-applied
+            // `data-theme` attribute (set by `SyncBootScript`). The legacy
+            // `localStorage.getItem('theme')` fallback is gone — see
+            // phase-1b-shim-cleanup.md.
+            const isDark = typeof window !== 'undefined' &&
+                document.documentElement.getAttribute('data-theme') === 'dark';
+
             return {
                 id: "theme",
                 icon: React.createElement(isDark ? Sun : Moon, { className: "h-4 w-4 mr-2" }),

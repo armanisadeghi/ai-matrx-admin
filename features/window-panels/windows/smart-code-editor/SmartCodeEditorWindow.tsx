@@ -3,219 +3,108 @@
 /**
  * SmartCodeEditorWindow
  *
- * Floating-window sibling of `SmartCodeEditorModal`. Wraps the
- * `SmartCodeEditor` component inside a `WindowPanel` and owns the agent
- * launch lifecycle:
+ * Thin `WindowPanel` shell around `SmartCodeEditor`. The 4-column editor
+ * owns all launch / widget-handle / conversation lifecycle internally.
  *
- *   1. On mount, register a code-editor widget handle (exposes text
- *      replace / patch / complete / error to the agent) and dispatch
- *      `launchAgentExecution` to create the conversation.
- *   2. Render `<SmartCodeEditor conversationId=... />` once the launch
- *      resolves.
- *   3. On unmount, destroy the instance via `destroyInstanceIfAllowed`.
+ * This window exists to:
+ *   1. Host `SmartCodeEditor` inside a draggable/resizable floating panel.
+ *   2. Emit typed events via a callback group (code-change, window-close)
+ *      so callers can observe editor state without touching Redux.
  *
- * Event channel:
- *   External handlers are NEVER plumbed through Redux. The opener
- *   creates a callback group via `createSmartCodeEditorCallbackGroup`
- *   and passes the returned `callbackGroupId` through `openOverlay`'s
- *   `data` payload. The window emits typed events (`ready`, `launched`,
- *   `code-change`, `agent-complete`, `agent-error`, `window-close`)
- *   onto that group. See `./callbacks.ts` for the event surface.
- *
- * Ephemerality:
- *   Registered as `ephemeral: true` in `windowRegistry.ts` — live agent
- *   conversations cannot be restored across reloads, so persisting
- *   would create confusingly empty windows.
+ * Registered as `ephemeral: true` — reload discards any live drafts because
+ * they belong to a session that can't be restored.
  */
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
+import React, { useCallback, useRef, useState } from "react";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
-import { launchAgentExecution } from "@/features/agents/redux/execution-system/thunks/launch-agent-execution.thunk";
-import { destroyInstanceIfAllowed } from "@/features/agents/redux/execution-system/conversations/conversations.thunks";
 import { SmartCodeEditor } from "@/features/code-editor/agent-code-editor/components/SmartCodeEditor";
-import { useCodeEditorWidgetHandle } from "@/features/code-editor/agent-code-editor/hooks/useCodeEditorWidgetHandle";
-import { SMART_CODE_EDITOR_SURFACE_KEY } from "@/features/code-editor/agent-code-editor/constants";
+import type {
+  CodeEditorAgentConfig,
+  CodeEditorFile,
+} from "@/features/code-editor/agent-code-editor/types";
 import { useSmartCodeEditorEmitter } from "./useSmartCodeEditorEmitter";
 
-// ─── Props ────────────────────────────────────────────────────────────────────
-
 export interface SmartCodeEditorWindowProps {
-  /** Overlay instanceId — stable across re-renders, unique per window. */
   windowInstanceId: string;
-  /** Callback group from the caller (via `useOpenSmartCodeEditorWindow`). */
   callbackGroupId?: string | null;
 
-  // From overlay `data`:
-  /** Agent UUID to launch for this editor session. Required. */
-  agentId: string;
-  /** Starting editor content. */
+  /** The agents available in the history-panel picker. Required. */
+  agents: CodeEditorAgentConfig[];
+  /** Picker-default agent. Defaults to `agents[0]`. */
+  defaultPickerAgentId?: string;
+
+  /** Single-file mode: starting editor content. */
   initialCode?: string;
-  /** Language identifier (e.g. "typescript"). */
   language?: string;
-  /** Optional vsc_active_file_path context. */
+
+  /** Multi-file mode — when provided, shows the Files column. */
+  files?: CodeEditorFile[];
+  initialActiveFileId?: string;
+
+  // Optional IDE context
   filePath?: string;
-  /** Optional vsc_selected_text context. */
   selection?: string;
-  /** Optional vsc_diagnostics context (pre-formatted text). */
   diagnostics?: string;
-  /** Editor header title (also used as the WindowPanel title). */
+  workspaceName?: string;
+  workspaceFolders?: string;
+  gitBranch?: string;
+  gitStatus?: string;
+  agentSkills?: string;
+
   title?: string | null;
-  /** Optional per-turn variable seed forwarded to `launchAgentExecution`. */
-  variables?: Record<string, unknown> | null;
 
   onClose: () => void;
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
-
 export function SmartCodeEditorWindow({
   windowInstanceId,
   callbackGroupId,
-  agentId,
+  agents,
+  defaultPickerAgentId,
   initialCode = "",
   language = "plaintext",
+  files,
+  initialActiveFileId,
   filePath,
   selection,
   diagnostics,
+  workspaceName,
+  workspaceFolders,
+  gitBranch,
+  gitStatus,
+  agentSkills,
   title,
-  variables,
   onClose,
 }: SmartCodeEditorWindowProps) {
-  const dispatch = useAppDispatch();
+  // The window tracks the "latest code" only for emitter purposes
+  // (window-close needs to report final code). SmartCodeEditor owns real
+  // editor state internally.
+  const codeRef = useRef<string>(initialCode);
+  const [, forceRender] = useState(0);
 
-  // Live code state — owned by the window so the widget handle and the
-  // emitter both see the latest value without prop-drilling from outside.
-  const [code, setCode] = useState<string>(initialCode);
-
-  // Keep latest code in a ref for ref-based consumers (emitter unmount).
-  const codeRef = useRef(code);
-  codeRef.current = code;
-
-  // ── Launch lifecycle state (ref declared early so widget callbacks can read it) ──
-  const [conversationId, setConversationId] = useState<string | null>(null);
-  const launchedIdRef = useRef<string | null>(null);
-
-  // ── Emitter (bookends + typed events) ─────────────────────────────────────
   const { emit } = useSmartCodeEditorEmitter(
     callbackGroupId,
     windowInstanceId,
     () => codeRef.current,
   );
 
-  // ── Code mutation pipeline ────────────────────────────────────────────────
-  // Every mutation routes through here: from the agent's widget-handle calls,
-  // from the SmartCodeEditor's "Apply" action, and from any future in-window
-  // manual editors. We update local state AND emit `code-change`.
   const handleCodeChange = useCallback(
-    (next: string) => {
-      setCode(next);
+    (next: string, _fileId: string | null) => {
+      codeRef.current = next;
       emit({ type: "code-change", code: next });
+      // No forceRender — SmartCodeEditor already re-renders via its own state.
+      void forceRender;
     },
     [emit],
   );
 
-  // ── Widget handle (agent tool-call surface) ───────────────────────────────
-  // Registered ONCE per window mount. The handle is ref-stable: its
-  // `onTextReplace` / `onTextPatch` read the latest `code` + `onCodeChange`
-  // via refs inside `useCodeEditorWidgetHandle`.
-  const widgetHandleId = useCodeEditorWidgetHandle({
-    code,
-    onCodeChange: handleCodeChange,
-    onComplete: (result) => {
-      emit({
-        type: "agent-complete",
-        conversationId: launchedIdRef.current ?? "",
-        finalCode: codeRef.current,
-      });
-      void result;
-    },
-    onError: (err) => {
-      emit({
-        type: "agent-error",
-        message:
-          err instanceof Error
-            ? err.message
-            : typeof err === "string"
-              ? err
-              : "Unknown agent error",
-      });
-    },
-  });
-
-  // Snapshot variables in a ref so mounting doesn't re-fire on reference churn.
-  const variablesRef = useRef(variables);
-  variablesRef.current = variables;
-
-  useEffect(() => {
-    if (launchedIdRef.current) return;
-
-    let cancelled = false;
-    (async () => {
-      try {
-        const result = await dispatch(
-          launchAgentExecution({
-            agentId,
-            surfaceKey: SMART_CODE_EDITOR_SURFACE_KEY,
-            sourceFeature: "code-editor",
-            displayMode: "direct",
-            autoRun: false,
-            allowChat: true,
-            apiEndpointMode: "agent",
-            widgetHandleId,
-            ...(variablesRef.current
-              ? { variables: variablesRef.current }
-              : {}),
-          }),
-        ).unwrap();
-
-        if (cancelled) {
-          // Window closed before launch resolved — tear down the stray instance.
-          dispatch(destroyInstanceIfAllowed(result.conversationId));
-          return;
-        }
-
-        launchedIdRef.current = result.conversationId;
-        setConversationId(result.conversationId);
-        emit({ type: "launched", conversationId: result.conversationId });
-      } catch (err) {
-        // eslint-disable-next-line no-console
-        console.error("[SmartCodeEditorWindow] launch failed", err);
-        emit({
-          type: "agent-error",
-          message:
-            err instanceof Error
-              ? err.message
-              : typeof err === "string"
-                ? err
-                : "Failed to launch agent",
-        });
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-      // Destroy on unmount — the window is ephemeral and any live
-      // conversation must be torn down to release execution resources.
-      const id = launchedIdRef.current;
-      if (id) {
-        launchedIdRef.current = null;
-        dispatch(destroyInstanceIfAllowed(id));
-      }
-    };
-  }, [agentId, widgetHandleId, dispatch, emit]);
-
-  // ── Persistence collect (ephemeral, but called by WindowPanel) ───────────
   const collectData = useCallback(
     (): Record<string, unknown> => ({
-      // callbackGroupId is intentionally omitted — live callbacks do not
-      // survive a reload. agentId + language are kept so the entry is
-      // self-describing even though the window is ephemeral.
-      agentId,
+      agents: agents.map((a) => ({ id: a.id, name: a.name })),
       language,
       title: title ?? null,
     }),
-    [agentId, language, title],
+    [agents, language, title],
   );
 
   return (
@@ -223,31 +112,33 @@ export function SmartCodeEditorWindow({
       id={`smart-code-editor-window-${windowInstanceId}`}
       title={title ?? "Smart Code Editor"}
       overlayId="smartCodeEditorWindow"
-      minWidth={640}
-      minHeight={420}
-      width={1100}
-      height={720}
+      minWidth={900}
+      minHeight={500}
+      width={1280}
+      height={760}
       position="center"
       onClose={onClose}
       onCollectData={collectData}
       bodyClassName="p-0 overflow-hidden"
     >
-      {conversationId ? (
-        <SmartCodeEditor
-          conversationId={conversationId}
-          currentCode={code}
-          language={language}
-          onCodeChange={handleCodeChange}
-          filePath={filePath}
-          selection={selection}
-          diagnostics={diagnostics}
-          title={title ?? undefined}
-        />
-      ) : (
-        <div className="h-full flex items-center justify-center text-muted-foreground text-sm">
-          Launching agent…
-        </div>
-      )}
+      <SmartCodeEditor
+        agents={agents}
+        defaultPickerAgentId={defaultPickerAgentId}
+        initialCode={initialCode}
+        language={language}
+        onCodeChange={handleCodeChange}
+        files={files}
+        initialActiveFileId={initialActiveFileId}
+        filePath={filePath}
+        selection={selection}
+        diagnostics={diagnostics}
+        workspaceName={workspaceName}
+        workspaceFolders={workspaceFolders}
+        gitBranch={gitBranch}
+        gitStatus={gitStatus}
+        agentSkills={agentSkills}
+        title={title ?? undefined}
+      />
     </WindowPanel>
   );
 }

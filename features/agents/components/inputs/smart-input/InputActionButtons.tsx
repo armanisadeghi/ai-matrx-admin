@@ -51,6 +51,7 @@ import {
   smartExecute,
   cancelExecution,
 } from "@/features/agents/redux/execution-system/thunks/smart-execute.thunk";
+import { syncInputToDisplay } from "@/features/agents/redux/execution-system/conversation-focus/conversation-focus.slice";
 
 // ── Inline button primitive ──────────────────────────────────────────────────
 
@@ -204,14 +205,21 @@ export function InputActionButtons({
           <InputButton
             icon={RefreshCcw}
             tooltip="Auto-clear ON — each send starts fresh (click to disable)"
-            onClick={() =>
+            onClick={() => {
+              const next = !autoClearWithHistory;
               dispatch(
                 setAutoClearConversation({
                   conversationId,
-                  value: !autoClearWithHistory,
+                  value: next,
                 }),
-              )
-            }
+              );
+              // Flipping autoclear OFF re-aligns the input back to whatever
+              // conversation the display is showing — the user now wants the
+              // continuing multi-turn view, not the prepped-next-turn convo.
+              if (!next && surfaceKey) {
+                dispatch(syncInputToDisplay(surfaceKey));
+              }
+            }}
             active={autoClearWithHistory}
           />
         )}

@@ -5,6 +5,33 @@
 import type { ParseResult } from "./utils/parseCodeEdits";
 
 /**
+ * Minimal config the editor needs for each agent in the picker.
+ *
+ * `codeVariableKey` is the agent's variable name that should receive the
+ * editor's current code on the first turn (e.g. "current_code",
+ * "dynamic_context"). Manual for now; in production this mapping comes from
+ * a Shortcut's scopeMappings.
+ */
+export interface CodeEditorAgentConfig {
+  id: string;
+  name: string;
+  codeVariableKey: string;
+}
+
+/**
+ * A single file in multi-file mode.
+ */
+export interface CodeEditorFile {
+  id: string;
+  title: string;
+  value: string;
+  /** Optional — defaults to the outer editor's language when omitted. */
+  language?: string;
+  /** Optional short note shown in the files list under the title. */
+  description?: string;
+}
+
+/**
  * The high-level state of an AI edit cycle. Drives the review UI.
  */
 export type CodeEditorState =

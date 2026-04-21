@@ -1,73 +1,106 @@
-'use client';
-
-import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
-
-type Theme = 'light' | 'dark';
-
-function getThemeFromDOM(): Theme {
-    if (typeof document === 'undefined') return 'dark';
-    return document.documentElement.classList.contains('dark') ? 'dark' : 'light';
-}
-
-function applyTheme(theme: Theme) {
-    document.documentElement.classList.toggle('dark', theme === 'dark');
-    document.documentElement.setAttribute('data-theme', theme);
-    document.cookie = `theme=${theme};path=/;max-age=31536000`;
-    try { localStorage.setItem('theme', theme); } catch {}
-}
-
-// Shared external store so all hook instances stay in sync
-let listeners: Array<() => void> = [];
-let currentTheme: Theme = typeof document !== 'undefined' ? getThemeFromDOM() : 'dark';
-
-function subscribe(listener: () => void) {
-    listeners.push(listener);
-    return () => {
-        listeners = listeners.filter(l => l !== listener);
-    };
-}
-
-function getSnapshot() {
-    return currentTheme;
-}
-
-function getServerSnapshot() {
-    return 'dark' as Theme;
-}
-
-function notifyListeners() {
-    for (const listener of listeners) listener();
-}
-
 /**
- * Lightweight theme hook — no provider required.
- * Drop-in replacement for next-themes useTheme().
- * Returns { theme, setTheme, resolvedTheme } for compatibility.
+ * hooks/useTheme.ts — SHIM.
+ *
+ * Routes legacy `useTheme()` calls to the sync-engine-owned Redux theme slice.
+ * All 45 call sites across the codebase are transparently preserved by
+ * returning a union of the two historical shapes (legacy context-hook shape:
+ * `{ mode, toggleMode }`; legacy external-store shape:
+ * `{ theme, setTheme, resolvedTheme, systemTheme }`).
+ *
+ * Provider-resilient: `Toaster` / `Sonner` / other layout-level consumers
+ * render OUTSIDE `StoreProvider`. Reading Redux via `useAppSelector` would
+ * throw there. Instead, this hook subscribes to the Redux store through
+ * `ReactReduxContext` when available, and falls back to a DOM-class read
+ * otherwise — mirroring the pre-shim `hooks/useTheme.ts` external-store
+ * behavior for those call sites.
+ *
+ * This file is **scheduled for deletion**; see
+ * `docs/concepts/full-sync-boardcast-storage/phase-1b-shim-cleanup.md`.
+ * Phase 1.C mechanically migrates every consumer to direct selectors;
+ * Phase 1.D deletes this file outright.
+ *
+ * Do NOT add new consumers of this hook. Use the sync-engine selectors
+ * directly.
  */
-export function useTheme() {
-    const theme = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
-    // Sync from DOM on mount (picks up server-rendered class)
-    useEffect(() => {
-        const domTheme = getThemeFromDOM();
-        if (domTheme !== currentTheme) {
-            currentTheme = domTheme;
-            notifyListeners();
-        }
-    }, []);
+"use client";
 
-    const setTheme = useCallback((value: Theme | ((prev: Theme) => Theme)) => {
-        const newTheme = typeof value === 'function' ? value(currentTheme) : value;
-        if (newTheme === currentTheme) return;
-        currentTheme = newTheme;
-        applyTheme(newTheme);
-        notifyListeners();
-    }, []);
+import { useCallback, useContext, useSyncExternalStore } from "react";
+import { ReactReduxContext } from "react-redux";
+import { setMode, toggleMode, type ThemeMode } from "@/styles/themes/themeSlice";
+
+export interface UseThemeShimReturn {
+    // Legacy context-hook shape (36 consumers).
+    mode: ThemeMode;
+    toggleMode: () => void;
+    // Legacy external-store shape (9 consumers).
+    theme: ThemeMode;
+    setTheme: (t: ThemeMode) => void;
+    resolvedTheme: ThemeMode;
+    systemTheme: ThemeMode;
+    // Convenience additions documented in the shim spec.
+    isDark: boolean;
+    toggleTheme: () => void;
+}
+
+interface ThemeRootSlice {
+    theme?: { mode?: ThemeMode };
+}
+
+function readModeFromDOM(): ThemeMode {
+    if (typeof document === "undefined") return "dark";
+    return document.documentElement.classList.contains("dark") ? "dark" : "light";
+}
+
+export function useTheme(): UseThemeShimReturn {
+    // `ReactReduxContext` is undefined when rendered above `<Provider>` —
+    // e.g. `<Toaster />` sitting in `app/layout.tsx` outside `StoreProvider`.
+    const ctx = useContext(ReactReduxContext);
+
+    const mode = useSyncExternalStore<ThemeMode>(
+        (onStoreChange) => {
+            if (!ctx?.store) return () => {};
+            return ctx.store.subscribe(onStoreChange);
+        },
+        () => {
+            if (ctx?.store) {
+                const state = ctx.store.getState() as ThemeRootSlice;
+                return state.theme?.mode ?? readModeFromDOM();
+            }
+            return readModeFromDOM();
+        },
+        // Server snapshot — no DOM access during SSR; default matches the
+        // themeSlice initial state.
+        () => "dark",
+    );
+
+    const setTheme = useCallback(
+        (t: ThemeMode) => {
+            ctx?.store?.dispatch(setMode(t));
+        },
+        [ctx],
+    );
+
+    const toggleModeFn = useCallback(() => {
+        ctx?.store?.dispatch(toggleMode());
+    }, [ctx]);
+
+    // systemTheme is best-effort — the sync engine's `SyncBootScript`
+    // owns first-paint OS-preference application.
+    const systemTheme: ThemeMode =
+        typeof window !== "undefined" &&
+        window.matchMedia?.("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light";
 
     return {
-        theme,
+        mode,
+        toggleMode: toggleModeFn,
+        theme: mode,
         setTheme,
-        resolvedTheme: theme,
-        systemTheme: typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
-    } as const;
+        resolvedTheme: mode,
+        systemTheme,
+        isDark: mode === "dark",
+        toggleTheme: toggleModeFn,
+    };
 }

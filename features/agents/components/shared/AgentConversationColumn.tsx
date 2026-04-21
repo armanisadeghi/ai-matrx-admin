@@ -17,7 +17,18 @@ interface SmartInputForwardProps {
 }
 
 interface AgentConversationColumnProps {
+  /**
+   * Conversation bound to the smart input / variables panel. In the default
+   * case this is also the display id (see below).
+   */
   conversationId: string;
+  /**
+   * Optional — conversation bound to the conversation display / history.
+   * Defaults to `conversationId`. Only diverges under the autoclear split
+   * flow: the user just submitted and the input has jumped to a freshly-
+   * prepped conversation while the display stays on the one streaming.
+   */
+  displayConversationId?: string;
   surfaceKey: string;
   constrainWidth?: boolean;
   smartInputProps?: SmartInputForwardProps;
@@ -25,10 +36,12 @@ interface AgentConversationColumnProps {
 
 export function AgentConversationColumn({
   conversationId,
+  displayConversationId,
   surfaceKey,
   constrainWidth = false,
   smartInputProps,
 }: AgentConversationColumnProps) {
+  const displayId = displayConversationId ?? conversationId;
   const scrollRef = useRef<HTMLDivElement>(null);
   const [showScrollDown, setShowScrollDown] = useState(false);
 
@@ -59,7 +72,7 @@ export function AgentConversationColumn({
           onScroll={handleScroll}
           className="h-full overflow-y-auto pt-12"
         >
-          <AgentConversationDisplay conversationId={conversationId} />
+          <AgentConversationDisplay conversationId={displayId} />
         </div>
         <div
           className="pointer-events-none absolute bottom-0 left-0 right-0 h-3"

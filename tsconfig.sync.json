@@ -1,0 +1,24 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "skipLibCheck": true,
+    "incremental": false
+  },
+  "include": [
+    "lib/sync/**/*.ts",
+    "lib/sync/**/*.tsx",
+    "lib/redux/store.ts",
+    "providers/StoreProvider.tsx",
+    "styles/themes/themeSlice.ts",
+    "styles/themes/ThemeProvider.tsx",
+    "hooks/useTheme.ts",
+    "app/layout.tsx",
+    "app/DeferredSingletons.tsx",
+    "app/(a)/sync-demo/theme/page.tsx",
+    "app/(a)/sync-demo/theme/_client.tsx",
+    "features/shell/components/header/header-right-menu/ThemeToggleMenuItem.tsx",
+    "components/ui/menu-system/GlobalMenuItems.ts"
+  ],
+  "exclude": ["lib/sync/__tests__/**"]
+}

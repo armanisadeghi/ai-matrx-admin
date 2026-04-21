@@ -31,7 +31,11 @@ import {
   createInstance,
   destroyInstance,
 } from "../conversations/conversations.slice";
-import { setFocus } from "../conversation-focus/conversation-focus.slice";
+import {
+  setFocus,
+  setInputFocus,
+  setDisplayFocus,
+} from "../conversation-focus/conversation-focus.slice";
 import { initInstanceOverrides } from "../instance-model-overrides/instance-model-overrides.slice";
 import {
   initInstanceVariables,
@@ -785,3 +789,172 @@ export const startNewConversationAndExecute = createAsyncThunk<
 
 /** @deprecated Use startNewConversationAndExecute */
 export const reInstanceAndExecute = startNewConversationAndExecute;
+
+// =============================================================================
+// Split Input Into New Conversation
+// =============================================================================
+
+interface SplitInputIntoNewConversationArgs {
+  /**
+   * The conversation the user just submitted. Becomes the "display" id;
+   * continues streaming. We read the submitted text + userValues from its
+   * `lastSubmittedText` / `lastSubmittedUserValues` snapshot (captured by
+   * `markInputSubmitted` a moment earlier in the smart-execute flow).
+   */
+  currentConversationId: string;
+  surfaceKey: string;
+}
+
+interface SplitInputIntoNewConversationResult {
+  newConversationId: string;
+}
+
+/**
+ * Autoclear's "split" step — called immediately after a submit.
+ *
+ * Creates a fresh conversation (same agent snapshot, same UI state) pre-populated
+ * with the text + variables the user just submitted, then points ONLY the input
+ * focus slot at it. The display slot stays on `currentConversationId` so the
+ * user watches the stream land into the previous conversation while typing the
+ * next turn into the new one.
+ *
+ * Nothing is executed here — this is pure preparation for the NEXT turn.
+ */
+export const splitInputIntoNewConversation = createAsyncThunk<
+  SplitInputIntoNewConversationResult,
+  SplitInputIntoNewConversationArgs
+>(
+  "instances/splitInputIntoNewConversation",
+  async ({ currentConversationId, surfaceKey }, { dispatch, getState }) => {
+    const state = getState() as RootState;
+
+    const currentInput =
+      state.instanceUserInput.byConversationId[currentConversationId];
+    const currentUIState =
+      state.instanceUIState.byConversationId[currentConversationId];
+    const instance =
+      state.conversations.byConversationId[currentConversationId];
+    if (!instance) {
+      throw new Error(`Conversation ${currentConversationId} not found`);
+    }
+    const { agentId, origin, sourceFeature } = instance;
+    const snapshot = agentId ? readAgentSnapshot(state, agentId) : null;
+
+    // The text + userValues the user just submitted. These are captured onto
+    // the current conversation by markInputSubmitted BEFORE smart-execute
+    // kicks off execution, so they're guaranteed to be present here.
+    const carryText = currentInput?.lastSubmittedText ?? "";
+    const carryUserValues = currentInput?.lastSubmittedUserValues ?? {};
+
+    const currentMode =
+      state.messages.byConversationId[currentConversationId]?.apiEndpointMode ??
+      "agent";
+
+    const newConversationId = generateConversationId();
+
+    dispatch(
+      createInstance({
+        conversationId: newConversationId,
+        agentId,
+        agentType: snapshot?.agentType ?? instance.agentType,
+        origin: origin as InstanceOrigin,
+        sourceFeature: sourceFeature as SourceFeature,
+      }),
+    );
+    dispatch(
+      initInstanceOverrides({
+        conversationId: newConversationId,
+        baseSettings: snapshot?.baseSettings ?? {},
+      }),
+    );
+    dispatch(
+      initInstanceVariables({
+        conversationId: newConversationId,
+        definitions: snapshot?.variableDefinitions ?? [],
+        scopeValues: {},
+      }),
+    );
+    dispatch(initInstanceResources({ conversationId: newConversationId }));
+    dispatch(initInstanceContext({ conversationId: newConversationId }));
+    dispatch(
+      initInstanceUserInput({
+        conversationId: newConversationId,
+        text: carryText,
+        lastSubmittedText: currentInput?.lastSubmittedText,
+        lastSubmittedUserValues: currentInput?.lastSubmittedUserValues,
+      }),
+    );
+    dispatch(initInstanceClientTools({ conversationId: newConversationId }));
+    dispatch(
+      initInstanceUIState({
+        conversationId: newConversationId,
+        displayMode: currentUIState?.displayMode,
+        isCreator: snapshot?.isCreator ?? currentUIState?.isCreator ?? false,
+        autoClearConversation: true,
+        showAutoClearToggle: currentUIState?.showAutoClearToggle,
+        autoRun: currentUIState?.autoRun,
+        allowChat: currentUIState?.allowChat,
+        usePreExecutionInput: currentUIState?.usePreExecutionInput,
+        showVariablePanel:
+          (snapshot?.variableDefinitions?.length ?? 0) > 0 ||
+          (currentUIState?.showVariablePanel ?? false),
+        showDefinitionMessages: currentUIState?.showDefinitionMessages,
+        showDefinitionMessageContent:
+          currentUIState?.showDefinitionMessageContent,
+        hiddenMessageCount: currentUIState?.hiddenMessageCount,
+        widgetHandleId: currentUIState?.widgetHandleId,
+        submitOnEnter: currentUIState?.submitOnEnter ?? true,
+        reuseConversationId: currentUIState?.reuseConversationId ?? false,
+        builderAdvancedSettings: currentUIState?.builderAdvancedSettings,
+        hideReasoning: currentUIState?.hideReasoning,
+        hideToolResults: currentUIState?.hideToolResults,
+        preExecutionMessage: currentUIState?.preExecutionMessage,
+        variableInputStyle: currentUIState?.variableInputStyle,
+        jsonExtraction: currentUIState?.jsonExtraction,
+        originalText: currentUIState?.originalText,
+      }),
+    );
+    dispatch(
+      initInstanceMessages({
+        conversationId: newConversationId,
+        apiEndpointMode: currentMode,
+      }),
+    );
+
+    if (Object.keys(carryUserValues).length > 0) {
+      dispatch(
+        setUserVariableValues({
+          conversationId: newConversationId,
+          values: carryUserValues,
+        }),
+      );
+    }
+
+    // initInstanceUserInput sets `text` but the setUserInputText path is what
+    // the undo stack uses — re-apply via setUserInputText so the snapshot is
+    // consistent and the input slice's phase/undo invariants hold.
+    if (carryText) {
+      dispatch(
+        setUserInputText({
+          conversationId: newConversationId,
+          text: carryText,
+          userValues: carryUserValues,
+        }),
+      );
+    }
+
+    // Catch the display up to the conversation that's now streaming, and
+    // move ONLY the input focus onto the fresh conversation.
+    dispatch(
+      setDisplayFocus({
+        surfaceKey,
+        conversationId: currentConversationId,
+      }),
+    );
+    dispatch(
+      setInputFocus({ surfaceKey, conversationId: newConversationId }),
+    );
+
+    return { newConversationId };
+  },
+);

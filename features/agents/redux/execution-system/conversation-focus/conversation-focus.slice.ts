@@ -4,21 +4,34 @@
  * Tracks which conversationId is "active" for each UI surface.
  * Eliminates the need to prop-drill onNewInstance/setInstanceId callbacks.
  *
+ * Each surface has TWO focus slots:
+ *   - `display` — what the conversation column / history panel shows
+ *   - `input`   — what the smart input / variables panel is bound to
+ *
+ * In 99% of flows they're the same id. They diverge only when
+ * `autoClearConversation` is ON: right after a submit, a fresh conversation
+ * is prepped and bound to `input`, while `display` stays on the
+ * currently-streaming conversation. On the next submit, `display` is caught
+ * up to the streaming id, and a new conversation is prepped for `input`
+ * again (see `smart-execute.thunk.ts` → `splitInputIntoNewConversation`).
+ *
  * A surfaceKey is a stable string identifying a rendering context:
  *   - "agent-builder"
  *   - "agent-runner:<agentId>"
  *   - "overlay:<overlayId>"
  *   - "chat-assistant:<widgetId>"
- *
- * Components read the focused conversationId via selector and switch
- * conversations by dispatching setFocus.
  */
 
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { destroyInstance } from "../conversations/conversations.slice";
 
+export interface SurfaceFocusEntry {
+  display: string;
+  input: string;
+}
+
 export interface ConversationFocusState {
-  bySurface: Record<string, string>;
+  bySurface: Record<string, SurfaceFocusEntry>;
 }
 
 const initialState: ConversationFocusState = {
@@ -29,12 +42,58 @@ const conversationFocusSlice = createSlice({
   name: "conversationFocus",
   initialState,
   reducers: {
+    /** Sets BOTH display and input to the same conversationId (the 99% case). */
     setFocus(
       state,
       action: PayloadAction<{ surfaceKey: string; conversationId: string }>,
     ) {
-      state.bySurface[action.payload.surfaceKey] =
-        action.payload.conversationId;
+      const { surfaceKey, conversationId } = action.payload;
+      state.bySurface[surfaceKey] = {
+        display: conversationId,
+        input: conversationId,
+      };
+    },
+
+    /** Updates only the input slot — used by the autoclear split flow. */
+    setInputFocus(
+      state,
+      action: PayloadAction<{ surfaceKey: string; conversationId: string }>,
+    ) {
+      const { surfaceKey, conversationId } = action.payload;
+      const entry = state.bySurface[surfaceKey];
+      if (entry) {
+        entry.input = conversationId;
+      } else {
+        state.bySurface[surfaceKey] = {
+          display: conversationId,
+          input: conversationId,
+        };
+      }
+    },
+
+    /** Updates only the display slot — used when the streaming convo advances. */
+    setDisplayFocus(
+      state,
+      action: PayloadAction<{ surfaceKey: string; conversationId: string }>,
+    ) {
+      const { surfaceKey, conversationId } = action.payload;
+      const entry = state.bySurface[surfaceKey];
+      if (entry) {
+        entry.display = conversationId;
+      } else {
+        state.bySurface[surfaceKey] = {
+          display: conversationId,
+          input: conversationId,
+        };
+      }
+    },
+
+    /** Re-aligns the input slot to the display slot (used when user toggles autoclear OFF). */
+    syncInputToDisplay(state, action: PayloadAction<string>) {
+      const entry = state.bySurface[action.payload];
+      if (entry) {
+        entry.input = entry.display;
+      }
     },
 
     clearFocus(state, action: PayloadAction<string>) {
@@ -46,7 +105,8 @@ const conversationFocusSlice = createSlice({
     builder.addCase(destroyInstance, (state, action) => {
       const conversationId = action.payload;
       for (const key of Object.keys(state.bySurface)) {
-        if (state.bySurface[key] === conversationId) {
+        const entry = state.bySurface[key];
+        if (entry.display === conversationId || entry.input === conversationId) {
           delete state.bySurface[key];
         }
       }
@@ -54,6 +114,12 @@ const conversationFocusSlice = createSlice({
   },
 });
 
-export const { setFocus, clearFocus } = conversationFocusSlice.actions;
+export const {
+  setFocus,
+  setInputFocus,
+  setDisplayFocus,
+  syncInputToDisplay,
+  clearFocus,
+} = conversationFocusSlice.actions;
 
 export default conversationFocusSlice.reducer;
