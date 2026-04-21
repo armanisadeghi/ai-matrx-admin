@@ -27,6 +27,7 @@ import type {
   AgentShortcutMenuResult,
   UserShortcutItem,
   CreateShortcutForAgentParams,
+  ShortcutFieldSnapshot,
 } from "./types";
 import type { ResultDisplay } from "@/features/agents/utils/run-ui-utils";
 import type { ShortcutContext } from "@/features/agents/utils/shortcut-context-utils";
@@ -79,7 +80,25 @@ import {
   removeShortcut,
   setInitialLoaded,
   setContextLoaded,
+  setShortcutScopeLoaded,
 } from "./slice";
+import {
+  buildScopeQueryString,
+  type Scope,
+  type ScopeRef,
+} from "../shared/scope";
+import {
+  upsertCategories as upsertCategoriesAction,
+  mergePartialCategory,
+} from "../agent-shortcut-categories/slice";
+import {
+  upsertContentBlocks as upsertContentBlocksAction,
+  mergePartialContentBlock,
+} from "../agent-content-blocks/slice";
+import { categoryRowToDef } from "../agent-shortcut-categories/converters";
+import { contentBlockRowToDef } from "../agent-content-blocks/converters";
+import type { CategoryApiRow } from "../agent-shortcut-categories/types";
+import type { ContentBlockApiRow } from "../agent-content-blocks/types";
 import { mergePartialAgent } from "@/features/agents/redux/agent-definition/slice";
 import {
   selectShortcutById,
@@ -510,23 +529,36 @@ export const fetchUserShortcuts = createAsyncThunk<
  * Agent reference is preserved. Keyboard shortcut is cleared. Label gets "(Copy)".
  * Returns the new shortcut id, and loads the copy into the slice.
  */
-export const duplicateShortcut = createAsyncThunk<string, string, ThunkApi>(
-  "agentShortcut/duplicate",
-  async (shortcutId, { dispatch }) => {
-    const { data, error } = await supabase.rpc("agx_duplicate_shortcut", {
-      p_shortcut_id: shortcutId,
-    });
+export const duplicateShortcut = createAsyncThunk<
+  string,
+  string | { id: string; categoryId?: string },
+  ThunkApi
+>("agentShortcut/duplicate", async (arg, { dispatch }) => {
+  const shortcutId = typeof arg === "string" ? arg : arg.id;
+  const targetCategoryId = typeof arg === "string" ? undefined : arg.categoryId;
 
-    if (error) throw error;
+  const { data, error } = await supabase.rpc("agx_duplicate_shortcut", {
+    p_shortcut_id: shortcutId,
+  });
 
-    const newShortcutId = data as string;
+  if (error) throw error;
 
-    // Load the new copy into state so it's immediately accessible
-    await dispatch(fetchFullShortcut(newShortcutId));
+  const newShortcutId = data as string;
 
-    return newShortcutId;
-  },
-);
+  await dispatch(fetchFullShortcut(newShortcutId));
+
+  if (targetCategoryId) {
+    await dispatch(
+      saveShortcutField({
+        shortcutId: newShortcutId,
+        field: "categoryId",
+        value: targetCategoryId,
+      }),
+    );
+  }
+
+  return newShortcutId;
+});
 
 /**
  * Quick-create a shortcut pinned to an agent's current version.
@@ -608,3 +640,390 @@ export const syncUserShortcutToSlice = createAsyncThunk<
     }),
   );
 });
+
+// ---------------------------------------------------------------------------
+// Scope-aware REST CRUD (routed through /api endpoints for multi-scope auth)
+// ---------------------------------------------------------------------------
+
+interface ShortcutApiRow {
+  id: string;
+  category_id: string;
+  label: string;
+  description: string | null;
+  icon_name: string | null;
+  keyboard_shortcut: string | null;
+  sort_order: number;
+  agent_id: string | null;
+  agent_version_id: string | null;
+  use_latest: boolean;
+  enabled_contexts: unknown;
+  scope_mappings: unknown;
+  result_display: string;
+  allow_chat: boolean;
+  auto_run: boolean;
+  apply_variables: boolean;
+  show_variables: boolean;
+  use_pre_execution_input: boolean;
+  is_active: boolean;
+  user_id: string | null;
+  organization_id: string | null;
+  project_id: string | null;
+  task_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+function shortcutRowToFrontend(row: ShortcutApiRow): AgentShortcut {
+  return {
+    id: row.id,
+    categoryId: row.category_id,
+    label: row.label,
+    description: row.description,
+    iconName: row.icon_name,
+    keyboardShortcut: row.keyboard_shortcut,
+    sortOrder: row.sort_order ?? 0,
+    agentId: row.agent_id,
+    agentVersionId: row.agent_version_id,
+    useLatest: row.use_latest ?? false,
+    enabledContexts: (row.enabled_contexts as ShortcutContext[]) ?? [],
+    scopeMappings: parseScopeMappings(row.scope_mappings),
+    resultDisplay: (row.result_display ?? "modal-full") as ResultDisplay,
+    allowChat: row.allow_chat ?? true,
+    autoRun: row.auto_run ?? true,
+    applyVariables: row.apply_variables ?? true,
+    showVariables: row.show_variables ?? false,
+    usePreExecutionInput: row.use_pre_execution_input ?? false,
+    isActive: row.is_active,
+    userId: row.user_id,
+    organizationId: row.organization_id,
+    projectId: row.project_id,
+    taskId: row.task_id,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+function shortcutToApiBody(
+  patch: Partial<AgentShortcut>,
+): Partial<ShortcutApiRow> {
+  const out: Partial<ShortcutApiRow> = {};
+  if (patch.categoryId !== undefined) out.category_id = patch.categoryId;
+  if (patch.label !== undefined) out.label = patch.label;
+  if (patch.description !== undefined) out.description = patch.description;
+  if (patch.iconName !== undefined) out.icon_name = patch.iconName;
+  if (patch.keyboardShortcut !== undefined)
+    out.keyboard_shortcut = patch.keyboardShortcut;
+  if (patch.sortOrder !== undefined) out.sort_order = patch.sortOrder;
+  if (patch.agentId !== undefined) out.agent_id = patch.agentId;
+  if (patch.agentVersionId !== undefined)
+    out.agent_version_id = patch.agentVersionId;
+  if (patch.useLatest !== undefined) out.use_latest = patch.useLatest;
+  if (patch.enabledContexts !== undefined)
+    out.enabled_contexts = patch.enabledContexts as unknown;
+  if (patch.scopeMappings !== undefined)
+    out.scope_mappings = patch.scopeMappings as unknown;
+  if (patch.resultDisplay !== undefined)
+    out.result_display = patch.resultDisplay;
+  if (patch.allowChat !== undefined) out.allow_chat = patch.allowChat;
+  if (patch.autoRun !== undefined) out.auto_run = patch.autoRun;
+  if (patch.applyVariables !== undefined)
+    out.apply_variables = patch.applyVariables;
+  if (patch.showVariables !== undefined)
+    out.show_variables = patch.showVariables;
+  if (patch.usePreExecutionInput !== undefined)
+    out.use_pre_execution_input = patch.usePreExecutionInput;
+  if (patch.isActive !== undefined) out.is_active = patch.isActive;
+  if (patch.userId !== undefined) out.user_id = patch.userId;
+  if (patch.organizationId !== undefined)
+    out.organization_id = patch.organizationId;
+  if (patch.projectId !== undefined) out.project_id = patch.projectId;
+  if (patch.taskId !== undefined) out.task_id = patch.taskId;
+  return out;
+}
+
+async function parseJsonOrThrow<T>(response: Response): Promise<T> {
+  if (!response.ok) {
+    let message = `Request failed: ${response.status}`;
+    try {
+      const body = await response.json();
+      if (body && typeof body === "object" && "error" in body) {
+        message = String((body as { error: unknown }).error);
+      }
+    } catch {
+      // no body or non-JSON response
+    }
+    throw new Error(message);
+  }
+  return (await response.json()) as T;
+}
+
+export const fetchShortcutsForScope = createAsyncThunk<
+  AgentShortcut[],
+  ScopeRef,
+  ThunkApi
+>(
+  "agentShortcut/fetchForScope",
+  async (scopeRef, { dispatch }) => {
+    dispatch(setShortcutsStatus("loading"));
+    try {
+      const qs = buildScopeQueryString(scopeRef);
+      const response = await fetch(`/api/agent-shortcuts?${qs}`, {
+        method: "GET",
+        credentials: "include",
+      });
+      const payload = await parseJsonOrThrow<{ data: ShortcutApiRow[] }>(
+        response,
+      );
+      const shortcuts = payload.data.map(shortcutRowToFrontend);
+      dispatch(upsertShortcuts(shortcuts));
+      dispatch(setShortcutScopeLoaded({ scopeRef, loaded: true }));
+      dispatch(setShortcutsStatus("succeeded"));
+      return shortcuts;
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to load shortcuts";
+      dispatch(setShortcutsError(message));
+      dispatch(setShortcutsStatus("failed"));
+      throw error;
+    }
+  },
+);
+
+export type UpdateShortcutInput = { id: string } & Partial<AgentShortcut>;
+
+export const updateShortcut = createAsyncThunk<
+  AgentShortcut,
+  UpdateShortcutInput,
+  ThunkApi
+>("agentShortcut/update", async (input, { dispatch, getState }) => {
+  const { id, ...patch } = input;
+
+  const existing = selectShortcutById(getState(), id);
+  const snapshot: ShortcutFieldSnapshot = existing
+    ? (Object.keys(patch) as (keyof AgentShortcut)[]).reduce<ShortcutFieldSnapshot>(
+        (acc, field) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (acc as any)[field] = (existing as any)[field];
+          return acc;
+        },
+        {},
+      )
+    : {};
+
+  dispatch(setShortcutLoading({ id, loading: true }));
+  try {
+    const response = await fetch(`/api/agent-shortcuts/${id}`, {
+      method: "PATCH",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(shortcutToApiBody(patch as Partial<AgentShortcut>)),
+    });
+    const result = await parseJsonOrThrow<{ data: ShortcutApiRow }>(response);
+    const shortcut = shortcutRowToFrontend(result.data);
+    dispatch(upsertShortcut(shortcut));
+    dispatch(markShortcutSaved({ id }));
+    return shortcut;
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to update shortcut";
+    dispatch(rollbackShortcutOptimisticUpdate({ id, snapshot }));
+    dispatch(setShortcutError({ id, error: message }));
+    throw error;
+  } finally {
+    dispatch(setShortcutLoading({ id, loading: false }));
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Unified menu — reads from agent_context_menu_view via GET /api/agent-context-menu
+// Populates shortcuts + categories + content blocks in a single pass.
+// ---------------------------------------------------------------------------
+
+interface UnifiedMenuCategoryRow extends CategoryApiRow {
+  scope?: Scope;
+}
+
+interface UnifiedMenuShortcutItem extends ShortcutApiRow {
+  type: "agent_shortcut";
+  scope?: Scope;
+  category_id: string;
+}
+
+interface UnifiedMenuContentBlockItem extends ContentBlockApiRow {
+  type: "content_block";
+  scope?: Scope;
+}
+
+type UnifiedMenuItem =
+  | UnifiedMenuShortcutItem
+  | UnifiedMenuContentBlockItem
+  | ({ type: string } & Record<string, unknown>);
+
+interface UnifiedMenuCategoryGroup {
+  category: UnifiedMenuCategoryRow;
+  items: UnifiedMenuItem[];
+}
+
+interface UnifiedMenuPlacementGroup {
+  placement_type: string;
+  categories_flat: UnifiedMenuCategoryGroup[];
+}
+
+export interface UnifiedMenuResult {
+  placements: UnifiedMenuPlacementGroup[];
+}
+
+function extractScopeFromUnifiedItem(
+  item: Record<string, unknown>,
+): { userId: string | null; organizationId: string | null; projectId: string | null; taskId: string | null } {
+  return {
+    userId: (item.user_id as string | null | undefined) ?? null,
+    organizationId:
+      (item.organization_id as string | null | undefined) ?? null,
+    projectId: (item.project_id as string | null | undefined) ?? null,
+    taskId: (item.task_id as string | null | undefined) ?? null,
+  };
+}
+
+export const fetchUnifiedMenu = createAsyncThunk<
+  UnifiedMenuResult,
+  ScopeRef | void,
+  ThunkApi
+>("agentShortcut/fetchUnifiedMenu", async (scopeRef, { dispatch }) => {
+  dispatch(setShortcutsStatus("loading"));
+  try {
+    const ref: ScopeRef =
+      scopeRef && typeof scopeRef === "object" && "scope" in scopeRef
+        ? scopeRef
+        : { scope: "global" };
+    const qs = buildScopeQueryString(ref);
+    const response = await fetch(`/api/agent-context-menu?${qs}`, {
+      method: "GET",
+      credentials: "include",
+    });
+    const payload = await parseJsonOrThrow<{
+      data: UnifiedMenuPlacementGroup[];
+    }>(response);
+
+    const categoryDefs: ReturnType<typeof categoryRowToDef>[] = [];
+    const shortcutDefs: AgentShortcut[] = [];
+    const contentBlockDefs: ReturnType<typeof contentBlockRowToDef>[] = [];
+
+    for (const placement of payload.data ?? []) {
+      for (const group of placement.categories_flat ?? []) {
+        const categoryRow: CategoryApiRow = {
+          id: group.category.id,
+          label: group.category.label,
+          description: group.category.description,
+          icon_name: group.category.icon_name,
+          color: group.category.color ?? null,
+          sort_order: group.category.sort_order ?? 0,
+          placement_type:
+            group.category.placement_type ?? placement.placement_type,
+          parent_category_id: group.category.parent_category_id,
+          enabled_contexts: group.category.enabled_contexts ?? null,
+          metadata: group.category.metadata ?? null,
+          is_active: group.category.is_active ?? true,
+          user_id: group.category.user_id ?? null,
+          organization_id: group.category.organization_id ?? null,
+          project_id: group.category.project_id ?? null,
+          task_id: group.category.task_id ?? null,
+          created_at: group.category.created_at ?? "",
+          updated_at: group.category.updated_at ?? "",
+        };
+        categoryDefs.push(categoryRowToDef(categoryRow));
+
+        for (const item of group.items ?? []) {
+          if ((item as { type: string }).type === "agent_shortcut") {
+            const shortcutItem = item as UnifiedMenuShortcutItem;
+            const scopeFields = extractScopeFromUnifiedItem(shortcutItem);
+            shortcutDefs.push(
+              shortcutRowToFrontend({
+                ...shortcutItem,
+                category_id:
+                  shortcutItem.category_id ?? group.category.id,
+                user_id: scopeFields.userId,
+                organization_id: scopeFields.organizationId,
+                project_id: scopeFields.projectId,
+                task_id: scopeFields.taskId,
+                created_at: shortcutItem.created_at ?? "",
+                updated_at: shortcutItem.updated_at ?? "",
+              }),
+            );
+          } else if ((item as { type: string }).type === "content_block") {
+            const blockItem = item as UnifiedMenuContentBlockItem;
+            const scopeFields = extractScopeFromUnifiedItem(blockItem);
+            contentBlockDefs.push(
+              contentBlockRowToDef({
+                id: blockItem.id,
+                block_id: blockItem.block_id,
+                category_id: blockItem.category_id ?? group.category.id,
+                label: blockItem.label,
+                description: blockItem.description,
+                icon_name: blockItem.icon_name,
+                sort_order: blockItem.sort_order ?? 0,
+                template: blockItem.template,
+                is_active: blockItem.is_active ?? true,
+                user_id: scopeFields.userId,
+                organization_id: scopeFields.organizationId,
+                project_id: scopeFields.projectId,
+                task_id: scopeFields.taskId,
+                created_at: blockItem.created_at ?? "",
+                updated_at: blockItem.updated_at ?? "",
+              }),
+            );
+          }
+        }
+      }
+    }
+
+    if (categoryDefs.length > 0) {
+      dispatch(upsertCategoriesAction(categoryDefs));
+    }
+    if (shortcutDefs.length > 0) {
+      dispatch(upsertShortcuts(shortcutDefs));
+    }
+    if (contentBlockDefs.length > 0) {
+      dispatch(upsertContentBlocksAction(contentBlockDefs));
+    }
+
+    dispatch(setShortcutScopeLoaded({ scopeRef: ref, loaded: true }));
+    dispatch(setShortcutsStatus("succeeded"));
+
+    return { placements: payload.data ?? [] };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to load unified menu";
+    dispatch(setShortcutsError(message));
+    dispatch(setShortcutsStatus("failed"));
+    throw error;
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Re-exports — consumers import the full shortcut-feature CRUD surface from
+// this module (categories + content blocks thunks live in their own slices
+// but share a namespace with shortcuts for ergonomics in UI code).
+// ---------------------------------------------------------------------------
+
+export {
+  fetchCategoriesForScope,
+  createCategory,
+  updateCategory,
+  deleteCategory,
+} from "../agent-shortcut-categories/thunks";
+
+export {
+  fetchContentBlocksForScope,
+  createContentBlock,
+  updateContentBlock,
+  deleteContentBlock,
+} from "../agent-content-blocks/thunks";
+
+export type { UpdateCategoryInput } from "../agent-shortcut-categories/thunks";
+export type { UpdateContentBlockInput } from "../agent-content-blocks/thunks";
+
+// mergePartialCategory / mergePartialContentBlock are re-exported so the
+// unified-menu consumer can seed slices with partial data outside of a full
+// fetch.
+export { mergePartialCategory, mergePartialContentBlock };

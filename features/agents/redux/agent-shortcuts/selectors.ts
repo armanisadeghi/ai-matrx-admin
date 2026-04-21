@@ -5,6 +5,12 @@ import type { RootState } from "@/lib/redux/store";
 import type { AgentShortcut, AgentShortcutRecord } from "./types";
 import type { FieldFlags } from "../shared/field-flags";
 import { hasField } from "../shared/field-flags";
+import {
+  matchesScope,
+  scopeIndexKey,
+  type Scope,
+  type ScopeRef,
+} from "../shared/scope";
 
 // ---------------------------------------------------------------------------
 // Slice root
@@ -390,3 +396,93 @@ export const selectActiveShortcutAgentId = createSelector(
   [selectActiveShortcut],
   (record): string | null => record?.agentId ?? null,
 );
+
+// ---------------------------------------------------------------------------
+// Scope-aware selectors
+// ---------------------------------------------------------------------------
+
+const selectShortcutScopeLoadedMap = (state: RootState) =>
+  state.agentShortcut.scopeLoaded;
+
+export const selectIsShortcutScopeLoaded = createSelector(
+  [
+    selectShortcutScopeLoadedMap,
+    (_s: RootState, scope: Scope, scopeId?: string | null) =>
+      scopeIndexKey({ scope, scopeId: scopeId ?? null }),
+  ],
+  (scopeLoaded, key) => scopeLoaded[key] ?? false,
+);
+
+export const selectShortcutsByScope = createSelector(
+  [
+    selectAllShortcutsArray,
+    (_s: RootState, scope: Scope, _scopeId?: string | null) => scope,
+    (_s: RootState, _scope: Scope, scopeId?: string | null) =>
+      scopeId ?? null,
+  ],
+  (shortcuts, scope, scopeId): AgentShortcutRecord[] =>
+    shortcuts.filter((s) =>
+      matchesScope(s, { scope, scopeId: scopeId ?? null }),
+    ),
+);
+
+export const selectShortcutsByScopeRef = createSelector(
+  [selectAllShortcutsArray, (_s: RootState, ref: ScopeRef) => ref],
+  (shortcuts, ref) => shortcuts.filter((s) => matchesScope(s, ref)),
+);
+
+export const selectActiveShortcutsByScope = createSelector(
+  [selectShortcutsByScope],
+  (shortcuts) => shortcuts.filter((s) => s.isActive),
+);
+
+// ---------------------------------------------------------------------------
+// Re-exports — unified selector surface for shortcuts + categories + content blocks
+// ---------------------------------------------------------------------------
+
+export {
+  selectAllCategoriesMap,
+  selectAllCategoriesArray,
+  selectCategoryById,
+  selectCategoryDefinition,
+  selectCategoryIsDirty,
+  selectCategoryIsLoading,
+  selectCategoryError,
+  selectCategoriesByScope,
+  selectCategoriesByScopeRef,
+  selectCategoriesByPlacementType,
+  selectCategoryTreeByScope,
+  selectCategoryTreeStructuredByScope,
+  selectCategoryIdsByScopeMap,
+  selectCategoriesStatus,
+  selectCategoriesError,
+  selectCategoryScopeLoaded,
+  selectIsCategoryScopeLoaded,
+  selectActiveCategoryId,
+  selectGlobalCategories,
+  selectUserCategories,
+  selectOrgCategories,
+} from "../agent-shortcut-categories/selectors";
+
+export {
+  selectAllContentBlocksMap,
+  selectAllContentBlocksArray,
+  selectContentBlockById,
+  selectContentBlockDefinition,
+  selectContentBlockIsDirty,
+  selectContentBlockIsLoading,
+  selectContentBlockError,
+  selectContentBlocksByScope,
+  selectContentBlocksByScopeRef,
+  selectContentBlocksByCategoryId,
+  selectContentBlockIdsByScopeMap,
+  selectContentBlocksStatus,
+  selectContentBlocksError,
+  selectContentBlockScopeLoadedMap,
+  selectIsContentBlockScopeLoaded,
+  selectActiveContentBlockId,
+  selectActiveContentBlocks,
+  selectContentBlocksGroupedByCategory,
+} from "../agent-content-blocks/selectors";
+
+export type { CategoryTree } from "../agent-shortcut-categories/selectors";

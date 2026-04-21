@@ -50,6 +50,12 @@ Append one entry per decision. Never edit past entries; supersede with a new ent
 **Rationale:** Content blocks are insertable text templates — inherently neither "prompt" nor "agent". Duplicating the table would fork data and force a later merge. The existing name is system-neutral.
 **Consequences:** Phase 1 task 1.2 is a column addition + RLS expansion, not a new-table migration. Phase 19 does not drop `content_blocks`. Phase 2 simplifies — no table creation, just UI + RTK work.
 
+### 2026-04-20 — Separate RTK slice dirs per resource (shortcuts / categories / content blocks)
+**Phase:** 1 (task 1.5)
+**Decision:** Categories and content blocks each get their own sibling slice directory under `features/agents/redux/` (`agent-shortcut-categories/`, `agent-content-blocks/`) with the full `types.ts` / `converters.ts` / `slice.ts` / `selectors.ts` / `thunks.ts` / `index.ts` file set, matching the existing `agent-shortcuts/` and `agent-apps/` shape. The existing `agent-shortcuts` slice is extended in-place for cross-cutting concerns only (the `fetchUnifiedMenu` thunk and a scope-aware selector surface that re-exports the per-resource selectors).
+**Rationale:** This mirrors the prevailing pattern in `features/agents/redux/` (each feature gets its own directory). Merging all three resources into a single `agent-shortcuts` slice would violate slice boundaries, create a monolithic state shape, and make later refactors — e.g. moving content blocks into the shared `@matrx/agents` package — destructive. The cost is one extra layer of imports, which is absorbed by a single re-export block in `agent-shortcuts/selectors.ts` so consumers still see one selector surface.
+**Consequences:** Two new RootState keys (`agentShortcutCategory`, `agentContentBlock`) must be kept in sync across `lib/redux/rootReducer.ts`, `packages/matrx-agents/src/redux/slices.ts`, and `packages/matrx-agents/src/build-reducer-map.ts`. A shared `features/agents/redux/shared/scope.ts` module owns the `Scope` / `ScopeRef` type + helpers so all three slices index their rows by the same key format (`"${scope}:${scopeId}"`).
+
 ### 2026-04-20 — Shortcut category scope model
 **Phase:** 1
 **Decision:** Categories scope via nullable `user_id` / `organization_id` / `project_id` / `task_id` columns. A row with all nulls is "global" and writable only by admins. Scope precedence at read time: user > org > global (enforced at the view/hook layer, not in RLS).

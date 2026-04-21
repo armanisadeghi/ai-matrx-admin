@@ -34,6 +34,8 @@ import {
   cacheBypassReducer,
   agentDefinitionReducer,
   agentShortcutReducer,
+  agentShortcutCategoryReducer,
+  agentContentBlockReducer,
   agentAppReducer,
   agentConsumersReducer,
   toolsReducer,
@@ -64,6 +66,8 @@ export function buildAgentsReducerMap() {
     // Catalogs
     agentDefinition: agentDefinitionReducer,
     agentShortcut: agentShortcutReducer,
+    agentShortcutCategory: agentShortcutCategoryReducer,
+    agentContentBlock: agentContentBlockReducer,
     agentApp: agentAppReducer,
     agentConsumers: agentConsumersReducer,
     tools: toolsReducer,

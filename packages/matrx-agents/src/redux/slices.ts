@@ -120,6 +120,8 @@ export { cacheBypassReducer } from "@/features/agents/redux/execution-system/mes
 // ── Catalogs (agent source) ────────────────────────────────────────────────
 export { default as agentDefinitionReducer } from "@/features/agents/redux/agent-definition/slice";
 export { default as agentShortcutReducer } from "@/features/agents/redux/agent-shortcuts/slice";
+export { default as agentShortcutCategoryReducer } from "@/features/agents/redux/agent-shortcut-categories/slice";
+export { default as agentContentBlockReducer } from "@/features/agents/redux/agent-content-blocks/slice";
 export { agentAppReducer } from "@/features/agents/redux/agent-apps/slice";
 export { default as agentConsumersReducer } from "@/features/agents/redux/agent-consumers/slice";
 export { default as toolsReducer } from "@/features/agents/redux/tools/tools.slice";
