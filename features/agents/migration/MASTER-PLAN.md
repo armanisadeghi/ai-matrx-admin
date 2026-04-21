@@ -31,7 +31,7 @@ Read [`README.md`](./README.md) before touching anything here. Read [`INVENTORY.
 | 8 | Agent Apps public runner (`/p/[slug]`) | not-started | `phases/phase-08-agent-apps-public.md` |
 | 9 | Admin Agent Apps management UI | not-started | `phases/phase-09-admin-agent-apps.md` |
 | 10 | Applets capture (parent-app-with-children + shared context slots) | not-started | `phases/phase-10-applets-capture.md` |
-| 11 | Admin Shortcut management UI | not-started | `phases/phase-11-admin-shortcuts-ui.md` |
+| 11 | Admin Shortcut management UI | complete | `phases/phase-11-admin-shortcuts-ui.md` |
 | 12 | User Shortcut management UI | not-started | `phases/phase-12-user-shortcuts-ui.md` |
 | 13 | Org Shortcut management UI | not-started | `phases/phase-13-org-shortcuts-ui.md` |
 | 14 | Dual-run & parity verification behind flag | not-started | `phases/phase-14-dual-run.md` |
