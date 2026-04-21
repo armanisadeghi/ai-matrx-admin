@@ -68,6 +68,24 @@ Append one entry per decision. Never edit past entries; supersede with a new ent
 **Rationale:** Phases 11 (admin), 12 (user), 13 (org) each mount the same component tree under a different route; the only difference between mounts is the scope pair. Binding scope to the route would force us to duplicate the components three times.
 **Consequences:** Admin routes pass `scope="global"`, user routes `scope="user"`, org routes `scope="organization" scopeId={orgId}`. `ShortcutScopePicker` lets admins switch scope without leaving the form. The CRUD hook builds two shapes of RTK payload internally: `{ scope, scopeId }` wrapper for the category/content-block thunks, and `userId/organizationId/projectId/taskId` row fields for the shortcut thunk (which writes directly to the table).
 
+### 2026-04-21 — Phase 3: execution goes through `launchShortcut`, not a pre-resolved variable payload
+**Phase:** 3
+**Decision:** `UnifiedAgentContextMenu` calls `useAgentLauncher().launchShortcut(shortcutId, applicationScope, opts)` and lets the launch-execution thunk resolve variables and context slots internally (via `mapScopeToInstance`). The component never passes a `variables` object derived from `mapScopeToAgentVariables` directly.
+**Rationale:** `launchAgentExecution` already loads the shortcut row from the slice and runs `mapScopeToInstance` which correctly splits keys into variable values vs context entries (respecting `contextSlots`). Replicating that in the component would duplicate logic and omit the slot-routing branch. `mapScopeToAgentVariables` remains exported for consumers that want a flat variable record outside of execution.
+**Consequences:** If the component ever needs to pre-validate mapping (e.g. show "missing variable" warnings before launching), it should call `mapScopeToAgentVariables` as a read-only helper. The runtime path always defers to the thunk. `originalText` is forwarded so widget-handle callbacks can wrap responses around the selection.
+
+### 2026-04-21 — Phase 3: scope precedence collapsed in the hook, not the component
+**Phase:** 3
+**Decision:** `useUnifiedAgentContextMenu` deduplicates rows across scopes before returning `categoryGroups`. Precedence keys: categories by `(placementType, parentCategoryId, label)`; shortcuts by `keyboard_shortcut` when present else `(categoryId, label)`; content blocks by `(categoryId, blockId)`. Winner is the highest-priority scope level (`task > project > user > organization > global`).
+**Rationale:** Matches the `DECISIONS.md` 2026-04-20 scope precedence entry, and keeps the component oblivious to scope — it just renders what the hook hands it. Puts the logic in a pure function (testable).
+**Consequences:** If a shortcut should reuse the same label at both user and global levels without one overriding the other, the shortcut's `keyboard_shortcut` can be set differently (or the dedupe key extended in a future refinement). The current behavior matches the user-expectation that a user override shadows the global with the same label.
+
+### 2026-04-21 — Phase 3: SSR fast-path via additive RPC, not legacy swap
+**Phase:** 3
+**Decision:** Shipped `migrations/get_ssr_agent_shell_data_rpc.sql` as a new RPC mirroring `get_ssr_shell_data` but reading from `agent_context_menu_view`. The existing `get_ssr_shell_data` RPC and `DeferredShellData.tsx` are unchanged. The Phase 3 hook uses `selectContextMenuHydrated` as a "warm" signal but still dispatches `fetchUnifiedMenu` to populate the agent slices from the view.
+**Rationale:** Flipping `DeferredShellData` to the agent view now would regress every consumer of `context_menu_unified_view` still in production. Keeping both RPCs lets Phase 5 flip the wiring in one controlled swap once every call site is on v2.
+**Consequences:** Phase 5 will update `DeferredShellData` to call `get_ssr_agent_shell_data` and write into a new `agentContextMenuCache` slice (or extend the existing one). Phase 16/18 removes the legacy RPC.
+
 ### 2026-04-21 — Mobile form UX: Drawer swap via `useIsMobile()`
 **Phase:** 1 (task 1.7)
 **Decision:** Every form/modal in `features/agent-shortcuts/components/` renders through `Dialog` on desktop and `Drawer` (vaul bottom-sheet) on mobile, gated by `useIsMobile()` from `@/hooks/use-mobile`. Form body and footer markup is shared — only the outer container swaps.

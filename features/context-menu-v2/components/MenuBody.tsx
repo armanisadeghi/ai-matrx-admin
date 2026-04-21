@@ -1,0 +1,493 @@
+"use client";
+
+import React from "react";
+import {
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuSub,
+  ContextMenuSubContent,
+  ContextMenuSubTrigger,
+  ContextMenuLabel,
+} from "@/components/ui/context-menu";
+import {
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuLabel,
+} from "@/components/ui/dropdown-menu";
+import {
+  StickyNote,
+  CheckSquare,
+  MessageSquare,
+  Database,
+  FolderOpen,
+  Sparkles,
+  FileText,
+  Zap,
+  Building,
+  User,
+  Scissors,
+  Copy,
+  Clipboard,
+  Type,
+  Search,
+  Bug,
+  Eye,
+  EyeOff,
+  Shield,
+  Mic,
+  Undo2,
+  Redo2,
+  History,
+} from "lucide-react";
+import { getIconComponent } from "@/components/official/icons/IconResolver";
+import {
+  PLACEMENT_TYPES,
+  PLACEMENT_TYPE_META,
+} from "@/features/agent-shortcuts/constants";
+import type {
+  AgentMenuCategoryGroup,
+  AgentMenuEntry,
+} from "../hooks/useUnifiedAgentContextMenu";
+
+export type MenuVariant = "context" | "dropdown";
+
+export interface MenuBodyRenderProps {
+  variant: MenuVariant;
+  loading: boolean;
+  selectedText: string;
+  isEditable: boolean;
+  enabledPlacements: string[];
+  categoryGroups: AgentMenuCategoryGroup[];
+  onEntrySelect: (entry: AgentMenuEntry, placementType: string) => void;
+  onCopy: () => void;
+  onCut: () => void;
+  onPaste: () => void;
+  onSelectAll: () => void;
+  onFind: () => void;
+  onUndo?: () => void;
+  onRedo?: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
+  undoHint?: string;
+  redoHint?: string;
+  onViewHistory?: () => void;
+  hasHistory: boolean;
+  isAdmin: boolean;
+  isDebugMode: boolean;
+  isAdminIndicatorOpen: boolean;
+  onToggleDebugMode: () => void;
+  onToggleAdminIndicator: () => void;
+  onInspectContext: () => void;
+  onOpenQuickNotes: () => void;
+  onOpenQuickTasks: () => void;
+  onOpenQuickChat: () => void;
+  onOpenQuickData: () => void;
+  onOpenQuickFiles: () => void;
+  onOpenVoicePad: () => void;
+}
+
+function resolveIcon(iconName: string | null | undefined, fallback: string = "FileText") {
+  if (!iconName) return getIconComponent(fallback, fallback);
+  return getIconComponent(iconName, fallback);
+}
+
+function getPlacementIcon(placementType: string) {
+  switch (placementType) {
+    case PLACEMENT_TYPES.AI_ACTION:
+      return Sparkles;
+    case PLACEMENT_TYPES.CONTENT_BLOCK:
+      return FileText;
+    case PLACEMENT_TYPES.ORGANIZATION_TOOL:
+      return Building;
+    case PLACEMENT_TYPES.USER_TOOL:
+      return User;
+    case "quick-action":
+      return Zap;
+    default:
+      return FileText;
+  }
+}
+
+function groupsByPlacement(
+  groups: AgentMenuCategoryGroup[],
+): Record<string, AgentMenuCategoryGroup[]> {
+  const map: Record<string, AgentMenuCategoryGroup[]> = {};
+  for (const g of groups) {
+    const pt = g.category.placementType;
+    if (!map[pt]) map[pt] = [];
+    map[pt].push(g);
+  }
+  return map;
+}
+
+function hasItemsRecursive(group: AgentMenuCategoryGroup): boolean {
+  if (group.items.length > 0) return true;
+  return group.children.some((child) => hasItemsRecursive(child));
+}
+
+export function MenuBody(props: MenuBodyRenderProps) {
+  const {
+    variant,
+    loading,
+    selectedText,
+    isEditable,
+    enabledPlacements,
+    categoryGroups,
+    onEntrySelect,
+    onCopy,
+    onCut,
+    onPaste,
+    onSelectAll,
+    onFind,
+    onUndo,
+    onRedo,
+    canUndo,
+    canRedo,
+    undoHint,
+    redoHint,
+    onViewHistory,
+    hasHistory,
+    isAdmin,
+    isDebugMode,
+    isAdminIndicatorOpen,
+    onToggleDebugMode,
+    onToggleAdminIndicator,
+    onInspectContext,
+    onOpenQuickNotes,
+    onOpenQuickTasks,
+    onOpenQuickChat,
+    onOpenQuickData,
+    onOpenQuickFiles,
+    onOpenVoicePad,
+  } = props;
+
+  const Item = variant === "context" ? ContextMenuItem : DropdownMenuItem;
+  const Separator =
+    variant === "context" ? ContextMenuSeparator : DropdownMenuSeparator;
+  const Sub = variant === "context" ? ContextMenuSub : DropdownMenuSub;
+  const SubTrigger =
+    variant === "context" ? ContextMenuSubTrigger : DropdownMenuSubTrigger;
+  const SubContent =
+    variant === "context" ? ContextMenuSubContent : DropdownMenuSubContent;
+  const Label = variant === "context" ? ContextMenuLabel : DropdownMenuLabel;
+
+  const grouped = groupsByPlacement(categoryGroups);
+
+  const renderCategoryGroup = (
+    group: AgentMenuCategoryGroup,
+    placementType: string,
+  ): React.ReactElement => {
+    const { category, items, children } = group;
+    const CategoryIcon = resolveIcon(category.iconName);
+    const hasContent = items.length > 0 || children.length > 0;
+
+    return (
+      <Sub key={category.id}>
+        <SubTrigger
+          className={!hasContent ? "opacity-50 cursor-not-allowed" : ""}
+        >
+          <CategoryIcon
+            className="h-4 w-4 mr-2"
+            style={{ color: category.color || "currentColor" }}
+          />
+          {category.label}
+        </SubTrigger>
+        <SubContent className="w-64">
+          {!hasContent && (
+            <div className="px-2 py-6 text-center">
+              <p className="text-sm text-muted-foreground">
+                No items in {category.label}
+              </p>
+            </div>
+          )}
+
+          {items.map((entry) => {
+            const ItemIcon = resolveIcon(
+              entry.entryType === "content_block"
+                ? entry.iconName
+                : entry.iconName,
+            );
+            const isDisabled =
+              entry.entryType === "agent_shortcut" && !entry.agentId;
+
+            return (
+              <Item
+                key={entry.id}
+                onSelect={() => onEntrySelect(entry, placementType)}
+                disabled={isDisabled}
+              >
+                <ItemIcon className="h-4 w-4 mr-2" />
+                {entry.label}
+                {entry.entryType === "agent_shortcut" &&
+                  entry.keyboardShortcut && (
+                    <span className="ml-auto text-xs text-muted-foreground">
+                      {entry.keyboardShortcut}
+                    </span>
+                  )}
+                {isDisabled && (
+                  <span className="ml-auto text-xs text-muted-foreground">
+                    Not configured
+                  </span>
+                )}
+              </Item>
+            );
+          })}
+
+          {children.length > 0 && (
+            <>
+              {items.length > 0 && <Separator />}
+              {children.map((childGroup) =>
+                renderCategoryGroup(childGroup, placementType),
+              )}
+            </>
+          )}
+        </SubContent>
+      </Sub>
+    );
+  };
+
+  return (
+    <>
+      {loading && (
+        <Label className="text-xs text-muted-foreground">Loading...</Label>
+      )}
+
+      {selectedText && (
+        <div className="px-2 py-2 border-b border-border bg-primary/5">
+          <div className="flex items-start gap-2">
+            <Type className="h-3.5 w-3.5 text-primary mt-0.5 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <div className="text-xs font-medium text-primary mb-0.5">
+                Selected ({selectedText.length} char
+                {selectedText.length !== 1 ? "s" : ""})
+              </div>
+              <div className="text-xs text-muted-foreground font-mono break-all leading-tight">
+                {selectedText.length <= 50
+                  ? `"${selectedText}"`
+                  : `"${selectedText.substring(0, 20)}...${selectedText.substring(
+                      selectedText.length - 20,
+                    )}"`}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {(onUndo || onRedo) && (
+        <>
+          {onUndo && (
+            <Item onSelect={onUndo} disabled={!canUndo}>
+              <Undo2 className="h-4 w-4 mr-2" />
+              Undo
+              {undoHint && (
+                <span className="ml-auto text-xs text-muted-foreground">
+                  {undoHint}
+                </span>
+              )}
+            </Item>
+          )}
+          {onRedo && (
+            <Item onSelect={onRedo} disabled={!canRedo}>
+              <Redo2 className="h-4 w-4 mr-2" />
+              Redo
+              {redoHint && (
+                <span className="ml-auto text-xs text-muted-foreground">
+                  {redoHint}
+                </span>
+              )}
+            </Item>
+          )}
+          {onViewHistory && (
+            <Item onSelect={onViewHistory} disabled={!hasHistory}>
+              <History className="h-4 w-4 mr-2" />
+              View History
+            </Item>
+          )}
+          <Separator />
+        </>
+      )}
+
+      <Item onSelect={onCopy} disabled={!selectedText}>
+        <Copy className="h-4 w-4 mr-2" />
+        Copy
+      </Item>
+      <Item onSelect={onCut} disabled={!selectedText || !isEditable}>
+        <Scissors className="h-4 w-4 mr-2" />
+        Cut
+      </Item>
+      <Item onSelect={onPaste} disabled={!isEditable}>
+        <Clipboard className="h-4 w-4 mr-2" />
+        Paste
+      </Item>
+      <Item onSelect={onSelectAll}>
+        <Type className="h-4 w-4 mr-2" />
+        Select All
+      </Item>
+      <Item onSelect={onFind}>
+        <Search className="h-4 w-4 mr-2" />
+        Find...
+      </Item>
+      <Separator />
+
+      {enabledPlacements
+        .filter((p) => p !== "quick-action")
+        .map((placementType) => {
+          const groups = grouped[placementType] || [];
+          const hasItems =
+            groups.length > 0 && groups.some((g) => hasItemsRecursive(g));
+          const PlacementIcon = getPlacementIcon(placementType);
+          const placementMeta =
+            PLACEMENT_TYPE_META[
+              placementType as keyof typeof PLACEMENT_TYPE_META
+            ];
+          const label = placementMeta?.label || placementType;
+
+          return (
+            <Sub key={placementType}>
+              <SubTrigger
+                disabled={!hasItems}
+                className={!hasItems ? "opacity-50 cursor-not-allowed" : ""}
+              >
+                <PlacementIcon className="h-4 w-4 mr-2" />
+                {label}
+              </SubTrigger>
+              <SubContent className="w-64">
+                {groups.length === 0 || !hasItems ? (
+                  <div className="px-2 py-6 text-center">
+                    <p className="text-sm text-muted-foreground">No {label}</p>
+                  </div>
+                ) : (
+                  groups.map((g) => renderCategoryGroup(g, placementType))
+                )}
+              </SubContent>
+            </Sub>
+          );
+        })}
+
+      {enabledPlacements.includes("quick-action") && (
+        <Sub>
+          <SubTrigger>
+            <Zap className="h-4 w-4 mr-2" />
+            Quick Actions
+          </SubTrigger>
+          <SubContent className="w-56">
+            <Item onSelect={onOpenQuickNotes}>
+              <StickyNote className="h-4 w-4 mr-2" />
+              <div className="flex flex-col">
+                <span>Notes</span>
+                <span className="text-xs text-muted-foreground">
+                  Quick capture
+                </span>
+              </div>
+            </Item>
+            <Item onSelect={onOpenQuickTasks}>
+              <CheckSquare className="h-4 w-4 mr-2" />
+              <div className="flex flex-col">
+                <span>Tasks</span>
+                <span className="text-xs text-muted-foreground">
+                  Manage tasks
+                </span>
+              </div>
+            </Item>
+            <Item onSelect={onOpenQuickChat}>
+              <MessageSquare className="h-4 w-4 mr-2" />
+              <div className="flex flex-col">
+                <span>Chat</span>
+                <span className="text-xs text-muted-foreground">
+                  AI assistant
+                </span>
+              </div>
+            </Item>
+            <Item onSelect={onOpenQuickData}>
+              <Database className="h-4 w-4 mr-2" />
+              <div className="flex flex-col">
+                <span>Data</span>
+                <span className="text-xs text-muted-foreground">
+                  View tables
+                </span>
+              </div>
+            </Item>
+            <Item onSelect={onOpenQuickFiles}>
+              <FolderOpen className="h-4 w-4 mr-2" />
+              <div className="flex flex-col">
+                <span>Files</span>
+                <span className="text-xs text-muted-foreground">
+                  Browse files
+                </span>
+              </div>
+            </Item>
+            <Item onSelect={onOpenVoicePad}>
+              <Mic className="h-4 w-4 mr-2" />
+              <div className="flex flex-col">
+                <span>Voice Input</span>
+                <span className="text-xs text-muted-foreground">
+                  Record &amp; transcribe
+                </span>
+              </div>
+            </Item>
+          </SubContent>
+        </Sub>
+      )}
+
+      {isAdmin && (
+        <>
+          <Separator />
+          <Sub>
+            <SubTrigger>
+              <Shield className="h-4 w-4 mr-2" />
+              Admin Tools
+            </SubTrigger>
+            <SubContent className="w-56">
+              <Item onSelect={onToggleDebugMode}>
+                {isDebugMode ? (
+                  <EyeOff className="h-4 w-4 mr-2 text-amber-600 dark:text-amber-400" />
+                ) : (
+                  <Eye className="h-4 w-4 mr-2" />
+                )}
+                <div className="flex flex-col">
+                  <span>{isDebugMode ? "Disable" : "Enable"} Debug Mode</span>
+                  <span className="text-xs text-muted-foreground">
+                    {isDebugMode ? "Hide debug info" : "Show debug info"}
+                  </span>
+                </div>
+              </Item>
+              {isDebugMode && (
+                <Item
+                  onSelect={onInspectContext}
+                  className="text-amber-600 dark:text-amber-400"
+                >
+                  <Bug className="h-4 w-4 mr-2" />
+                  <div className="flex flex-col">
+                    <span>Inspect Context</span>
+                    <span className="text-xs text-muted-foreground">
+                      View available data
+                    </span>
+                  </div>
+                </Item>
+              )}
+              <Separator />
+              <Item onSelect={onToggleAdminIndicator}>
+                {isAdminIndicatorOpen ? (
+                  <Eye className="h-4 w-4 mr-2 text-green-600 dark:text-green-400" />
+                ) : (
+                  <EyeOff className="h-4 w-4 mr-2" />
+                )}
+                <div className="flex flex-col">
+                  <span>
+                    {isAdminIndicatorOpen ? "Hide" : "Show"} Admin Indicator
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {isAdminIndicatorOpen ? "Hide overlay" : "Show overlay"}
+                  </span>
+                </div>
+              </Item>
+            </SubContent>
+          </Sub>
+        </>
+      )}
+    </>
+  );
+}

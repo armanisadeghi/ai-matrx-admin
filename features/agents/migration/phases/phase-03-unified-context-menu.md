@@ -1,7 +1,7 @@
 # Phase 3 — Unified Agent Context Menu
 
-**Status:** not-started
-**Owner:** _unassigned_
+**Status:** code-complete
+**Owner:** claude (phase-3 task)
 **Prerequisites:** Phase 1 (complete), Phase 2 (complete)
 **Unblocks:** Phases 4, 5, 7
 
@@ -29,16 +29,16 @@ The legacy component's imports — read `features/context-menu/UnifiedContextMen
 **Component props stay identical** — the legacy public API is not prompt-specific. This means Phase 5 is a mechanical swap at every call site.
 
 ## Success criteria
-- [ ] New component at `features/context-menu-v2/UnifiedAgentContextMenu.tsx` (new directory — do NOT overwrite v1).
-- [ ] Props surface identical to v1 (`children`, `editorId`, `getTextarea`, `onContentInserted`, `onTextReplace`, `onTextInsertBefore`, `onTextInsertAfter`, `isEditable`, `enabledPlacements`, `contextData`, `className`, `enableFloatingIcon`, `onUndo`, etc.).
-- [ ] Supports the 5 placement types: AI Actions, Content Blocks, Organization Tools, User Tools, Quick Actions.
-- [ ] Multi-scope visibility: user > org > global precedence when labels collide. De-duplication happens in the hook or a selector, not in this component.
-- [ ] Floating selection icon behavior preserved (Mac selection-restoration fix too — study v1 carefully).
-- [ ] Keyboard shortcut resolution preserved.
-- [ ] Undo/redo browser actions preserved.
-- [ ] SSR cache pattern preserved — if `get_ssr_shell_data` RPC pre-populates the menu, the hook uses it as a fast path.
-- [ ] Manual smoke test passes: right-click in Notes, code editor, file-system — menus render and execute correctly.
-- [ ] `INVENTORY.md` + this doc's Change Log updated.
+- [x] New component at `features/context-menu-v2/UnifiedAgentContextMenu.tsx` (new directory — do NOT overwrite v1).
+- [x] Props surface identical to v1 (`children`, `editorId`, `getTextarea`, `onContentInserted`, `onTextReplace`, `onTextInsertBefore`, `onTextInsertAfter`, `isEditable`, `enabledPlacements`, `contextData`, `className`, `enableFloatingIcon`, `onUndo`, etc.). Adds two optional props: `scope`, `scopeId`, defaulting to `"global" / null` so existing call sites work without change.
+- [x] Supports the 5 placement types: AI Actions, Content Blocks, Organization Tools, User Tools, Quick Actions.
+- [x] Multi-scope visibility: user > org > global precedence when labels collide. De-duplication happens in the hook (`useUnifiedAgentContextMenu`) via `dedupeByPrecedence`, keyed by `(placementType, parentCategoryId, label)` for categories and `keyboard_shortcut || (categoryId, label)` for shortcuts, and `(categoryId, blockId)` for content blocks.
+- [x] Floating selection icon behavior preserved (Mac selection-restoration fix too — ported intact via `selection-tracking.ts` util).
+- [x] Keyboard shortcut display preserved (as in v1, the hint is display-only; binding is deferred to a later phase).
+- [x] Undo/redo browser actions preserved.
+- [x] SSR cache pattern preserved — hook reads `selectContextMenuHydrated` as a warm signal and fetches `fetchUnifiedMenu` on mount to populate the agent slices. A new (additive) RPC `get_ssr_agent_shell_data` is shipped in `migrations/get_ssr_agent_shell_data_rpc.sql`; wiring it into `DeferredShellData` / an agent-shell fetcher is deferred to Phase 5 (integration sweep) to avoid double-fetching.
+- [ ] Manual smoke test passes: right-click in Notes, code editor, file-system — menus render and execute correctly. (Blocked — Phase 5 rewires consumers; a standalone demo page exists at `/demos/context-menu-v2`.)
+- [x] `INVENTORY.md` + this doc's Change Log updated.
 
 ## Out of scope
 - Consumer wiring — Phase 5 does the mechanical swap.
@@ -57,3 +57,4 @@ The legacy component's imports — read `features/context-menu/UnifiedContextMen
 |---|---|---|
 | 2026-04-20 | initial plan | Phase created |
 | 2026-04-20 | main agent | Expanded scope with concrete import-swap table keyed off legacy `UnifiedContextMenu.tsx`. |
+| 2026-04-21 | claude (phase-3) | Shipped `features/context-menu-v2/` (component + hook + subcomponents + selection-tracking util). Legacy `features/context-menu/UnifiedContextMenu.tsx` untouched. Files created: `features/context-menu-v2/{index.ts, UnifiedAgentContextMenu.tsx}`, `features/context-menu-v2/hooks/useUnifiedAgentContextMenu.ts`, `features/context-menu-v2/components/{MenuBody.tsx, FloatingSelectionIcon.tsx}`, `features/context-menu-v2/utils/selection-tracking.ts`, `app/(a)/demos/context-menu-v2/page.tsx`, `migrations/get_ssr_agent_shell_data_rpc.sql`. Routes agent execution through `useAgentLauncher().launchShortcut(shortcutId, applicationScope, opts)` — the launch thunk internally resolves variable mappings via `mapScopeToInstance`, so the component no longer needs to call `mapScopeToAgentVariables` directly (the util remains available for any consumer that wants to pre-resolve variables). Known caveats: (a) the `/api/agent-context-menu` route currently ignores the `scope` / `scopeId` query-string params — visibility is delegated to table RLS as intended by the view's header comment; if a future scope filter is wanted server-side, the route is the place to add it. (b) `get_ssr_agent_shell_data` RPC is shipped but not yet wired into `DeferredShellData.tsx` — Phase 5 will make that swap since it's the coordinated integration phase. (c) Keyboard-shortcut binding is not live (same as v1). |
