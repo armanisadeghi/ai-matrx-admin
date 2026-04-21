@@ -12,7 +12,7 @@
 - [x] **1.3** — `agent_context_menu_view` + scope-aware RLS on `agx_shortcut`. Files: `migrations/create_agent_context_menu_view.sql`, `migrations/scope_rls_on_agx_shortcut.sql`.
 - [x] **1.4** — RLS smoke tests (pre-flight checks for helpers, columns, policies, view). File: `migrations/tests/agent_shortcuts_rls_tests.sql`. Full per-role tests pending test fixtures.
 - [ ] **1.5** — RTK extensions for categories + content blocks + unified-menu thunk
-- [ ] **1.6** — REST API routes
+- [x] **1.6** — REST API routes. Files: `app/api/agent-shortcuts/route.ts`, `app/api/agent-shortcuts/[id]/route.ts`, `app/api/agent-shortcut-categories/route.ts`, `app/api/agent-shortcut-categories/[id]/route.ts`, `app/api/agent-content-blocks/route.ts`, `app/api/agent-content-blocks/[id]/route.ts`, `app/api/agent-context-menu/route.ts`.
 - [ ] **1.7** — `features/agent-shortcuts/` shared CRUD feature directory
 - [ ] **1.8** — Unit tests for `scope-mapping.ts`
 - [ ] **1.9** — Regenerate `types/database.types.ts` + doc sweep
@@ -230,3 +230,4 @@ After applying, run `npm run types` to regenerate `types/database.types.ts`.
 |---|---|---|
 | 2026-04-20 | initial plan | Phase created |
 | 2026-04-20 | main agent | Tasks 1.1–1.4 shipped: 4 migrations + RLS pre-flight test. Helpers `is_platform_admin`, `is_org_admin`, `is_org_member` added. Content-blocks decision landed in DECISIONS.md (extend existing table, not parallel). `agx_shortcut` RLS rewritten scope-aware — required because the view relies on row-level visibility at the source tables. |
+| 2026-04-21 | main agent | Task 1.6 shipped: seven REST endpoints under `app/api/agent-shortcuts`, `app/api/agent-shortcut-categories`, `app/api/agent-content-blocks` (each with list + `[id]` CRUD) plus `app/api/agent-context-menu` (read-only view surface). Scope handling via `?scope=global\|user\|organization\|project\|task` + `scopeId` query params; RLS enforces write authority at the DB. Response shape standardised to `{ data }` / `{ error, details }`. Routes are scope-agnostic where possible — the client chooses scope explicitly on POST/PATCH payloads and RLS validates. |
