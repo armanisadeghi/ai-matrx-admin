@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus, vs } from "react-syntax-highlighter/dist/cjs/styles/prism";
 import { cn } from "@/styles/themes/utils";
-import { useTheme } from "@/styles/themes/ThemeProvider";
+import { useAppSelector } from "@/lib/redux/hooks";
 import CodeBlockHeader from "@/features/code-editor/components/code-block/CodeBlockHeader";
 
 interface StreamingCodeProps {
@@ -18,7 +18,7 @@ const StreamingCode: React.FC<StreamingCodeProps> = ({ code, language, fontSize 
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
 
-    const { mode } = useTheme();
+    const mode = useAppSelector((s) => s.theme.mode);
 
     const handleCopy = async (e: React.MouseEvent) => {
         e.stopPropagation();

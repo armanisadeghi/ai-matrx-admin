@@ -30,6 +30,7 @@ import { destroyInstanceIfAllowed } from "@/features/agents/redux/execution-syst
 import {
   setFocus,
   selectFocusedConversation,
+  selectDisplayConversation,
 } from "@/features/agents/redux/execution-system/conversation-focus";
 import type { ApplicationScope } from "@/features/agents/utils/scope-mapping";
 import type { ManagedAgentOptions } from "../types/instance.types";
@@ -60,7 +61,20 @@ interface ImperativeMethods {
 }
 
 interface ManagedReturn extends ImperativeMethods {
+  /**
+   * The "input-bound" conversation id — what the smart input / variables
+   * panel targets. In the default case this equals `displayConversationId`;
+   * under autoclear split this is the NEXT-turn conversation.
+   */
   conversationId: string | null;
+  /** Alias of `conversationId` for explicit callers. */
+  inputConversationId: string | null;
+  /**
+   * The "display-bound" conversation id — what the conversation column
+   * shows. Diverges from `conversationId` only while autoclear split is
+   * active (between submit and the next submit).
+   */
+  displayConversationId: string | null;
 }
 
 // =============================================================================
@@ -84,6 +98,9 @@ export function useAgentLauncher(
   const dispatch = useAppDispatch();
   const surfaceKey = options?.surfaceKey;
   const conversationId = useAppSelector(selectFocusedConversation(surfaceKey));
+  const displayConversationId = useAppSelector(
+    selectDisplayConversation(surfaceKey ?? ""),
+  );
 
   // ── Imperative methods (always created) ──────────────────────────────────
 
@@ -283,6 +300,8 @@ export function useAgentLauncher(
   if (isManaged) {
     return {
       conversationId,
+      inputConversationId: conversationId,
+      displayConversationId: displayConversationId ?? conversationId,
       launchAgent,
       launchShortcut,
       launchChat,

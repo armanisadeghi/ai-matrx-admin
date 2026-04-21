@@ -7,7 +7,6 @@ import { Folder, PanelLeftClose, PanelLeft, GripVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useMeasure } from "@uidotdev/usehooks";
-import { useTheme } from "@/styles/themes/ThemeProvider";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
@@ -89,7 +88,7 @@ export default function MultiFileCodeEditor({
   );
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const { mode } = useTheme();
+  const mode = useAppSelector((s) => s.theme.mode);
   const isMobile = useIsMobile();
   const user = useAppSelector(selectUser);
   const { open: openCanvas } = useCanvas();

@@ -2,7 +2,7 @@
 
 import React, { useMemo, useEffect, useState, useRef } from "react";
 import { LatLngExpression, Icon, Map as LeafletMap } from "leaflet";
-import { useTheme } from "@/styles/themes/ThemeProvider";
+import { useAppSelector } from "@/lib/redux/hooks";
 import dynamic from "next/dynamic";
 
 // Define the component props interface
@@ -207,7 +207,7 @@ function OpenStreetMapComponent({
   onLayerChange
 }: OpenStreetMapProps = {}) {
     const mapRef = useRef(null);
-    const { mode } = useTheme();
+    const mode = useAppSelector((s) => s.theme.mode);
     const [mapLoaded, setMapLoaded] = useState(false);
     const [icons, setIcons] = useState<{ lightIcon: any; darkIcon: any } | null>(null);
     const [mapInstance, setMapInstance] = useState<LeafletMap | null>(null);

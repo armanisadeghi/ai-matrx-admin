@@ -17,7 +17,7 @@ import { MicrophoneIconButton } from "@/features/audio/components/MicrophoneIcon
 
 const VoicePadExpanded = lazy(() => import("./VoicePadExpanded"));
 
-const VOICE_PAD_WINDOW_ID = "voice-pad";
+const OVERLAY_ID = "voicePad" as const;
 
 function ExpandedLoadingFallback() {
   return (
@@ -28,42 +28,66 @@ function ExpandedLoadingFallback() {
   );
 }
 
-export default function VoicePad() {
+interface VoicePadProps {
+  instanceId: string;
+}
+
+export default function VoicePad({ instanceId }: VoicePadProps) {
   const dispatch = useAppDispatch();
-  const entries = useAppSelector(selectVoicePadEntries);
-  const draftText = useAppSelector(selectVoicePadDraftText);
+  const entries = useAppSelector((s) =>
+    selectVoicePadEntries(s, OVERLAY_ID, instanceId),
+  );
+  const draftText = useAppSelector((s) =>
+    selectVoicePadDraftText(s, OVERLAY_ID, instanceId),
+  );
   const [liveTranscript, setLiveTranscript] = useState("");
 
-  const handleClose = () => {
-    dispatch(closeOverlay({ overlayId: "voicePad" }));
-  };
+  const windowId = `voice-pad-${instanceId}`;
+  const micId = `voice-pad-mic-${instanceId}`;
 
-  const handleTranscriptionComplete = (text: string) => {
-    setLiveTranscript("");
-    if (text.trim()) {
-      dispatch(addTranscriptEntry(text));
-    }
-  };
+  const handleClose = useCallback(() => {
+    dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId }));
+  }, [dispatch, instanceId]);
 
-  const handleLiveTranscript = (text: string) => {
+  const handleTranscriptionComplete = useCallback(
+    (text: string) => {
+      setLiveTranscript("");
+      if (text.trim()) {
+        dispatch(
+          addTranscriptEntry({ overlayId: OVERLAY_ID, instanceId, text }),
+        );
+      }
+    },
+    [dispatch, instanceId],
+  );
+
+  const handleLiveTranscript = useCallback((text: string) => {
     setLiveTranscript(text);
-  };
+  }, []);
 
-  const handleRemoveEntry = (id: string) => {
-    dispatch(removeTranscriptEntry(id));
-  };
+  const handleRemoveEntry = useCallback(
+    (entryId: string) => {
+      dispatch(
+        removeTranscriptEntry({ overlayId: OVERLAY_ID, instanceId, entryId }),
+      );
+    },
+    [dispatch, instanceId],
+  );
 
-  const handleClearAll = () => {
-    dispatch(clearAllEntries());
-  };
+  const handleClearAll = useCallback(() => {
+    dispatch(clearAllEntries({ overlayId: OVERLAY_ID, instanceId }));
+  }, [dispatch, instanceId]);
 
-  const handleDraftChange = (text: string) => {
-    dispatch(setDraftText(text));
-  };
+  const handleDraftChange = useCallback(
+    (text: string) => {
+      dispatch(setDraftText({ overlayId: OVERLAY_ID, instanceId, text }));
+    },
+    [dispatch, instanceId],
+  );
 
   return (
     <WindowPanel
-      id={VOICE_PAD_WINDOW_ID}
+      id={windowId}
       title="Voice Pad"
       width={320}
       height={420}
@@ -73,10 +97,10 @@ export default function VoicePad() {
       bodyClassName="flex min-h-0 flex-1 flex-col overflow-hidden p-0"
       onClose={handleClose}
       urlSyncKey="voice"
-      urlSyncId="default"
+      urlSyncId={instanceId}
       actions={
         <MicrophoneIconButton
-          id="voice-pad-header-mic"
+          id={micId}
           onTranscriptionComplete={handleTranscriptionComplete}
           onLiveTranscript={handleLiveTranscript}
           variant="icon-only"
@@ -94,6 +118,7 @@ export default function VoicePad() {
           onRemoveEntry={handleRemoveEntry}
           onClearAll={handleClearAll}
           onDraftChange={handleDraftChange}
+          micButtonId={micId}
         />
       </Suspense>
     </WindowPanel>

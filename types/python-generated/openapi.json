@@ -1445,7 +1445,7 @@
           "AI"
         ],
         "summary": "Submit Tool Results",
-        "description": "Submit client-side tool execution results back to the suspended AI loop.\n\nCalled by the VSCode extension (or any other client-side executor) after it\nhas executed one or more client-delegated tool calls.  Each ``call_id`` in\nthe request body must match a ``tool_delegated`` event that was previously\nstreamed to the client.\n\nThe AI loop is automatically unblocked and continues with the provided\nresults as if the tools had been executed server-side.",
+        "description": "Submit client-side tool execution results back to the AI loop — durable.\n\nThere are two paths:\n\n1. **Live fast path:** the originating SSE task is still running and holds\n   an in-memory asyncio.Future for the call_id. We update the cx_tool_call\n   row to status='completed'/'error' AND wake the future (resolution_source\n   = 'inline_waiter'). The existing loop continues streaming on its SSE.\n\n2. **Recovery path:** the originating loop is gone (SSE disconnected, server\n   restarted, etc.). The in-memory waiter has no future — that's fine; the\n   cx_tool_call row is still status='delegated' from log_delegated(). We\n   update the row to status='completed'/'error' (resolution_source =\n   'client_post') and return continuation_needed=true so the caller knows\n   to open a /resume stream to continue the loop.\n\nIdempotent: duplicate POSTs for an already-resolved call return 200 with\nthe call_id in ``already_resolved`` and no side effects.",
         "operationId": "submit_tool_results_ai_conversation__conversation_id__tool_results_post",
         "parameters": [
           {
@@ -1473,7 +1473,9 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/ToolResultsResponse"
+                }
               }
             }
           },
@@ -1496,7 +1498,7 @@
           "AI"
         ],
         "summary": "Submit Tool Results",
-        "description": "Submit client-side tool execution results back to the suspended AI loop.\n\nCalled by the VSCode extension (or any other client-side executor) after it\nhas executed one or more client-delegated tool calls.  Each ``call_id`` in\nthe request body must match a ``tool_delegated`` event that was previously\nstreamed to the client.\n\nThe AI loop is automatically unblocked and continues with the provided\nresults as if the tools had been executed server-side.",
+        "description": "Submit client-side tool execution results back to the AI loop — durable.\n\nThere are two paths:\n\n1. **Live fast path:** the originating SSE task is still running and holds\n   an in-memory asyncio.Future for the call_id. We update the cx_tool_call\n   row to status='completed'/'error' AND wake the future (resolution_source\n   = 'inline_waiter'). The existing loop continues streaming on its SSE.\n\n2. **Recovery path:** the originating loop is gone (SSE disconnected, server\n   restarted, etc.). The in-memory waiter has no future — that's fine; the\n   cx_tool_call row is still status='delegated' from log_delegated(). We\n   update the row to status='completed'/'error' (resolution_source =\n   'client_post') and return continuation_needed=true so the caller knows\n   to open a /resume stream to continue the loop.\n\nIdempotent: duplicate POSTs for an already-resolved call return 200 with\nthe call_id in ``already_resolved`` and no side effects.",
         "operationId": "submit_tool_results_ai_conversations__conversation_id__tool_results_post",
         "parameters": [
           {
@@ -1515,6 +1517,230 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/ToolResultsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolResultsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ai/conversation/{conversation_id}/pending_calls": {
+      "get": {
+        "tags": [
+          "AI"
+        ],
+        "summary": "List Conversation Pending Calls",
+        "description": "List the client-delegated tool calls awaiting the user's response in this\nconversation. Powers the React \"you have N prompts waiting\" UI on load.",
+        "operationId": "list_conversation_pending_calls_ai_conversation__conversation_id__pending_calls_get",
+        "parameters": [
+          {
+            "name": "conversation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Conversation Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PendingCallSummary"
+                  },
+                  "title": "Response List Conversation Pending Calls Ai Conversation  Conversation Id  Pending Calls Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ai/conversations/{conversation_id}/pending_calls": {
+      "get": {
+        "tags": [
+          "AI"
+        ],
+        "summary": "List Conversation Pending Calls",
+        "description": "List the client-delegated tool calls awaiting the user's response in this\nconversation. Powers the React \"you have N prompts waiting\" UI on load.",
+        "operationId": "list_conversation_pending_calls_ai_conversations__conversation_id__pending_calls_get",
+        "parameters": [
+          {
+            "name": "conversation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Conversation Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PendingCallSummary"
+                  },
+                  "title": "Response List Conversation Pending Calls Ai Conversations  Conversation Id  Pending Calls Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ai/user/pending_calls": {
+      "get": {
+        "tags": [
+          "AI"
+        ],
+        "summary": "List User Pending Calls",
+        "description": "List ALL client-delegated tool calls awaiting this user's response,\nacross every conversation. Powers a global \"you have N tool prompts waiting\"\nbadge in the app shell.",
+        "operationId": "list_user_pending_calls_ai_user_pending_calls_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PendingCallSummary"
+                  },
+                  "type": "array",
+                  "title": "Response List User Pending Calls Ai User Pending Calls Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ai/conversation/{conversation_id}/resume": {
+      "post": {
+        "tags": [
+          "AI"
+        ],
+        "summary": "Resume Conversation",
+        "description": "Resume an AI loop after client-delegated tool calls were answered via\nPOST /tool_results while the original SSE was gone (server restart, browser\nclosed, etc.).\n\nPreconditions:\n- The conversation must exist and belong to this user.\n- No cx_tool_call rows can still be in ``status='delegated'`` for this\n  user_request_id. If any remain, 409 CONFLICT is returned with the list —\n  the client should continue prompting the user for the remaining answers.\n\nBehavior:\n- The original ``user_request_id`` is reused (ensure_user_request_exists is\n  idempotent) so tokens/cost continue to aggregate under the same row.\n- ``ConversationResolver.from_conversation_id`` reconstructs the full\n  history from cx_message + cx_tool_call rows (tool results are\n  automatically reassembled).\n- ``run_ai_task`` streams the continued loop like any other turn.",
+        "operationId": "resume_conversation_ai_conversation__conversation_id__resume_post",
+        "parameters": [
+          {
+            "name": "conversation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Conversation Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResumeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ai/conversations/{conversation_id}/resume": {
+      "post": {
+        "tags": [
+          "AI"
+        ],
+        "summary": "Resume Conversation",
+        "description": "Resume an AI loop after client-delegated tool calls were answered via\nPOST /tool_results while the original SSE was gone (server restart, browser\nclosed, etc.).\n\nPreconditions:\n- The conversation must exist and belong to this user.\n- No cx_tool_call rows can still be in ``status='delegated'`` for this\n  user_request_id. If any remain, 409 CONFLICT is returned with the list —\n  the client should continue prompting the user for the remaining answers.\n\nBehavior:\n- The original ``user_request_id`` is reused (ensure_user_request_exists is\n  idempotent) so tokens/cost continue to aggregate under the same row.\n- ``ConversationResolver.from_conversation_id`` reconstructs the full\n  history from cx_message + cx_tool_call rows (tool results are\n  automatically reassembled).\n- ``run_ai_task`` streams the continued loop like any other turn.",
+        "operationId": "resume_conversation_ai_conversations__conversation_id__resume_post",
+        "parameters": [
+          {
+            "name": "conversation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Conversation Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResumeRequest"
               }
             }
           }
@@ -7373,6 +7599,19 @@
             "title": "Context",
             "default": {}
           },
+          "writable_variables": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Writable Variables",
+            "default": []
+          },
+          "allow_context_create": {
+            "type": "boolean",
+            "title": "Allow Context Create",
+            "default": false
+          },
           "conversation_id": {
             "anyOf": [
               {
@@ -8470,6 +8709,19 @@
             "title": "Context",
             "default": {}
           },
+          "writable_variables": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Writable Variables",
+            "default": []
+          },
+          "allow_context_create": {
+            "type": "boolean",
+            "title": "Allow Context Create",
+            "default": false
+          },
           "block_mode": {
             "type": "boolean",
             "title": "Block Mode",
@@ -8748,6 +9000,19 @@
             "type": "object",
             "title": "Context",
             "default": {}
+          },
+          "writable_variables": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Writable Variables",
+            "default": []
+          },
+          "allow_context_create": {
+            "type": "boolean",
+            "title": "Allow Context Create",
+            "default": false
           },
           "block_mode": {
             "type": "boolean",
@@ -10145,6 +10410,89 @@
         "type": "object",
         "title": "PdfResult"
       },
+      "PendingCallSummary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "call_id": {
+            "type": "string",
+            "title": "Call Id"
+          },
+          "conversation_id": {
+            "type": "string",
+            "title": "Conversation Id"
+          },
+          "user_request_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Request Id"
+          },
+          "message_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message Id"
+          },
+          "tool_name": {
+            "type": "string",
+            "title": "Tool Name"
+          },
+          "arguments": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Arguments",
+            "default": {}
+          },
+          "iteration": {
+            "type": "integer",
+            "title": "Iteration",
+            "default": 0
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "call_id",
+          "conversation_id",
+          "tool_name"
+        ],
+        "title": "PendingCallSummary"
+      },
       "PodcastGenerateRequest": {
         "properties": {
           "show_id": {
@@ -10628,6 +10976,51 @@
           "urls"
         ],
         "title": "QuickScrapeRequest"
+      },
+      "ResumeRequest": {
+        "properties": {
+          "user_request_id": {
+            "type": "string",
+            "title": "User Request Id"
+          },
+          "config_overrides": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LLMParams"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "debug": {
+            "type": "boolean",
+            "title": "Debug",
+            "default": false
+          },
+          "client_tools": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Client Tools",
+            "default": []
+          },
+          "custom_tools": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Custom Tools",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_request_id"
+        ],
+        "title": "ResumeRequest"
       },
       "RetryClaimRequest": {
         "properties": {
@@ -11310,6 +11703,59 @@
           "results"
         ],
         "title": "ToolResultsRequest"
+      },
+      "ToolResultsResponse": {
+        "properties": {
+          "resolved": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Resolved"
+          },
+          "already_resolved": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Already Resolved"
+          },
+          "not_found": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Not Found"
+          },
+          "continuation_needed": {
+            "type": "boolean",
+            "title": "Continuation Needed"
+          },
+          "user_request_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Request Id"
+          },
+          "conversation_id": {
+            "type": "string",
+            "title": "Conversation Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "resolved",
+          "already_resolved",
+          "not_found",
+          "continuation_needed",
+          "conversation_id"
+        ],
+        "title": "ToolResultsResponse"
       },
       "ToolTestExecuteRequest": {
         "properties": {

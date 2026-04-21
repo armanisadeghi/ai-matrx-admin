@@ -1944,6 +1944,160 @@
     "title": "SearchErrorData",
     "type": "object"
   },
+  "ContextChangedData": {
+    "additionalProperties": false,
+    "description": "A ContextManifest object was mutated by ctx_patch / ctx_create.\n\nEmitted whenever the server edits a context object in place so the\nfrontend can re-render documents, flush pending UI state, or schedule a\npersist-back to its own storage.",
+    "properties": {
+      "type": {
+        "const": "context_changed",
+        "default": "context_changed",
+        "title": "Type",
+        "type": "string"
+      },
+      "key": {
+        "title": "Key",
+        "type": "string"
+      },
+      "command": {
+        "title": "Command",
+        "type": "string"
+      },
+      "object_type": {
+        "default": "",
+        "title": "Object Type",
+        "type": "string"
+      },
+      "mutable": {
+        "default": false,
+        "title": "Mutable",
+        "type": "boolean"
+      },
+      "persist": {
+        "default": "auto",
+        "title": "Persist",
+        "type": "string"
+      },
+      "source_kind": {
+        "default": "",
+        "title": "Source Kind",
+        "type": "string"
+      },
+      "source_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Source Id"
+      }
+    },
+    "required": [
+      "key",
+      "command"
+    ],
+    "title": "ContextChangedData",
+    "type": "object"
+  },
+  "ContextPersistedData": {
+    "additionalProperties": false,
+    "description": "The server successfully persisted a ctx_patch / ctx_create mutation.\n\nEmitted after the fire-and-forget writeback finishes. Lets the client\nknow it can trust its own cached copy (or trigger a refresh).",
+    "properties": {
+      "type": {
+        "const": "context_persisted",
+        "default": "context_persisted",
+        "title": "Type",
+        "type": "string"
+      },
+      "key": {
+        "title": "Key",
+        "type": "string"
+      },
+      "command": {
+        "title": "Command",
+        "type": "string"
+      },
+      "source_kind": {
+        "default": "",
+        "title": "Source Kind",
+        "type": "string"
+      },
+      "source_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Source Id"
+      }
+    },
+    "required": [
+      "key",
+      "command"
+    ],
+    "title": "ContextPersistedData",
+    "type": "object"
+  },
+  "ContextPersistFailedData": {
+    "additionalProperties": false,
+    "description": "A ctx_patch / ctx_create writeback failed after the in-memory edit.\n\nThe manifest still reflects the new content for the rest of the request,\nbut the DB was not updated. The client should decide whether to retry or\nsurface the failure to the user.",
+    "properties": {
+      "type": {
+        "const": "context_persist_failed",
+        "default": "context_persist_failed",
+        "title": "Type",
+        "type": "string"
+      },
+      "key": {
+        "title": "Key",
+        "type": "string"
+      },
+      "command": {
+        "title": "Command",
+        "type": "string"
+      },
+      "source_kind": {
+        "default": "",
+        "title": "Source Kind",
+        "type": "string"
+      },
+      "source_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Source Id"
+      },
+      "error": {
+        "default": "",
+        "title": "Error",
+        "type": "string"
+      },
+      "traceback": {
+        "default": "",
+        "title": "Traceback",
+        "type": "string"
+      }
+    },
+    "required": [
+      "key",
+      "command"
+    ],
+    "title": "ContextPersistFailedData",
+    "type": "object"
+  },
   "ToolStartedData": {
     "additionalProperties": false,
     "properties": {

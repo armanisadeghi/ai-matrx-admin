@@ -3,7 +3,7 @@ import React, { memo, useState } from "react";
 import { EdgeProps, getSmoothStepPath, EdgeLabelRenderer, useReactFlow, BaseEdge, EdgeMarker, useViewport } from "@xyflow/react";
 import { Trash2, Settings, Zap } from "lucide-react";
 import { EdgeSettingsOverlay } from "./EdgeSettingsOverlay";
-import { useTheme } from "@/styles/themes/ThemeProvider";
+import { useAppSelector } from "@/lib/redux/hooks";
 
 interface WorkflowEdgeData extends Record<string, unknown> {
     label?: string;
@@ -56,7 +56,7 @@ const WorkflowEdgeComponent: React.FC<WorkflowEdgeProps> = (props) => {
     } = props;
     const { deleteElements, setEdges } = useReactFlow();
     const { zoom } = useViewport();
-    const { mode: themeMode } = useTheme();
+    const themeMode = useAppSelector((s) => s.theme.mode);
 
     // State for edge settings overlay
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);

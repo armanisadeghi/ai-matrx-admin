@@ -52,6 +52,7 @@ import canvasReducer from "@/features/canvas/redux/canvasSlice";
 import textDiffReducer from "./slices/textDiffSlice";
 import noteVersionsReducer from "./slices/noteVersionsSlice";
 import notesReducer from "@/features/notes/redux/slice";
+import { codeFilesReducer } from "@/features/code-files/redux/slice";
 import messagingReducer from "@/features/messaging/redux/messagingSlice";
 import smsReducer from "@/features/sms/redux/smsSlice";
 import adminPreferencesReducer from "./slices/adminPreferencesSlice";
@@ -123,6 +124,7 @@ import { cacheBypassReducer } from "@/features/agents/redux/execution-system/mes
 import { messagesReducer } from "@/features/agents/redux/execution-system/messages";
 import { conversationFocusReducer } from "@/features/agents/redux/execution-system/conversation-focus";
 import agentAssistantMarkdownDraftReducer from "@/features/agents/redux/agent-assistant-markdown-draft.slice";
+import { netRequestsReducer, netHealthReducer } from "@/lib/redux/net";
 
 export type FileSystemState = { [K in AvailableBuckets]: FileManagement };
 
@@ -226,6 +228,7 @@ export const createRootReducer = (initialState: InitialReduxState) => {
     textDiff: textDiffReducer,
     noteVersions: noteVersionsReducer,
     notes: notesReducer,
+    codeFiles: codeFilesReducer,
     // SMS integration
     sms: smsReducer,
 
@@ -368,6 +371,8 @@ export const createRootReducer = (initialState: InitialReduxState) => {
 
     // // Layer 4 — Request Execution
     activeRequests: activeRequestsReducer,
+    netRequests: netRequestsReducer,
+    netHealth: netHealthReducer,
     messages: messagesReducer,
     // Observability — Runner-only debug data (cx_user_request, cx_request,
     // cx_tool_call + live stream timelines). Populated by commit path + RPC.

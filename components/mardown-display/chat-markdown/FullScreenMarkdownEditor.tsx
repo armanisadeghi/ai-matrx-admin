@@ -10,7 +10,7 @@ import React, {
   ErrorInfo,
   ReactNode,
 } from "react";
-import { useTheme } from "@/styles/themes/ThemeProvider";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { MarkdownCopyButton } from "@/components/matrx/buttons/MarkdownCopyButton";
 import FullScreenOverlay, {
   TabDefinition,
@@ -30,7 +30,6 @@ import TuiEditorContent, {
 import { MatrxSplit } from "@/components/matrx/MatrxSplit";
 import SuspenseLoader from "@/components/loaders/SuspenseLoader";
 import { LazyEntityGate } from "@/providers/packs/LazyEntityGate";
-import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
@@ -1012,7 +1011,7 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
   const tuiEditorRef = useRef<TuiEditorContentRef>(null);
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
-  const { mode } = useTheme();
+  const mode = useAppSelector((s) => s.theme.mode);
   const isAdmin = useAppSelector(selectIsAdmin);
   const isMobile = useIsMobile();
   const route =

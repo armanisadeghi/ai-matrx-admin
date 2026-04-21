@@ -9,7 +9,7 @@ import { EnrichedBroker } from "@/features/workflows/utils/data-flow-manager";
 import { DataBrokerData } from "@/types/AutomationSchemaTypes";
 import { DbNodeData, DbUserInput, DbBrokerRelayData, DbFunctionNode } from "@/features/workflows/types";
 import { getNodePotentialInputsAndOutputs, parseEdge } from "../../utils/node-utils";
-import { useTheme } from "@/styles/themes/ThemeProvider";
+import { useAppSelector } from "@/lib/redux/hooks";
 
 // TypeScript declaration for window object
 declare global {
@@ -34,7 +34,7 @@ interface NodeWrapperProps extends NodeProps {
 
 export const NodeWrapper: React.FC<NodeWrapperProps> = ({ data, selected, id, type }) => {
     const updateNodeInternals = useUpdateNodeInternals();
-    const { mode } = useTheme();
+    const mode = useAppSelector((s) => s.theme.mode);
     const inputsAndOutputs = getNodePotentialInputsAndOutputs(data, type);
 
     const enrichedBrokers = window.workflowEnrichedBrokers || [];

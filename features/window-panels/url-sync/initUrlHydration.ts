@@ -19,14 +19,30 @@ export function initUrlHydration() {
     );
   });
 
-  // Voice Pad global panel
-  registerPanelHydrator("voice", (dispatch) => {
-    dispatch(openOverlay({ overlayId: "voicePad" }));
+  // Voice Pad — simple
+  registerPanelHydrator("voice", (dispatch, id) => {
+    dispatch(openOverlay({ overlayId: "voicePad", instanceId: id }));
   });
 
-  // Notes Window
+  // Voice Pad — advanced
+  registerPanelHydrator("voice-advanced", (dispatch, id) => {
+    dispatch(openOverlay({ overlayId: "voicePadAdvanced", instanceId: id }));
+  });
+
+  // Voice Pad — AI
+  registerPanelHydrator("voice-ai", (dispatch, id) => {
+    dispatch(openOverlay({ overlayId: "voicePadAi", instanceId: id }));
+  });
+
+  // Notes (NotesBetaWindow — primary instance; title stays "Notes" in chrome)
   registerPanelHydrator("notes", (dispatch) => {
-    dispatch(openOverlay({ overlayId: "notesWindow" }));
+    dispatch(
+      openOverlay({
+        overlayId: "notesBetaWindow",
+        instanceId: "default",
+        data: { title: "Notes" },
+      }),
+    );
   });
 
   // Feedback Window

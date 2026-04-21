@@ -11,8 +11,11 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { brokerActions } from "@/lib/redux/brokerSlice";
 import { identifyUser } from "@/providers/PostHogProvider";
-import { loadPreferences } from "@/lib/redux/middleware/preferencesMiddleware";
 import { fetchFullContext } from "@/features/agent-context/redux/hierarchyThunks";
+// `loadPreferences` + `preferencesMiddleware` removed in PR 1.B. The middleware
+// was never wired into the store chain (confirmed dead); client-side
+// preference hydration is handled server-side via `getUserSessionData`
+// today, and will be fully owned by the sync engine in Phase 2.
 
 const SYSTEM_BROKERS = [
   {
@@ -81,10 +84,6 @@ export default function DeferredSingletons() {
         value: user.isAdmin,
       }),
     );
-  });
-
-  useIdleTask("load-preferences", 2, () => {
-    dispatch(loadPreferences());
   });
 
   // Pre-warm the full hierarchy (orgs, projects, tasks, scopes) once per session.

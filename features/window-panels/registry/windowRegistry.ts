@@ -64,6 +64,73 @@ export interface WindowRegistryEntry {
 // ─── Registry ─────────────────────────────────────────────────────────────────
 
 const REGISTRY: WindowRegistryEntry[] = [
+  // ── Code Editor ───────────────────────────────────────────────────────────
+  {
+    slug: "code-editor-window",
+    overlayId: "codeEditorWindow",
+    label: "Code Editor",
+    defaultData: {
+      files: [],
+      fileIds: [],
+      activeFile: null,
+      activeFileId: null,
+      title: null,
+    },
+  },
+
+  // ── Code File Manager (browse + organize persisted files) ─────────────────
+  {
+    slug: "code-file-manager-window",
+    overlayId: "codeFileManagerWindow",
+    label: "Code Files",
+    defaultData: {
+      selectedFolderId: null,
+      searchQuery: "",
+      sortBy: "updated",
+    },
+  },
+
+  // ── Multi-file Smart Code Editor (agent-driven, many files) ──────────────
+  {
+    slug: "multi-file-smart-code-editor-window",
+    overlayId: "multiFileSmartCodeEditorWindow",
+    label: "Smart Multi-file Editor",
+    // Ephemeral for the same reasons as the single-file variant — the agent
+    // conversation cannot survive a reload, so we skip persistence.
+    defaultData: {
+      agentId: null,
+      files: [],
+      initialActiveFile: null,
+      title: null,
+      defaultWordWrap: "off",
+      autoFormatOnOpen: false,
+      variables: null,
+    },
+    ephemeral: true,
+  },
+
+  // ── Smart Code Editor (agent-driven single-file editor) ───────────────────
+  {
+    slug: "smart-code-editor-window",
+    overlayId: "smartCodeEditorWindow",
+    label: "Smart Code Editor",
+    // Ephemeral: the agent conversation is a live stream — re-opening after
+    // a reload would restore geometry but could not restore the agent state,
+    // so we skip DB persistence entirely. `callbackGroupId` also can't cross
+    // a reload, which reinforces the decision.
+    defaultData: {
+      agentId: null,
+      initialCode: "",
+      language: "plaintext",
+      filePath: null,
+      selection: null,
+      diagnostics: null,
+      title: null,
+      variables: null,
+    },
+    ephemeral: true,
+  },
+
   // ── Notes ─────────────────────────────────────────────────────────────────
   {
     slug: "notes-window",
@@ -78,6 +145,15 @@ const REGISTRY: WindowRegistryEntry[] = [
     overlayId: "notesBetaWindow",
     label: "Notes Beta",
     defaultData: { openNoteId: null },
+  },
+
+  // ── Quick Note Save (ephemeral capture surface) ───────────────────────────
+  {
+    slug: "quick-note-save-window",
+    overlayId: "quickNoteSaveWindow",
+    label: "Quick Save Note",
+    defaultData: { initialContent: "", defaultFolder: "Scratch" },
+    ephemeral: true,
   },
 
   // ── Quick Data ────────────────────────────────────────────────────────────
@@ -203,6 +279,20 @@ const REGISTRY: WindowRegistryEntry[] = [
     slug: "agent-run-history-window",
     overlayId: "agentRunHistoryWindow",
     label: "Run History",
+    defaultData: { agentId: null, selectedConversationId: null },
+  },
+
+  // ── Agent Run (full run experience in a floating window) ──────────────────
+  {
+    slug: "agent-run-window",
+    overlayId: "agentRunWindow",
+    label: "Agent Run",
+    // agentId: the agent currently selected in the window header.
+    // selectedConversationId: the past conversation loaded from the sidebar
+    //   (null means "start a fresh conversation" when the window opens).
+    // Live execution state (streaming messages, focus, input drafts) lives in
+    // the agent execution Redux slices and cannot survive a reload, so only
+    // the selection is persisted here.
     defaultData: { agentId: null, selectedConversationId: null },
   },
 
@@ -374,6 +464,18 @@ const REGISTRY: WindowRegistryEntry[] = [
     slug: "voice-pad",
     overlayId: "voicePad",
     label: "Voice Pad",
+    defaultData: { transcript: null },
+  },
+  {
+    slug: "voice-pad-advanced",
+    overlayId: "voicePadAdvanced",
+    label: "Advanced Voice Pad",
+    defaultData: { transcript: null },
+  },
+  {
+    slug: "voice-pad-ai",
+    overlayId: "voicePadAi",
+    label: "Transcription Cleanup",
     defaultData: { transcript: null },
   },
 

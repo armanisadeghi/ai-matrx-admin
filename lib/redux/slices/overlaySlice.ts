@@ -64,12 +64,17 @@ const initialState: OverlayState = {
     announcements: makeDefaultInstance(),
     // Message action overlays (available in all routes)
     saveToNotes: makeDefaultInstance(),
+    saveToCode: makeDefaultInstance(),
+    codeFileManagerWindow: makeDefaultInstance(),
+    codeEditorWindow: makeDefaultInstance(),
     emailDialog: makeDefaultInstance(),
     authGate: makeDefaultInstance(),
     contentHistory: makeDefaultInstance(),
     feedbackDialog: makeDefaultInstance(),
     shareModal: makeDefaultInstance(),
     voicePad: makeDefaultInstance(),
+    voicePadAdvanced: makeDefaultInstance(),
+    voicePadAi: makeDefaultInstance(),
     undoHistory: makeDefaultInstance(),
     streamDebug: makeDefaultInstance(),
     jsonTruncator: makeDefaultInstance(),
@@ -331,6 +336,7 @@ interface HtmlPreviewPayload {
   onSave?: (markdownContent: string) => void;
   showSaveButton?: boolean;
   instanceId?: string;
+  isAgentSystem?: boolean;
 }
 
 export const openHtmlPreview = (options: HtmlPreviewPayload) =>
@@ -347,6 +353,7 @@ export const openHtmlPreview = (options: HtmlPreviewPayload) =>
         "Edit markdown, preview HTML, and publish your content",
       onSave: options.onSave,
       showSaveButton: options.showSaveButton ?? false,
+      isAgentSystem: options.isAgentSystem ?? false,
     },
   });
 
@@ -367,6 +374,67 @@ export const openSaveToNotes = (options: SaveToNotesPayload) =>
       content: options.content,
       defaultFolder: options.defaultFolder,
     },
+  });
+
+interface SaveToCodePayload {
+  /** The code body to save. */
+  content: string;
+  /** Detected or caller-preferred language (e.g. "typescript"). */
+  language?: string;
+  /** Optional filename hint. */
+  suggestedName?: string;
+  /** Optional folder id to pre-select. */
+  defaultFolderId?: string | null;
+  instanceId?: string;
+}
+
+export const openSaveToCode = (options: SaveToCodePayload) =>
+  openOverlay({
+    overlayId: "saveToCode",
+    instanceId: options.instanceId,
+    data: {
+      content: options.content,
+      language: options.language ?? "plaintext",
+      suggestedName: options.suggestedName,
+      defaultFolderId: options.defaultFolderId ?? null,
+    },
+  });
+
+interface CodeFileManagerWindowPayload {
+  instanceId?: string;
+}
+
+export const openCodeFileManagerWindow = (
+  options?: CodeFileManagerWindowPayload,
+) =>
+  openOverlay({
+    overlayId: "codeFileManagerWindow",
+    instanceId: options?.instanceId,
+  });
+
+interface CodeEditorWindowPayload {
+  /** Optional pre-loaded in-memory files (legacy/session mode). */
+  files?: unknown[];
+  /** Optional persisted file ids to load + open on mount. */
+  fileIds?: string[];
+  /** Which tab to show active on open. */
+  activeFileId?: string;
+  title?: string;
+  instanceId?: string;
+}
+
+export const openCodeEditorWindow = (options?: CodeEditorWindowPayload) =>
+  openOverlay({
+    overlayId: "codeEditorWindow",
+    instanceId: options?.instanceId,
+    data: options
+      ? {
+          files: options.files,
+          fileIds: options.fileIds,
+          activeFileId: options.activeFileId,
+          title: options.title,
+        }
+      : null,
   });
 
 interface EmailDialogPayload {
@@ -568,6 +636,20 @@ export const openAgentRunHistoryWindow = (
   openOverlay({
     overlayId: "agentRunHistoryWindow",
     data: { agentId: options?.agentId ?? null },
+  });
+
+interface AgentRunWindowPayload {
+  agentId?: string | null;
+  conversationId?: string | null;
+}
+
+export const openAgentRunWindow = (options?: AgentRunWindowPayload) =>
+  openOverlay({
+    overlayId: "agentRunWindow",
+    data: {
+      agentId: options?.agentId ?? null,
+      selectedConversationId: options?.conversationId ?? null,
+    },
   });
 
 export const openAgentImportWindow = () =>

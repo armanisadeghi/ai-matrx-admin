@@ -45,8 +45,8 @@ export function AgentWidgetInvokerTester({
   });
 
   return (
-    <div className="flex h-full w-full">
-      <div className="w-[230px] shrink-0 border-r border-border overflow-y-auto">
+    <div className="flex flex-col sm:flex-row h-full w-full min-w-0 overflow-y-auto sm:overflow-hidden">
+      <div className="w-full sm:w-[230px] shrink-0 border-b sm:border-b-0 sm:border-r border-border sm:overflow-y-auto">
         <div className="p-2">
           <TesterSettingsPanel
             controller={tester}
@@ -64,8 +64,8 @@ export function AgentWidgetInvokerTester({
       </div>
 
       {/* Right side: Display Mode grid */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="p-1 flex flex-wrap content-start gap-2">
+      <div className="flex-1 min-w-0 sm:overflow-y-auto">
+        <div className="p-2 flex flex-wrap content-start gap-2 justify-center sm:justify-start">
           {displayTypes.map((display) => (
             <button
               key={display.displayMode}

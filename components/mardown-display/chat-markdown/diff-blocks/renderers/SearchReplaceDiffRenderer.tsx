@@ -20,7 +20,7 @@ import { DiffLoadingIndicator } from '../DiffLoadingIndicator';
 import { DiffCollapsible } from '../DiffCollapsible';
 import { GitCompare } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useTheme } from '@/styles/themes/ThemeProvider';
+import { useAppSelector } from '@/lib/redux/hooks';
 import { Prism as SyntaxHighlighterBase } from 'react-syntax-highlighter';
 import { vscDarkPlus, vs } from 'react-syntax-highlighter/dist/cjs/styles/prism';
 
@@ -51,7 +51,7 @@ const DiffPreview: React.FC<{
   language: string;
   maxLines?: number;
 }> = ({ lines, language, maxLines = 4 }) => {
-  const { mode } = useTheme();
+  const mode = useAppSelector((s) => s.theme.mode);
   const previewLines = lines.slice(0, maxLines);
 
   const getDiffLineStyle = (type: DiffLine['type']) => {

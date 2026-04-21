@@ -762,15 +762,24 @@ export interface paths {
         put?: never;
         /**
          * Submit Tool Results
-         * @description Submit client-side tool execution results back to the suspended AI loop.
+         * @description Submit client-side tool execution results back to the AI loop — durable.
          *
-         *     Called by the VSCode extension (or any other client-side executor) after it
-         *     has executed one or more client-delegated tool calls.  Each ``call_id`` in
-         *     the request body must match a ``tool_delegated`` event that was previously
-         *     streamed to the client.
+         *     There are two paths:
          *
-         *     The AI loop is automatically unblocked and continues with the provided
-         *     results as if the tools had been executed server-side.
+         *     1. **Live fast path:** the originating SSE task is still running and holds
+         *        an in-memory asyncio.Future for the call_id. We update the cx_tool_call
+         *        row to status='completed'/'error' AND wake the future (resolution_source
+         *        = 'inline_waiter'). The existing loop continues streaming on its SSE.
+         *
+         *     2. **Recovery path:** the originating loop is gone (SSE disconnected, server
+         *        restarted, etc.). The in-memory waiter has no future — that's fine; the
+         *        cx_tool_call row is still status='delegated' from log_delegated(). We
+         *        update the row to status='completed'/'error' (resolution_source =
+         *        'client_post') and return continuation_needed=true so the caller knows
+         *        to open a /resume stream to continue the loop.
+         *
+         *     Idempotent: duplicate POSTs for an already-resolved call return 200 with
+         *     the call_id in ``already_resolved`` and no side effects.
          */
         post: operations["submit_tool_results_ai_conversation__conversation_id__tool_results_post"];
         delete?: never;
@@ -790,17 +799,162 @@ export interface paths {
         put?: never;
         /**
          * Submit Tool Results
-         * @description Submit client-side tool execution results back to the suspended AI loop.
+         * @description Submit client-side tool execution results back to the AI loop — durable.
          *
-         *     Called by the VSCode extension (or any other client-side executor) after it
-         *     has executed one or more client-delegated tool calls.  Each ``call_id`` in
-         *     the request body must match a ``tool_delegated`` event that was previously
-         *     streamed to the client.
+         *     There are two paths:
          *
-         *     The AI loop is automatically unblocked and continues with the provided
-         *     results as if the tools had been executed server-side.
+         *     1. **Live fast path:** the originating SSE task is still running and holds
+         *        an in-memory asyncio.Future for the call_id. We update the cx_tool_call
+         *        row to status='completed'/'error' AND wake the future (resolution_source
+         *        = 'inline_waiter'). The existing loop continues streaming on its SSE.
+         *
+         *     2. **Recovery path:** the originating loop is gone (SSE disconnected, server
+         *        restarted, etc.). The in-memory waiter has no future — that's fine; the
+         *        cx_tool_call row is still status='delegated' from log_delegated(). We
+         *        update the row to status='completed'/'error' (resolution_source =
+         *        'client_post') and return continuation_needed=true so the caller knows
+         *        to open a /resume stream to continue the loop.
+         *
+         *     Idempotent: duplicate POSTs for an already-resolved call return 200 with
+         *     the call_id in ``already_resolved`` and no side effects.
          */
         post: operations["submit_tool_results_ai_conversations__conversation_id__tool_results_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ai/conversation/{conversation_id}/pending_calls": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Conversation Pending Calls
+         * @description List the client-delegated tool calls awaiting the user's response in this
+         *     conversation. Powers the React "you have N prompts waiting" UI on load.
+         */
+        get: operations["list_conversation_pending_calls_ai_conversation__conversation_id__pending_calls_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ai/conversations/{conversation_id}/pending_calls": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Conversation Pending Calls
+         * @description List the client-delegated tool calls awaiting the user's response in this
+         *     conversation. Powers the React "you have N prompts waiting" UI on load.
+         */
+        get: operations["list_conversation_pending_calls_ai_conversations__conversation_id__pending_calls_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ai/user/pending_calls": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List User Pending Calls
+         * @description List ALL client-delegated tool calls awaiting this user's response,
+         *     across every conversation. Powers a global "you have N tool prompts waiting"
+         *     badge in the app shell.
+         */
+        get: operations["list_user_pending_calls_ai_user_pending_calls_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ai/conversation/{conversation_id}/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Resume Conversation
+         * @description Resume an AI loop after client-delegated tool calls were answered via
+         *     POST /tool_results while the original SSE was gone (server restart, browser
+         *     closed, etc.).
+         *
+         *     Preconditions:
+         *     - The conversation must exist and belong to this user.
+         *     - No cx_tool_call rows can still be in ``status='delegated'`` for this
+         *       user_request_id. If any remain, 409 CONFLICT is returned with the list —
+         *       the client should continue prompting the user for the remaining answers.
+         *
+         *     Behavior:
+         *     - The original ``user_request_id`` is reused (ensure_user_request_exists is
+         *       idempotent) so tokens/cost continue to aggregate under the same row.
+         *     - ``ConversationResolver.from_conversation_id`` reconstructs the full
+         *       history from cx_message + cx_tool_call rows (tool results are
+         *       automatically reassembled).
+         *     - ``run_ai_task`` streams the continued loop like any other turn.
+         */
+        post: operations["resume_conversation_ai_conversation__conversation_id__resume_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ai/conversations/{conversation_id}/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Resume Conversation
+         * @description Resume an AI loop after client-delegated tool calls were answered via
+         *     POST /tool_results while the original SSE was gone (server restart, browser
+         *     closed, etc.).
+         *
+         *     Preconditions:
+         *     - The conversation must exist and belong to this user.
+         *     - No cx_tool_call rows can still be in ``status='delegated'`` for this
+         *       user_request_id. If any remain, 409 CONFLICT is returned with the list —
+         *       the client should continue prompting the user for the remaining answers.
+         *
+         *     Behavior:
+         *     - The original ``user_request_id`` is reused (ensure_user_request_exists is
+         *       idempotent) so tokens/cost continue to aggregate under the same row.
+         *     - ``ConversationResolver.from_conversation_id`` reconstructs the full
+         *       history from cx_message + cx_tool_call rows (tool results are
+         *       automatically reassembled).
+         *     - ``run_ai_task`` streams the continued loop like any other turn.
+         */
+        post: operations["resume_conversation_ai_conversations__conversation_id__resume_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2777,6 +2931,16 @@ export interface components {
             context: {
                 [key: string]: unknown;
             };
+            /**
+             * Writable Variables
+             * @default []
+             */
+            writable_variables: string[];
+            /**
+             * Allow Context Create
+             * @default false
+             */
+            allow_context_create: boolean;
             /** Conversation Id */
             conversation_id?: string | null;
             /** Is New */
@@ -3139,6 +3303,16 @@ export interface components {
                 [key: string]: unknown;
             };
             /**
+             * Writable Variables
+             * @default []
+             */
+            writable_variables: string[];
+            /**
+             * Allow Context Create
+             * @default false
+             */
+            allow_context_create: boolean;
+            /**
              * Block Mode
              * @default false
              */
@@ -3260,6 +3434,16 @@ export interface components {
             context: {
                 [key: string]: unknown;
             };
+            /**
+             * Writable Variables
+             * @default []
+             */
+            writable_variables: string[];
+            /**
+             * Allow Context Create
+             * @default false
+             */
+            allow_context_create: boolean;
             /**
              * Block Mode
              * @default false
@@ -3709,6 +3893,37 @@ export interface components {
             /** Supabase Url */
             supabase_url?: string | null;
         };
+        /** PendingCallSummary */
+        PendingCallSummary: {
+            /** Id */
+            id: string;
+            /** Call Id */
+            call_id: string;
+            /** Conversation Id */
+            conversation_id: string;
+            /** User Request Id */
+            user_request_id?: string | null;
+            /** Message Id */
+            message_id?: string | null;
+            /** Tool Name */
+            tool_name: string;
+            /**
+             * Arguments
+             * @default {}
+             */
+            arguments: {
+                [key: string]: unknown;
+            };
+            /**
+             * Iteration
+             * @default 0
+             */
+            iteration: number;
+            /** Created At */
+            created_at?: string | null;
+            /** Expires At */
+            expires_at?: string | null;
+        };
         /** PodcastGenerateRequest */
         PodcastGenerateRequest: {
             /** Show Id */
@@ -3934,6 +4149,29 @@ export interface components {
              * @default false
              */
             stream: boolean;
+        };
+        /** ResumeRequest */
+        ResumeRequest: {
+            /** User Request Id */
+            user_request_id: string;
+            config_overrides?: components["schemas"]["LLMParams"] | null;
+            /**
+             * Debug
+             * @default false
+             */
+            debug: boolean;
+            /**
+             * Client Tools
+             * @default []
+             */
+            client_tools: string[];
+            /**
+             * Custom Tools
+             * @default []
+             */
+            custom_tools: {
+                [key: string]: unknown;
+            }[];
         };
         /** RetryClaimRequest */
         RetryClaimRequest: {
@@ -4279,6 +4517,21 @@ export interface components {
         ToolResultsRequest: {
             /** Results */
             results: components["schemas"]["ClientToolResult"][];
+        };
+        /** ToolResultsResponse */
+        ToolResultsResponse: {
+            /** Resolved */
+            resolved: string[];
+            /** Already Resolved */
+            already_resolved: string[];
+            /** Not Found */
+            not_found: string[];
+            /** Continuation Needed */
+            continuation_needed: boolean;
+            /** User Request Id */
+            user_request_id?: string | null;
+            /** Conversation Id */
+            conversation_id: string;
         };
         /** ToolTestExecuteRequest */
         ToolTestExecuteRequest: {
@@ -5483,7 +5736,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["ToolResultsResponse"];
                 };
             };
             /** @description Validation Error */
@@ -5509,6 +5762,158 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["ToolResultsRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ToolResultsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_conversation_pending_calls_ai_conversation__conversation_id__pending_calls_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PendingCallSummary"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_conversation_pending_calls_ai_conversations__conversation_id__pending_calls_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PendingCallSummary"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_user_pending_calls_ai_user_pending_calls_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PendingCallSummary"][];
+                };
+            };
+        };
+    };
+    resume_conversation_ai_conversation__conversation_id__resume_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResumeRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    resume_conversation_ai_conversations__conversation_id__resume_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResumeRequest"];
             };
         };
         responses: {

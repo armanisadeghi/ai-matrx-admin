@@ -25,7 +25,8 @@ interface TranscriptEntry {
 
 interface VoicePadExpandedProps {
   entries: TranscriptEntry[];
-  draftText: string;
+  /** null = no draft (show entries joined); string = user-edited buffer (takes over, even when empty). */
+  draftText: string | null;
   liveTranscript?: string;
   onTranscriptionComplete: (text: string) => void;
   onLiveTranscript?: (text: string) => void;
@@ -33,11 +34,12 @@ interface VoicePadExpandedProps {
   onClearAll: () => void;
   onDraftChange: (text: string) => void;
   fontSize?: number;
+  micButtonId: string;
 }
 
 export interface VoicePadFooterProps {
   entries: TranscriptEntry[];
-  draftText: string;
+  draftText: string | null;
   onClearAll: () => void;
   onNewSession?: () => void;
   fontSize: number;
@@ -79,7 +81,7 @@ export function VoicePadFooterRight({
   const allText = entries.map((e) => e.text).join("\n\n");
 
   const handleSaveToNotes = useCallback(() => {
-    const text = draftText || allText;
+    const text = draftText !== null ? draftText : allText;
     if (!text.trim()) {
       toast.info("Nothing to save");
       return;
@@ -94,7 +96,7 @@ export function VoicePadFooterRight({
   }, [dispatch, draftText, allText]);
 
   const handleCopyAll = useCallback(async () => {
-    const text = draftText || allText;
+    const text = draftText !== null ? draftText : allText;
     if (!text.trim()) {
       toast.info("Nothing to copy");
       return;
@@ -157,10 +159,14 @@ export default function VoicePadExpanded({
   onClearAll,
   onDraftChange,
   fontSize = 11,
+  micButtonId,
 }: VoicePadExpandedProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const allText = entries.map((e) => e.text).join("\n\n");
-  const baseText = draftText || allText;
+  // Once the user has typed anything (including deleting everything) the draft takes
+  // over — we must not fall back to `allText`, or the entries "come back" when the
+  // textarea is emptied.
+  const baseText = draftText !== null ? draftText : allText;
   const displayText = liveTranscript
     ? baseText
       ? baseText + "\n\n" + liveTranscript
@@ -171,7 +177,7 @@ export default function VoicePadExpanded({
 
   const handleStartRecording = () => {
     setIsEngaged(true);
-    document.getElementById("voice-pad-header-mic")?.click();
+    document.getElementById(micButtonId)?.click();
   };
 
   const handleTextareaChange = useCallback(
@@ -183,7 +189,7 @@ export default function VoicePadExpanded({
 
   const hasContent =
     entries.length > 0 ||
-    draftText.trim().length > 0 ||
+    draftText !== null ||
     (!!liveTranscript && liveTranscript.trim().length > 0);
 
   return (
@@ -243,7 +249,7 @@ export default function VoicePadExpanded({
           </p>
         </div>
 
-        {entries.length > 1 && (
+        {entries.length > 0 && (
           <div className="max-h-[100px] shrink-0 overflow-y-auto border border-border/40 rounded-md px-2 py-1">
             <div className="text-[10px] font-medium text-muted-foreground/70 mb-1">
               Session entries

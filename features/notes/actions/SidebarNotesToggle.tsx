@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { FileText } from "lucide-react";
-import { NotesWindow } from "../../window-panels/windows/notes/NotesWindow";
+import { NotesBetaWindow } from "@/features/window-panels/windows/notes/NotesBetaWindow";
 
 const NOTES_WINDOW_ID = "sidebar-notes-window";
 
@@ -27,8 +27,10 @@ export default function SidebarNotesToggle() {
       </button>
 
       {open && (
-        <NotesWindow
+        <NotesBetaWindow
+          title="Notes"
           id={NOTES_WINDOW_ID}
+          windowInstanceId="default"
           width={520}
           height={400}
           initialRect={{ x: 80, y: 80 }}

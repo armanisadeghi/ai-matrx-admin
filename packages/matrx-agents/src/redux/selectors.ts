@@ -10,7 +10,6 @@
 // ── Conversations ──────────────────────────────────────────────────────────
 export {
   selectInstance,
-  selectConversation,
   selectAllConversationIds,
   selectConversationIdsByAgent,
   selectInstancesByAgent,

@@ -25,11 +25,14 @@ import {
   Paintbrush,
   Code2,
   Brain,
+  FileCode,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/styles/themes/utils";
 import LanguageDisplay from "@/features/code-editor/components/code-block/LanguageDisplay";
 import IconButton from "@/components/official/IconButton";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { openSaveToCode } from "@/lib/redux/slices/overlaySlice";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -167,6 +170,8 @@ export const CodeBlockHeader: React.FC<CodeBlockHeaderProps> = ({
         )}
       </div>
       <CodeBlockButtons
+        code={code}
+        language={language}
         isEditing={isEditing}
         isFullScreen={isFullScreen}
         isCopied={isCopied}
@@ -195,6 +200,8 @@ export const CodeBlockHeader: React.FC<CodeBlockHeaderProps> = ({
 };
 
 interface CodeBlockButtonsProps {
+  code: string;
+  language: string;
   isEditing: boolean;
   isFullScreen: boolean;
   isCopied: boolean;
@@ -235,6 +242,8 @@ const getIconComponent = (iconName: string): LucideIcon => {
 };
 
 const CodeBlockButtons: React.FC<CodeBlockButtonsProps> = ({
+  code,
+  language,
   isEditing,
   isFullScreen,
   isCopied,
@@ -259,6 +268,18 @@ const CodeBlockButtons: React.FC<CodeBlockButtonsProps> = ({
   customBuiltinKeys = [],
 }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dispatch = useAppDispatch();
+
+  const handleSaveToCode = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!code?.trim()) return;
+    dispatch(
+      openSaveToCode({
+        content: code,
+        language,
+      }),
+    );
+  };
 
   // Merge default keys with custom keys and make unique
   const defaultKeys = ["generic-code-editor", "code-editor-dynamic-context"];
@@ -372,6 +393,19 @@ const CodeBlockButtons: React.FC<CodeBlockButtonsProps> = ({
           tooltipSide="bottom"
           disabled={!isEditing}
           className={cn(!isEditing ? "opacity-40 cursor-not-allowed" : "")}
+        />
+      )}
+
+      {/* Save to Code - Always visible on desktop */}
+      {!isMobile && (
+        <IconButton
+          icon={FileCode}
+          tooltip="Save to Code files"
+          size="sm"
+          variant="ghost"
+          onClick={handleSaveToCode}
+          tooltipSide="bottom"
+          className="text-rose-600 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300"
         />
       )}
 

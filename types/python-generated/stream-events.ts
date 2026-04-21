@@ -243,6 +243,21 @@ export function isTypedRecordReservedPayload(p: RecordReservedPayload): p is Rec
   return p.table === "cx_message" || p.table === "cx_request" || p.table === "cx_tool_call";
 }
 
+/** Narrows to CxMessageReservedPayload — `metadata.role` and `metadata.position` are guaranteed. */
+export function isCxMessageReservation(p: RecordReservedPayload): p is CxMessageReservedPayload {
+  return p.table === "cx_message";
+}
+
+/** Narrows to CxRequestReservedPayload — `metadata.iteration` is guaranteed. */
+export function isCxRequestReservation(p: RecordReservedPayload): p is CxRequestReservedPayload {
+  return p.table === "cx_request";
+}
+
+/** Narrows to CxToolCallReservedPayload — `metadata.tool_name`, `metadata.call_id`, and `metadata.iteration` are guaranteed. */
+export function isCxToolCallReservation(p: RecordReservedPayload): p is CxToolCallReservedPayload {
+  return p.table === "cx_tool_call";
+}
+
 // --- Typed Data Payloads ---
 
 export interface DataPayload {
@@ -263,6 +278,35 @@ export interface CategorizationResultData {
   description?: string;
   dry_run?: boolean;
   metadata?: Record<string, unknown>;
+}
+
+export interface ContextChangedData {
+  type: "context_changed";
+  key: string;
+  command: string;
+  object_type?: string;
+  mutable?: boolean;
+  persist?: string;
+  source_kind?: string;
+  source_id?: string | null;
+}
+
+export interface ContextPersistFailedData {
+  type: "context_persist_failed";
+  key: string;
+  command: string;
+  source_kind?: string;
+  source_id?: string | null;
+  error?: string;
+  traceback?: string;
+}
+
+export interface ContextPersistedData {
+  type: "context_persisted";
+  key: string;
+  command: string;
+  source_kind?: string;
+  source_id?: string | null;
 }
 
 export interface ConversationIdData {
@@ -392,6 +436,9 @@ export interface WorkflowStepData {
 export type TypedDataPayload =
   | AudioOutputData
   | CategorizationResultData
+  | ContextChangedData
+  | ContextPersistFailedData
+  | ContextPersistedData
   | ConversationIdData
   | ConversationLabeledData
   | FetchResultsData

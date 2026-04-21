@@ -7,7 +7,6 @@ import StoreProvider from "@/providers/StoreProvider";
 import { InitialReduxState, LiteInitialReduxState } from "@/types/reduxTypes";
 import { PublicAuthSync } from "./PublicAuthSync";
 import OverlayController from "@/components/overlays/OverlayController";
-import { ThemeProvider } from "@/styles/themes/ThemeProvider";
 
 interface PublicProvidersProps {
   children: React.ReactNode;
@@ -31,13 +30,11 @@ export function PublicProviders({
   return (
     <ReactQueryProvider>
       <StoreProvider initialState={initialState as Partial<InitialReduxState> & LiteInitialReduxState}>
-        <ThemeProvider>
-          <TooltipProvider delayDuration={200}>
-            <PublicAuthSync />
-            <OverlayController />
-            {children}
-          </TooltipProvider>
-        </ThemeProvider>
+        <TooltipProvider delayDuration={200}>
+          <PublicAuthSync />
+          <OverlayController />
+          {children}
+        </TooltipProvider>
       </StoreProvider>
     </ReactQueryProvider>
   );

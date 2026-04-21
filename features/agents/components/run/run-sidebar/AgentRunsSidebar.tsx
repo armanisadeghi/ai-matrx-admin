@@ -12,20 +12,9 @@ import {
 import { selectLatestConversationId } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
 import { fetchAgentConversations } from "@/features/agents/redux/conversation-list";
 import { makeSelectAgentConversations } from "@/features/agents/redux/conversation-list";
-import type { AgentConversationListItem } from "@/features/agents/redux/conversation-list";
+import type { ConversationListItem } from "@/features/agents/redux/conversation-list";
 import { AgentLauncherSidebarTester } from "../../run-controls/AgentLauncherSidebarTester";
 import { SidebarHeader } from "./SidebarHeader";
-
-// Module-level cache — checked once per session, avoids repeated 404 noise
-// when the agent_runs table hasn't been created by the Python backend yet.
-let agentRunsTableExists: boolean | null = null;
-
-interface AgentRun {
-  id: string;
-  name: string | null;
-  created_at: string | null;
-  message_count?: number | null;
-}
 
 interface AgentRunsSidebarProps {
   agentId: string;
@@ -34,19 +23,6 @@ interface AgentRunsSidebarProps {
   conversationIdFromUrl?: string;
   currentRunId?: string;
   onToggleSidebar: () => void;
-}
-
-function formatDate(iso: string | null): string {
-  if (!iso) return "";
-  const d = new Date(iso);
-  const now = new Date();
-  const diffMs = now.getTime() - d.getTime();
-  const diffDays = Math.floor(diffMs / 86_400_000);
-  if (diffDays === 0)
-    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  if (diffDays === 1) return "Yesterday";
-  if (diffDays < 7) return `${diffDays}d ago`;
-  return d.toLocaleDateString([], { month: "short", day: "numeric" });
 }
 
 export function AgentRunsSidebar({
@@ -168,7 +144,7 @@ function ConversationListRow({
   isActive,
   onSelect,
 }: {
-  conv: AgentConversationListItem;
+  conv: ConversationListItem;
   isActive: boolean;
   onSelect: () => void;
 }) {

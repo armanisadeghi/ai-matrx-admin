@@ -158,15 +158,6 @@ const AnnouncementsViewer = dynamic(
   { ssr: false },
 );
 
-// QuickSaveModal — wraps in NotesProvider so it works outside the notes page
-const QuickSaveModalWithProvider = dynamic(
-  () =>
-    import("@/features/notes/actions/QuickNoteSaveModal").then((mod) => ({
-      default: mod.QuickNoteSaveModal,
-    })),
-  { ssr: false },
-);
-
 const EmailInputDialog = dynamic(
   () => import("@/components/dialogs/EmailInputDialog"),
   { ssr: false },
@@ -462,6 +453,19 @@ const NotesBetaWindow = dynamic(
   { ssr: false },
 );
 
+const QuickNoteSaveWindow = dynamic(
+  () => import("@/features/window-panels/windows/notes/QuickNoteSaveWindow"),
+  { ssr: false },
+);
+
+const QuickNoteSaveOverlay = dynamic(
+  () =>
+    import("@/features/notes/actions/quick-save/QuickNoteSaveOverlay").then(
+      (m) => ({ default: m.QuickNoteSaveOverlay }),
+    ),
+  { ssr: false },
+);
+
 const ContentEditorWindow = dynamic(
   () =>
     import("@/features/window-panels/windows/content-editors/ContentEditorWindow").then(
@@ -478,17 +482,51 @@ const ContentEditorListWindow = dynamic(
   { ssr: false },
 );
 
+const CodeEditorWindow = dynamic(
+  () =>
+    import("@/features/window-panels/windows/code/CodeEditorWindow").then(
+      (m) => ({ default: m.CodeEditorWindow }),
+    ),
+  { ssr: false },
+);
+
+const CodeFileManagerWindow = dynamic(
+  () =>
+    import("@/features/window-panels/windows/code/CodeFileManagerWindow").then(
+      (m) => ({ default: m.CodeFileManagerWindow }),
+    ),
+  { ssr: false },
+);
+
+const QuickSaveCodeDialog = dynamic(
+  () =>
+    import("@/features/code-files/actions/QuickSaveCodeDialog").then((m) => ({
+      default: m.QuickSaveCodeDialog,
+    })),
+  { ssr: false },
+);
+
+const SmartCodeEditorWindow = dynamic(
+  () =>
+    import("@/features/window-panels/windows/smart-code-editor/SmartCodeEditorWindow").then(
+      (m) => ({ default: m.SmartCodeEditorWindow }),
+    ),
+  { ssr: false },
+);
+
+const MultiFileSmartCodeEditorWindow = dynamic(
+  () =>
+    import("@/features/window-panels/windows/multi-file-smart-code-editor/MultiFileSmartCodeEditorWindow").then(
+      (m) => ({ default: m.MultiFileSmartCodeEditorWindow }),
+    ),
+  { ssr: false },
+);
+
 const ContentEditorWorkspaceWindow = dynamic(
   () =>
     import("@/features/window-panels/windows/content-editors/ContentEditorWorkspaceWindow").then(
       (m) => ({ default: m.ContentEditorWorkspaceWindow }),
     ),
-  { ssr: false },
-);
-
-const VoicePadAdvanced = dynamic(
-  () =>
-    import("@/components/official-candidate/voice-pad/components/VoicePadAdvanced"),
   { ssr: false },
 );
 
@@ -562,6 +600,11 @@ const AgentSettingsWindow = dynamic(
 
 const AgentRunHistoryWindow = dynamic(
   () => import("@/features/window-panels/windows/agents/AgentRunHistoryWindow"),
+  { ssr: false },
+);
+
+const AgentRunWindow = dynamic(
+  () => import("@/features/window-panels/windows/agents/AgentRunWindow"),
   { ssr: false },
 );
 
@@ -758,6 +801,17 @@ export const OverlayController: React.FC = () => {
     selectOpenInstances(s, "notesBetaWindow"),
   );
 
+  const isQuickNoteSaveWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "quickNoteSaveWindow"),
+  );
+  const quickNoteSaveWindowData = useAppSelector((s) =>
+    selectOverlayData(s, "quickNoteSaveWindow"),
+  );
+
+  const saveToNotesFullscreenInstances = useAppSelector((s) =>
+    selectOpenInstances(s, "saveToNotesFullscreen"),
+  );
+
   const contentEditorWindowInstances = useAppSelector((s) =>
     selectOpenInstances(s, "contentEditorWindow"),
   );
@@ -767,13 +821,24 @@ export const OverlayController: React.FC = () => {
   const contentEditorWorkspaceWindowInstances = useAppSelector((s) =>
     selectOpenInstances(s, "contentEditorWorkspaceWindow"),
   );
+  const codeFileManagerWindowInstances = useAppSelector((s) =>
+    selectOpenInstances(s, "codeFileManagerWindow"),
+  );
+  const codeEditorWindowInstances = useAppSelector((s) =>
+    selectOpenInstances(s, "codeEditorWindow"),
+  );
+  const saveToCodeInstances = useAppSelector((s) =>
+    selectOpenInstances(s, "saveToCode"),
+  );
+  const smartCodeEditorWindowInstances = useAppSelector((s) =>
+    selectOpenInstances(s, "smartCodeEditorWindow"),
+  );
+  const multiFileSmartCodeEditorWindowInstances = useAppSelector((s) =>
+    selectOpenInstances(s, "multiFileSmartCodeEditorWindow"),
+  );
 
   const isScraperWindowOpen = useAppSelector((s) =>
     selectIsOverlayOpen(s, "scraperWindow"),
-  );
-
-  const isVoicePadOpen = useAppSelector((s) =>
-    selectIsOverlayOpen(s, "voicePad"),
   );
 
   const isContextSwitcherWindowOpen = useAppSelector((s) =>
@@ -837,6 +902,12 @@ export const OverlayController: React.FC = () => {
   );
   const agentRunHistoryWindowData = useAppSelector((s) =>
     selectOverlayData(s, "agentRunHistoryWindow"),
+  );
+  const isAgentRunWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "agentRunWindow"),
+  );
+  const agentRunWindowData = useAppSelector((s) =>
+    selectOverlayData(s, "agentRunWindow"),
   );
   const isAgentImportWindowOpen = useAppSelector((s) =>
     selectIsOverlayOpen(s, "agentImportWindow"),
@@ -1427,16 +1498,50 @@ export const OverlayController: React.FC = () => {
           initialActiveTab={
             (notesWindowData?.activeTabId as string | null | undefined) ?? null
           }
+          singleNoteId={
+            (notesWindowData?.singleNoteId as string | null | undefined) ?? null
+          }
         />
       )}
 
-      {notesBetaWindowInstances.map(({ instanceId }) => (
+      {notesBetaWindowInstances.map(({ instanceId, data }) => (
         <NotesBetaWindow
           key={instanceId}
           windowInstanceId={instanceId}
+          title={(data as { title?: string } | null)?.title ?? "Notes Beta"}
           onClose={() => close("notesBetaWindow", instanceId)}
         />
       ))}
+
+      {isQuickNoteSaveWindowOpen && (
+        <QuickNoteSaveWindow
+          isOpen={true}
+          onClose={() => close("quickNoteSaveWindow")}
+          initialContent={
+            (quickNoteSaveWindowData?.initialContent as string | undefined) ??
+            ""
+          }
+          defaultFolder={
+            (quickNoteSaveWindowData?.defaultFolder as string | undefined) ??
+            "Scratch"
+          }
+        />
+      )}
+
+      {saveToNotesFullscreenInstances.map(({ instanceId, data }) => {
+        const d = data as { content: string; defaultFolder?: string } | null;
+        if (!d) return null;
+        return (
+          <QuickNoteSaveOverlay
+            key={instanceId}
+            isOpen={true}
+            onClose={() => close("saveToNotesFullscreen", instanceId)}
+            initialContent={d.content}
+            defaultFolder={d.defaultFolder ?? "Scratch"}
+            onSaved={() => close("saveToNotesFullscreen", instanceId)}
+          />
+        );
+      })}
 
       {contentEditorWindowInstances.map(({ instanceId, data }) => (
         <ContentEditorWindow
@@ -1478,7 +1583,100 @@ export const OverlayController: React.FC = () => {
         />
       ))}
 
-      {isVoicePadOpen && <VoicePadAdvanced />}
+      {codeEditorWindowInstances.map(({ instanceId, data }) => (
+        <CodeEditorWindow
+          key={instanceId}
+          windowInstanceId={instanceId}
+          files={data?.files ?? []}
+          fileIds={data?.fileIds ?? undefined}
+          activeFileId={data?.activeFileId ?? undefined}
+          autoFormatOnOpen={data?.autoFormatOnOpen ?? false}
+          defaultWordWrap={data?.defaultWordWrap ?? "off"}
+          title={data?.title ?? null}
+          onClose={() => close("codeEditorWindow", instanceId)}
+        />
+      ))}
+
+      {codeFileManagerWindowInstances.map(({ instanceId }) => (
+        <CodeFileManagerWindow
+          key={instanceId}
+          windowInstanceId={instanceId}
+          onClose={() => close("codeFileManagerWindow", instanceId)}
+        />
+      ))}
+
+      {/* Save to Code — instanced so multiple save dialogs can be open. */}
+      {saveToCodeInstances.map(({ instanceId, data }) => {
+        const d = data as {
+          content?: string;
+          language?: string;
+          suggestedName?: string;
+          defaultFolderId?: string | null;
+        } | null;
+        if (!d || typeof d.content !== "string") return null;
+        return (
+          <QuickSaveCodeDialog
+            key={instanceId}
+            open={true}
+            onOpenChange={(open) => {
+              if (!open) close("saveToCode", instanceId);
+            }}
+            initialContent={d.content}
+            initialLanguage={d.language}
+            suggestedName={d.suggestedName}
+            defaultFolderId={d.defaultFolderId ?? null}
+          />
+        );
+      })}
+
+      {smartCodeEditorWindowInstances.map(({ instanceId, data }) => {
+        // The 4-column editor takes an `agents` array rather than a single
+        // agentId — each entry carries its own `codeVariableKey` mapping.
+        const agents = Array.isArray(data?.agents) ? data.agents : null;
+        if (!agents || agents.length === 0) return null;
+        return (
+          <SmartCodeEditorWindow
+            key={instanceId}
+            windowInstanceId={instanceId}
+            callbackGroupId={data?.callbackGroupId ?? null}
+            agents={agents}
+            defaultPickerAgentId={data?.defaultPickerAgentId ?? undefined}
+            initialCode={data?.initialCode ?? ""}
+            language={data?.language ?? "plaintext"}
+            files={data?.files ?? undefined}
+            initialActiveFilePath={data?.initialActiveFilePath ?? undefined}
+            filePath={data?.filePath ?? undefined}
+            selection={data?.selection ?? undefined}
+            diagnostics={data?.diagnostics ?? undefined}
+            workspaceName={data?.workspaceName ?? undefined}
+            workspaceFolders={data?.workspaceFolders ?? undefined}
+            gitBranch={data?.gitBranch ?? undefined}
+            gitStatus={data?.gitStatus ?? undefined}
+            agentSkills={data?.agentSkills ?? undefined}
+            title={data?.title ?? null}
+            onClose={() => close("smartCodeEditorWindow", instanceId)}
+          />
+        );
+      })}
+
+      {multiFileSmartCodeEditorWindowInstances.map(({ instanceId, data }) => {
+        if (!data?.agentId || typeof data.agentId !== "string") return null;
+        return (
+          <MultiFileSmartCodeEditorWindow
+            key={instanceId}
+            windowInstanceId={instanceId}
+            callbackGroupId={data?.callbackGroupId ?? null}
+            agentId={data.agentId}
+            files={data?.files ?? []}
+            initialActiveFile={data?.initialActiveFile ?? null}
+            title={data?.title ?? null}
+            defaultWordWrap={data?.defaultWordWrap ?? "off"}
+            autoFormatOnOpen={data?.autoFormatOnOpen ?? false}
+            variables={data?.variables ?? null}
+            onClose={() => close("multiFileSmartCodeEditorWindow", instanceId)}
+          />
+        );
+      })}
 
       {/* ── Instanced overlays — .map() renders each open instance ─────── */}
       {/* Each instance gets a stable key so React correctly reconciles them. */}
@@ -1517,6 +1715,7 @@ export const OverlayController: React.FC = () => {
           title={data?.title}
           description={data?.description}
           showSaveButton={data?.showSaveButton}
+          isAgentSystem={data?.isAgentSystem}
           onSave={(markdownContent: string) => {
             // Persist the saved content back to overlayDataSlice so this instance
             // restores to the last-saved state if it is reopened in the same session.
@@ -1612,20 +1811,18 @@ export const OverlayController: React.FC = () => {
           />
         ))}
 
-      {/* Save to Notes — instanced so multiple saves can be open at once */}
+      {/* Save to Notes — renders as a floating Window (default target). */}
       {saveToNotesInstances.map(({ instanceId, data }) => {
         const d = data as { content: string; defaultFolder?: string } | null;
         if (!d) return null;
         return (
-          <QuickSaveModalWithProvider
+          <QuickNoteSaveWindow
             key={instanceId}
-            open={true}
-            onOpenChange={(open: boolean) => {
-              if (!open) close("saveToNotes", instanceId);
-            }}
+            instanceId={instanceId}
+            isOpen={true}
+            onClose={() => close("saveToNotes", instanceId)}
             initialContent={d.content}
             defaultFolder={d.defaultFolder ?? "Scratch"}
-            onSaved={() => close("saveToNotes", instanceId)}
           />
         );
       })}
@@ -1946,6 +2143,17 @@ export const OverlayController: React.FC = () => {
           agentId={agentRunHistoryWindowData?.agentId as string | null}
           initialSelectedConversationId={
             agentRunHistoryWindowData?.selectedConversationId as string | null
+          }
+        />
+      )}
+
+      {isAgentRunWindowOpen && (
+        <AgentRunWindow
+          isOpen={true}
+          onClose={() => close("agentRunWindow")}
+          initialAgentId={agentRunWindowData?.agentId as string | null}
+          initialSelectedConversationId={
+            agentRunWindowData?.selectedConversationId as string | null
           }
         />
       )}

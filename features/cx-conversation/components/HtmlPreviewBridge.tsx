@@ -25,6 +25,7 @@ interface HtmlPreviewBridgeProps {
   description?: string;
   onSave?: (markdownContent: string) => void;
   showSaveButton?: boolean;
+  isAgentSystem?: boolean;
 }
 
 export function HtmlPreviewBridge({
@@ -36,6 +37,7 @@ export function HtmlPreviewBridge({
   description = "Edit markdown, preview HTML, and publish your content",
   onSave,
   showSaveButton,
+  isAgentSystem,
 }: HtmlPreviewBridgeProps) {
   const dispatch = useAppDispatch();
   const user = useAppSelector(selectUser);
@@ -153,6 +155,7 @@ export function HtmlPreviewBridge({
   return (
     <HtmlPreviewFullScreenEditor
       isOpen={true}
+      isAgentSystem={isAgentSystem}
       onClose={handleClose}
       htmlPreviewState={htmlPreviewState}
       title={title}

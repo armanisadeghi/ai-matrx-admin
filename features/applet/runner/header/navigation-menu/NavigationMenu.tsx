@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Menu, Crown, Settings, Sun, Moon, Bug } from "lucide-react";
-import { useTheme } from "@/hooks/useTheme";
+import { setMode } from "@/styles/themes/themeSlice";
 import Image from "next/image";
 import Link from "next/link";
 import { navigationLinks } from "@/constants/navigation-links";
@@ -69,7 +69,8 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = ({
   const dispatch = useAppDispatch();
   const router = useRouter();
   const isMobile = useIsMobile();
-  const { theme, setTheme } = useTheme();
+  const theme = useAppSelector((s) => s.theme.mode);
+  const setTheme = (t: "light" | "dark") => dispatch(setMode(t));
   const user = useAppSelector((state: RootState) => state.user);
   const displayName =
     user.userMetadata.name ||

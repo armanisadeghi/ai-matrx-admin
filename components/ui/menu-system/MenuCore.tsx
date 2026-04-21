@@ -5,9 +5,9 @@ import { MenuDefinition, MenuRenderProps, MenuItemDefinition } from "./types";
 import { MenuRegistry } from "./MenuRegistry";
 import { GlobalMenuItems } from "./GlobalMenuItems";
 import { useRouter } from "next/navigation";
-import { useTheme } from "@/styles/themes/ThemeProvider";
 import { createClient } from "@/utils/supabase/client";
-import { useAppDispatch } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { toggleMode } from "@/styles/themes/themeSlice";
 import { createTaskFromPresetQuick } from "@/lib/redux/socket-io/thunks/createTaskFromPreset";
 
 interface MenuCoreProps extends MenuRenderProps {
@@ -27,10 +27,9 @@ export const MenuCore: React.FC<MenuCoreProps> = ({
     renderSeparator,
 }) => {
     const router = useRouter();
-    const themeContext = useTheme();
-    // @ts-ignore - useTheme may return fallback object without toggleMode, but we know it exists in our context
-    const { mode, toggleMode } = themeContext;
+    const mode = useAppSelector((s) => s.theme.mode);
     const dispatch = useAppDispatch();
+    const handleToggleMode = () => dispatch(toggleMode());
 
     // Get the menu definition
     const menuDefinition = MenuRegistry.get(menuId);
@@ -89,7 +88,7 @@ export const MenuCore: React.FC<MenuCoreProps> = ({
             if (item.id === 'theme') {
                 finalItem = {
                     ...finalItem,
-                    onClick: toggleMode,
+                    onClick: handleToggleMode,
                 };
             } else if (item.id === 'logout') {
                 finalItem = {

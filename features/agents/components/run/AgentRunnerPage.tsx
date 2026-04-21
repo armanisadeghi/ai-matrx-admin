@@ -23,7 +23,7 @@ import { createManualInstance } from "@/features/agents/redux/execution-system/t
 import { loadConversation } from "@/features/agents/redux/execution-system/thunks/load-conversation.thunk";
 import { AgentLauncherSidebarTester } from "../run-controls/AgentLauncherSidebarTester";
 import { AgentConversationColumn } from "../shared/AgentConversationColumn";
-import { Loader2, TestTube2 } from "lucide-react";
+import { AlertTriangle, Loader2, RotateCw, TestTube2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
@@ -51,6 +51,8 @@ export function AgentRunnerPage({ agentId }: AgentRunnerPageProps) {
   );
 
   const [isInitializing, setIsInitializing] = useState(true);
+  const [initError, setInitError] = useState<string | null>(null);
+  const [initAttempt, setInitAttempt] = useState(0);
 
   // Mobile drawer state
   const [testModesDrawerOpen, setTestModesDrawerOpen] = useState(false);
@@ -61,12 +63,18 @@ export function AgentRunnerPage({ agentId }: AgentRunnerPageProps) {
     let cancelled = false;
     const init = async () => {
       setIsInitializing(true);
+      setInitError(null);
       try {
         if (!executionPayload.isReady) {
           await dispatch(fetchAgentExecutionMinimal(agentId)).unwrap();
         }
       } catch (err) {
         console.error("Failed to load agent execution payload:", err);
+        if (!cancelled) {
+          setInitError(
+            err instanceof Error ? err.message : "Failed to load agent.",
+          );
+        }
       } finally {
         if (!cancelled) setIsInitializing(false);
       }
@@ -76,7 +84,7 @@ export function AgentRunnerPage({ agentId }: AgentRunnerPageProps) {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [agentId]);
+  }, [agentId, initAttempt]);
 
   const sourceFeature = "agent-runner";
   const surfaceKey = `${sourceFeature}:${agentId}`;
@@ -97,14 +105,6 @@ export function AgentRunnerPage({ agentId }: AgentRunnerPageProps) {
   // loads the full message history, and switches focus.
   const lastSyncedUrl = useRef<string | null>(null);
   useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.log(
-      "[AgentRunnerPage] URL-sync effect fired: urlCid=%s isInitializing=%s currentCid=%s lastSynced=%s",
-      conversationIdFromUrl ?? "(none)",
-      isInitializing,
-      conversationId ?? "(none)",
-      lastSyncedUrl.current ?? "(none)",
-    );
     if (!conversationIdFromUrl || isInitializing) return;
     if (conversationIdFromUrl === lastSyncedUrl.current) return;
     if (conversationIdFromUrl === conversationId) return;
@@ -115,20 +115,7 @@ export function AgentRunnerPage({ agentId }: AgentRunnerPageProps) {
         !!store.getState().conversations?.byConversationId[
           conversationIdFromUrl
         ];
-      // eslint-disable-next-line no-console
-      console.log(
-        "[AgentRunnerPage] syncing %s (instance exists in conversations slice: %s)",
-        conversationIdFromUrl,
-        exists,
-      );
-
       if (!exists) {
-        // eslint-disable-next-line no-console
-        console.log(
-          "[AgentRunnerPage] createManualInstance agentId=%s conversationId=%s apiEndpointMode=agent",
-          agentId,
-          conversationIdFromUrl,
-        );
         try {
           await dispatch(
             createManualInstance({
@@ -143,13 +130,6 @@ export function AgentRunnerPage({ agentId }: AgentRunnerPageProps) {
           return;
         }
       }
-
-      // eslint-disable-next-line no-console
-      console.log(
-        "[AgentRunnerPage] dispatching loadConversation conversationId=%s surfaceKey=%s",
-        conversationIdFromUrl,
-        surfaceKey,
-      );
       try {
         await dispatch(
           loadConversation({
@@ -157,11 +137,6 @@ export function AgentRunnerPage({ agentId }: AgentRunnerPageProps) {
             surfaceKey,
           }),
         ).unwrap();
-        // eslint-disable-next-line no-console
-        console.log(
-          "[AgentRunnerPage] loadConversation resolved for %s",
-          conversationIdFromUrl,
-        );
       } catch (err) {
         // eslint-disable-next-line no-console
         console.error("[AgentRunnerPage] loadConversation failed", err);
@@ -169,6 +144,36 @@ export function AgentRunnerPage({ agentId }: AgentRunnerPageProps) {
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversationIdFromUrl, isInitializing, conversationId]);
+
+  if (initError && !isInitializing) {
+    return (
+      <div className="flex items-center justify-center h-full p-6">
+        <div className="max-w-md w-full rounded-lg border border-destructive/40 bg-destructive/5 p-5 flex flex-col gap-3">
+          <div className="flex items-center gap-2 text-destructive">
+            <AlertTriangle className="w-5 h-5" />
+            <span className="font-medium">
+              Couldn&apos;t reach the agent service
+            </span>
+          </div>
+          <p className="text-sm text-muted-foreground leading-snug">
+            {initError}
+          </p>
+          <p className="text-xs text-muted-foreground leading-snug">
+            Your work is safe — anything you had typed will be restored once the
+            agent loads.
+          </p>
+          <Button
+            size="sm"
+            className="self-start gap-1.5"
+            onClick={() => setInitAttempt((n) => n + 1)}
+          >
+            <RotateCw className="w-3.5 h-3.5" />
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   if (isInitializing || !conversationId) {
     return (
@@ -190,21 +195,6 @@ export function AgentRunnerPage({ agentId }: AgentRunnerPageProps) {
         conversationIdFromUrl={conversationIdFromUrl}
       />
 
-      {/* Mobile toolbar — Test Modes only (History is in shell sidebar) */}
-      {isMobile && (
-        <div className="shrink-0 flex items-center gap-1 px-2 py-1 border-b border-border bg-background">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 px-2 text-xs gap-1.5"
-            onClick={() => setTestModesDrawerOpen(true)}
-          >
-            <TestTube2 className="w-3.5 h-3.5" />
-            Test Modes
-          </Button>
-        </div>
-      )}
-
       {/* Main conversation area */}
       <div className="flex-1 overflow-hidden flex justify-center min-w-0">
         <AgentConversationColumn
@@ -217,29 +207,6 @@ export function AgentRunnerPage({ agentId }: AgentRunnerPageProps) {
           }}
         />
       </div>
-
-      {/* Mobile Test Modes drawer */}
-      {isMobile && (
-        <Drawer
-          open={testModesDrawerOpen}
-          onOpenChange={setTestModesDrawerOpen}
-        >
-          <DrawerContent className="max-h-[80dvh]">
-            <DrawerHeader className="pb-2">
-              <DrawerTitle className="text-sm">Test Display Modes</DrawerTitle>
-              <DrawerDescription className="text-xs">
-                Launch the agent in different display modes
-              </DrawerDescription>
-            </DrawerHeader>
-            <div className="flex-1 overflow-y-auto min-h-0 pb-safe">
-              <AgentLauncherSidebarTester
-                conversationId={conversationId}
-                surfaceKey={sidebarSurfaceKey}
-              />
-            </div>
-          </DrawerContent>
-        </Drawer>
-      )}
     </div>
   );
 }

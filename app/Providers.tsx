@@ -2,7 +2,6 @@
 
 import React from "react";
 import { Toaster } from "@/components/ui/toaster";
-import { ThemeProvider } from "@/styles/themes/ThemeProvider";
 import StoreProvider from "@/providers/StoreProvider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { InitialReduxState } from "@/types/reduxTypes";
@@ -18,6 +17,11 @@ import { UniformHeightProvider } from "@/features/applet/runner/layouts/core/Uni
 import { ReactQueryProvider } from "@/providers/ReactQueryProvider";
 import { TranscriptsProvider } from "@/features/transcripts/context/TranscriptsContext";
 import { AudioRecoveryProvider } from "@/features/audio/providers/AudioRecoveryProvider";
+import {
+  RequestRecoveryProvider,
+  RecoveryWindow,
+  RecoveryNudge,
+} from "@/features/request-recovery";
 import DeferredSingletons from "./DeferredSingletons";
 import {
   GlobalTaskShortcut,
@@ -64,8 +68,7 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
     // <SchemaProvider initialSchema={initialReduxState?.globalCache}>
     <ReactQueryProvider>
       <StoreProvider initialState={initialReduxState}>
-        <ThemeProvider>
-          <PersistentComponentProvider>
+        <PersistentComponentProvider>
             {/* <EntityProvider> */}
             <ContextMenuProvider>
               <ToastProvider>
@@ -83,10 +86,14 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                             <SelectedImagesProvider>
                               <TranscriptsProvider>
                                 <AudioRecoveryProvider>
-                                  {children}
-                                  <DeferredSingletons />
-                                  <GlobalTaskShortcut />
-                                  <CreateTaskFromSourceDialog />
+                                  <RequestRecoveryProvider>
+                                    {children}
+                                    <RecoveryWindow />
+                                    <RecoveryNudge />
+                                    <DeferredSingletons />
+                                    <GlobalTaskShortcut />
+                                    <CreateTaskFromSourceDialog />
+                                  </RequestRecoveryProvider>
                                 </AudioRecoveryProvider>
                               </TranscriptsProvider>
                             </SelectedImagesProvider>
@@ -103,7 +110,6 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
             </ContextMenuProvider>
             {/* </EntityProvider> */}
           </PersistentComponentProvider>
-        </ThemeProvider>
       </StoreProvider>
     </ReactQueryProvider>
     // </SchemaProvider>

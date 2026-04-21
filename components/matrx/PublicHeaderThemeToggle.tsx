@@ -2,12 +2,15 @@
 
 import React from 'react';
 import { Moon, Sun } from 'lucide-react';
-import { useTheme } from '@/hooks/useTheme';
+import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
+import { setMode } from '@/styles/themes/themeSlice';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 export function PublicHeaderThemeToggle() {
-    const { theme, setTheme } = useTheme();
+    const theme = useAppSelector((s) => s.theme.mode);
+    const dispatch = useAppDispatch();
+    const setTheme = (t: 'light' | 'dark') => dispatch(setMode(t));
     const [mounted, setMounted] = React.useState(false);
 
     // Avoid hydration mismatch

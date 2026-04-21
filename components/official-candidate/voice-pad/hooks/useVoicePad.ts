@@ -7,25 +7,34 @@ import {
   openOverlay,
   closeOverlay,
   selectIsOverlayOpen,
+  DEFAULT_INSTANCE_ID,
 } from "@/lib/redux/slices/overlaySlice";
+import type { VoicePadVariant } from "@/lib/redux/slices/voicePadSlice";
 
-export function useVoicePad() {
-  const dispatch = useAppDispatch();
-  const isOpen = useAppSelector((state) =>
-    selectIsOverlayOpen(state, "voicePad"),
-  );
+function makeHook(overlayId: VoicePadVariant) {
+  return function useVariant(instanceId: string = DEFAULT_INSTANCE_ID) {
+    const dispatch = useAppDispatch();
+    const isOpen = useAppSelector((state) =>
+      selectIsOverlayOpen(state, overlayId, instanceId),
+    );
 
-  const toggle = useCallback(() => {
-    dispatch(toggleOverlay({ overlayId: "voicePad" }));
-  }, [dispatch]);
+    const toggle = useCallback(() => {
+      dispatch(toggleOverlay({ overlayId, instanceId }));
+    }, [dispatch, instanceId]);
 
-  const open = useCallback(() => {
-    dispatch(openOverlay({ overlayId: "voicePad" }));
-  }, [dispatch]);
+    const open = useCallback(() => {
+      dispatch(openOverlay({ overlayId, instanceId }));
+    }, [dispatch, instanceId]);
 
-  const close = useCallback(() => {
-    dispatch(closeOverlay({ overlayId: "voicePad" }));
-  }, [dispatch]);
+    const close = useCallback(() => {
+      dispatch(closeOverlay({ overlayId, instanceId }));
+    }, [dispatch, instanceId]);
 
-  return { isOpen, toggle, open, close };
+    return { isOpen, toggle, open, close };
+  };
 }
+
+/** Simple voice pad — defaults to singleton instance. */
+export const useVoicePad = makeHook("voicePad");
+export const useVoicePadAdvanced = makeHook("voicePadAdvanced");
+export const useVoicePadAi = makeHook("voicePadAi");

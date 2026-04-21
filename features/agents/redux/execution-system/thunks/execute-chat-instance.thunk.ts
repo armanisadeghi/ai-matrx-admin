@@ -52,6 +52,15 @@ import {
   registerAbortController,
   unregisterAbortController,
 } from "./abort-registry";
+import { resilientFetch } from "@/lib/net/resilient-fetch";
+import { toNetError } from "@/lib/net/errors";
+import { payloadSafetyStore } from "@/lib/persistence/payloadSafetyStore";
+import {
+  startRequest as startNetRequest,
+  setPhase as setNetPhase,
+  beatHeartbeat as beatNetHeartbeat,
+  finishRequest as finishNetRequest,
+} from "@/lib/redux/net/netRequestsSlice";
 import { assertConversationIdMatches } from "../utils/assert-conversation-id";
 import { callbackManager } from "@/utils/callbackManager";
 import {
@@ -343,6 +352,7 @@ export const executeChatInstance = createAsyncThunk<
   "instances/executeChat",
   async ({ conversationId }, { getState, dispatch, rejectWithValue }) => {
     const requestId = generateRequestId();
+    let recoveryId: string | null = null;
 
     try {
       const state = getState() as RootState;
@@ -419,6 +429,17 @@ export const executeChatInstance = createAsyncThunk<
       dispatch(setInstanceStatus({ conversationId, status: "running" }));
       dispatch(setRequestStatus({ requestId, status: "connecting" }));
 
+      // Also register in the global netRequests slice so the connection-health
+      // UI (RequestRecoveryProvider, error cards, etc.) can see this request.
+      dispatch(
+        startNetRequest({
+          id: requestId,
+          kind: "agent-run",
+          label: `Agent: ${instance.agentId}`,
+          groupKey: conversationId,
+        }),
+      );
+
       // Consume any pending cache-bypass flags for this conversation —
       // direct DB writes (edits, forks, deletes) leave the server's agent
       // cache stale; this one-shot flag rebuilds it.
@@ -436,16 +457,49 @@ export const executeChatInstance = createAsyncThunk<
 
       const submitAt = performance.now();
 
+      // Persist to recovery store BEFORE firing the network call. If the tab
+      // closes or the server never responds, this record stays in IndexedDB
+      // and the RequestRecoveryProvider will surface it on next load.
+      try {
+        recoveryId = await payloadSafetyStore.savePending({
+          kind: "agent-run",
+          label:
+            typeof window !== "undefined"
+              ? `Agent run — ${document?.title ?? "matrx"}`
+              : "Agent run",
+          routeHref:
+            typeof window !== "undefined"
+              ? window.location.pathname + window.location.search
+              : "/agents",
+          payload: outboundPayload,
+          rawUserInput: userInputText || undefined,
+        });
+      } catch {
+        // IndexedDB unavailable — proceed without recovery coverage.
+        recoveryId = null;
+      }
+
       // Always POST to the manual endpoint
       const url = `${baseUrl}${ENDPOINTS.ai.manual}`;
       const abortController = new AbortController();
       registerAbortController(conversationId, abortController);
-      const response = await fetch(url, {
-        method: "POST",
-        headers,
-        body: JSON.stringify(outboundPayload),
-        signal: abortController.signal,
-      });
+
+      // Streaming request: bounded connect timeout, no wall-clock ceiling
+      // (the stream-monitor / heartbeat watchdog is the streaming ceiling).
+      const { response } = await resilientFetch(
+        url,
+        {
+          method: "POST",
+          headers,
+          body: JSON.stringify(outboundPayload),
+        },
+        {
+          connectTimeoutMs: 15_000,
+          totalTimeoutMs: null,
+          signal: abortController.signal,
+          throwOnHttpError: false,
+        },
+      );
 
       if (!response.ok) {
         let serverMessage = `${response.status} ${response.statusText}`;
@@ -478,6 +532,7 @@ export const executeChatInstance = createAsyncThunk<
 
       dispatch(setInstanceStatus({ conversationId, status: "streaming" }));
       dispatch(setRequestStatus({ requestId, status: "streaming" }));
+      dispatch(setNetPhase({ id: requestId, phase: "streaming" }));
 
       const currentUiState = (getState() as RootState).instanceUIState
         ?.byConversationId[conversationId];
@@ -491,10 +546,20 @@ export const executeChatInstance = createAsyncThunk<
         dispatch,
         getState: getState as () => RootState,
         jsonExtraction: currentUiState?.jsonExtraction ?? undefined,
+        onEvent: () => {
+          dispatch(beatNetHeartbeat(requestId));
+        },
+        abortController,
+        heartbeatTimeoutMs: 30_000,
+        maxLifetimeMs: 600_000,
         userMessageClientTempId,
       });
 
       unregisterAbortController(conversationId);
+      dispatch(finishNetRequest({ id: requestId, phase: "completed" }));
+      if (recoveryId) {
+        void payloadSafetyStore.markSuccess(recoveryId).catch(() => {});
+      }
       return {
         requestId,
         conversationId,
@@ -504,8 +569,34 @@ export const executeChatInstance = createAsyncThunk<
 
       if (error instanceof Error && error.name === "AbortError") {
         dispatch(setInstanceStatus({ conversationId, status: "cancelled" }));
+        dispatch(finishNetRequest({ id: requestId, phase: "cancelled" }));
+        if (recoveryId) {
+          void payloadSafetyStore.deleteEntry(recoveryId).catch(() => {});
+        }
         return rejectWithValue("Cancelled");
       }
+
+      const netErr = toNetError(error);
+      if (recoveryId) {
+        void payloadSafetyStore
+          .markFailed(recoveryId, netErr.message)
+          .catch(() => {});
+      }
+      const phase =
+        netErr.code === "connect-timeout" ||
+        netErr.code === "total-timeout" ||
+        netErr.code === "heartbeat-timeout"
+          ? "timed-out"
+          : "error";
+      dispatch(
+        finishNetRequest({
+          id: requestId,
+          phase,
+          errorCode: netErr.code,
+          errorMessage: netErr.message,
+          retryable: netErr.retryable,
+        }),
+      );
 
       dispatch(
         setRequestStatus({

@@ -3,7 +3,7 @@
 import React, { ReactNode, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import styles from "./ThemedSectionCard.module.css";
-import { useTheme } from "@/styles/themes/ThemeProvider";
+import { useAppSelector } from "@/lib/redux/hooks";
 
 // Available theme options - all standard Tailwind colors
 export type MainColor = "slate" | "gray" | "zinc" | "neutral" | "stone";
@@ -72,7 +72,7 @@ const ThemedSectionCard: React.FC<ThemedSectionCardProps> = ({
   preset = "default",  // Default to original design
 }) => {
   // Use ThemeProvider to detect app's light/dark mode
-  const { mode } = useTheme();
+  const mode = useAppSelector((s) => s.theme.mode);
   
   // Determine if footer should be rendered
   const hasFooter = footerLeft || footerCenter || footerRight;

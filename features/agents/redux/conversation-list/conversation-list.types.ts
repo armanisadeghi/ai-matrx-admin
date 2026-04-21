@@ -24,9 +24,6 @@ export interface ConversationListItem {
   sourceFeature?: string;
 }
 
-/** @deprecated Legacy name. Prefer `ConversationListItem`. */
-export type AgentConversationListItem = ConversationListItem;
-
 export type ConversationListLoadStatus =
   | "idle"
   | "loading"

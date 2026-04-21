@@ -1,6 +1,6 @@
 {
   "name": "app-matrx",
-  "version": "0.3.182",
+  "version": "0.3.190",
   "private": true,
   "scripts": {
     "dev": "set NODE_OPTIONS=--dns-result-order=ipv4first && next dev",
@@ -280,6 +280,7 @@
     "https-browserify": "latest",
     "install": "^0.13.0",
     "jest": "latest",
+    "jest-environment-jsdom": "^30.3.0",
     "jsdom": "latest",
     "os-browserify": "latest",
     "postcss": "latest",

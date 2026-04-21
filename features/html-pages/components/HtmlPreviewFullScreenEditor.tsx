@@ -33,6 +33,7 @@ interface HtmlPreviewFullScreenEditorProps {
   messageId?: string;
   onSave?: (markdownContent: string) => void;
   showSaveButton?: boolean;
+  isAgentSystem?: boolean;
 }
 
 /**
@@ -62,6 +63,7 @@ export default function HtmlPreviewFullScreenEditor({
   messageId,
   onSave,
   showSaveButton = false,
+  isAgentSystem = false,
 }: HtmlPreviewFullScreenEditorProps) {
   const user = useAppSelector(selectUser);
   const [activeTab, setActiveTab] = useState<string>("markdown");
@@ -174,6 +176,7 @@ export default function HtmlPreviewFullScreenEditor({
           state={htmlPreviewState}
           actions={htmlPreviewState}
           user={user}
+          isAgentSystem={isAgentSystem}
         />
       ),
       className: "p-0 overflow-hidden",

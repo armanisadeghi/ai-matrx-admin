@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useMap } from 'react-leaflet';
 import L from 'leaflet';
-import { useTheme } from '@/styles/themes/ThemeProvider';
+import { useAppSelector } from '@/lib/redux/hooks';
 
 interface SearchControlProps {
   position?: 'topleft' | 'topright' | 'bottomleft' | 'bottomright';
@@ -17,7 +17,7 @@ export default function SearchControl({
   placeholder = 'Search for a location'
 }: SearchControlProps) {
   const map = useMap();
-  const { mode } = useTheme();
+  const mode = useAppSelector((s) => s.theme.mode);
   const [isSearching, setIsSearching] = useState(false);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const searchControlRef = useRef<any>(null);

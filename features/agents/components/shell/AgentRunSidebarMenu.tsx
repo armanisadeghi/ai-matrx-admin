@@ -11,7 +11,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectAgentById } from "@/features/agents/redux/agent-definition/selectors";
 import { fetchAgentConversations } from "@/features/agents/redux/conversation-list";
 import { makeSelectAgentConversations } from "@/features/agents/redux/conversation-list";
-import type { AgentConversationListItem } from "@/features/agents/redux/conversation-list";
+import type { ConversationListItem } from "@/features/agents/redux/conversation-list";
 
 interface AgentRunSidebarMenuProps {
   expanded: boolean;
@@ -37,9 +37,9 @@ function formatRelativeDate(iso: string | null): string {
 
 /** Group conversations by agentVersionNumber, sorted highest version first. */
 function groupByVersion(
-  conversations: AgentConversationListItem[],
-): { version: number; items: AgentConversationListItem[] }[] {
-  const map = new Map<number, AgentConversationListItem[]>();
+  conversations: ConversationListItem[],
+): { version: number; items: ConversationListItem[] }[] {
+  const map = new Map<number, ConversationListItem[]>();
   for (const conv of conversations) {
     const v = conv.agentVersionNumber ?? 0;
     if (!map.has(v)) map.set(v, []);
@@ -186,7 +186,7 @@ function VersionGroup({
   onSelect,
 }: {
   version: number;
-  items: AgentConversationListItem[];
+  items: ConversationListItem[];
   activeConversationId: string | undefined;
   onSelect: (convId: string) => void;
 }) {
@@ -245,7 +245,7 @@ function ConversationRow({
   isActive,
   onSelect,
 }: {
-  conv: AgentConversationListItem;
+  conv: ConversationListItem;
   isActive: boolean;
   onSelect: () => void;
 }) {

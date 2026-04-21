@@ -3,13 +3,13 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
-import { cookies } from "next/headers";
 import { Suspense } from "react";
 import { metadata } from "./config/metadata";
 import { viewport } from "./config/viewport";
 import { inter, montserrat, openSans, roboto } from "@/styles/themes/fonts";
 import { PostHogProvider } from "@/providers/PostHogProvider";
 import { SpeedInsights } from "@vercel/speed-insights/next"
+import { SyncBootScript, syncPolicies } from "@/lib/sync";
 
 
 export { metadata, viewport };
@@ -19,14 +19,11 @@ interface RootLayoutProps {
 }
 
 export default async function RootLayout({ children }: RootLayoutProps) {
-    const cookieStore = await cookies();
-    const theme = cookieStore.get("theme")?.value || "dark";
     return (
         <html
             lang="en"
-            data-theme={theme}
             data-scroll-behavior="smooth"
-            className={cn("dark", inter.variable, montserrat.variable, openSans.variable, roboto.variable)}
+            className={cn(inter.variable, montserrat.variable, openSans.variable, roboto.variable)}
             suppressHydrationWarning
         >
             <head>
@@ -35,14 +32,12 @@ export default async function RootLayout({ children }: RootLayoutProps) {
                 <meta name="password-manager-off" content="true" />
                 <meta name="format-detection" content="telephone=no" />
                 <meta name="google" content="notranslate" />
-                {/* Inline theme script — runs before first paint to prevent FOUC.
-                    Must live in <head>, not inside a React component body. */}
-                <script
-                    suppressHydrationWarning
-                    dangerouslySetInnerHTML={{
-                        __html: `(function(){try{var s=localStorage.getItem('theme');if(!s){var c=document.cookie.split(';');for(var i=0;i<c.length;i++){var t=c[i].trim();if(t.startsWith('theme=')){s=t.substring(6);break;}}}if(s==='light'){document.documentElement.classList.remove('dark');}else if(s==='dark'){document.documentElement.classList.add('dark');}else if(window.matchMedia('(prefers-color-scheme: light)').matches){document.documentElement.classList.remove('dark');}}catch(e){}})();`,
-                    }}
-                />
+                {/* Sync-engine pre-paint script — declarative, built from
+                    each policy's `prePaint` descriptors. Owns `.dark` class
+                    and `data-theme` on <html> before first paint (no FOUC).
+                    Replaces: the ad-hoc inline theme script + hardcoded
+                    `className="dark"` that previously lived here. */}
+                <SyncBootScript policies={syncPolicies} />
             </head>
             <body
                 className={cn(

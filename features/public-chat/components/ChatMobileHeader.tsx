@@ -4,8 +4,9 @@ import { Suspense, lazy, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useTheme } from "@/hooks/useTheme";
 import { useSelector } from "react-redux";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
+import { setMode } from "@/styles/themes/themeSlice";
 import {
   PanelLeft,
   SquarePen,
@@ -61,7 +62,9 @@ export function ChatMobileHeader({
   isSidebarOpen = false,
 }: ChatMobileHeaderProps) {
   const router = useRouter();
-  const { theme, setTheme } = useTheme();
+  const theme = useAppSelector((s) => s.theme.mode);
+  const dispatch = useAppDispatch();
+  const setTheme = (t: "light" | "dark") => dispatch(setMode(t));
   const user = useSelector(selectUser);
   const isAdmin = useSelector(selectIsAdmin);
   const isAuthenticated = !!user?.id;

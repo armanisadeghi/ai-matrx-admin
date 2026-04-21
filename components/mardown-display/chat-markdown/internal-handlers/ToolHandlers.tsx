@@ -12,6 +12,7 @@ import {
 import type { ToolLifecycleEntry } from "@/features/agents/types/request.types";
 import type { ToolCallPhase } from "@/lib/api/tool-call.types";
 import { useAppSelector } from "@/lib/redux/hooks";
+import { selectHideToolResults } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 
 // ============================================================================
 // REDUX TOOL UPDATES — isolated subscriber so text-chunk re-renders don't
@@ -127,18 +128,30 @@ function lifecycleToToolObjects(entry: ToolLifecycleEntry): ToolCallObject[] {
 interface InlineToolCardProps {
   requestId: string;
   callId: string;
+  /**
+   * Owning conversation id. Required so this card can self-gate on the
+   * instance-level `hideToolResults` flag — when true, this component
+   * renders nothing. Parent callers should still pass the card; we
+   * intentionally centralize the visibility check here so a single
+   * setting silences every tool call on the surface with no scattered
+   * conditionals.
+   */
+  conversationId: string;
 }
 
 export const InlineToolCard: React.FC<InlineToolCardProps> = ({
   requestId,
   callId,
+  conversationId,
 }) => {
+  const hidden = useAppSelector(selectHideToolResults(conversationId));
   const lifecycle = useAppSelector(selectToolLifecycle(requestId, callId));
   const toolObjects = useMemo(
     () => (lifecycle ? lifecycleToToolObjects(lifecycle) : []),
     [lifecycle],
   );
 
+  if (hidden) return null;
   if (toolObjects.length === 0) return null;
 
   return (
@@ -152,14 +165,21 @@ export const InlineToolCard: React.FC<InlineToolCardProps> = ({
 
 // ============================================================================
 // DB TOOL CARD — renders a completed tool call from DB-loaded message parts.
-// Self-contained: all data comes from the segment, no Redux subscription.
+// Reads segment data directly, subscribes to `hideToolResults` so this
+// component self-gates when the surface has the flag set.
 // ============================================================================
 
 interface DbToolCardProps {
   segment: ContentSegmentDbTool;
+  /** Owning conversation id — drives the `hideToolResults` check. */
+  conversationId: string;
 }
 
-export const DbToolCard: React.FC<DbToolCardProps> = ({ segment }) => {
+export const DbToolCard: React.FC<DbToolCardProps> = ({
+  segment,
+  conversationId,
+}) => {
+  const hidden = useAppSelector(selectHideToolResults(conversationId));
   const toolObjects = useMemo((): ToolCallObject[] => {
     const objects: ToolCallObject[] = [];
 
@@ -205,6 +225,7 @@ export const DbToolCard: React.FC<DbToolCardProps> = ({ segment }) => {
     segment.isError,
   ]);
 
+  if (hidden) return null;
   if (toolObjects.length === 0) return null;
 
   return (

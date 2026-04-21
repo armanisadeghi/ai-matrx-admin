@@ -53,6 +53,8 @@ interface AgentCardProps {
   isDuplicating?: boolean;
   isNavigating?: boolean;
   isAnyNavigating?: boolean;
+  /** Ordered ids for prev/next navigation within the Sneak Peek modal. */
+  navigationIds?: string[];
 }
 
 export function AgentCard({
@@ -64,6 +66,7 @@ export function AgentCard({
   isDuplicating,
   isNavigating,
   isAnyNavigating,
+  navigationIds,
 }: AgentCardProps) {
   const dispatch = useAppDispatch();
   const record = useAppSelector((state) => selectAgentById(state, id));
@@ -532,6 +535,7 @@ export function AgentCard({
           setIsSneakPeekOpen(false);
           setLastModalCloseTime(Date.now());
         }}
+        navigationIds={navigationIds}
       />
     </Card>
   );

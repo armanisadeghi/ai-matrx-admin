@@ -32,6 +32,8 @@ export interface NotesWindowProps extends Omit<
   initialTabs?: string[];
   /** Active tab ID to restore from a saved session */
   initialActiveTab?: string | null;
+  /** Lock this window to a single note — hides sidebar and tabs */
+  singleNoteId?: string | null;
 }
 
 const INSTANCE_ID = "window-notes-window";
@@ -43,6 +45,7 @@ export function NotesWindow({
   id = WINDOW_ID,
   initialTabs,
   initialActiveTab,
+  singleNoteId = null,
   ...windowProps
 }: NotesWindowProps) {
   const openTabs = useAppSelector(selectInstanceTabs(INSTANCE_ID));
@@ -113,11 +116,14 @@ export function NotesWindow({
     >
       <NotesView
         config={{
-          showSidebar: true,
-          showTabs: true,
-          instanceId: INSTANCE_ID,
+          showSidebar: !singleNoteId,
+          showTabs: !singleNoteId,
+          instanceId: singleNoteId
+            ? `${INSTANCE_ID}-single-${singleNoteId}`
+            : INSTANCE_ID,
           initialTabs,
           initialActiveTab,
+          singleNote: singleNoteId,
         }}
         className="h-full"
       />

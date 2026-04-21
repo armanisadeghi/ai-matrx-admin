@@ -1,21 +1,36 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import type { AppDispatch, RootState } from "@/lib/redux/store";
-import {
-  selectAutoClearWithConversationHistory,
-  selectApiEndpointMode,
-} from "../selectors/aggregate.selectors";
+import { selectApiEndpointMode } from "../selectors/aggregate.selectors";
+import { selectAutoClearConversation } from "../instance-ui-state/instance-ui-state.selectors";
 import { executeInstance } from "./execute-instance.thunk";
 import { executeChatInstance } from "./execute-chat-instance.thunk";
-import { startNewConversationAndExecute } from "./create-instance.thunk";
+import { splitInputIntoNewConversation } from "./create-instance.thunk";
 import { abortConversation } from "./abort-registry";
 import { setInstanceStatus } from "../conversations";
 import { setRequestStatus } from "../active-requests/active-requests.slice";
+import {
+  markInputSubmitted,
+  resetSubmissionPhase,
+} from "../instance-user-input/instance-user-input.slice";
 
 interface SmartExecuteArgs {
   conversationId: string;
   surfaceKey?: string;
 }
 
+/**
+ * The single submit entrypoint. Handles two flavours:
+ *
+ *   • Normal:         execute on `conversationId`.
+ *   • Autoclear ON:   execute on `conversationId`, then IMMEDIATELY split —
+ *                     prep a fresh conversation pre-populated with the same
+ *                     text + userValues and point the input focus slot at it,
+ *                     while the display keeps watching the original stream.
+ *
+ * The split isn't gated on "has history" anymore — under autoclear we split
+ * on EVERY submit so the engineer can continue iterating the same prompt
+ * against a fresh agent call while the previous one is still streaming.
+ */
 export const smartExecute = createAsyncThunk<
   void,
   SmartExecuteArgs,
@@ -25,22 +40,35 @@ export const smartExecute = createAsyncThunk<
   async ({ conversationId, surfaceKey }, { getState, dispatch }) => {
     const state = getState();
 
-    const autoClearWithHistory =
-      selectAutoClearWithConversationHistory(conversationId)(state);
+    const autoClear = selectAutoClearConversation(conversationId)(state);
     const apiEndpointMode = selectApiEndpointMode(conversationId)(state);
 
-    if (autoClearWithHistory) {
+    // Phase 1 — capture the current text + userValues so we can pre-populate
+    // the post-split conversation (and so the "re-apply" snapshot is available
+    // after phase 2 clears the textarea on `conversationId`).
+    const userValues =
+      state.instanceVariableValues?.byConversationId[conversationId]
+        ?.userValues ?? {};
+    dispatch(markInputSubmitted({ conversationId, userValues }));
+
+    // Fire the execute on the CURRENT conversation — do NOT await yet.
+    // We want to split the input focus before the stream lands so the user
+    // sees the fresh input view as quickly as possible.
+    const executePromise =
+      apiEndpointMode === "manual"
+        ? dispatch(executeChatInstance({ conversationId }))
+        : dispatch(executeInstance({ conversationId }));
+
+    if (autoClear && surfaceKey) {
       await dispatch(
-        startNewConversationAndExecute({
+        splitInputIntoNewConversation({
           currentConversationId: conversationId,
           surfaceKey,
         }),
       );
-    } else if (apiEndpointMode === "manual") {
-      await dispatch(executeChatInstance({ conversationId }));
-    } else {
-      await dispatch(executeInstance({ conversationId }));
     }
+
+    await executePromise;
   },
 );
 
@@ -62,5 +90,8 @@ export const cancelExecution = createAsyncThunk<
       );
     }
     dispatch(setInstanceStatus({ conversationId, status: "cancelled" }));
+    // Return the input phase to idle so the user can edit/re-submit without
+    // appearing stuck in "pending". Keep any `text` they had in place.
+    dispatch(resetSubmissionPhase(conversationId));
   },
 );

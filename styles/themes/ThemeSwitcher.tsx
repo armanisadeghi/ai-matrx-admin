@@ -2,7 +2,8 @@
 'use client';
 
 import React from 'react';
-import { useTheme } from '@/styles/themes/ThemeProvider';
+import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
+import { toggleMode as toggleModeAction } from '@/styles/themes/themeSlice';
 import { cn } from '@/lib/utils';
 import { motion } from 'motion/react';
 import { Sun, Moon } from 'lucide-react';
@@ -20,7 +21,9 @@ export const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({
     darkModeText = 'Switch to light mode',
     lightModeText = 'Switch to dark mode'
 }) => {
-    const { mode, toggleMode } = useTheme();
+    const mode = useAppSelector((s) => s.theme.mode);
+    const dispatch = useAppDispatch();
+    const toggleMode = () => dispatch(toggleModeAction());
 
     React.useEffect(() => {
         document.cookie = `theme=${mode};path=/`;
@@ -75,7 +78,9 @@ interface ThemeSwitcherIconProps {
   }
   
   export const ThemeSwitcherIcon: React.FC<ThemeSwitcherIconProps> = ({ className }) => {
-    const { mode, toggleMode } = useTheme();
+    const mode = useAppSelector((s) => s.theme.mode);
+    const dispatch = useAppDispatch();
+    const toggleMode = () => dispatch(toggleModeAction());
   
     React.useEffect(() => {
       document.cookie = `theme=${mode};path=/`;
@@ -109,7 +114,9 @@ export const ThemeSwitcherMinimal: React.FC<ThemeSwitcherMinimalProps> = ({
   className,
   text
 }) => {
-  const { mode, toggleMode } = useTheme();
+  const mode = useAppSelector((s) => s.theme.mode);
+  const dispatch = useAppDispatch();
+  const toggleMode = () => dispatch(toggleModeAction());
   
   React.useEffect(() => {
     document.cookie = `theme=${mode};path=/`;

@@ -594,6 +594,7 @@ export const EnhancedChatMarkdownInternal: React.FC<
                       key={`tool-${slot.callId}`}
                       requestId={requestId}
                       callId={slot.callId}
+                      conversationId={conversationId ?? ""}
                     />
                   );
                 }
@@ -614,6 +615,7 @@ export const EnhancedChatMarkdownInternal: React.FC<
                       <DbToolCard
                         key={`db-tool-${segment.callId}`}
                         segment={segment}
+                        conversationId={conversationId ?? ""}
                       />
                     );
                   }

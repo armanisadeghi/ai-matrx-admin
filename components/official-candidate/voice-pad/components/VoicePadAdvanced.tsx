@@ -20,7 +20,7 @@ import { VoicePadHistorySidebar } from "./VoicePadHistorySidebar";
 const VoicePadExpanded = lazy(() => import("./VoicePadExpanded"));
 import { VoicePadFooterLeft, VoicePadFooterRight } from "./VoicePadExpanded";
 
-const VOICE_PAD_ADVANCED_WINDOW_ID = "voice-pad-advanced";
+const OVERLAY_ID = "voicePadAdvanced" as const;
 
 function ExpandedLoadingFallback() {
   return (
@@ -31,43 +31,67 @@ function ExpandedLoadingFallback() {
   );
 }
 
-export default function VoicePadAdvanced() {
+interface VoicePadAdvancedProps {
+  instanceId: string;
+}
+
+export default function VoicePadAdvanced({ instanceId }: VoicePadAdvancedProps) {
   const dispatch = useAppDispatch();
-  const entries = useAppSelector(selectVoicePadEntries);
-  const draftText = useAppSelector(selectVoicePadDraftText);
+  const entries = useAppSelector((s) =>
+    selectVoicePadEntries(s, OVERLAY_ID, instanceId),
+  );
+  const draftText = useAppSelector((s) =>
+    selectVoicePadDraftText(s, OVERLAY_ID, instanceId),
+  );
   const [liveTranscript, setLiveTranscript] = useState("");
   const [fontSize, setFontSize] = useState(11);
 
-  const handleClose = () => {
-    dispatch(closeOverlay({ overlayId: "voicePad" }));
-  };
+  const windowId = `voice-pad-advanced-${instanceId}`;
+  const micId = `voice-pad-advanced-mic-${instanceId}`;
 
-  const handleTranscriptionComplete = (text: string) => {
-    setLiveTranscript("");
-    if (text.trim()) {
-      dispatch(addTranscriptEntry(text));
-    }
-  };
+  const handleClose = useCallback(() => {
+    dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId }));
+  }, [dispatch, instanceId]);
 
-  const handleLiveTranscript = (text: string) => {
+  const handleTranscriptionComplete = useCallback(
+    (text: string) => {
+      setLiveTranscript("");
+      if (text.trim()) {
+        dispatch(
+          addTranscriptEntry({ overlayId: OVERLAY_ID, instanceId, text }),
+        );
+      }
+    },
+    [dispatch, instanceId],
+  );
+
+  const handleLiveTranscript = useCallback((text: string) => {
     setLiveTranscript(text);
-  };
+  }, []);
 
-  const handleRemoveEntry = (id: string) => {
-    dispatch(removeTranscriptEntry(id));
-  };
+  const handleRemoveEntry = useCallback(
+    (entryId: string) => {
+      dispatch(
+        removeTranscriptEntry({ overlayId: OVERLAY_ID, instanceId, entryId }),
+      );
+    },
+    [dispatch, instanceId],
+  );
 
-  const handleClearAll = () => {
-    dispatch(clearAllEntries());
-  };
+  const handleClearAll = useCallback(() => {
+    dispatch(clearAllEntries({ overlayId: OVERLAY_ID, instanceId }));
+  }, [dispatch, instanceId]);
 
-  const handleDraftChange = (text: string) => {
-    dispatch(setDraftText(text));
-  };
+  const handleDraftChange = useCallback(
+    (text: string) => {
+      dispatch(setDraftText({ overlayId: OVERLAY_ID, instanceId, text }));
+    },
+    [dispatch, instanceId],
+  );
 
   const handleNewSession = useCallback(() => {
     const allText = entries.map((e) => e.text).join("\n\n");
-    const currentText = draftText || allText;
+    const currentText = draftText !== null ? draftText : allText;
     if (currentText.trim()) {
       dispatch(
         openSaveToNotes({
@@ -77,15 +101,15 @@ export default function VoicePadAdvanced() {
         }),
       );
     }
-    dispatch(startNewSession());
-  }, [dispatch, entries, draftText]);
+    dispatch(startNewSession({ overlayId: OVERLAY_ID, instanceId }));
+  }, [dispatch, entries, draftText, instanceId]);
 
   const handleSelectHistoryItem = useCallback(
     (text: string) => {
       handleClearAll();
       handleDraftChange(text);
     },
-    [handleDraftChange],
+    [handleClearAll, handleDraftChange],
   );
 
   const sidebarContent = (
@@ -97,17 +121,17 @@ export default function VoicePadAdvanced() {
 
   return (
     <WindowPanel
-      id={VOICE_PAD_ADVANCED_WINDOW_ID}
+      id={windowId}
       title="Advanced Voice Pad"
-      width={320}
-      height={420}
+      width={640}
+      height={520}
       position="top-right"
-      minWidth={280}
-      minHeight={200}
+      minWidth={480}
+      minHeight={320}
       bodyClassName="flex min-h-0 flex-1 flex-col overflow-hidden p-0"
       onClose={handleClose}
-      urlSyncKey="voice"
-      urlSyncId="default"
+      urlSyncKey="voice-advanced"
+      urlSyncId={instanceId}
       sidebar={sidebarContent}
       sidebarDefaultSize={200}
       sidebarMinSize={150}
@@ -126,7 +150,7 @@ export default function VoicePadAdvanced() {
       }
       actionsRight={
         <MicrophoneIconButton
-          id="voice-pad-header-mic"
+          id={micId}
           onTranscriptionComplete={handleTranscriptionComplete}
           onLiveTranscript={handleLiveTranscript}
           variant="icon-only"
@@ -146,6 +170,7 @@ export default function VoicePadAdvanced() {
             onClearAll={handleClearAll}
             onDraftChange={handleDraftChange}
             fontSize={fontSize}
+            micButtonId={micId}
           />
         </Suspense>
       </div>

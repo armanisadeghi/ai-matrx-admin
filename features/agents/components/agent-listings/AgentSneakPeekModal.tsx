@@ -1,8 +1,20 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTriggerCore,
+} from "@/components/ui/tabs";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   selectAgentById,
@@ -18,19 +30,82 @@ import {
 } from "@/features/agents/redux/tools/tools.selectors";
 import { fetchAvailableTools } from "@/features/agents/redux/tools/tools.thunks";
 import type { AgentDefinitionMessage } from "@/features/agents/types/agent-message-types";
+import type {
+  AgentDefinition,
+  AgentDefinitionRecord,
+} from "@/features/agents/types/agent-definition.types";
 import {
   ChevronDown,
   ChevronRight,
+  ChevronLeft,
   Copy,
   Check,
   Loader2,
   Pencil,
   Play,
   CircleCheck,
+  FileJson,
+  Zap,
+  FileText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/lib/toast-service";
+
+const OVERVIEW_MESSAGE_PREVIEW_CHARS = 200;
+
+// ---------------------------------------------------------------------------
+// Pure JSON builders — shared by the copy menu and the JSON tabs.
+// ---------------------------------------------------------------------------
+
+function buildFullJson(definition: AgentDefinition): string {
+  return JSON.stringify(definition, null, 2);
+}
+
+function buildExecutionCoreJson(record: AgentDefinitionRecord): string {
+  return JSON.stringify(
+    {
+      id: record.id,
+      name: record.name,
+      variables: (record.variableDefinitions ?? []).map((v) => v.name),
+      context_slots: (record.contextSlots ?? []).map((s) => s.key),
+    },
+    null,
+    2,
+  );
+}
+
+function buildOverviewJson(definition: AgentDefinition): string {
+  const overview: AgentDefinition = {
+    ...definition,
+    messages: (definition.messages ?? []).map((m) => ({
+      ...m,
+      content: Array.isArray(m.content)
+        ? m.content.map((b) => {
+            if (
+              b.type === "text" &&
+              typeof (b as { text?: unknown }).text === "string"
+            ) {
+              const text = (b as { text: string }).text;
+              return {
+                ...b,
+                text:
+                  text.length > OVERVIEW_MESSAGE_PREVIEW_CHARS
+                    ? text.slice(0, OVERVIEW_MESSAGE_PREVIEW_CHARS) + "…"
+                    : text,
+              } as typeof b;
+            }
+            return b;
+          })
+        : m.content,
+    })),
+  };
+  return JSON.stringify(overview, null, 2);
+}
+
+// Shared tab trigger styling — small, flat, underline-on-active.
+const TAB_TRIGGER_CLASS =
+  "rounded-none border-b-2 border-transparent bg-transparent shadow-none text-xs font-medium px-3 py-1 h-auto text-muted-foreground hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:text-primary";
 
 const SYSTEM_PROMPT_PREVIEW_CHARS = 1000;
 const MESSAGE_PREVIEW_CHARS = 500;
@@ -157,9 +232,6 @@ export function AgentSneakPeekContent({
   const dispatch = useAppDispatch();
 
   const record = useAppSelector((state) => selectAgentById(state, agentId));
-  const definition = useAppSelector((state) =>
-    selectAgentDefinition(state, agentId),
-  );
   const isReady = useAppSelector((state) =>
     selectAgentReadyForBuilder(state, agentId),
   );
@@ -170,19 +242,20 @@ export function AgentSneakPeekContent({
   const toolsReady = useAppSelector(selectToolsReady);
 
   const [advancedOpen, setAdvancedOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const advancedContentRef = useRef<HTMLDivElement>(null);
 
-  const handleCopyDefinition = async () => {
-    if (!definition) return;
-    try {
-      await navigator.clipboard.writeText(JSON.stringify(definition, null, 2));
-      setCopied(true);
-      toast.success("Agent definition copied to clipboard");
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      toast.error("Failed to copy to clipboard");
-    }
-  };
+  // When the user opens Advanced, scroll the newly-revealed content into view
+  // so they get visual feedback that something expanded below the fold.
+  useEffect(() => {
+    if (!advancedOpen) return;
+    const raf = requestAnimationFrame(() => {
+      advancedContentRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "end",
+      });
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [advancedOpen]);
 
   useEffect(() => {
     if (!active) return;
@@ -217,6 +290,10 @@ export function AgentSneakPeekContent({
     return [...builtin, ...custom];
   }, [record?.tools, record?.customTools, allTools]);
 
+  const definition = useAppSelector((state) =>
+    selectAgentDefinition(state, agentId),
+  );
+
   if (!isReady || !record) {
     return (
       <div
@@ -232,7 +309,23 @@ export function AgentSneakPeekContent({
   }
 
   return (
-    <div className={cn("space-y-4", className)}>
+    <Tabs defaultValue="summary" className={cn("flex flex-col gap-3", className)}>
+      <TabsList className="h-auto bg-transparent p-0 gap-0 rounded-none border-b border-border justify-start w-full shrink-0 sticky top-0 z-10 backdrop-blur">
+        <TabsTriggerCore value="summary" className={TAB_TRIGGER_CLASS}>
+          Summary
+        </TabsTriggerCore>
+        <TabsTriggerCore value="full" className={TAB_TRIGGER_CLASS}>
+          Full JSON
+        </TabsTriggerCore>
+        <TabsTriggerCore value="core" className={TAB_TRIGGER_CLASS}>
+          Execution Core
+        </TabsTriggerCore>
+        <TabsTriggerCore value="overview" className={TAB_TRIGGER_CLASS}>
+          Overview
+        </TabsTriggerCore>
+      </TabsList>
+
+      <TabsContent value="summary" className="mt-0 space-y-4">
       <Section label="Description">
         {record.description ? (
           <p className="text-sm text-foreground whitespace-pre-wrap break-words">
@@ -340,37 +433,24 @@ export function AgentSneakPeekContent({
       </Section>
 
       <div className="border-t border-border pt-3">
-        <div className="flex items-center justify-between gap-2">
-          <button
-            type="button"
-            onClick={() => setAdvancedOpen((v) => !v)}
-            className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground focus:outline-none"
-          >
-            {advancedOpen ? (
-              <ChevronDown className="w-3.5 h-3.5" />
-            ) : (
-              <ChevronRight className="w-3.5 h-3.5" />
-            )}
-            Advanced
-          </button>
-          <button
-            type="button"
-            onClick={handleCopyDefinition}
-            disabled={!definition}
-            className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground focus:outline-none disabled:opacity-50"
-            title="Copy full agent definition as JSON"
-          >
-            {copied ? (
-              <Check className="w-3.5 h-3.5 text-success" />
-            ) : (
-              <Copy className="w-3.5 h-3.5" />
-            )}
-            {copied ? "Copied" : "Copy JSON"}
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => setAdvancedOpen((v) => !v)}
+          className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground focus:outline-none"
+        >
+          {advancedOpen ? (
+            <ChevronDown className="w-3.5 h-3.5" />
+          ) : (
+            <ChevronRight className="w-3.5 h-3.5" />
+          )}
+          Advanced
+        </button>
 
         {advancedOpen && (
-          <div className="mt-2 rounded-md bg-muted/30 p-3">
+          <div
+            ref={advancedContentRef}
+            className="mt-2 rounded-md bg-muted/30 p-3"
+          >
             <MetaRow label="ID" value={record.id} mono />
             <MetaRow label="Type" value={record.agentType} />
             <MetaRow label="Version" value={record.version ?? "—"} />
@@ -412,7 +492,116 @@ export function AgentSneakPeekContent({
           </div>
         )}
       </div>
-    </div>
+      </TabsContent>
+
+      <TabsContent value="full" className="mt-0">
+        {definition ? (
+          <JsonBlock json={buildFullJson(definition)} />
+        ) : (
+          <EmptyValue />
+        )}
+      </TabsContent>
+
+      <TabsContent value="core" className="mt-0">
+        <JsonBlock json={buildExecutionCoreJson(record)} />
+      </TabsContent>
+
+      <TabsContent value="overview" className="mt-0">
+        {definition ? (
+          <JsonBlock json={buildOverviewJson(definition)} />
+        ) : (
+          <EmptyValue />
+        )}
+      </TabsContent>
+    </Tabs>
+  );
+}
+
+function JsonBlock({ json }: { json: string }) {
+  return (
+    <pre className="text-[11px] leading-relaxed bg-muted/40 border border-border rounded-md p-3 font-mono whitespace-pre-wrap break-words">
+      {json}
+    </pre>
+  );
+}
+
+/**
+ * Copy-to-clipboard dropdown for the sneak-peek views. Standalone so it can be
+ * placed in a sticky footer (rather than inline with the scrollable body) and
+ * reused in both the modal and the hover popover.
+ */
+export function AgentSneakPeekCopyMenu({ agentId }: { agentId: string }) {
+  const record = useAppSelector((state) => selectAgentById(state, agentId));
+  const definition = useAppSelector((state) =>
+    selectAgentDefinition(state, agentId),
+  );
+  const [copied, setCopied] = useState(false);
+
+  const copyToClipboard = async (text: string, label: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      toast.success(`${label} copied to clipboard`);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error("Failed to copy to clipboard");
+    }
+  };
+
+  const handleCopyFull = () => {
+    if (!definition) return;
+    copyToClipboard(buildFullJson(definition), "Full definition");
+  };
+
+  const handleCopyExecutionCore = () => {
+    if (!record) return;
+    copyToClipboard(buildExecutionCoreJson(record), "Execution core");
+  };
+
+  const handleCopyOverview = () => {
+    if (!definition) return;
+    copyToClipboard(buildOverviewJson(definition), "Overview");
+  };
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="sm" disabled={!definition}>
+          {copied ? <Check className="text-success" /> : <Copy />}
+          {copied ? "Copied" : "Copy"}
+          <ChevronDown className="opacity-70" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-56">
+        <DropdownMenuItem onClick={handleCopyFull}>
+          <FileJson className="mr-2 h-4 w-4" />
+          <div className="flex flex-col">
+            <span>Full JSON</span>
+            <span className="text-[10px] text-muted-foreground">
+              Complete agent definition
+            </span>
+          </div>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleCopyExecutionCore}>
+          <Zap className="mr-2 h-4 w-4" />
+          <div className="flex flex-col">
+            <span>Execution Core</span>
+            <span className="text-[10px] text-muted-foreground">
+              id, name, variables, slots
+            </span>
+          </div>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleCopyOverview}>
+          <FileText className="mr-2 h-4 w-4" />
+          <div className="flex flex-col">
+            <span>Overview</span>
+            <span className="text-[10px] text-muted-foreground">
+              Full JSON, messages truncated
+            </span>
+          </div>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
@@ -427,6 +616,13 @@ interface AgentSneakPeekModalProps {
    */
   onSelect?: () => void;
   selectLabel?: string;
+  /**
+   * Ordered list of agent ids available for prev/next navigation within the
+   * modal (e.g. the currently filtered list from an agents page). When
+   * provided and the current agent is in the list, arrow controls appear in
+   * the header and ArrowLeft/ArrowRight keys cycle through the list.
+   */
+  navigationIds?: string[];
 }
 
 export function AgentSneakPeekModal({
@@ -435,10 +631,60 @@ export function AgentSneakPeekModal({
   onClose,
   onSelect,
   selectLabel = "Select Agent",
+  navigationIds,
 }: AgentSneakPeekModalProps) {
-  const record = useAppSelector((state) => selectAgentById(state, agentId));
+  // When navigation is enabled we track which agent is currently shown.
+  // This lets the user paginate without the caller having to re-render.
+  const [currentId, setCurrentId] = useState(agentId);
+  useEffect(() => {
+    if (isOpen) setCurrentId(agentId);
+  }, [isOpen, agentId]);
+
+  const bodyRef = useRef<HTMLDivElement>(null);
+
+  const currentIndex = navigationIds
+    ? navigationIds.indexOf(currentId)
+    : -1;
+  const hasNav = navigationIds != null && currentIndex >= 0;
+  const hasPrev = hasNav && currentIndex > 0;
+  const hasNext =
+    hasNav && navigationIds != null && currentIndex < navigationIds.length - 1;
+
+  const goPrev = () => {
+    if (!hasPrev || !navigationIds) return;
+    setCurrentId(navigationIds[currentIndex - 1]);
+    bodyRef.current?.scrollTo({ top: 0 });
+  };
+  const goNext = () => {
+    if (!hasNext || !navigationIds) return;
+    setCurrentId(navigationIds[currentIndex + 1]);
+    bodyRef.current?.scrollTo({ top: 0 });
+  };
+
+  // Keyboard shortcuts — only when modal is open and nav is available.
+  useEffect(() => {
+    if (!isOpen || !hasNav) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        goPrev();
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault();
+        goNext();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [isOpen, hasNav, currentIndex, navigationIds]);
+
+  const record = useAppSelector((state) =>
+    selectAgentById(state, currentId),
+  );
   const isReady = useAppSelector((state) =>
-    selectAgentReadyForBuilder(state, agentId),
+    selectAgentReadyForBuilder(state, currentId),
   );
   const showFooter = isReady && !!record;
 
@@ -453,34 +699,72 @@ export function AgentSneakPeekModal({
         className="max-w-xl bg-card border border-border p-5 gap-3"
         onClick={(e) => e.stopPropagation()}
       >
-        <DialogTitle className="text-base font-semibold text-foreground pr-6">
-          {record?.name ?? "Agent"}
-        </DialogTitle>
+        <div className="flex items-center gap-2 pr-6">
+          {hasNav && (
+            <div className="flex items-center gap-0.5 shrink-0">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 w-7 p-0"
+                onClick={goPrev}
+                disabled={!hasPrev}
+                title="Previous (←)"
+              >
+                <ChevronLeft />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 w-7 p-0"
+                onClick={goNext}
+                disabled={!hasNext}
+                title="Next (→)"
+              >
+                <ChevronRight />
+              </Button>
+              <span className="text-[10px] font-medium tabular-nums text-muted-foreground ml-1">
+                {currentIndex + 1} / {navigationIds!.length}
+              </span>
+            </div>
+          )}
+          <DialogTitle className="text-base font-semibold text-foreground truncate">
+            {record?.name ?? "Agent"}
+          </DialogTitle>
+        </div>
 
-        <div className="overflow-y-auto max-h-[65vh] -mr-2 pr-2">
-          <AgentSneakPeekContent agentId={agentId} active={isOpen} />
+        <div
+          ref={bodyRef}
+          className="overflow-y-auto max-h-[65vh] -mr-2 pr-2"
+        >
+          <AgentSneakPeekContent agentId={currentId} active={isOpen} />
         </div>
 
         {showFooter && (
-          <div className="flex items-center justify-end gap-2 border-t border-border pt-3">
-            <Button variant="ghost" size="sm" onClick={onClose}>
+          <div className="flex items-center gap-2 border-t border-border pt-3">
+            <AgentSneakPeekCopyMenu agentId={currentId} />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              className="ml-auto"
+            >
               Close
             </Button>
-            <Link href={`/agents/${agentId}/build`} onClick={onClose}>
+            <Link href={`/agents/${currentId}/build`} onClick={onClose}>
               <Button variant={onSelect ? "ghost" : "outline"} size="sm">
-                <Pencil className="w-3.5 h-3.5 mr-1.5" />
+                <Pencil />
                 Edit
               </Button>
             </Link>
-            <Link href={`/agents/${agentId}/run`} onClick={onClose}>
+            <Link href={`/agents/${currentId}/run`} onClick={onClose}>
               <Button variant={onSelect ? "outline" : "default"} size="sm">
-                <Play className="w-3.5 h-3.5 mr-1.5" />
+                <Play />
                 Run
               </Button>
             </Link>
             {onSelect && (
               <Button size="sm" onClick={handleSelect}>
-                <CircleCheck className="w-3.5 h-3.5 mr-1.5" />
+                <CircleCheck />
                 {selectLabel}
               </Button>
             )}

@@ -42,6 +42,7 @@ import { copyToClipboard } from "@/components/matrx/buttons/markdown-copy-utils"
 import { printMarkdownContent } from "@/features/conversation/utils/markdown-print";
 import { loadWordPressCSS } from "@/features/html-pages/css/wordpress-styles";
 import { NotesAPI } from "@/features/notes";
+import { CodeFilesAPI } from "@/features/code-files";
 import {
   createTaskWithAssociation,
   setSelectedTaskId,
@@ -54,6 +55,7 @@ import {
   openFullScreenEditor,
   openHtmlPreview,
   openSaveToNotes,
+  openSaveToCode,
   openEmailDialog,
   openAuthGate,
   openFeedbackDialog,
@@ -167,6 +169,23 @@ function wrapTextAsContent(text: string): Json {
   return [{ type: "text", text }] as unknown as Json;
 }
 
+/**
+ * Extract the first fenced code block from a markdown string (```lang\n…\n```).
+ * Returns the raw code and, if present, the detected language. When the
+ * content is already plain (no fence), falls back to the full content.
+ */
+function extractFirstCodeBlock(content: string): {
+  code: string;
+  language?: string;
+} {
+  const match = content.match(/```([\w.+-]+)?\s*\n([\s\S]*?)```/);
+  if (!match) return { code: content };
+  return {
+    code: match[2] ?? "",
+    language: match[1]?.toLowerCase() || undefined,
+  };
+}
+
 // ============================================================================
 // SHARED ITEMS — apply to both user and assistant messages
 // ============================================================================
@@ -261,6 +280,7 @@ function exportItems(ctx: MessageActionContext): MenuItem[] {
             conversationId: conversationId ?? undefined,
             instanceId,
             showSaveButton: Boolean(conversationId && messageId),
+            isAgentSystem: true,
             onSave: async (newContent: string) => {
               if (conversationId && messageId) {
                 try {
@@ -426,6 +446,68 @@ function saveItems(ctx: MessageActionContext): MenuItem[] {
         )
           return;
         dispatch(openSaveToNotes({ content }));
+      },
+      category: "Actions",
+      showToast: false,
+    },
+    {
+      key: "save-code-scratch",
+      icon: FileCode,
+      iconColor: "text-amber-500 dark:text-amber-400",
+      label: "Save code to Scratch",
+      action: async () => {
+        if (
+          !requireAuth(
+            ctx,
+            "save-code-scratch",
+            "Save code to Scratch",
+            "Sign in to save code snippets to your code files.",
+          )
+        )
+          return;
+        const { code, language } = extractFirstCodeBlock(content);
+        if (!code.trim()) throw new Error("No code to save");
+        await CodeFilesAPI.create({
+          name: `snippet-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")}.${
+            language === "typescript"
+              ? "ts"
+              : language === "javascript"
+                ? "js"
+                : language === "python"
+                  ? "py"
+                  : "txt"
+          }`,
+          language: language ?? "plaintext",
+          content: code,
+          tags: [],
+        });
+      },
+      category: "Actions",
+      successMessage: "Saved code to Scratch!",
+      errorMessage: "Failed to save code",
+    },
+    {
+      key: "save-to-code",
+      icon: FileCode,
+      iconColor: "text-rose-500 dark:text-rose-400",
+      label: "Save to Code",
+      action: () => {
+        if (
+          !requireAuth(
+            ctx,
+            "save-to-code",
+            "Save to Code",
+            "Sign in to save and organize your code snippets.",
+          )
+        )
+          return;
+        const { code, language } = extractFirstCodeBlock(content);
+        dispatch(
+          openSaveToCode({
+            content: code.trim() ? code : content,
+            language,
+          }),
+        );
       },
       category: "Actions",
       showToast: false,
@@ -606,9 +688,7 @@ function editContentItem(ctx: MessageActionContext): MenuItem {
                 "[edit-content] save failed",
                 JSON.stringify(serialized, null, 2),
               );
-              toast.error(
-                getErrorMessage(err, "Failed to save changes"),
-              );
+              toast.error(getErrorMessage(err, "Failed to save changes"));
             }
             dispatch(
               closeOverlay({ overlayId: "fullScreenEditor", instanceId }),
@@ -694,9 +774,7 @@ function editAndResubmitItem(ctx: MessageActionContext): MenuItem {
                 "[edit-resubmit] failed",
                 JSON.stringify(serialized, null, 2),
               );
-              toast.error(
-                getErrorMessage(err, "Failed to edit & resubmit"),
-              );
+              toast.error(getErrorMessage(err, "Failed to edit & resubmit"));
             } finally {
               dispatch(
                 closeOverlay({ overlayId: "fullScreenEditor", instanceId }),
@@ -906,6 +984,26 @@ export function resumePendingAuthAction(
         .catch(() => toast.error("Failed to save to Scratch"));
     } else if (action === "save-notes") {
       dispatch(openSaveToNotes({ content: savedContent }));
+    } else if (action === "save-to-code") {
+      const { code, language } = extractFirstCodeBlock(savedContent);
+      dispatch(
+        openSaveToCode({
+          content: code.trim() ? code : savedContent,
+          language,
+        }),
+      );
+    } else if (action === "save-code-scratch") {
+      const { code, language } = extractFirstCodeBlock(savedContent);
+      if (code.trim()) {
+        CodeFilesAPI.create({
+          name: `snippet-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")}.txt`,
+          language: language ?? "plaintext",
+          content: code,
+          tags: [],
+        })
+          .then(() => toast.success("Saved code to Scratch!"))
+          .catch(() => toast.error("Failed to save code"));
+      }
     } else if (action === "add-to-tasks") {
       const preview = savedContent.slice(0, 400);
       const seedTitle =

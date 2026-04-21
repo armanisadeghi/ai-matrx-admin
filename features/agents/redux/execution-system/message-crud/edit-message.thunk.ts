@@ -25,6 +25,7 @@ import type { AppDispatch, RootState } from "@/lib/redux/store";
 import type { Json } from "@/types/database.types";
 import { updateMessageRecord } from "../messages/messages.slice";
 import { markCacheBypass } from "./cache-bypass.slice";
+import { invalidateConversationCache } from "./invalidate-conversation-cache.thunk";
 
 interface EditMessageArgs {
   conversationId: string;
@@ -187,12 +188,21 @@ export const editMessage = createAsyncThunk<
       );
     }
 
-    // ── 4. Mark conversation for cache-bust — the server's agent cache
-    // for this conversation now includes a stale message snapshot. The
-    // next outbound AI request flips `cache_bypass.conversation = true`
-    // so the server rebuilds from the DB. One-shot: the flag clears
-    // when the next call fires.
+    // ── 4. Invalidate server-side cache
+    //
+    // Two layers:
+    //   (a) `markCacheBypass` sets a one-shot flag the NEXT outbound AI
+    //       request will ship as `cache_bypass`. This is the cheap
+    //       piggyback path — the server rebuilds whenever the next turn
+    //       fires.
+    //   (b) `invalidateConversationCache` fires the standalone
+    //       `POST /cx/conversations/{id}/invalidate-cache` endpoint
+    //       immediately, so even if the user never sends another turn
+    //       (navigate away, switch agents, close the page) the server
+    //       still drops its stale snapshot. This is fire-and-forget —
+    //       a failure here doesn't fail the edit.
     dispatch(markCacheBypass({ conversationId, conversation: true }));
+    void dispatch(invalidateConversationCache({ conversationId }));
 
     return { conversationId, messageId };
   },

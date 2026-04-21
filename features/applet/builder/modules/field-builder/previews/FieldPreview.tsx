@@ -9,7 +9,6 @@ import FieldPreviewAs from "./FieldPreviewAs";
 import { componentOptions } from "@/features/applet/constants/field-constants";
 import FieldContainerPreview from "./FieldContainerPreview";
 import { usePreviewBrokers } from "@/lib/redux/brokerSlice/hooks/useTempBroker";
-import { useTheme } from "@/styles/themes/ThemeProvider";
 import { ThemeSwitcherMinimal } from "@/styles/themes/ThemeSwitcher";
 
 interface FieldPreviewProps {
@@ -19,7 +18,7 @@ interface FieldPreviewProps {
 
 const FieldPreview: React.FC<FieldPreviewProps> = ({ fieldId, componentType = "textarea" }) => {
     const field = useAppSelector((state) => selectFieldById(state, fieldId));
-    const { mode } = useTheme();
+    const mode = useAppSelector((s) => s.theme.mode);
 
     // Memoize component type values to prevent recreation on every render
     const componentTypeValues = useMemo(() =>

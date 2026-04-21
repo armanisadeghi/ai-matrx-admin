@@ -1,5 +1,8 @@
 import type { RootState } from "@/lib/redux/store";
 import type { MessagePart } from "@/types/python-generated/stream-events";
+import type { InputSubmissionPhase } from "@/features/agents/types/instance.types";
+
+const EMPTY_USER_VALUES: Record<string, unknown> = Object.freeze({});
 
 /**
  * The current text input for this instance.
@@ -41,4 +44,51 @@ export const selectHasUserInput =
     return (
       entry.text.trim().length > 0 || (entry.messageParts?.length ?? 0) > 0
     );
+  };
+
+/**
+ * Current submission phase — "idle" | "pending" | "persisted".
+ * Components can use this to tell whether the input should be visually shown
+ * ("idle" | "pending") or hidden ("persisted"), and whether to gate the
+ * re-apply affordance.
+ */
+export const selectSubmissionPhase =
+  (conversationId: string) =>
+  (state: RootState): InputSubmissionPhase =>
+    state.instanceUserInput.byConversationId[conversationId]?.submissionPhase ??
+    "idle";
+
+/**
+ * The text snapshot captured at the most recent submit, preserved across a
+ * conversation reset so the user can re-apply it.
+ */
+export const selectLastSubmittedText =
+  (conversationId: string) =>
+  (state: RootState): string =>
+    state.instanceUserInput.byConversationId[conversationId]
+      ?.lastSubmittedText ?? "";
+
+/**
+ * The userValues snapshot captured at the most recent submit.
+ * Returns a stable frozen empty object when missing to avoid re-render churn.
+ */
+export const selectLastSubmittedUserValues =
+  (conversationId: string) =>
+  (state: RootState): Record<string, unknown> =>
+    state.instanceUserInput.byConversationId[conversationId]
+      ?.lastSubmittedUserValues ?? EMPTY_USER_VALUES;
+
+/**
+ * Whether a "Re-apply last input" action is available for this conversation:
+ * we have stashed content AND the user hasn't already started typing
+ * something new AND we're not mid-submit.
+ */
+export const selectHasReapplyableInput =
+  (conversationId: string) =>
+  (state: RootState): boolean => {
+    const entry = state.instanceUserInput.byConversationId[conversationId];
+    if (!entry) return false;
+    if (entry.submissionPhase === "pending") return false;
+    if (entry.text.length > 0) return false;
+    return entry.lastSubmittedText.length > 0;
   };

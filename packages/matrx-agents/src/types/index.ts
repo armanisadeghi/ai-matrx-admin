@@ -91,7 +91,6 @@ export type {
   ConversationListState,
   ConversationListAgentCacheEntry,
   ConversationListLoadStatus,
-  AgentConversationListItem, // legacy alias
 } from "@/features/agents/redux/conversation-list/conversation-list.types";
 
 export type {
