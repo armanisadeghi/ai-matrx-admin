@@ -11,8 +11,6 @@
     "lib/redux/store.ts",
     "providers/StoreProvider.tsx",
     "styles/themes/themeSlice.ts",
-    "styles/themes/ThemeProvider.tsx",
-    "hooks/useTheme.ts",
     "app/layout.tsx",
     "app/DeferredSingletons.tsx",
     "app/(a)/sync-demo/theme/page.tsx",

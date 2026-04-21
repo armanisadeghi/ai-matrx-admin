@@ -2,7 +2,6 @@
 
 import React from "react";
 import { Toaster } from "@/components/ui/toaster";
-import { ThemeProvider } from "@/styles/themes/ThemeProvider";
 import StoreProvider from "@/providers/StoreProvider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { InitialReduxState } from "@/types/reduxTypes";
@@ -69,8 +68,7 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
     // <SchemaProvider initialSchema={initialReduxState?.globalCache}>
     <ReactQueryProvider>
       <StoreProvider initialState={initialReduxState}>
-        <ThemeProvider>
-          <PersistentComponentProvider>
+        <PersistentComponentProvider>
             {/* <EntityProvider> */}
             <ContextMenuProvider>
               <ToastProvider>
@@ -112,7 +110,6 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
             </ContextMenuProvider>
             {/* </EntityProvider> */}
           </PersistentComponentProvider>
-        </ThemeProvider>
       </StoreProvider>
     </ReactQueryProvider>
     // </SchemaProvider>
