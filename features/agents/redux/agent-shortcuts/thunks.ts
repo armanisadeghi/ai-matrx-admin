@@ -44,6 +44,111 @@ function parseScopeMappings(raw: unknown): Record<string, string> | null {
   return out;
 }
 
+// ---------------------------------------------------------------------------
+// menuItemToConfigFields — extract the AgentExecutionConfig portion of an
+// AgentShortcut from a loose RPC / view row. Tolerant of pre-migration column
+// names so the client compiles before `npm run types` regenerates.
+// Reads v2 column names first; falls back to the legacy name; falls back to
+// DEFAULT_AGENT_EXECUTION_CONFIG.
+// ---------------------------------------------------------------------------
+function pickString(o: Record<string, unknown>, ...keys: string[]): string | null {
+  for (const k of keys) {
+    const v = o[k];
+    if (typeof v === "string") return v;
+  }
+  return null;
+}
+function pickBool(
+  o: Record<string, unknown>,
+  fallback: boolean,
+  ...keys: string[]
+): boolean {
+  for (const k of keys) {
+    const v = o[k];
+    if (typeof v === "boolean") return v;
+  }
+  return fallback;
+}
+function pickNumber(
+  o: Record<string, unknown>,
+  fallback: number,
+  ...keys: string[]
+): number {
+  for (const k of keys) {
+    const v = o[k];
+    if (typeof v === "number") return v;
+  }
+  return fallback;
+}
+function pickJsonObject<T>(
+  o: Record<string, unknown>,
+  ...keys: string[]
+): T | null {
+  for (const k of keys) {
+    const v = o[k];
+    if (v && typeof v === "object" && !Array.isArray(v)) return v as T;
+  }
+  return null;
+}
+
+function menuItemToConfigFields(item: unknown): {
+  displayMode: ResultDisplayMode;
+  showVariablePanel: boolean;
+  variablesPanelStyle: import("@/features/agents/components/inputs/variable-input-variations/variable-input-options").VariablesPanelStyle;
+  autoRun: boolean;
+  allowChat: boolean;
+  showDefinitionMessages: boolean;
+  showDefinitionMessageContent: boolean;
+  hideReasoning: boolean;
+  hideToolResults: boolean;
+  showPreExecutionGate: boolean;
+  preExecutionMessage: string | null;
+  bypassGateSeconds: number;
+  defaultUserInput: string | null;
+  defaultVariables: Record<string, unknown> | null;
+  contextOverrides: Record<string, unknown> | null;
+  llmOverrides: Partial<import("@/features/agents/types/agent-api-types").LLMParams> | null;
+} {
+  const o = (item ?? {}) as Record<string, unknown>;
+  return {
+    displayMode: ((pickString(o, "display_mode", "result_display") ??
+      "modal-full") as ResultDisplayMode),
+    showVariablePanel: pickBool(o, false, "show_variable_panel"),
+    variablesPanelStyle: (pickString(o, "variables_panel_style") ??
+      "inline") as import("@/features/agents/components/inputs/variable-input-variations/variable-input-options").VariablesPanelStyle,
+    autoRun: pickBool(o, true, "auto_run"),
+    allowChat: pickBool(o, true, "allow_chat"),
+    showDefinitionMessages: pickBool(o, false, "show_definition_messages"),
+    showDefinitionMessageContent: pickBool(
+      o,
+      false,
+      "show_definition_message_content",
+    ),
+    hideReasoning: pickBool(o, false, "hide_reasoning"),
+    hideToolResults: pickBool(o, false, "hide_tool_results"),
+    showPreExecutionGate: pickBool(
+      o,
+      false,
+      "show_pre_execution_gate",
+      "use_pre_execution_input",
+    ),
+    preExecutionMessage: pickString(o, "pre_execution_message"),
+    bypassGateSeconds: pickNumber(o, 3, "bypass_gate_seconds"),
+    defaultUserInput: pickString(o, "default_user_input"),
+    defaultVariables: pickJsonObject<Record<string, unknown>>(
+      o,
+      "default_variables",
+    ),
+    contextOverrides: pickJsonObject<Record<string, unknown>>(
+      o,
+      "context_overrides",
+    ),
+    llmOverrides: pickJsonObject<
+      Partial<import("@/features/agents/types/agent-api-types").LLMParams>
+    >(o, "llm_overrides"),
+  };
+}
+
 function parseVariableDefinitions(raw: unknown): VariableDefinition[] {
   if (!Array.isArray(raw)) return [];
   return raw.filter(
@@ -185,12 +290,9 @@ export const buildAgentShortcutMenu = createAsyncThunk<
           enabledContexts: item.enabled_contexts as ShortcutContext[],
           scopeMappings: parseScopeMappings(item.scope_mappings),
 
-          resultDisplay: item.result_display as ResultDisplayMode,
-          allowChat: item.allow_chat,
-          autoRun: item.auto_run,
-          applyVariables: item.apply_variables,
-          showVariables: item.show_variables,
-          showPreExecutionGate: item.use_pre_execution_input,
+          // AgentExecutionConfig bundle — read v2 columns with old-name fallback
+          // and DEFAULT_AGENT_EXECUTION_CONFIG defaults via the menu-item helper.
+          ...menuItemToConfigFields(item),
 
           isActive: true,
 
@@ -300,12 +402,7 @@ export const fetchShortcutsForContext = createAsyncThunk<
         enabledContexts: row.enabled_contexts as ShortcutContext[],
         scopeMappings: parseScopeMappings(row.scope_mappings),
 
-        resultDisplay: row.result_display as ResultDisplayMode,
-        allowChat: row.allow_chat,
-        autoRun: row.auto_run,
-        applyVariables: row.apply_variables,
-        showVariables: row.show_variables,
-        showPreExecutionGate: row.use_pre_execution_input,
+        ...menuItemToConfigFields(row),
 
         isActive: true,
 
@@ -622,12 +719,7 @@ export const syncUserShortcutToSlice = createAsyncThunk<
       useLatest: item.use_latest,
       enabledContexts: item.enabled_contexts as ShortcutContext[],
       scopeMappings: item.scope_mappings,
-      resultDisplay: item.result_display as ResultDisplayMode,
-      allowChat: item.allow_chat,
-      autoRun: item.auto_run,
-      applyVariables: item.apply_variables,
-      showVariables: item.show_variables,
-      showPreExecutionGate: item.use_pre_execution_input,
+      ...menuItemToConfigFields(item),
       isActive: item.is_active,
       userId: item.user_id,
       organizationId: item.organization_id,
@@ -643,6 +735,8 @@ export const syncUserShortcutToSlice = createAsyncThunk<
 // Scope-aware REST CRUD (routed through /api endpoints for multi-scope auth)
 // ---------------------------------------------------------------------------
 
+// API rows are tolerant of v2 / legacy column shapes via the loose
+// menuItemToConfigFields helper.
 interface ShortcutApiRow {
   id: string;
   category_id: string;
@@ -656,12 +750,6 @@ interface ShortcutApiRow {
   use_latest: boolean;
   enabled_contexts: unknown;
   scope_mappings: unknown;
-  result_display: ResultDisplayMode;
-  allow_chat: boolean;
-  auto_run: boolean;
-  apply_variables: boolean;
-  show_variables: boolean;
-  use_pre_execution_input: boolean;
   is_active: boolean;
   user_id: string | null;
   organization_id: string | null;
@@ -669,6 +757,8 @@ interface ShortcutApiRow {
   task_id: string | null;
   created_at: string;
   updated_at: string;
+  // AgentExecutionConfig fields are read via menuItemToConfigFields
+  [key: string]: unknown;
 }
 
 function shortcutRowToFrontend(row: ShortcutApiRow): AgentShortcut {
@@ -685,12 +775,7 @@ function shortcutRowToFrontend(row: ShortcutApiRow): AgentShortcut {
     useLatest: row.use_latest ?? false,
     enabledContexts: (row.enabled_contexts as ShortcutContext[]) ?? [],
     scopeMappings: parseScopeMappings(row.scope_mappings),
-    resultDisplay: (row.result_display ?? "modal-full") as ResultDisplayMode,
-    allowChat: row.allow_chat ?? true,
-    autoRun: row.auto_run ?? true,
-    applyVariables: row.apply_variables ?? true,
-    showVariables: row.show_variables ?? false,
-    showPreExecutionGate: row.use_pre_execution_input ?? false,
+    ...menuItemToConfigFields(row),
     isActive: row.is_active,
     userId: row.user_id,
     organizationId: row.organization_id,
@@ -720,16 +805,38 @@ function shortcutToApiBody(
     out.enabled_contexts = patch.enabledContexts as unknown;
   if (patch.scopeMappings !== undefined)
     out.scope_mappings = patch.scopeMappings as unknown;
-  if (patch.resultDisplay !== undefined)
-    out.result_display = patch.resultDisplay;
+
+  // ── AgentExecutionConfig bundle (v2 column names) ──
+  if (patch.displayMode !== undefined) out.display_mode = patch.displayMode;
+  if (patch.showVariablePanel !== undefined)
+    out.show_variable_panel = patch.showVariablePanel;
+  if (patch.variablesPanelStyle !== undefined)
+    out.variables_panel_style = patch.variablesPanelStyle;
   if (patch.allowChat !== undefined) out.allow_chat = patch.allowChat;
   if (patch.autoRun !== undefined) out.auto_run = patch.autoRun;
-  if (patch.applyVariables !== undefined)
-    out.apply_variables = patch.applyVariables;
-  if (patch.showVariables !== undefined)
-    out.show_variables = patch.showVariables;
+  if (patch.showDefinitionMessages !== undefined)
+    out.show_definition_messages = patch.showDefinitionMessages;
+  if (patch.showDefinitionMessageContent !== undefined)
+    out.show_definition_message_content = patch.showDefinitionMessageContent;
+  if (patch.hideReasoning !== undefined)
+    out.hide_reasoning = patch.hideReasoning;
+  if (patch.hideToolResults !== undefined)
+    out.hide_tool_results = patch.hideToolResults;
   if (patch.showPreExecutionGate !== undefined)
-    out.use_pre_execution_input = patch.showPreExecutionGate;
+    out.show_pre_execution_gate = patch.showPreExecutionGate;
+  if (patch.preExecutionMessage !== undefined)
+    out.pre_execution_message = patch.preExecutionMessage;
+  if (patch.bypassGateSeconds !== undefined)
+    out.bypass_gate_seconds = patch.bypassGateSeconds;
+  if (patch.defaultUserInput !== undefined)
+    out.default_user_input = patch.defaultUserInput;
+  if (patch.defaultVariables !== undefined)
+    out.default_variables = patch.defaultVariables as unknown;
+  if (patch.contextOverrides !== undefined)
+    out.context_overrides = patch.contextOverrides as unknown;
+  if (patch.llmOverrides !== undefined)
+    out.llm_overrides = patch.llmOverrides as unknown;
+
   if (patch.isActive !== undefined) out.is_active = patch.isActive;
   if (patch.userId !== undefined) out.user_id = patch.userId;
   if (patch.organizationId !== undefined)

@@ -206,7 +206,7 @@ export const launchAgentExecution = createAsyncThunk<
 
     resolvedDisplayMode =
       displayModeOverride ??
-      (shortcut.resultDisplay as ResultDisplayMode) ??
+      (shortcut.displayMode as ResultDisplayMode) ??
       "direct";
 
     conversationId = await dispatch(

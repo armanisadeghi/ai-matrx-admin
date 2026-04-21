@@ -76,6 +76,125 @@ export interface ShortcutFormProps extends ScopeProps {
   onDuplicate?: (shortcut: AgentShortcut) => void;
 }
 
+// ─────────────────────────────────────────────────────────────────────────
+// Section helpers — keep the form body readable when there are 12+ fields.
+// ─────────────────────────────────────────────────────────────────────────
+
+function ToggleRow({
+  id,
+  label,
+  help,
+  checked,
+  onChange,
+  disabled,
+}: {
+  id: string;
+  label: string;
+  help?: string;
+  checked: boolean;
+  onChange: (next: boolean) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <div className="flex items-start justify-between gap-2 px-3 py-2 border border-border rounded-md bg-muted/30">
+      <div className="min-w-0 flex-1">
+        <Label htmlFor={id} className="text-xs font-normal cursor-pointer">
+          {label}
+        </Label>
+        {help && (
+          <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">
+            {help}
+          </p>
+        )}
+      </div>
+      <Switch
+        id={id}
+        checked={checked}
+        onCheckedChange={onChange}
+        disabled={disabled}
+      />
+    </div>
+  );
+}
+
+function JsonEditorRow({
+  id,
+  label,
+  help,
+  value,
+  onChange,
+  disabled,
+}: {
+  id: string;
+  label: string;
+  help?: string;
+  value: Record<string, unknown> | null;
+  onChange: (next: Record<string, unknown> | null) => void;
+  disabled?: boolean;
+}) {
+  const [text, setText] = useState(() =>
+    value ? JSON.stringify(value, null, 2) : "",
+  );
+  const [parseError, setParseError] = useState<string | null>(null);
+
+  // Sync external value changes (e.g. shortcut reload) back into the textarea.
+  useEffect(() => {
+    setText(value ? JSON.stringify(value, null, 2) : "");
+    setParseError(null);
+  }, [value]);
+
+  const handleBlur = () => {
+    const trimmed = text.trim();
+    if (trimmed === "") {
+      onChange(null);
+      setParseError(null);
+      return;
+    }
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (
+        parsed === null ||
+        typeof parsed !== "object" ||
+        Array.isArray(parsed)
+      ) {
+        setParseError("Must be a JSON object (e.g. { \"key\": \"value\" })");
+        return;
+      }
+      setParseError(null);
+      onChange(parsed as Record<string, unknown>);
+    } catch (e) {
+      setParseError(
+        e instanceof Error ? e.message : "Invalid JSON",
+      );
+    }
+  };
+
+  return (
+    <div className="space-y-1.5">
+      <Label htmlFor={id} className="text-xs">
+        {label}
+      </Label>
+      <Textarea
+        id={id}
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        onBlur={handleBlur}
+        rows={3}
+        placeholder="{}"
+        spellCheck={false}
+        disabled={disabled}
+        className="text-[12px] font-mono"
+      />
+      {help && (
+        <p className="text-[10px] text-muted-foreground">{help}</p>
+      )}
+      {parseError && (
+        <p className="text-[10px] text-destructive">{parseError}</p>
+      )}
+    </div>
+  );
+}
+
 function emptyFormData(): ShortcutFormData {
   return {
     categoryId: "",
@@ -89,12 +208,23 @@ function emptyFormData(): ShortcutFormData {
     useLatest: false,
     enabledContexts: [],
     scopeMappings: null,
-    resultDisplay: "modal-full",
-    allowChat: true,
+    // AgentExecutionConfig bundle (matches DEFAULT_AGENT_EXECUTION_CONFIG)
+    displayMode: "modal-full",
+    showVariablePanel: false,
+    variablesPanelStyle: "inline",
     autoRun: true,
-    applyVariables: true,
-    showVariables: false,
+    allowChat: true,
+    showDefinitionMessages: false,
+    showDefinitionMessageContent: false,
+    hideReasoning: false,
+    hideToolResults: false,
     showPreExecutionGate: false,
+    preExecutionMessage: null,
+    bypassGateSeconds: 3,
+    defaultUserInput: null,
+    defaultVariables: null,
+    contextOverrides: null,
+    llmOverrides: null,
     isActive: true,
     userId: null,
     organizationId: null,
@@ -472,11 +602,11 @@ export function ShortcutForm({
             Result Display
           </Label>
           <Select
-            value={formData.resultDisplay}
+            value={formData.displayMode}
             onValueChange={(value) =>
               handleChange(
-                "resultDisplay",
-                value as ShortcutFormData["resultDisplay"],
+                "displayMode",
+                value as ShortcutFormData["displayMode"],
               )
             }
             disabled={saving}
@@ -495,85 +625,226 @@ export function ShortcutForm({
         </div>
       </div>
 
+      {/* ── Execution flow ──────────────────────────────────────── */}
       <div className="space-y-2">
-        <Label className="text-sm font-semibold">Execution Options</Label>
+        <Label className="text-sm font-semibold">Execution Flow</Label>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          <div className="flex items-center justify-between px-3 py-2 border border-border rounded-md bg-muted/30">
-            <Label
-              htmlFor="auto-run"
-              className="text-xs font-normal cursor-pointer"
-            >
-              Auto Run
+          <ToggleRow
+            id="auto-run"
+            label="Auto Run"
+            help="Execute immediately without waiting for input."
+            checked={formData.autoRun}
+            onChange={(v) => handleChange("autoRun", v)}
+            disabled={saving}
+          />
+          <ToggleRow
+            id="allow-chat"
+            label="Allow Chat"
+            help="Let the user send follow-up messages."
+            checked={formData.allowChat}
+            onChange={(v) => handleChange("allowChat", v)}
+            disabled={saving}
+          />
+        </div>
+      </div>
+
+      {/* ── Variable panel ──────────────────────────────────────── */}
+      <div className="space-y-2">
+        <Label className="text-sm font-semibold">Variable Panel</Label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <ToggleRow
+            id="show-variable-panel"
+            label="Show panel"
+            help="Let the user see and edit variable values before run."
+            checked={formData.showVariablePanel}
+            onChange={(v) => handleChange("showVariablePanel", v)}
+            disabled={saving}
+          />
+          <div className="space-y-1.5">
+            <Label htmlFor="variables-panel-style" className="text-xs">
+              Panel Style
             </Label>
-            <Switch
-              id="auto-run"
-              checked={formData.autoRun}
-              onCheckedChange={(checked) => handleChange("autoRun", checked)}
-              disabled={saving}
-            />
-          </div>
-          <div className="flex items-center justify-between px-3 py-2 border border-border rounded-md bg-muted/30">
-            <Label
-              htmlFor="allow-chat"
-              className="text-xs font-normal cursor-pointer"
-            >
-              Allow Chat
-            </Label>
-            <Switch
-              id="allow-chat"
-              checked={formData.allowChat}
-              onCheckedChange={(checked) => handleChange("allowChat", checked)}
-              disabled={saving}
-            />
-          </div>
-          <div className="flex items-center justify-between px-3 py-2 border border-border rounded-md bg-muted/30">
-            <Label
-              htmlFor="show-variables"
-              className="text-xs font-normal cursor-pointer"
-            >
-              Show Variables
-            </Label>
-            <Switch
-              id="show-variables"
-              checked={formData.showVariables}
-              onCheckedChange={(checked) =>
-                handleChange("showVariables", checked)
+            <Select
+              value={formData.variablesPanelStyle}
+              onValueChange={(value) =>
+                handleChange(
+                  "variablesPanelStyle",
+                  value as ShortcutFormData["variablesPanelStyle"],
+                )
               }
-              disabled={saving}
-            />
-          </div>
-          <div className="flex items-center justify-between px-3 py-2 border border-border rounded-md bg-muted/30">
-            <Label
-              htmlFor="apply-variables"
-              className="text-xs font-normal cursor-pointer"
+              disabled={saving || !formData.showVariablePanel}
             >
-              Apply Variables
+              <SelectTrigger id="variables-panel-style" className="h-9">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {[
+                  "inline",
+                  "wizard",
+                  "form",
+                  "compact",
+                  "guided",
+                  "cards",
+                ].map((style) => (
+                  <SelectItem key={style} value={style}>
+                    {style}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Pre-execution gate ──────────────────────────────────── */}
+      <div className="space-y-2">
+        <Label className="text-sm font-semibold">Pre-Execution Gate</Label>
+        <ToggleRow
+          id="show-pre-execution-gate"
+          label="Show gate"
+          help="Pause before executing so the user can add instructions."
+          checked={formData.showPreExecutionGate}
+          onChange={(v) => handleChange("showPreExecutionGate", v)}
+          disabled={saving}
+        />
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <div className="space-y-1.5 sm:col-span-2">
+            <Label htmlFor="pre-execution-message" className="text-xs">
+              Gate Message
             </Label>
-            <Switch
-              id="apply-variables"
-              checked={formData.applyVariables}
-              onCheckedChange={(checked) =>
-                handleChange("applyVariables", checked)
+            <Input
+              id="pre-execution-message"
+              value={formData.preExecutionMessage ?? ""}
+              onChange={(e) =>
+                handleChange(
+                  "preExecutionMessage",
+                  e.target.value.length > 0 ? e.target.value : null,
+                )
               }
-              disabled={saving}
+              placeholder="Any special instructions?"
+              disabled={saving || !formData.showPreExecutionGate}
+              className="h-9 text-[16px]"
             />
           </div>
-          <div className="flex items-center justify-between px-3 py-2 border border-border rounded-md bg-muted/30 sm:col-span-2">
-            <Label
-              htmlFor="show-pre-execution-gate"
-              className="text-xs font-normal cursor-pointer"
-            >
-              Show pre-execution gate
+          <div className="space-y-1.5">
+            <Label htmlFor="bypass-gate-seconds" className="text-xs">
+              Auto-bypass (s)
             </Label>
-            <Switch
-              id="show-pre-execution-gate"
-              checked={formData.showPreExecutionGate}
-              onCheckedChange={(checked) =>
-                handleChange("showPreExecutionGate", checked)
+            <Input
+              id="bypass-gate-seconds"
+              type="number"
+              min="0"
+              step="1"
+              value={formData.bypassGateSeconds}
+              onChange={(e) =>
+                handleChange(
+                  "bypassGateSeconds",
+                  Math.max(0, Number.parseInt(e.target.value, 10) || 0),
+                )
               }
+              disabled={saving || !formData.showPreExecutionGate}
+              className="h-9 text-[16px]"
+            />
+            <p className="text-[10px] text-muted-foreground">
+              0 = wait for user
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Transparency / privacy ──────────────────────────────── */}
+      <div className="space-y-2">
+        <Label className="text-sm font-semibold">Transparency</Label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <ToggleRow
+            id="show-definition-messages"
+            label="Show definition messages"
+            help="Reveal the agent's pre-written messages to the user."
+            checked={formData.showDefinitionMessages}
+            onChange={(v) => handleChange("showDefinitionMessages", v)}
+            disabled={saving}
+          />
+          <ToggleRow
+            id="show-definition-message-content"
+            label="Reveal interpolated content"
+            help="Show variable values inside revealed messages."
+            checked={formData.showDefinitionMessageContent}
+            onChange={(v) =>
+              handleChange("showDefinitionMessageContent", v)
+            }
+            disabled={saving || !formData.showDefinitionMessages}
+          />
+          <ToggleRow
+            id="hide-reasoning"
+            label="Hide reasoning"
+            help="Suppress thinking/reasoning blocks in output."
+            checked={formData.hideReasoning}
+            onChange={(v) => handleChange("hideReasoning", v)}
+            disabled={saving}
+          />
+          <ToggleRow
+            id="hide-tool-results"
+            label="Hide tool results"
+            help="Suppress tool-call result blocks in output."
+            checked={formData.hideToolResults}
+            onChange={(v) => handleChange("hideToolResults", v)}
+            disabled={saving}
+          />
+        </div>
+      </div>
+
+      {/* ── Defaults & overrides ────────────────────────────────── */}
+      <div className="space-y-2">
+        <Label className="text-sm font-semibold">Defaults &amp; Overrides</Label>
+        <div className="space-y-2">
+          <div className="space-y-1.5">
+            <Label htmlFor="default-user-input" className="text-xs">
+              Default user input{" "}
+              <span className="text-muted-foreground font-normal">
+                (designer-only, never shown to user)
+              </span>
+            </Label>
+            <Textarea
+              id="default-user-input"
+              value={formData.defaultUserInput ?? ""}
+              onChange={(e) =>
+                handleChange(
+                  "defaultUserInput",
+                  e.target.value.length > 0 ? e.target.value : null,
+                )
+              }
+              rows={2}
+              placeholder="Extra instructions appended to the template…"
               disabled={saving}
+              className="text-[16px]"
             />
           </div>
+          <JsonEditorRow
+            id="default-variables"
+            label="Default variables (JSON)"
+            help="Per-variable defaults — keyed by agent variable name. Scope-mapped values + user edits override."
+            value={formData.defaultVariables}
+            onChange={(v) => handleChange("defaultVariables", v)}
+            disabled={saving}
+          />
+          <JsonEditorRow
+            id="context-overrides"
+            label="Context overrides (JSON)"
+            help="Add / seed context-slot values — keyed by slot key."
+            value={formData.contextOverrides}
+            onChange={(v) => handleChange("contextOverrides", v)}
+            disabled={saving}
+          />
+          <JsonEditorRow
+            id="llm-overrides"
+            label="LLM overrides (JSON)"
+            help='Partial LLMParams delta — e.g. {"temperature": 0.2}. Only keys provided are sent.'
+            value={formData.llmOverrides as Record<string, unknown> | null}
+            onChange={(v) =>
+              handleChange("llmOverrides", v as ShortcutFormData["llmOverrides"])
+            }
+            disabled={saving}
+          />
         </div>
       </div>
 

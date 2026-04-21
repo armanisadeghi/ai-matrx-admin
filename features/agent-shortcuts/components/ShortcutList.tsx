@@ -212,8 +212,8 @@ export function ShortcutList({
           bVal = b.isActive ? 1 : 0;
           break;
         case "display":
-          aVal = a.resultDisplay;
-          bVal = b.resultDisplay;
+          aVal = a.displayMode;
+          bVal = b.displayMode;
           break;
         case "autoRun":
           aVal = a.autoRun ? 1 : 0;
@@ -742,7 +742,7 @@ export function ShortcutList({
                       </TableCell>
                       <TableCell>
                         <Badge variant="secondary" className="text-xs">
-                          {shortcut.resultDisplay}
+                          {shortcut.displayMode}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-center">

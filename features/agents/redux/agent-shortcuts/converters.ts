@@ -3,18 +3,36 @@
  *
  * Rules:
  *  - Outer column names convert between snake_case (DB) and camelCase (frontend).
- *  - JSONB field contents (enabled_contexts, scope_mappings) are NOT key-converted.
+ *  - JSONB field contents (enabled_contexts, scope_mappings, default_variables,
+ *    context_overrides, llm_overrides) are NOT key-converted — passed through.
  *
  * DB-managed fields excluded from ALL write payloads:
  *  - id          — DB generates on insert
  *  - created_at  — DB trigger
  *  - updated_at  — DB trigger (set_agx_shortcut_updated_at)
+ *
+ * Phase 3.5: column shape changed. See migrations/agx_shortcut_execution_config_v2.sql.
+ *  Renamed:  result_display          → display_mode
+ *            use_pre_execution_input → show_pre_execution_gate
+ *  Dropped:  apply_variables, show_variables
+ *  Added:    show_variable_panel, variables_panel_style,
+ *            show_definition_messages, show_definition_message_content,
+ *            hide_reasoning, hide_tool_results,
+ *            pre_execution_message, bypass_gate_seconds,
+ *            default_user_input, default_variables, context_overrides,
+ *            llm_overrides
  */
 
 import type { Database } from "@/types/database.types";
 import type { AgentShortcut } from "./types";
 import type { ResultDisplayMode } from "@/features/agents/utils/run-ui-utils";
 import type { ShortcutContext } from "@/features/agents/utils/shortcut-context-utils";
+import type { VariablesPanelStyle } from "@/features/agents/components/inputs/variable-input-variations/variable-input-options";
+import type { LLMParams } from "@/features/agents/types/agent-api-types";
+import {
+  type AgentExecutionConfig,
+  DEFAULT_AGENT_EXECUTION_CONFIG,
+} from "@/features/agents/types/agent-execution-config.types";
 
 // ---------------------------------------------------------------------------
 // Supabase row types
@@ -33,10 +51,48 @@ type ShortcutUpdate = Omit<
 export type { ShortcutInsert, ShortcutUpdate };
 
 // ---------------------------------------------------------------------------
+// Loose-typed row reader — tolerant of pre-types-regen builds.
+// Pulls the v2 columns by name; falls back to defaults if absent.
+// ---------------------------------------------------------------------------
+
+type LooseRow = Record<string, unknown>;
+
+function r(row: LooseRow, key: string): unknown {
+  return row[key];
+}
+
+function rString(row: LooseRow, key: string): string | null {
+  const v = r(row, key);
+  return typeof v === "string" ? v : null;
+}
+
+function rBool(row: LooseRow, key: string, fallback: boolean): boolean {
+  const v = r(row, key);
+  return typeof v === "boolean" ? v : fallback;
+}
+
+function rNumber(row: LooseRow, key: string, fallback: number): number {
+  const v = r(row, key);
+  return typeof v === "number" ? v : fallback;
+}
+
+function rJsonObject<T>(row: LooseRow, key: string): T | null {
+  const v = r(row, key);
+  if (v === null || v === undefined) return null;
+  if (typeof v === "object" && !Array.isArray(v)) return v as T;
+  return null;
+}
+
+// ---------------------------------------------------------------------------
 // DB → Frontend
 // ---------------------------------------------------------------------------
 
 export function dbRowToAgentShortcut(row: ShortcutRow): AgentShortcut {
+  // The Database types may lag the migration during transition. We read v2
+  // columns through a loose accessor so this converter compiles even before
+  // `npm run types` regenerates.
+  const loose = row as unknown as LooseRow;
+
   return {
     id: row.id,
     categoryId: row.category_id,
@@ -50,18 +106,79 @@ export function dbRowToAgentShortcut(row: ShortcutRow): AgentShortcut {
     agentVersionId: row.agent_version_id ?? null,
     useLatest: row.use_latest ?? false,
 
-    // JSONB — cast but not key-converted
     enabledContexts:
       (row.enabled_contexts as unknown as ShortcutContext[]) ?? [],
     scopeMappings:
       (row.scope_mappings as unknown as Record<string, string>) ?? null,
 
-    resultDisplay: (row.result_display ?? "modal-full") as ResultDisplayMode,
-    allowChat: row.allow_chat ?? true,
-    autoRun: row.auto_run ?? true,
-    applyVariables: row.apply_variables ?? true,
-    showVariables: row.show_variables ?? false,
-    showPreExecutionGate: row.use_pre_execution_input ?? false,
+    // Renamed columns — fall back to old names if pre-migration build
+    displayMode: ((rString(loose, "display_mode") ??
+      rString(loose, "result_display")) ??
+      DEFAULT_AGENT_EXECUTION_CONFIG.displayMode) as ResultDisplayMode,
+
+    showPreExecutionGate: rBool(
+      loose,
+      "show_pre_execution_gate",
+      rBool(
+        loose,
+        "use_pre_execution_input",
+        DEFAULT_AGENT_EXECUTION_CONFIG.showPreExecutionGate,
+      ),
+    ),
+
+    autoRun: rBool(loose, "auto_run", DEFAULT_AGENT_EXECUTION_CONFIG.autoRun),
+    allowChat: rBool(
+      loose,
+      "allow_chat",
+      DEFAULT_AGENT_EXECUTION_CONFIG.allowChat,
+    ),
+
+    showVariablePanel: rBool(
+      loose,
+      "show_variable_panel",
+      DEFAULT_AGENT_EXECUTION_CONFIG.showVariablePanel,
+    ),
+    variablesPanelStyle: ((rString(loose, "variables_panel_style") ??
+      DEFAULT_AGENT_EXECUTION_CONFIG.variablesPanelStyle) as VariablesPanelStyle),
+
+    showDefinitionMessages: rBool(
+      loose,
+      "show_definition_messages",
+      DEFAULT_AGENT_EXECUTION_CONFIG.showDefinitionMessages,
+    ),
+    showDefinitionMessageContent: rBool(
+      loose,
+      "show_definition_message_content",
+      DEFAULT_AGENT_EXECUTION_CONFIG.showDefinitionMessageContent,
+    ),
+    hideReasoning: rBool(
+      loose,
+      "hide_reasoning",
+      DEFAULT_AGENT_EXECUTION_CONFIG.hideReasoning,
+    ),
+    hideToolResults: rBool(
+      loose,
+      "hide_tool_results",
+      DEFAULT_AGENT_EXECUTION_CONFIG.hideToolResults,
+    ),
+
+    preExecutionMessage: rString(loose, "pre_execution_message"),
+    bypassGateSeconds: rNumber(
+      loose,
+      "bypass_gate_seconds",
+      DEFAULT_AGENT_EXECUTION_CONFIG.bypassGateSeconds,
+    ),
+
+    defaultUserInput: rString(loose, "default_user_input"),
+    defaultVariables: rJsonObject<Record<string, unknown>>(
+      loose,
+      "default_variables",
+    ),
+    contextOverrides: rJsonObject<Record<string, unknown>>(
+      loose,
+      "context_overrides",
+    ),
+    llmOverrides: rJsonObject<Partial<LLMParams>>(loose, "llm_overrides"),
 
     isActive: row.is_active,
 
@@ -75,12 +192,42 @@ export function dbRowToAgentShortcut(row: ShortcutRow): AgentShortcut {
   };
 }
 
+/**
+ * Extract just the AgentExecutionConfig bundle from a shortcut record.
+ * Used by launchAgentExecution to seed the resolved config.
+ */
+export function shortcutToExecutionConfig(
+  shortcut: AgentShortcut,
+): AgentExecutionConfig {
+  return {
+    displayMode: shortcut.displayMode,
+    showVariablePanel: shortcut.showVariablePanel,
+    variablesPanelStyle: shortcut.variablesPanelStyle,
+    autoRun: shortcut.autoRun,
+    allowChat: shortcut.allowChat,
+    showDefinitionMessages: shortcut.showDefinitionMessages,
+    showDefinitionMessageContent: shortcut.showDefinitionMessageContent,
+    hideReasoning: shortcut.hideReasoning,
+    hideToolResults: shortcut.hideToolResults,
+    showPreExecutionGate: shortcut.showPreExecutionGate,
+    preExecutionMessage: shortcut.preExecutionMessage,
+    bypassGateSeconds: shortcut.bypassGateSeconds,
+    defaultUserInput: shortcut.defaultUserInput,
+    defaultVariables: shortcut.defaultVariables,
+    contextOverrides: shortcut.contextOverrides,
+    llmOverrides: shortcut.llmOverrides,
+    scopeMappings: shortcut.scopeMappings,
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Frontend → DB (Insert)
 // ---------------------------------------------------------------------------
 
 export function agentShortcutToInsert(shortcut: AgentShortcut): ShortcutInsert {
-  return {
+  // Build via loose object so we can write v2 column names even when the
+  // generated `ShortcutInsert` type still reflects the pre-migration shape.
+  const insert: Record<string, unknown> = {
     category_id: shortcut.categoryId,
     label: shortcut.label,
     description: shortcut.description,
@@ -92,17 +239,25 @@ export function agentShortcutToInsert(shortcut: AgentShortcut): ShortcutInsert {
     agent_version_id: shortcut.agentVersionId,
     use_latest: shortcut.useLatest,
 
-    enabled_contexts:
-      shortcut.enabledContexts as unknown as Database["public"]["Tables"]["agx_shortcut"]["Insert"]["enabled_contexts"],
-    scope_mappings:
-      shortcut.scopeMappings as unknown as Database["public"]["Tables"]["agx_shortcut"]["Insert"]["scope_mappings"],
+    enabled_contexts: shortcut.enabledContexts,
+    scope_mappings: shortcut.scopeMappings,
 
-    result_display: shortcut.resultDisplay,
-    allow_chat: shortcut.allowChat,
+    display_mode: shortcut.displayMode,
+    show_variable_panel: shortcut.showVariablePanel,
+    variables_panel_style: shortcut.variablesPanelStyle,
     auto_run: shortcut.autoRun,
-    apply_variables: shortcut.applyVariables,
-    show_variables: shortcut.showVariables,
-    use_pre_execution_input: shortcut.showPreExecutionGate,
+    allow_chat: shortcut.allowChat,
+    show_definition_messages: shortcut.showDefinitionMessages,
+    show_definition_message_content: shortcut.showDefinitionMessageContent,
+    hide_reasoning: shortcut.hideReasoning,
+    hide_tool_results: shortcut.hideToolResults,
+    show_pre_execution_gate: shortcut.showPreExecutionGate,
+    pre_execution_message: shortcut.preExecutionMessage,
+    bypass_gate_seconds: shortcut.bypassGateSeconds,
+    default_user_input: shortcut.defaultUserInput,
+    default_variables: shortcut.defaultVariables,
+    context_overrides: shortcut.contextOverrides,
+    llm_overrides: shortcut.llmOverrides,
 
     is_active: shortcut.isActive,
 
@@ -111,6 +266,8 @@ export function agentShortcutToInsert(shortcut: AgentShortcut): ShortcutInsert {
     project_id: shortcut.projectId,
     task_id: shortcut.taskId,
   };
+
+  return insert as unknown as ShortcutInsert;
 }
 
 // ---------------------------------------------------------------------------
@@ -120,7 +277,7 @@ export function agentShortcutToInsert(shortcut: AgentShortcut): ShortcutInsert {
 export function agentShortcutToUpdate(
   partial: Partial<AgentShortcut>,
 ): ShortcutUpdate {
-  const update: ShortcutUpdate = {};
+  const update: Record<string, unknown> = {};
 
   if (partial.categoryId !== undefined) update.category_id = partial.categoryId;
   if (partial.label !== undefined) update.label = partial.label;
@@ -137,22 +294,40 @@ export function agentShortcutToUpdate(
   if (partial.useLatest !== undefined) update.use_latest = partial.useLatest;
 
   if (partial.enabledContexts !== undefined)
-    update.enabled_contexts =
-      partial.enabledContexts as unknown as Database["public"]["Tables"]["agx_shortcut"]["Update"]["enabled_contexts"];
+    update.enabled_contexts = partial.enabledContexts;
   if (partial.scopeMappings !== undefined)
-    update.scope_mappings =
-      partial.scopeMappings as unknown as Database["public"]["Tables"]["agx_shortcut"]["Update"]["scope_mappings"];
+    update.scope_mappings = partial.scopeMappings;
 
-  if (partial.resultDisplay !== undefined)
-    update.result_display = partial.resultDisplay;
-  if (partial.allowChat !== undefined) update.allow_chat = partial.allowChat;
+  // ── AgentExecutionConfig bundle ──
+  if (partial.displayMode !== undefined) update.display_mode = partial.displayMode;
+  if (partial.showVariablePanel !== undefined)
+    update.show_variable_panel = partial.showVariablePanel;
+  if (partial.variablesPanelStyle !== undefined)
+    update.variables_panel_style = partial.variablesPanelStyle;
   if (partial.autoRun !== undefined) update.auto_run = partial.autoRun;
-  if (partial.applyVariables !== undefined)
-    update.apply_variables = partial.applyVariables;
-  if (partial.showVariables !== undefined)
-    update.show_variables = partial.showVariables;
+  if (partial.allowChat !== undefined) update.allow_chat = partial.allowChat;
+  if (partial.showDefinitionMessages !== undefined)
+    update.show_definition_messages = partial.showDefinitionMessages;
+  if (partial.showDefinitionMessageContent !== undefined)
+    update.show_definition_message_content = partial.showDefinitionMessageContent;
+  if (partial.hideReasoning !== undefined)
+    update.hide_reasoning = partial.hideReasoning;
+  if (partial.hideToolResults !== undefined)
+    update.hide_tool_results = partial.hideToolResults;
   if (partial.showPreExecutionGate !== undefined)
-    update.use_pre_execution_input = partial.showPreExecutionGate;
+    update.show_pre_execution_gate = partial.showPreExecutionGate;
+  if (partial.preExecutionMessage !== undefined)
+    update.pre_execution_message = partial.preExecutionMessage;
+  if (partial.bypassGateSeconds !== undefined)
+    update.bypass_gate_seconds = partial.bypassGateSeconds;
+  if (partial.defaultUserInput !== undefined)
+    update.default_user_input = partial.defaultUserInput;
+  if (partial.defaultVariables !== undefined)
+    update.default_variables = partial.defaultVariables;
+  if (partial.contextOverrides !== undefined)
+    update.context_overrides = partial.contextOverrides;
+  if (partial.llmOverrides !== undefined)
+    update.llm_overrides = partial.llmOverrides;
 
   if (partial.isActive !== undefined) update.is_active = partial.isActive;
 
@@ -162,5 +337,5 @@ export function agentShortcutToUpdate(
   if (partial.projectId !== undefined) update.project_id = partial.projectId;
   if (partial.taskId !== undefined) update.task_id = partial.taskId;
 
-  return update;
+  return update as unknown as ShortcutUpdate;
 }

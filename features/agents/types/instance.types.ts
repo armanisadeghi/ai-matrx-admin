@@ -541,7 +541,24 @@ export interface InstanceUIState {
 // Managed Agent Options
 // =============================================================================
 
+/**
+ * ManagedAgentOptions — the full invocation envelope for launching an agent.
+ *
+ * Organized in three sections:
+ *   1. IDENTITY — who is being launched, from where
+ *   2. CONFIG    — the AgentExecutionConfig bundle (customization knobs)
+ *   3. RUNTIME   — per-call values (user input, scope, handles)
+ *   4. INVOCATION — flags that don't belong in any of the above
+ *
+ * Legacy flat-field versions of the config/runtime knobs are preserved
+ * with @deprecated markers so existing callers keep working. The
+ * launchAgentExecution thunk normalizes both shapes at entry.
+ */
 export interface ManagedAgentOptions {
+  // ═══════════════════════════════════════════════════════════
+  // IDENTITY
+  // ═══════════════════════════════════════════════════════════
+
   /** Stable surface key for the focus registry (e.g. "agent-builder", "agent-runner:<id>") */
   surfaceKey: string;
   agentId?: string;
@@ -550,6 +567,34 @@ export interface ManagedAgentOptions {
 
   /** UI surface that triggered the launch. Required for telemetry and attribution. */
   sourceFeature: SourceFeature;
+
+  // ═══════════════════════════════════════════════════════════
+  // CONFIG BUNDLE — canonical customization surface
+  // ═══════════════════════════════════════════════════════════
+
+  /**
+   * Canonical agent-customization bundle. When launching via a shortcut,
+   * the shortcut's persisted config is loaded here; callers can layer
+   * additional partial overrides on top.
+   *
+   * Preferred over the deprecated flat fields below — the launch thunk
+   * merges both but new code should only set `config`.
+   */
+  config?: Partial<import("./agent-execution-config.types").AgentExecutionConfig>;
+
+  // ═══════════════════════════════════════════════════════════
+  // RUNTIME — per-invocation values (never persisted on a shortcut)
+  // ═══════════════════════════════════════════════════════════
+
+  /**
+   * Per-call runtime data: applicationScope (UI-captured), live userInput,
+   * widget handle id, original text for widget handoff.
+   */
+  runtime?: import("./agent-execution-config.types").AgentExecutionRuntime;
+
+  // ═══════════════════════════════════════════════════════════
+  // INVOCATION flags (not shortcut-persistable, not runtime-UI data)
+  // ═══════════════════════════════════════════════════════════
 
   /** Delay conversation creation until the caller signals readiness. Default: true */
   ready?: boolean;
@@ -565,62 +610,40 @@ export interface ManagedAgentOptions {
    */
   isEphemeral?: boolean;
 
-  // ==== AGENT CUSTOMIZATIONS: MOST IMPORTANT ACTUAL CONFIGURABLE THINGS THAT CONVERT AN AGENT INTO A SHORTCUT OR APP ===== STARTS HERE =====
+  // ═══════════════════════════════════════════════════════════
+  // @deprecated flat config fields — use `config` instead.
+  // Kept for legacy callers; normalized to `config` at thunk entry.
+  // ═══════════════════════════════════════════════════════════
 
-  /**
-   * How the result is presented. "direct" means the caller manages the UI
-   *
-   * "inline" | "sidebar" | "modal-full" | "modal-compact" | "chat-bubble" |
-   * "flexible-panel" | "panel" | "toast" | "floating-chat" | "direct" | "background" |
-   * "chat-collapsible" | "chat-assistant"
-   */
+  /** @deprecated Use `config.displayMode`. */
   displayMode?: ResultDisplayMode;
-
-  /** Configuration the allows the user to enter values for agent variables. */
+  /** @deprecated Use `config.showVariablePanel`. */
   showVariablePanel?: boolean;
-  // "inline" | "wizard" | "form" | "compact" | "guided" | "cards"
+  /** @deprecated Use `config.variablesPanelStyle`. */
   variablesPanelStyle?: VariablesPanelStyle;
-
-  // autoRun means the agent triggers without any user input or variables.
-  // used for programmatic triggers where the full context is already assembled
-  // (e.g. flashcard "I'm confused" button) or many context menu options.
+  /** @deprecated Use `config.autoRun`. */
   autoRun?: boolean;
-
-  // allowChat means the user can send follow-up messages after the first response.
-  // true = multi-turn conversation; false = single-shot only.
+  /** @deprecated Use `config.allowChat`. */
   allowChat?: boolean;
-
-  /** Allows the user to see the messages that are part of the agent definition (NOT WRITTEN BY THE USER). */
+  /** @deprecated Use `config.showDefinitionMessages`. */
   showDefinitionMessages?: boolean;
-
-  /** If showDefinitionMessages is true, this can be false to hide any non-user entered variables or optional input content. */
+  /** @deprecated Use `config.showDefinitionMessageContent`. */
   showDefinitionMessageContent?: boolean;
-
-  /** Stop autoRun and offer the user a chance to provide optional instructions before executing. */
+  /** @deprecated Use `config.showPreExecutionGate`. */
   showPreExecutionGate?: boolean;
-  /** Optional message shown in the pre-execution input gate. */
+  /** @deprecated Use `config.preExecutionMessage`. */
   preExecutionMessage?: string | null;
-  /** Number of seconds to wait before automatically executing the agent (Default: 3 Seconds). */
+  /** @deprecated Use `config.bypassGateSeconds`. */
   bypassGateSeconds?: number;
-
-  /** When true, reasoning/thinking blocks are hidden from the user. */
+  /** @deprecated Use `config.hideReasoning`. */
   hideReasoning?: boolean;
-
-  /** When true, tool-call result blocks are hidden from the user. */
+  /** @deprecated Use `config.hideToolResults`. */
   hideToolResults?: boolean;
-
-  // ==== AGENT CUSTOMIZATIONS END ================================================================================================
-
-  // ===== RUNTIME EXECUTION VALUES... Can be overriden and automated via shortcuts or apps ====================================================
+  /** @deprecated Use `config.defaultUserInput` for designer-provided instructions, or `runtime.userInput` for live user input. */
   userInput?: string;
+  /** @deprecated Use `config.defaultVariables` for defaults, or set via runtime.applicationScope for scope-mapped values. */
   variables?: Record<string, unknown>;
-
-  /**
-   * LLM parameter overrides applied on top of the agent's base settings.
-   * These are delta-only — only keys you provide are sent.
-   * Use this in the runner, chat, and widgets to adjust temperature, model, etc.
-   * NOT applicable in builder system (builder always reads the full live agent definition).
-   */
+  /** @deprecated Use `config.llmOverrides`. */
   overrides?: Partial<LLMParams>;
 
   // ==== END RUNTIME EXECUTION VALUES ==========================================================================================================
@@ -650,27 +673,24 @@ export interface ManagedAgentOptions {
   // ===== END APPLICATION UI CONFIGS ==========================================================================================================
 
   /**
-   * This is NOT A CONFIGURATION. This is a UI State Flag, derived from the configs as well as the stage of the execution.
-   * Example: Always FALSE after the first response is received.
-   * Example: Always FALSE if showVariablePanel is FALSE.
+   * @deprecated DERIVED UI STATE. Never set by callers. Computed at runtime
+   * from config.showVariablePanel + execution stage. Kept on the type for
+   * transitional backwards-compat; will be deleted when all legacy callers
+   * drop their references.
    */
   showVariables?: boolean;
 
+  /** @deprecated Use `runtime.applicationScope`. */
   applicationScope?: ApplicationScope;
 
-  /**
-   * CallbackManager id for a WidgetHandle registered via `useWidgetHandle`.
-   * Carries both capability methods (onTextReplace, onAttachMedia, ...) and
-   * lifecycle methods (onComplete, onCancel, onError). The submit-body
-   * assembler reads the handle per-turn to derive `client_tools`; the
-   * tool_delegated dispatcher routes widget_* calls back through it.
-   */
+  /** @deprecated Use `runtime.widgetHandleId`. */
   widgetHandleId?: string;
 
   /**
    * The original text from the editor/notes that was selected before launch.
    * Forwarded to the widget handle's onTextReplace / onTextInsert* methods
    * alongside the agent's response.
+   * @deprecated Use `runtime.originalText`.
    */
   originalText?: string;
 
