@@ -18,7 +18,7 @@ export interface AiVoiceWindowProps extends Omit<
 }
 
 export function AiVoiceWindow({
-  title = "AI Voice Pad",
+  title = "AI Voice",
   id = "aiVoiceWindow",
   instanceId = "default",
   ...windowProps

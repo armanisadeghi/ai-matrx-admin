@@ -72,6 +72,16 @@ export interface SmartCodeEditorProps {
   selection?: string;
   /** Optional vsc_diagnostics context (pre-formatted text). */
   diagnostics?: string;
+  /** Optional vsc_workspace_name context. */
+  workspaceName?: string;
+  /** Optional vsc_workspace_folders context (newline-joined). */
+  workspaceFolders?: string;
+  /** Optional vsc_git_branch context. */
+  gitBranch?: string;
+  /** Optional vsc_git_status context (plain text). */
+  gitStatus?: string;
+  /** Optional agent_skills context (free-form text). */
+  agentSkills?: string;
   /** Optional title shown in the header. Header hidden when omitted. */
   title?: string;
   /** Render the right-side conversation pane when messages exist. Default: true. */
@@ -88,6 +98,11 @@ export function SmartCodeEditor({
   filePath,
   selection,
   diagnostics,
+  workspaceName,
+  workspaceFolders,
+  gitBranch,
+  gitStatus,
+  agentSkills,
   title,
   showConversation = true,
   className,
@@ -100,6 +115,11 @@ export function SmartCodeEditor({
     filePath,
     selection,
     diagnostics,
+    workspaceName,
+    workspaceFolders,
+    gitBranch,
+    gitStatus,
+    agentSkills,
   });
 
   const {
@@ -125,26 +145,18 @@ export function SmartCodeEditor({
 
   const memoizedCodeDisplay = useMemo(
     () => (
-      <>
-        <div className="px-2 py-1 flex items-center justify-between shrink-0">
-          <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
-            Current Code
-          </span>
-        </div>
-        <div className="flex-1 overflow-auto relative">
-          <CodeBlock
-            code={currentCode}
-            language={language}
-            showLineNumbers={true}
-          />
-        </div>
-      </>
+      <div className="flex-1 overflow-auto relative">
+        <CodeBlock
+          code={currentCode}
+          language={language}
+          showLineNumbers={true}
+        />
+      </div>
     ),
     [currentCode, language],
   );
 
-  const hasConversation =
-    showConversation && messages && messages.length > 0;
+  const hasConversation = showConversation && messages && messages.length > 0;
 
   return (
     <div className={cn("h-full flex flex-col overflow-hidden", className)}>

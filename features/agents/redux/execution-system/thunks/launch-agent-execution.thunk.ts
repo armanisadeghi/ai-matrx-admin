@@ -26,6 +26,8 @@ import type {
 } from "@/features/agents/types/instance.types";
 import { mapScopeToInstance } from "@/features/agents/utils/scope-mapping";
 import { resolveVisibilitySettings } from "../instance-ui-state/instance-ui-state.slice";
+import { fetchAgentExecutionMinimal } from "@/features/agents/redux/agent-definition/thunks";
+import { selectAgentExecutionPayload } from "@/features/agents/redux/agent-definition/selectors";
 import {
   createManualInstance,
   createInstanceFromShortcut,
@@ -167,6 +169,27 @@ export const launchAgentExecution = createAsyncThunk<
 
   let conversationId: string;
   let resolvedDisplayMode: ResultDisplayMode = displayModeOverride ?? "direct";
+
+  // =========================================================================
+  // Step 0.5: Ensure the agent's execution payload is in Redux before we
+  // snapshot it into the instance. `createInstance*` reads
+  // `state.agentDefinition.agents[agentId]` via `readAgentSnapshot` — if the
+  // variable definitions haven't been fetched yet, the instance ends up with
+  // `definitions: []` and subsequent `setUserVariableValues` writes are
+  // silently dropped at assembly time (selectResolvedVariables only emits
+  // values for defined vars).
+  //
+  // This check is a no-op when the payload is already ready (both this
+  // `isReady` gate and `fetchAgentExecutionMinimal`'s own early return).
+  // Shortcut path skips: the shortcut's own load flow takes care of it.
+  // =========================================================================
+  if (agentId && !shortcutId) {
+    const preState = getState() as RootState;
+    const payload = selectAgentExecutionPayload(preState, agentId);
+    if (!payload.isReady) {
+      await dispatch(fetchAgentExecutionMinimal(agentId)).unwrap();
+    }
+  }
 
   // =========================================================================
   // Step 1: Route by trigger type and create instance

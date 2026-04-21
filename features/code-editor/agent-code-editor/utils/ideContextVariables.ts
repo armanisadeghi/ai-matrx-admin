@@ -1,26 +1,27 @@
 /**
  * IDE Context Variables
  *
- * Converts a `CodeContextInput` (the editor's current code + language +
- * optional file-path / selection / diagnostics) into a list of context
- * entries for the agent-system `instanceContext` slice. The server exposes
- * these to the model via `ctx_get(key)` so the agent can pull live editor
- * state on demand without bloating the prompt.
+ * Converts a `CodeContextInput` (code + language + optional IDE state) into
+ * a list of context entries for the agent-system `instanceContext` slice.
+ * The server exposes these to the model via `ctx_get(key)` so the agent can
+ * pull live editor state on demand without bloating the prompt.
  *
- * Keys follow the `vsc_*` convention the server team uses for their VSCode
- * extension — any agent that opts into them (by declaring the key in its
- * variable schema or by using ctx_get) sees the same payload shape.
+ * Keys follow the server team's `vsc_*` convention for VSCode-style slots
+ * plus `agent_skills` for the manual capability slot.
  *
- * This replaces the prompt-era `specialVariables.ts`'s `current_code` /
- * `content` / `selection` / `context` auto-fill with a context-slot model.
+ * Fields with no content are omitted — same behavior as the server's
+ * IdeState.to_variables() (keys with empty strings aren't emitted).
  */
 
 import type { CodeContextInput } from "../types";
-import { VSC_CONTEXT_KEYS, VSC_CONTEXT_LABELS } from "../constants";
+import {
+  VSC_CONTEXT_KEYS,
+  AGENT_CONTEXT_KEYS,
+  CONTEXT_LABELS,
+} from "../constants";
 
 /**
- * Shape the agent-system instanceContext.setContextEntries action accepts.
- * Matches the payload contract at
+ * Shape the instanceContext.setContextEntries action accepts. Matches
  * `features/agents/redux/execution-system/instance-context/instance-context.slice.ts:94-120`.
  */
 export interface IdeContextEntry {
@@ -30,10 +31,6 @@ export interface IdeContextEntry {
   label: string;
 }
 
-/**
- * Detect if code is already wrapped in a markdown code block. Mirrors the
- * check in the legacy `specialVariables.ts` so we don't double-wrap.
- */
 function isWrappedInCodeBlock(code: string): boolean {
   const trimmed = code.trim();
   return (
@@ -43,10 +40,6 @@ function isWrappedInCodeBlock(code: string): boolean {
   );
 }
 
-/**
- * Wrap code in a fenced block for clean model consumption. If already
- * wrapped, passes through untouched.
- */
 export function wrapInCodeBlock(code: string, language?: string): string {
   if (isWrappedInCodeBlock(code)) return code;
   const lang = language || "code";
@@ -54,8 +47,8 @@ export function wrapInCodeBlock(code: string, language?: string): string {
 }
 
 /**
- * Build the IDE context entries for a given editor state. Returns only the
- * keys that have real content — mirrors the server's `ide_state.to_variables()`
+ * Build the context entries for a given editor state. Returns only the keys
+ * that have real content — mirrors the server's `ide_state.to_variables()`
  * behavior of omitting empty fields.
  *
  * Pass the result directly to `setContextEntries({conversationId, entries})`.
@@ -64,71 +57,64 @@ export function buildIdeContextEntries(
   input: CodeContextInput,
 ): IdeContextEntry[] {
   const entries: IdeContextEntry[] = [];
-  const { code, language, filePath, selection, diagnostics } = input;
+  const {
+    code,
+    language,
+    filePath,
+    selection,
+    diagnostics,
+    workspaceName,
+    workspaceFolders,
+    gitBranch,
+    gitStatus,
+    agentSkills,
+  } = input;
 
-  // Atomic: file content (fenced, ready for the model to read)
+  const push = (key: string, value: unknown, type: "text" | "json" = "text") => {
+    entries.push({ key, value, type, label: CONTEXT_LABELS[key] ?? key });
+  };
+
+  // File content (fenced, ready for the model to read)
   if (code && code.length > 0) {
-    entries.push({
-      key: VSC_CONTEXT_KEYS.ACTIVE_FILE_CONTENT,
-      value: wrapInCodeBlock(code, language),
-      type: "text",
-      label: VSC_CONTEXT_LABELS[VSC_CONTEXT_KEYS.ACTIVE_FILE_CONTENT],
-    });
+    push(
+      VSC_CONTEXT_KEYS.ACTIVE_FILE_CONTENT,
+      wrapInCodeBlock(code, language),
+    );
   }
+  if (language) push(VSC_CONTEXT_KEYS.ACTIVE_FILE_LANGUAGE, language);
+  if (filePath) push(VSC_CONTEXT_KEYS.ACTIVE_FILE_PATH, filePath);
 
-  // Atomic: language (small scalar, no wrapping needed)
-  if (language) {
-    entries.push({
-      key: VSC_CONTEXT_KEYS.ACTIVE_FILE_LANGUAGE,
-      value: language,
-      type: "text",
-      label: VSC_CONTEXT_LABELS[VSC_CONTEXT_KEYS.ACTIVE_FILE_LANGUAGE],
-    });
-  }
-
-  // Atomic: file path (optional — only when the caller supplies one)
-  if (filePath) {
-    entries.push({
-      key: VSC_CONTEXT_KEYS.ACTIVE_FILE_PATH,
-      value: filePath,
-      type: "text",
-      label: VSC_CONTEXT_LABELS[VSC_CONTEXT_KEYS.ACTIVE_FILE_PATH],
-    });
-  }
-
-  // Atomic: selection (optional)
   if (selection && selection.length > 0) {
-    entries.push({
-      key: VSC_CONTEXT_KEYS.SELECTED_TEXT,
-      value: wrapInCodeBlock(selection, language),
-      type: "text",
-      label: VSC_CONTEXT_LABELS[VSC_CONTEXT_KEYS.SELECTED_TEXT],
-    });
+    push(VSC_CONTEXT_KEYS.SELECTED_TEXT, wrapInCodeBlock(selection, language));
   }
-
-  // Atomic: diagnostics (optional; caller provides pre-formatted text)
   if (diagnostics && diagnostics.length > 0) {
-    entries.push({
-      key: VSC_CONTEXT_KEYS.DIAGNOSTICS,
-      value: diagnostics,
-      type: "text",
-      label: VSC_CONTEXT_LABELS[VSC_CONTEXT_KEYS.DIAGNOSTICS],
-    });
+    push(VSC_CONTEXT_KEYS.DIAGNOSTICS, diagnostics);
   }
 
-  // Composite: `vsc_active_file` — a json dict for agents that prefer one
-  // lookup over three. Only included when we have a file to describe.
+  if (workspaceName) push(VSC_CONTEXT_KEYS.WORKSPACE_NAME, workspaceName);
+  if (workspaceFolders && workspaceFolders.length > 0) {
+    push(VSC_CONTEXT_KEYS.WORKSPACE_FOLDERS, workspaceFolders);
+  }
+  if (gitBranch) push(VSC_CONTEXT_KEYS.GIT_BRANCH, gitBranch);
+  if (gitStatus && gitStatus.length > 0) {
+    push(VSC_CONTEXT_KEYS.GIT_STATUS, gitStatus);
+  }
+
+  if (agentSkills && agentSkills.length > 0) {
+    push(AGENT_CONTEXT_KEYS.AGENT_SKILLS, agentSkills);
+  }
+
+  // Composite: `vsc_active_file` — one json lookup for agents that want it.
   if (code && code.length > 0) {
-    entries.push({
-      key: VSC_CONTEXT_KEYS.ACTIVE_FILE,
-      value: {
+    push(
+      VSC_CONTEXT_KEYS.ACTIVE_FILE,
+      {
         path: filePath ?? null,
         language: language ?? null,
         content: code,
       },
-      type: "json",
-      label: VSC_CONTEXT_LABELS[VSC_CONTEXT_KEYS.ACTIVE_FILE],
-    });
+      "json",
+    );
   }
 
   return entries;

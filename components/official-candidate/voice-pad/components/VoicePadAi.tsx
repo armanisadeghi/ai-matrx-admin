@@ -260,7 +260,7 @@ export default function VoicePadAi({ instanceId }: VoicePadAiProps) {
   return (
     <WindowPanel
       id={windowId}
-      title="AI Voice Pad"
+      title="Transcription Cleanup"
       width={820}
       height={620}
       position="top-right"
@@ -287,7 +287,7 @@ export default function VoicePadAi({ instanceId }: VoicePadAiProps) {
         </>
       }
     >
-      <div className="flex min-h-0 flex-1 flex-col bg-background">
+      <div className="flex h-full min-h-0 flex-col bg-background">
         {/* Top half: transcript */}
         <div className="flex min-h-0 flex-1 flex-col">
           <div className="flex shrink-0 items-center justify-between px-3 py-1.5 border-b border-border/40">

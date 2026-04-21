@@ -35,6 +35,10 @@ import {
   AlignLeft,
   Wand2,
   FolderOpen,
+  Save,
+  Loader2,
+  AlertCircle,
+  CircleDot,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/styles/themes/ThemeProvider";
@@ -50,7 +54,16 @@ import type { CodeFile } from "@/features/code-editor/multi-file-core/types";
 
 export interface CodeEditorWindowProps {
   windowInstanceId: string;
+  /** In-memory files (legacy/session mode). Ignored when `fileIds` is set. */
   files: CodeFile[];
+  /**
+   * Persisted mode: ids of code_files rows to load and edit. When provided,
+   * the window pulls content from Redux, routes edits through the auto-save
+   * middleware, and displays a "Saving…" indicator.
+   */
+  fileIds?: string[];
+  /** Tab to show active on open. In persisted mode this is a fileId. */
+  activeFileId?: string;
   title?: string | null;
   defaultWordWrap?: "on" | "off";
   autoFormatOnOpen?: boolean;
@@ -62,6 +75,8 @@ export interface CodeEditorWindowProps {
 export function CodeEditorWindow({
   windowInstanceId,
   files: initialFiles,
+  fileIds,
+  activeFileId,
   title,
   defaultWordWrap = "off",
   autoFormatOnOpen = false,
@@ -89,22 +104,38 @@ export function CodeEditorWindow({
     handleContentChange,
     handleCopy,
     handleFormat,
+    handleSaveNow,
     getEditorPath,
     mapLanguageForMonaco,
     editorWrapperRef,
     editorHeight,
+    isPersisted,
+    isDirty,
+    isSaving,
+    saveError,
   } = useCodeEditorWindowState({
     initialFiles,
+    fileIds,
+    initialActiveFile: activeFileId ?? null,
   });
 
   // ── Persistence collect ────────────────────────────────────────────────────
+  // In persisted mode the file contents live in Redux / the DB; we only
+  // persist the list of ids + active tab so the window re-hydrates on reload.
   const collectData = useCallback(
-    (): Record<string, unknown> => ({
-      files,
-      activeFile: activeTab,
-      title: title ?? null,
-    }),
-    [files, activeTab, title],
+    (): Record<string, unknown> =>
+      isPersisted
+        ? {
+            fileIds: fileIds ?? [],
+            activeFileId: activeTab,
+            title: title ?? null,
+          }
+        : {
+            files,
+            activeFile: activeTab,
+            title: title ?? null,
+          },
+    [isPersisted, fileIds, files, activeTab, title],
   );
 
   // ── Derived editor props ───────────────────────────────────────────────────
@@ -170,6 +201,16 @@ export function CodeEditorWindow({
 
               {/* Right: action buttons */}
               <div className="flex items-center gap-0.5 shrink-0">
+                {/* Save status (persisted mode only) */}
+                {isPersisted ? (
+                  <SaveStatusIndicator
+                    dirty={isDirty}
+                    saving={isSaving}
+                    error={saveError}
+                    onSave={handleSaveNow}
+                  />
+                ) : null}
+
                 {/* Edit / View toggle */}
                 <ActionBtn
                   onClick={() => setIsEditing(!isEditing)}
@@ -300,6 +341,64 @@ function EmptyState({
         </p>
       )}
     </div>
+  );
+}
+
+// ─── Save status indicator ────────────────────────────────────────────────────
+
+function SaveStatusIndicator({
+  dirty,
+  saving,
+  error,
+  onSave,
+}: {
+  dirty: boolean;
+  saving: boolean;
+  error: string | null;
+  onSave: () => void;
+}) {
+  if (error) {
+    return (
+      <button
+        type="button"
+        onClick={onSave}
+        title={`Save failed: ${error}. Click to retry.`}
+        className="flex items-center gap-1 px-1.5 h-6 rounded text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-[11px]"
+      >
+        <AlertCircle className="w-3.5 h-3.5" />
+        Error
+      </button>
+    );
+  }
+  if (saving) {
+    return (
+      <span className="flex items-center gap-1 px-1.5 h-6 text-[11px] text-gray-500 dark:text-gray-400">
+        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+        Saving…
+      </span>
+    );
+  }
+  if (dirty) {
+    return (
+      <button
+        type="button"
+        onClick={onSave}
+        title="Save now"
+        className="flex items-center gap-1 px-1.5 h-6 rounded text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 text-[11px]"
+      >
+        <CircleDot className="w-3 h-3" />
+        Unsaved
+      </button>
+    );
+  }
+  return (
+    <span
+      className="flex items-center gap-1 px-1.5 h-6 text-[11px] text-emerald-600 dark:text-emerald-400"
+      title="Saved"
+    >
+      <Save className="w-3 h-3" />
+      Saved
+    </span>
   );
 }
 

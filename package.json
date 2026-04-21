@@ -280,6 +280,7 @@
     "https-browserify": "latest",
     "install": "^0.13.0",
     "jest": "latest",
+    "jest-environment-jsdom": "^30.3.0",
     "jsdom": "latest",
     "os-browserify": "latest",
     "postcss": "latest",

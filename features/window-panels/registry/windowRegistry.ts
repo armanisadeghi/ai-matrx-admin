@@ -71,8 +71,22 @@ const REGISTRY: WindowRegistryEntry[] = [
     label: "Code Editor",
     defaultData: {
       files: [],
+      fileIds: [],
       activeFile: null,
+      activeFileId: null,
       title: null,
+    },
+  },
+
+  // ── Code File Manager (browse + organize persisted files) ─────────────────
+  {
+    slug: "code-file-manager-window",
+    overlayId: "codeFileManagerWindow",
+    label: "Code Files",
+    defaultData: {
+      selectedFolderId: null,
+      searchQuery: "",
+      sortBy: "updated",
     },
   },
 
@@ -268,6 +282,20 @@ const REGISTRY: WindowRegistryEntry[] = [
     defaultData: { agentId: null, selectedConversationId: null },
   },
 
+  // ── Agent Run (full run experience in a floating window) ──────────────────
+  {
+    slug: "agent-run-window",
+    overlayId: "agentRunWindow",
+    label: "Agent Run",
+    // agentId: the agent currently selected in the window header.
+    // selectedConversationId: the past conversation loaded from the sidebar
+    //   (null means "start a fresh conversation" when the window opens).
+    // Live execution state (streaming messages, focus, input drafts) lives in
+    // the agent execution Redux slices and cannot survive a reload, so only
+    // the selection is persisted here.
+    defaultData: { agentId: null, selectedConversationId: null },
+  },
+
   // ── Agent Content ─────────────────────────────────────────────────────────
   {
     slug: "agent-content-window",
@@ -447,7 +475,7 @@ const REGISTRY: WindowRegistryEntry[] = [
   {
     slug: "voice-pad-ai",
     overlayId: "voicePadAi",
-    label: "AI Voice Pad",
+    label: "Transcription Cleanup",
     defaultData: { transcript: null },
   },
 

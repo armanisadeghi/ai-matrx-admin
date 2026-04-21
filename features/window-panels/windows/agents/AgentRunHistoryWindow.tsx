@@ -16,7 +16,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectAgentById } from "@/features/agents/redux/agent-definition/selectors";
 import { fetchAgentConversations } from "@/features/agents/redux/conversation-list";
 import { makeSelectAgentConversations } from "@/features/agents/redux/conversation-list";
-import type { AgentConversationListItem } from "@/features/agents/redux/conversation-list";
+import type { ConversationListItem } from "@/features/agents/redux/conversation-list";
 import { AgentConversationDisplay } from "@/features/agents/components/run/AgentConversationDisplay";
 import { loadConversation } from "@/features/agents/redux/execution-system/thunks/load-conversation.thunk";
 import { createManualInstance } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
@@ -30,7 +30,7 @@ const SURFACE_KEY = "agent-run-history-window";
 
 interface VersionGroup {
   versionNumber: number;
-  conversations: AgentConversationListItem[];
+  conversations: ConversationListItem[];
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -47,10 +47,8 @@ function formatDate(iso: string | null): string {
   return d.toLocaleDateString([], { month: "short", day: "numeric" });
 }
 
-function groupByVersion(
-  conversations: AgentConversationListItem[],
-): VersionGroup[] {
-  const map = new Map<number, AgentConversationListItem[]>();
+function groupByVersion(conversations: ConversationListItem[]): VersionGroup[] {
+  const map = new Map<number, ConversationListItem[]>();
   for (const conv of conversations) {
     const v = conv.agentVersionNumber ?? 0;
     if (!map.has(v)) map.set(v, []);

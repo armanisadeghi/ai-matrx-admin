@@ -47,6 +47,7 @@ Related docs:
 - **A13** — Block rendering only for `boot-critical` hydration. `warm-cache` and `live-data` hydrate async and stream in.
 - **A14** — The engine is unit-testable without a DOM: all side-effect sinks (channel, localStorage, IDB) are injected.
 - **A15** — Persisted presets (`boot-critical`, `warm-cache`, `live-data`) support an optional declarative `partialize` field — a positive allow-list of top-level slice keys to persist. Unlisted keys stay in memory. This is not an escape hatch — it is the explicit mechanism for excluding transient UI fields (`isLoading`, errors, AbortControllers) from persistence while keeping one coherent slice. When secrets or auth concerns differ semantically from the rest of the data, a slice split is still required (see D1).
+- **A16** — `boot-critical` policies may declare `prePaint` as either a single `PrePaintDescriptor` or an array of them. Each descriptor supports an optional `systemFallback` ({ mediaQuery, applyWhenMatches }) that fires only when storage is empty or malformed — this is how we honour the user's OS dark/light preference on first visit without hand-written scripts. Exact shape defined in `phase-1-plan.md` §5.4.
 
 ## 4. Presets (locked names and semantics)
 
@@ -130,6 +131,7 @@ Every overlapping system and ad-hoc cache, with the phase that deletes it. No it
 | 21 | Route group `(ssr)` | `app/(ssr)/**` | 9 | `app/(a)/**` |
 | 22 | Route group `(authenticated)` | `app/(authenticated)/**` | 9 | `app/(a)/**` |
 | 23 | Route group `(public)` | `app/(public)/**` | 9 | `app/(a)/**` or static routes |
+| 24 | `ThemeProvider` context + `useTheme` context hook | `styles/themes/ThemeProvider.tsx` | 1 | `useAppSelector((s) => s.theme.mode)`; sync engine owns theme lifecycle |
 
 New items discovered during a phase MUST be appended here before the phase is closed.
 

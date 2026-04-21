@@ -2,7 +2,18 @@
 
 > Scope lock. This doc is the contract for Phase 1. Anything outside this doc is out of scope for Phase 1 regardless of how tempting it is. New scope goes to a future phase or a new decisions entry.
 
-Related: `decisions.md` (principles + roadmap), `phase-2-plan.md` (written before Phase 2 execution).
+Related: `decisions.md` (principles + roadmap), `phase-0-theme-capabilities.md` (union of capabilities to preserve), `phase-0-rq-audit.md` (drives Phase 7 sequencing), `phase-2-plan.md` (written before Phase 2 execution).
+
+**Changes folded in from Phase 0 (2026-04-20):**
+
+- **G-1** `PrePaintDescriptor` gains optional `systemFallback` ({ mediaQuery, applyWhenMatches, whenMatchesValue? }) on both `classToggle` and `attribute` variants. Honours OS dark/light preference on first visit when no stored value exists. Arman explicitly endorsed this as a best-practice improvement.
+- **G-2** `PolicyConfig.prePaint` accepts `PrePaintDescriptor | readonly PrePaintDescriptor[]`. Theme policy ships both a `classToggle` for `.dark` AND an `attribute` for `data-theme` — the latter is required by 9 CSS selectors in `components/rich-text-editor/remirror-editor.css` (grep-verified).
+- **G-3** Empty-storage semantics for `classToggle` are now explicit: with `systemFallback`, decide via MQ; without, remove the class. `attribute` variant uses `systemFallback` if present, else `default`. Full evaluation order documented in §5.4.
+- **Manifest #24** `styles/themes/ThemeProvider.tsx` is added to the Phase 1 deletion list in `decisions.md` §8.
+- **Transient regression accepted** Cookie write on mode change is dropped in Phase 1 and restored in Phase 3 (D8). localStorage via SyncBootScript is the pre-paint source; no user-visible behavior change.
+- **D1.1** `jest.config.js.ts` `testEnvironment` flips from `"node"` to `"jsdom"` in Phase 1.
+- **D1.5** One-shot legacy key migration (`localStorage['theme']` → `'matrx:theme'`) runs in `bootSync`; covered by `engine.boot.test.ts`.
+- **D1.6** `zod` 4.3.6 is already installed — no package.json change for it.
 
 ---
 
@@ -112,7 +123,7 @@ interface PolicyConfig<TState = unknown> {
   serialize?: (state: TState) => unknown;     // defaults to identity
   deserialize?: (raw: unknown) => Partial<TState>; // defaults to identity
   // boot-critical only (pre-paint support):
-  prePaint?: PrePaintDescriptor; // see §5.4 for shape; serializable, no closures
+  prePaint?: PrePaintDescriptor | readonly PrePaintDescriptor[]; // see §5.4; serializable, no closures
 }
 
 /**
@@ -174,19 +185,29 @@ Server component rendered in `<head>`. Emits a single inline script that, for ea
 2. Parses the JSON (wrapped in try/catch; fall back to default on any error).
 3. Applies DOM mutations **declaratively** based on the descriptor — the script never invokes policy functions, because functions cannot be serialized into an inline `<script>` string.
 
-`PrePaintDescriptor` shape:
+`PrePaintDescriptor` shape. A policy may declare either a single descriptor or an array; the generator emits one ordered sequence of DOM mutations per policy.
 
 ```ts
+// Shared by both variants.
+interface SystemFallback {
+  mediaQuery: string;            // e.g. "(prefers-color-scheme: dark)"
+  applyWhenMatches: boolean;     // class variant: true = add class when MQ matches;
+                                 // attribute variant: true = set `whenMatchesValue`, else `default`
+  whenMatchesValue?: string;     // attribute variant only; value to set when the MQ matches
+}
+
 type PrePaintDescriptor =
   | {
-      // Sets an attribute on <html>. value is resolved by reading `fromKey` from the deserialized payload,
-      // falling back to `default` if the key is missing/invalid/storage empty.
+      // Sets an attribute on <html>/<body>. Value is resolved by reading `fromKey` from the deserialized payload,
+      // falling back to `default` if the key is missing/invalid/storage empty and `systemFallback` either is absent
+      // or yields no value for the current OS state.
       kind: "attribute";
       target: "html" | "body";
       attribute: string;          // e.g. "data-theme"
       fromKey: string;             // e.g. "mode"
-      allowed: readonly string[];  // whitelist of acceptable values; anything else → default
+      allowed: readonly string[];  // whitelist of acceptable values; anything else → default/systemFallback
       default: string;
+      systemFallback?: SystemFallback; // G-1; optional
     }
   | {
       // Toggles a class on <html>/<body> based on payload[fromKey] matching a value.
@@ -195,19 +216,49 @@ type PrePaintDescriptor =
       className: string;
       fromKey: string;
       whenEquals: string;
+      // G-3: semantics when storage is empty or malformed.
+      //   - If `systemFallback` is present: use it to decide whether to add or remove the class.
+      //   - If absent: class is removed (descriptor behaves as a no-op). Document intent explicitly;
+      //     do NOT leave any server-rendered class state untouched.
+      systemFallback?: SystemFallback; // G-1; optional
     };
 ```
 
-For theme, the descriptor is:
+Empty-storage evaluation order (G-3, spelled out to remove ambiguity):
+
+1. Try to read `localStorage[storageKey]` and JSON.parse it.
+2. If parsing succeeds AND the parsed value has `fromKey` matching an allowed shape → apply the descriptor using that value.
+3. Else if `systemFallback` is present → evaluate `matchMedia(mediaQuery).matches` and apply per `applyWhenMatches`.
+4. Else → `classToggle`: remove the class; `attribute`: set `default`.
+
+The generator must be idempotent: re-running the script after paint must not mutate the DOM differently than the first run.
+
+For theme, the policy declares an **array** of two descriptors — `classToggle` for the `.dark` class AND `attribute` for `data-theme`, because 9 CSS selectors in `components/rich-text-editor/remirror-editor.css` key off `[data-theme="dark"]` (verified via grep on 2026-04-20). Both descriptors share the same `systemFallback` so OS dark-mode is honoured on first visit.
 
 ```ts
-prePaint: {
-  kind: "classToggle",
-  target: "html",
-  className: "dark",
-  fromKey: "mode",
-  whenEquals: "dark",
-}
+prePaint: [
+  {
+    kind: "classToggle",
+    target: "html",
+    className: "dark",
+    fromKey: "mode",
+    whenEquals: "dark",
+    systemFallback: { mediaQuery: "(prefers-color-scheme: dark)", applyWhenMatches: true },
+  },
+  {
+    kind: "attribute",
+    target: "html",
+    attribute: "data-theme",
+    fromKey: "mode",
+    allowed: ["light", "dark"],
+    default: "dark",
+    systemFallback: {
+      mediaQuery: "(prefers-color-scheme: dark)",
+      applyWhenMatches: true,
+      whenMatchesValue: "dark",
+    },
+  },
+]
 ```
 
 The inline script is generated from the registered policies at render time (a small function in `SyncBootScript.tsx` walks `syncPolicies`, keeps only `boot-critical` policies with `prePaint`, and emits a single string). No per-feature hand-written scripts, ever.
@@ -277,15 +328,33 @@ export const themePolicy = definePolicy<ThemeState>({
     }
     return { mode: "dark" as const };
   },
-  prePaint: {
-    kind: "classToggle",
-    target: "html",
-    className: "dark",
-    fromKey: "mode",
-    whenEquals: "dark",
-  },
+  prePaint: [
+    {
+      kind: "classToggle",
+      target: "html",
+      className: "dark",
+      fromKey: "mode",
+      whenEquals: "dark",
+      systemFallback: { mediaQuery: "(prefers-color-scheme: dark)", applyWhenMatches: true },
+    },
+    {
+      kind: "attribute",
+      target: "html",
+      attribute: "data-theme",
+      fromKey: "mode",
+      allowed: ["light", "dark"],
+      default: "dark",
+      systemFallback: {
+        mediaQuery: "(prefers-color-scheme: dark)",
+        applyWhenMatches: true,
+        whenMatchesValue: "dark",
+      },
+    },
+  ],
 });
 ```
+
+Legacy-key migration (one-shot, at boot): the existing inline script reads from `localStorage['theme']`. `bootSync` checks for that key; if present, copies the value into `matrx:theme` (serialized through `themePolicy.serialize`) and `removeItem('theme')`. Covered by `engine.boot.test.ts` → "legacy key migration" case.
 
 ### 6.2 Registry
 
@@ -309,9 +378,11 @@ export const syncPolicies = [themePolicy] as const;
 `app/layout.tsx`:
 
 - **Delete** the inline `<script dangerouslySetInnerHTML={...}>` block (manifest item 2).
+- **Delete** the hardcoded `"dark"` literal inside `className={cn("dark", ...)}` on `<html>`. The `.dark` class is now driven exclusively by `SyncBootScript`. Server-rendered `<html>` ships with no theme class; the inline `<SyncBootScript />` is the only authority.
+- **Preserve** the server-side `data-theme={theme}` attribute on `<html>` (read from cookie) — it is still used by 9 CSS selectors in `components/rich-text-editor/remirror-editor.css`. The SyncBootScript's `attribute` descriptor overrides it pre-paint if localStorage disagrees.
 - **Add** `<SyncBootScript />` inside `<head>`.
 
-`features/shell/components/ThemeScript.tsx` + `hooks/useTheme.ts` (manifest item 3): deleted. All theme reads go through `useAppSelector((s) => s.theme.mode)`. All theme writes dispatch `setMode` / `toggleMode`.
+`features/shell/components/ThemeScript.tsx` + `hooks/useTheme.ts` (manifest item 3): deleted. `styles/themes/ThemeProvider.tsx` (manifest item 24, added Phase 0): deleted. All theme reads go through `useAppSelector((s) => s.theme.mode)`. All theme writes dispatch `setMode` / `toggleMode`.
 
 ### 6.6 `preferencesMiddleware.ts` (manifest item 1)
 
@@ -341,7 +412,8 @@ The demo is permanent. It stays in the codebase as a regression check for every 
 - `channel.test.ts` — identity-mismatched messages dropped. Malformed messages dropped with warning (dev) / silently (prod). Correct messages routed to handlers.
 - `persistence.local.test.ts` — `partialize` filters keys correctly. `serialize`/`deserialize` round-trip. Invalid JSON handled. Quota-exceeded handled without crash.
 - `policies.define.test.ts` — rules enforced (volatile cannot broadcast, boot-critical must broadcast, volatile cannot declare persistence fields, unique sliceName, boot-critical with `prePaint` produces valid descriptors).
-- `pre-paint.test.ts` — given a registry of policies, the generated inline script string applies the expected DOM mutations (tested by running the emitted script against `jsdom` with a stubbed `localStorage`).
+- `pre-paint.test.ts` — given a registry of policies, the generated inline script string applies the expected DOM mutations (tested by running the emitted script against `jsdom` with a stubbed `localStorage`). Coverage includes: empty storage + `systemFallback` matches → applies; empty storage + no `systemFallback` → class removed / attribute set to `default`; storage present but key missing → falls through to fallback chain; storage malformed JSON → falls through; array-form policy applies each descriptor in order; descriptor is idempotent on re-execution.
+- `engine.boot.test.ts` additionally covers: legacy `localStorage['theme']` → `'matrx:theme'` migration copies the value, removes the legacy key, and dispatches rehydrate once.
 
 ### 8.2 Integration test (playwright or similar if repo supports; otherwise manual checklist)
 
@@ -386,10 +458,12 @@ Full observability is Phase 12. Phase 1 installs the hooks:
 ### Modified
 
 - `styles/themes/themeSlice.ts` — add `themePolicy` export.
-- `lib/redux/store.ts` — add sync middleware to the chain.
-- `app/Providers.tsx` — await `bootSync()` in `StoreProvider`.
-- `app/layout.tsx` — replace inline theme script with `<SyncBootScript />`.
-- `package.json` — add `zod` if not already present (check first).
+- `lib/redux/store.ts` — add sync middleware to the chain (between `storageMiddleware` and `entitySagaMiddleware`).
+- `app/Providers.tsx` — call `bootSync()` synchronously inside `StoreProvider` init (via `useRef` initializer — the awaited portion is now a pure sync localStorage pass, no async gate needed). Remove `<ThemeProvider>` wrapping. Remove imperative `setGlobalUserId(...)` call (superseded by `lib/sync/identity.ts`; see Phase 4 cleanup).
+- `app/layout.tsx` — replace inline theme script with `<SyncBootScript />`; remove hardcoded `className="dark"`; keep server-side `data-theme` read.
+- `app/DeferredSingletons.tsx` — remove `useTheme()` import; replace with `useAppSelector((s) => s.theme.mode)`.
+- `jest.config.js.ts` — change `testEnvironment` from `"node"` to `"jsdom"`. Install `jest-environment-jsdom` if not transitively present (likely already via `ts-jest`). Verify the existing `utils/json/__tests__/extract-json.test.ts` still passes (it is a handrolled script — unaffected).
+- `package.json` — **no change for zod** (v4.3.6 already installed). Only modify if `jest-environment-jsdom` needs explicit install.
 
 ### Deleted
 
@@ -397,6 +471,8 @@ Full observability is Phase 12. Phase 1 installs the hooks:
 - Inline theme script block in `app/layout.tsx` (manifest #2)
 - `hooks/useTheme.ts` (manifest #3)
 - `features/shell/components/ThemeScript.tsx` (manifest #3)
+- `styles/themes/ThemeProvider.tsx` (manifest #24, added Phase 0)
+- Hardcoded `"dark"` literal in `app/layout.tsx` `<html className={cn("dark", ...)}>` — class is now sync-engine-driven.
 
 Every deletion is preceded by a global grep for imports; any remaining consumers are migrated to `useAppSelector((s) => s.theme.mode)` + `dispatch(setMode(...))` in the same PR.
 

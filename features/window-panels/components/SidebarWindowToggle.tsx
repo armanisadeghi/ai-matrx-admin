@@ -644,8 +644,8 @@ export default function SidebarWindowToggle() {
                     }
                   />
                   <MenuGridItem
-                    icon={<AudioLines className="w-3.5 h-3.5" />}
-                    label="AI Voice Pad"
+                    icon={<Sparkles className="w-3.5 h-3.5" />}
+                    label="Transcription Cleanup"
                     onClick={() =>
                       act(() =>
                         dispatch(openOverlay({ overlayId: "voicePadAi" })),
@@ -828,6 +828,20 @@ export default function SidebarWindowToggle() {
                     }
                   />
                   <MenuGridItem
+                    icon={<FolderSearch className="w-3.5 h-3.5" />}
+                    label="Code Files"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(
+                          openOverlay({
+                            overlayId: "codeFileManagerWindow",
+                            instanceId: `code-file-manager-${Date.now()}`,
+                          }),
+                        ),
+                      )
+                    }
+                  />
+                  <MenuGridItem
                     icon={<FileCode2 className="w-3.5 h-3.5" />}
                     label="Content Editor"
                     onClick={() =>
@@ -897,6 +911,15 @@ export default function SidebarWindowToggle() {
                 {/* ── Agent ──────────────────────────────────────────────────── */}
                 <MenuSection label="Agent" />
                 <div className="grid grid-cols-2 gap-1.5 px-2 pb-2">
+                  <MenuGridItem
+                    icon={<MessageSquare className="w-3.5 h-3.5" />}
+                    label="Agent Run"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(openOverlay({ overlayId: "agentRunWindow" })),
+                      )
+                    }
+                  />
                   <MenuGridItem
                     icon={<FileStack className="w-3.5 h-3.5" />}
                     label="Agent Content"

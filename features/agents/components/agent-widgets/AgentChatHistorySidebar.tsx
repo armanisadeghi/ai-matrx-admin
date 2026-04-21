@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { selectInstanceAgentId } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { fetchAgentConversations } from "@/features/agents/redux/conversation-list";
 import { makeSelectAgentConversations } from "@/features/agents/redux/conversation-list";
-import type { AgentConversationListItem } from "@/features/agents/redux/conversation-list";
+import type { ConversationListItem } from "@/features/agents/redux/conversation-list";
 
 interface AgentChatHistorySidebarProps {
   conversationId: string;
@@ -81,7 +81,7 @@ export function AgentChatHistorySidebar({
   );
 }
 
-function ConversationRow({ conv }: { conv: AgentConversationListItem }) {
+function ConversationRow({ conv }: { conv: ConversationListItem }) {
   const date = conv.updatedAt
     ? new Date(conv.updatedAt).toLocaleDateString(undefined, {
         month: "short",

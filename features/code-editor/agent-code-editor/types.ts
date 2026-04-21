@@ -17,8 +17,9 @@ export type CodeEditorState =
 
 /**
  * Input shape for `useIdeContextSync` and the composite `vsc_active_file`.
- * All fields optional except `code` + `language`; the sync hook will
- * populate only the keys that have real content.
+ * Only `code` + `language` are required; the sync hook emits an entry for
+ * every other field that has real content and skips the rest (matching the
+ * server's IdeState.to_variables() behavior).
  */
 export interface CodeContextInput {
   code: string;
@@ -26,6 +27,13 @@ export interface CodeContextInput {
   filePath?: string;
   selection?: string;
   diagnostics?: string;
+  workspaceName?: string;
+  /** Newline-joined list per server docs. */
+  workspaceFolders?: string;
+  gitBranch?: string;
+  gitStatus?: string;
+  /** Manual for now — populates the `agent_skills` slot. */
+  agentSkills?: string;
 }
 
 /**

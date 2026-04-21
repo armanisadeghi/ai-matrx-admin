@@ -79,7 +79,10 @@ export type SourceFeature =
   | "research"
   | "code-editor"
   | "agent-content-window"
-  | "voice-pad-ai";
+  | "voice-pad-ai"
+  | "agent-run-window"
+  | "agent-run-history-window"
+  | "agent-runs-sidebar";
 
 export const SOURCE_APP = "matrx-admin" as const;
 

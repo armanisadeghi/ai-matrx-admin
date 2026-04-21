@@ -490,6 +490,22 @@ const CodeEditorWindow = dynamic(
   { ssr: false },
 );
 
+const CodeFileManagerWindow = dynamic(
+  () =>
+    import("@/features/window-panels/windows/code/CodeFileManagerWindow").then(
+      (m) => ({ default: m.CodeFileManagerWindow }),
+    ),
+  { ssr: false },
+);
+
+const QuickSaveCodeDialog = dynamic(
+  () =>
+    import("@/features/code-files/actions/QuickSaveCodeDialog").then((m) => ({
+      default: m.QuickSaveCodeDialog,
+    })),
+  { ssr: false },
+);
+
 const SmartCodeEditorWindow = dynamic(
   () =>
     import("@/features/window-panels/windows/smart-code-editor/SmartCodeEditorWindow").then(
@@ -584,6 +600,11 @@ const AgentSettingsWindow = dynamic(
 
 const AgentRunHistoryWindow = dynamic(
   () => import("@/features/window-panels/windows/agents/AgentRunHistoryWindow"),
+  { ssr: false },
+);
+
+const AgentRunWindow = dynamic(
+  () => import("@/features/window-panels/windows/agents/AgentRunWindow"),
   { ssr: false },
 );
 
@@ -800,8 +821,14 @@ export const OverlayController: React.FC = () => {
   const contentEditorWorkspaceWindowInstances = useAppSelector((s) =>
     selectOpenInstances(s, "contentEditorWorkspaceWindow"),
   );
+  const codeFileManagerWindowInstances = useAppSelector((s) =>
+    selectOpenInstances(s, "codeFileManagerWindow"),
+  );
   const codeEditorWindowInstances = useAppSelector((s) =>
     selectOpenInstances(s, "codeEditorWindow"),
+  );
+  const saveToCodeInstances = useAppSelector((s) =>
+    selectOpenInstances(s, "saveToCode"),
   );
   const smartCodeEditorWindowInstances = useAppSelector((s) =>
     selectOpenInstances(s, "smartCodeEditorWindow"),
@@ -875,6 +902,12 @@ export const OverlayController: React.FC = () => {
   );
   const agentRunHistoryWindowData = useAppSelector((s) =>
     selectOverlayData(s, "agentRunHistoryWindow"),
+  );
+  const isAgentRunWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "agentRunWindow"),
+  );
+  const agentRunWindowData = useAppSelector((s) =>
+    selectOverlayData(s, "agentRunWindow"),
   );
   const isAgentImportWindowOpen = useAppSelector((s) =>
     selectIsOverlayOpen(s, "agentImportWindow"),
@@ -1555,12 +1588,46 @@ export const OverlayController: React.FC = () => {
           key={instanceId}
           windowInstanceId={instanceId}
           files={data?.files ?? []}
+          fileIds={data?.fileIds ?? undefined}
+          activeFileId={data?.activeFileId ?? undefined}
           autoFormatOnOpen={data?.autoFormatOnOpen ?? false}
           defaultWordWrap={data?.defaultWordWrap ?? "off"}
           title={data?.title ?? null}
           onClose={() => close("codeEditorWindow", instanceId)}
         />
       ))}
+
+      {codeFileManagerWindowInstances.map(({ instanceId }) => (
+        <CodeFileManagerWindow
+          key={instanceId}
+          windowInstanceId={instanceId}
+          onClose={() => close("codeFileManagerWindow", instanceId)}
+        />
+      ))}
+
+      {/* Save to Code — instanced so multiple save dialogs can be open. */}
+      {saveToCodeInstances.map(({ instanceId, data }) => {
+        const d = data as {
+          content?: string;
+          language?: string;
+          suggestedName?: string;
+          defaultFolderId?: string | null;
+        } | null;
+        if (!d || typeof d.content !== "string") return null;
+        return (
+          <QuickSaveCodeDialog
+            key={instanceId}
+            open={true}
+            onOpenChange={(open) => {
+              if (!open) close("saveToCode", instanceId);
+            }}
+            initialContent={d.content}
+            initialLanguage={d.language}
+            suggestedName={d.suggestedName}
+            defaultFolderId={d.defaultFolderId ?? null}
+          />
+        );
+      })}
 
       {smartCodeEditorWindowInstances.map(({ instanceId, data }) => {
         // Skip instances opened without an agentId — the window requires one
@@ -2068,6 +2135,17 @@ export const OverlayController: React.FC = () => {
           agentId={agentRunHistoryWindowData?.agentId as string | null}
           initialSelectedConversationId={
             agentRunHistoryWindowData?.selectedConversationId as string | null
+          }
+        />
+      )}
+
+      {isAgentRunWindowOpen && (
+        <AgentRunWindow
+          isOpen={true}
+          onClose={() => close("agentRunWindow")}
+          initialAgentId={agentRunWindowData?.agentId as string | null}
+          initialSelectedConversationId={
+            agentRunWindowData?.selectedConversationId as string | null
           }
         />
       )}
