@@ -1,3 +1,4 @@
+// Phase 6 wrapper — replaced in Phase 15
 "use client";
 
 import {

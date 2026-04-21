@@ -1,15 +1,12 @@
+// Phase 6 wrapper — replaced in Phase 15
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { usePromptRunner } from "@/features/prompts/hooks/usePromptRunner";
+import { useAgentLauncher } from "@/features/agents/hooks/useAgentLauncher";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { destroyInstanceIfAllowed } from "@/features/agents/redux/execution-system/conversations";
 import { useCanvas } from "@/features/canvas/hooks/useCanvas";
 import { getBuiltinId } from "@/lib/redux/prompt-execution/builtins";
-import { normalizeLanguage } from "@/features/code-editor/config/languages";
-import {
-  parseCodeEdits,
-  validateEdits,
-} from "@/features/code-editor/utils/parseCodeEdits";
-import { applyCodeEdits } from "@/features/code-editor/utils/applyCodeEdits";
 import { supabase } from "@/utils/supabase/client";
 import type {
   PromptData,
@@ -76,29 +73,28 @@ export interface AICodeEditorModalV2Props {
 
 export function AICodeEditorModalV2({
   open,
-  onOpenChange,
   currentCode,
-  language: rawLanguage,
   builtinId,
   promptKey = "generic-code-editor",
-  onCodeChange,
   selection,
   context,
 }: AICodeEditorModalV2Props) {
-  const { openPrompt, closePrompt } = usePromptRunner();
-  const { open: openCanvas, close: closeCanvas } = useCanvas();
+  const dispatch = useAppDispatch();
+  const { launchAgent } = useAgentLauncher();
+  const { close: closeCanvas } = useCanvas();
 
   const [promptData, setPromptData] = useState<PromptData | null>(null);
   const [isLoadingPrompt, setIsLoadingPrompt] = useState(false);
   const [hasOpened, setHasOpened] = useState(false);
+  const conversationIdRef = useRef<string | null>(null);
 
-  const language = normalizeLanguage(rawLanguage);
-  const currentCodeRef = useRef(currentCode);
   const defaultBuiltinId = builtinId || getBuiltinId(promptKey);
-
-  useEffect(() => {
-    currentCodeRef.current = currentCode;
-  }, [currentCode]);
+  const closePrompt = useCallback(() => {
+    if (conversationIdRef.current) {
+      dispatch(destroyInstanceIfAllowed(conversationIdRef.current));
+      conversationIdRef.current = null;
+    }
+  }, [dispatch]);
 
   // Fetch builtin prompt when modal opens
   useEffect(() => {
@@ -137,40 +133,35 @@ export function AICodeEditorModalV2({
     }
   }, [open, defaultBuiltinId, promptData]);
 
-  // Open the prompt runner when prompt data is loaded
+  // Open the agent runner when prompt data is loaded
   useEffect(() => {
     if (open && promptData && !isLoadingPrompt && !hasOpened) {
       setHasOpened(true);
 
       (async () => {
         try {
-          await openPrompt({
-            promptData,
-            result_display: "modal-full",
-            executionConfig: {
-              auto_run: false,
-              allow_chat: true,
-              show_variables: false,
-              apply_variables: true,
-              track_in_runs: true,
-              use_pre_execution_input: false,
-            },
+          const result = await launchAgent(defaultBuiltinId, {
+            surfaceKey: `code-editor:${defaultBuiltinId}`,
+            sourceFeature: "code-editor",
+            displayMode: "modal-full",
+            autoRun: false,
+            allowChat: true,
+            showVariables: false,
+            usePreExecutionInput: false,
             variables: {
               current_code: currentCode,
               content: currentCode,
               ...(selection && { selection }),
               ...(context && { context }),
             },
-            onExecutionComplete: (result) => {
-              handleExecutionComplete(result);
-            },
           });
+          conversationIdRef.current = result.conversationId;
         } catch (error) {
-          console.error("Error opening prompt:", error);
+          console.error("Error launching agent:", error);
         }
       })();
     }
-  }, [open, promptData, isLoadingPrompt, hasOpened]);
+  }, [open, promptData, isLoadingPrompt, hasOpened, defaultBuiltinId, currentCode, selection, context, launchAgent]);
 
   // Reset when modal closes
   useEffect(() => {
@@ -182,99 +173,5 @@ export function AICodeEditorModalV2({
     }
   }, [open, closePrompt, closeCanvas]);
 
-  const handleExecutionComplete = useCallback(
-    (result: any) => {
-      const { response } = result;
-
-      if (!response) return;
-
-      // Try to parse code edits from the response
-      const parsed = parseCodeEdits(response);
-
-      // No edits found - just continue the conversation
-      if (!parsed.success || parsed.edits.length === 0) {
-        return;
-      }
-
-      // Validate edits against current code
-      const validation = validateEdits(currentCodeRef.current, parsed.edits);
-
-      if (!validation.valid) {
-        // Show validation errors in canvas
-        openCanvas({
-          type: "code_edit_error",
-          data: {
-            errors: validation.errors,
-            warnings: validation.warnings,
-            rawResponse: response,
-            onClose: () => closeCanvas(),
-          },
-          metadata: {
-            title: "Code Edit Error",
-          },
-        });
-        return;
-      }
-
-      // Apply edits to generate preview
-      const result_apply = applyCodeEdits(currentCodeRef.current, parsed.edits);
-
-      if (!result_apply.success) {
-        // Show application errors in canvas
-        openCanvas({
-          type: "code_edit_error",
-          data: {
-            errors: result_apply.errors,
-            warnings: result_apply.warnings || [],
-            rawResponse: response,
-            onClose: () => closeCanvas(),
-          },
-          metadata: {
-            title: "Code Edit Error",
-          },
-        });
-        return;
-      }
-
-      const newCode = result_apply.code || "";
-
-      // Success! Open canvas with code preview
-      openCanvas({
-        type: "code_preview",
-        data: {
-          originalCode: currentCodeRef.current,
-          modifiedCode: newCode,
-          language,
-          edits: parsed.edits,
-          explanation: parsed.explanation,
-          onApply: () => {
-            // Update the code in parent component
-            onCodeChange(newCode);
-
-            // Update our ref so next edits work on the new code
-            currentCodeRef.current = newCode;
-
-            // Canvas will now show success state with options to close or continue
-          },
-          onDiscard: () => {
-            // Just close canvas, keep conversation open
-            closeCanvas();
-          },
-          onCloseModal: () => {
-            // Close the entire modal so user can see their updated code
-            closePrompt();
-            onOpenChange(false);
-          },
-        },
-        metadata: {
-          title: "Code Preview",
-        },
-      });
-    },
-    [language, openCanvas, closeCanvas, onCodeChange],
-  );
-
-  // This modal is just a trigger - the actual UI is handled by usePromptRunner
-  // which shows its own modal
   return null;
 }
