@@ -310,25 +310,83 @@ export const createInstanceFromShortcut = createAsyncThunk<
   dispatch(
     initInstanceUIState({
       conversationId,
-      displayMode: (displayMode ?? shortcut.resultDisplay) as ResultDisplayMode,
-      autoRun,
+      // v2 column names — falls back to shortcut.displayMode (was result_display)
+      displayMode: (displayMode ?? shortcut.displayMode) as ResultDisplayMode,
+      autoRun: autoRun ?? shortcut.autoRun,
       allowChat: allowChat ?? shortcut.allowChat,
-      showPreExecutionGate,
+      showPreExecutionGate: showPreExecutionGate ?? shortcut.showPreExecutionGate,
       autoClearConversation,
       showAutoClearToggle,
-      showVariablePanel: showVariablePanel ?? shortcut.showVariables,
-      showDefinitionMessages,
-      showDefinitionMessageContent,
+      showVariablePanel: showVariablePanel ?? shortcut.showVariablePanel,
+      showDefinitionMessages:
+        showDefinitionMessages ?? shortcut.showDefinitionMessages,
+      showDefinitionMessageContent:
+        showDefinitionMessageContent ?? shortcut.showDefinitionMessageContent,
       widgetHandleId,
       isCreator: snapshot.isCreator,
-      hideReasoning,
-      hideToolResults,
-      preExecutionMessage,
-      variablesPanelStyle,
+      hideReasoning: hideReasoning ?? shortcut.hideReasoning,
+      hideToolResults: hideToolResults ?? shortcut.hideToolResults,
+      preExecutionMessage:
+        preExecutionMessage ?? shortcut.preExecutionMessage,
+      variablesPanelStyle:
+        variablesPanelStyle ?? shortcut.variablesPanelStyle,
       jsonExtraction,
       originalText,
     }),
   );
+
+  // ── Variable resolution precedence (low → high) ──
+  //   1. Agent variableDefinitions[].defaultValue   (already seeded by initInstanceVariables)
+  //   2. Shortcut.defaultVariables                  (this dispatch)
+  //   3. Scope-mapped values from applicationScope  (next dispatch — overrides 2)
+  //   4. User edits via the variable panel          (later, runtime)
+  if (shortcut.defaultVariables && Object.keys(shortcut.defaultVariables).length > 0) {
+    dispatch(
+      setUserVariableValues({
+        conversationId,
+        values: shortcut.defaultVariables,
+      }),
+    );
+  }
+
+  // ── Context resolution precedence (low → high) ──
+  //   1. Agent context_slots[].default              (already seeded by initInstanceContext)
+  //   2. Shortcut.contextOverrides                  (this dispatch)
+  //   3. Runtime context entries from scope-mapping (next dispatch — overrides 2)
+  if (shortcut.contextOverrides && Object.keys(shortcut.contextOverrides).length > 0) {
+    const overrideEntries = Object.entries(shortcut.contextOverrides).map(
+      ([key, value]) => {
+        const slot = snapshot.contextSlots?.find((s) => s.key === key);
+        return {
+          key,
+          value,
+          slotMatched: !!slot,
+          type: slot?.type ?? ("text" as const),
+          label: slot?.label ?? key,
+        };
+      },
+    );
+    dispatch(
+      setContextEntries({ conversationId, entries: overrideEntries }),
+    );
+  }
+
+  // Apply LLM overrides from the shortcut config
+  if (shortcut.llmOverrides && Object.keys(shortcut.llmOverrides).length > 0) {
+    const { setOverrides } = await import(
+      "../instance-model-overrides/instance-model-overrides.slice"
+    );
+    dispatch(
+      setOverrides({ conversationId, changes: shortcut.llmOverrides }),
+    );
+  }
+
+  // Apply shortcut.defaultUserInput (designer's extra instructions)
+  if (shortcut.defaultUserInput) {
+    dispatch(
+      setUserInputText({ conversationId, text: shortcut.defaultUserInput }),
+    );
+  }
 
   const { variableValues, contextEntries } = mapScopeToInstance(
     uiScopes,
@@ -337,7 +395,10 @@ export const createInstanceFromShortcut = createAsyncThunk<
     snapshot.contextSlots,
   );
 
-  if (shortcut.applyVariables && Object.keys(variableValues).length > 0) {
+  // Always apply scope-mapped variables — they override shortcut defaults.
+  // (apply_variables conditional removed in Phase 3.5: defaults always apply,
+  // visibility is controlled by show_variable_panel.)
+  if (Object.keys(variableValues).length > 0) {
     dispatch(setUserVariableValues({ conversationId, values: variableValues }));
   }
 

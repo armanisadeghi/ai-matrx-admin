@@ -1,18 +1,21 @@
-import { ContextSlot } from "@/features/agents/types/agent-api-types";
+import { ContextSlot, LLMParams } from "@/features/agents/types/agent-api-types";
 import { VariableDefinition } from "@/features/agents/types/agent-definition.types";
 import { ResultDisplayMode } from "@/features/agents/utils/run-ui-utils";
 import { ShortcutContext } from "@/features/agents/utils/shortcut-context-utils";
+import { VariablesPanelStyle } from "@/features/agents/components/inputs/variable-input-variations/variable-input-options";
 import type { DbRpcRow } from "@/types/supabase-rpc";
 import type { FieldFlags } from "@/features/agents/redux/shared/field-flags";
 
 export type { ResultDisplayMode, ShortcutContext };
 
 // ---------------------------------------------------------------------------
-// Domain type — mirrors the agx_shortcut table (26 columns)
+// Domain type — mirrors the agx_shortcut table after Phase 3.5 migration
+// Every config field below corresponds 1:1 to AgentExecutionConfig — the
+// shortcut row IS a persisted config bundle plus identity + scope.
 // ---------------------------------------------------------------------------
 
 export interface AgentShortcut {
-  // Identity
+  // ── Identity ─────────────────────────────────────────────────────────
   id: string;
   categoryId: string;
   label: string;
@@ -21,35 +24,44 @@ export interface AgentShortcut {
   keyboardShortcut: string | null;
   sortOrder: number;
 
-  // Universal version reference pattern
-  agentId: string | null; // FK → agents (stable identity / display)
-  agentVersionId: string | null; // FK → agx_version (pinned snapshot)
-  useLatest: boolean; // true = always resolve to live agent
+  // ── Agent reference (pinned or latest) ───────────────────────────────
+  agentId: string | null;
+  agentVersionId: string | null;
+  useLatest: boolean;
 
-  // Context & scope
+  // ── Context visibility + scope mapping ───────────────────────────────
   enabledContexts: ShortcutContext[];
+  /** UI scope key → agent variable name. */
   scopeMappings: Record<string, string> | null;
-  // keys   = scope keys the UI provides (e.g. "selection", "active_doc")
-  // values = variable/context_slot names on the agent
 
-  // Execution behaviour
-  resultDisplay: ResultDisplayMode;
-  allowChat: boolean;
+  // ── AgentExecutionConfig bundle (persisted) ──────────────────────────
+  displayMode: ResultDisplayMode;
+  showVariablePanel: boolean;
+  variablesPanelStyle: VariablesPanelStyle;
   autoRun: boolean;
-  applyVariables: boolean;
-  showVariables: boolean;
+  allowChat: boolean;
+  showDefinitionMessages: boolean;
+  showDefinitionMessageContent: boolean;
+  hideReasoning: boolean;
+  hideToolResults: boolean;
   showPreExecutionGate: boolean;
+  preExecutionMessage: string | null;
+  bypassGateSeconds: number;
+  defaultUserInput: string | null;
+  defaultVariables: Record<string, unknown> | null;
+  contextOverrides: Record<string, unknown> | null;
+  llmOverrides: Partial<LLMParams> | null;
 
-  // Status
+  // ── Status ───────────────────────────────────────────────────────────
   isActive: boolean;
 
-  // Hierarchy (each column independently set — no auto-fill)
-  userId: string | null; // null = system shortcut
+  // ── Scope (each column independently set — no auto-fill) ─────────────
+  userId: string | null;
   organizationId: string | null;
   projectId: string | null;
   taskId: string | null;
 
-  // Timestamps (read-only — DB managed)
+  // ── Timestamps ───────────────────────────────────────────────────────
   createdAt: string;
   updatedAt: string;
 }

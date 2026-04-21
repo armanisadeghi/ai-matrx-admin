@@ -35,12 +35,24 @@ function makeEmptyRecord(id: string): AgentShortcutRecord {
     enabledContexts: [],
     scopeMappings: null,
 
-    resultDisplay: "modal-full",
-    allowChat: true,
+    // AgentExecutionConfig bundle defaults — keep in sync with
+    // DEFAULT_AGENT_EXECUTION_CONFIG in features/agents/types/agent-execution-config.types.ts
+    displayMode: "modal-full",
+    showVariablePanel: false,
+    variablesPanelStyle: "inline",
     autoRun: true,
-    applyVariables: true,
-    showVariables: false,
+    allowChat: true,
+    showDefinitionMessages: false,
+    showDefinitionMessageContent: false,
+    hideReasoning: false,
+    hideToolResults: false,
     showPreExecutionGate: false,
+    preExecutionMessage: null,
+    bypassGateSeconds: 3,
+    defaultUserInput: null,
+    defaultVariables: null,
+    contextOverrides: null,
+    llmOverrides: null,
 
     isActive: true,
 

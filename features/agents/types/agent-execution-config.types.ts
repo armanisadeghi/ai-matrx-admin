@@ -1,0 +1,148 @@
+/**
+ * Agent Execution Config — the single canonical customization bundle.
+ *
+ * Every surface that customizes an agent produces this same shape:
+ *   - shortcuts (agx_shortcut row, persisted)
+ *   - agent apps (agent_apps row, persisted)
+ *   - widget tester / creator run panel (in-memory)
+ *   - inline caller-supplied (launchAgent({ config: {...} }))
+ *
+ * The launchAgentExecution thunk merges:
+ *   defaults → shortcut.config → agent_app.config → caller.config
+ * and hands the resolved bundle to the execution pipeline.
+ *
+ * NOTHING in this type is runtime state. Runtime values (userInput,
+ * applicationScope, widgetHandleId, originalText) live on
+ * AgentExecutionRuntime, not here. Derived UI flags (showVariables,
+ * etc.) live in instance-ui-state and are computed from this + the
+ * current execution stage.
+ */
+
+import type { LLMParams } from "./agent-api-types";
+import type { ResultDisplayMode } from "./instance.types";
+import type { VariablesPanelStyle } from "../components/inputs/variable-input-variations/variable-input-options";
+import type { ApplicationScope } from "../utils/scope-mapping";
+
+export interface AgentExecutionConfig {
+  // ── Presentation ───────────────────────────────────────────
+  /** How the launched agent is presented. Default: "modal-full". */
+  displayMode: ResultDisplayMode;
+
+  // ── Variable panel ─────────────────────────────────────────
+  /** When true, show the variable panel so the user can edit resolved variable values. */
+  showVariablePanel: boolean;
+  /** UI style for the variable panel. App validates values; unknowns fall back to "inline". */
+  variablesPanelStyle: VariablesPanelStyle;
+
+  // ── Execution flow ─────────────────────────────────────────
+  /** When true, execute automatically (once the pre-gate resolves if any). */
+  autoRun: boolean;
+  /** When false, the run is single-shot — no follow-up chat. */
+  allowChat: boolean;
+
+  // ── Transparency / privacy ─────────────────────────────────
+  /** Reveal agent-definition messages to the user. Secret-sensitive. */
+  showDefinitionMessages: boolean;
+  /** When showDefinitionMessages is true, whether to also reveal interpolated content. */
+  showDefinitionMessageContent: boolean;
+  /** Hide reasoning/thinking blocks from output. */
+  hideReasoning: boolean;
+  /** Hide tool-call result blocks from output. */
+  hideToolResults: boolean;
+
+  // ── Pre-execution gate ─────────────────────────────────────
+  /** Show a pre-execution input gate before autoRun fires. */
+  showPreExecutionGate: boolean;
+  /** Custom message rendered inside the gate. */
+  preExecutionMessage: string | null;
+  /** Seconds before the gate auto-executes. 0 = wait for user indefinitely. */
+  bypassGateSeconds: number;
+
+  // ── Defaults / overrides applied before execution ──────────
+  /**
+   * Designer-provided extra instructions appended to the user template.
+   * NOT user-editable. NOT visible. The user never sees this text.
+   */
+  defaultUserInput: string | null;
+  /**
+   * Override the agent's variable defaultValues for this shortcut/app.
+   * Keyed by variable NAME. scopeMappings + user edits still override.
+   */
+  defaultVariables: Record<string, unknown> | null;
+  /**
+   * Add and/or seed context slots on launch.
+   * Keyed by context-slot KEY. Can introduce brand-new slots not declared
+   * on the agent, or override defaults for declared slots.
+   */
+  contextOverrides: Record<string, unknown> | null;
+  /**
+   * Partial LLMParams delta applied on top of the agent's base settings.
+   * Only the keys provided are sent (temperature, model_id, max_output_tokens, …).
+   */
+  llmOverrides: Partial<LLMParams> | null;
+
+  // ── Scope mapping ──────────────────────────────────────────
+  /**
+   * Map from UI-scope keys to agent variable names.
+   * Example: `{ selection: "highlighted_code", content: "file_contents" }`
+   */
+  scopeMappings: Record<string, string> | null;
+}
+
+/**
+ * Runtime — per-invocation data that is never persisted on a shortcut/app.
+ */
+export interface AgentExecutionRuntime {
+  /** Data captured from the UI at launch time (selection, text_before, content, etc.) */
+  applicationScope?: ApplicationScope;
+  /** Live user input — from the pre-execution gate or chat input. */
+  userInput?: string;
+  /** CallbackManager id for a WidgetHandle registered via useWidgetHandle. */
+  widgetHandleId?: string;
+  /** Original text the user had selected before the shortcut launched (for widget handoff). */
+  originalText?: string;
+}
+
+/**
+ * Default execution config. Every merge starts here; every optional field in
+ * Partial<AgentExecutionConfig> falls back to the corresponding value here.
+ */
+export const DEFAULT_AGENT_EXECUTION_CONFIG: AgentExecutionConfig = {
+  displayMode: "modal-full",
+  showVariablePanel: false,
+  variablesPanelStyle: "inline",
+  autoRun: true,
+  allowChat: true,
+  showDefinitionMessages: false,
+  showDefinitionMessageContent: false,
+  hideReasoning: false,
+  hideToolResults: false,
+  showPreExecutionGate: false,
+  preExecutionMessage: null,
+  bypassGateSeconds: 3,
+  defaultUserInput: null,
+  defaultVariables: null,
+  contextOverrides: null,
+  llmOverrides: null,
+  scopeMappings: null,
+};
+
+/**
+ * Merge layered partial configs into a complete AgentExecutionConfig.
+ * Later layers win. null in a later layer means "clear it"; undefined means "inherit".
+ */
+export function resolveExecutionConfig(
+  ...layers: Array<Partial<AgentExecutionConfig> | null | undefined>
+): AgentExecutionConfig {
+  const out: AgentExecutionConfig = { ...DEFAULT_AGENT_EXECUTION_CONFIG };
+  for (const layer of layers) {
+    if (!layer) continue;
+    for (const key of Object.keys(layer) as Array<keyof AgentExecutionConfig>) {
+      const v = layer[key];
+      if (v !== undefined) {
+        (out as Record<string, unknown>)[key] = v;
+      }
+    }
+  }
+  return out;
+}

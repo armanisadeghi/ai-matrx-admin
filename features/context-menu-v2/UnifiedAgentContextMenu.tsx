@@ -586,19 +586,22 @@ export function UnifiedAgentContextMenu({
         applicationScope[k] = v;
       }
 
-      const resultDisplay = (entry.resultDisplay ??
+      const resultDisplay = (entry.displayMode ??
         "modal-full") as ResultDisplayMode;
 
       try {
+        // The shortcut's persisted config is loaded by createInstanceFromShortcut
+        // in the launch thunk. We forward only minimal overrides — the bundle
+        // wins. Runtime values go in `runtime`.
         await launchShortcut(entry.id, applicationScope, {
           surfaceKey: `context-menu:${entry.id}`,
           sourceFeature: "context-menu",
-          displayMode: resultDisplay,
-          autoRun: entry.autoRun ?? true,
-          allowChat: entry.allowChat ?? true,
-          showVariables: entry.showVariables ?? false,
-          showPreExecutionGate: entry.showPreExecutionGate ?? false,
-          originalText: selectionText,
+          config: {
+            displayMode: resultDisplay,
+          },
+          runtime: {
+            originalText: selectionText,
+          },
         });
       } catch (error) {
         console.error(

@@ -12,3 +12,8 @@ export type * from "./json-schema";
 export type * from "./message-types";
 export type * from "./request.types";
 export type * from "./agent-definition.types";
+export type * from "./agent-execution-config.types";
+export {
+  DEFAULT_AGENT_EXECUTION_CONFIG,
+  resolveExecutionConfig,
+} from "./agent-execution-config.types";

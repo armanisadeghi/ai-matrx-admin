@@ -144,23 +144,33 @@ export function useAgentLauncher(
       applicationScope: ApplicationScope,
       opts?: Partial<ManagedAgentOptions>,
     ): Promise<LaunchResult> => {
+      // The shortcut's persisted AgentExecutionConfig is loaded by
+      // createInstanceFromShortcut. We forward only:
+      //   - identity (surfaceKey, sourceFeature)
+      //   - config: caller-provided overrides on top of the shortcut's bundle
+      //   - runtime: live data from the UI (applicationScope, originalText, …)
+      const runtime = {
+        applicationScope,
+        ...(opts?.runtime ?? {}),
+      };
       const payload: ManagedAgentOptions = {
         shortcutId,
-        applicationScope,
-        surfaceKey: opts?.surfaceKey,
-        sourceFeature: opts?.sourceFeature,
-        displayMode: opts?.displayMode,
-        autoRun: opts?.autoRun,
-        allowChat: opts?.allowChat,
-        showVariables: opts?.showVariables,
-        showVariablePanel: opts?.showVariablePanel,
-        showDefinitionMessages: opts?.showDefinitionMessages,
-        showDefinitionMessageContent: opts?.showDefinitionMessageContent,
-        showPreExecutionGate: opts?.showPreExecutionGate,
-        userInput: opts?.userInput,
-        variables: opts?.variables,
-        widgetHandleId: opts?.widgetHandleId,
-        originalText: opts?.originalText,
+        surfaceKey: opts?.surfaceKey ?? `shortcut:${shortcutId}`,
+        sourceFeature: opts?.sourceFeature ?? "context-menu",
+        config: opts?.config,
+        runtime,
+        // Forward legacy flat fields if any caller still passes them — the
+        // launch thunk's normalizer collapses them into config/runtime.
+        ...(opts?.displayMode !== undefined && { displayMode: opts.displayMode }),
+        ...(opts?.autoRun !== undefined && { autoRun: opts.autoRun }),
+        ...(opts?.allowChat !== undefined && { allowChat: opts.allowChat }),
+        ...(opts?.showVariablePanel !== undefined && {
+          showVariablePanel: opts.showVariablePanel,
+        }),
+        ...(opts?.showPreExecutionGate !== undefined && {
+          showPreExecutionGate: opts.showPreExecutionGate,
+        }),
+        ...(opts?.userInput !== undefined && { userInput: opts.userInput }),
       };
       return dispatch(launchAgentExecution(payload)).unwrap();
     },

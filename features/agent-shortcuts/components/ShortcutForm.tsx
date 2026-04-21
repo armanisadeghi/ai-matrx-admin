@@ -89,12 +89,23 @@ function emptyFormData(): ShortcutFormData {
     useLatest: false,
     enabledContexts: [],
     scopeMappings: null,
-    resultDisplay: "modal-full",
-    allowChat: true,
+    // AgentExecutionConfig bundle (matches DEFAULT_AGENT_EXECUTION_CONFIG)
+    displayMode: "modal-full",
+    showVariablePanel: false,
+    variablesPanelStyle: "inline",
     autoRun: true,
-    applyVariables: true,
-    showVariables: false,
+    allowChat: true,
+    showDefinitionMessages: false,
+    showDefinitionMessageContent: false,
+    hideReasoning: false,
+    hideToolResults: false,
     showPreExecutionGate: false,
+    preExecutionMessage: null,
+    bypassGateSeconds: 3,
+    defaultUserInput: null,
+    defaultVariables: null,
+    contextOverrides: null,
+    llmOverrides: null,
     isActive: true,
     userId: null,
     organizationId: null,
@@ -472,11 +483,11 @@ export function ShortcutForm({
             Result Display
           </Label>
           <Select
-            value={formData.resultDisplay}
+            value={formData.displayMode}
             onValueChange={(value) =>
               handleChange(
-                "resultDisplay",
-                value as ShortcutFormData["resultDisplay"],
+                "displayMode",
+                value as ShortcutFormData["displayMode"],
               )
             }
             disabled={saving}
@@ -544,16 +555,16 @@ export function ShortcutForm({
           </div>
           <div className="flex items-center justify-between px-3 py-2 border border-border rounded-md bg-muted/30">
             <Label
-              htmlFor="apply-variables"
+              htmlFor="show-variable-panel"
               className="text-xs font-normal cursor-pointer"
             >
-              Apply Variables
+              Show variable panel
             </Label>
             <Switch
-              id="apply-variables"
-              checked={formData.applyVariables}
+              id="show-variable-panel"
+              checked={formData.showVariablePanel}
               onCheckedChange={(checked) =>
-                handleChange("applyVariables", checked)
+                handleChange("showVariablePanel", checked)
               }
               disabled={saving}
             />
