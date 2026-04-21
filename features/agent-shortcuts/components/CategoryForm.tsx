@@ -36,10 +36,15 @@ import IconInputWithValidation from "@/components/official/icons/IconInputWithVa
 import { useToast } from "@/components/ui/use-toast";
 import { CategoryColorPicker } from "./CategoryColorPicker";
 import { useAgentShortcutCrud } from "../hooks/useAgentShortcutCrud";
+import { PLACEMENT_TYPES, getPlacementTypeMeta } from "../constants";
 import {
-  PLACEMENT_TYPES,
-  getPlacementTypeMeta,
-} from "../constants";
+  formatShortcutContextsForInput,
+  parseShortcutContextsInput,
+} from "../utils/enabled-contexts";
+import {
+  isValidShortcutContext,
+  type ShortcutContext,
+} from "@/features/agents/utils/shortcut-context-utils";
 import type {
   AgentShortcutCategory,
   CategoryFormData,
@@ -76,6 +81,10 @@ function emptyFormData(
 }
 
 function fromCategory(category: AgentShortcutCategory): CategoryFormData {
+  const raw = category.enabledContexts ?? [];
+  const enabledContexts: ShortcutContext[] = raw.filter(
+    (t): t is ShortcutContext => isValidShortcutContext(t),
+  );
   return {
     label: category.label,
     placementType: category.placementType as PlacementType,
@@ -85,7 +94,7 @@ function fromCategory(category: AgentShortcutCategory): CategoryFormData {
     color: category.color ?? "#64748b",
     sortOrder: category.sortOrder,
     isActive: category.isActive,
-    enabledContexts: category.enabledContexts ?? [],
+    enabledContexts,
     metadata: category.metadata ?? {},
   };
 }
@@ -317,6 +326,32 @@ export function CategoryForm({
         />
       </div>
 
+      <div>
+        <Label
+          htmlFor="category-enabled-contexts"
+          className="text-xs font-medium"
+        >
+          Enabled contexts
+        </Label>
+        <Input
+          id="category-enabled-contexts"
+          value={formatShortcutContextsForInput(formData.enabledContexts)}
+          onChange={(e) =>
+            handleChange(
+              "enabledContexts",
+              parseShortcutContextsInput(e.target.value),
+            )
+          }
+          placeholder="e.g. code-editor"
+          disabled={saving}
+          className="h-9 text-[16px]"
+        />
+        <p className="text-xs text-muted-foreground mt-1">
+          Comma-separated. Empty means this category applies everywhere. Used
+          with context menu filtering on the host.
+        </p>
+      </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div>
           <Label className="text-xs font-medium">Icon Name</Label>
@@ -402,12 +437,7 @@ export function CategoryForm({
 
   const footerButtons = (
     <>
-      <Button
-        variant="outline"
-        onClick={onClose}
-        disabled={saving}
-        size="sm"
-      >
+      <Button variant="outline" onClick={onClose} disabled={saving} size="sm">
         <X className="w-4 h-4 mr-1.5" />
         Cancel
       </Button>

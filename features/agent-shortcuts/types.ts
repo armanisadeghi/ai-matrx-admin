@@ -2,6 +2,7 @@ import type { AgentShortcut } from "@/features/agents/redux/agent-shortcuts/type
 import type { AgentShortcutCategoryDef } from "@/features/agents/redux/agent-shortcut-categories/types";
 import type { AgentContentBlockDef } from "@/features/agents/redux/agent-content-blocks/types";
 import type { AgentScope, PlacementType, ScopeLevel } from "./constants";
+import type { ShortcutContext } from "@/features/agents/utils/shortcut-context-utils";
 
 export type {
   AgentShortcut,
@@ -37,7 +38,7 @@ export interface CategoryFormData {
   color: string;
   sortOrder: number;
   isActive: boolean;
-  enabledContexts: string[];
+  enabledContexts: ShortcutContext[];
   metadata: Record<string, unknown>;
 }
 

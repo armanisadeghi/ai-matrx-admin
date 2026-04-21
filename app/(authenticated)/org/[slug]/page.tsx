@@ -17,6 +17,7 @@ import {
   ClipboardType,
   Puzzle,
   SquareFunction,
+  Zap,
 } from "lucide-react";
 import { FaIndent } from "react-icons/fa6";
 import { LuNotepadText } from "react-icons/lu";
@@ -188,6 +189,12 @@ export default function OrganizationPublicPage() {
       icon: <SquareFunction className="h-5 w-5" />,
       href: `/org/${slug}/prompt-apps`,
       color: "text-rose-600 dark:text-rose-400",
+    },
+    {
+      name: "Agent Shortcuts",
+      icon: <Zap className="h-5 w-5" />,
+      href: `/org/${slug}/shortcuts`,
+      color: "text-amber-600 dark:text-amber-400",
     },
   ];
 

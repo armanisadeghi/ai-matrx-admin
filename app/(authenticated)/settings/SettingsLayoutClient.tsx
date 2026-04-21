@@ -126,6 +126,12 @@ const settingsNavItems: SettingsNavItem[] = [
     IconComp: FileText,
   },
   {
+    title: "Agent shortcuts",
+    href: "/agents/shortcuts",
+    icon: <Zap className="h-3.5 w-3.5" />,
+    IconComp: Zap,
+  },
+  {
     title: "Voice & Mic",
     href: "/settings/voice",
     icon: <Mic className="h-3.5 w-3.5" />,

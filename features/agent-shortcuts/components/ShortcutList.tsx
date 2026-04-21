@@ -53,6 +53,7 @@ import type {
   AgentShortcutRecord,
   ScopeProps,
 } from "../types";
+import { isValidShortcutContext } from "@/features/agents/utils/shortcut-context-utils";
 
 type SortField =
   | "label"
@@ -102,6 +103,8 @@ export function ShortcutList({
   const [activeFilter, setActiveFilter] = useState<
     "all" | "active" | "inactive"
   >("all");
+  /** "all" | "unrestricted" | a specific tag from shortcuts' enabledContexts */
+  const [contextTagFilter, setContextTagFilter] = useState<string>("all");
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const categoryById = useMemo(() => {
@@ -118,6 +121,16 @@ export function ShortcutList({
     });
     return Array.from(set);
   }, [shortcuts, categoryById]);
+
+  const uniqueContextTags = useMemo(() => {
+    const set = new Set<string>();
+    shortcuts.forEach((s) => {
+      (s.enabledContexts ?? []).forEach((t) => {
+        if (isValidShortcutContext(t)) set.add(t);
+      });
+    });
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [shortcuts]);
 
   const availableCategories = useMemo(() => {
     if (placementFilter !== "all") {
@@ -161,6 +174,19 @@ export function ShortcutList({
       out = out.filter((s) => s.isActive);
     } else if (activeFilter === "inactive") {
       out = out.filter((s) => !s.isActive);
+    }
+
+    if (contextTagFilter === "unrestricted") {
+      out = out.filter(
+        (s) => !(s.enabledContexts && s.enabledContexts.length > 0),
+      );
+    } else if (
+      contextTagFilter !== "all" &&
+      isValidShortcutContext(contextTagFilter)
+    ) {
+      out = out.filter((s) =>
+        (s.enabledContexts ?? []).includes(contextTagFilter),
+      );
     }
 
     out.sort((a, b) => {
@@ -213,6 +239,7 @@ export function ShortcutList({
     sortField,
     sortDirection,
     categoryById,
+    contextTagFilter,
   ]);
 
   const stats = useMemo(() => {
@@ -226,13 +253,15 @@ export function ShortcutList({
     searchQuery.trim() !== "" ||
     categoryFilter !== "all" ||
     placementFilter !== "all" ||
-    activeFilter !== "all";
+    activeFilter !== "all" ||
+    contextTagFilter !== "all";
 
   const clearFilters = () => {
     setSearchQuery("");
     setCategoryFilter("all");
     setPlacementFilter(placementFilterProp ?? "all");
     setActiveFilter("all");
+    setContextTagFilter("all");
   };
 
   const handleSort = (field: SortField) => {
@@ -311,6 +340,20 @@ export function ShortcutList({
             onChange={(e) => setSearchQuery(e.target.value)}
             className="text-[16px]"
           />
+          <Select value={contextTagFilter} onValueChange={setContextTagFilter}>
+            <SelectTrigger className="w-full text-[16px]">
+              <SelectValue placeholder="Context filter" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All contexts</SelectItem>
+              <SelectItem value="unrestricted">Unrestricted only</SelectItem>
+              {uniqueContextTags.map((tag) => (
+                <SelectItem key={tag} value={tag}>
+                  Tag: {tag}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <ScrollArea className="flex-1">
@@ -378,6 +421,17 @@ export function ShortcutList({
                           {shortcut.keyboardShortcut}
                         </code>
                       )}
+                      {shortcut.enabledContexts &&
+                        shortcut.enabledContexts.length > 0 &&
+                        shortcut.enabledContexts.map((tag) => (
+                          <Badge
+                            key={tag}
+                            variant="outline"
+                            className="text-[10px]"
+                          >
+                            {tag}
+                          </Badge>
+                        ))}
                     </div>
                   </CardContent>
                 </Card>
@@ -506,6 +560,24 @@ export function ShortcutList({
                 <SelectItem value="inactive">Inactive Only</SelectItem>
               </SelectContent>
             </Select>
+
+            <Select
+              value={contextTagFilter}
+              onValueChange={setContextTagFilter}
+            >
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Context tag" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All contexts</SelectItem>
+                <SelectItem value="unrestricted">Unrestricted only</SelectItem>
+                {uniqueContextTags.map((tag) => (
+                  <SelectItem key={tag} value={tag}>
+                    Tag: {tag}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
@@ -546,6 +618,9 @@ export function ShortcutList({
                       <ArrowUpDown className="h-3 w-3" />
                       <SortIcon field="category" />
                     </div>
+                  </TableHead>
+                  <TableHead className="min-w-[140px] max-w-[220px]">
+                    Contexts
                   </TableHead>
                   <TableHead
                     className="min-w-[120px]"
@@ -644,6 +719,26 @@ export function ShortcutList({
                             —
                           </span>
                         )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1 max-w-[220px]">
+                          {shortcut.enabledContexts &&
+                          shortcut.enabledContexts.length > 0 ? (
+                            shortcut.enabledContexts.map((tag) => (
+                              <Badge
+                                key={tag}
+                                variant="outline"
+                                className="text-[10px] font-normal"
+                              >
+                                {tag}
+                              </Badge>
+                            ))
+                          ) : (
+                            <span className="text-xs text-muted-foreground">
+                              All
+                            </span>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>
                         <Badge variant="secondary" className="text-xs">
@@ -765,7 +860,9 @@ export function ShortcutList({
             )}
           </ScrollArea>
         </div>
-        <div className="sr-only">Scope: {scope} {scopeId ?? ""}</div>
+        <div className="sr-only">
+          Scope: {scope} {scopeId ?? ""}
+        </div>
       </div>
     </TooltipProvider>
   );

@@ -49,6 +49,7 @@ import { DEFAULT_AVAILABLE_SCOPES } from "../constants";
 import { ScopeMappingEditor } from "./ScopeMappingEditor";
 import type { AgentVariableDefinition } from "./ScopeMappingEditor";
 import type { ScopeProps } from "../types";
+import { parseShortcutContextsInput } from "../utils/enabled-contexts";
 
 export interface LinkAgentToShortcutModalProps extends ScopeProps {
   isOpen: boolean;
@@ -98,6 +99,7 @@ export function LinkAgentToShortcutModal({
   );
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [enabledContextsInput, setEnabledContextsInput] = useState("");
 
   useEffect(() => {
     if (!isOpen) return;
@@ -110,6 +112,7 @@ export function LinkAgentToShortcutModal({
     setLabel(agent.name);
     setScopeMappings({});
     setAvailableScopes(DEFAULT_AVAILABLE_SCOPES);
+    setEnabledContextsInput("");
     setError(null);
   }, [isOpen, agent, categories]);
 
@@ -150,7 +153,7 @@ export function LinkAgentToShortcutModal({
         agentId: agent.id,
         agentVersionId: useLatest ? null : (agent.currentVersionId ?? null),
         useLatest,
-        enabledContexts: [],
+        enabledContexts: parseShortcutContextsInput(enabledContextsInput),
         scopeMappings:
           Object.keys(scopeMappings).length > 0 ? scopeMappings : null,
         resultDisplay: "modal-full",
@@ -283,6 +286,23 @@ export function LinkAgentToShortcutModal({
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="link-enabled-contexts" className="text-sm">
+              Enabled contexts (optional)
+            </Label>
+            <Input
+              id="link-enabled-contexts"
+              value={enabledContextsInput}
+              onChange={(e) => setEnabledContextsInput(e.target.value)}
+              placeholder="e.g. code-editor, note-editor"
+              className="h-9 text-[16px]"
+              disabled={isProcessing}
+            />
+            <p className="text-xs text-muted-foreground">
+              Comma-separated. Leave empty to show in every surface.
+            </p>
           </div>
 
           <div className="space-y-2">

@@ -43,14 +43,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  AlertCircle,
-  Copy,
-  Loader2,
-  Save,
-  Trash2,
-  X,
-} from "lucide-react";
+import { AlertCircle, Copy, Loader2, Save, Trash2, X } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import IconInputWithValidation from "@/components/official/icons/IconInputWithValidation.dynamic";
@@ -58,10 +51,11 @@ import { ScopeMappingEditor } from "./ScopeMappingEditor";
 import type { AgentVariableDefinition } from "./ScopeMappingEditor";
 import { ShortcutScopePicker } from "./ShortcutScopePicker";
 import { useAgentShortcutCrud } from "../hooks/useAgentShortcutCrud";
+import { DEFAULT_AVAILABLE_SCOPES, RESULT_DISPLAY_OPTIONS } from "../constants";
 import {
-  DEFAULT_AVAILABLE_SCOPES,
-  RESULT_DISPLAY_OPTIONS,
-} from "../constants";
+  formatShortcutContextsForInput,
+  parseShortcutContextsInput,
+} from "../utils/enabled-contexts";
 import type {
   AgentScope,
   AgentShortcut,
@@ -330,14 +324,36 @@ export function ShortcutForm({
         <Textarea
           id="shortcut-description"
           value={formData.description ?? ""}
-          onChange={(e) =>
-            handleChange("description", e.target.value || null)
-          }
+          onChange={(e) => handleChange("description", e.target.value || null)}
           placeholder="Optional description"
           rows={3}
           className="resize-none text-[16px]"
           disabled={saving}
         />
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="enabled-contexts" className="text-sm">
+          Enabled contexts
+        </Label>
+        <Input
+          id="enabled-contexts"
+          value={formatShortcutContextsForInput(formData.enabledContexts)}
+          onChange={(e) =>
+            handleChange(
+              "enabledContexts",
+              parseShortcutContextsInput(e.target.value),
+            )
+          }
+          placeholder="e.g. code-editor, note-editor"
+          className="h-9 text-[16px]"
+          disabled={saving}
+        />
+        <p className="text-xs text-muted-foreground">
+          Comma-separated tags. Leave empty so this shortcut appears in every
+          surface. When a host sets a context filter, the shortcut must list
+          that tag (or stay empty) to appear.
+        </p>
       </div>
 
       <div className="flex items-center justify-between px-3 py-2 border border-border rounded-md bg-muted/30">
@@ -367,9 +383,7 @@ export function ShortcutForm({
             <Input
               id="agent-id"
               value={formData.agentId ?? ""}
-              onChange={(e) =>
-                handleChange("agentId", e.target.value || null)
-              }
+              onChange={(e) => handleChange("agentId", e.target.value || null)}
               placeholder="Agent UUID"
               className="h-9 text-[16px] font-mono"
               disabled={saving}
@@ -572,32 +586,33 @@ export function ShortcutForm({
     </div>
   );
 
-  const leftButtons = isEditing && shortcut ? (
-    <div className="flex gap-2">
-      {onDuplicate && (
+  const leftButtons =
+    isEditing && shortcut ? (
+      <div className="flex gap-2">
+        {onDuplicate && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onDuplicate(shortcut)}
+            disabled={saving || deleting}
+          >
+            <Copy className="h-4 w-4 mr-1.5" />
+            Duplicate
+          </Button>
+        )}
         <Button
-          variant="outline"
+          variant="destructive"
           size="sm"
-          onClick={() => onDuplicate(shortcut)}
+          onClick={() => setShowDeleteConfirm(true)}
           disabled={saving || deleting}
         >
-          <Copy className="h-4 w-4 mr-1.5" />
-          Duplicate
+          <Trash2 className="h-4 w-4 mr-1.5" />
+          Delete
         </Button>
-      )}
-      <Button
-        variant="destructive"
-        size="sm"
-        onClick={() => setShowDeleteConfirm(true)}
-        disabled={saving || deleting}
-      >
-        <Trash2 className="h-4 w-4 mr-1.5" />
-        Delete
-      </Button>
-    </div>
-  ) : (
-    <div />
-  );
+      </div>
+    ) : (
+      <div />
+    );
 
   const rightButtons = (
     <div className="flex gap-2">

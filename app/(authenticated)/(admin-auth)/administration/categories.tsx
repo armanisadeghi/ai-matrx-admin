@@ -59,6 +59,7 @@ import {
   AlertCircle,
   AlertTriangle,
   DollarSign,
+  Zap,
 } from "lucide-react";
 
 export const adminCategories = [
@@ -197,6 +198,45 @@ export const adminCategories = [
           "Fetch live model lists from Anthropic, OpenAI, Groq, and other providers. Compare against your database to find missing or extra models and keep everything in sync.",
         icon: <IconRefresh />,
         link: "/administration/ai-models/provider-sync",
+        isNew: true,
+      },
+    ],
+  },
+  {
+    name: "Agents",
+    icon: <Zap className="w-6 h-6" />,
+    iconColor: "text-rose-600",
+    features: [
+      {
+        title: "Agent shortcuts",
+        description:
+          "Dashboard for global agent shortcuts, categories, and content blocks (unified context menu).",
+        icon: <Zap />,
+        link: "/administration/agent-shortcuts",
+        isNew: true,
+      },
+      {
+        title: "Shortcuts — list",
+        description:
+          "Browse and edit global agent shortcuts, enabled contexts, and agent bindings.",
+        icon: <Zap />,
+        link: "/administration/agent-shortcuts/shortcuts",
+        isNew: true,
+      },
+      {
+        title: "Shortcut categories",
+        description:
+          "Placement hierarchy, icons, and enabled contexts for agent shortcut groups.",
+        icon: <Zap />,
+        link: "/administration/agent-shortcuts/categories",
+        isNew: true,
+      },
+      {
+        title: "Content blocks",
+        description:
+          "Reusable insertable blocks surfaced under agent shortcut categories.",
+        icon: <Zap />,
+        link: "/administration/agent-shortcuts/content-blocks",
         isNew: true,
       },
     ],
