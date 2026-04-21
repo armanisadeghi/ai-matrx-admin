@@ -261,6 +261,7 @@ function exportItems(ctx: MessageActionContext): MenuItem[] {
             conversationId: conversationId ?? undefined,
             instanceId,
             showSaveButton: Boolean(conversationId && messageId),
+            isAgentSystem: true,
             onSave: async (newContent: string) => {
               if (conversationId && messageId) {
                 try {
@@ -606,9 +607,7 @@ function editContentItem(ctx: MessageActionContext): MenuItem {
                 "[edit-content] save failed",
                 JSON.stringify(serialized, null, 2),
               );
-              toast.error(
-                getErrorMessage(err, "Failed to save changes"),
-              );
+              toast.error(getErrorMessage(err, "Failed to save changes"));
             }
             dispatch(
               closeOverlay({ overlayId: "fullScreenEditor", instanceId }),
@@ -694,9 +693,7 @@ function editAndResubmitItem(ctx: MessageActionContext): MenuItem {
                 "[edit-resubmit] failed",
                 JSON.stringify(serialized, null, 2),
               );
-              toast.error(
-                getErrorMessage(err, "Failed to edit & resubmit"),
-              );
+              toast.error(getErrorMessage(err, "Failed to edit & resubmit"));
             } finally {
               dispatch(
                 closeOverlay({ overlayId: "fullScreenEditor", instanceId }),

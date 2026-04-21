@@ -1,19 +1,36 @@
 "use client";
 
 /**
- * useAiPostProcess — orchestrates launching an AI post-processing agent
- * for a VoicePadAi instance and exposes its streaming state.
+ * useAiPostProcess — launches an AI post-processing agent for VoicePadAi
+ * and exposes its streaming state.
+ *
+ * CRITICAL — variable resolution:
+ *   `createManualInstance` snapshots the agent's `variableDefinitions` from
+ *   `state.agentDefinition.agents[agentId]` into the instance. If that agent
+ *   hasn't been loaded yet (e.g. the user opened VoicePadAi without first
+ *   visiting the agent page), the snapshot is EMPTY — and
+ *   `selectResolvedVariables` only emits keys that exist in `definitions`.
+ *   That means `setUserVariableValues({transcribed_text: "..."})` silently
+ *   no-ops at execute time.
+ *
+ *   Fix: we await `fetchAgentExecutionMinimal(agentId)` before creating the
+ *   instance so the definition snapshot has the right variable names.
  *
  * Flow:
- *   1. Caller picks an agent + supplies transcript + optional user context.
- *   2. process() creates a manual agent instance, writes the transcript into
- *      the agent's transcript variable, writes user context into the agent's
- *      context slot (when the agent declares one), and fires executeInstance.
- *   3. The returned `conversationId` is tracked locally. Redux selectors read
- *      the resulting ActiveRequest for status + streaming text.
+ *   1. fetchAgentExecutionMinimal(agentId) — populates redux with the agent's
+ *      variable_definitions + context_slots.
+ *   2. createManualInstance({ agentId, displayMode: "direct", autoRun: false,
+ *      apiEndpointMode: "agent" }) — snapshots definitions onto the instance.
+ *   3. setUserVariableValues({ [agent.transcriptVariableKey]: transcript })
+ *      — userValues takes priority in the three-tier resolution.
+ *   4. setContextEntries(...) — always set when context is provided. If the
+ *      agent declared a matching slot we mark `slotMatched: true` and use the
+ *      declared key; otherwise we use a generic "user_context" key so the
+ *      agent can still reach it via tools.
+ *   5. executeInstance — fire-and-forget. Redux is the source of truth for
+ *      streaming progress; selectors below feed the UI live.
  *
- * Execution is dispatched fire-and-forget — Redux state is the source of truth
- * for streaming progress, so we do not await the thunk.
+ * No user input is set — these agents don't consume one.
  */
 
 import { useCallback, useState } from "react";
@@ -22,6 +39,7 @@ import { createManualInstance } from "@/features/agents/redux/execution-system/t
 import { executeInstance } from "@/features/agents/redux/execution-system/thunks/execute-instance.thunk";
 import { setUserVariableValues } from "@/features/agents/redux/execution-system/instance-variable-values/instance-variable-values.slice";
 import { setContextEntries } from "@/features/agents/redux/execution-system/instance-context/instance-context.slice";
+import { fetchAgentExecutionMinimal } from "@/features/agents/redux/agent-definition/thunks";
 import {
   selectPrimaryRequest,
   selectAccumulatedText,
@@ -46,6 +64,8 @@ interface ProcessArgs {
   transcript: string;
   context: string;
 }
+
+const FALLBACK_CONTEXT_KEY = "user_context";
 
 export function useAiPostProcess() {
   const dispatch = useAppDispatch();
@@ -80,12 +100,17 @@ export function useAiPostProcess() {
       setError(null);
       setLaunching(true);
       try {
+        // Load the agent's variable_definitions + context_slots into redux.
+        // createManualInstance snapshots these onto the instance and
+        // executeInstance reads through that snapshot, not agentId.
+        await dispatch(fetchAgentExecutionMinimal(agent.id)).unwrap();
+
         const cid = await dispatch(
           createManualInstance({
             agentId: agent.id,
             sourceFeature: "voice-pad-ai",
             apiEndpointMode: "agent",
-            displayMode: "background",
+            displayMode: "direct",
             autoRun: false,
           }),
         ).unwrap();
@@ -97,15 +122,17 @@ export function useAiPostProcess() {
           }),
         );
 
-        if (agent.contextSlotKey && context.trim().length > 0) {
+        const contextValue = context.trim();
+        if (contextValue.length > 0) {
+          const key = agent.contextSlotKey ?? FALLBACK_CONTEXT_KEY;
           dispatch(
             setContextEntries({
               conversationId: cid,
               entries: [
                 {
-                  key: agent.contextSlotKey,
-                  value: context,
-                  slotMatched: true,
+                  key,
+                  value: contextValue,
+                  slotMatched: !!agent.contextSlotKey,
                 },
               ],
             }),
@@ -113,7 +140,7 @@ export function useAiPostProcess() {
         }
 
         setConversationId(cid);
-        // Fire-and-forget: Redux state tracks progress.
+        // Fire-and-forget — the UI reads streaming state from redux selectors.
         dispatch(executeInstance({ conversationId: cid }));
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err));

@@ -64,6 +64,18 @@ export interface WindowRegistryEntry {
 // ─── Registry ─────────────────────────────────────────────────────────────────
 
 const REGISTRY: WindowRegistryEntry[] = [
+  // ── Code Editor ───────────────────────────────────────────────────────────
+  {
+    slug: "code-editor-window",
+    overlayId: "codeEditorWindow",
+    label: "Code Editor",
+    defaultData: {
+      files: [],
+      activeFile: null,
+      title: null,
+    },
+  },
+
   // ── Notes ─────────────────────────────────────────────────────────────────
   {
     slug: "notes-window",

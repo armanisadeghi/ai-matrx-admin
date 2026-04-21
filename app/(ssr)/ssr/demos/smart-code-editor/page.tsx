@@ -27,7 +27,13 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Code2, Sparkles } from "lucide-react";
 import { SmartCodeEditorModal } from "@/features/code-editor/agent-code-editor";
 
@@ -45,14 +51,18 @@ interface AgentConfig {
    * Given the demo's `{code, context}` inputs, return the variable payload
    * the agent expects. Kept tiny here so swapping agents is trivial.
    */
-  buildVariables: (inputs: { code: string; context: string }) => Record<string, unknown>;
+  buildVariables: (inputs: {
+    code: string;
+    context: string;
+  }) => Record<string, unknown>;
 }
 
 const AGENTS: AgentConfig[] = [
   {
     id: "55cc4ad1-bafd-4b82-af0b-4b4f40406ca3",
     name: "Code Editor",
-    description: "Default code editor agent. Receives the current code as `current_code`.",
+    description:
+      "Default code editor agent. Receives the current code as `current_code`.",
     buildVariables: ({ code }) => ({ current_code: code }),
   },
   {
@@ -75,7 +85,18 @@ const AGENTS: AgentConfig[] = [
   },
 ];
 
-const LANGUAGES = ["typescript", "javascript", "tsx", "jsx", "python", "go", "rust", "html", "css", "sql"];
+const LANGUAGES = [
+  "typescript",
+  "javascript",
+  "tsx",
+  "jsx",
+  "python",
+  "go",
+  "rust",
+  "html",
+  "css",
+  "sql",
+];
 
 // ── Starter snippets (so the demo is immediately fireable) ──────────────────
 
@@ -198,23 +219,6 @@ export default function SmartCodeEditorDemoPage() {
           <Code2 className="w-5 h-5" />
           Smart Code Editor — Agent System
         </h1>
-        <p className="text-xs md:text-sm text-muted-foreground mt-1">
-          Demo of{" "}
-          <code className="text-[11px] bg-muted px-1 rounded">
-            SmartCodeEditorModal
-          </code>{" "}
-          wired against real agent UUIDs. Edit the code + context below, pick
-          an agent, and watch the new{" "}
-          <code className="text-[11px] bg-muted px-1 rounded">
-            vsc_*
-          </code>{" "}
-          context flow + widget-tool channel in action.
-        </p>
-        <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-1">
-          Note: variable mapping is hard-coded here because production flows
-          use Shortcut <code className="font-mono">scopeMappings</code>. The
-          Smart Code Editor itself is agent-agnostic.
-        </p>
       </div>
 
       <Separator />
@@ -226,8 +230,8 @@ export default function SmartCodeEditorDemoPage() {
           <p className="text-[11px] text-muted-foreground">
             The code and context below are what every agent sees. The left
             column feeds <code className="font-mono">current_code</code> or{" "}
-            <code className="font-mono">dynamic_context</code>; the right
-            column feeds the context blob for agents that want it.
+            <code className="font-mono">dynamic_context</code>; the right column
+            feeds the context blob for agents that want it.
           </p>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -298,48 +302,6 @@ export default function SmartCodeEditorDemoPage() {
           ))}
         </div>
       </section>
-
-      <Separator />
-
-      {/* What to watch */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm">What to watch in DevTools</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-1.5 text-xs text-muted-foreground">
-          <p>
-            1. <strong>Network tab</strong> → first request body should include
-            the variable mapping under{" "}
-            <code className="font-mono bg-muted px-1 rounded">variables</code>{" "}
-            and IDE context under{" "}
-            <code className="font-mono bg-muted px-1 rounded">context</code>.
-          </p>
-          <p>
-            2. <strong>Stream response</strong> → look for{" "}
-            <code className="font-mono bg-muted px-1 rounded">
-              {`tool_event { event: "tool_delegated", tool_name: "widget_text_patch" }`}
-            </code>{" "}
-            as the agent runs — these mutate the editor directly via the
-            widget handle channel.
-          </p>
-          <p>
-            3. <strong>Redux DevTools</strong> →{" "}
-            <code className="font-mono bg-muted px-1 rounded">
-              launchAgentExecution
-            </code>{" "}
-            at modal open,{" "}
-            <code className="font-mono bg-muted px-1 rounded">
-              destroyInstance
-            </code>{" "}
-            at close. Instance state cleanup should be complete.
-          </p>
-          <p>
-            4. If the agent outputs SEARCH/REPLACE blocks in its response
-            (legacy fallback), the review stage appears and you get Apply /
-            Discard buttons instead of auto-apply.
-          </p>
-        </CardContent>
-      </Card>
     </div>
   );
 }

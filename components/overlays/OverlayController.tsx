@@ -482,6 +482,14 @@ const ContentEditorListWindow = dynamic(
   { ssr: false },
 );
 
+const CodeEditorWindow = dynamic(
+  () =>
+    import("@/features/window-panels/windows/code/CodeEditorWindow").then(
+      (m) => ({ default: m.CodeEditorWindow }),
+    ),
+  { ssr: false },
+);
+
 const ContentEditorWorkspaceWindow = dynamic(
   () =>
     import("@/features/window-panels/windows/content-editors/ContentEditorWorkspaceWindow").then(
@@ -775,6 +783,9 @@ export const OverlayController: React.FC = () => {
   );
   const contentEditorWorkspaceWindowInstances = useAppSelector((s) =>
     selectOpenInstances(s, "contentEditorWorkspaceWindow"),
+  );
+  const codeEditorWindowInstances = useAppSelector((s) =>
+    selectOpenInstances(s, "codeEditorWindow"),
   );
 
   const isScraperWindowOpen = useAppSelector((s) =>
@@ -1517,6 +1528,18 @@ export const OverlayController: React.FC = () => {
         />
       ))}
 
+      {codeEditorWindowInstances.map(({ instanceId, data }) => (
+        <CodeEditorWindow
+          key={instanceId}
+          windowInstanceId={instanceId}
+          files={data?.files ?? []}
+          autoFormatOnOpen={data?.autoFormatOnOpen ?? false}
+          defaultWordWrap={data?.defaultWordWrap ?? "off"}
+          title={data?.title ?? null}
+          onClose={() => close("codeEditorWindow", instanceId)}
+        />
+      ))}
+
       {/* ── Instanced overlays — .map() renders each open instance ─────── */}
       {/* Each instance gets a stable key so React correctly reconciles them. */}
 
@@ -1554,6 +1577,7 @@ export const OverlayController: React.FC = () => {
           title={data?.title}
           description={data?.description}
           showSaveButton={data?.showSaveButton}
+          isAgentSystem={data?.isAgentSystem}
           onSave={(markdownContent: string) => {
             // Persist the saved content back to overlayDataSlice so this instance
             // restores to the last-saved state if it is reopened in the same session.

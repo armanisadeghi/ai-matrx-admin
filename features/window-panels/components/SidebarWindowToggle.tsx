@@ -629,17 +629,55 @@ export default function SidebarWindowToggle() {
 
             {/* ── Tab Content: Tools ───────────────────────────────────────── */}
             {activeTab === "tools" && (
-              <div className="flex-1 flex flex-col overflow-y-auto">
-                <div className="grid grid-cols-2 gap-1.5 px-2 pb-2 mt-1">
+              <div className="flex-1 flex flex-col overflow-y-auto mt-1">
+                {/* ── Voice ──────────────────────────────────────────────────── */}
+                <MenuSection label="Voice" />
+                <div className="grid grid-cols-2 gap-1.5 px-2 pb-2">
                   <MenuGridItem
-                    icon={<FileJson className="w-3.5 h-3.5" />}
-                    label="JSON Truncator"
+                    icon={<Mic className="w-3.5 h-3.5" />}
+                    label="AI Voice"
                     onClick={() =>
                       act(() =>
-                        dispatch(openOverlay({ overlayId: "jsonTruncator" })),
+                        dispatch(openOverlay({ overlayId: "aiVoiceWindow" })),
                       )
                     }
                   />
+                  <MenuGridItem
+                    icon={<AudioLines className="w-3.5 h-3.5" />}
+                    label="AI Voice Pad"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(openOverlay({ overlayId: "voicePadAi" })),
+                      )
+                    }
+                  />
+                  <MenuGridItem
+                    icon={<AudioLines className="w-3.5 h-3.5" />}
+                    label="Advanced Voice Pad"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(
+                          openOverlay({ overlayId: "voicePadAdvanced" }),
+                        ),
+                      )
+                    }
+                  />
+                  <MenuGridItem
+                    icon={<AudioLines className="w-3.5 h-3.5" />}
+                    label="Voice Pad"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(openOverlay({ overlayId: "voicePad" })),
+                      )
+                    }
+                  />
+                </div>
+
+                <MenuDivider />
+
+                {/* ── Notes ──────────────────────────────────────────────────── */}
+                <MenuSection label="Notes" />
+                <div className="grid grid-cols-2 gap-1.5 px-2 pb-2">
                   <MenuGridItem
                     icon={<StickyNote className="w-3.5 h-3.5" />}
                     label="Notes"
@@ -664,6 +702,53 @@ export default function SidebarWindowToggle() {
                           openOverlay({
                             overlayId: "notesBetaWindow",
                             instanceId: `notes-beta-${Date.now()}`,
+                          }),
+                        ),
+                      )
+                    }
+                  />
+                </div>
+
+                <MenuDivider />
+
+                {/* ── Content ────────────────────────────────────────────────── */}
+                <MenuSection label="Content" />
+                <div className="grid grid-cols-2 gap-1.5 px-2 pb-2">
+                  <MenuGridItem
+                    icon={<FileCode2 className="w-3.5 h-3.5" />}
+                    label="Code Editor"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(
+                          openOverlay({
+                            overlayId: "codeEditorWindow",
+                            instanceId: `code-editor-${Date.now()}`,
+                            data: {
+                              title: "Code Editor",
+                              files: [
+                                {
+                                  name: "index.tsx",
+                                  path: "src/index.tsx",
+                                  language: "typescript",
+                                  content:
+                                    'import React from "react";\n\nexport default function App() {\n  return (\n    <div className="flex items-center justify-center h-screen">\n      <h1 className="text-2xl font-bold">Hello, World!</h1>\n    </div>\n  );\n}\n',
+                                },
+                                {
+                                  name: "styles.css",
+                                  path: "src/styles.css",
+                                  language: "css",
+                                  content:
+                                    "/* Global styles */\nbody {\n  margin: 0;\n  font-family: system-ui, sans-serif;\n}\n",
+                                },
+                                {
+                                  name: "README.md",
+                                  path: "README.md",
+                                  language: "markdown",
+                                  content:
+                                    "# My Project\n\nA sample project.\n\n## Getting Started\n\n```bash\nnpm install\nnpm start\n```\n",
+                                },
+                              ],
+                            },
                           }),
                         ),
                       )
@@ -719,40 +804,39 @@ export default function SidebarWindowToggle() {
                     }
                   />
                   <MenuGridItem
-                    icon={<Mic className="w-3.5 h-3.5" />}
-                    label="AI Voice"
-                    onClick={() =>
-                      act(() =>
-                        dispatch(openOverlay({ overlayId: "aiVoiceWindow" })),
-                      )
-                    }
-                  />
-                  <MenuGridItem
-                    icon={<AudioLines className="w-3.5 h-3.5" />}
-                    label="Voice Pad"
-                    onClick={() =>
-                      act(() =>
-                        dispatch(openOverlay({ overlayId: "voicePad" })),
-                      )
-                    }
-                  />
-                  <MenuGridItem
-                    icon={<AudioLines className="w-3.5 h-3.5" />}
-                    label="Advanced Voice Pad"
+                    icon={<FileCode2 className="w-3.5 h-3.5" />}
+                    label="Markdown"
                     onClick={() =>
                       act(() =>
                         dispatch(
-                          openOverlay({ overlayId: "voicePadAdvanced" }),
+                          openOverlay({
+                            overlayId: "markdownEditorWindow",
+                            data: { instanceId: "default" },
+                          }),
                         ),
                       )
                     }
                   />
+                </div>
+
+                <MenuDivider />
+
+                {/* ── Agent ──────────────────────────────────────────────────── */}
+                <MenuSection label="Agent" />
+                <div className="grid grid-cols-2 gap-1.5 px-2 pb-2">
                   <MenuGridItem
-                    icon={<AudioLines className="w-3.5 h-3.5" />}
-                    label="AI Voice Pad"
+                    icon={<FileStack className="w-3.5 h-3.5" />}
+                    label="Agent Content"
+                    onClick={() => act(() => openAgentContentFromTools())}
+                  />
+                  <MenuGridItem
+                    icon={<SlidersHorizontal className="w-3.5 h-3.5" />}
+                    label="Agent Settings"
                     onClick={() =>
                       act(() =>
-                        dispatch(openOverlay({ overlayId: "voicePadAi" })),
+                        dispatch(
+                          openOverlay({ overlayId: "agentSettingsWindow" }),
+                        ),
                       )
                     }
                   />
@@ -766,29 +850,152 @@ export default function SidebarWindowToggle() {
                     }
                   />
                   <MenuGridItem
-                    icon={<Bug className="w-3.5 h-3.5" />}
-                    label="Stream Debug"
+                    icon={<Upload className="w-3.5 h-3.5" />}
+                    label="Import Agent"
+                    onClick={() => act(() => dispatch(openAgentImportWindow()))}
+                  />
+                  <MenuGridItem
+                    icon={<History className="w-3.5 h-3.5" />}
+                    label="Run History"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(
+                          openOverlay({ overlayId: "agentRunHistoryWindow" }),
+                        ),
+                      )
+                    }
+                  />
+                </div>
+
+                <MenuDivider />
+
+                {/* ── Files & Web ────────────────────────────────────────────── */}
+                <MenuSection label="Files & Web" />
+                <div className="grid grid-cols-2 gap-1.5 px-2 pb-2">
+                  <MenuGridItem
+                    icon={<FolderSearch className="w-3.5 h-3.5" />}
+                    label="Files"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(
+                          openOverlay({ overlayId: "quickFilesWindow" }),
+                        ),
+                      )
+                    }
+                  />
+                  <MenuGridItem
+                    icon={<GalleryHorizontalEnd className="w-3.5 h-3.5" />}
+                    label="Gallery"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(openOverlay({ overlayId: "galleryWindow" })),
+                      )
+                    }
+                  />
+                  <MenuGridItem
+                    icon={<FileScan className="w-3.5 h-3.5" />}
+                    label="PDF Extractor"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(
+                          openOverlay({ overlayId: "pdfExtractorWindow" }),
+                        ),
+                      )
+                    }
+                  />
+                  <MenuGridItem
+                    icon={<Frame className="w-3.5 h-3.5" />}
+                    label="Site Frame"
                     onClick={() =>
                       act(() =>
                         dispatch(
                           openOverlay({
-                            overlayId: "streamDebug",
-                            data: { conversationId: "default" },
+                            overlayId: "browserFrameWindow",
+                            data: {
+                              url: "https://lucide.dev/icons/",
+                              windowTitle: "Lucide",
+                            },
                           }),
                         ),
                       )
                     }
                   />
                   <MenuGridItem
-                    icon={<List className="w-3.5 h-3.5" />}
-                    label="Stream History"
+                    icon={<BookMarked className="w-3.5 h-3.5" />}
+                    label="Site Workbench"
                     onClick={() =>
                       act(() =>
                         dispatch(
-                          openOverlay({
-                            overlayId: "streamDebugHistoryWindow",
-                            data: { initialConversationId: null },
-                          }),
+                          openOverlay({ overlayId: "browserWorkbenchWindow" }),
+                        ),
+                      )
+                    }
+                  />
+                  <MenuGridItem
+                    icon={<ArrowUp className="w-3.5 h-3.5" />}
+                    label="Upload"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(
+                          openOverlay({ overlayId: "fileUploadWindow" }),
+                        ),
+                      )
+                    }
+                  />
+                  <MenuGridItem
+                    icon={<Globe className="w-3.5 h-3.5" />}
+                    label="Web Scraper"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(openOverlay({ overlayId: "scraperWindow" })),
+                      )
+                    }
+                  />
+                </div>
+
+                <MenuDivider />
+
+                {/* ── General (alphabetical) ─────────────────────────────────── */}
+                <MenuSection label="General" />
+                <div className="grid grid-cols-2 gap-1.5 px-2 pb-2">
+                  <MenuGridItem
+                    icon={<MonitorPlay className="w-3.5 h-3.5" />}
+                    label="Canvas Viewer"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(
+                          openOverlay({ overlayId: "canvasViewerWindow" }),
+                        ),
+                      )
+                    }
+                  />
+                  <MenuGridItem
+                    icon={<Layers className="w-3.5 h-3.5" />}
+                    label="Context Switcher"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(
+                          openOverlay({ overlayId: "contextSwitcherWindow" }),
+                        ),
+                      )
+                    }
+                  />
+                  <MenuGridItem
+                    icon={<Database className="w-3.5 h-3.5" />}
+                    label="Data Tables"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(openOverlay({ overlayId: "quickDataWindow" })),
+                      )
+                    }
+                  />
+                  <MenuGridItem
+                    icon={<Mail className="w-3.5 h-3.5" />}
+                    label="Email"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(
+                          openOverlay({ overlayId: "emailDialogWindow" }),
                         ),
                       )
                     }
@@ -803,29 +1010,44 @@ export default function SidebarWindowToggle() {
                     }
                   />
                   <MenuGridItem
-                    icon={<Activity className="w-3.5 h-3.5" />}
-                    label="State Analyzer"
+                    icon={<FileJson className="w-3.5 h-3.5" />}
+                    label="JSON Truncator"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(openOverlay({ overlayId: "jsonTruncator" })),
+                      )
+                    }
+                  />
+                  <MenuGridItem
+                    icon={<ListFilter className="w-3.5 h-3.5" />}
+                    label="List Manager"
                     onClick={() =>
                       act(() =>
                         dispatch(
-                          openOverlay({
-                            overlayId: "adminStateAnalyzerWindow",
+                          openOverlay({ overlayId: "listManagerWindow" }),
+                        ),
+                      )
+                    }
+                  />
+                  <MenuGridItem
+                    icon={<Building2 className="w-3.5 h-3.5" />}
+                    label="New Organization"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(
+                          openHierarchyCreationWindow({
+                            entityType: "organization",
                           }),
                         ),
                       )
                     }
                   />
                   <MenuGridItem
-                    icon={<FileCode2 className="w-3.5 h-3.5" />}
-                    label="Markdown"
+                    icon={<Newspaper className="w-3.5 h-3.5" />}
+                    label="News"
                     onClick={() =>
                       act(() =>
-                        dispatch(
-                          openOverlay({
-                            overlayId: "markdownEditorWindow",
-                            data: { instanceId: "default" },
-                          }),
-                        ),
+                        dispatch(openOverlay({ overlayId: "newsWindow" })),
                       )
                     }
                   />
@@ -836,17 +1058,6 @@ export default function SidebarWindowToggle() {
                       act(() =>
                         dispatch(
                           openOverlay({ overlayId: "userPreferencesWindow" }),
-                        ),
-                      )
-                    }
-                  />
-                  <MenuGridItem
-                    icon={<Mail className="w-3.5 h-3.5" />}
-                    label="Email"
-                    onClick={() =>
-                      act(() =>
-                        dispatch(
-                          openOverlay({ overlayId: "emailDialogWindow" }),
                         ),
                       )
                     }
@@ -872,220 +1083,6 @@ export default function SidebarWindowToggle() {
                       act(() =>
                         dispatch(
                           openOverlay({ overlayId: "quickTasksWindow" }),
-                        ),
-                      )
-                    }
-                  />
-                  <MenuGridItem
-                    icon={<Database className="w-3.5 h-3.5" />}
-                    label="Data Tables"
-                    onClick={() =>
-                      act(() =>
-                        dispatch(openOverlay({ overlayId: "quickDataWindow" })),
-                      )
-                    }
-                  />
-                  <MenuGridItem
-                    icon={<FolderSearch className="w-3.5 h-3.5" />}
-                    label="Files"
-                    onClick={() =>
-                      act(() =>
-                        dispatch(
-                          openOverlay({ overlayId: "quickFilesWindow" }),
-                        ),
-                      )
-                    }
-                  />
-                  <MenuGridItem
-                    icon={<ArrowUp className="w-3.5 h-3.5" />}
-                    label="Upload"
-                    onClick={() =>
-                      act(() =>
-                        dispatch(
-                          openOverlay({ overlayId: "fileUploadWindow" }),
-                        ),
-                      )
-                    }
-                  />
-                  <MenuGridItem
-                    icon={<Frame className="w-3.5 h-3.5" />}
-                    label="Site frame"
-                    onClick={() =>
-                      act(() =>
-                        dispatch(
-                          openOverlay({
-                            overlayId: "browserFrameWindow",
-                            data: {
-                              url: "https://lucide.dev/icons/",
-                              windowTitle: "Lucide",
-                            },
-                          }),
-                        ),
-                      )
-                    }
-                  />
-                  <MenuGridItem
-                    icon={<BookMarked className="w-3.5 h-3.5" />}
-                    label="Site workbench"
-                    onClick={() =>
-                      act(() =>
-                        dispatch(
-                          openOverlay({ overlayId: "browserWorkbenchWindow" }),
-                        ),
-                      )
-                    }
-                  />
-                  <MenuGridItem
-                    icon={<Globe className="w-3.5 h-3.5" />}
-                    label="Web Scraper"
-                    onClick={() =>
-                      act(() =>
-                        dispatch(openOverlay({ overlayId: "scraperWindow" })),
-                      )
-                    }
-                  />
-                  <MenuGridItem
-                    icon={<Layers className="w-3.5 h-3.5" />}
-                    label="Context Switcher"
-                    onClick={() =>
-                      act(() =>
-                        dispatch(
-                          openOverlay({ overlayId: "contextSwitcherWindow" }),
-                        ),
-                      )
-                    }
-                  />
-                  <MenuGridItem
-                    icon={<Building2 className="w-3.5 h-3.5" />}
-                    label="New organization"
-                    onClick={() =>
-                      act(() =>
-                        dispatch(
-                          openHierarchyCreationWindow({
-                            entityType: "organization",
-                          }),
-                        ),
-                      )
-                    }
-                  />
-                  <MenuGridItem
-                    icon={<FileScan className="w-3.5 h-3.5" />}
-                    label="PDF Extractor"
-                    onClick={() =>
-                      act(() =>
-                        dispatch(
-                          openOverlay({ overlayId: "pdfExtractorWindow" }),
-                        ),
-                      )
-                    }
-                  />
-                  <MenuGridItem
-                    icon={<MonitorPlay className="w-3.5 h-3.5" />}
-                    label="Canvas Viewer"
-                    onClick={() =>
-                      act(() =>
-                        dispatch(
-                          openOverlay({ overlayId: "canvasViewerWindow" }),
-                        ),
-                      )
-                    }
-                  />
-                  <MenuGridItem
-                    icon={<Newspaper className="w-3.5 h-3.5" />}
-                    label="News"
-                    onClick={() =>
-                      act(() =>
-                        dispatch(openOverlay({ overlayId: "newsWindow" })),
-                      )
-                    }
-                  />
-                  <MenuGridItem
-                    icon={<ListFilter className="w-3.5 h-3.5" />}
-                    label="List Manager"
-                    onClick={() =>
-                      act(() =>
-                        dispatch(
-                          openOverlay({ overlayId: "listManagerWindow" }),
-                        ),
-                      )
-                    }
-                  />
-                  <MenuGridItem
-                    icon={<GalleryHorizontalEnd className="w-3.5 h-3.5" />}
-                    label="Gallery"
-                    onClick={() =>
-                      act(() =>
-                        dispatch(openOverlay({ overlayId: "galleryWindow" })),
-                      )
-                    }
-                  />
-                  <MenuGridItem
-                    icon={<SlidersHorizontal className="w-3.5 h-3.5" />}
-                    label="Agent Settings"
-                    onClick={() =>
-                      act(() =>
-                        dispatch(
-                          openOverlay({ overlayId: "agentSettingsWindow" }),
-                        ),
-                      )
-                    }
-                  />
-                  <MenuGridItem
-                    icon={<History className="w-3.5 h-3.5" />}
-                    label="Run History"
-                    onClick={() =>
-                      act(() =>
-                        dispatch(
-                          openOverlay({ overlayId: "agentRunHistoryWindow" }),
-                        ),
-                      )
-                    }
-                  />
-                  <MenuGridItem
-                    icon={<Upload className="w-3.5 h-3.5" />}
-                    label="Import Agent"
-                    onClick={() => act(() => dispatch(openAgentImportWindow()))}
-                  />
-                  <MenuGridItem
-                    icon={<FileStack className="w-3.5 h-3.5" />}
-                    label="Agent content"
-                    onClick={() => act(() => openAgentContentFromTools())}
-                  />
-                  <MenuGridItem
-                    icon={<Cpu className="w-3.5 h-3.5" />}
-                    label="Exec Inspector"
-                    onClick={() =>
-                      act(() =>
-                        dispatch(
-                          openOverlay({
-                            overlayId: "executionInspectorWindow",
-                          }),
-                        ),
-                      )
-                    }
-                  />
-                  <MenuGridItem
-                    icon={<LayoutDashboard className="w-3.5 h-3.5" />}
-                    label="UI State"
-                    onClick={() =>
-                      act(() =>
-                        dispatch(
-                          openOverlay({
-                            overlayId: "instanceUIStateWindow",
-                          }),
-                        ),
-                      )
-                    }
-                  />
-                  <MenuGridItem
-                    icon={<ScrollText className="w-3.5 h-3.5" />}
-                    label="MD debug"
-                    onClick={() =>
-                      act(() =>
-                        dispatch(
-                          openOverlay({
-                            overlayId: "agentAssistantMarkdownDebugWindow",
-                          }),
                         ),
                       )
                     }

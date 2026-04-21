@@ -333,6 +333,7 @@ interface HtmlPreviewPayload {
   onSave?: (markdownContent: string) => void;
   showSaveButton?: boolean;
   instanceId?: string;
+  isAgentSystem?: boolean;
 }
 
 export const openHtmlPreview = (options: HtmlPreviewPayload) =>
@@ -349,6 +350,7 @@ export const openHtmlPreview = (options: HtmlPreviewPayload) =>
         "Edit markdown, preview HTML, and publish your content",
       onSave: options.onSave,
       showSaveButton: options.showSaveButton ?? false,
+      isAgentSystem: options.isAgentSystem ?? false,
     },
   });
 

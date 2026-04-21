@@ -1,13 +1,18 @@
 "use client";
 
 /**
- * VoicePadAi — voice pad with an AI post-processing pipeline.
+ * VoicePadAi — voice pad with AI post-processing.
  *
  * Layout:
- *   - Sidebar: agent picker + free-form user context + Process button
- *   - Main area: transcript on top; once processing starts the pane splits
- *     and the lower half shows the streaming response (spinner → stream →
- *     editable + copy).
+ *   - WindowPanel sidebar holds the agent picker + free-form context textarea
+ *     + Process button.
+ *   - Main body is a vertical ResizablePanelGroup:
+ *       • Top panel: the transcript (always visible).
+ *       • Bottom panel: AI response (only rendered once processing starts).
+ *
+ * The bottom panel shows a spinner while launching/pending/connecting, the
+ * live accumulated text while streaming, and an editable textarea + copy on
+ * complete.
  */
 
 import React, { useCallback, useMemo, useState } from "react";
@@ -28,13 +33,17 @@ import {
   selectVoicePadEntries,
   selectVoicePadDraftText,
   addTranscriptEntry,
-  removeTranscriptEntry,
   clearAllEntries,
   setDraftText,
 } from "@/lib/redux/slices/voicePadSlice";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { MicrophoneIconButton } from "@/features/audio/components/MicrophoneIconButton";
 import ActionFeedbackButton from "@/components/official/ActionFeedbackButton";
+import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizableHandle,
+} from "@/components/ui/resizable";
 import {
   AI_POST_PROCESS_AGENTS,
   DEFAULT_AI_POST_PROCESS_AGENT_ID,
@@ -46,11 +55,6 @@ const OVERLAY_ID = "voicePadAi" as const;
 
 interface VoicePadAiProps {
   instanceId: string;
-}
-
-function formatTime(ts: number): string {
-  const d = new Date(ts);
-  return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
 export default function VoicePadAi({ instanceId }: VoicePadAiProps) {
@@ -111,15 +115,6 @@ export default function VoicePadAi({ instanceId }: VoicePadAiProps) {
     setLiveTranscript(text);
   }, []);
 
-  const handleRemoveEntry = useCallback(
-    (entryId: string) => {
-      dispatch(
-        removeTranscriptEntry({ overlayId: OVERLAY_ID, instanceId, entryId }),
-      );
-    },
-    [dispatch, instanceId],
-  );
-
   const handleClearAll = useCallback(() => {
     dispatch(clearAllEntries({ overlayId: OVERLAY_ID, instanceId }));
   }, [dispatch, instanceId]);
@@ -134,7 +129,7 @@ export default function VoicePadAi({ instanceId }: VoicePadAiProps) {
   const handleProcess = useCallback(() => {
     const transcript = baseText.trim();
     if (!transcript) {
-      toast.info("Nothing to process — record or type a transcript first");
+      toast.info("Record or type a transcript first");
       return;
     }
     setEditedResponse(null);
@@ -176,13 +171,12 @@ export default function VoicePadAi({ instanceId }: VoicePadAiProps) {
     ai.phase === "launching" ||
     ai.phase === "pending" ||
     ai.phase === "connecting";
-
   const responseValue = editedResponse ?? ai.accumulatedText;
 
   const sidebar = (
-    <div className="flex h-full min-h-0 flex-col gap-3 p-3 text-xs">
-      <div className="flex flex-col gap-1.5">
-        <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+    <div className="flex h-full min-h-0 flex-col bg-background">
+      <div className="flex-1 min-h-0 overflow-y-auto px-3 pt-3 pb-2">
+        <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">
           Agent
         </div>
         <div className="flex flex-col gap-1">
@@ -190,10 +184,10 @@ export default function VoicePadAi({ instanceId }: VoicePadAiProps) {
             <label
               key={agent.id}
               className={cn(
-                "flex items-start gap-2 rounded-md border border-border/50 p-2 cursor-pointer transition-colors",
+                "flex items-start gap-2 rounded-md border p-2 cursor-pointer transition-colors text-xs",
                 agent.id === agentId
                   ? "bg-primary/10 border-primary/50"
-                  : "hover:bg-accent/40",
+                  : "border-border/50 hover:bg-accent/40",
               )}
             >
               <input
@@ -202,13 +196,13 @@ export default function VoicePadAi({ instanceId }: VoicePadAiProps) {
                 value={agent.id}
                 checked={agent.id === agentId}
                 onChange={() => setAgentId(agent.id)}
-                className="mt-0.5"
+                className="mt-0.5 shrink-0"
               />
-              <span className="flex flex-col gap-0.5">
+              <div className="flex min-w-0 flex-col gap-0.5">
                 <span className="text-[11px] font-medium leading-tight">
                   {agent.name}
                 </span>
-                <span className="text-[10px] text-muted-foreground/80 leading-tight">
+                <span className="text-[10px] text-muted-foreground/80 leading-tight break-all">
                   var: <code>{agent.transcriptVariableKey}</code>
                   {agent.contextSlotKey && (
                     <>
@@ -216,20 +210,18 @@ export default function VoicePadAi({ instanceId }: VoicePadAiProps) {
                     </>
                   )}
                 </span>
-              </span>
+              </div>
             </label>
           ))}
         </div>
-      </div>
 
-      <div className="flex min-h-0 flex-1 flex-col gap-1.5">
-        <div className="flex items-center justify-between">
+        <div className="mt-3 flex items-center justify-between">
           <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
             Context
           </span>
           {!selectedAgent.contextSlotKey && (
             <span className="text-[9px] text-muted-foreground/70">
-              agent ignores context
+              no slot — tool-accessible only
             </span>
           )}
         </div>
@@ -238,46 +230,155 @@ export default function VoicePadAi({ instanceId }: VoicePadAiProps) {
           onChange={(e) => setUserContext(e.target.value)}
           placeholder="Free-form context for the agent..."
           className={cn(
-            "min-h-[120px] flex-1 resize-none rounded-md border border-border/50 bg-background px-2 py-1.5 text-[11px]",
+            "mt-1 min-h-[120px] w-full resize-none rounded-md border border-border/50 bg-background px-2 py-1.5 text-[11px]",
             "focus:outline-none focus:ring-1 focus:ring-ring",
           )}
         />
       </div>
 
-      <button
-        type="button"
-        onClick={handleProcess}
-        disabled={ai.isBusy || !hasTranscript}
-        className={cn(
-          "inline-flex items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
-          ai.isBusy || !hasTranscript
-            ? "bg-muted text-muted-foreground cursor-not-allowed"
-            : "bg-primary text-primary-foreground hover:bg-primary/90",
-        )}
-      >
-        {ai.isBusy ? (
-          <>
-            <Loader2 className="h-3.5 w-3.5 animate-spin" /> Processing...
-          </>
-        ) : (
-          <>
-            <Sparkles className="h-3.5 w-3.5" /> Process
-          </>
-        )}
-      </button>
-
-      {ai.phase !== "idle" && (
+      <div className="shrink-0 border-t border-border/50 p-2 flex flex-col gap-1.5">
         <button
           type="button"
-          onClick={handleResetProcess}
-          className="inline-flex items-center justify-center gap-1.5 rounded-md border border-border/50 px-3 py-1 text-[11px] text-muted-foreground hover:bg-accent/40"
+          onClick={handleProcess}
+          disabled={ai.isBusy || !hasTranscript}
+          className={cn(
+            "inline-flex items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+            ai.isBusy || !hasTranscript
+              ? "bg-muted text-muted-foreground cursor-not-allowed"
+              : "bg-primary text-primary-foreground hover:bg-primary/90",
+          )}
         >
-          <RotateCcw className="h-3 w-3" /> Reset response
+          {ai.isBusy ? (
+            <>
+              <Loader2 className="h-3.5 w-3.5 animate-spin" /> Processing...
+            </>
+          ) : (
+            <>
+              <Sparkles className="h-3.5 w-3.5" /> Process
+            </>
+          )}
         </button>
-      )}
+        {ai.phase !== "idle" && (
+          <button
+            type="button"
+            onClick={handleResetProcess}
+            className="inline-flex items-center justify-center gap-1.5 rounded-md border border-border/50 px-3 py-1 text-[11px] text-muted-foreground hover:bg-accent/40"
+          >
+            <RotateCcw className="h-3 w-3" /> Reset response
+          </button>
+        )}
+        <div className="text-[10px] text-muted-foreground/70 text-center">
+          Phase: <span className="font-mono">{ai.phase}</span>
+        </div>
+      </div>
+    </div>
+  );
 
-      <div className="text-[10px] text-muted-foreground/70">
-        Phase: <span className="font-mono">{ai.phase}</span>
+  const transcriptPane = (
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="flex shrink-0 items-center justify-between px-3 py-1.5 border-b border-border/40">
+        <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+          Transcript{" "}
+          <span className="text-muted-foreground/60">({entries.length})</span>
+        </span>
+        {hasTranscript && (
+          <ActionFeedbackButton
+            icon={<Trash2 />}
+            tooltip="Clear transcript"
+            onClick={handleClearAll}
+            className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+          />
+        )}
+      </div>
+
+      {hasTranscript ? (
+        <textarea
+          value={transcriptDisplay}
+          onChange={(e) => handleDraftChange(e.target.value)}
+          placeholder="Transcribed text appears here..."
+          className={cn(
+            "flex-1 min-h-0 w-full resize-none border-0 bg-background px-3 py-2 text-xs leading-snug",
+            "focus:outline-none focus:ring-0",
+          )}
+        />
+      ) : (
+        <div className="flex min-h-0 flex-1 flex-col items-center justify-center p-4 text-center">
+          <button
+            type="button"
+            onClick={() => document.getElementById(micId)?.click()}
+            className="mb-3 flex items-center justify-center rounded-full bg-primary/10 p-4 transition-colors hover:bg-primary/20"
+            title="Start recording"
+          >
+            <Mic className="h-6 w-6 text-muted-foreground" />
+          </button>
+          <p className="text-[11px] text-muted-foreground">
+            Tap the mic, pick an agent, then press Process.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+
+  const responsePane = (
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="flex shrink-0 items-center justify-between px-3 py-1.5 border-b border-border/40">
+        <span className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+          <Sparkles className="h-3 w-3 text-primary/80" />
+          AI Response
+          <span className="font-mono text-[9px] text-muted-foreground/70">
+            ({ai.phase})
+          </span>
+        </span>
+        <div className="flex items-center gap-1">
+          {(isComplete || ai.accumulatedText.length > 0) && (
+            <ActionFeedbackButton
+              icon={<Copy />}
+              tooltip="Copy response"
+              onClick={handleCopyResponse}
+              className="text-muted-foreground"
+            />
+          )}
+          <ActionFeedbackButton
+            icon={<X />}
+            tooltip="Close response"
+            onClick={handleResetProcess}
+            className="text-muted-foreground"
+          />
+        </div>
+      </div>
+
+      <div className="flex min-h-0 flex-1 flex-col">
+        {isBusyEarly && ai.accumulatedText.length === 0 ? (
+          <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-2 text-muted-foreground">
+            <Loader2 className="h-5 w-5 animate-spin" />
+            <span className="text-[11px]">
+              Launching agent — waiting for stream...
+            </span>
+          </div>
+        ) : isError ? (
+          <div className="flex min-h-0 flex-1 items-center justify-center p-3 text-center text-[11px] text-destructive">
+            {ai.error ?? "Something went wrong."}
+          </div>
+        ) : isComplete ? (
+          <textarea
+            value={responseValue}
+            onChange={(e) => setEditedResponse(e.target.value)}
+            className={cn(
+              "flex-1 min-h-0 w-full resize-none border-0 bg-background px-3 py-2 text-xs leading-snug",
+              "focus:outline-none focus:ring-0",
+            )}
+          />
+        ) : (
+          <div
+            className={cn(
+              "flex-1 min-h-0 w-full overflow-y-auto bg-muted/10 px-3 py-2 text-xs leading-snug whitespace-pre-wrap",
+              ai.accumulatedText.length === 0 &&
+                "text-muted-foreground italic",
+            )}
+          >
+            {ai.accumulatedText || "Waiting for response..."}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -286,18 +387,18 @@ export default function VoicePadAi({ instanceId }: VoicePadAiProps) {
     <WindowPanel
       id={windowId}
       title="AI Voice Pad"
-      width={780}
-      height={600}
+      width={820}
+      height={620}
       position="top-right"
-      minWidth={560}
-      minHeight={380}
+      minWidth={600}
+      minHeight={420}
       bodyClassName="flex min-h-0 flex-1 flex-col overflow-hidden p-0"
       onClose={handleClose}
       urlSyncKey="voice-ai"
       urlSyncId={instanceId}
       sidebar={sidebar}
       sidebarDefaultSize={260}
-      sidebarMinSize={200}
+      sidebarMinSize={220}
       defaultSidebarOpen={true}
       actionsRight={
         <>
@@ -313,140 +414,18 @@ export default function VoicePadAi({ instanceId }: VoicePadAiProps) {
       }
     >
       <div className="flex min-h-0 flex-1 flex-col bg-background">
-        {/* Transcript pane (top) */}
-        <div
-          className={cn(
-            "flex min-h-0 flex-col",
-            showResponsePane ? "flex-1 basis-0" : "flex-1",
-          )}
-        >
-          <div className="flex items-center justify-between px-3 pt-2 pb-1">
-            <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-              Transcript
-            </span>
-            {hasTranscript && (
-              <ActionFeedbackButton
-                icon={<Trash2 />}
-                tooltip="Clear transcript"
-                onClick={handleClearAll}
-                className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-              />
-            )}
-          </div>
-
-          {hasTranscript ? (
-            <div className="flex min-h-0 flex-1 flex-col gap-2 px-3 pb-2">
-              <textarea
-                value={transcriptDisplay}
-                onChange={(e) => handleDraftChange(e.target.value)}
-                placeholder="Transcribed text appears here..."
-                className={cn(
-                  "min-h-0 w-full flex-1 resize-none rounded-md border border-border/40 bg-background px-2 py-1.5 text-xs leading-snug",
-                  "focus:outline-none focus:ring-1 focus:ring-ring",
-                )}
-              />
-              {entries.length > 0 && (
-                <div className="max-h-[90px] shrink-0 overflow-y-auto rounded-md border border-border/40 px-2 py-1">
-                  <div className="text-[10px] font-medium text-muted-foreground/70 mb-1">
-                    Session entries
-                  </div>
-                  {entries.map((entry) => (
-                    <div
-                      key={entry.id}
-                      className="group flex items-start gap-1 py-0.5 text-[11px] leading-tight"
-                    >
-                      <span className="text-muted-foreground/50 shrink-0 mt-0.5 tabular-nums">
-                        {formatTime(entry.timestamp)}
-                      </span>
-                      <span className="flex-1 truncate text-foreground/80">
-                        {entry.text}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveEntry(entry.id)}
-                        className="p-0.5 text-muted-foreground opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100"
-                        aria-label="Remove entry"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="flex min-h-0 flex-1 flex-col items-center justify-center p-4 text-center">
-              <button
-                type="button"
-                onClick={() => document.getElementById(micId)?.click()}
-                className="mb-3 flex items-center justify-center rounded-full bg-primary/10 p-4 transition-colors hover:bg-primary/20"
-                title="Start recording"
-              >
-                <Mic className="h-6 w-6 text-muted-foreground" />
-              </button>
-              <p className="text-[11px] text-muted-foreground">
-                Tap the mic, then pick an agent and press Process.
-              </p>
-            </div>
-          )}
-        </div>
-
-        {showResponsePane && (
-          <>
-            <div className="h-px bg-border/60" />
-            <div className="flex min-h-0 flex-1 basis-0 flex-col">
-              <div className="flex items-center justify-between px-3 pt-2 pb-1">
-                <span className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                  <Sparkles className="h-3 w-3 text-primary/80" />
-                  AI Response
-                  <span className="font-mono text-[9px] text-muted-foreground/70">
-                    ({ai.phase})
-                  </span>
-                </span>
-                {(isComplete || ai.accumulatedText.length > 0) && (
-                  <ActionFeedbackButton
-                    icon={<Copy />}
-                    tooltip="Copy response"
-                    onClick={handleCopyResponse}
-                    className="text-muted-foreground"
-                  />
-                )}
-              </div>
-
-              <div className="flex min-h-0 flex-1 flex-col px-3 pb-2">
-                {isBusyEarly && ai.accumulatedText.length === 0 ? (
-                  <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-2 text-muted-foreground">
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                    <span className="text-[11px]">
-                      Launching agent — waiting for stream...
-                    </span>
-                  </div>
-                ) : isError ? (
-                  <div className="flex min-h-0 flex-1 items-center justify-center text-[11px] text-destructive">
-                    {ai.error ?? "Something went wrong."}
-                  </div>
-                ) : isComplete ? (
-                  <textarea
-                    value={responseValue}
-                    onChange={(e) => setEditedResponse(e.target.value)}
-                    className={cn(
-                      "min-h-0 w-full flex-1 resize-none rounded-md border border-border/40 bg-background px-2 py-1.5 text-xs leading-snug",
-                      "focus:outline-none focus:ring-1 focus:ring-ring",
-                    )}
-                  />
-                ) : (
-                  <div
-                    className={cn(
-                      "min-h-0 w-full flex-1 overflow-y-auto rounded-md border border-border/40 bg-muted/20 px-2 py-1.5 text-xs leading-snug whitespace-pre-wrap",
-                      ai.accumulatedText.length === 0 && "text-muted-foreground italic",
-                    )}
-                  >
-                    {ai.accumulatedText || "Waiting for response..."}
-                  </div>
-                )}
-              </div>
-            </div>
-          </>
+        {showResponsePane ? (
+          <ResizablePanelGroup orientation="vertical" className="flex-1 min-h-0">
+            <ResizablePanel defaultSize={50} minSize={20}>
+              {transcriptPane}
+            </ResizablePanel>
+            <ResizableHandle />
+            <ResizablePanel defaultSize={50} minSize={20}>
+              {responsePane}
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        ) : (
+          <div className="flex-1 min-h-0">{transcriptPane}</div>
         )}
       </div>
     </WindowPanel>
