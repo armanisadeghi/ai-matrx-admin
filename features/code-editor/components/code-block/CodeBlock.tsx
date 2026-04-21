@@ -8,7 +8,6 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import StickyButtons from "./StickyButtons";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { HTMLPageService } from "@/features/html-pages/services/htmlPageService";
-import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import { Globe, Loader2 } from "lucide-react";
 import { useCanvas } from "@/features/canvas/hooks/useCanvas";
