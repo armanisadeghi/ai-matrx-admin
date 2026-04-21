@@ -1,9 +1,21 @@
 # Phase 1 — Agent Shortcuts Foundation
 
-**Status:** not-started
+**Status:** in-progress
 **Owner:** _unassigned_
 **Prerequisites:** Phase 0 (governance docs exist)
 **Unblocks:** Phases 2, 3, 11, 12, 13
+
+## Progress
+
+- [x] **1.1** — Scope columns on `shortcut_categories` + scope helper functions. File: `migrations/scope_columns_on_shortcut_categories.sql`.
+- [x] **1.2** — Scope columns on `content_blocks` (existing table extended, not a new table — see `DECISIONS.md`). File: `migrations/scope_columns_on_content_blocks.sql`.
+- [x] **1.3** — `agent_context_menu_view` + scope-aware RLS on `agx_shortcut`. Files: `migrations/create_agent_context_menu_view.sql`, `migrations/scope_rls_on_agx_shortcut.sql`.
+- [x] **1.4** — RLS smoke tests (pre-flight checks for helpers, columns, policies, view). File: `migrations/tests/agent_shortcuts_rls_tests.sql`. Full per-role tests pending test fixtures.
+- [ ] **1.5** — RTK extensions for categories + content blocks + unified-menu thunk
+- [ ] **1.6** — REST API routes
+- [ ] **1.7** — `features/agent-shortcuts/` shared CRUD feature directory
+- [ ] **1.8** — Unit tests for `scope-mapping.ts`
+- [ ] **1.9** — Regenerate `types/database.types.ts` + doc sweep
 
 ## Goal
 
@@ -200,8 +212,21 @@ Before closing this phase:
 
 **Task 1.1** (schema migration for `shortcut_categories`) is the smallest independent unit and unblocks everything else. One pull request, one migration file, one regenerated types file, one RLS test. Open it first; get it reviewed; then pick up 1.2.
 
+## Run order (for whoever applies these migrations)
+
+```
+1. migrations/scope_columns_on_shortcut_categories.sql   (creates helpers + cols)
+2. migrations/scope_columns_on_content_blocks.sql        (uses helpers)
+3. migrations/scope_rls_on_agx_shortcut.sql              (uses helpers)
+4. migrations/create_agent_context_menu_view.sql         (uses tables from 1–3)
+5. migrations/tests/agent_shortcuts_rls_tests.sql        (verification — idempotent, rolls back)
+```
+
+After applying, run `npm run types` to regenerate `types/database.types.ts`.
+
 ## Change log
 
 | Date | Who | Change |
 |---|---|---|
 | 2026-04-20 | initial plan | Phase created |
+| 2026-04-20 | main agent | Tasks 1.1–1.4 shipped: 4 migrations + RLS pre-flight test. Helpers `is_platform_admin`, `is_org_admin`, `is_org_member` added. Content-blocks decision landed in DECISIONS.md (extend existing table, not parallel). `agx_shortcut` RLS rewritten scope-aware — required because the view relies on row-level visibility at the source tables. |

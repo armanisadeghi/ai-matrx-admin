@@ -43,3 +43,15 @@ Append one entry per decision. Never edit past entries; supersede with a new ent
 **Decision:** The `features/applet/` parent-app-with-children pattern (and its shared-context concept) is captured as an **agent-native pattern** built on `context-slots-management` — not by moving applet code over.
 **Rationale:** The applets system predates real cross-app context sharing; now that context slots exist, the clean expression of that vision is an agent pattern, not a carried-over feature.
 **Consequences:** `features/applet/` eventually deprecates (after Phase 10). `app/(authenticated)/apps/custom/*` routes redirect or sunset.
+
+### 2026-04-20 — Content blocks: extend existing table, do not create `agent_content_blocks`
+**Phase:** 1 (task 1.2)
+**Decision:** The `public.content_blocks` table already exists and is referenced by `context_menu_unified_view`. Instead of creating a parallel `agent_content_blocks` table, extend the existing table with scope columns (`user_id`, `organization_id`, `project_id`, `task_id`) and widen its RLS.
+**Rationale:** Content blocks are insertable text templates — inherently neither "prompt" nor "agent". Duplicating the table would fork data and force a later merge. The existing name is system-neutral.
+**Consequences:** Phase 1 task 1.2 is a column addition + RLS expansion, not a new-table migration. Phase 19 does not drop `content_blocks`. Phase 2 simplifies — no table creation, just UI + RTK work.
+
+### 2026-04-20 — Shortcut category scope model
+**Phase:** 1
+**Decision:** Categories scope via nullable `user_id` / `organization_id` / `project_id` / `task_id` columns. A row with all nulls is "global" and writable only by admins. Scope precedence at read time: user > org > global (enforced at the view/hook layer, not in RLS).
+**Rationale:** Matches the pattern `agx_shortcut` already uses. Keeps RLS simple (visibility), and lets the view/hook express precedence and shadowing (user row with same label as global row wins in UI).
+**Consequences:** The agent-context-menu view returns all visible rows; the RTK consumer handles collapsing duplicates by precedence. Document precedence in the view's header comment.
