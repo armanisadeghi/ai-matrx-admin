@@ -18,7 +18,11 @@ import {
   setAgentCacheLoading,
   setAgentCacheSuccess,
   setAgentCacheError,
+  setGlobalListLoading,
+  setGlobalListSuccess,
+  setGlobalListError,
 } from "./conversation-list.slice";
+import { CONVERSATION_LIST_PAGE_SIZE } from "./conversation-list.types";
 
 type GetAgentConversationsReturns =
   Database["public"]["Functions"]["get_agent_conversations"]["Returns"];
@@ -169,3 +173,72 @@ export function fetchAgentConversations(
     ).unwrap();
   };
 }
+
+// ── Global list thunk (Phase 7) ──────────────────────────────────────────────
+
+export interface FetchGlobalConversationsArgs {
+  limit?: number;
+  offset?: number;
+  replace?: boolean;
+}
+
+export interface FetchGlobalConversationsResult {
+  items: ConversationListItem[];
+  hasMore: boolean;
+}
+
+/**
+ * Fetches the signed-in user's most recent conversations across all agents.
+ * Reads directly from `cx_conversation` — the table is RLS-filtered to the
+ * requesting user, so no agent scoping is required. Used by the `(a)/chat`
+ * global history sidebar.
+ */
+export const fetchGlobalConversations = createAsyncThunk<
+  FetchGlobalConversationsResult,
+  FetchGlobalConversationsArgs | void,
+  { rejectValue: string }
+>(
+  "conversationList/fetchGlobalConversations",
+  async (args, { dispatch, rejectWithValue }) => {
+    const limit = args?.limit ?? CONVERSATION_LIST_PAGE_SIZE;
+    const offset = args?.offset ?? 0;
+    const replace = args?.replace ?? true;
+
+    dispatch(setGlobalListLoading());
+
+    const { data, error } = await supabase
+      .from("cx_conversation")
+      .select(
+        "id, title, description, status, message_count, initial_agent_id, last_model_id, source_app, source_feature, created_at, updated_at",
+      )
+      .is("deleted_at", null)
+      .eq("is_ephemeral", false)
+      .order("updated_at", { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    if (error) {
+      dispatch(setGlobalListError(error.message));
+      return rejectWithValue(error.message);
+    }
+
+    const rows = data ?? [];
+    const items: ConversationListItem[] = rows.map((row) => ({
+      conversationId: row.id as string,
+      title: (row.title ?? null) as string | null,
+      description: (row.description ?? null) as string | null,
+      updatedAt: row.updated_at as string,
+      createdAt: row.created_at as string,
+      status: row.status as string,
+      messageCount: (row.message_count ?? 0) as number,
+      agentId: (row.initial_agent_id ?? null) as string | null,
+      lastModelId: (row.last_model_id ?? null) as string | null,
+      sourceApp: (row.source_app ?? undefined) as string | undefined,
+      sourceFeature: (row.source_feature ?? undefined) as string | undefined,
+    }));
+
+    const hasMore = items.length === limit;
+    dispatch(setGlobalListSuccess({ items, hasMore, replace }));
+
+    return { items, hasMore };
+  },
+);
