@@ -1644,7 +1644,7 @@ export const OverlayController: React.FC = () => {
             initialCode={data?.initialCode ?? ""}
             language={data?.language ?? "plaintext"}
             files={data?.files ?? undefined}
-            initialActiveFileId={data?.initialActiveFileId ?? undefined}
+            initialActiveFilePath={data?.initialActiveFilePath ?? undefined}
             filePath={data?.filePath ?? undefined}
             selection={data?.selection ?? undefined}
             diagnostics={data?.diagnostics ?? undefined}

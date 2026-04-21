@@ -12,7 +12,7 @@
 import React from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { SmartCodeEditor } from "./SmartCodeEditor";
-import type { CodeEditorAgentConfig, CodeEditorFile } from "../types";
+import type { CodeEditorAgentConfig, CodeFile } from "../types";
 
 export interface SmartCodeEditorModalProps {
   open: boolean;
@@ -25,8 +25,8 @@ export interface SmartCodeEditorModalProps {
   language?: string;
   onCodeChange?: (code: string, fileId: string | null) => void;
 
-  files?: CodeEditorFile[];
-  initialActiveFileId?: string;
+  files?: CodeFile[];
+  initialActiveFilePath?: string;
 
   filePath?: string;
   selection?: string;
@@ -49,7 +49,7 @@ export function SmartCodeEditorModal({
   language = "plaintext",
   onCodeChange,
   files,
-  initialActiveFileId,
+  initialActiveFilePath,
   filePath,
   selection,
   diagnostics,
@@ -72,7 +72,7 @@ export function SmartCodeEditorModal({
           language={language}
           onCodeChange={onCodeChange}
           files={files}
-          initialActiveFileId={initialActiveFileId}
+          initialActiveFilePath={initialActiveFilePath}
           filePath={filePath}
           selection={selection}
           diagnostics={diagnostics}

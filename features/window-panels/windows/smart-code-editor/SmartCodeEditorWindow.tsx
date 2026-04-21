@@ -20,7 +20,7 @@ import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { SmartCodeEditor } from "@/features/code-editor/agent-code-editor/components/SmartCodeEditor";
 import type {
   CodeEditorAgentConfig,
-  CodeEditorFile,
+  CodeFile,
 } from "@/features/code-editor/agent-code-editor/types";
 import { useSmartCodeEditorEmitter } from "./useSmartCodeEditorEmitter";
 
@@ -38,8 +38,8 @@ export interface SmartCodeEditorWindowProps {
   language?: string;
 
   /** Multi-file mode — when provided, shows the Files column. */
-  files?: CodeEditorFile[];
-  initialActiveFileId?: string;
+  files?: CodeFile[];
+  initialActiveFilePath?: string;
 
   // Optional IDE context
   filePath?: string;
@@ -64,7 +64,7 @@ export function SmartCodeEditorWindow({
   initialCode = "",
   language = "plaintext",
   files,
-  initialActiveFileId,
+  initialActiveFilePath,
   filePath,
   selection,
   diagnostics,
@@ -128,7 +128,7 @@ export function SmartCodeEditorWindow({
         language={language}
         onCodeChange={handleCodeChange}
         files={files}
-        initialActiveFileId={initialActiveFileId}
+        initialActiveFilePath={initialActiveFilePath}
         filePath={filePath}
         selection={selection}
         diagnostics={diagnostics}

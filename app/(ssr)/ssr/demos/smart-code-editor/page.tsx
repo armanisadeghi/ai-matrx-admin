@@ -16,7 +16,7 @@ import {
 import { useOpenSmartCodeEditorWindow } from "@/features/window-panels/windows/smart-code-editor";
 import type {
   CodeEditorAgentConfig,
-  CodeEditorFile,
+  CodeFile,
 } from "@/features/code-editor/agent-code-editor/types";
 import { TYPESCRIPT_SNIPPET, ADDITIONAL_CONTEXT_SNIPPET } from "./snippets";
 
@@ -70,20 +70,18 @@ const DEFAULT_AGENT_SKILLS =
   "file_read, file_write, shell_exec, code_search, web_search";
 
 // Multi-file demo — a minimal file set exercising the Files column.
-const DEFAULT_FILES: CodeEditorFile[] = [
+const DEFAULT_FILES: CodeFile[] = [
   {
-    id: "right-panel",
-    title: "AgentBuilderRightPanel.tsx",
+    name: "AgentBuilderRightPanel.tsx",
+    path: "features/agents/components/builder/AgentBuilderRightPanel.tsx",
     language: "tsx",
-    value: TYPESCRIPT_SNIPPET,
-    description: "Active file",
+    content: TYPESCRIPT_SNIPPET,
   },
   {
-    id: "parent",
-    title: "AgentBuilderDesktop.tsx",
+    name: "AgentBuilderDesktop.tsx",
+    path: "features/agents/components/builder/AgentBuilderDesktop.tsx",
     language: "tsx",
-    value: ADDITIONAL_CONTEXT_SNIPPET,
-    description: "Parent layout",
+    content: ADDITIONAL_CONTEXT_SNIPPET,
   },
 ];
 
@@ -132,7 +130,7 @@ export default function SmartCodeEditorDemoPage() {
     open({
       ...commonOpts,
       files: DEFAULT_FILES,
-      initialActiveFileId: DEFAULT_FILES[0].id,
+      initialActiveFilePath: DEFAULT_FILES[0].path,
       title: "Smart Code Editor — multi-file",
     });
   };

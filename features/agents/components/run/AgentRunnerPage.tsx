@@ -105,14 +105,6 @@ export function AgentRunnerPage({ agentId }: AgentRunnerPageProps) {
   // loads the full message history, and switches focus.
   const lastSyncedUrl = useRef<string | null>(null);
   useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.log(
-      "[AgentRunnerPage] URL-sync effect fired: urlCid=%s isInitializing=%s currentCid=%s lastSynced=%s",
-      conversationIdFromUrl ?? "(none)",
-      isInitializing,
-      conversationId ?? "(none)",
-      lastSyncedUrl.current ?? "(none)",
-    );
     if (!conversationIdFromUrl || isInitializing) return;
     if (conversationIdFromUrl === lastSyncedUrl.current) return;
     if (conversationIdFromUrl === conversationId) return;
@@ -123,20 +115,7 @@ export function AgentRunnerPage({ agentId }: AgentRunnerPageProps) {
         !!store.getState().conversations?.byConversationId[
           conversationIdFromUrl
         ];
-      // eslint-disable-next-line no-console
-      console.log(
-        "[AgentRunnerPage] syncing %s (instance exists in conversations slice: %s)",
-        conversationIdFromUrl,
-        exists,
-      );
-
       if (!exists) {
-        // eslint-disable-next-line no-console
-        console.log(
-          "[AgentRunnerPage] createManualInstance agentId=%s conversationId=%s apiEndpointMode=agent",
-          agentId,
-          conversationIdFromUrl,
-        );
         try {
           await dispatch(
             createManualInstance({
@@ -151,13 +130,6 @@ export function AgentRunnerPage({ agentId }: AgentRunnerPageProps) {
           return;
         }
       }
-
-      // eslint-disable-next-line no-console
-      console.log(
-        "[AgentRunnerPage] dispatching loadConversation conversationId=%s surfaceKey=%s",
-        conversationIdFromUrl,
-        surfaceKey,
-      );
       try {
         await dispatch(
           loadConversation({
@@ -165,11 +137,6 @@ export function AgentRunnerPage({ agentId }: AgentRunnerPageProps) {
             surfaceKey,
           }),
         ).unwrap();
-        // eslint-disable-next-line no-console
-        console.log(
-          "[AgentRunnerPage] loadConversation resolved for %s",
-          conversationIdFromUrl,
-        );
       } catch (err) {
         // eslint-disable-next-line no-console
         console.error("[AgentRunnerPage] loadConversation failed", err);
@@ -184,7 +151,9 @@ export function AgentRunnerPage({ agentId }: AgentRunnerPageProps) {
         <div className="max-w-md w-full rounded-lg border border-destructive/40 bg-destructive/5 p-5 flex flex-col gap-3">
           <div className="flex items-center gap-2 text-destructive">
             <AlertTriangle className="w-5 h-5" />
-            <span className="font-medium">Couldn&apos;t reach the agent service</span>
+            <span className="font-medium">
+              Couldn&apos;t reach the agent service
+            </span>
           </div>
           <p className="text-sm text-muted-foreground leading-snug">
             {initError}

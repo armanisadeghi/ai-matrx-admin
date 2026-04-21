@@ -30,7 +30,6 @@ import TuiEditorContent, {
 import { MatrxSplit } from "@/components/matrx/MatrxSplit";
 import SuspenseLoader from "@/components/loaders/SuspenseLoader";
 import { LazyEntityGate } from "@/providers/packs/LazyEntityGate";
-import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {

@@ -57,6 +57,14 @@ export interface ConsumePendingResult {
 interface UseCodeEditorWidgetHandleArgs {
   /** Current editor code — used as the base for the FIRST widget edit. */
   code: string;
+  /**
+   * Legacy "live mode" hook: when provided, widget edits apply immediately
+   * to this callback and the internal buffer is NOT used. Use this for
+   * surfaces without a review stage (e.g. the multi-file window). When
+   * omitted, edits buffer and the orchestrator consumes them at stream-end
+   * via `consumePending`.
+   */
+  onCodeChange?: (next: string) => void;
   /** Optional lifecycle hook forwarded to the underlying handle. */
   onComplete?: (result: WidgetCompletionResult) => void;
   /** Optional lifecycle hook forwarded to the underlying handle. */
@@ -75,18 +83,21 @@ export interface UseCodeEditorWidgetHandleReturn {
 
 export function useCodeEditorWidgetHandle({
   code,
+  onCodeChange,
   onComplete,
   onError,
 }: UseCodeEditorWidgetHandleArgs): UseCodeEditorWidgetHandleReturn {
   const codeRef = useRef(code);
   codeRef.current = code;
 
+  const onCodeChangeRef = useRef(onCodeChange);
+  onCodeChangeRef.current = onCodeChange;
   const onCompleteRef = useRef(onComplete);
   onCompleteRef.current = onComplete;
   const onErrorRef = useRef(onError);
   onErrorRef.current = onError;
 
-  // Buffer state.
+  // Buffer state (used only when onCodeChange is NOT provided).
   const pendingRef = useRef<PendingCodeEdit[]>([]);
   const stagedCodeRef = useRef<string | null>(null);
   const seqRef = useRef(0);
@@ -97,8 +108,8 @@ export function useCodeEditorWidgetHandle({
   const nextId = () => `w${++seqRef.current}`;
 
   // Apply one edit against the current staged code, writing the new staged
-  // code on success and throwing (for the agent's tool-result feedback) on
-  // failure.
+  // code on success and throwing on failure. In live mode (onCodeChange
+  // provided) we forward the result immediately instead of buffering.
   const stageEdit = (edit: PendingCodeEdit): void => {
     const base = baseForNextEdit();
     let next: string;
@@ -124,6 +135,11 @@ export function useCodeEditorWidgetHandle({
         next = result.code;
         break;
       }
+    }
+    if (onCodeChangeRef.current) {
+      // Live mode — skip the buffer entirely.
+      onCodeChangeRef.current(next);
+      return;
     }
     pendingRef.current.push(edit);
     stagedCodeRef.current = next;

@@ -226,9 +226,10 @@ export function MultiFileSmartCodeEditorWindow({
   );
 
   // ── Widget handle (agent tool-call surface) ──────────────────────────────
-  // The handle operates on the ACTIVE file. The hook stores its own refs,
-  // so passing changing code/onCodeChange each render is safe.
-  const widgetHandleId = useCodeEditorWidgetHandle({
+  // Legacy LIVE mode — this window doesn't have a review stage, so widget
+  // edits are applied immediately via `onCodeChange`. (The SmartCodeEditor
+  // surface, in contrast, runs in buffered mode and flushes at stream-end.)
+  const { widgetHandleId } = useCodeEditorWidgetHandle({
     code: currentFile?.content ?? "",
     onCodeChange: handleAgentCodeChange,
     onComplete: () => {

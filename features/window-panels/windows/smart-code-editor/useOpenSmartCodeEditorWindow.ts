@@ -31,7 +31,7 @@ import {
 } from "./callbacks";
 import type {
   CodeEditorAgentConfig,
-  CodeEditorFile,
+  CodeFile,
 } from "@/features/code-editor/agent-code-editor/types";
 
 export interface OpenSmartCodeEditorWindowOptions
@@ -52,8 +52,8 @@ export interface OpenSmartCodeEditorWindowOptions
   language?: string;
 
   // Multi-file
-  files?: CodeEditorFile[];
-  initialActiveFileId?: string;
+  files?: CodeFile[];
+  initialActiveFilePath?: string;
 
   // Optional IDE context
   filePath?: string;
@@ -123,8 +123,8 @@ export function useOpenSmartCodeEditorWindow() {
       if (options.defaultPickerAgentId !== undefined)
         data.defaultPickerAgentId = options.defaultPickerAgentId;
       if (options.files !== undefined) data.files = options.files;
-      if (options.initialActiveFileId !== undefined)
-        data.initialActiveFileId = options.initialActiveFileId;
+      if (options.initialActiveFilePath !== undefined)
+        data.initialActiveFilePath = options.initialActiveFilePath;
       if (options.filePath !== undefined) data.filePath = options.filePath;
       if (options.selection !== undefined) data.selection = options.selection;
       if (options.diagnostics !== undefined)

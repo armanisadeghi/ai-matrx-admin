@@ -4,6 +4,12 @@
 
 import type { ParseResult } from "./utils/parseCodeEdits";
 
+// Re-export the canonical multi-file shape used across the code-editor
+// feature. This keeps us on the SAME data model the existing CodeSidebar +
+// CodeEditorTabBar + useCodeEditorWindowState already speak — no adapter
+// layer, no duplicated icons / language mappings / tab logic.
+export type { CodeFile } from "@/features/code-editor/multi-file-core/types";
+
 /**
  * Minimal config the editor needs for each agent in the picker.
  *
@@ -16,19 +22,6 @@ export interface CodeEditorAgentConfig {
   id: string;
   name: string;
   codeVariableKey: string;
-}
-
-/**
- * A single file in multi-file mode.
- */
-export interface CodeEditorFile {
-  id: string;
-  title: string;
-  value: string;
-  /** Optional — defaults to the outer editor's language when omitted. */
-  language?: string;
-  /** Optional short note shown in the files list under the title. */
-  description?: string;
 }
 
 /**

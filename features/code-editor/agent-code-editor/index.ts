@@ -26,6 +26,8 @@ export { useCodeEditorWidgetHandle } from "./hooks/useCodeEditorWidgetHandle";
 export type {
   CodeEditorState,
   CodeContextInput,
+  CodeEditorAgentConfig,
+  CodeFile,
   UseSmartCodeEditorReturn,
 } from "./types";
 

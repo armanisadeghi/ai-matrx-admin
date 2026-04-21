@@ -11,21 +11,21 @@
  *   │          │  SmartAgentInput)│              │         │
  *   └──────────┴──────────────────┴──────────────┴─────────┘
  *
- * Owns:
- *   - The widget handle (registered ONCE per editor mount; reused across
- *     all conversations launched from this editor).
- *   - The active conversation id (what's being displayed in col 2+3).
- *   - The "picker agent" (what [+] creates for in col 1).
- *   - The live code (owned locally; caller gets updates via onCodeChange).
- *   - The multi-file active file id (when `files` is provided).
- *   - Context-slot sync: every render, dispatches setContextEntries with
- *     the current IDE state so the agent can `ctx_get`.
- *   - Variable sync: every render while there's an active conversation,
- *     dispatches setUserVariableValues to map the code into that agent's
- *     configured variable key. (First-turn only matters; after that the
- *     variable system is inert and context takes over.)
+ * File state is owned by the shared `useCodeEditorWindowState` hook — same
+ * one `CodeEditorWindow` and `MultiFileSmartCodeEditorWindow` use. That
+ * means we inherit the proven tab + file-content + toolbar state machine
+ * for free, and the UI is visually identical to those surfaces.
  *
- * The diff is rendered IN-PLACE in column 3 during review — NOT a modal.
+ * Agent state:
+ *   - Widget handle registered ONCE per editor mount (reused across every
+ *     conversation launched from this editor).
+ *   - Widget tool calls BUFFER — they don't mutate `code` live. At stream-
+ *     end `useSmartCodeEditor` flushes the buffer and transitions the UI
+ *     to the full 4-tab `ReviewStage`.
+ *   - IDE context + other-file context slots dispatch into the active
+ *     conversation's `instanceContext` on every relevant change.
+ *   - First-turn variable is seeded from the active file's code per agent
+ *     (`codeVariableKey`).
  */
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
@@ -34,13 +34,15 @@ import { useAgentLauncher } from "@/features/agents/hooks/useAgentLauncher";
 import { setUserVariableValues } from "@/features/agents/redux/execution-system/instance-variable-values/instance-variable-values.slice";
 import { createManualInstance } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
 import { loadConversation } from "@/features/agents/redux/execution-system/thunks/load-conversation.thunk";
-import { selectInstance } from "@/features/agents/redux/execution-system/conversations/conversations.selectors";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { pct } from "@/components/matrx/resizable/pct";
+import { useCodeEditorWindowState } from "@/features/window-panels/windows/code/useCodeEditorWindowState";
+import type { CodeFile } from "@/features/code-editor/multi-file-core/types";
+
 import { useCodeEditorWidgetHandle } from "../hooks/useCodeEditorWidgetHandle";
 import { useIdeContextSync } from "../hooks/useIdeContextSync";
 import { useSmartCodeEditor } from "../hooks/useSmartCodeEditor";
@@ -50,22 +52,23 @@ import { CodeOrDiffColumn } from "./parts/CodeOrDiffColumn";
 import { FilesPanel } from "./parts/FilesPanel";
 import { TerminalPlaceholder } from "./parts/TerminalPlaceholder";
 import { SMART_CODE_EDITOR_SURFACE_KEY } from "../constants";
-import type { CodeEditorAgentConfig, CodeEditorFile } from "../types";
+import type { CodeEditorAgentConfig } from "../types";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
+const SINGLE_FILE_PATH = "__single_file__";
+
 /**
- * Build a stable, safe key for another file's context slot. The agent
- * retrieves via `ctx_get("file_<slug>")`. Slugs keep only alphanumerics +
- * underscore; collisions fall back to the file id.
+ * Build a stable, Claude-friendly context key for another file. The agent
+ * retrieves via `ctx_get("file_<slug>")`.
  */
-function fileContextKey(fileId: string, fileTitle: string): string {
-  const rawSlug = fileTitle
+function fileContextKey(filePath: string, fileName: string): string {
+  const rawSlug = fileName
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "_")
     .replace(/^_+|_+$/g, "");
   const slug =
-    rawSlug.length > 0 ? rawSlug : fileId.replace(/[^a-z0-9]/gi, "_");
+    rawSlug.length > 0 ? rawSlug : filePath.replace(/[^a-z0-9]/gi, "_");
   return `file_${slug}`;
 }
 
@@ -77,17 +80,17 @@ export interface SmartCodeEditorProps {
   /** Initial picker-selected agent id. Defaults to `agents[0]`. */
   defaultPickerAgentId?: string;
 
-  /** Single-file content (ignored in multi-file mode). */
+  /** Single-file content (ignored when `files` is provided). */
   initialCode?: string;
-  /** Language identifier. */
+  /** Language identifier (single-file mode, or fallback when a file omits one). */
   language: string;
-  /** Fires every time the active file's code changes (local edits + AI mutations). */
-  onCodeChange?: (code: string, fileId: string | null) => void;
+  /** Fires every time the active file's code changes. */
+  onCodeChange?: (code: string, filePath: string | null) => void;
 
   /** Multi-file mode — when provided, activates the Files column. */
-  files?: CodeEditorFile[];
-  /** Which file is active on mount (default: first file). */
-  initialActiveFileId?: string;
+  files?: CodeFile[];
+  /** Which file is active on mount (default: files[0].path). */
+  initialActiveFilePath?: string;
 
   // ── Optional IDE context (fed into vsc_* slots) ────────────────────────────
   filePath?: string;
@@ -99,7 +102,7 @@ export interface SmartCodeEditorProps {
   gitStatus?: string;
   agentSkills?: string;
 
-  /** Optional title shown at the top of the editor. */
+  /** Ignored — the window/modal shell already renders the title. Kept for API compat. */
   title?: string;
   className?: string;
 }
@@ -113,7 +116,7 @@ export function SmartCodeEditor({
   language,
   onCodeChange,
   files,
-  initialActiveFileId,
+  initialActiveFilePath,
   filePath,
   selection,
   diagnostics,
@@ -125,95 +128,111 @@ export function SmartCodeEditor({
   title,
   className,
 }: SmartCodeEditorProps) {
+  void title; // intentionally unused — window shell renders the title.
+
   const dispatch = useAppDispatch();
+  const store = useAppStore();
   const { launchAgent } = useAgentLauncher();
 
-  // ── Picker state (which agent the [+] creates for) ────────────────────────
+  // ── Picker state ──────────────────────────────────────────────────────────
   const [pickerAgentId, setPickerAgentId] = useState<string>(
     defaultPickerAgentId ?? agents[0]?.id ?? "",
   );
 
-  // ── Active conversation ────────────────────────────────────────────────────
+  // ── Active conversation ───────────────────────────────────────────────────
   const [activeConversationId, setActiveConversationId] = useState<
     string | null
   >(null);
   const [activeAgentId, setActiveAgentId] = useState<string | null>(null);
 
-  // Lookup the active agent's config (for variable-key mapping).
   const activeAgent = useMemo(
     () => agents.find((a) => a.id === activeAgentId) ?? null,
     [agents, activeAgentId],
   );
 
-  // ── Multi-file state ──────────────────────────────────────────────────────
+  // ── File state (shared CodeEditorWindow hook) ─────────────────────────────
   const isMultiFile = (files?.length ?? 0) > 0;
-  const [activeFileId, setActiveFileId] = useState<string | null>(
-    initialActiveFileId ?? files?.[0]?.id ?? null,
-  );
 
-  // Keep a local copy of multi-file contents so edits are preserved as the
-  // user swaps files. For single-file mode, `code` is the source of truth.
-  const [fileContents, setFileContents] = useState<Record<string, string>>(
-    () => {
-      if (!files) return {};
-      const out: Record<string, string> = {};
-      for (const f of files) out[f.id] = f.value;
-      return out;
+  // In single-file mode, synthesize a one-item CodeFile list so the hook
+  // has something to manage. The tab bar still shows one tab (minimal UI).
+  const seedFiles: CodeFile[] = useMemo(() => {
+    if (files && files.length > 0) return files;
+    return [
+      {
+        name: "code",
+        path: SINGLE_FILE_PATH,
+        language,
+        content: initialCode,
+      },
+    ];
+    // Intentional: we don't re-seed on `initialCode` changes — after first
+    // mount the hook owns content.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [files, language]);
+
+  const editorState = useCodeEditorWindowState({
+    initialFiles: seedFiles,
+    initialActiveFile:
+      initialActiveFilePath ?? seedFiles[0]?.path ?? null,
+  });
+
+  const {
+    files: currentFiles,
+    currentFile,
+    openTabs,
+    activeTab,
+    openFile,
+    closeTab,
+    selectTab,
+    isEditing,
+    setIsEditing,
+    showWrapLines,
+    setShowWrapLines,
+    minimapEnabled,
+    setMinimapEnabled,
+    formatTrigger,
+    isCopied,
+    handleContentChange,
+    handleCopy,
+    handleFormat,
+    getEditorPath,
+    mapLanguageForMonaco,
+    editorWrapperRef,
+    editorHeight,
+  } = editorState;
+
+  const code = currentFile?.content ?? "";
+  const activeLanguage = currentFile?.language ?? language;
+
+  // Intercept Monaco edits so we can notify the external `onCodeChange`
+  // alongside the hook's internal state update.
+  const wrappedHandleContentChange = useCallback(
+    (value: string | undefined) => {
+      handleContentChange(value);
+      if (value !== undefined) onCodeChange?.(value, activeTab);
     },
+    [handleContentChange, onCodeChange, activeTab],
   );
-  // Sync from props if the `files` identity changes (new file set).
-  useEffect(() => {
-    if (!files) return;
-    setFileContents((prev) => {
-      const next = { ...prev };
-      for (const f of files) {
-        if (next[f.id] === undefined) next[f.id] = f.value;
-      }
-      return next;
-    });
-  }, [files]);
 
-  const [singleFileCode, setSingleFileCode] = useState<string>(initialCode);
-
-  // Current code = active file's contents (multi-file) or singleFileCode.
-  const code = isMultiFile
-    ? activeFileId
-      ? (fileContents[activeFileId] ?? "")
-      : ""
-    : singleFileCode;
-
-  // Active file's language overrides the top-level language when provided.
-  const activeLanguage = useMemo(() => {
-    if (!isMultiFile) return language;
-    const f = files?.find((x) => x.id === activeFileId);
-    return f?.language ?? language;
-  }, [isMultiFile, files, activeFileId, language]);
-
-  const handleCodeChange = useCallback(
+  // Called when the widget applies edits on Apply — mirrors the Monaco path.
+  const widgetOnCodeChange = useCallback(
     (next: string) => {
-      if (isMultiFile && activeFileId) {
-        setFileContents((prev) => ({ ...prev, [activeFileId]: next }));
-      } else {
-        setSingleFileCode(next);
-      }
-      onCodeChange?.(next, isMultiFile ? activeFileId : null);
+      handleContentChange(next);
+      onCodeChange?.(next, activeTab);
     },
-    [isMultiFile, activeFileId, onCodeChange],
+    [handleContentChange, onCodeChange, activeTab],
   );
 
-  // ── Widget handle (once per mount, reused across conversations) ───────────
-  // Widget tool calls BUFFER into the handle's pending list; `code` stays
-  // stable during streaming. `useSmartCodeEditor` flushes the buffer at
-  // stream-end and transitions to the review UI.
+  // ── Widget handle (buffered; flushes at stream-end) ───────────────────────
   const { widgetHandleId, consumePending } = useCodeEditorWidgetHandle({
     code,
   });
 
-  // ── IDE context sync (vsc_* slots for whichever conversation is active) ───
+  // ── IDE context sync ──────────────────────────────────────────────────────
   useIdeContextSync(activeConversationId, {
     code,
     language: activeLanguage,
-    filePath,
+    filePath: currentFile?.path ?? filePath,
     selection,
     diagnostics,
     workspaceName,
@@ -223,39 +242,28 @@ export function SmartCodeEditor({
     agentSkills,
   });
 
-  // ── Other-files context slots (multi-file only) ──────────────────────────
+  // ── Other-files context slots (multi-file only) ───────────────────────────
   useEffect(() => {
-    if (!activeConversationId || !isMultiFile || !files) return;
-    // Build context entries for every file EXCEPT the active one. Each gets
-    // its own `file_<slug>` key so the agent can `ctx_get` a specific file.
-    const entries = files
-      .filter((f) => f.id !== activeFileId)
+    if (!activeConversationId || !isMultiFile) return;
+    const entries = currentFiles
+      .filter((f) => f.path !== activeTab)
       .map((f) => ({
-        key: fileContextKey(f.id, f.title),
-        value: `File: ${f.title}${f.language ? ` (${f.language})` : ""}\n\n${fileContents[f.id] ?? f.value}`,
+        key: fileContextKey(f.path, f.name),
+        value: `File: ${f.name}${f.language ? ` (${f.language})` : ""}\n\n${f.content}`,
         type: "text" as const,
-        label: f.title,
+        label: f.name,
       }));
     if (entries.length === 0) return;
-    // Lazy import to avoid a circular dep at type-check time.
-    import("@/features/agents/redux/execution-system/instance-context/instance-context.slice").then(
-      ({ setContextEntries }) => {
-        dispatch(
-          setContextEntries({ conversationId: activeConversationId, entries }),
-        );
-      },
-    );
-  }, [
-    activeConversationId,
-    isMultiFile,
-    files,
-    activeFileId,
-    fileContents,
-    dispatch,
-  ]);
+    import(
+      "@/features/agents/redux/execution-system/instance-context/instance-context.slice"
+    ).then(({ setContextEntries }) => {
+      dispatch(
+        setContextEntries({ conversationId: activeConversationId, entries }),
+      );
+    });
+  }, [activeConversationId, isMultiFile, currentFiles, activeTab, dispatch]);
 
-  // ── Variable sync — push `code` into the active agent's variable slot ────
-  // Only matters on first turn; after that the agent relies on context slots.
+  // ── Variable sync (first-turn only; context takes over after) ────────────
   useEffect(() => {
     if (!activeConversationId || !activeAgent) return;
     dispatch(
@@ -266,7 +274,7 @@ export function SmartCodeEditor({
     );
   }, [activeConversationId, activeAgent, code, dispatch]);
 
-  // ── State machine hook (review / processing / error / etc.) ──────────────
+  // ── Agent state machine (buffered widget edits → review) ─────────────────
   const {
     state,
     setState,
@@ -274,16 +282,15 @@ export function SmartCodeEditor({
     modifiedCode,
     errorMessage,
     rawAIResponse,
-    isCopied,
+    isCopied: reviewIsCopied,
     diffStats,
-    streamingText,
     handleApplyChanges,
     handleCopyResponse,
     handleRejectEdits,
   } = useSmartCodeEditor({
     conversationId: activeConversationId,
     currentCode: code,
-    onCodeChange: handleCodeChange,
+    onCodeChange: widgetOnCodeChange,
     consumeWidgetEdits: consumePending,
   });
 
@@ -313,30 +320,18 @@ export function SmartCodeEditor({
     [agents, code, launchAgent, widgetHandleId],
   );
 
-  // Selecting an existing conversation from the history panel.
-  //
-  // Mirrors the AgentRunnerPage URL-sync pattern: if the instance isn't
-  // already in Redux (most fetched conversations aren't until clicked),
-  // dispatch `createManualInstance({agentId, conversationId})` to mount the
-  // conversation shell at the known UUID, then `loadConversation` to
-  // rehydrate its messages / variables / UI state from the server.
-  //
-  // If the instance IS already in Redux (e.g. a draft we just created, or
-  // one we loaded earlier this session), we skip both steps — Redux
-  // already has everything needed.
-  const store = useAppStore();
+  // ── Select an existing conversation (mirrors AgentRunnerPage URL-sync) ────
   const handleSelectConversation = useCallback(
     async (conversationId: string, agentId: string) => {
-      // Flip the active id immediately so the UI starts transitioning.
       setActiveConversationId(conversationId);
       setActiveAgentId(agentId);
 
-      // Snapshot check — avoids re-creating / re-fetching something already
-      // in Redux. Drafts we created this session already have an instance;
-      // recently-loaded conversations are also cached.
-      const existingInstance = selectInstance(store.getState(), conversationId);
+      // Mirror of AgentRunnerPage's URL-sync pattern — direct lookup on the
+      // store snapshot instead of a curried selector call.
+      const exists =
+        !!store.getState().conversations?.byConversationId[conversationId];
 
-      if (!existingInstance) {
+      if (!exists) {
         try {
           await dispatch(
             createManualInstance({
@@ -348,10 +343,7 @@ export function SmartCodeEditor({
           ).unwrap();
         } catch (err) {
           // eslint-disable-next-line no-console
-          console.error(
-            "[SmartCodeEditor] createManualInstance failed",
-            err,
-          );
+          console.error("[SmartCodeEditor] createManualInstance failed", err);
           return;
         }
       }
@@ -371,14 +363,14 @@ export function SmartCodeEditor({
     [store, dispatch, widgetHandleId],
   );
 
+  // ── Derived Monaco props ──────────────────────────────────────────────────
+  const editorPath = currentFile ? getEditorPath(currentFile) : undefined;
+  const monacoLanguage = currentFile
+    ? mapLanguageForMonaco(currentFile.language)
+    : "plaintext";
+
   return (
     <div className={`h-full w-full flex flex-col ${className ?? ""}`}>
-      {title && (
-        <div className="shrink-0 px-3 py-2 border-b border-border bg-muted/30">
-          <span className="text-sm font-medium truncate">{title}</span>
-        </div>
-      )}
-
       <div className="flex-1 min-h-0">
         <ResizablePanelGroup
           orientation="horizontal"
@@ -401,7 +393,7 @@ export function SmartCodeEditor({
           </ResizablePanel>
           <ResizableHandle />
 
-          {/* Column 2: Agent runner (picker + conversation + input) */}
+          {/* Column 2: Agent runner */}
           <ResizablePanel defaultSize={pct(30)} minSize={pct(18)}>
             <AgentRunnerColumn
               conversationId={activeConversationId}
@@ -410,7 +402,7 @@ export function SmartCodeEditor({
           </ResizablePanel>
           <ResizableHandle />
 
-          {/* Column 3: Code-or-Diff on top, Terminal below (nested vertical) */}
+          {/* Column 3: Code / Diff on top, Terminal below */}
           <ResizablePanel
             defaultSize={pct(isMultiFile ? 36 : 52)}
             minSize={pct(20)}
@@ -421,15 +413,33 @@ export function SmartCodeEditor({
             >
               <ResizablePanel defaultSize={pct(75)} minSize={pct(40)}>
                 <CodeOrDiffColumn
-                  code={code}
-                  onCodeChange={handleCodeChange}
-                  language={activeLanguage}
+                  files={currentFiles}
+                  openTabs={openTabs}
+                  activeTab={activeTab}
+                  currentFile={currentFile}
+                  onTabClick={selectTab}
+                  onTabClose={closeTab}
+                  onContentChange={wrappedHandleContentChange}
+                  editorWrapperRef={editorWrapperRef}
+                  editorHeight={editorHeight}
+                  editorPath={editorPath}
+                  monacoLanguage={monacoLanguage}
+                  isEditing={isEditing}
+                  onToggleEditing={() => setIsEditing(!isEditing)}
+                  showWrapLines={showWrapLines}
+                  onToggleWordWrap={() => setShowWrapLines(!showWrapLines)}
+                  minimapEnabled={minimapEnabled}
+                  onToggleMinimap={() => setMinimapEnabled(!minimapEnabled)}
+                  formatTrigger={formatTrigger}
+                  onFormat={handleFormat}
+                  isCopied={isCopied}
+                  onCopy={handleCopy}
                   state={state}
                   parsedEdits={parsedEdits}
                   modifiedCode={modifiedCode}
                   rawAIResponse={rawAIResponse}
                   errorMessage={errorMessage}
-                  isCopied={isCopied}
+                  reviewIsCopied={reviewIsCopied}
                   diffStats={diffStats}
                   onApply={handleApplyChanges}
                   onDiscard={handleRejectEdits}
@@ -449,7 +459,7 @@ export function SmartCodeEditor({
           </ResizablePanel>
 
           {/* Column 4: Files (multi-file only) */}
-          {isMultiFile && files && (
+          {isMultiFile && (
             <>
               <ResizableHandle />
               <ResizablePanel
@@ -458,9 +468,9 @@ export function SmartCodeEditor({
                 maxSize={pct(28)}
               >
                 <FilesPanel
-                  files={files}
-                  activeFileId={activeFileId}
-                  onSelectFile={setActiveFileId}
+                  files={currentFiles}
+                  activeFilePath={activeTab}
+                  onSelectFile={openFile}
                 />
               </ResizablePanel>
             </>
