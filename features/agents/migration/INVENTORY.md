@@ -146,3 +146,4 @@
 | Date | Who | Change |
 |---|---|---|
 | 2026-04-20 | initial audit | Created inventory from Explore-agent sweep |
+| 2026-04-20 | main agent | Phase 1 code-complete. Discovered `content_blocks` table already exists (not `prompt_content_blocks`) — decision to extend rather than fork logged in DECISIONS.md. Added `agent_context_menu_view`, scope-aware RLS on `agx_shortcut`, three RTK slices under `features/agents/redux/` (`agent-shortcuts` extended, `agent-shortcut-categories`, `agent-content-blocks`), seven REST routes under `/api/agent-*`, and shared CRUD components at `features/agent-shortcuts/`. |

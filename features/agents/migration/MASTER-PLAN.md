@@ -21,9 +21,9 @@ Read [`README.md`](./README.md) before touching anything here. Read [`INVENTORY.
 | # | Phase | Status | Doc |
 |---|---|---|---|
 | 0 | Governance & docs bootstrap | complete | _this file + `README.md` + `INVENTORY.md`_ |
-| 1 | Agent Shortcuts foundation (multi-scope DB + RTK + API + shared CRUD feature) | not-started | `phases/phase-01-agent-shortcuts-foundation.md` |
-| 2 | Content Blocks migration | not-started | `phases/phase-02-content-blocks.md` |
-| 3 | Unified Agent Context Menu (replace 1765-LOC component) | not-started | `phases/phase-03-unified-context-menu.md` |
+| 1 | Agent Shortcuts foundation (multi-scope DB + RTK + API + shared CRUD feature) | code-complete (1.9 pending DB apply) | `phases/phase-01-agent-shortcuts-foundation.md` |
+| 2 | Content Blocks migration | in-progress (largely absorbed into Phase 1) | `phases/phase-02-content-blocks.md` |
+| 3 | Unified Agent Context Menu (replace 1765-LOC component) | in-progress | `phases/phase-03-unified-context-menu.md` |
 | 4 | Quick Actions: hardcoded → DB-backed shortcuts | not-started | `phases/phase-04-quick-actions.md` |
 | 5 | Context-menu integration sweep (notes, code editor, file system) | not-started | `phases/phase-05-integration-sweep.md` |
 | 6 | Code Editor quick wrapper (keep prompt-app editing working) | not-started | `phases/phase-06-code-editor-quick-wrapper.md` |

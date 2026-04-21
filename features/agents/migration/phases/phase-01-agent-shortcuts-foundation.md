@@ -1,9 +1,26 @@
 # Phase 1 — Agent Shortcuts Foundation
 
-**Status:** in-progress
+**Status:** code-complete; pending DB migration apply + types regen (1.9)
 **Owner:** _unassigned_
 **Prerequisites:** Phase 0 (governance docs exist)
 **Unblocks:** Phases 2, 3, 11, 12, 13
+
+## Human step required before 1.9
+
+Apply the five migration files in order, then regenerate types:
+
+```
+psql $DATABASE_URL -v ON_ERROR_STOP=1 \
+  -f migrations/scope_columns_on_shortcut_categories.sql \
+  -f migrations/scope_columns_on_content_blocks.sql \
+  -f migrations/scope_rls_on_agx_shortcut.sql \
+  -f migrations/create_agent_context_menu_view.sql \
+  -f migrations/tests/agent_shortcuts_rls_tests.sql
+
+npm run types
+```
+
+After types regen, tighten the `unknown` cast in `app/api/agent-context-menu/route.ts` (agent 1.6 noted this).
 
 ## Progress
 
