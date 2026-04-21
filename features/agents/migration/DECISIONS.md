@@ -86,6 +86,24 @@ Append one entry per decision. Never edit past entries; supersede with a new ent
 **Rationale:** Flipping `DeferredShellData` to the agent view now would regress every consumer of `context_menu_unified_view` still in production. Keeping both RPCs lets Phase 5 flip the wiring in one controlled swap once every call site is on v2.
 **Consequences:** Phase 5 will update `DeferredShellData` to call `get_ssr_agent_shell_data` and write into a new `agentContextMenuCache` slice (or extend the existing one). Phase 16/18 removes the legacy RPC.
 
+### 2026-04-21 — Phase 10: join table over self-FK for composite agent-apps
+**Phase:** 10
+**Decision:** Parent→child linkage for composite agent-apps lives in a new `agent_app_children (parent_id, child_id, slug, label, slot_order, required_slots, writes_slots)` join table, not a `agent_apps.parent_agent_app_id` self-FK. Single-app rows carry no parent columns; composite rows get `app_kind = 'composite'` + `shared_context_slots jsonb`.
+**Rationale:** A child agent-app may be reused under multiple composites (e.g. a generic `rewriter` under both `email-assistant` and `doc-helper`); ordering, per-link slug, and the `required_slots`/`writes_slots` contract are properties of the *relationship*, not the child. A self-FK would either preclude reuse or require a second table anyway. Keeping single-app rows free of parent columns also avoids `NULL` noise on ~99% of rows.
+**Consequences:** Phase 8's `agent_apps` migration adds `app_kind` and `shared_context_slots`; Phase 10 ships `agent_app_children`. The composite editor must prevent cycles (parent/child can't transitively embed itself). A validator at publish time can check each child's declared context slots are covered by the parent's `shared_context_slots`.
+
+### 2026-04-21 — Phase 10: one execution instance per composite, shared by all children
+**Phase:** 10
+**Decision:** A composite agent-app creates a single `conversationId` (and therefore one `instanceContext` record) at parent-page load. Navigating between child siblings swaps the rendered child component but reuses the same conversation. `initInstanceContext` runs once; child launches through `useAgentLauncher` skip it when the conversation already exists.
+**Rationale:** This is the whole point of the composite pattern — shared working memory across sibling mini-apps. Per-child instances would reintroduce the exact gap that made legacy applets' context-sharing never land. The `instanceContext` slice already keys by `conversationId`, so the grain fits natively.
+**Consequences:** The composite renderer owns conversation lifecycle; children never call `createInstance` on their own. Persistence (if implemented per open question #2) is a composite-level concern. Destroying the conversation on parent unmount destroys all child state simultaneously — intentional.
+
+### 2026-04-21 — Phase 10: shared-slot namespacing convention
+**Phase:** 10
+**Decision:** Shared context slots declared on a composite's `shared_context_slots` use their bare key (`draft_text`). A child's own `context_slots` that are *not* promoted to the shared contract get written to the shared context dict under `${child_slug}__${key}` to prevent collisions between siblings that happen to declare the same local slot name. Promotion to the bare key is opt-in via `agent_app_children.writes_slots`.
+**Rationale:** Keeps the common case readable (`draft_text` in both children) while making cross-child collisions impossible by construction. The namespacing is applied at the composite runtime layer, so child agent definitions stay oblivious — they still read/write their own declared keys.
+**Consequences:** Children that expect to write to a shared key *must* be listed under `writes_slots`; otherwise their writes land in their private namespace and siblings won't see them. The composite editor surfaces this as an explicit toggle per child per slot.
+
 ### 2026-04-21 — Mobile form UX: Drawer swap via `useIsMobile()`
 **Phase:** 1 (task 1.7)
 **Decision:** Every form/modal in `features/agent-shortcuts/components/` renders through `Dialog` on desktop and `Drawer` (vaul bottom-sheet) on mobile, gated by `useIsMobile()` from `@/hooks/use-mobile`. Form body and footer markup is shared — only the outer container swaps.
