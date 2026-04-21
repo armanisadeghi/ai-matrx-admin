@@ -79,6 +79,10 @@ export function resolveStoreBootstrapState(
   if (input.contextMenuCache !== undefined) {
     merged.contextMenuCache = input.contextMenuCache;
   }
+  if (input.agentContextMenuCache !== undefined) {
+    (merged as Record<string, unknown>).agentContextMenuCache =
+      input.agentContextMenuCache;
+  }
   if (input.modelRegistry !== undefined) {
     out.modelRegistry = input.modelRegistry;
   }

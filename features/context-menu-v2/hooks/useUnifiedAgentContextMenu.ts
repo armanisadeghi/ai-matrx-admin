@@ -13,6 +13,10 @@ import {
   selectContextMenuRows,
   selectContextMenuHydrated,
 } from "@/lib/redux/slices/contextMenuCacheSlice";
+import {
+  selectAgentContextMenuRows,
+  selectAgentContextMenuHydrated,
+} from "@/lib/redux/slices/agentContextMenuCacheSlice";
 import type { AgentShortcutRecord } from "@/features/agents/redux/agent-shortcuts/types";
 import type { AgentShortcutCategoryRecord } from "@/features/agents/redux/agent-shortcut-categories/types";
 import type { AgentContentBlockRecord } from "@/features/agents/redux/agent-content-blocks/types";
@@ -113,8 +117,15 @@ export function useUnifiedAgentContextMenu(
   const shortcuts = useAppSelector(selectAllShortcutsArray);
   const categories = useAppSelector(selectAllCategoriesArray);
   const contentBlocks = useAppSelector(selectAllContentBlocksArray);
-  const ssrRows = useAppSelector(selectContextMenuRows);
-  const ssrHydrated = useAppSelector(selectContextMenuHydrated);
+  // Prefer the agent-specific SSR cache (populated by get_ssr_agent_shell_data).
+  // Fall back to the legacy contextMenuCache as a warm signal during the
+  // prompts→agents migration — both are populated in parallel by DeferredShellData.
+  const agentSsrRows = useAppSelector(selectAgentContextMenuRows);
+  const agentSsrHydrated = useAppSelector(selectAgentContextMenuHydrated);
+  const legacySsrRows = useAppSelector(selectContextMenuRows);
+  const legacySsrHydrated = useAppSelector(selectContextMenuHydrated);
+  const ssrRows = agentSsrHydrated ? agentSsrRows : legacySsrRows;
+  const ssrHydrated = agentSsrHydrated || legacySsrHydrated;
   const scopeLoaded = useAppSelector((state) =>
     selectIsShortcutScopeLoaded(state, scope, scopeId ?? null),
   );

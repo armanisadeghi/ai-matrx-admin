@@ -25,7 +25,7 @@ Read [`README.md`](./README.md) before touching anything here. Read [`INVENTORY.
 | 2 | Content Blocks migration | in-progress (largely absorbed into Phase 1) | `phases/phase-02-content-blocks.md` |
 | 3 | Unified Agent Context Menu (replace 1765-LOC component) | in-progress | `phases/phase-03-unified-context-menu.md` |
 | 4 | Quick Actions re-scope (overlay dispatches, not agents — design decision needed) | **needs-design-decision** | `phases/phase-04-quick-actions.md` |
-| 5 | Context-menu integration sweep (notes, code editor, file system) | not-started | `phases/phase-05-integration-sweep.md` |
+| 5 | Context-menu integration sweep (notes, code editor, agent builder, SSR RPC) | complete | `phases/phase-05-integration-sweep.md` |
 | 6 | Code Editor quick wrapper (keep prompt-app editing working) | not-started | `phases/phase-06-code-editor-quick-wrapper.md` |
 | 7 | `(a)/chat` — unified chat flagship route | not-started | `phases/phase-07-chat-route.md` |
 | 8 | Agent Apps public runner (`/p/[slug]`) | not-started | `phases/phase-08-agent-apps-public.md` |

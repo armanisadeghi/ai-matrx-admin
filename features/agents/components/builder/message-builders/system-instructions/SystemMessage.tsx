@@ -7,7 +7,7 @@ import {
   useMemo,
 } from "react";
 import { Label } from "@/components/ui/label";
-import { UnifiedContextMenu } from "@/features/context-menu";
+import { UnifiedAgentContextMenu } from "@/features/context-menu-v2";
 
 // OLD: Need to be replaced
 import { SystemPromptOptimizer } from "@/features/prompts/components/actions/prompt-optimizers/SystemPromptOptimizer";
@@ -653,7 +653,7 @@ export function SystemMessage({
         {/* Content */}
         <div className="p-4">
           {isEditing ? (
-            <UnifiedContextMenu
+            <UnifiedAgentContextMenu
               getTextarea={() =>
                 textareaRefs.current[systemMessageIndex] || null
               }
@@ -692,7 +692,7 @@ export function SystemMessage({
                   lineHeight: "1.5",
                 }}
               />
-            </UnifiedContextMenu>
+            </UnifiedAgentContextMenu>
           ) : (
             <div
               className="text-xs pb-2 text-gray-600 dark:text-gray-400 whitespace-pre-wrap cursor-text leading-normal"

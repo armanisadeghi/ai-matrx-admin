@@ -40,7 +40,7 @@ import { useNotesRedux } from "../hooks/useNotesRedux";
 import { cn } from "@/lib/utils";
 import { useToastManager } from "@/hooks/useToastManager";
 import MarkdownStream from "@/components/MarkdownStream";
-// import { UnifiedContextMenu } from '@/features/context-menu';
+// import { UnifiedAgentContextMenu } from '@/features/context-menu-v2';
 
 // Dynamic imports for heavy components (only load when needed)
 const TuiEditorContent = dynamic(
@@ -57,11 +57,11 @@ const TuiEditorContent = dynamic(
 );
 
 // CRITICAL: Dynamic import to prevent loading on routes that don't use notes
-// This prevents UnifiedContextMenu and all its hooks from bundling into every route
-const UnifiedContextMenu = dynamic(
+// This prevents UnifiedAgentContextMenu and all its hooks from bundling into every route
+const UnifiedAgentContextMenu = dynamic(
   () =>
-    import("@/features/context-menu").then((mod) => ({
-      default: mod.UnifiedContextMenu,
+    import("@/features/context-menu-v2").then((mod) => ({
+      default: mod.UnifiedAgentContextMenu,
     })),
   { ssr: false },
 );
@@ -607,7 +607,7 @@ export function NoteEditor({
       <div className="flex-1 relative overflow-hidden bg-textured">
         {/* Editor Content with Unified Context Menu */}
         {editorMode === "plain" && (
-          <UnifiedContextMenu
+          <UnifiedAgentContextMenu
             getTextarea={() => textareaRef.current}
             contextData={{
               content: localContent,
@@ -679,11 +679,11 @@ export function NoteEditor({
               placeholder="Start typing your note..."
               className="absolute inset-0 w-full h-full resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-sm leading-relaxed bg-transparent p-3 pb-[50vh]"
             />
-          </UnifiedContextMenu>
+          </UnifiedAgentContextMenu>
         )}
 
         {editorMode === "wysiwyg" && (
-          <UnifiedContextMenu
+          <UnifiedAgentContextMenu
             contextData={{
               content: localContent,
               context: localContent,
@@ -725,11 +725,11 @@ export function NoteEditor({
                 className="w-full h-full"
               />
             </div>
-          </UnifiedContextMenu>
+          </UnifiedAgentContextMenu>
         )}
 
         {editorMode === "markdown" && (
-          <UnifiedContextMenu
+          <UnifiedAgentContextMenu
             contextData={{
               content: localContent,
               context: localContent,
@@ -770,7 +770,7 @@ export function NoteEditor({
                 className="w-full h-full"
               />
             </div>
-          </UnifiedContextMenu>
+          </UnifiedAgentContextMenu>
         )}
 
         {editorMode === "matrx-split" && (
@@ -784,7 +784,7 @@ export function NoteEditor({
         )}
 
         {editorMode === "preview" && (
-          <UnifiedContextMenu
+          <UnifiedAgentContextMenu
             contextData={{
               content: localContent,
               context: localContent,
@@ -808,7 +808,7 @@ export function NoteEditor({
                 )}
               </div>
             </ScrollArea>
-          </UnifiedContextMenu>
+          </UnifiedAgentContextMenu>
         )}
       </div>
     </div>

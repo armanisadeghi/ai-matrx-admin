@@ -1,9 +1,9 @@
 /**
  * CodeEditorContextMenu
- * 
- * Integrates UnifiedContextMenu with Monaco code editor.
+ *
+ * Integrates UnifiedAgentContextMenu with Monaco code editor.
  * Provides AI-powered actions specifically for code editing.
- * 
+ *
  * Features:
  * - Right-click context menu with AI actions
  * - Code-specific categories (Code Operations, Text Operations)
@@ -14,8 +14,8 @@
 'use client';
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { UnifiedContextMenu } from '@/features/context-menu/UnifiedContextMenu';
-import { PLACEMENT_TYPES } from '@/features/prompt-builtins/constants';
+import { UnifiedAgentContextMenu } from '@/features/context-menu-v2';
+import { PLACEMENT_TYPES } from '@/features/agent-shortcuts/constants';
 import type { editor } from 'monaco-editor';
 
 interface CodeEditorContextMenuProps {
@@ -233,7 +233,7 @@ export function CodeEditorContextMenu({
 
     return (
         <div ref={wrapperRef} className={className}>
-            <UnifiedContextMenu
+            <UnifiedAgentContextMenu
                 isEditable={true}
                 onTextReplace={handleTextReplace}
                 onTextInsertBefore={handleTextInsertBefore}
@@ -248,7 +248,7 @@ export function CodeEditorContextMenu({
                 contextData={getContextData()}
             >
                 {children}
-            </UnifiedContextMenu>
+            </UnifiedAgentContextMenu>
         </div>
     );
 }
