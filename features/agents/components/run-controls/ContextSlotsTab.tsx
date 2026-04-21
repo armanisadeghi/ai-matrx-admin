@@ -21,7 +21,6 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { createSelector } from "@reduxjs/toolkit";
 import { Plus, Trash2, Pencil, Check, X, RefreshCw } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import type { RootState } from "@/lib/redux/store";
@@ -54,12 +53,10 @@ function makeSelectAgentIdForConversation(conversationId: string) {
     state.conversations.byConversationId[conversationId]?.agentId ?? null;
 }
 
-function makeSelectContextMap(conversationId: string) {
-  return createSelector(
-    (state: RootState) =>
-      state.instanceContext.byConversationId[conversationId],
-    (map): Record<string, InstanceContextEntry> => map ?? EMPTY_MAP,
-  );
+/** Instance context map for this conversation, or undefined if none. */
+function makeSelectInstanceContextMap(conversationId: string) {
+  return (state: RootState): Record<string, InstanceContextEntry> | undefined =>
+    state.instanceContext.byConversationId[conversationId];
 }
 const EMPTY_MAP: Record<string, InstanceContextEntry> = {};
 
@@ -161,9 +158,13 @@ export function ContextSlotsTab({ conversationId }: ContextSlotsTabProps) {
       agentId ? selectAgentContextSlots(state, agentId) : undefined,
     ) ?? EMPTY_SLOTS;
 
-  const contextMap = useAppSelector(
-    useMemo(() => makeSelectContextMap(conversationId), [conversationId]),
-  );
+  const contextEntries =
+    useAppSelector(
+      useMemo(
+        () => makeSelectInstanceContextMap(conversationId),
+        [conversationId],
+      ),
+    ) ?? EMPTY_MAP;
 
   // Split existing entries into declared vs ad-hoc based on whether the key
   // matches any declared slot key. We don't trust `slotMatched` alone —
@@ -176,8 +177,10 @@ export function ContextSlotsTab({ conversationId }: ContextSlotsTabProps) {
 
   const adHocEntries = useMemo(
     () =>
-      Object.values(contextMap).filter((entry) => !declaredKeys.has(entry.key)),
-    [contextMap, declaredKeys],
+      Object.values(contextEntries).filter(
+        (entry) => !declaredKeys.has(entry.key),
+      ),
+    [contextEntries, declaredKeys],
   );
 
   const writeEntry = useCallback(
@@ -230,7 +233,7 @@ export function ContextSlotsTab({ conversationId }: ContextSlotsTabProps) {
   }, [conversationId, agentId, dispatch]);
 
   const hasAnyValues =
-    Object.keys(contextMap).length > 0 || adHocEntries.length > 0;
+    Object.keys(contextEntries).length > 0 || adHocEntries.length > 0;
 
   return (
     <div className="h-full overflow-y-auto">
@@ -244,8 +247,8 @@ export function ContextSlotsTab({ conversationId }: ContextSlotsTabProps) {
           />
           {declaredSlots.length === 0 ? (
             <div className="mt-2 px-3 py-2 text-[11px] text-muted-foreground border border-dashed border-border rounded-md">
-              This agent defines no context slots. Use the Ad-hoc section
-              below to test with arbitrary keys.
+              This agent defines no context slots. Use the Ad-hoc section below
+              to test with arbitrary keys.
             </div>
           ) : (
             <div className="mt-2 space-y-2">
@@ -253,7 +256,7 @@ export function ContextSlotsTab({ conversationId }: ContextSlotsTabProps) {
                 <DeclaredSlotRow
                   key={slot.key}
                   slot={slot}
-                  entry={contextMap[slot.key]}
+                  entry={contextEntries[slot.key]}
                   onWrite={writeEntry}
                   onClear={() => removeEntry(slot.key)}
                 />
@@ -292,7 +295,7 @@ export function ContextSlotsTab({ conversationId }: ContextSlotsTabProps) {
               />
             ))}
             <AddAdHocRow
-              existingKeys={new Set(Object.keys(contextMap))}
+              existingKeys={new Set(Object.keys(contextEntries))}
               onAdd={(key, type) =>
                 writeEntry(
                   key,
@@ -734,4 +737,3 @@ function AddAdHocRow({
     </div>
   );
 }
-

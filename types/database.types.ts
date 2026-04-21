@@ -103,6 +103,483 @@ export type Database = {
         }
         Relationships: []
       }
+      agent_app_categories: {
+        Row: {
+          description: string | null
+          icon: string | null
+          id: string
+          name: string
+          sort_order: number | null
+        }
+        Insert: {
+          description?: string | null
+          icon?: string | null
+          id: string
+          name: string
+          sort_order?: number | null
+        }
+        Update: {
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+          sort_order?: number | null
+        }
+        Relationships: []
+      }
+      agent_app_errors: {
+        Row: {
+          app_id: string
+          created_at: string
+          error_code: string | null
+          error_details: Json | null
+          error_message: string | null
+          error_type: string
+          execution_id: string | null
+          expected_variables: Json | null
+          id: string
+          resolution_notes: string | null
+          resolved: boolean | null
+          resolved_at: string | null
+          resolved_by: string | null
+          variables_sent: Json | null
+        }
+        Insert: {
+          app_id: string
+          created_at?: string
+          error_code?: string | null
+          error_details?: Json | null
+          error_message?: string | null
+          error_type: string
+          execution_id?: string | null
+          expected_variables?: Json | null
+          id?: string
+          resolution_notes?: string | null
+          resolved?: boolean | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          variables_sent?: Json | null
+        }
+        Update: {
+          app_id?: string
+          created_at?: string
+          error_code?: string | null
+          error_details?: Json | null
+          error_message?: string | null
+          error_type?: string
+          execution_id?: string | null
+          expected_variables?: Json | null
+          id?: string
+          resolution_notes?: string | null
+          resolved?: boolean | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          variables_sent?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_app_errors_app_id_fkey"
+            columns: ["app_id"]
+            isOneToOne: false
+            referencedRelation: "agent_apps"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_app_errors_execution_id_fkey"
+            columns: ["execution_id"]
+            isOneToOne: false
+            referencedRelation: "agent_app_executions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_app_executions: {
+        Row: {
+          app_id: string
+          cost: number | null
+          created_at: string
+          error_message: string | null
+          error_type: string | null
+          execution_time_ms: number | null
+          fingerprint: string | null
+          id: string
+          ip_address: unknown
+          metadata: Json | null
+          referer: string | null
+          success: boolean | null
+          task_id: string
+          tokens_used: number | null
+          user_agent: string | null
+          user_id: string | null
+          variables_provided: Json | null
+          variables_used: Json | null
+        }
+        Insert: {
+          app_id: string
+          cost?: number | null
+          created_at?: string
+          error_message?: string | null
+          error_type?: string | null
+          execution_time_ms?: number | null
+          fingerprint?: string | null
+          id?: string
+          ip_address?: unknown
+          metadata?: Json | null
+          referer?: string | null
+          success?: boolean | null
+          task_id: string
+          tokens_used?: number | null
+          user_agent?: string | null
+          user_id?: string | null
+          variables_provided?: Json | null
+          variables_used?: Json | null
+        }
+        Update: {
+          app_id?: string
+          cost?: number | null
+          created_at?: string
+          error_message?: string | null
+          error_type?: string | null
+          execution_time_ms?: number | null
+          fingerprint?: string | null
+          id?: string
+          ip_address?: unknown
+          metadata?: Json | null
+          referer?: string | null
+          success?: boolean | null
+          task_id?: string
+          tokens_used?: number | null
+          user_agent?: string | null
+          user_id?: string | null
+          variables_provided?: Json | null
+          variables_used?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_app_executions_app_id_fkey"
+            columns: ["app_id"]
+            isOneToOne: false
+            referencedRelation: "agent_apps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_app_rate_limits: {
+        Row: {
+          app_id: string
+          blocked_reason: string | null
+          blocked_until: string | null
+          created_at: string
+          execution_count: number
+          fingerprint: string | null
+          first_execution_at: string
+          id: string
+          ip_address: unknown
+          is_blocked: boolean | null
+          last_execution_at: string
+          updated_at: string
+          user_id: string | null
+          window_start_at: string
+        }
+        Insert: {
+          app_id: string
+          blocked_reason?: string | null
+          blocked_until?: string | null
+          created_at?: string
+          execution_count?: number
+          fingerprint?: string | null
+          first_execution_at?: string
+          id?: string
+          ip_address?: unknown
+          is_blocked?: boolean | null
+          last_execution_at?: string
+          updated_at?: string
+          user_id?: string | null
+          window_start_at?: string
+        }
+        Update: {
+          app_id?: string
+          blocked_reason?: string | null
+          blocked_until?: string | null
+          created_at?: string
+          execution_count?: number
+          fingerprint?: string | null
+          first_execution_at?: string
+          id?: string
+          ip_address?: unknown
+          is_blocked?: boolean | null
+          last_execution_at?: string
+          updated_at?: string
+          user_id?: string | null
+          window_start_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_app_rate_limits_app_id_fkey"
+            columns: ["app_id"]
+            isOneToOne: false
+            referencedRelation: "agent_apps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_app_versions: {
+        Row: {
+          agent_id: string | null
+          agent_version_id: string | null
+          allowed_imports: Json | null
+          app_id: string
+          category: string | null
+          change_note: string | null
+          changed_at: string
+          component_code: string | null
+          component_language: string | null
+          description: string | null
+          id: string
+          layout_config: Json | null
+          name: string | null
+          pinned_version: number | null
+          status: string | null
+          styling_config: Json | null
+          tagline: string | null
+          tags: string[] | null
+          variable_schema: Json | null
+          version_number: number
+        }
+        Insert: {
+          agent_id?: string | null
+          agent_version_id?: string | null
+          allowed_imports?: Json | null
+          app_id: string
+          category?: string | null
+          change_note?: string | null
+          changed_at?: string
+          component_code?: string | null
+          component_language?: string | null
+          description?: string | null
+          id?: string
+          layout_config?: Json | null
+          name?: string | null
+          pinned_version?: number | null
+          status?: string | null
+          styling_config?: Json | null
+          tagline?: string | null
+          tags?: string[] | null
+          variable_schema?: Json | null
+          version_number: number
+        }
+        Update: {
+          agent_id?: string | null
+          agent_version_id?: string | null
+          allowed_imports?: Json | null
+          app_id?: string
+          category?: string | null
+          change_note?: string | null
+          changed_at?: string
+          component_code?: string | null
+          component_language?: string | null
+          description?: string | null
+          id?: string
+          layout_config?: Json | null
+          name?: string | null
+          pinned_version?: number | null
+          status?: string | null
+          styling_config?: Json | null
+          tagline?: string | null
+          tags?: string[] | null
+          variable_schema?: Json | null
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_app_versions_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agx_agent"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_app_versions_agent_version_id_fkey"
+            columns: ["agent_version_id"]
+            isOneToOne: false
+            referencedRelation: "agx_version"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_app_versions_app_id_fkey"
+            columns: ["app_id"]
+            isOneToOne: false
+            referencedRelation: "agent_apps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_apps: {
+        Row: {
+          agent_id: string
+          agent_version_id: string | null
+          allowed_imports: Json | null
+          app_kind: string
+          avg_execution_time_ms: number | null
+          category: string | null
+          component_code: string
+          component_language: string
+          created_at: string
+          description: string | null
+          favicon_url: string | null
+          id: string
+          is_featured: boolean | null
+          is_public: boolean
+          is_verified: boolean | null
+          last_execution_at: string | null
+          layout_config: Json | null
+          metadata: Json | null
+          name: string
+          organization_id: string | null
+          pinned_version: number | null
+          preview_image_url: string | null
+          project_id: string | null
+          published_at: string | null
+          rate_limit_authenticated: number | null
+          rate_limit_per_ip: number | null
+          rate_limit_window_hours: number | null
+          search_tsv: unknown
+          shared_context_slots: Json | null
+          slug: string
+          status: string
+          styling_config: Json | null
+          success_rate: number | null
+          tagline: string | null
+          tags: string[] | null
+          task_id: string | null
+          total_cost: number | null
+          total_executions: number | null
+          total_tokens_used: number | null
+          unique_users_count: number | null
+          updated_at: string
+          use_latest: boolean
+          user_id: string | null
+          variable_schema: Json | null
+          version: number
+        }
+        Insert: {
+          agent_id: string
+          agent_version_id?: string | null
+          allowed_imports?: Json | null
+          app_kind?: string
+          avg_execution_time_ms?: number | null
+          category?: string | null
+          component_code: string
+          component_language?: string
+          created_at?: string
+          description?: string | null
+          favicon_url?: string | null
+          id?: string
+          is_featured?: boolean | null
+          is_public?: boolean
+          is_verified?: boolean | null
+          last_execution_at?: string | null
+          layout_config?: Json | null
+          metadata?: Json | null
+          name: string
+          organization_id?: string | null
+          pinned_version?: number | null
+          preview_image_url?: string | null
+          project_id?: string | null
+          published_at?: string | null
+          rate_limit_authenticated?: number | null
+          rate_limit_per_ip?: number | null
+          rate_limit_window_hours?: number | null
+          search_tsv?: unknown
+          shared_context_slots?: Json | null
+          slug: string
+          status?: string
+          styling_config?: Json | null
+          success_rate?: number | null
+          tagline?: string | null
+          tags?: string[] | null
+          task_id?: string | null
+          total_cost?: number | null
+          total_executions?: number | null
+          total_tokens_used?: number | null
+          unique_users_count?: number | null
+          updated_at?: string
+          use_latest?: boolean
+          user_id?: string | null
+          variable_schema?: Json | null
+          version?: number
+        }
+        Update: {
+          agent_id?: string
+          agent_version_id?: string | null
+          allowed_imports?: Json | null
+          app_kind?: string
+          avg_execution_time_ms?: number | null
+          category?: string | null
+          component_code?: string
+          component_language?: string
+          created_at?: string
+          description?: string | null
+          favicon_url?: string | null
+          id?: string
+          is_featured?: boolean | null
+          is_public?: boolean
+          is_verified?: boolean | null
+          last_execution_at?: string | null
+          layout_config?: Json | null
+          metadata?: Json | null
+          name?: string
+          organization_id?: string | null
+          pinned_version?: number | null
+          preview_image_url?: string | null
+          project_id?: string | null
+          published_at?: string | null
+          rate_limit_authenticated?: number | null
+          rate_limit_per_ip?: number | null
+          rate_limit_window_hours?: number | null
+          search_tsv?: unknown
+          shared_context_slots?: Json | null
+          slug?: string
+          status?: string
+          styling_config?: Json | null
+          success_rate?: number | null
+          tagline?: string | null
+          tags?: string[] | null
+          task_id?: string | null
+          total_cost?: number | null
+          total_executions?: number | null
+          total_tokens_used?: number | null
+          unique_users_count?: number | null
+          updated_at?: string
+          use_latest?: boolean
+          user_id?: string | null
+          variable_schema?: Json | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_apps_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agx_agent"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_apps_agent_version_id_fkey"
+            columns: ["agent_version_id"]
+            isOneToOne: false
+            referencedRelation: "agx_version"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_apps_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       agent_conversations: {
         Row: {
           config_settings: Json
@@ -2957,6 +3434,321 @@ export type Database = {
         }
         Relationships: []
       }
+      code_file_folders: {
+        Row: {
+          color: string | null
+          created_at: string
+          description: string | null
+          icon_name: string
+          id: string
+          is_active: boolean
+          is_public: boolean
+          metadata: Json
+          name: string
+          organization_id: string | null
+          parent_folder_id: string | null
+          project_id: string | null
+          sort_order: number | null
+          updated_at: string
+          user_id: string
+          workspace_id: string | null
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          icon_name?: string
+          id?: string
+          is_active?: boolean
+          is_public?: boolean
+          metadata?: Json
+          name: string
+          organization_id?: string | null
+          parent_folder_id?: string | null
+          project_id?: string | null
+          sort_order?: number | null
+          updated_at?: string
+          user_id: string
+          workspace_id?: string | null
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          icon_name?: string
+          id?: string
+          is_active?: boolean
+          is_public?: boolean
+          metadata?: Json
+          name?: string
+          organization_id?: string | null
+          parent_folder_id?: string | null
+          project_id?: string | null
+          sort_order?: number | null
+          updated_at?: string
+          user_id?: string
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "code_file_folders_parent_folder_id_fkey"
+            columns: ["parent_folder_id"]
+            isOneToOne: false
+            referencedRelation: "code_file_folders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "code_file_folders_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ctx_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      code_file_versions: {
+        Row: {
+          change_note: string | null
+          change_source: string
+          change_type: string | null
+          changed_at: string
+          code_file_id: string
+          content: string | null
+          diff_metadata: Json
+          id: string
+          language: string | null
+          name: string | null
+          user_id: string
+          version_number: number
+        }
+        Insert: {
+          change_note?: string | null
+          change_source?: string
+          change_type?: string | null
+          changed_at?: string
+          code_file_id: string
+          content?: string | null
+          diff_metadata?: Json
+          id?: string
+          language?: string | null
+          name?: string | null
+          user_id: string
+          version_number: number
+        }
+        Update: {
+          change_note?: string | null
+          change_source?: string
+          change_type?: string | null
+          changed_at?: string
+          code_file_id?: string
+          content?: string | null
+          diff_metadata?: Json
+          id?: string
+          language?: string | null
+          name?: string | null
+          user_id?: string
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "code_file_versions_code_file_id_fkey"
+            columns: ["code_file_id"]
+            isOneToOne: false
+            referencedRelation: "code_files"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      code_files: {
+        Row: {
+          content: string
+          content_hash: string | null
+          created_at: string
+          folder_id: string | null
+          id: string
+          is_deleted: boolean
+          is_public: boolean
+          is_readonly: boolean
+          language: string
+          metadata: Json
+          name: string
+          organization_id: string | null
+          path: string
+          project_id: string | null
+          repository_id: string | null
+          s3_bucket: string | null
+          s3_key: string | null
+          tags: string[]
+          task_id: string | null
+          updated_at: string
+          user_id: string
+          version: number
+          workspace_id: string | null
+        }
+        Insert: {
+          content?: string
+          content_hash?: string | null
+          created_at?: string
+          folder_id?: string | null
+          id?: string
+          is_deleted?: boolean
+          is_public?: boolean
+          is_readonly?: boolean
+          language?: string
+          metadata?: Json
+          name: string
+          organization_id?: string | null
+          path?: string
+          project_id?: string | null
+          repository_id?: string | null
+          s3_bucket?: string | null
+          s3_key?: string | null
+          tags?: string[]
+          task_id?: string | null
+          updated_at?: string
+          user_id: string
+          version?: number
+          workspace_id?: string | null
+        }
+        Update: {
+          content?: string
+          content_hash?: string | null
+          created_at?: string
+          folder_id?: string | null
+          id?: string
+          is_deleted?: boolean
+          is_public?: boolean
+          is_readonly?: boolean
+          language?: string
+          metadata?: Json
+          name?: string
+          organization_id?: string | null
+          path?: string
+          project_id?: string | null
+          repository_id?: string | null
+          s3_bucket?: string | null
+          s3_key?: string | null
+          tags?: string[]
+          task_id?: string | null
+          updated_at?: string
+          user_id?: string
+          version?: number
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "code_files_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "code_file_folders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "code_files_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ctx_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "code_files_repository_id_fkey"
+            columns: ["repository_id"]
+            isOneToOne: false
+            referencedRelation: "code_repositories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      code_repositories: {
+        Row: {
+          created_at: string
+          description: string | null
+          git_branch: string | null
+          git_commit_sha: string | null
+          git_provider: string | null
+          git_url: string | null
+          id: string
+          is_active: boolean
+          is_public: boolean
+          last_synced_at: string | null
+          metadata: Json
+          name: string
+          organization_id: string | null
+          project_id: string | null
+          root_folder_id: string | null
+          s3_bucket: string | null
+          s3_prefix: string | null
+          sync_error: string | null
+          sync_status: string
+          updated_at: string
+          user_id: string
+          workspace_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          git_branch?: string | null
+          git_commit_sha?: string | null
+          git_provider?: string | null
+          git_url?: string | null
+          id?: string
+          is_active?: boolean
+          is_public?: boolean
+          last_synced_at?: string | null
+          metadata?: Json
+          name: string
+          organization_id?: string | null
+          project_id?: string | null
+          root_folder_id?: string | null
+          s3_bucket?: string | null
+          s3_prefix?: string | null
+          sync_error?: string | null
+          sync_status?: string
+          updated_at?: string
+          user_id: string
+          workspace_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          git_branch?: string | null
+          git_commit_sha?: string | null
+          git_provider?: string | null
+          git_url?: string | null
+          id?: string
+          is_active?: boolean
+          is_public?: boolean
+          last_synced_at?: string | null
+          metadata?: Json
+          name?: string
+          organization_id?: string | null
+          project_id?: string | null
+          root_folder_id?: string | null
+          s3_bucket?: string | null
+          s3_prefix?: string | null
+          sync_error?: string | null
+          sync_status?: string
+          updated_at?: string
+          user_id?: string
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "code_repositories_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ctx_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "code_repositories_root_folder_id_fkey"
+            columns: ["root_folder_id"]
+            isOneToOne: false
+            referencedRelation: "code_file_folders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       compiled_recipe: {
         Row: {
           compiled_recipe: Json
@@ -3154,9 +3946,13 @@ export type Database = {
           id: string
           is_active: boolean | null
           label: string
+          organization_id: string | null
+          project_id: string | null
           sort_order: number | null
+          task_id: string | null
           template: string
           updated_at: string | null
+          user_id: string | null
         }
         Insert: {
           block_id: string
@@ -3167,9 +3963,13 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           label: string
+          organization_id?: string | null
+          project_id?: string | null
           sort_order?: number | null
+          task_id?: string | null
           template: string
           updated_at?: string | null
+          user_id?: string | null
         }
         Update: {
           block_id?: string
@@ -3180,9 +3980,13 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           label?: string
+          organization_id?: string | null
+          project_id?: string | null
           sort_order?: number | null
+          task_id?: string | null
           template?: string
           updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -3198,6 +4002,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "shortcuts_by_placement_view"
             referencedColumns: ["category_id"]
+          },
+          {
+            foreignKeyName: "content_blocks_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -5076,9 +5887,11 @@ export type Database = {
           error_message: string | null
           error_type: string | null
           execution_events: Json | null
+          expires_at: string | null
           file_path: string | null
           id: string
           input_tokens: number | null
+          is_client_delegated: boolean
           is_error: boolean | null
           iteration: number
           message_id: string | null
@@ -5090,6 +5903,8 @@ export type Database = {
           output_type: string | null
           parent_call_id: string | null
           persist_key: string | null
+          resolution_source: string | null
+          resolved_at: string | null
           retry_count: number | null
           started_at: string
           status: string
@@ -5112,9 +5927,11 @@ export type Database = {
           error_message?: string | null
           error_type?: string | null
           execution_events?: Json | null
+          expires_at?: string | null
           file_path?: string | null
           id?: string
           input_tokens?: number | null
+          is_client_delegated?: boolean
           is_error?: boolean | null
           iteration?: number
           message_id?: string | null
@@ -5126,6 +5943,8 @@ export type Database = {
           output_type?: string | null
           parent_call_id?: string | null
           persist_key?: string | null
+          resolution_source?: string | null
+          resolved_at?: string | null
           retry_count?: number | null
           started_at?: string
           status?: string
@@ -5148,9 +5967,11 @@ export type Database = {
           error_message?: string | null
           error_type?: string | null
           execution_events?: Json | null
+          expires_at?: string | null
           file_path?: string | null
           id?: string
           input_tokens?: number | null
+          is_client_delegated?: boolean
           is_error?: boolean | null
           iteration?: number
           message_id?: string | null
@@ -5162,6 +5983,8 @@ export type Database = {
           output_type?: string | null
           parent_call_id?: string | null
           persist_key?: string | null
+          resolution_source?: string | null
+          resolved_at?: string | null
           retry_count?: number | null
           started_at?: string
           status?: string
@@ -12160,9 +12983,13 @@ export type Database = {
           is_active: boolean | null
           label: string
           metadata: Json | null
+          organization_id: string | null
           parent_category_id: string | null
           placement_type: string
+          project_id: string | null
           sort_order: number | null
+          task_id: string | null
+          user_id: string | null
         }
         Insert: {
           color?: string | null
@@ -12173,9 +13000,13 @@ export type Database = {
           is_active?: boolean | null
           label: string
           metadata?: Json | null
+          organization_id?: string | null
           parent_category_id?: string | null
           placement_type: string
+          project_id?: string | null
           sort_order?: number | null
+          task_id?: string | null
+          user_id?: string | null
         }
         Update: {
           color?: string | null
@@ -12186,11 +13017,22 @@ export type Database = {
           is_active?: boolean | null
           label?: string
           metadata?: Json | null
+          organization_id?: string | null
           parent_category_id?: string | null
           placement_type?: string
+          project_id?: string | null
           sort_order?: number | null
+          task_id?: string | null
+          user_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "shortcut_categories_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "shortcut_categories_parent_fkey"
             columns: ["parent_category_id"]
@@ -13549,6 +14391,7 @@ export type Database = {
           icon: string | null
           id: string
           is_active: boolean | null
+          max_client_wait_seconds: number | null
           name: string
           output_schema: Json | null
           parameters: Json
@@ -13567,6 +14410,7 @@ export type Database = {
           icon?: string | null
           id?: string
           is_active?: boolean | null
+          max_client_wait_seconds?: number | null
           name: string
           output_schema?: Json | null
           parameters: Json
@@ -13585,6 +14429,7 @@ export type Database = {
           icon?: string | null
           id?: string
           is_active?: boolean | null
+          max_client_wait_seconds?: number | null
           name?: string
           output_schema?: Json | null
           parameters?: Json
@@ -15108,6 +15953,13 @@ export type Database = {
       }
     }
     Views: {
+      agent_context_menu_view: {
+        Row: {
+          categories_flat: Json | null
+          placement_type: string | null
+        }
+        Relationships: []
+      }
       ai_runs_summary: {
         Row: {
           created_at: string | null
@@ -18031,6 +18883,28 @@ export type Database = {
       }
       generate_invitation_code: { Args: never; Returns: string }
       generate_invitation_token: { Args: never; Returns: string }
+      get_agent_app_public_data: {
+        Args: { p_app_id?: string; p_slug?: string }
+        Returns: {
+          allowed_imports: Json
+          category: string
+          component_code: string
+          component_language: string
+          description: string
+          favicon_url: string
+          id: string
+          layout_config: Json
+          name: string
+          preview_image_url: string
+          slug: string
+          styling_config: Json
+          success_rate: number
+          tagline: string
+          tags: string[]
+          total_executions: number
+          variable_schema: Json
+        }[]
+      }
       get_agent_conversations: {
         Args: {
           p_agent_id: string
@@ -18904,6 +19778,7 @@ export type Database = {
         Args: { p_org_id: string; p_type_id?: string }
         Returns: Json
       }
+      get_ssr_agent_shell_data: { Args: { p_user_id: string }; Returns: Json }
       get_ssr_shell_data: { Args: { p_user_id: string }; Returns: Json }
       get_storage_object: {
         Args: { p_bucket_id: string; p_name: string }
@@ -19237,6 +20112,9 @@ export type Database = {
         Args: { p_conversation_id: string; p_user_id: string }
         Returns: boolean
       }
+      is_org_admin: { Args: { p_org_id: string }; Returns: boolean }
+      is_org_member: { Args: { p_org_id: string }; Returns: boolean }
+      is_platform_admin: { Args: never; Returns: boolean }
       is_resource_owner: {
         Args: { p_resource_id: string; p_resource_type: string }
         Returns: boolean
