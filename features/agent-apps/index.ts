@@ -20,6 +20,10 @@ export type { AgentOption } from "./components/SearchableAgentSelect";
 export { CreateAgentAppForm } from "./components/CreateAgentAppForm";
 export { CreateAgentAppModal } from "./components/CreateAgentAppModal";
 export { UpdateAgentAppModal } from "./components/UpdateAgentAppModal";
+export {
+  AgentAppAdminActions,
+  type AgentAppAdminActionPatch,
+} from "./components/AgentAppAdminActions";
 
 export { AgentAppCard } from "./components/layouts/AgentAppCard";
 export { AgentAppListItem } from "./components/layouts/AgentAppListItem";
