@@ -1,6 +1,6 @@
 # Phase 2 — Content Blocks Migration
 
-**Status:** partially-absorbed-into-phase-1
+**Status:** in-progress (2.1 complete, 2.2 pending DB, 2.3 pending)
 **Owner:** _unassigned_
 **Prerequisites:** Phase 1
 **Unblocks:** Phase 3, Phase 5
@@ -25,9 +25,9 @@ Phase 1 absorbed most of the original Phase 2 scope:
 - [ ] Change log entry here, `MASTER-PLAN.md` status updated.
 
 ## Tasks
-- **2.1** Port insertion utils. Find every importer of `features/prompts/utils/textareaInsertUtils.ts` and update to the new path. Keep the old file exporting from the new location during the dual-run window (deleted in Phase 18).
-- **2.2** View performance smoke test. Run `EXPLAIN ANALYZE` against `agent_context_menu_view` with a meaningful data set. Add partial indexes if the scan-rate is unacceptable.
-- **2.3** Write short dev-doc paragraph in `features/agent-shortcuts/` describing what content blocks are and how they differ from shortcuts (for Phase 3 consumers).
+- [x] **2.1** Port insertion utils. New: `utils/text-insertion.ts`. Re-export shim kept at `features/prompts/utils/textareaInsertUtils.ts` (deleted in Phase 18). One non-prompts caller (`app/(ssr)/ssr/notes/_components/NoteContextMenuContent.tsx`) switched.
+- [ ] **2.2** View performance smoke test. Run `EXPLAIN ANALYZE` against `agent_context_menu_view` with a meaningful data set. Add partial indexes if the scan-rate is unacceptable. *(Requires DB apply of Phase 1 migrations.)*
+- [ ] **2.3** Write short dev-doc paragraph in `features/agent-shortcuts/` describing what content blocks are and how they differ from shortcuts (for Phase 3 consumers).
 
 ## Out of scope
 - Any UI route (Phases 11/12/13).
@@ -39,3 +39,4 @@ Phase 1 absorbed most of the original Phase 2 scope:
 |---|---|---|
 | 2026-04-20 | initial plan | Phase created |
 | 2026-04-20 | main agent | Phase largely absorbed into Phase 1 after discovery that `content_blocks` already exists. Remaining scope: insertion util port + perf verification. |
+| 2026-04-20 | main agent | Task 2.1 shipped. Insertion utils now live at `utils/text-insertion.ts`; legacy path is a re-export shim so prompt-side callers keep working until Phase 18. |
