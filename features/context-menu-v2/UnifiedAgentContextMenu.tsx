@@ -52,6 +52,17 @@ import {
   type SelectionRange,
 } from "./utils/selection-tracking";
 
+export type PlacementVisibility = "show" | "hide" | "disable";
+
+export type PlacementKey =
+  | "ai-action"
+  | "content-block"
+  | "organization-tool"
+  | "user-tool"
+  | "quick-action";
+
+export type PlacementMode = Partial<Record<PlacementKey, PlacementVisibility>>;
+
 export interface UnifiedAgentContextMenuProps {
   children: React.ReactNode;
   editorId?: string;
@@ -61,10 +72,30 @@ export interface UnifiedAgentContextMenuProps {
   onTextInsertBefore?: (text: string) => void;
   onTextInsertAfter?: (text: string) => void;
   isEditable?: boolean;
+  /**
+   * Per-placement visibility. Defaults to "show" for every placement type.
+   * - "show"    → render normally
+   * - "hide"    → don't render the submenu at all
+   * - "disable" → render the submenu but greyed out and unclickable
+   */
+  placementMode?: PlacementMode;
+  /** @deprecated Use `placementMode`. Anything not in this list is treated as "hide". */
   enabledPlacements?: string[];
+  /**
+   * Contexts added to the default {general} allow-set.
+   * Example: `['code-editor']` lets code-editor shortcuts through alongside general.
+   */
+  addedContexts?: string[];
+  /**
+   * Contexts removed from the allow-set after `addedContexts` is applied.
+   * Example: `excludedContexts: ['general']` with `addedContexts: ['code-editor']`
+   * → only shortcuts tagged specifically with `code-editor` appear.
+   */
+  excludedContexts?: string[];
   contextData?: {
     content?: string;
     context?: string;
+    /** @deprecated Use `addedContexts` / `excludedContexts` instead. */
     contextFilter?: string;
     [key: string]: unknown;
   };
@@ -82,13 +113,42 @@ export interface UnifiedAgentContextMenuProps {
   scopeId?: string | null;
 }
 
-const DEFAULT_PLACEMENTS = [
-  PLACEMENT_TYPES.AI_ACTION,
-  PLACEMENT_TYPES.CONTENT_BLOCK,
-  PLACEMENT_TYPES.ORGANIZATION_TOOL,
-  PLACEMENT_TYPES.USER_TOOL,
-  "quick-action",
+const DEFAULT_PLACEMENT_MODE: Required<PlacementMode> = {
+  "ai-action": "show",
+  "content-block": "show",
+  "organization-tool": "show",
+  "user-tool": "show",
+  "quick-action": "show",
+};
+
+const ALL_DB_PLACEMENTS: PlacementKey[] = [
+  "ai-action",
+  "content-block",
+  "organization-tool",
+  "user-tool",
 ];
+
+function resolvePlacementMode(
+  placementMode: PlacementMode | undefined,
+  enabledPlacements: string[] | undefined,
+): Required<PlacementMode> {
+  // Explicit placementMode wins; callers migrating can drop `enabledPlacements`.
+  if (placementMode) {
+    return { ...DEFAULT_PLACEMENT_MODE, ...placementMode };
+  }
+  // Legacy path: anything not in enabledPlacements is hidden.
+  if (enabledPlacements) {
+    const enabledSet = new Set(enabledPlacements);
+    return {
+      "ai-action": enabledSet.has("ai-action") ? "show" : "hide",
+      "content-block": enabledSet.has("content-block") ? "show" : "hide",
+      "organization-tool": enabledSet.has("organization-tool") ? "show" : "hide",
+      "user-tool": enabledSet.has("user-tool") ? "show" : "hide",
+      "quick-action": enabledSet.has("quick-action") ? "show" : "hide",
+    };
+  }
+  return DEFAULT_PLACEMENT_MODE;
+}
 
 export function UnifiedAgentContextMenu({
   children,
@@ -99,7 +159,10 @@ export function UnifiedAgentContextMenu({
   onTextInsertBefore,
   onTextInsertAfter,
   isEditable = false,
-  enabledPlacements = DEFAULT_PLACEMENTS,
+  placementMode,
+  enabledPlacements,
+  addedContexts,
+  excludedContexts,
   contextData = {},
   className,
   enableFloatingIcon = true,
@@ -116,12 +179,26 @@ export function UnifiedAgentContextMenu({
 }: UnifiedAgentContextMenuProps) {
   const dispatch = useAppDispatch();
 
-  const dbPlacementTypes = enabledPlacements.filter((p) => p !== "quick-action");
-  const contextFilter = contextData?.contextFilter as string | undefined;
+  const resolvedPlacementMode = resolvePlacementMode(placementMode, enabledPlacements);
+
+  // Placements the hook should fetch items for: anything not "hide".
+  // "disable" still fetches so the row count is available; "hide" skips.
+  const dbPlacementTypes = ALL_DB_PLACEMENTS.filter(
+    (p) => resolvedPlacementMode[p] !== "hide",
+  );
+
+  // Legacy support: contextFilter becomes a single-entry addedContexts +
+  // excludedContexts: ['general'] — i.e. "only this one context".
+  const legacyContextFilter = contextData?.contextFilter as string | undefined;
+  const resolvedAddedContexts =
+    addedContexts ?? (legacyContextFilter ? [legacyContextFilter] : undefined);
+  const resolvedExcludedContexts =
+    excludedContexts ?? (legacyContextFilter ? ["general"] : undefined);
 
   const { categoryGroups, loading } = useUnifiedAgentContextMenu({
     placementTypes: dbPlacementTypes,
-    contextFilter,
+    addedContexts: resolvedAddedContexts,
+    excludedContexts: resolvedExcludedContexts,
     enabled: dbPlacementTypes.length > 0,
     scope,
     scopeId,
@@ -470,8 +547,25 @@ export function UnifiedAgentContextMenu({
       const selectionText =
         capturedSelection.current?.text || selectedText || "";
 
+      // Compute text_before / text_after from the textarea around the selection.
+      // This mirrors useAgentLauncherTester's applicationScope so shortcuts
+      // mapped to `text_before` / `text_after` actually receive values.
+      let textBefore = "";
+      let textAfter = "";
+      if (
+        selectionRange &&
+        selectionRange.type === "editable" &&
+        selectionRange.element
+      ) {
+        const value = selectionRange.element.value ?? "";
+        textBefore = value.substring(0, selectionRange.start ?? 0);
+        textAfter = value.substring(selectionRange.end ?? 0);
+      }
+
       const applicationScope: ApplicationScope = {
         selection: selectionText,
+        text_before: textBefore,
+        text_after: textAfter,
         content:
           typeof contextData?.content === "string" ? contextData.content : "",
         context:
@@ -580,7 +674,7 @@ export function UnifiedAgentContextMenu({
     loading,
     selectedText,
     isEditable,
-    enabledPlacements,
+    placementMode: resolvedPlacementMode,
     categoryGroups,
     onEntrySelect: handleEntrySelect,
     onCopy: handleCopy,

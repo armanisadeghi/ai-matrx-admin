@@ -41,7 +41,16 @@ export interface AgentMenuCategoryGroup {
 
 export interface UseUnifiedAgentContextMenuArgs {
   placementTypes: string[];
-  contextFilter?: string;
+  /**
+   * Contexts to ADD to the default `{general}` allow-set.
+   * Example: `['code-editor']` makes code-editor shortcuts visible alongside general ones.
+   */
+  addedContexts?: string[];
+  /**
+   * Contexts to REMOVE from the allow-set after `addedContexts` is applied.
+   * Example: `['general']` with `addedContexts: ['code-editor']` → only code-editor shortcuts.
+   */
+  excludedContexts?: string[];
   enabled?: boolean;
   scope?: Scope;
   scopeId?: string | null;
@@ -90,14 +99,34 @@ function dedupeByPrecedence<T extends { scopeLevel: Scope }>(
   return [...winners.values(), ...passthrough];
 }
 
-function filterByContext<T extends { enabledContexts?: string[] | null }>(
-  items: T[],
-  contextFilter: string | undefined,
-): T[] {
-  if (!contextFilter) return items;
+// Allowed-context set: `{general} ∪ addedContexts − excludedContexts`.
+// An item is visible iff its `enabled_contexts` intersects the set, OR the
+// item has no `enabled_contexts` declared (legacy data — treated as general).
+function buildAllowedContexts(
+  addedContexts: string[] | undefined,
+  excludedContexts: string[] | undefined,
+): Set<string> {
+  const allowed = new Set<string>(["general"]);
+  for (const c of addedContexts ?? []) allowed.add(c);
+  for (const c of excludedContexts ?? []) allowed.delete(c);
+  return allowed;
+}
+
+function filterByAllowedContexts<
+  T extends { enabledContexts?: string[] | null },
+>(items: T[], allowed: Set<string>): T[] {
+  // Empty allow-set is a nonsense state — treat as "nothing visible".
+  if (allowed.size === 0) return [];
   return items.filter((item) => {
-    const ec = item.enabledContexts ?? null;
-    return ec === null || ec.length === 0 || ec.includes(contextFilter);
+    const ec = item.enabledContexts;
+    if (!ec || ec.length === 0) {
+      // Legacy rows with no contexts declared — treat as general.
+      return allowed.has("general");
+    }
+    for (const c of ec) {
+      if (allowed.has(c)) return true;
+    }
+    return false;
   });
 }
 
@@ -106,7 +135,8 @@ export function useUnifiedAgentContextMenu(
 ): UseUnifiedAgentContextMenuResult {
   const {
     placementTypes,
-    contextFilter,
+    addedContexts,
+    excludedContexts,
     enabled = true,
     scope = "global",
     scopeId = null,
@@ -211,8 +241,13 @@ export function useUnifiedAgentContextMenu(
         scopeLevel: resolveRowScope(b),
       }));
 
-    const filteredCategories = filterByContext(scopedCategories, contextFilter);
-    const filteredShortcuts = filterByContext(scopedShortcuts, contextFilter);
+    const allowedContexts = buildAllowedContexts(addedContexts, excludedContexts);
+
+    const filteredCategories = filterByAllowedContexts(scopedCategories, allowedContexts);
+    const filteredShortcuts = filterByAllowedContexts(scopedShortcuts, allowedContexts);
+    // Content blocks are static insertable text — they don't carry enabled_contexts
+    // today, so they always pass through. (If we ever add enabled_contexts to
+    // content_blocks, swap in filterByAllowedContexts.)
     const filteredBlocks = scopedBlocks;
 
     const dedupedCategories = dedupeByPrecedence(
@@ -280,7 +315,8 @@ export function useUnifiedAgentContextMenu(
     categories,
     shortcuts,
     contentBlocks,
-    contextFilter,
+    addedContexts,
+    excludedContexts,
   ]);
 
   return {
