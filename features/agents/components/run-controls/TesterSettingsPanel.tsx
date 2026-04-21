@@ -8,8 +8,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  VARIABLE_INPUT_STYLE_OPTIONS,
-  type VariableInputStyle,
+  VARIABLE_PANEL_STYLE_OPTIONS,
+  type VariablesPanelStyle,
 } from "@/features/agents/types";
 import { ApiEndpointMode } from "@/features/agents/types/instance.types";
 import { VoiceTextarea } from "@/features/audio";
@@ -31,10 +31,10 @@ export interface TesterSettingsController {
   setAutoRun: (v: boolean) => void;
   showVariablePanel: boolean;
   setShowVariablePanel: (v: boolean) => void;
-  variableInputStyle: VariableInputStyle;
-  setVariableInputStyle: (v: VariableInputStyle) => void;
-  usePreExecutionInput: boolean;
-  setUsePreExecutionInput: (v: boolean) => void;
+  variablesPanelStyle: VariablesPanelStyle;
+  setVariablesPanelStyle: (v: VariablesPanelStyle) => void;
+  showPreExecutionGate: boolean;
+  setShowPreExecutionGate: (v: boolean) => void;
   preExecutionMessage: string;
   setPreExecutionMessage: (v: string) => void;
   showDefinitionMessages: boolean;
@@ -195,9 +195,9 @@ export function TesterSettingsPanel({
           Variable Input Style
         </Label>
         <Select
-          value={c.variableInputStyle}
+          value={c.variablesPanelStyle}
           onValueChange={(v) =>
-            c.setVariableInputStyle(v as VariableInputStyle)
+            c.setVariablesPanelStyle(v as VariablesPanelStyle)
           }
           disabled={!c.showVariablePanel}
         >
@@ -209,7 +209,7 @@ export function TesterSettingsPanel({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {VARIABLE_INPUT_STYLE_OPTIONS.map((opt) => (
+            {VARIABLE_PANEL_STYLE_OPTIONS.map((opt) => (
               <SelectItem
                 key={opt.value}
                 value={opt.value}
@@ -223,14 +223,14 @@ export function TesterSettingsPanel({
       </div>
 
       <SwitchRow
-        id={`${idPrefix}-use-pre-execution`}
-        label="Use Pre-Execution Input"
-        checked={c.usePreExecutionInput}
-        onCheckedChange={c.setUsePreExecutionInput}
-        title="Gate the widget with an initial input screen"
+        id={`${idPrefix}-show-pre-execution-gate`}
+        label="Show Pre-Execution Gate"
+        checked={c.showPreExecutionGate}
+        onCheckedChange={c.setShowPreExecutionGate}
+        title="Show a gate UI before executing where the user provides initial text"
       />
 
-      {c.usePreExecutionInput && (
+      {c.showPreExecutionGate && (
         <input
           id={`${idPrefix}-pre-execution-message`}
           type="text"

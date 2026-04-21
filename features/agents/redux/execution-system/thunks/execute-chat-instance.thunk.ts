@@ -23,7 +23,10 @@ import type {
 } from "@/features/agents/types/agent-api-types";
 import type { MessagePart } from "@/types/python-generated/stream-events";
 import type { MessageRecord } from "../messages/messages.slice";
-import { extractContentBlocks, extractFlatText } from "../messages/messages.selectors";
+import {
+  extractContentBlocks,
+  extractFlatText,
+} from "../messages/messages.selectors";
 import { generateRequestId } from "../utils";
 import { setInstanceStatus } from "../conversations";
 import { selectSettingsForChatApi } from "../instance-model-overrides";
@@ -147,7 +150,7 @@ export function assembleChatRequest(
 
   const preExecState = state.instanceUIState.byConversationId[conversationId];
   if (
-    preExecState?.usePreExecutionInput &&
+    preExecState?.showPreExecutionGate &&
     !preExecState.preExecutionSatisfied
   ) {
     console.error(
@@ -356,8 +359,7 @@ export const executeChatInstance = createAsyncThunk<
 
     try {
       const state = getState() as RootState;
-      const instance =
-        state.conversations.byConversationId[conversationId];
+      const instance = state.conversations.byConversationId[conversationId];
 
       if (!instance) {
         throw new Error(`Instance ${conversationId} not found`);
@@ -405,9 +407,15 @@ export const executeChatInstance = createAsyncThunk<
       if (userInputText || userMessageParts || resourceBlocks.length > 0) {
         const content: CxContentBlock[] = [
           ...(userInputText
-            ? [{ type: "text", text: userInputText } as unknown as CxContentBlock]
+            ? [
+                {
+                  type: "text",
+                  text: userInputText,
+                } as unknown as CxContentBlock,
+              ]
             : []),
-          ...(userMessageParts as unknown as CxContentBlock[] | undefined ?? []),
+          ...((userMessageParts as unknown as CxContentBlock[] | undefined) ??
+            []),
           ...(resourceBlocks as unknown as CxContentBlock[]),
         ];
         userMessageClientTempId = uuidv4();
@@ -443,9 +451,8 @@ export const executeChatInstance = createAsyncThunk<
       // Consume any pending cache-bypass flags for this conversation —
       // direct DB writes (edits, forks, deletes) leave the server's agent
       // cache stale; this one-shot flag rebuilds it.
-      const { consumePendingCacheBypass } = await import(
-        "../message-crud/cache-bypass.slice"
-      );
+      const { consumePendingCacheBypass } =
+        await import("../message-crud/cache-bypass.slice");
       const pendingBypass = dispatch(
         consumePendingCacheBypass(conversationId) as never,
       ) as unknown as

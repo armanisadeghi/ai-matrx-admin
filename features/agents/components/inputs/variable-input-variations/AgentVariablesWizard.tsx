@@ -46,7 +46,7 @@ export function AgentVariablesWizard({
   const showVariablePanel = useAppSelector(
     selectShowVariablePanel(conversationId),
   );
-  const variableInputStyle = useAppSelector(
+  const variablesPanelStyle = useAppSelector(
     selectVariableInputStyle(conversationId),
   );
   const shouldShowVariables = useAppSelector(
@@ -86,7 +86,7 @@ export function AgentVariablesWizard({
     !shouldShowVariables ||
     !showVariablePanel ||
     definitions.length === 0 ||
-    variableInputStyle !== "wizard"
+    variablesPanelStyle !== "wizard"
   ) {
     return null;
   }

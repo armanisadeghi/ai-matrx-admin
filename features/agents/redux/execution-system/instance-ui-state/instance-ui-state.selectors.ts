@@ -15,7 +15,7 @@ import type {
   BuilderAdvancedSettings,
   InstanceUIState,
   ResultDisplayMode,
-  VariableInputStyle,
+  VariablesPanelStyle,
 } from "@/features/agents/types";
 import { DEFAULT_BUILDER_ADVANCED_SETTINGS } from "@/features/agents/types/instance.types";
 import { getShortcutRecordFromState } from "@/features/agents/redux/agent-shortcuts/selectors";
@@ -96,7 +96,7 @@ export const selectUsePreExecutionInput =
   (conversationId: string) =>
   (state: RootState): boolean =>
     state.instanceUIState.byConversationId[conversationId]
-      ?.usePreExecutionInput ?? false;
+      ?.showPreExecutionGate ?? false;
 
 export const selectPreExecutionSatisfied =
   (conversationId: string) =>
@@ -113,7 +113,7 @@ export const selectNeedsPreExecutionInput =
   (state: RootState): boolean => {
     const entry = state.instanceUIState.byConversationId[conversationId];
     if (!entry) return false;
-    return entry.usePreExecutionInput && !entry.preExecutionSatisfied;
+    return entry.showPreExecutionGate && !entry.preExecutionSatisfied;
   };
 
 // ── Visibility (fine-grained) ────────────────────────────────────────────────
@@ -432,9 +432,9 @@ export const selectPreExecutionMessage =
 
 export const selectVariableInputStyle =
   (conversationId: string) =>
-  (state: RootState): VariableInputStyle =>
+  (state: RootState): VariablesPanelStyle =>
     state.instanceUIState.byConversationId[conversationId]
-      ?.variableInputStyle ?? "inline";
+      ?.variablesPanelStyle ?? "inline";
 
 // ── Global preference selectors ───────────────────────────────────────────────
 

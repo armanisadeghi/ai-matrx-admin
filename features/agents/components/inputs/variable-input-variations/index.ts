@@ -5,8 +5,8 @@ export { AgentVariableForm as AgentVariableInputForm } from "./AgentVariableForm
 export { AgentVariablesWizard as WizardAgentVariableInputs } from "./AgentVariablesWizard";
 export { SmartAgentVariables } from "./SmartAgentVariables";
 export {
-  VARIABLE_INPUT_STYLES,
-  VARIABLE_INPUT_STYLE_OPTIONS,
-  isVariableInputStyle,
-  type VariableInputStyle,
+  VARIABLE_PANEL_STYLES,
+  VARIABLE_PANEL_STYLE_OPTIONS,
+  isVariablesPanelStyle,
+  type VariablesPanelStyle,
 } from "./variable-input-options";

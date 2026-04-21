@@ -8,9 +8,20 @@
 // Result Display Types
 // ============================================================================
 
-import type { ResultDisplayMode } from "@/features/agents/types/instance.types";
-
-export type ResultDisplay = ResultDisplayMode;
+export type ResultDisplayMode =
+  | "modal-full"
+  | "modal-compact"
+  | "chat-bubble"
+  | "inline"
+  | "sidebar"
+  | "flexible-panel"
+  | "panel"
+  | "toast"
+  | "floating-chat"
+  | "direct"
+  | "background"
+  | "chat-collapsible"
+  | "chat-assistant";
 
 export interface DisplayModeMeta {
   label: string;
@@ -161,11 +172,11 @@ export const RESULT_DISPLAY_META: Record<ResultDisplayMode, DisplayModeMeta> = {
   },
 };
 
-export const hasVisibleUI = (display: ResultDisplay): boolean => {
+export const hasVisibleUI = (display: ResultDisplayMode): boolean => {
   return display !== "background" && display !== "direct";
 };
 
-export const isInteractive = (display: ResultDisplay): boolean => {
+export const isInteractive = (display: ResultDisplayMode): boolean => {
   return (
     display === "modal-full" ||
     display === "modal-compact" ||
@@ -179,7 +190,7 @@ export const isInteractive = (display: ResultDisplay): boolean => {
 // ============================================================================
 
 export interface AgentUiRunConfig {
-  result_display: ResultDisplay;
+  result_display: ResultDisplayMode;
   auto_run: boolean;
   allow_chat: boolean;
   show_variables: boolean;
@@ -209,7 +220,7 @@ export function parseExecutionConfig(
 ): AgentUiRunConfig {
   return {
     result_display:
-      (result_display as ResultDisplay) ||
+      (result_display as ResultDisplayMode) ||
       DEFAULT_EXECUTION_CONFIG.result_display,
     auto_run: auto_run ?? DEFAULT_EXECUTION_CONFIG.auto_run,
     allow_chat: allow_chat ?? DEFAULT_EXECUTION_CONFIG.allow_chat,
@@ -223,7 +234,7 @@ export function parseExecutionConfig(
   };
 }
 
-export function requiresModalUI(display: ResultDisplay): boolean {
+export function requiresModalUI(display: ResultDisplayMode): boolean {
   return (
     display === "modal-full" ||
     display === "modal-compact" ||
@@ -231,31 +242,31 @@ export function requiresModalUI(display: ResultDisplay): boolean {
   );
 }
 
-export function requiresInlineUI(display: ResultDisplay): boolean {
+export function requiresInlineUI(display: ResultDisplayMode): boolean {
   return display === "inline";
 }
 
-export function showsResults(display: ResultDisplay): boolean {
+export function showsResults(display: ResultDisplayMode): boolean {
   return display !== "background";
 }
 
 /**
  * Get all display types as an array
  */
-export function getAllDisplayTypes(): ResultDisplay[] {
-  return Object.keys(RESULT_DISPLAY_META) as ResultDisplay[];
+export function getAllDisplayTypes(): ResultDisplayMode[] {
+  return Object.keys(RESULT_DISPLAY_META) as ResultDisplayMode[];
 }
 
 /**
  * Get metadata for a specific display type
  */
-export function getDisplayMeta(display: ResultDisplay) {
+export function getDisplayMeta(display: ResultDisplayMode) {
   return RESULT_DISPLAY_META[display];
 }
 
 /**
  * Check if a display type requires test mode UI
  */
-export function isTestMode(display: ResultDisplay): boolean {
+export function isTestMode(display: ResultDisplayMode): boolean {
   return RESULT_DISPLAY_META[display].testMode;
 }

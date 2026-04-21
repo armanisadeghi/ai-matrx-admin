@@ -4,7 +4,7 @@
  * AgentPreExecutionInput
  *
  * Focused gate component — NOT a chat interface. Shown before the main display
- * when usePreExecutionInput is true and preExecutionSatisfied is false.
+ * when showPreExecutionGate is true and preExecutionSatisfied is false.
  *
  * Uses SmartAgentInput in compact mode with send disabled so the user gets
  * full functionality (variables, resources, audio, paste) in a tight layout.

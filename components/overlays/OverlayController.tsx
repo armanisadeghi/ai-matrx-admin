@@ -651,6 +651,12 @@ const AgentAssistantMarkdownDebugWindow = dynamic(
   { ssr: false },
 );
 
+const MessageAnalysisWindow = dynamic(
+  () =>
+    import("@/features/window-panels/windows/agents/MessageAnalysisWindow"),
+  { ssr: false },
+);
+
 // ============================================================================
 // OVERLAY CONTROLLER
 // ============================================================================
@@ -954,6 +960,13 @@ export const OverlayController: React.FC = () => {
 
   const isAgentAssistantMarkdownDebugWindowOpen = useAppSelector((s) =>
     selectIsOverlayOpen(s, "agentAssistantMarkdownDebugWindow"),
+  );
+
+  const isMessageAnalysisWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "messageAnalysisWindow"),
+  );
+  const messageAnalysisWindowData = useAppSelector((s) =>
+    selectOverlayData(s, "messageAnalysisWindow"),
   );
 
   const agentGateWindowInstances = useAppSelector((s) =>
@@ -1279,11 +1292,17 @@ export const OverlayController: React.FC = () => {
         )}
 
       {isStreamDebugOpen &&
-        (streamDebugData as { conversationId?: string } | null)
-          ?.conversationId && (
+        (streamDebugData as {
+          conversationId?: string;
+          requestId?: string | null;
+        } | null)?.conversationId && (
           <StreamDebugFloating
             conversationId={
               (streamDebugData as { conversationId: string }).conversationId
+            }
+            requestIdOverride={
+              (streamDebugData as { requestId?: string | null }).requestId ??
+              undefined
             }
             onClose={() => close("streamDebug")}
           />
@@ -2185,6 +2204,28 @@ export const OverlayController: React.FC = () => {
         <ExecutionInspectorWindow
           isOpen={true}
           onClose={() => close("executionInspectorWindow")}
+        />
+      )}
+
+      {isMessageAnalysisWindowOpen && (
+        <MessageAnalysisWindow
+          isOpen={true}
+          onClose={() => close("messageAnalysisWindow")}
+          conversationId={
+            (
+              messageAnalysisWindowData as {
+                conversationId?: string | null;
+              } | null
+            )?.conversationId ?? null
+          }
+          requestId={
+            (messageAnalysisWindowData as { requestId?: string | null } | null)
+              ?.requestId ?? null
+          }
+          messageId={
+            (messageAnalysisWindowData as { messageId?: string | null } | null)
+              ?.messageId ?? null
+          }
         />
       )}
 

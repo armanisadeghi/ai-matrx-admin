@@ -398,6 +398,7 @@ export interface TimelineWarning extends TimelineBase {
   recoverable: boolean;
   userMessage: string | null;
   systemMessage: string;
+  metadata?: Record<string, unknown>;
 }
 
 export interface TimelineInfo extends TimelineBase {
@@ -405,6 +406,7 @@ export interface TimelineInfo extends TimelineBase {
   code: string;
   userMessage: string | null;
   systemMessage: string;
+  metadata?: Record<string, unknown>;
 }
 
 export interface TimelineRecordReserved extends TimelineBase {
@@ -413,6 +415,7 @@ export interface TimelineRecordReserved extends TimelineBase {
   recordId: string;
   dbProject: string;
   parentRefs: Record<string, string>;
+  metadata: Record<string, unknown>;
 }
 
 export interface TimelineRecordUpdate extends TimelineBase {
@@ -420,6 +423,7 @@ export interface TimelineRecordUpdate extends TimelineBase {
   table: string;
   recordId: string;
   status: "active" | "completed" | "failed";
+  metadata?: Record<string, unknown>;
 }
 
 export interface TimelinePhase extends TimelineBase {
@@ -467,6 +471,8 @@ export interface TimelineError extends TimelineBase {
   errorType: string;
   message: string;
   isFatal: boolean;
+  code?: string | null;
+  details?: Record<string, unknown> | null;
 }
 
 export interface TimelineEnd extends TimelineBase {

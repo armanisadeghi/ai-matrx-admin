@@ -37,6 +37,8 @@ import {
   GitBranch,
   Send,
   FileType,
+  Activity,
+  BarChart3,
 } from "lucide-react";
 import { copyToClipboard } from "@/components/matrx/buttons/markdown-copy-utils";
 import { printMarkdownContent } from "@/features/conversation/utils/markdown-print";
@@ -61,6 +63,8 @@ import {
   openFeedbackDialog,
   openAnnouncements,
   openUserPreferences,
+  openStreamDebug,
+  openMessageAnalysisWindow,
 } from "@/lib/redux/slices/overlaySlice";
 import type { MenuItem } from "@/components/official/AdvancedMenu";
 import type { AppDispatch, RootState } from "@/lib/redux/store";
@@ -90,6 +94,21 @@ export interface MessageActionContext {
   showFullPrint: boolean;
   onFullPrint?: () => void;
   isCapturing?: boolean;
+
+  /**
+   * True only when the viewer owns the agent definition that authored the
+   * conversation. Creator-only debugging / analysis items (stream debug,
+   * response analysis) are hidden otherwise.
+   */
+  isCreator: boolean;
+  /**
+   * The request that produced this message — comes from
+   * `MessageRecord._streamRequestId`. `null` on messages from a previous
+   * session (activeRequests is in-memory only), or on user messages. When
+   * null, creator panels fall back to the latest request for the
+   * conversation.
+   */
+  streamRequestId: string | null;
 }
 
 // ============================================================================
@@ -839,6 +858,65 @@ function forkAtMessageItem(ctx: MessageActionContext): MenuItem {
 }
 
 // ============================================================================
+// CREATOR-ONLY ITEMS — visible only to the agent's owner
+//
+// These surface the same analytics and debugging tools that live in the
+// Creator Run Panel on /agent/[id]/run and /build, but pinned to the
+// request that produced a specific message. Every item opens a floating
+// window-panel — the core logic stays in one place (`StreamDebugPanel`,
+// `RequestStatsPanel`, etc.) and the window components are thin wrappers.
+//
+// Only items that make sense per-message are exposed here. Input-bound
+// settings (system prompt editor, run settings, context slots, widget
+// invoker, reset conversation) are intentionally omitted because they
+// are not tied to an individual message.
+// ============================================================================
+
+function creatorItems(ctx: MessageActionContext): MenuItem[] {
+  const { conversationId, messageId, streamRequestId, dispatch, onClose } = ctx;
+  if (!ctx.isCreator) return [];
+  if (!conversationId) return [];
+
+  return [
+    {
+      key: "analyze-response",
+      icon: BarChart3,
+      iconColor: "text-emerald-500 dark:text-emerald-400",
+      label: "Analyze response",
+      action: () => {
+        dispatch(
+          openMessageAnalysisWindow({
+            conversationId,
+            requestId: streamRequestId,
+            messageId,
+          }),
+        );
+        onClose();
+      },
+      category: "Creator",
+      showToast: false,
+    },
+    {
+      key: "stream-debug",
+      icon: Activity,
+      iconColor: "text-blue-500 dark:text-blue-400",
+      label: "Debug stream",
+      action: () => {
+        dispatch(
+          openStreamDebug({
+            conversationId,
+            requestId: streamRequestId ?? undefined,
+          }),
+        );
+        onClose();
+      },
+      category: "Creator",
+      showToast: false,
+    },
+  ];
+}
+
+// ============================================================================
 // ASSISTANT-ONLY EXTRAS
 // ============================================================================
 
@@ -918,6 +996,7 @@ export function getAssistantMessageActions(
   return [
     editContentItem(ctx),
     forkAtMessageItem(ctx),
+    ...creatorItems(ctx),
     ...copyItems(ctx),
     ...assistantOnlyItems(ctx),
     ...exportItems(ctx),
@@ -942,6 +1021,7 @@ export function getUserMessageActions(ctx: MessageActionContext): MenuItem[] {
     editContentItem(ctx),
     editAndResubmitItem(ctx),
     forkAtMessageItem(ctx),
+    ...creatorItems(ctx),
     ...copyItems(ctx),
     ...exportItems(ctx),
     ...saveItems(ctx),

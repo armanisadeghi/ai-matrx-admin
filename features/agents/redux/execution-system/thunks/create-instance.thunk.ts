@@ -60,7 +60,7 @@ import {
   ResultDisplayMode,
   type JsonExtractionConfig,
   type SourceFeature,
-  type VariableInputStyle,
+  type VariablesPanelStyle,
 } from "@/features/agents/types/instance.types";
 import { mapScopeToInstance } from "@/features/agents/utils/scope-mapping";
 
@@ -104,7 +104,7 @@ interface CreateManualInstanceArgs {
   sourceFeature?: SourceFeature;
   autoRun?: boolean;
   allowChat?: boolean;
-  usePreExecutionInput?: boolean;
+  showPreExecutionGate?: boolean;
   showVariablePanel?: boolean;
   showDefinitionMessages?: boolean;
   showDefinitionMessageContent?: boolean;
@@ -113,7 +113,7 @@ interface CreateManualInstanceArgs {
   hideReasoning?: boolean;
   hideToolResults?: boolean;
   preExecutionMessage?: string | null;
-  variableInputStyle?: VariableInputStyle;
+  variablesPanelStyle?: VariablesPanelStyle;
   jsonExtraction?: JsonExtractionConfig | null;
   originalText?: string | null;
   /**
@@ -138,7 +138,7 @@ export const createManualInstance = createAsyncThunk<
     sourceFeature = "agent-runner",
     autoRun,
     allowChat,
-    usePreExecutionInput,
+    showPreExecutionGate,
     showVariablePanel,
     showDefinitionMessages,
     showDefinitionMessageContent,
@@ -147,7 +147,7 @@ export const createManualInstance = createAsyncThunk<
     hideReasoning,
     hideToolResults,
     preExecutionMessage,
-    variableInputStyle,
+    variablesPanelStyle,
     jsonExtraction,
     originalText,
     isEphemeral,
@@ -196,7 +196,7 @@ export const createManualInstance = createAsyncThunk<
       showAutoClearToggle,
       autoRun,
       allowChat,
-      usePreExecutionInput,
+      showPreExecutionGate,
       showVariablePanel:
         showVariablePanel ?? snapshot.variableDefinitions.length > 0,
       showDefinitionMessages,
@@ -205,7 +205,7 @@ export const createManualInstance = createAsyncThunk<
       hideReasoning,
       hideToolResults,
       preExecutionMessage,
-      variableInputStyle,
+      variablesPanelStyle,
       jsonExtraction,
       originalText,
     }),
@@ -226,7 +226,7 @@ interface CreateShortcutInstanceArgs {
   displayMode?: ResultDisplayMode;
   autoRun?: boolean;
   allowChat?: boolean;
-  usePreExecutionInput?: boolean;
+  showPreExecutionGate?: boolean;
   autoClearConversation?: boolean;
   showAutoClearToggle?: boolean;
   apiEndpointMode?: ApiEndpointMode;
@@ -237,7 +237,7 @@ interface CreateShortcutInstanceArgs {
   hideReasoning?: boolean;
   hideToolResults?: boolean;
   preExecutionMessage?: string | null;
-  variableInputStyle?: VariableInputStyle;
+  variablesPanelStyle?: VariablesPanelStyle;
   jsonExtraction?: JsonExtractionConfig | null;
   originalText?: string | null;
 }
@@ -253,7 +253,7 @@ export const createInstanceFromShortcut = createAsyncThunk<
     displayMode,
     autoRun,
     allowChat,
-    usePreExecutionInput,
+    showPreExecutionGate,
     autoClearConversation,
     showAutoClearToggle,
     apiEndpointMode = "agent",
@@ -264,7 +264,7 @@ export const createInstanceFromShortcut = createAsyncThunk<
     hideReasoning,
     hideToolResults,
     preExecutionMessage,
-    variableInputStyle,
+    variablesPanelStyle,
     jsonExtraction,
     originalText,
   } = args;
@@ -313,7 +313,7 @@ export const createInstanceFromShortcut = createAsyncThunk<
       displayMode: (displayMode ?? shortcut.resultDisplay) as ResultDisplayMode,
       autoRun,
       allowChat: allowChat ?? shortcut.allowChat,
-      usePreExecutionInput,
+      showPreExecutionGate,
       autoClearConversation,
       showAutoClearToggle,
       showVariablePanel: showVariablePanel ?? shortcut.showVariables,
@@ -324,7 +324,7 @@ export const createInstanceFromShortcut = createAsyncThunk<
       hideReasoning,
       hideToolResults,
       preExecutionMessage,
-      variableInputStyle,
+      variablesPanelStyle,
       jsonExtraction,
       originalText,
     }),
@@ -586,7 +586,7 @@ export const startNewConversation = createAsyncThunk<
         showAutoClearToggle: currentUIState?.showAutoClearToggle,
         autoRun: currentUIState?.autoRun,
         allowChat: currentUIState?.allowChat,
-        usePreExecutionInput: currentUIState?.usePreExecutionInput,
+        showPreExecutionGate: currentUIState?.showPreExecutionGate,
         showVariablePanel:
           (snapshot?.variableDefinitions?.length ?? 0) > 0 ||
           (currentUIState?.showVariablePanel ?? false),
@@ -601,7 +601,7 @@ export const startNewConversation = createAsyncThunk<
         hideReasoning: currentUIState?.hideReasoning,
         hideToolResults: currentUIState?.hideToolResults,
         preExecutionMessage: currentUIState?.preExecutionMessage,
-        variableInputStyle: currentUIState?.variableInputStyle,
+        variablesPanelStyle: currentUIState?.variablesPanelStyle,
         jsonExtraction: currentUIState?.jsonExtraction,
         originalText: currentUIState?.originalText,
       }),
@@ -728,7 +728,7 @@ export const startNewConversationAndExecute = createAsyncThunk<
         showAutoClearToggle: currentUIState?.showAutoClearToggle,
         autoRun: currentUIState?.autoRun,
         allowChat: currentUIState?.allowChat,
-        usePreExecutionInput: currentUIState?.usePreExecutionInput,
+        showPreExecutionGate: currentUIState?.showPreExecutionGate,
         showVariablePanel:
           (snapshot?.variableDefinitions?.length ?? 0) > 0 ||
           (currentUIState?.showVariablePanel ?? false),
@@ -743,7 +743,7 @@ export const startNewConversationAndExecute = createAsyncThunk<
         hideReasoning: currentUIState?.hideReasoning,
         hideToolResults: currentUIState?.hideToolResults,
         preExecutionMessage: currentUIState?.preExecutionMessage,
-        variableInputStyle: currentUIState?.variableInputStyle,
+        variablesPanelStyle: currentUIState?.variablesPanelStyle,
         jsonExtraction: currentUIState?.jsonExtraction,
         originalText: currentUIState?.originalText,
       }),
@@ -922,7 +922,7 @@ export const splitInputIntoNewConversation = createAsyncThunk<
         showAutoClearToggle: currentUIState?.showAutoClearToggle,
         autoRun: currentUIState?.autoRun,
         allowChat: currentUIState?.allowChat,
-        usePreExecutionInput: currentUIState?.usePreExecutionInput,
+        showPreExecutionGate: currentUIState?.showPreExecutionGate,
         showVariablePanel:
           (snapshot?.variableDefinitions?.length ?? 0) > 0 ||
           (currentUIState?.showVariablePanel ?? false),
@@ -937,7 +937,7 @@ export const splitInputIntoNewConversation = createAsyncThunk<
         hideReasoning: currentUIState?.hideReasoning,
         hideToolResults: currentUIState?.hideToolResults,
         preExecutionMessage: currentUIState?.preExecutionMessage,
-        variableInputStyle: currentUIState?.variableInputStyle,
+        variablesPanelStyle: currentUIState?.variablesPanelStyle,
         jsonExtraction: currentUIState?.jsonExtraction,
         originalText: currentUIState?.originalText,
       }),

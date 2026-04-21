@@ -1,11 +1,11 @@
 import { ContextSlot } from "@/features/agents/types/agent-api-types";
 import { VariableDefinition } from "@/features/agents/types/agent-definition.types";
-import { ResultDisplay } from "@/features/agents/utils/run-ui-utils";
+import { ResultDisplayMode } from "@/features/agents/utils/run-ui-utils";
 import { ShortcutContext } from "@/features/agents/utils/shortcut-context-utils";
 import type { DbRpcRow } from "@/types/supabase-rpc";
 import type { FieldFlags } from "@/features/agents/redux/shared/field-flags";
 
-export type { ResultDisplay, ShortcutContext };
+export type { ResultDisplayMode, ShortcutContext };
 
 // ---------------------------------------------------------------------------
 // Domain type — mirrors the agx_shortcut table (26 columns)
@@ -33,12 +33,12 @@ export interface AgentShortcut {
   // values = variable/context_slot names on the agent
 
   // Execution behaviour
-  resultDisplay: ResultDisplay;
+  resultDisplay: ResultDisplayMode;
   allowChat: boolean;
   autoRun: boolean;
   applyVariables: boolean;
   showVariables: boolean;
-  usePreExecutionInput: boolean;
+  showPreExecutionGate: boolean;
 
   // Status
   isActive: boolean;
@@ -94,7 +94,7 @@ export interface AgentShortcutInitialRow {
   // Shortcut config
   enabled_contexts: ShortcutContext[];
   scope_mappings: Record<string, string> | null;
-  result_display: ResultDisplay;
+  result_display: ResultDisplayMode;
   allow_chat: boolean;
   auto_run: boolean;
   apply_variables: boolean;
@@ -174,7 +174,7 @@ export interface AgentShortcutMenuItem {
   use_latest: boolean;
   scope_mappings: Record<string, string> | null;
   enabled_contexts: ShortcutContext[];
-  result_display: ResultDisplay;
+  result_display: ResultDisplayMode;
   auto_run: boolean;
   allow_chat: boolean;
   show_variables: boolean;
@@ -213,12 +213,7 @@ export interface UserShortcutItem {
   use_latest: boolean;
 
   // Scope — primary grouping key for the management UI
-  scope_type:
-    | "personal"
-    | "organization"
-    | "project"
-    | "task"
-    | "system";
+  scope_type: "personal" | "organization" | "project" | "task" | "system";
   scope_name: string; // "Personal", org name, workspace name, etc.
 
   // Raw hierarchy fields
@@ -230,7 +225,7 @@ export interface UserShortcutItem {
   // Config
   enabled_contexts: string[];
   scope_mappings: Record<string, string> | null;
-  result_display: string;
+  result_display: ResultDisplayMode;
   allow_chat: boolean;
   auto_run: boolean;
   apply_variables: boolean;

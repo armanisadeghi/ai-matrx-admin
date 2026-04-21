@@ -94,7 +94,7 @@ function emptyFormData(): ShortcutFormData {
     autoRun: true,
     applyVariables: true,
     showVariables: false,
-    usePreExecutionInput: false,
+    showPreExecutionGate: false,
     isActive: true,
     userId: null,
     organizationId: null,
@@ -560,16 +560,16 @@ export function ShortcutForm({
           </div>
           <div className="flex items-center justify-between px-3 py-2 border border-border rounded-md bg-muted/30 sm:col-span-2">
             <Label
-              htmlFor="use-pre-execution-input"
+              htmlFor="show-pre-execution-gate"
               className="text-xs font-normal cursor-pointer"
             >
-              Capture pre-execution input
+              Show pre-execution gate
             </Label>
             <Switch
-              id="use-pre-execution-input"
-              checked={formData.usePreExecutionInput}
+              id="show-pre-execution-gate"
+              checked={formData.showPreExecutionGate}
               onCheckedChange={(checked) =>
-                handleChange("usePreExecutionInput", checked)
+                handleChange("showPreExecutionGate", checked)
               }
               disabled={saving}
             />

@@ -402,7 +402,7 @@ export function InstanceUIStateCore({
                 {
                   displayMode: state.displayMode,
                   isExpanded: state.isExpanded,
-                  variableInputStyle: state.variableInputStyle,
+                  variablesPanelStyle: state.variablesPanelStyle,
                   modeState: state.modeState,
                 },
                 null,
@@ -414,8 +414,8 @@ export function InstanceUIStateCore({
                 <KVRow label="displayMode" value={state.displayMode} />
                 <BoolBadge value={state.isExpanded} label="isExpanded" />
                 <KVRow
-                  label="variableInputStyle"
-                  value={state.variableInputStyle}
+                  label="variablesPanelStyle"
+                  value={state.variablesPanelStyle}
                 />
                 {state.modeState && Object.keys(state.modeState).length > 0 && (
                   <div className="flex items-start gap-3 py-1 border-b border-border/40 last:border-0">
@@ -526,7 +526,7 @@ export function InstanceUIStateCore({
               onToggle={() => setContentOpen((v) => !v)}
               copyValue={JSON.stringify(
                 {
-                  usePreExecutionInput: state.usePreExecutionInput,
+                  showPreExecutionGate: state.showPreExecutionGate,
                   preExecutionSatisfied: state.preExecutionSatisfied,
                   preExecutionMessage: state.preExecutionMessage,
                 },
@@ -537,8 +537,8 @@ export function InstanceUIStateCore({
             {contentOpen && (
               <div className="px-4 pb-2">
                 <BoolBadge
-                  value={state.usePreExecutionInput}
-                  label="usePreExecutionInput"
+                  value={state.showPreExecutionGate}
+                  label="showPreExecutionGate"
                 />
                 <BoolBadge
                   value={state.preExecutionSatisfied}

@@ -1,7 +1,7 @@
 export {
-  VARIABLE_INPUT_STYLES,
-  VARIABLE_INPUT_STYLE_OPTIONS,
-  isVariableInputStyle,
+  VARIABLE_PANEL_STYLES,
+  VARIABLE_PANEL_STYLE_OPTIONS,
+  isVariablesPanelStyle,
 } from "../components/inputs/variable-input-variations/variable-input-options";
 
 export type * from "./agent-message-types";

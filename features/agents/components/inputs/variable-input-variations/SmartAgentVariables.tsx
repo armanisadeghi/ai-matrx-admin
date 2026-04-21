@@ -3,14 +3,14 @@
 /**
  * SmartAgentVariables
  *
- * Renders the correct variable input UI based on the instance's variableInputStyle.
+ * Renders the correct variable input UI based on the instance's variablesPanelStyle.
  * Only requires conversationId — reads style from Redux directly.
  */
 
 import dynamic from "next/dynamic";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectVariableInputStyle } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
-import type { VariableInputStyle } from "./variable-input-options";
+import type { VariablesPanelStyle } from "./variable-input-options";
 
 const AgentVariableInputForm = dynamic(() =>
   import("./AgentVariableForm").then((m) => m.AgentVariableForm),
@@ -41,7 +41,7 @@ interface SmartAgentVariablesProps {
   compact?: boolean;
   onSubmit: () => void;
   /** Override the Redux-stored style (e.g. from parent props) */
-  styleOverride?: VariableInputStyle;
+  styleOverride?: VariablesPanelStyle;
 }
 
 export function SmartAgentVariables({

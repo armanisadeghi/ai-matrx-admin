@@ -144,7 +144,7 @@ export function AgentLauncherSidebarTester({
           showVariables={tester.showVariablePanel}
           applyVariables={tester.applyVariables}
           apiEndpointMode={tester.apiEndpointMode}
-          variableInputStyle={tester.variableInputStyle}
+          variablesPanelStyle={tester.variablesPanelStyle}
           variables={tester.applyVariables ? tester.currentVariables : {}}
           userInput={
             tester.applyUserInput && tester.currentInput

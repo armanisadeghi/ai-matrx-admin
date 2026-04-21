@@ -48,7 +48,7 @@ import {
 } from "lucide-react";
 import type {
   ResultDisplayMode,
-  VariableInputStyle,
+  VariablesPanelStyle,
 } from "@/features/agents/types/instance.types";
 import { ApiEndpointMode } from "@/features/agents/types/instance.types";
 
@@ -64,7 +64,7 @@ interface AgentExecutionTestModalProps {
   showVariables: boolean;
   applyVariables: boolean;
   apiEndpointMode: ApiEndpointMode;
-  variableInputStyle?: VariableInputStyle;
+  variablesPanelStyle?: VariablesPanelStyle;
   variables: Record<string, unknown>;
   userInput: string;
 }
@@ -431,7 +431,15 @@ function BackgroundTestMode({
     } catch (err) {
       console.error("Background execution failed:", err);
     }
-  }, [agentId, variables, userInput, apiEndpointMode, launchAgent, surfaceKey, widgetHandleId]);
+  }, [
+    agentId,
+    variables,
+    userInput,
+    apiEndpointMode,
+    launchAgent,
+    surfaceKey,
+    widgetHandleId,
+  ]);
 
   useEffect(() => {
     return () => {

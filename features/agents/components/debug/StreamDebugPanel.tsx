@@ -421,8 +421,13 @@ function timelineSummary(
       return `Init: ${entry.operation} (${entry.operationId.slice(0, 8)}…)`;
     case "warning":
       return `[${entry.code}] ${entry.level}${!entry.recoverable ? " UNRECOVERABLE" : ""}: ${entry.userMessage ?? entry.systemMessage}`;
-    case "info":
-      return `[${entry.code}] ${entry.userMessage ?? entry.systemMessage}`;
+    case "info": {
+      const base = `[${entry.code}] ${entry.userMessage ?? entry.systemMessage}`;
+      if (entry.metadata && Object.keys(entry.metadata).length > 0) {
+        return `${base} · ${JSON.stringify(entry.metadata).slice(0, 60)}`;
+      }
+      return base;
+    }
     case "tool_event":
       return `${entry.subEvent} — ${entry.toolName} (${entry.callId.slice(0, 8)})`;
     case "render_block":
@@ -431,16 +436,35 @@ function timelineSummary(
       return JSON.stringify(entry.data).slice(0, 80);
     case "completion":
       return `Completion: ${entry.operation} → ${entry.status} (${entry.operationId.slice(0, 8)}…)`;
-    case "error":
-      return `${entry.isFatal ? "FATAL" : "ERR"}: ${entry.message.slice(0, 80)}`;
+    case "error": {
+      const tag = entry.isFatal ? "FATAL" : "ERR";
+      const codePart = entry.code ? ` [${entry.code}]` : "";
+      return `${tag}${codePart}: ${entry.message.slice(0, 80)}`;
+    }
     case "end":
       return entry.reason ?? "stream ended";
     case "broker":
       return `broker: ${entry.brokerId}`;
     case "heartbeat":
       return "heartbeat";
-    case "record_reserved":
-      return `${entry.table} reserved: ${entry.recordId.slice(0, 8)}… [${entry.dbProject}]`;
+    case "record_reserved": {
+      const short = `${entry.recordId.slice(0, 8)}…`;
+      if (entry.table === "cx_message") {
+        const role = entry.metadata?.role ?? "?";
+        const pos = entry.metadata?.position ?? "?";
+        return `cx_message reserved [${role} #${pos}]: ${short}`;
+      }
+      if (entry.table === "cx_request") {
+        const iter = entry.metadata?.iteration ?? "?";
+        return `cx_request reserved [iter ${iter}]: ${short}`;
+      }
+      if (entry.table === "cx_tool_call") {
+        const tool = entry.metadata?.tool_name ?? "?";
+        const iter = entry.metadata?.iteration ?? "?";
+        return `cx_tool_call reserved [${tool}, iter ${iter}]: ${short}`;
+      }
+      return `${entry.table} reserved: ${short} [${entry.dbProject}]`;
+    }
     case "record_update":
       return `${entry.table} → ${entry.status}: ${entry.recordId.slice(0, 8)}…`;
     case "unknown":

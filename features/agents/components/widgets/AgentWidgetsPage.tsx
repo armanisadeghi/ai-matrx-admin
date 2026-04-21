@@ -39,7 +39,7 @@ import type {
 import type {
   JsonExtractionConfig,
   LLMParams,
-  VariableInputStyle,
+  VariablesPanelStyle,
 } from "@/features/agents/types";
 import { ApiEndpointMode } from "@/features/agents/types/instance.types";
 import type { ApplicationScope } from "@/features/agents/utils/scope-mapping";
@@ -107,9 +107,9 @@ export function AgentWidgetsPage({
   // ── Settings (local state — matches TesterSettingsController shape) ────
   const [autoRun, setAutoRun] = useState(true);
   const [showVariablePanel, setShowVariablePanel] = useState(true);
-  const [variableInputStyle, setVariableInputStyle] =
-    useState<VariableInputStyle>("inline");
-  const [usePreExecutionInput, setUsePreExecutionInput] = useState(false);
+  const [variablesPanelStyle, setVariablesPanelStyle] =
+    useState<VariablesPanelStyle>("inline");
+  const [showPreExecutionGate, setShowPreExecutionGate] = useState(false);
   const [preExecutionMessage, setPreExecutionMessage] = useState("");
   const [showDefinitionMessages, setShowDefinitionMessages] = useState(true);
   const [showDefinitionMessageContent, setShowDefinitionMessageContent] =
@@ -148,10 +148,10 @@ export function AgentWidgetsPage({
     setAutoRun,
     showVariablePanel,
     setShowVariablePanel,
-    variableInputStyle,
-    setVariableInputStyle,
-    usePreExecutionInput,
-    setUsePreExecutionInput,
+    variablesPanelStyle,
+    setVariablesPanelStyle,
+    showPreExecutionGate,
+    setShowPreExecutionGate,
     preExecutionMessage,
     setPreExecutionMessage,
     showDefinitionMessages,
@@ -281,9 +281,9 @@ export function AgentWidgetsPage({
       displayMode,
       autoRun,
       allowChat,
-      usePreExecutionInput,
+      showPreExecutionGate,
       apiEndpointMode,
-      variableInputStyle,
+      variablesPanelStyle,
       showVariablePanel,
       showDefinitionMessages,
       showDefinitionMessageContent,

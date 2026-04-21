@@ -80,7 +80,7 @@ export function assembleRequest(
   if (!instance) return null;
 
   const uiState = state.instanceUIState.byConversationId[conversationId];
-  if (uiState?.usePreExecutionInput && !uiState.preExecutionSatisfied) {
+  if (uiState?.showPreExecutionGate && !uiState.preExecutionSatisfied) {
     console.error(
       `[assembleRequest] BLOCKED: conversation ${conversationId} requires pre-execution input that has not been satisfied.`,
     );

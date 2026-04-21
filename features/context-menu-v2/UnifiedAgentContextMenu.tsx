@@ -142,7 +142,9 @@ function resolvePlacementMode(
     return {
       "ai-action": enabledSet.has("ai-action") ? "show" : "hide",
       "content-block": enabledSet.has("content-block") ? "show" : "hide",
-      "organization-tool": enabledSet.has("organization-tool") ? "show" : "hide",
+      "organization-tool": enabledSet.has("organization-tool")
+        ? "show"
+        : "hide",
       "user-tool": enabledSet.has("user-tool") ? "show" : "hide",
       "quick-action": enabledSet.has("quick-action") ? "show" : "hide",
     };
@@ -179,7 +181,10 @@ export function UnifiedAgentContextMenu({
 }: UnifiedAgentContextMenuProps) {
   const dispatch = useAppDispatch();
 
-  const resolvedPlacementMode = resolvePlacementMode(placementMode, enabledPlacements);
+  const resolvedPlacementMode = resolvePlacementMode(
+    placementMode,
+    enabledPlacements,
+  );
 
   // Placements the hook should fetch items for: anything not "hide".
   // "disable" still fetches so the row count is available; "hide" skips.
@@ -571,12 +576,13 @@ export function UnifiedAgentContextMenu({
         context:
           typeof contextData?.context === "string"
             ? { raw: contextData.context }
-            : (contextData?.context as Record<string, unknown> | undefined) ??
-              {},
+            : ((contextData?.context as Record<string, unknown> | undefined) ??
+              {}),
       };
 
       for (const [k, v] of Object.entries(contextData ?? {})) {
-        if (k === "content" || k === "context" || k === "contextFilter") continue;
+        if (k === "content" || k === "context" || k === "contextFilter")
+          continue;
         applicationScope[k] = v;
       }
 
@@ -591,11 +597,14 @@ export function UnifiedAgentContextMenu({
           autoRun: entry.autoRun ?? true,
           allowChat: entry.allowChat ?? true,
           showVariables: entry.showVariables ?? false,
-          usePreExecutionInput: entry.usePreExecutionInput ?? false,
+          showPreExecutionGate: entry.showPreExecutionGate ?? false,
           originalText: selectionText,
         });
       } catch (error) {
-        console.error("[UnifiedAgentContextMenu] shortcut execution failed", error);
+        console.error(
+          "[UnifiedAgentContextMenu] shortcut execution failed",
+          error,
+        );
         const message =
           error instanceof Error ? error.message : "An unknown error occurred";
         toast({
@@ -614,11 +623,10 @@ export function UnifiedAgentContextMenu({
 
       if (editorId) {
         try {
-          const {
-            insertTextAtCursor,
-          } = require("@/features/rich-text-editor/utils/insertTextUtils") as {
-            insertTextAtCursor: (id: string, text: string) => boolean;
-          };
+          const { insertTextAtCursor } =
+            require("@/features/rich-text-editor/utils/insertTextUtils") as {
+              insertTextAtCursor: (id: string, text: string) => boolean;
+            };
           const success = insertTextAtCursor(editorId, template);
           if (success) onContentInserted?.();
         } catch (err) {
@@ -757,9 +765,13 @@ export function UnifiedAgentContextMenu({
           contextData={{
             selection: capturedSelection.current?.text || selectedText,
             content:
-              typeof contextData?.content === "string" ? contextData.content : "",
+              typeof contextData?.content === "string"
+                ? contextData.content
+                : "",
             context:
-              typeof contextData?.context === "string" ? contextData.context : "",
+              typeof contextData?.context === "string"
+                ? contextData.context
+                : "",
             ...contextData,
           }}
         />

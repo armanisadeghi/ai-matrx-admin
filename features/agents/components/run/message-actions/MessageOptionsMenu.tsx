@@ -5,6 +5,12 @@
  * message. Role-aware: assistant messages get the assistant action set,
  * user messages get the user action set (which includes Edit & Resubmit).
  *
+ * Creator detection — when the viewer owns the agent definition tied to
+ * this conversation, extra analytics / debug items are shown (stream
+ * debug, response analysis). These open floating window-panels and reuse
+ * the same core panels that power the Creator Run Panel on
+ * /agent/[id]/run and /build.
+ *
  * Props are passed directly — no Redux instance-registration pattern.
  */
 
@@ -12,6 +18,9 @@ import React, { useEffect } from "react";
 import AdvancedMenu from "@/components/official/AdvancedMenu";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/slices/userSlice";
+import { selectAgentIdFromInstance } from "@/features/agents/redux/execution-system/conversations/conversations.selectors";
+import { selectAgentIsConfirmedOwner } from "@/features/agents/redux/agent-definition/selectors";
+import { selectMessageStreamRequestId } from "@/features/agents/redux/execution-system/messages/messages.selectors";
 import {
   getAssistantMessageActions,
   getUserMessageActions,
@@ -55,6 +64,29 @@ export function MessageOptionsMenu({
   const user = useAppSelector(selectUser);
   const isAuthenticated = !!user?.email;
 
+  // ── Creator detection — conversation → agent → isConfirmedOwner ──────────
+  // `agentId` sits on the execution instance (cx_conversation.agent_id mirrored
+  // locally). `selectAgentIsConfirmedOwner` only returns true once the agent
+  // record has loaded with `is_owner === true` — it stays false while the
+  // access metadata is pending, so creator items don't flash for
+  // non-creators on first render.
+  const agentId = useAppSelector((s) =>
+    conversationId ? selectAgentIdFromInstance(conversationId)(s) : undefined,
+  );
+  const isCreator = useAppSelector((s) =>
+    agentId ? selectAgentIsConfirmedOwner(s, agentId) : false,
+  );
+
+  // Request that produced this message. `_streamRequestId` is client-only
+  // (lives in Redux, not the DB), so it's only populated for messages that
+  // streamed this session — sufficient for creator debugging right after a
+  // turn, gracefully degrades otherwise.
+  const streamRequestId = useAppSelector((s) =>
+    conversationId && messageId
+      ? (selectMessageStreamRequestId(conversationId, messageId)(s) ?? null)
+      : null,
+  );
+
   useEffect(() => {
     resumePendingAuthAction(isAuthenticated, content, dispatch);
   }, [isAuthenticated, content, dispatch]);
@@ -70,6 +102,8 @@ export function MessageOptionsMenu({
     showFullPrint,
     onFullPrint,
     isCapturing,
+    isCreator,
+    streamRequestId,
   };
 
   const menuItems =

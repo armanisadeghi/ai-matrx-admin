@@ -124,7 +124,7 @@ export function getComponentTypeMeta(type: VariableComponentType) {
 
 // ─── Variable input layout styles ─────────────────────────────────────────
 
-export const VARIABLE_INPUT_STYLES = [
+export const VARIABLE_PANEL_STYLES = [
   "inline",
   "wizard",
   "form",
@@ -133,10 +133,10 @@ export const VARIABLE_INPUT_STYLES = [
   "cards",
 ] as const;
 
-export type VariableInputStyle = (typeof VARIABLE_INPUT_STYLES)[number];
+export type VariablesPanelStyle = (typeof VARIABLE_PANEL_STYLES)[number];
 
-export const VARIABLE_INPUT_STYLE_OPTIONS: ReadonlyArray<{
-  value: VariableInputStyle;
+export const VARIABLE_PANEL_STYLE_OPTIONS: ReadonlyArray<{
+  value: VariablesPanelStyle;
   label: string;
   description: string;
 }> = [
@@ -172,6 +172,6 @@ export const VARIABLE_INPUT_STYLE_OPTIONS: ReadonlyArray<{
   },
 ];
 
-export function isVariableInputStyle(v: string): v is VariableInputStyle {
-  return (VARIABLE_INPUT_STYLES as readonly string[]).includes(v);
+export function isVariablesPanelStyle(v: string): v is VariablesPanelStyle {
+  return (VARIABLE_PANEL_STYLES as readonly string[]).includes(v);
 }

@@ -407,11 +407,20 @@ export const EnhancedChatMarkdownInternal: React.FC<
   // component instance when blocks shift (e.g. a decision block resolves and
   // the array collapses). Index is appended only as a tiebreaker for identical
   // blocks; the content prefix keeps identity stable across re-parses.
-  const blockKey = useCallback(
-    (block: RenderBlock, index: number) =>
-      `${block.type}-${block.content.slice(0, 100)}-${index}`,
-    [],
-  );
+  //
+  // Code blocks are a special case: their `content` mutates on every keystroke
+  // when the user edits them in-place (via replaceBlockContent) AND on every
+  // stream chunk. Including content in the key would remount the editor on
+  // each change, destroying local state (isEditing, Monaco cursor/selection,
+  // scroll, fullscreen). Keyed by `code-${index}` alone, in-place content
+  // edits preserve component identity; if the block's position shifts, the
+  // index changes and React still remounts correctly.
+  const blockKey = useCallback((block: RenderBlock, index: number) => {
+    if (block.type === "code") {
+      return `code-${index}`;
+    }
+    return `${block.type}-${block.content.slice(0, 100)}-${index}`;
+  }, []);
 
   // Memoize the render block function to prevent unnecessary re-renders
   const renderBlock = useCallback(

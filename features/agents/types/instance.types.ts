@@ -10,23 +10,13 @@
  * Multiple conversations for the same agent coexist with zero shared mutable state.
  */
 
-import { AgentType } from "./agent-definition.types";
+import type { AgentType } from "./agent-definition.types";
 import { ContextObjectType, LLMParams } from "./agent-api-types";
 import type { SystemInstruction } from "./agent-api-types";
 import type { ApplicationScope } from "@/features/agents/utils/scope-mapping";
-import type { LaunchResult } from "@/features/agents/redux/execution-system/thunks/launch-agent-execution.thunk";
 import type { MessagePart } from "@/types/python-generated/stream-events";
-
-// =============================================================================
-// JSON Extraction Config (mirrored from process-stream.ts to avoid circular dep)
-// =============================================================================
-
-export interface JsonExtractionConfig {
-  enabled: boolean;
-  fuzzyOnFinalize?: boolean;
-  maxResults?: number;
-}
-import type { VariableInputStyle } from "../components/inputs/variable-input-variations/variable-input-options";
+import type { ResultDisplayMode } from "@/features/agents/utils/run-ui-utils";
+import type { VariablesPanelStyle } from "../components/inputs/variable-input-variations/variable-input-options";
 
 // =============================================================================
 // Completion Stats — re-exported from auto-generated stream-events.ts
@@ -324,25 +314,6 @@ export interface InstanceUserInputState {
   lastSubmittedUserValues: Record<string, unknown>;
 }
 
-// =============================================================================
-// Instance UI State
-// =============================================================================
-
-export type ResultDisplayMode =
-  | "modal-full"
-  | "modal-compact"
-  | "chat-bubble"
-  | "inline"
-  | "sidebar"
-  | "flexible-panel"
-  | "panel"
-  | "toast"
-  | "floating-chat"
-  | "direct"
-  | "background"
-  | "chat-collapsible"
-  | "chat-assistant";
-
 /**
  * Transient builder/test settings sent to the chat endpoint on each call.
  * NOT persisted with the agent definition — destroyed with the instance.
@@ -384,6 +355,16 @@ export const DEFAULT_BUILDER_ADVANCED_SETTINGS: BuilderAdvancedSettings = {
   structuredInstruction: {},
 };
 
+// =============================================================================
+// JSON Extraction Config (mirrored from process-stream.ts to avoid circular dep)
+// =============================================================================
+
+export interface JsonExtractionConfig {
+  enabled: boolean;
+  fuzzyOnFinalize?: boolean;
+  maxResults?: number;
+}
+
 export interface InstanceUIState {
   conversationId: string;
   displayMode: ResultDisplayMode;
@@ -405,11 +386,11 @@ export interface InstanceUIState {
    * The user enters text, clicks "Continue", and then the main component renders.
    * Primarily for inline/toast/compact modes where the main display has no input.
    */
-  usePreExecutionInput: boolean;
+  showPreExecutionGate: boolean;
 
   /**
    * Flips to true after the user completes the pre-execution input step.
-   * Components check: if usePreExecutionInput && !preExecutionSatisfied → show gate.
+   * Components check: if showPreExecutionGate && !preExecutionSatisfied → show gate.
    */
   preExecutionSatisfied: boolean;
 
@@ -532,7 +513,7 @@ export interface InstanceUIState {
    * - "inline"  — compact rows above the textarea (default)
    * - "wizard"  — one variable at a time, fixed-height card with Back/Skip/Skip All
    */
-  variableInputStyle: VariableInputStyle;
+  variablesPanelStyle: VariablesPanelStyle;
 
   /**
    * Arbitrary UI state specific to the display Mode.
@@ -583,7 +564,8 @@ export interface ManagedAgentOptions {
    */
   isEphemeral?: boolean;
 
-  // -- Display Mode ───────────────────────────────────────────────────────────
+  // ==== AGENT CUSTOMIZATIONS: MOST IMPORTANT ACTUAL CONFIGURABLE THINGS THAT CONVERT AN AGENT INTO A SHORTCUT OR APP ===== STARTS HERE =====
+
   /**
    * How the result is presented. "direct" means the caller manages the UI
    *
@@ -593,8 +575,10 @@ export interface ManagedAgentOptions {
    */
   displayMode?: ResultDisplayMode;
 
+  /** Configuration the allows the user to enter values for agent variables. */
+  showVariablePanel?: boolean;
   // "inline" | "wizard" | "form" | "compact" | "guided" | "cards"
-  variableInputStyle?: VariableInputStyle;
+  variablesPanelStyle?: VariablesPanelStyle;
 
   // autoRun means the agent triggers without any user input or variables.
   // used for programmatic triggers where the full context is already assembled
@@ -605,23 +589,45 @@ export interface ManagedAgentOptions {
   // true = multi-turn conversation; false = single-shot only.
   allowChat?: boolean;
 
-  /**
-   * Coarse-grained visibility config. When provided, resolves to fine-grained:
-   *   false → showVariablePanel: false, showDefinitionMessages: false
-   *   true  → showVariablePanel: true,  showDefinitionMessages: true, showDefinitionMessageContent: false
-   *
-   * Fine-grained overrides below take precedence over this.
-   */
-  showVariables?: boolean;
-
-  /** Fine-grained: override variable panel independently. */
-  showVariablePanel?: boolean;
-  /** Fine-grained: override definition message visibility independently. */
+  /** Allows the user to see the messages that are part of the agent definition (NOT WRITTEN BY THE USER). */
   showDefinitionMessages?: boolean;
-  /** Fine-grained: override definition message content visibility independently. */
+
+  /** If showDefinitionMessages is true, this can be false to hide any non-user entered variables or optional input content. */
   showDefinitionMessageContent?: boolean;
 
-  usePreExecutionInput?: boolean;
+  /** Stop autoRun and offer the user a chance to provide optional instructions before executing. */
+  showPreExecutionGate?: boolean;
+  /** Optional message shown in the pre-execution input gate. */
+  preExecutionMessage?: string | null;
+  /** Number of seconds to wait before automatically executing the agent (Default: 3 Seconds). */
+  bypassGateSeconds?: number;
+
+  /** When true, reasoning/thinking blocks are hidden from the user. */
+  hideReasoning?: boolean;
+
+  /** When true, tool-call result blocks are hidden from the user. */
+  hideToolResults?: boolean;
+
+  // ==== AGENT CUSTOMIZATIONS END ================================================================================================
+
+  // ===== RUNTIME EXECUTION VALUES... Can be overriden and automated via shortcuts or apps ====================================================
+  userInput?: string;
+  variables?: Record<string, unknown>;
+
+  /**
+   * LLM parameter overrides applied on top of the agent's base settings.
+   * These are delta-only — only keys you provide are sent.
+   * Use this in the runner, chat, and widgets to adjust temperature, model, etc.
+   * NOT applicable in builder system (builder always reads the full live agent definition).
+   */
+  overrides?: Partial<LLMParams>;
+
+  // ==== END RUNTIME EXECUTION VALUES ==========================================================================================================
+
+  // ===== APPLICATION UI CONFIGS ==========================================================================================================
+  // Options used to configure specific Core Application UIs, such as Builder, Runner, Chat, etc.
+
+  showAutoClearToggle?: boolean;
 
   /** When true, conversation history is wiped after each submit (builder/test). */
   autoClearConversation?: boolean;
@@ -640,32 +646,16 @@ export interface ManagedAgentOptions {
    */
   apiEndpointMode?: ApiEndpointMode;
 
-  userInput?: string;
-  variables?: Record<string, unknown>;
+  // ===== END APPLICATION UI CONFIGS ==========================================================================================================
 
   /**
-   * LLM parameter overrides applied on top of the agent's base settings.
-   * These are delta-only — only keys you provide are sent.
-   * Use this in the runner, chat, and widgets to adjust temperature, model, etc.
-   * NOT applicable in builder system (builder always reads the full live agent definition).
+   * This is NOT A CONFIGURATION. This is a UI State Flag, derived from the configs as well as the stage of the execution.
+   * Example: Always FALSE after the first response is received.
+   * Example: Always FALSE if showVariablePanel is FALSE.
    */
-  overrides?: Partial<LLMParams>;
+  showVariables?: boolean;
 
   applicationScope?: ApplicationScope;
-
-  showAutoClearToggle?: boolean;
-
-  /** When true, reasoning/thinking blocks are hidden in the message list. */
-  hideReasoning?: boolean;
-
-  /** When true, tool-call result blocks are hidden in the message list. */
-  hideToolResults?: boolean;
-
-  /**
-   * Optional message shown in the pre-execution input gate.
-   * Provides context about what the agent expects before the user submits.
-   */
-  preExecutionMessage?: string | null;
 
   /**
    * CallbackManager id for a WidgetHandle registered via `useWidgetHandle`.
@@ -751,7 +741,7 @@ export const AGENT_EXECUTION_DEFAULTS = {
    * Show a gate UI before executing where the user provides initial text.
    * Used for inline/toast/compact modes that have no built-in input.
    */
-  usePreExecutionInput: false,
+  showPreExecutionGate: false,
 
   /**
    * When true, submitting creates a fresh instance (no history) instead of
@@ -796,7 +786,7 @@ export const AGENT_EXECUTION_DEFAULTS = {
    * "inline" = compact rows above the textarea.
    * "wizard" = one-at-a-time card with Back/Skip/Skip All.
    */
-  variableInputStyle: "inline" as VariableInputStyle,
+  variablesPanelStyle: "inline" as VariablesPanelStyle,
 
   // ── Conversation History (UIState layer) ───────────────────────────────────
 
@@ -872,4 +862,5 @@ export const AGENT_EXECUTION_DEFAULTS = {
   sourceFeature: "agent-runner" as SourceFeature,
 } as const;
 
-export type { VariableInputStyle } from "../components/inputs/variable-input-variations/variable-input-options";
+export type { VariablesPanelStyle } from "@/features/agents/components/inputs/variable-input-variations/variable-input-options";
+export type { ResultDisplayMode } from "@/features/agents/utils/run-ui-utils";

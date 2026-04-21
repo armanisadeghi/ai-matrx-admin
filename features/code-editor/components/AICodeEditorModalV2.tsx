@@ -147,7 +147,7 @@ export function AICodeEditorModalV2({
             autoRun: false,
             allowChat: true,
             showVariables: false,
-            usePreExecutionInput: false,
+            showPreExecutionGate: false,
             variables: {
               current_code: currentCode,
               content: currentCode,
@@ -161,7 +161,17 @@ export function AICodeEditorModalV2({
         }
       })();
     }
-  }, [open, promptData, isLoadingPrompt, hasOpened, defaultBuiltinId, currentCode, selection, context, launchAgent]);
+  }, [
+    open,
+    promptData,
+    isLoadingPrompt,
+    hasOpened,
+    defaultBuiltinId,
+    currentCode,
+    selection,
+    context,
+    launchAgent,
+  ]);
 
   // Reset when modal closes
   useEffect(() => {

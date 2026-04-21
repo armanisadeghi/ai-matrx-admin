@@ -14,7 +14,7 @@
  *   - direct / background → caller manages UI
  *   - All others → OverlayController renders the component
  *
- * All settings (autoRun, showVariables, usePreExecutionInput, callbacks, etc.)
+ * All settings (autoRun, showVariables, showPreExecutionGate, callbacks, etc.)
  * are persisted to Redux so components can read them after creation.
  */
 
@@ -131,14 +131,14 @@ export const launchAgentExecution = createAsyncThunk<
     showVariablePanel,
     showDefinitionMessages,
     showDefinitionMessageContent,
-    usePreExecutionInput,
+    showPreExecutionGate,
     showAutoClearToggle,
     autoClearConversation,
     apiEndpointMode = "agent",
     userInput,
     variables,
     overrides,
-    variableInputStyle,
+    variablesPanelStyle,
     hideReasoning,
     hideToolResults,
     preExecutionMessage,
@@ -217,7 +217,7 @@ export const launchAgentExecution = createAsyncThunk<
         displayMode: resolvedDisplayMode,
         autoRun,
         allowChat: allowChat ?? shortcut.allowChat,
-        usePreExecutionInput,
+        showPreExecutionGate,
         showAutoClearToggle,
         autoClearConversation,
         apiEndpointMode,
@@ -225,7 +225,7 @@ export const launchAgentExecution = createAsyncThunk<
         showDefinitionMessages: resolvedShowDefinitionMessages,
         showDefinitionMessageContent: resolvedShowDefinitionMessageContent,
         widgetHandleId,
-        variableInputStyle,
+        variablesPanelStyle,
         hideReasoning,
         hideToolResults,
         preExecutionMessage,
@@ -254,12 +254,12 @@ export const launchAgentExecution = createAsyncThunk<
         displayMode: resolvedDisplayMode,
         autoRun,
         allowChat,
-        usePreExecutionInput,
+        showPreExecutionGate,
         showVariablePanel: resolvedShowVariablePanel,
         showDefinitionMessages: resolvedShowDefinitionMessages,
         showDefinitionMessageContent: resolvedShowDefinitionMessageContent,
         widgetHandleId,
-        variableInputStyle,
+        variablesPanelStyle,
         hideReasoning,
         hideToolResults,
         preExecutionMessage,
@@ -364,7 +364,7 @@ export const launchAgentExecution = createAsyncThunk<
   // the component is always ready to render once the user continues.
   // =========================================================================
 
-  if (usePreExecutionInput) {
+  if (showPreExecutionGate) {
     const downstreamOverlayId = DISPLAY_MODE_TO_OVERLAY_ID[resolvedDisplayMode];
     dispatch(
       openAgentGateWindow({

@@ -24,7 +24,7 @@ import type {
   ApiEndpointMode,
   SourceFeature,
 } from "./instance.types";
-import type { VariableInputStyle } from "../components/inputs/variable-input-variations/variable-input-options";
+import type { VariablesPanelStyle } from "../components/inputs/variable-input-variations/variable-input-options";
 
 // =============================================================================
 // Identity — who this invocation is and where it's coming from
@@ -187,7 +187,7 @@ export interface ConversationInvocationDisplay {
   /** Where/how the result shows up. One of 13 presentation styles. */
   displayMode?: ResultDisplayMode;
   /** Layout for variable collection when input is needed. One of 6 layouts. */
-  variableInputStyle?: VariableInputStyle;
+  variablesPanelStyle?: VariablesPanelStyle;
   /**
    * Show the variable inputs to the user — whether the values were user-typed
    * or programmatically supplied by a shortcut.
@@ -224,7 +224,7 @@ export interface ConversationInvocationDisplay {
    */
   autoClearConversation?: boolean;
   /**
-   * Message shown to the user before firing, when `behavior.usePreExecutionInput`
+   * Message shown to the user before firing, when `behavior.showPreExecutionGate`
    * is true. Gives them a chance to read/edit/confirm before the agent runs.
    */
   preExecutionMessage?: string | null;
@@ -252,7 +252,7 @@ export interface ConversationInvocationBehavior {
    * for partial user input between firing and response. Pairs with
    * `display.preExecutionMessage`.
    */
-  usePreExecutionInput?: boolean;
+  showPreExecutionGate?: boolean;
   /**
    * Streaming JSON extraction config — for agents producing structured output
    * that should parse incrementally as it streams.

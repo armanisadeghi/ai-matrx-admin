@@ -16,7 +16,7 @@ import type {
   InstanceUIState,
   JsonExtractionConfig,
   ResultDisplayMode,
-  VariableInputStyle,
+  VariablesPanelStyle,
 } from "@/features/agents/types";
 import { DEFAULT_BUILDER_ADVANCED_SETTINGS } from "@/features/agents/types/instance.types";
 import { destroyInstance } from "../conversations/conversations.slice";
@@ -80,7 +80,7 @@ export interface InitInstanceUIStatePayload {
   displayMode?: ResultDisplayMode;
   autoRun?: boolean;
   allowChat?: boolean;
-  usePreExecutionInput?: boolean;
+  showPreExecutionGate?: boolean;
   showVariablePanel?: boolean;
   showDefinitionMessages?: boolean;
   showDefinitionMessageContent?: boolean;
@@ -95,7 +95,7 @@ export interface InitInstanceUIStatePayload {
   hideReasoning?: boolean;
   hideToolResults?: boolean;
   preExecutionMessage?: string | null;
-  variableInputStyle?: VariableInputStyle;
+  variablesPanelStyle?: VariablesPanelStyle;
   jsonExtraction?: JsonExtractionConfig | null;
   /** Original text selected in an editor/notes surface before launch. Used by text-manipulation callbacks. */
   originalText?: string | null;
@@ -118,7 +118,7 @@ const instanceUIStateSlice = createSlice({
         displayMode = "direct",
         autoRun = false,
         allowChat = true,
-        usePreExecutionInput = false,
+        showPreExecutionGate = false,
         showVariablePanel = false,
         showDefinitionMessages = true,
         showDefinitionMessageContent = false,
@@ -133,7 +133,7 @@ const instanceUIStateSlice = createSlice({
         hideReasoning = false,
         hideToolResults = false,
         preExecutionMessage = null,
-        variableInputStyle = "inline",
+        variablesPanelStyle = "inline",
         jsonExtraction = null,
         originalText = null,
       } = action.payload;
@@ -143,7 +143,7 @@ const instanceUIStateSlice = createSlice({
         displayMode,
         autoRun,
         allowChat,
-        usePreExecutionInput,
+        showPreExecutionGate: showPreExecutionGate,
         preExecutionSatisfied: false,
         showVariablePanel,
         showDefinitionMessages,
@@ -165,7 +165,7 @@ const instanceUIStateSlice = createSlice({
         hideReasoning,
         hideToolResults,
         preExecutionMessage,
-        variableInputStyle,
+        variablesPanelStyle,
         modeState: {},
         jsonExtraction,
         originalText,
@@ -212,7 +212,7 @@ const instanceUIStateSlice = createSlice({
     ) {
       const entry = state.byConversationId[action.payload.conversationId];
       if (entry) {
-        entry.usePreExecutionInput = action.payload.value;
+        entry.showPreExecutionGate = action.payload.value;
       }
     },
 
@@ -471,16 +471,16 @@ const instanceUIStateSlice = createSlice({
       }
     },
 
-    setVariableInputStyle(
+    setVariablesPanelStyle(
       state,
       action: PayloadAction<{
         conversationId: string;
-        style: VariableInputStyle;
+        style: VariablesPanelStyle;
       }>,
     ) {
       const entry = state.byConversationId[action.payload.conversationId];
       if (entry) {
-        entry.variableInputStyle = action.payload.style;
+        entry.variablesPanelStyle = action.payload.style;
       }
     },
 
@@ -546,7 +546,7 @@ export const {
   setHideReasoning,
   setHideToolResults,
   setPreExecutionMessage,
-  setVariableInputStyle,
+  setVariablesPanelStyle,
   setOriginalText,
   removeInstanceUIState,
   setUseBlockMode,

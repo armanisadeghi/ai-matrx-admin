@@ -35,6 +35,9 @@ import {
   isBrokerEvent,
   isRecordReservedEvent,
   isRecordUpdateEvent,
+  isCxMessageReservation,
+  isCxRequestReservation,
+  isCxToolCallReservation,
   type ConversationIdData,
   type ConversationLabeledData,
   type UntypedDataPayload,
@@ -692,6 +695,7 @@ export async function processStream({
             recoverable: event.data.recoverable ?? true,
             userMessage: event.data.user_message ?? null,
             systemMessage: event.data.system_message,
+            metadata: event.data.metadata ?? {},
           },
         }),
       );
@@ -708,6 +712,7 @@ export async function processStream({
             code: event.data.code,
             userMessage: event.data.user_message ?? null,
             systemMessage: event.data.system_message,
+            metadata: event.data.metadata ?? {},
           },
         }),
       );
@@ -739,18 +744,14 @@ export async function processStream({
       // the final `CxContentBlock[]` into the same `byId` slot. Live
       // stream writes here are metadata-only — no re-render storm on the
       // message body.
-      if (d.table === "cx_message") {
-        const meta = d.metadata as
-          | { role?: string; position?: number }
-          | undefined;
-        const parents = d.parent_refs as
-          | { conversation_id?: string }
-          | undefined;
+      if (isCxMessageReservation(d)) {
+        const { position } = d.metadata;
+        // MessageRecord.role is "system" | "user" | "assistant" — narrow out
+        // CxMessageRole's "tool" variant (tool turns live in cx_tool_call).
         const role =
-          (meta?.role as "user" | "assistant" | "system") ?? "assistant";
-        const position = typeof meta?.position === "number" ? meta.position : 0;
+          d.metadata.role === "tool" ? "assistant" : d.metadata.role;
         const owningConversationId =
-          parents?.conversation_id ?? conversationId;
+          d.parent_refs.conversation_id ?? conversationId;
 
         if (role === "user" && userMessageClientTempId) {
           // Promote the optimistic user record to the server id. The record
@@ -821,20 +822,18 @@ export async function processStream({
             deletedAt: null,
           }),
         );
-      } else if (d.table === "cx_request") {
-        const parents = d.parent_refs as
-          | { conversation_id?: string; user_request_id?: string }
-          | undefined;
-        const meta = d.metadata as { iteration?: number } | undefined;
+      } else if (isCxRequestReservation(d)) {
+        const { iteration } = d.metadata;
+        const { conversation_id, user_request_id } = d.parent_refs;
         const nowIso = new Date().toISOString();
         dispatch(
           upsertRequest({
             id: d.record_id,
-            conversationId: parents?.conversation_id ?? conversationId,
-            userRequestId: parents?.user_request_id ?? "",
+            conversationId: conversation_id ?? conversationId,
+            userRequestId: user_request_id,
             aiModelId: "",
             apiClass: null,
-            iteration: typeof meta?.iteration === "number" ? meta.iteration : 0,
+            iteration,
             responseId: null,
             finishReason: null,
             inputTokens: null,
@@ -852,35 +851,31 @@ export async function processStream({
             deletedAt: null,
           }),
         );
-      } else if (d.table === "cx_tool_call") {
-        const parents = d.parent_refs as
-          | {
-              conversation_id?: string;
-              user_request_id?: string;
-              call_id?: string;
-            }
-          | undefined;
-        const meta = d.metadata as
-          | { tool_name?: string; call_id?: string; iteration?: number }
-          | undefined;
+      } else if (isCxToolCallReservation(d)) {
+        const { tool_name, call_id, iteration } = d.metadata;
+        const {
+          conversation_id,
+          user_request_id,
+          call_id: parentCallId,
+        } = d.parent_refs;
         const nowIso = new Date().toISOString();
         // Record the call_id → DB id mapping so tool_event patches land on
         // the correct observability row.
-        const providerCallId = meta?.call_id ?? parents?.call_id;
+        const providerCallId = call_id ?? parentCallId;
         if (providerCallId) {
           toolCallIdByProviderCallId.set(providerCallId, d.record_id);
         }
         dispatch(
           upsertToolCall({
             id: d.record_id,
-            conversationId: parents?.conversation_id ?? conversationId,
-            userRequestId: parents?.user_request_id ?? null,
+            conversationId: conversation_id ?? conversationId,
+            userRequestId: user_request_id,
             messageId: null,
             userId: "",
-            callId: meta?.call_id ?? parents?.call_id ?? "",
-            toolName: meta?.tool_name ?? "",
+            callId: call_id ?? parentCallId,
+            toolName: tool_name,
             toolType: "",
-            iteration: typeof meta?.iteration === "number" ? meta.iteration : 0,
+            iteration,
             status: "pending",
             success: false,
             isError: null,
@@ -937,6 +932,7 @@ export async function processStream({
             recordId: d.record_id,
             dbProject: d.db_project,
             parentRefs: d.parent_refs ?? {},
+            metadata: d.metadata ?? {},
           },
         }),
       );
@@ -1004,6 +1000,7 @@ export async function processStream({
             table: d.table,
             recordId: d.record_id,
             status: d.status,
+            metadata: d.metadata ?? {},
           },
         }),
       );
@@ -1030,6 +1027,8 @@ export async function processStream({
             errorType: event.data.error_type,
             message: errorMessage,
             isFatal,
+            code: event.data.code ?? null,
+            details: event.data.details ?? null,
           },
         }),
       );

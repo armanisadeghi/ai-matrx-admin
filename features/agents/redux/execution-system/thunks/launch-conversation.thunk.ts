@@ -100,8 +100,8 @@ function invocationToManagedOptions(
     ...(display?.displayMode !== undefined
       ? { displayMode: display.displayMode }
       : {}),
-    ...(display?.variableInputStyle !== undefined
-      ? { variableInputStyle: display.variableInputStyle }
+    ...(display?.variablesPanelStyle !== undefined
+      ? { variablesPanelStyle: display.variablesPanelStyle }
       : {}),
     ...(display?.showVariablePanel !== undefined
       ? { showVariablePanel: display.showVariablePanel }
@@ -133,8 +133,8 @@ function invocationToManagedOptions(
       ? { allowChat: behavior.allowChat }
       : {}),
     ...(behavior?.autoRun !== undefined ? { autoRun: behavior.autoRun } : {}),
-    ...(behavior?.usePreExecutionInput !== undefined
-      ? { usePreExecutionInput: behavior.usePreExecutionInput }
+    ...(behavior?.showPreExecutionGate !== undefined
+      ? { showPreExecutionGate: behavior.showPreExecutionGate }
       : {}),
     ...(behavior?.jsonExtraction !== undefined
       ? { jsonExtraction: behavior.jsonExtraction }

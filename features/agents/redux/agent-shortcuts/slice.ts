@@ -40,7 +40,7 @@ function makeEmptyRecord(id: string): AgentShortcutRecord {
     autoRun: true,
     applyVariables: true,
     showVariables: false,
-    usePreExecutionInput: false,
+    showPreExecutionGate: false,
 
     isActive: true,
 

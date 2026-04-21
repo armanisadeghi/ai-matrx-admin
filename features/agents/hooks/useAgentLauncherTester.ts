@@ -12,7 +12,7 @@ import type {
 import type {
   JsonExtractionConfig,
   LLMParams,
-  VariableInputStyle,
+  VariablesPanelStyle,
 } from "@/features/agents/types";
 import type { ManagedAgentOptions } from "@/features/agents/types/instance.types";
 import type { ApplicationScope } from "@/features/agents/utils/scope-mapping";
@@ -52,9 +52,9 @@ export function useAgentLauncherTester(
   // ── Main settings (visible, no heading) ───────────────────────────────────
   const [autoRun, setAutoRun] = useState(true);
   const [showVariablePanel, setShowVariablePanel] = useState(true);
-  const [variableInputStyle, setVariableInputStyle] =
-    useState<VariableInputStyle>("inline");
-  const [usePreExecutionInput, setUsePreExecutionInput] = useState(false);
+  const [variablesPanelStyle, setVariablesPanelStyle] =
+    useState<VariablesPanelStyle>("inline");
+  const [showPreExecutionGate, setShowPreExecutionGate] = useState(false);
   const [preExecutionMessage, setPreExecutionMessage] = useState("");
   const [showDefinitionMessages, setShowDefinitionMessages] = useState(true);
   const [showDefinitionMessageContent, setShowDefinitionMessageContent] =
@@ -72,9 +72,8 @@ export function useAgentLauncherTester(
   const [editorTextBefore, setEditorTextBefore] = useState<string>(
     DEFAULT_EDITOR_BEFORE,
   );
-  const [editorTextAfter, setEditorTextAfter] = useState<string>(
-    DEFAULT_EDITOR_AFTER,
-  );
+  const [editorTextAfter, setEditorTextAfter] =
+    useState<string>(DEFAULT_EDITOR_AFTER);
   const [editorContent, setEditorContent] = useState<string>(
     DEFAULT_EDITOR_CONTENT,
   );
@@ -206,9 +205,9 @@ export function useAgentLauncherTester(
       displayMode,
       autoRun,
       allowChat,
-      usePreExecutionInput,
+      showPreExecutionGate,
       apiEndpointMode,
-      variableInputStyle,
+      variablesPanelStyle,
       showVariablePanel,
       showDefinitionMessages,
       showDefinitionMessageContent,
@@ -250,10 +249,10 @@ export function useAgentLauncherTester(
     setAutoRun,
     showVariablePanel,
     setShowVariablePanel,
-    variableInputStyle,
-    setVariableInputStyle,
-    usePreExecutionInput,
-    setUsePreExecutionInput,
+    variablesPanelStyle,
+    setVariablesPanelStyle,
+    showPreExecutionGate,
+    setShowPreExecutionGate,
     preExecutionMessage,
     setPreExecutionMessage,
     showDefinitionMessages,

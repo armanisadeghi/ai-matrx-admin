@@ -31,7 +31,7 @@ export const AGENT_GENERATOR_CONFIG = {
     showVariablePanel: false,
     showDefinitionMessages: false,
     showDefinitionMessageContent: false,
-    usePreExecutionInput: false,
+    showPreExecutionGate: false,
     autoClearConversation: false,
     hideReasoning: true,
     hideToolResults: true,

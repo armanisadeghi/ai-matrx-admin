@@ -6,7 +6,7 @@ export interface CapturedSelection {
 
 export interface EditableSelectionRange {
   type: "editable";
-  element: HTMLElement | null;
+  element: HTMLTextAreaElement | HTMLInputElement | null;
   start: number;
   end: number;
   range?: Range | null;

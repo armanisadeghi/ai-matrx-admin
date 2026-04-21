@@ -29,7 +29,7 @@ import type {
   CreateShortcutForAgentParams,
   ShortcutFieldSnapshot,
 } from "./types";
-import type { ResultDisplay } from "@/features/agents/utils/run-ui-utils";
+import type { ResultDisplayMode } from "@/features/agents/utils/run-ui-utils";
 import type { ShortcutContext } from "@/features/agents/utils/shortcut-context-utils";
 import type { VariableDefinition } from "@/features/agents/types/agent-definition.types";
 import type { ContextSlot } from "@/features/agents/types/agent-api-types";
@@ -185,12 +185,12 @@ export const buildAgentShortcutMenu = createAsyncThunk<
           enabledContexts: item.enabled_contexts as ShortcutContext[],
           scopeMappings: parseScopeMappings(item.scope_mappings),
 
-          resultDisplay: item.result_display as ResultDisplay,
+          resultDisplay: item.result_display as ResultDisplayMode,
           allowChat: item.allow_chat,
           autoRun: item.auto_run,
           applyVariables: item.apply_variables,
           showVariables: item.show_variables,
-          usePreExecutionInput: item.use_pre_execution_input,
+          showPreExecutionGate: item.use_pre_execution_input,
 
           isActive: true,
 
@@ -300,12 +300,12 @@ export const fetchShortcutsForContext = createAsyncThunk<
         enabledContexts: row.enabled_contexts as ShortcutContext[],
         scopeMappings: parseScopeMappings(row.scope_mappings),
 
-        resultDisplay: row.result_display as ResultDisplay,
+        resultDisplay: row.result_display as ResultDisplayMode,
         allowChat: row.allow_chat,
         autoRun: row.auto_run,
         applyVariables: row.apply_variables,
         showVariables: row.show_variables,
-        usePreExecutionInput: row.use_pre_execution_input,
+        showPreExecutionGate: row.use_pre_execution_input,
 
         isActive: true,
 
@@ -578,9 +578,7 @@ export const createShortcutForAgent = createAsyncThunk<
     ...params,
     p_user_id:
       params.p_user_id ??
-      (!params.p_organization_id &&
-      !params.p_project_id &&
-      !params.p_task_id
+      (!params.p_organization_id && !params.p_project_id && !params.p_task_id
         ? userId
         : null),
   };
@@ -624,12 +622,12 @@ export const syncUserShortcutToSlice = createAsyncThunk<
       useLatest: item.use_latest,
       enabledContexts: item.enabled_contexts as ShortcutContext[],
       scopeMappings: item.scope_mappings,
-      resultDisplay: item.result_display as ResultDisplay,
+      resultDisplay: item.result_display as ResultDisplayMode,
       allowChat: item.allow_chat,
       autoRun: item.auto_run,
       applyVariables: item.apply_variables,
       showVariables: item.show_variables,
-      usePreExecutionInput: item.use_pre_execution_input,
+      showPreExecutionGate: item.use_pre_execution_input,
       isActive: item.is_active,
       userId: item.user_id,
       organizationId: item.organization_id,
@@ -658,7 +656,7 @@ interface ShortcutApiRow {
   use_latest: boolean;
   enabled_contexts: unknown;
   scope_mappings: unknown;
-  result_display: string;
+  result_display: ResultDisplayMode;
   allow_chat: boolean;
   auto_run: boolean;
   apply_variables: boolean;
@@ -687,12 +685,12 @@ function shortcutRowToFrontend(row: ShortcutApiRow): AgentShortcut {
     useLatest: row.use_latest ?? false,
     enabledContexts: (row.enabled_contexts as ShortcutContext[]) ?? [],
     scopeMappings: parseScopeMappings(row.scope_mappings),
-    resultDisplay: (row.result_display ?? "modal-full") as ResultDisplay,
+    resultDisplay: (row.result_display ?? "modal-full") as ResultDisplayMode,
     allowChat: row.allow_chat ?? true,
     autoRun: row.auto_run ?? true,
     applyVariables: row.apply_variables ?? true,
     showVariables: row.show_variables ?? false,
-    usePreExecutionInput: row.use_pre_execution_input ?? false,
+    showPreExecutionGate: row.use_pre_execution_input ?? false,
     isActive: row.is_active,
     userId: row.user_id,
     organizationId: row.organization_id,
@@ -730,8 +728,8 @@ function shortcutToApiBody(
     out.apply_variables = patch.applyVariables;
   if (patch.showVariables !== undefined)
     out.show_variables = patch.showVariables;
-  if (patch.usePreExecutionInput !== undefined)
-    out.use_pre_execution_input = patch.usePreExecutionInput;
+  if (patch.showPreExecutionGate !== undefined)
+    out.use_pre_execution_input = patch.showPreExecutionGate;
   if (patch.isActive !== undefined) out.is_active = patch.isActive;
   if (patch.userId !== undefined) out.user_id = patch.userId;
   if (patch.organizationId !== undefined)
@@ -761,33 +759,30 @@ export const fetchShortcutsForScope = createAsyncThunk<
   AgentShortcut[],
   ScopeRef,
   ThunkApi
->(
-  "agentShortcut/fetchForScope",
-  async (scopeRef, { dispatch }) => {
-    dispatch(setShortcutsStatus("loading"));
-    try {
-      const qs = buildScopeQueryString(scopeRef);
-      const response = await fetch(`/api/agent-shortcuts?${qs}`, {
-        method: "GET",
-        credentials: "include",
-      });
-      const payload = await parseJsonOrThrow<{ data: ShortcutApiRow[] }>(
-        response,
-      );
-      const shortcuts = payload.data.map(shortcutRowToFrontend);
-      dispatch(upsertShortcuts(shortcuts));
-      dispatch(setShortcutScopeLoaded({ scopeRef, loaded: true }));
-      dispatch(setShortcutsStatus("succeeded"));
-      return shortcuts;
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Failed to load shortcuts";
-      dispatch(setShortcutsError(message));
-      dispatch(setShortcutsStatus("failed"));
-      throw error;
-    }
-  },
-);
+>("agentShortcut/fetchForScope", async (scopeRef, { dispatch }) => {
+  dispatch(setShortcutsStatus("loading"));
+  try {
+    const qs = buildScopeQueryString(scopeRef);
+    const response = await fetch(`/api/agent-shortcuts?${qs}`, {
+      method: "GET",
+      credentials: "include",
+    });
+    const payload = await parseJsonOrThrow<{ data: ShortcutApiRow[] }>(
+      response,
+    );
+    const shortcuts = payload.data.map(shortcutRowToFrontend);
+    dispatch(upsertShortcuts(shortcuts));
+    dispatch(setShortcutScopeLoaded({ scopeRef, loaded: true }));
+    dispatch(setShortcutsStatus("succeeded"));
+    return shortcuts;
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to load shortcuts";
+    dispatch(setShortcutsError(message));
+    dispatch(setShortcutsStatus("failed"));
+    throw error;
+  }
+});
 
 export type UpdateShortcutInput = { id: string } & Partial<AgentShortcut>;
 
@@ -800,14 +795,13 @@ export const updateShortcut = createAsyncThunk<
 
   const existing = selectShortcutById(getState(), id);
   const snapshot: ShortcutFieldSnapshot = existing
-    ? (Object.keys(patch) as (keyof AgentShortcut)[]).reduce<ShortcutFieldSnapshot>(
-        (acc, field) => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (acc as any)[field] = (existing as any)[field];
-          return acc;
-        },
-        {},
-      )
+    ? (
+        Object.keys(patch) as (keyof AgentShortcut)[]
+      ).reduce<ShortcutFieldSnapshot>((acc, field) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (acc as any)[field] = (existing as any)[field];
+        return acc;
+      }, {})
     : {};
 
   dispatch(setShortcutLoading({ id, loading: true }));
@@ -873,13 +867,15 @@ export interface UnifiedMenuResult {
   placements: UnifiedMenuPlacementGroup[];
 }
 
-function extractScopeFromUnifiedItem(
-  item: Record<string, unknown>,
-): { userId: string | null; organizationId: string | null; projectId: string | null; taskId: string | null } {
+function extractScopeFromUnifiedItem(item: Record<string, unknown>): {
+  userId: string | null;
+  organizationId: string | null;
+  projectId: string | null;
+  taskId: string | null;
+} {
   return {
     userId: (item.user_id as string | null | undefined) ?? null,
-    organizationId:
-      (item.organization_id as string | null | undefined) ?? null,
+    organizationId: (item.organization_id as string | null | undefined) ?? null,
     projectId: (item.project_id as string | null | undefined) ?? null,
     taskId: (item.task_id as string | null | undefined) ?? null,
   };
@@ -918,7 +914,11 @@ export const fetchUnifiedMenu = createAsyncThunk<
           0,
         ),
       }));
-      console.log("[fetchUnifiedMenu] scope=%o payload=%o", ref, placementSummary);
+      console.log(
+        "[fetchUnifiedMenu] scope=%o payload=%o",
+        ref,
+        placementSummary,
+      );
     }
 
     for (const placement of payload.data ?? []) {
@@ -952,8 +952,7 @@ export const fetchUnifiedMenu = createAsyncThunk<
             shortcutDefs.push(
               shortcutRowToFrontend({
                 ...shortcutItem,
-                category_id:
-                  shortcutItem.category_id ?? group.category.id,
+                category_id: shortcutItem.category_id ?? group.category.id,
                 user_id: scopeFields.userId,
                 organization_id: scopeFields.organizationId,
                 project_id: scopeFields.projectId,

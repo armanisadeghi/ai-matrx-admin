@@ -154,7 +154,7 @@ export const selectShortcutExecutionConfig = createSelector(
       autoRun: record.autoRun,
       applyVariables: record.applyVariables,
       showVariables: record.showVariables,
-      usePreExecutionInput: record.usePreExecutionInput,
+      showPreExecutionGate: record.showPreExecutionGate,
     };
   },
 );
@@ -224,7 +224,8 @@ export const selectShortcutFieldHistory = createSelector(
 
 export const selectShortcutLoadedFields = createSelector(
   [selectShortcutById],
-  (record): FieldFlags<keyof AgentShortcut> | undefined => record?._loadedFields,
+  (record): FieldFlags<keyof AgentShortcut> | undefined =>
+    record?._loadedFields,
 );
 
 export const selectShortcutIsLoading = createSelector(
@@ -356,8 +357,12 @@ export const selectShortcutsByAgentId = createSelector(
  * Useful for showing which shortcuts would be affected by a version change.
  */
 export const selectShortcutsByVersionId = createSelector(
-  [selectAllShortcutsArray, (_state: RootState, versionId: string) => versionId],
-  (shortcuts, versionId) => shortcuts.filter((s) => s.agentVersionId === versionId),
+  [
+    selectAllShortcutsArray,
+    (_state: RootState, versionId: string) => versionId,
+  ],
+  (shortcuts, versionId) =>
+    shortcuts.filter((s) => s.agentVersionId === versionId),
 );
 
 /** Shortcuts that always follow the live agent (use_latest = true). */
@@ -369,7 +374,8 @@ export const selectLatestShortcuts = createSelector(
 /** Shortcuts that are pinned to a specific version (use_latest = false, agentVersionId set). */
 export const selectPinnedShortcuts = createSelector(
   [selectAllShortcutsArray],
-  (shortcuts) => shortcuts.filter((s) => !s.useLatest && s.agentVersionId !== null),
+  (shortcuts) =>
+    shortcuts.filter((s) => !s.useLatest && s.agentVersionId !== null),
 );
 
 /** Shortcuts with unsaved local changes. */
@@ -437,8 +443,7 @@ export const selectShortcutsByScope = createSelector(
   [
     selectAllShortcutsArray,
     (_s: RootState, scope: Scope, _scopeId?: string | null) => scope,
-    (_s: RootState, _scope: Scope, scopeId?: string | null) =>
-      scopeId ?? null,
+    (_s: RootState, _scope: Scope, scopeId?: string | null) => scopeId ?? null,
   ],
   (shortcuts, scope, scopeId): AgentShortcutRecord[] =>
     shortcuts.filter((s) =>

@@ -13,7 +13,7 @@
 
 import type { Database } from "@/types/database.types";
 import type { AgentShortcut } from "./types";
-import type { ResultDisplay } from "@/features/agents/utils/run-ui-utils";
+import type { ResultDisplayMode } from "@/features/agents/utils/run-ui-utils";
 import type { ShortcutContext } from "@/features/agents/utils/shortcut-context-utils";
 
 // ---------------------------------------------------------------------------
@@ -51,15 +51,17 @@ export function dbRowToAgentShortcut(row: ShortcutRow): AgentShortcut {
     useLatest: row.use_latest ?? false,
 
     // JSONB — cast but not key-converted
-    enabledContexts: (row.enabled_contexts as unknown as ShortcutContext[]) ?? [],
-    scopeMappings: (row.scope_mappings as unknown as Record<string, string>) ?? null,
+    enabledContexts:
+      (row.enabled_contexts as unknown as ShortcutContext[]) ?? [],
+    scopeMappings:
+      (row.scope_mappings as unknown as Record<string, string>) ?? null,
 
-    resultDisplay: (row.result_display ?? "modal-full") as ResultDisplay,
+    resultDisplay: (row.result_display ?? "modal-full") as ResultDisplayMode,
     allowChat: row.allow_chat ?? true,
     autoRun: row.auto_run ?? true,
     applyVariables: row.apply_variables ?? true,
     showVariables: row.show_variables ?? false,
-    usePreExecutionInput: row.use_pre_execution_input ?? false,
+    showPreExecutionGate: row.use_pre_execution_input ?? false,
 
     isActive: row.is_active,
 
@@ -90,15 +92,17 @@ export function agentShortcutToInsert(shortcut: AgentShortcut): ShortcutInsert {
     agent_version_id: shortcut.agentVersionId,
     use_latest: shortcut.useLatest,
 
-    enabled_contexts: shortcut.enabledContexts as unknown as Database["public"]["Tables"]["agx_shortcut"]["Insert"]["enabled_contexts"],
-    scope_mappings: shortcut.scopeMappings as unknown as Database["public"]["Tables"]["agx_shortcut"]["Insert"]["scope_mappings"],
+    enabled_contexts:
+      shortcut.enabledContexts as unknown as Database["public"]["Tables"]["agx_shortcut"]["Insert"]["enabled_contexts"],
+    scope_mappings:
+      shortcut.scopeMappings as unknown as Database["public"]["Tables"]["agx_shortcut"]["Insert"]["scope_mappings"],
 
     result_display: shortcut.resultDisplay,
     allow_chat: shortcut.allowChat,
     auto_run: shortcut.autoRun,
     apply_variables: shortcut.applyVariables,
     show_variables: shortcut.showVariables,
-    use_pre_execution_input: shortcut.usePreExecutionInput,
+    use_pre_execution_input: shortcut.showPreExecutionGate,
 
     is_active: shortcut.isActive,
 
@@ -120,31 +124,41 @@ export function agentShortcutToUpdate(
 
   if (partial.categoryId !== undefined) update.category_id = partial.categoryId;
   if (partial.label !== undefined) update.label = partial.label;
-  if (partial.description !== undefined) update.description = partial.description;
+  if (partial.description !== undefined)
+    update.description = partial.description;
   if (partial.iconName !== undefined) update.icon_name = partial.iconName;
-  if (partial.keyboardShortcut !== undefined) update.keyboard_shortcut = partial.keyboardShortcut;
+  if (partial.keyboardShortcut !== undefined)
+    update.keyboard_shortcut = partial.keyboardShortcut;
   if (partial.sortOrder !== undefined) update.sort_order = partial.sortOrder;
 
   if (partial.agentId !== undefined) update.agent_id = partial.agentId;
-  if (partial.agentVersionId !== undefined) update.agent_version_id = partial.agentVersionId;
+  if (partial.agentVersionId !== undefined)
+    update.agent_version_id = partial.agentVersionId;
   if (partial.useLatest !== undefined) update.use_latest = partial.useLatest;
 
   if (partial.enabledContexts !== undefined)
-    update.enabled_contexts = partial.enabledContexts as unknown as Database["public"]["Tables"]["agx_shortcut"]["Update"]["enabled_contexts"];
+    update.enabled_contexts =
+      partial.enabledContexts as unknown as Database["public"]["Tables"]["agx_shortcut"]["Update"]["enabled_contexts"];
   if (partial.scopeMappings !== undefined)
-    update.scope_mappings = partial.scopeMappings as unknown as Database["public"]["Tables"]["agx_shortcut"]["Update"]["scope_mappings"];
+    update.scope_mappings =
+      partial.scopeMappings as unknown as Database["public"]["Tables"]["agx_shortcut"]["Update"]["scope_mappings"];
 
-  if (partial.resultDisplay !== undefined) update.result_display = partial.resultDisplay;
+  if (partial.resultDisplay !== undefined)
+    update.result_display = partial.resultDisplay;
   if (partial.allowChat !== undefined) update.allow_chat = partial.allowChat;
   if (partial.autoRun !== undefined) update.auto_run = partial.autoRun;
-  if (partial.applyVariables !== undefined) update.apply_variables = partial.applyVariables;
-  if (partial.showVariables !== undefined) update.show_variables = partial.showVariables;
-  if (partial.usePreExecutionInput !== undefined) update.use_pre_execution_input = partial.usePreExecutionInput;
+  if (partial.applyVariables !== undefined)
+    update.apply_variables = partial.applyVariables;
+  if (partial.showVariables !== undefined)
+    update.show_variables = partial.showVariables;
+  if (partial.showPreExecutionGate !== undefined)
+    update.use_pre_execution_input = partial.showPreExecutionGate;
 
   if (partial.isActive !== undefined) update.is_active = partial.isActive;
 
   if (partial.userId !== undefined) update.user_id = partial.userId;
-  if (partial.organizationId !== undefined) update.organization_id = partial.organizationId;
+  if (partial.organizationId !== undefined)
+    update.organization_id = partial.organizationId;
   if (partial.projectId !== undefined) update.project_id = partial.projectId;
   if (partial.taskId !== undefined) update.task_id = partial.taskId;
 

@@ -26,7 +26,7 @@ import { InputActionButtons } from "./InputActionButtons";
 import { SingleRowActionButtons } from "./SingleRowActionButtons";
 import { smartExecute } from "@/features/agents/redux/execution-system/thunks/smart-execute.thunk";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import type { VariableInputStyle } from "@/features/agents/types/instance.types";
+import type { VariablesPanelStyle } from "@/features/agents/types/instance.types";
 import { UninitializedShell } from "./UninitializedShell";
 // ── Props ────────────────────────────────────────────────────────────────────
 
@@ -44,7 +44,7 @@ interface SmartAgentInputProps {
   showVariableIcon?: boolean;
   surfaceKey?: string;
   disableSend?: boolean;
-  variableInputStyle?: VariableInputStyle;
+  variablesPanelStyle?: VariablesPanelStyle;
   extraRightControls?: React.ReactNode;
 }
 
@@ -64,7 +64,7 @@ export function SmartAgentInput({
   showVariableIcon = true,
   surfaceKey,
   disableSend = false,
-  variableInputStyle,
+  variablesPanelStyle,
   extraRightControls,
 }: SmartAgentInputProps) {
   const dispatch = useAppDispatch();
@@ -96,7 +96,7 @@ export function SmartAgentInput({
           conversationId={conversationId}
           compact
           onSubmit={handleSubmit}
-          styleOverride={variableInputStyle}
+          styleOverride={variablesPanelStyle}
         />
 
         {/* Resource chips (stacked above the row when present) */}
@@ -146,7 +146,7 @@ export function SmartAgentInput({
         conversationId={conversationId}
         compact={compact}
         onSubmit={handleSubmit}
-        styleOverride={variableInputStyle}
+        styleOverride={variablesPanelStyle}
       />
 
       {/* Resource chips — pinned, never scrolls away */}

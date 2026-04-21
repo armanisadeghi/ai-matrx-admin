@@ -493,7 +493,28 @@ const REGISTRY: WindowRegistryEntry[] = [
     slug: "stream-debug",
     overlayId: "streamDebug",
     label: "Stream Debug",
-    defaultData: { conversationId: null },
+    // requestId is optional — when set, the panel is pinned to a specific
+    // request (e.g. the one that produced an assistant message). When null,
+    // the panel tracks the latest request for the conversation.
+    defaultData: { conversationId: null, requestId: null },
+    ephemeral: true,
+  },
+
+  // ── Message Analysis (per-assistant-message response stats) ──────────────
+  {
+    slug: "message-analysis-window",
+    overlayId: "messageAnalysisWindow",
+    label: "Response Analysis",
+    // Creator-only window that inspects the request tied to a given assistant
+    // message: token usage, cost, timings, tool calls, client metrics,
+    // session totals. Ephemeral because `activeRequests` in Redux doesn't
+    // survive a reload — there's no restorable state beyond geometry.
+    defaultData: {
+      conversationId: null,
+      requestId: null,
+      messageId: null,
+      activeTab: "request",
+    },
     ephemeral: true,
   },
 

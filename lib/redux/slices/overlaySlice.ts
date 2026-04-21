@@ -105,6 +105,7 @@ const initialState: OverlayState = {
     agentContentWindow: makeDefaultInstance(),
     agentContentSidebarWindow: makeDefaultInstance(),
     executionInspectorWindow: makeDefaultInstance(),
+    messageAnalysisWindow: makeDefaultInstance(),
     agentAssistantMarkdownDebugWindow: makeDefaultInstance(),
     agentImportWindow: makeDefaultInstance(),
     notesBetaWindow: makeDefaultInstance(),
@@ -522,12 +523,37 @@ export const openUndoHistory = (options: UndoHistoryPayload) =>
 
 interface StreamDebugPayload {
   conversationId: string;
+  /** Pin the panel to a specific request (e.g. a given assistant message). */
+  requestId?: string;
 }
 
 export const openStreamDebug = (options: StreamDebugPayload) =>
   openOverlay({
     overlayId: "streamDebug",
-    data: { conversationId: options.conversationId },
+    data: {
+      conversationId: options.conversationId,
+      requestId: options.requestId ?? null,
+    },
+  });
+
+interface MessageAnalysisWindowPayload {
+  conversationId: string;
+  /** The request that produced the message (from MessageRecord._streamRequestId). */
+  requestId?: string | null;
+  /** The message id for display context (not required for stats lookup). */
+  messageId?: string | null;
+}
+
+export const openMessageAnalysisWindow = (
+  options: MessageAnalysisWindowPayload,
+) =>
+  openOverlay({
+    overlayId: "messageAnalysisWindow",
+    data: {
+      conversationId: options.conversationId,
+      requestId: options.requestId ?? null,
+      messageId: options.messageId ?? null,
+    },
   });
 
 interface ContextSwitcherWindowPayload {

@@ -25,7 +25,7 @@ export function AgentRunWrapper({
     showVariablePanel: true,
     showDefinitionMessages: true,
     showDefinitionMessageContent: true,
-    usePreExecutionInput: false,
+    showPreExecutionGate: false,
     autoClearConversation: false,
   });
 

@@ -161,7 +161,7 @@ export function LinkAgentToShortcutModal({
         autoRun: true,
         applyVariables: true,
         showVariables: false,
-        usePreExecutionInput: false,
+        showPreExecutionGate: false,
         isActive: true,
         userId: null,
         organizationId: null,
