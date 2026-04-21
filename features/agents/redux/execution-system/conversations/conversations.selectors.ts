@@ -11,9 +11,6 @@ export const selectInstance =
   (state: RootState): ConversationRecord | undefined =>
     state.conversations.byConversationId[conversationId];
 
-/** @deprecated Legacy alias; prefer `selectConversation`. */
-export const selectConversation = selectInstance;
-
 export const selectAllConversationIds = (state: RootState): string[] =>
   state.conversations.allConversationIds;
 

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Handle, Position } from "reactflow";
 import { Card, CardContent } from "@/components/ui/card";
 import { NodeContextMenu } from "@/features/workflows/components/menus/NodeContextMenu";
-import { useTheme } from "@/styles/themes/ThemeProvider";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { getRegisteredFunctions } from "@/features/workflows/react-flow/node-editor/workflow-node-editor/utils/arg-utils";
 import { SocketExecuteButton } from "@/components/socket-io/presets/preset-manager/triggers/SocketExecuteButton";
 import { SocketResultsOverlay } from "@/components/socket-io/presets/preset-manager/responses/SocketResultsOverlay";
@@ -38,7 +38,7 @@ interface WorkflowNodeProps {
 }
 
 const RecipeNode: React.FC<WorkflowNodeProps> = ({ data, selected, onDelete, onEdit, onDuplicate, userInputs, onShowResults }) => {
-    const { mode } = useTheme();
+    const mode = useAppSelector((s) => s.theme.mode);
     const [mounted, setMounted] = useState(false);
     const [showResults, setShowResults] = useState(false);
     const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);

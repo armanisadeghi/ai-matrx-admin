@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useTheme } from '@/styles/themes/ThemeProvider';
+import { useAppSelector } from '@/lib/redux/hooks';
 import {
   Select,
   SelectTrigger,
@@ -32,7 +32,7 @@ const MarkdownClassifier: React.FC<MarkdownClassifierProps> = ({
   showSampleSelector = true,
   showCoordinatorSelector = true,
 }) => {
-  const { mode } = useTheme();
+  const mode = useAppSelector((s) => s.theme.mode);
   const [markdown, setMarkdown] = useState<string>(initialMarkdown || markdownSamples.candidateProfileShort);
   const [parsedMarkdown, setParsedMarkdown] = useState<string>(initialMarkdown || markdownSamples.candidateProfileShort);
   const [selectedCoordinatorId, setSelectedCoordinatorId] = useState<string>(initialCoordinatorId);

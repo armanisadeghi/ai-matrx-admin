@@ -15,7 +15,6 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { useTheme } from "@/hooks/useTheme";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -180,7 +179,7 @@ export default function ReduxDebugInterface({
   const [searchTerm, setSearchTerm] = useState("");
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [tabOrder, setTabOrder] = useState<string[]>(["overview"]);
-  const { theme } = useTheme();
+  const theme = useAppSelector((s) => s.theme.mode);
   const debugSelectors = useDebugSelectors();
 
   // Redux State

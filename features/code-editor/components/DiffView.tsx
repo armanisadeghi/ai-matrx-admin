@@ -3,7 +3,7 @@
 import React from 'react';
 import { Prism as SyntaxHighlighterBase } from 'react-syntax-highlighter';
 import { vscDarkPlus, vs } from 'react-syntax-highlighter/dist/cjs/styles/prism';
-import { useTheme } from '@/styles/themes/ThemeProvider';
+import { useAppSelector } from '@/lib/redux/hooks';
 import { generateUnifiedDiff, DiffLine } from '@/features/code-editor/utils/generateDiff';
 import { cn } from '@/styles/themes/utils';
 
@@ -25,7 +25,7 @@ export function DiffView({
   showLineNumbers = true,
   className,
 }: DiffViewProps) {
-  const { mode } = useTheme();
+  const mode = useAppSelector((s) => s.theme.mode);
   const diff = generateUnifiedDiff(originalCode, modifiedCode);
 
   const getDiffLineStyle = (type: DiffLine['type']) => {

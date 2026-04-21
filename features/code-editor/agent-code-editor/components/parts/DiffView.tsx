@@ -14,7 +14,7 @@ import {
   vscDarkPlus,
   vs,
 } from "react-syntax-highlighter/dist/cjs/styles/prism";
-import { useTheme } from "@/styles/themes/ThemeProvider";
+import { useAppSelector } from "@/lib/redux/hooks";
 import {
   generateUnifiedDiff,
   type DiffLine,
@@ -39,7 +39,7 @@ export function DiffView({
   showLineNumbers = true,
   className,
 }: DiffViewProps) {
-  const { mode } = useTheme();
+  const mode = useAppSelector((s) => s.theme.mode);
   const diff = generateUnifiedDiff(originalCode, modifiedCode);
 
   const getDiffLineStyle = (type: DiffLine["type"]) => {

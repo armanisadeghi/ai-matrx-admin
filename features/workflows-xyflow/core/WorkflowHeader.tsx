@@ -12,7 +12,7 @@ import {
     DropdownMenuTrigger,
     DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { useTheme } from '@/styles/themes/ThemeProvider';
+import { toggleMode as toggleModeAction } from '@/styles/themes/themeSlice';
 
 import {
     Save,
@@ -79,8 +79,8 @@ export const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
     const allNodesArray = useAppSelector((state) => workflowNodesSelectors.nodesByWorkflowId(state, workflowId));
     const nodeCount = allNodesArray.length;
     const userId = useAppSelector(selectUserId);
-    const themeContext = useTheme();
-    const { mode: themeMode, toggleMode } = themeContext as { mode: 'light' | 'dark'; toggleMode: () => void };
+    const themeMode = useAppSelector((s) => s.theme.mode);
+    const toggleMode = () => dispatch(toggleModeAction());
     
     // Auto-save functionality - watch for workflow dirty state
     const isWorkflowDirty = useAppSelector(state => selectWorkflowIsDirty(state, workflowId));

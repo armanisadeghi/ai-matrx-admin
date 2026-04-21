@@ -18,7 +18,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle2, Sparkles } from "lucide-react";
 import dynamic from "next/dynamic";
-import { useTheme } from "@/styles/themes/ThemeProvider";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { ReviewStage } from "./ReviewStage";
 import { ErrorPanel } from "./ErrorPanel";
 import type { CodeEditorState } from "../../types";
@@ -70,7 +70,7 @@ export function CodeOrDiffColumn({
   onCopyResponse,
   onBackToInput,
 }: CodeOrDiffColumnProps) {
-  const { mode } = useTheme();
+  const mode = useAppSelector((s) => s.theme.mode);
 
   return (
     <div className="flex flex-col h-full min-h-0 bg-background">

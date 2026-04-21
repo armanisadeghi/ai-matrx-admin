@@ -3,7 +3,6 @@
 import "./UserInputNode.css";
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { useTheme } from "@/styles/themes/ThemeProvider";
 import { DbUserInput } from "@/features/workflows/types";
 import { NodeDropdownMenu } from "@/features/workflows/components/menus/NodeDropdownMenu";
 import { BsThreeDots } from "react-icons/bs";
@@ -38,7 +37,7 @@ interface UserInputNodeProps {
 }
 
 const UserInputNode: React.FC<UserInputNodeProps> = ({ data, selected, onDelete, onEdit, onDuplicate }) => {
-    const { mode } = useTheme();
+    const mode = useAppSelector((s) => s.theme.mode);
     const [mounted, setMounted] = useState(false);
     const dispatch = useAppDispatch();
     
