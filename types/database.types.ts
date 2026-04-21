@@ -984,82 +984,112 @@ export type Database = {
           agent_id: string | null
           agent_version_id: string | null
           allow_chat: boolean | null
-          apply_variables: boolean | null
           auto_run: boolean | null
+          bypass_gate_seconds: number
           category_id: string
+          context_overrides: Json | null
           created_at: string
+          default_user_input: string | null
+          default_variables: Json | null
           description: string | null
+          display_mode: string | null
           enabled_contexts: Json | null
+          hide_reasoning: boolean
+          hide_tool_results: boolean
           icon_name: string | null
           id: string
           is_active: boolean
           keyboard_shortcut: string | null
           label: string
+          llm_overrides: Json | null
           organization_id: string | null
+          pre_execution_message: string | null
           project_id: string | null
-          result_display: string | null
           scope_mappings: Json | null
-          show_variables: boolean | null
+          show_definition_message_content: boolean
+          show_definition_messages: boolean
+          show_pre_execution_gate: boolean | null
+          show_variable_panel: boolean
           sort_order: number
           task_id: string | null
           updated_at: string
           use_latest: boolean
-          use_pre_execution_input: boolean | null
           user_id: string | null
+          variables_panel_style: string
         }
         Insert: {
           agent_id?: string | null
           agent_version_id?: string | null
           allow_chat?: boolean | null
-          apply_variables?: boolean | null
           auto_run?: boolean | null
+          bypass_gate_seconds?: number
           category_id: string
+          context_overrides?: Json | null
           created_at?: string
+          default_user_input?: string | null
+          default_variables?: Json | null
           description?: string | null
+          display_mode?: string | null
           enabled_contexts?: Json | null
+          hide_reasoning?: boolean
+          hide_tool_results?: boolean
           icon_name?: string | null
           id?: string
           is_active?: boolean
           keyboard_shortcut?: string | null
           label: string
+          llm_overrides?: Json | null
           organization_id?: string | null
+          pre_execution_message?: string | null
           project_id?: string | null
-          result_display?: string | null
           scope_mappings?: Json | null
-          show_variables?: boolean | null
+          show_definition_message_content?: boolean
+          show_definition_messages?: boolean
+          show_pre_execution_gate?: boolean | null
+          show_variable_panel?: boolean
           sort_order?: number
           task_id?: string | null
           updated_at?: string
           use_latest?: boolean
-          use_pre_execution_input?: boolean | null
           user_id?: string | null
+          variables_panel_style?: string
         }
         Update: {
           agent_id?: string | null
           agent_version_id?: string | null
           allow_chat?: boolean | null
-          apply_variables?: boolean | null
           auto_run?: boolean | null
+          bypass_gate_seconds?: number
           category_id?: string
+          context_overrides?: Json | null
           created_at?: string
+          default_user_input?: string | null
+          default_variables?: Json | null
           description?: string | null
+          display_mode?: string | null
           enabled_contexts?: Json | null
+          hide_reasoning?: boolean
+          hide_tool_results?: boolean
           icon_name?: string | null
           id?: string
           is_active?: boolean
           keyboard_shortcut?: string | null
           label?: string
+          llm_overrides?: Json | null
           organization_id?: string | null
+          pre_execution_message?: string | null
           project_id?: string | null
-          result_display?: string | null
           scope_mappings?: Json | null
-          show_variables?: boolean | null
+          show_definition_message_content?: boolean
+          show_definition_messages?: boolean
+          show_pre_execution_gate?: boolean | null
+          show_variable_panel?: boolean
           sort_order?: number
           task_id?: string | null
           updated_at?: string
           use_latest?: boolean
-          use_pre_execution_input?: boolean | null
           user_id?: string | null
+          variables_panel_style?: string
         }
         Relationships: [
           {
@@ -5873,6 +5903,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      cx_request_snapshot: {
+        Row: {
+          conversation_id: string
+          created_at: string
+          cx_request_id: string | null
+          id: string
+          iteration: number
+          model: string | null
+          provider: string
+          request_payload: Json
+          response_message_id: string | null
+          response_payload: Json | null
+          trigger_message_id: string | null
+          user_request_id: string | null
+        }
+        Insert: {
+          conversation_id: string
+          created_at?: string
+          cx_request_id?: string | null
+          id?: string
+          iteration?: number
+          model?: string | null
+          provider: string
+          request_payload: Json
+          response_message_id?: string | null
+          response_payload?: Json | null
+          trigger_message_id?: string | null
+          user_request_id?: string | null
+        }
+        Update: {
+          conversation_id?: string
+          created_at?: string
+          cx_request_id?: string | null
+          id?: string
+          iteration?: number
+          model?: string | null
+          provider?: string
+          request_payload?: Json
+          response_message_id?: string | null
+          response_payload?: Json | null
+          trigger_message_id?: string | null
+          user_request_id?: string | null
+        }
+        Relationships: []
       }
       cx_tool_call: {
         Row: {
@@ -17114,29 +17189,39 @@ export type Database = {
           agent_variable_definitions: Json
           agent_version_id: string
           allow_chat: boolean
-          apply_variables: boolean
           auto_run: boolean
+          bypass_gate_seconds: number
           category_id: string
+          context_overrides: Json
           current_version: number
+          default_user_input: string
+          default_variables: Json
           description: string
+          display_mode: string
           enabled_contexts: Json
+          hide_reasoning: boolean
+          hide_tool_results: boolean
           icon_name: string
           is_behind: boolean
           is_version: boolean
           keyboard_shortcut: string
           label: string
+          llm_overrides: Json
+          pre_execution_message: string
           resolved_id: string
-          result_display: string
           scope_mappings: Json
           shortcut_id: string
           shortcut_org_id: string
           shortcut_project_id: string
           shortcut_task_id: string
           shortcut_user_id: string
-          show_variables: boolean
+          show_definition_message_content: boolean
+          show_definition_messages: boolean
+          show_pre_execution_gate: boolean
+          show_variable_panel: boolean
           sort_order: number
           use_latest: boolean
-          use_pre_execution_input: boolean
+          variables_panel_style: string
         }[]
       }
       agx_get_shortcuts_initial: {
@@ -17148,27 +17233,37 @@ export type Database = {
           agent_variable_definitions: Json
           agent_version_id: string
           allow_chat: boolean
-          apply_variables: boolean
           auto_run: boolean
+          bypass_gate_seconds: number
           category_id: string
+          context_overrides: Json
           current_version: number
+          default_user_input: string
+          default_variables: Json
           description: string
+          display_mode: string
           enabled_contexts: Json
+          hide_reasoning: boolean
+          hide_tool_results: boolean
           icon_name: string
           is_behind: boolean
           is_version: boolean
           keyboard_shortcut: string
           label: string
+          llm_overrides: Json
+          pre_execution_message: string
           resolved_id: string
-          result_display: string
           scope_mappings: Json
           shortcut_id: string
           shortcut_org_id: string
           shortcut_user_id: string
-          show_variables: boolean
+          show_definition_message_content: boolean
+          show_definition_messages: boolean
+          show_pre_execution_gate: boolean
+          show_variable_panel: boolean
           sort_order: number
           use_latest: boolean
-          use_pre_execution_input: boolean
+          variables_panel_style: string
         }[]
       }
       agx_get_user_context_tree: { Args: never; Returns: Json }
@@ -17179,31 +17274,41 @@ export type Database = {
           agent_name: string
           agent_version_id: string
           allow_chat: boolean
-          apply_variables: boolean
           auto_run: boolean
+          bypass_gate_seconds: number
           category_id: string
           category_label: string
+          context_overrides: Json
           created_at: string
+          default_user_input: string
+          default_variables: Json
           description: string
+          display_mode: string
           enabled_contexts: Json
+          hide_reasoning: boolean
+          hide_tool_results: boolean
           icon_name: string
           id: string
           is_active: boolean
           keyboard_shortcut: string
           label: string
+          llm_overrides: Json
           organization_id: string
+          pre_execution_message: string
           project_id: string
-          result_display: string
           scope_mappings: Json
           scope_name: string
           scope_type: string
-          show_variables: boolean
+          show_definition_message_content: boolean
+          show_definition_messages: boolean
+          show_pre_execution_gate: boolean
+          show_variable_panel: boolean
           sort_order: number
           task_id: string
           updated_at: string
           use_latest: boolean
-          use_pre_execution_input: boolean
           user_id: string
+          variables_panel_style: string
         }[]
       }
       agx_get_version_history: {

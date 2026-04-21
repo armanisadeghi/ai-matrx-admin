@@ -1025,6 +1025,87 @@
         }
       }
     },
+    "/ai/mock-stream/{scenario}": {
+      "post": {
+        "tags": [
+          "AI"
+        ],
+        "summary": "Mock Stream",
+        "description": "Stream a synthetic edge-case response without touching the AI stack.\n\nThe endpoint goes through the full auth middleware stack (same as\n/ai/agents/{agent_id}) but short-circuits before any DB or LLM calls.",
+        "operationId": "mock_stream_ai_mock_stream__scenario__post",
+        "parameters": [
+          {
+            "name": "scenario",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Scenario"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MockStreamRequest",
+                "default": {
+                  "chunk_count": 10,
+                  "chunk_delay_ms": 200,
+                  "heartbeat_interval_ms": 10000,
+                  "max_lifetime_ms": 120000,
+                  "include_preamble": true
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ai/mock-stream/scenarios": {
+      "get": {
+        "tags": [
+          "AI"
+        ],
+        "summary": "List Scenarios",
+        "description": "Return all available scenario names with short descriptions.",
+        "operationId": "list_scenarios_ai_mock_stream_scenarios_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response List Scenarios Ai Mock Stream Scenarios Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/ai/prompts/{prompt_id}": {
       "post": {
         "tags": [
@@ -7639,6 +7720,11 @@
             "title": "Block Mode",
             "default": false
           },
+          "snapshot": {
+            "type": "boolean",
+            "title": "Snapshot",
+            "default": false
+          },
           "cache_bypass": {
             "anyOf": [
               {
@@ -8727,6 +8813,11 @@
             "title": "Block Mode",
             "default": false
           },
+          "snapshot": {
+            "type": "boolean",
+            "title": "Snapshot",
+            "default": false
+          },
           "cache_bypass": {
             "anyOf": [
               {
@@ -9017,6 +9108,11 @@
           "block_mode": {
             "type": "boolean",
             "title": "Block Mode",
+            "default": false
+          },
+          "snapshot": {
+            "type": "boolean",
+            "title": "Snapshot",
             "default": false
           },
           "cache_bypass": {
@@ -10230,6 +10326,45 @@
         "type": "object",
         "title": "MessageUpdate",
         "description": "Fields the client can edit on an existing ``cx_message`` row.\n\nEvery field is optional — only fields the caller actually sets are\nwritten to the DB. ``content`` accepts the same structured JSON the\nserver would have written (list of parts) — callers that want to\nedit a simple text message should still send the list form."
+      },
+      "MockStreamRequest": {
+        "properties": {
+          "chunk_count": {
+            "type": "integer",
+            "maximum": 10000,
+            "minimum": 1,
+            "title": "Chunk Count",
+            "default": 10
+          },
+          "chunk_delay_ms": {
+            "type": "integer",
+            "maximum": 60000,
+            "minimum": 0,
+            "title": "Chunk Delay Ms",
+            "default": 200
+          },
+          "heartbeat_interval_ms": {
+            "type": "integer",
+            "maximum": 60000,
+            "minimum": 1000,
+            "title": "Heartbeat Interval Ms",
+            "default": 10000
+          },
+          "max_lifetime_ms": {
+            "type": "integer",
+            "maximum": 600000,
+            "minimum": 1000,
+            "title": "Max Lifetime Ms",
+            "default": 120000
+          },
+          "include_preamble": {
+            "type": "boolean",
+            "title": "Include Preamble",
+            "default": true
+          }
+        },
+        "type": "object",
+        "title": "MockStreamRequest"
       },
       "PdfPipelineOptions": {
         "properties": {

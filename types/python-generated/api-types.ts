@@ -541,6 +541,49 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/ai/mock-stream/{scenario}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mock Stream
+         * @description Stream a synthetic edge-case response without touching the AI stack.
+         *
+         *     The endpoint goes through the full auth middleware stack (same as
+         *     /ai/agents/{agent_id}) but short-circuits before any DB or LLM calls.
+         */
+        post: operations["mock_stream_ai_mock_stream__scenario__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ai/mock-stream/scenarios": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Scenarios
+         * @description Return all available scenario names with short descriptions.
+         */
+        get: operations["list_scenarios_ai_mock_stream_scenarios_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/ai/prompts/{prompt_id}": {
         parameters: {
             query?: never;
@@ -2950,6 +2993,11 @@ export interface components {
              * @default false
              */
             block_mode: boolean;
+            /**
+             * Snapshot
+             * @default false
+             */
+            snapshot: boolean;
             cache_bypass?: components["schemas"]["CacheBypass"] | null;
         };
         /** AnalyzeBulkRequest */
@@ -3317,6 +3365,11 @@ export interface components {
              * @default false
              */
             block_mode: boolean;
+            /**
+             * Snapshot
+             * @default false
+             */
+            snapshot: boolean;
             cache_bypass?: components["schemas"]["CacheBypass"] | null;
             /** Metadata */
             metadata?: {
@@ -3449,6 +3502,11 @@ export interface components {
              * @default false
              */
             block_mode: boolean;
+            /**
+             * Snapshot
+             * @default false
+             */
+            snapshot: boolean;
             cache_bypass?: components["schemas"]["CacheBypass"] | null;
         };
         /** DirectChatRequest */
@@ -3798,6 +3856,34 @@ export interface components {
             metadata?: {
                 [key: string]: unknown;
             } | null;
+        };
+        /** MockStreamRequest */
+        MockStreamRequest: {
+            /**
+             * Chunk Count
+             * @default 10
+             */
+            chunk_count: number;
+            /**
+             * Chunk Delay Ms
+             * @default 200
+             */
+            chunk_delay_ms: number;
+            /**
+             * Heartbeat Interval Ms
+             * @default 10000
+             */
+            heartbeat_interval_ms: number;
+            /**
+             * Max Lifetime Ms
+             * @default 120000
+             */
+            max_lifetime_ms: number;
+            /**
+             * Include Preamble
+             * @default true
+             */
+            include_preamble: boolean;
         };
         /** PdfPipelineOptions */
         PdfPipelineOptions: {
@@ -5404,6 +5490,63 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    mock_stream_ai_mock_stream__scenario__post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                scenario: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["MockStreamRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_scenarios_ai_mock_stream_scenarios_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
                 };
             };
         };
