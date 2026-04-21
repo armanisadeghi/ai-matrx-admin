@@ -85,7 +85,7 @@ import type {
 } from "@/features/prompt-builtins/types/menu";
 import { mapScopeToVariables } from "@/features/prompt-builtins/utils/execution";
 import { usePromptRunner } from "@/features/prompts/hooks/usePromptRunner";
-import { insertTextAtTextareaCursor } from "@/features/prompts/utils/textareaInsertUtils";
+import { insertTextAtTextareaCursor } from "@/utils/text-insertion";
 import { toast } from "@/components/ui/use-toast";
 import { useQuickActions } from "@/features/quick-actions/hooks/useQuickActions";
 import { getPlacementTypeMeta } from "@/features/prompt-builtins/constants";

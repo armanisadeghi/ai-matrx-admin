@@ -24,7 +24,7 @@ import {
   selectAgentVariableDefinitions,
 } from "@/features/agents/redux/agent-definition/selectors";
 import { setAgentMessages } from "@/features/agents/redux/agent-definition/slice";
-import { UnifiedContextMenu } from "@/features/context-menu";
+import { UnifiedAgentContextMenu } from "@/features/context-menu-v2";
 import { HighlightedText } from "@/features/agents/components/variables-management/HighlightedText";
 import { MessageItemButtons } from "@/features/agents/components/builder/message-builders/MessageItemButtons";
 import {
@@ -601,7 +601,7 @@ export function MessageItem({
       {/* Content */}
       <div className="p-4">
         {isEditing ? (
-          <UnifiedContextMenu
+          <UnifiedAgentContextMenu
             getTextarea={() => textareaRef.current}
             contextData={{ contextMenuData }}
             enabledPlacements={["ai-action", "content-block", "quick-action"]}
@@ -639,7 +639,7 @@ export function MessageItem({
               className="w-full bg-transparent border-none outline-none text-xs text-foreground placeholder:text-muted-foreground p-0 resize-none overflow-hidden leading-normal"
               style={{ minHeight: "80px", lineHeight: "1.5" }}
             />
-          </UnifiedContextMenu>
+          </UnifiedAgentContextMenu>
         ) : (
           <div
             className="text-xs text-muted-foreground whitespace-pre-wrap cursor-text leading-normal"

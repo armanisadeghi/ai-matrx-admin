@@ -1,0 +1,356 @@
+// ============================================================================
+// AGENT APPS — TypeScript Type Definitions
+// ============================================================================
+// Public shareable AI-powered mini-apps with custom UIs, backed by agents
+// (agx_agent / agx_version). Parity port of features/prompt-apps/types.
+// ============================================================================
+
+import type { Database, Json } from "@/types/database.types";
+
+export type AppStatus = "draft" | "published" | "archived" | "suspended";
+
+export type AppDisplayMode =
+  | "form"
+  | "form-to-chat"
+  | "chat"
+  | "centered-input"
+  | "chat-with-history";
+
+export type ComponentLanguage =
+  | "tsx"
+  | "jsx"
+  | "typescript"
+  | "javascript"
+  | "html"
+  | "react";
+
+export type ErrorType =
+  | "missing_variable"
+  | "extra_variable"
+  | "invalid_variable_type"
+  | "component_render_error"
+  | "api_error"
+  | "rate_limit"
+  | "other";
+
+export type ExecutionErrorType =
+  | "missing_variables"
+  | "invalid_variables"
+  | "rate_limit_exceeded"
+  | "execution_error"
+  | "timeout"
+  | "cost_limit_exceeded";
+
+// ============================================================================
+// Auto-Create
+// ============================================================================
+
+export interface AppMetadata {
+  name: string;
+  tagline: string;
+  description: string;
+  slug_options: string[];
+  category: string | null;
+  tags: string[];
+}
+
+// ============================================================================
+// Core — backed by DB row shape (when generated types land, swap in DbRow)
+// ============================================================================
+
+export type AgentAppRow =
+  Database["public"]["Tables"] extends { agent_apps: { Row: infer R } } ? R : never;
+
+export interface AgentAppRecord {
+  id: string;
+  slug: string;
+  name: string;
+  tagline: string | null;
+  description: string | null;
+  category: string | null;
+  tags: string[];
+
+  agent_id: string;
+  agent_version_id: string | null;
+  use_latest: boolean;
+
+  component_code: string;
+  component_language: ComponentLanguage;
+  allowed_imports: string[] | Json;
+
+  variable_schema: VariableSchemaItem[] | Json;
+  layout_config: LayoutConfig | Json;
+  styling_config: StylingConfig | Json;
+
+  preview_image_url: string | null;
+  favicon_url: string | null;
+
+  status: AppStatus;
+  is_public: boolean;
+  is_featured: boolean | null;
+  is_verified: boolean | null;
+
+  rate_limit_per_ip: number | null;
+  rate_limit_window_hours: number | null;
+  rate_limit_authenticated: number | null;
+
+  version: number;
+  pinned_version: number | null;
+
+  total_executions: number | null;
+  total_tokens_used: number | null;
+  total_cost: number | null;
+  unique_users_count: number | null;
+  success_rate: number | null;
+  avg_execution_time_ms: number | null;
+  last_execution_at: string | null;
+
+  metadata: Json | null;
+
+  user_id: string | null;
+  organization_id: string | null;
+  project_id: string | null;
+  task_id: string | null;
+
+  created_at: string;
+  updated_at: string;
+  published_at: string | null;
+}
+
+export type AgentApp = AgentAppRecord;
+
+export type PublicAgentApp = Omit<
+  AgentAppRecord,
+  | "agent_id"
+  | "agent_version_id"
+  | "use_latest"
+  | "user_id"
+  | "organization_id"
+  | "project_id"
+  | "task_id"
+  | "rate_limit_per_ip"
+  | "rate_limit_window_hours"
+  | "rate_limit_authenticated"
+  | "metadata"
+  | "pinned_version"
+  | "version"
+  | "published_at"
+  | "created_at"
+  | "updated_at"
+  | "is_featured"
+  | "is_verified"
+  | "total_tokens_used"
+  | "total_cost"
+  | "unique_users_count"
+  | "avg_execution_time_ms"
+  | "last_execution_at"
+  | "status"
+  | "is_public"
+>;
+
+export interface VariableSchemaItem {
+  name: string;
+  type: "string" | "number" | "boolean" | "object" | "array";
+  required: boolean;
+  default?: unknown;
+  description?: string;
+  validation?: {
+    min?: number;
+    max?: number;
+    pattern?: string;
+    options?: string[];
+  };
+}
+
+export interface LayoutConfig {
+  theme?: "light" | "dark" | "auto";
+  maxWidth?: string;
+  showBranding?: boolean;
+  showCredit?: boolean;
+  customLayout?: string;
+  displayMode?: AppDisplayMode;
+}
+
+export interface StylingConfig {
+  primaryColor?: string;
+  secondaryColor?: string;
+  fontFamily?: string;
+  customCSS?: string;
+  tailwindClasses?: Record<string, string>;
+}
+
+// ============================================================================
+// Execution
+// ============================================================================
+
+export interface AgentAppExecution {
+  id: string;
+  app_id: string;
+  user_id?: string;
+
+  fingerprint?: string;
+  ip_address?: string;
+  user_agent?: string;
+
+  task_id: string;
+  variables_provided: Record<string, unknown>;
+  variables_used: Record<string, unknown>;
+
+  success: boolean;
+  error_type?: ExecutionErrorType;
+  error_message?: string;
+
+  execution_time_ms?: number;
+  tokens_used?: number;
+  cost?: number;
+
+  referer?: string;
+  metadata: Record<string, unknown>;
+
+  created_at: string;
+}
+
+export interface AgentAppError {
+  id: string;
+  app_id: string;
+  execution_id?: string;
+
+  error_type: ErrorType;
+  error_code?: string;
+  error_message?: string;
+  error_details: Record<string, unknown>;
+
+  variables_sent: Record<string, unknown>;
+  expected_variables: Record<string, unknown>;
+
+  resolved: boolean;
+  resolved_at?: string;
+  resolved_by?: string;
+  resolution_notes?: string;
+
+  created_at: string;
+}
+
+export interface RateLimitInfo {
+  allowed: boolean;
+  remaining: number;
+  reset_at: string;
+  is_blocked: boolean;
+}
+
+// ============================================================================
+// API
+// ============================================================================
+
+export interface ExecuteAgentAppRequest {
+  variables: Record<string, unknown>;
+  fingerprint?: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface ExecuteAgentAppResponse {
+  success: boolean;
+  task_id?: string;
+  rate_limit?: RateLimitInfo;
+  guest_limit?: {
+    allowed: boolean;
+    remaining: number;
+    total_used: number;
+    is_blocked: boolean;
+  };
+  error?: {
+    type: ExecutionErrorType;
+    message: string;
+    details?: Record<string, unknown>;
+  };
+}
+
+export interface CreateAgentAppInput {
+  agent_id: string;
+  agent_version_id?: string;
+  use_latest?: boolean;
+  slug: string;
+  name: string;
+  tagline?: string;
+  description?: string;
+  category?: string;
+  tags?: string[];
+  component_code: string;
+  component_language?: ComponentLanguage;
+  variable_schema?: VariableSchemaItem[];
+  allowed_imports?: string[];
+  layout_config?: LayoutConfig;
+  styling_config?: StylingConfig;
+}
+
+export interface UpdateAgentAppInput {
+  slug?: string;
+  name?: string;
+  tagline?: string;
+  description?: string;
+  category?: string;
+  tags?: string[];
+  preview_image_url?: string;
+  component_code?: string;
+  variable_schema?: VariableSchemaItem[];
+  allowed_imports?: string[];
+  layout_config?: LayoutConfig;
+  styling_config?: StylingConfig;
+  status?: AppStatus;
+  rate_limit_per_ip?: number;
+  rate_limit_window_hours?: number;
+  rate_limit_authenticated?: number;
+}
+
+// ============================================================================
+// Component Props
+// ============================================================================
+
+export interface AgentAppComponentProps {
+  onExecute: (
+    variables: Record<string, unknown>,
+    userInput?: string,
+  ) => Promise<void>;
+
+  response: string;
+  isStreaming: boolean;
+
+  isExecuting: boolean;
+  error?: {
+    type: ExecutionErrorType | string;
+    message: string;
+  };
+
+  rateLimitInfo?: RateLimitInfo | { remaining: number; total: number } | null;
+
+  appName: string;
+  appTagline?: string;
+  appCategory?: string;
+
+  conversationId?: string | null;
+  onResetConversation?: () => void;
+  streamEvents?: unknown[];
+}
+
+// ============================================================================
+// List / Filter
+// ============================================================================
+
+export interface AgentAppsListFilters {
+  status?: AppStatus;
+  category?: string;
+  tags?: string[];
+  search?: string;
+  featured?: boolean;
+  verified?: boolean;
+  limit?: number;
+  offset?: number;
+  sort_by?: "created_at" | "total_executions" | "name" | "last_execution_at";
+  sort_direction?: "asc" | "desc";
+}
+
+export interface AgentAppsListResponse {
+  apps: AgentApp[];
+  total: number;
+  hasMore: boolean;
+}

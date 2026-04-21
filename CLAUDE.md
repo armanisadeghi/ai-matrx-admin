@@ -10,6 +10,27 @@ Large-scale Next.js no-code AI app builder and admin dashboard. Desktop-first, m
 > **Official Next.js/React/TypeScript best practices:** `~/.arman/rules/nextjs-best-practices/nextjs-guide.md`
 > That guide is the single source of truth for rendering, caching, performance, mobile, Tailwind, component contracts, API patterns, and more. This file covers project-specific conventions only.
 
+---
+
+## ⚡ Active Migration: Prompts → Agents
+
+The app is mid-migration from the legacy prompt system (`/ai/prompts`, `features/prompts*`, `features/context-menu`, `features/quick-actions`) to the new agent system (`/agents`, `features/agents`, `features/agent-shortcuts`).
+
+**Before editing anything under prompts, context-menu, prompt-apps, shortcuts, code-editor, quick-actions, applets, or chat — read:**
+
+1. [`features/agents/migration/README.md`](./features/agents/migration/README.md) — rules of the road
+2. [`features/agents/migration/MASTER-PLAN.md`](./features/agents/migration/MASTER-PLAN.md) — phase-ordered plan
+3. [`features/agents/migration/INVENTORY.md`](./features/agents/migration/INVENTORY.md) — legacy ↔ agent mapping
+
+**Non-negotiable rules for every turn:**
+- Keep the migration docs live. After any in-scope change, update the phase doc's status and Change Log. Add any newly discovered prompt-adjacent surface to `INVENTORY.md`. Stale docs will cascade across parallel agents.
+- RTK only for all new state. Extend existing slices under `features/agents/redux/**` — never create parallel/local state.
+- Shortcuts, categories, and content blocks are multi-scope from day one (admin / user / org). Build CRUD components once in `features/agent-shortcuts/` and reuse across admin/user/org routes.
+- No destructive action until replacement ships and its phase is `complete`. Phases 16–19 are the deletion phases and run last.
+- Recipes are dead; all active prompts have already been converted to agents. No conversion utilities needed.
+
+---
+
 # Web Access For Testing
 - user: admin@admin.com
 - Password: Password1234#
@@ -89,7 +110,9 @@ MCP server and REST endpoint for cross-project issue tracking. Agents submit bug
 
 ---
 
-## Prompt Apps System
+## Prompt Apps System [LEGACY — being replaced]
+
+> **Under active migration to agent-apps.** See `features/agents/migration/phases/phase-08-agent-apps-public.md`. Do not add new features here; extend the agent-app equivalent.
 
 - **Concept:** Transform prompts into public, shareable AI-powered mini-apps with custom UIs
 - **Execution modes:** Real-time streaming (authenticated via Redux + Socket.IO) and polling (public, no Redux)

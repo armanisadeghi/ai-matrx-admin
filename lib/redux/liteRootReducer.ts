@@ -83,6 +83,7 @@ import entitySystemReducer from "./slices/entitySystemSlice";
 
 // Context menu cache (populated server-side via get_ssr_shell_data RPC)
 import contextMenuCacheReducer from "./slices/contextMenuCacheSlice";
+import agentContextMenuCacheReducer from "./slices/agentContextMenuCacheSlice";
 
 // activeChat — unmounted (Redux unification). File remains on disk.
 
@@ -217,6 +218,8 @@ export const createLiteRootReducer = () => {
 
     // Context menu cache (SSR pre-populated, no client fetch)
     contextMenuCache: contextMenuCacheReducer,
+    // Agent context menu SSR cache — populated by get_ssr_agent_shell_data RPC
+    agentContextMenuCache: agentContextMenuCacheReducer,
 
     // activeChat unmounted — superseded by conversations slice.
 

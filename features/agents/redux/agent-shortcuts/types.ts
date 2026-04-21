@@ -313,6 +313,9 @@ export interface AgentShortcutSliceState {
   initialLoaded: boolean;
   contextLoaded: Record<string, boolean>; // key = "project:{id}" | "task:{id}"
 
+  // Scope-aware phase tracking — keyed by scopeIndexKey({ scope, scopeId })
+  scopeLoaded: Record<string, boolean>;
+
   // Global slice status
   status: "idle" | "loading" | "succeeded" | "failed";
   error: string | null;

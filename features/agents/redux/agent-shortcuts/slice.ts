@@ -12,6 +12,7 @@ import {
   hasField,
   removeField,
 } from "../shared/field-flags";
+import { scopeIndexKey, type ScopeRef } from "../shared/scope";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -116,6 +117,7 @@ const initialState: AgentShortcutSliceState = {
   activeShortcutId: null,
   initialLoaded: false,
   contextLoaded: {},
+  scopeLoaded: {},
   status: "idle",
   error: null,
 };
@@ -342,6 +344,14 @@ export const agentShortcutSlice = createSlice({
       state.contextLoaded[action.payload.key] = action.payload.loaded;
     },
 
+    setShortcutScopeLoaded(
+      state,
+      action: PayloadAction<{ scopeRef: ScopeRef; loaded: boolean }>,
+    ) {
+      const key = scopeIndexKey(action.payload.scopeRef);
+      state.scopeLoaded[key] = action.payload.loaded;
+    },
+
     // ── Slice-level status ────────────────────────────────────────────────────
 
     setShortcutsStatus(
@@ -383,6 +393,7 @@ export const {
   setActiveShortcutId,
   setInitialLoaded,
   setContextLoaded,
+  setShortcutScopeLoaded,
   setShortcutsStatus,
   setShortcutsError,
   removeShortcut,

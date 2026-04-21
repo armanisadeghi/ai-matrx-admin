@@ -1,96 +1,203 @@
-import { createClient } from '@/utils/supabase/server';
-import { notFound } from 'next/navigation';
-import { PromptAppPublicRendererFastAPI } from '@/features/prompt-apps/components/PromptAppPublicRendererFastAPI';
-import { getPromptAppIconsMetadata } from '@/features/prompt-apps/utils/favicon-metadata';
-import { BACKEND_URLS, ENDPOINTS } from '@/lib/api/endpoints';
-import type { Metadata } from 'next';
+import { createClient } from "@/utils/supabase/server";
+import { notFound } from "next/navigation";
+import { PromptAppPublicRendererFastAPI } from "@/features/prompt-apps/components/PromptAppPublicRendererFastAPI";
+import { getPromptAppIconsMetadata } from "@/features/prompt-apps/utils/favicon-metadata";
+import { AgentAppPublicRenderer } from "@/features/agent-apps/components/AgentAppPublicRenderer";
+import { getAgentAppIconsMetadata } from "@/features/agent-apps/utils/favicon-metadata";
+import { BACKEND_URLS, ENDPOINTS } from "@/lib/api/endpoints";
+import type { Metadata } from "next";
 
-export const revalidate = 3600; // Revalidate every hour
+export const revalidate = 3600;
 
-// Helper to check if string is a valid UUID
 function isUUID(str: string): boolean {
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     return uuidRegex.test(str);
 }
 
+async function resolveAgentAppMetadata(
+    slug: string,
+): Promise<{
+    name: string;
+    tagline: string | null;
+    description: string | null;
+    preview_image_url: string | null;
+    favicon_url: string | null;
+} | null> {
+    const supabase = (await createClient()) as unknown as any;
+    const isId = isUUID(slug);
+    const column = isId ? "id" : "slug";
+
+    const { data } = await supabase
+        .from("agent_apps")
+        .select("name, tagline, description, preview_image_url, favicon_url")
+        .eq(column, slug)
+        .eq("status", "published")
+        .eq("is_public", true)
+        .maybeSingle();
+
+    return (data as typeof data) ?? null;
+}
+
+async function resolvePromptAppMetadata(
+    slug: string,
+): Promise<{
+    name: string;
+    tagline: string | null;
+    description: string | null;
+    preview_image_url: string | null;
+    favicon_url: string | null;
+} | null> {
+    const supabase = await createClient();
+    const isId = isUUID(slug);
+    const column = isId ? "id" : "slug";
+
+    const { data } = await supabase
+        .from("prompt_apps")
+        .select("name, tagline, description, preview_image_url, favicon_url")
+        .eq(column, slug)
+        .eq("status", "published")
+        .maybeSingle();
+
+    return data ?? null;
+}
+
 export async function generateMetadata({
-    params
+    params,
 }: {
     params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
     const { slug } = await params;
-    const supabase = await createClient();
 
-    // Determine if we're searching by ID or slug
-    const isId = isUUID(slug);
-    const column = isId ? 'id' : 'slug';
-
-    const { data: app } = await supabase
-        .from('prompt_apps')
-        .select('name, tagline, description, preview_image_url, favicon_url')
-        .eq(column, slug)
-        .eq('status', 'published')
-        .single();
-
-    if (!app) {
+    const agentAppMeta = await resolveAgentAppMetadata(slug);
+    if (agentAppMeta) {
         return {
-            title: 'App Not Found',
+            title: `${agentAppMeta.name} | AI Matrx Apps`,
+            description:
+                agentAppMeta.tagline ||
+                agentAppMeta.description ||
+                `Try ${agentAppMeta.name} — An AI-powered app`,
+            icons: getAgentAppIconsMetadata(agentAppMeta.favicon_url),
+            openGraph: {
+                title: agentAppMeta.name,
+                description:
+                    agentAppMeta.tagline ||
+                    agentAppMeta.description ||
+                    `Try ${agentAppMeta.name}`,
+                images: agentAppMeta.preview_image_url
+                    ? [agentAppMeta.preview_image_url]
+                    : [],
+            },
+            twitter: {
+                card: "summary_large_image",
+                title: agentAppMeta.name,
+                description:
+                    agentAppMeta.tagline ||
+                    agentAppMeta.description ||
+                    `Try ${agentAppMeta.name}`,
+                images: agentAppMeta.preview_image_url
+                    ? [agentAppMeta.preview_image_url]
+                    : [],
+            },
         };
     }
 
-    return {
-        title: `${app.name} | AI Matrx Apps`,
-        description: app.tagline || app.description || `Try ${app.name} - An AI-powered app`,
-        icons: getPromptAppIconsMetadata(app.favicon_url),
-        openGraph: {
-            title: app.name,
-            description: app.tagline || app.description || `Try ${app.name}`,
-            images: app.preview_image_url ? [app.preview_image_url] : [],
-        },
-        twitter: {
-            card: 'summary_large_image',
-            title: app.name,
-            description: app.tagline || app.description || `Try ${app.name}`,
-            images: app.preview_image_url ? [app.preview_image_url] : [],
-        },
-    };
+    const promptAppMeta = await resolvePromptAppMetadata(slug);
+    if (promptAppMeta) {
+        return {
+            title: `${promptAppMeta.name} | AI Matrx Apps`,
+            description:
+                promptAppMeta.tagline ||
+                promptAppMeta.description ||
+                `Try ${promptAppMeta.name} - An AI-powered app`,
+            icons: getPromptAppIconsMetadata(promptAppMeta.favicon_url),
+            openGraph: {
+                title: promptAppMeta.name,
+                description:
+                    promptAppMeta.tagline ||
+                    promptAppMeta.description ||
+                    `Try ${promptAppMeta.name}`,
+                images: promptAppMeta.preview_image_url
+                    ? [promptAppMeta.preview_image_url]
+                    : [],
+            },
+            twitter: {
+                card: "summary_large_image",
+                title: promptAppMeta.name,
+                description:
+                    promptAppMeta.tagline ||
+                    promptAppMeta.description ||
+                    `Try ${promptAppMeta.name}`,
+                images: promptAppMeta.preview_image_url
+                    ? [promptAppMeta.preview_image_url]
+                    : [],
+            },
+        };
+    }
+
+    return { title: "App Not Found" };
 }
 
-export default async function PromptAppPage({
-    params
+export default async function PublicAppPage({
+    params,
 }: {
     params: Promise<{ slug: string }>;
 }) {
     const { slug } = await params;
     const supabase = await createClient();
-
-    // Determine if we're searching by ID or slug
     const isId = isUUID(slug);
 
-    // SECURITY: Use public-safe RPC that omits prompt secrets (messages, settings, variable_defaults).
-    // Execution data is fetched server-side by AI Dream — React never sees it.
-    const { data: appData, error } = await supabase
-        .rpc('get_prompt_app_public_data', {
+    const { data: agentAppData } = await (supabase as unknown as {
+        rpc: (
+            name: string,
+            args: Record<string, unknown>,
+        ) => {
+            maybeSingle: () => Promise<{ data: Record<string, unknown> | null; error: unknown }>;
+        };
+    })
+        .rpc("get_agent_app_public_data", {
             p_slug: !isId ? slug : null,
-            p_app_id: isId ? slug : null
+            p_app_id: isId ? slug : null,
+        })
+        .maybeSingle();
+
+    if (agentAppData) {
+        if (process.env.NODE_ENV !== "production") {
+            console.log(`[p/${slug}] resolved path=agent-app`);
+        }
+        const app = agentAppData as {
+            id: string;
+            slug: string;
+            [key: string]: unknown;
+        };
+        return (
+            <AgentAppPublicRenderer
+                app={agentAppData as never}
+                slug={app.slug}
+            />
+        );
+    }
+
+    const { data: promptAppData, error: promptError } = await supabase
+        .rpc("get_prompt_app_public_data", {
+            p_slug: !isId ? slug : null,
+            p_app_id: isId ? slug : null,
         })
         .single();
 
-    if (error || !appData) {
+    if (promptError || !promptAppData) {
         notFound();
     }
 
-    const app = appData as any;
+    if (process.env.NODE_ENV !== "production") {
+        console.log(`[p/${slug}] resolved path=prompt-app`);
+    }
 
-    // Fire-and-forget: warm the app's pinned version on the Python backend (server → server)
+    const app = promptAppData as never as { id: string; slug: string };
+
     const warmUrl = `${BACKEND_URLS.production}${ENDPOINTS.ai.appWarm(app.id)}`;
-    fetch(warmUrl, { method: 'POST' }).catch(() => {});
+    fetch(warmUrl, { method: "POST" }).catch(() => {});
 
     return (
-        <PromptAppPublicRendererFastAPI
-            app={app}
-            slug={app.slug}
-        />
+        <PromptAppPublicRendererFastAPI app={app as never} slug={app.slug} />
     );
 }
-

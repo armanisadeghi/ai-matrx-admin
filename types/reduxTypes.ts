@@ -15,6 +15,7 @@ export interface InitialReduxState {
   // modelRegistry and sms need action-based hydration (their shapes don't match raw arrays)
   // so they are handled by SsrShellHydrator client island, not preloaded state.
   contextMenuCache?: { rows: ContextMenuRow[]; hydrated: boolean };
+  agentContextMenuCache?: { rows: ContextMenuRow[]; hydrated: boolean };
 }
 
 /**
@@ -29,6 +30,7 @@ export interface LiteInitialReduxState {
   // Pre-populated from SSR shell data RPC — no client fetch needed
   modelRegistry?: { availableModels: AIModel[]; lastFetched: number };
   contextMenuCache?: { rows: ContextMenuRow[]; hydrated: boolean };
+  agentContextMenuCache?: { rows: ContextMenuRow[]; hydrated: boolean };
   // sms.unreadTotal seeded via PostPaintHydrator dispatch — not preloadedState
   sms?: { unreadTotal: number };
 }
