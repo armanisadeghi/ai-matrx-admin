@@ -909,6 +909,18 @@ export const fetchUnifiedMenu = createAsyncThunk<
     const shortcutDefs: AgentShortcut[] = [];
     const contentBlockDefs: ReturnType<typeof contentBlockRowToDef>[] = [];
 
+    if (process.env.NODE_ENV !== "production") {
+      const placementSummary = (payload.data ?? []).map((p) => ({
+        placement_type: p.placement_type,
+        categories: (p.categories_flat ?? []).length,
+        total_items: (p.categories_flat ?? []).reduce(
+          (sum, g) => sum + (g.items?.length ?? 0),
+          0,
+        ),
+      }));
+      console.log("[fetchUnifiedMenu] scope=%o payload=%o", ref, placementSummary);
+    }
+
     for (const placement of payload.data ?? []) {
       for (const group of placement.categories_flat ?? []) {
         const categoryRow: CategoryApiRow = {
