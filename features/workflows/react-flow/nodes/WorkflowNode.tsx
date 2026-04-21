@@ -5,7 +5,7 @@ import { Connection, Handle, Position } from "reactflow";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { NodeContextMenu } from "@/features/workflows/components/menus/NodeContextMenu";
 import { NodeDropdownMenu } from "@/features/workflows/components/menus/NodeDropdownMenu";
-import { useTheme } from "@/styles/themes/ThemeProvider";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { SocketResultsOverlay } from "@/components/socket-io/presets/preset-manager/responses/SocketResultsOverlay";
 import { DbFunctionNode } from "@/features/workflows/types";
 import { isNodeConnected, Input, Output } from "@/features/workflows/utils/node-utils";
@@ -35,7 +35,7 @@ const WorkflowNode: React.FC<WorkflowNodeProps> = ({
     onConnect,
     onShowResults,
 }) => {
-    const { mode } = useTheme();
+    const mode = useAppSelector((s) => s.theme.mode);
     const [showResults, setShowResults] = useState(false);
     const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);
 

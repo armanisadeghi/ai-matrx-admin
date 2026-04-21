@@ -33,7 +33,6 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { workflowNodesSelectors } from "@/lib/redux/workflow-nodes/selectors";
 import { workflowNodesActions } from "@/lib/redux/workflow-nodes/slice";
 import { DynamicIcon } from "@/components/official/icons/IconResolver";
-import { useTheme } from "@/styles/themes/ThemeProvider";
 
 export interface BaseNodeData extends Record<string, unknown> {
   nodeType?: string;
@@ -124,7 +123,7 @@ const BaseNodeComponent: React.FC<BaseNodeProps> = ({
   const updateNodeInternals = useUpdateNodeInternals();
   const nodeId = useNodeId();
   const { updateNodeData, getNode, deleteElements } = useReactFlow();
-  const { mode } = useTheme();
+  const mode = useAppSelector((s) => s.theme.mode);
   const isDarkMode = mode === "dark";
   const isLightMode = mode === "light";
 

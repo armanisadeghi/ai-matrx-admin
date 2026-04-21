@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Connection, Handle, Position } from "reactflow";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { useTheme } from "@/styles/themes/ThemeProvider";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { DbBrokerRelayData } from "@/features/workflows/types";
 import { NodeDropdownMenu } from "../../components/menus/NodeDropdownMenu";
 import { BsThreeDots } from "react-icons/bs";
@@ -23,7 +23,7 @@ interface BrokerRelayNodeProps {
 const BrokerRelayNode: React.FC<BrokerRelayNodeProps> = ({ data, inputsAndOutputs, selected, onDelete, onEdit, onDuplicate, onConnect }) => {
     // Access enrichedBrokers from window object (set by WorkflowSystem)
     const enrichedBrokers = window.workflowEnrichedBrokers || [];
-    const { mode } = useTheme();
+    const mode = useAppSelector((s) => s.theme.mode);
     const [mounted, setMounted] = useState(false);
     const { inputs, outputs } = inputsAndOutputs;
 

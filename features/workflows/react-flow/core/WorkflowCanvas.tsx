@@ -18,7 +18,7 @@ import ReactFlow, {
 import QuickAccessPanel from "@/features/workflows/components/access-panel/QuickAccessPanel";
 import CustomEdge from "@/features/workflows/react-flow/edges/CustomEdge";
 import { EdgeDetailOverlay } from "@/features/workflows/components/common/EdgeDetailOverlay";
-import { useTheme } from "@/styles/themes/ThemeProvider";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { DbFunctionNode } from "@/features/workflows/types";
 
 interface WorkflowCanvasProps {
@@ -60,7 +60,7 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
     onCloseEdgeOverlay,
     onEdgeUpdated,
 }) => {
-    const { mode: themeMode } = useTheme();
+    const themeMode = useAppSelector((s) => s.theme.mode);
 
     // Create stable edge types using the handleEdgeClick prop
     const edgeTypes: EdgeTypes = useMemo(
