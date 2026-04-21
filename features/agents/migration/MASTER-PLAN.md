@@ -22,18 +22,18 @@ Read [`README.md`](./README.md) before touching anything here. Read [`INVENTORY.
 |---|---|---|---|
 | 0 | Governance & docs bootstrap | complete | _this file + `README.md` + `INVENTORY.md`_ |
 | 1 | Agent Shortcuts foundation (multi-scope DB + RTK + API + shared CRUD feature) | code-complete (1.9 pending DB apply) | `phases/phase-01-agent-shortcuts-foundation.md` |
-| 2 | Content Blocks migration | in-progress (largely absorbed into Phase 1) | `phases/phase-02-content-blocks.md` |
-| 3 | Unified Agent Context Menu (replace 1765-LOC component) | in-progress | `phases/phase-03-unified-context-menu.md` |
+| 2 | Content Blocks migration | in-progress (2.1 done; 2.2 pending DB; 2.3 pending) | `phases/phase-02-content-blocks.md` |
+| 3 | Unified Agent Context Menu (replace 1765-LOC component) | **complete** | `phases/phase-03-unified-context-menu.md` |
 | 4 | Quick Actions re-scope (overlay dispatches, not agents — design decision needed) | **needs-design-decision** | `phases/phase-04-quick-actions.md` |
-| 5 | Context-menu integration sweep (notes, code editor, agent builder, SSR RPC) | complete | `phases/phase-05-integration-sweep.md` |
-| 6 | Code Editor quick wrapper (keep prompt-app editing working) | not-started | `phases/phase-06-code-editor-quick-wrapper.md` |
-| 7 | `(a)/chat` — unified chat flagship route | not-started | `phases/phase-07-chat-route.md` |
-| 8 | Agent Apps public runner (`/p/[slug]`) | not-started | `phases/phase-08-agent-apps-public.md` |
+| 5 | Context-menu integration sweep (notes, code editor, agent builder, SSR RPC) | **complete** | `phases/phase-05-integration-sweep.md` |
+| 6 | Code Editor quick wrapper (keep prompt-app editing working) | **blocked** on agent-id decision | `phases/phase-06-code-editor-quick-wrapper.md` |
+| 7 | `(a)/chat` — unified chat flagship route | partially-complete (community stub; keybind wiring deferred) | `phases/phase-07-chat-route.md` |
+| 8 | Agent Apps public runner (`/p/[slug]`) | in-progress | `phases/phase-08-agent-apps-public.md` |
 | 9 | Admin Agent Apps management UI | not-started | `phases/phase-09-admin-agent-apps.md` |
 | 10 | Applets capture (parent-app-with-children + shared context slots) | not-started | `phases/phase-10-applets-capture.md` |
-| 11 | Admin Shortcut management UI | complete | `phases/phase-11-admin-shortcuts-ui.md` |
-| 12 | User Shortcut management UI | not-started | `phases/phase-12-user-shortcuts-ui.md` |
-| 13 | Org Shortcut management UI | not-started | `phases/phase-13-org-shortcuts-ui.md` |
+| 11 | Admin Shortcut management UI | **complete** | `phases/phase-11-admin-shortcuts-ui.md` |
+| 12 | User Shortcut management UI | **complete** | `phases/phase-12-user-shortcuts-ui.md` |
+| 13 | Org Shortcut management UI | **complete** | `phases/phase-13-org-shortcuts-ui.md` |
 | 14 | Dual-run & parity verification behind flag | not-started | `phases/phase-14-dual-run.md` |
 | 15 | Native Code Editor rebuild (agent tools, VSCode-style context slots) | not-started | `phases/phase-15-native-code-editor.md` |
 | 16 | Deprecate prompt routes | not-started | `phases/phase-16-deprecate-routes.md` |
