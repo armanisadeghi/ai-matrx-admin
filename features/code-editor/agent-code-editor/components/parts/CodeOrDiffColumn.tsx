@@ -1,27 +1,37 @@
 "use client";
 
 /**
- * CodeOrDiffColumn — the right-of-center column.
+ * CodeOrDiffColumn — the code column (middle-right in the 4-column layout).
  *
- * Renders the code editor by default. When the smart-code-editor state
- * machine transitions to `review`, the diff replaces the code IN PLACE
- * (same column, same real estate). Apply/Discard buttons sit at the bottom.
+ * Two modes, in-place (no modal):
+ *   - Default: Monaco editor, stable through streaming (no live widget
+ *     mutations — those are buffered and applied on Apply).
+ *   - Review: full `<ReviewStage>` with Diff / Original / Preview / Response
+ *     tabs + diff-stat badges, replacing the editor in the same real estate.
  *
- * Intentionally simple — the textarea is fine for the first draft; Monaco
- * can come later.
+ * A thin status line at the top shows "Agent working…" during streaming;
+ * we do NOT re-stream response text here — the conversation column already
+ * shows that.
  */
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CheckCircle2, Loader2, AlertCircle } from "lucide-react";
-import { DiffView } from "./DiffView";
-import { ProcessingOverlay } from "./ProcessingOverlay";
+import { Loader2, CheckCircle2, Sparkles } from "lucide-react";
+import dynamic from "next/dynamic";
+import { useTheme } from "@/styles/themes/ThemeProvider";
+import { ReviewStage } from "./ReviewStage";
 import { ErrorPanel } from "./ErrorPanel";
 import type { CodeEditorState } from "../../types";
 import type { ParseResult } from "../../utils/parseCodeEdits";
+
+// Monaco imports are heavy; dynamic-load client-only.
+const SmallCodeEditor = dynamic(
+  () =>
+    import(
+      "@/features/code-editor/components/code-block/SmallCodeEditor"
+    ).then((m) => m.default),
+  { ssr: false },
+);
 
 interface CodeOrDiffColumnProps {
   /** Current editor code. */
@@ -37,7 +47,6 @@ interface CodeOrDiffColumnProps {
   errorMessage: string;
   isCopied: boolean;
   diffStats: { additions: number; deletions: number } | null;
-  streamingText: string;
 
   onApply: () => void | Promise<void>;
   onDiscard: () => void;
@@ -56,81 +65,60 @@ export function CodeOrDiffColumn({
   errorMessage,
   isCopied,
   diffStats,
-  streamingText,
   onApply,
   onDiscard,
   onCopyResponse,
   onBackToInput,
 }: CodeOrDiffColumnProps) {
+  const { mode } = useTheme();
+
   return (
     <div className="flex flex-col h-full min-h-0 bg-background">
-      {/* Header bar */}
+      {/* Thin status strip on top */}
       <div className="shrink-0 px-3 py-1.5 border-b border-border flex items-center justify-between gap-2">
         <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
           {state === "review" ? "Review Changes" : "Code"}
         </span>
-        {state === "review" && diffStats && (
-          <div className="flex gap-1.5">
-            <Badge
-              variant="outline"
-              className="text-[10px] h-5 px-1.5 text-green-600 border-green-600 bg-green-50 dark:bg-green-950/30"
-            >
-              +{diffStats.additions}
-            </Badge>
-            <Badge
-              variant="outline"
-              className="text-[10px] h-5 px-1.5 text-red-600 border-red-600 bg-red-50 dark:bg-red-950/30"
-            >
-              -{diffStats.deletions}
-            </Badge>
-          </div>
+        {state === "processing" && (
+          <span className="flex items-center gap-1 text-[10px] text-muted-foreground italic">
+            <Sparkles className="w-3 h-3 animate-pulse" />
+            Agent working…
+          </span>
         )}
       </div>
 
       {/* Body */}
       <div className="flex-1 min-h-0 overflow-hidden relative">
-        {/* Always-mounted editor so typing state is never destroyed when state
-            flips to review — review simply overlays in the same column. */}
-        <div
-          className={
-            state === "review" ||
-            state === "applying" ||
-            state === "complete" ||
-            state === "error"
-              ? "hidden"
-              : "h-full flex flex-col"
-          }
-        >
-          <Textarea
-            value={code}
-            onChange={(e) => onCodeChange(e.target.value)}
-            className="flex-1 resize-none rounded-none border-0 font-mono text-xs focus-visible:ring-0 focus-visible:ring-offset-0"
-            placeholder="Paste or write code here…"
-            spellCheck={false}
-          />
-          {state === "processing" && (
-            <ProcessingOverlay streamingText={streamingText} />
-          )}
-        </div>
+        {/* Editor — always mounted while NOT reviewing / applying / error, so
+            user edits aren't lost when state flips. */}
+        {(state === "input" || state === "processing") && (
+          <div className="h-full w-full">
+            <SmallCodeEditor
+              language={language}
+              initialCode={code}
+              onChange={(val) => onCodeChange(val ?? "")}
+              mode={mode}
+              height="100%"
+              readOnly={state === "processing"}
+              defaultWordWrap="on"
+              showFormatButton={false}
+              showCopyButton={false}
+              showResetButton={false}
+              showWordWrapToggle={false}
+              showMinimapToggle={false}
+            />
+          </div>
+        )}
 
         {state === "review" && parsedEdits && (
-          <div className="h-full flex flex-col">
-            {parsedEdits.explanation && (
-              <Alert className="shrink-0 mx-2 mt-2 py-2">
-                <AlertDescription className="text-xs">
-                  {parsedEdits.explanation}
-                </AlertDescription>
-              </Alert>
-            )}
-            <div className="flex-1 min-h-0 overflow-auto">
-              <DiffView
-                originalCode={code}
-                modifiedCode={modifiedCode}
-                language={language}
-                showLineNumbers
-              />
-            </div>
-          </div>
+          <ReviewStage
+            currentCode={code}
+            modifiedCode={modifiedCode}
+            language={language}
+            parsedEdits={parsedEdits}
+            rawAIResponse={rawAIResponse}
+            diffStats={diffStats}
+          />
         )}
 
         {state === "applying" && (
@@ -163,7 +151,7 @@ export function CodeOrDiffColumn({
         )}
       </div>
 
-      {/* Footer — action bar depends on state */}
+      {/* Footer */}
       <div className="shrink-0 border-t border-border px-2 py-2 flex items-center justify-end gap-1.5 bg-background">
         {state === "review" ? (
           <>
@@ -185,17 +173,11 @@ export function CodeOrDiffColumn({
           </Button>
         ) : state === "processing" ? (
           <span className="text-[10px] text-muted-foreground italic">
-            Agent is thinking…
+            {code.length} chars · {code.split("\n").length} lines
           </span>
         ) : (
           <span className="text-[10px] text-muted-foreground">
             {code.length} chars · {code.split("\n").length} lines
-          </span>
-        )}
-        {state === "error" && (
-          <span className="mr-auto flex items-center gap-1 text-[10px] text-destructive">
-            <AlertCircle className="w-3 h-3" />
-            Agent reported an error
           </span>
         )}
       </div>

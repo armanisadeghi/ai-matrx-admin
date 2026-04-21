@@ -44,6 +44,7 @@ import {
 import { applyCodeEdits } from "../utils/applyCodeEdits";
 import { getDiffStats } from "../utils/generateDiff";
 import type { CodeEditorState, UseSmartCodeEditorReturn } from "../types";
+import type { ConsumePendingResult } from "./useCodeEditorWidgetHandle";
 
 interface UseSmartCodeEditorArgs {
   /** The conversationId the modal created for this session. */
@@ -52,17 +53,29 @@ interface UseSmartCodeEditorArgs {
   currentCode: string;
   /** Callback that writes new code back to the parent on Apply. */
   onCodeChange: (newCode: string) => void;
+  /**
+   * Called at stream-end BEFORE parsing the response text. Lets the widget
+   * handle flush any buffered tool-call edits. If the returned `stagedCode`
+   * is non-null, we skip the SEARCH/REPLACE fallback and go straight to
+   * review with the widget-derived code.
+   */
+  consumeWidgetEdits?: () => ConsumePendingResult;
 }
 
 export function useSmartCodeEditor({
   conversationId,
   currentCode,
   onCodeChange,
+  consumeWidgetEdits,
 }: UseSmartCodeEditorArgs): UseSmartCodeEditorReturn & {
   messages: MessageRecord[];
   streamingText: string;
   setState: (s: CodeEditorState) => void;
 } {
+  // Keep the consumer in a ref so the effect below doesn't re-fire on
+  // identity churn — the caller re-creates the fn on every render.
+  const consumeWidgetEditsRef = useRef(consumeWidgetEdits);
+  consumeWidgetEditsRef.current = consumeWidgetEdits;
   const [state, setState] = useState<CodeEditorState>("input");
   const [parsedEdits, setParsedEdits] = useState<ParseResult | null>(null);
   const [modifiedCode, setModifiedCode] = useState<string>("");
@@ -120,16 +133,35 @@ export function useSmartCodeEditor({
       return;
     }
 
-    // Parse SEARCH/REPLACE blocks out of the final response text. If the
-    // agent delivered its edits via widget_text_* tool calls instead, the
-    // parser will find nothing — that's fine; widget tool calls already
-    // mutated the editor's code live via the widget handle.
+    // ── Widget edits first (primary channel) ──────────────────────────────
+    // The widget handle buffered any widget_text_* tool calls it got during
+    // the stream. If anything's there, go straight to review — skip the
+    // SEARCH/REPLACE fallback.
+    const widget = consumeWidgetEditsRef.current?.();
+    if (widget && widget.stagedCode !== null && widget.edits.length > 0) {
+      // Synthesize a ParseResult so `<ReviewStage>` can render the 4 tabs
+      // consistently regardless of which channel produced the edits.
+      const synthetic: ParseResult = {
+        success: true,
+        edits: widget.edits.map((e) => ({
+          id: e.id,
+          search: e.search,
+          replace: e.replace,
+        })),
+        rawResponse: finalText,
+      };
+      setParsedEdits(synthetic);
+      setModifiedCode(widget.stagedCode);
+      setState("review");
+      return;
+    }
+
+    // ── Fallback: parse SEARCH/REPLACE blocks from the response text ──────
     const parsed = parseCodeEdits(finalText);
     setParsedEdits(parsed);
 
     if (!parsed.success || parsed.edits.length === 0) {
-      // No fallback edits — agent either used widget tools or just chatted.
-      // Drop back to input so the user can continue the conversation.
+      // No edits of any kind — agent just chatted. Back to input.
       setState("input");
       return;
     }

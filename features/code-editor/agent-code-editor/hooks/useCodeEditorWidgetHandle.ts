@@ -1,23 +1,24 @@
 "use client";
 
 /**
- * useCodeEditorWidgetHandle — wraps useWidgetHandle for code-editor actions.
+ * useCodeEditorWidgetHandle — registers a widget handle for the code editor.
  *
- * The agent can either issue `widget_text_*` tool calls mid-stream (the
- * primary, typed channel) OR output SEARCH/REPLACE blocks in its response
- * text (the fallback, handled by the consumer on stream end). Both paths
- * ultimately call the editor's `onCodeChange` with new content.
+ * Widget tool calls are BUFFERED, not applied live. The editor's displayed
+ * code stays stable throughout a streaming turn; only when the stream ends
+ * does the orchestrator consume the buffer and transition the UI to Review.
  *
- * This hook only wires the tool-call channel. SEARCH/REPLACE fallback is
- * handled by `useSmartCodeEditor` on the `onComplete` lifecycle event.
+ * Each widget call validates against a running "staged code" — so the agent
+ * still gets immediate pass/fail feedback (the tool result the server sees)
+ * while the user's view of the code doesn't flicker during streaming.
  *
- * Method mapping:
- *   widget_text_replace       → onTextReplace  → setCode(text)
- *   widget_text_insert_before → onTextInsertBefore
- *   widget_text_insert_after  → onTextInsertAfter
- *   widget_text_prepend       → onTextPrepend
- *   widget_text_append        → onTextAppend
- *   widget_text_patch         → onTextPatch    → applyCodeEdits single-edit
+ * Buffer lifecycle:
+ *   - Widget method fires → validates against stagedCode → updates stagedCode
+ *     + pushes to edits list → throws on validation failure (agent sees it).
+ *   - Orchestrator calls `consumePending()` at stream-end → returns
+ *     {edits, stagedCode}, clears internal state.
+ *   - If the agent made no widget calls, stagedCode is null and the
+ *     orchestrator falls back to parsing SEARCH/REPLACE blocks from the
+ *     response text.
  */
 
 import { useMemo, useRef } from "react";
@@ -29,86 +30,158 @@ import type {
 } from "@/features/agents/types/widget-handle.types";
 import { applyCodeEdits } from "../utils/applyCodeEdits";
 
+export interface PendingCodeEdit {
+  id: string;
+  /** What the agent was trying to do. */
+  kind:
+    | "replace"
+    | "insert_before"
+    | "insert_after"
+    | "prepend"
+    | "append"
+    | "patch";
+  /** For `patch` — the search text. For other kinds, the previous content. */
+  search: string;
+  /** The new text. For `patch`, the replacement text. */
+  replace: string;
+}
+
+export interface ConsumePendingResult {
+  edits: PendingCodeEdit[];
+  /** The computed final code after all buffered edits are applied in order.
+   *  `null` when no widget edits were buffered (caller should try the
+   *  SEARCH/REPLACE fallback from the response text). */
+  stagedCode: string | null;
+}
+
 interface UseCodeEditorWidgetHandleArgs {
-  /** Current code — ref-stable read so tool handlers see the latest value. */
+  /** Current editor code — used as the base for the FIRST widget edit. */
   code: string;
-  /** Writes new code back to the parent editor. */
-  onCodeChange: (newCode: string) => void;
-  /** Optional: fired when the stream ends (for SEARCH/REPLACE fallback). */
+  /** Optional lifecycle hook forwarded to the underlying handle. */
   onComplete?: (result: WidgetCompletionResult) => void;
-  /** Optional: fired on widget-method or stream-level errors. */
+  /** Optional lifecycle hook forwarded to the underlying handle. */
   onError?: (err: WidgetErrorPayload) => void;
 }
 
-/**
- * Returns the `widgetHandleId` to pass on the invocation's `callbacks`.
- *
- * The underlying widget handle is registered once per mount. Internally it
- * uses getters to always read the latest code ref, so the caller can pass
- * fresh `onCodeChange` closures every render without re-registering.
- */
+export interface UseCodeEditorWidgetHandleReturn {
+  widgetHandleId: string;
+  /** Snapshot + clear the buffered widget edits. */
+  consumePending: () => ConsumePendingResult;
+  /** For debug / display — does NOT clear. */
+  peekPending: () => readonly PendingCodeEdit[];
+}
+
+// ── Implementation ──────────────────────────────────────────────────────────
+
 export function useCodeEditorWidgetHandle({
   code,
-  onCodeChange,
   onComplete,
   onError,
-}: UseCodeEditorWidgetHandleArgs): string {
-  // Ref-stable access to the latest code + callbacks
+}: UseCodeEditorWidgetHandleArgs): UseCodeEditorWidgetHandleReturn {
   const codeRef = useRef(code);
   codeRef.current = code;
-  const onCodeChangeRef = useRef(onCodeChange);
-  onCodeChangeRef.current = onCodeChange;
+
   const onCompleteRef = useRef(onComplete);
   onCompleteRef.current = onComplete;
   const onErrorRef = useRef(onError);
   onErrorRef.current = onError;
 
-  // Build the handle once — the useWidgetHandle hook itself wraps each
-  // method in a getter that reads from refs, so this object identity is fine.
+  // Buffer state.
+  const pendingRef = useRef<PendingCodeEdit[]>([]);
+  const stagedCodeRef = useRef<string | null>(null);
+  const seqRef = useRef(0);
+
+  const baseForNextEdit = () =>
+    stagedCodeRef.current !== null ? stagedCodeRef.current : codeRef.current;
+
+  const nextId = () => `w${++seqRef.current}`;
+
+  // Apply one edit against the current staged code, writing the new staged
+  // code on success and throwing (for the agent's tool-result feedback) on
+  // failure.
+  const stageEdit = (edit: PendingCodeEdit): void => {
+    const base = baseForNextEdit();
+    let next: string;
+    switch (edit.kind) {
+      case "replace":
+        next = edit.replace;
+        break;
+      case "insert_before":
+      case "prepend":
+        next = edit.replace + base;
+        break;
+      case "insert_after":
+      case "append":
+        next = base + edit.replace;
+        break;
+      case "patch": {
+        const result = applyCodeEdits(base, [
+          { id: edit.id, search: edit.search, replace: edit.replace },
+        ]);
+        if (!result.success || result.code === undefined) {
+          throw new Error(result.errors[0] ?? "applyCodeEdits failed");
+        }
+        next = result.code;
+        break;
+      }
+    }
+    pendingRef.current.push(edit);
+    stagedCodeRef.current = next;
+  };
+
   const handle = useMemo<WidgetHandle>(
     () => ({
       onTextReplace: ({ text }) => {
-        onCodeChangeRef.current(text);
+        stageEdit({
+          id: nextId(),
+          kind: "replace",
+          search: "", // full-document replace — search is not used
+          replace: text,
+        });
       },
-
       onTextInsertBefore: ({ text }) => {
-        onCodeChangeRef.current(text + codeRef.current);
+        stageEdit({
+          id: nextId(),
+          kind: "insert_before",
+          search: "",
+          replace: text,
+        });
       },
-
       onTextInsertAfter: ({ text }) => {
-        onCodeChangeRef.current(codeRef.current + text);
+        stageEdit({
+          id: nextId(),
+          kind: "insert_after",
+          search: "",
+          replace: text,
+        });
       },
-
       onTextPrepend: ({ text }) => {
-        onCodeChangeRef.current(text + codeRef.current);
+        stageEdit({
+          id: nextId(),
+          kind: "prepend",
+          search: "",
+          replace: text,
+        });
       },
-
       onTextAppend: ({ text }) => {
-        onCodeChangeRef.current(codeRef.current + text);
+        stageEdit({
+          id: nextId(),
+          kind: "append",
+          search: "",
+          replace: text,
+        });
       },
-
       onTextPatch: ({ search_text, replacement_text }) => {
-        const result = applyCodeEdits(codeRef.current, [
-          {
-            id: "widget_text_patch",
-            search: search_text,
-            replace: replacement_text,
-          },
-        ]);
-        if (result.success && result.code !== undefined) {
-          onCodeChangeRef.current(result.code);
-        } else {
-          const firstError = result.errors[0] ?? "applyCodeEdits failed";
-          // Surface as a thrown error so the dispatcher reports it to the
-          // server with reason:"failed" and fires handle.onError.
-          throw new Error(firstError);
-        }
+        stageEdit({
+          id: nextId(),
+          kind: "patch",
+          search: search_text,
+          replace: replacement_text,
+        });
       },
-
       onComplete: (result) => {
         onCompleteRef.current?.(result);
       },
-
       onError: (err) => {
         onErrorRef.current?.(err);
       },
@@ -116,5 +189,18 @@ export function useCodeEditorWidgetHandle({
     [],
   );
 
-  return useWidgetHandle(handle);
+  const widgetHandleId = useWidgetHandle(handle);
+
+  return {
+    widgetHandleId,
+    consumePending: () => {
+      const edits = pendingRef.current;
+      const stagedCode = stagedCodeRef.current;
+      pendingRef.current = [];
+      stagedCodeRef.current = null;
+      seqRef.current = 0;
+      return { edits, stagedCode };
+    },
+    peekPending: () => pendingRef.current,
+  };
 }

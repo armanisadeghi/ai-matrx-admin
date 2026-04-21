@@ -29,9 +29,12 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
 import { useAgentLauncher } from "@/features/agents/hooks/useAgentLauncher";
 import { setUserVariableValues } from "@/features/agents/redux/execution-system/instance-variable-values/instance-variable-values.slice";
+import { createManualInstance } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
+import { loadConversation } from "@/features/agents/redux/execution-system/thunks/load-conversation.thunk";
+import { selectInstance } from "@/features/agents/redux/execution-system/conversations/conversations.selectors";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -199,9 +202,11 @@ export function SmartCodeEditor({
   );
 
   // ── Widget handle (once per mount, reused across conversations) ───────────
-  const widgetHandleId = useCodeEditorWidgetHandle({
+  // Widget tool calls BUFFER into the handle's pending list; `code` stays
+  // stable during streaming. `useSmartCodeEditor` flushes the buffer at
+  // stream-end and transitions to the review UI.
+  const { widgetHandleId, consumePending } = useCodeEditorWidgetHandle({
     code,
-    onCodeChange: handleCodeChange,
   });
 
   // ── IDE context sync (vsc_* slots for whichever conversation is active) ───
@@ -279,6 +284,7 @@ export function SmartCodeEditor({
     conversationId: activeConversationId,
     currentCode: code,
     onCodeChange: handleCodeChange,
+    consumeWidgetEdits: consumePending,
   });
 
   // ── Draft creation ────────────────────────────────────────────────────────
@@ -308,12 +314,61 @@ export function SmartCodeEditor({
   );
 
   // Selecting an existing conversation from the history panel.
+  //
+  // Mirrors the AgentRunnerPage URL-sync pattern: if the instance isn't
+  // already in Redux (most fetched conversations aren't until clicked),
+  // dispatch `createManualInstance({agentId, conversationId})` to mount the
+  // conversation shell at the known UUID, then `loadConversation` to
+  // rehydrate its messages / variables / UI state from the server.
+  //
+  // If the instance IS already in Redux (e.g. a draft we just created, or
+  // one we loaded earlier this session), we skip both steps — Redux
+  // already has everything needed.
+  const store = useAppStore();
   const handleSelectConversation = useCallback(
-    (conversationId: string, agentId: string) => {
+    async (conversationId: string, agentId: string) => {
+      // Flip the active id immediately so the UI starts transitioning.
       setActiveConversationId(conversationId);
       setActiveAgentId(agentId);
+
+      // Snapshot check — avoids re-creating / re-fetching something already
+      // in Redux. Drafts we created this session already have an instance;
+      // recently-loaded conversations are also cached.
+      const existingInstance = selectInstance(store.getState(), conversationId);
+
+      if (!existingInstance) {
+        try {
+          await dispatch(
+            createManualInstance({
+              agentId,
+              conversationId,
+              apiEndpointMode: "agent",
+              widgetHandleId,
+            }),
+          ).unwrap();
+        } catch (err) {
+          // eslint-disable-next-line no-console
+          console.error(
+            "[SmartCodeEditor] createManualInstance failed",
+            err,
+          );
+          return;
+        }
+      }
+
+      try {
+        await dispatch(
+          loadConversation({
+            conversationId,
+            surfaceKey: SMART_CODE_EDITOR_SURFACE_KEY,
+          }),
+        ).unwrap();
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error("[SmartCodeEditor] loadConversation failed", err);
+      }
     },
-    [],
+    [store, dispatch, widgetHandleId],
   );
 
   return (
@@ -376,7 +431,6 @@ export function SmartCodeEditor({
                   errorMessage={errorMessage}
                   isCopied={isCopied}
                   diffStats={diffStats}
-                  streamingText={streamingText}
                   onApply={handleApplyChanges}
                   onDiscard={handleRejectEdits}
                   onCopyResponse={handleCopyResponse}

@@ -229,9 +229,11 @@ export async function createCodeFolder(
       organization_id: input.organization_id ?? null,
       project_id: input.project_id ?? null,
       workspace_id: input.workspace_id ?? null,
-      icon_name: input.icon_name ?? null,
-      color: input.color ?? null,
-      sort_order: input.sort_order ?? 0,
+      // `icon_name` is NOT NULL in the DB (default 'Folder'). Don't overwrite
+      // the default with explicit null.
+      icon_name: input.icon_name ?? "Folder",
+      color: input.color ?? "zinc",
+      sort_order: input.sort_order ?? 999,
     })
     .select("*")
     .single();
