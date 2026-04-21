@@ -45,6 +45,32 @@ Criteria numbering matches the plan doc (`plans/here-are-the-responses-toasty-pa
 
 Run against `http://localhost:3000/sync-demo/theme` with the dev server up.
 
+### Live dev-server observation (2026-04-21)
+
+User ran `pnpm dev` on a route unrelated to the demo (`/agents/.../run` + `/agents/.../build`). Two sequential boots (route navigation re-mounted `StoreProvider`):
+
+```
+[sync] boot.start { identity: 'auth:4cf62e4e-...', policyCount: 1 }
+[sync] boot.localStorage.miss { sliceName: 'theme' }
+[sync] boot.complete { ms: 1.49, hydrated: 0, legacyMigrated: 0 }
+[sync] boot.start { identity: 'auth:4cf62e4e-...', policyCount: 1 }
+[sync] boot.localStorage.miss { sliceName: 'theme' }
+[sync] boot.complete { ms: 0.48, hydrated: 0, legacyMigrated: 0 }
+```
+
+**Readings:**
+- Identity resolved against authenticated user (criterion #5 API sanity).
+- Policy count = 1 (theme only — correct for Phase 1).
+- Boot completes in **0.5–1.5ms** (criterion #2 <20ms budget verified at the middleware layer; full cross-tab latency still needs the 4-tab manual check below).
+- `miss` + `hydrated: 0` is correct for a user who hasn't toggled theme since the engine went live (no `matrx:theme` key written yet).
+- **No provider errors.** `Toaster` / `Sonner` rendering outside `StoreProvider` did not throw (criterion separately tracked at the bottom of this list; confirmed again in dev logs today).
+
+Unrelated warnings in the same log (investigated, not Phase 1):
+- `--localstorage-file was provided without a valid path` — a Node 22+ runtime warning from the user's shell/wrapper environment; grep-verified nothing in the repo passes this flag. Node's own `localStorage` API, unrelated to our browser `localStorage` writes.
+- `Switch is changing from controlled to uncontrolled` — a React warning from an out-of-scope `Switch` component, not the sync engine.
+
+### Remaining browser walk (owner: Arman)
+
 - [ ] **FOUC-free first paint.** Hard-reload with DevTools → Network → "Disable cache". Watch for any flash of wrong theme. Pass = no flash; theme matches the value shown in the demo panel.
 - [ ] **Persistence.** Toggle to light. Reload. Demo shows `mode: light` and localStorage `matrx:theme` envelope carries `{ body: { mode: "light" } }`.
 - [ ] **Cross-tab broadcast <20ms.** Open 4 tabs of the demo route. Toggle in tab 1. Tabs 2–4 reflect the change within one frame (visual); broadcast log in each shows the inbound ACTION message with its timestamp.
