@@ -28,9 +28,9 @@ Read [`README.md`](./README.md) before touching anything here. Read [`INVENTORY.
 | 5 | Context-menu integration sweep (notes, code editor, agent builder, SSR RPC) | **complete** | `phases/phase-05-integration-sweep.md` |
 | 6 | Code Editor quick wrapper (keep prompt-app editing working) | **blocked** on agent-id decision | `phases/phase-06-code-editor-quick-wrapper.md` |
 | 7 | `(a)/chat` — unified chat flagship route | partially-complete (community stub; keybind wiring deferred) | `phases/phase-07-chat-route.md` |
-| 8 | Agent Apps public runner (`/p/[slug]`) | in-progress | `phases/phase-08-agent-apps-public.md` |
-| 9 | Admin Agent Apps management UI | not-started | `phases/phase-09-admin-agent-apps.md` |
-| 10 | Applets capture (parent-app-with-children + shared context slots) | not-started | `phases/phase-10-applets-capture.md` |
+| 8 | Agent Apps public runner (`/p/[slug]`) | code-complete (pending DB apply) | `phases/phase-08-agent-apps-public.md` |
+| 9 | Admin Agent Apps management UI | in-progress | `phases/phase-09-admin-agent-apps.md` |
+| 10 | Applets capture (parent-app-with-children + shared context slots) | design-complete (implementation pending 3 user questions) | `phases/phase-10-applets-capture.md` |
 | 11 | Admin Shortcut management UI | **complete** | `phases/phase-11-admin-shortcuts-ui.md` |
 | 12 | User Shortcut management UI | **complete** | `phases/phase-12-user-shortcuts-ui.md` |
 | 13 | Org Shortcut management UI | **complete** | `phases/phase-13-org-shortcuts-ui.md` |
