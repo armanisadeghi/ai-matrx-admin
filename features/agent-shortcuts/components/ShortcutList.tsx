@@ -1,0 +1,772 @@
+"use client";
+
+import React, { useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  ArrowUpDown,
+  Check,
+  ChevronDown,
+  ChevronUp,
+  Copy,
+  Edit2,
+  Eye,
+  EyeOff,
+  Plus,
+  RefreshCw,
+  Sparkles,
+  X,
+  Zap,
+} from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { useToast } from "@/components/ui/use-toast";
+import { useAgentShortcuts } from "../hooks/useAgentShortcuts";
+import { useAgentShortcutCrud } from "../hooks/useAgentShortcutCrud";
+import { getPlacementTypeMeta } from "../constants";
+import type {
+  AgentShortcutCategory,
+  AgentShortcutRecord,
+  ScopeProps,
+} from "../types";
+
+type SortField =
+  | "label"
+  | "category"
+  | "placement"
+  | "status"
+  | "display"
+  | "autoRun"
+  | "allowChat";
+
+type SortDirection = "asc" | "desc";
+
+export interface ShortcutListProps extends ScopeProps {
+  onEdit?: (shortcut: AgentShortcutRecord) => void;
+  onCreate?: () => void;
+  onDuplicate?: (shortcut: AgentShortcutRecord) => void;
+  className?: string;
+  readonly?: boolean;
+  placementFilter?: string;
+}
+
+export function ShortcutList({
+  scope,
+  scopeId,
+  onEdit,
+  onCreate,
+  onDuplicate,
+  className,
+  readonly = false,
+  placementFilter: placementFilterProp,
+}: ShortcutListProps) {
+  const isMobile = useIsMobile();
+  const { toast } = useToast();
+  const { shortcuts, categories, isLoading, refetch } = useAgentShortcuts({
+    scope,
+    scopeId,
+  });
+  const crud = useAgentShortcutCrud({ scope, scopeId });
+
+  const [sortField, setSortField] = useState<SortField>("label");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [placementFilter, setPlacementFilter] = useState<string>(
+    placementFilterProp ?? "all",
+  );
+  const [activeFilter, setActiveFilter] = useState<
+    "all" | "active" | "inactive"
+  >("all");
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const categoryById = useMemo(() => {
+    const map = new Map<string, AgentShortcutCategory>();
+    categories.forEach((c) => map.set(c.id, c));
+    return map;
+  }, [categories]);
+
+  const availablePlacements = useMemo(() => {
+    const set = new Set<string>();
+    shortcuts.forEach((s) => {
+      const cat = categoryById.get(s.categoryId);
+      if (cat?.placementType) set.add(cat.placementType);
+    });
+    return Array.from(set);
+  }, [shortcuts, categoryById]);
+
+  const availableCategories = useMemo(() => {
+    if (placementFilter !== "all") {
+      return categories.filter(
+        (c) =>
+          c.placementType === placementFilter &&
+          shortcuts.some((s) => s.categoryId === c.id),
+      );
+    }
+    return categories.filter((c) =>
+      shortcuts.some((s) => s.categoryId === c.id),
+    );
+  }, [categories, shortcuts, placementFilter]);
+
+  const filtered = useMemo(() => {
+    let out = [...shortcuts];
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      out = out.filter(
+        (s) =>
+          s.label.toLowerCase().includes(q) ||
+          (s.description ?? "").toLowerCase().includes(q) ||
+          (s.keyboardShortcut ?? "").toLowerCase().includes(q) ||
+          s.id.toLowerCase().includes(q),
+      );
+    }
+
+    if (categoryFilter !== "all") {
+      out = out.filter((s) => s.categoryId === categoryFilter);
+    }
+
+    if (placementFilter !== "all") {
+      out = out.filter((s) => {
+        const cat = categoryById.get(s.categoryId);
+        return cat?.placementType === placementFilter;
+      });
+    }
+
+    if (activeFilter === "active") {
+      out = out.filter((s) => s.isActive);
+    } else if (activeFilter === "inactive") {
+      out = out.filter((s) => !s.isActive);
+    }
+
+    out.sort((a, b) => {
+      let aVal: string | number = "";
+      let bVal: string | number = "";
+      switch (sortField) {
+        case "label":
+          aVal = a.label.toLowerCase();
+          bVal = b.label.toLowerCase();
+          break;
+        case "category": {
+          aVal = categoryById.get(a.categoryId)?.label ?? "";
+          bVal = categoryById.get(b.categoryId)?.label ?? "";
+          break;
+        }
+        case "placement": {
+          aVal = categoryById.get(a.categoryId)?.placementType ?? "";
+          bVal = categoryById.get(b.categoryId)?.placementType ?? "";
+          break;
+        }
+        case "status":
+          aVal = a.isActive ? 1 : 0;
+          bVal = b.isActive ? 1 : 0;
+          break;
+        case "display":
+          aVal = a.resultDisplay;
+          bVal = b.resultDisplay;
+          break;
+        case "autoRun":
+          aVal = a.autoRun ? 1 : 0;
+          bVal = b.autoRun ? 1 : 0;
+          break;
+        case "allowChat":
+          aVal = a.allowChat ? 1 : 0;
+          bVal = b.allowChat ? 1 : 0;
+          break;
+      }
+      if (aVal < bVal) return sortDirection === "asc" ? -1 : 1;
+      if (aVal > bVal) return sortDirection === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    return out;
+  }, [
+    shortcuts,
+    searchQuery,
+    categoryFilter,
+    placementFilter,
+    activeFilter,
+    sortField,
+    sortDirection,
+    categoryById,
+  ]);
+
+  const stats = useMemo(() => {
+    const total = shortcuts.length;
+    const active = shortcuts.filter((s) => s.isActive).length;
+    const wiredToAgent = shortcuts.filter((s) => s.agentId).length;
+    return { total, active, wiredToAgent, unwired: total - wiredToAgent };
+  }, [shortcuts]);
+
+  const hasActiveFilters =
+    searchQuery.trim() !== "" ||
+    categoryFilter !== "all" ||
+    placementFilter !== "all" ||
+    activeFilter !== "all";
+
+  const clearFilters = () => {
+    setSearchQuery("");
+    setCategoryFilter("all");
+    setPlacementFilter(placementFilterProp ?? "all");
+    setActiveFilter("all");
+  };
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
+  };
+
+  const handleCopyId = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(id);
+      setCopiedId(id);
+      toast({ title: "Copied", description: "ID copied to clipboard" });
+      setTimeout(() => setCopiedId(null), 1800);
+    } catch {
+      toast({
+        title: "Copy failed",
+        description: "Unable to copy ID",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleToggleActive = async (shortcut: AgentShortcutRecord) => {
+    try {
+      await crud.updateShortcut(shortcut.id, { isActive: !shortcut.isActive });
+      toast({
+        title: shortcut.isActive ? "Deactivated" : "Activated",
+        description: shortcut.label,
+      });
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to update status";
+      toast({
+        title: "Update failed",
+        description: message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const SortIcon = ({ field }: { field: SortField }) => {
+    if (sortField !== field) return null;
+    return sortDirection === "asc" ? (
+      <ChevronUp className="h-3 w-3 inline ml-1" />
+    ) : (
+      <ChevronDown className="h-3 w-3 inline ml-1" />
+    );
+  };
+
+  if (isMobile) {
+    return (
+      <div className={`flex flex-col h-full ${className ?? ""}`}>
+        <div className="flex flex-col gap-2 p-3 border-b border-border bg-card">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold">Shortcuts</h2>
+            <div className="flex gap-1.5">
+              <Button variant="outline" size="sm" onClick={() => refetch()}>
+                <RefreshCw className="h-3.5 w-3.5" />
+              </Button>
+              {!readonly && onCreate && (
+                <Button size="sm" onClick={onCreate}>
+                  <Plus className="h-3.5 w-3.5 mr-1" />
+                  New
+                </Button>
+              )}
+            </div>
+          </div>
+          <Input
+            placeholder="Search shortcuts..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="text-[16px]"
+          />
+        </div>
+
+        <ScrollArea className="flex-1">
+          <div className="p-3 space-y-2">
+            {isLoading && (
+              <div className="text-center py-8 text-sm text-muted-foreground">
+                Loading...
+              </div>
+            )}
+            {!isLoading && filtered.length === 0 && (
+              <div className="text-center py-8 text-sm text-muted-foreground">
+                No shortcuts found
+              </div>
+            )}
+            {filtered.map((shortcut) => {
+              const cat = categoryById.get(shortcut.categoryId);
+              return (
+                <Card
+                  key={shortcut.id}
+                  className="cursor-pointer"
+                  onClick={() => onEdit?.(shortcut)}
+                >
+                  <CardContent className="p-3 space-y-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-start gap-2 min-w-0">
+                        <Sparkles className="h-4 w-4 text-primary mt-0.5" />
+                        <div className="min-w-0">
+                          <div className="font-medium text-sm truncate">
+                            {shortcut.label}
+                          </div>
+                          {shortcut.description && (
+                            <div className="text-xs text-muted-foreground line-clamp-2">
+                              {shortcut.description}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <Switch
+                        checked={shortcut.isActive}
+                        onCheckedChange={() =>
+                          !readonly && handleToggleActive(shortcut)
+                        }
+                        onClick={(e) => e.stopPropagation()}
+                        disabled={readonly}
+                      />
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {cat && (
+                        <Badge variant="secondary" className="text-xs">
+                          {cat.label}
+                        </Badge>
+                      )}
+                      {cat?.placementType && (
+                        <Badge variant="outline" className="text-xs">
+                          {getPlacementTypeMeta(cat.placementType).label}
+                        </Badge>
+                      )}
+                      {shortcut.autoRun && (
+                        <Badge variant="outline" className="text-xs">
+                          Auto
+                        </Badge>
+                      )}
+                      {shortcut.keyboardShortcut && (
+                        <code className="text-xs bg-muted px-1.5 py-0.5 rounded">
+                          {shortcut.keyboardShortcut}
+                        </code>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </ScrollArea>
+      </div>
+    );
+  }
+
+  return (
+    <TooltipProvider>
+      <div className={`flex flex-col h-full ${className ?? ""}`}>
+        <div className="flex-shrink-0 p-4 border-b border-border bg-card space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold">Shortcuts</h2>
+            <div className="flex gap-2">
+              {hasActiveFilters && (
+                <Button onClick={clearFilters} variant="outline" size="sm">
+                  <X className="h-4 w-4 mr-2" />
+                  Clear Filters
+                </Button>
+              )}
+              <Button onClick={() => refetch()} variant="outline" size="sm">
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Refresh
+              </Button>
+              {!readonly && onCreate && (
+                <Button onClick={onCreate} size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  New Shortcut
+                </Button>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-4 gap-2">
+            <Card>
+              <CardContent className="p-2">
+                <div className="text-xl font-bold">{stats.total}</div>
+                <div className="text-xs text-muted-foreground">Total</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-2">
+                <div className="text-xl font-bold text-primary">
+                  {stats.active}
+                </div>
+                <div className="text-xs text-muted-foreground">Active</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-2">
+                <div className="text-xl font-bold text-success">
+                  {stats.wiredToAgent}
+                </div>
+                <div className="text-xs text-muted-foreground">Connected</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-2">
+                <div className="text-xl font-bold text-warning">
+                  {stats.unwired}
+                </div>
+                <div className="text-xs text-muted-foreground">Unwired</div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="flex flex-wrap gap-2 items-center">
+            <Input
+              placeholder="Search shortcuts (label, description, keyboard, or ID)..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="max-w-md text-[16px]"
+            />
+
+            <Select
+              value={placementFilter}
+              onValueChange={setPlacementFilter}
+              disabled={!!placementFilterProp}
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Placements</SelectItem>
+                {availablePlacements.map((placement) => {
+                  const meta = getPlacementTypeMeta(placement);
+                  return (
+                    <SelectItem key={placement} value={placement}>
+                      {meta.label}
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+
+            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="All Categories" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {availableCategories.map((cat) => (
+                  <SelectItem key={cat.id} value={cat.id}>
+                    {cat.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select
+              value={activeFilter}
+              onValueChange={(value) =>
+                setActiveFilter(value as typeof activeFilter)
+              }
+            >
+              <SelectTrigger className="w-[160px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="active">Active Only</SelectItem>
+                <SelectItem value="inactive">Inactive Only</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-hidden">
+          <ScrollArea className="h-full">
+            <Table>
+              <TableHeader className="sticky top-0 bg-background z-10">
+                <TableRow>
+                  <TableHead className="w-[260px]">
+                    <span className="font-semibold">ID</span>
+                  </TableHead>
+                  <TableHead
+                    className="min-w-[200px]"
+                    onClick={() => handleSort("label")}
+                  >
+                    <div className="flex items-center gap-1 cursor-pointer hover:text-primary">
+                      Label
+                      <ArrowUpDown className="h-3 w-3" />
+                      <SortIcon field="label" />
+                    </div>
+                  </TableHead>
+                  <TableHead
+                    className="min-w-[140px]"
+                    onClick={() => handleSort("placement")}
+                  >
+                    <div className="flex items-center gap-1 cursor-pointer hover:text-primary">
+                      Placement
+                      <ArrowUpDown className="h-3 w-3" />
+                      <SortIcon field="placement" />
+                    </div>
+                  </TableHead>
+                  <TableHead
+                    className="min-w-[140px]"
+                    onClick={() => handleSort("category")}
+                  >
+                    <div className="flex items-center gap-1 cursor-pointer hover:text-primary">
+                      Category
+                      <ArrowUpDown className="h-3 w-3" />
+                      <SortIcon field="category" />
+                    </div>
+                  </TableHead>
+                  <TableHead
+                    className="min-w-[120px]"
+                    onClick={() => handleSort("display")}
+                  >
+                    <div className="flex items-center gap-1 cursor-pointer hover:text-primary">
+                      Display
+                      <ArrowUpDown className="h-3 w-3" />
+                      <SortIcon field="display" />
+                    </div>
+                  </TableHead>
+                  <TableHead
+                    className="w-[80px] text-center"
+                    onClick={() => handleSort("autoRun")}
+                  >
+                    <div className="flex items-center gap-1 cursor-pointer hover:text-primary justify-center">
+                      Auto
+                      <SortIcon field="autoRun" />
+                    </div>
+                  </TableHead>
+                  <TableHead
+                    className="w-[80px] text-center"
+                    onClick={() => handleSort("allowChat")}
+                  >
+                    <div className="flex items-center gap-1 cursor-pointer hover:text-primary justify-center">
+                      Chat
+                      <SortIcon field="allowChat" />
+                    </div>
+                  </TableHead>
+                  <TableHead className="min-w-[120px]">Keyboard</TableHead>
+                  <TableHead
+                    className="w-[100px] text-center"
+                    onClick={() => handleSort("status")}
+                  >
+                    <div className="flex items-center gap-1 cursor-pointer hover:text-primary justify-center">
+                      Active
+                      <SortIcon field="status" />
+                    </div>
+                  </TableHead>
+                  <TableHead className="text-right w-[160px]">
+                    Actions
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filtered.map((shortcut) => {
+                  const cat = categoryById.get(shortcut.categoryId);
+                  return (
+                    <TableRow
+                      key={shortcut.id}
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => onEdit?.(shortcut)}
+                    >
+                      <TableCell onClick={(e) => e.stopPropagation()}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 px-2 gap-2 font-mono text-xs hover:bg-accent w-full justify-start"
+                              onClick={(e) => handleCopyId(shortcut.id, e)}
+                            >
+                              {copiedId === shortcut.id ? (
+                                <Check className="h-3 w-3 text-success flex-shrink-0" />
+                              ) : (
+                                <Copy className="h-3 w-3 flex-shrink-0" />
+                              )}
+                              <span className="truncate">{shortcut.id}</span>
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Copy ID</TooltipContent>
+                        </Tooltip>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Sparkles className="h-4 w-4 text-primary" />
+                          <div className="font-medium">{shortcut.label}</div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {cat ? (
+                          <Badge variant="outline">
+                            {getPlacementTypeMeta(cat.placementType).label}
+                          </Badge>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">
+                            —
+                          </span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {cat ? (
+                          <span className="text-sm">{cat.label}</span>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">
+                            —
+                          </span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" className="text-xs">
+                          {shortcut.resultDisplay}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {shortcut.autoRun ? (
+                          <Zap className="h-3.5 w-3.5 text-primary mx-auto" />
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {shortcut.allowChat ? (
+                          <Check className="h-3.5 w-3.5 text-success mx-auto" />
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {shortcut.keyboardShortcut && (
+                          <code className="text-xs bg-muted px-2 py-1 rounded">
+                            {shortcut.keyboardShortcut}
+                          </code>
+                        )}
+                      </TableCell>
+                      <TableCell
+                        className="text-center"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Switch
+                          checked={shortcut.isActive}
+                          onCheckedChange={() =>
+                            !readonly && handleToggleActive(shortcut)
+                          }
+                          disabled={readonly}
+                        />
+                      </TableCell>
+                      <TableCell
+                        className="text-right"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div className="flex justify-end gap-1">
+                          {onEdit && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => onEdit(shortcut)}
+                                >
+                                  <Edit2 className="h-3 w-3" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Edit</TooltipContent>
+                            </Tooltip>
+                          )}
+                          {!readonly && onDuplicate && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => onDuplicate(shortcut)}
+                                >
+                                  <Copy className="h-3 w-3" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Duplicate</TooltipContent>
+                            </Tooltip>
+                          )}
+                          {!readonly && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleToggleActive(shortcut)}
+                                >
+                                  {shortcut.isActive ? (
+                                    <EyeOff className="h-3 w-3" />
+                                  ) : (
+                                    <Eye className="h-3 w-3" />
+                                  )}
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                {shortcut.isActive ? "Deactivate" : "Activate"}
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+            {filtered.length === 0 && (
+              <div className="text-center py-12">
+                <Sparkles className="h-12 w-12 mx-auto text-muted-foreground mb-3 opacity-50" />
+                <p className="text-muted-foreground">No shortcuts found</p>
+                {hasActiveFilters && (
+                  <Button
+                    variant="link"
+                    onClick={clearFilters}
+                    className="mt-2"
+                  >
+                    Clear filters
+                  </Button>
+                )}
+              </div>
+            )}
+            {isLoading && filtered.length === 0 && (
+              <div className="text-center py-12 text-muted-foreground">
+                Loading shortcuts...
+              </div>
+            )}
+          </ScrollArea>
+        </div>
+        <div className="sr-only">Scope: {scope} {scopeId ?? ""}</div>
+      </div>
+    </TooltipProvider>
+  );
+}

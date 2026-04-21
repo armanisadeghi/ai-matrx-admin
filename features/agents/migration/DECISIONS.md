@@ -61,3 +61,15 @@ Append one entry per decision. Never edit past entries; supersede with a new ent
 **Decision:** Categories scope via nullable `user_id` / `organization_id` / `project_id` / `task_id` columns. A row with all nulls is "global" and writable only by admins. Scope precedence at read time: user > org > global (enforced at the view/hook layer, not in RLS).
 **Rationale:** Matches the pattern `agx_shortcut` already uses. Keeps RLS simple (visibility), and lets the view/hook express precedence and shadowing (user row with same label as global row wins in UI).
 **Consequences:** The agent-context-menu view returns all visible rows; the RTK consumer handles collapsing duplicates by precedence. Document precedence in the view's header comment.
+
+### 2026-04-21 — Shared CRUD components: strict `{ scope, scopeId? }` prop contract
+**Phase:** 1 (task 1.7), 11, 12, 13
+**Decision:** Every CRUD component under `features/agent-shortcuts/components/` takes `scope: AgentScope` and optional `scopeId?: string` as props — never reads scope from the URL, pathname, or a route segment. The hooks (`useAgentShortcuts`, `useAgentShortcutCrud`) take the same pair and pass it through to RTK thunks/selectors.
+**Rationale:** Phases 11 (admin), 12 (user), 13 (org) each mount the same component tree under a different route; the only difference between mounts is the scope pair. Binding scope to the route would force us to duplicate the components three times.
+**Consequences:** Admin routes pass `scope="global"`, user routes `scope="user"`, org routes `scope="organization" scopeId={orgId}`. `ShortcutScopePicker` lets admins switch scope without leaving the form. The CRUD hook builds two shapes of RTK payload internally: `{ scope, scopeId }` wrapper for the category/content-block thunks, and `userId/organizationId/projectId/taskId` row fields for the shortcut thunk (which writes directly to the table).
+
+### 2026-04-21 — Mobile form UX: Drawer swap via `useIsMobile()`
+**Phase:** 1 (task 1.7)
+**Decision:** Every form/modal in `features/agent-shortcuts/components/` renders through `Dialog` on desktop and `Drawer` (vaul bottom-sheet) on mobile, gated by `useIsMobile()` from `@/hooks/use-mobile`. Form body and footer markup is shared — only the outer container swaps.
+**Rationale:** CLAUDE.md and `.cursor/skills/ios-mobile-first/SKILL.md` forbid Dialogs on mobile. Splitting each form into a shared body and conditionally rendering Dialog/Drawer is the lowest-duplication path.
+**Consequences:** All forms use `text-[16px]` on inputs to prevent iOS zoom, `pb-safe` on drawer footers, and `max-h-[92dvh]` on drawer content. Phases 3 (unified context menu), 7 (chat), 11–13 (route UIs) should follow the same pattern.
