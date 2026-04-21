@@ -2,11 +2,11 @@
 
 import React, { useState } from "react";
 import { Edit, Copy, Trash2, Play, Zap, User, LogOut, Sun, Moon, Eye } from "lucide-react";
-import { useAppDispatch } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { createTaskFromPresetQuick } from "@/lib/redux/socket-io/thunks/createTaskFromPreset";
 import { DbFunctionNode } from "@/features/workflows/types";
 import { useRouter } from "next/navigation";
-import { useTheme } from "@/styles/themes/ThemeProvider";
+import { toggleMode } from "@/styles/themes/themeSlice";
 import { createClient } from "@/utils/supabase/client";
 
 export interface NodeMenuCoreProps {
@@ -50,8 +50,8 @@ export const NodeMenuCore: React.FC<NodeMenuCoreProps> = ({
 }) => {
     const dispatch = useAppDispatch();
     const router = useRouter();
-    const theme = useTheme();
-    const toggleMode = 'toggleMode' in theme ? theme.toggleMode : () => { }; // TODO: Fix useTheme return type
+    const theme = useAppSelector((s) => s.theme.mode);
+    const handleToggleMode = () => dispatch(toggleMode());
     const [isExecuting, setIsExecuting] = useState(false);
 
     const handleExecute = async () => {
@@ -125,9 +125,9 @@ export const NodeMenuCore: React.FC<NodeMenuCoreProps> = ({
                 onClick: handleProfileClick,
             })}
             {!hideTheme && renderMenuItem({
-                icon: theme.mode === 'dark' ? <Sun className="h-4 w-4 mr-2" /> : <Moon className="h-4 w-4 mr-2" />,
-                label: theme.mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode',
-                onClick: toggleMode,
+                icon: theme === 'dark' ? <Sun className="h-4 w-4 mr-2" /> : <Moon className="h-4 w-4 mr-2" />,
+                label: theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode',
+                onClick: handleToggleMode,
             })}
 
             {!hideLogout && renderMenuItem({

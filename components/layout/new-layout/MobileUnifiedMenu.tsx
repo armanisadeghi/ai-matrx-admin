@@ -27,8 +27,8 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useTheme } from "@/hooks/useTheme";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
+import { setMode } from "@/styles/themes/themeSlice";
 import type { RootState } from "@/lib/redux/store";
 import { openFeedbackDialog } from "@/lib/redux/slices/overlaySlice";
 import { brokerSelectors } from "@/lib/redux/brokerSlice";
@@ -37,7 +37,8 @@ import { useQuickActions } from "@/features/quick-actions/hooks/useQuickActions"
 export function MobileUnifiedMenu() {
   const dispatch = useAppDispatch();
   const router = useRouter();
-  const { theme, setTheme } = useTheme();
+  const theme = useAppSelector((s) => s.theme.mode);
+  const setTheme = (t: "light" | "dark") => dispatch(setMode(t));
   const user = useAppSelector((state: RootState) => state.user);
   const displayName =
     user.userMetadata.name ||
