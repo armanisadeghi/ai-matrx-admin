@@ -1,6 +1,6 @@
 /**
  * Audio Utilities
- * 
+ *
  * Barrel export for audio utility functions
  */
 
@@ -11,5 +11,10 @@ export {
   getFixInstructions,
   type DiagnosticResult,
   type DiagnosticIssue,
-} from './microphone-diagnostics';
+} from "./microphone-diagnostics";
 
+export {
+  filterWhisperHallucinations,
+  type WhisperSegment,
+  type HallucinationFilterResult,
+} from "./hallucinationFilter";

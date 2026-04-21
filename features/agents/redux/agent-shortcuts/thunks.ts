@@ -867,17 +867,24 @@ export interface UnifiedMenuResult {
   placements: UnifiedMenuPlacementGroup[];
 }
 
-function extractScopeFromUnifiedItem(item: Record<string, unknown>): {
+interface UnifiedMenuScopeFields {
+  user_id?: string | null;
+  organization_id?: string | null;
+  project_id?: string | null;
+  task_id?: string | null;
+}
+
+function extractScopeFromUnifiedItem(item: UnifiedMenuScopeFields): {
   userId: string | null;
   organizationId: string | null;
   projectId: string | null;
   taskId: string | null;
 } {
   return {
-    userId: (item.user_id as string | null | undefined) ?? null,
-    organizationId: (item.organization_id as string | null | undefined) ?? null,
-    projectId: (item.project_id as string | null | undefined) ?? null,
-    taskId: (item.task_id as string | null | undefined) ?? null,
+    userId: item.user_id ?? null,
+    organizationId: item.organization_id ?? null,
+    projectId: item.project_id ?? null,
+    taskId: item.task_id ?? null,
   };
 }
 

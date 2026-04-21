@@ -23,7 +23,7 @@ interface ChatRoomClientProps {
   conversationId?: string;
 }
 
-const SOURCE_FEATURE = "chat";
+const SOURCE_FEATURE = "chat-route";
 
 export function ChatRoomClient({
   agentId,
@@ -51,7 +51,10 @@ export function ChatRoomClient({
           await dispatch(fetchAgentExecutionMinimal(agentId)).unwrap();
         }
       } catch (err) {
-        console.error("[ChatRoomClient] fetchAgentExecutionMinimal failed", err);
+        console.error(
+          "[ChatRoomClient] fetchAgentExecutionMinimal failed",
+          err,
+        );
       } finally {
         if (!cancelled) setIsInitializing(false);
       }
@@ -92,7 +95,8 @@ export function ChatRoomClient({
 
     (async () => {
       const state = store.getState();
-      const exists = !!state.conversations?.byConversationId?.[conversationIdProp];
+      const exists =
+        !!state.conversations?.byConversationId?.[conversationIdProp];
       try {
         if (!exists) {
           await dispatch(
@@ -114,7 +118,14 @@ export function ChatRoomClient({
         console.error("[ChatRoomClient] loadConversation failed", err);
       }
     })();
-  }, [agentId, conversationIdProp, dispatch, isInitializing, store, surfaceKey]);
+  }, [
+    agentId,
+    conversationIdProp,
+    dispatch,
+    isInitializing,
+    store,
+    surfaceKey,
+  ]);
 
   const handlePickAgent = (nextAgentId: string) => {
     if (nextAgentId === agentId) return;

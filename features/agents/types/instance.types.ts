@@ -67,6 +67,7 @@ export type SourceFeature =
   | "context-menu"
   | "prompt-app"
   | "research"
+  | "chat-route"
   | "code-editor"
   | "agent-content-window"
   | "voice-pad-ai"

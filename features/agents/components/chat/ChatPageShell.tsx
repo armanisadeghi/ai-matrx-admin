@@ -47,8 +47,7 @@ export function ChatPageShell({
       el.focus();
       return;
     }
-    const fallback =
-      document.querySelector<HTMLTextAreaElement>("textarea");
+    const fallback = document.querySelector<HTMLTextAreaElement>("textarea");
     fallback?.focus();
   }, []);
 
@@ -94,7 +93,7 @@ export function ChatPageShell({
   }, [router, focusInput, openAgentPicker]);
 
   return (
-    <div className="h-[calc(100dvh-var(--header-height,2.5rem))] flex overflow-hidden bg-textured">
+    <div className="h-full flex overflow-hidden bg-textured">
       {!isMobile && (
         <aside
           className="hidden lg:flex w-64 shrink-0 border-r border-border flex-col"
@@ -139,7 +138,9 @@ export function ChatPageShell({
         <Drawer open={historyOpen} onOpenChange={setHistoryOpen}>
           <DrawerContent className="max-h-[85dvh]">
             <DrawerHeader className="pb-1">
-              <DrawerTitle className="text-sm">Conversation history</DrawerTitle>
+              <DrawerTitle className="text-sm">
+                Conversation history
+              </DrawerTitle>
             </DrawerHeader>
             <div className="flex-1 min-h-0 overflow-hidden pb-safe">
               <ChatHistorySidebar
