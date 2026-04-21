@@ -5,7 +5,7 @@
 import React, { useEffect, useState } from 'react';
 import { Download, Filter, Search, Trash2, RefreshCw, MaximizeIcon, MinimizeIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { useTheme } from '@/hooks/useTheme';
+import { useAppSelector } from '@/lib/redux/hooks';
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -25,7 +25,7 @@ export default function DebugInterface() {
     const [levelFilter, setLevelFilter] = useState('all');
     const [isExpanded, setIsExpanded] = useState(false);
     const [autoRefresh, setAutoRefresh] = useState(true);
-    const { theme } = useTheme();
+    const theme = useAppSelector((s) => s.theme.mode);
 
     useEffect(() => {
         const updateLogs = () => {
