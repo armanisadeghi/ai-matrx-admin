@@ -2,7 +2,11 @@
 
 import { createSelector } from "reselect";
 import type { RootState } from "@/lib/redux/store";
-import type { AgentShortcut, AgentShortcutRecord } from "./types";
+import type {
+  AgentShortcut,
+  AgentShortcutRecord,
+  AgentShortcutSliceState,
+} from "./types";
 import type { FieldFlags } from "../shared/field-flags";
 import { hasField } from "../shared/field-flags";
 import {
@@ -64,6 +68,22 @@ export const selectShortcutsSliceError = createSelector(
 // ---------------------------------------------------------------------------
 // Single shortcut by id
 // ---------------------------------------------------------------------------
+
+/**
+ * Imperative lookup for thunks, sagas, and middleware.
+ * The normalized registry is `state.agentShortcut.shortcuts` — never index
+ * `state.agentShortcut[shortcutId]` (wrong shape; almost always undefined at runtime).
+ *
+ * For `useSelector` / `useAppSelector`, prefer memoized {@link selectShortcutById}.
+ */
+export function getShortcutRecordFromState(
+  state: RootState,
+  shortcutId: string,
+): AgentShortcutRecord | undefined {
+  const registry: AgentShortcutSliceState["shortcuts"] =
+    state.agentShortcut.shortcuts;
+  return registry[shortcutId];
+}
 
 /** Returns the full record (including runtime flags) or undefined. */
 export const selectShortcutById = createSelector(

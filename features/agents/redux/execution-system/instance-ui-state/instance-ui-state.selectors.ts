@@ -18,6 +18,7 @@ import type {
   VariableInputStyle,
 } from "@/features/agents/types";
 import { DEFAULT_BUILDER_ADVANCED_SETTINGS } from "@/features/agents/types/instance.types";
+import { getShortcutRecordFromState } from "@/features/agents/redux/agent-shortcuts/selectors";
 
 // ── Full state accessor ──────────────────────────────────────────────────────
 
@@ -236,7 +237,7 @@ export const selectInstanceShortcutLabel =
     const shortcutId =
       state.conversations.byConversationId[conversationId]?.shortcutId;
     if (!shortcutId) return undefined;
-    return state.agentShortcut?.[shortcutId]?.label || undefined;
+    return getShortcutRecordFromState(state, shortcutId)?.label || undefined;
   };
 
 /**
@@ -279,7 +280,10 @@ export const selectInstanceTitle =
     if (!instance) return undefined;
 
     if (instance.shortcutId) {
-      const label = state.agentShortcut?.[instance.shortcutId]?.label;
+      const label = getShortcutRecordFromState(
+        state,
+        instance.shortcutId,
+      )?.label;
       if (label) return label;
     }
 
@@ -309,7 +313,10 @@ export const selectInstanceDisplayTitle =
     if (!instance) return "Agent";
 
     if (instance.shortcutId) {
-      const label = state.agentShortcut?.[instance.shortcutId]?.label;
+      const label = getShortcutRecordFromState(
+        state,
+        instance.shortcutId,
+      )?.label;
       if (label) return label;
     }
 

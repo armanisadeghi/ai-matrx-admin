@@ -28,6 +28,7 @@ import { mapScopeToInstance } from "@/features/agents/utils/scope-mapping";
 import { resolveVisibilitySettings } from "../instance-ui-state/instance-ui-state.slice";
 import { fetchAgentExecutionMinimal } from "@/features/agents/redux/agent-definition/thunks";
 import { selectAgentExecutionPayload } from "@/features/agents/redux/agent-definition/selectors";
+import { getShortcutRecordFromState } from "@/features/agents/redux/agent-shortcuts/selectors";
 import {
   createManualInstance,
   createInstanceFromShortcut,
@@ -197,7 +198,7 @@ export const launchAgentExecution = createAsyncThunk<
 
   if (shortcutId) {
     const state = getState() as RootState;
-    const shortcut = state.agentShortcut[shortcutId];
+    const shortcut = getShortcutRecordFromState(state, shortcutId);
 
     if (!shortcut) {
       throw new Error(`Shortcut ${shortcutId} not found in Redux`);

@@ -23,6 +23,7 @@ import type {
 } from "@/features/agents/types/agent-definition.types";
 import type { LLMParams } from "@/features/agents/types";
 import type { ApiEndpointMode } from "@/features/agents/types/instance.types";
+import { getShortcutRecordFromState } from "@/features/agents/redux/agent-shortcuts/selectors";
 import { executeInstance } from "./execute-instance.thunk";
 import { executeChatInstance } from "./execute-chat-instance.thunk";
 
@@ -270,7 +271,7 @@ export const createInstanceFromShortcut = createAsyncThunk<
 
   const conversationId = generateConversationId();
   const state = getState() as RootState;
-  const shortcut = state.agentShortcut[shortcutId];
+  const shortcut = getShortcutRecordFromState(state, shortcutId);
 
   if (!shortcut) throw new Error(`Shortcut ${shortcutId} not found`);
 
@@ -978,9 +979,7 @@ export const splitInputIntoNewConversation = createAsyncThunk<
         conversationId: currentConversationId,
       }),
     );
-    dispatch(
-      setInputFocus({ surfaceKey, conversationId: newConversationId }),
-    );
+    dispatch(setInputFocus({ surfaceKey, conversationId: newConversationId }));
 
     return { newConversationId };
   },
