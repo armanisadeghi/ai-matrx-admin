@@ -1,7 +1,6 @@
 "use client";
 import { useState, useCallback, useRef } from "react";
 import { useMeasure } from "@uidotdev/usehooks";
-import { useTheme } from "@/styles/themes/ThemeProvider";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
@@ -57,7 +56,7 @@ export function useCodeEditorBasics({
   const [isCreatingPage, setIsCreatingPage] = useState(false);
   const [formatTrigger, setFormatTrigger] = useState(0);
 
-  const { mode } = useTheme();
+  const mode = useAppSelector((s) => s.theme.mode);
   const isMobile = useIsMobile();
   const user = useAppSelector(selectUser);
   const { open: openCanvas } = useCanvas();

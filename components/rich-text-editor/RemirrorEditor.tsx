@@ -35,7 +35,7 @@ import {
   ListOrdered, Quote, Heading1, Heading2, Heading3, 
   Table, Undo, Redo, MinusSquare, Type, FileCode
 } from 'lucide-react';
-import { useTheme } from '@/styles/themes/ThemeProvider';
+import { useAppSelector } from '@/lib/redux/hooks';
 import {
   Dialog,
   DialogContent,
@@ -353,7 +353,7 @@ const EditorContent: React.FC = () => {
 const RemirrorEditor: React.FC = () => {
   const [height, setHeight] = useState(300);
   const [lineSpacing, setLineSpacing] = useState(1);
-  const { mode } = useTheme();
+  const mode = useAppSelector((s) => s.theme.mode);
   const { manager, state } = useRemirror({
     extensions,
     content: '',

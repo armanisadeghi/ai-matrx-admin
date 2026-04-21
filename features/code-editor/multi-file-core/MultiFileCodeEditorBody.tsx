@@ -19,7 +19,7 @@ import CodeBlockHeader from "@/features/code-editor/components/code-block/CodeBl
 import { getLanguageIconNode } from "@/features/code-editor/components/code-block/LanguageDisplay";
 import { PanelLeftClose } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useTheme } from "@/styles/themes/ThemeProvider";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { CodeFile } from "./types";
 
@@ -110,7 +110,7 @@ export function MultiFileCodeEditorBody({
   editorWrapperRef,
   editorHeight,
 }: MultiFileCodeEditorBodyProps) {
-  const { mode } = useTheme();
+  const mode = useAppSelector((s) => s.theme.mode);
   const isMobile = useIsMobile();
 
   return (
