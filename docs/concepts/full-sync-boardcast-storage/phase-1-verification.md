@@ -15,7 +15,7 @@ Date: 2026-04-20.
 | 1.A | `lib/sync/**` engine core + 7 Jest suites + jsdom config | ✅ Merged (`eb102e7a`) |
 | 1.B | `themePolicy` + middleware wire-up + `bootSync` in `StoreProvider` + `SyncBootScript` in `<head>` + Option-C shims + demo route | ✅ Merged (`88cc0c93`) |
 | 1.C | Mechanical migration of 45 `useTheme` shim consumers | ✅ Merged (`0b2c6225`) |
-| 1.D | Delete the two shim files + three `<ThemeProvider>` mounts | ⏳ Ready — trigger next |
+| 1.D | Delete the two shim files + three `<ThemeProvider>` mounts | ✅ Merged (`2dd04c8b`) — −173 lines |
 
 Docs co-landed: `phase-1-plan.md`, `phase-1b-shim-cleanup.md`, this doc.
 
@@ -36,7 +36,7 @@ Criteria numbering matches the plan doc (`plans/here-are-the-responses-toasty-pa
 | 7 | Unit tests green under jsdom | ✅ | `pnpm jest lib/sync/` → 14 suites / 92 tests passing (post-1.C). `jest.config.ts` created (superseding the misnamed `jest.config.js.ts`). |
 | 8 | Demo route works | ✅ (route created, needs browser walk) | `app/(a)/sync-demo/theme/page.tsx` + `_client.tsx` |
 | 9 | Legacy `'theme'` localStorage key migrated to `'matrx:theme'` | ✅ | `LEGACY_MIGRATIONS` in `engine/boot.ts`; `engine.boot.test.ts` "legacy key migration" case |
-| 10 | `grep -r "useTheme\|ThemeProvider\|ThemeScript\|preferencesMiddleware"` → 0 | 🟢 **Live-code: 0** — After 1.C merge: zero remaining imports of `@/hooks/useTheme` outside the shim itself. Remaining hits are (a) the shim files themselves (deleted in 1.D), (b) `styles/themes/index.ts` re-export (removed in 1.D), (c) `components/ui/sonner.tsx` defines a *local* `useThemeMode` (prefix collision, not a consumer), (d) `components/admin/ReduxDebugInterface.tsx` imports `useTheme` from `next-themes` (different package). | `grep -rn "from ['\"]@/hooks/useTheme['\"]"` → 1 hit (the shim's own re-export in `ThemeProvider.tsx`). |
+| 10 | `grep -r "useTheme\|ThemeProvider\|ThemeScript\|preferencesMiddleware"` → 0 | ✅ **Live-code: 0** — Post-1.D: `grep -rn "from ['\"]@/hooks/useTheme['\"]\|from ['\"]@/styles/themes/ThemeProvider['\"]"` across `app/ components/ features/ hooks/ lib/ styles/ providers/` returns **0 hits**. Remaining `useTheme` substring matches are (a) a local `useThemeMode` helper in `components/ui/sonner.tsx` (prefix collision only), (b) `components/admin/ReduxDebugInterface.tsx` imports from `next-themes` (different package). | Grep pasted inline. Shim files deleted (`2dd04c8b`). |
 | 11 | Net-lines report | ✅ | See §4 below |
 
 ---
