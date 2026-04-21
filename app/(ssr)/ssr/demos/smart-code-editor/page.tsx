@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/select";
 import { Code2, Sparkles } from "lucide-react";
 import { SmartCodeEditorModal } from "@/features/code-editor/agent-code-editor";
+import { TYPESCRIPT_SNIPPET } from "./snippets";
 
 // ── Agent registry (demo-only) ──────────────────────────────────────────────
 //
@@ -101,16 +102,8 @@ const LANGUAGES = [
 // ── Starter snippets (so the demo is immediately fireable) ──────────────────
 
 const STARTER_SNIPPETS: Record<string, string> = {
-  typescript: `// Refactor this fetch wrapper to have proper error handling and types.
-async function getUser(id) {
-  const res = await fetch("/api/users/" + id);
-  const json = await res.json();
-  console.log(json);
-  return json;
-}
+  typescript: TYPESCRIPT_SNIPPET,
 
-getUser("abc");
-`,
   python: `def process(items):
     results = []
     for i in range(0, len(items)):

@@ -50,6 +50,7 @@ import {
   List,
   Frame,
   BookMarked,
+  Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -725,6 +726,78 @@ export default function SidebarWindowToggle() {
                             instanceId: `code-editor-${Date.now()}`,
                             data: {
                               title: "Code Editor",
+                              files: [
+                                {
+                                  name: "index.tsx",
+                                  path: "src/index.tsx",
+                                  language: "typescript",
+                                  content:
+                                    'import React from "react";\n\nexport default function App() {\n  return (\n    <div className="flex items-center justify-center h-screen">\n      <h1 className="text-2xl font-bold">Hello, World!</h1>\n    </div>\n  );\n}\n',
+                                },
+                                {
+                                  name: "styles.css",
+                                  path: "src/styles.css",
+                                  language: "css",
+                                  content:
+                                    "/* Global styles */\nbody {\n  margin: 0;\n  font-family: system-ui, sans-serif;\n}\n",
+                                },
+                                {
+                                  name: "README.md",
+                                  path: "README.md",
+                                  language: "markdown",
+                                  content:
+                                    "# My Project\n\nA sample project.\n\n## Getting Started\n\n```bash\nnpm install\nnpm start\n```\n",
+                                },
+                              ],
+                            },
+                          }),
+                        ),
+                      )
+                    }
+                  />
+                  <MenuGridItem
+                    icon={<Sparkles className="w-3.5 h-3.5" />}
+                    label="Smart Code Editor"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(
+                          openOverlay({
+                            overlayId: "smartCodeEditorWindow",
+                            instanceId: `smart-code-editor-${Date.now()}`,
+                            data: {
+                              // Default agent: "Code Editor" (legacy prompt builtin clone).
+                              // The agent expects a `current_code` variable — we seed it
+                              // on first launch so the sidebar entry is fireable with no
+                              // extra wiring.
+                              agentId: "55cc4ad1-bafd-4b82-af0b-4b4f40406ca3",
+                              language: "typescript",
+                              initialCode:
+                                '// Start typing, then ask the agent to refactor.\n\nasync function getUser(id) {\n  const res = await fetch("/api/users/" + id);\n  return res.json();\n}\n',
+                              title: "Smart Code Editor",
+                              variables: {
+                                current_code:
+                                  '// Start typing, then ask the agent to refactor.\n\nasync function getUser(id) {\n  const res = await fetch("/api/users/" + id);\n  return res.json();\n}\n',
+                              },
+                            },
+                          }),
+                        ),
+                      )
+                    }
+                  />
+                  <MenuGridItem
+                    icon={<Sparkles className="w-3.5 h-3.5" />}
+                    label="Smart Multi-file"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(
+                          openOverlay({
+                            overlayId: "multiFileSmartCodeEditorWindow",
+                            instanceId: `multi-file-smart-code-editor-${Date.now()}`,
+                            data: {
+                              // Same default agent as the single-file variant;
+                              // richer per-file context mapping is a follow-up.
+                              agentId: "55cc4ad1-bafd-4b82-af0b-4b4f40406ca3",
+                              title: "Smart Multi-file Editor",
                               files: [
                                 {
                                   name: "index.tsx",

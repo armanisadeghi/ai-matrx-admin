@@ -490,6 +490,22 @@ const CodeEditorWindow = dynamic(
   { ssr: false },
 );
 
+const SmartCodeEditorWindow = dynamic(
+  () =>
+    import("@/features/window-panels/windows/smart-code-editor/SmartCodeEditorWindow").then(
+      (m) => ({ default: m.SmartCodeEditorWindow }),
+    ),
+  { ssr: false },
+);
+
+const MultiFileSmartCodeEditorWindow = dynamic(
+  () =>
+    import("@/features/window-panels/windows/multi-file-smart-code-editor/MultiFileSmartCodeEditorWindow").then(
+      (m) => ({ default: m.MultiFileSmartCodeEditorWindow }),
+    ),
+  { ssr: false },
+);
+
 const ContentEditorWorkspaceWindow = dynamic(
   () =>
     import("@/features/window-panels/windows/content-editors/ContentEditorWorkspaceWindow").then(
@@ -786,6 +802,12 @@ export const OverlayController: React.FC = () => {
   );
   const codeEditorWindowInstances = useAppSelector((s) =>
     selectOpenInstances(s, "codeEditorWindow"),
+  );
+  const smartCodeEditorWindowInstances = useAppSelector((s) =>
+    selectOpenInstances(s, "smartCodeEditorWindow"),
+  );
+  const multiFileSmartCodeEditorWindowInstances = useAppSelector((s) =>
+    selectOpenInstances(s, "multiFileSmartCodeEditorWindow"),
   );
 
   const isScraperWindowOpen = useAppSelector((s) =>
@@ -1539,6 +1561,47 @@ export const OverlayController: React.FC = () => {
           onClose={() => close("codeEditorWindow", instanceId)}
         />
       ))}
+
+      {smartCodeEditorWindowInstances.map(({ instanceId, data }) => {
+        // Skip instances opened without an agentId — the window requires one
+        // to launch. This also guards against stale ephemeral overlay state.
+        if (!data?.agentId || typeof data.agentId !== "string") return null;
+        return (
+          <SmartCodeEditorWindow
+            key={instanceId}
+            windowInstanceId={instanceId}
+            callbackGroupId={data?.callbackGroupId ?? null}
+            agentId={data.agentId}
+            initialCode={data?.initialCode ?? ""}
+            language={data?.language ?? "plaintext"}
+            filePath={data?.filePath ?? undefined}
+            selection={data?.selection ?? undefined}
+            diagnostics={data?.diagnostics ?? undefined}
+            title={data?.title ?? null}
+            variables={data?.variables ?? null}
+            onClose={() => close("smartCodeEditorWindow", instanceId)}
+          />
+        );
+      })}
+
+      {multiFileSmartCodeEditorWindowInstances.map(({ instanceId, data }) => {
+        if (!data?.agentId || typeof data.agentId !== "string") return null;
+        return (
+          <MultiFileSmartCodeEditorWindow
+            key={instanceId}
+            windowInstanceId={instanceId}
+            callbackGroupId={data?.callbackGroupId ?? null}
+            agentId={data.agentId}
+            files={data?.files ?? []}
+            initialActiveFile={data?.initialActiveFile ?? null}
+            title={data?.title ?? null}
+            defaultWordWrap={data?.defaultWordWrap ?? "off"}
+            autoFormatOnOpen={data?.autoFormatOnOpen ?? false}
+            variables={data?.variables ?? null}
+            onClose={() => close("multiFileSmartCodeEditorWindow", instanceId)}
+          />
+        );
+      })}
 
       {/* ── Instanced overlays — .map() renders each open instance ─────── */}
       {/* Each instance gets a stable key so React correctly reconciles them. */}

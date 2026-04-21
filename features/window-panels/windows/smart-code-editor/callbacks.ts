@@ -33,38 +33,32 @@ export interface SmartCodeEditorWindowEventBase {
   windowInstanceId: string;
 }
 
-export interface SmartCodeEditorReadyEvent
-  extends SmartCodeEditorWindowEventBase {
+export interface SmartCodeEditorReadyEvent extends SmartCodeEditorWindowEventBase {
   type: "ready";
 }
 
-export interface SmartCodeEditorLaunchedEvent
-  extends SmartCodeEditorWindowEventBase {
+export interface SmartCodeEditorLaunchedEvent extends SmartCodeEditorWindowEventBase {
   type: "launched";
   conversationId: string;
 }
 
-export interface SmartCodeEditorCodeChangeEvent
-  extends SmartCodeEditorWindowEventBase {
+export interface SmartCodeEditorCodeChangeEvent extends SmartCodeEditorWindowEventBase {
   type: "code-change";
   code: string;
 }
 
-export interface SmartCodeEditorAgentCompleteEvent
-  extends SmartCodeEditorWindowEventBase {
+export interface SmartCodeEditorAgentCompleteEvent extends SmartCodeEditorWindowEventBase {
   type: "agent-complete";
   conversationId: string;
   finalCode: string;
 }
 
-export interface SmartCodeEditorAgentErrorEvent
-  extends SmartCodeEditorWindowEventBase {
+export interface SmartCodeEditorAgentErrorEvent extends SmartCodeEditorWindowEventBase {
   type: "agent-error";
   message: string;
 }
 
-export interface SmartCodeEditorWindowCloseEvent
-  extends SmartCodeEditorWindowEventBase {
+export interface SmartCodeEditorWindowCloseEvent extends SmartCodeEditorWindowEventBase {
   type: "window-close";
   finalCode: string;
 }

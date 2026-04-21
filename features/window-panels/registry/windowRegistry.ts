@@ -76,6 +76,47 @@ const REGISTRY: WindowRegistryEntry[] = [
     },
   },
 
+  // ── Multi-file Smart Code Editor (agent-driven, many files) ──────────────
+  {
+    slug: "multi-file-smart-code-editor-window",
+    overlayId: "multiFileSmartCodeEditorWindow",
+    label: "Smart Multi-file Editor",
+    // Ephemeral for the same reasons as the single-file variant — the agent
+    // conversation cannot survive a reload, so we skip persistence.
+    defaultData: {
+      agentId: null,
+      files: [],
+      initialActiveFile: null,
+      title: null,
+      defaultWordWrap: "off",
+      autoFormatOnOpen: false,
+      variables: null,
+    },
+    ephemeral: true,
+  },
+
+  // ── Smart Code Editor (agent-driven single-file editor) ───────────────────
+  {
+    slug: "smart-code-editor-window",
+    overlayId: "smartCodeEditorWindow",
+    label: "Smart Code Editor",
+    // Ephemeral: the agent conversation is a live stream — re-opening after
+    // a reload would restore geometry but could not restore the agent state,
+    // so we skip DB persistence entirely. `callbackGroupId` also can't cross
+    // a reload, which reinforces the decision.
+    defaultData: {
+      agentId: null,
+      initialCode: "",
+      language: "plaintext",
+      filePath: null,
+      selection: null,
+      diagnostics: null,
+      title: null,
+      variables: null,
+    },
+    ephemeral: true,
+  },
+
   // ── Notes ─────────────────────────────────────────────────────────────────
   {
     slug: "notes-window",
