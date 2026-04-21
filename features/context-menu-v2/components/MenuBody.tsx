@@ -59,7 +59,16 @@ export interface MenuBodyRenderProps {
   loading: boolean;
   selectedText: string;
   isEditable: boolean;
-  enabledPlacements: string[];
+  /**
+   * Per-placement visibility. Values:
+   *   - "show"    → render submenu normally; submenu disabled only if it has no items
+   *   - "hide"    → skip rendering entirely
+   *   - "disable" → render greyed out, not clickable
+   */
+  placementMode: Record<
+    "ai-action" | "content-block" | "organization-tool" | "user-tool" | "quick-action",
+    "show" | "hide" | "disable"
+  >;
   categoryGroups: AgentMenuCategoryGroup[];
   onEntrySelect: (entry: AgentMenuEntry, placementType: string) => void;
   onCopy: () => void;
@@ -134,7 +143,7 @@ export function MenuBody(props: MenuBodyRenderProps) {
     loading,
     selectedText,
     isEditable,
-    enabledPlacements,
+    placementMode,
     categoryGroups,
     onEntrySelect,
     onCopy,
@@ -332,12 +341,22 @@ export function MenuBody(props: MenuBodyRenderProps) {
       </Item>
       <Separator />
 
-      {enabledPlacements
-        .filter((p) => p !== "quick-action")
+      {(
+        [
+          "ai-action",
+          "content-block",
+          "organization-tool",
+          "user-tool",
+        ] as const
+      )
+        .filter((p) => placementMode[p] !== "hide")
         .map((placementType) => {
+          const mode = placementMode[placementType];
           const groups = grouped[placementType] || [];
           const hasItems =
             groups.length > 0 && groups.some((g) => hasItemsRecursive(g));
+          const forcedDisabled = mode === "disable";
+          const isDisabled = forcedDisabled || !hasItems;
           const PlacementIcon = getPlacementIcon(placementType);
           const placementMeta =
             PLACEMENT_TYPE_META[
@@ -348,8 +367,8 @@ export function MenuBody(props: MenuBodyRenderProps) {
           return (
             <Sub key={placementType}>
               <SubTrigger
-                disabled={!hasItems}
-                className={!hasItems ? "opacity-50 cursor-not-allowed" : ""}
+                disabled={isDisabled}
+                className={isDisabled ? "opacity-50 cursor-not-allowed" : ""}
               >
                 <PlacementIcon className="h-4 w-4 mr-2" />
                 {label}
@@ -367,9 +386,16 @@ export function MenuBody(props: MenuBodyRenderProps) {
           );
         })}
 
-      {enabledPlacements.includes("quick-action") && (
+      {placementMode["quick-action"] !== "hide" && (
         <Sub>
-          <SubTrigger>
+          <SubTrigger
+            disabled={placementMode["quick-action"] === "disable"}
+            className={
+              placementMode["quick-action"] === "disable"
+                ? "opacity-50 cursor-not-allowed"
+                : ""
+            }
+          >
             <Zap className="h-4 w-4 mr-2" />
             Quick Actions
           </SubTrigger>
