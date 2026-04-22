@@ -15,6 +15,7 @@ import { makeSelectAgentConversations } from "@/features/agents/redux/conversati
 import type { ConversationListItem } from "@/features/agents/redux/conversation-list";
 import { AgentLauncherSidebarTester } from "../../run-controls/AgentLauncherSidebarTester";
 import { SidebarHeader } from "./SidebarHeader";
+import { ConversationHoverPreview } from "../../previews";
 
 interface AgentRunsSidebarProps {
   agentId: string;
@@ -156,34 +157,43 @@ function ConversationListRow({
     : null;
 
   return (
-    <button
-      type="button"
-      onClick={onSelect}
-      className={cn(
-        "flex items-center gap-2 w-full px-3 py-2 text-left transition-colors",
-        isActive
-          ? "bg-primary/10 text-primary"
-          : "hover:bg-muted/50 text-foreground",
-      )}
+    <ConversationHoverPreview
+      conversationId={conv.conversationId}
+      side="right"
+      align="start"
+      onOpen={onSelect}
     >
-      <div className="flex-1 min-w-0">
-        <p
-          className={cn(
-            "text-xs font-medium truncate",
-            isActive && "text-primary",
-          )}
-        >
-          {conv.title?.trim() ? conv.title : "Untitled"}
-        </p>
-        <div className="flex items-center gap-1.5 mt-0.5">
-          <MessageSquare className="w-2.5 h-2.5 text-muted-foreground shrink-0" />
-          <span className="text-[10px] text-muted-foreground">
-            {conv.messageCount} msg{conv.messageCount === 1 ? "" : "s"}
-            {date ? ` · ${date}` : ""}
-          </span>
+      <button
+        type="button"
+        onClick={onSelect}
+        className={cn(
+          "flex items-center gap-2 w-full px-3 py-2 text-left transition-colors",
+          isActive
+            ? "bg-primary/10 text-primary"
+            : "hover:bg-muted/50 text-foreground",
+        )}
+      >
+        <div className="flex-1 min-w-0">
+          <p
+            className={cn(
+              "text-xs font-medium truncate",
+              isActive && "text-primary",
+            )}
+          >
+            {conv.title?.trim() ? conv.title : "Untitled"}
+          </p>
+          <div className="flex items-center gap-1.5 mt-0.5">
+            <MessageSquare className="w-2.5 h-2.5 text-muted-foreground shrink-0" />
+            <span className="text-[10px] text-muted-foreground">
+              {conv.messageCount} msg{conv.messageCount === 1 ? "" : "s"}
+              {date ? ` · ${date}` : ""}
+            </span>
+          </div>
         </div>
-      </div>
-      {isActive && <ChevronRight className="w-3 h-3 text-primary shrink-0" />}
-    </button>
+        {isActive && (
+          <ChevronRight className="w-3 h-3 text-primary shrink-0" />
+        )}
+      </button>
+    </ConversationHoverPreview>
   );
 }

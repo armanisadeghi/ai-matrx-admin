@@ -56,7 +56,11 @@ import {
   isWidgetActionName,
   type WidgetHandle,
 } from "@/features/agents/types/widget-handle.types";
-import { selectWidgetHandleIdFor } from "../instance-ui-state/instance-ui-state.selectors";
+import {
+  selectIsBlockMode,
+  selectIsSnapshot,
+  selectWidgetHandleIdFor,
+} from "../instance-ui-state/instance-ui-state.selectors";
 import {
   registerAbortController,
   unregisterAbortController,
@@ -152,6 +156,11 @@ export function assembleRequest(
   // Source tracking
   const { sourceApp, sourceFeature } = instance;
 
+  // Admin-only global flags (read at execute time so the most recent toggle
+  // value applies to every outbound turn). Defaults are false on the slice.
+  const block_mode = selectIsBlockMode(state);
+  const snapshot = selectIsSnapshot(state);
+
   // Assemble snake_case body
   const request: AssembledAgentStartRequest = { stream: true };
 
@@ -165,6 +174,8 @@ export function assembleRequest(
   if (task_id) request.task_id = task_id;
   if (sourceApp) request.source_app = sourceApp;
   if (sourceFeature) request.source_feature = sourceFeature;
+  if (block_mode) request.block_mode = true;
+  if (snapshot) request.snapshot = true;
 
   return request;
 }
@@ -332,7 +343,9 @@ export const executeInstance = createAsyncThunk<
       if (isContinuation) {
         // Turn 2+: POST /ai/conversations/{conversationId}
         url = `${baseUrl}/ai/conversations/${conversationId}`;
-        // Continuation only needs user_input, config_overrides, context, client_tools, stream
+        // Continuation only needs user_input, config_overrides, context, client_tools, stream.
+        // Admin flags (block_mode, snapshot) are forwarded so each turn honors
+        // the latest toggle value, not just turn 1.
         routedPayload = {
           user_input: payload.user_input,
           stream: true,
@@ -342,6 +355,8 @@ export const executeInstance = createAsyncThunk<
           ...(payload.context && { context: payload.context }),
           ...(payload.client_tools && { client_tools: payload.client_tools }),
           ...(debug && { debug: true }),
+          ...(payload.block_mode && { block_mode: true }),
+          ...(payload.snapshot && { snapshot: true }),
           ...(pendingBypass && { cache_bypass: pendingBypass }),
         };
       } else {

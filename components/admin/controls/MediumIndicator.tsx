@@ -13,6 +13,7 @@ import {
   Activity,
   Bug,
   Gauge,
+  Camera,
 } from "lucide-react";
 import { PiPathFill } from "react-icons/pi";
 import { usePathname } from "next/navigation";
@@ -38,6 +39,8 @@ import {
   type ServerEnvironment,
 } from "@/lib/redux/slices/apiConfigSlice";
 import { BACKEND_URLS } from "@/lib/api/endpoints";
+import { setUseSnapshot } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.slice";
+import { selectIsSnapshot } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 
 /** Debug module ids that open a WindowPanel instead of the modal DebugModulePanel. */
 const DEBUG_MODULE_IDS_AS_WINDOW = new Set<string>([
@@ -98,8 +101,10 @@ const MediumIndicator: React.FC<MediumIndicatorProps> = ({
   const allServerHealth = useAppSelector(selectAllServerHealth);
   const recentCalls = useAppSelector(selectRecentApiCalls);
   const isDebugMode = useAppSelector(selectIsDebugMode);
+  const isSnapshot = useAppSelector(selectIsSnapshot);
 
   const handleToggleDebugMode = () => dispatch(toggleDebugMode());
+  const handleToggleSnapshot = () => dispatch(setUseSnapshot(!isSnapshot));
 
   const handleContainerMouseDown = (e: React.MouseEvent) => {
     if (e.currentTarget === e.target) onDragStart(e);
@@ -223,6 +228,19 @@ const MediumIndicator: React.FC<MediumIndicatorProps> = ({
           >
             <Gauge size={14} />
           </button>
+          {isAdmin && (
+            <button
+              onClick={handleToggleSnapshot}
+              className={`p-1 rounded transition-colors ${isSnapshot ? "bg-purple-700 text-purple-200" : "text-slate-400 hover:bg-slate-700"}`}
+              title={
+                isSnapshot
+                  ? "Snapshot mode ON — every request stamps snapshot:true"
+                  : "Toggle Snapshot mode (admin: capture full server snapshot per request)"
+              }
+            >
+              <Camera size={14} />
+            </button>
+          )}
           <button
             onClick={handleForceHealthCheck}
             className="p-1 rounded hover:bg-slate-700"

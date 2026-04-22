@@ -571,14 +571,17 @@ function saveItems(ctx: MessageActionContext): MenuItem[] {
         )
           return;
         const preview = content.slice(0, 400);
-        // Seed a sensible title from the first line, but let the user edit
-        // it in the dialog — this is the UX fix the user asked for.
-        const seedTitle =
+        // "Task Related To: <start of message>" — makes it clear at a glance
+        // what the task is about. Fully editable in the window.
+        const firstLine =
           content
             .trim()
             .split(/\n+/)[0]
             ?.replace(/^[#>*\-\s]+/, "")
-            .slice(0, 100) || "";
+            .slice(0, 60) || "";
+        const seedTitle = firstLine
+          ? `Task Related To: ${firstLine}${firstLine.length >= 60 ? "…" : ""}`
+          : "Task Related To AI message";
 
         dispatch(
           setPendingSource({
@@ -1086,13 +1089,15 @@ export function resumePendingAuthAction(
       }
     } else if (action === "add-to-tasks") {
       const preview = savedContent.slice(0, 400);
-      const seedTitle =
+      const firstLine =
         savedContent
           .trim()
           .split(/\n+/)[0]
           ?.replace(/^[#>*\-\s]+/, "")
-          .slice(0, 100) || "";
-      // Post-auth resume — open the same dialog the action opens normally
+          .slice(0, 60) || "";
+      const seedTitle = firstLine
+        ? `Task Related To: ${firstLine}${firstLine.length >= 60 ? "…" : ""}`
+        : "Task Related To AI message";
       dispatch(
         setPendingSource({
           entity_type: "cx_message",

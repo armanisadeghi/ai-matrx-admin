@@ -10,11 +10,16 @@ import { Separator } from "@/components/ui/separator";
 import {
   setBuilderAdvancedSettings,
   setReuseConversationId,
+  setUseBlockMode,
+  setUseSnapshot,
 } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.slice";
 import {
   selectBuilderAdvancedSettings,
+  selectIsBlockMode,
+  selectIsSnapshot,
   selectReuseConversationId,
 } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
+import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 import { DEFAULT_BUILDER_ADVANCED_SETTINGS } from "@/features/agents/types/instance.types";
 import { SystemInstructionModal } from "../builder/message-builders/system-instructions/SystemInstructionModal";
 import { NumberStepper } from "@/components/official-candidate/NumberStepper";
@@ -60,6 +65,9 @@ export function RunSettingsEditor({ conversationId }: RunSettingsEditorProps) {
   const reuseConversationId = useAppSelector(
     selectReuseConversationId(conversationId),
   );
+  const isAdmin = useAppSelector(selectIsAdmin);
+  const isBlockMode = useAppSelector(selectIsBlockMode);
+  const isSnapshot = useAppSelector(selectIsSnapshot);
   const [sysModalOpen, setSysModalOpen] = useState(false);
 
   return (
@@ -71,7 +79,10 @@ export function RunSettingsEditor({ conversationId }: RunSettingsEditorProps) {
           checked={settings.debug}
           onChange={(v) =>
             dispatch(
-              setBuilderAdvancedSettings({ conversationId, changes: { debug: v } }),
+              setBuilderAdvancedSettings({
+                conversationId,
+                changes: { debug: v },
+              }),
             )
           }
         />
@@ -81,7 +92,10 @@ export function RunSettingsEditor({ conversationId }: RunSettingsEditorProps) {
           checked={settings.store}
           onChange={(v) =>
             dispatch(
-              setBuilderAdvancedSettings({ conversationId, changes: { store: v } }),
+              setBuilderAdvancedSettings({
+                conversationId,
+                changes: { store: v },
+              }),
             )
           }
         />
@@ -163,6 +177,27 @@ export function RunSettingsEditor({ conversationId }: RunSettingsEditorProps) {
             className="h-6"
           />
         </div>
+
+        {isAdmin && (
+          <>
+            <Separator className="!my-1.5" />
+            <div className="px-0.5 pt-0.5 text-[10px] uppercase tracking-wide text-muted-foreground/70">
+              Admin
+            </div>
+            <SettingRow
+              id={`block-mode-${conversationId}`}
+              label="Block mode (block_mode)"
+              checked={isBlockMode}
+              onChange={(v) => dispatch(setUseBlockMode(v))}
+            />
+            <SettingRow
+              id={`snapshot-${conversationId}`}
+              label="Snapshot capture (snapshot)"
+              checked={isSnapshot}
+              onChange={(v) => dispatch(setUseSnapshot(v))}
+            />
+          </>
+        )}
       </div>
 
       <SystemInstructionModal

@@ -64,11 +64,23 @@ export interface InstanceUIStateSlice {
    * Not tied to any specific instance — it is a global display preference.
    */
   isBlockMode: boolean;
+
+  /**
+   * Admin-only — when true, every outbound agent / conversation / chat-manual
+   * request is sent with `snapshot: true` so the server captures a full
+   * snapshot of the request + response payload for offline inspection.
+   *
+   * Global on purpose: snapshot mode is a debugging session preference, not
+   * a per-instance setting. Read at request-assembly time by the execute
+   * thunks and serialized onto the wire payload.
+   */
+  isSnapshot: boolean;
 }
 
 const initialState: InstanceUIStateSlice = {
   byConversationId: {},
   isBlockMode: false,
+  isSnapshot: false,
 };
 
 // =============================================================================
@@ -501,6 +513,10 @@ const instanceUIStateSlice = createSlice({
     setUseBlockMode(state, action: PayloadAction<boolean>) {
       state.isBlockMode = action.payload;
     },
+
+    setUseSnapshot(state, action: PayloadAction<boolean>) {
+      state.isSnapshot = action.payload;
+    },
   },
 
   extraReducers: (builder) => {
@@ -550,6 +566,7 @@ export const {
   setOriginalText,
   removeInstanceUIState,
   setUseBlockMode,
+  setUseSnapshot,
 } = instanceUIStateSlice.actions;
 
 export default instanceUIStateSlice.reducer;

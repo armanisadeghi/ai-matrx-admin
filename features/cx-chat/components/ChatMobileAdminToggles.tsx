@@ -4,7 +4,7 @@
 //
 // Migrated to pure Redux: no context dependencies.
 
-import { Blocks } from "lucide-react";
+import { Blocks, Camera } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 import {
@@ -13,7 +13,9 @@ import {
 } from "@/lib/redux/slices/apiConfigSlice";
 import {
   selectIsBlockMode,
+  selectIsSnapshot,
   setUseBlockMode,
+  setUseSnapshot,
 } from "@/features/agents/redux/execution-system/instance-ui-state";
 
 export default function ChatMobileAdminToggles() {
@@ -22,6 +24,7 @@ export default function ChatMobileAdminToggles() {
   const activeServer = useAppSelector(selectActiveServer);
   const isUsingLocalhost = activeServer === "localhost";
   const blockMode = useAppSelector(selectIsBlockMode);
+  const snapshot = useAppSelector(selectIsSnapshot);
 
   if (!isAdmin) return null;
 
@@ -33,6 +36,10 @@ export default function ChatMobileAdminToggles() {
 
   const handleToggleBlockMode = () => {
     dispatch(setUseBlockMode(!blockMode));
+  };
+
+  const handleToggleSnapshot = () => {
+    dispatch(setUseSnapshot(!snapshot));
   };
 
   return (
@@ -66,6 +73,21 @@ export default function ChatMobileAdminToggles() {
         }`}
       >
         <Blocks className="h-3.5 w-3.5" />
+      </button>
+      <button
+        onClick={handleToggleSnapshot}
+        title={
+          snapshot
+            ? "Snapshot ON — every request stamps snapshot:true. Click to disable."
+            : "Snapshot OFF — click to capture full server-side snapshots per request."
+        }
+        className={`p-1.5 rounded-md transition-colors ${
+          snapshot
+            ? "text-fuchsia-600 dark:text-fuchsia-400 bg-fuchsia-500/15 border border-fuchsia-500/30"
+            : "text-muted-foreground/50 hover:text-muted-foreground hover:bg-accent/50 border border-transparent"
+        }`}
+      >
+        <Camera className="h-3.5 w-3.5" />
       </button>
     </div>
   );

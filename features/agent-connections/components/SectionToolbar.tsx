@@ -1,0 +1,101 @@
+"use client";
+
+import React from "react";
+import { ChevronDown, Sparkles, Plus, Library } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+interface SectionToolbarProps {
+  search: string;
+  onSearchChange: (value: string) => void;
+  searchPlaceholder?: string;
+  generateLabel?: string;
+  onGenerate?: () => void;
+  browseLabel?: string;
+  onBrowse?: () => void;
+  showAddButton?: boolean;
+  onAdd?: () => void;
+}
+
+export function SectionToolbar({
+  search,
+  onSearchChange,
+  searchPlaceholder = "Type to search...",
+  generateLabel,
+  onGenerate,
+  browseLabel,
+  onBrowse,
+  showAddButton,
+  onAdd,
+}: SectionToolbarProps) {
+  return (
+    <div className="flex items-center gap-2 px-4 py-3 shrink-0">
+      <input
+        type="text"
+        value={search}
+        onChange={(e) => onSearchChange(e.target.value)}
+        placeholder={searchPlaceholder}
+        className={cn(
+          "flex-1 h-8 px-3 text-sm rounded-md",
+          "bg-background border border-border",
+          "text-foreground placeholder:text-muted-foreground/70",
+          "focus:outline-none focus:ring-1 focus:ring-ring",
+        )}
+      />
+      {browseLabel && (
+        <button
+          type="button"
+          onClick={onBrowse}
+          className={cn(
+            "inline-flex items-center gap-1.5 h-8 px-3 rounded-md text-sm",
+            "bg-background border border-border text-foreground",
+            "hover:bg-accent transition-colors",
+          )}
+        >
+          <Library className="h-3.5 w-3.5" />
+          {browseLabel}
+        </button>
+      )}
+      {generateLabel && (
+        <div className="inline-flex rounded-md overflow-hidden shadow-sm">
+          <button
+            type="button"
+            onClick={onGenerate}
+            className={cn(
+              "inline-flex items-center gap-1.5 h-8 px-3 text-sm font-medium",
+              "bg-sky-600 hover:bg-sky-500 text-white transition-colors",
+            )}
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+            {generateLabel}
+          </button>
+          <button
+            type="button"
+            aria-label="More generation options"
+            className={cn(
+              "inline-flex items-center justify-center h-8 w-7 border-l border-sky-700/60",
+              "bg-sky-600 hover:bg-sky-500 text-white transition-colors",
+            )}
+          >
+            <ChevronDown className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      )}
+      {showAddButton && (
+        <button
+          type="button"
+          onClick={onAdd}
+          aria-label="Add new"
+          className={cn(
+            "inline-flex items-center justify-center h-8 w-8 rounded-md",
+            "bg-background border border-border text-foreground",
+            "hover:bg-accent transition-colors",
+          )}
+        >
+          <Plus className="h-4 w-4" />
+        </button>
+      )}
+    </div>
+  );
+}
+
+export default SectionToolbar;
