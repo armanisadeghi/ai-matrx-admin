@@ -685,8 +685,7 @@ const AgentInterfaceVariationsWindow = dynamic(
 );
 
 const AgentCreateAppWindow = dynamic(
-  () =>
-    import("@/features/window-panels/windows/agents/AgentCreateAppWindow"),
+  () => import("@/features/window-panels/windows/agents/AgentCreateAppWindow"),
   { ssr: false },
 );
 
@@ -2441,6 +2440,7 @@ export const OverlayController: React.FC = () => {
               | "details"
               | "advanced"
               | "link"
+              | "json"
               | undefined
           }
         />

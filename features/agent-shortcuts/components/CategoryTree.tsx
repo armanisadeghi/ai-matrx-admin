@@ -16,6 +16,7 @@ import {
 import {
   ChevronDown,
   ChevronRight,
+  Copy,
   Edit2,
   Eye,
   EyeOff,
@@ -32,6 +33,7 @@ export interface CategoryTreeProps extends ScopeProps {
   placementFilter?: string;
   onEdit?: (category: AgentShortcutCategory) => void;
   onCreate?: (parent?: AgentShortcutCategory) => void;
+  onDuplicate?: (category: AgentShortcutCategory) => void;
   onDelete?: (category: AgentShortcutCategory) => void;
   onToggleActive?: (category: AgentShortcutCategory) => void;
   selectedId?: string;
@@ -71,6 +73,7 @@ export function CategoryTree({
   placementFilter,
   onEdit,
   onCreate,
+  onDuplicate,
   onDelete,
   onToggleActive,
   selectedId,
@@ -240,6 +243,20 @@ export function CategoryTree({
                   <Edit2 className="h-3 w-3" />
                 </Button>
               )}
+              {onDuplicate && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDuplicate(node);
+                  }}
+                  title="Duplicate"
+                >
+                  <Copy className="h-3 w-3" />
+                </Button>
+              )}
               {onToggleActive && (
                 <Button
                   variant="ghost"
@@ -328,7 +345,10 @@ export function CategoryTree({
         {groups.map(({ placementType, roots }) => {
           const meta = getPlacementTypeMeta(placementType);
           return (
-            <div key={placementType} className="border border-border rounded-md">
+            <div
+              key={placementType}
+              className="border border-border rounded-md"
+            >
               <div className="flex items-center gap-2 px-3 py-2 bg-muted/40 border-b border-border">
                 <FolderOpen className="h-4 w-4" />
                 <span className="font-semibold text-sm">{meta.label}</span>

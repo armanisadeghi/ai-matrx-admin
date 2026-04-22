@@ -7,6 +7,8 @@ export { ContentBlockForm } from "./ContentBlockForm";
 export type { ContentBlockFormProps } from "./ContentBlockForm";
 export { ContentBlockList } from "./ContentBlockList";
 export type { ContentBlockListProps } from "./ContentBlockList";
+export { DuplicateCategoryModal } from "./DuplicateCategoryModal";
+export type { DuplicateCategoryModalProps } from "./DuplicateCategoryModal";
 export { DuplicateShortcutModal } from "./DuplicateShortcutModal";
 export type { DuplicateShortcutModalProps } from "./DuplicateShortcutModal";
 export { PromoteToGlobalModal } from "./PromoteToGlobalModal";

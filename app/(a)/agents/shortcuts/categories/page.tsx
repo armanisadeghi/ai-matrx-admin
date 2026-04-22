@@ -17,6 +17,7 @@ import { useToast } from "@/components/ui/use-toast";
 import {
   CategoryForm,
   CategoryTree,
+  DuplicateCategoryModal,
   useAgentShortcutCrud,
   useAgentShortcuts,
   type AgentShortcutCategory,
@@ -43,6 +44,9 @@ export default function UserCategoriesPage() {
   const [deleteTarget, setDeleteTarget] =
     useState<AgentShortcutCategory | null>(null);
   const [deleting, setDeleting] = useState(false);
+
+  const [duplicateTarget, setDuplicateTarget] =
+    useState<AgentShortcutCategory | null>(null);
 
   const handleCreate = (parent?: AgentShortcutCategory) => {
     setEditingCategory(null);
@@ -128,6 +132,7 @@ export default function UserCategoriesPage() {
           categories={categories}
           onCreate={handleCreate}
           onEdit={handleEdit}
+          onDuplicate={(c) => setDuplicateTarget(c)}
           onDelete={(c) => setDeleteTarget(c)}
           onToggleActive={handleToggleActive}
         />
@@ -138,10 +143,23 @@ export default function UserCategoriesPage() {
         isOpen={formOpen}
         onClose={() => setFormOpen(false)}
         onSuccess={() => setFormOpen(false)}
+        onDuplicate={(c) => {
+          setFormOpen(false);
+          setDuplicateTarget(c);
+        }}
         allCategories={categories}
         editingCategory={editingCategory}
         defaultPlacementType={defaultPlacement}
         defaultParentCategoryId={defaultParentId}
+      />
+
+      <DuplicateCategoryModal
+        scope={SCOPE}
+        isOpen={!!duplicateTarget}
+        onClose={() => setDuplicateTarget(null)}
+        onSuccess={() => setDuplicateTarget(null)}
+        category={duplicateTarget}
+        categories={categories}
       />
 
       {deleteTarget && (
@@ -154,8 +172,8 @@ export default function UserCategoriesPage() {
               <AlertDialogTitle>Delete Category</AlertDialogTitle>
               <AlertDialogDescription>
                 Delete &quot;{deleteTarget.label}&quot;? Child categories and
-                shortcuts assigned to this category may be orphaned. This
-                cannot be undone.
+                shortcuts assigned to this category may be orphaned. This cannot
+                be undone.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

@@ -118,7 +118,9 @@ export function ConvertAgentToSystemBody({
           payload.error ?? `Failed to check for existing system agents`,
         );
       }
-      const body = (await res.json()) as { system_agents: SystemAgentSummary[] };
+      const body = (await res.json()) as {
+        system_agents: SystemAgentSummary[];
+      };
       const rows = body.system_agents ?? [];
       setExisting(rows);
       if (rows.length > 0) {
@@ -148,18 +150,14 @@ export function ConvertAgentToSystemBody({
     setStep("processing");
 
     try {
-      const res = await fetch(
-        "/api/admin/agent-builtins/convert-from-agent",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            agent_id: agentId,
-            system_agent_id:
-              action === "update" ? selectedExistingId : undefined,
-          }),
-        },
-      );
+      const res = await fetch("/api/admin/agent-builtins/convert-from-agent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          agent_id: agentId,
+          system_agent_id: action === "update" ? selectedExistingId : undefined,
+        }),
+      });
 
       if (!res.ok) {
         const payload = await res.json().catch(() => ({}));
@@ -326,8 +324,8 @@ export function ConvertAgentToSystemBody({
             <Plus className="w-3.5 h-3.5 text-muted-foreground" />
           </div>
           <p className="mt-1.5 pl-6 text-xs text-muted-foreground">
-            Adds a brand-new builtin entry. Use this when there's no prior
-            system agent linked to this source.
+            Adds a brand-new System Agent. Use this when there's no prior system
+            agent linked to this source.
           </p>
         </div>
       </RadioGroup>
@@ -385,7 +383,7 @@ export function ConvertAgentToSystemBody({
         <p className="text-xs text-muted-foreground max-w-sm">
           {resultIsUpdate
             ? "The existing system agent has been refreshed with the latest definition."
-            : "A new builtin agent is now available to every user on the platform."}
+            : "A new system agent is now available to every user on the platform."}
         </p>
       </div>
 

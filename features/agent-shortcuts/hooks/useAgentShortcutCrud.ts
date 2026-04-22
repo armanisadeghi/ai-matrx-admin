@@ -15,6 +15,8 @@ import {
   createCategory,
   updateCategory,
   deleteCategory,
+  duplicateCategory,
+  type DuplicateCategoryInput,
 } from "@/features/agents/redux/agent-shortcut-categories/thunks";
 import {
   createContentBlock,
@@ -53,6 +55,9 @@ export interface UseAgentShortcutCrudResult {
     data: Partial<AgentShortcutCategory>,
   ) => Promise<void>;
   deleteCategory: (id: string) => Promise<void>;
+  duplicateCategory: (
+    args: DuplicateCategoryInput,
+  ) => Promise<AgentShortcutCategory>;
   createContentBlock: (data: ContentBlockFormData) => Promise<string>;
   updateContentBlock: (
     id: string,
@@ -176,6 +181,14 @@ export function useAgentShortcutCrud({
     [dispatch],
   );
 
+  const doDuplicateCategory = useCallback(
+    async (args: DuplicateCategoryInput) => {
+      const result = await dispatch(duplicateCategory(args)).unwrap();
+      return result;
+    },
+    [dispatch],
+  );
+
   const doCreateContentBlock = useCallback(
     async (data: ContentBlockFormData) => {
       const scoped = applyScopeWrapper(scope, scopeId, data);
@@ -209,6 +222,7 @@ export function useAgentShortcutCrud({
     createCategory: doCreateCategory,
     updateCategory: doUpdateCategory,
     deleteCategory: doDeleteCategory,
+    duplicateCategory: doDuplicateCategory,
     createContentBlock: doCreateContentBlock,
     updateContentBlock: doUpdateContentBlock,
     deleteContentBlock: doDeleteContentBlock,

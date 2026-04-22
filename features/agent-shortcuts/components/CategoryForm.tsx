@@ -30,7 +30,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { AlertCircle, Folder, Loader2, Save, X } from "lucide-react";
+import { AlertCircle, Copy, Folder, Loader2, Save, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import IconInputWithValidation from "@/components/official/icons/IconInputWithValidation.dynamic";
 import { useToast } from "@/components/ui/use-toast";
@@ -53,6 +53,11 @@ export interface CategoryFormProps extends ScopeProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: (category: AgentShortcutCategory | null) => void;
+  /**
+   * Invoked when the user clicks "Duplicate" in edit mode. The parent owns
+   * presenting the duplicate modal so the edit form can close cleanly first.
+   */
+  onDuplicate?: (category: AgentShortcutCategory) => void;
   allCategories: AgentShortcutCategory[];
   editingCategory?: AgentShortcutCategory | null;
   defaultPlacementType?: PlacementType;
@@ -111,6 +116,7 @@ export function CategoryForm({
   isOpen,
   onClose,
   onSuccess,
+  onDuplicate,
   allCategories,
   editingCategory,
   defaultPlacementType,
@@ -419,12 +425,28 @@ export function CategoryForm({
     </div>
   );
 
+  const handleDuplicateClick = () => {
+    if (!editingCategory || !onDuplicate) return;
+    onDuplicate(editingCategory);
+  };
+
   const footerButtons = (
     <>
       <Button variant="outline" onClick={onClose} disabled={saving} size="sm">
         <X className="w-4 h-4 mr-1.5" />
         Cancel
       </Button>
+      {isEditMode && onDuplicate && editingCategory && (
+        <Button
+          variant="outline"
+          onClick={handleDuplicateClick}
+          disabled={saving}
+          size="sm"
+        >
+          <Copy className="w-4 h-4 mr-1.5" />
+          Duplicate
+        </Button>
+      )}
       <Button onClick={handleSave} disabled={saving} size="sm">
         {saving ? (
           <>
