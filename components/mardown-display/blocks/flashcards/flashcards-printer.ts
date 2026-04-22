@@ -39,7 +39,7 @@ interface CardPrintSettings {
 const SETTING_DEFAULTS: CardPrintSettings = {
   showSideLabel: false,
   showCardNumber: false,
-  showTickMarks: true,
+  showTickMarks: false,
   showCutLines: false,
   lightBackText: false,
   mirrorBack: false,
@@ -244,7 +244,11 @@ function sizeClass(text: string): string {
   return "";
 }
 
-function renderCutCards(cards: Flashcard[], title: string): string {
+function renderCutCards(
+  cards: Flashcard[],
+  title: string,
+  startIndex = 0,
+): string {
   const PAGE_SIZE = 4; // cards per page
   const pages: string[] = [];
 
@@ -253,7 +257,7 @@ function renderCutCards(cards: Flashcard[], title: string): string {
 
     const cells = batch
       .map((card, i) => {
-        const globalIdx = p * PAGE_SIZE + i + 1;
+        const globalIdx = startIndex + p * PAGE_SIZE + i + 1;
         const frontSize = sizeClass(card.front);
         const backSize = sizeClass(card.back ?? "");
         const backContent = (card.back ?? "")
@@ -290,7 +294,7 @@ ${
   ✂ Print this page, then cut along the dashed lines. Each cell is one card — front (blue) on top, answer on the bottom.
   Fold in half for a double-sided card, or cut each half separately for separate front/back cards.
 </div>`
-    : `<div class="deck-meta" style="margin-bottom:10px;">Cards ${p * PAGE_SIZE + 1}–${Math.min((p + 1) * PAGE_SIZE, cards.length)} of ${cards.length}</div>`
+    : `<div class="deck-meta" style="margin-bottom:10px;">Cards ${startIndex + p * PAGE_SIZE + 1}–${startIndex + Math.min((p + 1) * PAGE_SIZE, cards.length)}</div>`
 }
 <div class="cards-grid">
 ${cells}
@@ -347,12 +351,16 @@ const BOTH_SIDES_STYLES = `
   }
 `;
 
-function renderBothSides(cards: Flashcard[], title: string): string {
+function renderBothSides(
+  cards: Flashcard[],
+  title: string,
+  startIndex = 0,
+): string {
   const cells = cards
     .map(
       (card, i) => `<div class="card-cell">
   <div class="card-front">
-    <div class="card-number">Card ${i + 1}</div>
+    <div class="card-number">Card ${startIndex + i + 1}</div>
     ${escapeHtml(card.front)}
   </div>
   <div class="card-back">${escapeHtml(card.back ?? "")}</div>
@@ -423,11 +431,15 @@ const STUDY_SHEET_STYLES = `
   }
 `;
 
-function renderStudySheet(cards: Flashcard[], title: string): string {
+function renderStudySheet(
+  cards: Flashcard[],
+  title: string,
+  startIndex = 0,
+): string {
   const rows = cards
     .map(
       (card, i) => `  <tr>
-    <td><span class="row-num">${i + 1}.</span>${escapeHtml(card.front)}</td>
+    <td><span class="row-num">${startIndex + i + 1}.</span>${escapeHtml(card.front)}</td>
     <td>${escapeHtml(card.back ?? "")}</td>
   </tr>`,
     )
@@ -499,12 +511,16 @@ const FRONT_ONLY_STYLES = `
   }
 `;
 
-function renderFrontOnly(cards: Flashcard[], title: string): string {
+function renderFrontOnly(
+  cards: Flashcard[],
+  title: string,
+  startIndex = 0,
+): string {
   const cells = cards
     .map(
       (card, i) => `<div class="card-cell">
   <div class="card-front">
-    <div class="card-number">Card ${i + 1}</div>
+    <div class="card-number">Card ${startIndex + i + 1}</div>
     ${escapeHtml(card.front)}
   </div>
   <div class="answer-blank"></div>
@@ -562,11 +578,15 @@ const BACK_ONLY_STYLES = `
   }
 `;
 
-function renderBackOnly(cards: Flashcard[], title: string): string {
+function renderBackOnly(
+  cards: Flashcard[],
+  title: string,
+  startIndex = 0,
+): string {
   const cells = cards
     .map(
       (card, i) => `<div class="card-cell">
-  <div class="card-back-header">Card ${i + 1}</div>
+  <div class="card-back-header">Card ${startIndex + i + 1}</div>
   <div class="card-back-content">${escapeHtml(card.back ?? "")}</div>
 </div>`,
     )
@@ -962,6 +982,7 @@ function renderLandscape(
   title: string,
   mode: "duplex" | "stacked",
   s: CardPrintSettings,
+  startIndex = 0,
 ): string {
   const BATCH = 4;
   const pages: string[] = [];
@@ -972,10 +993,14 @@ function renderLandscape(
     while (batch.length < BATCH) batch.push({ front: "", back: "" });
 
     const fronts = batch.map((c, i) =>
-      c.front ? buildCardFace(c.front, p * BATCH + i + 1, true, s) : empty,
+      c.front
+        ? buildCardFace(c.front, startIndex + p * BATCH + i + 1, true, s)
+        : empty,
     );
     const backs = batch.map((c, i) =>
-      c.back ? buildCardFace(c.back ?? "", p * BATCH + i + 1, false, s) : empty,
+      c.back
+        ? buildCardFace(c.back ?? "", startIndex + p * BATCH + i + 1, false, s)
+        : empty,
     );
 
     if (mode === "duplex") {
@@ -1224,6 +1249,7 @@ function renderAvery5388(
   cards: Flashcard[],
   title: string,
   s: CardPrintSettings,
+  startIndex = 0,
 ): string {
   const BATCH = 3;
   const pages: string[] = [];
@@ -1232,10 +1258,14 @@ function renderAvery5388(
     const batch = cards.slice(p * BATCH, (p + 1) * BATCH);
 
     const frontCells = batch
-      .map((c, i) => buildAveryCard(c.front, p * BATCH + i + 1, true, s))
+      .map((c, i) =>
+        buildAveryCard(c.front, startIndex + p * BATCH + i + 1, true, s),
+      )
       .join("\n");
     const backCells = batch
-      .map((c, i) => buildAveryCard(c.back ?? "", p * BATCH + i + 1, false, s))
+      .map((c, i) =>
+        buildAveryCard(c.back ?? "", startIndex + p * BATCH + i + 1, false, s),
+      )
       .join("\n");
 
     const padCount = BATCH - batch.length;
@@ -1516,6 +1546,7 @@ function renderPortrait6Up(
   title: string,
   mode: "duplex" | "stacked",
   s: CardPrintSettings,
+  startIndex = 0,
 ): string {
   const BATCH = 6;
   const pages: string[] = [];
@@ -1526,10 +1557,14 @@ function renderPortrait6Up(
     while (batch.length < BATCH) batch.push({ front: "", back: "" });
 
     const fronts = batch.map((c, i) =>
-      c.front ? buildCardFace(c.front, p * BATCH + i + 1, true, s) : empty,
+      c.front
+        ? buildCardFace(c.front, startIndex + p * BATCH + i + 1, true, s)
+        : empty,
     );
     const backs = batch.map((c, i) =>
-      c.back ? buildCardFace(c.back ?? "", p * BATCH + i + 1, false, s) : empty,
+      c.back
+        ? buildCardFace(c.back ?? "", startIndex + p * BATCH + i + 1, false, s)
+        : empty,
     );
 
     if (mode === "duplex") {
@@ -1562,10 +1597,22 @@ function openPortrait6UpWindow(bodyHtml: string, title: string): void {
   <style>${PORTRAIT_6UP_STYLES}</style>
 </head>
 <body>
-<div class="screen-only" style="font-family:sans-serif;font-size:12px;padding:12px 16px;background:#f8fafc;border-bottom:1px solid #e2e8f0;display:flex;gap:10px;align-items:center;">
-  <button onclick="window.print()" style="padding:7px 18px;background:#111;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;">Print / Save PDF</button>
-  <button onclick="window.close()" style="padding:7px 14px;background:#f1f5f9;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;cursor:pointer;">Close</button>
-  <span style="color:#64748b;font-size:11px;">6 per page · set printer to <strong>Portrait, two-sided, flip on long edge</strong>, no additional margins</span>
+<div class="screen-only" style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#fff;border-bottom:1px solid #e2e8f0;padding:14px 20px;">
+  <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;">
+    <button onclick="window.print()" style="padding:8px 20px;background:#111;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;">Print / Save PDF</button>
+    <button onclick="window.close()" style="padding:8px 14px;background:#f1f5f9;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;cursor:pointer;">Close</button>
+    <span style="color:#111;font-size:12px;font-weight:600;margin-left:4px;">6 flashcards per page · cut into 6</span>
+  </div>
+  <div style="background:#fef3c7;border:1px solid #fbbf24;border-radius:6px;padding:10px 14px;font-size:12px;line-height:1.55;color:#78350f;max-width:720px;">
+    <div style="font-weight:700;margin-bottom:4px;color:#92400e;">⚠ Printer settings for duplex alignment</div>
+    <strong>- Page Size:</strong> Letter (8.5" × 11")<br>
+    <strong>- Orientation:</strong> Portrait<br>
+    <strong>- Two-sided (Duplex):</strong> On<br>
+    <strong>- Flip on:</strong> Long edge<br>
+    <strong>- Pages per sheet:</strong> 1<br>
+    <strong>- Scale:</strong> 100% / Actual size<br>
+    <strong>- Margins:</strong> None<br>
+  </div>
 </div>
 ${bodyHtml}
 ${FIT_TEXT_SCRIPT}
@@ -1608,6 +1655,18 @@ export const flashcardsPrinter: BlockPrinter = {
   label: "Print flashcards",
   variants: [
     {
+      id: "portrait-6up-duplex",
+      label: "Portrait 6-up — duplex (recommended)",
+      description:
+        "6 cards per page (2 columns × 3 rows), portrait. Split down the middle and into thirds. Fronts and backs on alternating pages — backs are mirrored so they align perfectly when duplex-printed (flip on long edge) and cut into 6",
+    },
+    {
+      id: "portrait-6up-stacked",
+      label: "Portrait 6-up — all fronts then all backs",
+      description:
+        "6 cards per page (2 columns × 3 rows), portrait. All front pages first, then all back pages — cut all sheets together for a matching deck",
+    },
+    {
       id: "landscape-duplex",
       label: "Landscape cut sheet — duplex (double-sided)",
       description:
@@ -1618,18 +1677,6 @@ export const flashcardsPrinter: BlockPrinter = {
       label: "Landscape cut sheet — all fronts then all backs",
       description:
         "4 cards per page, landscape. All front pages first, then all back pages — cut all sheets together for a matching deck",
-    },
-    {
-      id: "portrait-6up-duplex",
-      label: "Portrait cut sheet — 6 per page, duplex (double-sided)",
-      description:
-        "6 cards per page (2 columns × 3 rows), portrait. Split down the middle and into thirds. Fronts and backs on alternating pages — backs are mirrored so they align perfectly when duplex-printed (flip on long edge) and cut into 6",
-    },
-    {
-      id: "portrait-6up-stacked",
-      label: "Portrait cut sheet — 6 per page, all fronts then all backs",
-      description:
-        "6 cards per page (2 columns × 3 rows), portrait. All front pages first, then all back pages — cut all sheets together for a matching deck",
     },
     {
       id: "avery-5388",
@@ -1668,6 +1715,19 @@ export const flashcardsPrinter: BlockPrinter = {
 
   settings: [
     {
+      type: "range" as const,
+      id: "cardRange",
+      label: "Cards to print",
+      description: "Leave blank to print the whole deck",
+      fromId: "fromCard",
+      toId: "toCard",
+      defaultFrom: 0,
+      defaultTo: 0,
+      min: 1,
+      fromPlaceholder: "1",
+      toPlaceholder: "end",
+    },
+    {
       type: "boolean" as const,
       id: "showSideLabel",
       label: "Show side label",
@@ -1701,7 +1761,7 @@ export const flashcardsPrinter: BlockPrinter = {
       label: "Show cut tick marks",
       description:
         "Small marks at each cut intersection — where to make each cut",
-      defaultValue: true,
+      defaultValue: false,
       appliesTo: [
         "landscape-duplex",
         "landscape-stacked",
@@ -1757,14 +1817,14 @@ export const flashcardsPrinter: BlockPrinter = {
 
   print(
     data: unknown,
-    variantId: string = "landscape-duplex",
+    variantId: string = "portrait-6up-duplex",
     rawSettings?: PrintSettings,
   ) {
-    const cards = extractCards(data);
+    const allCards = extractCards(data);
     const title = deriveTitle(data);
     const s = resolveSettings(rawSettings);
 
-    if (cards.length === 0) {
+    if (allCards.length === 0) {
       openPrintWindow(
         buildPrintDocument(
           "<p>No flashcard data available to print.</p>",
@@ -1776,31 +1836,51 @@ export const flashcardsPrinter: BlockPrinter = {
       return;
     }
 
+    // Resolve the "cards to print" range. 0 / missing / out-of-bounds all
+    // fall back to sensible ends. Any invalid input still produces a valid deck.
+    const rawFrom =
+      typeof rawSettings?.fromCard === "number" ? rawSettings.fromCard : 0;
+    const rawTo =
+      typeof rawSettings?.toCard === "number" ? rawSettings.toCard : 0;
+    const rangeStart = rawFrom > 0 ? Math.min(rawFrom, allCards.length) : 1;
+    const rangeEnd =
+      rawTo > 0 ? Math.min(rawTo, allCards.length) : allCards.length;
+    const [fromIdx, toIdx] =
+      rangeStart <= rangeEnd ? [rangeStart, rangeEnd] : [rangeEnd, rangeStart]; // swap if user inverted them
+    const startIndex = fromIdx - 1; // 0-based offset of the first card
+    const cards = allCards.slice(startIndex, toIdx);
+
     // Landscape and Avery variants use fully custom documents (precise page geometry)
     if (variantId === "landscape-duplex") {
-      openLandscapeWindow(renderLandscape(cards, title, "duplex", s), title);
+      openLandscapeWindow(
+        renderLandscape(cards, title, "duplex", s, startIndex),
+        title,
+      );
       return;
     }
     if (variantId === "landscape-stacked") {
-      openLandscapeWindow(renderLandscape(cards, title, "stacked", s), title);
+      openLandscapeWindow(
+        renderLandscape(cards, title, "stacked", s, startIndex),
+        title,
+      );
       return;
     }
     if (variantId === "portrait-6up-duplex") {
       openPortrait6UpWindow(
-        renderPortrait6Up(cards, title, "duplex", s),
+        renderPortrait6Up(cards, title, "duplex", s, startIndex),
         title,
       );
       return;
     }
     if (variantId === "portrait-6up-stacked") {
       openPortrait6UpWindow(
-        renderPortrait6Up(cards, title, "stacked", s),
+        renderPortrait6Up(cards, title, "stacked", s, startIndex),
         title,
       );
       return;
     }
     if (variantId === "avery-5388") {
-      openAveryWindow(renderAvery5388(cards, title, s), title);
+      openAveryWindow(renderAvery5388(cards, title, s, startIndex), title);
       return;
     }
 
@@ -1809,24 +1889,24 @@ export const flashcardsPrinter: BlockPrinter = {
 
     switch (variantId as FlashcardsVariant) {
       case "cut-cards":
-        bodyHtml = renderCutCards(cards, title);
+        bodyHtml = renderCutCards(cards, title, startIndex);
         styles = CUT_CARD_STYLES;
         break;
       case "front-only":
-        bodyHtml = renderFrontOnly(cards, title);
+        bodyHtml = renderFrontOnly(cards, title, startIndex);
         styles = FRONT_ONLY_STYLES;
         break;
       case "back-only":
-        bodyHtml = renderBackOnly(cards, title);
+        bodyHtml = renderBackOnly(cards, title, startIndex);
         styles = BACK_ONLY_STYLES;
         break;
       case "study-sheet":
-        bodyHtml = renderStudySheet(cards, title);
+        bodyHtml = renderStudySheet(cards, title, startIndex);
         styles = STUDY_SHEET_STYLES;
         break;
       case "both-sides":
       default:
-        bodyHtml = renderBothSides(cards, title);
+        bodyHtml = renderBothSides(cards, title, startIndex);
         styles = BOTH_SIDES_STYLES;
         break;
     }

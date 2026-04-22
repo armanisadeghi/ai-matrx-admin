@@ -9,27 +9,52 @@
 // ─── Contract ────────────────────────────────────────────────────────────────
 
 export interface PrintVariant {
-    id: string;
-    label: string;
-    description?: string;
+  id: string;
+  label: string;
+  description?: string;
 }
 
 /**
  * A single user-configurable setting shown in the print dialog.
- * Currently supports boolean toggles. Extend discriminated union for
- * future types (select, number, etc.) without breaking existing printers.
+ * Extend the discriminated union for new control types (select, etc.)
+ * without breaking existing printers.
  */
 export type PrintSetting =
-    | {
-          type: "boolean";
-          id: string;
-          label: string;
-          description?: string;
-          /** Default value shown when the dialog first opens */
-          defaultValue: boolean;
-          /** Which variant IDs this setting applies to. Omit = applies to all. */
-          appliesTo?: string[];
-      };
+  | {
+      type: "boolean";
+      id: string;
+      label: string;
+      description?: string;
+      /** Default value shown when the dialog first opens */
+      defaultValue: boolean;
+      /** Which variant IDs this setting applies to. Omit = applies to all. */
+      appliesTo?: string[];
+    }
+  | {
+      /**
+       * A numeric "from → to" range control, rendered as two small number inputs.
+       * Writes two entries into the resolved PrintSettings map — one under fromId,
+       * one under toId. Printers interpret 0 (or missing) as "no bound" by convention.
+       */
+      type: "range";
+      /** Stable id used as React key — not written to the settings map */
+      id: string;
+      label: string;
+      description?: string;
+      /** Settings map key for the lower bound value */
+      fromId: string;
+      /** Settings map key for the upper bound value */
+      toId: string;
+      defaultFrom: number;
+      defaultTo: number;
+      /** Minimum accepted value for each input (inclusive). Default 0. */
+      min?: number;
+      /** Placeholder shown when the input is empty (0). Default "start" / "end". */
+      fromPlaceholder?: string;
+      toPlaceholder?: string;
+      /** Which variant IDs this setting applies to. Omit = applies to all. */
+      appliesTo?: string[];
+    };
 
 /** A resolved map of setting id → current value, passed to print(). */
 export type PrintSettings = Record<string, boolean | string | number>;
@@ -39,28 +64,32 @@ export type PrintSettings = Record<string, boolean | string | number>;
  * Host code only ever calls print(data, variantId, settings) — it never inspects internals.
  */
 export interface BlockPrinter {
-    /** Tooltip / aria-label for the print button in the block header */
-    label: string;
+  /** Tooltip / aria-label for the print button in the block header */
+  label: string;
 
-    /**
-     * Variants offered to the user before printing.
-     * Empty array = no options dialog shown; prints immediately with defaults.
-     */
-    variants: PrintVariant[];
+  /**
+   * Variants offered to the user before printing.
+   * Empty array = no options dialog shown; prints immediately with defaults.
+   */
+  variants: PrintVariant[];
 
-    /**
-     * Optional user-configurable settings shown below the variant picker.
-     * Omit entirely if the block has no configurable settings.
-     */
-    settings?: PrintSetting[];
+  /**
+   * Optional user-configurable settings shown below the variant picker.
+   * Omit entirely if the block has no configurable settings.
+   */
+  settings?: PrintSetting[];
 
-    /**
-     * Execute the print.
-     * data      — the block's structured data (serverData or parsed content)
-     * variantId — which variant was chosen (undefined = default / no variants)
-     * settings  — resolved setting values chosen by the user
-     */
-    print: (data: unknown, variantId?: string, settings?: PrintSettings) => void | Promise<void>;
+  /**
+   * Execute the print.
+   * data      — the block's structured data (serverData or parsed content)
+   * variantId — which variant was chosen (undefined = default / no variants)
+   * settings  — resolved setting values chosen by the user
+   */
+  print: (
+    data: unknown,
+    variantId?: string,
+    settings?: PrintSettings,
+  ) => void | Promise<void>;
 }
 
 // ─── Shared Utilities ─────────────────────────────────────────────────────────
@@ -137,23 +166,23 @@ const PRINT_STYLES = `
 `;
 
 function escapeHtml(str: string): string {
-    return str
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 /**
  * Wrap body HTML in a complete, styled print document.
  */
 export function buildPrintDocument(
-    bodyHtml: string,
-    title = 'AI Response',
-    extraStyles = '',
+  bodyHtml: string,
+  title = "AI Response",
+  extraStyles = "",
 ): string {
-    return `<!DOCTYPE html>
+  return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -180,36 +209,39 @@ ${bodyHtml}
  * Open a new browser window and write a complete HTML document into it.
  * Falls back to downloading an .html file if the popup is blocked.
  */
-export function openPrintWindow(htmlDocument: string, filename = 'print'): void {
-    const win = window.open('', '_blank', 'width=920,height=720,scrollbars=yes');
-    if (!win) {
-        // Popup blocked — fall back to file download
-        const blob = new Blob([htmlDocument], { type: 'text/html;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${filename.replace(/\s+/g, '-').toLowerCase()}.html`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        return;
-    }
-    win.document.open();
-    win.document.write(htmlDocument);
-    win.document.close();
+export function openPrintWindow(
+  htmlDocument: string,
+  filename = "print",
+): void {
+  const win = window.open("", "_blank", "width=920,height=720,scrollbars=yes");
+  if (!win) {
+    // Popup blocked — fall back to file download
+    const blob = new Blob([htmlDocument], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${filename.replace(/\s+/g, "-").toLowerCase()}.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    return;
+  }
+  win.document.open();
+  win.document.write(htmlDocument);
+  win.document.close();
 }
 
 /**
  * Shorthand: build the document and open it in one call.
  */
 export function printHtmlContent(
-    bodyHtml: string,
-    title = 'AI Response',
-    extraStyles = '',
+  bodyHtml: string,
+  title = "AI Response",
+  extraStyles = "",
 ): void {
-    const doc = buildPrintDocument(bodyHtml, title, extraStyles);
-    openPrintWindow(doc, title);
+  const doc = buildPrintDocument(bodyHtml, title, extraStyles);
+  openPrintWindow(doc, title);
 }
 
 export { escapeHtml };

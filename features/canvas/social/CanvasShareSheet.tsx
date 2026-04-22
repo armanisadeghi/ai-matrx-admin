@@ -47,6 +47,7 @@ import { useCanvasShare } from "@/hooks/canvas/useCanvasShare";
 import { useToast } from "@/components/ui/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { CanvasType, CanvasVisibility } from "@/types/canvas-social";
+import { ShareCoverImagePicker } from "./ShareCoverImagePicker";
 
 // ============================================================================
 // TYPES
@@ -75,6 +76,8 @@ function ShareFormContent({
   setDescription,
   tags,
   setTags,
+  thumbnailUrl,
+  setThumbnailUrl,
   visibility,
   setVisibility,
   allowRemixes,
@@ -98,6 +101,8 @@ function ShareFormContent({
   setDescription: (v: string) => void;
   tags: string;
   setTags: (v: string) => void;
+  thumbnailUrl: string | null;
+  setThumbnailUrl: (v: string | null) => void;
   visibility: CanvasVisibility;
   setVisibility: (v: CanvasVisibility) => void;
   allowRemixes: boolean;
@@ -116,6 +121,21 @@ function ShareFormContent({
   if (shareUrl) {
     return (
       <div className="space-y-5">
+        {/* Cover preview — shows what will appear in social share previews */}
+        {thumbnailUrl && (
+          <div className="space-y-2">
+            <Label>Social Preview</Label>
+            <div className="relative aspect-[1200/630] w-full overflow-hidden rounded-lg border border-border">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={thumbnailUrl}
+                alt="Social share cover"
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            </div>
+          </div>
+        )}
+
         {/* Share URL */}
         <div className="space-y-2">
           <Label>Share Link</Label>
@@ -217,7 +237,7 @@ function ShareFormContent({
       </TabsList>
 
       {/* Fixed-height tab body so the modal never resizes between tabs */}
-      <div className="h-[390px] relative mt-4">
+      <div className="h-[480px] relative mt-4">
         <TabsContent
           value="details"
           className="absolute inset-0 overflow-y-auto space-y-4 m-0 pr-1"
@@ -240,10 +260,16 @@ function ShareFormContent({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe what your canvas is about..."
-              rows={3}
+              rows={2}
               maxLength={500}
             />
           </div>
+
+          <ShareCoverImagePicker
+            value={thumbnailUrl}
+            onChange={setThumbnailUrl}
+            disabled={isSharing}
+          />
 
           <div className="space-y-2">
             <Label htmlFor="share-tags">Tags (comma separated)</Label>
@@ -404,6 +430,7 @@ function useShareLogic({
 }: CanvasShareSheetProps) {
   const [title, setTitle] = useState(defaultTitle ?? "");
   const [description, setDescription] = useState(defaultDescription ?? "");
+  const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
   const [visibility, setVisibility] = useState<CanvasVisibility>("public");
   const [allowRemixes, setAllowRemixes] = useState(true);
   const [requireAttribution, setRequireAttribution] = useState(true);
@@ -418,6 +445,7 @@ function useShareLogic({
     if (!open) {
       setTimeout(reset, 300);
       setCopied(false);
+      setThumbnailUrl(null);
     }
   }, [open, reset]);
 
@@ -454,6 +482,7 @@ function useShareLogic({
       title: title.trim(),
       description: description.trim() || undefined,
       canvas_type: canvasType,
+      thumbnail_url: thumbnailUrl,
       visibility,
       allow_remixes: allowRemixes,
       require_attribution: requireAttribution,
@@ -498,6 +527,8 @@ function useShareLogic({
     setTitle,
     description,
     setDescription,
+    thumbnailUrl,
+    setThumbnailUrl,
     visibility,
     setVisibility,
     allowRemixes,

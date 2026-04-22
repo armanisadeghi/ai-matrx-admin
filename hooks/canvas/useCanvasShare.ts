@@ -49,6 +49,7 @@ export function useCanvasShare() {
         description: request.description,
         canvas_type: request.canvas_type,
         canvas_data: request.canvas_data,
+        thumbnail_url: request.thumbnail_url ?? null,
         visibility: request.visibility || "public",
         allow_remixes: request.allow_remixes !== false,
         require_attribution: request.require_attribution !== false,
