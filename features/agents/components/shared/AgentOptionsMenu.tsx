@@ -91,6 +91,7 @@ const THIS_AGENT_ITEMS: MenuItem[] = [
 
 // Actions that produce something new from this agent
 const AGENT_MANAGEMENT_ITEMS: MenuItem[] = [
+  { label: "Create Shortcut", icon: Link2 },
   { label: "Duplicate", icon: Copy },
   { label: "Convert to Template", icon: Shield },
   { label: "Create App", icon: AppWindow },
@@ -128,7 +129,6 @@ const NEW_TAB_ITEMS: {
 
 const ADMIN_ITEMS: MenuItem[] = [
   { label: "Convert/Update System Agent", icon: RefreshCw },
-  { label: "Create/Update Shortcut", icon: Link2 },
   { label: "Find Usages (Admin)", icon: Search },
 ];
 
@@ -201,7 +201,7 @@ export function AgentOptionsMenu({
     } else if (label === "Convert/Update System Agent") {
       dispatch(openAgentConvertSystemWindow({ agentId }));
       setOpen(false);
-    } else if (label === "Create/Update Shortcut") {
+    } else if (label === "Create Shortcut") {
       dispatch(openAgentAdminShortcutWindow({ agentId }));
       setOpen(false);
     } else if (label === "Find Usages (Admin)") {
@@ -264,10 +264,7 @@ export function AgentOptionsMenu({
         )}
         <DrawerContent className="max-h-[85dvh]">
           <DrawerTitle className="sr-only">Agent Options</DrawerTitle>
-          <MobileMenuContent
-            onClose={() => setOpen(false)}
-            agentId={agentId}
-          />
+          <MobileMenuContent onClose={() => setOpen(false)} agentId={agentId} />
         </DrawerContent>
       </Drawer>
     );
@@ -446,7 +443,7 @@ function MobileMenuContent({
     } else if (label === "Convert/Update System Agent") {
       dispatch(openAgentConvertSystemWindow({ agentId }));
       onClose();
-    } else if (label === "Create/Update Shortcut") {
+    } else if (label === "Create Shortcut") {
       dispatch(openAgentAdminShortcutWindow({ agentId }));
       onClose();
     } else if (label === "Find Usages (Admin)") {

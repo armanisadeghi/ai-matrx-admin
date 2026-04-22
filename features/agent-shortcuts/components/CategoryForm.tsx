@@ -35,12 +35,9 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import IconInputWithValidation from "@/components/official/icons/IconInputWithValidation.dynamic";
 import { useToast } from "@/components/ui/use-toast";
 import { CategoryColorPicker } from "./CategoryColorPicker";
+import { ShortcutContextsPicker } from "./ShortcutContextsPicker";
 import { useAgentShortcutCrud } from "../hooks/useAgentShortcutCrud";
 import { PLACEMENT_TYPES, getPlacementTypeMeta } from "../constants";
-import {
-  formatShortcutContextsForInput,
-  parseShortcutContextsInput,
-} from "../utils/enabled-contexts";
 import {
   isValidShortcutContext,
   type ShortcutContext,
@@ -327,29 +324,16 @@ export function CategoryForm({
       </div>
 
       <div>
-        <Label
-          htmlFor="category-enabled-features"
-          className="text-xs font-medium"
-        >
-          Enabled features
-        </Label>
-        <Input
-          id="category-enabled-features"
-          value={formatShortcutContextsForInput(formData.enabledFeatures)}
-          onChange={(e) =>
-            handleChange(
-              "enabledFeatures",
-              parseShortcutContextsInput(e.target.value),
-            )
-          }
-          placeholder="e.g. code-editor"
-          disabled={saving}
-          className="h-9 text-[16px]"
-        />
-        <p className="text-xs text-muted-foreground mt-1">
-          Comma-separated. Empty means this category applies everywhere. Used
-          with context menu filtering on the host.
+        <Label className="text-xs font-medium">Enabled features</Label>
+        <p className="text-xs text-muted-foreground mb-1.5">
+          Pick the surfaces this category applies to. Leave empty to apply
+          everywhere.
         </p>
+        <ShortcutContextsPicker
+          value={formData.enabledFeatures}
+          onChange={(value) => handleChange("enabledFeatures", value)}
+          disabled={saving}
+        />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">

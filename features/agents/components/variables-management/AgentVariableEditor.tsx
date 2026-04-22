@@ -406,11 +406,11 @@ export function AgentVariableEditor({
         </div>
       )}
 
-      {/* ── Default Value — rendered as the actual component ─────────────── */}
+      {/* ── Default Value ─────────────────────────────────────────────── */}
       <div className="space-y-1.5 p-3 bg-muted/30 rounded-lg border border-border">
         <Label className="text-sm font-medium">Default Value</Label>
         <p className="text-xs text-muted-foreground">
-          Use the component below to set the default.
+          Pre-fills this variable at run time. Leave blank for no default.
         </p>
         {readonly ? (
           <p className="text-sm text-foreground">
@@ -418,6 +418,15 @@ export function AgentVariableEditor({
               <span className="text-muted-foreground italic">None</span>
             )}
           </p>
+        ) : componentType === "textarea" ? (
+          <Textarea
+            autoGrow
+            value={defaultValueStr}
+            onChange={(e) => handleDefaultValueChange(e.target.value)}
+            placeholder="Leave empty or type a default…"
+            minHeight={48}
+            maxHeight={160}
+          />
         ) : (
           <VariableInputComponent
             value={defaultValueStr}
@@ -425,6 +434,7 @@ export function AgentVariableEditor({
             variableName={variableName || "variable"}
             customComponent={previewCc}
             hideLabel
+            compact
           />
         )}
       </div>

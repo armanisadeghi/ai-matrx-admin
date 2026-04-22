@@ -10,7 +10,7 @@
  *    const { conversationId, launchShortcut, close } = useAgentLauncher(agentId, {
  *      surfaceKey: "agent-builder",
  *      sourceFeature: "agent-builder",
- *      apiEndpointMode: "manual",
+ *      apiEndpointMode: "agent",
  *    });
  *    ```
  *
@@ -161,7 +161,9 @@ export function useAgentLauncher(
         runtime,
         // Forward legacy flat fields if any caller still passes them — the
         // launch thunk's normalizer collapses them into config/runtime.
-        ...(opts?.displayMode !== undefined && { displayMode: opts.displayMode }),
+        ...(opts?.displayMode !== undefined && {
+          displayMode: opts.displayMode,
+        }),
         ...(opts?.autoRun !== undefined && { autoRun: opts.autoRun }),
         ...(opts?.allowChat !== undefined && { allowChat: opts.allowChat }),
         ...(opts?.showVariablePanel !== undefined && {

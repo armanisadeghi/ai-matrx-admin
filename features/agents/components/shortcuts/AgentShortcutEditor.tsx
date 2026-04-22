@@ -144,71 +144,58 @@ export function AgentShortcutEditor({
   };
 
   // ── Create-mode initial values — pin the shortcut to this agent ────────
+  //
+  // We default `useLatest` to FALSE (pin to current version). The
+  // AgentVersionPicker auto-resolves the live agent's current version id
+  // once it loads history, so by the time the user hits save the record
+  // points at a concrete version and can't be silently broken by an agent
+  // update. A user who wants floating behavior can flip the switch on
+  // in the form.
   const initialValues: Partial<ShortcutFormData> | undefined = isCreate
-    ? { agentId, useLatest: true }
+    ? { agentId, useLatest: false, agentVersionId: null }
     : undefined;
 
   // ── Loading + error states ─────────────────────────────────────────────
   if (!isCreate && isLoading && !loadedShortcut) {
     return (
-      <EditorShell agentId={agentId} heading={agentName} subHeading="Loading…">
-        <Card className="mx-auto mt-6 w-full max-w-md">
-          <CardContent className="p-6 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Loading shortcut…
-          </CardContent>
-        </Card>
-      </EditorShell>
+      <Card className="mx-auto mt-12 w-full max-w-md">
+        <CardContent className="p-6 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Loading shortcut…
+        </CardContent>
+      </Card>
     );
   }
 
   if (!isCreate && !loadedShortcut) {
     return (
-      <EditorShell
-        agentId={agentId}
-        heading={agentName}
-        subHeading="Shortcut not found"
-      >
-        <Card className="mx-auto mt-6 w-full max-w-md border-destructive/30">
-          <CardContent className="p-6 flex flex-col items-center text-center space-y-3">
-            <div className="p-3 bg-destructive/10 rounded-full">
-              <AlertCircle className="h-6 w-6 text-destructive" />
-            </div>
-            <div>
-              <h2 className="text-base font-semibold text-foreground mb-1">
-                Shortcut not found
-              </h2>
-              <p className="text-xs text-muted-foreground">
-                This shortcut doesn&apos;t exist, or isn&apos;t visible to you.
-                {fetchError ? ` (${fetchError})` : null}
-              </p>
-            </div>
-            <Link href={`/agents/${agentId}/shortcuts`}>
-              <Button size="sm" variant="outline">
-                <ArrowLeft className="h-4 w-4 mr-1.5" />
-                Back to shortcuts
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-      </EditorShell>
+      <Card className="mx-auto mt-12 w-full max-w-md border-destructive/30">
+        <CardContent className="p-6 flex flex-col items-center text-center space-y-3">
+          <div className="p-3 bg-destructive/10 rounded-full">
+            <AlertCircle className="h-6 w-6 text-destructive" />
+          </div>
+          <div>
+            <h2 className="text-base font-semibold text-foreground mb-1">
+              Shortcut not found
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              This shortcut doesn&apos;t exist, or isn&apos;t visible to you.
+              {fetchError ? ` (${fetchError})` : null}
+            </p>
+          </div>
+          <Link href={`/agents/${agentId}/shortcuts`}>
+            <Button size="sm" variant="outline">
+              <ArrowLeft className="h-4 w-4 mr-1.5" />
+              Back to shortcuts
+            </Button>
+          </Link>
+        </CardContent>
+      </Card>
     );
   }
 
-  const heading = isCreate
-    ? `New shortcut for ${agentName}`
-    : loadedShortcut?.label || "Edit shortcut";
-  const subHeading = isCreate
-    ? `Creating under ${scope} scope`
-    : `Editing ${scope} shortcut`;
-
   return (
-    <EditorShell
-      agentId={agentId}
-      heading={heading}
-      subHeading={subHeading}
-      isPending={isPending}
-    >
+    <div className="h-full overflow-y-auto pt-12">
       <ShortcutForm
         variant="inline"
         scope={scope}
@@ -219,52 +206,6 @@ export function AgentShortcutEditor({
         categories={categories}
         initialValues={initialValues}
       />
-    </EditorShell>
-  );
-}
-
-// ─── Local shell wrapper ───────────────────────────────────────────────────
-
-function EditorShell({
-  agentId,
-  heading,
-  subHeading,
-  isPending,
-  children,
-}: {
-  agentId: string;
-  heading: string;
-  subHeading?: string;
-  isPending?: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="flex flex-col h-full min-h-0 overflow-hidden">
-      <div className="shrink-0 flex items-center gap-2 px-4 sm:px-6 h-11 border-b border-border bg-card">
-        <Link
-          href={`/agents/${agentId}/shortcuts`}
-          className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          {isPending ? (
-            <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
-          ) : (
-            <ArrowLeft className="h-4 w-4 mr-1.5" />
-          )}
-          Back to shortcuts
-        </Link>
-        <div className="w-px h-4 bg-border/60" />
-        <div className="min-w-0 flex-1 truncate">
-          <span className="text-sm font-medium text-foreground truncate">
-            {heading}
-          </span>
-          {subHeading && (
-            <span className="ml-2 text-xs text-muted-foreground truncate">
-              {subHeading}
-            </span>
-          )}
-        </div>
-      </div>
-      <div className="flex-1 min-h-0 overflow-hidden">{children}</div>
     </div>
   );
 }

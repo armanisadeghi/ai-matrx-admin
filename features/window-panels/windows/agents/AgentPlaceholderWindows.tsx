@@ -7,7 +7,6 @@ import {
   Database,
   Search,
   RefreshCw,
-  Link2,
   ShieldCheck,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -190,24 +189,9 @@ export function AgentConvertSystemWindow(props: PlaceholderProps) {
   );
 }
 
-export function AgentAdminShortcutWindow(props: PlaceholderProps) {
-  return (
-    <PlaceholderWindowShell
-      {...props}
-      slug="agent-admin-shortcut-window"
-      overlayId="agentAdminShortcutWindow"
-      title="Create / Update Shortcut"
-      icon={Link2}
-      description="Create a global shortcut that points to this agent, or update an existing one — available to every user or restricted to an org."
-      bullets={[
-        "Set trigger and display label",
-        "Scope: global, org, or user",
-        "Bind to a specific agent version",
-        "Optional category and icon",
-      ]}
-    />
-  );
-}
+// AgentAdminShortcutWindow used to be a coming-soon placeholder here.
+// It now lives in `AgentShortcutQuickCreateWindow.tsx` with a real
+// implementation, and is wired directly from OverlayController.
 
 export function AgentAdminFindUsagesWindow(props: PlaceholderProps) {
   return (

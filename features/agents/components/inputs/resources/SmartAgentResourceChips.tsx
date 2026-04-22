@@ -33,6 +33,13 @@ import type {
   ManagedResource,
   ResourceBlockType,
 } from "@/features/agents/types";
+import {
+  NoteHoverPreview,
+  TaskHoverPreview,
+  WebpageHoverPreview,
+  DataRefHoverPreview,
+} from "../../previews";
+import type { DataRef } from "@/features/agents/types/message-types";
 
 function getBlockTypeDisplay(blockType: ResourceBlockType) {
   const map: Record<
@@ -156,7 +163,7 @@ function ResourceChip({ resource, onRemove }: ResourceChipProps) {
     resource.status === "pending" || resource.status === "resolving";
   const isError = resource.status === "error";
 
-  return (
+  const chip = (
     <motion.div
       initial={{ opacity: 0, scale: 0.85 }}
       animate={{ opacity: 1, scale: 1 }}
@@ -184,6 +191,78 @@ function ResourceChip({ resource, onRemove }: ResourceChipProps) {
       </button>
     </motion.div>
   );
+
+  // Don't show hover previews while the resource is still resolving/erroring —
+  // the source data may not be in its final shape yet.
+  if (isPending || isError) return chip;
+
+  return wrapWithPreview(resource, chip);
+}
+
+/**
+ * Picks the appropriate hover preview wrapper for a fully-resolved resource.
+ * For unsupported block types the chip is returned as-is.
+ */
+function wrapWithPreview(
+  resource: ManagedResource,
+  chip: React.ReactNode,
+): React.ReactNode {
+  const src = resource.source as Record<string, unknown> | null;
+
+  switch (resource.blockType) {
+    case "input_notes": {
+      const ids = src?.note_ids;
+      const id =
+        Array.isArray(ids) && typeof ids[0] === "string" ? ids[0] : null;
+      if (!id) return chip;
+      return (
+        <NoteHoverPreview noteId={id} side="top" align="start">
+          {chip}
+        </NoteHoverPreview>
+      );
+    }
+    case "input_task": {
+      const ids = src?.task_ids;
+      const id =
+        Array.isArray(ids) && typeof ids[0] === "string" ? ids[0] : null;
+      if (!id) return chip;
+      return (
+        <TaskHoverPreview taskId={id} side="top" align="start">
+          {chip}
+        </TaskHoverPreview>
+      );
+    }
+    case "input_webpage": {
+      const urls = src?.urls;
+      const url =
+        Array.isArray(urls) && typeof urls[0] === "string"
+          ? urls[0]
+          : typeof src?.url === "string"
+            ? (src.url as string)
+            : null;
+      if (!url) return chip;
+      const preview =
+        typeof resource.preview === "string" ? resource.preview : null;
+      return (
+        <WebpageHoverPreview url={url} snippet={preview} side="top" align="start">
+          {chip}
+        </WebpageHoverPreview>
+      );
+    }
+    case "input_data": {
+      const refs = src?.refs;
+      const ref =
+        Array.isArray(refs) && refs.length > 0 ? (refs[0] as DataRef) : null;
+      if (!ref) return chip;
+      return (
+        <DataRefHoverPreview dataRef={ref} side="top" align="start">
+          {chip}
+        </DataRefHoverPreview>
+      );
+    }
+    default:
+      return chip;
+  }
 }
 
 interface SmartAgentResourceChipsProps {

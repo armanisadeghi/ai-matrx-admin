@@ -47,12 +47,15 @@ import { AlertCircle, Copy, Loader2, Save, Trash2, X } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import IconInputWithValidation from "@/components/official/icons/IconInputWithValidation.dynamic";
+import { AgentListDropdown } from "@/features/agents/components/agent-listings/AgentListDropdown";
+import { AgentVersionPicker } from "./AgentVersionPicker";
 import { ScopeMappingEditor } from "./ScopeMappingEditor";
 import type { AgentVariableDefinition } from "./ScopeMappingEditor";
 import { ContextSlotMappingEditor } from "./ContextSlotMappingEditor";
 import { DefaultVariableValuesEditor } from "./DefaultVariableValuesEditor";
 import { DefaultContextSlotValuesEditor } from "./DefaultContextSlotValuesEditor";
 import { ShortcutScopePicker } from "./ShortcutScopePicker";
+import { ShortcutContextsPicker } from "./ShortcutContextsPicker";
 import { useAgentShortcutCrud } from "../hooks/useAgentShortcutCrud";
 import { DEFAULT_AVAILABLE_SCOPES, RESULT_DISPLAY_OPTIONS } from "../constants";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -60,10 +63,6 @@ import { selectAgentById } from "@/features/agents/redux/agent-definition/select
 import { fetchAgentExecutionMinimal } from "@/features/agents/redux/agent-definition/thunks";
 import type { VariableDefinition } from "@/features/agents/types/agent-definition.types";
 import type { ContextSlot } from "@/features/agents/types/agent-api-types";
-import {
-  formatShortcutContextsForInput,
-  parseShortcutContextsInput,
-} from "../utils/enabled-contexts";
 import type {
   AgentScope,
   AgentShortcut,
@@ -520,27 +519,17 @@ export function ShortcutForm({
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="enabled-features" className="text-sm">
-          Enabled features
-        </Label>
-        <Input
-          id="enabled-features"
-          value={formatShortcutContextsForInput(formData.enabledFeatures)}
-          onChange={(e) =>
-            handleChange(
-              "enabledFeatures",
-              parseShortcutContextsInput(e.target.value),
-            )
-          }
-          placeholder="e.g. code-editor, note-editor"
-          className="h-9 text-[16px]"
+        <Label className="text-sm">Enabled features</Label>
+        <p className="text-xs text-muted-foreground">
+          Pick the surfaces this shortcut appears in. Leave empty to show
+          everywhere. When a host sets a feature filter, the shortcut must
+          include that tag (or stay empty) to appear.
+        </p>
+        <ShortcutContextsPicker
+          value={formData.enabledFeatures}
+          onChange={(value) => handleChange("enabledFeatures", value)}
           disabled={saving}
         />
-        <p className="text-xs text-muted-foreground">
-          Comma-separated feature tags. Leave empty so this shortcut appears in
-          every surface. When a host sets a feature filter, the shortcut must
-          list that tag (or stay empty) to appear.
-        </p>
       </div>
 
       <div className="flex items-center justify-between px-3 py-2 border border-border rounded-md bg-muted/30">
@@ -560,55 +549,30 @@ export function ShortcutForm({
 
       <Separator />
 
-      <div className="space-y-2">
-        <Label className="text-sm font-semibold">Agent</Label>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div className="space-y-1.5">
-            <Label htmlFor="agent-id" className="text-xs">
-              Agent ID
-            </Label>
-            <Input
-              id="agent-id"
-              value={formData.agentId ?? ""}
-              onChange={(e) => handleChange("agentId", e.target.value || null)}
-              placeholder="Agent UUID"
-              className="h-9 text-[16px] font-mono"
-              disabled={saving}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="agent-version-id" className="text-xs">
-              Agent Version ID (pin)
-            </Label>
-            <Input
-              id="agent-version-id"
-              value={formData.agentVersionId ?? ""}
-              onChange={(e) =>
-                handleChange("agentVersionId", e.target.value || null)
-              }
-              placeholder="agx_version UUID (optional)"
-              className="h-9 text-[16px] font-mono"
-              disabled={saving || formData.useLatest}
-            />
-          </div>
-        </div>
-        <div className="flex items-center justify-between px-3 py-2 border border-border rounded-md bg-muted/30">
-          <Label
-            htmlFor="use-latest"
-            className="text-sm font-normal cursor-pointer"
-          >
-            Always use the latest agent version
-          </Label>
-          <Switch
-            id="use-latest"
-            checked={formData.useLatest}
-            onCheckedChange={(checked) => {
-              handleChange("useLatest", checked);
-              if (checked) handleChange("agentVersionId", null);
+      <div className="space-y-3">
+        <div className="flex items-center justify-between gap-2">
+          <Label className="text-sm font-semibold">Agent &amp; Version</Label>
+          <AgentListDropdown
+            onSelect={(id) => {
+              if (id === formData.agentId) return;
+              handleChange("agentId", id);
+              // Drop any pinned version — the picker will auto-pin to the
+              // new agent's current version once its history loads.
+              handleChange("agentVersionId", null);
             }}
-            disabled={saving}
+            label={formData.agentId ? "Change agent…" : "Select agent…"}
           />
         </div>
+        <AgentVersionPicker
+          agentId={formData.agentId}
+          agentVersionId={formData.agentVersionId}
+          useLatest={formData.useLatest}
+          onAgentVersionIdChange={(next) =>
+            handleChange("agentVersionId", next)
+          }
+          onUseLatestChange={(next) => handleChange("useLatest", next)}
+          disabled={saving}
+        />
       </div>
 
       <Separator />

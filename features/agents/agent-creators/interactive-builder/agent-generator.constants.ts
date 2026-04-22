@@ -24,7 +24,6 @@ export const AGENT_GENERATOR_CONFIG = {
 
   launchDefaults: {
     displayMode: "direct" as ResultDisplayMode,
-    apiEndpointMode: "manual" as ApiEndpointMode,
     autoRun: false,
     allowChat: false,
     showVariables: false,

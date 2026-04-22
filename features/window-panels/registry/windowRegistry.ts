@@ -693,8 +693,14 @@ const REGISTRY: WindowRegistryEntry[] = [
   {
     slug: "agent-admin-shortcut-window",
     overlayId: "agentAdminShortcutWindow",
-    label: "Create / Update Shortcut",
-    defaultData: { agentId: null },
+    label: "Create Shortcut",
+    // activeTab: which tab of the quick-create form the user last had open
+    //   ("essentials" | "variables" | "details" | "advanced" | "link").
+    //   agentId is required to make the window meaningful — it's the live
+    //   agent whose shortcut is being created or linked. Ephemeral because
+    //   this is a one-shot create action; the window should not reopen on
+    //   reload.
+    defaultData: { agentId: null, activeTab: "essentials" },
     ephemeral: true,
   },
   {

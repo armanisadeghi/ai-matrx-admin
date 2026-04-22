@@ -718,9 +718,7 @@ const AgentConvertSystemWindow = dynamic(
 
 const AgentAdminShortcutWindow = dynamic(
   () =>
-    import("@/features/window-panels/windows/agents/AgentPlaceholderWindows").then(
-      (m) => ({ default: m.AgentAdminShortcutWindow }),
-    ),
+    import("@/features/window-panels/windows/agents/AgentShortcutQuickCreateWindow"),
   { ssr: false },
 );
 
@@ -2399,9 +2397,7 @@ export const OverlayController: React.FC = () => {
         <AgentInterfaceVariationsWindow
           isOpen={true}
           onClose={() => close("agentInterfaceVariationsWindow")}
-          agentId={
-            agentInterfaceVariationsWindowData?.agentId as string | null
-          }
+          agentId={agentInterfaceVariationsWindowData?.agentId as string | null}
         />
       )}
 
@@ -2442,6 +2438,15 @@ export const OverlayController: React.FC = () => {
           isOpen={true}
           onClose={() => close("agentAdminShortcutWindow")}
           agentId={agentAdminShortcutWindowData?.agentId as string | null}
+          initialActiveTab={
+            agentAdminShortcutWindowData?.activeTab as
+              | "essentials"
+              | "variables"
+              | "details"
+              | "advanced"
+              | "link"
+              | undefined
+          }
         />
       )}
 

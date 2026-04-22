@@ -15,7 +15,13 @@
  * props.
  */
 
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useLayoutEffect,
+  useCallback,
+} from "react";
 import { Maximize2, Minimize2 } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { toast } from "sonner";
@@ -68,7 +74,6 @@ export function AgentTextarea({
 }: AgentTextareaProps) {
   const dispatch = useAppDispatch();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const wrapperRef = useRef<HTMLDivElement>(null);
 
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -170,43 +175,30 @@ export function AgentTextarea({
   );
 
   // ── Auto-resize ─────────────────────────────────────────────────────────────
-  useEffect(() => {
+  // Sync, pre-paint layout. No transitions, no wrapper animation, no timeouts —
+  // the textarea grows directly from its own scrollHeight. This is the key to
+  // stability: any attempt to animate height on each keystroke produces flicker
+  // as overlapping 300ms transitions stack on top of each other.
+  useLayoutEffect(() => {
     const el = textareaRef.current;
-    const wrapper = wrapperRef.current;
-    if (!el || !wrapper) return;
+    if (!el) return;
 
-    // Single-row: stays at one line, scrolls horizontally-ish via overflow
     if (singleRow) {
       el.style.height = "20px";
-      wrapper.style.height = "20px";
       return;
     }
 
     if (isExpanded) {
       const target = Math.max(Math.floor(window.innerHeight * 0.6) - 80, 200);
       el.style.height = `${target}px`;
-      wrapper.style.transition = "none";
-      wrapper.style.height = `${wrapper.offsetHeight}px`;
-      requestAnimationFrame(() => {
-        wrapper.style.transition = "height 300ms cubic-bezier(0.4, 0, 0.2, 1)";
-        wrapper.style.height = `${target}px`;
-      });
-    } else {
-      const minH = compact ? 20 : 40;
-      const startHeight = wrapper.offsetHeight;
-      el.style.height = "auto";
-      const natural = Math.max(minH, Math.min(el.scrollHeight, 200));
-      wrapper.style.transition = "none";
-      wrapper.style.height = `${startHeight}px`;
-      requestAnimationFrame(() => {
-        wrapper.style.transition = "height 300ms cubic-bezier(0.4, 0, 0.2, 1)";
-        wrapper.style.height = `${natural}px`;
-        setTimeout(() => {
-          el.style.height = `${natural}px`;
-        }, 300);
-      });
+      return;
     }
-  }, [charCount, isExpanded, singleRow]);
+
+    const minH = compact ? 20 : 40;
+    el.style.height = "auto"; // reset so scrollHeight reflects actual content
+    const natural = Math.max(minH, Math.min(el.scrollHeight, 200));
+    el.style.height = `${natural}px`;
+  }, [inputText, isExpanded, singleRow, compact]);
 
   // ── Auto-focus ──────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -219,7 +211,7 @@ export function AgentTextarea({
 
   if (singleRow) {
     return (
-      <div ref={wrapperRef} className="relative flex items-center min-w-0">
+      <div className="relative flex items-center min-w-0">
         <textarea
           ref={textareaRef}
           value={inputText}
@@ -236,7 +228,7 @@ export function AgentTextarea({
 
   return (
     <div className="px-2 pt-1.5 relative shrink-0">
-      <div ref={wrapperRef} className="relative">
+      <div className="relative">
         <textarea
           ref={textareaRef}
           value={inputText}

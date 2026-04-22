@@ -37,6 +37,7 @@ import {
   extractContentBlocks,
 } from "@/features/agents/redux/execution-system/messages/messages.selectors";
 import { UserActionBar } from "./message-actions/UserActionBar";
+import { BlockHoverPreview } from "../previews";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -431,22 +432,28 @@ function AttachmentChip({ block }: { block: NormalisedBlock }) {
   const [open, setOpen] = useState(false);
   const Icon = block.icon;
 
+  const chipButton = (
+    <button
+      onClick={() => setOpen(true)}
+      className={cn(
+        "inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-[10px] font-medium leading-none",
+        "cursor-pointer transition-colors hover:brightness-95 active:brightness-90",
+        block.chipBg,
+        block.chipBorder,
+        block.iconColor,
+      )}
+      title={block.title}
+    >
+      <Icon className="w-2.5 h-2.5 flex-shrink-0" />
+      <span className="max-w-[120px] truncate">{block.title}</span>
+    </button>
+  );
+
   return (
     <>
-      <button
-        onClick={() => setOpen(true)}
-        className={cn(
-          "inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-[10px] font-medium leading-none",
-          "cursor-pointer transition-colors hover:brightness-95 active:brightness-90",
-          block.chipBg,
-          block.chipBorder,
-          block.iconColor,
-        )}
-        title={block.title}
-      >
-        <Icon className="w-2.5 h-2.5 flex-shrink-0" />
-        <span className="max-w-[120px] truncate">{block.title}</span>
-      </button>
+      <BlockHoverPreview block={block.raw} side="top" align="start">
+        {chipButton}
+      </BlockHoverPreview>
 
       {open && <BlockModal block={block} onClose={() => setOpen(false)} />}
     </>
