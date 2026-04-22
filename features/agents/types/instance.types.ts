@@ -510,6 +510,13 @@ export interface InstanceUIState {
   preExecutionMessage: string | null;
 
   /**
+   * Seconds before the pre-execution gate auto-submits (falls through).
+   * 0 = wait indefinitely for the user. Any positive number starts a visible
+   * countdown in AgentGateBody that auto-advances once it reaches zero.
+   */
+  bypassGateSeconds: number;
+
+  /**
    * Controls which variable input UI style is rendered.
    * - "inline"  — compact rows above the textarea (default)
    * - "wizard"  — one variable at a time, fixed-height card with Back/Skip/Skip All

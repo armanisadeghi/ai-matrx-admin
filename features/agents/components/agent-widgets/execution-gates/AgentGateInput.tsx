@@ -1,10 +1,12 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { ArrowLeftFromLine, ArrowRight, ArrowUp, X } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import {
   selectPreExecutionMessage,
   selectInstanceAgentName,
+  selectBypassGateSeconds,
 } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { setPreExecutionSatisfied } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.slice";
 import { destroyInstanceIfAllowed } from "@/features/agents/redux/execution-system/conversations";
@@ -31,6 +33,9 @@ export function AgentGateBody({
   const agentName = useAppSelector(selectInstanceAgentName(conversationId));
   const preExecutionMessage = useAppSelector(
     selectPreExecutionMessage(conversationId),
+  );
+  const bypassGateSeconds = useAppSelector(
+    selectBypassGateSeconds(conversationId),
   );
 
   const closeGate = () => {
@@ -60,6 +65,43 @@ export function AgentGateBody({
     onClose();
   };
 
+  // ── Bypass countdown ────────────────────────────────────────────────────
+  // When bypassGateSeconds > 0, auto-advance after N seconds unless the user
+  // types into the input (interaction cancels the timer).
+  const [secondsLeft, setSecondsLeft] = useState<number | null>(
+    bypassGateSeconds > 0 ? bypassGateSeconds : null,
+  );
+  const autoAdvancedRef = useRef(false);
+
+  useEffect(() => {
+    if (bypassGateSeconds <= 0) return;
+    if (autoAdvancedRef.current) return;
+
+    const tick = window.setInterval(() => {
+      setSecondsLeft((prev) => {
+        if (prev === null) return prev;
+        if (prev <= 1) {
+          window.clearInterval(tick);
+          if (!autoAdvancedRef.current) {
+            autoAdvancedRef.current = true;
+            handleContinue();
+          }
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => window.clearInterval(tick);
+    // handleContinue closes over dispatch + args; stable within this mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bypassGateSeconds]);
+
+  const cancelCountdown = () => {
+    autoAdvancedRef.current = true;
+    setSecondsLeft(null);
+  };
+
   const handleCancel = () => {
     // Destroy the instance — nothing downstream was ever opened, so we just clean up
     dispatch(destroyInstanceIfAllowed(conversationId));
@@ -78,7 +120,11 @@ export function AgentGateBody({
     </Button>
   );
 
-  const title = preExecutionMessage || agentName || "Provide Details";
+  const baseTitle = preExecutionMessage || agentName || "Provide Details";
+  const title =
+    secondsLeft !== null && secondsLeft > 0
+      ? `${baseTitle} · auto-continue in ${secondsLeft}s`
+      : baseTitle;
 
   return (
     <WindowPanel
@@ -96,7 +142,11 @@ export function AgentGateBody({
       overlayId="agentGateWindow"
       onCollectData={() => ({ conversationId })}
     >
-      <div className="flex flex-col flex-1 min-h-0 justify-end">
+      <div
+        className="flex flex-col flex-1 min-h-0 justify-end"
+        onKeyDown={cancelCountdown}
+        onPointerDown={cancelCountdown}
+      >
         <SmartAgentInput
           conversationId={conversationId}
           placeholder="Additional instructions (optional)..."

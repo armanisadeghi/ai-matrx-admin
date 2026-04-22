@@ -75,14 +75,14 @@ function emptyFormData(
     color: "#64748b",
     sortOrder: 999,
     isActive: true,
-    enabledContexts: [],
+    enabledFeatures: [],
     metadata: {},
   };
 }
 
 function fromCategory(category: AgentShortcutCategory): CategoryFormData {
-  const raw = category.enabledContexts ?? [];
-  const enabledContexts: ShortcutContext[] = raw.filter(
+  const raw = category.enabledFeatures ?? [];
+  const enabledFeatures: ShortcutContext[] = raw.filter(
     (t): t is ShortcutContext => isValidShortcutContext(t),
   );
   return {
@@ -94,7 +94,7 @@ function fromCategory(category: AgentShortcutCategory): CategoryFormData {
     color: category.color ?? "#64748b",
     sortOrder: category.sortOrder,
     isActive: category.isActive,
-    enabledContexts,
+    enabledFeatures,
     metadata: category.metadata ?? {},
   };
 }
@@ -189,7 +189,7 @@ export function CategoryForm({
           color: formData.color,
           sortOrder: formData.sortOrder,
           isActive: formData.isActive,
-          enabledContexts: formData.enabledContexts,
+          enabledFeatures: formData.enabledFeatures,
           metadata: formData.metadata,
         });
         toast({
@@ -328,17 +328,17 @@ export function CategoryForm({
 
       <div>
         <Label
-          htmlFor="category-enabled-contexts"
+          htmlFor="category-enabled-features"
           className="text-xs font-medium"
         >
-          Enabled contexts
+          Enabled features
         </Label>
         <Input
-          id="category-enabled-contexts"
-          value={formatShortcutContextsForInput(formData.enabledContexts)}
+          id="category-enabled-features"
+          value={formatShortcutContextsForInput(formData.enabledFeatures)}
           onChange={(e) =>
             handleChange(
-              "enabledContexts",
+              "enabledFeatures",
               parseShortcutContextsInput(e.target.value),
             )
           }

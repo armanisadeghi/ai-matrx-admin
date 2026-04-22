@@ -99,7 +99,7 @@ export function LinkAgentToShortcutModal({
   );
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [enabledContextsInput, setEnabledContextsInput] = useState("");
+  const [enabledFeaturesInput, setEnabledFeaturesInput] = useState("");
 
   useEffect(() => {
     if (!isOpen) return;
@@ -112,7 +112,7 @@ export function LinkAgentToShortcutModal({
     setLabel(agent.name);
     setScopeMappings({});
     setAvailableScopes(DEFAULT_AVAILABLE_SCOPES);
-    setEnabledContextsInput("");
+    setEnabledFeaturesInput("");
     setError(null);
   }, [isOpen, agent, categories]);
 
@@ -153,9 +153,10 @@ export function LinkAgentToShortcutModal({
         agentId: agent.id,
         agentVersionId: useLatest ? null : (agent.currentVersionId ?? null),
         useLatest,
-        enabledContexts: parseShortcutContextsInput(enabledContextsInput),
+        enabledFeatures: parseShortcutContextsInput(enabledFeaturesInput),
         scopeMappings:
           Object.keys(scopeMappings).length > 0 ? scopeMappings : null,
+        contextMappings: null,
         // AgentExecutionConfig defaults — keep in sync with DEFAULT_AGENT_EXECUTION_CONFIG
         displayMode: "modal-full",
         showVariablePanel: false,
@@ -300,13 +301,13 @@ export function LinkAgentToShortcutModal({
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="link-enabled-contexts" className="text-sm">
-              Enabled contexts (optional)
+            <Label htmlFor="link-enabled-features" className="text-sm">
+              Enabled features (optional)
             </Label>
             <Input
-              id="link-enabled-contexts"
-              value={enabledContextsInput}
-              onChange={(e) => setEnabledContextsInput(e.target.value)}
+              id="link-enabled-features"
+              value={enabledFeaturesInput}
+              onChange={(e) => setEnabledFeaturesInput(e.target.value)}
               placeholder="e.g. code-editor, note-editor"
               className="h-9 text-[16px]"
               disabled={isProcessing}

@@ -287,8 +287,9 @@ export const buildAgentShortcutMenu = createAsyncThunk<
           agentVersionId: isVersion ? item.resolved_id : null,
           useLatest: item.use_latest,
 
-          enabledContexts: item.enabled_contexts as ShortcutContext[],
+          enabledFeatures: item.enabled_features as ShortcutContext[],
           scopeMappings: parseScopeMappings(item.scope_mappings),
+          contextMappings: parseScopeMappings(item.context_mappings),
 
           // AgentExecutionConfig bundle — read v2 columns with old-name fallback
           // and DEFAULT_AGENT_EXECUTION_CONFIG defaults via the menu-item helper.
@@ -399,8 +400,9 @@ export const fetchShortcutsForContext = createAsyncThunk<
         agentVersionId: isVersion ? row.resolved_id : null,
         useLatest: row.use_latest,
 
-        enabledContexts: row.enabled_contexts as ShortcutContext[],
+        enabledFeatures: row.enabled_features as ShortcutContext[],
         scopeMappings: parseScopeMappings(row.scope_mappings),
+        contextMappings: parseScopeMappings(row.context_mappings),
 
         ...menuItemToConfigFields(row),
 
@@ -717,8 +719,9 @@ export const syncUserShortcutToSlice = createAsyncThunk<
       agentId: item.agent_id,
       agentVersionId: item.agent_version_id,
       useLatest: item.use_latest,
-      enabledContexts: item.enabled_contexts as ShortcutContext[],
+      enabledFeatures: item.enabled_features as ShortcutContext[],
       scopeMappings: item.scope_mappings,
+      contextMappings: item.context_mappings,
       ...menuItemToConfigFields(item),
       isActive: item.is_active,
       userId: item.user_id,
@@ -748,8 +751,9 @@ interface ShortcutApiRow {
   agent_id: string | null;
   agent_version_id: string | null;
   use_latest: boolean;
-  enabled_contexts: unknown;
+  enabled_features: unknown;
   scope_mappings: unknown;
+  context_mappings: unknown;
   is_active: boolean;
   user_id: string | null;
   organization_id: string | null;
@@ -773,8 +777,9 @@ function shortcutRowToFrontend(row: ShortcutApiRow): AgentShortcut {
     agentId: row.agent_id,
     agentVersionId: row.agent_version_id,
     useLatest: row.use_latest ?? false,
-    enabledContexts: (row.enabled_contexts as ShortcutContext[]) ?? [],
+    enabledFeatures: (row.enabled_features as ShortcutContext[]) ?? [],
     scopeMappings: parseScopeMappings(row.scope_mappings),
+    contextMappings: parseScopeMappings(row.context_mappings),
     ...menuItemToConfigFields(row),
     isActive: row.is_active,
     userId: row.user_id,
@@ -801,10 +806,12 @@ function shortcutToApiBody(
   if (patch.agentVersionId !== undefined)
     out.agent_version_id = patch.agentVersionId;
   if (patch.useLatest !== undefined) out.use_latest = patch.useLatest;
-  if (patch.enabledContexts !== undefined)
-    out.enabled_contexts = patch.enabledContexts as unknown;
+  if (patch.enabledFeatures !== undefined)
+    out.enabled_features = patch.enabledFeatures as unknown;
   if (patch.scopeMappings !== undefined)
     out.scope_mappings = patch.scopeMappings as unknown;
+  if (patch.contextMappings !== undefined)
+    out.context_mappings = patch.contextMappings as unknown;
 
   // ── AgentExecutionConfig bundle (v2 column names) ──
   if (patch.displayMode !== undefined) out.display_mode = patch.displayMode;
@@ -1047,7 +1054,7 @@ export const fetchUnifiedMenu = createAsyncThunk<
           placement_type:
             group.category.placement_type ?? placement.placement_type,
           parent_category_id: group.category.parent_category_id,
-          enabled_contexts: group.category.enabled_contexts ?? null,
+          enabled_features: group.category.enabled_features ?? null,
           metadata: group.category.metadata ?? null,
           is_active: group.category.is_active ?? true,
           user_id: group.category.user_id ?? null,

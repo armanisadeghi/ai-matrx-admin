@@ -99,9 +99,9 @@ function dedupeByPrecedence<T extends { scopeLevel: Scope }>(
   return [...winners.values(), ...passthrough];
 }
 
-// Allowed-context set: `{general} ∪ addedContexts − excludedContexts`.
-// An item is visible iff its `enabled_contexts` intersects the set, OR the
-// item has no `enabled_contexts` declared (legacy data — treated as general).
+// Allowed-feature set: `{general} ∪ addedContexts − excludedContexts`.
+// An item is visible iff its `enabledFeatures` intersects the set, OR the
+// item has no `enabledFeatures` declared (legacy data — treated as general).
 function buildAllowedContexts(
   addedContexts: string[] | undefined,
   excludedContexts: string[] | undefined,
@@ -113,14 +113,14 @@ function buildAllowedContexts(
 }
 
 function filterByAllowedContexts<
-  T extends { enabledContexts?: string[] | null },
+  T extends { enabledFeatures?: string[] | null },
 >(items: T[], allowed: Set<string>): T[] {
   // Empty allow-set is a nonsense state — treat as "nothing visible".
   if (allowed.size === 0) return [];
   return items.filter((item) => {
-    const ec = item.enabledContexts;
+    const ec = item.enabledFeatures;
     if (!ec || ec.length === 0) {
-      // Legacy rows with no contexts declared — treat as general.
+      // Legacy rows with no features declared — treat as general.
       return allowed.has("general");
     }
     for (const c of ec) {
@@ -245,8 +245,8 @@ export function useUnifiedAgentContextMenu(
 
     const filteredCategories = filterByAllowedContexts(scopedCategories, allowedContexts);
     const filteredShortcuts = filterByAllowedContexts(scopedShortcuts, allowedContexts);
-    // Content blocks are static insertable text — they don't carry enabled_contexts
-    // today, so they always pass through. (If we ever add enabled_contexts to
+    // Content blocks are static insertable text — they don't carry enabled_features
+    // today, so they always pass through. (If we ever add enabled_features to
     // content_blocks, swap in filterByAllowedContexts.)
     const filteredBlocks = scopedBlocks;
 

@@ -32,8 +32,9 @@ function makeEmptyRecord(id: string): AgentShortcutRecord {
     agentVersionId: null,
     useLatest: false,
 
-    enabledContexts: [],
+    enabledFeatures: [],
     scopeMappings: null,
+    contextMappings: null,
 
     // AgentExecutionConfig bundle defaults — keep in sync with
     // DEFAULT_AGENT_EXECUTION_CONFIG in features/agents/types/agent-execution-config.types.ts
@@ -222,16 +223,16 @@ export const agentShortcutSlice = createSlice({
 
     // ── Dedicated actions for complex fields ──────────────────────────────────
 
-    setShortcutEnabledContexts(
+    setShortcutEnabledFeatures(
       state,
       action: PayloadAction<{
         id: string;
-        enabledContexts: AgentShortcut["enabledContexts"];
+        enabledFeatures: AgentShortcut["enabledFeatures"];
       }>,
     ) {
       const record = state.shortcuts[action.payload.id];
       if (!record) return;
-      applyFieldEdit(record, "enabledContexts", action.payload.enabledContexts);
+      applyFieldEdit(record, "enabledFeatures", action.payload.enabledFeatures);
     },
 
     setShortcutScopeMappings(
@@ -244,6 +245,18 @@ export const agentShortcutSlice = createSlice({
       const record = state.shortcuts[action.payload.id];
       if (!record) return;
       applyFieldEdit(record, "scopeMappings", action.payload.scopeMappings);
+    },
+
+    setShortcutContextMappings(
+      state,
+      action: PayloadAction<{
+        id: string;
+        contextMappings: AgentShortcut["contextMappings"];
+      }>,
+    ) {
+      const record = state.shortcuts[action.payload.id];
+      if (!record) return;
+      applyFieldEdit(record, "contextMappings", action.payload.contextMappings);
     },
 
     // ── Dirty / history management ────────────────────────────────────────────
@@ -393,8 +406,9 @@ export const {
   upsertShortcuts,
   mergePartialShortcut,
   setShortcutField,
-  setShortcutEnabledContexts,
+  setShortcutEnabledFeatures,
   setShortcutScopeMappings,
+  setShortcutContextMappings,
   resetShortcutField,
   resetAllShortcutFields,
   markShortcutSaved,

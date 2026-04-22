@@ -28,7 +28,7 @@ function makeEmptyRecord(id: string): AgentShortcutCategoryRecord {
     sortOrder: 0,
     placementType: "",
     parentCategoryId: null,
-    enabledContexts: null,
+    enabledFeatures: null,
     metadata: null,
     isActive: true,
     userId: null,

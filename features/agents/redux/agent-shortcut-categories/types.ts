@@ -10,7 +10,7 @@ export interface AgentShortcutCategoryDef {
   sortOrder: number;
   placementType: string;
   parentCategoryId: string | null;
-  enabledContexts: string[] | null;
+  enabledFeatures: string[] | null;
   metadata: Record<string, unknown> | null;
   isActive: boolean;
 
@@ -56,7 +56,7 @@ export interface CategoryApiRow {
   sort_order: number;
   placement_type: string;
   parent_category_id: string | null;
-  enabled_contexts: string[] | null;
+  enabled_features: string[] | null;
   metadata: Record<string, unknown> | null;
   is_active: boolean;
   user_id: string | null;

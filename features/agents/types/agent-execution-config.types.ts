@@ -23,24 +23,32 @@ import type { ResultDisplayMode } from "./instance.types";
 import type { VariablesPanelStyle } from "../components/inputs/variable-input-variations/variable-input-options";
 import type { ApplicationScope } from "../utils/scope-mapping";
 
-export interface AgentExecutionConfig {
-  // ── Presentation ───────────────────────────────────────────
+/**
+ * ============================================================================
+ * CATEGORY HELPERS — documentation-only groupings
+ * ============================================================================
+ * AgentExecutionConfig is deliberately flat for ergonomics (easy merging,
+ * easy form binding, easy DB column mapping). These three sub-interfaces
+ * exist only to document the semantic categories of the flat shape and to
+ * give form/selector code a type-safe way to pick a subset of fields.
+ * They are composed into AgentExecutionConfig below.
+ */
+
+/** How the agent APPEARS and WHAT THE USER CAN DO with it. */
+export interface AgentPresentationConfig {
   /** How the launched agent is presented. Default: "modal-full". */
   displayMode: ResultDisplayMode;
 
-  // ── Variable panel ─────────────────────────────────────────
   /** When true, show the variable panel so the user can edit resolved variable values. */
   showVariablePanel: boolean;
   /** UI style for the variable panel. App validates values; unknowns fall back to "inline". */
   variablesPanelStyle: VariablesPanelStyle;
 
-  // ── Execution flow ─────────────────────────────────────────
   /** When true, execute automatically (once the pre-gate resolves if any). */
   autoRun: boolean;
   /** When false, the run is single-shot — no follow-up chat. */
   allowChat: boolean;
 
-  // ── Transparency / privacy ─────────────────────────────────
   /** Reveal agent-definition messages to the user. Secret-sensitive. */
   showDefinitionMessages: boolean;
   /** When showDefinitionMessages is true, whether to also reveal interpolated content. */
@@ -50,15 +58,32 @@ export interface AgentExecutionConfig {
   /** Hide tool-call result blocks from output. */
   hideToolResults: boolean;
 
-  // ── Pre-execution gate ─────────────────────────────────────
   /** Show a pre-execution input gate before autoRun fires. */
   showPreExecutionGate: boolean;
   /** Custom message rendered inside the gate. */
   preExecutionMessage: string | null;
   /** Seconds before the gate auto-executes. 0 = wait for user indefinitely. */
   bypassGateSeconds: number;
+}
 
-  // ── Defaults / overrides applied before execution ──────────
+/** How the agent BINDS to the surrounding UI (scope/context key routing). */
+export interface AgentEnvironmentBindings {
+  /**
+   * Map from UI-scope keys to agent variable names.
+   * Example: `{ selection: "highlighted_code", content: "file_contents" }`
+   */
+  scopeMappings: Record<string, string> | null;
+  /**
+   * Map from UI-scope keys to agent context-slot keys.
+   * Parity with scopeMappings but for context slots. Takes precedence over
+   * contextOverrides and over ad-hoc context entries.
+   * Example: `{ file_path: "target_file", task_id: "current_task" }`
+   */
+  contextMappings: Record<string, string> | null;
+}
+
+/** Direct VALUE INJECTION regardless of UI context. */
+export interface AgentValueDefaults {
   /**
    * Designer-provided extra instructions appended to the user template.
    * NOT user-editable. NOT visible. The user never sees this text.
@@ -80,14 +105,12 @@ export interface AgentExecutionConfig {
    * Only the keys provided are sent (temperature, model_id, max_output_tokens, …).
    */
   llmOverrides: Partial<LLMParams> | null;
-
-  // ── Scope mapping ──────────────────────────────────────────
-  /**
-   * Map from UI-scope keys to agent variable names.
-   * Example: `{ selection: "highlighted_code", content: "file_contents" }`
-   */
-  scopeMappings: Record<string, string> | null;
 }
+
+export interface AgentExecutionConfig
+  extends AgentPresentationConfig,
+    AgentEnvironmentBindings,
+    AgentValueDefaults {}
 
 /**
  * Runtime — per-invocation data that is never persisted on a shortcut/app.
@@ -125,6 +148,7 @@ export const DEFAULT_AGENT_EXECUTION_CONFIG: AgentExecutionConfig = {
   contextOverrides: null,
   llmOverrides: null,
   scopeMappings: null,
+  contextMappings: null,
 };
 
 /**

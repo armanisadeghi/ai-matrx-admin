@@ -2,14 +2,14 @@
  * Scope Mapping Utility
  *
  * Maps UI-provided scope data (selected text, document content, context objects)
- * to agent variables and context entries using a shortcut's scopeMappings.
+ * to agent variables and context entries using a shortcut's scopeMappings +
+ * contextMappings.
  *
- * Resolution rule:
- *   - If the target name matches a variable definition → variable
- *   - If the target name matches a context slot → context entry (slotMatched)
- *   - If neither → context entry (ad-hoc)
- *
- * Unmapped scope keys that aren't in scopeMappings fall through as ad-hoc context.
+ * Resolution order per UI-scope key (first match wins):
+ *   1. scopeMappings   — explicit UI key → agent variable/context target
+ *   2. contextMappings — explicit UI key → agent context-slot key
+ *   3. Ad-hoc         — key falls through as a context entry; if the key
+ *                       matches an agent context slot, slotMatched=true.
  */
 
 import type { VariableDefinition } from "@/features/agents/types/agent-definition.types";
@@ -55,6 +55,7 @@ export function mapScopeToInstance(
       }>
     | null
     | undefined,
+  contextMappings: Record<string, string> | null = null,
 ): ScopeMappingResult {
   const defs = variableDefinitions ?? [];
   const slots = contextSlots ?? [];
@@ -65,6 +66,7 @@ export function mapScopeToInstance(
   const contextEntries: InstanceContextEntry[] = [];
   const mappedScopeKeys = new Set<string>();
 
+  // ── Pass 1: scopeMappings (UI key → variable OR context key) ────────────
   if (scopeMappings) {
     for (const [sourceKey, targetName] of Object.entries(scopeMappings)) {
       const value = applicationScope[sourceKey];
@@ -87,10 +89,32 @@ export function mapScopeToInstance(
     }
   }
 
-  // Unmapped scope keys fall through as ad-hoc context
+  // ── Pass 2: contextMappings (UI key → agent context-slot key) ───────────
+  // Always resolves to a context entry, never a variable. If the target
+  // matches a declared slot, slotMatched=true and type/label come from it.
+  if (contextMappings) {
+    for (const [sourceKey, slotKey] of Object.entries(contextMappings)) {
+      if (mappedScopeKeys.has(sourceKey)) continue;
+      const value = applicationScope[sourceKey];
+      if (value === undefined) continue;
+
+      mappedScopeKeys.add(sourceKey);
+
+      const slot = slotMap.get(slotKey);
+      contextEntries.push({
+        key: slotKey,
+        value,
+        slotMatched: !!slot,
+        type: slot?.type ?? inferContextType(value),
+        label: slot?.label ?? slotKey,
+      });
+    }
+  }
+
+  // ── Pass 3: Unmapped scope keys fall through as ad-hoc context ──────────
   for (const [key, value] of Object.entries(applicationScope)) {
     if (mappedScopeKeys.has(key) || value === undefined) continue;
-    // Skip the well-known structural keys if they're empty
+    // Well-known `context` object gets flattened into entries
     if (key === "context" && typeof value === "object" && value !== null) {
       for (const [ctxKey, ctxVal] of Object.entries(
         value as Record<string, unknown>,

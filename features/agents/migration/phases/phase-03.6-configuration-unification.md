@@ -1,6 +1,6 @@
 # Phase 3.6 — Configuration Unification & Wiring Audit
 
-**Status:** analysis-phase
+**Status:** implementation-complete
 **Owner:** main agent
 **Prerequisites:** Phase 3.5 (migration applied, RPCs updated, types regenerated)
 **Unblocks:** end-to-end shortcut execution, smoke test of Quick Code Explanation
@@ -88,3 +88,7 @@ Map every type that carries agent-execution configuration: `AgentExecutionConfig
 | Date | Who | Change |
 |---|---|---|
 | 2026-04-21 | main agent | Phase created. Subagent tasks defined. Awaiting analysis output. |
+| 2026-04-22 | Agent A | Trace report delivered — 14/16 fields wired, 2 orphans (bypass_gate_seconds, enabled_contexts). |
+| 2026-04-22 | Agent B | Types + naming proposal delivered — flat AgentExecutionConfig with helper aliases; confirm rename + add. |
+| 2026-04-22 | main agent | DB migration applied (enabled_contexts → enabled_features, add context_mappings, rebuild view + 6 RPCs). Types regenerated. |
+| 2026-04-22 | main agent | Code-side Phase 3.6 complete. Added AgentPresentationConfig / AgentEnvironmentBindings / AgentValueDefaults helper aliases on AgentExecutionConfig. Added contextMappings to AgentExecutionConfig + AgentShortcut + RPC types + converters + slice/selectors/thunks + API routes + ShortcutForm JSON editor. Renamed enabledContexts → enabledFeatures across types, converters, slice, selectors, thunks, forms, list filter, category slice/converter/types. Added bypassGateSeconds to InstanceUIState + init payload + createInstanceFromShortcut + launchAgentExecution. Wired bypass countdown into AgentGateBody (auto-advance after N seconds, any keyboard/pointer interaction cancels). Wired contextMappings as 5th arg to mapScopeToInstance with precedence: scopeMappings → contextMappings → ad-hoc. |
