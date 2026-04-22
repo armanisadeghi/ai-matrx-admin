@@ -441,6 +441,9 @@ export const selectVariableInputStyle =
 export const selectIsBlockMode = (state: RootState): boolean =>
   state.instanceUIState.isBlockMode;
 
+export const selectIsSnapshot = (state: RootState): boolean =>
+  state.instanceUIState.isSnapshot;
+
 // ── Global registry selectors (keyed by display Mode) ────────────────────────
 
 export const selectInstanceIdsByDisplayMode = (

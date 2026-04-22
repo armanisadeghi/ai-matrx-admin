@@ -1,6 +1,17 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+/**
+ * AgentVariableEditorModal
+ *
+ * Edit-only modal wrapper around AgentVariableEditor. The variable must
+ * already exist in Redux when this opens — callers that want to "add" a
+ * variable should create it via the slice first, then open this modal.
+ *
+ * When `justCreated` is true the footer shows a Discard action (wired via
+ * `onDiscard`) to delete the freshly-created entity.
+ */
+
+import React from "react";
 import {
   Dialog,
   DialogContent,
@@ -17,11 +28,6 @@ import {
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/ButtonMine";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { sanitizeVariableName } from "@/features/agents/utils/variable-utils";
-import type {
-  VariableCustomComponent,
-  VariableDefinition,
-} from "@/features/agents/types/agent-definition.types";
 import { AgentVariableEditor } from "./AgentVariableEditor";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -29,17 +35,14 @@ interface AgentVariableEditorModalProps {
   agentId: string;
   isOpen: boolean;
   onClose: () => void;
-
-  // Edit mode: pass variableName → editor auto-saves via Redux
-  variableName?: string;
-
-  // Add mode: no variableName → controlled state, onAdd called on confirm
-  onAdd?: (variable: VariableDefinition) => void;
+  variableName: string;
   existingNames: string[];
-  mode: "add" | "edit";
-  // Optional pre-filled name when opening in "add" mode (e.g. converting an
-  // undeclared {{var}} reference into a real variable).
-  prefillName?: string;
+  /** True when the variable was just instant-created by the caller. */
+  justCreated?: boolean;
+  /** Called when the user clicks the Discard footer button. */
+  onDiscard?: () => void;
+  /** Called after a successful rename inside the editor. */
+  onRenamed?: (newName: string) => void;
 }
 
 export function AgentVariableEditorModal({
@@ -47,95 +50,40 @@ export function AgentVariableEditorModal({
   isOpen,
   onClose,
   variableName,
-  onAdd,
   existingNames,
-  mode,
-  prefillName,
+  justCreated,
+  onDiscard,
+  onRenamed,
 }: AgentVariableEditorModalProps) {
   const isMobile = useIsMobile();
 
-  // Add-mode controlled state
-  const [newName, setNewName] = useState("");
-  const [newDefaultValue, setNewDefaultValue] = useState("");
-  const [newCustomComponent, setNewCustomComponent] = useState<
-    VariableCustomComponent | undefined
-  >(undefined);
-  const [newRequired, setNewRequired] = useState(false);
-  const [newHelpText, setNewHelpText] = useState("");
-
-  useEffect(() => {
-    if (isOpen && mode === "add") {
-      setNewName(prefillName ?? "");
-      setNewDefaultValue("");
-      setNewCustomComponent(undefined);
-      setNewRequired(false);
-      setNewHelpText("");
-    }
-  }, [isOpen, mode, prefillName]);
-
-  const sanitizedName = newName.trim() ? sanitizeVariableName(newName) : "";
-  const isDuplicate =
-    mode === "add" && !!sanitizedName && existingNames.includes(sanitizedName);
-  const canAdd = mode === "add" && !!sanitizedName && !isDuplicate;
-
-  const handleAdd = () => {
-    if (!canAdd || !onAdd) return;
-    onAdd({
-      name: sanitizedName,
-      defaultValue: newDefaultValue,
-      customComponent: newCustomComponent,
-      required: newRequired || undefined,
-      helpText: newHelpText || undefined,
-    });
-    onClose();
-  };
-
-  const title = mode === "add" ? "Add Variable" : "Edit Variable";
+  const title = justCreated ? "New Variable" : "Edit Variable";
 
   const content = (
     <>
-      {mode === "edit" && variableName ? (
-        // Existing variable — AgentVariableEditor dispatches directly
-        <AgentVariableEditor
-          agentId={agentId}
-          variableName={variableName}
-          existingNames={existingNames}
-        />
-      ) : (
-        // New variable — controlled
-        <AgentVariableEditor
-          name={newName}
-          defaultValue={newDefaultValue}
-          customComponent={newCustomComponent}
-          required={newRequired}
-          helpText={newHelpText}
-          existingNames={existingNames}
-          onNameChange={setNewName}
-          onDefaultValueChange={setNewDefaultValue}
-          onCustomComponentChange={setNewCustomComponent}
-          onRequiredChange={setNewRequired}
-          onHelpTextChange={setNewHelpText}
-        />
-      )}
+      <AgentVariableEditor
+        agentId={agentId}
+        variableName={variableName}
+        existingNames={existingNames}
+        onRenamed={onRenamed}
+      />
 
-      {mode === "add" && (
-        <div className="flex justify-end gap-2 pt-4">
-          <Button variant="outline" onClick={onClose}>
-            Cancel
+      <div className="flex justify-end gap-2 pt-4">
+        {justCreated && onDiscard && (
+          <Button
+            variant="outline"
+            onClick={() => {
+              onDiscard();
+              onClose();
+            }}
+          >
+            Discard
           </Button>
-          <Button onClick={handleAdd} disabled={!canAdd}>
-            Add Variable
-          </Button>
-        </div>
-      )}
-
-      {mode === "edit" && (
-        <div className="flex justify-end pt-4">
-          <Button variant="outline" onClick={onClose}>
-            Done
-          </Button>
-        </div>
-      )}
+        )}
+        <Button variant={justCreated ? "default" : "outline"} onClick={onClose}>
+          Done
+        </Button>
+      </div>
     </>
   );
 

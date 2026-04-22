@@ -547,6 +547,10 @@ export interface AssembledAgentStartRequest {
   source_feature?: string;
   stream?: boolean;
   debug?: boolean;
+  /** Admin: render every assistant turn as a single block instead of a streaming thread. */
+  block_mode?: boolean;
+  /** Admin: capture a full server-side snapshot of the request + response for offline inspection. */
+  snapshot?: boolean;
 }
 
 /**
@@ -562,6 +566,10 @@ export interface AssembledConversationRequest {
   task_id?: string;
   stream?: boolean;
   debug?: boolean;
+  /** Admin: render every assistant turn as a single block instead of a streaming thread. */
+  block_mode?: boolean;
+  /** Admin: capture a full server-side snapshot of the request + response for offline inspection. */
+  snapshot?: boolean;
 }
 
 /**

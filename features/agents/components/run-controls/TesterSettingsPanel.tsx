@@ -184,7 +184,7 @@ export function TesterSettingsPanel({
 
       <div className="flex items-center justify-between gap-1">
         <Label
-          htmlFor={`${idPrefix}-variable-input-style`}
+          htmlFor={`${idPrefix}-variables-panel-style`}
           className={`text-[11px] leading-tight ${
             c.showVariablePanel
               ? "text-foreground cursor-pointer"
@@ -192,7 +192,7 @@ export function TesterSettingsPanel({
           }`}
           aria-disabled={!c.showVariablePanel}
         >
-          Variable Input Style
+          Variables Panel Style
         </Label>
         <Select
           value={c.variablesPanelStyle}
@@ -202,9 +202,9 @@ export function TesterSettingsPanel({
           disabled={!c.showVariablePanel}
         >
           <SelectTrigger
-            id={`${idPrefix}-variable-input-style`}
+            id={`${idPrefix}-variables-panel-style`}
             size="sm"
-            className="h-5 min-w-[6.5rem] max-w-[6.5rem] shrink-0 text-[11px] px-1.5"
+            className="h-5 min-w-[4.5rem] max-w-[4.5rem] shrink-0 text-[11px] px-1.5"
           >
             <SelectValue />
           </SelectTrigger>
@@ -381,7 +381,7 @@ export function TesterSettingsPanel({
           <SelectTrigger
             id={`${idPrefix}-api-endpoint-mode`}
             size="sm"
-            className="h-5 min-w-[6.5rem] max-w-[6.5rem] shrink-0 text-[11px] px-1.5"
+            className="h-5 min-w-[4.5rem] max-w-[4.5rem] shrink-0 text-[11px] px-1.5"
           >
             <SelectValue />
           </SelectTrigger>

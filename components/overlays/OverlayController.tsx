@@ -458,6 +458,12 @@ const QuickNoteSaveWindow = dynamic(
   { ssr: false },
 );
 
+const TaskQuickCreateWindow = dynamic(
+  () =>
+    import("@/features/window-panels/windows/tasks/TaskQuickCreateWindow"),
+  { ssr: false },
+);
+
 const QuickNoteSaveOverlay = dynamic(
   () =>
     import("@/features/notes/actions/quick-save/QuickNoteSaveOverlay").then(
@@ -805,6 +811,13 @@ export const OverlayController: React.FC = () => {
 
   const notesBetaWindowInstances = useAppSelector((s) =>
     selectOpenInstances(s, "notesBetaWindow"),
+  );
+
+  const isTaskQuickCreateWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "taskQuickCreateWindow"),
+  );
+  const taskQuickCreateWindowData = useAppSelector((s) =>
+    selectOverlayData(s, "taskQuickCreateWindow"),
   );
 
   const isQuickNoteSaveWindowOpen = useAppSelector((s) =>
@@ -1543,6 +1556,32 @@ export const OverlayController: React.FC = () => {
           defaultFolder={
             (quickNoteSaveWindowData?.defaultFolder as string | undefined) ??
             "Scratch"
+          }
+        />
+      )}
+
+      {isTaskQuickCreateWindowOpen && (
+        <TaskQuickCreateWindow
+          isOpen={true}
+          onClose={() => close("taskQuickCreateWindow")}
+          source={
+            (taskQuickCreateWindowData?.source as
+              | {
+                  entity_type: string;
+                  entity_id: string;
+                  label?: string;
+                  metadata?: Record<string, unknown>;
+                }
+              | undefined) ?? undefined
+          }
+          prePopulate={
+            (taskQuickCreateWindowData?.prePopulate as
+              | {
+                  title?: string;
+                  description?: string;
+                  priority?: "low" | "medium" | "high";
+                }
+              | undefined) ?? undefined
           }
         />
       )}

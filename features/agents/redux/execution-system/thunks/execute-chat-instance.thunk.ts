@@ -71,7 +71,11 @@ import {
   isWidgetActionName,
   type WidgetHandle,
 } from "@/features/agents/types/widget-handle.types";
-import { selectWidgetHandleIdFor } from "../instance-ui-state/instance-ui-state.selectors";
+import {
+  selectIsBlockMode,
+  selectIsSnapshot,
+  selectWidgetHandleIdFor,
+} from "../instance-ui-state/instance-ui-state.selectors";
 
 // =============================================================================
 // Turn Conversion Utility
@@ -326,6 +330,11 @@ export function assembleChatRequest(
       structuredSystemInstruction as unknown as string;
   if (sourceApp) request.source_app = sourceApp;
   if (sourceFeature) request.source_feature = sourceFeature;
+
+  // Admin-only global flags — read at execute time so the latest toggle
+  // value applies to every outbound chat-manual call.
+  if (selectIsBlockMode(state)) request.block_mode = true;
+  if (selectIsSnapshot(state)) request.snapshot = true;
 
   // Stable agx_agent.id for server logging / linkage (chat has no /agents/{id} URL).
   // Version snapshots use parentAgentId; live agents use their own id.

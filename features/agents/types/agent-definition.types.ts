@@ -44,6 +44,20 @@ export interface VariableCustomComponent {
   min?: number;
   max?: number;
   step?: number;
+  /**
+   * Preserved config fragments for other component types.
+   * Written when the user edits a field that isn't used by the current type
+   * (or when switching away from a type that had config set); read back when
+   * switching to a type that does use the field. Stripped at save time when empty.
+   */
+  stash?: {
+    options?: string[];
+    allowOther?: boolean;
+    toggleValues?: [string, string];
+    min?: number;
+    max?: number;
+    step?: number;
+  };
 }
 
 /**

@@ -23,6 +23,7 @@ import { noopAdapter } from "../persistence/noop";
 import type { PersistenceAdapter } from "../persistence/types";
 import type { SyncChannel } from "../channel";
 import { isRehydrateAction } from "./rehydrate";
+import { applyPrePaintDescriptors } from "./applyPrePaint";
 
 interface ActionWithMeta {
     type: string;
@@ -100,6 +101,10 @@ export function createSyncMiddleware(ctx: SyncMiddlewareContext): Middleware {
 
     // Track previous slice state refs so we only persist when the slice changed.
     const lastPersistedRef = new Map<string, unknown>();
+    // Same idea for runtime DOM application — avoid re-applying on every action
+    // when the slice state hasn't changed. Separate map because persist skips
+    // rehydrate actions (see below) but DOM apply does not.
+    const lastAppliedRef = new Map<string, unknown>();
 
     return (api: MiddlewareAPI) => (next: Dispatch) => (action: unknown) => {
         const result = next(action as Action);
@@ -155,6 +160,30 @@ export function createSyncMiddleware(ctx: SyncMiddlewareContext): Middleware {
                     version: policy.config.version,
                     identityKey: ctx.getIdentity().key,
                     body,
+                });
+            }
+        }
+
+        // --- Apply pre-paint descriptors at runtime ---
+        // Mirrors the one-shot inline SyncBootScript so DOM class/attribute
+        // state stays in lockstep with Redux for local toggles, inbound
+        // broadcasts, AND rehydrate (boot). Idempotent: skips if slice state
+        // reference didn't change.
+        for (const policy of ctx.policies) {
+            if (policy.prePaintDescriptors.length === 0) continue;
+            const sliceState = selectSliceState(api.getState(), policy.config.sliceName);
+            if (sliceState === undefined) continue;
+            if (lastAppliedRef.get(policy.config.sliceName) === sliceState) continue;
+            lastAppliedRef.set(policy.config.sliceName, sliceState);
+            try {
+                applyPrePaintDescriptors(
+                    policy.prePaintDescriptors,
+                    sliceState as Record<string, unknown>,
+                );
+            } catch (err) {
+                logger.error("apply.prePaint.failed", {
+                    sliceName: policy.config.sliceName,
+                    meta: { error: err instanceof Error ? err.message : String(err) },
                 });
             }
         }

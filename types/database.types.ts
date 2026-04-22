@@ -987,13 +987,14 @@ export type Database = {
           auto_run: boolean | null
           bypass_gate_seconds: number
           category_id: string
+          context_mappings: Json | null
           context_overrides: Json | null
           created_at: string
           default_user_input: string | null
           default_variables: Json | null
           description: string | null
           display_mode: string | null
-          enabled_contexts: Json | null
+          enabled_features: Json | null
           hide_reasoning: boolean
           hide_tool_results: boolean
           icon_name: string | null
@@ -1024,13 +1025,14 @@ export type Database = {
           auto_run?: boolean | null
           bypass_gate_seconds?: number
           category_id: string
+          context_mappings?: Json | null
           context_overrides?: Json | null
           created_at?: string
           default_user_input?: string | null
           default_variables?: Json | null
           description?: string | null
           display_mode?: string | null
-          enabled_contexts?: Json | null
+          enabled_features?: Json | null
           hide_reasoning?: boolean
           hide_tool_results?: boolean
           icon_name?: string | null
@@ -1061,13 +1063,14 @@ export type Database = {
           auto_run?: boolean | null
           bypass_gate_seconds?: number
           category_id?: string
+          context_mappings?: Json | null
           context_overrides?: Json | null
           created_at?: string
           default_user_input?: string | null
           default_variables?: Json | null
           description?: string | null
           display_mode?: string | null
-          enabled_contexts?: Json | null
+          enabled_features?: Json | null
           hide_reasoning?: boolean
           hide_tool_results?: boolean
           icon_name?: string | null
@@ -13052,7 +13055,7 @@ export type Database = {
         Row: {
           color: string | null
           description: string | null
-          enabled_contexts: Json | null
+          enabled_features: Json | null
           icon_name: string
           id: string
           is_active: boolean | null
@@ -13069,7 +13072,7 @@ export type Database = {
         Insert: {
           color?: string | null
           description?: string | null
-          enabled_contexts?: Json | null
+          enabled_features?: Json | null
           icon_name?: string
           id?: string
           is_active?: boolean | null
@@ -13086,7 +13089,7 @@ export type Database = {
         Update: {
           color?: string | null
           description?: string | null
-          enabled_contexts?: Json | null
+          enabled_features?: Json | null
           icon_name?: string
           id?: string
           is_active?: boolean | null
@@ -17192,13 +17195,14 @@ export type Database = {
           auto_run: boolean
           bypass_gate_seconds: number
           category_id: string
+          context_mappings: Json
           context_overrides: Json
           current_version: number
           default_user_input: string
           default_variables: Json
           description: string
           display_mode: string
-          enabled_contexts: Json
+          enabled_features: Json
           hide_reasoning: boolean
           hide_tool_results: boolean
           icon_name: string
@@ -17236,13 +17240,14 @@ export type Database = {
           auto_run: boolean
           bypass_gate_seconds: number
           category_id: string
+          context_mappings: Json
           context_overrides: Json
           current_version: number
           default_user_input: string
           default_variables: Json
           description: string
           display_mode: string
-          enabled_contexts: Json
+          enabled_features: Json
           hide_reasoning: boolean
           hide_tool_results: boolean
           icon_name: string
@@ -17278,13 +17283,14 @@ export type Database = {
           bypass_gate_seconds: number
           category_id: string
           category_label: string
+          context_mappings: Json
           context_overrides: Json
           created_at: string
           default_user_input: string
           default_variables: Json
           description: string
           display_mode: string
-          enabled_contexts: Json
+          enabled_features: Json
           hide_reasoning: boolean
           hide_tool_results: boolean
           icon_name: string

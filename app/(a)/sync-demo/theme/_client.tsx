@@ -28,6 +28,11 @@ export function ThemeDemoClient() {
     const mode = useAppSelector((s) => s.theme.mode);
     const [storageRaw, setStorageRaw] = useState<string | null>(null);
     const [events, setEvents] = useState<BroadcastEvent[]>([]);
+    // Mount gate + live observer for `<html>` class so the debug field stays
+    // hydration-safe (SSR renders "—") and reflects pre-paint + runtime
+    // applier changes without polling.
+    const [mounted, setMounted] = useState(false);
+    const [htmlHasDark, setHtmlHasDark] = useState(false);
 
     // Poll localStorage so the on-screen envelope reflects writes in real time.
     useEffect(() => {
@@ -35,6 +40,20 @@ export function ThemeDemoClient() {
         read();
         const id = window.setInterval(read, 250);
         return () => window.clearInterval(id);
+    }, []);
+
+    // Observe `<html>` class so the "contains `dark`?" debug row stays live
+    // whenever the runtime applier (or anything else) toggles it.
+    useEffect(() => {
+        setMounted(true);
+        const read = () => setHtmlHasDark(document.documentElement.classList.contains("dark"));
+        read();
+        const obs = new MutationObserver(read);
+        obs.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ["class"],
+        });
+        return () => obs.disconnect();
     }, []);
 
     // Tap into the BroadcastChannel directly — does NOT interfere with the
@@ -71,11 +90,7 @@ export function ThemeDemoClient() {
                     <dt className="text-muted-foreground">Redux mode:</dt>
                     <dd className="font-mono">{mode}</dd>
                     <dt className="text-muted-foreground">&lt;html&gt; class contains `dark`:</dt>
-                    <dd className="font-mono">
-                        {typeof document !== "undefined"
-                            ? String(document.documentElement.classList.contains("dark"))
-                            : "—"}
-                    </dd>
+                    <dd className="font-mono">{mounted ? String(htmlHasDark) : "—"}</dd>
                     <dt className="text-muted-foreground">localStorage matrx:theme:</dt>
                     <dd className="whitespace-pre-wrap break-all font-mono text-xs">
                         {storageRaw ?? "(null)"}

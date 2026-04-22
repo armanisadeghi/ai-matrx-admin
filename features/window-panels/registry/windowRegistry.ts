@@ -172,6 +172,21 @@ const REGISTRY: WindowRegistryEntry[] = [
     defaultData: { orgId: null, projectId: null, taskId: null, search: "" },
   },
 
+  // ── Quick Task Save (ephemeral — create + scope-tag + link anything) ─────
+  {
+    slug: "task-quick-create-window",
+    overlayId: "taskQuickCreateWindow",
+    label: "Create Task",
+    defaultData: {
+      entity_type: null,
+      entity_id: null,
+      label: "",
+      metadata: {},
+      prePopulate: { title: "", description: "", priority: null },
+    },
+    ephemeral: true,
+  },
+
   // ── Quick Files ───────────────────────────────────────────────────────────
   {
     slug: "quick-files-window",
