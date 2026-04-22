@@ -110,18 +110,58 @@ MCP server and REST endpoint for cross-project issue tracking. Agents submit bug
 
 ---
 
-## Prompt Apps System [LEGACY — being replaced]
+## Prompt Apps System [LEGACY]
 
-> **Under active migration to agent-apps.** See `features/agents/migration/phases/phase-08-agent-apps-public.md`. Do not add new features here; extend the agent-app equivalent.
+Being replaced by **agent-apps**. See `features/agents/migration/phases/phase-08-agent-apps-public.md` and `features/agent-apps/FEATURE.md`. Do not extend — build in agent-apps.
 
-- **Concept:** Transform prompts into public, shareable AI-powered mini-apps with custom UIs
-- **Execution modes:** Real-time streaming (authenticated via Redux + Socket.IO) and polling (public, no Redux)
-- **Component pipeline:** AI-generated JSX/TSX → Babel transform → `new Function()` with scoped imports
-- **Security:** Import allowlisting, variable validation, RLS (owner CRUD, public SELECT on published)
-- **Rate limiting:** Fingerprint + IP tracking, configurable per app, DB triggers enforce limits
-- **Public URL:** `/p/[slug]` — minimal bundle, no Redux, server-side metadata for SEO
-- **Key paths:** `features/prompt-apps/`, `app/(authenticated)/prompt-apps/`, `app/(public)/p/[slug]/`
-- **DB tables:** `prompt_apps`, `prompt_app_executions`, `prompt_app_errors`, `prompt_app_rate_limits`
+---
+
+## Feature Documentation
+
+Every Tier 1 / Tier 2 feature has a `FEATURE.md` inside its feature directory. These are the **single source of truth** for how a feature works today. CLAUDE.md is just the index.
+
+**Convention:**
+- Filename is `FEATURE.md` (agent-facing architecture notes). User-facing `README.md` files are separate and may coexist.
+- The template lives at `features/_FEATURE_TEMPLATE.md`.
+
+### Tier 1 — core features (read before modifying)
+
+| Feature | Doc |
+|---|---|
+| Agents system (umbrella) | `features/agents/FEATURE.md` + `features/agents/docs/` |
+| Agent shortcuts | `features/agent-shortcuts/FEATURE.md` |
+| Agent apps | `features/agent-apps/FEATURE.md` |
+| Agent connections | `features/agent-connections/FEATURE.md` |
+| Agent context + Brokers | `features/agent-context/FEATURE.md` |
+| Tool call visualization | `features/tool-call-visualization/FEATURE.md` |
+| Streaming system | `features/agents/docs/STREAMING_SYSTEM.md` |
+| Artifacts + Canvas | `features/artifacts/FEATURE.md` |
+| Chat + Conversation | `features/conversation/FEATURE.md` |
+| Notes | `features/notes/FEATURE.md` |
+| Permissions & Sharing | `features/sharing/FEATURE.md` |
+| Scope system | `features/scope-system/FEATURE.md` |
+| Code editor | `features/code-editor/FEATURE.md` |
+
+### Tier 2 — secondary features
+
+| Feature | Doc |
+|---|---|
+| API integrations (incl. MCP) | `features/api-integrations/FEATURE.md` |
+| Tasks + Projects | `features/tasks/FEATURE.md` |
+| Organizations + Invitations | `features/organizations/FEATURE.md` |
+| AI Models registry | `features/ai-models/FEATURE.md` |
+| Data ingestion (scraper, PDF, research, transcripts) | `features/scraper/FEATURE.md` |
+| Agent feedback API / MCP server | `app/api/mcp/FEATURE.md` |
+| Audio pipeline (TTS, audio, podcasts) | `features/audio/FEATURE.md` |
+
+### Non-negotiable: keep feature docs live
+
+After any substantive change to a feature:
+1. Update the matching `FEATURE.md` — status, flows that changed, new entry points, invariants broken/added.
+2. Append to its **Change Log** (date + one-line summary).
+3. If the change crosses features, update **every** doc affected.
+
+Stale docs cascade across parallel agents and corrupt the mental model of every future turn. Treat doc updates with the same weight as code changes in the same PR.
 
 ---
 

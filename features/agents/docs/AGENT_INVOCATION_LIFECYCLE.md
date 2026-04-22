@@ -1,0 +1,163 @@
+# AGENT_INVOCATION_LIFECYCLE.md
+
+**Status:** `active`
+**Tier:** 1 (sub-feature of `features/agents/`)
+**Last updated:** `2026-04-22`
+
+> Read [`features/agents/FEATURE.md`](../FEATURE.md) first. This doc is the endpoint routing contract — the rules for which URL, which payload, which mode. Canonical source in code: [`features/agents/types/conversation-invocation.types.ts`](../types/conversation-invocation.types.ts).
+
+---
+
+## The unified launch entry point
+
+Every surface — Chat, Runner, Shortcut, App, Builder — constructs a `ConversationInvocation` object and hands it to the single [`launchConversation`](../redux/execution-system/thunks/launch-conversation.thunk.ts) thunk. **No per-surface launch functions exist.** The thunk picks the endpoint from three inputs and dispatches accordingly:
+
+1. `routing.apiEndpointMode` (`"manual" | "agent"`)
+2. `origin.isEphemeral` (bool)
+3. Whether `identity.conversationId` is already present (first-turn vs subsequent)
+
+---
+
+## Endpoint matrix
+
+| Mode | Ephemeral | Turn | Endpoint | Body |
+|---|---|---|---|---|
+| `manual` (Builder) | false | 1 | `POST /prompts` | Full agent definition + invocation inputs |
+| `manual` (Builder) | false | 2+ | `POST /ai/conversations/{conversationId}` | Invocation inputs only (server owns state) |
+| `agent` (Runner/Chat/Shortcut/App) | false | 1 | `POST /ai/agents/{id}` | Invocation inputs only |
+| `agent` | false | 2+ | `POST /ai/conversations/{conversationId}` | Invocation inputs only |
+| `agent` | true | 1 | `POST /ai/agents/{id}` with `is_new: false, store: false`, no `conversationId` | Invocation inputs |
+| `agent` | true | 2+ | `POST /ai/chat` (NOT `/conversations/{id}` — DB row does not exist) | Full accumulated message history from Redux `messages/` slice |
+
+This routing table is the single contract the entire invocation pipeline enforces. Full canonical encoding: `features/agents/types/conversation-invocation.types.ts:314-331`.
+
+---
+
+## Body assembly (`assembleRequest`)
+
+`assembleRequest(state, instanceId)` reads across all 10 instance slices + `appContext` and builds a snake_case payload. Key mappings:
+
+| Source slice | Selector | → Payload field |
+|---|---|---|
+| `instanceUserInput` | direct read | `user_input` (string or content block array) |
+| `instanceResources` | `selectResourcePayloads` | merged into `user_input` as blocks |
+| `instanceVariableValues` | `selectResolvedVariables` | `variables` |
+| `instanceContext` | direct read | `context` |
+| `instanceModelOverrides` | diff against snapshot | `config_overrides` (deltas only) |
+| `instanceClientTools` | direct read | `client_tools` |
+| `appContext` | direct read | `scope` (org, workspace, project, task) |
+
+**Invariants:**
+- `assembleRequest` never reads `agentDefinition`. The agent ID on the instance is the only link back to the definition, and the server resolves it (except in Builder `manual` mode, where the full definition is on `invocation.builder.*`).
+- Payload is ALWAYS snake_case. Client is camelCase. Conversion happens once, at the boundary.
+
+---
+
+## The conceptual shift
+
+Once the first turn completes, **there is no longer an "agent" in play — there is an *agent conversation*.** The conversation is a live instance of the agent that evolves through messages and tool calls. You do not re-send instructions. You do not re-send history. You append to a running entity the server fully owns.
+
+- First request: "here is an agent, start a conversation with it."
+- Every subsequent request: "here is more input, advance the conversation."
+
+This is why the endpoint shape shifts after turn 1: from agent-identified (`/ai/agents/{id}`) to conversation-identified (`/ai/conversations/{conversationId}`).
+
+---
+
+## The ephemeral branch
+
+When `origin.isEphemeral: true`, the invocation is never persisted:
+
+- Turn 1 → `POST /ai/agents/{id}` with `is_new: false, store: false` and **no** `conversationId`.
+- Turn 2+ → `POST /ai/chat`. The client sends the **full accumulated message history** from the Redux `messages/` slice every turn. There is no DB row to target; the server is stateless for this branch.
+
+**Why this exists:** public chat, throwaway tests, anonymous surfaces — anywhere we don't want a DB write. It costs more bandwidth (full history per turn) but keeps the server stateless.
+
+**Do not** try to call `POST /ai/conversations/{conversationId}` on an ephemeral turn — the row doesn't exist and the call 404s.
+
+---
+
+## Builder vs. Runner payload difference (the critical distinction)
+
+Both surfaces dispatch `launchConversation`. Both eventually fire a fetch. The difference is what's in the body:
+
+**Builder** (`routing.apiEndpointMode: "manual"`):
+```
+POST /prompts
+{
+  // invocation.builder carries the full agent definition snapshot
+  definition: { system_prompt, model, settings, tools, variables, ... },
+  // plus standard inputs
+  variables, context, user_input, scope, config_overrides
+}
+```
+Server runs exactly these bytes. No cache lookup, no current-pointer resolution.
+
+**Runner / Chat / Shortcut / App** (`routing.apiEndpointMode: "agent"`):
+```
+POST /ai/agents/{id}
+{
+  variables, context, user_input, scope, config_overrides
+}
+```
+Server hydrates the definition from the agent ID (current pointer or pinned version per `engine.isVersion`).
+
+**Why the split exists:** the Builder engineer is editing. Their in-memory state may not match server cache. The Runner + consumer surfaces are invoking a saved, stable agent — caching is a feature, not a hazard.
+
+---
+
+## Key flows
+
+### Flow 1 — New Chat turn (most common)
+
+1. User types a message in Chat → dispatch `launchConversation` with `apiEndpointMode: "agent"`, `origin: "manual"`.
+2. No `identity.conversationId` → first-turn branch.
+3. Body assembled → `POST /ai/agents/{id}`.
+4. Server responds with conversation ID in an early `data` event.
+5. Client stores conversationId on the instance.
+6. Second user turn → same thunk → `identity.conversationId` present → `POST /ai/conversations/{conversationId}`.
+
+### Flow 2 — Builder test turn
+
+1. Engineer in Builder clicks run. Dispatch `launchConversation` with `apiEndpointMode: "manual"`, full definition snapshot on `invocation.builder.*`.
+2. Body includes inline definition.
+3. `POST /prompts`.
+4. Stream processed identically to agent mode.
+
+### Flow 3 — Ephemeral public chat
+
+1. Public surface dispatches with `origin.isEphemeral: true`, `apiEndpointMode: "agent"`.
+2. Turn 1 → `POST /ai/agents/{id}` with `store: false`. No DB row written.
+3. Response streams back. Client builds up `messages/` slice locally.
+4. Turn 2 → `POST /ai/chat` with full history. Not `/conversations/{id}` — there is none.
+
+---
+
+## Invariants & gotchas
+
+- **Never bypass `launchConversation`.** Every surface goes through it. Custom launch paths fragment the routing contract and break observability.
+- **The full definition is sent from the client ONLY in Builder (`manual`) mode.** Any other path sending the full definition is a bug.
+- **`is_new: false, store: false` is the ephemeral signature on turn 1.** Don't confuse with normal agent mode.
+- **Ephemeral turn 2+ MUST hit `/ai/chat`, not `/conversations/{id}`.** There is no conversation row to find.
+- **`assembleRequest` does not read `agentDefinition`.** If it starts to, we've broken the layer-3 isolation contract.
+- **Snake_case at the boundary, camelCase everywhere in TypeScript.** Do not leak snake_case into Redux state.
+
+---
+
+## Related
+
+- [`AGENT_BUILDER.md`](./AGENT_BUILDER.md) — the `manual` mode surface
+- [`AGENT_RUNNER.md`](./AGENT_RUNNER.md) — the `agent` mode surface with observability
+- [`AGENT_ORCHESTRATION.md`](./AGENT_ORCHESTRATION.md) — what happens inside a single turn
+- [`STREAMING_SYSTEM.md`](./STREAMING_SYSTEM.md) — what comes back over the wire
+- [`../conversation-invocation-reference.md`](../conversation-invocation-reference.md) — `ConversationInvocation` shape reference
+
+---
+
+## Change log
+
+- `2026-04-22` — claude: initial doc. Canonical endpoint matrix extracted from `agent-system-mental-model.md` §4 and `conversation-invocation.types.ts`.
+
+---
+
+> **Keep-docs-live:** changes to the endpoint matrix, `assembleRequest` body shape, ephemeral routing, or the Builder-vs-Runner payload contract must update this doc. This is the most-referenced contract in the system.
