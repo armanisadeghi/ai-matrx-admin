@@ -129,15 +129,76 @@ export const SCOPE_LEVELS = {
   SELECTION: "selection",
   CONTENT: "content",
   CONTEXT: "context",
+  TEXT_BEFORE: "text_before",
+  TEXT_AFTER: "text_after",
+  CURSOR_POSITION: "cursor_position",
+  FILE_PATH: "file_path",
+  FILE_NAME: "file_name",
+  LANGUAGE: "language",
 } as const;
 
 export type ScopeLevel = (typeof SCOPE_LEVELS)[keyof typeof SCOPE_LEVELS];
 
+/**
+ * Standard scope keys available to every shortcut. When a surface (code editor,
+ * notes, etc.) launches a shortcut it populates whichever of these keys it can;
+ * scope → variable / scope → context-slot mappings then route each populated
+ * value into the agent.
+ */
 export const DEFAULT_AVAILABLE_SCOPES: ScopeLevel[] = [
   SCOPE_LEVELS.SELECTION,
   SCOPE_LEVELS.CONTENT,
   SCOPE_LEVELS.CONTEXT,
+  SCOPE_LEVELS.TEXT_BEFORE,
+  SCOPE_LEVELS.TEXT_AFTER,
+  SCOPE_LEVELS.CURSOR_POSITION,
+  SCOPE_LEVELS.FILE_PATH,
+  SCOPE_LEVELS.FILE_NAME,
+  SCOPE_LEVELS.LANGUAGE,
 ];
+
+export const SCOPE_LEVEL_META: Record<
+  ScopeLevel,
+  { label: string; description: string }
+> = {
+  [SCOPE_LEVELS.SELECTION]: {
+    label: "Selection",
+    description: "The text the user has highlighted.",
+  },
+  [SCOPE_LEVELS.CONTENT]: {
+    label: "Content",
+    description: "The full content of the surrounding document / editor.",
+  },
+  [SCOPE_LEVELS.CONTEXT]: {
+    label: "Context",
+    description:
+      "Surface-provided context dict (flattened onto the instance as context entries).",
+  },
+  [SCOPE_LEVELS.TEXT_BEFORE]: {
+    label: "Text Before",
+    description: "Text before the cursor / selection in the surface.",
+  },
+  [SCOPE_LEVELS.TEXT_AFTER]: {
+    label: "Text After",
+    description: "Text after the cursor / selection in the surface.",
+  },
+  [SCOPE_LEVELS.CURSOR_POSITION]: {
+    label: "Cursor Position",
+    description: "Cursor location in the surface (line / column).",
+  },
+  [SCOPE_LEVELS.FILE_PATH]: {
+    label: "File Path",
+    description: "Absolute path of the active file.",
+  },
+  [SCOPE_LEVELS.FILE_NAME]: {
+    label: "File Name",
+    description: "Base filename of the active file.",
+  },
+  [SCOPE_LEVELS.LANGUAGE]: {
+    label: "Language",
+    description: "Language / mode of the active file (e.g. typescript, python).",
+  },
+};
 
 export const SCOPE_UNAVAILABLE_VALUES = {
   EMPTY: "",

@@ -16,6 +16,12 @@ export type {
   ScopeMappingEditorProps,
   AgentVariableDefinition,
 } from "./ScopeMappingEditor";
+export { ContextSlotMappingEditor } from "./ContextSlotMappingEditor";
+export type { ContextSlotMappingEditorProps } from "./ContextSlotMappingEditor";
+export { DefaultVariableValuesEditor } from "./DefaultVariableValuesEditor";
+export type { DefaultVariableValuesEditorProps } from "./DefaultVariableValuesEditor";
+export { DefaultContextSlotValuesEditor } from "./DefaultContextSlotValuesEditor";
+export type { DefaultContextSlotValuesEditorProps } from "./DefaultContextSlotValuesEditor";
 export { ShortcutForm } from "./ShortcutForm";
 export type { ShortcutFormProps } from "./ShortcutForm";
 export { ShortcutList } from "./ShortcutList";

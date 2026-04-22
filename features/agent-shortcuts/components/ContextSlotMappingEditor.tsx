@@ -18,119 +18,103 @@ import {
   SCOPE_LEVEL_META,
   type ScopeLevel,
 } from "../constants";
+import type { ContextSlot } from "@/features/agents/types/agent-api-types";
 
-export interface AgentVariableDefinition {
-  name: string;
-  default_value?: unknown;
-  description?: string | null;
-}
-
-export interface ScopeMappingEditorProps {
-  availableScopes: string[];
-  scopeMappings: Record<string, string> | null;
-  variableDefinitions: AgentVariableDefinition[];
-  onScopesChange: (
-    scopes: string[],
-    mappings: Record<string, string>,
-  ) => void;
+export interface ContextSlotMappingEditorProps {
+  /**
+   * Context slots declared on the agent. Used to populate the right-hand
+   * dropdown. If empty, the editor disables its selects and shows a hint.
+   */
+  contextSlots: ContextSlot[];
+  /**
+   * Current mapping: UI scope key → agent context-slot key.
+   */
+  contextMappings: Record<string, string> | null;
+  onChange: (mappings: Record<string, string> | null) => void;
   compact?: boolean;
 }
 
-// All standard (non-custom) scope keys. Custom keys are anything outside this set.
 const STANDARD_SCOPES: string[] = [...DEFAULT_AVAILABLE_SCOPES];
 
 function labelForScope(scope: string): string {
-  const meta = SCOPE_LEVEL_META[scope as ScopeLevel];
-  return meta?.label ?? scope;
+  return SCOPE_LEVEL_META[scope as ScopeLevel]?.label ?? scope;
 }
 
 function helpForScope(scope: string): string | null {
-  const meta = SCOPE_LEVEL_META[scope as ScopeLevel];
-  return meta?.description ?? null;
+  return SCOPE_LEVEL_META[scope as ScopeLevel]?.description ?? null;
 }
 
-export function ScopeMappingEditor({
-  availableScopes,
-  scopeMappings,
-  variableDefinitions,
-  onScopesChange,
+/**
+ * Parity with ScopeMappingEditor but routes scope keys to agent CONTEXT SLOTS
+ * instead of variables. Takes precedence over default context-slot values and
+ * ad-hoc context at launch.
+ */
+export function ContextSlotMappingEditor({
+  contextSlots,
+  contextMappings,
+  onChange,
   compact = false,
-}: ScopeMappingEditorProps) {
+}: ContextSlotMappingEditorProps) {
   const [newScopeName, setNewScopeName] = useState("");
 
-  const mappings = scopeMappings ?? {};
-  // The union: every standard scope is always listed (checkbox), plus any
-  // custom keys the designer has added or that the current mapping references.
-  const enabledScopes =
-    availableScopes.length > 0 ? availableScopes : DEFAULT_AVAILABLE_SCOPES;
+  const mappings = contextMappings ?? {};
+  const hasSlots = contextSlots.length > 0;
   const customScopes = Array.from(
-    new Set([
-      ...enabledScopes.filter((s) => !STANDARD_SCOPES.includes(s)),
-      ...Object.keys(mappings).filter((k) => !STANDARD_SCOPES.includes(k)),
-    ]),
+    new Set(Object.keys(mappings).filter((k) => !STANDARD_SCOPES.includes(k))),
   );
 
-  const handleScopeToggle = (scopeName: string, enabled: boolean) => {
-    let newScopes: string[];
-    const newMappings = { ...mappings };
-
-    if (enabled) {
-      newScopes = [...enabledScopes, scopeName];
+  const setMapping = (scopeName: string, slotKey: string) => {
+    const next = { ...mappings };
+    if (slotKey && slotKey !== "_none_") {
+      next[scopeName] = slotKey;
     } else {
-      newScopes = enabledScopes.filter((s) => s !== scopeName);
-      delete newMappings[scopeName];
+      delete next[scopeName];
     }
-
-    onScopesChange(newScopes, newMappings);
+    onChange(Object.keys(next).length > 0 ? next : null);
   };
 
-  const handleMappingChange = (scopeName: string, variableName: string) => {
-    const newMappings = { ...mappings };
-    let nextScopes = enabledScopes;
-    if (variableName && variableName !== "_none_") {
-      newMappings[scopeName] = variableName;
-      // Auto-enable the scope key when the user picks a variable for it.
-      if (!enabledScopes.includes(scopeName)) {
-        nextScopes = [...enabledScopes, scopeName];
-      }
-    } else {
-      delete newMappings[scopeName];
+  const toggleStandardScope = (scopeName: string, enabled: boolean) => {
+    // Toggling a standard row off only clears its mapping — the row stays
+    // visible (it's a standard key); toggling on is a no-op until the user
+    // selects a slot.
+    if (!enabled) {
+      const next = { ...mappings };
+      delete next[scopeName];
+      onChange(Object.keys(next).length > 0 ? next : null);
     }
-    onScopesChange(nextScopes, newMappings);
   };
 
-  const handleAddCustomScope = () => {
-    const trimmedName = newScopeName.trim().toLowerCase();
-    if (!trimmedName) return;
-    if (enabledScopes.includes(trimmedName)) return;
-    onScopesChange([...enabledScopes, trimmedName], mappings);
+  const addCustomScope = () => {
+    const trimmed = newScopeName.trim();
+    if (!trimmed) return;
+    if (STANDARD_SCOPES.includes(trimmed)) return;
+    if (mappings[trimmed] !== undefined) return;
+    onChange({ ...mappings, [trimmed]: "" });
     setNewScopeName("");
   };
 
-  const handleRemoveCustomScope = (scopeName: string) => {
-    const newScopes = enabledScopes.filter((s) => s !== scopeName);
-    const newMappings = { ...mappings };
-    delete newMappings[scopeName];
-    onScopesChange(newScopes, newMappings);
+  const removeCustomScope = (scopeName: string) => {
+    const next = { ...mappings };
+    delete next[scopeName];
+    onChange(Object.keys(next).length > 0 ? next : null);
   };
 
-  const renderVariableSelect = (scopeName: string, _isEnabled: boolean) => {
-    const currentVarName = mappings[scopeName] ?? "";
-    const hasVariables = variableDefinitions.length > 0;
-    const placeholder = hasVariables
-      ? "Select variable..."
-      : "Agent has no variables";
+  const renderSlotSelect = (scopeName: string, isEnabled: boolean) => {
+    const currentSlotKey = mappings[scopeName] ?? "";
+    const placeholder = hasSlots
+      ? "Select context slot..."
+      : "Agent has no context slots";
 
     return (
       <Select
-        value={currentVarName || "_none_"}
-        onValueChange={(value) => handleMappingChange(scopeName, value)}
-        disabled={!hasVariables}
+        value={currentSlotKey || "_none_"}
+        onValueChange={(v) => setMapping(scopeName, v)}
+        disabled={!isEnabled || !hasSlots}
       >
         <SelectTrigger className={compact ? "h-7 text-xs" : "h-8"}>
           <SelectValue>
-            {currentVarName ? (
-              <code className="font-mono text-xs">{`{{${currentVarName}}}`}</code>
+            {currentSlotKey ? (
+              <code className="font-mono text-xs">{currentSlotKey}</code>
             ) : (
               <span className="text-muted-foreground">{placeholder}</span>
             )}
@@ -140,9 +124,14 @@ export function ScopeMappingEditor({
           <SelectItem value="_none_">
             <span className="text-muted-foreground italic">None</span>
           </SelectItem>
-          {variableDefinitions.map((v) => (
-            <SelectItem key={v.name} value={v.name}>
-              <code className="font-mono text-xs">{`{{${v.name}}}`}</code>
+          {contextSlots.map((slot) => (
+            <SelectItem key={slot.key} value={slot.key}>
+              <div className="flex items-center gap-2">
+                <code className="font-mono text-xs">{slot.key}</code>
+                <span className="text-[10px] text-muted-foreground">
+                  {slot.type}
+                </span>
+              </div>
             </SelectItem>
           ))}
         </SelectContent>
@@ -160,7 +149,7 @@ export function ScopeMappingEditor({
           className={`border border-border rounded-md ${compact ? "text-xs" : "text-sm"}`}
         >
           {STANDARD_SCOPES.map((scopeName) => {
-            const isEnabled = enabledScopes.includes(scopeName);
+            const isEnabled = mappings[scopeName] !== undefined;
             const help = helpForScope(scopeName);
             return (
               <div
@@ -170,10 +159,10 @@ export function ScopeMappingEditor({
                 }`}
               >
                 <Checkbox
-                  id={`scope-${scopeName}`}
+                  id={`cs-scope-${scopeName}`}
                   checked={isEnabled}
                   onCheckedChange={(checked) =>
-                    handleScopeToggle(scopeName, checked === true)
+                    toggleStandardScope(scopeName, checked === true)
                   }
                 />
                 <div
@@ -182,7 +171,7 @@ export function ScopeMappingEditor({
                   title={help ?? undefined}
                 >
                   <Label
-                    htmlFor={`scope-${scopeName}`}
+                    htmlFor={`cs-scope-${scopeName}`}
                     className={`font-medium cursor-pointer ${compact ? "text-xs" : "text-sm"} ${
                       !isEnabled ? "text-muted-foreground" : ""
                     }`}
@@ -198,7 +187,7 @@ export function ScopeMappingEditor({
                   </div>
                 </div>
                 <div className="flex-1">
-                  {renderVariableSelect(scopeName, isEnabled)}
+                  {renderSlotSelect(scopeName, true)}
                 </div>
               </div>
             );
@@ -232,14 +221,12 @@ export function ScopeMappingEditor({
                     custom
                   </div>
                 </div>
-                <div className="flex-1">
-                  {renderVariableSelect(scopeName, true)}
-                </div>
+                <div className="flex-1">{renderSlotSelect(scopeName, true)}</div>
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
-                  onClick={() => handleRemoveCustomScope(scopeName)}
+                  onClick={() => removeCustomScope(scopeName)}
                   className={compact ? "h-6 w-6 p-0" : "h-7 w-7 p-0"}
                 >
                   <X className="h-3 w-3 text-muted-foreground hover:text-destructive" />
@@ -252,13 +239,13 @@ export function ScopeMappingEditor({
 
       <div className="flex gap-2">
         <Input
-          placeholder="Enter custom scope name..."
+          placeholder="Enter custom scope key..."
           value={newScopeName}
           onChange={(e) => setNewScopeName(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.preventDefault();
-              handleAddCustomScope();
+              addCustomScope();
             }
           }}
           className={compact ? "h-8 text-[16px]" : "h-9 text-[16px]"}
@@ -267,7 +254,7 @@ export function ScopeMappingEditor({
           type="button"
           variant="outline"
           size="sm"
-          onClick={handleAddCustomScope}
+          onClick={addCustomScope}
           disabled={!newScopeName.trim()}
           className={compact ? "h-8" : "h-9"}
         >

@@ -49,9 +49,17 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import IconInputWithValidation from "@/components/official/icons/IconInputWithValidation.dynamic";
 import { ScopeMappingEditor } from "./ScopeMappingEditor";
 import type { AgentVariableDefinition } from "./ScopeMappingEditor";
+import { ContextSlotMappingEditor } from "./ContextSlotMappingEditor";
+import { DefaultVariableValuesEditor } from "./DefaultVariableValuesEditor";
+import { DefaultContextSlotValuesEditor } from "./DefaultContextSlotValuesEditor";
 import { ShortcutScopePicker } from "./ShortcutScopePicker";
 import { useAgentShortcutCrud } from "../hooks/useAgentShortcutCrud";
 import { DEFAULT_AVAILABLE_SCOPES, RESULT_DISPLAY_OPTIONS } from "../constants";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { selectAgentById } from "@/features/agents/redux/agent-definition/selectors";
+import { fetchAgentExecutionMinimal } from "@/features/agents/redux/agent-definition/thunks";
+import type { VariableDefinition } from "@/features/agents/types/agent-definition.types";
+import type { ContextSlot } from "@/features/agents/types/agent-api-types";
 import {
   formatShortcutContextsForInput,
   parseShortcutContextsInput,
@@ -247,7 +255,7 @@ export function ShortcutForm({
   onSuccess,
   shortcut,
   categories,
-  variableDefinitions = [],
+  variableDefinitions: variableDefinitionsProp = [],
   allowScopeEdit = false,
   onScopeChange,
   onDuplicate,
@@ -256,6 +264,7 @@ export function ShortcutForm({
   const isEditing = !!shortcut;
   const crud = useAgentShortcutCrud({ scope, scopeId });
   const { toast } = useToast();
+  const dispatch = useAppDispatch();
 
   const [formData, setFormData] = useState<ShortcutFormData>(() =>
     shortcut ? fromShortcut(shortcut) : emptyFormData(),
@@ -264,6 +273,32 @@ export function ShortcutForm({
   const [error, setError] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+
+  // ── Load the agent's variable definitions + context slots from Redux ────
+  // When the selected agent changes, fetch its minimal execution payload so
+  // the mapping + default editors below can render real dropdowns / rows.
+  const selectedAgentId = formData.agentId;
+  const agentRecord = useAppSelector((state) =>
+    selectedAgentId ? selectAgentById(state, selectedAgentId) : undefined,
+  );
+  useEffect(() => {
+    if (!isOpen) return;
+    if (!selectedAgentId) return;
+    dispatch(fetchAgentExecutionMinimal(selectedAgentId));
+  }, [isOpen, selectedAgentId, dispatch]);
+
+  const variableDefinitions: VariableDefinition[] = useMemo(() => {
+    if (agentRecord?.variableDefinitions) {
+      return agentRecord.variableDefinitions;
+    }
+    // Fallback to the prop form (external callers may still pass their own).
+    return (variableDefinitionsProp as VariableDefinition[]) ?? [];
+  }, [agentRecord?.variableDefinitions, variableDefinitionsProp]);
+
+  const contextSlots: ContextSlot[] = useMemo(
+    () => agentRecord?.contextSlots ?? [],
+    [agentRecord?.contextSlots],
+  );
 
   useEffect(() => {
     if (!isOpen) return;
@@ -558,7 +593,9 @@ export function ShortcutForm({
       <Separator />
 
       <div className="space-y-2">
-        <Label className="text-sm font-semibold">Scope Mappings</Label>
+        <Label className="text-sm font-semibold">
+          Scope → Variable Mappings
+        </Label>
         <ScopeMappingEditor
           availableScopes={
             formData.scopeMappings
@@ -571,7 +608,9 @@ export function ShortcutForm({
               : DEFAULT_AVAILABLE_SCOPES
           }
           scopeMappings={formData.scopeMappings}
-          variableDefinitions={variableDefinitions}
+          variableDefinitions={
+            variableDefinitions as AgentVariableDefinition[]
+          }
           onScopesChange={(_scopes, mappings) =>
             handleChange(
               "scopeMappings",
@@ -581,23 +620,29 @@ export function ShortcutForm({
           compact
         />
         <p className="text-xs text-muted-foreground">
-          Map UI scope keys (selection, content, …) to agent VARIABLE names.
+          Route a surface-provided scope key (selection, content, file path,
+          …) into one of the agent&apos;s{" "}
+          <span className="font-mono">{`{{variables}}`}</span>.
         </p>
       </div>
 
-      <JsonEditorRow
-        id="shortcut-context-mappings"
-        label="Context Mappings (JSON)"
-        help='Map UI scope keys to agent CONTEXT-SLOT keys (e.g. { "file_path": "target_file" }). Parity with Scope Mappings. Takes precedence over context overrides and ad-hoc context.'
-        value={formData.contextMappings}
-        onChange={(v) =>
-          handleChange(
-            "contextMappings",
-            v as Record<string, string> | null,
-          )
-        }
-        disabled={saving}
-      />
+      <div className="space-y-2">
+        <Label className="text-sm font-semibold">
+          Scope → Context Slot Mappings
+        </Label>
+        <ContextSlotMappingEditor
+          contextSlots={contextSlots}
+          contextMappings={formData.contextMappings}
+          onChange={(v) => handleChange("contextMappings", v)}
+          compact
+        />
+        <p className="text-xs text-muted-foreground">
+          Parity with the mapping above, but routes a scope key into an
+          agent <span className="font-medium">context slot</span> instead of a
+          variable. Takes precedence over default context slot values and
+          ad-hoc context at launch.
+        </p>
+      </div>
 
       <Separator />
 
@@ -616,8 +661,8 @@ export function ShortcutForm({
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="result-display" className="text-sm">
-            Result Display
+          <Label htmlFor="display-mode" className="text-sm">
+            Display Mode
           </Label>
           <Select
             value={formData.displayMode}
@@ -629,7 +674,7 @@ export function ShortcutForm({
             }
             disabled={saving}
           >
-            <SelectTrigger id="result-display" className="h-9">
+            <SelectTrigger id="display-mode" className="h-9">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -812,58 +857,73 @@ export function ShortcutForm({
       </div>
 
       {/* ── Defaults & overrides ────────────────────────────────── */}
-      <div className="space-y-2">
+      <div className="space-y-3">
         <Label className="text-sm font-semibold">Defaults &amp; Overrides</Label>
-        <div className="space-y-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="default-user-input" className="text-xs">
-              Default user input{" "}
-              <span className="text-muted-foreground font-normal">
-                (designer-only, never shown to user)
-              </span>
-            </Label>
-            <Textarea
-              id="default-user-input"
-              value={formData.defaultUserInput ?? ""}
-              onChange={(e) =>
-                handleChange(
-                  "defaultUserInput",
-                  e.target.value.length > 0 ? e.target.value : null,
-                )
-              }
-              rows={2}
-              placeholder="Extra instructions appended to the template…"
-              disabled={saving}
-              className="text-[16px]"
-            />
-          </div>
-          <JsonEditorRow
-            id="default-variables"
-            label="Default variables (JSON)"
-            help="Per-variable defaults — keyed by agent variable name. Scope-mapped values + user edits override."
-            value={formData.defaultVariables}
-            onChange={(v) => handleChange("defaultVariables", v)}
-            disabled={saving}
-          />
-          <JsonEditorRow
-            id="context-overrides"
-            label="Context overrides (JSON)"
-            help="Add / seed context-slot values — keyed by slot key."
-            value={formData.contextOverrides}
-            onChange={(v) => handleChange("contextOverrides", v)}
-            disabled={saving}
-          />
-          <JsonEditorRow
-            id="llm-overrides"
-            label="LLM overrides (JSON)"
-            help='Partial LLMParams delta — e.g. {"temperature": 0.2}. Only keys provided are sent.'
-            value={formData.llmOverrides as Record<string, unknown> | null}
-            onChange={(v) =>
-              handleChange("llmOverrides", v as ShortcutFormData["llmOverrides"])
+
+        <div className="space-y-1.5">
+          <Label htmlFor="default-user-input" className="text-xs">
+            Default user input{" "}
+            <span className="text-muted-foreground font-normal">
+              (designer-only, never shown to user)
+            </span>
+          </Label>
+          <Textarea
+            id="default-user-input"
+            value={formData.defaultUserInput ?? ""}
+            onChange={(e) =>
+              handleChange(
+                "defaultUserInput",
+                e.target.value.length > 0 ? e.target.value : null,
+              )
             }
+            rows={2}
+            placeholder="Extra instructions appended to the template…"
             disabled={saving}
+            className="text-[16px]"
           />
         </div>
+
+        <div className="space-y-1.5">
+          <Label className="text-xs">Default Variable Values</Label>
+          <DefaultVariableValuesEditor
+            variableDefinitions={variableDefinitions}
+            values={formData.defaultVariables}
+            onChange={(v) => handleChange("defaultVariables", v)}
+            disabled={saving}
+            compact
+          />
+          <p className="text-[10px] text-muted-foreground">
+            Agent-defined defaults show as placeholders; your overrides are
+            saved per-shortcut. Scope-mapped values and the user&apos;s runtime
+            edits still win.
+          </p>
+        </div>
+
+        <div className="space-y-1.5">
+          <Label className="text-xs">Default Context Slot Values</Label>
+          <DefaultContextSlotValuesEditor
+            contextSlots={contextSlots}
+            values={formData.contextOverrides}
+            onChange={(v) => handleChange("contextOverrides", v)}
+            disabled={saving}
+            compact
+          />
+          <p className="text-[10px] text-muted-foreground">
+            Pre-seed a value for any declared context slot on launch. Scope →
+            Context Slot mappings and runtime context entries still override.
+          </p>
+        </div>
+
+        <JsonEditorRow
+          id="llm-overrides"
+          label="LLM Overrides (JSON)"
+          help='Partial LLMParams delta — e.g. {"temperature": 0.2}. Only keys provided are sent.'
+          value={formData.llmOverrides as Record<string, unknown> | null}
+          onChange={(v) =>
+            handleChange("llmOverrides", v as ShortcutFormData["llmOverrides"])
+          }
+          disabled={saving}
+        />
       </div>
 
       {error && (
