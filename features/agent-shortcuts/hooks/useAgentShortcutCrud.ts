@@ -7,6 +7,9 @@ import {
   updateShortcut,
   deleteShortcut,
   duplicateShortcut,
+  promoteShortcutToGlobal,
+  listNonGlobalShortcutsForAdmin,
+  type AdminNonGlobalShortcutRow,
 } from "@/features/agents/redux/agent-shortcuts/thunks";
 import {
   createCategory,
@@ -38,6 +41,12 @@ export interface UseAgentShortcutCrudResult {
   updateShortcut: (id: string, data: Partial<AgentShortcut>) => Promise<void>;
   deleteShortcut: (id: string) => Promise<void>;
   duplicateShortcut: (id: string, targetCategoryId?: string) => Promise<string>;
+  promoteShortcutToGlobal: (args: {
+    shortcutId: string;
+    targetCategoryId: string;
+    label?: string | null;
+  }) => Promise<string>;
+  listNonGlobalShortcutsForAdmin: () => Promise<AdminNonGlobalShortcutRow[]>;
   createCategory: (data: CategoryFormData) => Promise<string>;
   updateCategory: (
     id: string,
@@ -127,6 +136,23 @@ export function useAgentShortcutCrud({
     [dispatch],
   );
 
+  const doPromoteShortcutToGlobal = useCallback(
+    async (args: {
+      shortcutId: string;
+      targetCategoryId: string;
+      label?: string | null;
+    }) => {
+      const result = await dispatch(promoteShortcutToGlobal(args)).unwrap();
+      return result;
+    },
+    [dispatch],
+  );
+
+  const doListNonGlobalShortcutsForAdmin = useCallback(async () => {
+    const result = await dispatch(listNonGlobalShortcutsForAdmin()).unwrap();
+    return result;
+  }, [dispatch]);
+
   const doCreateCategory = useCallback(
     async (data: CategoryFormData) => {
       const scoped = applyScopeWrapper(scope, scopeId, data);
@@ -178,6 +204,8 @@ export function useAgentShortcutCrud({
     updateShortcut: doUpdateShortcut,
     deleteShortcut: doDeleteShortcut,
     duplicateShortcut: doDuplicateShortcut,
+    promoteShortcutToGlobal: doPromoteShortcutToGlobal,
+    listNonGlobalShortcutsForAdmin: doListNonGlobalShortcutsForAdmin,
     createCategory: doCreateCategory,
     updateCategory: doUpdateCategory,
     deleteCategory: doDeleteCategory,

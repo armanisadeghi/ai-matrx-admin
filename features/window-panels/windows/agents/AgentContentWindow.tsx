@@ -267,7 +267,7 @@ function FooterControls({
 
 // ── Agent Picker Fallback ─────────────────────────────────────────────────────
 
-const PICKER_CONSUMER_ID = "agent-content-window-picker";
+const PICKER_CONSUMER_ID = "agent-advanced-editor-window-picker";
 
 interface AgentPickerFallbackProps {
   onSelect: (agentId: string) => void;
@@ -408,7 +408,7 @@ export function TabContent({
       {activeTab === "run" && (
         <AgentRunWrapper
           agentId={agentId}
-          sourceFeature="agent-content-window"
+          sourceFeature="agent-advanced-editor-window"
         />
       )}
     </div>
@@ -481,17 +481,17 @@ export default function AgentContentWindow({
 
   return (
     <WindowPanel
-      id="agent-content-window"
-      title="Agent Editor"
+      id="agent-advanced-editor-window"
+      title="Agent Advanced Editor"
       onClose={onClose}
       width={1050}
       height={760}
       minWidth={640}
       minHeight={520}
-      urlSyncKey="agent-content"
-      urlSyncId="agent-content-window"
+      urlSyncKey="agent-advanced-editor"
+      urlSyncId="agent-advanced-editor-window"
       urlSyncArgs={{ m: "ac" }}
-      overlayId="agentContentWindow"
+      overlayId="agentAdvancedEditorWindow"
       onCollectData={collectData}
       actionsRight={
         agentId ? (

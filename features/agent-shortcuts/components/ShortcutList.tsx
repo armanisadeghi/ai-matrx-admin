@@ -37,6 +37,7 @@ import {
   Edit2,
   Eye,
   EyeOff,
+  Globe,
   Plus,
   RefreshCw,
   Sparkles,
@@ -70,9 +71,11 @@ export interface ShortcutListProps extends ScopeProps {
   onEdit?: (shortcut: AgentShortcutRecord) => void;
   onCreate?: () => void;
   onDuplicate?: (shortcut: AgentShortcutRecord) => void;
+  onPromoteToGlobal?: (shortcut: AgentShortcutRecord) => void;
   className?: string;
   readonly?: boolean;
   placementFilter?: string;
+  toolbarSlot?: React.ReactNode;
 }
 
 export function ShortcutList({
@@ -81,9 +84,11 @@ export function ShortcutList({
   onEdit,
   onCreate,
   onDuplicate,
+  onPromoteToGlobal,
   className,
   readonly = false,
   placementFilter: placementFilterProp,
+  toolbarSlot,
 }: ShortcutListProps) {
   const isMobile = useIsMobile();
   const { toast } = useToast();
@@ -326,6 +331,7 @@ export function ShortcutList({
               <Button variant="outline" size="sm" onClick={() => refetch()}>
                 <RefreshCw className="h-3.5 w-3.5" />
               </Button>
+              {toolbarSlot}
               {!readonly && onCreate && (
                 <Button size="sm" onClick={onCreate}>
                   <Plus className="h-3.5 w-3.5 mr-1" />
@@ -460,6 +466,7 @@ export function ShortcutList({
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Refresh
               </Button>
+              {toolbarSlot}
               {!readonly && onCreate && (
                 <Button onClick={onCreate} size="sm">
                   <Plus className="h-4 w-4 mr-2" />
@@ -811,6 +818,24 @@ export function ShortcutList({
                               <TooltipContent>Duplicate</TooltipContent>
                             </Tooltip>
                           )}
+                          {!readonly &&
+                            onPromoteToGlobal &&
+                            scope !== "global" && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => onPromoteToGlobal(shortcut)}
+                                  >
+                                    <Globe className="h-3 w-3" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  Promote to Global (admin)
+                                </TooltipContent>
+                              </Tooltip>
+                            )}
                           {!readonly && (
                             <Tooltip>
                               <TooltipTrigger asChild>

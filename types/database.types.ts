@@ -17352,6 +17352,58 @@ export type Database = {
           version_number: number
         }[]
       }
+      agx_list_non_global_shortcuts_for_admin: {
+        Args: never
+        Returns: {
+          agent_id: string
+          agent_version_id: string
+          allow_chat: boolean
+          auto_run: boolean
+          bypass_gate_seconds: number
+          category_id: string
+          context_mappings: Json
+          context_overrides: Json
+          created_at: string
+          default_user_input: string
+          default_variables: Json
+          description: string
+          display_mode: string
+          enabled_features: Json
+          hide_reasoning: boolean
+          hide_tool_results: boolean
+          icon_name: string
+          id: string
+          is_active: boolean
+          keyboard_shortcut: string
+          label: string
+          llm_overrides: Json
+          organization_id: string
+          owner_display: string
+          owner_email: string
+          pre_execution_message: string
+          project_id: string
+          scope_mappings: Json
+          scope_type: string
+          show_definition_message_content: boolean
+          show_definition_messages: boolean
+          show_pre_execution_gate: boolean
+          show_variable_panel: boolean
+          sort_order: number
+          task_id: string
+          updated_at: string
+          use_latest: boolean
+          user_id: string
+          variables_panel_style: string
+        }[]
+      }
+      agx_promote_shortcut_to_global: {
+        Args: {
+          p_label?: string
+          p_shortcut_id: string
+          p_target_category_id: string
+        }
+        Returns: string
+      }
       agx_promote_version: {
         Args: { p_agent_id: string; p_version_number: number }
         Returns: Json

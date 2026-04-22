@@ -2,14 +2,28 @@
 
 import React, { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { DownloadCloud } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   DuplicateShortcutModal,
+  ImportShortcutsBrowserModal,
+  PromoteToGlobalModal,
   ShortcutForm,
   ShortcutList,
   useAgentShortcuts,
   type AgentShortcut,
+  type AgentShortcutCategory,
   type AgentShortcutRecord,
 } from "@/features/agent-shortcuts";
+import {
+  shortcutRowToFrontend,
+  type AdminNonGlobalShortcutRow,
+} from "@/features/agents/redux/agent-shortcuts/thunks";
+
+interface PromoteTargetState {
+  shortcut: AgentShortcut;
+  sourceCategory: AgentShortcutCategory | null;
+}
 
 const SCOPE = "global" as const;
 
@@ -22,6 +36,10 @@ export default function AdminShortcutsPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [duplicateTarget, setDuplicateTarget] =
     useState<AgentShortcutRecord | null>(null);
+  const [importerOpen, setImporterOpen] = useState(false);
+  const [promoteTarget, setPromoteTarget] = useState<PromoteTargetState | null>(
+    null,
+  );
 
   const handleEdit = (shortcut: AgentShortcutRecord) => {
     startTransition(() => {
@@ -49,6 +67,21 @@ export default function AdminShortcutsPage() {
     });
   };
 
+  const handleImportSelect = (row: AdminNonGlobalShortcutRow) => {
+    setImporterOpen(false);
+    setPromoteTarget({
+      shortcut: shortcutRowToFrontend(row),
+      sourceCategory: null,
+    });
+  };
+
+  const handlePromoteSuccess = (newId: string) => {
+    setPromoteTarget(null);
+    startTransition(() => {
+      router.push(`/administration/agent-shortcuts/edit/${newId}`);
+    });
+  };
+
   return (
     <div className="h-full flex flex-col overflow-hidden bg-textured">
       <ShortcutList
@@ -56,6 +89,16 @@ export default function AdminShortcutsPage() {
         onCreate={handleCreate}
         onEdit={handleEdit}
         onDuplicate={handleDuplicate}
+        toolbarSlot={
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setImporterOpen(true)}
+          >
+            <DownloadCloud className="h-4 w-4 mr-2" />
+            Import from Shortcut
+          </Button>
+        }
       />
 
       <ShortcutForm
@@ -75,6 +118,22 @@ export default function AdminShortcutsPage() {
           onSuccess={handleDuplicateSuccess}
           shortcut={duplicateTarget as AgentShortcut}
           categories={categories}
+        />
+      )}
+
+      <ImportShortcutsBrowserModal
+        isOpen={importerOpen}
+        onClose={() => setImporterOpen(false)}
+        onSelect={handleImportSelect}
+      />
+
+      {promoteTarget && (
+        <PromoteToGlobalModal
+          isOpen={!!promoteTarget}
+          onClose={() => setPromoteTarget(null)}
+          onSuccess={handlePromoteSuccess}
+          shortcut={promoteTarget.shortcut}
+          sourceCategory={promoteTarget.sourceCategory}
         />
       )}
     </div>

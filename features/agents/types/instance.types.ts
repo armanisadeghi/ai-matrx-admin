@@ -69,7 +69,7 @@ export type SourceFeature =
   | "research"
   | "chat-route"
   | "code-editor"
-  | "agent-content-window"
+  | "agent-advanced-editor-window"
   | "voice-pad-ai"
   | "agent-run-window"
   | "agent-run-history-window"
@@ -587,7 +587,9 @@ export interface ManagedAgentOptions {
    * Preferred over the deprecated flat fields below — the launch thunk
    * merges both but new code should only set `config`.
    */
-  config?: Partial<import("./agent-execution-config.types").AgentExecutionConfig>;
+  config?: Partial<
+    import("./agent-execution-config.types").AgentExecutionConfig
+  >;
 
   // ═══════════════════════════════════════════════════════════
   // RUNTIME — per-invocation values (never persisted on a shortcut)

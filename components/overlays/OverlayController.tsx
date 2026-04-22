@@ -944,10 +944,10 @@ export const OverlayController: React.FC = () => {
   );
 
   const isAgentContentWindowOpen = useAppSelector((s) =>
-    selectIsOverlayOpen(s, "agentContentWindow"),
+    selectIsOverlayOpen(s, "agentAdvancedEditorWindow"),
   );
   const agentContentWindowData = useAppSelector((s) =>
-    selectOverlayData(s, "agentContentWindow"),
+    selectOverlayData(s, "agentAdvancedEditorWindow"),
   );
 
   const isAgentContentSidebarWindowOpen = useAppSelector((s) =>
@@ -2258,7 +2258,7 @@ export const OverlayController: React.FC = () => {
       {isAgentContentWindowOpen && (
         <AgentContentWindow
           isOpen={true}
-          onClose={() => close("agentContentWindow")}
+          onClose={() => close("agentAdvancedEditorWindow")}
           {...(agentContentWindowData as any)}
         />
       )}

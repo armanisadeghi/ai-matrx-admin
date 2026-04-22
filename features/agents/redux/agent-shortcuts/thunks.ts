@@ -51,7 +51,10 @@ function parseScopeMappings(raw: unknown): Record<string, string> | null {
 // Reads v2 column names first; falls back to the legacy name; falls back to
 // DEFAULT_AGENT_EXECUTION_CONFIG.
 // ---------------------------------------------------------------------------
-function pickString(o: Record<string, unknown>, ...keys: string[]): string | null {
+function pickString(
+  o: Record<string, unknown>,
+  ...keys: string[]
+): string | null {
   for (const k of keys) {
     const v = o[k];
     if (typeof v === "string") return v;
@@ -107,12 +110,14 @@ function menuItemToConfigFields(item: unknown): {
   defaultUserInput: string | null;
   defaultVariables: Record<string, unknown> | null;
   contextOverrides: Record<string, unknown> | null;
-  llmOverrides: Partial<import("@/features/agents/types/agent-api-types").LLMParams> | null;
+  llmOverrides: Partial<
+    import("@/features/agents/types/agent-api-types").LLMParams
+  > | null;
 } {
   const o = (item ?? {}) as Record<string, unknown>;
   return {
-    displayMode: ((pickString(o, "display_mode", "result_display") ??
-      "modal-full") as ResultDisplayMode),
+    displayMode: (pickString(o, "display_mode", "result_display") ??
+      "modal-full") as ResultDisplayMode,
     showVariablePanel: pickBool(o, false, "show_variable_panel"),
     variablesPanelStyle: (pickString(o, "variables_panel_style") ??
       "inline") as import("@/features/agents/components/inputs/variable-input-variations/variable-input-options").VariablesPanelStyle,
@@ -659,6 +664,73 @@ export const duplicateShortcut = createAsyncThunk<
   return newShortcutId;
 });
 
+// ---------------------------------------------------------------------------
+// Admin: promote to global + list non-global for admin
+// ---------------------------------------------------------------------------
+
+export interface PromoteShortcutToGlobalArgs {
+  shortcutId: string;
+  targetCategoryId: string;
+  label?: string | null;
+}
+
+/**
+ * Admin-only. Duplicates any non-global shortcut into the global/system pool
+ * under the provided global category via the `agx_promote_shortcut_to_global`
+ * RPC. Source row is preserved. Loads the new (global) copy into the slice.
+ */
+export const promoteShortcutToGlobal = createAsyncThunk<
+  string,
+  PromoteShortcutToGlobalArgs,
+  ThunkApi
+>(
+  "agentShortcut/promoteToGlobal",
+  async ({ shortcutId, targetCategoryId, label }, { dispatch }) => {
+    const { data, error } = await supabase.rpc(
+      "agx_promote_shortcut_to_global",
+      {
+        p_shortcut_id: shortcutId,
+        p_target_category_id: targetCategoryId,
+        p_label: label && label.trim().length > 0 ? label.trim() : undefined,
+      },
+    );
+
+    if (error) throw error;
+
+    const newShortcutId = data as string;
+
+    await dispatch(fetchFullShortcut(newShortcutId));
+
+    return newShortcutId;
+  },
+);
+
+export interface AdminNonGlobalShortcutRow extends ShortcutApiRow {
+  owner_email: string | null;
+  owner_display: string | null;
+  scope_type: "user" | "organization" | "project" | "task" | string;
+}
+
+/**
+ * Admin-only. Returns every non-global shortcut across users/orgs/projects/
+ * tasks via the `agx_list_non_global_shortcuts_for_admin` RPC. Results are
+ * intended for the "Import to Global" picker — they are NOT upserted into
+ * the shortcut slice (would pollute the scope-aware selectors).
+ */
+export const listNonGlobalShortcutsForAdmin = createAsyncThunk<
+  AdminNonGlobalShortcutRow[],
+  void,
+  ThunkApi
+>("agentShortcut/listNonGlobalForAdmin", async () => {
+  const { data, error } = await supabase.rpc(
+    "agx_list_non_global_shortcuts_for_admin",
+  );
+
+  if (error) throw error;
+
+  return (data ?? []) as unknown as AdminNonGlobalShortcutRow[];
+});
+
 /**
  * Quick-create a shortcut pinned to an agent's current version.
  * Scope is determined by which p_*_id param is set.
@@ -740,7 +812,7 @@ export const syncUserShortcutToSlice = createAsyncThunk<
 
 // API rows are tolerant of v2 / legacy column shapes via the loose
 // menuItemToConfigFields helper.
-interface ShortcutApiRow {
+export interface ShortcutApiRow {
   id: string;
   category_id: string;
   label: string;
@@ -765,7 +837,7 @@ interface ShortcutApiRow {
   [key: string]: unknown;
 }
 
-function shortcutRowToFrontend(row: ShortcutApiRow): AgentShortcut {
+export function shortcutRowToFrontend(row: ShortcutApiRow): AgentShortcut {
   return {
     id: row.id,
     categoryId: row.category_id,

@@ -313,9 +313,9 @@ const REGISTRY: WindowRegistryEntry[] = [
 
   // ── Agent Content ─────────────────────────────────────────────────────────
   {
-    slug: "agent-content-window",
-    overlayId: "agentContentWindow",
-    label: "Agent Content",
+    slug: "agent-advanced-editor-window",
+    overlayId: "agentAdvancedEditorWindow",
+    label: "Agent Advanced Editor",
     // activeTab: "messages" | "system" | "model" | "variables" | "tools" | "context" | "settings" | "share"
     defaultData: { initialAgentId: null, activeTab: "messages", tabs: null },
   },
@@ -324,7 +324,7 @@ const REGISTRY: WindowRegistryEntry[] = [
   {
     slug: "agent-content-sidebar-window",
     overlayId: "agentContentSidebarWindow",
-    label: "Agent Editor",
+    label: "Agent Editor (Sidebar)",
     defaultData: { initialAgentId: null, activeTab: "messages" },
   },
 

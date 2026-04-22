@@ -102,7 +102,7 @@ const initialState: OverlayState = {
     agentGateWindow: makeDefaultInstance(),
     agentSettingsWindow: makeDefaultInstance(),
     agentRunHistoryWindow: makeDefaultInstance(),
-    agentContentWindow: makeDefaultInstance(),
+    agentAdvancedEditorWindow: makeDefaultInstance(),
     agentContentSidebarWindow: makeDefaultInstance(),
     executionInspectorWindow: makeDefaultInstance(),
     messageAnalysisWindow: makeDefaultInstance(),
@@ -691,7 +691,7 @@ interface AgentContentWindowPayload {
 
 export const openAgentContentWindow = (options: AgentContentWindowPayload) =>
   openOverlay({
-    overlayId: "agentContentWindow",
+    overlayId: "agentAdvancedEditorWindow",
     instanceId: options?.instanceId,
     data: {
       initialAgentId: options.agentId ?? null,

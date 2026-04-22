@@ -345,7 +345,11 @@ export default function AgentContentSidebarWindow({
     <>
       <WindowPanel
         id="agent-content-sidebar-window"
-        title={activeAgentId ? (agentName ?? "Agent Editor") : "Agent Editor"}
+        title={
+          activeAgentId
+            ? (agentName ?? "Agent Editor (Sidebar)")
+            : "Agent Editor (Sidebar)"
+        }
         onClose={onClose}
         width={1200}
         height={760}

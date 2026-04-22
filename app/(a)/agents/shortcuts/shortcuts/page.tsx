@@ -1,27 +1,38 @@
 "use client";
 
-import React, { useState, useTransition } from "react";
+import React, { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
   DuplicateShortcutModal,
+  PromoteToGlobalModal,
   ShortcutForm,
   ShortcutList,
   useAgentShortcuts,
   type AgentShortcut,
   type AgentShortcutRecord,
 } from "@/features/agent-shortcuts";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 
 const SCOPE = "user" as const;
 
 export default function UserShortcutsPage() {
   const router = useRouter();
   const [, startTransition] = useTransition();
+  const isAdmin = useAppSelector(selectIsAdmin);
 
   const { categories } = useAgentShortcuts({ scope: SCOPE });
 
   const [createOpen, setCreateOpen] = useState(false);
   const [duplicateTarget, setDuplicateTarget] =
     useState<AgentShortcutRecord | null>(null);
+  const [promoteTarget, setPromoteTarget] =
+    useState<AgentShortcutRecord | null>(null);
+
+  const promoteSourceCategory = useMemo(() => {
+    if (!promoteTarget) return null;
+    return categories.find((c) => c.id === promoteTarget.categoryId) ?? null;
+  }, [promoteTarget, categories]);
 
   const handleEdit = (shortcut: AgentShortcutRecord) => {
     startTransition(() => {
@@ -32,6 +43,8 @@ export default function UserShortcutsPage() {
   const handleCreate = () => setCreateOpen(true);
   const handleDuplicate = (shortcut: AgentShortcutRecord) =>
     setDuplicateTarget(shortcut);
+  const handlePromoteToGlobal = (shortcut: AgentShortcutRecord) =>
+    setPromoteTarget(shortcut);
 
   const handleCreateSuccess = (id: string | null) => {
     setCreateOpen(false);
@@ -49,6 +62,13 @@ export default function UserShortcutsPage() {
     });
   };
 
+  const handlePromoteSuccess = (newId: string) => {
+    setPromoteTarget(null);
+    startTransition(() => {
+      router.push(`/administration/agent-shortcuts/edit/${newId}`);
+    });
+  };
+
   return (
     <div className="h-full flex flex-col overflow-hidden bg-textured">
       <ShortcutList
@@ -56,6 +76,7 @@ export default function UserShortcutsPage() {
         onCreate={handleCreate}
         onEdit={handleEdit}
         onDuplicate={handleDuplicate}
+        onPromoteToGlobal={isAdmin ? handlePromoteToGlobal : undefined}
       />
 
       <ShortcutForm
@@ -75,6 +96,16 @@ export default function UserShortcutsPage() {
           onSuccess={handleDuplicateSuccess}
           shortcut={duplicateTarget as AgentShortcut}
           categories={categories}
+        />
+      )}
+
+      {promoteTarget && (
+        <PromoteToGlobalModal
+          isOpen={!!promoteTarget}
+          onClose={() => setPromoteTarget(null)}
+          onSuccess={handlePromoteSuccess}
+          shortcut={promoteTarget as AgentShortcut}
+          sourceCategory={promoteSourceCategory}
         />
       )}
     </div>
