@@ -404,6 +404,11 @@ const UserPreferencesWindow = dynamic(
   { ssr: false },
 );
 
+const AgentConnectionsWindow = dynamic(
+  () => import("@/features/window-panels/windows/AgentConnectionsWindow"),
+  { ssr: false },
+);
+
 const QuickTasksWindow = dynamic(
   () =>
     import("@/features/window-panels/windows/context-scopes/QuickTasksWindow"),
@@ -769,6 +774,13 @@ export const OverlayController: React.FC = () => {
   );
   const userPreferencesWindowData = useAppSelector((s) =>
     selectOverlayData(s, "userPreferencesWindow"),
+  );
+
+  const isAgentConnectionsWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "agentConnectionsWindow"),
+  );
+  const agentConnectionsWindowData = useAppSelector((s) =>
+    selectOverlayData(s, "agentConnectionsWindow"),
   );
 
   const isQuickTasksWindowOpen = useAppSelector((s) =>
@@ -1366,6 +1378,25 @@ export const OverlayController: React.FC = () => {
         <UserPreferencesWindow
           isOpen={true}
           onClose={() => close("userPreferencesWindow")}
+        />
+      )}
+
+      {isAgentConnectionsWindowOpen && (
+        <AgentConnectionsWindow
+          isOpen={true}
+          onClose={() => close("agentConnectionsWindow")}
+          initialSection={
+            (agentConnectionsWindowData?.activeSection as
+              | "overview"
+              | "agents"
+              | "skills"
+              | "instructions"
+              | "prompts"
+              | "hooks"
+              | "mcpServers"
+              | "plugins"
+              | undefined) ?? "overview"
+          }
         />
       )}
 

@@ -23,6 +23,7 @@ import {
   Activity,
   FileCode2,
   Settings,
+  Settings2,
   Mail,
   Share2,
   CheckSquare,
@@ -1154,6 +1155,17 @@ export default function SidebarWindowToggle() {
                       act(() =>
                         dispatch(
                           openOverlay({ overlayId: "userPreferencesWindow" }),
+                        ),
+                      )
+                    }
+                  />
+                  <MenuGridItem
+                    icon={<Settings2 className="w-3.5 h-3.5" />}
+                    label="Agent Customizations"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(
+                          openOverlay({ overlayId: "agentConnectionsWindow" }),
                         ),
                       )
                     }

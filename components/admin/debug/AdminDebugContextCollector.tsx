@@ -12,88 +12,114 @@
 // the pathname effect only runs on navigation. Zero cost for non-admins because
 // this component is a child of AdminIndicatorWrapper which returns null for them.
 
-'use client';
+"use client";
 
-import { useEffect, useRef } from 'react';
-import { usePathname, useSearchParams } from 'next/navigation';
-import { useAppDispatch } from '@/lib/redux/hooks';
-import { setRouteContext, appendConsoleError, type ConsoleErrorEntry } from '@/lib/redux/slices/adminDebugSlice';
-import { v4 as uuidv4 } from 'uuid';
+import { useEffect, useRef } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import {
+  setRouteContext,
+  appendConsoleError,
+  type ConsoleErrorEntry,
+} from "@/lib/redux/slices/adminDebugSlice";
+import { v4 as uuidv4 } from "uuid";
 
 export function AdminDebugContextCollector() {
-    const dispatch = useAppDispatch();
-    const pathname = usePathname();
-    const searchParams = useSearchParams();
-    const renderCountRef = useRef(0);
+  const dispatch = useAppDispatch();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const renderCountRef = useRef(0);
 
-    // ── Route context capture ─────────────────────────────────────────────
-    useEffect(() => {
-        renderCountRef.current += 1;
-        const params: Record<string, string> = {};
-        searchParams.forEach((value, key) => { params[key] = value; });
+  // ── Route context capture ─────────────────────────────────────────────
+  useEffect(() => {
+    renderCountRef.current += 1;
+    const params: Record<string, string> = {};
+    searchParams.forEach((value, key) => {
+      params[key] = value;
+    });
 
-        dispatch(setRouteContext({
-            pathname,
-            searchParams: params,
-            capturedAt: Date.now(),
-            userAgent: navigator.userAgent,
-            viewportWidth: window.innerWidth,
-            viewportHeight: window.innerHeight,
-            renderCount: renderCountRef.current,
-        }));
-    }, [pathname, searchParams, dispatch]);
+    dispatch(
+      setRouteContext({
+        pathname,
+        searchParams: params,
+        capturedAt: Date.now(),
+        userAgent: navigator.userAgent,
+        viewportWidth: window.innerWidth,
+        viewportHeight: window.innerHeight,
+        renderCount: renderCountRef.current,
+      }),
+    );
+  }, [pathname, searchParams, dispatch]);
 
-    // ── Console error capture ─────────────────────────────────────────────
-    useEffect(() => {
-        const originalError = console.error.bind(console);
+  // ── Console error capture ─────────────────────────────────────────────
+  useEffect(() => {
+    const originalError = console.error.bind(console);
 
-        console.error = (...args: unknown[]) => {
-            originalError(...args);
-            const message = args
-                .map(a => (typeof a === 'string' ? a : a instanceof Error ? a.message : JSON.stringify(a)))
-                .join(' ');
-            const stack = args.find(a => a instanceof Error) instanceof Error
-                ? (args.find(a => a instanceof Error) as Error).stack
-                : undefined;
-            dispatch(appendConsoleError({
-                id: uuidv4(),
-                message,
-                source: 'console.error',
-                stack,
-                capturedAt: Date.now(),
-            } satisfies ConsoleErrorEntry));
-        };
+    // Defer dispatch off the current call stack. console.error can fire
+    // synchronously from inside React's render phase (e.g. the "setState
+    // during render" warning). Dispatching Redux actions synchronously in
+    // that context can cascade into additional warnings or subscriber work
+    // mid-render. queueMicrotask gets us out of the current frame safely.
+    const scheduleAppend = (entry: ConsoleErrorEntry) => {
+      queueMicrotask(() => {
+        dispatch(appendConsoleError(entry));
+      });
+    };
 
-        const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
-            const reason = event.reason;
-            dispatch(appendConsoleError({
-                id: uuidv4(),
-                message: reason instanceof Error ? reason.message : String(reason),
-                source: 'unhandledrejection',
-                stack: reason instanceof Error ? reason.stack : undefined,
-                capturedAt: Date.now(),
-            } satisfies ConsoleErrorEntry));
-        };
+    console.error = (...args: unknown[]) => {
+      originalError(...args);
+      const message = args
+        .map((a) =>
+          typeof a === "string"
+            ? a
+            : a instanceof Error
+              ? a.message
+              : JSON.stringify(a),
+        )
+        .join(" ");
+      const errArg = args.find((a) => a instanceof Error) as Error | undefined;
+      scheduleAppend({
+        id: uuidv4(),
+        message,
+        source: "console.error",
+        stack: errArg?.stack,
+        capturedAt: Date.now(),
+      });
+    };
 
-        const handleErrorEvent = (event: ErrorEvent) => {
-            dispatch(appendConsoleError({
-                id: uuidv4(),
-                message: event.message,
-                source: 'error-event',
-                stack: event.error?.stack,
-                capturedAt: Date.now(),
-            } satisfies ConsoleErrorEntry));
-        };
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      const reason = event.reason;
+      scheduleAppend({
+        id: uuidv4(),
+        message: reason instanceof Error ? reason.message : String(reason),
+        source: "unhandledrejection",
+        stack: reason instanceof Error ? reason.stack : undefined,
+        capturedAt: Date.now(),
+      });
+    };
 
-        window.addEventListener('unhandledrejection', handleUnhandledRejection);
-        window.addEventListener('error', handleErrorEvent);
+    const handleErrorEvent = (event: ErrorEvent) => {
+      scheduleAppend({
+        id: uuidv4(),
+        message: event.message,
+        source: "error-event",
+        stack: event.error?.stack,
+        capturedAt: Date.now(),
+      });
+    };
 
-        return () => {
-            console.error = originalError;
-            window.removeEventListener('unhandledrejection', handleUnhandledRejection);
-            window.removeEventListener('error', handleErrorEvent);
-        };
-    }, [dispatch]);
+    window.addEventListener("unhandledrejection", handleUnhandledRejection);
+    window.addEventListener("error", handleErrorEvent);
 
-    return null;
+    return () => {
+      console.error = originalError;
+      window.removeEventListener(
+        "unhandledrejection",
+        handleUnhandledRejection,
+      );
+      window.removeEventListener("error", handleErrorEvent);
+    };
+  }, [dispatch]);
+
+  return null;
 }
