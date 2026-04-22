@@ -13,6 +13,7 @@
 import type { AppDispatch } from "@/lib/redux/store";
 import { launchAgentExecution } from "@/features/agents/redux/execution-system/thunks/launch-agent-execution.thunk";
 import type {
+  JsonExtractionConfig,
   ManagedAgentOptions,
   SourceFeature,
 } from "@/features/agents/types/instance.types";
@@ -31,6 +32,7 @@ export interface TriggerShortcutArgs {
   runtime?: Omit<AgentExecutionRuntime, "applicationScope"> & {
     applicationScope?: ApplicationScope;
   };
+  jsonExtraction?: JsonExtractionConfig;
   extra?: Partial<ManagedAgentOptions>;
 }
 
@@ -59,6 +61,7 @@ export function triggerShortcut(
     sourceFeature,
     config,
     runtime,
+    jsonExtraction,
     extra,
   } = args;
 
@@ -76,6 +79,7 @@ export function triggerShortcut(
     sourceFeature: sourceFeature ?? "programmatic",
     ...(config ? { config } : {}),
     ...(mergedRuntime ? { runtime: mergedRuntime } : {}),
+    ...(jsonExtraction ? { jsonExtraction } : {}),
     ...(extra ?? {}),
   };
 

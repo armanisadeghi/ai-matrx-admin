@@ -4,6 +4,7 @@ import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { launchAgentExecution } from "@/features/agents/redux/execution-system/thunks/launch-agent-execution.thunk";
 import type {
+  JsonExtractionConfig,
   ManagedAgentOptions,
   SourceFeature,
 } from "@/features/agents/types/instance.types";
@@ -46,6 +47,13 @@ export interface TriggerShortcutOptions {
   config?: Partial<
     import("@/features/agents/types/agent-execution-config.types").AgentExecutionConfig
   >;
+
+  /**
+   * Opt-in structured-JSON extraction during streaming. When provided,
+   * processStream runs a StreamingJsonTracker and the results land in the
+   * active-requests slice (`selectFirstExtractedObject`, etc.).
+   */
+  jsonExtraction?: JsonExtractionConfig;
 
   /**
    * Additional runtime values (widgetHandleId, originalText, userInput).
@@ -91,6 +99,7 @@ export function useShortcutTrigger() {
         sourceFeature,
         config,
         runtime,
+        jsonExtraction,
         extra,
       } = options;
 
@@ -108,6 +117,7 @@ export function useShortcutTrigger() {
         sourceFeature: sourceFeature ?? "programmatic",
         ...(config ? { config } : {}),
         ...(mergedRuntime ? { runtime: mergedRuntime } : {}),
+        ...(jsonExtraction ? { jsonExtraction } : {}),
         ...(extra ?? {}),
       };
 

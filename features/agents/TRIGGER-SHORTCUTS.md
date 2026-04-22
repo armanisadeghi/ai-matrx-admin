@@ -8,6 +8,23 @@ context-slot mappings, defaults, display mode, pre-execution gate, LLM
 overrides, …) and then triggered from anywhere with its ID plus optional
 runtime scope data.
 
+## Where the context menu is live today
+
+Mount points for `UnifiedAgentContextMenu`:
+
+| Surface | File |
+|---|---|
+| Notes editor | `features/notes/components/NoteEditor.tsx` (4 menus — title, body, block, side rail) |
+| Monaco code editor | `features/code-editor/components/CodeEditorContextMenu.tsx` |
+| Agent builder — system instructions | `features/agents/components/builder/message-builders/system-instructions/SystemMessage.tsx` |
+| Agent builder — message item | `features/agents/components/builder/message-builders/MessageItem.tsx` |
+| **Demo / smoke test** | `app/(a)/demos/context-menu-v2/page.tsx` → route `/demos/context-menu-v2` |
+| **Demo / debug** | `app/(a)/demos/context-menu-v2/debug/page.tsx` → route `/demos/context-menu-v2/debug` |
+
+Right-click anywhere inside the bordered panels on the demo page and the menu
+should render. The debug page prints the live shortcut / category / content-block
+state straight out of Redux — useful when a shortcut is missing from the menu.
+
 ## From a React component — `useShortcutTrigger()`
 
 ```tsx

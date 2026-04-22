@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, Component, type ReactNode, type ErrorInfo } from "react";
-import { useAppSelector } from "@/lib/redux/hooks";
-import { useAgentLauncher } from "@/features/agents/hooks/useAgentLauncher";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { useShortcutTrigger } from "@/features/agents/hooks/useShortcutTrigger";
+import { destroyInstanceIfAllowed } from "@/features/agents/redux/execution-system/conversations";
 import {
   selectLatestAccumulatedText,
   selectLatestRequestId,
@@ -99,13 +100,18 @@ interface AgentGeneratorProps {
 }
 
 export function AgentGenerator({ onComplete }: AgentGeneratorProps) {
-  const { launchAgent, close } = useAgentLauncher();
+  const dispatch = useAppDispatch();
+  const trigger = useShortcutTrigger();
   const { createAgent } = useAgentBuilder(onComplete);
   const { publish, publishKey, isActive: isDebugActive } = useDebugContext("AgentGenerator");
 
-  // Pre-launch form inputs (legitimately local — no instance exists yet)
-  const [promptPurpose, setPromptPurpose] = useState("");
-  const [additionalContext, setAdditionalContext] = useState("");
+  // Pre-launch form inputs (legitimately local — no instance exists yet).
+  // These map 1:1 onto the shortcut's input surface:
+  //   selection  → scope.selection  (routed to the agent's prompt variable
+  //                by the shortcut's scope → variable mapping)
+  //   userInput  → runtime.userInput (free-form "additional context")
+  const [selection, setSelection] = useState("");
+  const [userInput, setUserInput] = useState("");
 
   // Post-extraction user-editable field
   const [agentName, setAgentName] = useState("");
@@ -150,7 +156,7 @@ export function AgentGenerator({ onComplete }: AgentGeneratorProps) {
   const hasExtractedJson = extractedSnapshot !== null && extractedSnapshot.type === "object";
   const extractedValue = hasExtractedJson ? (extractedSnapshot.value as Record<string, unknown>) : null;
   const extractionFailed = jsonExtractionComplete && !hasExtractedJson && !!streamingText;
-  const canGenerate = promptPurpose.trim().length > 0;
+  const canGenerate = selection.trim().length > 0;
 
   // ── Auto-populate agent name from extraction ─────────────────────────────
 
@@ -185,6 +191,7 @@ export function AgentGenerator({ onComplete }: AgentGeneratorProps) {
   useEffect(() => {
     if (!isDebugActive) return;
     publish({
+      "Shortcut ID": AGENT_GENERATOR_CONFIG.shortcutId,
       "Conversation ID": conversationId,
       "Request ID": requestId,
       "Stream Phase": streamPhase,
@@ -194,20 +201,20 @@ export function AgentGenerator({ onComplete }: AgentGeneratorProps) {
       "Has Extracted JSON": hasExtractedJson,
       "Extracted Value": extractedValue,
       "Agent Name": agentName,
-      "Prompt Purpose": promptPurpose.slice(0, 100),
-      "Launch Config": AGENT_GENERATOR_CONFIG,
+      "Selection (first 100)": selection.slice(0, 100),
+      "User Input (first 100)": userInput.slice(0, 100),
     });
   }, [
     isDebugActive, conversationId, requestId, streamPhase, isStreaming,
     jsonExtractionComplete, jsonExtractionRevision, hasExtractedJson,
-    extractedValue, agentName, promptPurpose, publish,
+    extractedValue, agentName, selection, userInput, publish,
   ]);
 
   // ── Cleanup on unmount ───────────────────────────────────────────────────
 
   useEffect(() => {
     return () => {
-      if (conversationId) close(conversationId);
+      if (conversationId) dispatch(destroyInstanceIfAllowed(conversationId));
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -215,21 +222,22 @@ export function AgentGenerator({ onComplete }: AgentGeneratorProps) {
   // ── Handlers ─────────────────────────────────────────────────────────────
 
   const handleGenerate = useCallback(async () => {
-    if (!promptPurpose.trim()) {
+    if (!selection.trim()) {
       toast.error("Please describe the purpose of your agent");
       return;
     }
 
-    if (conversationId) close(conversationId);
+    if (conversationId) dispatch(destroyInstanceIfAllowed(conversationId));
     setAgentName("");
 
     try {
-      const result = await launchAgent(AGENT_GENERATOR_CONFIG.agentId, {
-        ...AGENT_GENERATOR_CONFIG.launchDefaults,
-        surfaceKey: "agent-generator",
-        autoRun: true,
-        variables: { prompt_purpose: promptPurpose },
-        userInput: additionalContext || undefined,
+      // The shortcut owns the agent, display mode ("direct"), and the
+      // scope → variable routing. All we supply is the live scope data.
+      const result = await trigger(AGENT_GENERATOR_CONFIG.shortcutId, {
+        scope: { selection },
+        runtime: { userInput: userInput || undefined },
+        jsonExtraction: AGENT_GENERATOR_CONFIG.jsonExtraction,
+        sourceFeature: "agent-generator",
       });
       setConversationId(result.conversationId);
     } catch (err) {
@@ -238,7 +246,7 @@ export function AgentGenerator({ onComplete }: AgentGeneratorProps) {
         description: err instanceof Error ? err.message : "Unknown error",
       });
     }
-  }, [promptPurpose, additionalContext, conversationId, launchAgent, close]);
+  }, [selection, userInput, conversationId, trigger, dispatch]);
 
   const handleCreateAgent = useCallback(async () => {
     if (!extractedValue) {
@@ -267,10 +275,10 @@ export function AgentGenerator({ onComplete }: AgentGeneratorProps) {
   }, [extractedValue, agentName, createAgent]);
 
   const handleRegenerate = useCallback(() => {
-    if (conversationId) close(conversationId);
+    if (conversationId) dispatch(destroyInstanceIfAllowed(conversationId));
     setConversationId(null);
     setAgentName("");
-  }, [conversationId, close]);
+  }, [conversationId, dispatch]);
 
   const handleCopyGenerated = useCallback(() => {
     if (extractedValue) {
@@ -311,8 +319,8 @@ export function AgentGenerator({ onComplete }: AgentGeneratorProps) {
                 <span className="text-xs text-red-500">*</span>
               </Label>
               <VoiceTextarea
-                value={promptPurpose}
-                onChange={(e) => setPromptPurpose(e.target.value)}
+                value={selection}
+                onChange={(e) => setSelection(e.target.value)}
                 placeholder="Describe what you want your AI agent to do..."
                 className="min-h-[120px] sm:min-h-[180px] text-sm border border-border rounded-xl"
                 disabled={isActive || isStreaming || showResult}
@@ -330,8 +338,8 @@ export function AgentGenerator({ onComplete }: AgentGeneratorProps) {
                 <span className="text-xs text-gray-500 ml-1">(Optional)</span>
               </Label>
               <VoiceTextarea
-                value={additionalContext}
-                onChange={(e) => setAdditionalContext(e.target.value)}
+                value={userInput}
+                onChange={(e) => setUserInput(e.target.value)}
                 placeholder="Add any specific requirements, tone, formats, or constraints..."
                 className="min-h-[120px] sm:min-h-[180px] text-sm border border-border rounded-xl"
                 disabled={isActive || isStreaming || showResult}
