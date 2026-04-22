@@ -16,7 +16,9 @@ import {
   type CuratedPickerAiTapEntry,
   type CuratedPickerTabId,
 } from "@/components/icons/curated-icon-picker-entries";
+import { EmbedSiteFrame } from "@/features/window-panels/components/EmbedSiteFrame";
 import { cn } from "@/lib/utils";
+import { LUCIDE_ICONS_GALLERY_URL } from "@/utils/icons/lucide-gallery-url";
 
 export interface CuratedIconPickerWindowProps {
   isOpen: boolean;
@@ -84,8 +86,9 @@ export function CuratedIconPickerWindow({
       position="center"
       footerLeft={
         <p className="truncate px-2 text-[10px] text-muted-foreground">
-          AI tiles match the button demo; stored id may differ from artwork —
-          use Icons tab to refine.
+          {tab === "lucideWeb"
+            ? "Browse Lucide here, then enter the icon name in the field. Search Lucide in the form still opens the full site frame."
+            : "AI tiles match the button demo; stored id may differ from artwork — use Icons tab to refine."}
         </p>
       }
     >
@@ -108,70 +111,82 @@ export function CuratedIconPickerWindow({
           ))}
         </div>
 
-        <Input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Filter…"
-          className="h-9 shrink-0 text-sm"
-          style={{ fontSize: "16px" }}
-          aria-label="Filter icons"
-        />
+        {tab !== "lucideWeb" ? (
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Filter…"
+            className="h-9 shrink-0 text-sm"
+            style={{ fontSize: "16px" }}
+            aria-label="Filter icons"
+          />
+        ) : null}
 
-        <ScrollArea className="min-h-0 flex-1">
-          <div className="space-y-4 pr-3 pb-2">
-            {tab === "all" && (
-              <>
-                {svgIds.length > 0 ? (
-                  <section className="space-y-1.5">
-                    <h3 className="px-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                      Matrx SVG ({svgIds.length})
-                    </h3>
-                    <IconPickerTapestry ids={svgIds} onPick={pick} />
-                  </section>
-                ) : null}
-                {componentIds.length > 0 ? (
-                  <section className="space-y-1.5">
-                    <h3 className="px-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                      Icons ({componentIds.length})
-                    </h3>
-                    <IconPickerTapestry ids={componentIds} onPick={pick} />
-                  </section>
-                ) : null}
-                {svgIds.length === 0 && componentIds.length === 0 ? (
-                  <EmptyFilter />
-                ) : null}
-              </>
-            )}
-
-            {tab === "svg" &&
-              (svgIds.length > 0 ? (
-                <IconPickerTapestry ids={svgIds} onPick={pick} />
-              ) : (
-                <EmptyFilter />
-              ))}
-
-            {tab === "icons" &&
-              (componentIds.length > 0 ? (
-                <IconPickerTapestry ids={componentIds} onPick={pick} />
-              ) : (
-                <EmptyFilter />
-              ))}
-
-            {tab === "aiBrands" &&
-              (aiBrandsFiltered.length > 0 ? (
-                <AiTapTapestry entries={aiBrandsFiltered} onPick={pick} />
-              ) : (
-                <EmptyFilter />
-              ))}
-
-            {tab === "aiActions" &&
-              (aiActionsFiltered.length > 0 ? (
-                <AiTapTapestry entries={aiActionsFiltered} onPick={pick} />
-              ) : (
-                <EmptyFilter />
-              ))}
+        {tab === "lucideWeb" ? (
+          <div className="flex min-h-0 flex-1 flex-col gap-2">
+            <EmbedSiteFrame
+              src={LUCIDE_ICONS_GALLERY_URL}
+              title="Lucide icons"
+              className="min-h-[200px] rounded-md border bg-muted/20"
+            />
           </div>
-        </ScrollArea>
+        ) : (
+          <ScrollArea className="min-h-0 flex-1">
+            <div className="space-y-4 pr-3 pb-2">
+              {tab === "all" && (
+                <>
+                  {svgIds.length > 0 ? (
+                    <section className="space-y-1.5">
+                      <h3 className="px-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                        Matrx SVG ({svgIds.length})
+                      </h3>
+                      <IconPickerTapestry ids={svgIds} onPick={pick} />
+                    </section>
+                  ) : null}
+                  {componentIds.length > 0 ? (
+                    <section className="space-y-1.5">
+                      <h3 className="px-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                        Icons ({componentIds.length})
+                      </h3>
+                      <IconPickerTapestry ids={componentIds} onPick={pick} />
+                    </section>
+                  ) : null}
+                  {svgIds.length === 0 && componentIds.length === 0 ? (
+                    <EmptyFilter />
+                  ) : null}
+                </>
+              )}
+
+              {tab === "svg" &&
+                (svgIds.length > 0 ? (
+                  <IconPickerTapestry ids={svgIds} onPick={pick} />
+                ) : (
+                  <EmptyFilter />
+                ))}
+
+              {tab === "icons" &&
+                (componentIds.length > 0 ? (
+                  <IconPickerTapestry ids={componentIds} onPick={pick} />
+                ) : (
+                  <EmptyFilter />
+                ))}
+
+              {tab === "aiBrands" &&
+                (aiBrandsFiltered.length > 0 ? (
+                  <AiTapTapestry entries={aiBrandsFiltered} onPick={pick} />
+                ) : (
+                  <EmptyFilter />
+                ))}
+
+              {tab === "aiActions" &&
+                (aiActionsFiltered.length > 0 ? (
+                  <AiTapTapestry entries={aiActionsFiltered} onPick={pick} />
+                ) : (
+                  <EmptyFilter />
+                ))}
+            </div>
+          </ScrollArea>
+        )}
       </div>
     </WindowPanel>
   );

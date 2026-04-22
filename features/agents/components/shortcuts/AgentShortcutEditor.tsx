@@ -24,6 +24,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useAgentShortcuts } from "@/features/agent-shortcuts";
 import { ShortcutForm } from "@/features/agent-shortcuts/components/ShortcutForm";
 import { useAppSelector } from "@/lib/redux/hooks";
+import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
+import { selectAgentById } from "@/features/agents/redux/agent-definition/selectors";
 import { selectShortcutById } from "@/features/agents/redux/agent-shortcuts/selectors";
 import type { AgentShortcut } from "@/features/agents/redux/agent-shortcuts/types";
 import type { AgentScope } from "@/features/agent-shortcuts/constants";
@@ -34,17 +36,28 @@ interface AgentShortcutEditorProps {
   agentName: string;
   /** Either a real shortcut UUID, or the literal string `"new"` for creation. */
   shortcutId: string;
+  /** Base path for back-to-list navigation. Defaults to `/agents` (user route).
+   *  Admin route passes `/administration/system-agents/agents`. */
+  basePath?: string;
 }
 
 export function AgentShortcutEditor({
   agentId,
   agentName,
   shortcutId,
+  basePath = "/agents",
 }: AgentShortcutEditorProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
   const isCreate = shortcutId === "new";
+  const isAdmin = useAppSelector(selectIsAdmin);
+  const agent = useAppSelector((state) => selectAgentById(state, agentId));
+
+  // When an admin creates a shortcut for a builtin/system agent, it belongs
+  // to the system (global scope). Plain users, or regular agents → user scope.
+  const createModeDefaultScope: AgentScope =
+    agent?.agentType === "builtin" && isAdmin ? "global" : "user";
 
   // We pre-hydrate both scopes so the page works whether the shortcut is
   // user-owned or global. When creating we default to `"user"`; when editing
@@ -59,14 +72,18 @@ export function AgentShortcutEditor({
   const isLoading = userQuery.isLoading || globalQuery.isLoading;
   const fetchError = userQuery.error || globalQuery.error;
 
-  // Resolve the scope to feed `useAgentShortcutCrud`. Creating → user;
-  // editing → inferred from the shortcut's ownership columns.
+  // Resolve the scope to feed `useAgentShortcutCrud`. Creating → derived from
+  // agent type (admin + builtin → global, else user); editing → inferred from
+  // the shortcut's ownership columns.
   const { scope, scopeId, categories } = useMemo(() => {
     if (isCreate) {
       return {
-        scope: "user" as AgentScope,
+        scope: createModeDefaultScope,
         scopeId: undefined as string | undefined,
-        categories: userQuery.categories,
+        categories:
+          createModeDefaultScope === "global"
+            ? globalQuery.categories
+            : userQuery.categories,
       };
     }
 
@@ -111,11 +128,17 @@ export function AgentShortcutEditor({
       scopeId: undefined,
       categories: globalQuery.categories,
     };
-  }, [isCreate, loadedShortcut, userQuery.categories, globalQuery.categories]);
+  }, [
+    isCreate,
+    loadedShortcut,
+    userQuery.categories,
+    globalQuery.categories,
+    createModeDefaultScope,
+  ]);
 
   const goToList = () => {
     startTransition(() => {
-      router.push(`/agents/${agentId}/shortcuts`);
+      router.push(`${basePath}/${agentId}/shortcuts`);
     });
   };
 
@@ -132,13 +155,13 @@ export function AgentShortcutEditor({
     if (isCreate) {
       // Just created → replace the `new` URL with the real id so refresh works.
       startTransition(() => {
-        router.replace(`/agents/${agentId}/shortcuts/${nextId}`);
+        router.replace(`${basePath}/${agentId}/shortcuts/${nextId}`);
       });
       return;
     }
     if (nextId !== shortcutId) {
       startTransition(() => {
-        router.replace(`/agents/${agentId}/shortcuts/${nextId}`);
+        router.replace(`${basePath}/${agentId}/shortcuts/${nextId}`);
       });
     }
   };
@@ -183,7 +206,7 @@ export function AgentShortcutEditor({
               {fetchError ? ` (${fetchError})` : null}
             </p>
           </div>
-          <Link href={`/agents/${agentId}/shortcuts`}>
+          <Link href={`${basePath}/${agentId}/shortcuts`}>
             <Button size="sm" variant="outline">
               <ArrowLeft className="h-4 w-4 mr-1.5" />
               Back to shortcuts

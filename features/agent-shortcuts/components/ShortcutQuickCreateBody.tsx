@@ -643,12 +643,6 @@ function JsonTab({ state }: { state: ShortcutQuickCreateState }) {
           <Info className="h-3.5 w-3.5 text-muted-foreground" />
           <Label className="text-sm font-semibold">Raw shortcut JSON</Label>
         </div>
-        <p className="text-[11px] text-muted-foreground leading-tight">
-          Edit freely. Nothing is validated as you type — we only parse and
-          sanity-check when you click <span className="font-medium">Save</span>.
-          On save, this JSON replaces every other tab&apos;s values. The agent
-          binding stays locked to the agent this window was opened from.
-        </p>
       </div>
 
       <div className="flex-1 min-h-0 px-4 pb-2">

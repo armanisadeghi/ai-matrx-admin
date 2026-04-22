@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { Eye, Pencil, Play, History, Plus, Webhook } from "lucide-react";
+import { Check, MoreHorizontal, Pencil, Play, Webhook } from "lucide-react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAgentIsDirty } from "@/features/agents/redux/agent-definition/selectors";
 import {
@@ -20,34 +20,25 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  BottomSheet,
+  BottomSheetHeader,
+  BottomSheetBody,
+} from "@/components/official/bottom-sheet";
+import { cn } from "@/lib/utils";
 import { AgentOptionsMenu } from "./AgentOptionsMenu";
+import {
+  MODES,
+  deriveAgentMode,
+  getAgentModeHref,
+  type AgentPageMode,
+  type ModeOption,
+} from "./AgentModeController";
 
-type AgentPageMode = "view" | "edit" | "run" | "versions";
-type ModeOption = AgentPageMode | "new";
-
-const MODES: { id: ModeOption; label: string; icon: typeof Eye }[] = [
-  { id: "view", label: "View", icon: Eye },
-  { id: "edit", label: "Build", icon: Pencil },
-  { id: "run", label: "Run", icon: Play },
-  { id: "versions", label: "Versions", icon: History },
-  { id: "new", label: "New", icon: Plus },
-];
-
-function deriveMode(
-  pathname: string,
-  agentId: string,
-  basePath: string,
-): AgentPageMode {
-  const base = `${basePath}/${agentId}`;
-  if (pathname.startsWith(`${base}/run`)) return "run";
-  if (pathname.startsWith(`${base}/build`)) return "edit";
-  const versionPattern = new RegExp(
-    `^${basePath.replace(/\//g, "\\/")}\\/[^/]+\\/\\d+$`,
-  );
-  if (pathname.startsWith(`${base}/latest`) || versionPattern.test(pathname))
-    return "versions";
-  return "view";
-}
+// Modes that stay visible directly on mobile — everything else goes in the
+// "More" sheet. Per UX request: only Build + Run are prominent; the rest are
+// one tap away in the sheet.
+const PROMINENT: ModeOption[] = ["edit", "run"];
 
 function deriveModeSuffix(
   pathname: string,
@@ -57,6 +48,8 @@ function deriveModeSuffix(
   const base = `${basePath}/${agentId}`;
   if (pathname.startsWith(`${base}/run`)) return "/run";
   if (pathname.startsWith(`${base}/build`)) return "/build";
+  if (pathname.startsWith(`${base}/shortcuts`)) return "/shortcuts";
+  if (pathname.startsWith(`${base}/apps`)) return "/apps";
   const versionPattern = new RegExp(
     `^${basePath.replace(/\//g, "\\/")}\\/[^/]+\\/\\d+$`,
   );
@@ -84,8 +77,9 @@ export function AgentHeaderMobile({
   const isDirty = useAppSelector((state) => selectAgentIsDirty(state, agentId));
   const [showDirtyDialog, setShowDirtyDialog] = useState(false);
   const [pendingNew, setPendingNew] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
 
-  const mode = deriveMode(pathname, agentId, basePath);
+  const mode = deriveAgentMode(pathname, agentId, basePath);
 
   const navigateTo = (path: string) => {
     startTransition(() => router.push(path));
@@ -102,13 +96,7 @@ export function AgentHeaderMobile({
       }
       return;
     }
-    const pathMap: Record<AgentPageMode, string> = {
-      view: `${basePath}/${agentId}`,
-      edit: `${basePath}/${agentId}/build`,
-      run: `${basePath}/${agentId}/run`,
-      versions: `${basePath}/${agentId}/latest`,
-    };
-    navigateTo(pathMap[next]);
+    navigateTo(getAgentModeHref(next, agentId, basePath));
   };
 
   const handleAgentSelect = (selectedId: string) => {
@@ -116,10 +104,12 @@ export function AgentHeaderMobile({
     startTransition(() => router.push(`${basePath}/${selectedId}${suffix}`));
   };
 
+  const prominentModes = MODES.filter((m) => PROMINENT.includes(m.id));
+
   return (
     <>
       <div className="flex items-center w-full gap-0.5 min-w-0">
-        {/* Left: Agent selector — Webhook icon opens the drawer (no name label; icons-only to save mobile space) */}
+        {/* Left: Agent selector */}
         <AgentListDropdown
           onSelect={handleAgentSelect}
           triggerSlot={
@@ -134,10 +124,10 @@ export function AgentHeaderMobile({
           }
         />
 
-        {/* Center: 5-icon mode group */}
+        {/* Center: Build + Run + More */}
         <div className="flex-1 flex justify-center min-w-0">
           <TapTargetButtonGroup>
-            {MODES.map(({ id, label, icon: Icon }) => {
+            {prominentModes.map(({ id, label, icon: Icon }) => {
               const isActive = id === mode;
               return (
                 <TapTargetButtonForGroup
@@ -152,12 +142,72 @@ export function AgentHeaderMobile({
                 />
               );
             })}
+            <TapTargetButtonForGroup
+              icon={
+                <MoreHorizontal
+                  className={`w-4 h-4 ${!PROMINENT.includes(mode as ModeOption) ? "text-primary" : ""}`}
+                />
+              }
+              ariaLabel="More"
+              onClick={() => setMoreOpen(true)}
+            />
           </TapTargetButtonGroup>
         </div>
 
         {/* Right: Options menu */}
         <AgentOptionsMenu agentId={agentId} asTapTarget />
       </div>
+
+      <BottomSheet open={moreOpen} onOpenChange={setMoreOpen} title="Agent mode">
+        <BottomSheetHeader
+          title="Switch mode"
+          trailing={
+            <button
+              onClick={() => setMoreOpen(false)}
+              className="text-primary active:opacity-70 min-h-[44px] px-1 text-[15px]"
+            >
+              Done
+            </button>
+          }
+        />
+        <BottomSheetBody>
+          {MODES.map((m, idx) => {
+            const Icon = m.icon;
+            const isActive = m.id === mode;
+            return (
+              <button
+                key={m.id}
+                onClick={() => {
+                  setMoreOpen(false);
+                  handleModeChange(m.id);
+                }}
+                className={cn(
+                  "flex items-center w-full px-5 min-h-[52px] active:bg-white/5 transition-colors",
+                  idx < MODES.length - 1 && "border-b border-white/[0.06]",
+                )}
+              >
+                <Icon
+                  className={cn(
+                    "w-4 h-4 mr-3 shrink-0",
+                    isActive ? "text-primary" : "text-muted-foreground",
+                  )}
+                />
+                <span
+                  className={cn(
+                    "text-[15px] flex-1 text-left",
+                    isActive && "font-medium",
+                  )}
+                >
+                  {m.label}
+                </span>
+                {isActive && (
+                  <Check className="w-4 h-4 text-primary shrink-0" />
+                )}
+              </button>
+            );
+          })}
+        </BottomSheetBody>
+      </BottomSheet>
 
       <AlertDialog open={showDirtyDialog} onOpenChange={setShowDirtyDialog}>
         <AlertDialogContent>

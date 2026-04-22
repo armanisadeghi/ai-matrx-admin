@@ -109,7 +109,26 @@ export function useShortcutQuickCreate({
   }, [dispatch, agentId]);
 
   // ── Scope ────────────────────────────────────────────────────────────────
-  const [scope, setScope] = useState<AgentScope>("user");
+  // When an admin is creating a shortcut for a builtin/system agent, the
+  // shortcut belongs to the system — not to the admin personally. Default
+  // scope accordingly so the form loads global categories, not the admin's
+  // own shortcuts. Falls back to "user" for regular agents or non-admins.
+  const initialScope: AgentScope =
+    agent?.agentType === "builtin" && isAdmin ? "global" : "user";
+  const [scope, setScope] = useState<AgentScope>(initialScope);
+
+  // Agents hydrate async; re-sync scope once the agent row lands so the first
+  // render doesn't lock in "user" when we're actually in the builtin context.
+  const syncedForAgent = useRef<string | null>(null);
+  useEffect(() => {
+    if (!agent?.agentType) return;
+    if (syncedForAgent.current === agentId) return;
+    const desired: AgentScope =
+      agent.agentType === "builtin" && isAdmin ? "global" : "user";
+    setScope(desired);
+    syncedForAgent.current = agentId;
+  }, [agent?.agentType, agentId, isAdmin]);
+
   const { shortcuts, categories } = useAgentShortcuts({
     scope,
     scopeId: undefined,

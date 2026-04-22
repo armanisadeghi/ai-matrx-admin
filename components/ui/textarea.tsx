@@ -12,6 +12,23 @@ export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextArea
   wrapperClassName?: string;
 }
 
+// When the consumer asks the <textarea> to fill its container via `h-full`,
+// `h-screen`, or `flex-1`, the wrapping motion.div must also stretch or
+// CSS `height: 100%` on the inner textarea resolves against an auto-sized
+// parent and collapses. This detects those classes and forwards matching
+// stretch behavior to the wrapper so `<Textarea className="h-full" />`
+// works out-of-the-box without consumers needing to learn about
+// `wrapperClassName`.
+const FILL_HEIGHT_REGEX = /(?:^|\s)(h-full|h-screen|flex-1|grow)(?:\s|$)/;
+const FILL_WIDTH_REGEX = /(?:^|\s)(w-full|w-screen)(?:\s|$)/;
+const getWrapperStretchClasses = (className?: string) => {
+  if (!className) return undefined;
+  const fills: string[] = [];
+  if (FILL_HEIGHT_REGEX.test(className)) fills.push("h-full min-h-0");
+  if (FILL_WIDTH_REGEX.test(className)) fills.push("w-full");
+  return fills.length ? fills.join(" ") : undefined;
+};
+
 // Hook for auto-grow functionality
 const useAutoGrow = (
   ref: React.RefObject<HTMLTextAreaElement>,
@@ -81,6 +98,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         onMouseLeave={() => setVisible(false)}
         className={cn(
           "p-[2px] rounded-lg transition duration-300 group/textarea",
+          getWrapperStretchClasses(className),
           wrapperClassName,
         )}
       >
@@ -165,7 +183,13 @@ const TextareaWithPrefix = React.forwardRef<
     useAutoGrow(textareaRef, props.value, autoGrow, minHeight, maxHeight);
 
     return (
-      <div className={cn("relative", wrapperClassName)}>
+      <div
+        className={cn(
+          "relative",
+          getWrapperStretchClasses(className),
+          wrapperClassName,
+        )}
+      >
         {prefix && (
           <div className="absolute left-3 top-3 text-muted-foreground z-10 pointer-events-none">
             {prefix}
@@ -227,7 +251,7 @@ const CopyTextarea = React.forwardRef<HTMLTextAreaElement, CopyTextareaProps>(
     };
 
     return (
-      <div className="relative">
+      <div className={cn("relative", getWrapperStretchClasses(className))}>
         <textarea
           ref={textareaRef}
           className={cn(
@@ -315,7 +339,11 @@ const FancyTextarea = React.forwardRef<HTMLTextAreaElement, FancyTextareaProps>(
 
     return (
       <motion.div
-        className={cn("relative", wrapperClassName)}
+        className={cn(
+          "relative",
+          getWrapperStretchClasses(className),
+          wrapperClassName,
+        )}
         style={{
           background: useMotionTemplate`
                   radial-gradient(

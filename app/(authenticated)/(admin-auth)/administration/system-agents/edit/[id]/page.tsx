@@ -3,7 +3,7 @@
 import React, { use, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { AlertCircle, ArrowLeft, Loader2 } from "lucide-react";
+import { AlertCircle, ArrowLeft, Copy, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAppSelector } from "@/lib/redux/hooks";
@@ -17,6 +17,13 @@ import {
 
 const SCOPE = "global" as const;
 
+/**
+ * Admin inline editor for a global shortcut. Unlike the earlier
+ * "route-hosts-a-modal" pattern, this renders the `ShortcutForm` directly
+ * inline as a proper page. The Duplicate modal is the only remaining modal,
+ * which is acceptable — it's an ephemeral action triggered from the page, not
+ * the primary editing surface.
+ */
 export default function AdminEditShortcutPage({
   params,
 }: {
@@ -31,7 +38,6 @@ export default function AdminEditShortcutPage({
   });
   const shortcut = useAppSelector((state) => selectShortcutById(state, id));
 
-  const [formOpen, setFormOpen] = useState(true);
   const [duplicateTarget, setDuplicateTarget] = useState<AgentShortcut | null>(
     null,
   );
@@ -40,11 +46,6 @@ export default function AdminEditShortcutPage({
     startTransition(() => {
       router.push("/administration/system-agents/shortcuts");
     });
-  };
-
-  const handleClose = () => {
-    setFormOpen(false);
-    goToList();
   };
 
   const handleSuccess = (nextId: string | null) => {
@@ -130,40 +131,31 @@ export default function AdminEditShortcutPage({
           )}
           Back to shortcuts
         </Button>
-        <div className="text-sm text-muted-foreground truncate">
-          Editing <span className="font-medium text-foreground">{resolved.label}</span>
+        <div className="text-sm text-muted-foreground truncate flex-1">
+          Editing{" "}
+          <span className="font-medium text-foreground">{resolved.label}</span>
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => handleDuplicate(resolved as AgentShortcut)}
+        >
+          <Copy className="h-3.5 w-3.5 mr-1.5" />
+          Duplicate
+        </Button>
       </div>
 
-      <div className="flex-1 overflow-hidden flex items-center justify-center p-6">
-        <Card className="max-w-lg w-full">
-          <CardContent className="p-6 space-y-2 text-sm text-muted-foreground">
-            <div className="font-medium text-foreground">Shortcut editor</div>
-            <p>
-              The shortcut editor is open as a modal. Close it to return to the
-              shortcut list.
-            </p>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setFormOpen(true)}
-              disabled={formOpen}
-            >
-              Re-open editor
-            </Button>
-          </CardContent>
-        </Card>
+      <div className="flex-1 overflow-hidden">
+        <ShortcutForm
+          variant="inline"
+          scope={SCOPE}
+          onClose={goToList}
+          onSuccess={handleSuccess}
+          shortcut={resolved as AgentShortcut}
+          categories={categories}
+          onDuplicate={handleDuplicate}
+        />
       </div>
-
-      <ShortcutForm
-        scope={SCOPE}
-        isOpen={formOpen}
-        onClose={handleClose}
-        onSuccess={handleSuccess}
-        shortcut={resolved}
-        categories={categories}
-        onDuplicate={handleDuplicate}
-      />
 
       {duplicateTarget && (
         <DuplicateShortcutModal

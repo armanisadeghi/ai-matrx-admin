@@ -43,7 +43,21 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { AlertCircle, Copy, Loader2, Save, Trash2, X } from "lucide-react";
+import {
+  AlertCircle,
+  Copy,
+  HelpCircle,
+  Loader2,
+  Save,
+  Trash2,
+  X,
+} from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useToast } from "@/components/ui/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import IconInputWithValidation from "@/components/official/icons/IconInputWithValidation.dynamic";
@@ -101,6 +115,51 @@ export interface ShortcutFormProps extends ScopeProps {
 // ─────────────────────────────────────────────────────────────────────────
 // Section helpers — keep the form body readable when there are 12+ fields.
 // ─────────────────────────────────────────────────────────────────────────
+
+/**
+ * Inline help tooltip: a tiny `?` icon next to a label that reveals the
+ * explanatory copy on hover. Replaces the multi-line paragraphs that used to
+ * sit under every field and turn the form into a wall of text.
+ */
+function HelpTooltip({ children }: { children: React.ReactNode }) {
+  return (
+    <TooltipProvider delayDuration={150}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            aria-label="Help"
+            className="inline-flex items-center justify-center h-4 w-4 rounded-full text-muted-foreground/70 hover:text-foreground transition-colors"
+          >
+            <HelpCircle className="h-3.5 w-3.5" />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="top" className="max-w-xs text-xs">
+          {children}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+
+/** Label + inline HelpTooltip. Used for section headers that previously had
+ *  a paragraph of explanatory copy underneath them. */
+function LabelWithHelp({
+  children,
+  help,
+  className = "text-sm",
+}: {
+  children: React.ReactNode;
+  help: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className="flex items-center gap-1.5">
+      <Label className={className}>{children}</Label>
+      <HelpTooltip>{help}</HelpTooltip>
+    </div>
+  );
+}
 
 function ToggleRow({
   id,
@@ -519,12 +578,11 @@ export function ShortcutForm({
       </div>
 
       <div className="space-y-1.5">
-        <Label className="text-sm">Enabled features</Label>
-        <p className="text-xs text-muted-foreground">
-          Pick the surfaces this shortcut appears in. Leave empty to show
-          everywhere. When a host sets a feature filter, the shortcut must
-          include that tag (or stay empty) to appear.
-        </p>
+        <LabelWithHelp
+          help="Pick the surfaces this shortcut appears in. Leave empty to show everywhere. When a host sets a feature filter, the shortcut must include that tag (or stay empty) to appear."
+        >
+          Enabled features
+        </LabelWithHelp>
         <ShortcutContextsPicker
           value={formData.enabledFeatures}
           onChange={(value) => handleChange("enabledFeatures", value)}
@@ -578,9 +636,18 @@ export function ShortcutForm({
       <Separator />
 
       <div className="space-y-2">
-        <Label className="text-sm font-semibold">
+        <LabelWithHelp
+          className="text-sm font-semibold"
+          help={
+            <>
+              Route a surface-provided scope key (selection, content, file
+              path, …) into one of the agent&apos;s{" "}
+              <span className="font-mono">{`{{variables}}`}</span>.
+            </>
+          }
+        >
           Scope → Variable Mappings
-        </Label>
+        </LabelWithHelp>
         <ScopeMappingEditor
           availableScopes={
             formData.scopeMappings
@@ -602,29 +669,21 @@ export function ShortcutForm({
           }
           compact
         />
-        <p className="text-xs text-muted-foreground">
-          Route a surface-provided scope key (selection, content, file path, …)
-          into one of the agent&apos;s{" "}
-          <span className="font-mono">{`{{variables}}`}</span>.
-        </p>
       </div>
 
       <div className="space-y-2">
-        <Label className="text-sm font-semibold">
+        <LabelWithHelp
+          className="text-sm font-semibold"
+          help="Same as variable mappings, but routes a scope key into a context slot instead. Takes precedence over default slot values and ad-hoc context at launch."
+        >
           Scope → Context Slot Mappings
-        </Label>
+        </LabelWithHelp>
         <ContextSlotMappingEditor
           contextSlots={contextSlots}
           contextMappings={formData.contextMappings}
           onChange={(v) => handleChange("contextMappings", v)}
           compact
         />
-        <p className="text-xs text-muted-foreground">
-          Parity with the mapping above, but routes a scope key into an agent{" "}
-          <span className="font-medium">context slot</span> instead of a
-          variable. Takes precedence over default context slot values and ad-hoc
-          context at launch.
-        </p>
       </div>
 
       <Separator />
@@ -862,7 +921,12 @@ export function ShortcutForm({
         </div>
 
         <div className="space-y-1.5">
-          <Label className="text-xs">Default Variable Values</Label>
+          <LabelWithHelp
+            className="text-xs"
+            help="Agent-defined defaults show as placeholders; your overrides are saved per-shortcut. Scope-mapped values and the user's runtime edits still win."
+          >
+            Default Variable Values
+          </LabelWithHelp>
           <DefaultVariableValuesEditor
             variableDefinitions={variableDefinitions}
             values={formData.defaultVariables}
@@ -870,15 +934,15 @@ export function ShortcutForm({
             disabled={saving}
             compact
           />
-          <p className="text-[10px] text-muted-foreground">
-            Agent-defined defaults show as placeholders; your overrides are
-            saved per-shortcut. Scope-mapped values and the user&apos;s runtime
-            edits still win.
-          </p>
         </div>
 
         <div className="space-y-1.5">
-          <Label className="text-xs">Default Context Slot Values</Label>
+          <LabelWithHelp
+            className="text-xs"
+            help="Pre-seed a value for any declared context slot on launch. Scope → Context Slot mappings and runtime context entries still override."
+          >
+            Default Context Slot Values
+          </LabelWithHelp>
           <DefaultContextSlotValuesEditor
             contextSlots={contextSlots}
             values={formData.contextOverrides}
@@ -886,10 +950,6 @@ export function ShortcutForm({
             disabled={saving}
             compact
           />
-          <p className="text-[10px] text-muted-foreground">
-            Pre-seed a value for any declared context slot on launch. Scope →
-            Context Slot mappings and runtime context entries still override.
-          </p>
         </div>
 
         <JsonEditorRow

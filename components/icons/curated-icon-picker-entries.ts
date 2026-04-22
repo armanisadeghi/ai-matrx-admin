@@ -177,6 +177,7 @@ export type CuratedPickerTabId =
   | "all"
   | "svg"
   | "icons"
+  | "lucideWeb"
   | "aiBrands"
   | "aiActions";
 
@@ -187,6 +188,7 @@ export const CURATED_PICKER_TABS: {
   { id: "all", label: "All" },
   { id: "svg", label: "Matrx SVG" },
   { id: "icons", label: "Icons" },
+  { id: "lucideWeb", label: "Lucide.dev" },
   { id: "aiBrands", label: "AI brands" },
   { id: "aiActions", label: "AI actions" },
 ];

@@ -22,8 +22,7 @@ import {
   collectLucideIconNameCandidates,
   extractLucideJsxIconName,
 } from "@/utils/icons/lucide-name-normalize";
-
-const LUCIDE_ICONS_URL = "https://lucide.dev/icons/";
+import { LUCIDE_ICONS_GALLERY_URL } from "@/utils/icons/lucide-gallery-url";
 
 const CuratedIconPickerWindowLazy = dynamic(
   () =>
@@ -67,7 +66,7 @@ export default function IconInputWithValidation({
   id,
   disabled = false,
   showLucideLink = true,
-  showCuratedIconGallery = false,
+  showCuratedIconGallery = true,
 }: IconInputWithValidationProps) {
   const dispatch = useAppDispatch();
   const galleryInstanceId = useId().replace(/:/g, "");
@@ -146,7 +145,7 @@ export default function IconInputWithValidation({
       openOverlay({
         overlayId: "browserFrameWindow",
         data: {
-          url: LUCIDE_ICONS_URL,
+          url: LUCIDE_ICONS_GALLERY_URL,
           windowTitle: "Lucide icons",
         },
       }),
@@ -224,7 +223,7 @@ export default function IconInputWithValidation({
                 Search Lucide
               </button>
               <a
-                href={LUCIDE_ICONS_URL}
+                href={LUCIDE_ICONS_GALLERY_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 text-primary underline-offset-2 hover:underline"

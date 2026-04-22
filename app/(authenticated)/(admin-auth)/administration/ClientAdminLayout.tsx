@@ -14,9 +14,11 @@ import { filteredPages, MODULE_HOME, MODULE_NAME } from "./config";
  */
 function isFullscreenRoute(pathname: string): boolean {
   // System agent detail routes: /administration/system-agents/agents/<id>[/...]
-  if (/^\/administration\/system-agents\/agents\/[^/]+(?:\/.*)?$/.test(pathname)) {
-    // The list page lives at /administration/system-agents/agents — keep the
-    // header there. Everything deeper is fullscreen.
+  // — every path DEEPER than the list is fullscreen (builder, runner,
+  // shortcuts, apps, edit). The list itself keeps the module header.
+  if (
+    /^\/administration\/system-agents\/agents\/[^/]+(?:\/.*)?$/.test(pathname)
+  ) {
     return pathname !== "/administration/system-agents/agents";
   }
   return false;

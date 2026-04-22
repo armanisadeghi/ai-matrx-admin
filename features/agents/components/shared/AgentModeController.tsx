@@ -3,7 +3,16 @@
 import { useState, useTransition } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { Eye, Pencil, Play, History, Plus, LayoutGrid } from "lucide-react";
+import {
+  AppWindow,
+  Eye,
+  History,
+  LayoutGrid,
+  Pencil,
+  Play,
+  Plus,
+  Zap,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAgentIsDirty } from "@/features/agents/redux/agent-definition/selectors";
@@ -18,19 +27,48 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-type AgentPageMode = "view" | "edit" | "run" | "versions" | "widgets";
-type ModeOption = AgentPageMode | "new";
+export type AgentPageMode =
+  | "view"
+  | "edit"
+  | "run"
+  | "shortcuts"
+  | "apps"
+  | "versions"
+  | "widgets";
+export type ModeOption = AgentPageMode | "new";
 
-const MODES: { id: ModeOption; label: string; icon: typeof Eye }[] = [
+export const MODES: { id: ModeOption; label: string; icon: typeof Eye }[] = [
   { id: "view", label: "View", icon: Eye },
   { id: "edit", label: "Build", icon: Pencil },
   { id: "run", label: "Run", icon: Play },
+  { id: "shortcuts", label: "Shortcuts", icon: Zap },
+  { id: "apps", label: "Apps", icon: AppWindow },
   { id: "versions", label: "Versions", icon: History },
   { id: "widgets", label: "Widgets", icon: LayoutGrid },
   { id: "new", label: "New", icon: Plus },
 ];
 
-function deriveMode(
+/** Shared resolver for `${basePath}/${agentId}/<mode-suffix>` URLs. Exported so
+ *  the mobile header + "more" sheet can reuse the same mapping. */
+export function getAgentModeHref(
+  mode: ModeOption,
+  agentId: string,
+  basePath: string,
+): string {
+  if (mode === "new") return basePath;
+  const map: Record<AgentPageMode, string> = {
+    view: `${basePath}/${agentId}`,
+    edit: `${basePath}/${agentId}/build`,
+    run: `${basePath}/${agentId}/run`,
+    shortcuts: `${basePath}/${agentId}/shortcuts`,
+    apps: `${basePath}/${agentId}/apps`,
+    versions: `${basePath}/${agentId}/latest`,
+    widgets: `${basePath}/${agentId}/widgets`,
+  };
+  return map[mode];
+}
+
+export function deriveAgentMode(
   pathname: string,
   agentId: string,
   basePath: string,
@@ -38,6 +76,8 @@ function deriveMode(
   const base = `${basePath}/${agentId}`;
   if (pathname.startsWith(`${base}/run`)) return "run";
   if (pathname.startsWith(`${base}/build`)) return "edit";
+  if (pathname.startsWith(`${base}/shortcuts`)) return "shortcuts";
+  if (pathname.startsWith(`${base}/apps`)) return "apps";
   if (pathname.startsWith(`${base}/widgets`)) return "widgets";
   const versionPattern = new RegExp(
     `^${basePath.replace(/\//g, "\\/")}\\/[^/]+\\/v\\/\\d+$`,
@@ -61,7 +101,7 @@ export function AgentModeController({
   const [showDirtyDialog, setShowDirtyDialog] = useState(false);
   const [pendingNew, setPendingNew] = useState(false);
 
-  const mode = deriveMode(pathname, agentId, basePath);
+  const mode = deriveAgentMode(pathname, agentId, basePath);
 
   const navigateTo = (path: string) => {
     startTransition(() => router.push(path));
@@ -80,27 +120,11 @@ export function AgentModeController({
       return;
     }
 
-    const pathMap: Record<AgentPageMode, string> = {
-      view: `${basePath}/${agentId}`,
-      edit: `${basePath}/${agentId}/build`,
-      run: `${basePath}/${agentId}/run`,
-      versions: `${basePath}/${agentId}/latest`,
-      widgets: `${basePath}/${agentId}/widgets`,
-    };
-    navigateTo(pathMap[next]);
+    navigateTo(getAgentModeHref(next, agentId, basePath));
   };
 
-  const getModeHref = (id: ModeOption): string => {
-    if (id === "new") return basePath;
-    const map: Record<AgentPageMode, string> = {
-      view: `${basePath}/${agentId}`,
-      edit: `${basePath}/${agentId}/build`,
-      run: `${basePath}/${agentId}/run`,
-      versions: `${basePath}/${agentId}/latest`,
-      widgets: `${basePath}/${agentId}/widgets`,
-    };
-    return map[id];
-  };
+  const getModeHref = (id: ModeOption): string =>
+    getAgentModeHref(id, agentId, basePath);
 
   return (
     <>
@@ -119,7 +143,7 @@ export function AgentModeController({
               title={label}
               className={cn(
                 "flex items-center justify-center gap-1 py-0.5 text-[0.6875rem] font-medium rounded-full transition-colors cursor-pointer",
-                "px-1.5 md:px-2.5",
+                "px-1.5 xl:px-2.5",
                 "[&_svg]:w-3.5 [&_svg]:h-3.5",
                 isActive
                   ? "bg-[var(--shell-glass-bg-active)] text-[var(--shell-nav-text-hover)]"
@@ -127,7 +151,7 @@ export function AgentModeController({
               )}
             >
               <Icon />
-              <span className="hidden md:inline">{label}</span>
+              <span className="hidden xl:inline">{label}</span>
             </Link>
           );
         })}

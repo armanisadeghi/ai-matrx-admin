@@ -9,6 +9,7 @@ import {
   Bot,
   FileText,
   Folder,
+  GitBranch,
   LayoutDashboard,
   Loader2,
   Zap,
@@ -26,6 +27,11 @@ const NAV_ITEMS = [
     label: "Agents",
     href: "/administration/system-agents/agents",
     icon: Bot,
+  },
+  {
+    label: "Lineage",
+    href: "/administration/system-agents/lineage",
+    icon: GitBranch,
   },
   {
     label: "Shortcuts",
@@ -69,12 +75,15 @@ export function SystemAgentsLayoutClient({
   const [isPending, startTransition] = useTransition();
   const [pendingHref, setPendingHref] = React.useState<string | null>(null);
 
+  // The system-agents subnav is suppressed for two classes of pages:
+  //   1. Deep shortcut edit routes — they render their own back-button chrome.
+  //   2. Any agent detail page under /system-agents/agents/<id>/... — these
+  //      include build, run, shortcuts, apps, and their nested editors. The
+  //      agent list page at `/system-agents/agents` keeps the subnav.
   const isShortcutEditPage = pathname.includes("/system-agents/edit/");
   const isAgentDetailPage =
-    pathname.includes("/system-agents/agents/") &&
-    (pathname.endsWith("/build") ||
-      pathname.endsWith("/run") ||
-      /\/agents\/[^/]+$/.test(pathname));
+    /\/system-agents\/agents\/[^/]+(\/.*)?$/.test(pathname) &&
+    pathname !== "/administration/system-agents/agents";
   if (isShortcutEditPage || isAgentDetailPage) {
     return <>{children}</>;
   }

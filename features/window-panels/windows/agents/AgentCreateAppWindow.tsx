@@ -20,6 +20,7 @@ import {
   useAppDispatch,
   useAppSelector,
 } from "@/lib/redux/hooks";
+import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 import {
   selectAgentById,
   selectLiveAgents,
@@ -82,10 +83,19 @@ function CreateAppWindowBody({
   const dispatch = useAppDispatch();
   const router = useRouter();
 
+  const isAdmin = useAppSelector(selectIsAdmin);
   const presetAgent = useAppSelector((state) =>
     agentId ? selectAgentById(state, agentId) : null,
   );
   const liveAgents = useAppSelector(selectLiveAgents);
+
+  // When an admin creates an app for a builtin/system agent, the app belongs
+  // to the system (scope="global"), not to the admin personally. Forgetting
+  // this would leak a system-scoped workflow into the admin's personal
+  // catalogue.
+  const publishAsGlobal = Boolean(
+    isAdmin && presetAgent?.agentType === "builtin",
+  );
 
   const [submitting, setSubmitting] = useState(false);
   const [created, setCreated] = useState<CreatedApp | null>(null);
@@ -135,7 +145,10 @@ function CreateAppWindowBody({
         const res = await fetch("/api/agent-apps", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(input),
+          body: JSON.stringify({
+            ...input,
+            scope: publishAsGlobal ? "global" : input.scope ?? "user",
+          }),
         });
 
         if (!res.ok) {
@@ -161,7 +174,7 @@ function CreateAppWindowBody({
         setSubmitting(false);
       }
     },
-    [],
+    [publishAsGlobal],
   );
 
   // Empty-state when the window was opened without an agent context and the
@@ -178,6 +191,9 @@ function CreateAppWindowBody({
   }
 
   if (created) {
+    const editorHref = publishAsGlobal
+      ? `/administration/agent-apps/edit/${created.id}`
+      : `/agents/${agentId ?? ""}/apps/${created.id}`;
     return (
       <div className="flex flex-col items-center justify-center gap-3 py-10 text-center px-6">
         <div className="flex items-center justify-center w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-500">
@@ -188,8 +204,9 @@ function CreateAppWindowBody({
             {created.name}
           </div>
           <p className="text-xs text-muted-foreground max-w-sm">
-            Your agent app is saved as a draft. Open the editor to tweak the
-            layout, component code, and publishing settings.
+            {publishAsGlobal
+              ? "System app saved as a draft — visible to every user once published."
+              : "Your agent app is saved as a draft. Open the editor to tweak the layout, component code, and publishing settings."}
           </p>
         </div>
         <div
@@ -198,10 +215,7 @@ function CreateAppWindowBody({
           )}
         >
           <Button asChild variant="default" size="sm" className="gap-1.5">
-            <Link
-              href={`/agents/${agentId ?? ""}/apps/${created.id}`}
-              onClick={onClose}
-            >
+            <Link href={editorHref} onClick={onClose}>
               Open editor
             </Link>
           </Button>
@@ -225,6 +239,12 @@ function CreateAppWindowBody({
 
   return (
     <div className="flex flex-col h-full min-h-0">
+      {publishAsGlobal && (
+        <div className="flex-shrink-0 px-4 py-2 text-xs border-b border-amber-500/30 bg-amber-500/10 text-amber-800 dark:text-amber-200">
+          Publishing as a <strong>system app</strong> — visible to every user
+          on the platform.
+        </div>
+      )}
       <div className="flex-1 min-h-0 overflow-y-auto p-4">
         <CreateAgentAppForm
           agents={agentOptions}

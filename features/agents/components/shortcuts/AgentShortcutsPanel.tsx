@@ -39,11 +39,15 @@ import type { AgentShortcutRecord } from "@/features/agents/redux/agent-shortcut
 interface AgentShortcutsPanelProps {
   agentId: string;
   agentName: string;
+  /** Base path for shortcut edit/new routes. Defaults to `/agents` (user route).
+   *  Admin usage passes `/administration/system-agents/agents`. */
+  basePath?: string;
 }
 
 export function AgentShortcutsPanel({
   agentId,
   agentName,
+  basePath = "/agents",
 }: AgentShortcutsPanelProps) {
   const router = useRouter();
 
@@ -74,7 +78,7 @@ export function AgentShortcutsPanel({
   );
 
   const goToEditor = (shortcutId: string) => {
-    router.push(`/agents/${agentId}/shortcuts/${shortcutId}`);
+    router.push(`${basePath}/${agentId}/shortcuts/${shortcutId}`);
   };
 
   return (
@@ -95,7 +99,7 @@ export function AgentShortcutsPanel({
             </p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            <Link href={`/agents/${agentId}/shortcuts/new`}>
+            <Link href={`${basePath}/${agentId}/shortcuts/new`}>
               <Button size="sm">
                 <Plus className="h-4 w-4 mr-1.5" />
                 New shortcut
@@ -158,7 +162,7 @@ export function AgentShortcutsPanel({
               Loading shortcuts…
             </Card>
           ) : shortcuts.length === 0 ? (
-            <EmptyState agentId={agentId} />
+            <EmptyState agentId={agentId} basePath={basePath} />
           ) : (
             <div className="space-y-2">
               {shortcuts.map((shortcut) => (
@@ -300,7 +304,13 @@ function ShortcutRow({
   );
 }
 
-function EmptyState({ agentId }: { agentId: string }) {
+function EmptyState({
+  agentId,
+  basePath,
+}: {
+  agentId: string;
+  basePath: string;
+}) {
   return (
     <Card className="p-6 flex flex-col items-center text-center gap-3">
       <div className="rounded-full bg-primary/10 text-primary p-3">
@@ -315,7 +325,7 @@ function EmptyState({ agentId }: { agentId: string }) {
           context menus, and other surfaces across the app.
         </p>
       </div>
-      <Link href={`/agents/${agentId}/shortcuts/new`}>
+      <Link href={`${basePath}/${agentId}/shortcuts/new`}>
         <Button size="sm" variant="outline">
           <Plus className="h-4 w-4 mr-1.5" />
           Create the first one

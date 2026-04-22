@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useTransition } from "react";
+import React, { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
   AppWindow,
@@ -8,6 +8,7 @@ import {
   Bot,
   FileText,
   Folder,
+  GitBranch,
   Globe,
   Loader2,
   RefreshCw,
@@ -16,20 +17,28 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { fetchAgentsListFull } from "@/features/agents/redux/agent-definition/thunks";
+import { selectBuiltinAgents } from "@/features/agents/redux/agent-definition/selectors";
 import { useAgentShortcuts } from "@/features/agent-shortcuts";
+import { fetchAgentAppsAdmin } from "@/lib/services/agent-apps-admin-service";
 
 const SCOPE = "global" as const;
+
+type TileCounts = {
+  agents: number;
+  shortcuts: number;
+  categories: number;
+  contentBlocks: number;
+  apps: number;
+};
 
 type Tile = {
   href: string;
   label: string;
   description: string;
   icon: typeof Folder;
-  count?: (counts: {
-    shortcuts: number;
-    categories: number;
-    contentBlocks: number;
-  }) => number;
+  count?: (counts: TileCounts) => number;
 };
 
 const TILES: Tile[] = [
@@ -39,6 +48,14 @@ const TILES: Tile[] = [
     description:
       "Browse, build, and run system (builtin) agents shipped to every user.",
     icon: Bot,
+    count: (c) => c.agents,
+  },
+  {
+    href: "/administration/system-agents/lineage",
+    label: "Lineage",
+    description:
+      "See what each system agent gives rise to — derived agents, shortcuts, and apps — in one place.",
+    icon: GitBranch,
   },
   {
     href: "/administration/system-agents/shortcuts",
@@ -70,25 +87,55 @@ const TILES: Tile[] = [
     description:
       "Global agent apps published to all users. Distinct from user-published apps.",
     icon: AppWindow,
+    count: (c) => c.apps,
   },
 ];
 
 export default function SystemAgentsDashboardPage() {
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const [isPending, startTransition] = useTransition();
   const [pendingHref, setPendingHref] = React.useState<string | null>(null);
 
   const { shortcuts, categories, contentBlocks, isLoading, refetch } =
     useAgentShortcuts({ scope: SCOPE });
 
-  const counts = {
+  const builtinAgents = useAppSelector(selectBuiltinAgents);
+  const [appCount, setAppCount] = useState<number | null>(null);
+  const [appsLoading, setAppsLoading] = useState(false);
+
+  const loadAppCount = React.useCallback(async () => {
+    setAppsLoading(true);
+    try {
+      const rows = await fetchAgentAppsAdmin({ scope: "global", limit: 500 });
+      setAppCount(rows.length);
+    } catch {
+      setAppCount(null);
+    } finally {
+      setAppsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    dispatch(fetchAgentsListFull());
+    void loadAppCount();
+  }, [dispatch, loadAppCount]);
+
+  const counts: TileCounts = {
+    agents: builtinAgents.length,
     shortcuts: shortcuts.length,
     categories: categories.length,
     contentBlocks: contentBlocks.length,
+    apps: appCount ?? 0,
   };
 
-  const activeShortcuts = shortcuts.filter((s) => s.isActive).length;
   const wiredShortcuts = shortcuts.filter((s) => s.agentId).length;
+
+  const handleRefresh = () => {
+    refetch();
+    dispatch(fetchAgentsListFull());
+    void loadAppCount();
+  };
 
   const handleNavigate = (href: string) => {
     if (isPending) return;
@@ -122,11 +169,13 @@ export default function SystemAgentsDashboardPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => refetch()}
-            disabled={isLoading}
+            onClick={handleRefresh}
+            disabled={isLoading || appsLoading}
           >
             <RefreshCw
-              className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`}
+              className={`h-4 w-4 mr-2 ${
+                isLoading || appsLoading ? "animate-spin" : ""
+              }`}
             />
             Refresh
           </Button>
@@ -135,7 +184,15 @@ export default function SystemAgentsDashboardPage() {
 
       <div className="flex-1 overflow-y-auto">
         <div className="p-4 space-y-4 max-w-5xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <Card>
+              <CardContent className="p-3">
+                <div className="text-2xl font-bold">{counts.agents}</div>
+                <div className="text-xs text-muted-foreground">
+                  System agents
+                </div>
+              </CardContent>
+            </Card>
             <Card>
               <CardContent className="p-3">
                 <div className="text-2xl font-bold">{counts.shortcuts}</div>
@@ -144,19 +201,11 @@ export default function SystemAgentsDashboardPage() {
             </Card>
             <Card>
               <CardContent className="p-3">
-                <div className="text-2xl font-bold text-primary">
-                  {activeShortcuts}
-                </div>
-                <div className="text-xs text-muted-foreground">Active</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-3">
                 <div className="text-2xl font-bold text-success">
                   {wiredShortcuts}
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  Wired to agent
+                  Wired shortcuts
                 </div>
               </CardContent>
             </Card>
@@ -166,8 +215,16 @@ export default function SystemAgentsDashboardPage() {
                   {counts.categories + counts.contentBlocks}
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  Categories + Blocks
+                  Cats + Blocks
                 </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-3">
+                <div className="text-2xl font-bold">
+                  {appsLoading && appCount === null ? "—" : counts.apps}
+                </div>
+                <div className="text-xs text-muted-foreground">System apps</div>
               </CardContent>
             </Card>
           </div>

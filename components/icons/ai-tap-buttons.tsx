@@ -25,8 +25,9 @@ export interface AITapButtonProps {
 function Wrap({
   variant = "glass",
   children,
+  colored: _colored,
   ...props
-}: Omit<AITapButtonProps, "colored"> & { children: React.ReactNode }) {
+}: AITapButtonProps & { children: React.ReactNode }) {
   switch (variant) {
     case "transparent":
       return (

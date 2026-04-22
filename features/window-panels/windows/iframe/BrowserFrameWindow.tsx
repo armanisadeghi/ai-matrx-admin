@@ -10,8 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-
-const DEFAULT_FRAME_URL = "https://lucide.dev/icons/";
+import { LUCIDE_ICONS_GALLERY_URL } from "@/utils/icons/lucide-gallery-url";
 
 export interface BrowserFrameWindowProps {
   isOpen: boolean;
@@ -44,7 +43,9 @@ function BrowserFrameWindowInner({
   initialWindowTitle,
 }: Omit<BrowserFrameWindowProps, "isOpen">) {
   const [url, setUrl] = useState(() =>
-    initialUrl && initialUrl.trim() ? initialUrl.trim() : DEFAULT_FRAME_URL,
+    initialUrl && initialUrl.trim()
+      ? initialUrl.trim()
+      : LUCIDE_ICONS_GALLERY_URL,
   );
   const [addressDraft, setAddressDraft] = useState(url);
   const [windowTitleExtra, setWindowTitleExtra] = useState<string | null>(() =>
