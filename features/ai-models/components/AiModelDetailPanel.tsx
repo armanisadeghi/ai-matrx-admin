@@ -5,6 +5,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -25,6 +31,7 @@ import {
   ChevronRight,
   RotateCcw,
   AlertTriangle,
+  PanelRight,
 } from "lucide-react";
 import AiModelForm from "./AiModelForm";
 import JsonFieldEditor from "./JsonFieldEditor";
@@ -805,7 +812,6 @@ export default function AiModelDetailPanel({
   const [activeTab, setActiveTab] = useState("details");
   const [showDirtyDialog, setShowDirtyDialog] = useState(false);
   const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const innerRef = useRef<HTMLDivElement>(null);
 
   const formIsDirty = (
     Object.keys({ ...formData, ...baseline }) as Array<keyof AiModelFormData>
@@ -844,24 +850,6 @@ export default function AiModelDetailPanel({
       onClose();
     }
   }, [isDirty, onClose]);
-
-  // Click-outside: detect clicks on the overlay (left half) when panel is open.
-  // Must ignore clicks inside Radix UI portals (Select, Popover, Dialog, etc.)
-  // which render outside the panel's DOM subtree via document.body portals but
-  // are logically "inside" the panel. Radix marks these with [data-radix-portal].
-  useEffect(() => {
-    const handleMouseDown = (e: MouseEvent) => {
-      const target = e.target as Element;
-      const inner = innerRef.current;
-      if (!inner) return;
-      if (inner.contains(target)) return;
-      // Ignore clicks inside any Radix portal (dropdowns, selects, dialogs, etc.)
-      if (target.closest("[data-radix-portal]")) return;
-      requestClose();
-    };
-    document.addEventListener("mousedown", handleMouseDown);
-    return () => document.removeEventListener("mousedown", handleMouseDown);
-  }, [requestClose]);
 
   const displayName = isNew
     ? "New Model"
@@ -1004,13 +992,15 @@ export default function AiModelDetailPanel({
 
   return (
     <>
-      <div
-        ref={innerRef}
-        className="h-full flex flex-col overflow-hidden bg-card"
-      >
+      <div className="h-full flex flex-col overflow-hidden bg-card">
         {/* Header */}
-        <div className="flex items-center justify-between px-3 py-2 border-b shrink-0">
+        <div className="flex items-center justify-between px-3 py-2 border-b shrink-0 bg-muted/20">
           <div className="flex items-center gap-2 min-w-0">
+            <span className="flex items-center gap-1.5 text-[10px] font-medium text-muted-foreground/60 shrink-0 select-none">
+              <PanelRight className="h-3 w-3" />
+              Detail
+            </span>
+            <div className="w-px h-3 bg-border shrink-0" />
             <span className="text-sm font-semibold truncate">
               {displayName}
             </span>
@@ -1051,14 +1041,23 @@ export default function AiModelDetailPanel({
               </span>
             )}
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 w-7 p-0 shrink-0"
-            onClick={requestClose}
-          >
-            <X className="h-4 w-4" />
-          </Button>
+          <TooltipProvider delayDuration={400}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0 shrink-0"
+                  onClick={requestClose}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="left" className="text-xs">
+                Close panel
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
 
         {/* Tab content area */}

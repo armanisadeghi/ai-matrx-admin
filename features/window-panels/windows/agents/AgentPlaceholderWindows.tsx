@@ -3,10 +3,8 @@
 import {
   Sparkles,
   Layers,
-  AppWindow,
   Database,
   Search,
-  RefreshCw,
   ShieldCheck,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -111,24 +109,9 @@ export function AgentInterfaceVariationsWindow(props: PlaceholderProps) {
   );
 }
 
-export function AgentCreateAppWindow(props: PlaceholderProps) {
-  return (
-    <PlaceholderWindowShell
-      {...props}
-      slug="agent-create-app-window"
-      overlayId="agentCreateAppWindow"
-      title="Create Agent App"
-      icon={AppWindow}
-      description="Turn this agent into a public, shareable mini-app with a custom UI, branding, and rate-limited public access."
-      bullets={[
-        "Custom UI generated from agent variables",
-        "Public URL with SEO metadata",
-        "Rate limiting & usage analytics",
-        "Permission scopes & publishing workflow",
-      ]}
-    />
-  );
-}
+// AgentCreateAppWindow used to be a coming-soon placeholder here. It now
+// lives in `AgentCreateAppWindow.tsx` with a real implementation, wired
+// directly from OverlayController.
 
 export function AgentDataStorageWindow(props: PlaceholderProps) {
   return (
@@ -170,24 +153,9 @@ export function AgentFindUsagesWindow(props: PlaceholderProps) {
 
 // ── Admin placeholders ─────────────────────────────────────────────────────
 
-export function AgentConvertSystemWindow(props: PlaceholderProps) {
-  return (
-    <PlaceholderWindowShell
-      {...props}
-      slug="agent-convert-system-window"
-      overlayId="agentConvertSystemWindow"
-      title="Convert to System Agent"
-      icon={RefreshCw}
-      description="Promote this agent to the system library, or update an existing system agent from the current definition."
-      bullets={[
-        "Review diff vs. existing system agent",
-        "Set visibility, category, and tags",
-        "Assign owner team and change note",
-        "Roll out to all orgs immediately",
-      ]}
-    />
-  );
-}
+// AgentConvertSystemWindow used to be a coming-soon placeholder here.
+// It now lives in `AgentConvertSystemWindow.tsx` with a real implementation,
+// wired directly from OverlayController.
 
 // AgentAdminShortcutWindow used to be a coming-soon placeholder here.
 // It now lives in `AgentShortcutQuickCreateWindow.tsx` with a real

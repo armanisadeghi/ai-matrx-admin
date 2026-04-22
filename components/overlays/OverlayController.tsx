@@ -686,9 +686,7 @@ const AgentInterfaceVariationsWindow = dynamic(
 
 const AgentCreateAppWindow = dynamic(
   () =>
-    import("@/features/window-panels/windows/agents/AgentPlaceholderWindows").then(
-      (m) => ({ default: m.AgentCreateAppWindow }),
-    ),
+    import("@/features/window-panels/windows/agents/AgentCreateAppWindow"),
   { ssr: false },
 );
 
@@ -710,9 +708,7 @@ const AgentFindUsagesWindow = dynamic(
 
 const AgentConvertSystemWindow = dynamic(
   () =>
-    import("@/features/window-panels/windows/agents/AgentPlaceholderWindows").then(
-      (m) => ({ default: m.AgentConvertSystemWindow }),
-    ),
+    import("@/features/window-panels/windows/agents/AgentConvertSystemWindow"),
   { ssr: false },
 );
 

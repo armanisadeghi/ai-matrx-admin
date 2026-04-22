@@ -33,6 +33,10 @@ interface CreateAgentAppFormProps {
   onSubmit: (input: CreateAgentAppInput) => Promise<void> | void;
   onCancel?: () => void;
   busy?: boolean;
+  /** Preselect a specific agent when the form opens. */
+  defaultAgentId?: string | null;
+  /** Optional default name (e.g. inherited from the preset agent). */
+  defaultName?: string;
 }
 
 export function CreateAgentAppForm({
@@ -40,9 +44,11 @@ export function CreateAgentAppForm({
   onSubmit,
   onCancel,
   busy = false,
+  defaultAgentId = null,
+  defaultName = "",
 }: CreateAgentAppFormProps) {
-  const [agentId, setAgentId] = useState<string | null>(null);
-  const [name, setName] = useState("");
+  const [agentId, setAgentId] = useState<string | null>(defaultAgentId);
+  const [name, setName] = useState(defaultName);
   const [tagline, setTagline] = useState("");
   const [description, setDescription] = useState("");
   const [displayMode, setDisplayMode] = useState<AppDisplayMode>("form");

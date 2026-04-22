@@ -3,6 +3,7 @@
 import React, { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Tooltip,
@@ -10,6 +11,18 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import GenericTablePagination from "@/components/generic-table/GenericTablePagination";
 import {
   AlertDialog,
@@ -30,6 +43,7 @@ import {
   ArrowUp,
   ArrowDown,
   ArrowUpDown,
+  ListFilter,
 } from "lucide-react";
 import type { AiModel, AiProvider } from "../types";
 import type { TabState, AiModelFilters } from "../hooks/useTabUrlState";
@@ -199,6 +213,7 @@ interface ColDef {
   header: string;
   width: string;
   sortable: boolean;
+  filterType?: FilterType;
   className?: string;
   render: (
     item: AiModel,
@@ -247,6 +262,7 @@ const COLUMNS: ColDef[] = [
     header: "Provider",
     width: "w-[120px] min-w-[100px]",
     sortable: true,
+    filterType: "provider",
     render: (item) => (
       <Badge
         variant="outline"
@@ -261,6 +277,7 @@ const COLUMNS: ColDef[] = [
     header: "Model Class",
     width: "w-[180px] min-w-[140px]",
     sortable: true,
+    filterType: "model_class",
     render: (item) => (
       <span
         className="text-xs font-mono text-muted-foreground truncate block max-w-[170px]"
@@ -275,6 +292,7 @@ const COLUMNS: ColDef[] = [
     header: "API Class",
     width: "w-[160px] min-w-[120px]",
     sortable: true,
+    filterType: "api_class",
     render: (item) => (
       <span
         className="text-xs font-mono text-muted-foreground truncate block max-w-[150px]"
@@ -303,6 +321,7 @@ const COLUMNS: ColDef[] = [
     header: "Context",
     width: "w-[80px] min-w-[70px]",
     sortable: true,
+    filterType: "context_window",
     className: "text-right",
     render: (item) => (
       <span className="text-xs tabular-nums">
@@ -315,6 +334,7 @@ const COLUMNS: ColDef[] = [
     header: "Max Tokens",
     width: "w-[90px] min-w-[80px]",
     sortable: true,
+    filterType: "max_tokens",
     className: "text-right",
     render: (item) => (
       <span className="text-xs tabular-nums">
@@ -359,6 +379,7 @@ const COLUMNS: ColDef[] = [
     header: "Deprecated",
     width: "w-[90px] min-w-[80px]",
     sortable: true,
+    filterType: "is_deprecated",
     render: (item) => (
       <BoolBadge
         value={item.is_deprecated}
@@ -372,6 +393,7 @@ const COLUMNS: ColDef[] = [
     header: "Primary",
     width: "w-[75px] min-w-[70px]",
     sortable: true,
+    filterType: "is_primary",
     render: (item) => (
       <BoolBadge
         value={item.is_primary}
@@ -385,6 +407,7 @@ const COLUMNS: ColDef[] = [
     header: "Premium",
     width: "w-[75px] min-w-[70px]",
     sortable: true,
+    filterType: "is_premium",
     render: (item) => (
       <BoolBadge
         value={item.is_premium}
@@ -618,12 +641,393 @@ function SortIcon({
   sortBy: string;
   dir: "asc" | "desc";
 }) {
-  if (field !== sortBy)
-    return <ArrowUpDown className="h-3 w-3 ml-1 opacity-30" />;
+  if (field !== sortBy) return <ArrowUpDown className="h-3 w-3 opacity-30" />;
   return dir === "asc" ? (
-    <ArrowUp className="h-3 w-3 ml-1 text-primary" />
+    <ArrowUp className="h-3 w-3 text-primary" />
   ) : (
-    <ArrowDown className="h-3 w-3 ml-1 text-primary" />
+    <ArrowDown className="h-3 w-3 text-primary" />
+  );
+}
+
+// ─── Column Filter ────────────────────────────────────────────────────────────
+
+type FilterType =
+  | "provider"
+  | "model_class"
+  | "api_class"
+  | "is_deprecated"
+  | "is_primary"
+  | "is_premium"
+  | "context_window"
+  | "max_tokens";
+
+interface FilterOptions {
+  providers: string[];
+  modelClasses: string[];
+  apiClasses: string[];
+}
+
+function isFilterActive(
+  filterType: FilterType,
+  filters: AiModelFilters,
+): boolean {
+  switch (filterType) {
+    case "provider":
+      return !!filters.provider;
+    case "model_class":
+      return !!filters.model_class;
+    case "api_class":
+      return !!filters.api_class;
+    case "is_deprecated":
+      return filters.is_deprecated !== undefined;
+    case "is_primary":
+      return filters.is_primary !== undefined;
+    case "is_premium":
+      return filters.is_premium !== undefined;
+    case "context_window":
+      return (
+        filters.context_window_min !== undefined ||
+        filters.context_window_max !== undefined
+      );
+    case "max_tokens":
+      return (
+        filters.max_tokens_min !== undefined ||
+        filters.max_tokens_max !== undefined
+      );
+  }
+}
+
+function SelectFilterContent({
+  label,
+  value,
+  options,
+  onChange,
+  onClear,
+}: {
+  label: string;
+  value: string | undefined;
+  options: { value: string; label: string }[];
+  onChange: (v: string) => void;
+  onClear: () => void;
+}) {
+  return (
+    <div className="flex flex-col gap-2 w-[160px]">
+      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+        Filter: {label}
+      </p>
+      <Select
+        value={value ?? "__all__"}
+        onValueChange={(v) => (v === "__all__" ? onClear() : onChange(v))}
+      >
+        <SelectTrigger className="h-7 text-xs">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="__all__">All</SelectItem>
+          {options.map((o) => (
+            <SelectItem key={o.value} value={o.value}>
+              {o.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      {value !== undefined && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-6 text-xs text-muted-foreground"
+          onClick={onClear}
+        >
+          Clear filter
+        </Button>
+      )}
+    </div>
+  );
+}
+
+function BoolFilterContent({
+  label,
+  value,
+  trueLabel,
+  falseLabel,
+  onChange,
+  onClear,
+}: {
+  label: string;
+  value: boolean | undefined;
+  trueLabel: string;
+  falseLabel: string;
+  onChange: (v: boolean) => void;
+  onClear: () => void;
+}) {
+  return (
+    <div className="flex flex-col gap-2 w-[150px]">
+      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+        Filter: {label}
+      </p>
+      <Select
+        value={value === true ? "true" : value === false ? "false" : "__all__"}
+        onValueChange={(v) =>
+          v === "__all__" ? onClear() : onChange(v === "true")
+        }
+      >
+        <SelectTrigger className="h-7 text-xs">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="__all__">All</SelectItem>
+          <SelectItem value="true">{trueLabel}</SelectItem>
+          <SelectItem value="false">{falseLabel}</SelectItem>
+        </SelectContent>
+      </Select>
+      {value !== undefined && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-6 text-xs text-muted-foreground"
+          onClick={onClear}
+        >
+          Clear filter
+        </Button>
+      )}
+    </div>
+  );
+}
+
+function RangeFilterContent({
+  label,
+  minKey,
+  maxKey,
+  minValue,
+  maxValue,
+  onUpdateFilters,
+}: {
+  label: string;
+  minKey: "context_window_min" | "max_tokens_min";
+  maxKey: "context_window_max" | "max_tokens_max";
+  minValue: number | undefined;
+  maxValue: number | undefined;
+  onUpdateFilters: (patch: Partial<AiModelFilters>) => void;
+}) {
+  const [min, setMin] = React.useState(
+    minValue !== undefined ? String(minValue) : "",
+  );
+  const [max, setMax] = React.useState(
+    maxValue !== undefined ? String(maxValue) : "",
+  );
+
+  React.useEffect(() => {
+    setMin(minValue !== undefined ? String(minValue) : "");
+  }, [minValue]);
+  React.useEffect(() => {
+    setMax(maxValue !== undefined ? String(maxValue) : "");
+  }, [maxValue]);
+
+  const commitMin = (raw: string) => {
+    if (raw === "") {
+      onUpdateFilters({ [minKey]: undefined });
+      return;
+    }
+    const n = parseInt(raw.replace(/[^0-9]/g, ""), 10);
+    if (!isNaN(n)) onUpdateFilters({ [minKey]: n });
+  };
+  const commitMax = (raw: string) => {
+    if (raw === "") {
+      onUpdateFilters({ [maxKey]: undefined });
+      return;
+    }
+    const n = parseInt(raw.replace(/[^0-9]/g, ""), 10);
+    if (!isNaN(n)) onUpdateFilters({ [maxKey]: n });
+  };
+
+  const hasFilter = minValue !== undefined || maxValue !== undefined;
+
+  return (
+    <div className="flex flex-col gap-2 w-[190px]">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+          Filter: {label}
+        </p>
+        {hasFilter && (
+          <button
+            type="button"
+            className="text-xs text-muted-foreground hover:text-foreground"
+            onClick={() => {
+              setMin("");
+              setMax("");
+              onUpdateFilters({ [minKey]: undefined, [maxKey]: undefined });
+            }}
+          >
+            clear
+          </button>
+        )}
+      </div>
+      <div className="flex items-center gap-1.5">
+        <Input
+          value={min}
+          onChange={(e) => setMin(e.target.value)}
+          onBlur={(e) => commitMin(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") e.currentTarget.blur();
+          }}
+          placeholder="min"
+          className="h-7 text-xs w-[80px] font-mono"
+        />
+        <span className="text-xs text-muted-foreground">–</span>
+        <Input
+          value={max}
+          onChange={(e) => setMax(e.target.value)}
+          onBlur={(e) => commitMax(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") e.currentTarget.blur();
+          }}
+          placeholder="max"
+          className="h-7 text-xs w-[80px] font-mono"
+        />
+      </div>
+    </div>
+  );
+}
+
+function ColumnHeaderFilter({
+  filterType,
+  filters,
+  onUpdateFilters,
+  filterOptions,
+}: {
+  filterType: FilterType;
+  filters: AiModelFilters;
+  onUpdateFilters: (patch: Partial<AiModelFilters>) => void;
+  filterOptions: FilterOptions;
+}) {
+  const active = isFilterActive(filterType, filters);
+
+  const renderContent = () => {
+    switch (filterType) {
+      case "provider":
+        return (
+          <SelectFilterContent
+            label="Provider"
+            value={filters.provider}
+            options={filterOptions.providers.map((p) => ({
+              value: p,
+              label: p,
+            }))}
+            onChange={(v) => onUpdateFilters({ provider: v })}
+            onClear={() => onUpdateFilters({ provider: undefined })}
+          />
+        );
+      case "model_class":
+        return (
+          <SelectFilterContent
+            label="Model Class"
+            value={filters.model_class}
+            options={filterOptions.modelClasses.map((c) => ({
+              value: c,
+              label: c,
+            }))}
+            onChange={(v) => onUpdateFilters({ model_class: v })}
+            onClear={() => onUpdateFilters({ model_class: undefined })}
+          />
+        );
+      case "api_class":
+        return (
+          <SelectFilterContent
+            label="API Class"
+            value={filters.api_class}
+            options={filterOptions.apiClasses.map((c) => ({
+              value: c,
+              label: c,
+            }))}
+            onChange={(v) => onUpdateFilters({ api_class: v })}
+            onClear={() => onUpdateFilters({ api_class: undefined })}
+          />
+        );
+      case "is_deprecated":
+        return (
+          <BoolFilterContent
+            label="Deprecated"
+            value={filters.is_deprecated}
+            trueLabel="Deprecated"
+            falseLabel="Active"
+            onChange={(v) => onUpdateFilters({ is_deprecated: v })}
+            onClear={() => onUpdateFilters({ is_deprecated: undefined })}
+          />
+        );
+      case "is_primary":
+        return (
+          <BoolFilterContent
+            label="Primary"
+            value={filters.is_primary}
+            trueLabel="Primary only"
+            falseLabel="Non-primary"
+            onChange={(v) => onUpdateFilters({ is_primary: v })}
+            onClear={() => onUpdateFilters({ is_primary: undefined })}
+          />
+        );
+      case "is_premium":
+        return (
+          <BoolFilterContent
+            label="Premium"
+            value={filters.is_premium}
+            trueLabel="Premium only"
+            falseLabel="Non-premium"
+            onChange={(v) => onUpdateFilters({ is_premium: v })}
+            onClear={() => onUpdateFilters({ is_premium: undefined })}
+          />
+        );
+      case "context_window":
+        return (
+          <RangeFilterContent
+            label="Context Window"
+            minKey="context_window_min"
+            maxKey="context_window_max"
+            minValue={filters.context_window_min}
+            maxValue={filters.context_window_max}
+            onUpdateFilters={onUpdateFilters}
+          />
+        );
+      case "max_tokens":
+        return (
+          <RangeFilterContent
+            label="Max Tokens"
+            minKey="max_tokens_min"
+            maxKey="max_tokens_max"
+            minValue={filters.max_tokens_min}
+            maxValue={filters.max_tokens_max}
+            onUpdateFilters={onUpdateFilters}
+          />
+        );
+    }
+  };
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          onClick={(e) => e.stopPropagation()}
+          title={`Filter by ${filterType.replace(/_/g, " ")}`}
+          className={`rounded p-0.5 transition-colors ${
+            active
+              ? "text-primary hover:text-primary/80"
+              : "text-muted-foreground/40 hover:text-muted-foreground"
+          }`}
+        >
+          <ListFilter
+            className={`h-3 w-3 ${active ? "fill-primary/20" : ""}`}
+          />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        align="start"
+        side="bottom"
+        className="w-auto p-3"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {renderContent()}
+      </PopoverContent>
+    </Popover>
   );
 }
 
@@ -663,6 +1067,21 @@ export default function AiModelTable({
   const providerMap = useMemo(
     () => Object.fromEntries(providers.map((p) => [p.id, p.name ?? p.id])),
     [providers],
+  );
+
+  const filterOptions = useMemo<FilterOptions>(
+    () => ({
+      providers: [
+        ...new Set(models.map((m) => m.provider).filter(Boolean)),
+      ].sort() as string[],
+      modelClasses: [
+        ...new Set(models.map((m) => m.model_class).filter(Boolean)),
+      ].sort() as string[],
+      apiClasses: [
+        ...new Set(models.map((m) => m.api_class).filter(Boolean)),
+      ].sort() as string[],
+    }),
+    [models],
   );
 
   const filteredModels = useMemo(
@@ -730,10 +1149,18 @@ export default function AiModelTable({
                   }`}
                   onClick={() => col.sortable && handleSortClick(col.key)}
                 >
-                  <span className="flex items-center">
+                  <span className="flex items-center gap-0.5">
                     {col.header}
                     {col.sortable && (
                       <SortIcon field={col.key} sortBy={sort} dir={dir} />
+                    )}
+                    {col.filterType && (
+                      <ColumnHeaderFilter
+                        filterType={col.filterType}
+                        filters={filters}
+                        onUpdateFilters={handleUpdateFilters}
+                        filterOptions={filterOptions}
+                      />
                     )}
                   </span>
                 </th>
