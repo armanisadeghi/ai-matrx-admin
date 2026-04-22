@@ -29,10 +29,13 @@ export interface AgentShortcut {
   agentVersionId: string | null;
   useLatest: boolean;
 
-  // ── Context visibility + scope mapping ───────────────────────────────
-  enabledContexts: ShortcutContext[];
+  // ── Where the shortcut appears + scope→agent key routing ────────────
+  /** App features/surfaces where this shortcut is available (chat, notes, code-editor, …). */
+  enabledFeatures: ShortcutContext[];
   /** UI scope key → agent variable name. */
   scopeMappings: Record<string, string> | null;
+  /** UI scope key → agent context-slot key. Parity with scopeMappings. */
+  contextMappings: Record<string, string> | null;
 
   // ── AgentExecutionConfig bundle (persisted) ──────────────────────────
   displayMode: ResultDisplayMode;
@@ -103,15 +106,28 @@ export interface AgentShortcutInitialRow {
   current_version: number | null;
   use_latest: boolean;
 
-  // Shortcut config
-  enabled_contexts: ShortcutContext[];
+  // Bindings — where the shortcut appears + UI-scope → agent key routing
+  enabled_features: ShortcutContext[];
   scope_mappings: Record<string, string> | null;
-  result_display: ResultDisplayMode;
-  allow_chat: boolean;
+  context_mappings: Record<string, string> | null;
+
+  // Execution config bundle (persisted on the shortcut row)
+  display_mode: ResultDisplayMode;
+  show_variable_panel: boolean;
+  variables_panel_style: string;
   auto_run: boolean;
-  apply_variables: boolean;
-  show_variables: boolean;
-  use_pre_execution_input: boolean;
+  allow_chat: boolean;
+  show_definition_messages: boolean;
+  show_definition_message_content: boolean;
+  hide_reasoning: boolean;
+  hide_tool_results: boolean;
+  show_pre_execution_gate: boolean;
+  pre_execution_message: string | null;
+  bypass_gate_seconds: number;
+  default_user_input: string | null;
+  default_variables: Record<string, unknown> | null;
+  context_overrides: Record<string, unknown> | null;
+  llm_overrides: Record<string, unknown> | null;
 
   // Ownership
   shortcut_user_id: string | null; // null = system shortcut
@@ -167,7 +183,7 @@ export interface AgentShortcutCategory {
     color: string | null;
     sort_order: number;
     parent_category_id: string | null;
-    enabled_contexts: string[] | null;
+    enabled_features: string[] | null;
   };
   shortcuts: AgentShortcutMenuItem[];
 }
@@ -184,14 +200,30 @@ export interface AgentShortcutMenuItem {
   is_behind: boolean;
   agent_id: string | null;
   use_latest: boolean;
+
+  // Bindings
+  enabled_features: ShortcutContext[];
   scope_mappings: Record<string, string> | null;
-  enabled_contexts: ShortcutContext[];
-  result_display: ResultDisplayMode;
+  context_mappings: Record<string, string> | null;
+
+  // Config bundle (persisted on the shortcut row)
+  display_mode: ResultDisplayMode;
+  show_variable_panel: boolean;
+  variables_panel_style: string;
   auto_run: boolean;
   allow_chat: boolean;
-  show_variables: boolean;
-  apply_variables: boolean;
-  use_pre_execution_input: boolean;
+  show_definition_messages: boolean;
+  show_definition_message_content: boolean;
+  hide_reasoning: boolean;
+  hide_tool_results: boolean;
+  show_pre_execution_gate: boolean;
+  pre_execution_message: string | null;
+  bypass_gate_seconds: number;
+  default_user_input: string | null;
+  default_variables: Record<string, unknown> | null;
+  context_overrides: Record<string, unknown> | null;
+  llm_overrides: Record<string, unknown> | null;
+
   agent: {
     name: string;
     variable_definitions: VariableDefinition[] | null;
@@ -234,15 +266,29 @@ export interface UserShortcutItem {
   project_id: string | null;
   task_id: string | null;
 
-  // Config
-  enabled_contexts: string[];
+  // Bindings
+  enabled_features: ShortcutContext[];
   scope_mappings: Record<string, string> | null;
-  result_display: ResultDisplayMode;
-  allow_chat: boolean;
+  context_mappings: Record<string, string> | null;
+
+  // Config bundle
+  display_mode: ResultDisplayMode;
+  show_variable_panel: boolean;
+  variables_panel_style: string;
   auto_run: boolean;
-  apply_variables: boolean;
-  show_variables: boolean;
-  use_pre_execution_input: boolean;
+  allow_chat: boolean;
+  show_definition_messages: boolean;
+  show_definition_message_content: boolean;
+  hide_reasoning: boolean;
+  hide_tool_results: boolean;
+  show_pre_execution_gate: boolean;
+  pre_execution_message: string | null;
+  bypass_gate_seconds: number;
+  default_user_input: string | null;
+  default_variables: Record<string, unknown> | null;
+  context_overrides: Record<string, unknown> | null;
+  llm_overrides: Record<string, unknown> | null;
+
   is_active: boolean;
 
   created_at: string;

@@ -206,8 +206,9 @@ function emptyFormData(): ShortcutFormData {
     agentId: null,
     agentVersionId: null,
     useLatest: false,
-    enabledContexts: [],
+    enabledFeatures: [],
     scopeMappings: null,
+    contextMappings: null,
     // AgentExecutionConfig bundle (matches DEFAULT_AGENT_EXECUTION_CONFIG)
     displayMode: "modal-full",
     showVariablePanel: false,
@@ -463,15 +464,15 @@ export function ShortcutForm({
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="enabled-contexts" className="text-sm">
-          Enabled contexts
+        <Label htmlFor="enabled-features" className="text-sm">
+          Enabled features
         </Label>
         <Input
-          id="enabled-contexts"
-          value={formatShortcutContextsForInput(formData.enabledContexts)}
+          id="enabled-features"
+          value={formatShortcutContextsForInput(formData.enabledFeatures)}
           onChange={(e) =>
             handleChange(
-              "enabledContexts",
+              "enabledFeatures",
               parseShortcutContextsInput(e.target.value),
             )
           }
@@ -480,9 +481,9 @@ export function ShortcutForm({
           disabled={saving}
         />
         <p className="text-xs text-muted-foreground">
-          Comma-separated tags. Leave empty so this shortcut appears in every
-          surface. When a host sets a context filter, the shortcut must list
-          that tag (or stay empty) to appear.
+          Comma-separated feature tags. Leave empty so this shortcut appears in
+          every surface. When a host sets a feature filter, the shortcut must
+          list that tag (or stay empty) to appear.
         </p>
       </div>
 
@@ -579,7 +580,24 @@ export function ShortcutForm({
           }
           compact
         />
+        <p className="text-xs text-muted-foreground">
+          Map UI scope keys (selection, content, …) to agent VARIABLE names.
+        </p>
       </div>
+
+      <JsonEditorRow
+        id="shortcut-context-mappings"
+        label="Context Mappings (JSON)"
+        help='Map UI scope keys to agent CONTEXT-SLOT keys (e.g. { "file_path": "target_file" }). Parity with Scope Mappings. Takes precedence over context overrides and ad-hoc context.'
+        value={formData.contextMappings}
+        onChange={(v) =>
+          handleChange(
+            "contextMappings",
+            v as Record<string, string> | null,
+          )
+        }
+        disabled={saving}
+      />
 
       <Separator />
 

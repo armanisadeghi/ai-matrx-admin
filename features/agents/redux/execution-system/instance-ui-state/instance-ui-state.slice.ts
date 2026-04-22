@@ -107,6 +107,7 @@ export interface InitInstanceUIStatePayload {
   hideReasoning?: boolean;
   hideToolResults?: boolean;
   preExecutionMessage?: string | null;
+  bypassGateSeconds?: number;
   variablesPanelStyle?: VariablesPanelStyle;
   jsonExtraction?: JsonExtractionConfig | null;
   /** Original text selected in an editor/notes surface before launch. Used by text-manipulation callbacks. */
@@ -145,6 +146,7 @@ const instanceUIStateSlice = createSlice({
         hideReasoning = false,
         hideToolResults = false,
         preExecutionMessage = null,
+        bypassGateSeconds = 0,
         variablesPanelStyle = "inline",
         jsonExtraction = null,
         originalText = null,
@@ -177,6 +179,7 @@ const instanceUIStateSlice = createSlice({
         hideReasoning,
         hideToolResults,
         preExecutionMessage,
+        bypassGateSeconds,
         variablesPanelStyle,
         modeState: {},
         jsonExtraction,

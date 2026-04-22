@@ -38,7 +38,7 @@ export interface CategoryFormData {
   color: string;
   sortOrder: number;
   isActive: boolean;
-  enabledContexts: ShortcutContext[];
+  enabledFeatures: ShortcutContext[];
   metadata: Record<string, unknown>;
 }
 

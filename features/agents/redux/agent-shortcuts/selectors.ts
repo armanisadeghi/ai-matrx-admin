@@ -183,14 +183,19 @@ export const selectShortcutKeyboardShortcut = createSelector(
   (record) => record?.keyboardShortcut ?? null,
 );
 
-export const selectShortcutEnabledContexts = createSelector(
+export const selectShortcutEnabledFeatures = createSelector(
   [selectShortcutById],
-  (record) => record?.enabledContexts,
+  (record) => record?.enabledFeatures,
 );
 
 export const selectShortcutScopeMappings = createSelector(
   [selectShortcutById],
   (record) => record?.scopeMappings ?? null,
+);
+
+export const selectShortcutContextMappings = createSelector(
+  [selectShortcutById],
+  (record) => record?.contextMappings ?? null,
 );
 
 export const selectShortcutCategoryId = createSelector(
@@ -329,19 +334,19 @@ export const selectActiveShortcuts = createSelector(
 );
 
 /**
- * Shortcuts that are active and enabled for a given context key.
- * e.g. selectShortcutsForContext(state, "chat")
+ * Shortcuts that are active and enabled for a given feature/surface key.
+ * e.g. selectShortcutsForFeature(state, "chat")
  */
-export const selectShortcutsForContext = createSelector(
-  [selectActiveShortcuts, (_state: RootState, context: string) => context],
-  (shortcuts, context) =>
+export const selectShortcutsForFeature = createSelector(
+  [selectActiveShortcuts, (_state: RootState, feature: string) => feature],
+  (shortcuts, feature) =>
     shortcuts.filter(
       (s) =>
-        s.enabledContexts.includes(
-          context as AgentShortcut["enabledContexts"][number],
+        s.enabledFeatures.includes(
+          feature as AgentShortcut["enabledFeatures"][number],
         ) ||
-        s.enabledContexts.includes(
-          "general" as AgentShortcut["enabledContexts"][number],
+        s.enabledFeatures.includes(
+          "general" as AgentShortcut["enabledFeatures"][number],
         ),
     ),
 );

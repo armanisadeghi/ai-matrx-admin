@@ -3,8 +3,9 @@
  *
  * Rules:
  *  - Outer column names convert between snake_case (DB) and camelCase (frontend).
- *  - JSONB field contents (enabled_contexts, scope_mappings, default_variables,
- *    context_overrides, llm_overrides) are NOT key-converted — passed through.
+ *  - JSONB field contents (enabled_features, scope_mappings, context_mappings,
+ *    default_variables, context_overrides, llm_overrides) are NOT key-converted —
+ *    passed through.
  *
  * DB-managed fields excluded from ALL write payloads:
  *  - id          — DB generates on insert
@@ -106,10 +107,11 @@ export function dbRowToAgentShortcut(row: ShortcutRow): AgentShortcut {
     agentVersionId: row.agent_version_id ?? null,
     useLatest: row.use_latest ?? false,
 
-    enabledContexts:
-      (row.enabled_contexts as unknown as ShortcutContext[]) ?? [],
+    enabledFeatures:
+      ((loose.enabled_features ?? loose.enabled_contexts) as unknown as ShortcutContext[]) ?? [],
     scopeMappings:
       (row.scope_mappings as unknown as Record<string, string>) ?? null,
+    contextMappings: rJsonObject<Record<string, string>>(loose, "context_mappings"),
 
     // Renamed columns — fall back to old names if pre-migration build
     displayMode: ((rString(loose, "display_mode") ??
@@ -217,6 +219,7 @@ export function shortcutToExecutionConfig(
     contextOverrides: shortcut.contextOverrides,
     llmOverrides: shortcut.llmOverrides,
     scopeMappings: shortcut.scopeMappings,
+    contextMappings: shortcut.contextMappings,
   };
 }
 
@@ -239,8 +242,9 @@ export function agentShortcutToInsert(shortcut: AgentShortcut): ShortcutInsert {
     agent_version_id: shortcut.agentVersionId,
     use_latest: shortcut.useLatest,
 
-    enabled_contexts: shortcut.enabledContexts,
+    enabled_features: shortcut.enabledFeatures,
     scope_mappings: shortcut.scopeMappings,
+    context_mappings: shortcut.contextMappings,
 
     display_mode: shortcut.displayMode,
     show_variable_panel: shortcut.showVariablePanel,
@@ -293,10 +297,12 @@ export function agentShortcutToUpdate(
     update.agent_version_id = partial.agentVersionId;
   if (partial.useLatest !== undefined) update.use_latest = partial.useLatest;
 
-  if (partial.enabledContexts !== undefined)
-    update.enabled_contexts = partial.enabledContexts;
+  if (partial.enabledFeatures !== undefined)
+    update.enabled_features = partial.enabledFeatures;
   if (partial.scopeMappings !== undefined)
     update.scope_mappings = partial.scopeMappings;
+  if (partial.contextMappings !== undefined)
+    update.context_mappings = partial.contextMappings;
 
   // ── AgentExecutionConfig bundle ──
   if (partial.displayMode !== undefined) update.display_mode = partial.displayMode;

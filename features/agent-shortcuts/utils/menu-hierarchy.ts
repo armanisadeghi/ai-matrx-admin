@@ -12,7 +12,7 @@ export interface FlatAgentCategory {
     color: string | null;
     sortOrder: number;
     isActive: boolean;
-    enabledContexts?: string[] | null;
+    enabledFeatures?: string[] | null;
     metadata: Record<string, unknown> | null;
   };
   items: AgentMenuItem[];
@@ -25,7 +25,7 @@ export interface AgentMenuItem {
   description: string | null;
   iconName: string | null;
   sortOrder: number;
-  enabledContexts?: string[] | null;
+  enabledFeatures?: string[] | null;
   icon?: React.ComponentType<{ className?: string }>;
   [key: string]: unknown;
 }
@@ -45,11 +45,11 @@ export function filterByContext(
   return flatData
     .map((category) => {
       const categoryEnabled =
-        category.category.enabledContexts?.includes(contextFilter) ?? true;
+        category.category.enabledFeatures?.includes(contextFilter) ?? true;
       if (!categoryEnabled) return null;
 
       const filteredItems = category.items.filter((item) => {
-        const itemEnabled = item.enabledContexts?.includes(contextFilter) ?? true;
+        const itemEnabled = item.enabledFeatures?.includes(contextFilter) ?? true;
         return itemEnabled;
       });
 

@@ -430,6 +430,12 @@ export const selectPreExecutionMessage =
     state.instanceUIState.byConversationId[conversationId]
       ?.preExecutionMessage ?? null;
 
+export const selectBypassGateSeconds =
+  (conversationId: string) =>
+  (state: RootState): number =>
+    state.instanceUIState.byConversationId[conversationId]
+      ?.bypassGateSeconds ?? 0;
+
 export const selectVariableInputStyle =
   (conversationId: string) =>
   (state: RootState): VariablesPanelStyle =>

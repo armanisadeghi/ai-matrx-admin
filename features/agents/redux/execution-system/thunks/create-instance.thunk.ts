@@ -237,6 +237,7 @@ interface CreateShortcutInstanceArgs {
   hideReasoning?: boolean;
   hideToolResults?: boolean;
   preExecutionMessage?: string | null;
+  bypassGateSeconds?: number;
   variablesPanelStyle?: VariablesPanelStyle;
   jsonExtraction?: JsonExtractionConfig | null;
   originalText?: string | null;
@@ -264,6 +265,7 @@ export const createInstanceFromShortcut = createAsyncThunk<
     hideReasoning,
     hideToolResults,
     preExecutionMessage,
+    bypassGateSeconds,
     variablesPanelStyle,
     jsonExtraction,
     originalText,
@@ -328,6 +330,8 @@ export const createInstanceFromShortcut = createAsyncThunk<
       hideToolResults: hideToolResults ?? shortcut.hideToolResults,
       preExecutionMessage:
         preExecutionMessage ?? shortcut.preExecutionMessage,
+      bypassGateSeconds:
+        bypassGateSeconds ?? shortcut.bypassGateSeconds ?? 0,
       variablesPanelStyle:
         variablesPanelStyle ?? shortcut.variablesPanelStyle,
       jsonExtraction,
@@ -393,6 +397,7 @@ export const createInstanceFromShortcut = createAsyncThunk<
     shortcut.scopeMappings,
     snapshot.variableDefinitions,
     snapshot.contextSlots,
+    shortcut.contextMappings,
   );
 
   // Always apply scope-mapped variables — they override shortcut defaults.

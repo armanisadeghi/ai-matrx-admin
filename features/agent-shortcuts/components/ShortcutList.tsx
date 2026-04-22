@@ -103,7 +103,7 @@ export function ShortcutList({
   const [activeFilter, setActiveFilter] = useState<
     "all" | "active" | "inactive"
   >("all");
-  /** "all" | "unrestricted" | a specific tag from shortcuts' enabledContexts */
+  /** "all" | "unrestricted" | a specific tag from shortcuts' enabledFeatures */
   const [contextTagFilter, setContextTagFilter] = useState<string>("all");
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
@@ -125,7 +125,7 @@ export function ShortcutList({
   const uniqueContextTags = useMemo(() => {
     const set = new Set<string>();
     shortcuts.forEach((s) => {
-      (s.enabledContexts ?? []).forEach((t) => {
+      (s.enabledFeatures ?? []).forEach((t) => {
         if (isValidShortcutContext(t)) set.add(t);
       });
     });
@@ -178,14 +178,14 @@ export function ShortcutList({
 
     if (contextTagFilter === "unrestricted") {
       out = out.filter(
-        (s) => !(s.enabledContexts && s.enabledContexts.length > 0),
+        (s) => !(s.enabledFeatures && s.enabledFeatures.length > 0),
       );
     } else if (
       contextTagFilter !== "all" &&
       isValidShortcutContext(contextTagFilter)
     ) {
       out = out.filter((s) =>
-        (s.enabledContexts ?? []).includes(contextTagFilter),
+        (s.enabledFeatures ?? []).includes(contextTagFilter),
       );
     }
 
@@ -421,9 +421,9 @@ export function ShortcutList({
                           {shortcut.keyboardShortcut}
                         </code>
                       )}
-                      {shortcut.enabledContexts &&
-                        shortcut.enabledContexts.length > 0 &&
-                        shortcut.enabledContexts.map((tag) => (
+                      {shortcut.enabledFeatures &&
+                        shortcut.enabledFeatures.length > 0 &&
+                        shortcut.enabledFeatures.map((tag) => (
                           <Badge
                             key={tag}
                             variant="outline"
@@ -722,9 +722,9 @@ export function ShortcutList({
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-1 max-w-[220px]">
-                          {shortcut.enabledContexts &&
-                          shortcut.enabledContexts.length > 0 ? (
-                            shortcut.enabledContexts.map((tag) => (
+                          {shortcut.enabledFeatures &&
+                          shortcut.enabledFeatures.length > 0 ? (
+                            shortcut.enabledFeatures.map((tag) => (
                               <Badge
                                 key={tag}
                                 variant="outline"

@@ -15,7 +15,7 @@ export function categoryRowToDef(
     sortOrder: row.sort_order ?? 0,
     placementType: row.placement_type,
     parentCategoryId: row.parent_category_id,
-    enabledContexts: row.enabled_contexts ?? null,
+    enabledFeatures: row.enabled_features ?? null,
     metadata: row.metadata ?? null,
     isActive: row.is_active,
     userId: row.user_id,
@@ -40,8 +40,8 @@ export function categoryDefToRowPatch(
     out.placement_type = patch.placementType;
   if (patch.parentCategoryId !== undefined)
     out.parent_category_id = patch.parentCategoryId;
-  if (patch.enabledContexts !== undefined)
-    out.enabled_contexts = patch.enabledContexts;
+  if (patch.enabledFeatures !== undefined)
+    out.enabled_features = patch.enabledFeatures;
   if (patch.metadata !== undefined) out.metadata = patch.metadata;
   if (patch.isActive !== undefined) out.is_active = patch.isActive;
   if (patch.userId !== undefined) out.user_id = patch.userId;

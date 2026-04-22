@@ -902,7 +902,7 @@ export const makeSelectAvailableShortcuts = (context: ShortcutContext) =>
     (shortcuts) =>
       Object.values(shortcuts)
         .filter(
-          (s) => s != null && s.isActive && s.enabledContexts.includes(context),
+          (s) => s != null && s.isActive && s.enabledFeatures.includes(context),
         )
         .sort((a, b) => (a?.sortOrder ?? 0) - (b?.sortOrder ?? 0)),
   );
@@ -915,7 +915,7 @@ export const selectAvailableShortcuts =
   (context: ShortcutContext) => (state: RootState) => {
     return Object.values(state.agentShortcut.shortcuts)
       .filter(
-        (s) => s != null && s.isActive && s.enabledContexts.includes(context),
+        (s) => s != null && s.isActive && s.enabledFeatures.includes(context),
       )
       .sort((a, b) => (a?.sortOrder ?? 0) - (b?.sortOrder ?? 0));
   };

@@ -12,7 +12,7 @@ const CATEGORY_FIELDS = [
   "sort_order",
   "is_active",
   "metadata",
-  "enabled_contexts",
+  "enabled_features",
   "user_id",
   "organization_id",
   "project_id",
