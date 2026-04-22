@@ -1,6 +1,6 @@
 # Phase 8 — Agent Apps Public Runner
 
-**Status:** code-complete-pending-DB
+**Status:** implementation-complete (DB applied: agent_apps + related tables live); end-to-end smoke untested
 **Owner:** claude (phase-08)
 **Prerequisites:** Phase 5
 **Unblocks:** Phase 9, Phase 10

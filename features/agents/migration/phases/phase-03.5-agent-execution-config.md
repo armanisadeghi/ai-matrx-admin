@@ -1,6 +1,6 @@
 # Phase 3.5 — Agent Execution Config Bundle
 
-**Status:** design-locked; awaiting user green-light to execute migration
+**Status:** complete (migration applied, types regenerated, ShortcutForm rebuilt with all 12 new fields, variable-resolution bug fixed)
 **Owner:** main agent
 **Prerequisites:** Phases 0, 1, 3 (all complete)
 **Unblocks:** correct shortcut execution, Phase 4+, all runtime-variable tests

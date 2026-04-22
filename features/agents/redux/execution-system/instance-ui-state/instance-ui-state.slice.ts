@@ -291,9 +291,10 @@ const instanceUIStateSlice = createSlice({
     },
 
     /**
-     * Coarse-grained action: apply a single showVariables boolean to flip
-     * all three fine-grained visibility fields at once.
-     * Used by shortcuts and launch options for convenience.
+     * @deprecated Coarse-grained action: flipped all three fine-grained
+     * visibility fields via resolveVisibilitySettings. No callers remained
+     * after Phase 3.5, kept only as a historical note. Use setShowVariablePanel
+     * / setShowDefinitionMessages / setShowDefinitionMessageContent directly.
      */
     applyShowVariablesConfig(
       state,
