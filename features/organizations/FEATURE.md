@@ -1,0 +1,195 @@
+# FEATURE.md — `organizations` + `invitations`
+
+**Status:** `stable`
+**Tier:** `2`
+**Last updated:** `2026-04-22`
+
+> Combined doc for `features/organizations/` and `features/invitations/`. Orgs are the multi-tenant primitive; invitations are the flow that admits users to orgs (and, in mirrored form, to projects). Architecture mirrors `features/projects/`.
+
+---
+
+## Purpose
+
+Organizations are the top-level multi-tenant scope in the app — every user belongs to at least one (their personal org), and teams are additional orgs that bundle members, projects, tasks, and shared resources. Invitations are the email-based flow that brings a new user into an existing org or project.
+
+---
+
+## Entry points
+
+**Routes**
+- `app/(authenticated)/org/[slug]/page.tsx` — public landing page for an org (any authenticated user can view)
+- `app/(authenticated)/org/[slug]/{projects,tasks,notes,files,tables,workflows,shortcuts,templates,prompt-apps,prompts}/` — org-scoped resource views sharing `OrgResourceLayout.tsx`
+- `app/(authenticated)/org/[slug]/projects/[project-slug]/` — project-scoped view within an org
+- `app/(authenticated)/organizations/[id]/settings/page.tsx` — settings hub (members, invitations, general, scopes, danger zone)
+- `app/(authenticated)/organizations/[id]/settings/scopes/` — scope-system config (see `features/scope-system/FEATURE.md`)
+- `app/(authenticated)/invitations/accept/[token]/page.tsx` — accept org invitation
+- `app/(authenticated)/project-invitations/accept/[token]/page.tsx` — accept project invitation
+
+**Hooks** (`features/organizations/hooks.ts`)
+- `useUserOrganizations()` — current user's orgs with role + member counts; sorted personal-first
+- `useOrganization(orgId)` — single org by id
+- `useOrganizationOperations()` — `create`, `update`, `remove`
+- `useOrganizationMembers(orgId)` — members with user profile
+- `useMemberOperations(orgId)` — `updateRole`, `remove`, `leave`
+- `useUserRole(orgId)` — returns `{ role, isOwner, isAdmin, canManageMembers, canManageSettings, canDelete }`
+- `useOrganizationInvitations(orgId)` — pending invitations for an org
+- `useInvitationOperations(orgId)` — `invite`, `cancel`, `resend`
+- `useUserInvitations()` — invitations addressed to the current user, with `accept(token)`
+- `useSlugAvailability(slug, debounceMs)` — debounced uniqueness check
+
+**Services**
+- `features/organizations/service.ts` — full CRUD: orgs, members, invitations. Uses `supabase` client; invitation create/resend proxy to API routes (email needs server env)
+- `features/organizations/userSearch.ts` — `searchUserByEmail()` via the `lookup_user_by_email` RPC (never reads `profiles.email` directly)
+- `features/invitations/emailService.ts` — sends approval/rejection emails for the *invitation-request* admin flow (separate from org invitations; see Gotchas)
+
+**API endpoints**
+- `POST /api/organizations/invite` — creates an `organization_invitations` row, generates token (crypto.randomUUID), sets 7-day expiry, sends email via Resend
+- `POST /api/organizations/invitations/resend` — regenerates expiry and resends email
+- `POST /api/projects/invite` — mirror for project-level invitations; writes to `ctx_project_invitations`
+- `POST /api/projects/invitations/resend` — mirror for project resend
+- `GET/PATCH /api/admin/invitation-requests[/id]` — admin triage of signup-access requests (separate "request an invite" flow, not org-member invites)
+
+**Redux**
+- No dedicated org slice. Active org is tracked in `features/agent-context/redux/appContextSlice.ts` (`organization_id`, `organization_name`). All other org data is fetched per-hook via service calls — no cached Redux state.
+
+---
+
+## Data model
+
+**Database tables** (Supabase)
+- `organizations` — `id, name, slug (unique), description, logo_url, website, created_by, is_personal, settings, created_at, updated_at`. RLS: members can SELECT; owners/admins can UPDATE; only owners DELETE.
+- `organization_members` — `id, organization_id, user_id, role, joined_at, invited_by`. Composite unique on `(organization_id, user_id)`.
+- `organization_invitations` — `id, organization_id, email, token, role, invited_by, invited_at, expires_at, email_sent, email_sent_at`. Unique on `(organization_id, email)` — code `23505` maps to "already invited".
+- `ctx_projects` — project rows, scoped by `organization_id`
+- `ctx_project_members` — project membership
+- `ctx_project_invitations` — project invitation tokens (same shape as `organization_invitations`, different FK)
+- `admin.invitation_requests` — signup-access requests, admin-approved, triggers `features/invitations/emailService.ts`
+
+**Key types** (`features/organizations/types.ts`)
+- `OrgRole = 'owner' | 'admin' | 'member'` — three roles, no `viewer`
+- `Organization`, `OrganizationWithRole` (adds `role`, `memberCount`)
+- `OrganizationMember`, `OrganizationMemberWithUser`
+- `OrganizationInvitation`, `OrganizationInvitationWithOrg`
+- `CreateOrganizationOptions`, `UpdateOrganizationOptions`, `InviteMemberOptions`
+
+**Permission helpers** (pure, in `types.ts`)
+- `canManageMembers(role)` — true for `owner` | `admin`
+- `canManageSettings(role)` — true for `owner` | `admin`
+- `canDeleteOrg(role)` — true for `owner` only
+- `isHigherRole(a, b)` — `owner(3) > admin(2) > member(1)`
+
+---
+
+## Key flows
+
+### (a) Create an org — creator becomes owner
+
+1. UI: `CreateOrgModal` collects name + slug. `validateOrgName`, `validateOrgSlug` run client-side; `useSlugAvailability` debounces server check.
+2. `createOrganization()` in `service.ts`:
+   - Validates + checks `isSlugAvailable(slug)`.
+   - `requireUserId()` from `@/utils/auth/getUserId`.
+   - `INSERT INTO organizations` with `is_personal: false`, `created_by: userId`.
+   - `INSERT INTO organization_members` with `role: 'owner'`.
+3. Returns `OrganizationResult`. Caller refreshes `useUserOrganizations`.
+
+### (b) Invite a user by email
+
+1. UI: `InvitationManager` → `useInvitationOperations(orgId).invite({ email, role })`.
+2. Client `inviteToOrganization()` POSTs `/api/organizations/invite` (cannot call Resend from client — `RESEND_API_KEY` and `EMAIL_FROM` are server-only).
+3. Server route (`app/api/organizations/invite/route.ts`):
+   - Auth-checks the inviter.
+   - `crypto.randomUUID()` → token.
+   - `expires_at = now + 7 days`.
+   - INSERTs `organization_invitations` (unique on `(org, email)` → `23505` = already invited).
+   - Looks up org name + inviter display name.
+   - `sendEmail()` with `emailTemplates.organizationInvitation(orgName, inviterName, url, expiresAt)` where url = `${SITE_URL}/invitations/accept/${token}`.
+   - On email success, updates `email_sent = true, email_sent_at = now`.
+4. Recipient opens email → `/invitations/accept/[token]`:
+   - Fetches invitation by token, checks expiry client-side, verifies `invitation.email === user.email`, checks no existing membership.
+   - On Accept → `acceptInvitation(token)` in `service.ts`: INSERTs `organization_members` with invitation's role + `invited_by`, then DELETEs the invitation row.
+   - Redirects to `/organizations/{id}/settings`.
+
+### (c) Invite to a specific project (distinct from org invitation)
+
+- Use when the invitee needs project access but not broad org access (or is being added to a project in an org they already belong to).
+- Flow mirrors (b) but hits `/api/projects/invite`, writes `ctx_project_invitations`, and the accept route is `/project-invitations/accept/[token]`.
+- On accept, `acceptProjectInvitation()` (in `features/projects/service.ts`) INSERTs `ctx_project_members`. **Does not automatically add the user to the parent org** — org membership is a separate concern.
+- Email template: `emailTemplates.projectInvitation(projectName, orgName, inviterName, url, expiresAt)`.
+
+### (d) Role hierarchy — who can do what
+
+| Action | owner | admin | member |
+|---|:-:|:-:|:-:|
+| View org + members | yes | yes | yes |
+| Invite members | yes | yes | no |
+| Cancel/resend invitations | yes | yes | no |
+| Update other members' roles | yes | yes | no |
+| Remove members | yes | yes | no |
+| Edit org settings (name, logo, website) | yes | yes | no |
+| Delete organization | yes | no | no |
+| Transfer ownership | yes | no | no |
+| Leave organization | yes (unless last owner) | yes | yes |
+
+RLS enforces these at the database layer. Service functions (`updateMemberRole`, `removeMember`) use `.select()` after mutating and treat zero returned rows as "RLS blocked, not permitted" — they do NOT fail hard on RLS; they fail gracefully with `"You may not have permission..."`.
+
+### (e) Switching active org in the UI
+
+1. User clicks an org in sidebar / switcher (`OrgSidebar.tsx` or app-level switcher).
+2. Dispatch `appContextSlice.setOrganization({ id, name })`.
+3. **Slice resets all descendants on org change:** `scope_selections = {}`, `project_id = null`, `task_id = null`, `conversation_id = null`. A stale project from a previous org cannot leak across.
+4. All downstream hooks (`useContextScope`, agent invocations via `call-api.ts`) read `appContext` for the new scope.
+5. Route navigation is independent — switching the active context does not auto-navigate. URL-driven routes (`/org/[slug]/...`) sync the OTHER direction: on route load, read slug → call `setOrganization`.
+
+### (f) Slugs in routes
+
+- Public landing: `/org/[slug]` — any authenticated user can view.
+- Nested resource routes: `/org/[slug]/{projects,tasks,...}` — all keyed by slug.
+- Settings routes use `[id]` not `[slug]`: `/organizations/[id]/settings` — stable across renames.
+- `generateSlug(name)`: lowercase, `[^a-z0-9]+ → -`, trim leading/trailing hyphens.
+- `validateOrgSlug`: 3–50 chars, `[a-z0-9-]` only.
+- Rename semantics: `updateOrganization` does NOT accept `slug` in `UpdateOrganizationOptions` — slugs are effectively immutable post-creation. If slug change is needed, do it via direct SQL / admin flow.
+
+---
+
+## Invariants & gotchas
+
+- **Slug is globally unique, URL-safe, and lowercase.** `isSlugAvailable()` runs before insert; DB also has a unique constraint. Slug is not in `UpdateOrganizationOptions` — treat as immutable.
+- **Every org must have at least one owner.** `updateMemberRole` and `removeMember` block the last-owner case explicitly (pre-check + select-count of `role = 'owner'`). `leaveOrganization` just calls `removeMember(self)` so the same guard applies — a sole owner cannot leave their own org.
+- **Personal orgs (`is_personal = true`) cannot be deleted.** `deleteOrganization` pre-checks and returns `error: 'Cannot delete personal organization'`. Every user gets a personal org at signup (provisioned elsewhere, likely via a DB trigger).
+- **Invitation tokens are UUIDs, expire in 7 days.** Generated server-side via `crypto.randomUUID()`. Expiry is checked in the accept page (client-side date comparison) AND by a `.gt('expires_at', now)` filter in `getUserInvitations` / `acceptInvitation`.
+- **Invitation uniqueness is per `(organization_id, email)`.** Re-inviting the same email returns `23505` → "User already invited". Use `resendInvitation` to bump the expiry instead.
+- **Invitation email must match the authenticated user's email on accept.** `acceptInvitation` filters `.eq('email', getUserEmail())`. Case-insensitive compare in the accept page as well. A user signed in with a different email sees "This invitation is for X".
+- **`/api/organizations/invite` and `/api/projects/invite` MUST run server-side.** `RESEND_API_KEY` and `EMAIL_FROM` are server env only. Do not try to send invitation emails from the client.
+- **Accepting a project invitation does NOT add the user to the parent org.** Orgs and projects have independent membership tables. If the user is not in the org, they may or may not be able to use the project depending on RLS — verify with `features/scope-system/FEATURE.md` before assuming access.
+- **`features/invitations/emailService.ts` is a different flow.** It handles the "request access to sign up" admin approval/rejection emails (see `/api/admin/invitation-requests`), not org-member invitations. Do not wire it into org flows.
+- **`organization_members` updates/deletes silently succeed with 0 rows when RLS blocks.** Service layer compensates by requiring `.select()` + row-count check. Any new mutation against `organization_members` must follow this pattern or it will report false success.
+- **No Redux cache for org data.** Each hook refetches from Supabase. `refresh()` is exposed on every list hook — call it after any mutation (the operation hooks in `hooks.ts` already do this internally; external callers of `service.ts` directly must do it themselves).
+- **`lookup_user_by_email` is an RPC, not a table read.** Never query `profiles.email` directly — email lives in `auth.users` which is not directly selectable from the client.
+
+---
+
+## Related features
+
+- **Depends on:** `features/agent-context/redux/appContextSlice.ts` (active org state), `features/email/` + `lib/email/client.ts` (Resend integration + templates), `@/utils/auth/getUserId` (user id/email helpers), `@/utils/supabase/{client,server}`
+- **Depended on by:** `features/projects/` (project FKs `organization_id`), `features/scope-system/`, `features/tasks/`, `features/sharing/`, `features/agents/` (agent ownership + multi-scope), every `/org/[slug]/**` route
+- **Cross-links:**
+  - [`features/scope-system/FEATURE.md`](../scope-system/FEATURE.md) — scopes sit between org and project in the hierarchy
+  - [`features/sharing/FEATURE.md`](../sharing/FEATURE.md) — cross-org/user/project sharing of resources
+  - [`features/projects/README.md`](../projects/README.md) — projects mirror this architecture
+  - [`features/agents/FEATURE.md`](../agents/FEATURE.md) — agents are org-scoped; shortcuts/apps are multi-scope
+
+---
+
+## Current work / migration state
+
+Stable. No active migration. If org or project invitation flows evolve, keep `/api/organizations/invite` and `/api/projects/invite` in lockstep — they are deliberately parallel and diverging them will create surprising behavior.
+
+---
+
+## Change log
+
+- `2026-04-22` — claude: initial combined doc for organizations + invitations.
+
+---
+
+> **Keep-docs-live rule (CLAUDE.md):** after any substantive change to org membership, role rules, invitation tokens/expiry, or the `appContextSlice` integration, update this file and append to the Change log. The invitation flow spans client service, API route, email template, and accept page — changes that touch one almost always need to touch the others, and this doc is the single place that ties them together.
