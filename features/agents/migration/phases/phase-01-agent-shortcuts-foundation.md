@@ -1,6 +1,6 @@
 # Phase 1 — Agent Shortcuts Foundation
 
-**Status:** code-complete; pending DB migration apply + types regen (1.9)
+**Status:** complete (DB applied + types regenerated; live shortcuts verified end-to-end)
 **Owner:** _unassigned_
 **Prerequisites:** Phase 0 (governance docs exist)
 **Unblocks:** Phases 2, 3, 11, 12, 13

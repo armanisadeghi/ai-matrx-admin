@@ -1,6 +1,6 @@
 # Phase 2 — Content Blocks Migration
 
-**Status:** in-progress (2.1 complete, 2.2 pending DB, 2.3 pending)
+**Status:** implementation-complete (DB applied); perf profile (2.3) outstanding
 **Owner:** _unassigned_
 **Prerequisites:** Phase 1
 **Unblocks:** Phase 3, Phase 5
