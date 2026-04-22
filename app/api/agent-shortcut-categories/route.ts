@@ -1,5 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
+import { applyScopeToInsertPayload } from "../_lib/apply-scope-to-insert";
 
 const CATEGORY_FIELDS = [
   "id",
@@ -146,16 +147,23 @@ export async function POST(request: NextRequest) {
     }
 
     const insertPayload = pickCategoryFields(body);
+    const scoped = applyScopeToInsertPayload({
+      body,
+      payload: insertPayload,
+      userId: user.id,
+    });
+    if (scoped instanceof NextResponse) return scoped;
 
     const { data, error } = await supabase
       .from("shortcut_categories")
-      .insert(insertPayload as never)
+      .insert(scoped as never)
       .select()
       .single();
 
     if (error) {
       console.error("Error creating shortcut category:", error);
-      const status = error.code === "42501" || error.code === "PGRST301" ? 403 : 500;
+      const status =
+        error.code === "42501" || error.code === "PGRST301" ? 403 : 500;
       return NextResponse.json(
         {
           error: "Failed to create shortcut category",

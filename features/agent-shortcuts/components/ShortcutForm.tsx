@@ -73,7 +73,17 @@ import type {
 } from "../types";
 
 export interface ShortcutFormProps extends ScopeProps {
-  isOpen: boolean;
+  /**
+   * Rendering mode.
+   * - `"dialog"` (default): wraps the form in a Dialog (desktop) / Drawer (mobile).
+   * - `"inline"`: renders the form body and footer inline as a full-page editor.
+   *   In this mode `isOpen` is ignored and the form is always mounted.
+   */
+  variant?: "dialog" | "inline";
+  /**
+   * Only required for `variant="dialog"`. Ignored when `variant="inline"`.
+   */
+  isOpen?: boolean;
   onClose: () => void;
   onSuccess?: (id: string | null) => void;
   shortcut?: AgentShortcut | null;
@@ -82,6 +92,11 @@ export interface ShortcutFormProps extends ScopeProps {
   allowScopeEdit?: boolean;
   onScopeChange?: (scope: AgentScope, scopeId?: string) => void;
   onDuplicate?: (shortcut: AgentShortcut) => void;
+  /**
+   * Only used in `variant="inline"`. Pre-fills fields on the initial (create)
+   * form render. Ignored when editing an existing shortcut.
+   */
+  initialValues?: Partial<ShortcutFormData>;
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -165,15 +180,13 @@ function JsonEditorRow({
         typeof parsed !== "object" ||
         Array.isArray(parsed)
       ) {
-        setParseError("Must be a JSON object (e.g. { \"key\": \"value\" })");
+        setParseError('Must be a JSON object (e.g. { "key": "value" })');
         return;
       }
       setParseError(null);
       onChange(parsed as Record<string, unknown>);
     } catch (e) {
-      setParseError(
-        e instanceof Error ? e.message : "Invalid JSON",
-      );
+      setParseError(e instanceof Error ? e.message : "Invalid JSON");
     }
   };
 
@@ -193,9 +206,7 @@ function JsonEditorRow({
         disabled={disabled}
         className="text-[12px] font-mono"
       />
-      {help && (
-        <p className="text-[10px] text-muted-foreground">{help}</p>
-      )}
+      {help && <p className="text-[10px] text-muted-foreground">{help}</p>}
       {parseError && (
         <p className="text-[10px] text-destructive">{parseError}</p>
       )}
@@ -250,6 +261,7 @@ function fromShortcut(shortcut: AgentShortcut): ShortcutFormData {
 export function ShortcutForm({
   scope,
   scopeId,
+  variant = "dialog",
   isOpen,
   onClose,
   onSuccess,
@@ -259,16 +271,21 @@ export function ShortcutForm({
   allowScopeEdit = false,
   onScopeChange,
   onDuplicate,
+  initialValues,
 }: ShortcutFormProps) {
   const isMobile = useIsMobile();
+  const isInline = variant === "inline";
+  // Inline editor is always "open" — the parent route controls its lifecycle.
+  const open = isInline ? true : !!isOpen;
   const isEditing = !!shortcut;
   const crud = useAgentShortcutCrud({ scope, scopeId });
   const { toast } = useToast();
   const dispatch = useAppDispatch();
 
-  const [formData, setFormData] = useState<ShortcutFormData>(() =>
-    shortcut ? fromShortcut(shortcut) : emptyFormData(),
-  );
+  const [formData, setFormData] = useState<ShortcutFormData>(() => {
+    if (shortcut) return fromShortcut(shortcut);
+    return { ...emptyFormData(), ...(initialValues ?? {}) };
+  });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -282,10 +299,10 @@ export function ShortcutForm({
     selectedAgentId ? selectAgentById(state, selectedAgentId) : undefined,
   );
   useEffect(() => {
-    if (!isOpen) return;
+    if (!open) return;
     if (!selectedAgentId) return;
     dispatch(fetchAgentExecutionMinimal(selectedAgentId));
-  }, [isOpen, selectedAgentId, dispatch]);
+  }, [open, selectedAgentId, dispatch]);
 
   const variableDefinitions: VariableDefinition[] = useMemo(() => {
     if (agentRecord?.variableDefinitions) {
@@ -301,7 +318,7 @@ export function ShortcutForm({
   );
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!open) return;
     setError(null);
     if (shortcut) {
       setFormData(fromShortcut(shortcut));
@@ -309,9 +326,13 @@ export function ShortcutForm({
       setFormData({
         ...emptyFormData(),
         categoryId: categories[0]?.id ?? "",
+        ...(initialValues ?? {}),
       });
     }
-  }, [isOpen, shortcut, categories]);
+    // `initialValues` is intentionally omitted — it should only seed on mount
+    // or when switching between edit/create targets.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, shortcut, categories]);
 
   const groupedCategories = useMemo(() => {
     const byPlacement = new Map<string, AgentShortcutCategory[]>();
@@ -608,9 +629,7 @@ export function ShortcutForm({
               : DEFAULT_AVAILABLE_SCOPES
           }
           scopeMappings={formData.scopeMappings}
-          variableDefinitions={
-            variableDefinitions as AgentVariableDefinition[]
-          }
+          variableDefinitions={variableDefinitions as AgentVariableDefinition[]}
           onScopesChange={(_scopes, mappings) =>
             handleChange(
               "scopeMappings",
@@ -620,8 +639,8 @@ export function ShortcutForm({
           compact
         />
         <p className="text-xs text-muted-foreground">
-          Route a surface-provided scope key (selection, content, file path,
-          …) into one of the agent&apos;s{" "}
+          Route a surface-provided scope key (selection, content, file path, …)
+          into one of the agent&apos;s{" "}
           <span className="font-mono">{`{{variables}}`}</span>.
         </p>
       </div>
@@ -637,10 +656,10 @@ export function ShortcutForm({
           compact
         />
         <p className="text-xs text-muted-foreground">
-          Parity with the mapping above, but routes a scope key into an
-          agent <span className="font-medium">context slot</span> instead of a
-          variable. Takes precedence over default context slot values and
-          ad-hoc context at launch.
+          Parity with the mapping above, but routes a scope key into an agent{" "}
+          <span className="font-medium">context slot</span> instead of a
+          variable. Takes precedence over default context slot values and ad-hoc
+          context at launch.
         </p>
       </div>
 
@@ -741,18 +760,13 @@ export function ShortcutForm({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {[
-                  "inline",
-                  "wizard",
-                  "form",
-                  "compact",
-                  "guided",
-                  "cards",
-                ].map((style) => (
-                  <SelectItem key={style} value={style}>
-                    {style}
-                  </SelectItem>
-                ))}
+                {["inline", "wizard", "form", "compact", "guided", "cards"].map(
+                  (style) => (
+                    <SelectItem key={style} value={style}>
+                      {style}
+                    </SelectItem>
+                  ),
+                )}
               </SelectContent>
             </Select>
           </div>
@@ -832,9 +846,7 @@ export function ShortcutForm({
             label="Reveal interpolated content"
             help="Show variable values inside revealed messages."
             checked={formData.showDefinitionMessageContent}
-            onChange={(v) =>
-              handleChange("showDefinitionMessageContent", v)
-            }
+            onChange={(v) => handleChange("showDefinitionMessageContent", v)}
             disabled={saving || !formData.showDefinitionMessages}
           />
           <ToggleRow
@@ -858,7 +870,9 @@ export function ShortcutForm({
 
       {/* ── Defaults & overrides ────────────────────────────────── */}
       <div className="space-y-3">
-        <Label className="text-sm font-semibold">Defaults &amp; Overrides</Label>
+        <Label className="text-sm font-semibold">
+          Defaults &amp; Overrides
+        </Label>
 
         <div className="space-y-1.5">
           <Label htmlFor="default-user-input" className="text-xs">
@@ -1025,10 +1039,28 @@ export function ShortcutForm({
     </AlertDialog>
   );
 
+  if (isInline) {
+    return (
+      <>
+        <div className="flex flex-col h-full min-h-0 overflow-hidden">
+          <div className="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 pt-4 pb-6">
+            <div className="mx-auto w-full max-w-3xl">{body}</div>
+          </div>
+          <div className="shrink-0 border-t border-border bg-card px-4 sm:px-6 py-3">
+            <div className="mx-auto w-full max-w-3xl flex items-center justify-between gap-2 flex-col sm:flex-row">
+              {footer}
+            </div>
+          </div>
+        </div>
+        {deleteConfirm}
+      </>
+    );
+  }
+
   if (isMobile) {
     return (
       <>
-        <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
+        <Drawer open={open} onOpenChange={(next) => !next && onClose()}>
           <DrawerContent className="max-h-[92dvh] pb-safe">
             <DrawerHeader>
               <DrawerTitle>
@@ -1053,7 +1085,7 @@ export function ShortcutForm({
 
   return (
     <>
-      <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
         <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col p-0">
           <DialogHeader className="px-4 pt-4 pb-2 border-b border-border">
             <DialogTitle>

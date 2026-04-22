@@ -48,8 +48,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { useMemo } from "react";
 import { AgentRunWrapper } from "@/features/agents/components/smart/AgentRunWrapper";
-import { SourceFeature } from "@/features/agents/types";
-import { AgentVersionsWorkspace } from "@/features/agents/route/AgentVersionsWorkspace";
+import { AgentVersionDiffPage } from "@/features/agents/components/diff/AgentVersionDiffPage";
+import { AgentContentHistoryPanel } from "./AgentContentHistoryPanel";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -401,15 +401,21 @@ export function TabContent({
         />
       )}
 
-      {/* {activeTab === "history" && <AgentRunHistoryPanel agentId={agentId} />} */}
+      {activeTab === "history" && (
+        <AgentContentHistoryPanel agentId={agentId} />
+      )}
 
-      {activeTab === "versions" && <AgentVersionsWorkspace agentId={agentId} />}
+      {activeTab === "versions" && <AgentVersionDiffPage agentId={agentId} />}
 
       {activeTab === "run" && (
-        <AgentRunWrapper
-          agentId={agentId}
-          sourceFeature="agent-advanced-editor-window"
-        />
+        <div className="h-full w-full flex justify-center min-w-0 overflow-hidden">
+          <div className="h-full w-full max-w-[800px]">
+            <AgentRunWrapper
+              agentId={agentId}
+              sourceFeature="agent-advanced-editor-window"
+            />
+          </div>
+        </div>
       )}
     </div>
   );
@@ -425,7 +431,6 @@ export default function AgentContentWindow({
   onClose,
 }: AgentContentWindowProps) {
   const dispatch = useAppDispatch();
-  dispatch(fetchFullAgent(initialAgentId));
 
   const [localAgentId, setLocalAgentId] = useState<string | null>(
     initialAgentId ?? null,

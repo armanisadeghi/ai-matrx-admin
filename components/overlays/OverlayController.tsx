@@ -667,6 +667,71 @@ const MessageAnalysisWindow = dynamic(
   { ssr: false },
 );
 
+// ── Agent placeholder (coming-soon) windows ─────────────────────────────────
+const AgentOptimizerWindow = dynamic(
+  () =>
+    import("@/features/window-panels/windows/agents/AgentPlaceholderWindows").then(
+      (m) => ({ default: m.AgentOptimizerWindow }),
+    ),
+  { ssr: false },
+);
+
+const AgentInterfaceVariationsWindow = dynamic(
+  () =>
+    import("@/features/window-panels/windows/agents/AgentPlaceholderWindows").then(
+      (m) => ({ default: m.AgentInterfaceVariationsWindow }),
+    ),
+  { ssr: false },
+);
+
+const AgentCreateAppWindow = dynamic(
+  () =>
+    import("@/features/window-panels/windows/agents/AgentPlaceholderWindows").then(
+      (m) => ({ default: m.AgentCreateAppWindow }),
+    ),
+  { ssr: false },
+);
+
+const AgentDataStorageWindow = dynamic(
+  () =>
+    import("@/features/window-panels/windows/agents/AgentPlaceholderWindows").then(
+      (m) => ({ default: m.AgentDataStorageWindow }),
+    ),
+  { ssr: false },
+);
+
+const AgentFindUsagesWindow = dynamic(
+  () =>
+    import("@/features/window-panels/windows/agents/AgentPlaceholderWindows").then(
+      (m) => ({ default: m.AgentFindUsagesWindow }),
+    ),
+  { ssr: false },
+);
+
+const AgentConvertSystemWindow = dynamic(
+  () =>
+    import("@/features/window-panels/windows/agents/AgentPlaceholderWindows").then(
+      (m) => ({ default: m.AgentConvertSystemWindow }),
+    ),
+  { ssr: false },
+);
+
+const AgentAdminShortcutWindow = dynamic(
+  () =>
+    import("@/features/window-panels/windows/agents/AgentPlaceholderWindows").then(
+      (m) => ({ default: m.AgentAdminShortcutWindow }),
+    ),
+  { ssr: false },
+);
+
+const AgentAdminFindUsagesWindow = dynamic(
+  () =>
+    import("@/features/window-panels/windows/agents/AgentPlaceholderWindows").then(
+      (m) => ({ default: m.AgentAdminFindUsagesWindow }),
+    ),
+  { ssr: false },
+);
+
 // ============================================================================
 // OVERLAY CONTROLLER
 // ============================================================================
@@ -991,6 +1056,56 @@ export const OverlayController: React.FC = () => {
   );
   const messageAnalysisWindowData = useAppSelector((s) =>
     selectOverlayData(s, "messageAnalysisWindow"),
+  );
+
+  // ── Agent placeholder (coming-soon) window selectors ──────────────────────
+  const isAgentOptimizerWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "agentOptimizerWindow"),
+  );
+  const agentOptimizerWindowData = useAppSelector((s) =>
+    selectOverlayData(s, "agentOptimizerWindow"),
+  );
+  const isAgentInterfaceVariationsWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "agentInterfaceVariationsWindow"),
+  );
+  const agentInterfaceVariationsWindowData = useAppSelector((s) =>
+    selectOverlayData(s, "agentInterfaceVariationsWindow"),
+  );
+  const isAgentCreateAppWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "agentCreateAppWindow"),
+  );
+  const agentCreateAppWindowData = useAppSelector((s) =>
+    selectOverlayData(s, "agentCreateAppWindow"),
+  );
+  const isAgentDataStorageWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "agentDataStorageWindow"),
+  );
+  const agentDataStorageWindowData = useAppSelector((s) =>
+    selectOverlayData(s, "agentDataStorageWindow"),
+  );
+  const isAgentFindUsagesWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "agentFindUsagesWindow"),
+  );
+  const agentFindUsagesWindowData = useAppSelector((s) =>
+    selectOverlayData(s, "agentFindUsagesWindow"),
+  );
+  const isAgentConvertSystemWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "agentConvertSystemWindow"),
+  );
+  const agentConvertSystemWindowData = useAppSelector((s) =>
+    selectOverlayData(s, "agentConvertSystemWindow"),
+  );
+  const isAgentAdminShortcutWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "agentAdminShortcutWindow"),
+  );
+  const agentAdminShortcutWindowData = useAppSelector((s) =>
+    selectOverlayData(s, "agentAdminShortcutWindow"),
+  );
+  const isAgentAdminFindUsagesWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "agentAdminFindUsagesWindow"),
+  );
+  const agentAdminFindUsagesWindowData = useAppSelector((s) =>
+    selectOverlayData(s, "agentAdminFindUsagesWindow"),
   );
 
   const agentGateWindowInstances = useAppSelector((s) =>
@@ -2268,6 +2383,73 @@ export const OverlayController: React.FC = () => {
           isOpen={true}
           onClose={() => close("agentContentSidebarWindow")}
           {...(agentContentSidebarWindowData as any)}
+        />
+      )}
+
+      {/* ── Agent placeholder (coming-soon) windows ──────────────────────── */}
+      {isAgentOptimizerWindowOpen && (
+        <AgentOptimizerWindow
+          isOpen={true}
+          onClose={() => close("agentOptimizerWindow")}
+          agentId={agentOptimizerWindowData?.agentId as string | null}
+        />
+      )}
+
+      {isAgentInterfaceVariationsWindowOpen && (
+        <AgentInterfaceVariationsWindow
+          isOpen={true}
+          onClose={() => close("agentInterfaceVariationsWindow")}
+          agentId={
+            agentInterfaceVariationsWindowData?.agentId as string | null
+          }
+        />
+      )}
+
+      {isAgentCreateAppWindowOpen && (
+        <AgentCreateAppWindow
+          isOpen={true}
+          onClose={() => close("agentCreateAppWindow")}
+          agentId={agentCreateAppWindowData?.agentId as string | null}
+        />
+      )}
+
+      {isAgentDataStorageWindowOpen && (
+        <AgentDataStorageWindow
+          isOpen={true}
+          onClose={() => close("agentDataStorageWindow")}
+          agentId={agentDataStorageWindowData?.agentId as string | null}
+        />
+      )}
+
+      {isAgentFindUsagesWindowOpen && (
+        <AgentFindUsagesWindow
+          isOpen={true}
+          onClose={() => close("agentFindUsagesWindow")}
+          agentId={agentFindUsagesWindowData?.agentId as string | null}
+        />
+      )}
+
+      {isAgentConvertSystemWindowOpen && (
+        <AgentConvertSystemWindow
+          isOpen={true}
+          onClose={() => close("agentConvertSystemWindow")}
+          agentId={agentConvertSystemWindowData?.agentId as string | null}
+        />
+      )}
+
+      {isAgentAdminShortcutWindowOpen && (
+        <AgentAdminShortcutWindow
+          isOpen={true}
+          onClose={() => close("agentAdminShortcutWindow")}
+          agentId={agentAdminShortcutWindowData?.agentId as string | null}
+        />
+      )}
+
+      {isAgentAdminFindUsagesWindowOpen && (
+        <AgentAdminFindUsagesWindow
+          isOpen={true}
+          onClose={() => close("agentAdminFindUsagesWindow")}
+          agentId={agentAdminFindUsagesWindowData?.agentId as string | null}
         />
       )}
 

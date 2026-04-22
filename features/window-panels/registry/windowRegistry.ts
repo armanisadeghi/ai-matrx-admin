@@ -646,6 +646,64 @@ const REGISTRY: WindowRegistryEntry[] = [
       activeSection: "overview",
     },
   },
+
+  // ── Agent Placeholder Windows (coming-soon surfaces) ──────────────────────
+  {
+    slug: "agent-optimizer-window",
+    overlayId: "agentOptimizerWindow",
+    label: "Matrx Agent Optimizer",
+    defaultData: { agentId: null },
+    ephemeral: true,
+  },
+  {
+    slug: "agent-interface-variations-window",
+    overlayId: "agentInterfaceVariationsWindow",
+    label: "Interface Variations",
+    defaultData: { agentId: null },
+    ephemeral: true,
+  },
+  {
+    slug: "agent-create-app-window",
+    overlayId: "agentCreateAppWindow",
+    label: "Create Agent App",
+    defaultData: { agentId: null },
+    ephemeral: true,
+  },
+  {
+    slug: "agent-data-storage-window",
+    overlayId: "agentDataStorageWindow",
+    label: "Data Storage Support",
+    defaultData: { agentId: null },
+    ephemeral: true,
+  },
+  {
+    slug: "agent-find-usages-window",
+    overlayId: "agentFindUsagesWindow",
+    label: "Find Usages",
+    defaultData: { agentId: null },
+    ephemeral: true,
+  },
+  {
+    slug: "agent-convert-system-window",
+    overlayId: "agentConvertSystemWindow",
+    label: "Convert to System Agent",
+    defaultData: { agentId: null },
+    ephemeral: true,
+  },
+  {
+    slug: "agent-admin-shortcut-window",
+    overlayId: "agentAdminShortcutWindow",
+    label: "Create / Update Shortcut",
+    defaultData: { agentId: null },
+    ephemeral: true,
+  },
+  {
+    slug: "agent-admin-find-usages-window",
+    overlayId: "agentAdminFindUsagesWindow",
+    label: "Find Usages (Admin)",
+    defaultData: { agentId: null },
+    ephemeral: true,
+  },
 ];
 
 // ─── Lookup helpers ───────────────────────────────────────────────────────────

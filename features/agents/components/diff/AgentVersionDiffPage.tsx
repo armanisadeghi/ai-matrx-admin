@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   fetchAgentVersionHistory,
@@ -41,6 +42,9 @@ interface AgentVersionDiffPageProps {
 
 export function AgentVersionDiffPage({ agentId, initialVersion }: AgentVersionDiffPageProps) {
   const dispatch = useAppDispatch();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [versions, setVersions] = useState<AgentVersionHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -55,7 +59,27 @@ export function AgentVersionDiffPage({ agentId, initialVersion }: AgentVersionDi
   const [snapshotLoading, setSnapshotLoading] = useState(false);
   const [promoting, setPromoting] = useState(false);
   const [showPromoteDialog, setShowPromoteDialog] = useState(false);
-  const [activeTab, setActiveTab] = useState<"compare" | "history">("compare");
+  const initialTabParam = searchParams?.get("tab");
+  const [activeTab, setActiveTab] = useState<"compare" | "history">(
+    initialTabParam === "history" ? "history" : "compare",
+  );
+
+  // Sync activeTab → URL (?tab=history, or remove for compare)
+  useEffect(() => {
+    if (!pathname) return;
+    const params = new URLSearchParams(searchParams?.toString() ?? "");
+    const current = params.get("tab");
+    if (activeTab === "history" && current !== "history") {
+      params.set("tab", "history");
+    } else if (activeTab === "compare" && current === "history") {
+      params.delete("tab");
+    } else {
+      return;
+    }
+    const qs = params.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
 
   const liveAgent = useAppSelector((state) => selectAgentById(state, agentId));
   const snapshotRecords = useAppSelector((state) => selectVersionsByParentAgentId(state, agentId));
@@ -213,7 +237,11 @@ export function AgentVersionDiffPage({ agentId, initialVersion }: AgentVersionDi
 
   return (
     <div className="h-full flex flex-col overflow-hidden" style={{ paddingTop: "var(--shell-header-h)" }}>
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "compare" | "history")} className="flex flex-col h-full">
+      <Tabs
+        value={activeTab}
+        onValueChange={(v) => setActiveTab(v as "compare" | "history")}
+        className="flex flex-col h-full"
+      >
         {/* Toolbar */}
         <div className="shrink-0 flex items-center gap-3 px-4 py-2 border-b border-border bg-card/50">
           <TabsList className="h-7 p-0.5 bg-muted/50">

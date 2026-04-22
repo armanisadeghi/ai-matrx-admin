@@ -1,5 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
+import { applyScopeToInsertPayload } from "../_lib/apply-scope-to-insert";
 
 const BLOCK_FIELDS = [
   "id",
@@ -144,16 +145,23 @@ export async function POST(request: NextRequest) {
     }
 
     const insertPayload = pickBlockFields(body);
+    const scoped = applyScopeToInsertPayload({
+      body,
+      payload: insertPayload,
+      userId: user.id,
+    });
+    if (scoped instanceof NextResponse) return scoped;
 
     const { data, error } = await supabase
       .from("content_blocks")
-      .insert(insertPayload as never)
+      .insert(scoped as never)
       .select()
       .single();
 
     if (error) {
       console.error("Error creating content block:", error);
-      const status = error.code === "42501" || error.code === "PGRST301" ? 403 : 500;
+      const status =
+        error.code === "42501" || error.code === "PGRST301" ? 403 : 500;
       return NextResponse.json(
         { error: "Failed to create content block", details: error.message },
         { status },

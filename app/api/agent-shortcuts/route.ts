@@ -1,5 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
+import { applyScopeToInsertPayload } from "../_lib/apply-scope-to-insert";
 
 const SHORTCUT_FIELDS = [
   "id",
@@ -124,7 +125,7 @@ export async function GET(request: NextRequest) {
 
     const filtered = placementType
       ? await filterByPlacementType(supabase, data ?? [], placementType)
-      : data ?? [];
+      : (data ?? []);
 
     return NextResponse.json({ data: filtered });
   } catch (error) {
@@ -168,16 +169,23 @@ export async function POST(request: NextRequest) {
     }
 
     const insertPayload = pickShortcutFields(body);
+    const scoped = applyScopeToInsertPayload({
+      body,
+      payload: insertPayload,
+      userId: user.id,
+    });
+    if (scoped instanceof NextResponse) return scoped;
 
     const { data, error } = await supabase
       .from("agx_shortcut")
-      .insert(insertPayload as never)
+      .insert(scoped as never)
       .select()
       .single();
 
     if (error) {
       console.error("Error creating agent shortcut:", error);
-      const status = error.code === "42501" || error.code === "PGRST301" ? 403 : 500;
+      const status =
+        error.code === "42501" || error.code === "PGRST301" ? 403 : 500;
       return NextResponse.json(
         { error: "Failed to create agent shortcut", details: error.message },
         { status },

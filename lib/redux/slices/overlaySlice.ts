@@ -799,3 +799,67 @@ export const openAgentChatAssistant = (options: AgentWidgetPayload) =>
     overlayId: "agentChatAssistant",
     instanceId: options.instanceId,
   });
+
+// ============================================================================
+// AGENT PLACEHOLDER (COMING-SOON) OVERLAYS
+// ============================================================================
+
+interface AgentPlaceholderPayload {
+  agentId?: string | null;
+}
+
+export const openAgentOptimizerWindow = (options?: AgentPlaceholderPayload) =>
+  openOverlay({
+    overlayId: "agentOptimizerWindow",
+    data: { agentId: options?.agentId ?? null },
+  });
+
+export const openAgentInterfaceVariationsWindow = (
+  options?: AgentPlaceholderPayload,
+) =>
+  openOverlay({
+    overlayId: "agentInterfaceVariationsWindow",
+    data: { agentId: options?.agentId ?? null },
+  });
+
+export const openAgentCreateAppWindow = (options?: AgentPlaceholderPayload) =>
+  openOverlay({
+    overlayId: "agentCreateAppWindow",
+    data: { agentId: options?.agentId ?? null },
+  });
+
+export const openAgentDataStorageWindow = (options?: AgentPlaceholderPayload) =>
+  openOverlay({
+    overlayId: "agentDataStorageWindow",
+    data: { agentId: options?.agentId ?? null },
+  });
+
+export const openAgentFindUsagesWindow = (options?: AgentPlaceholderPayload) =>
+  openOverlay({
+    overlayId: "agentFindUsagesWindow",
+    data: { agentId: options?.agentId ?? null },
+  });
+
+export const openAgentConvertSystemWindow = (
+  options?: AgentPlaceholderPayload,
+) =>
+  openOverlay({
+    overlayId: "agentConvertSystemWindow",
+    data: { agentId: options?.agentId ?? null },
+  });
+
+export const openAgentAdminShortcutWindow = (
+  options?: AgentPlaceholderPayload,
+) =>
+  openOverlay({
+    overlayId: "agentAdminShortcutWindow",
+    data: { agentId: options?.agentId ?? null },
+  });
+
+export const openAgentAdminFindUsagesWindow = (
+  options?: AgentPlaceholderPayload,
+) =>
+  openOverlay({
+    overlayId: "agentAdminFindUsagesWindow",
+    data: { agentId: options?.agentId ?? null },
+  });

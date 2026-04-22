@@ -6,6 +6,15 @@ import {
   openAgentRunHistoryWindow,
   openAgentImportWindow,
   openAgentContentWindow,
+  openAgentRunWindow,
+  openAgentOptimizerWindow,
+  openAgentInterfaceVariationsWindow,
+  openAgentCreateAppWindow,
+  openAgentDataStorageWindow,
+  openAgentFindUsagesWindow,
+  openAgentConvertSystemWindow,
+  openAgentAdminShortcutWindow,
+  openAgentAdminFindUsagesWindow,
 } from "@/lib/redux/slices/overlaySlice";
 import { duplicateAgent } from "@/features/agents/redux/agent-definition/thunks";
 
@@ -72,20 +81,20 @@ interface MenuItem {
 const THIS_AGENT_ITEMS: MenuItem[] = [
   { label: "Edit Agent Info", icon: FileText },
   { label: "View Run History", icon: History },
-  { label: "View Agent Window", icon: AppWindow },
-  { label: "Advanced Settings View", icon: SlidersHorizontal, soon: true },
-  { label: "View All Versions", icon: GitBranch, soon: true },
+  { label: "Advanced Settings View", icon: SlidersHorizontal },
+  { label: "View All Versions", icon: GitBranch },
+  { label: "Open Run Modal", icon: Play },
   { label: "Full Screen Editor", icon: Maximize2, soon: true },
-  { label: "Open Run Modal", icon: Play, soon: true },
-  { label: "Matrx Agent Optimizer", icon: Sparkles, soon: true },
+  { label: "Matrx Agent Optimizer", icon: Sparkles },
+  { label: "Find Usages", icon: Search },
 ];
 
 // Actions that produce something new from this agent
 const AGENT_MANAGEMENT_ITEMS: MenuItem[] = [
   { label: "Duplicate", icon: Copy },
   { label: "Convert to Template", icon: Shield },
-  { label: "Create App", icon: AppWindow, soon: true },
-  { label: "Add Data Storage Support", icon: Database, soon: true },
+  { label: "Create App", icon: AppWindow },
+  { label: "Add Data Storage Support", icon: Database },
 ];
 
 // Global agent actions — not scoped to the current agent
@@ -118,9 +127,9 @@ const NEW_TAB_ITEMS: {
 ];
 
 const ADMIN_ITEMS: MenuItem[] = [
-  { label: "Convert/Update System Agent", icon: RefreshCw, soon: true },
-  { label: "Create/Update Shortcut", icon: Link2, soon: true },
-  { label: "Find Usages", icon: Search, soon: true },
+  { label: "Convert/Update System Agent", icon: RefreshCw },
+  { label: "Create/Update Shortcut", icon: Link2 },
+  { label: "Find Usages (Admin)", icon: Search },
 ];
 
 function comingSoon() {
@@ -171,8 +180,32 @@ export function AgentOptionsMenu({
     } else if (label === "View Run History") {
       dispatch(openAgentRunHistoryWindow({ agentId }));
       setOpen(false);
-    } else if (label === "View Agent Window") {
+    } else if (label === "Advanced Settings View") {
       dispatch(openAgentContentWindow({ agentId }));
+      setOpen(false);
+    } else if (label === "Open Run Modal") {
+      dispatch(openAgentRunWindow({ agentId }));
+      setOpen(false);
+    } else if (label === "Matrx Agent Optimizer") {
+      dispatch(openAgentOptimizerWindow({ agentId }));
+      setOpen(false);
+    } else if (label === "Find Usages") {
+      dispatch(openAgentFindUsagesWindow({ agentId }));
+      setOpen(false);
+    } else if (label === "Create App") {
+      dispatch(openAgentCreateAppWindow({ agentId }));
+      setOpen(false);
+    } else if (label === "Add Data Storage Support") {
+      dispatch(openAgentDataStorageWindow({ agentId }));
+      setOpen(false);
+    } else if (label === "Convert/Update System Agent") {
+      dispatch(openAgentConvertSystemWindow({ agentId }));
+      setOpen(false);
+    } else if (label === "Create/Update Shortcut") {
+      dispatch(openAgentAdminShortcutWindow({ agentId }));
+      setOpen(false);
+    } else if (label === "Find Usages (Admin)") {
+      dispatch(openAgentAdminFindUsagesWindow({ agentId }));
       setOpen(false);
     } else if (label === "Import Agent") {
       dispatch(openAgentImportWindow());
@@ -205,6 +238,11 @@ export function AgentOptionsMenu({
     }
   };
 
+  const handleInterfaceVariationClick = () => {
+    dispatch(openAgentInterfaceVariationsWindow({ agentId }));
+    setOpen(false);
+  };
+
   const trigger = <MenuTapButton />;
 
   if (isMobile) {
@@ -226,7 +264,10 @@ export function AgentOptionsMenu({
         )}
         <DrawerContent className="max-h-[85dvh]">
           <DrawerTitle className="sr-only">Agent Options</DrawerTitle>
-          <MobileMenuContent onClose={() => setOpen(false)} agentId={agentId} />
+          <MobileMenuContent
+            onClose={() => setOpen(false)}
+            agentId={agentId}
+          />
         </DrawerContent>
       </Drawer>
     );
@@ -237,27 +278,42 @@ export function AgentOptionsMenu({
       <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-80">
         {/* ── This Agent ── */}
-        {THIS_AGENT_ITEMS.map(({ label, icon: Icon, soon }) => (
-          <DropdownMenuItem
-            key={label}
-            onClick={() => handleDesktopItemClick(label)}
-            className={cn(soon && "text-muted-foreground")}
-          >
-            <Icon className="w-4 h-4 mr-2 text-muted-foreground" />
-            <span className="flex-1">{label}</span>
-            {soon && <SoonBadge />}
-          </DropdownMenuItem>
-        ))}
+        {THIS_AGENT_ITEMS.map(({ label, icon: Icon, soon }) => {
+          if (label === "View All Versions") {
+            return (
+              <DropdownMenuItem key={label} asChild>
+                <Link
+                  href={`/agents/${agentId}/latest?tab=history`}
+                  className="flex items-center gap-2 cursor-pointer"
+                  onClick={() => setOpen(false)}
+                >
+                  <Icon className="w-4 h-4 mr-2 text-muted-foreground" />
+                  <span className="flex-1">{label}</span>
+                </Link>
+              </DropdownMenuItem>
+            );
+          }
+          return (
+            <DropdownMenuItem
+              key={label}
+              onClick={() => handleDesktopItemClick(label)}
+              className={cn(soon && "text-muted-foreground")}
+            >
+              <Icon className="w-4 h-4 mr-2 text-muted-foreground" />
+              <span className="flex-1">{label}</span>
+              {soon && <SoonBadge />}
+            </DropdownMenuItem>
+          );
+        })}
 
         <DropdownMenuSub>
-          <DropdownMenuSubTrigger className="text-muted-foreground">
+          <DropdownMenuSubTrigger>
             <Layers className="w-4 h-4 mr-2 text-muted-foreground" />
             <span className="flex-1">Try Interface Variations</span>
-            <SoonBadge />
           </DropdownMenuSubTrigger>
           <DropdownMenuSubContent className="w-48">
             {INTERFACE_VARIATIONS.map((v) => (
-              <DropdownMenuItem key={v} onClick={comingSoon}>
+              <DropdownMenuItem key={v} onClick={handleInterfaceVariationClick}>
                 {v}
               </DropdownMenuItem>
             ))}
@@ -340,12 +396,10 @@ export function AgentOptionsMenu({
         {ADMIN_ITEMS.map(({ label, icon: Icon }) => (
           <DropdownMenuItem
             key={label}
-            onClick={comingSoon}
-            className="text-muted-foreground"
+            onClick={() => handleDesktopItemClick(label)}
           >
             <Icon className="w-4 h-4 mr-2 text-muted-foreground" />
             <span className="flex-1">{label}</span>
-            <SoonBadge />
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>
@@ -371,8 +425,32 @@ function MobileMenuContent({
     } else if (label === "View Run History") {
       dispatch(openAgentRunHistoryWindow({ agentId }));
       onClose();
-    } else if (label === "View Agent Window") {
+    } else if (label === "Advanced Settings View") {
       dispatch(openAgentContentWindow({ agentId }));
+      onClose();
+    } else if (label === "Open Run Modal") {
+      dispatch(openAgentRunWindow({ agentId }));
+      onClose();
+    } else if (label === "Matrx Agent Optimizer") {
+      dispatch(openAgentOptimizerWindow({ agentId }));
+      onClose();
+    } else if (label === "Find Usages") {
+      dispatch(openAgentFindUsagesWindow({ agentId }));
+      onClose();
+    } else if (label === "Create App") {
+      dispatch(openAgentCreateAppWindow({ agentId }));
+      onClose();
+    } else if (label === "Add Data Storage Support") {
+      dispatch(openAgentDataStorageWindow({ agentId }));
+      onClose();
+    } else if (label === "Convert/Update System Agent") {
+      dispatch(openAgentConvertSystemWindow({ agentId }));
+      onClose();
+    } else if (label === "Create/Update Shortcut") {
+      dispatch(openAgentAdminShortcutWindow({ agentId }));
+      onClose();
+    } else if (label === "Find Usages (Admin)") {
+      dispatch(openAgentAdminFindUsagesWindow({ agentId }));
       onClose();
     } else if (label === "Import Agent") {
       dispatch(openAgentImportWindow());
@@ -406,32 +484,51 @@ function MobileMenuContent({
     }
   };
 
+  const handleVariationClick = () => {
+    dispatch(openAgentInterfaceVariationsWindow({ agentId }));
+    onClose();
+  };
+
   return (
     <div className="flex flex-col overflow-y-auto max-h-[calc(85dvh-2rem)] pb-safe">
       {/* ── This Agent ── */}
       <div className="py-1">
-        {THIS_AGENT_ITEMS.map(({ label, icon: Icon, soon }) => (
-          <button
-            key={label}
-            onClick={() => handleItem(label)}
-            className={cn(
-              "flex items-center gap-3 w-full px-4 py-2.5 text-sm hover:bg-muted/50 active:bg-muted/70 transition-colors",
-              soon ? "text-muted-foreground" : "text-foreground",
-            )}
-          >
-            <Icon className="w-4 h-4 text-muted-foreground shrink-0" />
-            <span className="flex-1 text-left">{label}</span>
-            {soon && <SoonBadge />}
-          </button>
-        ))}
+        {THIS_AGENT_ITEMS.map(({ label, icon: Icon, soon }) => {
+          if (label === "View All Versions") {
+            return (
+              <Link
+                key={label}
+                href={`/agents/${agentId}/latest?tab=history`}
+                onClick={onClose}
+                className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-foreground hover:bg-muted/50 active:bg-muted/70 transition-colors"
+              >
+                <Icon className="w-4 h-4 text-muted-foreground shrink-0" />
+                <span className="flex-1 text-left">{label}</span>
+              </Link>
+            );
+          }
+          return (
+            <button
+              key={label}
+              onClick={() => handleItem(label)}
+              className={cn(
+                "flex items-center gap-3 w-full px-4 py-2.5 text-sm hover:bg-muted/50 active:bg-muted/70 transition-colors",
+                soon ? "text-muted-foreground" : "text-foreground",
+              )}
+            >
+              <Icon className="w-4 h-4 text-muted-foreground shrink-0" />
+              <span className="flex-1 text-left">{label}</span>
+              {soon && <SoonBadge />}
+            </button>
+          );
+        })}
 
         <button
           onClick={() => setVariationsOpen(!variationsOpen)}
-          className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-muted-foreground hover:bg-muted/50 active:bg-muted/70 transition-colors"
+          className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-foreground hover:bg-muted/50 active:bg-muted/70 transition-colors"
         >
           <Layers className="w-4 h-4 text-muted-foreground shrink-0" />
           <span className="flex-1 text-left">Try Interface Variations</span>
-          <SoonBadge />
           <ChevronRight
             className={cn(
               "w-3.5 h-3.5 text-muted-foreground transition-transform ml-1",
@@ -444,7 +541,7 @@ function MobileMenuContent({
             {INTERFACE_VARIATIONS.map((v) => (
               <button
                 key={v}
-                onClick={() => handleItem(v)}
+                onClick={handleVariationClick}
                 className="flex items-center gap-3 w-full px-4 py-2 text-sm text-foreground/80 hover:bg-muted/50 active:bg-muted/70 transition-colors"
               >
                 {v}
@@ -541,11 +638,10 @@ function MobileMenuContent({
           <button
             key={label}
             onClick={() => handleItem(label)}
-            className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-muted-foreground hover:bg-muted/50 active:bg-muted/70 transition-colors"
+            className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-foreground hover:bg-muted/50 active:bg-muted/70 transition-colors"
           >
             <Icon className="w-4 h-4 text-muted-foreground shrink-0" />
             <span className="flex-1 text-left">{label}</span>
-            <SoonBadge />
           </button>
         ))}
       </div>

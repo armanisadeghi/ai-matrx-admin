@@ -62,6 +62,8 @@ function resolveSettings(raw?: PrintSettings): CardPrintSettings {
 export type FlashcardsVariant =
   | "landscape-duplex"
   | "landscape-stacked"
+  | "portrait-6up-duplex"
+  | "portrait-6up-stacked"
   | "avery-5388"
   | "cut-cards"
   | "both-sides"
@@ -1286,6 +1288,309 @@ ${FIT_TEXT_SCRIPT}
 }
 
 // ---------------------------------------------------------------------------
+// Variant: Portrait 6-up (6 cards per page, 2 columns × 3 rows)
+//
+// Geometry (portrait 8.5" × 11"):
+//   Page is split exactly in half down the middle and into thirds across.
+//   Each cell: 4.25" wide × 3.667" tall.
+//   Inner padding per cell: ~0.22" gives the text breathing room without
+//   pushing content off the cuttable area.
+//
+// Duplex (double-sided) mirroring for portrait:
+//   Most printers default to "flip on long edge" for portrait duplex, which
+//   pivots the sheet around its left (long) edge. Result: left ↔ right
+//   columns swap on the back side, rows are unchanged.
+//
+//   Front slot order:  [0:TL, 1:TR, 2:ML, 3:MR, 4:BL, 5:BR]
+//   Back page render:  [B1, B0, B3, B2, B5, B4]  (columns swapped per row)
+//
+// Content centering:
+//   Each card face uses flex centering so short text sits dead-center,
+//   multiline prose is left-aligned but still vertically centered, and
+//   bullet lists align to the top-left of their cell for readability.
+// ---------------------------------------------------------------------------
+
+const PORTRAIT_6UP_STYLES = `
+  @page { size: portrait; margin: 0; }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    width: 8.5in;
+    background: #fff;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    color: #000;
+  }
+
+  .page-6up {
+    width: 8.5in;
+    height: 11in;
+    position: relative;
+    page-break-after: always;
+    break-after: page;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    gap: 0;
+    padding: 0;
+    border-bottom: 2px solid #e2e8f0;
+  }
+  .page-6up:last-child {
+    page-break-after: auto;
+    break-after: auto;
+    border-bottom: none;
+  }
+
+  @media print {
+    html, body { width: 8.5in; height: auto; overflow: visible; }
+    .page-6up { border-bottom: none; }
+  }
+
+  /* Each of the 6 cells — clean 4.25" × 3.667" zone split by the cuts */
+  .cell-6 {
+    display: flex;
+    align-items: stretch;
+    justify-content: stretch;
+    padding: 0.2in 0.22in;
+    overflow: hidden;
+  }
+
+  /* The actual card face — no border. Cuts are the separation. */
+  .card-face {
+    flex: 1;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0.1in 0.12in;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Cut tick marks — short marks at each cut intersection with the page edge */
+  .tick-v-top, .tick-v-bottom {
+    position: absolute;
+    left: 50%;
+    height: 0.18in;
+    width: 0;
+    border-left: 0.6px solid #bbb;
+    pointer-events: none;
+  }
+  .tick-v-top    { top: 0.1in; }
+  .tick-v-bottom { bottom: 0.1in; }
+
+  .tick-h-1-left, .tick-h-1-right,
+  .tick-h-2-left, .tick-h-2-right {
+    position: absolute;
+    width: 0.18in;
+    height: 0;
+    border-top: 0.6px solid #bbb;
+    pointer-events: none;
+  }
+  .tick-h-1-left  { top: 33.333%; left: 0.1in; }
+  .tick-h-1-right { top: 33.333%; right: 0.1in; }
+  .tick-h-2-left  { top: 66.667%; left: 0.1in; }
+  .tick-h-2-right { top: 66.667%; right: 0.1in; }
+
+  /* Full dashed cut lines (optional) */
+  .cut-line-v {
+    position: absolute;
+    top: 0; bottom: 0;
+    left: 50%;
+    width: 0;
+    border-left: 0.6px dashed #bbb;
+    pointer-events: none;
+  }
+  .cut-line-h-1, .cut-line-h-2 {
+    position: absolute;
+    left: 0; right: 0;
+    height: 0;
+    border-top: 0.6px dashed #bbb;
+    pointer-events: none;
+  }
+  .cut-line-h-1 { top: 33.333%; }
+  .cut-line-h-2 { top: 66.667%; }
+
+  /* Card number badge */
+  .card-num {
+    position: absolute;
+    top: 5px;
+    right: 7px;
+    font-size: 6.5pt;
+    color: #999;
+    font-weight: 600;
+  }
+
+  /* Side label (FRONT / BACK) */
+  .side-label {
+    font-size: 6.5pt;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: 6px;
+    align-self: flex-start;
+  }
+
+  /* Centered text container — fills the card, both axes centered */
+  .card-text {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    overflow: hidden;
+  }
+
+  .card-text-inner {
+    font-size: 18pt;   /* fitText JS shrinks this to fit */
+    font-weight: 600;
+    line-height: 1.3;
+    white-space: pre-wrap;
+    word-break: break-word;
+    text-align: center;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .card-text-inner.multiline {
+    text-align: left;
+    font-size: 13pt;
+    font-weight: 400;
+    line-height: 1.45;
+  }
+
+  ul.card-text-inner.card-list {
+    text-align: left;
+    font-size: 13pt;
+    font-weight: 400;
+    line-height: 1.5;
+    padding-left: 1.1em;
+    margin: 0;
+    list-style-type: disc;
+    white-space: normal;
+    width: 100%;
+  }
+  ul.card-text-inner.card-list li { margin-bottom: 0.2em; }
+  ul.card-text-inner.card-list li:last-child { margin-bottom: 0; }
+
+  @media print {
+    .screen-only { display: none !important; }
+  }
+`;
+
+function buildPage6Up(cells: string[], s: CardPrintSettings): string {
+  const ticks = s.showTickMarks
+    ? `<div class="tick-v-top"></div>
+  <div class="tick-v-bottom"></div>
+  <div class="tick-h-1-left"></div>
+  <div class="tick-h-1-right"></div>
+  <div class="tick-h-2-left"></div>
+  <div class="tick-h-2-right"></div>`
+    : "";
+
+  const lines = s.showCutLines
+    ? `<div class="cut-line-v"></div>
+  <div class="cut-line-h-1"></div>
+  <div class="cut-line-h-2"></div>`
+    : "";
+
+  return `<div class="page-6up">
+  ${ticks}
+  ${lines}
+  ${cells.map((c) => `<div class="cell-6">${c}</div>`).join("\n  ")}
+</div>`;
+}
+
+/**
+ * portrait-6up-duplex: alternating front/back pages, backs mirrored for duplex.
+ *   Front page → [F0, F1, F2, F3, F4, F5] in slot order TL, TR, ML, MR, BL, BR
+ *   Back page  → [B1, B0, B3, B2, B5, B4]  (columns swapped for long-edge flip)
+ *
+ * portrait-6up-stacked: all fronts first, then all backs (same slot order both).
+ */
+function renderPortrait6Up(
+  cards: Flashcard[],
+  title: string,
+  mode: "duplex" | "stacked",
+  s: CardPrintSettings,
+): string {
+  const BATCH = 6;
+  const pages: string[] = [];
+  const empty = `<div class="card-face"></div>`;
+
+  for (let p = 0; p < Math.ceil(cards.length / BATCH); p++) {
+    const batch = cards.slice(p * BATCH, (p + 1) * BATCH);
+    while (batch.length < BATCH) batch.push({ front: "", back: "" });
+
+    const fronts = batch.map((c, i) =>
+      c.front ? buildCardFace(c.front, p * BATCH + i + 1, true, s) : empty,
+    );
+    const backs = batch.map((c, i) =>
+      c.back ? buildCardFace(c.back ?? "", p * BATCH + i + 1, false, s) : empty,
+    );
+
+    if (mode === "duplex") {
+      // Long-edge flip swaps columns per row: [TR, TL, MR, ML, BR, BL]
+      const backsFlipped = [
+        backs[1],
+        backs[0],
+        backs[3],
+        backs[2],
+        backs[5],
+        backs[4],
+      ];
+      pages.push(buildPage6Up(fronts, s));
+      pages.push(buildPage6Up(backsFlipped, s));
+    } else {
+      pages.push(buildPage6Up(fronts, s));
+      pages.push(buildPage6Up(backs, s));
+    }
+  }
+
+  return pages.join("\n");
+}
+
+function openPortrait6UpWindow(bodyHtml: string, title: string): void {
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>${escapeHtml(title)} — 6 per page</title>
+  <style>${PORTRAIT_6UP_STYLES}</style>
+</head>
+<body>
+<div class="screen-only" style="font-family:sans-serif;font-size:12px;padding:12px 16px;background:#f8fafc;border-bottom:1px solid #e2e8f0;display:flex;gap:10px;align-items:center;">
+  <button onclick="window.print()" style="padding:7px 18px;background:#111;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;">Print / Save PDF</button>
+  <button onclick="window.close()" style="padding:7px 14px;background:#f1f5f9;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;cursor:pointer;">Close</button>
+  <span style="color:#64748b;font-size:11px;">6 per page · set printer to <strong>Portrait, two-sided, flip on long edge</strong>, no additional margins</span>
+</div>
+${bodyHtml}
+${FIT_TEXT_SCRIPT}
+</body>
+</html>`;
+
+  const win = window.open("", "_blank", "width=900,height=720,scrollbars=yes");
+  if (!win) {
+    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${title.replace(/\s+/g, "-").toLowerCase()}-flashcards-6up.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    return;
+  }
+  win.document.open();
+  win.document.write(html);
+  win.document.close();
+}
+
+// ---------------------------------------------------------------------------
 // Helper: derive a title from the data if available
 // ---------------------------------------------------------------------------
 function deriveTitle(data: unknown): string {
@@ -1313,6 +1618,18 @@ export const flashcardsPrinter: BlockPrinter = {
       label: "Landscape cut sheet — all fronts then all backs",
       description:
         "4 cards per page, landscape. All front pages first, then all back pages — cut all sheets together for a matching deck",
+    },
+    {
+      id: "portrait-6up-duplex",
+      label: "Portrait cut sheet — 6 per page, duplex (double-sided)",
+      description:
+        "6 cards per page (2 columns × 3 rows), portrait. Split down the middle and into thirds. Fronts and backs on alternating pages — backs are mirrored so they align perfectly when duplex-printed (flip on long edge) and cut into 6",
+    },
+    {
+      id: "portrait-6up-stacked",
+      label: "Portrait cut sheet — 6 per page, all fronts then all backs",
+      description:
+        "6 cards per page (2 columns × 3 rows), portrait. All front pages first, then all back pages — cut all sheets together for a matching deck",
     },
     {
       id: "avery-5388",
@@ -1356,7 +1673,13 @@ export const flashcardsPrinter: BlockPrinter = {
       label: "Show side label",
       description: 'Prints "Front" or "Back" in the corner of each card',
       defaultValue: false,
-      appliesTo: ["landscape-duplex", "landscape-stacked", "avery-5388"],
+      appliesTo: [
+        "landscape-duplex",
+        "landscape-stacked",
+        "portrait-6up-duplex",
+        "portrait-6up-stacked",
+        "avery-5388",
+      ],
     },
     {
       type: "boolean" as const,
@@ -1364,16 +1687,27 @@ export const flashcardsPrinter: BlockPrinter = {
       label: "Show card number",
       description: "Prints #1, #2 … in the corner of each card",
       defaultValue: false,
-      appliesTo: ["landscape-duplex", "landscape-stacked", "avery-5388"],
+      appliesTo: [
+        "landscape-duplex",
+        "landscape-stacked",
+        "portrait-6up-duplex",
+        "portrait-6up-stacked",
+        "avery-5388",
+      ],
     },
     {
       type: "boolean" as const,
       id: "showTickMarks",
       label: "Show cut tick marks",
       description:
-        "Four small marks at the center intersection — where to make each cut",
+        "Small marks at each cut intersection — where to make each cut",
       defaultValue: true,
-      appliesTo: ["landscape-duplex", "landscape-stacked"],
+      appliesTo: [
+        "landscape-duplex",
+        "landscape-stacked",
+        "portrait-6up-duplex",
+        "portrait-6up-stacked",
+      ],
     },
     {
       type: "boolean" as const,
@@ -1382,7 +1716,12 @@ export const flashcardsPrinter: BlockPrinter = {
       description:
         "Dashed lines all the way across the page — helps if you don't have a ruler",
       defaultValue: false,
-      appliesTo: ["landscape-duplex", "landscape-stacked"],
+      appliesTo: [
+        "landscape-duplex",
+        "landscape-stacked",
+        "portrait-6up-duplex",
+        "portrait-6up-stacked",
+      ],
     },
     {
       type: "boolean" as const,
@@ -1391,7 +1730,13 @@ export const flashcardsPrinter: BlockPrinter = {
       description:
         "Prints the back side in dark gray instead of black — ink is lighter and less visible through the paper",
       defaultValue: false,
-      appliesTo: ["landscape-duplex", "landscape-stacked", "avery-5388"],
+      appliesTo: [
+        "landscape-duplex",
+        "landscape-stacked",
+        "portrait-6up-duplex",
+        "portrait-6up-stacked",
+        "avery-5388",
+      ],
     },
     {
       type: "boolean" as const,
@@ -1400,7 +1745,13 @@ export const flashcardsPrinter: BlockPrinter = {
       description:
         "Flips back text horizontally — any ink that bleeds through reads backwards and is unrecognizable from the front",
       defaultValue: false,
-      appliesTo: ["landscape-duplex", "landscape-stacked", "avery-5388"],
+      appliesTo: [
+        "landscape-duplex",
+        "landscape-stacked",
+        "portrait-6up-duplex",
+        "portrait-6up-stacked",
+        "avery-5388",
+      ],
     },
   ],
 
@@ -1432,6 +1783,20 @@ export const flashcardsPrinter: BlockPrinter = {
     }
     if (variantId === "landscape-stacked") {
       openLandscapeWindow(renderLandscape(cards, title, "stacked", s), title);
+      return;
+    }
+    if (variantId === "portrait-6up-duplex") {
+      openPortrait6UpWindow(
+        renderPortrait6Up(cards, title, "duplex", s),
+        title,
+      );
+      return;
+    }
+    if (variantId === "portrait-6up-stacked") {
+      openPortrait6UpWindow(
+        renderPortrait6Up(cards, title, "stacked", s),
+        title,
+      );
       return;
     }
     if (variantId === "avery-5388") {
