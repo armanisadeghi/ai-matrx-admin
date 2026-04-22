@@ -15,9 +15,11 @@ A **Shortcut** is a stored, first-class invocation of a specific agent version t
 ## Entry points
 
 **Routes**
-- `app/(authenticated)/ai/shortcuts/` — shortcut admin
-- Multi-scope UI in progress:
-  - `features/agents/migration/phases/phase-11-admin-shortcuts-ui.md` — admin/system shortcuts
+- `app/(authenticated)/(admin-auth)/administration/system-agents/shortcuts/` — admin shortcuts CRUD (**renamed 2026-04-22** from `administration/agent-shortcuts/shortcuts/`; now nested under the broader "System Agents" umbrella alongside builtin agents and system apps)
+- `app/(a)/agents/shortcuts/` — user shortcuts CRUD
+- `app/(authenticated)/org/[slug]/shortcuts/` — org shortcuts CRUD
+- Multi-scope UI progress docs:
+  - `features/agents/migration/phases/phase-11-admin-shortcuts-ui.md` — admin/system shortcuts (see Phase 11b addendum for the rename)
   - `features/agents/migration/phases/phase-12-user-shortcuts-ui.md` — user-owned shortcuts
   - `features/agents/migration/phases/phase-13-org-shortcuts-ui.md` — org-owned shortcuts
 
@@ -184,6 +186,7 @@ See `features/agents/migration/MASTER-PLAN.md`.
 ## Change log
 
 - `2026-04-22` — claude: initial FEATURE.md extracted from `agent-system-mental-model.md` §5.
+- `2026-04-22` — claude: admin route renamed `administration/agent-shortcuts/` → `administration/system-agents/` and folded into a broader System Agents umbrella (adds builtin-agent builder/runner and system-apps management under the same subnav). All internal link references updated. Shortcuts/categories/content-blocks surfaces unchanged in behavior.
 
 ---
 

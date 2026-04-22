@@ -38,9 +38,18 @@ import { DebugSessionActivator } from "@/features/agents/components/debug/DebugS
 
 interface AgentRunnerPageProps {
   agentId: string;
+  /** Back-link target shown in the run header. Defaults to `/agents`. */
+  backHref?: string;
+  /** Base path used by the mode switcher inside the header. Defaults to
+   *  `/agents`. Admin passes `/administration/system-agents/agents`. */
+  basePath?: string;
 }
 
-export function AgentRunnerPage({ agentId }: AgentRunnerPageProps) {
+export function AgentRunnerPage({
+  agentId,
+  backHref = "/agents",
+  basePath = "/agents",
+}: AgentRunnerPageProps) {
   const dispatch = useAppDispatch();
   const store = useAppStore();
   const searchParams = useSearchParams();
@@ -193,6 +202,8 @@ export function AgentRunnerPage({ agentId }: AgentRunnerPageProps) {
         conversationId={conversationId}
         surfaceKey={surfaceKey}
         conversationIdFromUrl={conversationIdFromUrl}
+        backHref={backHref}
+        basePath={basePath}
       />
 
       {/* Main conversation area */}

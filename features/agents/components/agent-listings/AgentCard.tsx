@@ -55,6 +55,9 @@ interface AgentCardProps {
   isAnyNavigating?: boolean;
   /** Ordered ids for prev/next navigation within the Sneak Peek modal. */
   navigationIds?: string[];
+  /** Base path for agent navigation. Defaults to `/agents`. The admin
+   *  system-agents route passes `/administration/system-agents/agents`. */
+  basePath?: string;
 }
 
 export function AgentCard({
@@ -67,6 +70,7 @@ export function AgentCard({
   isNavigating,
   isAnyNavigating,
   navigationIds,
+  basePath = "/agents",
 }: AgentCardProps) {
   const dispatch = useAppDispatch();
   const record = useAppSelector((state) => selectAgentById(state, id));
@@ -78,7 +82,6 @@ export function AgentCard({
   const isSystemAdmin = useAppSelector((state: RootState) =>
     selectIsAdmin(state),
   );
-  const basePath = "/agents";
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isActionModalOpen, setIsActionModalOpen] = useState(false);
   const [isCreateAppModalOpen, setIsCreateAppModalOpen] = useState(false);

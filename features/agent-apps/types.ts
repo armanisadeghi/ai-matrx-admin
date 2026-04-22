@@ -281,6 +281,10 @@ export interface CreateAgentAppInput {
   allowed_imports?: string[];
   layout_config?: LayoutConfig;
   styling_config?: StylingConfig;
+  /** Ownership scope for the new app.
+   *  - `"user"` (default) — owned by the authenticated user.
+   *  - `"global"` — admin-only; creates a system app with all scope columns null. */
+  scope?: "user" | "global";
 }
 
 export interface UpdateAgentAppInput {

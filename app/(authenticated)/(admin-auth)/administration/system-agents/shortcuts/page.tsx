@@ -43,7 +43,7 @@ export default function AdminShortcutsPage() {
 
   const handleEdit = (shortcut: AgentShortcutRecord) => {
     startTransition(() => {
-      router.push(`/administration/agent-shortcuts/edit/${shortcut.id}`);
+      router.push(`/administration/system-agents/edit/${shortcut.id}`);
     });
   };
 
@@ -55,7 +55,7 @@ export default function AdminShortcutsPage() {
     setCreateOpen(false);
     if (id) {
       startTransition(() => {
-        router.push(`/administration/agent-shortcuts/edit/${id}`);
+        router.push(`/administration/system-agents/edit/${id}`);
       });
     }
   };
@@ -63,7 +63,7 @@ export default function AdminShortcutsPage() {
   const handleDuplicateSuccess = (newId: string) => {
     setDuplicateTarget(null);
     startTransition(() => {
-      router.push(`/administration/agent-shortcuts/edit/${newId}`);
+      router.push(`/administration/system-agents/edit/${newId}`);
     });
   };
 
@@ -78,7 +78,7 @@ export default function AdminShortcutsPage() {
   const handlePromoteSuccess = (newId: string) => {
     setPromoteTarget(null);
     startTransition(() => {
-      router.push(`/administration/agent-shortcuts/edit/${newId}`);
+      router.push(`/administration/system-agents/edit/${newId}`);
     });
   };
 

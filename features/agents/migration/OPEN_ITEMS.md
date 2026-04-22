@@ -27,7 +27,7 @@ Last updated: 2026-04-21
 - [ ] `/demos/context-menu-v2` — 5-panel exercise per the demo's "Expected behavior per panel" list
 - [ ] Launch `Quick Code Explanation` shortcut (id `863b28c4-bb94-400f-8e23-b6cf50486537`) from the demo page; verify variables + context_slots + pre-execution gate + bypass timer all fire correctly
 - [ ] `/chat` — own/system agent picker, history, deep-link resume
-- [ ] `/administration/agent-shortcuts` — admin CRUD end-to-end
+- [ ] `/administration/system-agents` — admin CRUD end-to-end (renamed from `agent-shortcuts` on 2026-04-22)
 - [ ] `/agents/shortcuts` — user CRUD end-to-end
 - [ ] `/org/[slug]/shortcuts` — member sees read-only; owner/admin sees full CRUD
 - [ ] `/administration/agent-apps` — admin table + feature/verify + rate-limit override

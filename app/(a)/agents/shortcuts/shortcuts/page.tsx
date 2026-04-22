@@ -65,7 +65,7 @@ export default function UserShortcutsPage() {
   const handlePromoteSuccess = (newId: string) => {
     setPromoteTarget(null);
     startTransition(() => {
-      router.push(`/administration/agent-shortcuts/edit/${newId}`);
+      router.push(`/administration/system-agents/edit/${newId}`);
     });
   };
 

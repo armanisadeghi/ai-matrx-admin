@@ -174,6 +174,7 @@ Active rebuild governed by `features/agents/migration/MASTER-PLAN.md`. Phase-ord
 ## Change log
 
 - `2026-04-22` — claude: initial FEATURE.md umbrella + new sub-docs (BUILDER, RUNNER, VERSIONING, INVOCATION_LIFECYCLE, ORCHESTRATION, STREAMING_SYSTEM).
+- `2026-04-22` — claude: admin surface for system (builtin) agents lives at `app/(authenticated)/(admin-auth)/administration/system-agents/agents/`. Reuses `AgentBuilderPage`, `AgentRunnerPage`, and `AgentCard` from the user-side `(a)/agents/` routes via new `basePath` / `backHref` props on `AgentHeader`, `AgentModeController`, `AgentRunHeader`, `AgentCard`, `AgentListItem`. The admin shell (`ClientAdminLayout`) suppresses its ModuleHeader on builder/runner detail routes so these pages can own the top strip. `SystemAgentsGrid` is a simpler admin-only grid that reads `selectBuiltinAgents` directly. System agent creation goes through `createSystemAgentFromSeed` server action (admin-gated, writes via `createAdminClient` with all scope columns null).
 
 ---
 

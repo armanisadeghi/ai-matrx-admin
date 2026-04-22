@@ -1,6 +1,8 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
+import { createAdminClient } from "@/utils/supabase/adminClient";
+import { checkIsUserAdmin } from "@/utils/supabase/userSessionData";
 import { redirect } from "next/navigation";
 import type { AgentDefinition } from "@/features/agents/types/agent-definition.types";
 import type { Database } from "@/types/database.types";
@@ -68,4 +70,49 @@ export async function createAgentFromSeed(
 
   if (error) throw error;
   redirect(`/agents/${data.id}/build`);
+}
+
+/**
+ * Admin-only: creates a system ("builtin") agent from a seed and redirects
+ * to the admin system-agents builder. Sets `agent_type = 'builtin'` with all
+ * scope columns null so the row is globally visible. Uses the admin client
+ * to bypass RLS since `user_id = null` would otherwise fail the INSERT policy.
+ */
+export async function createSystemAgentFromSeed(
+  seed: Omit<Partial<AgentDefinition>, "id">,
+) {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    redirect("/login");
+  }
+
+  const isAdmin = await checkIsUserAdmin(supabase, user.id);
+  if (!isAdmin) {
+    throw new Error("Forbidden: admin privileges required");
+  }
+
+  const admin = createAdminClient();
+  const { data, error } = await admin
+    .from("agx_agent")
+    .insert({
+      ...seedToInsertPayload(seed),
+      agent_type: "builtin",
+      is_public: true,
+      is_active: true,
+      user_id: null,
+      organization_id: null,
+      project_id: null,
+      task_id: null,
+    })
+    .select("id")
+    .single();
+
+  if (error) throw error;
+  redirect(`/administration/system-agents/agents/${data.id}/build`);
 }

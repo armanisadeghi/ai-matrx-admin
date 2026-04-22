@@ -201,6 +201,9 @@ export async function fetchAgentAppsAdmin(filters?: {
   is_verified?: boolean;
   category?: string;
   limit?: number;
+  /** Filter by ownership scope. `"global"` returns system apps (user_id IS NULL);
+   *  `"user"` returns user-owned apps (user_id IS NOT NULL). Omit for all. */
+  scope?: "global" | "user";
 }): Promise<AgentAppAdminView[]> {
   const supabase = getClient();
   let query = supabase
@@ -214,6 +217,8 @@ export async function fetchAgentAppsAdmin(filters?: {
   if (filters?.is_verified !== undefined)
     query = query.eq("is_verified", filters.is_verified);
   if (filters?.category) query = query.eq("category", filters.category);
+  if (filters?.scope === "global") query = query.is("user_id", null);
+  if (filters?.scope === "user") query = query.not("user_id", "is", null);
   if (filters?.limit) query = query.limit(filters.limit);
 
   const { data, error } = await query;

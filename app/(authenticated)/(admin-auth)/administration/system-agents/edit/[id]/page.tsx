@@ -38,7 +38,7 @@ export default function AdminEditShortcutPage({
 
   const goToList = () => {
     startTransition(() => {
-      router.push("/administration/agent-shortcuts/shortcuts");
+      router.push("/administration/system-agents/shortcuts");
     });
   };
 
@@ -50,7 +50,7 @@ export default function AdminEditShortcutPage({
   const handleSuccess = (nextId: string | null) => {
     if (nextId && nextId !== id) {
       startTransition(() => {
-        router.push(`/administration/agent-shortcuts/edit/${nextId}`);
+        router.push(`/administration/system-agents/edit/${nextId}`);
       });
       return;
     }
@@ -66,7 +66,7 @@ export default function AdminEditShortcutPage({
   const handleDuplicateSuccess = (newId: string) => {
     setDuplicateTarget(null);
     startTransition(() => {
-      router.push(`/administration/agent-shortcuts/edit/${newId}`);
+      router.push(`/administration/system-agents/edit/${newId}`);
     });
   };
 
@@ -101,7 +101,7 @@ export default function AdminEditShortcutPage({
                 global scope.
               </p>
             </div>
-            <Link href="/administration/agent-shortcuts/shortcuts">
+            <Link href="/administration/system-agents/shortcuts">
               <Button size="sm">
                 <ArrowLeft className="h-4 w-4 mr-1.5" />
                 Back to shortcuts

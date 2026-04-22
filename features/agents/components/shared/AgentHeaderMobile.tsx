@@ -33,26 +33,34 @@ const MODES: { id: ModeOption; label: string; icon: typeof Eye }[] = [
   { id: "new", label: "New", icon: Plus },
 ];
 
-function deriveMode(pathname: string, agentId: string): AgentPageMode {
-  const base = `/agents/${agentId}`;
+function deriveMode(
+  pathname: string,
+  agentId: string,
+  basePath: string,
+): AgentPageMode {
+  const base = `${basePath}/${agentId}`;
   if (pathname.startsWith(`${base}/run`)) return "run";
   if (pathname.startsWith(`${base}/build`)) return "edit";
-  if (
-    pathname.startsWith(`${base}/latest`) ||
-    /^\/agents\/[^/]+\/\d+$/.test(pathname)
-  )
+  const versionPattern = new RegExp(
+    `^${basePath.replace(/\//g, "\\/")}\\/[^/]+\\/\\d+$`,
+  );
+  if (pathname.startsWith(`${base}/latest`) || versionPattern.test(pathname))
     return "versions";
   return "view";
 }
 
-function deriveModeSuffix(pathname: string, agentId: string): string {
-  const base = `/agents/${agentId}`;
+function deriveModeSuffix(
+  pathname: string,
+  agentId: string,
+  basePath: string,
+): string {
+  const base = `${basePath}/${agentId}`;
   if (pathname.startsWith(`${base}/run`)) return "/run";
   if (pathname.startsWith(`${base}/build`)) return "/build";
-  if (
-    pathname.startsWith(`${base}/latest`) ||
-    /^\/agents\/[^/]+\/\d+$/.test(pathname)
-  )
+  const versionPattern = new RegExp(
+    `^${basePath.replace(/\//g, "\\/")}\\/[^/]+\\/\\d+$`,
+  );
+  if (pathname.startsWith(`${base}/latest`) || versionPattern.test(pathname))
     return "/latest";
   return "";
 }
@@ -62,9 +70,14 @@ interface AgentHeaderMobileProps {
   /** Agent name — currently unused in mobile layout (icons-only to save space).
    *  Kept in the props for API symmetry with desktop and for future label use. */
   agentName?: string;
+  /** Base path used for mode-switch navigation. Defaults to `/agents`. */
+  basePath?: string;
 }
 
-export function AgentHeaderMobile({ agentId }: AgentHeaderMobileProps) {
+export function AgentHeaderMobile({
+  agentId,
+  basePath = "/agents",
+}: AgentHeaderMobileProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [, startTransition] = useTransition();
@@ -72,7 +85,7 @@ export function AgentHeaderMobile({ agentId }: AgentHeaderMobileProps) {
   const [showDirtyDialog, setShowDirtyDialog] = useState(false);
   const [pendingNew, setPendingNew] = useState(false);
 
-  const mode = deriveMode(pathname, agentId);
+  const mode = deriveMode(pathname, agentId, basePath);
 
   const navigateTo = (path: string) => {
     startTransition(() => router.push(path));
@@ -85,22 +98,22 @@ export function AgentHeaderMobile({ agentId }: AgentHeaderMobileProps) {
         setPendingNew(true);
         setShowDirtyDialog(true);
       } else {
-        navigateTo("/agents");
+        navigateTo(basePath);
       }
       return;
     }
     const pathMap: Record<AgentPageMode, string> = {
-      view: `/agents/${agentId}`,
-      edit: `/agents/${agentId}/build`,
-      run: `/agents/${agentId}/run`,
-      versions: `/agents/${agentId}/latest`,
+      view: `${basePath}/${agentId}`,
+      edit: `${basePath}/${agentId}/build`,
+      run: `${basePath}/${agentId}/run`,
+      versions: `${basePath}/${agentId}/latest`,
     };
     navigateTo(pathMap[next]);
   };
 
   const handleAgentSelect = (selectedId: string) => {
-    const suffix = deriveModeSuffix(pathname, agentId);
-    startTransition(() => router.push(`/agents/${selectedId}${suffix}`));
+    const suffix = deriveModeSuffix(pathname, agentId, basePath);
+    startTransition(() => router.push(`${basePath}/${selectedId}${suffix}`));
   };
 
   return (
@@ -169,7 +182,7 @@ export function AgentHeaderMobile({ agentId }: AgentHeaderMobileProps) {
                 setShowDirtyDialog(false);
                 if (pendingNew) {
                   setPendingNew(false);
-                  navigateTo("/agents");
+                  navigateTo(basePath);
                 }
               }}
             >

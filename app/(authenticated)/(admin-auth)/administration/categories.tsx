@@ -203,16 +203,24 @@ export const adminCategories = [
     ],
   },
   {
-    name: "Agents",
+    name: "System Agents",
     icon: <Zap className="w-6 h-6" />,
     iconColor: "text-rose-600",
     features: [
       {
-        title: "Agent shortcuts",
+        title: "System Agents Dashboard",
         description:
-          "Dashboard for global agent shortcuts, categories, and content blocks (unified context menu).",
+          "Hub for every global-scope agent surface: builtin agents, shortcuts, categories, content blocks, and system agent apps.",
         icon: <Zap />,
-        link: "/administration/agent-shortcuts",
+        link: "/administration/system-agents",
+        isNew: true,
+      },
+      {
+        title: "System agents — list",
+        description:
+          "Browse, build, and run builtin (global) agents. Includes agents converted from user definitions.",
+        icon: <IconRobot />,
+        link: "/administration/system-agents/agents",
         isNew: true,
       },
       {
@@ -220,7 +228,7 @@ export const adminCategories = [
         description:
           "Browse and edit global agent shortcuts, enabled contexts, and agent bindings.",
         icon: <Zap />,
-        link: "/administration/agent-shortcuts/shortcuts",
+        link: "/administration/system-agents/shortcuts",
         isNew: true,
       },
       {
@@ -228,7 +236,7 @@ export const adminCategories = [
         description:
           "Placement hierarchy, icons, and enabled contexts for agent shortcut groups.",
         icon: <Zap />,
-        link: "/administration/agent-shortcuts/categories",
+        link: "/administration/system-agents/categories",
         isNew: true,
       },
       {
@@ -236,7 +244,15 @@ export const adminCategories = [
         description:
           "Reusable insertable blocks surfaced under agent shortcut categories.",
         icon: <Zap />,
-        link: "/administration/agent-shortcuts/content-blocks",
+        link: "/administration/system-agents/content-blocks",
+        isNew: true,
+      },
+      {
+        title: "System agent apps",
+        description:
+          "Global-scope agent apps available to every user. Distinct from moderation of user-published apps.",
+        icon: <IconRobot />,
+        link: "/administration/system-agents/apps",
         isNew: true,
       },
     ],

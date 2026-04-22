@@ -51,6 +51,8 @@ interface AgentListItemProps {
   isAnyNavigating?: boolean;
   /** Ordered ids for prev/next navigation within the Sneak Peek modal. */
   navigationIds?: string[];
+  /** Base path for agent navigation. Defaults to `/agents`. */
+  basePath?: string;
 }
 
 export function AgentListItem({
@@ -63,6 +65,7 @@ export function AgentListItem({
   isNavigating,
   isAnyNavigating,
   navigationIds,
+  basePath = "/agents",
 }: AgentListItemProps) {
   const dispatch = useAppDispatch();
   const record = useAppSelector((state) => selectAgentById(state, id));
@@ -73,7 +76,6 @@ export function AgentListItem({
   const isSystemAdmin = useAppSelector((state: RootState) =>
     selectIsAdmin(state),
   );
-  const basePath = "/agents";
   const [isActionModalOpen, setIsActionModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isCreateAppModalOpen, setIsCreateAppModalOpen] = useState(false);

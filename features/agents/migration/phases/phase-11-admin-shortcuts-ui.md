@@ -44,3 +44,14 @@ No bugs discovered in the shared components during this phase.
 | 2026-04-21 | claude | Created `app/.../agent-shortcuts/content-blocks/page.tsx` — mounts `<ContentBlockList scope="global" />` + `<ContentBlockForm>`. |
 | 2026-04-21 | claude | Created `app/.../agent-shortcuts/edit/[id]/page.tsx` — mounts `<ShortcutForm scope="global">` by id with duplicate modal and back-to-list action. |
 | 2026-04-21 | claude | Added deprecation banner on legacy `administration/prompt-builtins/page.tsx` linking to `/administration/agent-shortcuts`. Legacy page preserved per Phase 16 plan. |
+| 2026-04-22 | claude | **Route renamed**: `administration/agent-shortcuts/` → `administration/system-agents/`. All internal links updated. Subnav expanded to include new Agents and Apps tabs (filled in a follow-up — see Phase 11b below). |
+
+## Phase 11b — System Agents umbrella (2026-04-22)
+
+The admin shortcuts route was never a narrow "shortcuts only" surface — it's an umbrella for every global-scope agent artifact. Renamed to `system-agents` and expanded to cover:
+
+- Builtin agents (list, build, run, create) — reuses `AgentsGrid` + `AgentBuilderPage` + `AgentRunnerPage` from the `(a)/agents/` routes
+- System-scope agent apps — new `/apps` sub-route
+- Existing shortcut/category/content-block surfaces (unchanged in behavior, just moved)
+
+See: `/Users/armanisadeghi/.claude/plans/i-need-you-to-binary-patterson.md` for the full plan.

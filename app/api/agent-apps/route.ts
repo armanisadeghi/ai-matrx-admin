@@ -1,4 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
+import { createAdminClient } from "@/utils/supabase/adminClient";
+import { checkIsUserAdmin } from "@/utils/supabase/userSessionData";
 import { NextRequest, NextResponse } from "next/server";
 import type { CreateAgentAppInput } from "@/features/agent-apps/types";
 
@@ -7,6 +9,9 @@ import type { CreateAgentAppInput } from "@/features/agent-apps/types";
  *
  * Creates a new agent app for the authenticated user. Mirrors the legacy
  * `prompt_apps` creation flow but against the `agent_apps` table.
+ *
+ * When `scope: "global"` is passed, the caller must be an admin; the app is
+ * created with all scope columns null so it's globally visible.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -38,7 +43,19 @@ export async function POST(request: NextRequest) {
       allowed_imports,
       layout_config,
       styling_config,
+      scope,
     } = body;
+
+    const isGlobal = scope === "global";
+    if (isGlobal) {
+      const isAdmin = await checkIsUserAdmin(supabase, user.id);
+      if (!isAdmin) {
+        return NextResponse.json(
+          { error: "Forbidden: admin privileges required for global apps" },
+          { status: 403 },
+        );
+      }
+    }
 
     if (!agent_id || !slug || !name || !component_code) {
       return NextResponse.json(
@@ -96,7 +113,10 @@ export async function POST(request: NextRequest) {
       agent_id,
       agent_version_id: agent_version_id ?? null,
       use_latest: use_latest ?? true,
-      user_id: user.id,
+      user_id: isGlobal ? null : user.id,
+      organization_id: null,
+      project_id: null,
+      task_id: null,
       slug: normalizedSlug,
       name: name.trim(),
       tagline: tagline ?? null,
@@ -112,7 +132,10 @@ export async function POST(request: NextRequest) {
       status: "draft",
     };
 
-    const { data, error } = await supabase
+    // Global apps bypass RLS via the admin client because user_id = null
+    // would fail a typical owner-check INSERT policy.
+    const writer = isGlobal ? createAdminClient() : supabase;
+    const { data, error } = await writer
       .from("agent_apps")
       .insert(insertPayload)
       .select()

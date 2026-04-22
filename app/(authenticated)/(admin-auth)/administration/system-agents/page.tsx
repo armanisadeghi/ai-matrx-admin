@@ -3,7 +3,9 @@
 import React, { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
+  AppWindow,
   ArrowRight,
+  Bot,
   FileText,
   Folder,
   Globe,
@@ -23,7 +25,7 @@ type Tile = {
   label: string;
   description: string;
   icon: typeof Folder;
-  count: (counts: {
+  count?: (counts: {
     shortcuts: number;
     categories: number;
     contentBlocks: number;
@@ -32,7 +34,14 @@ type Tile = {
 
 const TILES: Tile[] = [
   {
-    href: "/administration/agent-shortcuts/shortcuts",
+    href: "/administration/system-agents/agents",
+    label: "Agents",
+    description:
+      "Browse, build, and run system (builtin) agents shipped to every user.",
+    icon: Bot,
+  },
+  {
+    href: "/administration/system-agents/shortcuts",
     label: "Shortcuts",
     description:
       "Agent-backed triggers surfaced in menus, buttons, and keyboard hotkeys.",
@@ -40,7 +49,7 @@ const TILES: Tile[] = [
     count: (c) => c.shortcuts,
   },
   {
-    href: "/administration/agent-shortcuts/categories",
+    href: "/administration/system-agents/categories",
     label: "Categories",
     description:
       "Organise shortcuts and content blocks by placement and hierarchy.",
@@ -48,16 +57,23 @@ const TILES: Tile[] = [
     count: (c) => c.categories,
   },
   {
-    href: "/administration/agent-shortcuts/content-blocks",
+    href: "/administration/system-agents/content-blocks",
     label: "Content Blocks",
     description:
       "Reusable text/template blocks insertable from the agent context menu.",
     icon: FileText,
     count: (c) => c.contentBlocks,
   },
+  {
+    href: "/administration/system-agents/apps",
+    label: "Apps",
+    description:
+      "Global agent apps published to all users. Distinct from user-published apps.",
+    icon: AppWindow,
+  },
 ];
 
-export default function AgentShortcutsDashboardPage() {
+export default function SystemAgentsDashboardPage() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [pendingHref, setPendingHref] = React.useState<string | null>(null);
@@ -92,7 +108,7 @@ export default function AgentShortcutsDashboardPage() {
             </div>
             <div>
               <h1 className="text-xl font-semibold text-foreground">
-                Agent Shortcuts Admin
+                System Agents Admin
               </h1>
               <p className="text-sm text-muted-foreground">
                 Managing{" "}
@@ -156,10 +172,11 @@ export default function AgentShortcutsDashboardPage() {
             </Card>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
             {TILES.map((tile) => {
               const Icon = tile.icon;
               const navigating = isPending && pendingHref === tile.href;
+              const countValue = tile.count ? tile.count(counts) : null;
               return (
                 <button
                   key={tile.href}
@@ -178,9 +195,11 @@ export default function AgentShortcutsDashboardPage() {
                             <Icon className="h-4 w-4" />
                           )}
                         </div>
-                        <Badge variant="secondary" className="text-xs">
-                          {tile.count(counts)}
-                        </Badge>
+                        {countValue !== null && (
+                          <Badge variant="secondary" className="text-xs">
+                            {countValue}
+                          </Badge>
+                        )}
                       </div>
                       <div>
                         <div className="flex items-center gap-1.5 text-foreground font-medium group-hover:text-primary transition-colors">

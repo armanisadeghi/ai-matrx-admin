@@ -30,20 +30,30 @@ const MODES: { id: ModeOption; label: string; icon: typeof Eye }[] = [
   { id: "new", label: "New", icon: Plus },
 ];
 
-function deriveMode(pathname: string, agentId: string): AgentPageMode {
-  const base = `/agents/${agentId}`;
+function deriveMode(
+  pathname: string,
+  agentId: string,
+  basePath: string,
+): AgentPageMode {
+  const base = `${basePath}/${agentId}`;
   if (pathname.startsWith(`${base}/run`)) return "run";
   if (pathname.startsWith(`${base}/build`)) return "edit";
   if (pathname.startsWith(`${base}/widgets`)) return "widgets";
-  if (
-    pathname.startsWith(`${base}/latest`) ||
-    /^\/agents\/[^/]+\/v\/\d+$/.test(pathname)
-  )
+  const versionPattern = new RegExp(
+    `^${basePath.replace(/\//g, "\\/")}\\/[^/]+\\/v\\/\\d+$`,
+  );
+  if (pathname.startsWith(`${base}/latest`) || versionPattern.test(pathname))
     return "versions";
   return "view";
 }
 
-export function AgentModeController({ agentId }: { agentId: string }) {
+export function AgentModeController({
+  agentId,
+  basePath = "/agents",
+}: {
+  agentId: string;
+  basePath?: string;
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const [, startTransition] = useTransition();
@@ -51,7 +61,7 @@ export function AgentModeController({ agentId }: { agentId: string }) {
   const [showDirtyDialog, setShowDirtyDialog] = useState(false);
   const [pendingNew, setPendingNew] = useState(false);
 
-  const mode = deriveMode(pathname, agentId);
+  const mode = deriveMode(pathname, agentId, basePath);
 
   const navigateTo = (path: string) => {
     startTransition(() => router.push(path));
@@ -65,29 +75,29 @@ export function AgentModeController({ agentId }: { agentId: string }) {
         setPendingNew(true);
         setShowDirtyDialog(true);
       } else {
-        navigateTo("/agents");
+        navigateTo(basePath);
       }
       return;
     }
 
     const pathMap: Record<AgentPageMode, string> = {
-      view: `/agents/${agentId}`,
-      edit: `/agents/${agentId}/build`,
-      run: `/agents/${agentId}/run`,
-      versions: `/agents/${agentId}/latest`,
-      widgets: `/agents/${agentId}/widgets`,
+      view: `${basePath}/${agentId}`,
+      edit: `${basePath}/${agentId}/build`,
+      run: `${basePath}/${agentId}/run`,
+      versions: `${basePath}/${agentId}/latest`,
+      widgets: `${basePath}/${agentId}/widgets`,
     };
     navigateTo(pathMap[next]);
   };
 
   const getModeHref = (id: ModeOption): string => {
-    if (id === "new") return "/agents";
+    if (id === "new") return basePath;
     const map: Record<AgentPageMode, string> = {
-      view: `/agents/${agentId}`,
-      edit: `/agents/${agentId}/build`,
-      run: `/agents/${agentId}/run`,
-      versions: `/agents/${agentId}/latest`,
-      widgets: `/agents/${agentId}/widgets`,
+      view: `${basePath}/${agentId}`,
+      edit: `${basePath}/${agentId}/build`,
+      run: `${basePath}/${agentId}/run`,
+      versions: `${basePath}/${agentId}/latest`,
+      widgets: `${basePath}/${agentId}/widgets`,
     };
     return map[id];
   };
@@ -146,7 +156,7 @@ export function AgentModeController({ agentId }: { agentId: string }) {
                 setShowDirtyDialog(false);
                 if (pendingNew) {
                   setPendingNew(false);
-                  navigateTo("/agents");
+                  navigateTo(basePath);
                 }
               }}
             >

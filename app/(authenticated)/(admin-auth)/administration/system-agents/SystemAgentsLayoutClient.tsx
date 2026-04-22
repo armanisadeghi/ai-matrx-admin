@@ -4,7 +4,9 @@ import React, { useTransition } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
+  AppWindow,
   ArrowLeft,
+  Bot,
   FileText,
   Folder,
   LayoutDashboard,
@@ -16,24 +18,34 @@ import { cn } from "@/lib/utils";
 const NAV_ITEMS = [
   {
     label: "Dashboard",
-    href: "/administration/agent-shortcuts",
+    href: "/administration/system-agents",
     icon: LayoutDashboard,
     exact: true,
   },
   {
+    label: "Agents",
+    href: "/administration/system-agents/agents",
+    icon: Bot,
+  },
+  {
     label: "Shortcuts",
-    href: "/administration/agent-shortcuts/shortcuts",
+    href: "/administration/system-agents/shortcuts",
     icon: Zap,
   },
   {
     label: "Categories",
-    href: "/administration/agent-shortcuts/categories",
+    href: "/administration/system-agents/categories",
     icon: Folder,
   },
   {
     label: "Content Blocks",
-    href: "/administration/agent-shortcuts/content-blocks",
+    href: "/administration/system-agents/content-blocks",
     icon: FileText,
+  },
+  {
+    label: "Apps",
+    href: "/administration/system-agents/apps",
+    icon: AppWindow,
   },
 ];
 
@@ -42,7 +54,12 @@ function isActive(pathname: string, href: string, exact?: boolean): boolean {
   return pathname.startsWith(href);
 }
 
-export function AgentShortcutsLayoutClient({
+/**
+ * Sub-nav for the admin "System Agents" hub. The subnav is suppressed for
+ * specific "fullscreen" detail routes (shortcut editor, agent builder/runner)
+ * so those pages can render their own chrome without double headers.
+ */
+export function SystemAgentsLayoutClient({
   children,
 }: {
   children: React.ReactNode;
@@ -52,8 +69,13 @@ export function AgentShortcutsLayoutClient({
   const [isPending, startTransition] = useTransition();
   const [pendingHref, setPendingHref] = React.useState<string | null>(null);
 
-  const isEditPage = pathname.includes("/agent-shortcuts/edit/");
-  if (isEditPage) {
+  const isShortcutEditPage = pathname.includes("/system-agents/edit/");
+  const isAgentDetailPage =
+    pathname.includes("/system-agents/agents/") &&
+    (pathname.endsWith("/build") ||
+      pathname.endsWith("/run") ||
+      /\/agents\/[^/]+$/.test(pathname));
+  if (isShortcutEditPage || isAgentDetailPage) {
     return <>{children}</>;
   }
 
@@ -74,7 +96,7 @@ export function AgentShortcutsLayoutClient({
         >
           <ArrowLeft className="w-4 h-4" />
         </Link>
-        <nav className="flex items-center h-12 gap-1">
+        <nav className="flex items-center h-12 gap-1 overflow-x-auto">
           {NAV_ITEMS.map((item) => {
             const active = isActive(pathname, item.href, item.exact);
             const navigating = isPending && pendingHref === item.href;
@@ -85,7 +107,7 @@ export function AgentShortcutsLayoutClient({
                 onClick={() => handleNavigate(item.href)}
                 disabled={isPending}
                 className={cn(
-                  "inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-colors disabled:opacity-60 disabled:cursor-not-allowed",
+                  "inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-colors disabled:opacity-60 disabled:cursor-not-allowed shrink-0",
                   active
                     ? "bg-accent text-accent-foreground"
                     : "text-muted-foreground hover:text-foreground hover:bg-accent/50",
