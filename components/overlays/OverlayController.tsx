@@ -405,7 +405,8 @@ const UserPreferencesWindow = dynamic(
 );
 
 const AgentConnectionsWindow = dynamic(
-  () => import("@/features/window-panels/windows/AgentConnectionsWindow"),
+  () =>
+    import("@/features/window-panels/windows/agents/AgentConnectionsWindow"),
   { ssr: false },
 );
 
@@ -464,8 +465,7 @@ const QuickNoteSaveWindow = dynamic(
 );
 
 const TaskQuickCreateWindow = dynamic(
-  () =>
-    import("@/features/window-panels/windows/tasks/TaskQuickCreateWindow"),
+  () => import("@/features/window-panels/windows/tasks/TaskQuickCreateWindow"),
   { ssr: false },
 );
 
@@ -663,8 +663,7 @@ const AgentAssistantMarkdownDebugWindow = dynamic(
 );
 
 const MessageAnalysisWindow = dynamic(
-  () =>
-    import("@/features/window-panels/windows/agents/MessageAnalysisWindow"),
+  () => import("@/features/window-panels/windows/agents/MessageAnalysisWindow"),
   { ssr: false },
 );
 
@@ -1317,10 +1316,12 @@ export const OverlayController: React.FC = () => {
         )}
 
       {isStreamDebugOpen &&
-        (streamDebugData as {
-          conversationId?: string;
-          requestId?: string | null;
-        } | null)?.conversationId && (
+        (
+          streamDebugData as {
+            conversationId?: string;
+            requestId?: string | null;
+          } | null
+        )?.conversationId && (
           <StreamDebugFloating
             conversationId={
               (streamDebugData as { conversationId: string }).conversationId

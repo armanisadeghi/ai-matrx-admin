@@ -17,7 +17,7 @@ export function OverviewSection({ onNavigate }: OverviewSectionProps) {
     <div className="flex flex-col gap-6 px-8 py-6 max-w-5xl mx-auto w-full">
       <header className="flex flex-col gap-1">
         <h1 className="text-2xl font-semibold text-foreground">
-          Agent Customizations
+          Agent Connections
         </h1>
         <p className="text-sm text-muted-foreground max-w-3xl">
           Tailor how agents work in your projects. Configure workspace

@@ -209,7 +209,7 @@ export default function SidebarWindowToggle() {
             role="menu"
             className={cn(
               "fixed z-[10000] flex flex-col",
-              "w-[300px] min-h-[380px] rounded-xl overflow-hidden",
+              "w-[350px] min-h-[380px] rounded-xl overflow-hidden",
               "bg-card/97 backdrop-blur-xl border border-blue-300 dark:border-blue-700 shadow-2xl",
               "py-1 text-sm",
             )}
@@ -909,8 +909,9 @@ export default function SidebarWindowToggle() {
 
                 <MenuDivider />
 
-                {/* ── Agent ──────────────────────────────────────────────────── */}
-                <MenuSection label="Agent" />
+                {/* ── Agents ──────────────────────────────────────────────────── */}
+                <MenuSection label="Agents" />
+
                 <div className="grid grid-cols-2 gap-1.5 px-2 pb-2">
                   <MenuGridItem
                     icon={<MessageSquare className="w-3.5 h-3.5" />}
@@ -958,6 +959,17 @@ export default function SidebarWindowToggle() {
                       act(() =>
                         dispatch(
                           openOverlay({ overlayId: "agentRunHistoryWindow" }),
+                        ),
+                      )
+                    }
+                  />
+                  <MenuGridItem
+                    icon={<Settings2 className="w-3.5 h-3.5" />}
+                    label="Agent Connections"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(
+                          openOverlay({ overlayId: "agentConnectionsWindow" }),
                         ),
                       )
                     }
@@ -1159,17 +1171,7 @@ export default function SidebarWindowToggle() {
                       )
                     }
                   />
-                  <MenuGridItem
-                    icon={<Settings2 className="w-3.5 h-3.5" />}
-                    label="Agent Customizations"
-                    onClick={() =>
-                      act(() =>
-                        dispatch(
-                          openOverlay({ overlayId: "agentConnectionsWindow" }),
-                        ),
-                      )
-                    }
-                  />
+
                   <MenuGridItem
                     icon={<Share2 className="w-3.5 h-3.5" />}
                     label="Share Modal"
@@ -1368,7 +1370,7 @@ function MenuGridItem({
       type="button"
       role="menuitem"
       className={cn(
-        "flex items-center justify-start gap-1.5 px-1 py-3 transition-colors text-left border rounded-lg shadow-[0_1px_2px_rgba(0,0,0,0.05)]",
+        "flex items-center justify-start gap-1.5 px-1 py-1.5 transition-colors text-left border rounded-lg shadow-[0_1px_2px_rgba(0,0,0,0.05)]",
         disabled
           ? "opacity-40 cursor-not-allowed border-border/20 bg-background/50"
           : "cursor-pointer border-border/40 bg-card hover:bg-accent hover:border-border/60 hover:shadow-md text-foreground/80",

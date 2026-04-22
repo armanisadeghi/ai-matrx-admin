@@ -637,11 +637,11 @@ const REGISTRY: WindowRegistryEntry[] = [
     },
   },
 
-  // ── Agent Connections (Agent Customizations hub) ──────────────────────────
+  // ── Agent Connections (Agent Connections hub) ──────────────────────────
   {
     slug: "agent-connections-window",
     overlayId: "agentConnectionsWindow",
-    label: "Agent Customizations",
+    label: "Agent Connections",
     defaultData: {
       activeSection: "overview",
     },

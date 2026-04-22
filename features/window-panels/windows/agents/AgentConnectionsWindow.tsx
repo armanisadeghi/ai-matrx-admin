@@ -33,8 +33,9 @@ function AgentConnectionsWindowInner({
   onClose,
   initialSection,
 }: Omit<AgentConnectionsWindowProps, "isOpen">) {
-  const [activeSection, setActiveSection] =
-    useState<AgentConnectionsSection>(initialSection ?? "overview");
+  const [activeSection, setActiveSection] = useState<AgentConnectionsSection>(
+    initialSection ?? "overview",
+  );
 
   const collectData = useCallback(
     (): Record<string, unknown> => ({ activeSection }),
@@ -51,7 +52,7 @@ function AgentConnectionsWindowInner({
   const titleNode = (
     <span className="inline-flex items-center gap-1.5">
       <Settings className="h-3.5 w-3.5 text-muted-foreground" />
-      Agent Customizations
+      Agent Connections
     </span>
   );
 
@@ -59,7 +60,7 @@ function AgentConnectionsWindowInner({
     <WindowPanel
       id="agent-connections-window"
       titleNode={titleNode}
-      title="Agent Customizations"
+      title="Agent Connections"
       width={1100}
       height={720}
       minWidth={640}
