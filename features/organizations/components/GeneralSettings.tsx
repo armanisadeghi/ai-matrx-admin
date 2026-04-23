@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { updateOrganization, validateOrgName, type Organization, type OrgRole } from '@/features/organizations';
 import { format } from 'date-fns';
+import { ImageAssetUploader } from '@/components/official/ImageAssetUploader';
 
 interface GeneralSettingsProps {
   organization: Organization;
@@ -257,17 +258,17 @@ export function GeneralSettings({ organization, canEdit, userRole }: GeneralSett
           )}
         </div>
 
-        {/* Logo URL */}
+        {/* Logo — drag-drop with Sharp variants, or paste a URL */}
         <div className="space-y-2">
-          <Label htmlFor="logoUrl">Logo URL</Label>
+          <Label>Logo</Label>
           {isEditing ? (
-            <Input
-              id="logoUrl"
-              type="url"
-              value={logoUrl}
-              onChange={(e) => setLogoUrl(e.target.value)}
-              placeholder="https://example.com/logo.png"
+            <ImageAssetUploader
+              preset="logo"
+              currentUrl={logoUrl || null}
+              onComplete={(result) => setLogoUrl(result?.primary_url ?? '')}
+              folder="organizations/logos"
               disabled={isSaving}
+              label="Organization logo"
             />
           ) : (
             <div className="flex items-center gap-4">

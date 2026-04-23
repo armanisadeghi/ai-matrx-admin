@@ -23,9 +23,9 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { useFileUploadWithStorage } from "@/components/ui/file-upload/useFileUploadWithStorage";
 import { PRESET_COVERS } from "./preset-covers";
 import { cn } from "@/utils/cn";
+import type { ImageUploadResponse } from "@/app/api/images/upload/route";
 
 interface ShareCoverImagePickerProps {
   value: string | null;
@@ -48,12 +48,9 @@ export function ShareCoverImagePicker({
   const [uploadError, setUploadError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // NOTE: `uploadToPublicUserAssets` uploads straight to the user's own
-  // public-assets dir — the constructor args below are unused by that method
-  // but the hook requires them.
-  const { uploadToPublicUserAssets } =
-    useFileUploadWithStorage("user-public-assets");
-
+  // Canvas covers go through the shared Sharp pipeline with the `cover`
+  // preset so every canvas gets a consistent 1200×630 OG image regardless
+  // of what the user uploads.
   const handleFileSelected = useCallback(
     async (file: File) => {
       if (!file.type.startsWith("image/")) {
@@ -68,18 +65,24 @@ export function ShareCoverImagePicker({
       setUploadError(null);
       setUploading(true);
       try {
-        // Prefix filename so re-uploads don't collide and covers are easy
-        // to find inside the user's public bucket.
-        const ext = (file.name.split(".").pop() ?? "png").toLowerCase();
-        const safeExt = ext.replace(/[^a-z0-9]/g, "") || "png";
-        const renamed = new File(
-          [file],
-          `canvas-cover-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${safeExt}`,
-          { type: file.type },
-        );
-        const result = await uploadToPublicUserAssets(renamed);
-        if (result?.url) {
-          onChange(result.url);
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("preset", "cover");
+        formData.append("folder", "canvas/covers");
+
+        const res = await fetch("/api/images/upload", {
+          method: "POST",
+          body: formData,
+        });
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          throw new Error(
+            (body as { error?: string }).error ?? `Upload failed (${res.status})`,
+          );
+        }
+        const data = (await res.json()) as ImageUploadResponse;
+        if (data.primary_url) {
+          onChange(data.primary_url);
           setView("idle");
         } else {
           setUploadError("Upload failed. Please try again.");
@@ -92,7 +95,7 @@ export function ShareCoverImagePicker({
         if (inputRef.current) inputRef.current.value = "";
       }
     },
-    [onChange, uploadToPublicUserAssets],
+    [onChange],
   );
 
   const handleDrop = useCallback(

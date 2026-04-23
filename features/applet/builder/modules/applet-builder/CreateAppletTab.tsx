@@ -35,6 +35,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { CustomAppletConfig, AppletContainer } from '@/types/customAppTypes';
 import { ICON_OPTIONS, COLOR_VARIANTS } from '@/features/applet/styles/StyledComponents';
 import { RecipeInfo } from "@/features/recipes/types";
+import { ImageAssetUploader } from '@/components/official/ImageAssetUploader';
 
 interface CreateAppletTabProps {
   newApplet: Partial<CustomAppletConfig>;
@@ -299,16 +300,17 @@ export const CreateAppletTab: React.FC<CreateAppletTabProps> = ({
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="imageUrl" className="text-gray-900 dark:text-gray-100">
-              Image URL
+            <Label className="text-gray-900 dark:text-gray-100">
+              Applet Image
             </Label>
-            <Input
-              id="imageUrl"
-              name="imageUrl"
-              value={newApplet.imageUrl || ''}
-              onChange={handleInputChange}
-              placeholder="Enter image URL"
-              className="border-gray-200 dark:border-gray-700 bg-textured"
+            <ImageAssetUploader
+              preset="social"
+              currentUrl={newApplet.imageUrl || null}
+              onComplete={(result) =>
+                setNewApplet((prev) => ({ ...prev, imageUrl: result?.primary_url ?? '' }))
+              }
+              folder="applets"
+              label="Image"
             />
           </div>
         </div>

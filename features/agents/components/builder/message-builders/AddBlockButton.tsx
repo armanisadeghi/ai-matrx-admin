@@ -32,6 +32,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { Upload } from "lucide-react";
+import { useOpenImageUploaderWindow } from "@/features/window-panels/windows/image";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -161,6 +163,7 @@ export function BlockEditor({
         )
       : {},
   );
+  const openImageUploader = useOpenImageUploaderWindow();
 
   const handleConfirm = () => {
     if (!config) return;
@@ -223,22 +226,47 @@ export function BlockEditor({
         </button>
       </div>
 
-      {config.fields.map(({ key, label, placeholder }) => (
-        <div key={key} className="flex flex-col gap-1">
-          <Label className="text-xs text-muted-foreground">{label}</Label>
-          <Input
-            autoFocus={key === config.fields[0].key}
-            value={values[key] ?? ""}
-            onChange={(e) => setValue(key, e.target.value)}
-            placeholder={placeholder}
-            className="h-7 text-xs font-mono"
-            onKeyDown={(e) => {
-              if (e.key === "Enter") handleConfirm();
-              if (e.key === "Escape") onCancel();
-            }}
-          />
-        </div>
-      ))}
+      {config.fields.map(({ key, label, placeholder }) => {
+        const showImageUpload = config.type === "image" && key === "url";
+        return (
+          <div key={key} className="flex flex-col gap-1">
+            <Label className="text-xs text-muted-foreground">{label}</Label>
+            <div className="flex items-center gap-1">
+              <Input
+                autoFocus={key === config.fields[0].key}
+                value={values[key] ?? ""}
+                onChange={(e) => setValue(key, e.target.value)}
+                placeholder={placeholder}
+                className="h-7 text-xs font-mono flex-1"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleConfirm();
+                  if (e.key === "Escape") onCancel();
+                }}
+              />
+              {showImageUpload && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    openImageUploader({
+                      preset: "social",
+                      title: "Upload image for block",
+                      currentUrl: values[key] ?? null,
+                      folder: "agent-blocks",
+                      onUploaded: (e) => setValue(key, e.result.primary_url),
+                      onCleared: () => setValue(key, ""),
+                    })
+                  }
+                  className="shrink-0 h-7 px-2 text-xs rounded-md border border-border hover:bg-accent transition-colors flex items-center gap-1"
+                  title="Upload an image (auto-resized)"
+                >
+                  <Upload className="w-3 h-3" />
+                  Upload
+                </button>
+              )}
+            </div>
+          </div>
+        );
+      })}
 
       <div className="flex items-center justify-end gap-1.5">
         <Button

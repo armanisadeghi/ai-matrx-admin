@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { ChevronLeft, Image as ImageIcon, Loader2, AlertCircle, ExternalLink, Globe } from "lucide-react";
+import { ChevronLeft, Image as ImageIcon, Loader2, AlertCircle, ExternalLink, Globe, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useOpenImageUploaderWindow } from "@/features/window-panels/windows/image";
 
 interface ImageUrlResourcePickerProps {
     onBack: () => void;
@@ -116,6 +117,21 @@ export function ImageUrlResourcePicker({ onBack, onSelect, onSwitchTo, initialUr
     const [suggestedType, setSuggestedType] = useState<'webpage' | 'youtube' | 'file_url' | null>(null);
     const [previewImage, setPreviewImage] = useState<ImageUrlData | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
+    const openImageUploader = useOpenImageUploaderWindow();
+
+    const handleUploadInstead = () => {
+        openImageUploader({
+            preset: "social",
+            title: "Upload image",
+            description: "Drop an image to upload — we'll fill the URL below.",
+            folder: "chat-resources",
+            currentUrl: url || null,
+            onUploaded: (e) => {
+                setUrl(e.result.primary_url);
+                void handleValidate(e.result.primary_url);
+            },
+        });
+    };
 
     // Auto-focus the input on mount (preventScroll to avoid auto-scroll)
     useEffect(() => {
@@ -229,9 +245,19 @@ export function ImageUrlResourcePicker({ onBack, onSelect, onSwitchTo, initialUr
                             )}
                         </Button>
                     </div>
-                    <p className="text-[10px] text-gray-500 dark:text-gray-400">
-                        Paste a direct URL to an image file
-                    </p>
+                    <div className="flex items-center justify-between">
+                        <p className="text-[10px] text-gray-500 dark:text-gray-400">
+                            Paste a direct URL to an image file
+                        </p>
+                        <button
+                            type="button"
+                            onClick={handleUploadInstead}
+                            className="text-[10px] text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                        >
+                            <Upload className="w-2.5 h-2.5" />
+                            or upload one
+                        </button>
+                    </div>
                 </div>
 
                 {/* Error with suggestion */}

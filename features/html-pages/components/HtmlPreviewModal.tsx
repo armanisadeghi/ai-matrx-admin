@@ -10,6 +10,7 @@ import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import { copyToClipboard, removeThinkingContent } from "@/components/matrx/buttons/markdown-copy-utils";
 import { getWordPressCSS, loadWordPressCSS } from "@/features/html-pages/css/wordpress-styles";
 import SmallCodeEditor from "@/features/code-editor/components/code-block/SmallCodeEditor";
+import { ImageAssetUploader } from "@/components/official/ImageAssetUploader";
 
 interface HtmlPreviewModalProps {
     isOpen: boolean;
@@ -937,21 +938,21 @@ ${wordPressCSS}
                                                              </p>
                                                          </div>
 
-                                                         {/* OG Image */}
+                                                         {/* OG Image — drag-drop with Sharp-processed 1200×630, or paste a URL */}
                                                          <div>
                                                              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                                 Open Graph Image URL (optional)
+                                                                 Open Graph Image (optional)
                                                              </label>
-                                                             <input
-                                                                 type="url"
-                                                                 value={ogImage}
-                                                                 onChange={(e) => setOgImage(e.target.value)}
-                                                                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-textured text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                                 placeholder="https://example.com/image.jpg"
+                                                             <ImageAssetUploader
+                                                                 preset="cover"
+                                                                 currentUrl={ogImage || null}
+                                                                 onComplete={(result) => setOgImage(result?.primary_url ?? '')}
                                                                  disabled={!user}
+                                                                 label="OG Image"
+                                                                 hideVariantBadges
                                                              />
                                                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                                                 Image shown when shared on social media (1200x630px recommended)
+                                                                 Shown when shared on social media. Drops generate 1200×630; toggle "Use URL" to paste one.
                                                              </p>
                                                          </div>
 
