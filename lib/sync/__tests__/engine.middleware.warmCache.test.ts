@@ -242,4 +242,141 @@ describe("createSyncMiddleware warm-cache branch", () => {
         const record = await readSlice("auth:u2", "warm", 1);
         expect(record).not.toBeNull();
     });
+
+    it("does NOT schedule a debounced write when the first post-boot action leaves the slice reference unchanged", async () => {
+        // Reproduces Arman's Phase 2 §3.1 bug: an SSR-preloaded warm-cache slice
+        // triggered a debounced Supabase upsert on first reload because
+        // `lastPersistedRef` was empty at boot — any first action (even one
+        // that touched a DIFFERENT slice) flipped the `!==` check and the
+        // slice was flushed back to remote unchanged.
+        //
+        // Fix: middleware seeds `lastPersistedRef` from preloadedState on the
+        // first action, before `next(action)`. First non-REHYDRATE action
+        // that leaves the slice state reference intact must not write.
+        const remoteCalls: unknown[] = [];
+        const policy = definePolicy<WarmState>({
+            sliceName: "warm",
+            preset: "warm-cache",
+            version: 1,
+            broadcast: { actions: ["other/ping"] },
+            remote: { write: async (ctx) => void remoteCalls.push(ctx.body) },
+        });
+
+        const warmSlice = createSlice({
+            name: "warm",
+            initialState: { items: [], counter: 0 } as WarmState,
+            reducers: {},
+        });
+        const otherSlice = createSlice({
+            name: "other",
+            initialState: { beep: 0 },
+            reducers: {
+                ping: (s) => {
+                    s.beep += 1;
+                },
+            },
+        });
+
+        const channel = makeFakeChannel();
+        // Boot with a preloaded warm state — mirrors the SSR baseline that
+        // `(a)/layout.tsx` injects via `getUserSessionData`.
+        const store = configureStore({
+            reducer: { warm: warmSlice.reducer, other: otherSlice.reducer },
+            preloadedState: {
+                warm: { items: ["seed"], counter: 7 } as WarmState,
+                other: { beep: 0 },
+            },
+            middleware: (gDM) =>
+                gDM().concat(
+                    createSyncMiddleware({
+                        policies: [policy],
+                        channel,
+                        getIdentity: () => identityA,
+                        defaultDebounceMs: FAST_DEBOUNCE,
+                    }),
+                ),
+        });
+
+        // First post-boot action touches `other`, leaving `warm` state ref
+        // intact. Before the fix, this tripped the warm write scheduler
+        // because `lastPersistedRef.get("warm")` was `undefined`.
+        store.dispatch({ type: "other/ping" });
+
+        await wait(FAST_DEBOUNCE + 60);
+
+        expect(remoteCalls).toHaveLength(0);
+        expect(await readSlice("auth:u1", "warm", 1)).toBeNull();
+        expect(window.localStorage.getItem("matrx:idbFallback:warm")).toBeNull();
+    });
+
+    it("refreshes the persisted baseline after REHYDRATE so a subsequent no-op action does not flush", async () => {
+        // Second half of Arman's §3.1/§3.3 fix: once a REHYDRATE lands (from
+        // IDB/LS/remote.fetch/peer), the newly-rehydrated slice state IS the
+        // persistent baseline. If we didn't update `lastPersistedRef` on the
+        // REHYDRATE path, the NEXT mutation would be compared against the
+        // stale boot baseline (or worse, `undefined`) and spuriously flushed.
+        const remoteCalls: unknown[] = [];
+        const policy = definePolicy<WarmState>({
+            sliceName: "warm",
+            preset: "warm-cache",
+            version: 1,
+            broadcast: { actions: ["warm/push"] },
+            remote: { write: async (ctx) => void remoteCalls.push(ctx.body) },
+        });
+
+        const slice = createSlice({
+            name: "warm",
+            initialState: { items: [], counter: 0 } as WarmState,
+            reducers: {},
+            extraReducers: (b) => {
+                b.addCase("sync/rehydrate", (state, action: any) => {
+                    if (action.payload?.sliceName === "warm") {
+                        Object.assign(state, action.payload.state);
+                    }
+                });
+            },
+        });
+        const otherSlice = createSlice({
+            name: "other",
+            initialState: { beep: 0 },
+            reducers: {
+                ping: (s) => {
+                    s.beep += 1;
+                },
+            },
+        });
+
+        const channel = makeFakeChannel();
+        const store = configureStore({
+            reducer: { warm: slice.reducer, other: otherSlice.reducer },
+            middleware: (gDM) =>
+                gDM().concat(
+                    createSyncMiddleware({
+                        policies: [policy],
+                        channel,
+                        getIdentity: () => identityA,
+                        defaultDebounceMs: FAST_DEBOUNCE,
+                    }),
+                ),
+        });
+
+        // Simulate a REHYDRATE arriving from (e.g.) remote.fetch cold-boot.
+        store.dispatch({
+            type: "sync/rehydrate",
+            payload: {
+                sliceName: "warm",
+                state: { items: ["from-server"], counter: 1 } as WarmState,
+            },
+            meta: { fromRehydrate: true },
+        });
+
+        // Next action does not touch the warm slice. The warm ref is
+        // unchanged from the post-REHYDRATE state, so nothing should flush.
+        store.dispatch({ type: "other/ping" });
+
+        await wait(FAST_DEBOUNCE + 60);
+
+        expect(remoteCalls).toHaveLength(0);
+        expect(await readSlice("auth:u1", "warm", 1)).toBeNull();
+    });
 });

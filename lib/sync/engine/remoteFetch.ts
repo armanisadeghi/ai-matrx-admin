@@ -19,6 +19,9 @@ import type { Store } from "@reduxjs/toolkit";
 import type { FallbackContext, IdentityKey, Policy } from "../types";
 import { buildRehydrateAction } from "./rehydrate";
 import { logger } from "../logger";
+import { writeSlice } from "../persistence/idb";
+import { localStorageAdapter } from "../persistence/local-storage";
+import { getPreset } from "../policies/presets";
 
 export interface InvokeRemoteFetchOptions {
     policy: Policy<any>;
@@ -95,6 +98,45 @@ export async function invokeRemoteFetch(opts: InvokeRemoteFetchOptions): Promise
         store.dispatch(
             buildRehydrateAction(policy.config.sliceName, state, { fromRehydrate: true }),
         );
+
+        // Warm the local cache so the next boot is warm — writes landed via
+        // `remote.fetch` only flow through REHYDRATE (which the middleware
+        // deliberately skips for persist), so without this the next reload
+        // cold-fetches the same data again. `warm-cache` tier only.
+        //
+        // We persist the ORIGINAL `result` body (not the post-deserialize
+        // `state`), mirroring what the debounced write scheduler does when
+        // a user mutation flushes: the serialized body shape is the policy's
+        // stable contract, and round-tripping through the slice is the job of
+        // the reducer's REHYDRATE case, not the persistence tier.
+        const caps = getPreset(policy.config.preset);
+        if (caps.storageTier === "idb") {
+            try {
+                await writeSlice(
+                    startIdentity.key,
+                    policy.config.sliceName,
+                    policy.config.version,
+                    result,
+                );
+                localStorageAdapter.write(`matrx:idbFallback:${policy.config.sliceName}`, {
+                    version: policy.config.version,
+                    identityKey: startIdentity.key,
+                    body: result,
+                });
+                logger.debug("fallback.cache.warmed", {
+                    sliceName: policy.config.sliceName,
+                    meta: { identity: startIdentity.key, reason },
+                });
+            } catch (err) {
+                // Non-fatal — the data is already in Redux and will re-fetch
+                // on next cold boot; only cache warming is impacted.
+                logger.warn("fallback.cache.warm.failed", {
+                    sliceName: policy.config.sliceName,
+                    meta: { error: err instanceof Error ? err.message : String(err) },
+                });
+            }
+        }
+
         const elapsed = typeof performance !== "undefined" ? performance.now() - started : 0;
         logger.info("fallback.complete", {
             sliceName: policy.config.sliceName,

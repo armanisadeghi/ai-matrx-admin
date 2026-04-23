@@ -9,12 +9,14 @@
  *   - external signal → aborted + no dispatch
  */
 
+import "fake-indexeddb/auto";
 import { configureStore, createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { REHYDRATE_ACTION_TYPE } from "../engine/rehydrate";
 import {
     createStaleRefreshScheduler,
     invokeRemoteFetch,
 } from "../engine/remoteFetch";
+import { clearAll, readSlice } from "../persistence/idb";
 import { definePolicy } from "../policies/define";
 import type { IdentityKey } from "../types";
 
@@ -191,6 +193,112 @@ describe("invokeRemoteFetch", () => {
             externalSignal: controller.signal,
         });
         expect(fetchSpy).not.toHaveBeenCalled();
+    });
+
+    it("warms IDB + localStorage fallback mirror after a successful warm-cache fetch", async () => {
+        // Reproduces Arman's Phase 2 §3.3 regression: a cold boot (IDB empty,
+        // no LS fallback, no peer) triggered remote.fetch, which correctly
+        // dispatched REHYDRATE — but the middleware deliberately skips
+        // persist on REHYDRATE, so the next reload cold-fetched AGAIN. The
+        // fix: after a successful fetch, `invokeRemoteFetch` writes the
+        // original body directly to IDB + LS mirror (bypassing middleware).
+        window.localStorage.clear();
+        await clearAll();
+        const { store, policy } = makeSetup(async () => ({
+            value: "from-server",
+            loaded: true,
+        }));
+        await invokeRemoteFetch({
+            policy,
+            store,
+            getIdentity: () => identityA,
+            reason: "cold-boot",
+        });
+        // REHYDRATE landed — slice state updated.
+        expect(store.getState().warm.value).toBe("from-server");
+        // IDB cache is warmed — next boot won't need to cold-fetch.
+        const idbRecord = await readSlice("auth:u1", "warm", 1);
+        expect(idbRecord).not.toBeNull();
+        expect((idbRecord!.body as WarmState).value).toBe("from-server");
+        // LS mirror (the localStorage fallback that kicks in when Dexie is
+        // unavailable) is also populated.
+        const lsMirror = window.localStorage.getItem("matrx:idbFallback:warm");
+        expect(lsMirror).not.toBeNull();
+        const parsed = JSON.parse(lsMirror!);
+        expect(parsed.version).toBe(1);
+        expect(parsed.identityKey).toBe("auth:u1");
+        expect((parsed.body as WarmState).value).toBe("from-server");
+    });
+
+    it("persists the original body (not the post-deserialize state) so the cached shape round-trips through REHYDRATE on next boot", async () => {
+        window.localStorage.clear();
+        await clearAll();
+        const dispatched: unknown[] = [];
+        const slice = createSlice({
+            name: "warm",
+            initialState: { value: "initial", loaded: false } as WarmState,
+            reducers: {},
+            extraReducers: (b) => {
+                b.addCase(
+                    REHYDRATE_ACTION_TYPE,
+                    (state, action: PayloadAction<{ sliceName: string; state: Partial<WarmState> }>) => {
+                        if (action.payload.sliceName === "warm") {
+                            Object.assign(state, action.payload.state);
+                        }
+                    },
+                );
+            },
+        });
+        const store = configureStore({
+            reducer: { warm: slice.reducer },
+            middleware: (gDM) =>
+                gDM().concat(() => (next) => (action) => {
+                    dispatched.push(action);
+                    return next(action);
+                }),
+        });
+        const policy = definePolicy<WarmState>({
+            sliceName: "warm",
+            preset: "warm-cache",
+            version: 1,
+            broadcast: { actions: ["warm/set"] },
+            deserialize: (raw) => ({
+                ...(raw as Partial<WarmState>),
+                value: `deserialized:${(raw as WarmState).value}`,
+            }),
+            remote: { fetch: async () => ({ value: "raw", loaded: true }) },
+        });
+        await invokeRemoteFetch({
+            policy,
+            store,
+            getIdentity: () => identityA,
+            reason: "cold-boot",
+        });
+        // Redux saw the deserialized value…
+        expect(store.getState().warm.value).toBe("deserialized:raw");
+        // …but the IDB/LS cache stored the ORIGINAL body shape, so the next
+        // boot's REHYDRATE → deserialize chain reproduces the same state.
+        const idbRecord = await readSlice("auth:u1", "warm", 1);
+        expect((idbRecord!.body as WarmState).value).toBe("raw");
+        const lsMirror = JSON.parse(
+            window.localStorage.getItem("matrx:idbFallback:warm")!,
+        );
+        expect((lsMirror.body as WarmState).value).toBe("raw");
+    });
+
+    it("does NOT write to IDB when the fetch returns null", async () => {
+        window.localStorage.clear();
+        await clearAll();
+        const { store, policy } = makeSetup(async () => null);
+        await invokeRemoteFetch({
+            policy,
+            store,
+            getIdentity: () => identityA,
+            reason: "cold-boot",
+        });
+        expect(await readSlice("auth:u1", "warm", 1)).toBeNull();
+        expect(window.localStorage.getItem("matrx:idbFallback:warm")).toBeNull();
+        void store;
     });
 
     it("applies policy.deserialize before dispatching", async () => {

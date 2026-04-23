@@ -111,6 +111,16 @@ export function createSyncMiddleware(ctx: SyncMiddlewareContext): Middleware {
     // when the slice state hasn't changed. Separate map because persist skips
     // rehydrate actions (see below) but DOM apply does not.
     const lastAppliedRef = new Map<string, unknown>();
+    // Seeded on the first action's `api.getState()` — captures the SSR /
+    // preloaded baseline so we don't falsely persist it back on the first
+    // post-boot user action. Without this, `lastPersistedRef.get(sliceName)`
+    // is `undefined` for every slice at boot, and the first non-REHYDRATE
+    // action (a broker-setValue, a PostHog identify, etc.) triggers a
+    // redundant debounced write: IDB + LS mirror + remote.write. For
+    // `warm-cache` policies like `userPreferences` that remote.write is a
+    // visible Supabase upsert that Arman saw in the Phase 2 browser
+    // checklist (one POST on warm refresh; a GET+POST pair on cold refresh).
+    let seededFromBoot = false;
     // Warm-cache debounced write sink (IDB + remote.write). Lazily constructed
     // so stores that don't use warm-cache don't install a pagehide listener.
     let remoteWriteScheduler: RemoteWriteScheduler | null = null;
@@ -122,6 +132,21 @@ export function createSyncMiddleware(ctx: SyncMiddlewareContext): Middleware {
     let lastSeenIdentity = ctx.getIdentity().key;
 
     return (api: MiddlewareAPI) => (next: Dispatch) => (action: unknown) => {
+        // Seed baselines BEFORE `next(action)` so the first mutation is
+        // compared against the boot state — not against the post-action
+        // state. Must run exactly once per middleware instance.
+        if (!seededFromBoot) {
+            seededFromBoot = true;
+            const bootState = api.getState();
+            for (const policy of ctx.policies) {
+                const sliceState = selectSliceState(bootState, policy.config.sliceName);
+                if (sliceState !== undefined) {
+                    lastPersistedRef.set(policy.config.sliceName, sliceState);
+                    lastAppliedRef.set(policy.config.sliceName, sliceState);
+                }
+            }
+        }
+
         const result = next(action as Action);
 
         // Ignore rehydrate echoes and anything without a string type.
@@ -204,6 +229,22 @@ export function createSyncMiddleware(ctx: SyncMiddlewareContext): Middleware {
                         });
                     }
                     remoteWriteScheduler.schedule(policy.config.sliceName, body);
+                }
+            }
+        } else {
+            // REHYDRATE path: the reducer just replaced slice state with data
+            // pulled from a persistent source (IDB, LS fallback, remote.fetch,
+            // or peer HYDRATE_RESPONSE). That new state IS the persisted
+            // baseline — update `lastPersistedRef` so the first subsequent
+            // mutation is compared against it. Without this, a user edit
+            // right after rehydrate would be detected as "changed since boot
+            // seed" and flushed back to the same source we just read from.
+            for (const policy of ctx.policies) {
+                const caps = getPreset(policy.config.preset);
+                if (caps.writeStrategy === "none") continue;
+                const sliceState = selectSliceState(api.getState(), policy.config.sliceName);
+                if (sliceState !== undefined) {
+                    lastPersistedRef.set(policy.config.sliceName, sliceState);
                 }
             }
         }
