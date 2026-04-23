@@ -1,6 +1,7 @@
-import { registerPanelHydrator } from "./UrlPanelRegistry";
+import { getHydrator, registerPanelHydrator } from "./UrlPanelRegistry";
 import { setDisplayMode } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.slice";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
+import { ALL_WINDOW_REGISTRY_ENTRIES } from "../registry/windowRegistry";
 
 /**
  * Register all known panel URL hydrators.
@@ -114,4 +115,70 @@ export function initUrlHydration() {
   registerPanelHydrator("listManager", (dispatch) => {
     dispatch(openOverlay({ overlayId: "listManagerWindow" }));
   });
+
+  // Cloud Files Window
+  registerPanelHydrator("cloud_files", (dispatch) => {
+    dispatch(openOverlay({ overlayId: "cloudFilesWindow" }));
+  });
+
+  // Web Scraper Window
+  registerPanelHydrator("scraper", (dispatch) => {
+    dispatch(openOverlay({ overlayId: "scraperWindow" }));
+  });
+
+  // Agent Settings Window
+  registerPanelHydrator("agent-settings", (dispatch, id) => {
+    dispatch(
+      openOverlay({
+        overlayId: "agentSettingsWindow",
+        data: id && id !== "agentSettingsWindow" ? { initialAgentId: id } : {},
+      }),
+    );
+  });
+
+  // Agent Advanced Editor (Agent Content) Window
+  registerPanelHydrator("agent-content", (dispatch, id) => {
+    dispatch(
+      openOverlay({
+        overlayId: "agentAdvancedEditorWindow",
+        data:
+          id && id !== "agentAdvancedEditorWindow" ? { initialAgentId: id } : {},
+      }),
+    );
+  });
+
+  // Execution Inspector Window
+  registerPanelHydrator("exec-inspector", (dispatch) => {
+    dispatch(openOverlay({ overlayId: "executionInspectorWindow" }));
+  });
+
+  // Agent Assistant Markdown Debug Window
+  registerPanelHydrator("agent-md-debug", (dispatch) => {
+    dispatch(openOverlay({ overlayId: "agentAssistantMarkdownDebugWindow" }));
+  });
+
+  // ── Dev-only integrity check ─────────────────────────────────────────────
+  // Every registry entry that declares `urlSync.key` must have a hydrator
+  // registered above. Drift here is silent: `?panels=<key>` would just
+  // log a console warning from UrlPanelManager and do nothing. This check
+  // fails loudly in development so missing hydrators land in a failing PR
+  // instead of a broken deep-link in production.
+  if (process.env.NODE_ENV !== "production") {
+    const missing: Array<{ overlayId: string; key: string }> = [];
+    for (const entry of ALL_WINDOW_REGISTRY_ENTRIES) {
+      const key = entry.urlSync?.key;
+      if (!key) continue;
+      if (!getHydrator(key)) {
+        missing.push({ overlayId: entry.overlayId, key });
+      }
+    }
+    if (missing.length > 0) {
+      // eslint-disable-next-line no-console
+      console.error(
+        `[initUrlHydration] ${missing.length} registry urlSync key(s) have no hydrator:\n` +
+          missing.map((m) => `  - ${m.overlayId} → "${m.key}"`).join("\n") +
+          `\nRegister a hydrator in features/window-panels/url-sync/initUrlHydration.ts.`,
+      );
+    }
+  }
 }

@@ -5,15 +5,22 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { useCodeWorkspace } from "../../CodeWorkspaceProvider";
 import { useOpenFile } from "../../hooks/useOpenFile";
 import type { FilesystemNode } from "../../types";
-import { selectActiveTab } from "../../redux";
+import { selectActiveTab, selectExplorerRootOverride } from "../../redux";
 import { FileTreeNode } from "./FileTreeNode";
 import { useFileTreeExpansion } from "./useFileTreeExpansion";
 
-export const FileTree: React.FC = () => {
+interface FileTreeProps {
+  refreshKey?: number;
+}
+
+export const FileTree: React.FC<FileTreeProps> = ({ refreshKey = 0 }) => {
   const { filesystem } = useCodeWorkspace();
   const openFile = useOpenFile();
   const activeTab = useAppSelector(selectActiveTab);
-  const { isExpanded, toggle } = useFileTreeExpansion([filesystem.rootPath]);
+  const override = useAppSelector(selectExplorerRootOverride);
+  const rootPath = override ?? filesystem.rootPath;
+
+  const { isExpanded, toggle } = useFileTreeExpansion([rootPath]);
   const [roots, setRoots] = useState<FilesystemNode[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -22,7 +29,7 @@ export const FileTree: React.FC = () => {
     setRoots(null);
     setError(null);
     filesystem
-      .listChildren(filesystem.rootPath)
+      .listChildren(rootPath)
       .then((list) => {
         if (!cancelled) setRoots(list);
       })
@@ -33,7 +40,7 @@ export const FileTree: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [filesystem]);
+  }, [filesystem, rootPath, refreshKey]);
 
   const handleOpen = (path: string) => {
     openFile(path).catch((err) => {
@@ -51,9 +58,7 @@ export const FileTree: React.FC = () => {
         <div className="px-3 py-1 text-[11px] text-red-500">{error}</div>
       )}
       {roots === null && !error && (
-        <div className="px-3 py-1 text-[11px] text-neutral-500">
-          Loading…
-        </div>
+        <div className="px-3 py-1 text-[11px] text-neutral-500">Loading…</div>
       )}
       {roots?.map((node) => (
         <FileTreeNode

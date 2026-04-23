@@ -84,6 +84,16 @@ Live ledger of questions, feature requests, and backend-side asks. Every interac
 
 ---
 
+### 2026-04-23 — Req: Folder CRUD endpoints
+
+**Status:** 🟡 awaiting.
+**Priority:** Medium.
+**Context:** The REST contract exposes no folder-create, folder-rename, or folder-delete endpoints. Clients that need "new folder" / "move folder" / "delete folder" currently write directly to `cld_folders` via supabase-js (RLS allows it). That works but skips any server-side validation you might want (quotas, name normalization, cascading permission updates).
+**Ask:** Provide `POST /folders`, `PATCH /folders/:id`, `DELETE /folders/:id` with a body similar to `FilePatchRequest`. If you'd prefer to keep folders client-managed via RLS, confirm that's the intended design and we'll formalize the client-side path.
+**Workaround:** We already ship `createFolder` / `deleteFolder` / `ensureFolderPath` thunks that hit `cld_folders` directly. If/when the REST endpoints exist, only the thunk internals change — callers are unaffected.
+
+---
+
 ### 2026-04-23 — Req: Bulk operations
 
 **Status:** 🟡 awaiting.

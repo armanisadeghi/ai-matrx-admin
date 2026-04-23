@@ -5,7 +5,7 @@ import { FileCode } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { cn } from "@/lib/utils";
 import { selectActiveTab, updateTabContent } from "../redux";
-import { EDITOR_BG } from "../styles/tokens";
+import { AVATAR_RESERVE, EDITOR_BG } from "../styles/tokens";
 import { EditorTabs } from "./EditorTabs";
 import { EditorToolbar } from "./EditorToolbar";
 import { MonacoEditor } from "./MonacoEditor";
@@ -13,12 +13,16 @@ import { MonacoEditor } from "./MonacoEditor";
 interface EditorAreaProps {
   rightSlotAvailable?: boolean;
   farRightSlotAvailable?: boolean;
+  /** When true, the editor is the rightmost column and its toolbar needs to
+   *  reserve space for the app's floating avatar. */
+  rightmost?: boolean;
   className?: string;
 }
 
 export const EditorArea: React.FC<EditorAreaProps> = ({
   rightSlotAvailable = false,
   farRightSlotAvailable = false,
+  rightmost = false,
   className,
 }) => {
   const dispatch = useAppDispatch();
@@ -34,7 +38,12 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
 
   return (
     <div className={cn("flex h-full min-h-0 flex-col", EDITOR_BG, className)}>
-      <div className="flex h-9 shrink-0 items-stretch border-b border-neutral-200 bg-neutral-100 dark:border-neutral-800 dark:bg-neutral-900">
+      <div
+        className={cn(
+          "flex h-9 shrink-0 items-stretch border-b border-neutral-200 bg-neutral-100 dark:border-neutral-800 dark:bg-neutral-900",
+          rightmost && AVATAR_RESERVE,
+        )}
+      >
         <div className="min-w-0 flex-1 overflow-hidden">
           <EditorTabs />
         </div>

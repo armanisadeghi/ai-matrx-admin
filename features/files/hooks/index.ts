@@ -8,3 +8,6 @@ export * from "./useFolderContents";
 export * from "./useFileSelection";
 export * from "./useFileUpload";
 export * from "./useCloudTree";
+export * from "./useSharing";
+export * from "./useFileSearch";
+export * from "./useUploadAndGet";

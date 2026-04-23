@@ -4,6 +4,7 @@ import React from "react";
 import { useSearchParams } from "next/navigation";
 import { AgentRunnerPage } from "@/features/agents/components/run/AgentRunnerPage";
 import { SidePanelHeader } from "../views/SidePanelChrome";
+import { AVATAR_RESERVE } from "../styles/tokens";
 import { AgentPicker } from "./AgentPicker";
 
 interface ChatPanelSlotProps {
@@ -11,6 +12,8 @@ interface ChatPanelSlotProps {
    *  current `/code` route so in-panel navigation stays inside the workspace. */
   basePath?: string;
   className?: string;
+  /** When true, the top row reserves space for the app's floating avatar. */
+  rightmost?: boolean;
 }
 
 /**
@@ -22,6 +25,7 @@ interface ChatPanelSlotProps {
 export const ChatPanelSlot: React.FC<ChatPanelSlotProps> = ({
   basePath = "/code",
   className,
+  rightmost = false,
 }) => {
   const searchParams = useSearchParams();
   const agentId = searchParams.get("agentId");
@@ -31,6 +35,7 @@ export const ChatPanelSlot: React.FC<ChatPanelSlotProps> = ({
       <SidePanelHeader
         title="Chat"
         actions={<AgentPicker variant="inline" />}
+        className={rightmost ? AVATAR_RESERVE : undefined}
       />
       <div className="min-h-0 flex-1">
         {agentId ? (

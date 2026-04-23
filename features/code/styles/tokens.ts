@@ -47,3 +47,9 @@ export const HOVER_ROW = "hover:bg-neutral-200/70 dark:hover:bg-neutral-800/60";
 
 export const ACTIVE_ROW =
   "bg-neutral-200 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-50";
+
+/** Reserves horizontal space at the top-right of the rightmost panel so the
+ *  app's floating user-menu avatar (rendered by `features/shell/...`) doesn't
+ *  overlap panel content. The avatar sits roughly 2.25rem tall at the top-right
+ *  of the viewport; we give ourselves a little breathing room. */
+export const AVATAR_RESERVE = "pr-14";

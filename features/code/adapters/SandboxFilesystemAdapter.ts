@@ -12,16 +12,18 @@ import type { FilesystemNode } from "../types";
 export class SandboxFilesystemAdapter implements FilesystemAdapter {
   readonly id: string;
   readonly label: string;
-  readonly rootPath = "/home/agent";
+  readonly rootPath: string;
   readonly writable = true;
 
   constructor(
     /** sandbox_instances.id (the UUID used by the /api/sandbox/[id] route). */
     public readonly instanceId: string,
     label?: string,
+    rootPath: string = "/home/agent",
   ) {
     this.id = `sandbox:${instanceId}`;
     this.label = label ?? "Sandbox";
+    this.rootPath = rootPath;
   }
 
   private async exec(command: string): Promise<{

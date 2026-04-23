@@ -321,6 +321,169 @@ export const loadShareLinks = createAsyncThunk<
 });
 
 // ---------------------------------------------------------------------------
+// Writes — folders
+// ---------------------------------------------------------------------------
+//
+// NOTE: The Python backend doesn't expose dedicated folder-CRUD endpoints
+// per the current contract (see PYTHON_TEAM_COMMS.md). Folders are cheap,
+// rows-only entities with RLS, so we write directly via supabase-js. If the
+// Python team ships a REST endpoint later, these thunks can be swapped to
+// hit it without changing callers.
+
+export const createFolder = createAsyncThunk<
+  string,
+  import("../types").CreateFolderArg,
+  ThunkApi
+>("cloudFiles/createFolder", async (arg, { dispatch, getState }) => {
+  const state = getState();
+  const parent = arg.parentId
+    ? state.cloudFiles.foldersById[arg.parentId]
+    : null;
+
+  const folderName = arg.folderName.trim();
+  if (!folderName) {
+    throw new Error("Folder name cannot be empty.");
+  }
+  if (/[/\\]/.test(folderName)) {
+    throw new Error("Folder names cannot contain '/' or '\\'.");
+  }
+
+  const folderPath = parent ? `${parent.folderPath}/${folderName}` : folderName;
+
+  // Pull owner_id from the current session — RLS enforces the match anyway.
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Must be signed in to create a folder.");
+
+  const insertRow = {
+    folder_name: folderName,
+    folder_path: folderPath,
+    owner_id: user.id,
+    parent_id: arg.parentId,
+    visibility: arg.visibility ?? "private",
+    metadata: (arg.metadata ?? {}) as Record<string, unknown>,
+  };
+
+  const { data, error } = await supabase
+    .from("cld_folders")
+    .insert(insertRow)
+    .select("*")
+    .single();
+
+  if (error) {
+    // Surface FK + unique-violation errors as-is.
+    throw error;
+  }
+
+  const folder = dbRowToCloudFolder(data);
+  dispatch(upsertFolder(folder));
+  dispatch(
+    attachChildToFolder({
+      parentFolderId: folder.parentId,
+      kind: "folder",
+      id: folder.id,
+    }),
+  );
+  return folder.id;
+});
+
+export const deleteFolder = createAsyncThunk<
+  void,
+  import("../types").DeleteFolderArg,
+  ThunkApi
+>("cloudFiles/deleteFolder", async (arg, { dispatch, getState }) => {
+  const state = getState();
+  const folder = state.cloudFiles.foldersById[arg.folderId];
+  if (!folder) return;
+
+  // Optimistic: mark deleted or remove.
+  if (arg.hardDelete) {
+    const { error } = await supabase
+      .from("cld_folders")
+      .delete()
+      .eq("id", arg.folderId);
+    if (error) throw error;
+  } else {
+    const { error } = await supabase
+      .from("cld_folders")
+      .update({ deleted_at: new Date().toISOString() })
+      .eq("id", arg.folderId);
+    if (error) throw error;
+  }
+
+  dispatch(removeFolder({ id: arg.folderId }));
+});
+
+/**
+ * Ensure every segment of `folderPath` exists; create any that don't.
+ * Returns the leaf folder's id. Used for convention-based uploads like
+ * "save all pasted images under /Images".
+ */
+export const ensureFolderPath = createAsyncThunk<
+  string,
+  import("../types").EnsureFolderPathArg,
+  ThunkApi
+>("cloudFiles/ensureFolderPath", async (arg, { dispatch, getState }) => {
+  const segments = arg.folderPath
+    .split("/")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (segments.length === 0) {
+    throw new Error("folderPath cannot be empty.");
+  }
+
+  let parentId: string | null = null;
+  let accumulatedPath = "";
+
+  for (const segment of segments) {
+    accumulatedPath = accumulatedPath
+      ? `${accumulatedPath}/${segment}`
+      : segment;
+
+    // Check live state first — the realtime subscription keeps it current.
+    const state = getState();
+    const existing = Object.values(state.cloudFiles.foldersById).find(
+      (f) =>
+        f.folderPath === accumulatedPath &&
+        !f.deletedAt &&
+        (parentId == null ? f.parentId == null : f.parentId === parentId),
+    );
+    if (existing) {
+      parentId = existing.id;
+      continue;
+    }
+
+    // Not in local state — fall back to a DB lookup (another device may have
+    // created it). This is the path that also handles races on first use.
+    const { data: existingRow } = await supabase
+      .from("cld_folders")
+      .select("*")
+      .eq("folder_path", accumulatedPath)
+      .is("deleted_at", null)
+      .maybeSingle();
+    if (existingRow) {
+      const existingFolder = dbRowToCloudFolder(existingRow);
+      dispatch(upsertFolder(existingFolder));
+      parentId = existingFolder.id;
+      continue;
+    }
+
+    // Still missing — create it.
+    parentId = await dispatch(
+      createFolder({
+        folderName: segment,
+        parentId,
+        visibility: arg.visibility ?? "private",
+      }),
+    ).unwrap();
+  }
+
+  if (!parentId) throw new Error("Unreachable: ensureFolderPath");
+  return parentId;
+});
+
+// ---------------------------------------------------------------------------
 // Writes — uploads (multi-file with progress)
 // ---------------------------------------------------------------------------
 

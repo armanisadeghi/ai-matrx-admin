@@ -84,6 +84,10 @@ export {
   createShareLink,
   deactivateShareLink,
   getSignedUrl,
+  // Folder ops (written via supabase-js direct; RLS enforced)
+  createFolder,
+  deleteFolder,
+  ensureFolderPath,
 } from "./redux/thunks";
 
 export * from "./redux/selectors";
@@ -108,3 +112,6 @@ export * from "./components/core";
 
 // Surfaces — Phase 4 (drop-in hosts per consumption context)
 export * from "./components/surfaces";
+
+// Pickers — Phase 7 (declarative + hook + imperative host)
+export * from "./components/pickers";

@@ -360,6 +360,27 @@ export interface CloudFilesState {
 // 10. Thunk argument shapes (Phase 2 will dispatch these)
 // ---------------------------------------------------------------------------
 
+export interface CreateFolderArg {
+  folderName: string;
+  parentId: string | null;
+  visibility?: Visibility;
+  metadata?: Record<string, unknown>;
+}
+
+export interface DeleteFolderArg {
+  folderId: string;
+  hardDelete?: boolean;
+}
+
+export interface EnsureFolderPathArg {
+  /**
+   * A folder path like "Images/2026/Q1". Each segment is created if missing.
+   * Returns the leaf folder's id.
+   */
+  folderPath: string;
+  visibility?: Visibility;
+}
+
 export interface UploadFilesArg {
   files: File[];
   parentFolderId: string | null;

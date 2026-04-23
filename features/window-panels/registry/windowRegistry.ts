@@ -395,6 +395,30 @@ const REGISTRY: WindowRegistryEntry[] = [
     urlSync: { key: "files" },
   },
 
+  // ── Cloud Files (new — backed by cld_* tables + Python/S3 backend) ───────
+  // Full-fledged floating window for the new cloud-files system. Mirrors the
+  // `/cloud-files` route experience inside a draggable WindowPanel with
+  // Browse / Recent / Shared / Trash tabs. See
+  // features/files/FEATURE.md for the architecture.
+  {
+    slug: "cloud-files-window",
+    overlayId: "cloudFilesWindow",
+    kind: "window",
+    label: "Cloud Files",
+    componentImport: () =>
+      import(
+        "@/features/window-panels/windows/cloud-files/CloudFilesWindow"
+      ),
+    defaultData: {
+      // `activeTab`: restored on reopen. One of:
+      //   "browse" | "recent" | "shared" | "trash"
+      activeTab: "browse",
+    },
+    mobilePresentation: "fullscreen",
+    mobileSidebarAs: "drawer",
+    urlSync: { key: "cloud_files" },
+  },
+
   // ── Web Scraper ───────────────────────────────────────────────────────────
   {
     slug: "scraper-window",
@@ -509,15 +533,19 @@ const REGISTRY: WindowRegistryEntry[] = [
     urlSync: { key: "listManager" },
   },
 
-  // ── User Preferences ──────────────────────────────────────────────────────
+  // ── Settings (Phase 8 cutover — was: User Preferences) ────────────────────
+  // Replaces both the legacy VSCodePreferencesModal and UserPreferencesWindow.
+  // Slug + overlayId are unchanged so deep links (`?panels=user_preferences`)
+  // and every existing `openOverlay({ overlayId: "userPreferencesWindow" })`
+  // continue to work. The component behind the id now mounts `SettingsShell`.
   {
     slug: "user-preferences-window",
     overlayId: "userPreferencesWindow",
     kind: "window",
-    label: "Preferences",
+    label: "Settings",
     componentImport: () =>
-      import("@/features/window-panels/windows/UserPreferencesWindow"),
-    defaultData: { activeTab: null },
+      import("@/features/settings/components/SettingsShellOverlay"),
+    defaultData: { initialTabId: null },
     mobilePresentation: "drawer",
     mobileSidebarAs: "drawer",
     urlSync: { key: "user_preferences" },
@@ -1468,15 +1496,16 @@ const REGISTRY: WindowRegistryEntry[] = [
   },
 
   // ── Modals: centered dialogs ─────────────────────────────────────────────
+  // Phase 8: the legacy `userPreferences` modal id now resolves to the same
+  // shell as the window entry. Kept so any code still dispatching the old id
+  // lands in the new UI.
   {
     slug: "user-preferences-modal",
     overlayId: "userPreferences",
     kind: "modal",
-    label: "Preferences",
+    label: "Settings",
     componentImport: () =>
-      import("@/components/user-preferences/VSCodePreferencesModal").then(
-        (m) => ({ default: m.VSCodePreferencesModal }),
-      ),
+      import("@/features/settings/components/SettingsShellOverlay"),
     defaultData: {},
     ephemeral: true,
   },

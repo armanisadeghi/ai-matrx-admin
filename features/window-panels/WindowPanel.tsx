@@ -234,7 +234,17 @@ export function WindowPanel({
     "main",
   );
 
-  useUrlSync(urlSyncKey, urlSyncId, urlSyncArgs);
+  // URL sync: prefer explicit props (back-compat), else derive from registry.
+  // A window with `urlSync.key` in its registry entry auto-activates without
+  // any prop wiring — fixes the "urlSyncKey set but urlSyncId missing" silent
+  // no-op that previously left ~7 windows without deep-link support.
+  const urlSyncRegEntry = overlayId
+    ? getRegistryEntryByOverlayId(overlayId)
+    : undefined;
+  const effectiveUrlSyncKey = urlSyncKey ?? urlSyncRegEntry?.urlSync?.key;
+  const effectiveUrlSyncId =
+    urlSyncId ?? (effectiveUrlSyncKey ? overlayId : undefined);
+  useUrlSync(effectiveUrlSyncKey, effectiveUrlSyncId, urlSyncArgs);
 
   // ── Sidebar state ─────────────────────────────────────────────────────────
   const hasSidebar = !!sidebar;

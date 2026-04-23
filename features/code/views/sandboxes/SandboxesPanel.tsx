@@ -15,10 +15,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import type {
-  SandboxInstance,
-  SandboxStatus,
-} from "@/types/sandbox";
+import type { SandboxInstance, SandboxStatus } from "@/types/sandbox";
 import { ACTIVE_SANDBOX_STATUSES } from "@/types/sandbox";
 import {
   MockFilesystemAdapter,
@@ -28,10 +25,7 @@ import {
 } from "../../adapters";
 import { useCodeWorkspace } from "../../CodeWorkspaceProvider";
 import { selectActiveSandboxId, setActiveSandboxId } from "../../redux";
-import {
-  SidePanelAction,
-  SidePanelHeader,
-} from "../SidePanelChrome";
+import { SidePanelAction, SidePanelHeader } from "../SidePanelChrome";
 import {
   ACTIVE_ROW,
   HOVER_ROW,
@@ -67,7 +61,8 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
     setError(null);
     try {
       const resp = await fetch("/api/sandbox");
-      if (!resp.ok) throw new Error(`Failed to list sandboxes (${resp.status})`);
+      if (!resp.ok)
+        throw new Error(`Failed to list sandboxes (${resp.status})`);
       const data = await resp.json();
       setInstances((data.instances ?? []) as SandboxInstance[]);
     } catch (err) {
@@ -108,12 +103,11 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
       const label = instance.sandbox_id
         ? instance.sandbox_id.slice(0, 10)
         : instance.id.slice(0, 8);
+      const rootPath = instance.hot_path || "/home/agent";
       setFilesystem(
-        new SandboxFilesystemAdapter(instance.id, `Sandbox ${label}`),
+        new SandboxFilesystemAdapter(instance.id, `Sandbox ${label}`, rootPath),
       );
-      setProcess(
-        new SandboxProcessAdapter(instance.id, instance.hot_path ?? undefined),
-      );
+      setProcess(new SandboxProcessAdapter(instance.id, rootPath));
     },
     [dispatch, setFilesystem, setProcess],
   );
@@ -233,7 +227,9 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
       <SidePanelHeader
         title="Sandboxes"
         subtitle={
-          instances ? `${instances.length} instance${instances.length === 1 ? "" : "s"}` : undefined
+          instances
+            ? `${instances.length} instance${instances.length === 1 ? "" : "s"}`
+            : undefined
         }
         actions={
           <>
@@ -261,7 +257,8 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
           <div className="flex min-w-0 items-center gap-1.5">
             <Plug size={12} />
             <span className="truncate font-mono">
-              {activeInstance.sandbox_id?.slice(0, 14) ?? activeInstance.id.slice(0, 8)}
+              {activeInstance.sandbox_id?.slice(0, 14) ??
+                activeInstance.id.slice(0, 8)}
             </span>
             <span className="opacity-70">connected</span>
           </div>

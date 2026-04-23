@@ -9,18 +9,21 @@ interface SidePanelHeaderProps {
   title: string;
   subtitle?: string;
   actions?: React.ReactNode;
+  className?: string;
 }
 
 export const SidePanelHeader: React.FC<SidePanelHeaderProps> = ({
   title,
   subtitle,
   actions,
+  className,
 }) => (
   <div
     className={cn(
       "flex shrink-0 items-center justify-between border-b px-3",
       HEADER_HEIGHT,
       PANE_BORDER,
+      className,
     )}
   >
     <div className="flex min-w-0 items-baseline gap-2">

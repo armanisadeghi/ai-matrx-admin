@@ -18,6 +18,7 @@ import type {
 } from "../active-requests/active-requests.selectors";
 import type {
   ToolCallPart,
+  ThinkingPart,
   MessagePart,
 } from "@/types/python-generated/stream-events";
 import type { CxContentBlock } from "@/features/public-chat/types/cx-tables";
@@ -237,7 +238,41 @@ export const selectMessageInterleavedContent = (
             break;
           }
           case "thinking": {
-            const text = (part as { text?: string }).text;
+            const thinkingPart = part as ThinkingPart;
+            let text = thinkingPart.text;
+
+            // Known case: reasoning models (OpenAI o-series) emit no `.text`
+            // and instead ship structured content in `summary[]`.
+            // Reconstruct the text so the UI has something to render.
+            if (
+              !text &&
+              Array.isArray(thinkingPart.summary) &&
+              thinkingPart.summary.length > 0
+            ) {
+              const reconstructed = thinkingPart.summary
+                .map((item) => {
+                  if (typeof item === "string") return item;
+                  if (item && typeof item === "object") {
+                    const maybeText = (item as { text?: unknown }).text;
+                    if (typeof maybeText === "string") return maybeText;
+                  }
+                  return "";
+                })
+                .filter(Boolean)
+                .join("\n");
+              if (reconstructed) {
+                console.log(
+                  "[selectMessageInterleavedContent] thinking.summary[] fallback used",
+                  {
+                    conversationId,
+                    messageId,
+                    summaryItemCount: thinkingPart.summary.length,
+                  },
+                );
+                text = reconstructed;
+              }
+            }
+
             if (text) {
               segments.push({
                 type: "thinking",
@@ -270,6 +305,87 @@ export const selectMessageInterleavedContent = (
               result: resolvedResult,
               isError: resolvedIsError,
             } satisfies ContentSegmentDbTool);
+            break;
+          }
+          case "media": {
+            // Known case: Google Gemini File API returns assets with `file_uri`
+            // rather than a public `url`. Accept either.
+            const media = part as {
+              kind?: string;
+              url?: string | null;
+              file_uri?: string | null;
+              mime_type?: string | null;
+            };
+            const resolvedUrl = media.url ?? media.file_uri ?? null;
+            if (!resolvedUrl) break;
+
+            console.log(
+              "[selectMessageInterleavedContent] media part rendered as text",
+              {
+                conversationId,
+                messageId,
+                kind: media.kind,
+                viaFileUri: !media.url && !!media.file_uri,
+                mimeType: media.mime_type ?? null,
+              },
+            );
+
+            // Encode as markdown so the existing text-block renderer picks it
+            // up without needing a new ContentSegment variant.
+            const label = media.kind ?? "media";
+            const markdown =
+              media.kind === "image"
+                ? `![${label}](${resolvedUrl})`
+                : `[${label}](${resolvedUrl})`;
+            segments.push({
+              type: "text",
+              content: markdown,
+            } satisfies ContentSegmentText);
+            break;
+          }
+          case "code_exec": {
+            // Known case: Gemini code-execution feature emits the model-written
+            // code as a dedicated part. Render it as a fenced code block.
+            const codePart = part as { language?: string; code?: string };
+            if (!codePart.code) break;
+
+            console.log(
+              "[selectMessageInterleavedContent] code_exec part rendered",
+              {
+                conversationId,
+                messageId,
+                language: codePart.language ?? null,
+                codeChars: codePart.code.length,
+              },
+            );
+
+            const fence = "```";
+            segments.push({
+              type: "text",
+              content: `${fence}${codePart.language ?? ""}\n${codePart.code}\n${fence}`,
+            } satisfies ContentSegmentText);
+            break;
+          }
+          case "code_result": {
+            // Known case: Gemini code-execution companion output (stdout/error).
+            const resultPart = part as { output?: string; outcome?: string };
+            if (!resultPart.output) break;
+
+            console.log(
+              "[selectMessageInterleavedContent] code_result part rendered",
+              {
+                conversationId,
+                messageId,
+                outcome: resultPart.outcome ?? null,
+                outputChars: resultPart.output.length,
+              },
+            );
+
+            const fence = "```";
+            segments.push({
+              type: "text",
+              content: `${fence}\n${resultPart.output}\n${fence}`,
+            } satisfies ContentSegmentText);
             break;
           }
           case "tool_result":

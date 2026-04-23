@@ -107,12 +107,23 @@ export const BottomPanel: React.FC<BottomPanelProps> = ({
           </button>
         </div>
       </div>
-      <div className="flex-1 min-h-0">
-        {activeTab === "problems" && <ProblemsTab />}
-        {activeTab === "output" && <OutputTab />}
-        {activeTab === "debug" && <DebugConsoleTab />}
-        {activeTab === "terminal" && <TerminalTab />}
-        {activeTab === "ports" && <PortsTab />}
+      {/* Terminal is always mounted so xterm state (scrollback, input
+       *  buffer, cursor position) survives tab switches. Other tabs render
+       *  normally; when one of them is active, the terminal is hidden via
+       *  `display:none`. */}
+      <div className="relative flex-1 min-h-0">
+        <div className={cn("h-full", activeTab === "terminal" && "hidden")}>
+          {activeTab === "problems" && <ProblemsTab />}
+          {activeTab === "output" && <OutputTab />}
+          {activeTab === "debug" && <DebugConsoleTab />}
+          {activeTab === "ports" && <PortsTab />}
+        </div>
+        <div
+          className={cn("h-full", activeTab !== "terminal" && "hidden")}
+          aria-hidden={activeTab !== "terminal"}
+        >
+          <TerminalTab visible={activeTab === "terminal"} />
+        </div>
       </div>
     </div>
   );

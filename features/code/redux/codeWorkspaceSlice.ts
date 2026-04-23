@@ -13,6 +13,10 @@ export interface CodeWorkspaceState {
   farRightOpen: boolean;
   /** The last instanceId the user selected from the Sandboxes view. */
   activeSandboxId: string | null;
+  /** Override for the explorer's current root. `null` → use adapter's
+   *  `rootPath`. Set by the breadcrumb "navigate into / up" controls and by
+   *  direct path input. */
+  explorerRootOverride: string | null;
 }
 
 const initialState: CodeWorkspaceState = {
@@ -21,6 +25,7 @@ const initialState: CodeWorkspaceState = {
   rightOpen: true,
   farRightOpen: false,
   activeSandboxId: null,
+  explorerRootOverride: null,
 };
 
 const slice = createSlice({
@@ -47,6 +52,12 @@ const slice = createSlice({
     },
     setActiveSandboxId(state, action: PayloadAction<string | null>) {
       state.activeSandboxId = action.payload;
+      // Reset any custom explorer root when a new sandbox is connected so
+      // the user always starts at the adapter's default path.
+      state.explorerRootOverride = null;
+    },
+    setExplorerRootOverride(state, action: PayloadAction<string | null>) {
+      state.explorerRootOverride = action.payload;
     },
   },
 });
@@ -57,6 +68,7 @@ export const {
   setRightOpen,
   setFarRightOpen,
   setActiveSandboxId,
+  setExplorerRootOverride,
 } = slice.actions;
 
 export default slice.reducer;
@@ -76,3 +88,5 @@ export const selectFarRightOpen = (state: RootState) =>
   selectCodeWorkspace(state).farRightOpen;
 export const selectActiveSandboxId = (state: RootState) =>
   selectCodeWorkspace(state).activeSandboxId;
+export const selectExplorerRootOverride = (state: RootState) =>
+  selectCodeWorkspace(state).explorerRootOverride;

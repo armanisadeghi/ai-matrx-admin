@@ -5,6 +5,7 @@
  */
 
 export * from "./FileIcon";
+export * from "./FileChip";
 export * from "./FileMeta";
 export * from "./FileBreadcrumbs";
 export * from "./FileActions";

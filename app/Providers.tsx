@@ -27,6 +27,7 @@ import {
   GlobalTaskShortcut,
   CreateTaskFromSourceDialog,
 } from "@/features/tasks/widgets";
+import { CloudFilesPickerHost } from "@/features/files";
 
 /*
 
@@ -93,6 +94,11 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                                     <DeferredSingletons />
                                     <GlobalTaskShortcut />
                                     <CreateTaskFromSourceDialog />
+                                    {/* Cloud-files imperative pickers:
+                                        openFilePicker() / openFolderPicker() / openSaveAs()
+                                        are callable from anywhere in the app once this host
+                                        mounts. See features/files/components/pickers/. */}
+                                    <CloudFilesPickerHost />
                                   </RequestRecoveryProvider>
                                 </AudioRecoveryProvider>
                               </TranscriptsProvider>

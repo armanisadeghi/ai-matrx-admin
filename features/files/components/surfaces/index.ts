@@ -7,6 +7,9 @@
 export { PageShell } from "./PageShell";
 export type { PageShellProps } from "./PageShell";
 
+export { OnboardingEmptyState } from "./OnboardingEmptyState";
+export type { OnboardingEmptyStateProps } from "./OnboardingEmptyState";
+
 export {
   WindowPanelShell,
 } from "./WindowPanelShell";

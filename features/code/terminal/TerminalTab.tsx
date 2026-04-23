@@ -1,195 +1,569 @@
 "use client";
 
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import { Trash2 } from "lucide-react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import "@xterm/xterm/css/xterm.css";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
+  appendLine,
   clearLines,
+  pushHistory,
+  selectTerminalExecuting,
   selectTerminalHistory,
   selectTerminalLines,
+  setExecuting,
 } from "../redux";
-import { useTerminalSession } from "../hooks/useTerminalSession";
+import { useCodeWorkspace } from "../CodeWorkspaceProvider";
+import { useMonacoTheme } from "../editor/useMonacoTheme";
 
 interface TerminalTabProps {
   className?: string;
+  /** Keep the terminal rendered even when its bottom-panel tab isn't
+   *  active. When `false`, the terminal element is still in the DOM but
+   *  visually hidden; xterm state is preserved across tab switches. */
+  visible?: boolean;
 }
 
-export const TerminalTab: React.FC<TerminalTabProps> = ({ className }) => {
-  const dispatch = useAppDispatch();
-  const lines = useAppSelector(selectTerminalLines);
-  const history = useAppSelector(selectTerminalHistory);
-  const { run, executing, cwd, isReady } = useTerminalSession();
+type XtermTerminal = import("@xterm/xterm").Terminal;
+type FitAddon = import("@xterm/addon-fit").FitAddon;
 
-  const terminalLines = useMemo(
-    () => lines.filter((l) => l.tab === "terminal"),
-    [lines],
+interface SessionState {
+  term: XtermTerminal;
+  fit: FitAddon;
+  /** Current in-progress user input. */
+  buffer: string;
+  /** Cursor index within the buffer. */
+  cursor: number;
+  /** Position in history ring buffer (null = not recalling). */
+  historyIdx: number | null;
+  /** True while a command is executing — keystrokes are ignored. */
+  running: boolean;
+  /** Latest Redux line id rendered into xterm (for agent-line mirroring). */
+  lastSeenLineId: number;
+}
+
+// ANSI color escape codes
+const PROMPT_GREEN = "\x1b[32m";
+const PROMPT_BLUE = "\x1b[34m";
+const DIM = "\x1b[2m";
+const RED = "\x1b[31m";
+const PURPLE = "\x1b[35m";
+const BOLD = "\x1b[1m";
+const RESET = "\x1b[0m";
+
+export const TerminalTab: React.FC<TerminalTabProps> = ({
+  className,
+  visible = true,
+}) => {
+  const dispatch = useAppDispatch();
+  const history = useAppSelector(selectTerminalHistory);
+  const reduxLines = useAppSelector(selectTerminalLines);
+  const executing = useAppSelector(selectTerminalExecuting);
+  const { process } = useCodeWorkspace();
+  const dark = useMonacoTheme();
+
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const sessionRef = useRef<SessionState | null>(null);
+  const historyRef = useRef(history);
+  const processRef = useRef(process);
+  historyRef.current = history;
+  processRef.current = process;
+
+  const [ready, setReady] = useState(false);
+
+  // ── Prompt writing helpers ──────────────────────────────────────────────
+  const writePromptFor = useCallback((state: SessionState) => {
+    const cwd = shortCwd(processRef.current.cwd);
+    state.term.write(`${PROMPT_GREEN}${cwd}${RESET} ${PROMPT_BLUE}❯${RESET} `);
+    if (state.buffer) {
+      state.term.write(state.buffer);
+      const trailing = state.buffer.length - state.cursor;
+      if (trailing > 0) state.term.write(`\x1b[${trailing}D`);
+    }
+  }, []);
+
+  const refreshLine = useCallback(
+    (state: SessionState) => {
+      state.term.write("\r\x1b[K");
+      writePromptFor(state);
+    },
+    [writePromptFor],
   );
 
-  const [input, setInput] = useState("");
-  const [historyIdx, setHistoryIdx] = useState<number | null>(null);
-  const scrollRef = useRef<HTMLDivElement | null>(null);
-  const inputRef = useRef<HTMLInputElement | null>(null);
+  const runCommand = useCallback(
+    async (state: SessionState, command: string) => {
+      if (!command.trim()) {
+        state.term.write("\r\n");
+        writePromptFor(state);
+        return;
+      }
 
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (el) el.scrollTop = el.scrollHeight;
-  }, [terminalLines.length]);
+      state.running = true;
+      dispatch(pushHistory(command));
+      dispatch(setExecuting(true));
 
-  const submit = useCallback(() => {
-    if (!input.trim() || executing) return;
-    const cmd = input;
-    setInput("");
-    setHistoryIdx(null);
-    void run(cmd);
-  }, [input, executing, run]);
+      dispatch(
+        appendLine({
+          type: "command",
+          text: command,
+          tab: "terminal",
+          cwd: processRef.current.cwd,
+          source: "user",
+        }),
+      );
 
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        submit();
-      } else if (e.key === "ArrowUp") {
-        if (history.length === 0) return;
-        e.preventDefault();
-        const idx =
-          historyIdx === null
-            ? history.length - 1
-            : Math.max(0, historyIdx - 1);
-        setHistoryIdx(idx);
-        setInput(history[idx] ?? "");
-      } else if (e.key === "ArrowDown") {
-        if (historyIdx === null) return;
-        e.preventDefault();
-        const nextIdx = historyIdx + 1;
-        if (nextIdx >= history.length) {
-          setHistoryIdx(null);
-          setInput("");
-        } else {
-          setHistoryIdx(nextIdx);
-          setInput(history[nextIdx] ?? "");
+      state.term.write("\r\n");
+
+      try {
+        const result = await processRef.current.exec(command);
+        if (result.stdout) {
+          state.term.write(ansiNormalize(result.stdout));
         }
-      } else if (e.key === "l" && (e.ctrlKey || e.metaKey)) {
-        e.preventDefault();
-        dispatch(clearLines("terminal"));
+        if (result.stderr) {
+          state.term.write(`${RED}${ansiNormalize(result.stderr)}${RESET}`);
+        }
+        state.term.write(`${DIM}exit ${result.exitCode}${RESET}\r\n`);
+
+        dispatch(
+          appendLine({
+            type: "info",
+            text: `Exit ${result.exitCode}`,
+            exitCode: result.exitCode,
+            cwd: result.cwd,
+            tab: "terminal",
+            source: "user",
+          }),
+        );
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        state.term.write(`${RED}${message}${RESET}\r\n`);
+        dispatch(
+          appendLine({
+            type: "stderr",
+            text: message,
+            tab: "terminal",
+            source: "user",
+          }),
+        );
+      } finally {
+        state.running = false;
+        state.buffer = "";
+        state.cursor = 0;
+        state.historyIdx = null;
+        dispatch(setExecuting(false));
+        writePromptFor(state);
       }
     },
-    [dispatch, history, historyIdx, submit],
+    [dispatch, writePromptFor],
   );
+
+  // ── Input handler (read-line emulation) ─────────────────────────────────
+  const handleData = useCallback(
+    (state: SessionState, data: string) => {
+      if (state.running) return;
+
+      // Paste-in: multi-char chunk without escape prefix.
+      if (data.length > 1 && !data.startsWith("\x1b")) {
+        const lines = data.split(/\r?\n/);
+        for (let i = 0; i < lines.length; i++) {
+          const chunk = lines[i];
+          if (chunk) {
+            state.buffer =
+              state.buffer.slice(0, state.cursor) +
+              chunk +
+              state.buffer.slice(state.cursor);
+            state.cursor += chunk.length;
+            state.term.write(chunk);
+          }
+          if (i < lines.length - 1) {
+            const toRun = state.buffer;
+            state.buffer = "";
+            state.cursor = 0;
+            void runCommand(state, toRun);
+            return; // further lines handled after command completes
+          }
+        }
+        return;
+      }
+
+      switch (data) {
+        case "\r": {
+          const command = state.buffer;
+          state.buffer = "";
+          state.cursor = 0;
+          state.historyIdx = null;
+          void runCommand(state, command);
+          return;
+        }
+        case "\x7f": {
+          if (state.cursor === 0) return;
+          state.buffer =
+            state.buffer.slice(0, state.cursor - 1) +
+            state.buffer.slice(state.cursor);
+          state.cursor -= 1;
+          refreshLine(state);
+          return;
+        }
+        case "\x1b[3~": {
+          if (state.cursor >= state.buffer.length) return;
+          state.buffer =
+            state.buffer.slice(0, state.cursor) +
+            state.buffer.slice(state.cursor + 1);
+          refreshLine(state);
+          return;
+        }
+        case "\x1b[A": {
+          const hist = historyRef.current;
+          if (hist.length === 0) return;
+          const idx =
+            state.historyIdx === null
+              ? hist.length - 1
+              : Math.max(0, state.historyIdx - 1);
+          state.historyIdx = idx;
+          state.buffer = hist[idx] ?? "";
+          state.cursor = state.buffer.length;
+          refreshLine(state);
+          return;
+        }
+        case "\x1b[B": {
+          const hist = historyRef.current;
+          if (state.historyIdx === null) return;
+          const next = state.historyIdx + 1;
+          if (next >= hist.length) {
+            state.historyIdx = null;
+            state.buffer = "";
+          } else {
+            state.historyIdx = next;
+            state.buffer = hist[next] ?? "";
+          }
+          state.cursor = state.buffer.length;
+          refreshLine(state);
+          return;
+        }
+        case "\x1b[C": {
+          if (state.cursor < state.buffer.length) {
+            state.cursor += 1;
+            state.term.write("\x1b[C");
+          }
+          return;
+        }
+        case "\x1b[D": {
+          if (state.cursor > 0) {
+            state.cursor -= 1;
+            state.term.write("\x1b[D");
+          }
+          return;
+        }
+        case "\x01": {
+          if (state.cursor > 0) {
+            state.term.write(`\x1b[${state.cursor}D`);
+            state.cursor = 0;
+          }
+          return;
+        }
+        case "\x05": {
+          const dist = state.buffer.length - state.cursor;
+          if (dist > 0) {
+            state.term.write(`\x1b[${dist}C`);
+            state.cursor = state.buffer.length;
+          }
+          return;
+        }
+        case "\x0b": {
+          state.buffer = state.buffer.slice(0, state.cursor);
+          refreshLine(state);
+          return;
+        }
+        case "\x15": {
+          state.buffer = state.buffer.slice(state.cursor);
+          state.cursor = 0;
+          refreshLine(state);
+          return;
+        }
+        case "\x0c": {
+          state.term.clear();
+          refreshLine(state);
+          return;
+        }
+        case "\x03": {
+          state.term.write("^C\r\n");
+          state.buffer = "";
+          state.cursor = 0;
+          state.historyIdx = null;
+          writePromptFor(state);
+          return;
+        }
+        default: {
+          if (data >= " " && data.length === 1) {
+            state.buffer =
+              state.buffer.slice(0, state.cursor) +
+              data +
+              state.buffer.slice(state.cursor);
+            state.cursor += 1;
+            if (state.cursor === state.buffer.length) {
+              state.term.write(data);
+            } else {
+              refreshLine(state);
+            }
+          }
+        }
+      }
+    },
+    [refreshLine, runCommand, writePromptFor],
+  );
+
+  // ── Boot xterm once ─────────────────────────────────────────────────────
+  useEffect(() => {
+    let cancelled = false;
+
+    const boot = async () => {
+      if (!containerRef.current) return;
+      // eslint-disable-next-line @typescript-eslint/consistent-type-imports
+      const xtermModule = await import("@xterm/xterm");
+      const fitModule = await import("@xterm/addon-fit");
+      const linksModule = await import("@xterm/addon-web-links");
+      if (cancelled || !containerRef.current) return;
+
+      const term = new xtermModule.Terminal({
+        fontFamily:
+          "ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace",
+        fontSize: 12.5,
+        lineHeight: 1.25,
+        cursorBlink: true,
+        cursorStyle: "bar",
+        scrollback: 5000,
+        convertEol: true,
+        theme: makeTheme(document.documentElement.classList.contains("dark")),
+      });
+      const fit = new fitModule.FitAddon();
+      term.loadAddon(fit);
+      term.loadAddon(new linksModule.WebLinksAddon());
+      term.open(containerRef.current);
+      try {
+        fit.fit();
+      } catch {
+        /* container may not be sized yet */
+      }
+
+      const session: SessionState = {
+        term,
+        fit,
+        buffer: "",
+        cursor: 0,
+        historyIdx: null,
+        running: false,
+        lastSeenLineId: parseLineId(reduxLines[reduxLines.length - 1]?.id),
+      };
+      sessionRef.current = session;
+
+      term.onData((data) => handleData(session, data));
+
+      term.write(
+        `${BOLD}Matrx Terminal${RESET}${DIM} — ${processRef.current.isReady ? "connected" : "no process adapter"}${RESET}\r\n`,
+      );
+      writePromptFor(session);
+      setReady(true);
+    };
+
+    void boot();
+
+    return () => {
+      cancelled = true;
+      const s = sessionRef.current;
+      if (s) {
+        s.term.dispose();
+        sessionRef.current = null;
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ── Resize observer ─────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const ro = new ResizeObserver(() => {
+      const s = sessionRef.current;
+      if (!s) return;
+      try {
+        s.fit.fit();
+      } catch {
+        /* noop */
+      }
+    });
+    ro.observe(containerRef.current);
+    return () => ro.disconnect();
+  }, []);
+
+  // When the panel becomes visible again, refit + refocus.
+  useEffect(() => {
+    if (!visible) return;
+    const s = sessionRef.current;
+    if (!s) return;
+    try {
+      s.fit.fit();
+    } catch {
+      /* noop */
+    }
+    s.term.focus();
+  }, [visible]);
+
+  // ── Theme swap ──────────────────────────────────────────────────────────
+  useEffect(() => {
+    const s = sessionRef.current;
+    if (!s) return;
+    s.term.options.theme = makeTheme(dark);
+  }, [dark]);
+
+  // ── Mirror agent-originated Redux lines into xterm ──────────────────────
+  useEffect(() => {
+    const s = sessionRef.current;
+    if (!s) return;
+    for (const line of reduxLines) {
+      const id = parseLineId(line.id);
+      if (id <= s.lastSeenLineId) continue;
+      s.lastSeenLineId = id;
+      if (line.tab !== "terminal" || line.source !== "agent") continue;
+
+      // Clear pending prompt, render the agent output, then redraw prompt.
+      s.term.write("\r\x1b[K");
+      if (line.type === "command") {
+        const cwd = line.cwd ? shortCwd(line.cwd) : "~";
+        s.term.write(
+          `${PURPLE}[agent]${RESET} ${PROMPT_GREEN}${cwd}${RESET} ${PROMPT_BLUE}❯${RESET} ${line.text}\r\n`,
+        );
+      } else if (line.type === "stdout") {
+        s.term.write(ansiNormalize(line.text.replace(/\r?\n$/, "")) + "\r\n");
+      } else if (line.type === "stderr") {
+        s.term.write(
+          `${RED}${ansiNormalize(line.text.replace(/\r?\n$/, ""))}${RESET}\r\n`,
+        );
+      } else {
+        const text =
+          line.exitCode !== undefined ? `exit ${line.exitCode}` : line.text;
+        s.term.write(`${DIM}${text}${RESET}\r\n`);
+      }
+      writePromptFor(s);
+    }
+  }, [reduxLines, writePromptFor]);
+
+  const handleClear = useCallback(() => {
+    const s = sessionRef.current;
+    if (!s) return;
+    s.term.clear();
+    dispatch(clearLines("terminal"));
+    writePromptFor(s);
+  }, [dispatch, writePromptFor]);
 
   return (
     <div
       className={cn(
-        "flex h-full min-h-0 flex-col bg-[#1e1e1e] font-mono text-[12px] text-neutral-200",
+        "relative flex h-full min-h-0 flex-col bg-white dark:bg-[#1e1e1e]",
+        !visible && "hidden",
         className,
       )}
-      onClick={() => inputRef.current?.focus()}
     >
       <div
-        ref={scrollRef}
-        className="flex-1 overflow-y-auto whitespace-pre-wrap px-3 py-2 leading-[1.5]"
-      >
-        {terminalLines.length === 0 && (
-          <div className="text-neutral-500">
-            {isReady
-              ? `Connected \u2014 ${cwd}. Type a command and press Enter.`
-              : "No process adapter connected."}
-          </div>
-        )}
-        {terminalLines.map((line) => {
-          const isAgent = line.source === "agent";
-          return (
-            <div key={line.id} className="whitespace-pre-wrap">
-              {line.type === "command" ? (
-                <div className="flex items-center gap-2">
-                  {isAgent && <AgentBadge />}
-                  <span className="text-green-400">
-                    {line.cwd ? shortCwd(line.cwd) : "$"}
-                  </span>
-                  <span className="text-blue-400">&gt;</span>
-                  <span className="text-neutral-100">{line.text}</span>
-                </div>
-              ) : line.type === "stdout" ? (
-                <span
-                  className={cn(
-                    "text-neutral-200",
-                    isAgent && "border-l-2 border-purple-500/60 pl-2",
-                  )}
-                >
-                  {line.text}
-                </span>
-              ) : line.type === "stderr" ? (
-                <span
-                  className={cn(
-                    "text-red-400",
-                    isAgent && "border-l-2 border-purple-500/60 pl-2",
-                  )}
-                >
-                  {line.text}
-                </span>
-              ) : (
-                <span
-                  className={cn(
-                    "text-[11px]",
-                    line.exitCode && line.exitCode !== 0
-                      ? "text-red-400"
-                      : "text-neutral-500",
-                  )}
-                >
-                  {line.text}
-                </span>
-              )}
-            </div>
-          );
-        })}
-      </div>
-      <div className="flex shrink-0 items-center gap-2 border-t border-neutral-800 bg-[#1e1e1e] px-3 py-1.5">
-        <span className="text-green-400">{shortCwd(cwd)}</span>
-        <span className="text-blue-400">&gt;</span>
-        <input
-          ref={inputRef}
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          disabled={!isReady || executing}
-          placeholder={
-            executing ? "Executing\u2026" : "Type a command and press Enter"
-          }
-          className="flex-1 bg-transparent text-neutral-100 outline-none placeholder:text-neutral-500"
-          autoFocus
-        />
+        ref={containerRef}
+        className="h-full min-h-0 w-full overflow-hidden px-1 pt-1"
+        onClick={() => sessionRef.current?.term.focus()}
+      />
+      {ready && (
         <button
           type="button"
           aria-label="Clear terminal"
           title="Clear terminal (Ctrl+L)"
-          onClick={() => dispatch(clearLines("terminal"))}
-          className="flex h-6 w-6 items-center justify-center rounded-sm text-neutral-500 hover:bg-neutral-800 hover:text-neutral-200"
+          onClick={handleClear}
+          disabled={executing}
+          className="absolute right-2 top-1 z-10 flex h-5 w-5 items-center justify-center rounded-sm text-neutral-500 opacity-0 transition-opacity hover:bg-neutral-800/60 hover:text-neutral-200 hover:opacity-100 focus:opacity-100 disabled:opacity-30"
         >
-          <Trash2 size={12} />
+          <ClearIcon />
         </button>
-      </div>
+      )}
     </div>
   );
 };
 
-function AgentBadge() {
+function ClearIcon() {
   return (
-    <span className="rounded-sm bg-purple-500/20 px-1 text-[9px] font-semibold uppercase tracking-wide text-purple-300">
-      Agent
-    </span>
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+    </svg>
   );
 }
 
 function shortCwd(cwd: string): string {
-  if (!cwd) return "$";
+  if (!cwd) return "~";
   const home = "/home/agent";
   if (cwd === home) return "~";
   if (cwd.startsWith(`${home}/`)) return `~/${cwd.slice(home.length + 1)}`;
   return cwd;
+}
+
+function ansiNormalize(text: string): string {
+  return text.replace(/\r?\n/g, "\r\n");
+}
+
+function parseLineId(id: string | undefined): number {
+  if (!id) return 0;
+  const m = id.match(/^line-(\d+)$/);
+  return m ? Number.parseInt(m[1], 10) : 0;
+}
+
+function makeTheme(dark: boolean) {
+  return dark
+    ? {
+        background: "#1e1e1e",
+        foreground: "#e4e4e7",
+        cursor: "#e4e4e7",
+        cursorAccent: "#1e1e1e",
+        black: "#1e1e1e",
+        red: "#f87171",
+        green: "#4ade80",
+        yellow: "#facc15",
+        blue: "#60a5fa",
+        magenta: "#c084fc",
+        cyan: "#22d3ee",
+        white: "#e5e7eb",
+        brightBlack: "#52525b",
+        brightRed: "#fca5a5",
+        brightGreen: "#86efac",
+        brightYellow: "#fde047",
+        brightBlue: "#93c5fd",
+        brightMagenta: "#d8b4fe",
+        brightCyan: "#67e8f9",
+        brightWhite: "#f4f4f5",
+        selectionBackground: "#3b82f6",
+      }
+    : {
+        background: "#ffffff",
+        foreground: "#18181b",
+        cursor: "#18181b",
+        cursorAccent: "#ffffff",
+        black: "#18181b",
+        red: "#b91c1c",
+        green: "#15803d",
+        yellow: "#b45309",
+        blue: "#1d4ed8",
+        magenta: "#7c3aed",
+        cyan: "#0e7490",
+        white: "#d4d4d8",
+        brightBlack: "#71717a",
+        brightRed: "#dc2626",
+        brightGreen: "#16a34a",
+        brightYellow: "#d97706",
+        brightBlue: "#2563eb",
+        brightMagenta: "#9333ea",
+        brightCyan: "#0891b2",
+        brightWhite: "#a1a1aa",
+        selectionBackground: "#93c5fd",
+      };
 }

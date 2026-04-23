@@ -142,11 +142,15 @@ const HtmlPreviewBridge = dynamic(
   { ssr: false },
 );
 
-const VSCodePreferencesModal = dynamic(
+// Phase 8 cutover: both the legacy modal overlay (`userPreferences`) and the
+// window overlay (`userPreferencesWindow`) now resolve to the same controller
+// which mounts SettingsShell internally. The legacy modal/window components
+// have been deleted — this adapter is the single mount point.
+const SettingsShellOverlay = dynamic(
   () =>
-    import("@/components/user-preferences/VSCodePreferencesModal").then(
-      (m) => ({ default: m.VSCodePreferencesModal }),
-    ),
+    import("@/features/settings").then((m) => ({
+      default: m.SettingsShellOverlay,
+    })),
   { ssr: false },
 );
 
@@ -404,10 +408,10 @@ const MarkdownEditorWindow = dynamic(
   { ssr: false },
 );
 
-const UserPreferencesWindow = dynamic(
-  () => import("@/features/window-panels/windows/UserPreferencesWindow"),
-  { ssr: false },
-);
+// Phase 8 cutover: UserPreferencesWindow is gone — SettingsShellOverlay
+// (declared earlier in this file) serves both the modal `userPreferences` and
+// window `userPreferencesWindow` overlay ids. The self-gating adapter reads
+// overlay state directly, so no explicit mount is required per id.
 
 const AgentConnectionsWindow = dynamic(
   () =>
@@ -781,12 +785,9 @@ export const OverlayController: React.FC = () => {
   const isQuickAIResultsOpen = useAppSelector((s) =>
     selectIsOverlayOpen(s, "quickAIResults"),
   );
-  const isPreferencesOpen = useAppSelector((s) =>
-    selectIsOverlayOpen(s, "userPreferences"),
-  );
-  const preferencesData = useAppSelector((s) =>
-    selectOverlayData(s, "userPreferences"),
-  );
+  // Phase 8: both `userPreferences` (legacy modal) and `userPreferencesWindow`
+  // overlay ids are observed directly by `SettingsShellOverlay`, so this
+  // controller no longer needs selectors for them.
   const isAnnouncementsOpen = useAppSelector((s) =>
     selectIsOverlayOpen(s, "announcements"),
   );
@@ -835,13 +836,6 @@ export const OverlayController: React.FC = () => {
   );
   const markdownEditorWindowData = useAppSelector((s) =>
     selectOverlayData(s, "markdownEditorWindow"),
-  );
-
-  const isUserPreferencesWindowOpen = useAppSelector((s) =>
-    selectIsOverlayOpen(s, "userPreferencesWindow"),
-  );
-  const userPreferencesWindowData = useAppSelector((s) =>
-    selectOverlayData(s, "userPreferencesWindow"),
   );
 
   const isAgentConnectionsWindowOpen = useAppSelector((s) =>
@@ -1395,13 +1389,11 @@ export const OverlayController: React.FC = () => {
         </FloatingSheet>
       )}
 
-      {isPreferencesOpen && (
-        <VSCodePreferencesModal
-          isOpen={true}
-          onClose={() => close("userPreferences")}
-          initialTab={preferencesData?.initialTab}
-        />
-      )}
+      {/* The SettingsShellOverlay renders itself if either `userPreferences`
+          or `userPreferencesWindow` overlay is open — no conditional needed
+          here. Both legacy mount points flow through the same component. */}
+      <SettingsShellOverlay />
+
 
       {isAnnouncementsOpen && (
         <AnnouncementsViewer
@@ -1504,12 +1496,8 @@ export const OverlayController: React.FC = () => {
         />
       )}
 
-      {isUserPreferencesWindowOpen && (
-        <UserPreferencesWindow
-          isOpen={true}
-          onClose={() => close("userPreferencesWindow")}
-        />
-      )}
+      {/* `userPreferencesWindow` is handled by the SettingsShellOverlay
+          rendered above — no separate mount needed. */}
 
       {isAgentConnectionsWindowOpen && (
         <AgentConnectionsWindow

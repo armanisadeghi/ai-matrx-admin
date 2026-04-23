@@ -12,10 +12,17 @@ import {
 import type { ConversationListItem } from "@/features/agents/redux/conversation-list";
 import { selectAgentById } from "@/features/agents/redux/agent-definition/selectors";
 import { SidePanelHeader } from "../views/SidePanelChrome";
-import { ACTIVE_ROW, HOVER_ROW, ROW_HEIGHT } from "../styles/tokens";
+import {
+  ACTIVE_ROW,
+  AVATAR_RESERVE,
+  HOVER_ROW,
+  ROW_HEIGHT,
+} from "../styles/tokens";
 
 interface ChatHistorySlotProps {
   className?: string;
+  /** When true, the top row reserves space for the app's floating avatar. */
+  rightmost?: boolean;
 }
 
 /**
@@ -30,6 +37,7 @@ interface ChatHistorySlotProps {
  */
 export const ChatHistorySlot: React.FC<ChatHistorySlotProps> = ({
   className,
+  rightmost = false,
 }) => {
   const dispatch = useAppDispatch();
   const router = useRouter();
@@ -48,11 +56,7 @@ export const ChatHistorySlot: React.FC<ChatHistorySlotProps> = ({
     () => makeSelectAgentConversations(canonicalAgentId ?? "", null),
     [canonicalAgentId],
   );
-  const {
-    status,
-    conversations,
-    error,
-  } = useAppSelector(selectConversations);
+  const { status, conversations, error } = useAppSelector(selectConversations);
 
   useEffect(() => {
     if (canonicalAgentId && status === "idle") {
@@ -65,10 +69,7 @@ export const ChatHistorySlot: React.FC<ChatHistorySlotProps> = ({
     }
   }, [canonicalAgentId, status, dispatch]);
 
-  const grouped = useMemo(
-    () => groupByVersion(conversations),
-    [conversations],
-  );
+  const grouped = useMemo(() => groupByVersion(conversations), [conversations]);
 
   const openConversation = (convId: string) => {
     if (!agentId) return;
@@ -79,7 +80,10 @@ export const ChatHistorySlot: React.FC<ChatHistorySlotProps> = ({
 
   return (
     <div className={cn("flex h-full min-h-0 flex-col", className)}>
-      <SidePanelHeader title="History" />
+      <SidePanelHeader
+        title="History"
+        className={rightmost ? AVATAR_RESERVE : undefined}
+      />
       <div className="flex-1 overflow-y-auto">
         {!agentId && (
           <EmptyState

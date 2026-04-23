@@ -31,3 +31,4 @@ export {
 export { SettingsShell } from "./components/SettingsShell";
 export type { SettingsShellProps } from "./components/SettingsShell";
 export { SettingsTabHost } from "./components/SettingsTabHost";
+export { SettingsShellOverlay } from "./components/SettingsShellOverlay";

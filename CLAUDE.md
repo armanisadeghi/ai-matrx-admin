@@ -141,6 +141,7 @@ Every Tier 1 / Tier 2 feature has a `FEATURE.md` inside its feature directory. T
 | Permissions & Sharing | `features/sharing/FEATURE.md` |
 | Scope system | `features/scope-system/FEATURE.md` |
 | Code editor | `features/code-editor/FEATURE.md` |
+| Window Panels (all overlays) | `features/window-panels/FEATURE.md` |
 
 ### Tier 2 — secondary features
 
