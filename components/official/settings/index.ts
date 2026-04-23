@@ -78,3 +78,16 @@ export type { SettingsGridProps } from "./layout/SettingsGrid";
 
 export { SettingsReadOnlyValue } from "./layout/SettingsReadOnlyValue";
 export type { SettingsReadOnlyValueProps } from "./layout/SettingsReadOnlyValue";
+
+// Tree + navigation
+export { SettingsTree } from "./tree/SettingsTree";
+export { SettingsDrawerNav } from "./tree/SettingsDrawerNav";
+export { SettingsBreadcrumb } from "./tree/SettingsBreadcrumb";
+export type { SettingsTreeNode } from "./tree/types";
+export {
+  flattenLeaves,
+  findAncestorPath,
+  findNodeById,
+  searchTree,
+  withAncestors,
+} from "./tree/types";

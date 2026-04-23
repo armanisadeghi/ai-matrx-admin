@@ -53,6 +53,7 @@ import textDiffReducer from "./slices/textDiffSlice";
 import noteVersionsReducer from "./slices/noteVersionsSlice";
 import notesReducer from "@/features/notes/redux/slice";
 import { codeFilesReducer } from "@/features/code-files/redux/slice";
+import { cloudFilesReducer } from "@/features/files/redux/slice";
 import messagingReducer from "@/features/messaging/redux/messagingSlice";
 import smsReducer from "@/features/sms/redux/smsSlice";
 import adminPreferencesReducer from "./slices/adminPreferencesSlice";
@@ -232,6 +233,11 @@ export const createRootReducer = (initialState: InitialReduxState) => {
     noteVersions: noteVersionsReducer,
     notes: notesReducer,
     codeFiles: codeFilesReducer,
+    // New cloud-files system (migration from Supabase Storage buckets).
+    // Reads via supabase-js + cloud_get_user_file_tree RPC. Writes via REST at
+    // ${NEXT_PUBLIC_BACKEND_URL}/files/*. Live updates via the
+    // cloudFilesRealtimeMiddleware (see lib/redux/store.ts).
+    cloudFiles: cloudFilesReducer,
     // SMS integration
     sms: smsReducer,
 

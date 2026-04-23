@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import type { Database } from "@/types/database.types";
 import type { VariableDefinition } from "@/features/agents/types/agent-definition.types";
+import { stripNullish } from "@/utils/supabase/payload";
 
 type AgentInsert = Database["public"]["Tables"]["agx_agent"]["Insert"];
 
@@ -25,6 +26,14 @@ export interface AgentBuilderResult {
 
 const DEFAULT_MODEL_ID = "e2150d2f-7dd3-4fad-9d81-6e6ea41d4afd";
 
+/**
+ * Builds a minimal INSERT payload for agx_agent.
+ *
+ * Only includes fields we have real values for. Omitted fields fall back to
+ * the DB defaults (e.g. custom_tools → '[]'::jsonb, tools → '{}', is_active
+ * → true, agent_type → 'user'). NEVER send `null` for NOT NULL columns —
+ * see utils/supabase/payload.ts for the full rationale.
+ */
 function configToInsertPayload(
   config: AgentBuilderConfig,
 ): Omit<
@@ -54,29 +63,32 @@ function configToInsertPayload(
     ...(v.customComponent ? { customComponent: v.customComponent } : {}),
   }));
 
-  return {
+  const description = config.description?.trim();
+
+  const raw: Partial<AgentInsert> = {
     name: config.name.trim(),
-    description: config.description?.trim() ?? null,
-    agent_type: "user",
     model_id: DEFAULT_MODEL_ID,
     messages: messages as unknown as AgentInsert["messages"],
-    variable_definitions: variableDefinitions.length
-      ? (variableDefinitions as unknown as AgentInsert["variable_definitions"])
-      : null,
-    settings: (config.settings as AgentInsert["settings"]) ?? null,
-    tools: [],
-    tags: [],
-    is_active: true,
-    is_public: false,
-    is_archived: false,
-    is_favorite: false,
-    category: null,
-    context_slots: null,
-    model_tiers: null,
-    output_schema: null,
-    custom_tools: null,
-    mcp_servers: [],
+    ...(description ? { description } : {}),
+    ...(variableDefinitions.length
+      ? {
+          variable_definitions:
+            variableDefinitions as unknown as AgentInsert["variable_definitions"],
+        }
+      : {}),
+    ...(config.settings
+      ? { settings: config.settings as AgentInsert["settings"] }
+      : {}),
   };
+
+  return stripNullish(raw) as Omit<
+    AgentInsert,
+    | "id"
+    | "created_at"
+    | "updated_at"
+    | "source_agent_id"
+    | "source_snapshot_at"
+  >;
 }
 
 export async function createAgentFromBuilder(

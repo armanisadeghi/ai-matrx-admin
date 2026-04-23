@@ -7,6 +7,11 @@ import StoreProvider from "@/providers/StoreProvider";
 import { InitialReduxState, LiteInitialReduxState } from "@/types/reduxTypes";
 import { PublicAuthSync } from "./PublicAuthSync";
 import OverlayController from "@/components/overlays/OverlayController";
+import UnifiedOverlayController from "@/features/window-panels/UnifiedOverlayController";
+
+const USE_OVERLAYS_V2 =
+  process.env.NEXT_PUBLIC_OVERLAYS_V2 === "1" ||
+  process.env.NEXT_PUBLIC_OVERLAYS_V2 === "true";
 
 interface PublicProvidersProps {
   children: React.ReactNode;
@@ -32,7 +37,7 @@ export function PublicProviders({
       <StoreProvider initialState={initialState as Partial<InitialReduxState> & LiteInitialReduxState}>
         <TooltipProvider delayDuration={200}>
           <PublicAuthSync />
-          <OverlayController />
+          {USE_OVERLAYS_V2 ? <UnifiedOverlayController /> : <OverlayController />}
           {children}
         </TooltipProvider>
       </StoreProvider>

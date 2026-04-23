@@ -21,6 +21,7 @@
  */
 
 import type { Database } from "@/types/database.types";
+import { stripNullish } from "@/utils/supabase/payload";
 import type {
   AgentDefinition,
   AgentType,
@@ -119,10 +120,17 @@ export function dbRowToAgentDefinition(row: AgentRow): AgentDefinition {
 
 /**
  * Converts an AgentDefinition into a DB Insert payload.
- * Strips all DB-managed fields (id, created_at, updated_at, version).
+ * Strips all DB-managed fields (id, created_at, updated_at, version) and
+ * removes any key whose value is null/undefined so the DB's defaults apply.
+ *
+ * This last step is critical: `agx_agent` has many NOT NULL columns with
+ * defaults (custom_tools, context_slots, messages, settings, tools, tags,
+ * mcp_servers, is_*, agent_type, version). Sending `null` for any of them
+ * bypasses the default and triggers a 23502 violation. See
+ * utils/supabase/payload.ts for the full rationale.
  */
 export function agentDefinitionToInsert(agent: AgentDefinition): AgentInsert {
-  return {
+  const raw: Partial<AgentInsert> = {
     name: agent.name,
     description: agent.description,
     category: agent.category,
@@ -158,6 +166,8 @@ export function agentDefinitionToInsert(agent: AgentDefinition): AgentInsert {
     project_id: agent.projectId,
     task_id: agent.taskId,
   };
+
+  return stripNullish(raw) as AgentInsert;
 }
 
 // ---------------------------------------------------------------------------

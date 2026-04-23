@@ -3,6 +3,15 @@
 import { useIdleReady, useIdleTask } from "@/utils/idle-scheduler";
 import { PersistentDOMConnector } from "@/providers/persistance/PersistentDOMConnector";
 import OverlayController from "@/components/overlays/OverlayController";
+import UnifiedOverlayController from "@/features/window-panels/UnifiedOverlayController";
+
+// Opt-in switch to the registry-driven controller. Default off until the
+// remaining non-window overlays (agent widgets, prompt runners, quick sheets,
+// etc.) are absorbed into the registry in sub-phase 2b. Flip via
+// `NEXT_PUBLIC_OVERLAYS_V2=1` in .env.local for smoke testing.
+const USE_OVERLAYS_V2 =
+  process.env.NEXT_PUBLIC_OVERLAYS_V2 === "1" ||
+  process.env.NEXT_PUBLIC_OVERLAYS_V2 === "true";
 import { AudioRecoveryToast } from "@/features/audio/components/AudioRecoveryToast";
 import AuthSessionWatcher from "@/components/layout/AuthSessionWatcher";
 import AnnouncementProvider from "@/components/layout/AnnouncementProvider";
@@ -110,7 +119,7 @@ export default function DeferredSingletons() {
   return (
     <>
       <PersistentDOMConnector />
-      <OverlayController />
+      {USE_OVERLAYS_V2 ? <UnifiedOverlayController /> : <OverlayController />}
       <AudioRecoveryToast />
       <AuthSessionWatcher />
       <AnnouncementProvider />

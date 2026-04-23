@@ -1,0 +1,228 @@
+"use client";
+
+import React, { useState } from "react";
+import {
+    AlertCircle,
+    Check,
+    ChevronDown,
+    ChevronUp,
+    Edit3,
+    FileImage,
+    Loader2,
+    Trash2,
+    X,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import type { StudioSourceFile } from "../types";
+import { formatBytes, formatDimensions } from "../utils/format-bytes";
+import {
+    StudioVariantTile,
+    VariantTileGrid,
+    StudioVariantTilePending,
+    StudioVariantTileError,
+} from "./StudioVariantTile";
+
+interface StudioFileCardProps {
+    file: StudioSourceFile;
+    /** Currently selected preset ids (shows pending tiles when processing). */
+    selectedPresetIds: string[];
+    /** Variant filenames that are selected for bundled actions. */
+    selectedVariantFilenames: Set<string>;
+    onToggleVariantSelect: (filename: string) => void;
+    onRemove: () => void;
+    onRename: (base: string) => void;
+}
+
+export function StudioFileCard({
+    file,
+    selectedPresetIds,
+    selectedVariantFilenames,
+    onToggleVariantSelect,
+    onRemove,
+    onRename,
+}: StudioFileCardProps) {
+    const [collapsed, setCollapsed] = useState(false);
+    const [renaming, setRenaming] = useState(false);
+    const [rawBase, setRawBase] = useState(file.filenameBase);
+    const variantList = Object.values(file.variants);
+
+    // Which preset ids are still to be processed?
+    const pendingPresetIds = selectedPresetIds.filter(
+        (id) => !(id in file.variants),
+    );
+
+    const isProcessing = file.status === "processing";
+    const hasError = file.status === "error";
+
+    const commitRename = () => {
+        onRename(rawBase);
+        setRenaming(false);
+    };
+
+    return (
+        <section className="flex flex-col rounded-2xl border border-border bg-card overflow-hidden">
+            {/* Header ────────────────────────────────────────── */}
+            <header className="flex items-center gap-3 p-3 border-b border-border bg-muted/20">
+                {/* Thumbnail */}
+                <div className="relative h-14 w-14 rounded-lg overflow-hidden border border-border bg-muted/50 flex-shrink-0">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                        src={file.objectUrl}
+                        alt={file.originalName}
+                        className="h-full w-full object-cover"
+                    />
+                    {isProcessing && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-sm">
+                            <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                        </div>
+                    )}
+                </div>
+
+                <div className="min-w-0 flex-1">
+                    {/* Filename base — editable */}
+                    {renaming ? (
+                        <div className="flex items-center gap-1">
+                            <input
+                                type="text"
+                                value={rawBase}
+                                onChange={(e) => setRawBase(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter") commitRename();
+                                    if (e.key === "Escape") {
+                                        setRawBase(file.filenameBase);
+                                        setRenaming(false);
+                                    }
+                                }}
+                                autoFocus
+                                className="h-7 flex-1 text-sm font-mono rounded-md border border-border bg-background px-2 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                placeholder="my-image"
+                            />
+                            <button
+                                type="button"
+                                onClick={commitRename}
+                                className="h-7 w-7 rounded-md hover:bg-accent text-success flex items-center justify-center"
+                                title="Save"
+                            >
+                                <Check className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setRawBase(file.filenameBase);
+                                    setRenaming(false);
+                                }}
+                                className="h-7 w-7 rounded-md hover:bg-accent text-muted-foreground flex items-center justify-center"
+                                title="Cancel"
+                            >
+                                <X className="h-3.5 w-3.5" />
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="flex items-center gap-1.5">
+                            <p
+                                className="font-mono text-sm truncate"
+                                title={file.filenameBase}
+                            >
+                                {file.filenameBase}
+                            </p>
+                            <button
+                                type="button"
+                                onClick={() => setRenaming(true)}
+                                className="h-5 w-5 rounded hover:bg-accent text-muted-foreground hover:text-foreground flex items-center justify-center"
+                                title="Rename filename base"
+                            >
+                                <Edit3 className="h-3 w-3" />
+                            </button>
+                        </div>
+                    )}
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                        <FileImage className="h-3 w-3" />
+                        <span className="truncate">{file.originalName}</span>
+                        <span>·</span>
+                        <span className="font-mono whitespace-nowrap">
+                            {formatDimensions(file.width, file.height)}
+                        </span>
+                        <span>·</span>
+                        <span className="font-mono whitespace-nowrap">
+                            {formatBytes(file.size)}
+                        </span>
+                    </div>
+                </div>
+
+                {/* Status / actions */}
+                <div className="flex items-center gap-1">
+                    {variantList.length > 0 && (
+                        <span className="rounded-full bg-primary/10 border border-primary/30 text-primary px-2 py-0.5 text-[11px] font-medium">
+                            {variantList.length}{" "}
+                            {variantList.length === 1 ? "variant" : "variants"}
+                        </span>
+                    )}
+                    {hasError && (
+                        <span className="rounded-full bg-destructive/10 border border-destructive/30 text-destructive px-2 py-0.5 text-[11px] font-medium flex items-center gap-1">
+                            <AlertCircle className="h-3 w-3" /> Error
+                        </span>
+                    )}
+                    <button
+                        type="button"
+                        onClick={() => setCollapsed((v) => !v)}
+                        className="h-8 w-8 rounded-md hover:bg-accent text-muted-foreground flex items-center justify-center"
+                        title={collapsed ? "Expand" : "Collapse"}
+                    >
+                        {collapsed ? (
+                            <ChevronDown className="h-4 w-4" />
+                        ) : (
+                            <ChevronUp className="h-4 w-4" />
+                        )}
+                    </button>
+                    <button
+                        type="button"
+                        onClick={onRemove}
+                        className="h-8 w-8 rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive flex items-center justify-center"
+                        title="Remove this file"
+                    >
+                        <Trash2 className="h-4 w-4" />
+                    </button>
+                </div>
+            </header>
+
+            {/* Body ────────────────────────────────────────── */}
+            {!collapsed && (
+                <div className="p-3">
+                    {hasError && (
+                        <p className="mb-3 rounded-md bg-destructive/10 border border-destructive/30 px-3 py-2 text-xs text-destructive flex items-center gap-1.5">
+                            <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                            {file.error}
+                        </p>
+                    )}
+                    {variantList.length === 0 && pendingPresetIds.length === 0 && !isProcessing && (
+                        <div className="rounded-lg border border-dashed border-border bg-muted/10 p-6 text-center">
+                            <p className="text-sm text-muted-foreground">
+                                Pick presets from the catalog on the left, then press{" "}
+                                <span className="font-medium text-foreground">Generate</span>.
+                            </p>
+                        </div>
+                    )}
+
+                    {(variantList.length > 0 || pendingPresetIds.length > 0) && (
+                        <VariantTileGrid>
+                            {/* Processed variants */}
+                            {variantList.map((v) => (
+                                <StudioVariantTile
+                                    key={v.presetId}
+                                    variant={v}
+                                    selected={selectedVariantFilenames.has(v.filename)}
+                                    onToggleSelect={() => onToggleVariantSelect(v.filename)}
+                                />
+                            ))}
+                            {/* Pending variants (while processing) */}
+                            {isProcessing &&
+                                pendingPresetIds.map((id) => (
+                                    <StudioVariantTilePending key={`p-${id}`} presetId={id} />
+                                ))}
+                        </VariantTileGrid>
+                    )}
+                </div>
+            )}
+        </section>
+    );
+}

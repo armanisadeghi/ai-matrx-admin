@@ -14,8 +14,6 @@ import {
   Code,
   Keyboard,
   Database,
-  Mic,
-  Image as ImageIcon,
   Settings,
 } from "lucide-react";
 import {
@@ -42,37 +40,20 @@ import {
 } from "@/components/official/settings";
 
 export default function SettingsPrimitivesDemoPage() {
-  // Switch/Checkbox states
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [autoSave, setAutoSave] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
-
-  // Select states
   const [theme, setTheme] = useState("system");
   const [editor, setEditor] = useState("default");
-
-  // Slider states
   const [temperature, setTemperature] = useState(1.0);
   const [fontSize, setFontSize] = useState(14);
-
-  // Number input
   const [maxTokens, setMaxTokens] = useState(4096);
-
-  // Text states
   const [displayName, setDisplayName] = useState("");
   const [bio, setBio] = useState("");
-
-  // Radio / segmented
   const [density, setDensity] = useState("default");
   const [visibility, setVisibility] = useState("private");
-
-  // Color
   const [accentColor, setAccentColor] = useState("#3b82f6");
-
-  // Multi-select
   const [languages, setLanguages] = useState<string[]>(["en"]);
-
-  // Keybinding
   const [shortcut, setShortcut] = useState<KeybindingValue | null>({
     key: "KeyK",
     display: "⌘K",
@@ -98,7 +79,6 @@ export default function SettingsPrimitivesDemoPage() {
           variant prop — never pass className.
         </SettingsCallout>
 
-        {/* Toggles & Selects */}
         <SettingsSubHeader
           title="General"
           description="Foundational preferences for the app."
@@ -163,7 +143,6 @@ export default function SettingsPrimitivesDemoPage() {
           />
         </SettingsSection>
 
-        {/* Sliders & Numeric */}
         <SettingsSubHeader
           title="AI & Models"
           description="Configure AI behaviour."
@@ -227,7 +206,6 @@ export default function SettingsPrimitivesDemoPage() {
           />
         </SettingsSection>
 
-        {/* Radio + Text + Textarea */}
         <SettingsSubHeader
           title="Profile"
           description="How you appear to others."
@@ -282,7 +260,6 @@ export default function SettingsPrimitivesDemoPage() {
           />
         </SettingsSection>
 
-        {/* Keyboard & Editor */}
         <SettingsSubHeader
           title="Keyboard & Editor"
           description="Shortcuts and code editor behaviour."
@@ -311,7 +288,6 @@ export default function SettingsPrimitivesDemoPage() {
           />
         </SettingsSection>
 
-        {/* Warnings / Errors / Badges / Disabled */}
         <SettingsSubHeader
           title="States Showcase"
           description="Every label state — warnings, errors, disabled, badges."
@@ -353,7 +329,6 @@ export default function SettingsPrimitivesDemoPage() {
           />
         </SettingsSection>
 
-        {/* Actions */}
         <SettingsSubHeader
           title="Actions"
           description="Buttons, links, and informational rows."
@@ -417,7 +392,6 @@ export default function SettingsPrimitivesDemoPage() {
           />
         </SettingsSection>
 
-        {/* Grid layout */}
         <SettingsSubHeader
           title="Dense layouts"
           description="SettingsGrid for side-by-side pickers."
@@ -456,7 +430,6 @@ export default function SettingsPrimitivesDemoPage() {
           </div>
         </SettingsGrid>
 
-        {/* Collapsible section */}
         <SettingsSubHeader
           title="Advanced"
           description="Collapsible sections for advanced options."

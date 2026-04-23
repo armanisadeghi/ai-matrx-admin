@@ -1,0 +1,510 @@
+/**
+ * features/files/redux/realtime-middleware.ts
+ *
+ * Bridges Supabase Realtime into Redux.
+ *
+ * LIFECYCLE
+ * ---------
+ *   - Dispatch `cloudFilesRealtime/attach` (from
+ *     CloudFilesRealtimeProvider on mount with a valid user id). Middleware
+ *     opens a channel and subscribes to cloud_* table changes.
+ *   - Dispatch `cloudFilesRealtime/detach` on logout/unmount. Middleware tears
+ *     the channel down.
+ *   - On reconnect after error, middleware re-runs the tree RPC via
+ *     `reconcileTree` to close any event gap.
+ *
+ * DEDUP
+ * -----
+ *   Every REST write registers its `requestId` in
+ *   [request-ledger.ts](./request-ledger.ts). Incoming realtime payloads are
+ *   checked with `isOwnEcho`. Matches are skipped — the optimistic update
+ *   already reflects the change. Non-matches are dispatched normally, so
+ *   changes originating from other devices / the server / share-link
+ *   visitors always reach our state.
+ */
+
+"use client";
+
+import type { Middleware } from "@reduxjs/toolkit";
+import { supabase } from "@/utils/supabase/client";
+import type { RootState } from "@/lib/redux/store";
+import type {
+  RealtimeChannel,
+  RealtimePostgresChangesPayload,
+} from "@supabase/supabase-js";
+
+import {
+  dbRowToCloudFile,
+  dbRowToCloudFilePermission,
+  dbRowToCloudFileVersion,
+  dbRowToCloudFolder,
+  dbRowToCloudShareLink,
+} from "./converters";
+import { isOwnEcho } from "./request-ledger";
+import { reconcileTree } from "./thunks";
+import {
+  attachChildToFolder,
+  clearSelection,
+  detachChildFromFolder,
+  removeFile,
+  removeFolder,
+  removeShareLink,
+  setRealtimeStatus,
+  touchRealtime,
+  upsertFile,
+  upsertFolder,
+  upsertPermissionsForResource,
+  upsertShareLinksForResource,
+  upsertVersionsForFile,
+} from "./slice";
+import type {
+  CloudFileRow,
+  CloudFolderRow,
+  CloudFilePermissionRow,
+  CloudFileVersionRow,
+  CloudShareLinkRow,
+} from "../types";
+
+// ---------------------------------------------------------------------------
+// Action creators — not reducers, just signals consumed by this middleware.
+// ---------------------------------------------------------------------------
+
+export const ATTACH_ACTION = "cloudFilesRealtime/attach" as const;
+export const DETACH_ACTION = "cloudFilesRealtime/detach" as const;
+
+export function attachCloudFilesRealtime(userId: string) {
+  return { type: ATTACH_ACTION, payload: { userId } } as const;
+}
+
+export function detachCloudFilesRealtime() {
+  return { type: DETACH_ACTION } as const;
+}
+
+type AttachAction = ReturnType<typeof attachCloudFilesRealtime>;
+type DetachAction = ReturnType<typeof detachCloudFilesRealtime>;
+type RealtimeAction = AttachAction | DetachAction;
+
+function isAttachAction(a: unknown): a is AttachAction {
+  return (
+    typeof a === "object" &&
+    a !== null &&
+    (a as { type?: unknown }).type === ATTACH_ACTION
+  );
+}
+
+function isDetachAction(a: unknown): a is DetachAction {
+  return (
+    typeof a === "object" &&
+    a !== null &&
+    (a as { type?: unknown }).type === DETACH_ACTION
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Payload helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Extract `request_id` from a realtime payload, if the backend embeds it in
+ * the row's `metadata` jsonb (see PYTHON_TEAM_COMMS.md — requested).
+ */
+function extractRequestId(
+  payload: RealtimePostgresChangesPayload<Record<string, unknown>>,
+): string | null {
+  const row = (payload.new ?? payload.old) as
+    | Record<string, unknown>
+    | undefined;
+  if (!row) return null;
+  const meta = row.metadata as Record<string, unknown> | undefined;
+  if (meta && typeof meta.request_id === "string") {
+    return meta.request_id;
+  }
+  return null;
+}
+
+// ---------------------------------------------------------------------------
+// Middleware
+// ---------------------------------------------------------------------------
+
+// We intentionally leave this middleware loosely typed. Using the store's
+// RootState / AppDispatch directly creates a type-level cycle because those
+// types are derived from configureStore's middleware list — which includes
+// this middleware. Local casts inside the body give us the strong typing
+// where it actually matters.
+export const cloudFilesRealtimeMiddleware: Middleware = (store) => {
+  let channel: RealtimeChannel | null = null;
+  let subscribedUserId: string | null = null;
+
+  // Local typed dispatcher — the Middleware type is deliberately loose (see
+  // note above), so we cast once here to keep the call sites concise.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const dispatch = store.dispatch as (action: any) => any;
+
+  async function teardown(): Promise<void> {
+    if (channel) {
+      try {
+        await supabase.removeChannel(channel);
+      } catch {
+        /* noop */
+      }
+      channel = null;
+    }
+    subscribedUserId = null;
+    dispatch(setRealtimeStatus({ status: "detached", userId: null }));
+  }
+
+  async function setup(userId: string): Promise<void> {
+    if (subscribedUserId === userId && channel) return;
+    await teardown();
+
+    subscribedUserId = userId;
+    dispatch(
+      setRealtimeStatus({ status: "connecting", userId }),
+    );
+
+    channel = supabase
+      .channel(`cloud-files:${userId}`)
+      // Files — owner_id filter. Files shared with the user show up via
+      // RLS on separate events; to keep the subscription broad yet bounded,
+      // we rely on RLS-filtered unscoped subscriptions elsewhere.
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "cloud_files",
+          filter: `owner_id=eq.${userId}`,
+        },
+        (payload) => handleFilePayload(payload),
+      )
+      // Folders.
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "cloud_folders",
+          filter: `owner_id=eq.${userId}`,
+        },
+        (payload) => handleFolderPayload(payload),
+      )
+      // Versions — no owner filter (FK to cloud_files; RLS enforces).
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "cloud_file_versions",
+        },
+        (payload) => handleVersionPayload(payload),
+      )
+      // Permissions — grantee_id filter (things granted TO this user).
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "cloud_file_permissions",
+          filter: `grantee_id=eq.${userId}`,
+        },
+        (payload) => handlePermissionPayload(payload),
+      )
+      // Share links — no filter; RLS enforces.
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "cloud_share_links",
+        },
+        (payload) => handleShareLinkPayload(payload),
+      )
+      .subscribe((status, error) => {
+        if (status === "SUBSCRIBED") {
+          dispatch(
+            setRealtimeStatus({
+              status: "subscribed",
+              userId: subscribedUserId,
+            }),
+          );
+          // On every (re)subscribe, reconcile. Cheap safety net.
+          void dispatch(reconcileTree({ userId }));
+        } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+          dispatch(
+            setRealtimeStatus({
+              status: "errored",
+              userId: subscribedUserId,
+              error: error?.message ?? status,
+            }),
+          );
+        } else if (status === "CLOSED") {
+          dispatch(
+            setRealtimeStatus({
+              status: "closed",
+              userId: subscribedUserId,
+            }),
+          );
+        }
+      });
+  }
+
+  // -------------------------------------------------------------------------
+  // Payload handlers
+  // -------------------------------------------------------------------------
+
+  function handleFilePayload(
+    payload: RealtimePostgresChangesPayload<Record<string, unknown>>,
+  ): void {
+    dispatch(touchRealtime());
+    const requestId = extractRequestId(payload);
+    const rowId =
+      (payload.new as { id?: string } | undefined)?.id ??
+      (payload.old as { id?: string } | undefined)?.id ??
+      null;
+    if (
+      isOwnEcho({
+        requestId,
+        resourceId: rowId,
+        resourceType: "file",
+      })
+    ) {
+      return;
+    }
+
+    if (payload.eventType === "DELETE") {
+      if (rowId) {
+        dispatch(removeFile({ id: rowId }));
+        dispatch(clearSelection());
+      }
+      return;
+    }
+
+    const newRow = payload.new as unknown as CloudFileRow;
+    if (!newRow?.id) return;
+    const file = dbRowToCloudFile(newRow);
+    const oldParent =
+      (payload.old as { parent_folder_id?: string | null } | undefined)
+        ?.parent_folder_id ?? null;
+
+    dispatch(upsertFile(file));
+
+    if (file.deletedAt) {
+      dispatch(removeFile({ id: file.id }));
+      return;
+    }
+
+    if (payload.eventType === "INSERT") {
+      dispatch(
+        attachChildToFolder({
+          parentFolderId: file.parentFolderId,
+          kind: "file",
+          id: file.id,
+        }),
+      );
+    } else if (payload.eventType === "UPDATE") {
+      if (oldParent !== file.parentFolderId) {
+        dispatch(
+          detachChildFromFolder({
+            parentFolderId: oldParent,
+            kind: "file",
+            id: file.id,
+          }),
+        );
+        dispatch(
+          attachChildToFolder({
+            parentFolderId: file.parentFolderId,
+            kind: "file",
+            id: file.id,
+          }),
+        );
+      }
+    }
+  }
+
+  function handleFolderPayload(
+    payload: RealtimePostgresChangesPayload<Record<string, unknown>>,
+  ): void {
+    dispatch(touchRealtime());
+    const requestId = extractRequestId(payload);
+    const rowId =
+      (payload.new as { id?: string } | undefined)?.id ??
+      (payload.old as { id?: string } | undefined)?.id ??
+      null;
+    if (
+      isOwnEcho({
+        requestId,
+        resourceId: rowId,
+        resourceType: "folder",
+      })
+    ) {
+      return;
+    }
+
+    if (payload.eventType === "DELETE") {
+      if (rowId) dispatch(removeFolder({ id: rowId }));
+      return;
+    }
+
+    const newRow = payload.new as unknown as CloudFolderRow;
+    if (!newRow?.id) return;
+    const folder = dbRowToCloudFolder(newRow);
+    const oldParent =
+      (payload.old as { parent_id?: string | null } | undefined)?.parent_id ??
+      null;
+
+    dispatch(upsertFolder(folder));
+
+    if (folder.deletedAt) {
+      dispatch(removeFolder({ id: folder.id }));
+      return;
+    }
+
+    if (payload.eventType === "INSERT") {
+      dispatch(
+        attachChildToFolder({
+          parentFolderId: folder.parentId,
+          kind: "folder",
+          id: folder.id,
+        }),
+      );
+    } else if (
+      payload.eventType === "UPDATE" &&
+      oldParent !== folder.parentId
+    ) {
+      dispatch(
+        detachChildFromFolder({
+          parentFolderId: oldParent,
+          kind: "folder",
+          id: folder.id,
+        }),
+      );
+      dispatch(
+        attachChildToFolder({
+          parentFolderId: folder.parentId,
+          kind: "folder",
+          id: folder.id,
+        }),
+      );
+    }
+  }
+
+  function handleVersionPayload(
+    payload: RealtimePostgresChangesPayload<Record<string, unknown>>,
+  ): void {
+    dispatch(touchRealtime());
+    const newRow = payload.new as unknown as CloudFileVersionRow | undefined;
+    const oldRow = payload.old as unknown as CloudFileVersionRow | undefined;
+    const fileId = newRow?.file_id ?? oldRow?.file_id;
+    if (!fileId) return;
+
+    // For a single event we'd merge into the existing array. Simpler: refetch
+    // the list for this file. Cheap query, and keeps order / counts correct.
+    const state = store.getState() as RootState;
+    const existing = state.cloudFiles.versionsByFileId[fileId] ?? [];
+
+    if (payload.eventType === "DELETE") {
+      const deletedId = oldRow?.id;
+      if (!deletedId) return;
+      dispatch(
+        upsertVersionsForFile({
+          fileId,
+          versions: existing.filter((v) => v.id !== deletedId),
+        }),
+      );
+      return;
+    }
+
+    if (!newRow?.id) return;
+    const converted = dbRowToCloudFileVersion(newRow);
+    const next = [
+      converted,
+      ...existing.filter((v) => v.id !== converted.id),
+    ].sort((a, b) => b.versionNumber - a.versionNumber);
+    dispatch(upsertVersionsForFile({ fileId, versions: next }));
+  }
+
+  function handlePermissionPayload(
+    payload: RealtimePostgresChangesPayload<Record<string, unknown>>,
+  ): void {
+    dispatch(touchRealtime());
+    const newRow = payload.new as unknown as CloudFilePermissionRow | undefined;
+    const oldRow = payload.old as unknown as CloudFilePermissionRow | undefined;
+    const resourceId = newRow?.resource_id ?? oldRow?.resource_id;
+    if (!resourceId) return;
+
+    const state = store.getState() as RootState;
+    const existing =
+      state.cloudFiles.permissionsByResourceId[resourceId] ?? [];
+
+    if (payload.eventType === "DELETE") {
+      const deletedId = oldRow?.id;
+      if (!deletedId) return;
+      dispatch(
+        upsertPermissionsForResource({
+          resourceId,
+          permissions: existing.filter((p) => p.id !== deletedId),
+        }),
+      );
+      return;
+    }
+
+    if (!newRow?.id) return;
+    const converted = dbRowToCloudFilePermission(newRow);
+    const next = [
+      converted,
+      ...existing.filter((p) => p.id !== converted.id),
+    ];
+    dispatch(
+      upsertPermissionsForResource({ resourceId, permissions: next }),
+    );
+  }
+
+  function handleShareLinkPayload(
+    payload: RealtimePostgresChangesPayload<Record<string, unknown>>,
+  ): void {
+    dispatch(touchRealtime());
+    const newRow = payload.new as unknown as CloudShareLinkRow | undefined;
+    const oldRow = payload.old as unknown as CloudShareLinkRow | undefined;
+    const resourceId = newRow?.resource_id ?? oldRow?.resource_id;
+    if (!resourceId) return;
+
+    const state = store.getState() as RootState;
+    const existing =
+      state.cloudFiles.shareLinksByResourceId[resourceId] ?? [];
+
+    if (payload.eventType === "DELETE") {
+      const deletedToken = oldRow?.share_token;
+      if (deletedToken) {
+        dispatch(removeShareLink({ shareToken: deletedToken }));
+      }
+      return;
+    }
+
+    if (!newRow?.id) return;
+    const converted = dbRowToCloudShareLink(newRow);
+    const next = [
+      converted,
+      ...existing.filter((l) => l.id !== converted.id),
+    ];
+    dispatch(
+      upsertShareLinksForResource({ resourceId, shareLinks: next }),
+    );
+  }
+
+  // -------------------------------------------------------------------------
+  // Middleware dispatcher
+  // -------------------------------------------------------------------------
+
+  return (next) => (action) => {
+    if (isAttachAction(action as RealtimeAction)) {
+      const userId = (action as AttachAction).payload.userId;
+      void setup(userId);
+      return next(action);
+    }
+    if (isDetachAction(action as RealtimeAction)) {
+      void teardown();
+      return next(action);
+    }
+    return next(action);
+  };
+};

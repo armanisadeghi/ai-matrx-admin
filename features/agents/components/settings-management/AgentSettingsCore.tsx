@@ -94,6 +94,145 @@ interface NumberInputProps {
   withSlider?: boolean;
 }
 
+// ── FallbackValueInput ───────────────────────────────────────────────────────
+// Used when the selected model has no control schema for a key but the key
+// still exists in settings. Shape-aware editor (boolean / number / string /
+// JSON) so users can always edit what's there even when we can't validate it.
+interface FallbackValueInputProps {
+  settingKey: string;
+  value: unknown;
+  disabled?: boolean;
+  onChange: (value: unknown) => void;
+}
+
+function FallbackValueInput({
+  settingKey,
+  value,
+  disabled,
+  onChange,
+}: FallbackValueInputProps) {
+  const [draft, setDraft] = useState<string>(() =>
+    value === undefined || value === null
+      ? ""
+      : typeof value === "string"
+        ? value
+        : typeof value === "number" || typeof value === "boolean"
+          ? String(value)
+          : JSON.stringify(value),
+  );
+  const [jsonError, setJsonError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setDraft(
+      value === undefined || value === null
+        ? ""
+        : typeof value === "string"
+          ? value
+          : typeof value === "number" || typeof value === "boolean"
+            ? String(value)
+            : JSON.stringify(value),
+    );
+    setJsonError(null);
+  }, [value]);
+
+  if (typeof value === "boolean") {
+    return (
+      <div className="flex items-center gap-2">
+        <Checkbox
+          id={`fallback-${settingKey}`}
+          checked={value}
+          onCheckedChange={(c) => onChange(c === true)}
+          disabled={disabled}
+          className="cursor-pointer"
+        />
+        <Label
+          htmlFor={`fallback-${settingKey}`}
+          className="text-xs text-muted-foreground cursor-pointer"
+        >
+          {value ? "true" : "false"}
+        </Label>
+      </div>
+    );
+  }
+
+  if (typeof value === "number") {
+    return (
+      <Input
+        type="text"
+        inputMode="decimal"
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={(e) => {
+          const n = parseFloat(e.target.value);
+          if (Number.isFinite(n)) onChange(n);
+          else setDraft(String(value));
+        }}
+        disabled={disabled}
+        className="h-7 text-xs"
+      />
+    );
+  }
+
+  if (value !== null && typeof value === "object") {
+    return (
+      <div className="flex flex-col gap-1">
+        <Textarea
+          value={draft}
+          onChange={(e) => {
+            setDraft(e.target.value);
+            try {
+              JSON.parse(e.target.value);
+              setJsonError(null);
+            } catch (err) {
+              setJsonError(err instanceof Error ? err.message : "Invalid JSON");
+            }
+          }}
+          onBlur={(e) => {
+            try {
+              const parsed = JSON.parse(e.target.value);
+              onChange(parsed);
+              setJsonError(null);
+            } catch {
+              // Keep draft; user can fix or revert.
+            }
+          }}
+          disabled={disabled}
+          className="text-xs font-mono"
+          spellCheck={false}
+          style={{ minHeight: 48 }}
+        />
+        {jsonError && (
+          <p className="text-[10px] text-orange-600 dark:text-orange-400">
+            {jsonError}
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  // string (default)
+  return (
+    <Input
+      type="text"
+      value={draft}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={(e) => onChange(e.target.value)}
+      disabled={disabled}
+      className="h-7 text-xs"
+      placeholder={`Value for ${settingKey}`}
+      style={{ fontSize: "16px" }}
+    />
+  );
+}
+
+/** Pretty-print a snake_case key as a human label. */
+function humanizeKey(key: string): string {
+  return key
+    .split("_")
+    .map((w) => (w ? w[0].toUpperCase() + w.slice(1) : ""))
+    .join(" ");
+}
+
 function NumberInput({
   value,
   onChange,
@@ -1401,16 +1540,68 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
   const renderControl = (
     key: keyof LLMParams,
     label: string,
-    control: ControlDefinition,
+    control: ControlDefinition | null,
   ) => {
     const isEnabled = enabledSettings.has(key);
-    const value = (currentSettings as Record<string, unknown>)[key];
+    const valueRaw = (currentSettings as Record<string, unknown>)[key];
     const checkboxId = `setting-agent-${key}`;
+    const keyIssues = validation.issuesByKey[key] ?? [];
+    const hasIssue = keyIssues.length > 0;
+    const hasControl = !!control;
+
+    // Three-state validity:
+    //   valid    — control exists AND no issues (or setting is not enabled)
+    //   invalid  — has validation issue(s)
+    //   unknown  — no control on the current model → we can't confirm
+    const state: "valid" | "invalid" | "unknown" =
+      !isEnabled
+        ? "valid"
+        : hasIssue
+          ? "invalid"
+          : !hasControl
+            ? "unknown"
+            : "valid";
+
+    const firstIssue = keyIssues[0];
+    const fixable =
+      !!firstIssue && canFixIssue(firstIssue, normalizedControls);
+
+    const dotClass =
+      state === "invalid"
+        ? "bg-orange-500"
+        : state === "unknown"
+          ? "bg-amber-400"
+          : "bg-emerald-500";
+    const dotTitle =
+      state === "invalid"
+        ? firstIssue?.message ?? "Issue detected"
+        : state === "unknown"
+          ? "Unable to confirm — this model has no schema for this setting"
+          : "Valid";
 
     return (
-      <div key={key} className="flex items-center gap-3 mb-2">
+      <div
+        key={key}
+        className="flex items-start gap-2 mb-2 rounded px-1 py-1 hover:bg-muted/20"
+      >
+        {/* Validity dot */}
+        <TooltipProvider delayDuration={200}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span
+                className={`h-2 w-2 rounded-full shrink-0 mt-2 ${dotClass}`}
+                aria-label={dotTitle}
+              />
+            </TooltipTrigger>
+            <TooltipContent side="top" className="text-xs max-w-[260px]">
+              {dotTitle}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+
+        {/* Checkbox + Label */}
         <div
-          className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
+          className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity pt-1"
           onClick={() => handleToggleSetting(key, !isEnabled)}
         >
           <Checkbox
@@ -1432,10 +1623,68 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
             {label}
           </Label>
         </div>
+
+        {/* Control input (or fallback) */}
         <div
-          className={`flex-1 ${!isEnabled ? "opacity-50 pointer-events-none" : ""}`}
+          className={`flex-1 min-w-0 ${!isEnabled ? "opacity-50 pointer-events-none" : ""}`}
         >
-          {renderControlInput(key, control, value, isEnabled)}
+          {control ? (
+            renderControlInput(key, control, valueRaw, isEnabled)
+          ) : (
+            <FallbackValueInput
+              settingKey={key as string}
+              value={valueRaw}
+              disabled={!isEnabled}
+              onChange={(v) => handleSettingChange(key, v)}
+            />
+          )}
+          {hasIssue && isEnabled && (
+            <p className="text-[10px] text-orange-600 dark:text-orange-400 mt-1 leading-tight">
+              {firstIssue.message}
+            </p>
+          )}
+        </div>
+
+        {/* Per-row actions */}
+        <div className="flex items-center gap-0 shrink-0">
+          {fixable && isEnabled && (
+            <TooltipProvider delayDuration={200}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 text-muted-foreground hover:text-orange-500"
+                    onClick={() => handleIssueFix(key as string)}
+                  >
+                    <WrenchIcon className="h-3.5 w-3.5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-xs">
+                  Fix automatically
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+          {isEnabled && (
+            <TooltipProvider delayDuration={200}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                    onClick={() => handleIssueRemove(key as string)}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-xs">
+                  Remove this setting
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
         </div>
       </div>
     );
@@ -1553,18 +1802,33 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
               />
             )}
 
-            {/* Text model settings */}
-            {!noControls &&
-              textModelSettings.map(({ key, label }) => {
-                const control = getControl(key);
-                if (!control) return null;
-                return renderControl(key, label, control);
-              })}
+            {/* Text model settings — render every key that has a control OR is currently set */}
+            {(() => {
+              const rows = textModelSettings.filter(
+                ({ key }) =>
+                  !!getControl(key) ||
+                  (currentSettings as Record<string, unknown>)[key] !==
+                    undefined,
+              );
+              return rows.map(({ key, label }) =>
+                renderControl(key, label, getControl(key) ?? null),
+              );
+            })()}
 
             {/* Audio settings */}
-            {!noControls &&
-              (getControl("tts_voice") ||
-                audioSettings.some(({ key }) => getControl(key))) && (
+            {(() => {
+              const audioRows = audioSettings.filter(
+                ({ key }) =>
+                  !!getControl(key) ||
+                  (currentSettings as Record<string, unknown>)[key] !==
+                    undefined,
+              );
+              const hasTtsVoice =
+                !!getControl("tts_voice") ||
+                (currentSettings as Record<string, unknown>).tts_voice !==
+                  undefined;
+              if (!hasTtsVoice && audioRows.length === 0) return null;
+              return (
                 <div className="border-t pt-2 mt-2">
                   <div className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
                     Audio Settings
@@ -1642,43 +1906,85 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
                     );
                   })()}
 
-                  {audioSettings.map(({ key, label }) => {
-                    const control = getControl(key);
-                    if (!control) return null;
-                    return renderControl(key, label, control);
-                  })}
+                  {audioRows.map(({ key, label }) =>
+                    renderControl(key, label, getControl(key) ?? null),
+                  )}
                 </div>
-              )}
+              );
+            })()}
 
             {/* Image/Video settings */}
-            {!noControls &&
-              imageVideoSettings.some(({ key }) => getControl(key)) && (
+            {(() => {
+              const rows = imageVideoSettings.filter(
+                ({ key }) =>
+                  !!getControl(key) ||
+                  (currentSettings as Record<string, unknown>)[key] !==
+                    undefined,
+              );
+              if (rows.length === 0) return null;
+              return (
                 <div className="border-t pt-2 mt-2">
                   <div className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
                     Image / Video Settings
                   </div>
-                  {imageVideoSettings.map(({ key, label }) => {
-                    const control = getControl(key);
-                    if (!control) return null;
-                    return renderControl(key, label, control);
-                  })}
+                  {rows.map(({ key, label }) =>
+                    renderControl(key, label, getControl(key) ?? null),
+                  )}
                 </div>
-              )}
+              );
+            })()}
 
             {/* Boolean / Feature flags */}
-            {!noControls &&
-              booleanSettings.some(({ key }) => getControl(key)) && (
+            {(() => {
+              const rows = booleanSettings.filter(
+                ({ key }) =>
+                  !!getControl(key) ||
+                  (currentSettings as Record<string, unknown>)[key] !==
+                    undefined,
+              );
+              if (rows.length === 0) return null;
+              return (
                 <div className="border-t pt-2 mt-2">
                   <div className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
                     Feature Flags
                   </div>
-                  {booleanSettings.map(({ key, label }) => {
-                    const control = getControl(key);
-                    if (!control) return null;
-                    return renderControl(key, label, control);
-                  })}
+                  {rows.map(({ key, label }) =>
+                    renderControl(key, label, getControl(key) ?? null),
+                  )}
                 </div>
-              )}
+              );
+            })()}
+
+            {/* Other settings — keys present in currentSettings that no group claims.
+                Always visible so nothing can silently hide. */}
+            {(() => {
+              const hardcodedKeys = new Set<string>([
+                ...textModelSettings.map((s) => s.key as string),
+                ...imageVideoSettings.map((s) => s.key as string),
+                ...audioSettings.map((s) => s.key as string),
+                ...booleanSettings.map((s) => s.key as string),
+                "tts_voice",
+                "multi_speaker",
+              ]);
+              const otherKeys = Object.keys(currentSettings).filter(
+                (k) => !hardcodedKeys.has(k),
+              );
+              if (otherKeys.length === 0) return null;
+              return (
+                <div className="border-t pt-2 mt-2">
+                  <div className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                    Other Settings
+                  </div>
+                  {otherKeys.map((key) =>
+                    renderControl(
+                      key as keyof LLMParams,
+                      humanizeKey(key),
+                      getControl(key) ?? null,
+                    ),
+                  )}
+                </div>
+              );
+            })()}
           </div>
         )}
 

@@ -1,0 +1,434 @@
+/**
+ * features/files/redux/selectors.ts
+ *
+ * Memoized selectors over the cloudFiles slice. Follow the agent-shortcuts
+ * pattern: every read path is wrapped in createSelector; imperative accessors
+ * (for middleware / thunks) are named `get...FromState`.
+ */
+
+"use client";
+
+import { createSelector } from "reselect";
+import type { RootState } from "@/lib/redux/store";
+import {
+  sortChildren as sortChildrenUtil,
+} from "./tree-utils";
+import type {
+  CloudFile,
+  CloudFileRecord,
+  CloudFilePermission,
+  CloudFileVersion,
+  CloudFolder,
+  CloudFolderRecord,
+  CloudShareLink,
+  CloudUserGroup,
+  CloudUserGroupMember,
+  PermissionLevel,
+  TreeChildren,
+  UploadState,
+} from "../types";
+
+// ---------------------------------------------------------------------------
+// Slice root
+// ---------------------------------------------------------------------------
+
+const selectSlice = (state: RootState) => state.cloudFiles;
+
+// ---------------------------------------------------------------------------
+// Files
+// ---------------------------------------------------------------------------
+
+export const selectAllFilesMap = createSelector(
+  [selectSlice],
+  (slice) => slice.filesById,
+);
+
+export const selectAllFilesArray = createSelector(
+  [selectAllFilesMap],
+  (map): CloudFileRecord[] => Object.values(map),
+);
+
+export const selectFileById = createSelector(
+  [selectAllFilesMap, (_state: RootState, id: string) => id],
+  (map, id): CloudFileRecord | undefined => map[id],
+);
+
+/** Imperative — middleware / thunks. */
+export function getFileFromState(
+  state: RootState,
+  id: string,
+): CloudFileRecord | undefined {
+  return state.cloudFiles.filesById[id];
+}
+
+export const selectFileName = createSelector(
+  [selectFileById],
+  (record): string | null => record?.fileName ?? null,
+);
+
+export const selectFilePath = createSelector(
+  [selectFileById],
+  (record): string | null => record?.filePath ?? null,
+);
+
+export const selectFileVisibility = createSelector(
+  [selectFileById],
+  (record) => record?.visibility ?? "private",
+);
+
+export const selectFileIsDirty = createSelector(
+  [selectFileById],
+  (record): boolean => record?._dirty ?? false,
+);
+
+export const selectFileIsLoading = createSelector(
+  [selectFileById],
+  (record): boolean => record?._loading ?? false,
+);
+
+export const selectFileError = createSelector(
+  [selectFileById],
+  (record): string | null => record?._error ?? null,
+);
+
+export const selectFilePendingRequestIds = createSelector(
+  [selectFileById],
+  (record): string[] => record?._pendingRequestIds ?? [],
+);
+
+/** Strip runtime fields — for components that only render domain fields. */
+export const selectFileDefinition = createSelector(
+  [selectFileById],
+  (record): CloudFile | undefined => {
+    if (!record) return undefined;
+    const {
+      _dirty: _a,
+      _dirtyFields: _b,
+      _fieldHistory: _c,
+      _loadedFields: _d,
+      _loading: _e,
+      _error: _f,
+      _pendingRequestIds: _g,
+      ...definition
+    } = record;
+    return definition;
+  },
+);
+
+// ---------------------------------------------------------------------------
+// Folders
+// ---------------------------------------------------------------------------
+
+export const selectAllFoldersMap = createSelector(
+  [selectSlice],
+  (slice) => slice.foldersById,
+);
+
+export const selectAllFoldersArray = createSelector(
+  [selectAllFoldersMap],
+  (map): CloudFolderRecord[] => Object.values(map),
+);
+
+export const selectFolderById = createSelector(
+  [selectAllFoldersMap, (_state: RootState, id: string) => id],
+  (map, id): CloudFolderRecord | undefined => map[id],
+);
+
+export function getFolderFromState(
+  state: RootState,
+  id: string,
+): CloudFolderRecord | undefined {
+  return state.cloudFiles.foldersById[id];
+}
+
+export const selectFolderDefinition = createSelector(
+  [selectFolderById],
+  (record): CloudFolder | undefined => {
+    if (!record) return undefined;
+    const {
+      _dirty: _a,
+      _dirtyFields: _b,
+      _fieldHistory: _c,
+      _loadedFields: _d,
+      _loading: _e,
+      _error: _f,
+      _pendingRequestIds: _g,
+      ...definition
+    } = record;
+    return definition;
+  },
+);
+
+// ---------------------------------------------------------------------------
+// Tree
+// ---------------------------------------------------------------------------
+
+const selectTreeSlice = createSelector([selectSlice], (slice) => slice.tree);
+
+export const selectTreeStatus = createSelector(
+  [selectTreeSlice],
+  (tree) => tree.status,
+);
+
+export const selectTreeError = createSelector(
+  [selectTreeSlice],
+  (tree) => tree.error,
+);
+
+export const selectRootFolderIds = createSelector(
+  [selectTreeSlice],
+  (tree) => tree.rootFolderIds,
+);
+
+export const selectRootFileIds = createSelector(
+  [selectTreeSlice],
+  (tree) => tree.rootFileIds,
+);
+
+export const selectChildrenByFolderId = createSelector(
+  [selectTreeSlice],
+  (tree) => tree.childrenByFolderId,
+);
+
+export const selectChildrenOfFolder = createSelector(
+  [
+    selectChildrenByFolderId,
+    (_state: RootState, folderId: string) => folderId,
+  ],
+  (byId, folderId): TreeChildren =>
+    byId[folderId] ?? { folderIds: [], fileIds: [] },
+);
+
+export const selectIsFolderFullyLoaded = createSelector(
+  [selectTreeSlice, (_state: RootState, folderId: string) => folderId],
+  (tree, folderId): boolean => tree.fullyLoadedFolderIds[folderId] === true,
+);
+
+// ---------------------------------------------------------------------------
+// Tree — sorted children (respects UI sort settings)
+// ---------------------------------------------------------------------------
+
+const selectUiSlice = createSelector([selectSlice], (slice) => slice.ui);
+
+export const selectViewMode = createSelector(
+  [selectUiSlice],
+  (ui) => ui.viewMode,
+);
+
+export const selectSort = createSelector([selectUiSlice], (ui) => ({
+  sortBy: ui.sortBy,
+  sortDir: ui.sortDir,
+}));
+
+export const selectActiveFileId = createSelector(
+  [selectUiSlice],
+  (ui) => ui.activeFileId,
+);
+
+export const selectActiveFolderId = createSelector(
+  [selectUiSlice],
+  (ui) => ui.activeFolderId,
+);
+
+export const selectActiveFile = createSelector(
+  [selectAllFilesMap, selectActiveFileId],
+  (map, id): CloudFileRecord | null => (id ? (map[id] ?? null) : null),
+);
+
+export const selectActiveFolder = createSelector(
+  [selectAllFoldersMap, selectActiveFolderId],
+  (map, id): CloudFolderRecord | null => (id ? (map[id] ?? null) : null),
+);
+
+export const selectSortedChildrenOfFolder = createSelector(
+  [
+    selectChildrenOfFolder,
+    selectAllFilesMap,
+    selectAllFoldersMap,
+    selectSort,
+  ],
+  (children, filesById, foldersById, sort): TreeChildren =>
+    sortChildrenUtil(
+      children,
+      filesById,
+      foldersById,
+      sort.sortBy,
+      sort.sortDir,
+    ),
+);
+
+export const selectSortedRootChildren = createSelector(
+  [
+    selectRootFolderIds,
+    selectRootFileIds,
+    selectAllFilesMap,
+    selectAllFoldersMap,
+    selectSort,
+  ],
+  (folderIds, fileIds, filesById, foldersById, sort): TreeChildren =>
+    sortChildrenUtil(
+      { folderIds, fileIds },
+      filesById,
+      foldersById,
+      sort.sortBy,
+      sort.sortDir,
+    ),
+);
+
+// ---------------------------------------------------------------------------
+// Selection
+// ---------------------------------------------------------------------------
+
+export const selectSelection = createSelector(
+  [selectSlice],
+  (slice) => slice.selection,
+);
+
+export const selectIsSelected = createSelector(
+  [selectSelection, (_s: RootState, id: string) => id],
+  (selection, id): boolean => selection.selectedIds.includes(id),
+);
+
+export const selectSelectedCount = createSelector(
+  [selectSelection],
+  (selection): number => selection.selectedIds.length,
+);
+
+// ---------------------------------------------------------------------------
+// Versions
+// ---------------------------------------------------------------------------
+
+export const selectVersionsForFile = createSelector(
+  [selectSlice, (_s: RootState, fileId: string) => fileId],
+  (slice, fileId): CloudFileVersion[] => slice.versionsByFileId[fileId] ?? [],
+);
+
+// ---------------------------------------------------------------------------
+// Permissions
+// ---------------------------------------------------------------------------
+
+export const selectPermissionsForResource = createSelector(
+  [selectSlice, (_s: RootState, resourceId: string) => resourceId],
+  (slice, resourceId): CloudFilePermission[] =>
+    slice.permissionsByResourceId[resourceId] ?? [],
+);
+
+/**
+ * Returns the highest permission the given user has on the given file.
+ * Ownership returns 'admin'; otherwise derives from cloud_file_permissions
+ * where grantee_id matches. Caller must provide userId.
+ */
+export const selectEffectivePermissionForFile = createSelector(
+  [
+    selectFileById,
+    selectPermissionsForResource,
+    (_s: RootState, _fileId: string, userId: string) => userId,
+  ],
+  (file, permissions, userId): PermissionLevel | null => {
+    if (!file) return null;
+    if (file.ownerId === userId) return "admin";
+    const order: Record<PermissionLevel, number> = {
+      read: 1,
+      write: 2,
+      admin: 3,
+    };
+    let best: PermissionLevel | null = file.visibility === "public" ? "read" : null;
+    for (const perm of permissions) {
+      if (perm.granteeId !== userId) continue;
+      if (perm.expiresAt && new Date(perm.expiresAt).getTime() < Date.now())
+        continue;
+      if (!best || order[perm.permissionLevel] > order[best]) {
+        best = perm.permissionLevel;
+      }
+    }
+    return best;
+  },
+);
+
+// ---------------------------------------------------------------------------
+// Share links
+// ---------------------------------------------------------------------------
+
+export const selectShareLinksForResource = createSelector(
+  [selectSlice, (_s: RootState, resourceId: string) => resourceId],
+  (slice, resourceId): CloudShareLink[] =>
+    slice.shareLinksByResourceId[resourceId] ?? [],
+);
+
+export const selectActiveShareLinksForResource = createSelector(
+  [selectShareLinksForResource],
+  (links): CloudShareLink[] => links.filter((l) => l.isActive),
+);
+
+// ---------------------------------------------------------------------------
+// Groups
+// ---------------------------------------------------------------------------
+
+export const selectAllGroupsArray = createSelector(
+  [selectSlice],
+  (slice): CloudUserGroup[] => Object.values(slice.groupsById),
+);
+
+export const selectGroupById = createSelector(
+  [selectSlice, (_s: RootState, id: string) => id],
+  (slice, id): CloudUserGroup | undefined => slice.groupsById[id],
+);
+
+export const selectGroupMembers = createSelector(
+  [selectSlice, (_s: RootState, groupId: string) => groupId],
+  (slice, groupId): CloudUserGroupMember[] =>
+    slice.groupMembersByGroupId[groupId] ?? [],
+);
+
+// ---------------------------------------------------------------------------
+// Uploads
+// ---------------------------------------------------------------------------
+
+export const selectAllUploads = createSelector(
+  [selectSlice],
+  (slice) => slice.uploads,
+);
+
+export const selectUploadByRequestId = createSelector(
+  [selectAllUploads, (_s: RootState, requestId: string) => requestId],
+  (uploads, requestId): UploadState | undefined => uploads[requestId],
+);
+
+export const selectActiveUploads = createSelector(
+  [selectAllUploads],
+  (uploads): UploadState[] =>
+    (Object.values(uploads) as UploadState[]).filter(
+      (u) => u.status === "uploading" || u.status === "pending",
+    ),
+);
+
+export const selectOverallUploadProgress = createSelector(
+  [selectActiveUploads],
+  (active): { loaded: number; total: number; percent: number } => {
+    let loaded = 0;
+    let total = 0;
+    for (const u of active) {
+      loaded += u.bytesUploaded;
+      total += u.fileSize;
+    }
+    return {
+      loaded,
+      total,
+      percent: total > 0 ? Math.round((loaded / total) * 100) : 0,
+    };
+  },
+);
+
+// ---------------------------------------------------------------------------
+// Realtime
+// ---------------------------------------------------------------------------
+
+export const selectRealtime = createSelector(
+  [selectSlice],
+  (slice) => slice.realtime,
+);
+
+export const selectRealtimeStatus = createSelector(
+  [selectRealtime],
+  (rt) => rt.status,
+);

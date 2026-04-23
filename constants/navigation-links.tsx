@@ -29,6 +29,7 @@ import {
   Mic,
   Container,
   FlaskConical,
+  Wand2,
 } from "lucide-react";
 import { TbBrandSocketIo } from "react-icons/tb";
 import { LuWebhook } from "react-icons/lu";
@@ -247,6 +248,20 @@ export const allNavigationLinks: NavigationLink[] = [
     description: "Browse a collection of images you can use in your projects",
     color: "rose",
     favicon: { color: "#0d9488", letter: "Im" }, // Teal-600 — "Im" distinct from "I" alone
+  },
+  {
+    label: "Image Studio",
+    href: "/image-studio",
+    icon: (
+      <Wand2 className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+    ),
+    section: "primary",
+    profileMenu: true,
+    dashboard: true,
+    description:
+      "Drop one image, get 60+ platform-perfect sizes — favicons, OG, social, avatars, logos, print.",
+    color: "fuchsia",
+    favicon: { color: "#c026d3", letter: "Is" }, // Fuchsia — "Is" for Image Studio
   },
   {
     label: "Webscraper",

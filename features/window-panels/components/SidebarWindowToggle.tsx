@@ -55,6 +55,7 @@ import {
   Brain,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { selectActiveAgentId } from "@/lib/redux/slices/agent-settings/selectors";
@@ -99,6 +100,7 @@ const STATE_LABEL: Record<WindowState, string> = {
 export default function SidebarWindowToggle() {
   const dispatch = useAppDispatch();
   const store = useAppStore();
+  const router = useRouter();
   const hidden = useAppSelector(selectWindowsHidden);
   const allMinimized = useAppSelector(selectAllMinimized);
   const windows = useAppSelector(selectAllWindows);
@@ -1051,6 +1053,11 @@ export default function SidebarWindowToggle() {
                         ),
                       )
                     }
+                  />
+                  <MenuGridItem
+                    icon={<Wand2 className="w-3.5 h-3.5" />}
+                    label="Image Studio"
+                    onClick={() => act(() => router.push("/image-studio"))}
                   />
                   <MenuGridItem
                     icon={<Globe className="w-3.5 h-3.5" />}

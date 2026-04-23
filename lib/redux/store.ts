@@ -12,6 +12,7 @@ import { entitySagaMiddleware } from "./entity/entitySagaMiddleware";
 import { socketMiddleware } from "./socket-io/connection/socketMiddleware";
 import { autoSaveMiddleware } from "@/features/notes/redux/autoSaveMiddleware";
 import { codeFilesAutoSaveMiddleware } from "@/features/code-files/redux/autoSaveMiddleware";
+import { cloudFilesRealtimeMiddleware } from "@/features/files/redux/realtime-middleware";
 import {
   createSyncMiddleware,
   openSyncChannel,
@@ -169,6 +170,7 @@ export const makeStore = (
         autoSaveMiddleware,
         codeFilesAutoSaveMiddleware,
         // notesRealtimeMiddleware — re-enable when workspace converges to Redux
+        cloudFilesRealtimeMiddleware,
       ),
     devTools: process.env.NODE_ENV !== "production",
   });
