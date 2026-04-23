@@ -9,6 +9,35 @@ import type { OutputFormat, StudioPreset } from "./presets";
 
 export type { OutputFormat, StudioPreset };
 
+/**
+ * Fit mode — controls what happens when the preset's aspect ratio doesn't
+ * match the source.
+ *
+ *   - cover   Fill the whole target; crop overflow. (Default.)
+ *   - contain Letterbox the full image inside the target; pad with bg.
+ *   - inside  Shrink to fit inside the target, keep aspect ratio.
+ *             No crop, no upscale, no padding — output may be smaller.
+ */
+export type ImageFit = "cover" | "contain" | "inside";
+
+/**
+ * Focal point for cover mode. The 9 compass values are standard crops;
+ * `entropy` and `attention` use Sharp's smart-crop algorithms to pick the
+ * most interesting region automatically.
+ */
+export type ImagePosition =
+    | "center"
+    | "top"
+    | "bottom"
+    | "left"
+    | "right"
+    | "top-left"
+    | "top-right"
+    | "bottom-left"
+    | "bottom-right"
+    | "entropy"
+    | "attention";
+
 // ── Client-side file state ────────────────────────────────────────────────
 
 export type StudioFileStatus =
@@ -62,6 +91,10 @@ export interface ProcessedVariant {
     dataUrl: string;
     /** Compression ratio: (1 - size/originalSize) * 100. Cached once. */
     compressionRatio: number | null;
+    /** Fit mode actually applied. */
+    fit: ImageFit;
+    /** Position actually applied (cover only). */
+    position: ImagePosition | null;
     /** Public Supabase URL, set only once the variant is saved. */
     publicUrl?: string | null;
     /** Saved-to-library state — controlled by the save step. */
@@ -76,6 +109,10 @@ export interface ProcessVariantSpec {
     format?: OutputFormat;
     /** Override the default filename base. */
     filenameBase?: string;
+    /** Per-variant fit override (default: spec.defaultFit). */
+    fit?: ImageFit;
+    /** Per-variant focal point (cover mode only). */
+    position?: ImagePosition;
 }
 
 export interface ProcessStudioRequestBody {
@@ -83,8 +120,12 @@ export interface ProcessStudioRequestBody {
     quality: number;
     /** Global output format when a preset doesn't define its own. */
     defaultFormat: OutputFormat;
-    /** Background colour for transparent inputs (hex). */
+    /** Background colour for transparent inputs AND contain-mode padding (hex). */
     backgroundColor?: string;
+    /** Default fit mode. Individual variants may override. */
+    defaultFit?: ImageFit;
+    /** Default focal point for cover mode. Individual variants may override. */
+    defaultPosition?: ImagePosition;
     /** Preset ids + per-variant overrides. */
     variants: ProcessVariantSpec[];
     /** Filename base (falls back to uploaded filename without ext). */
@@ -101,6 +142,10 @@ export interface ProcessStudioResponseVariant {
     size: number;
     dataUrl: string;
     compressionRatio: number | null;
+    /** The fit mode actually applied (server resolves defaults + overrides). */
+    fit: ImageFit;
+    /** The position actually applied (cover mode only). */
+    position: ImagePosition | null;
     error?: string;
 }
 

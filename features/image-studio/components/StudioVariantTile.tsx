@@ -5,17 +5,58 @@ import {
     Check,
     CheckCircle2,
     Copy,
+    Crop,
     Download,
     ExternalLink,
     Loader2,
+    Maximize2,
+    Scaling,
     Trash2,
     Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { ProcessedVariant } from "../types";
+import type { ImageFit, ImagePosition, ProcessedVariant } from "../types";
 import { getPresetById } from "../presets";
 import { formatBytes, formatDimensions } from "../utils/format-bytes";
 import { downloadSingleVariant } from "../utils/download-bundle";
+
+function fitIcon(fit: ImageFit): React.ReactNode {
+    switch (fit) {
+        case "cover":
+            return <Crop className="h-2.5 w-2.5" />;
+        case "contain":
+            return <Maximize2 className="h-2.5 w-2.5" />;
+        case "inside":
+            return <Scaling className="h-2.5 w-2.5" />;
+    }
+}
+
+function positionLabel(p: ImagePosition): string {
+    switch (p) {
+        case "top-left":
+            return "↖";
+        case "top":
+            return "↑";
+        case "top-right":
+            return "↗";
+        case "left":
+            return "←";
+        case "center":
+            return "●";
+        case "right":
+            return "→";
+        case "bottom-left":
+            return "↙";
+        case "bottom":
+            return "↓";
+        case "bottom-right":
+            return "↘";
+        case "attention":
+            return "Sm·A";
+        case "entropy":
+            return "Sm·E";
+    }
+}
 
 interface StudioVariantTileProps {
     variant: ProcessedVariant;
@@ -112,12 +153,30 @@ export function StudioVariantTile({
                     {usage}
                 </p>
                 <div className="flex items-center justify-between gap-2 pt-1">
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-[10px] uppercase">
                             {variant.format}
                         </span>
                         <span className="font-mono text-[10px] text-muted-foreground">
                             {formatBytes(variant.size)}
+                        </span>
+                        <span
+                            className="flex items-center gap-0.5 rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-medium capitalize"
+                            title={
+                                variant.fit === "cover"
+                                    ? `Cover — anchored to ${variant.position ?? "center"}`
+                                    : variant.fit === "contain"
+                                      ? "Contain — padded with background colour"
+                                      : "Inside — shrunk to fit without crop or padding"
+                            }
+                        >
+                            {fitIcon(variant.fit)}
+                            {variant.fit}
+                            {variant.fit === "cover" && variant.position && (
+                                <span className="font-mono ml-0.5 text-muted-foreground">
+                                    {positionLabel(variant.position)}
+                                </span>
+                            )}
                         </span>
                     </div>
                     {variant.compressionRatio != null && variant.compressionRatio > 0 && (

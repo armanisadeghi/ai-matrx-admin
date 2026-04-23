@@ -1,0 +1,596 @@
+/**
+ * toolsGridTiles.ts
+ *
+ * Declarative configuration for the Tools-grid tiles in the shell sidebar.
+ *
+ * Each tile references a registered overlayId and supplies the grid-facing
+ * presentation (label / icon / category / admin-gate / optional seed data and
+ * instance strategy). Replaces the ~570 lines of hand-written JSX that used
+ * to live inside `SidebarWindowToggle.tsx`.
+ *
+ * Order within a category determines render order. Moving a tile → re-order
+ * here. Adding a new tile for a registered overlay → one entry here.
+ *
+ * This file is the single source of truth for "what appears in the Tools
+ * grid" — it does NOT duplicate any registry data (label is usually pulled
+ * from the registry unless overridden for a tile-specific name like the
+ * legacy "Notes" tile that opens notesBetaWindow).
+ */
+import type { LucideIcon } from "lucide-react";
+import {
+  Activity,
+  ArrowUp,
+  AudioLines,
+  BookMarked,
+  Brain,
+  Bug,
+  BugPlay,
+  Building2,
+  CheckSquare,
+  Cpu,
+  Database,
+  FileCode2,
+  FileJson,
+  FileScan,
+  FileStack,
+  FolderSearch,
+  Frame,
+  GalleryHorizontalEnd,
+  Globe,
+  History,
+  LayoutDashboard,
+  Layers,
+  List,
+  ListFilter,
+  Mail,
+  MessageSquare,
+  Mic,
+  MonitorPlay,
+  Newspaper,
+  ScrollText,
+  Settings,
+  Settings2,
+  Share2,
+  SlidersHorizontal,
+  Sparkles,
+  StickyNote,
+  Upload,
+  Wand2,
+} from "lucide-react";
+
+import type { AppDispatch, RootState } from "@/lib/redux/store";
+import {
+  selectActiveAgentId,
+} from "@/lib/redux/slices/agent-settings/selectors";
+import { selectOwnedAgentIds } from "@/lib/redux/slices/agentCacheSlice";
+
+/**
+ * Grid-tab buckets. "admin" is gated on `isAdmin`; the rest show for every
+ * authenticated user. Ordered here for display order in the tab.
+ */
+export type ToolsCategory =
+  | "voice"
+  | "notes"
+  | "content"
+  | "agents"
+  | "files-web"
+  | "general"
+  | "admin";
+
+export const TOOLS_CATEGORIES: ReadonlyArray<{
+  id: ToolsCategory;
+  label: string;
+  gate?: "admin";
+}> = [
+  { id: "voice", label: "Voice" },
+  { id: "notes", label: "Notes" },
+  { id: "content", label: "Content" },
+  { id: "agents", label: "Agents" },
+  { id: "files-web", label: "Files & Web" },
+  { id: "general", label: "General" },
+  { id: "admin", label: "Admin", gate: "admin" },
+];
+
+/**
+ * Context passed to each tile's optional `seedData` / `onActivate` callback.
+ * Keeps the tile callbacks pure (no useSelector/useDispatch churn per tile)
+ * while still giving them access to store + dispatch + router.
+ */
+export interface TileContext {
+  dispatch: AppDispatch;
+  getState: () => RootState;
+  router: { push: (path: string) => void };
+}
+
+export interface ToolsGridTile {
+  /** Stable id for React keys + analytics. */
+  id: string;
+  /** Display label on the tile. */
+  label: string;
+  /** Lucide icon component. */
+  icon: LucideIcon;
+  /** Category bucket. */
+  category: ToolsCategory;
+  /** Admin-only gate. Default: shown to everyone in the category's audience. */
+  gate?: "admin";
+  /**
+   * EITHER declarative (overlayId + optional seedData + instanceStrategy) —
+   * covers ~95% of tiles.
+   */
+  overlayId?: string;
+  /**
+   * Instance strategy for multi-instance overlays.
+   *   "singleton-default" — use instanceId "default" (shared / pinned tile).
+   *   "fresh-per-click"   — generate a unique instanceId each click.
+   * Default: "singleton-default" for singleton overlays, "fresh-per-click"
+   * for multi overlays (auto-detected from registry).
+   */
+  instanceStrategy?: "singleton-default" | "fresh-per-click";
+  /** Optional data seed for the openOverlay payload. */
+  seedData?: (ctx: TileContext) => Record<string, unknown> | undefined;
+  /**
+   * OR imperative — escape hatch for tiles that don't open an overlay
+   * (e.g. "Image Studio" routes to /image-studio).
+   */
+  onActivate?: (ctx: TileContext) => void;
+}
+
+/**
+ * Default boilerplate source for Code Editor / Smart Multi-file tiles.
+ * Matches what the legacy SidebarWindowToggle seeded on click — moving the
+ * large string literals out of the component file.
+ */
+const CODE_EDITOR_DEMO_FILES = [
+  {
+    name: "index.tsx",
+    path: "src/index.tsx",
+    language: "typescript",
+    content:
+      'import React from "react";\n\nexport default function App() {\n  return (\n    <div className="flex items-center justify-center h-screen">\n      <h1 className="text-2xl font-bold">Hello, World!</h1>\n    </div>\n  );\n}\n',
+  },
+  {
+    name: "styles.css",
+    path: "src/styles.css",
+    language: "css",
+    content:
+      "/* Global styles */\nbody {\n  margin: 0;\n  font-family: system-ui, sans-serif;\n}\n",
+  },
+  {
+    name: "README.md",
+    path: "README.md",
+    language: "markdown",
+    content:
+      "# My Project\n\nA sample project.\n\n## Getting Started\n\n```bash\nnpm install\nnpm start\n```\n",
+  },
+];
+
+const SMART_CODE_EDITOR_STARTER =
+  '// Start typing, then ask the agent to refactor.\n\nasync function getUser(id) {\n  const res = await fetch("/api/users/" + id);\n  return res.json();\n}\n';
+
+// Default agent for Smart Code Editor tiles — the legacy "Code Editor"
+// builtin-prompt clone. Seeds `current_code` so the tile is fireable with
+// no extra wiring.
+const SMART_CODE_EDITOR_DEFAULT_AGENT_ID =
+  "55cc4ad1-bafd-4b82-af0b-4b4f40406ca3";
+
+export const TOOLS_GRID_TILES: ReadonlyArray<ToolsGridTile> = [
+  // ── Voice ──────────────────────────────────────────────────────────────
+  {
+    id: "tile.ai-voice",
+    label: "AI Voice",
+    icon: Mic,
+    category: "voice",
+    overlayId: "aiVoiceWindow",
+  },
+  {
+    id: "tile.voice-pad-ai",
+    label: "Transcription Cleanup",
+    icon: Sparkles,
+    category: "voice",
+    overlayId: "voicePadAi",
+  },
+  {
+    id: "tile.voice-pad-advanced",
+    label: "Advanced Voice Pad",
+    icon: AudioLines,
+    category: "voice",
+    overlayId: "voicePadAdvanced",
+  },
+  {
+    id: "tile.voice-pad",
+    label: "Voice Pad",
+    icon: AudioLines,
+    category: "voice",
+    overlayId: "voicePad",
+  },
+
+  // ── Notes ──────────────────────────────────────────────────────────────
+  {
+    // Legacy "Notes" tile — pins a default instance of Notes Beta with a
+    // fixed title so it behaves like a singleton home-notes surface.
+    id: "tile.notes-pinned",
+    label: "Notes",
+    icon: StickyNote,
+    category: "notes",
+    overlayId: "notesBetaWindow",
+    instanceStrategy: "singleton-default",
+    seedData: () => ({ title: "Notes" }),
+  },
+  {
+    // Companion "Notes Beta" tile — opens a fresh instance each click.
+    id: "tile.notes-beta",
+    label: "Notes Beta",
+    icon: StickyNote,
+    category: "notes",
+    overlayId: "notesBetaWindow",
+    instanceStrategy: "fresh-per-click",
+  },
+
+  // ── Content ────────────────────────────────────────────────────────────
+  {
+    id: "tile.code-editor",
+    label: "Code Editor",
+    icon: FileCode2,
+    category: "content",
+    overlayId: "codeEditorWindow",
+    instanceStrategy: "fresh-per-click",
+    seedData: () => ({
+      title: "Code Editor",
+      files: CODE_EDITOR_DEMO_FILES,
+    }),
+  },
+  {
+    id: "tile.smart-code-editor",
+    label: "Smart Code Editor",
+    icon: Sparkles,
+    category: "content",
+    overlayId: "smartCodeEditorWindow",
+    instanceStrategy: "fresh-per-click",
+    seedData: () => ({
+      agentId: SMART_CODE_EDITOR_DEFAULT_AGENT_ID,
+      language: "typescript",
+      initialCode: SMART_CODE_EDITOR_STARTER,
+      title: "Smart Code Editor",
+      variables: { current_code: SMART_CODE_EDITOR_STARTER },
+    }),
+  },
+  {
+    id: "tile.smart-multi-file",
+    label: "Smart Multi-file",
+    icon: Sparkles,
+    category: "content",
+    overlayId: "multiFileSmartCodeEditorWindow",
+    instanceStrategy: "fresh-per-click",
+    seedData: () => ({
+      agentId: SMART_CODE_EDITOR_DEFAULT_AGENT_ID,
+      title: "Smart Multi-file Editor",
+      files: CODE_EDITOR_DEMO_FILES,
+    }),
+  },
+  {
+    id: "tile.code-files",
+    label: "Code Files",
+    icon: FolderSearch,
+    category: "content",
+    overlayId: "codeFileManagerWindow",
+    instanceStrategy: "fresh-per-click",
+  },
+  {
+    id: "tile.content-editor",
+    label: "Content Editor",
+    icon: FileCode2,
+    category: "content",
+    overlayId: "contentEditorWindow",
+    instanceStrategy: "fresh-per-click",
+    seedData: () => ({
+      documentId: "scratch",
+      documentTitle: "Scratch",
+      initialValue: "",
+    }),
+  },
+  {
+    id: "tile.content-list",
+    label: "Content List",
+    icon: FileStack,
+    category: "content",
+    overlayId: "contentEditorListWindow",
+    instanceStrategy: "fresh-per-click",
+    seedData: () => ({ documents: [] }),
+  },
+  {
+    id: "tile.content-workspace",
+    label: "Content Workspace",
+    icon: Layers,
+    category: "content",
+    overlayId: "contentEditorWorkspaceWindow",
+    instanceStrategy: "fresh-per-click",
+    seedData: () => ({ documents: [], openDocumentIds: [] }),
+  },
+  {
+    id: "tile.markdown",
+    label: "Markdown",
+    icon: FileCode2,
+    category: "content",
+    overlayId: "markdownEditorWindow",
+    seedData: () => ({ instanceId: "default" }),
+  },
+
+  // ── Agents ─────────────────────────────────────────────────────────────
+  {
+    id: "tile.agent-run",
+    label: "Agent Run",
+    icon: MessageSquare,
+    category: "agents",
+    overlayId: "agentRunWindow",
+  },
+  {
+    // Opens `agentContentSidebarWindow` seeded with the active agent
+    // (falls back to the first owned agent). Matches the legacy
+    // `openAgentContentFromTools` helper.
+    id: "tile.agent-content",
+    label: "Agent Content",
+    icon: FileStack,
+    category: "agents",
+    overlayId: "agentContentSidebarWindow",
+    seedData: ({ getState }) => {
+      const state = getState();
+      const agentId =
+        selectActiveAgentId(state) ?? selectOwnedAgentIds(state)[0] ?? null;
+      return agentId ? { agentId } : undefined;
+    },
+  },
+  {
+    id: "tile.agent-settings",
+    label: "Agent Settings",
+    icon: SlidersHorizontal,
+    category: "agents",
+    overlayId: "agentSettingsWindow",
+  },
+  {
+    id: "tile.ai-results",
+    label: "AI Results",
+    icon: Wand2,
+    category: "agents",
+    overlayId: "quickAIResults",
+  },
+  {
+    id: "tile.agent-import",
+    label: "Import Agent",
+    icon: Upload,
+    category: "agents",
+    overlayId: "agentImportWindow",
+  },
+  {
+    id: "tile.agent-run-history",
+    label: "Run History",
+    icon: History,
+    category: "agents",
+    overlayId: "agentRunHistoryWindow",
+  },
+  {
+    id: "tile.agent-connections",
+    label: "Agent Connections",
+    icon: Settings2,
+    category: "agents",
+    overlayId: "agentConnectionsWindow",
+  },
+
+  // ── Files & Web ────────────────────────────────────────────────────────
+  {
+    id: "tile.quick-files",
+    label: "Files",
+    icon: FolderSearch,
+    category: "files-web",
+    overlayId: "quickFilesWindow",
+  },
+  {
+    id: "tile.gallery",
+    label: "Gallery",
+    icon: GalleryHorizontalEnd,
+    category: "files-web",
+    overlayId: "galleryWindow",
+  },
+  {
+    id: "tile.pdf-extractor",
+    label: "PDF Extractor",
+    icon: FileScan,
+    category: "files-web",
+    overlayId: "pdfExtractorWindow",
+  },
+  {
+    id: "tile.site-frame",
+    label: "Site Frame",
+    icon: Frame,
+    category: "files-web",
+    overlayId: "browserFrameWindow",
+    seedData: () => ({
+      url: "https://lucide.dev/icons/",
+      windowTitle: "Lucide",
+    }),
+  },
+  {
+    id: "tile.site-workbench",
+    label: "Site Workbench",
+    icon: BookMarked,
+    category: "files-web",
+    overlayId: "browserWorkbenchWindow",
+  },
+  {
+    id: "tile.file-upload",
+    label: "Upload",
+    icon: ArrowUp,
+    category: "files-web",
+    overlayId: "fileUploadWindow",
+  },
+  {
+    // Route-navigation tile — escapes the overlay model entirely.
+    id: "tile.image-studio",
+    label: "Image Studio",
+    icon: Wand2,
+    category: "files-web",
+    onActivate: ({ router }) => router.push("/image-studio"),
+  },
+  {
+    id: "tile.scraper",
+    label: "Web Scraper",
+    icon: Globe,
+    category: "files-web",
+    overlayId: "scraperWindow",
+  },
+
+  // ── General ────────────────────────────────────────────────────────────
+  {
+    id: "tile.canvas-viewer",
+    label: "Canvas Viewer",
+    icon: MonitorPlay,
+    category: "general",
+    overlayId: "canvasViewerWindow",
+  },
+  {
+    id: "tile.context-switcher",
+    label: "Context Switcher",
+    icon: Layers,
+    category: "general",
+    overlayId: "contextSwitcherWindow",
+  },
+  {
+    id: "tile.quick-data",
+    label: "Data Tables",
+    icon: Database,
+    category: "general",
+    overlayId: "quickDataWindow",
+  },
+  {
+    id: "tile.email",
+    label: "Email",
+    icon: Mail,
+    category: "general",
+    overlayId: "emailDialogWindow",
+  },
+  {
+    id: "tile.feedback",
+    label: "Feedback",
+    icon: MessageSquare,
+    category: "general",
+    overlayId: "feedbackDialog",
+  },
+  {
+    id: "tile.json-truncator",
+    label: "JSON Truncator",
+    icon: FileJson,
+    category: "general",
+    overlayId: "jsonTruncator",
+  },
+  {
+    id: "tile.list-manager",
+    label: "List Manager",
+    icon: ListFilter,
+    category: "general",
+    overlayId: "listManagerWindow",
+  },
+  {
+    id: "tile.new-organization",
+    label: "New Organization",
+    icon: Building2,
+    category: "general",
+    overlayId: "hierarchyCreationWindow",
+    seedData: () => ({ entityType: "organization" }),
+  },
+  {
+    id: "tile.news",
+    label: "News",
+    icon: Newspaper,
+    category: "general",
+    overlayId: "newsWindow",
+  },
+  {
+    id: "tile.preferences",
+    label: "Preferences",
+    icon: Settings,
+    category: "general",
+    overlayId: "userPreferencesWindow",
+  },
+  {
+    id: "tile.share-modal",
+    label: "Share Modal",
+    icon: Share2,
+    category: "general",
+    overlayId: "shareModalWindow",
+    seedData: () => ({ resourceType: "note" }),
+  },
+  {
+    id: "tile.quick-tasks",
+    label: "Tasks",
+    icon: CheckSquare,
+    category: "general",
+    overlayId: "quickTasksWindow",
+  },
+
+  // ── Admin ──────────────────────────────────────────────────────────────
+  {
+    id: "tile.agent-debug",
+    label: "Agent Debug",
+    icon: BugPlay,
+    category: "admin",
+    gate: "admin",
+    overlayId: "agentDebugWindow",
+  },
+  {
+    id: "tile.memory-inspector",
+    label: "Memory Inspector",
+    icon: Brain,
+    category: "admin",
+    gate: "admin",
+    overlayId: "observationalMemoryWindow",
+  },
+  {
+    id: "tile.ui-state",
+    label: "UI State",
+    icon: LayoutDashboard,
+    category: "admin",
+    gate: "admin",
+    overlayId: "instanceUIStateWindow",
+  },
+  {
+    id: "tile.exec-inspector",
+    label: "Exec Inspector",
+    icon: Cpu,
+    category: "admin",
+    gate: "admin",
+    overlayId: "executionInspectorWindow",
+  },
+  {
+    id: "tile.state-analyzer",
+    label: "State Analyzer",
+    icon: Activity,
+    category: "admin",
+    gate: "admin",
+    overlayId: "adminStateAnalyzerWindow",
+  },
+  {
+    id: "tile.stream-debug",
+    label: "Stream Debug",
+    icon: Bug,
+    category: "admin",
+    gate: "admin",
+    overlayId: "streamDebug",
+    seedData: () => ({ conversationId: "default" }),
+  },
+  {
+    id: "tile.stream-history",
+    label: "Stream History",
+    icon: List,
+    category: "admin",
+    gate: "admin",
+    overlayId: "streamDebugHistoryWindow",
+    seedData: () => ({ initialConversationId: null }),
+  },
+  {
+    id: "tile.md-debug",
+    label: "MD Debug",
+    icon: ScrollText,
+    category: "admin",
+    gate: "admin",
+    overlayId: "agentAssistantMarkdownDebugWindow",
+  },
+];

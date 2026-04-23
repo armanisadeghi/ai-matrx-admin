@@ -13,8 +13,8 @@ Full rationale and context: [../FEATURE.md](../FEATURE.md). Full approved plan: 
 | 0 | Foundation docs | ✅ complete | 1 day | — (this dir) |
 | 1 | Types + API client | ✅ complete | 2 days | phases/phase-01-types-api.md |
 | 2 | Redux slice + realtime middleware | ✅ complete | 3 days | phases/phase-02-redux-realtime.md |
-| 3 | Core components | ⬜ not started | 5 days | phases/phase-03-core-components.md |
-| 4 | Surface wrappers | ⬜ not started | 3 days | phases/phase-04-surfaces.md |
+| 3 | Core components | ✅ complete | 5 days | phases/phase-03-core-components.md |
+| 4 | Surface wrappers | ✅ complete | 3 days | phases/phase-04-surfaces.md |
 | 5 | Routes (`app/(a)/cloud-files/`) | ⬜ not started | 2 days | phases/phase-05-routes.md |
 | 6 | WindowPanel integration | ⬜ not started | 2 days | phases/phase-06-window-panel.md |
 | 7 | Hooks + pickers | ⬜ not started | 2 days | phases/phase-07-hooks-pickers.md |

@@ -47,6 +47,8 @@ import {
 } from "@/lib/net/errors";
 import { useRequestRecovery } from "@/features/request-recovery";
 import { selectActiveNetRequests } from "@/lib/redux/net/selectors";
+import { selectResolvedBaseUrl } from "@/lib/redux/slices/apiConfigSlice";
+import { selectAccessToken } from "@/lib/redux/slices/userSlice";
 
 type RunResult =
   | { ok: true; detail: string }
@@ -190,10 +192,230 @@ async function consumeNdjsonWithMonitor(
 const MOCK_USER_INPUT =
   "This is the prompt the user typed before we broke things.";
 
+// ---------- Live server scenarios (Python /ai/mock-stream/{scenario}) --------
+
+interface ServerScenario {
+  name: string;
+  description: string;
+  expected: string;
+  heartbeatTimeoutMs: number;
+  maxLifetimeMs: number;
+  expectSuccess: boolean;
+}
+
+const SERVER_SCENARIOS: ServerScenario[] = [
+  {
+    name: "happy-path",
+    description: "Clean nominal stream — baseline sanity check.",
+    expected: "Succeeds cleanly",
+    heartbeatTimeoutMs: 30_000,
+    maxLifetimeMs: 60_000,
+    expectSuccess: true,
+  },
+  {
+    name: "slow-chunks",
+    description:
+      "25s gap between chunks (under the 30s watchdog). Heartbeats keep it alive.",
+    expected: "Succeeds — heartbeats prevent timeout",
+    heartbeatTimeoutMs: 30_000,
+    maxLifetimeMs: 600_000,
+    expectSuccess: true,
+  },
+  {
+    name: "rapid-chunks",
+    description: "1000 chunks with no delay — flood / buffer exhaustion.",
+    expected: "Succeeds, many events",
+    heartbeatTimeoutMs: 30_000,
+    maxLifetimeMs: 60_000,
+    expectSuccess: true,
+  },
+  {
+    name: "oversized-chunk",
+    description: "Single ~2MB NDJSON line.",
+    expected: "Succeeds, parser handles large line",
+    heartbeatTimeoutMs: 30_000,
+    maxLifetimeMs: 60_000,
+    expectSuccess: true,
+  },
+  {
+    name: "headers-silence",
+    description: "200 OK + valid headers, no bytes ever sent.",
+    expected: "HeartbeatTimeoutError",
+    heartbeatTimeoutMs: 5_000,
+    maxLifetimeMs: 60_000,
+    expectSuccess: false,
+  },
+  {
+    name: "phase-then-silence",
+    description: "phase:connected emitted, then silence forever.",
+    expected: "HeartbeatTimeoutError after phase event",
+    heartbeatTimeoutMs: 5_000,
+    maxLifetimeMs: 60_000,
+    expectSuccess: false,
+  },
+  {
+    name: "heartbeat-only",
+    description:
+      "Heartbeats every N ms forever — tests absolute lifetime ceiling.",
+    expected: "TotalTimeoutError (maxLifetime)",
+    heartbeatTimeoutMs: 30_000,
+    maxLifetimeMs: 8_000,
+    expectSuccess: false,
+  },
+  {
+    name: "truncated-ndjson",
+    description: "Half a JSON line then socket close.",
+    expected: "Parser throw",
+    heartbeatTimeoutMs: 30_000,
+    maxLifetimeMs: 30_000,
+    expectSuccess: false,
+  },
+  {
+    name: "partial-json-recovery",
+    description: "Mix of valid NDJSON, blank lines, and corrupt JSON lines.",
+    expected: "Parser throw on corrupt line",
+    heartbeatTimeoutMs: 30_000,
+    maxLifetimeMs: 30_000,
+    expectSuccess: false,
+  },
+  {
+    name: "empty-ndjson-lines",
+    description: "Valid events separated by blank lines.",
+    expected: "Succeeds — parser skips blanks",
+    heartbeatTimeoutMs: 30_000,
+    maxLifetimeMs: 30_000,
+    expectSuccess: true,
+  },
+  {
+    name: "no-end-event",
+    description: "Chunks then clean close, no end event.",
+    expected: "Stream iterator completes",
+    heartbeatTimeoutMs: 30_000,
+    maxLifetimeMs: 30_000,
+    expectSuccess: true,
+  },
+  {
+    name: "duplicate-end",
+    description: "Two end events back-to-back.",
+    expected: "Succeeds, double-finalize tolerated",
+    heartbeatTimeoutMs: 30_000,
+    maxLifetimeMs: 30_000,
+    expectSuccess: true,
+  },
+  {
+    name: "error-no-end",
+    description: "Error event, no subsequent end event.",
+    expected: "Stream iterator completes",
+    heartbeatTimeoutMs: 30_000,
+    maxLifetimeMs: 30_000,
+    expectSuccess: true,
+  },
+  {
+    name: "chunked-error",
+    description: "Normal stream → {error} → end(reason:error).",
+    expected: "Succeeds (in-band error surfaced to caller)",
+    heartbeatTimeoutMs: 30_000,
+    maxLifetimeMs: 30_000,
+    expectSuccess: true,
+  },
+  {
+    name: "reset-mid-stream",
+    description: "Healthy start then abrupt generator exit.",
+    expected: "Stream iterator completes early",
+    heartbeatTimeoutMs: 30_000,
+    maxLifetimeMs: 30_000,
+    expectSuccess: true,
+  },
+  {
+    name: "unknown-event-types",
+    description: "Valid JSON with unrecognised 'event' values.",
+    expected: "Succeeds — client tolerates unknown types",
+    heartbeatTimeoutMs: 30_000,
+    maxLifetimeMs: 30_000,
+    expectSuccess: true,
+  },
+  {
+    name: "out-of-order-events",
+    description: "end event first, then chunks.",
+    expected: "Stream iterator completes after end",
+    heartbeatTimeoutMs: 30_000,
+    maxLifetimeMs: 30_000,
+    expectSuccess: true,
+  },
+  {
+    name: "html-response",
+    description: "200 OK with Content-Type: text/html (proxy intercept).",
+    expected: "Parser throw (not NDJSON)",
+    heartbeatTimeoutMs: 30_000,
+    maxLifetimeMs: 30_000,
+    expectSuccess: false,
+  },
+  {
+    name: "503-error",
+    description: "HTTP 503 Service Unavailable.",
+    expected: "HttpError (status 503)",
+    heartbeatTimeoutMs: 30_000,
+    maxLifetimeMs: 30_000,
+    expectSuccess: false,
+  },
+];
+
+async function runServerScenario(args: {
+  dispatch: ReturnType<typeof useAppDispatch>;
+  baseUrl: string;
+  token: string | null;
+  scenario: ServerScenario;
+}): Promise<RunResult> {
+  const { dispatch, baseUrl, token, scenario } = args;
+  const requestId = shortId();
+  const abortController = new AbortController();
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
+  try {
+    await runTrackedRequest(dispatch, {
+      id: requestId,
+      kind: "api",
+      label: `Server: ${scenario.name}`,
+      run: async () => {
+        const { response } = await resilientFetch(
+          `${baseUrl}/ai/mock-stream/${scenario.name}`,
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify({}),
+          },
+          {
+            signal: abortController.signal,
+            connectTimeoutMs: 15_000,
+            totalTimeoutMs: null,
+            throwOnHttpError: true,
+          },
+        );
+        if (!response.body) throw new Error("No response body");
+        await consumeNdjsonWithMonitor(
+          response,
+          abortController,
+          scenario.heartbeatTimeoutMs,
+          scenario.maxLifetimeMs,
+        );
+      },
+    });
+    return { ok: true, detail: "Stream consumed cleanly" };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    return { ok: false, error: message };
+  }
+}
+
 export default function ResilienceLabPage() {
   const dispatch = useAppDispatch();
   const recovery = useRequestRecovery();
   const activeRequests = useAppSelector(selectActiveNetRequests);
+  const baseUrl = useAppSelector(selectResolvedBaseUrl);
+  const accessToken = useAppSelector(selectAccessToken);
 
   const [inputValue, setInputValue] = useState(MOCK_USER_INPUT);
   const [log, setLog] = useState<
@@ -523,6 +745,31 @@ export default function ResilienceLabPage() {
     }
   };
 
+  const [runningServer, setRunningServer] = useState<string | null>(null);
+  const runServer = async (s: ServerScenario) => {
+    if (!baseUrl) {
+      toast.error("No backend URL resolved — set one in admin prefs.");
+      return;
+    }
+    setRunningServer(s.name);
+    const result = await runServerScenario({
+      dispatch,
+      baseUrl,
+      token: accessToken ?? null,
+      scenario: s,
+    });
+    setRunningServer(null);
+    const isExpected =
+      (s.expectSuccess && "detail" in result) ||
+      (!s.expectSuccess && !("detail" in result));
+    const tag = isExpected ? "PASS" : "UNEXPECTED";
+    if ("detail" in result) {
+      append(`Server: ${s.name}`, `${tag} — ${result.detail}`);
+    } else {
+      append(`Server: ${s.name}`, `${tag} — ${result.error}`);
+    }
+  };
+
   const fireThreeThenReload = async () => {
     for (const s of scenarios.slice(0, 3)) {
       void s.run();
@@ -635,6 +882,67 @@ export default function ResilienceLabPage() {
             <Trash2 className="w-3.5 h-3.5" />
             Clear all
           </Button>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm">
+            Live server scenarios ({SERVER_SCENARIOS.length})
+          </CardTitle>
+          <CardDescription className="text-xs">
+            Hits the Python mock router at{" "}
+            <code className="text-[11px]">POST /ai/mock-stream/{"{scenario}"}</code>.
+            Exercises the real resilientFetch + monitorStream stack end-to-end
+            against a live server. Tag {" "}
+            <span className="font-semibold">PASS</span> means the outcome
+            matched the scenario's expectation (success or specific failure);{" "}
+            <span className="font-semibold">UNEXPECTED</span> means something
+            drifted.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {!baseUrl ? (
+            <div className="text-xs text-muted-foreground">
+              No backend URL resolved — configure a server in admin prefs first.
+            </div>
+          ) : (
+            <>
+              <div className="text-[11px] text-muted-foreground mb-2 font-mono">
+                baseUrl: {baseUrl}
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                {SERVER_SCENARIOS.map((s) => {
+                  const isRunning = runningServer === s.name;
+                  return (
+                    <div
+                      key={s.name}
+                      className="border border-border rounded-md p-2 flex flex-col gap-1"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <code className="text-xs font-semibold">{s.name}</code>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => runServer(s)}
+                          disabled={isRunning}
+                          className="h-6 px-2 text-[11px]"
+                        >
+                          {isRunning ? "..." : "Run"}
+                        </Button>
+                      </div>
+                      <div className="text-[11px] text-muted-foreground leading-snug">
+                        {s.description}
+                      </div>
+                      <div className="text-[10px] text-muted-foreground">
+                        Expected: {s.expected}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
 

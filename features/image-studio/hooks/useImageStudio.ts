@@ -17,6 +17,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type {
+    ImageFit,
+    ImagePosition,
     OutputFormat,
     ProcessStudioRequestBody,
     ProcessStudioResponse,
@@ -30,6 +32,8 @@ import { slugifyFilename } from "../utils/slugify-filename";
 const DEFAULT_QUALITY = 88;
 const DEFAULT_FORMAT: OutputFormat = "webp";
 const DEFAULT_BACKGROUND = "#ffffff";
+const DEFAULT_FIT: ImageFit = "cover";
+const DEFAULT_POSITION: ImagePosition = "center";
 
 export interface UseImageStudioOptions {
     /** Default folder path inside the Supabase bucket when saving. */
@@ -42,6 +46,8 @@ export interface UseImageStudioResult {
     format: OutputFormat;
     quality: number;
     backgroundColor: string;
+    fit: ImageFit;
+    position: ImagePosition;
     isProcessing: boolean;
     isSaving: boolean;
     lastSaveResult: SaveStudioResponse | null;
@@ -63,6 +69,8 @@ export interface UseImageStudioResult {
     setFormat: (format: OutputFormat) => void;
     setQuality: (quality: number) => void;
     setBackgroundColor: (color: string) => void;
+    setFit: (fit: ImageFit) => void;
+    setPosition: (position: ImagePosition) => void;
 
     // Actions
     generate: () => Promise<void>;
@@ -107,6 +115,8 @@ export function useImageStudio(
     const [format, setFormat] = useState<OutputFormat>(DEFAULT_FORMAT);
     const [quality, setQuality] = useState<number>(DEFAULT_QUALITY);
     const [backgroundColor, setBackgroundColor] = useState<string>(DEFAULT_BACKGROUND);
+    const [fit, setFit] = useState<ImageFit>(DEFAULT_FIT);
+    const [position, setPosition] = useState<ImagePosition>(DEFAULT_POSITION);
     const [isProcessing, setIsProcessing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [lastSaveResult, setLastSaveResult] = useState<SaveStudioResponse | null>(null);
@@ -226,6 +236,8 @@ export function useImageStudio(
                     quality,
                     defaultFormat: format,
                     backgroundColor,
+                    defaultFit: fit,
+                    defaultPosition: position,
                     filenameBase: sourceFile.filenameBase,
                     variants: selectedPresetIds.map((presetId) => ({
                         presetId,
@@ -266,6 +278,8 @@ export function useImageStudio(
                                     size: v.size,
                                     dataUrl: v.dataUrl,
                                     compressionRatio: v.compressionRatio,
+                                    fit: v.fit,
+                                    position: v.position,
                                     publicUrl: null,
                                     savedAt: null,
                                 };
@@ -294,7 +308,7 @@ export function useImageStudio(
         );
 
         setIsProcessing(false);
-    }, [files, selectedPresetIds, quality, format, backgroundColor]);
+    }, [files, selectedPresetIds, quality, format, backgroundColor, fit, position]);
 
     const saveAll = useCallback(
         async (folder?: string) => {
@@ -385,6 +399,8 @@ export function useImageStudio(
         format,
         quality,
         backgroundColor,
+        fit,
+        position,
         isProcessing,
         isSaving,
         lastSaveResult,
@@ -403,6 +419,8 @@ export function useImageStudio(
         setFormat,
         setQuality,
         setBackgroundColor,
+        setFit,
+        setPosition,
 
         generate,
         saveAll,

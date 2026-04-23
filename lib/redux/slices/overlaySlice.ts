@@ -25,6 +25,12 @@ export const DEFAULT_INSTANCE_ID = "default";
 export interface OverlayInstance {
   isOpen: boolean;
   data: any;
+  /**
+   * Unix ms timestamp of the last open action. Used by `pruneStaleInstances`
+   * to GC long-forgotten closed entries. Set on every open, untouched on
+   * close so the age reflects when the user last used it.
+   */
+  lastUsedAt?: number;
 }
 
 export interface OverlayState {
@@ -32,99 +38,16 @@ export interface OverlayState {
 }
 
 // ============================================================================
-// HELPERS
-// ============================================================================
-
-function makeDefaultInstance(): Record<string, OverlayInstance> {
-  return { [DEFAULT_INSTANCE_ID]: { isOpen: false, data: null } };
-}
-
-// ============================================================================
 // INITIAL STATE
 // ============================================================================
+//
+// Empty by design. Overlay keys are added lazily on first `openOverlay`
+// (matches the registry — see `features/window-panels/registry/windowRegistry.ts`).
+// Prior to 2026-04 this file hand-mirrored 77 registry keys; drift between
+// registry and slice caused silent no-ops for unlisted overlays.
 
 const initialState: OverlayState = {
-  overlays: {
-    brokerState: makeDefaultInstance(),
-    markdownEditor: makeDefaultInstance(),
-    socketAccordion: makeDefaultInstance(),
-    adminStateAnalyzer: makeDefaultInstance(),
-    adminIndicator: makeDefaultInstance(),
-    // Quick Action Overlays
-    quickNotes: makeDefaultInstance(),
-    quickTasks: makeDefaultInstance(),
-    quickChat: makeDefaultInstance(),
-    quickData: makeDefaultInstance(),
-    quickFiles: makeDefaultInstance(),
-    quickUtilities: makeDefaultInstance(),
-    quickAIResults: makeDefaultInstance(),
-    fullScreenEditor: makeDefaultInstance(),
-    htmlPreview: makeDefaultInstance(),
-    userPreferences: makeDefaultInstance(),
-    announcements: makeDefaultInstance(),
-    // Message action overlays (available in all routes)
-    saveToNotes: makeDefaultInstance(),
-    saveToCode: makeDefaultInstance(),
-    codeFileManagerWindow: makeDefaultInstance(),
-    codeEditorWindow: makeDefaultInstance(),
-    emailDialog: makeDefaultInstance(),
-    authGate: makeDefaultInstance(),
-    contentHistory: makeDefaultInstance(),
-    feedbackDialog: makeDefaultInstance(),
-    shareModal: makeDefaultInstance(),
-    voicePad: makeDefaultInstance(),
-    voicePadAdvanced: makeDefaultInstance(),
-    voicePadAi: makeDefaultInstance(),
-    undoHistory: makeDefaultInstance(),
-    streamDebug: makeDefaultInstance(),
-    jsonTruncator: makeDefaultInstance(),
-    // Image viewer — instanced so multiple can be open at once
-    imageViewer: makeDefaultInstance(),
-    // Window panel specific components
-    adminStateAnalyzerWindow: makeDefaultInstance(),
-    markdownEditorWindow: makeDefaultInstance(),
-    userPreferencesWindow: makeDefaultInstance(),
-    quickTasksWindow: makeDefaultInstance(),
-    quickDataWindow: makeDefaultInstance(),
-    quickFilesWindow: makeDefaultInstance(),
-    filePreviewWindow: makeDefaultInstance(),
-    fileUploadWindow: makeDefaultInstance(),
-    emailDialogWindow: makeDefaultInstance(),
-    scraperWindow: makeDefaultInstance(),
-    contextSwitcherWindow: makeDefaultInstance(),
-    canvasViewerWindow: makeDefaultInstance(),
-    hierarchyCreationWindow: makeDefaultInstance(),
-    projectsWindow: makeDefaultInstance(),
-    newsWindow: makeDefaultInstance(),
-    galleryWindow: makeDefaultInstance(),
-    listManagerWindow: makeDefaultInstance(),
-    aiVoiceWindow: makeDefaultInstance(),
-    agentGateWindow: makeDefaultInstance(),
-    agentSettingsWindow: makeDefaultInstance(),
-    agentRunHistoryWindow: makeDefaultInstance(),
-    agentAdvancedEditorWindow: makeDefaultInstance(),
-    agentContentSidebarWindow: makeDefaultInstance(),
-    executionInspectorWindow: makeDefaultInstance(),
-    messageAnalysisWindow: makeDefaultInstance(),
-    agentAssistantMarkdownDebugWindow: makeDefaultInstance(),
-    agentImportWindow: makeDefaultInstance(),
-    notesBetaWindow: makeDefaultInstance(),
-    contentEditorWindow: makeDefaultInstance(),
-    contentEditorListWindow: makeDefaultInstance(),
-    contentEditorWorkspaceWindow: makeDefaultInstance(),
-    // Agent execution widget overlays — each is autonomous, instanced
-    agentFullModal: makeDefaultInstance(),
-    agentCompactModal: makeDefaultInstance(),
-    agentChatBubble: makeDefaultInstance(),
-    agentInlineOverlay: makeDefaultInstance(),
-    agentSidebarOverlay: makeDefaultInstance(),
-    agentFlexiblePanel: makeDefaultInstance(),
-    agentPanelOverlay: makeDefaultInstance(),
-    agentToastOverlay: makeDefaultInstance(),
-    agentFloatingChat: makeDefaultInstance(),
-    agentChatCollapsible: makeDefaultInstance(),
-    agentChatAssistant: makeDefaultInstance(),
-  },
+  overlays: {},
 };
 
 // ============================================================================
@@ -141,32 +64,52 @@ const overlaySlice = createSlice({
         instanceId = DEFAULT_INSTANCE_ID,
         data,
       } = action.payload;
-      console.log("[overlaySlice] openOverlay", overlayId, instanceId);
       if (!state.overlays[overlayId]) {
         state.overlays[overlayId] = {};
       }
       state.overlays[overlayId][instanceId] = {
         isOpen: true,
         data: data ?? null,
+        lastUsedAt: Date.now(),
       };
     },
 
     closeOverlay: (state, action) => {
       const { overlayId, instanceId = DEFAULT_INSTANCE_ID } = action.payload;
-      const instance = state.overlays[overlayId]?.[instanceId];
-      if (instance) {
-        instance.isOpen = false;
-        instance.data = null;
+      const bucket = state.overlays[overlayId];
+      if (!bucket) return;
+      const instance = bucket[instanceId];
+      if (!instance) return;
+
+      // Multi-instance entries have unique (non-default) ids. Dropping them
+      // immediately on close avoids unbounded growth of closed records.
+      // Singleton ("default") entries flip isOpen but retain the slot so
+      // subsequent selectors keep their stable reference.
+      if (instanceId !== DEFAULT_INSTANCE_ID) {
+        delete bucket[instanceId];
+        if (Object.keys(bucket).length === 0) {
+          delete state.overlays[overlayId];
+        }
+        return;
       }
+      instance.isOpen = false;
+      instance.data = null;
     },
 
     closeAllOverlays: (state) => {
-      Object.values(state.overlays).forEach((instances) => {
-        Object.values(instances).forEach((instance) => {
-          instance.isOpen = false;
-          instance.data = null;
-        });
-      });
+      for (const [overlayId, bucket] of Object.entries(state.overlays)) {
+        for (const [instanceId, instance] of Object.entries(bucket)) {
+          if (instanceId === DEFAULT_INSTANCE_ID) {
+            instance.isOpen = false;
+            instance.data = null;
+          } else {
+            delete bucket[instanceId];
+          }
+        }
+        if (Object.keys(bucket).length === 0) {
+          delete state.overlays[overlayId];
+        }
+      }
     },
 
     toggleOverlay: (state, action) => {
@@ -183,10 +126,57 @@ const overlaySlice = createSlice({
         state.overlays[overlayId][instanceId] = {
           isOpen: true,
           data: data ?? null,
+          lastUsedAt: Date.now(),
         };
+      } else if (existing.isOpen) {
+        // Close branch — same semantics as closeOverlay.
+        if (instanceId !== DEFAULT_INSTANCE_ID) {
+          delete state.overlays[overlayId][instanceId];
+          if (Object.keys(state.overlays[overlayId]).length === 0) {
+            delete state.overlays[overlayId];
+          }
+        } else {
+          existing.isOpen = false;
+          existing.data = null;
+        }
       } else {
-        existing.isOpen = !existing.isOpen;
-        existing.data = existing.isOpen ? (data ?? existing.data) : null;
+        existing.isOpen = true;
+        existing.data = data ?? existing.data;
+        existing.lastUsedAt = Date.now();
+      }
+    },
+
+    /**
+     * Removes every instance of a given overlayId — useful when closing a
+     * feature that opened many instanced overlays (e.g. closing an editor
+     * that spawned multiple Content Editor tabs).
+     */
+    closeAllInstancesOfOverlay: (state, action) => {
+      const { overlayId } = action.payload as { overlayId: string };
+      delete state.overlays[overlayId];
+    },
+
+    /**
+     * GC pass — removes closed instances last used more than
+     * `olderThanMs` ago. Singleton slots are preserved regardless so the
+     * selectors that return stable references don't thrash.
+     *
+     * Intended caller: idle sweep in WindowPersistenceManager (~30 min).
+     */
+    pruneStaleInstances: (state, action) => {
+      const { olderThanMs } = action.payload as { olderThanMs: number };
+      const cutoff = Date.now() - olderThanMs;
+      for (const [overlayId, bucket] of Object.entries(state.overlays)) {
+        for (const [instanceId, instance] of Object.entries(bucket)) {
+          if (instanceId === DEFAULT_INSTANCE_ID) continue;
+          if (instance.isOpen) continue;
+          if (!instance.lastUsedAt || instance.lastUsedAt < cutoff) {
+            delete bucket[instanceId];
+          }
+        }
+        if (Object.keys(bucket).length === 0) {
+          delete state.overlays[overlayId];
+        }
       }
     },
   },
@@ -262,8 +252,14 @@ export const selectOpenInstances = (
 // that do `instances.length === 0` checks don't get a new reference each render.
 const EMPTY_INSTANCES: Array<{ instanceId: string; data: any }> = [];
 
-export const { openOverlay, closeOverlay, closeAllOverlays, toggleOverlay } =
-  overlaySlice.actions;
+export const {
+  openOverlay,
+  closeOverlay,
+  closeAllOverlays,
+  toggleOverlay,
+  closeAllInstancesOfOverlay,
+  pruneStaleInstances,
+} = overlaySlice.actions;
 export default overlaySlice.reducer;
 
 // ============================================================================

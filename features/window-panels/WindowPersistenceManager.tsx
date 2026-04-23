@@ -26,7 +26,10 @@ import React, {
 } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/slices/userSlice";
-import { openOverlay } from "@/lib/redux/slices/overlaySlice";
+import {
+  openOverlay,
+  pruneStaleInstances,
+} from "@/lib/redux/slices/overlaySlice";
 import { restoreWindowState } from "@/lib/redux/slices/windowManagerSlice";
 import {
   loadWindowSessions,
@@ -112,6 +115,28 @@ export function WindowPersistenceManager({
 
   // ── Hydrate on mount ────────────────────────────────────────────────────────
   useEffect(() => {
+    // One-time migration off the legacy `matrx_window_manager_state`
+    // localStorage sidecar. Reads the old blob, seeds Redux geometry
+    // synchronously, then removes the key. Later DB hydration will
+    // overwrite geometry with the authoritative row. Safe no-op on
+    // subsequent loads once the key is gone.
+    //
+    // Delete this block after the next release cycle — by then every
+    // active user will have hydrated at least once.
+    try {
+      const LEGACY_LS_KEY = "matrx_window_manager_state";
+      const saved = localStorage.getItem(LEGACY_LS_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved) as Record<string, WindowEntry> | null;
+        if (parsed && typeof parsed === "object") {
+          dispatch(restoreWindowState(parsed));
+        }
+        localStorage.removeItem(LEGACY_LS_KEY);
+      }
+    } catch {
+      // Malformed LS blob — drop silently.
+    }
+
     if (!userId) {
       setHydrated(true);
       return;
@@ -174,6 +199,36 @@ export function WindowPersistenceManager({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
+
+  // ── Idle GC sweep ──────────────────────────────────────────────────────────
+  //
+  // Every 30 minutes (idle-only), prune closed multi-instance overlay entries
+  // that haven't been used in the same window. Keeps `state.overlays` from
+  // growing unbounded when users repeatedly open/close Content Editors,
+  // Smart Code Editor instances, image viewers, etc. Singleton slots are
+  // preserved so stable-reference selectors don't thrash.
+  useEffect(() => {
+    const THIRTY_MINUTES_MS = 30 * 60 * 1000;
+
+    const runSweep = () => {
+      const idleRun = () =>
+        dispatch(pruneStaleInstances({ olderThanMs: THIRTY_MINUTES_MS }));
+
+      // Prefer requestIdleCallback so the sweep never steals paint time.
+      // Fall back to a microtask on Safari (no rIC support yet).
+      const w = window as unknown as {
+        requestIdleCallback?: (cb: () => void) => number;
+      };
+      if (typeof w.requestIdleCallback === "function") {
+        w.requestIdleCallback(idleRun);
+      } else {
+        setTimeout(idleRun, 0);
+      }
+    };
+
+    const interval = window.setInterval(runSweep, THIRTY_MINUTES_MS);
+    return () => window.clearInterval(interval);
+  }, [dispatch]);
 
   // ── Context callbacks ───────────────────────────────────────────────────────
 

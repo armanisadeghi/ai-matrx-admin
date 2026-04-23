@@ -357,7 +357,9 @@ export function ToolUiComponentEditor({
         <div className="flex items-start gap-2 text-xs text-amber-800 dark:text-amber-200">
           <div className="mt-0.5 w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0" />
           <div>
-            <div className="font-medium">Contract v1 — rendered as fallback only</div>
+            <div className="font-medium">
+              Contract v1 — rendered as fallback only
+            </div>
             <div className="text-[11px] opacity-80 mt-0.5">
               This component still uses the dead ToolCallObject shape. Rewrite
               every code field against the new contract (entry, events), then
@@ -377,7 +379,9 @@ export function ToolUiComponentEditor({
     ) : (
       <div className="flex items-center gap-2 text-[11px] text-emerald-700 dark:text-emerald-400">
         <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-        <span>Contract v2 — canonical ToolLifecycleEntry / ToolEventPayload</span>
+        <span>
+          Contract v2 — canonical ToolLifecycleEntry / ToolEventPayload
+        </span>
       </div>
     );
 

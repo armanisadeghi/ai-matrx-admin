@@ -22,7 +22,7 @@ import SidebarNotesToggle from "@/features/notes/actions/SidebarNotesToggle";
 import SidebarVoicePadToggle from "../controls/SidebarVoicePadToggle";
 import SidebarAdminIndicatorToggle from "../controls/SidebarAdminIndicatorToggle";
 import SidebarEnvToggle from "../controls/SidebarEnvToggle";
-import SidebarWindowToggle from "@/features/window-panels/components/SidebarWindowToggle";
+import SidebarWindowToggleIsland from "./SidebarWindowToggleIsland";
 import {
   primaryNavItems,
   settingsItem,
@@ -87,7 +87,7 @@ export default function Sidebar({ pathname }: SidebarProps) {
       <div className="shell-sidebar-footer">
         <SidebarEnvToggle />
         <SidebarAdminIndicatorToggle />
-        <SidebarWindowToggle />
+        <SidebarWindowToggleIsland />
         <SidebarNotesToggle />
         <SidebarVoicePadToggle />
         <NavItem item={settingsItem} />

@@ -1,0 +1,138 @@
+"use client";
+
+import { Bot, User } from "lucide-react";
+import {
+  SettingsSwitch,
+  SettingsSelect,
+  SettingsSlider,
+  SettingsTextInput,
+  SettingsSection,
+  SettingsSubHeader,
+} from "@/components/official/settings";
+import { useSetting } from "../hooks/useSetting";
+import type { AIProvider } from "@/lib/redux/slices/userPreferencesSlice";
+
+const providerOptions: { value: AIProvider; label: string }[] = [
+  { value: "default", label: "Default" },
+  { value: "openai", label: "OpenAI" },
+  { value: "anthropic", label: "Anthropic" },
+  { value: "google", label: "Google" },
+  { value: "groq", label: "Groq" },
+  { value: "cohere", label: "Cohere" },
+  { value: "matrx", label: "Matrx" },
+  { value: "other", label: "Other" },
+];
+
+export default function AssistantTab() {
+  const [alwaysActive, setAlwaysActive] = useSetting<boolean>(
+    "userPreferences.assistant.alwaysActive",
+  );
+  const [alwaysWatching, setAlwaysWatching] = useSetting<boolean>(
+    "userPreferences.assistant.alwaysWatching",
+  );
+  const [useAudio, setUseAudio] = useSetting<boolean>(
+    "userPreferences.assistant.useAudio",
+  );
+  const [isPersonal, setIsPersonal] = useSetting<boolean>(
+    "userPreferences.assistant.isPersonal",
+  );
+  const [name, setName] = useSetting<string>(
+    "userPreferences.assistant.name",
+  );
+  const [memoryLevel, setMemoryLevel] = useSetting<number>(
+    "userPreferences.assistant.memoryLevel",
+  );
+  const [provider, setProvider] = useSetting<AIProvider>(
+    "userPreferences.assistant.preferredProvider",
+  );
+  const [model, setModel] = useSetting<string>(
+    "userPreferences.assistant.preferredModel",
+  );
+
+  return (
+    <>
+      <SettingsSubHeader
+        title="Assistant"
+        description="How your AI assistant should behave."
+        icon={Bot}
+      />
+
+      <SettingsSection title="Activation">
+        <SettingsSwitch
+          label="Always active"
+          description="Keep the assistant running even when no conversation is open."
+          checked={alwaysActive}
+          onCheckedChange={setAlwaysActive}
+        />
+        <SettingsSwitch
+          label="Always watching"
+          description="Observe screen context even when not explicitly invoked."
+          warning="May consume extra resources."
+          checked={alwaysWatching}
+          onCheckedChange={setAlwaysWatching}
+        />
+        <SettingsSwitch
+          label="Use audio"
+          description="Respond with spoken audio in addition to text."
+          checked={useAudio}
+          onCheckedChange={setUseAudio}
+          last
+        />
+      </SettingsSection>
+
+      <SettingsSection title="Identity" icon={User}>
+        <SettingsTextInput
+          label="Assistant name"
+          description="What the assistant calls itself."
+          value={name}
+          onValueChange={setName}
+          placeholder="e.g., Assistant, Jarvis"
+          commitOnBlur
+          stacked
+        />
+        <SettingsSwitch
+          label="Personal mode"
+          description="Use a more casual, personalized tone."
+          checked={isPersonal}
+          onCheckedChange={setIsPersonal}
+          last
+        />
+      </SettingsSection>
+
+      <SettingsSection title="Memory">
+        <SettingsSlider
+          label="Memory level"
+          description="How much conversation history the assistant retains between sessions."
+          value={memoryLevel}
+          onValueChange={setMemoryLevel}
+          min={0}
+          max={10}
+          step={1}
+          minLabel="Minimal"
+          midLabel="Moderate"
+          maxLabel="Maximum"
+          last
+        />
+      </SettingsSection>
+
+      <SettingsSection title="Model">
+        <SettingsSelect<AIProvider>
+          label="Provider"
+          value={provider}
+          onValueChange={setProvider}
+          options={providerOptions}
+        />
+        <SettingsTextInput
+          label="Preferred model"
+          description="Free-text model name. Use the AI Models tab for a picker."
+          value={model}
+          onValueChange={setModel}
+          placeholder="e.g., gpt-4, claude-3"
+          commitOnBlur
+          stacked
+          last
+        />
+      </SettingsSection>
+    </>
+  );
+}

@@ -22,6 +22,8 @@ import { createClient } from "@/utils/supabase/server";
 import sharp from "sharp";
 import { ALL_PRESETS, getPresetById } from "@/features/image-studio/presets";
 import type {
+    ImageFit,
+    ImagePosition,
     OutputFormat,
     ProcessStudioRequestBody,
     ProcessStudioResponse,
@@ -51,6 +53,44 @@ function clampQuality(q: unknown): number {
 
 function isFormat(v: unknown): v is OutputFormat {
     return v === "jpeg" || v === "png" || v === "webp" || v === "avif";
+}
+
+function isFit(v: unknown): v is ImageFit {
+    return v === "cover" || v === "contain" || v === "inside";
+}
+
+const POSITION_SET: ReadonlySet<ImagePosition> = new Set<ImagePosition>([
+    "center",
+    "top",
+    "bottom",
+    "left",
+    "right",
+    "top-left",
+    "top-right",
+    "bottom-left",
+    "bottom-right",
+    "entropy",
+    "attention",
+]);
+
+function isPosition(v: unknown): v is ImagePosition {
+    return typeof v === "string" && POSITION_SET.has(v as ImagePosition);
+}
+
+/** Convert our UI position string to the value Sharp accepts. */
+function toSharpPosition(p: ImagePosition): string {
+    switch (p) {
+        case "top-left":
+            return "left top";
+        case "top-right":
+            return "right top";
+        case "bottom-left":
+            return "left bottom";
+        case "bottom-right":
+            return "right bottom";
+        default:
+            return p; // "center" | "top" | "bottom" | "left" | "right" | "entropy" | "attention"
+    }
 }
 
 function extForFormat(format: OutputFormat): string {
@@ -137,6 +177,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         const defaultFormat: OutputFormat = isFormat(spec.defaultFormat)
             ? spec.defaultFormat
             : "webp";
+        const defaultFit: ImageFit = isFit(spec.defaultFit)
+            ? spec.defaultFit
+            : "cover";
+        const defaultPosition: ImagePosition = isPosition(spec.defaultPosition)
+            ? spec.defaultPosition
+            : "center";
         const backgroundColor =
             typeof spec.backgroundColor === "string" && /^#?[0-9a-fA-F]{3,8}$/.test(spec.backgroundColor)
                 ? spec.backgroundColor.startsWith("#")
@@ -169,6 +215,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
                         size: 0,
                         dataUrl: "",
                         compressionRatio: null,
+                        fit: defaultFit,
+                        position: defaultFit === "cover" ? defaultPosition : null,
                         error: `Unknown preset: ${v.presetId}`,
                     };
                 }
@@ -176,22 +224,40 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
                 const format: OutputFormat = isFormat(v.format)
                     ? v.format
                     : (preset.defaultFormat ?? defaultFormat);
+                const fit: ImageFit = isFit(v.fit) ? v.fit : defaultFit;
+                const position: ImagePosition = isPosition(v.position)
+                    ? v.position
+                    : defaultPosition;
 
                 try {
+                    const resizeOpts: sharp.ResizeOptions = {
+                        fit,
+                        background: backgroundColor,
+                        withoutEnlargement: false,
+                    };
+                    // Position only applies to `cover`. Sharp ignores it for
+                    // `contain` / `inside` but keeping it out keeps intent clear.
+                    if (fit === "cover") {
+                        resizeOpts.position = toSharpPosition(position);
+                    }
+
                     const pipeline = sharp(sourceBuffer)
                         .rotate() // respect EXIF
-                        .resize(preset.width, preset.height, {
-                            fit: "cover",
-                            position: "center",
-                            withoutEnlargement: false,
-                        });
+                        .resize(preset.width, preset.height, resizeOpts);
 
+                    // JPEG / AVIF don't support alpha — flatten onto the
+                    // background colour so transparent pixels become opaque.
+                    // (Contain-mode padding is already filled via resize's
+                    // `background` option — this is for alpha in the source.)
                     if (format === "jpeg" || format === "avif") {
-                        // No alpha support — composite onto a flat background.
                         pipeline.flatten({ background: backgroundColor });
                     }
 
                     const outBuffer = await encode(pipeline, format, quality);
+                    const outMeta = await sharp(outBuffer).metadata();
+                    const actualWidth = outMeta.width ?? preset.width;
+                    const actualHeight = outMeta.height ?? preset.height;
+
                     const ext = extForFormat(format);
                     const filenameBase = sanitizeFilenameBase(v.filenameBase || baseName);
                     const filename = `${filenameBase}-${preset.id}.${ext}`;
@@ -205,12 +271,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
                         presetId: preset.id,
                         filename,
                         format,
-                        width: preset.width,
-                        height: preset.height,
+                        width: actualWidth,
+                        height: actualHeight,
                         quality: format === "png" ? null : quality,
                         size: outBuffer.length,
                         dataUrl,
                         compressionRatio,
+                        fit,
+                        position: fit === "cover" ? position : null,
                     };
                 } catch (err: unknown) {
                     const msg = err instanceof Error ? err.message : "Unknown error";
@@ -224,6 +292,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
                         size: 0,
                         dataUrl: "",
                         compressionRatio: null,
+                        fit,
+                        position: fit === "cover" ? position : null,
                         error: msg,
                     };
                 }

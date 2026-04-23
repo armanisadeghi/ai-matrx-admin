@@ -13,12 +13,10 @@ import {
   Image as ImageIcon,
   Type,
   BookOpen,
-  Gamepad2,
   Cpu,
   ShieldCheck,
   User,
   Database,
-  Sparkles,
   Globe,
   Sun,
   Layers,
@@ -33,17 +31,36 @@ import type { SettingsTreeNode } from "@/components/official/settings";
 /**
  * Single source of truth for every settings tab.
  *
- * Phase 3 deliverable: the catalog exists and is wired to `useSetting`. The
- * actual tab components are placeholders that the later phases replace with
- * primitives-based implementations.
- *
  * Adding a setting? See .cursor/skills/settings-system/SKILL.md once Phase 9 lands.
+ *
+ * NOTE: tabs are typed permissively because they're lazy-loaded and have no
+ * props at the call site — `ComponentType<Record<string, never>>` means "no
+ * required props" but structurally any tab that uses `useSetting` internally
+ * is assignable.
  */
 
-// Lazy-loaded placeholder — real tabs live under features/settings/tabs/* (Phase 5+).
-// Typed permissively so tabs with internal props don't fail structural checks.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const Placeholder = lazy(() => import("./tabs/PlaceholderTab")) as any;
+const lazyTab = (importer: () => Promise<{ default: any }>): any =>
+  lazy(importer);
+
+// ── Placeholder (used only for category-only nodes) ──────────────────────────
+const Placeholder = lazyTab(() => import("./tabs/PlaceholderTab"));
+
+// ── Real tabs ───────────────────────────────────────────────────────────────
+const MessagingTab = lazyTab(() => import("./tabs/MessagingTab"));
+const AppearanceTab = lazyTab(() => import("./tabs/AppearanceTab"));
+const VoiceTab = lazyTab(() => import("./tabs/VoiceTab"));
+const TextToSpeechTab = lazyTab(() => import("./tabs/TextToSpeechTab"));
+const AssistantTab = lazyTab(() => import("./tabs/AssistantTab"));
+const EmailTab = lazyTab(() => import("./tabs/EmailTab"));
+const TextGenerationTab = lazyTab(() => import("./tabs/TextGenerationTab"));
+const ImageGenerationTab = lazyTab(() => import("./tabs/ImageGenerationTab"));
+const PhotoEditingTab = lazyTab(() => import("./tabs/PhotoEditingTab"));
+const VideoConferenceTab = lazyTab(() => import("./tabs/VideoConferenceTab"));
+const CodingTab = lazyTab(() => import("./tabs/CodingTab"));
+const FlashcardsTab = lazyTab(() => import("./tabs/FlashcardsTab"));
+const AiModelsTab = lazyTab(() => import("./tabs/AiModelsTab"));
+const AdminServerTab = lazyTab(() => import("./tabs/AdminServerTab"));
 
 export const settingsRegistry: SettingsTabDef[] = [
   // ── General ───────────────────────────────────────────────────────────────
@@ -62,7 +79,7 @@ export const settingsRegistry: SettingsTabDef[] = [
     parentId: "general",
     description: "Desktop notifications, volume, alerts.",
     searchKeywords: ["alerts", "sound", "ping"],
-    component: Placeholder,
+    component: MessagingTab, // shares the messaging implementation
     persistence: "synced",
   },
   {
@@ -83,13 +100,14 @@ export const settingsRegistry: SettingsTabDef[] = [
     persistence: "synced",
   },
 
-  // ── Appearance (theme slice) ──────────────────────────────────────────────
+  // ── Appearance (theme slice + display module) ─────────────────────────────
   {
     id: "appearance",
     label: "Appearance",
     icon: Palette,
     description: "Theme, density, accent color.",
-    component: Placeholder,
+    searchKeywords: ["dark", "light", "mode", "theme", "layout"],
+    component: AppearanceTab,
     persistence: "synced",
   },
   {
@@ -97,9 +115,9 @@ export const settingsRegistry: SettingsTabDef[] = [
     label: "Theme",
     icon: Sun,
     parentId: "appearance",
-    description: "Light, dark, system.",
+    description: "Light, dark, accent variants.",
     searchKeywords: ["dark mode", "light mode"],
-    component: Placeholder,
+    component: AppearanceTab,
     persistence: "synced",
   },
   {
@@ -107,7 +125,7 @@ export const settingsRegistry: SettingsTabDef[] = [
     label: "Density",
     icon: Layers,
     parentId: "appearance",
-    component: Placeholder,
+    component: AppearanceTab,
     persistence: "synced",
   },
   {
@@ -115,7 +133,7 @@ export const settingsRegistry: SettingsTabDef[] = [
     label: "Accent color",
     icon: Eye,
     parentId: "appearance",
-    component: Placeholder,
+    component: AppearanceTab,
     persistence: "synced",
   },
 
@@ -133,18 +151,9 @@ export const settingsRegistry: SettingsTabDef[] = [
     label: "Models",
     icon: Cpu,
     parentId: "ai",
-    searchKeywords: ["gpt", "claude", "llm"],
-    component: Placeholder,
-    persistence: "synced",
-  },
-  {
-    id: "ai.prompts",
-    label: "Prompts",
-    icon: Sparkles,
-    parentId: "ai",
-    description: "Default model, temperature, thinking mode.",
-    searchKeywords: ["temperature", "thinking"],
-    component: Placeholder,
+    description: "Choose which models appear in pickers.",
+    searchKeywords: ["gpt", "claude", "llm", "provider"],
+    component: AiModelsTab,
     persistence: "synced",
   },
   {
@@ -152,7 +161,8 @@ export const settingsRegistry: SettingsTabDef[] = [
     label: "Assistants",
     icon: Bot,
     parentId: "ai",
-    component: Placeholder,
+    description: "Default assistant behaviour.",
+    component: AssistantTab,
     persistence: "synced",
   },
   {
@@ -160,7 +170,7 @@ export const settingsRegistry: SettingsTabDef[] = [
     label: "Text generation",
     icon: Type,
     parentId: "ai",
-    component: Placeholder,
+    component: TextGenerationTab,
     persistence: "synced",
   },
   {
@@ -168,7 +178,7 @@ export const settingsRegistry: SettingsTabDef[] = [
     label: "Image generation",
     icon: ImageIcon,
     parentId: "ai",
-    component: Placeholder,
+    component: ImageGenerationTab,
     persistence: "synced",
   },
   {
@@ -176,7 +186,7 @@ export const settingsRegistry: SettingsTabDef[] = [
     label: "Photo editing",
     icon: Camera,
     parentId: "ai",
-    component: Placeholder,
+    component: PhotoEditingTab,
     persistence: "synced",
   },
 
@@ -193,7 +203,7 @@ export const settingsRegistry: SettingsTabDef[] = [
     label: "Coding",
     icon: Code,
     parentId: "editor",
-    component: Placeholder,
+    component: CodingTab,
     persistence: "synced",
   },
   {
@@ -218,7 +228,8 @@ export const settingsRegistry: SettingsTabDef[] = [
     label: "Voice input",
     icon: Mic,
     parentId: "voice",
-    component: Placeholder,
+    description: "Microphone, wake word, speech speed.",
+    component: VoiceTab,
     persistence: "synced",
   },
   {
@@ -226,7 +237,8 @@ export const settingsRegistry: SettingsTabDef[] = [
     label: "Text-to-speech",
     icon: Volume2,
     parentId: "voice",
-    component: Placeholder,
+    description: "Voice used to read responses aloud.",
+    component: TextToSpeechTab,
     persistence: "synced",
   },
 
@@ -235,21 +247,23 @@ export const settingsRegistry: SettingsTabDef[] = [
     id: "communication.email",
     label: "Email",
     icon: Mail,
-    component: Placeholder,
-    persistence: "synced",
+    component: EmailTab,
+    persistence: "local-only", // stored via separate API, not unified sync yet
   },
   {
     id: "communication.video",
     label: "Video conference",
     icon: Video,
-    component: Placeholder,
+    component: VideoConferenceTab,
     persistence: "synced",
   },
   {
     id: "communication.messaging",
     label: "Messaging",
     icon: MessageSquare,
-    component: Placeholder,
+    description: "Notification sounds and desktop alerts.",
+    searchKeywords: ["notifications", "sound", "volume", "alerts", "banner"],
+    component: MessagingTab,
     persistence: "synced",
   },
 
@@ -258,14 +272,7 @@ export const settingsRegistry: SettingsTabDef[] = [
     id: "learning.flashcards",
     label: "Flashcards",
     icon: BookOpen,
-    component: Placeholder,
-    persistence: "synced",
-  },
-  {
-    id: "learning.playground",
-    label: "Playground",
-    icon: Gamepad2,
-    component: Placeholder,
+    component: FlashcardsTab,
     persistence: "synced",
   },
 
@@ -296,15 +303,12 @@ export const settingsRegistry: SettingsTabDef[] = [
     description: "Override the backend host for API calls.",
     searchKeywords: ["url", "endpoint", "localhost", "staging"],
     requiresAdmin: true,
-    component: Placeholder,
+    component: AdminServerTab,
     persistence: "local-only",
   },
 ];
 
-/**
- * Returns the registry filtered by visibility rules.
- * `isAdmin` gates tabs with `requiresAdmin: true`.
- */
+/** Returns the registry filtered by visibility rules. */
 export function getVisibleTabs(isAdmin: boolean): SettingsTabDef[] {
   return settingsRegistry.filter((t) => {
     if (t.requiresAdmin && !isAdmin) return false;
@@ -315,7 +319,9 @@ export function getVisibleTabs(isAdmin: boolean): SettingsTabDef[] {
 /** Returns the registry organized as a hierarchical array for the tree. */
 export function getTabTree(isAdmin: boolean): ResolvedSettingsTab[] {
   const visible = getVisibleTabs(isAdmin);
-  const byId = new Map(visible.map((t) => [t.id, { ...t } as ResolvedSettingsTab]));
+  const byId = new Map(
+    visible.map((t) => [t.id, { ...t } as ResolvedSettingsTab]),
+  );
   const roots: ResolvedSettingsTab[] = [];
   for (const t of byId.values()) {
     if (t.parentId) {
@@ -323,7 +329,6 @@ export function getTabTree(isAdmin: boolean): ResolvedSettingsTab[] {
       if (parent) {
         (parent.children ??= []).push(t);
       } else {
-        // Orphan — promote to root rather than drop silently
         roots.push(t);
       }
     } else {
@@ -333,7 +338,7 @@ export function getTabTree(isAdmin: boolean): ResolvedSettingsTab[] {
   return roots;
 }
 
-/** Returns the registry as SettingsTreeNode[], ready for SettingsTree / SettingsDrawerNav. */
+/** Returns the registry as SettingsTreeNode[], ready for the tree components. */
 export function getTabTreeNodes(isAdmin: boolean): SettingsTreeNode[] {
   const toNode = (t: ResolvedSettingsTab): SettingsTreeNode => ({
     id: t.id,

@@ -13,8 +13,9 @@ import {
 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
-import type { OutputFormat, StudioSourceFile } from "../types";
+import type { ImageFit, ImagePosition, OutputFormat, StudioSourceFile } from "../types";
 import { formatBytes } from "../utils/format-bytes";
+import { CropControls } from "./CropControls";
 
 const FORMATS: Array<{
     id: OutputFormat;
@@ -32,9 +33,13 @@ interface ExportPanelProps {
     format: OutputFormat;
     quality: number;
     backgroundColor: string;
+    fit: ImageFit;
+    position: ImagePosition;
     onFormatChange: (f: OutputFormat) => void;
     onQualityChange: (q: number) => void;
     onBackgroundChange: (c: string) => void;
+    onFitChange: (f: ImageFit) => void;
+    onPositionChange: (p: ImagePosition) => void;
 
     isProcessing: boolean;
     isSaving: boolean;
@@ -59,9 +64,13 @@ export function ExportPanel({
     format,
     quality,
     backgroundColor,
+    fit,
+    position,
     onFormatChange,
     onQualityChange,
     onBackgroundChange,
+    onFitChange,
+    onPositionChange,
 
     isProcessing,
     isSaving,
@@ -93,6 +102,16 @@ export function ExportPanel({
             </div>
 
             <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-5">
+                {/* Crop & fit — placed FIRST because it's the most common gotcha */}
+                <CropControls
+                    fit={fit}
+                    position={position}
+                    onFitChange={onFitChange}
+                    onPositionChange={onPositionChange}
+                />
+
+                <div className="h-px bg-border" />
+
                 {/* Format */}
                 <div className="space-y-2">
                     <label className="text-[11px] uppercase tracking-wider font-semibold text-muted-foreground">

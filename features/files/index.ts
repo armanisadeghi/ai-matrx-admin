@@ -96,3 +96,15 @@ export {
 
 // Providers
 export { CloudFilesRealtimeProvider } from "./providers/CloudFilesRealtimeProvider";
+
+// Hooks — ergonomic consumption API
+export * from "./hooks";
+
+// Utils — pure helpers (path, format, mime, icon-map, preview-capabilities)
+export * as Utils from "./utils";
+
+// Core components — Phase 3
+export * from "./components/core";
+
+// Surfaces — Phase 4 (drop-in hosts per consumption context)
+export * from "./components/surfaces";

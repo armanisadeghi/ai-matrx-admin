@@ -188,9 +188,13 @@ export function ImageStudioShell({ defaultFolder }: ImageStudioShellProps) {
                     format={studio.format}
                     quality={studio.quality}
                     backgroundColor={studio.backgroundColor}
+                    fit={studio.fit}
+                    position={studio.position}
                     onFormatChange={studio.setFormat}
                     onQualityChange={studio.setQuality}
                     onBackgroundChange={studio.setBackgroundColor}
+                    onFitChange={studio.setFit}
+                    onPositionChange={studio.setPosition}
                     isProcessing={studio.isProcessing}
                     isSaving={studio.isSaving}
                     canGenerate={
