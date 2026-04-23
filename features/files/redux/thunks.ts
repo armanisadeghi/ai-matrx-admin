@@ -42,6 +42,7 @@ import {
   markFileSaved,
   removeFile,
   removeFilePendingRequest,
+  removeFolder,
   removePermissionForResource,
   removeShareLink,
   replaceTree,

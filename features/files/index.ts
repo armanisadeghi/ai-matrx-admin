@@ -115,3 +115,7 @@ export * from "./components/surfaces";
 
 // Pickers — Phase 7 (declarative + hook + imperative host)
 export * from "./components/pickers";
+
+// Compat — migration bridges for legacy callers. Scheduled for deletion in
+// Phase 11. Do not add new callers.
+export * as Compat from "./compat";

@@ -72,6 +72,7 @@ function parseRegistry(src: string): RegistryEntry[] {
   let inArray = false;
   let depth = 0;
   let current: RegistryEntry | null = null;
+  let buffer: string[] = [];
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
@@ -90,36 +91,41 @@ function parseRegistry(src: string): RegistryEntry[] {
     // Entry starts with "  {" at depth 0 -> 1
     if (depth === 0 && /^\s*\{\s*$/.test(line)) {
       current = { lineStart: i + 1 };
+      buffer = [];
     }
 
-    if (current) {
-      const slug = /slug:\s*"([^"]+)"/.exec(line);
-      if (slug) current.slug = slug[1];
-      const overlayId = /overlayId:\s*"([^"]+)"/.exec(line);
-      if (overlayId) current.overlayId = overlayId[1];
-      const kind = /kind:\s*"([^"]+)"/.exec(line);
-      if (kind) current.kind = kind[1];
-      const label = /label:\s*"([^"]+)"/.exec(line);
-      if (label) current.label = label[1];
-      const mobile = /mobilePresentation:\s*"([^"]+)"/.exec(line);
-      if (mobile) current.mobilePresentation = mobile[1];
-      const urlKey = /urlSync:\s*\{\s*key:\s*"([^"]+)"/.exec(line);
-      if (urlKey) current.urlSyncKey = urlKey[1];
-      const ci = /import\(\s*"([^"]+)"\s*\)/.exec(line);
-      if (ci && !current.componentPath) current.componentPath = ci[1];
-    }
+    if (current) buffer.push(line);
 
     depth += opens - closes;
     if (depth < 0) depth = 0;
 
-    // Entry closed — collect + reset.
+    // Entry closed — scan the accumulated buffer with multi-line-friendly
+    // regexes, then reset.
     if (
       current &&
       depth === 0 &&
       (/^\s*\},?\s*$/.test(line) || /^\s*\}\s*,\s*$/.test(line))
     ) {
+      const text = buffer.join("\n");
+      const slug = /slug:\s*"([^"]+)"/.exec(text);
+      if (slug) current.slug = slug[1];
+      const overlayId = /overlayId:\s*"([^"]+)"/.exec(text);
+      if (overlayId) current.overlayId = overlayId[1];
+      const kind = /kind:\s*"([^"]+)"/.exec(text);
+      if (kind) current.kind = kind[1];
+      const label = /label:\s*"([^"]+)"/.exec(text);
+      if (label) current.label = label[1];
+      const mobile = /mobilePresentation:\s*"([^"]+)"/.exec(text);
+      if (mobile) current.mobilePresentation = mobile[1];
+      const urlKey = /urlSync:\s*\{\s*key:\s*"([^"]+)"/.exec(text);
+      if (urlKey) current.urlSyncKey = urlKey[1];
+      // Multi-line-tolerant: `import(\n "path" \n)` is common.
+      const ci = /import\(\s*"([^"]+)"/.exec(text);
+      if (ci) current.componentPath = ci[1];
+
       if (current.slug || current.overlayId) entries.push(current);
       current = null;
+      buffer = [];
     }
 
     // Array closed.

@@ -18,8 +18,8 @@ Full rationale and context: [../FEATURE.md](../FEATURE.md). Full approved plan: 
 | 5 | Routes (`app/(a)/cloud-files/`) | ✅ complete | 2 days | phases/phase-05-routes.md |
 | 6 | WindowPanel integration | ✅ complete | 2 days | phases/phase-06-window-panel.md |
 | 7 | Hooks + pickers | ✅ complete | 2 days | phases/phase-07-hooks-pickers.md |
-| 8 | First consumer migration | ⬜ not started | 1–2 days | phases/phase-08-first-consumer.md |
-| 9 | Progressive consumer migration | ⬜ not started | 1–2 weeks | phases/phase-09-consumers.md |
+| 8 | First consumer migration | ✅ complete | 1–2 days | phases/phase-08-first-consumer.md |
+| 9 | Progressive consumer migration | 🟡 in progress | 1–2 weeks | phases/phase-09-consumers.md |
 | 10 | Validation soak | ⬜ not started | 2 weeks | phases/phase-10-soak.md |
 | 11 | Legacy deletion | ⬜ not started | 1–3 days (many PRs) | phases/phase-11-deletion.md |
 | 12 | Backend optimization follow-ups | ⬜ ongoing | — | phases/phase-12-backend-followups.md |

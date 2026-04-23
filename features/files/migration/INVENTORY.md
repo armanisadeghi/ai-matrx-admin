@@ -116,7 +116,7 @@ Live map of every legacy file-handling surface in the repo and its new replaceme
 | Legacy path | New path | Status | Notes |
 |---|---|---|---|
 | `features/tasks/services/taskService.ts` (attachments) | `uploadFiles` thunk | legacy | — |
-| `features/audio/services/audioFallbackUpload.ts` | `uploadFiles` thunk | legacy | — |
+| `features/audio/services/audioFallbackUpload.ts` | `uploadFiles` thunk | **replaced** | Migrated 2026-04-23. Uploads via cloud-files REST, transcribes via signed URL, hard-deletes on completion. |
 | Slack upload flows | `uploadFiles` thunk | legacy | — |
 | Broker upload flows | `uploadFiles` thunk | legacy | — |
 | Chat/Prompt upload flows | `uploadFiles` thunk | legacy | — |
@@ -136,7 +136,7 @@ These must all migrate; grep pattern: `supabase.storage.from` / `storage.upload`
 | `utils/supabase/bucket-manager.ts` (all methods) | legacy |
 | `utils/file-operations/FileSystemManager.ts` (listBuckets) | legacy |
 | `features/tasks/services/taskService.ts` (getPublicUrl, remove) | legacy |
-| `features/audio/services/audioFallbackUpload.ts` (remove) | legacy |
+| `features/audio/services/audioFallbackUpload.ts` (remove) | **replaced** |
 | `features/resource-manager/resource-picker/FilesResourcePicker.tsx` (listBuckets) | legacy |
 | `lib/code-files/objectStore.ts` (remove ops) | legacy |
 

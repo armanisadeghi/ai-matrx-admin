@@ -4,6 +4,39 @@
     "react-hooks/exhaustive-deps": "off",
     "@next/next/no-img-element": "off",
     "react/no-unescaped-entities": "off",
-    "import/no-anonymous-default-export": "off"
-  }
+    "import/no-anonymous-default-export": "off",
+    "no-restricted-imports": [
+      "error",
+      {
+        "patterns": [
+          {
+            "group": [
+              "@/features/window-panels/windows/*",
+              "@/features/window-panels/windows/**/*"
+            ],
+            "message": "Import window components only via the registry's componentImport (features/window-panels/registry/windowRegistry.ts). Direct imports break bundle splitting. See .claude/skills/window-panels/SKILL.md."
+          }
+        ]
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["features/window-panels/windows/**/*"],
+      "rules": {
+        "no-restricted-imports": "off"
+      }
+    },
+    {
+      "files": [
+        "features/window-panels/registry/windowRegistry.ts",
+        "features/window-panels/UnifiedOverlayController.tsx",
+        "features/window-panels/OverlaySurface.tsx",
+        "components/overlays/OverlayController.tsx"
+      ],
+      "rules": {
+        "no-restricted-imports": "off"
+      }
+    }
+  ]
 }
