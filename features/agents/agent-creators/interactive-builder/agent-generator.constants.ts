@@ -5,22 +5,23 @@ import type {
 } from "@/features/agents/types/instance.types";
 
 /**
- * Standardized in-app agent definition for the AI Agent Generator.
+ * Standardized in-app agent configuration for the AI Agent Generator.
  *
- * This agent takes a user's description of what they want and generates
- * a complete agent configuration (system message, variables, settings)
- * as structured JSON.
+ * Launches via the "Agent Generator" shortcut, which:
+ *   - Pins the agent + version to use (shortcut owns the agent reference)
+ *   - Maps `selection` scope → the agent's primary description variable
+ *   - Runs in direct display mode so this component owns the UI
  *
- * The agent ID maps to the "Full Prompt Structure Builder" which was
- * duplicated from prompt_builtins into the agx_agent table with the
- * same UUID so existing definitions carry over.
+ * The caller here sends the two UI fields mapped to the shortcut's
+ * standard input surface:
+ *   - `scope.selection` — "What should this agent do?"
+ *   - `runtime.userInput` — "Additional context" (optional)
  *
- * TODO: Enable allowChat: true for multi-turn refinement ("make it more
- * concise", "add a variable for X"). This requires handling incremental
- * patches to the extracted JSON — tracked as the next milestone.
+ * JSON extraction is on so the streaming output is parsed into a structured
+ * agent config in real time; see `extractAgentConfig` for the shape.
  */
 export const AGENT_GENERATOR_CONFIG = {
-  agentId: "62895ef4-1f3a-499d-9af3-148944462769",
+  shortcutId: "cfde5205-598f-41d5-a627-6774846f5879",
 
   launchDefaults: {
     displayMode: "direct" as ResultDisplayMode,

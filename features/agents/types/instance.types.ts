@@ -73,7 +73,9 @@ export type SourceFeature =
   | "voice-pad-ai"
   | "agent-run-window"
   | "agent-run-history-window"
-  | "agent-runs-sidebar";
+  | "agent-runs-sidebar"
+  /** Triggered directly from application code (hook / helper / automation). */
+  | "programmatic";
 
 export const SOURCE_APP = "matrx-admin" as const;
 
