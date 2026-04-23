@@ -3,20 +3,22 @@
  *
  * This system allows tool renderers to be stored in the database and
  * compiled at runtime, so new tool UIs can be added without code deploys.
+ *
+ * Dynamic components consume the same canonical contract as hardcoded
+ * renderers: { entry: ToolLifecycleEntry, events?: ToolEventPayload[], ... }
  */
 
 import type { Database } from "@/types/database.types";
+import type { ToolLifecycleEntry } from "@/features/agents/types/request.types";
+import type { ToolEventPayload } from "@/types/python-generated/stream-events";
 
 // ---------------------------------------------------------------------------
-// Database row types — derived from the generated Supabase schema so schema
-// changes surface at compile time without manual type drift.
+// Database row types
 // ---------------------------------------------------------------------------
 
-/** Row from `tool_ui_components` table */
 export type ToolUiComponentRow =
     Database["public"]["Tables"]["tool_ui_components"]["Row"];
 
-/** Row from `tool_ui_incidents` table */
 export type ToolUiIncidentRow =
     Database["public"]["Tables"]["tool_ui_incidents"]["Row"];
 
@@ -39,11 +41,14 @@ export type IncidentErrorType =
     | "timeout"
     | "unknown";
 
+/** Contract version for stored components.  v1 = legacy ToolCallObject-based.
+ *  v2 = canonical ToolLifecycleEntry + ToolEventPayload. */
+export type ContractVersion = 1 | 2;
+
 // ---------------------------------------------------------------------------
 // Compiled component types
 // ---------------------------------------------------------------------------
 
-/** A fully compiled dynamic tool renderer ready for use */
 export interface CompiledToolRenderer {
     toolName: string;
     displayName: string;
@@ -51,26 +56,33 @@ export interface CompiledToolRenderer {
     keepExpandedOnStream: boolean;
     version: string;
     componentId: string;
+    contractVersion: ContractVersion;
 
-    /** Compiled React inline component */
     InlineComponent: React.ComponentType<DynamicRendererProps>;
 
-    /** Compiled React overlay component (may be null) */
     OverlayComponent: React.ComponentType<DynamicRendererProps> | null;
 
-    /** Compiled header extras function (may be null) */
-    getHeaderExtras: ((toolUpdates: unknown[]) => React.ReactNode) | null;
+    getHeaderExtras:
+        | ((entry: ToolLifecycleEntry, events?: ToolEventPayload[]) => React.ReactNode)
+        | null;
 
-    /** Compiled header subtitle function (may be null) */
-    getHeaderSubtitle: ((toolUpdates: unknown[]) => string | null) | null;
+    getHeaderSubtitle:
+        | ((entry: ToolLifecycleEntry, events?: ToolEventPayload[]) => string | null)
+        | null;
 }
 
-/** Props passed to dynamically compiled components — same shape as ToolRendererProps */
+/**
+ * Props passed to dynamically compiled components.
+ *
+ * Mirrors ToolRendererProps exactly. Kept as a separate type so the compiler
+ * layer doesn't have a structural dependency on features/ folders.
+ */
 export interface DynamicRendererProps {
-    toolUpdates: unknown[];
-    currentIndex?: number;
+    entry: ToolLifecycleEntry;
+    events?: ToolEventPayload[];
     onOpenOverlay?: (initialTab?: string) => void;
     toolGroupId?: string;
+    isPersisted?: boolean;
 }
 
 // ---------------------------------------------------------------------------

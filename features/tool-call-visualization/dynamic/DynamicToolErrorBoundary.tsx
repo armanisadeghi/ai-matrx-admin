@@ -8,7 +8,9 @@ interface Props {
     componentType: "inline" | "overlay";
     componentId?: string;
     componentVersion?: string;
-    toolUpdates?: unknown[];
+    /** Snapshot of the data passed to the dynamic component at time of render,
+     *  included in incident reports for debugging. */
+    snapshot?: unknown;
     fallback: React.ReactNode;
     children: React.ReactNode;
 }
@@ -42,7 +44,7 @@ export class DynamicToolErrorBoundary extends React.Component<Props, State> {
             this.props.toolName,
             this.props.componentType,
             error,
-            this.props.toolUpdates,
+            this.props.snapshot,
             this.props.componentId,
             this.props.componentVersion
         );

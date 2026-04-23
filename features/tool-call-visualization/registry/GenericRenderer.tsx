@@ -2,9 +2,8 @@
 
 import React from "react";
 import { Globe, ExternalLink, AlertTriangle, FileText, Maximize2 } from "lucide-react";
-import { ToolRendererProps } from "./types";
+import type { ToolRendererProps } from "../types";
 
-// Common boilerplate messages from the agent that duplicate header info
 const REDUNDANT_PATTERNS = [
     /^executing\s/i,
     /^running\s/i,
@@ -20,28 +19,19 @@ const REDUNDANT_PATTERNS = [
 
 function isRedundantMessage(message: string): boolean {
     const trimmed = message.trim();
-    return REDUNDANT_PATTERNS.some(pattern => pattern.test(trimmed));
+    return REDUNDANT_PATTERNS.some((pattern) => pattern.test(trimmed));
 }
 
-/** Try to extract a text snippet from tool output for preview */
-function extractPreviewText(output: Record<string, unknown> | undefined): string | null {
-    if (!output) return null;
-    
-    const result = output.result;
-    
-    // String result — take the first meaningful chunk
+function extractPreviewText(result: unknown): string | null {
+    if (result == null) return null;
     if (typeof result === "string" && result.length > 0) {
-        // Clean up the string and take first ~200 chars
-        const cleaned = result
-            .replace(/^[\s\n]+/, "")
-            .replace(/\n{3,}/g, "\n\n");
+        const cleaned = result.replace(/^[\s\n]+/, "").replace(/\n{3,}/g, "\n\n");
         if (cleaned.length > 0) {
             return cleaned.length > 200 ? cleaned.slice(0, 200) + "..." : cleaned;
         }
+        return null;
     }
-    
-    // Object result — look for text-like fields
-    if (result && typeof result === "object" && !Array.isArray(result)) {
+    if (typeof result === "object" && !Array.isArray(result)) {
         const obj = result as Record<string, unknown>;
         for (const key of ["text", "content", "summary", "message", "description"]) {
             if (typeof obj[key] === "string" && (obj[key] as string).length > 0) {
@@ -50,100 +40,76 @@ function extractPreviewText(output: Record<string, unknown> | undefined): string
             }
         }
     }
-    
     return null;
 }
 
-/** Extract result stats (count, size info) from tool output */
-function extractResultStats(output: Record<string, unknown> | undefined): string | null {
-    if (!output) return null;
-    
-    const result = output.result;
-    
+function extractResultStats(result: unknown): string | null {
+    if (result == null) return null;
     if (typeof result === "string") {
-        // Count lines as a rough metric for text content
-        const lines = result.split("\n").filter(l => l.trim().length > 0);
-        if (lines.length > 3) {
-            return `${lines.length} lines of content`;
-        }
-        if (result.length > 100) {
-            return `${Math.round(result.length / 100) / 10}k characters`;
-        }
+        const lines = result.split("\n").filter((l) => l.trim().length > 0);
+        if (lines.length > 3) return `${lines.length} lines of content`;
+        if (result.length > 100) return `${Math.round(result.length / 100) / 10}k characters`;
     }
-    
-    if (result && typeof result === "object") {
+    if (typeof result === "object" && result !== null) {
         const obj = result as Record<string, unknown>;
-        // Look for array properties
         for (const key of Object.keys(obj)) {
             if (Array.isArray(obj[key])) {
                 const count = (obj[key] as unknown[]).length;
-                // Try to make a nice label from the key
                 const label = key.replace(/_/g, " ").replace(/([a-z])([A-Z])/g, "$1 $2").toLowerCase();
                 return `${count} ${label}`;
             }
         }
-        // Look for count/total fields
         for (const key of ["count", "total", "totalResults", "total_results"]) {
-            if (typeof obj[key] === "number") {
-                return `${obj[key]} results`;
-            }
+            if (typeof obj[key] === "number") return `${obj[key]} results`;
         }
     }
-    
     return null;
 }
 
-/** Check if a message looks like a URL being browsed */
 function extractUrl(message: string): string | null {
     const urlMatch = message.match(/https?:\/\/[^\s]+/);
     return urlMatch ? urlMatch[0] : null;
 }
 
 /**
- * Generic fallback renderer for tools without custom displays.
- * Filters out redundant status messages, shows meaningful activity,
- * and provides a clean "View Result" button when complete.
+ * Universal fallback renderer for tools without custom displays.
+ *
+ * Uses `events[].message` (all non-redundant user-visible messages) for
+ * activity feed, `entry.result` for preview/stats, `entry.errorMessage`
+ * for error display.
  */
-export const GenericRenderer: React.FC<ToolRendererProps> = ({ 
-    toolUpdates, 
-    currentIndex, 
-    onOpenOverlay, 
-    toolGroupId = "default" 
+export const GenericRenderer: React.FC<ToolRendererProps> = ({
+    entry,
+    events,
+    onOpenOverlay,
+    toolGroupId,
 }) => {
-    const visibleUpdates = currentIndex !== undefined 
-        ? toolUpdates.slice(0, currentIndex + 1) 
-        : toolUpdates;
-    
-    const isComplete = visibleUpdates.some(u => u.type === "mcp_output");
-    const hasError = visibleUpdates.some(u => u.type === "mcp_error");
+    const isComplete = entry.status === "completed";
+    const hasError = entry.status === "error";
     const hasResult = isComplete || hasError;
-    
-    // Collect meaningful (non-redundant) user messages
-    const meaningfulMessages = visibleUpdates
-        .filter(u => u.type === "user_visible_message" && (u.user_message || u.user_visible_message))
-        .map(u => (u.user_message || u.user_visible_message)!)
-        .filter(msg => !isRedundantMessage(msg));
-    
-    // Get output data for preview/stats
-    const outputUpdate = visibleUpdates.find(u => u.type === "mcp_output");
-    const errorUpdate = visibleUpdates.find(u => u.type === "mcp_error");
-    const previewText = isComplete ? extractPreviewText(outputUpdate?.mcp_output as Record<string, unknown> | undefined) : null;
-    const resultStats = isComplete ? extractResultStats(outputUpdate?.mcp_output as Record<string, unknown> | undefined) : null;
-    
-    // Split messages into URL-type activity vs plain text
-    const activityMessages = meaningfulMessages.map(msg => ({
+
+    const allMessages: string[] = events
+        ? events.map((e) => e.message).filter((m): m is string => typeof m === "string" && m.length > 0)
+        : entry.latestMessage
+          ? [entry.latestMessage]
+          : [];
+
+    const meaningfulMessages = allMessages.filter((m) => !isRedundantMessage(m));
+
+    const previewText = isComplete ? extractPreviewText(entry.result) : null;
+    const resultStats = isComplete ? extractResultStats(entry.result) : null;
+
+    const activityMessages = meaningfulMessages.map((msg) => ({
         text: msg,
         url: extractUrl(msg),
     }));
-    
-    // When processing (not complete), show only the latest few messages to avoid clutter
-    const displayMessages = hasResult 
-        ? activityMessages.slice(-3)  // Show last 3 when done
-        : activityMessages.slice(-2); // Show last 2 while processing
-    
+
+    const displayMessages = hasResult ? activityMessages.slice(-3) : activityMessages.slice(-2);
+
+    const groupId = toolGroupId ?? entry.callId;
+
     return (
         <div className="space-y-2.5">
-            {/* Activity messages — URLs get special treatment, others are plain */}
             {displayMessages.length > 0 && (
                 <div className="space-y-1.5">
                     {displayMessages.map((msg, index) => (
@@ -176,16 +142,15 @@ export const GenericRenderer: React.FC<ToolRendererProps> = ({
                     ))}
                 </div>
             )}
-            
-            {/* Error display */}
+
             {hasError && (
                 <div className="flex items-start gap-2.5 p-3 rounded-lg bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800/50 animate-in fade-in duration-300">
                     <AlertTriangle className="w-4 h-4 text-red-500 dark:text-red-400 flex-shrink-0 mt-0.5" />
                     <div className="flex-1 min-w-0">
                         <p className="text-xs font-medium text-red-700 dark:text-red-300">Tool call failed</p>
-                        {errorUpdate?.mcp_error && (
+                        {entry.errorMessage && (
                             <p className="text-xs text-red-600 dark:text-red-400 mt-1 line-clamp-2">
-                                {errorUpdate.mcp_error}
+                                {entry.errorMessage}
                             </p>
                         )}
                     </div>
@@ -193,7 +158,7 @@ export const GenericRenderer: React.FC<ToolRendererProps> = ({
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
-                                onOpenOverlay(`tool-group-${toolGroupId}`);
+                                onOpenOverlay(`tool-group-${groupId}`);
                             }}
                             className="text-xs text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-medium flex-shrink-0"
                         >
@@ -202,17 +167,15 @@ export const GenericRenderer: React.FC<ToolRendererProps> = ({
                     )}
                 </div>
             )}
-            
-            {/* Successful result — preview card + view button */}
+
             {isComplete && onOpenOverlay && (
                 <button
                     onClick={(e) => {
                         e.stopPropagation();
-                        onOpenOverlay(`tool-group-${toolGroupId}`);
+                        onOpenOverlay(`tool-group-${groupId}`);
                     }}
                     className="w-full text-left rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-600 hover:bg-blue-50/50 dark:hover:bg-blue-950/20 transition-all duration-200 group animate-in fade-in slide-in-from-bottom duration-300 overflow-hidden cursor-pointer"
                 >
-                    {/* Preview text snippet if available */}
                     {previewText && (
                         <div className="px-3.5 pt-3 pb-2">
                             <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-3 leading-relaxed">
@@ -220,9 +183,11 @@ export const GenericRenderer: React.FC<ToolRendererProps> = ({
                             </p>
                         </div>
                     )}
-                    
-                    {/* Footer bar — always visible */}
-                    <div className={`flex items-center justify-between gap-3 px-3.5 py-2.5 ${previewText ? "border-t border-slate-200 dark:border-slate-700" : ""}`}>
+                    <div
+                        className={`flex items-center justify-between gap-3 px-3.5 py-2.5 ${
+                            previewText ? "border-t border-slate-200 dark:border-slate-700" : ""
+                        }`}
+                    >
                         <div className="flex items-center gap-2 min-w-0">
                             <FileText className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                             <span className="text-xs font-medium text-blue-700 dark:text-blue-300">
@@ -236,4 +201,3 @@ export const GenericRenderer: React.FC<ToolRendererProps> = ({
         </div>
     );
 };
-
