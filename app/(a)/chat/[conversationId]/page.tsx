@@ -35,10 +35,7 @@ export default async function ChatConversationPage({
   const agentId = await resolveAgentIdForConversation(conversationId);
   if (!agentId) {
     redirect("/chat/new");
-    notFound();
   }
 
-  return (
-    <ChatRoomClient agentId={agentId} conversationId={conversationId} />
-  );
+  return <ChatRoomClient agentId={agentId} conversationId={conversationId} />;
 }

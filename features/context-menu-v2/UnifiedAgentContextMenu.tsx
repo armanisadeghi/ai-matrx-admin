@@ -783,9 +783,9 @@ export function UnifiedAgentContextMenu({
                 selectionRect={selectionRect}
                 visible={showFloatingIcon}
                 dropdownOpen={dropdownOpen}
-                onOpen={() => {
+                onOpen={(e) => {
                   ensureMenuLoaded();
-                  handleOpenFloating();
+                  handleOpenFloating(e);
                 }}
                 onDismiss={() => setShowFloatingIcon(false)}
               />

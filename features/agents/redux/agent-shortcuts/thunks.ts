@@ -194,6 +194,7 @@ import {
 } from "./slice";
 import {
   buildScopeQueryString,
+  scopeIndexKey,
   type Scope,
   type ScopeRef,
 } from "../shared/scope";
@@ -282,9 +283,7 @@ export const buildAgentShortcutMenu = createAsyncThunk<
         const parsedVariableDefinitions = parseVariableDefinitions(
           item.agent?.variable_definitions,
         );
-        const parsedContextSlots = parseContextSlots(
-          item.agent?.context_slots,
-        );
+        const parsedContextSlots = parseContextSlots(item.agent?.context_slots);
 
         const shortcut: AgentShortcut = {
           id: item.id,
@@ -1252,7 +1251,9 @@ export const fetchUnifiedMenu = createAsyncThunk<
         return { placements: payload.data ?? [] };
       } catch (error) {
         const message =
-          error instanceof Error ? error.message : "Failed to load unified menu";
+          error instanceof Error
+            ? error.message
+            : "Failed to load unified menu";
         dispatch(setShortcutsError(message));
         dispatch(setShortcutsStatus("failed"));
         throw error;
