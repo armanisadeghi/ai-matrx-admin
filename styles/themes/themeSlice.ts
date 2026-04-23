@@ -102,3 +102,28 @@ export const themePolicy = definePolicy<ThemeState>({
         },
     ],
 });
+
+// ---- Cookie mirror -------------------------------------------------------
+//
+// Phase 3 PR 3.B: server-side pre-paint needs a cookie so the first HTML
+// frame already has the right `.dark` class (previously the inline
+// `SyncBootScript` was the only authority; the default theme flashed for a
+// beat before the script toggled the class). The cookie side-effect lives
+// outside the slice's reducers (which must stay pure) — `StoreProvider`
+// installs a narrow `store.subscribe` watcher that calls `writeThemeCookie`
+// whenever `theme.mode` changes. This keeps the cookie in lockstep with the
+// Redux action on every toggle.
+//
+// Fire-and-forget: cookie write failing is not a user-visible error — the
+// localStorage mirror still paints correctly next boot via the existing
+// `SyncBootScript` fallback path (see `app/layout.tsx` comments).
+export function writeThemeCookie(mode: ThemeMode): void {
+    if (typeof window === "undefined") return;
+    void fetch("/api/set-theme", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ theme: mode }),
+    }).catch(() => {
+        // Swallow — SyncBootScript + LS fallback covers the next boot.
+    });
+}

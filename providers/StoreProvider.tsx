@@ -24,6 +24,7 @@ import { useRef } from "react";
 import { Provider } from "react-redux";
 import { bootSync, syncPolicies } from "@/lib/sync";
 import { InitialReduxState, LiteInitialReduxState } from "@/types/reduxTypes";
+import { writeThemeCookie, type ThemeMode } from "@/styles/themes/themeSlice";
 
 // Module-level browser singleton. Populated lazily on first client render.
 // Never populated on the server (the `typeof window` guard below skips it).
@@ -43,6 +44,22 @@ function getOrCreateClientStore(
     // identity after a runtime swap (store._sync.setIdentity).
     getIdentity: () => store._sync.getIdentity(),
   });
+
+  // Phase 3 PR 3.B: keep the `theme` cookie in lockstep with Redux so the
+  // server-side pre-paint (`app/layout.tsx` reads `theme` from cookies to
+  // set `<html class="dark">` before JS runs) always reflects the user's
+  // last choice on the very first HTML frame. Seeding `lastMode` from the
+  // initial store state avoids a redundant POST when REHYDRATE lands with
+  // the same value the cookie already holds.
+  let lastMode: ThemeMode | undefined = store.getState().theme?.mode;
+  store.subscribe(() => {
+    const mode = store.getState().theme?.mode;
+    if (mode && mode !== lastMode) {
+      lastMode = mode;
+      writeThemeCookie(mode);
+    }
+  });
+
   clientStore = store;
   return store;
 }
