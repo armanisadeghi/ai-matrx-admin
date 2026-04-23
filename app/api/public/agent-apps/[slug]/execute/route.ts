@@ -36,7 +36,7 @@ type AppLookup = {
   variable_schema: unknown;
 };
 
-// agent_apps and agent_app_executions are added by Phase-8 migrations and
+// agent_apps and aga_executions are added by Phase-8 migrations and
 // are not yet present in the generated database types. Until types are
 // regenerated, cast the admin client to `any` at the call site.
 function adminAny(): any {
@@ -163,7 +163,7 @@ export async function POST(
 
           const admin = adminAny();
           admin
-            .from("agent_app_executions")
+            .from("aga_executions")
             .insert({
               app_id: app.id,
               user_id: null,
@@ -226,31 +226,29 @@ export async function POST(
     const newConversationId = conversation_id || uuidv4();
 
     const admin = adminAny();
-    const { error: insertError } = await admin
-      .from("agent_app_executions")
-      .insert({
-        app_id: app.id,
-        user_id: user?.id || null,
-        fingerprint: isPublicAccess ? primaryIdentifier : null,
-        ip_address,
-        user_agent,
-        task_id: taskId,
-        variables_provided,
-        variables_used: variables,
-        success: true,
-        referer,
-        metadata: {
-          ...metadata,
-          is_public_access: isPublicAccess,
-          identifier_type: isPublicAccess ? identifierType : undefined,
-          backup_identifier: isPublicAccess ? backupIdentifier : undefined,
-          conversation_id: newConversationId,
-        },
-      });
+    const { error: insertError } = await admin.from("aga_executions").insert({
+      app_id: app.id,
+      user_id: user?.id || null,
+      fingerprint: isPublicAccess ? primaryIdentifier : null,
+      ip_address,
+      user_agent,
+      task_id: taskId,
+      variables_provided,
+      variables_used: variables,
+      success: true,
+      referer,
+      metadata: {
+        ...metadata,
+        is_public_access: isPublicAccess,
+        identifier_type: isPublicAccess ? identifierType : undefined,
+        backup_identifier: isPublicAccess ? backupIdentifier : undefined,
+        conversation_id: newConversationId,
+      },
+    });
 
     if (insertError) {
       const msg = insertError.message ?? "";
-      if (msg.includes("agent_app_rate_limit_exceeded")) {
+      if (msg.includes("aga_rate_limit_exceeded")) {
         return NextResponse.json(
           {
             success: false,
@@ -327,7 +325,7 @@ export async function POST(
       });
     } catch (err) {
       admin
-        .from("agent_app_executions")
+        .from("aga_executions")
         .update({
           success: false,
           error_type: "execution_error",
@@ -351,7 +349,7 @@ export async function POST(
     if (!upstream.ok || !upstream.body) {
       const text = await upstream.text().catch(() => "");
       admin
-        .from("agent_app_executions")
+        .from("aga_executions")
         .update({
           success: false,
           error_type: "execution_error",
@@ -416,7 +414,7 @@ export async function PATCH(
     }
 
     const { error: updateError } = await admin
-      .from("agent_app_executions")
+      .from("aga_executions")
       .update({
         success: false,
         error_type: error_type || "stream_error",
@@ -453,7 +451,7 @@ export async function GET(
   const supabase = (await createClient()) as unknown as any;
 
   const { data: app, error } = await supabase
-    .rpc("get_agent_app_public_data", { p_slug: slug, p_app_id: null })
+    .rpc("get_aga_public_data", { p_slug: slug, p_app_id: null })
     .single();
 
   if (error || !app) {
