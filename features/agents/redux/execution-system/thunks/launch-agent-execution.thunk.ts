@@ -125,7 +125,7 @@ export const launchAgentExecution = createAsyncThunk<
     sourceFeature,
     applicationScope: flatApplicationScope,
     displayMode: flatDisplayMode,
-    autoRun: flatAutoRun = false,
+    autoRun: flatAutoRun,
     allowChat: flatAllowChat,
     showVariables,
     showVariablePanel: flatShowVariablePanel,
@@ -156,6 +156,15 @@ export const launchAgentExecution = createAsyncThunk<
   // scope / userInput / originalText under `runtime.*` and per-run config
   // overrides under `config.*`. Legacy callers used top-level flat fields.
   // Pull from both so everyone works.
+  //
+  // CRITICAL: do NOT default boolean/scalar fields to concrete values here.
+  // Down in createInstanceFromShortcut every field does
+  //   `autoRun ?? shortcut.autoRun`
+  // to let the shortcut's persisted config win when the caller didn't
+  // override. A default like `autoRun = false` would replace "caller did
+  // not specify" with a concrete `false`, and `false ?? shortcut.autoRun`
+  // resolves to `false` (?? only falls through on null/undefined). Leave
+  // these undefined on purpose so the shortcut's own value survives.
   const applicationScope = runtime?.applicationScope ?? flatApplicationScope;
   const userInput = runtime?.userInput ?? flatUserInput;
   const originalText = runtime?.originalText ?? flatOriginalText;
