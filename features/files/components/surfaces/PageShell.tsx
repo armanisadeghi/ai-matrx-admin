@@ -210,8 +210,9 @@ function PageShellDesktop({
 
   return (
     <div
+      style={{ height: "calc(100dvh - var(--header-height))" }}
       className={cn(
-        "flex h-[calc(100dvh-var(--header-height))] w-full flex-col overflow-hidden bg-background",
+        "flex w-full flex-col overflow-hidden bg-background",
         className,
       )}
     >
