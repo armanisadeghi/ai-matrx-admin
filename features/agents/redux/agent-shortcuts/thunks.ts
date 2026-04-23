@@ -382,9 +382,6 @@ export const fetchShortcutsForContext = createAsyncThunk<
       },
     );
 
-    console.log("data", data);
-    console.log("error", error);
-
     if (error) throw error;
 
     const rows = data ?? [];
