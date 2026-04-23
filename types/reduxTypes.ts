@@ -8,7 +8,11 @@ import type { ContextMenuRow } from "@/utils/supabase/ssrShellData";
 export interface InitialReduxState {
   user: UserData;
   testRoutes: string[];
-  userPreferences: Record<string, any>;
+  // Phase 3: made optional. Preferences are no longer fetched server-side;
+  // the `userPreferencesPolicy` warm-cache cold-boot path (IDB → LS → remote.fetch)
+  // owns hydration entirely on the client. `resolveStoreBootstrapState` falls
+  // back to `initializeUserPreferencesState(defaultUserPreferences)` when absent.
+  userPreferences?: Record<string, any>;
   globalCache: GlobalCacheState;
   // Optional SSR pre-population.
   // contextMenuCache shape matches ContextMenuCacheState exactly — safe as preloaded state.

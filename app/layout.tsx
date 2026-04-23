@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 import { Suspense } from "react";
+import { cookies } from "next/headers";
 import { metadata } from "./config/metadata";
 import { viewport } from "./config/viewport";
 import { inter, montserrat, openSans, roboto } from "@/styles/themes/fonts";
@@ -19,11 +20,35 @@ interface RootLayoutProps {
 }
 
 export default async function RootLayout({ children }: RootLayoutProps) {
+    // Phase 3: server-read theme cookie so the very first HTML frame has the
+    // correct class on <html>. Previously the inline `SyncBootScript` was the
+    // only authority, which means the default CSS rendered for a beat before
+    // the script toggled the class. With the cookie path in place:
+    //   1. Server sets class/data-theme based on cookie (most returning users).
+    //   2. SyncBootScript re-runs at head-parse time as fallback for cookie-
+    //      absent users with localStorage populated, or to apply the
+    //      `prefers-color-scheme` default for true first-visits.
+    //   3. themePolicy's cookie-write side-effect (PR 3.B) keeps the cookie
+    //      in lockstep with the Redux action on every toggle.
+    const cookieStore = await cookies();
+    const themeCookie = cookieStore.get("theme")?.value;
+    const isDark = themeCookie === "dark";
+    const dataTheme = themeCookie === "light" || themeCookie === "dark"
+        ? themeCookie
+        : undefined;
+
     return (
         <html
             lang="en"
             data-scroll-behavior="smooth"
-            className={cn(inter.variable, montserrat.variable, openSans.variable, roboto.variable)}
+            className={cn(
+                inter.variable,
+                montserrat.variable,
+                openSans.variable,
+                roboto.variable,
+                isDark && "dark",
+            )}
+            data-theme={dataTheme}
             suppressHydrationWarning
         >
             <head>
@@ -34,7 +59,8 @@ export default async function RootLayout({ children }: RootLayoutProps) {
                 <meta name="google" content="notranslate" />
                 {/* Sync-engine pre-paint script — declarative, built from
                     each policy's `prePaint` descriptors. Owns `.dark` class
-                    and `data-theme` on <html> before first paint (no FOUC).
+                    and `data-theme` on <html> before first paint when the
+                    server-read cookie (see RootLayout above) is absent.
                     Replaces: the ad-hoc inline theme script + hardcoded
                     `className="dark"` that previously lived here. */}
                 <SyncBootScript policies={syncPolicies} />

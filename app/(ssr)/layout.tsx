@@ -3,15 +3,9 @@ import { headers } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
 import { Providers } from "@/app/Providers";
 import { mapUserData } from "@/utils/userDataMapper";
-import { getUserSessionData } from "@/utils/supabase/userSessionData";
+import { checkIsUserAdmin } from "@/utils/supabase/userSessionData";
 import { getEmptyGlobalCache } from "@/utils/schema/schema-processing/emptyGlobalCache";
 import { InitialReduxState } from "@/types/reduxTypes";
-import { defaultUserPreferences } from "@/lib/redux/slices/defaultPreferences";
-import type { Json } from "@/types/database.types";
-import {
-  initializeUserPreferencesState,
-  UserPreferences,
-} from "@/lib/redux/slices/userPreferencesSlice";
 import { setGlobalUserIdAndToken } from "@/lib/globalState";
 import Sidebar from "@/features/shell/components/sidebar/Sidebar";
 import Header from "@/features/shell/components/header/Header";
@@ -58,66 +52,40 @@ export default async function SSRLayout({
   } = await supabase.auth.getUser();
 
   let initialReduxState: InitialReduxState;
-  let avatarUrl: string | undefined;
-  let displayName: string | undefined;
   let userData: UserData;
-  let userPreferences: UserPreferences;
 
   if (user) {
-    // Authenticated: get session token and preferences in parallel
+    // Phase 3: admin check is now a narrow single-row lookup; preferences
+    // hydration has moved to the client-side `userPreferencesPolicy` cold-boot
+    // path (IDB → LS → remote.fetch).
     const [
       {
         data: { session },
       },
-      sessionData,
+      isAdmin,
     ] = await Promise.all([
       supabase.auth.getSession(),
-      getUserSessionData(supabase, user.id),
+      checkIsUserAdmin(supabase, user.id),
     ]);
 
     const accessToken = session?.access_token;
-    const isAdmin = sessionData.isAdmin;
     userData = mapUserData(user, accessToken, isAdmin);
 
     setGlobalUserIdAndToken(userData.id, accessToken, isAdmin);
 
-    if (!sessionData.preferencesExist) {
-      await supabase.from("user_preferences").insert({
-        user_id: userData.id,
-        preferences: defaultUserPreferences as unknown as Json,
-      });
-      userPreferences = initializeUserPreferencesState(
-        defaultUserPreferences,
-        true,
-      );
-    } else {
-      userPreferences = initializeUserPreferencesState(
-        sessionData.preferences || {},
-        true,
-      );
-    }
-
     initialReduxState = {
       user: userData,
       testRoutes: [],
-      userPreferences,
       globalCache: emptyGlobalCache,
     };
-
-    avatarUrl = userData.userMetadata.avatarUrl ?? undefined;
-    displayName = userData.userMetadata.name ?? userData.email ?? undefined;
   } else {
     // Guest: seed Redux with empty user state, skip all DB calls
     const guestUserData = mapUserData(null, undefined, false);
-    const userPreferences = initializeUserPreferencesState(
-      defaultUserPreferences,
-      true,
-    );
+    userData = guestUserData;
 
     initialReduxState = {
       user: guestUserData,
       testRoutes: [],
-      userPreferences,
       globalCache: emptyGlobalCache,
     };
   }
