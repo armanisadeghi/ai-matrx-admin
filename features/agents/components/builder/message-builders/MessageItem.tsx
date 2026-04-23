@@ -24,7 +24,17 @@ import {
   selectAgentVariableDefinitions,
 } from "@/features/agents/redux/agent-definition/selectors";
 import { setAgentMessages } from "@/features/agents/redux/agent-definition/slice";
-import { UnifiedAgentContextMenu } from "@/features/context-menu-v2";
+import dynamic from "next/dynamic";
+
+// Dynamic — keeps UnifiedAgentContextMenu + its hooks out of the initial
+// message-builder bundle.
+const UnifiedAgentContextMenu = dynamic(
+  () =>
+    import("@/features/context-menu-v2").then((mod) => ({
+      default: mod.UnifiedAgentContextMenu,
+    })),
+  { ssr: false },
+);
 import { HighlightedText } from "@/features/agents/components/variables-management/HighlightedText";
 import { MessageItemButtons } from "@/features/agents/components/builder/message-builders/MessageItemButtons";
 import {

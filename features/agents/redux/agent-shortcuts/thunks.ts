@@ -1089,136 +1089,240 @@ function extractScopeFromUnifiedItem(item: UnifiedMenuScopeFields): {
   };
 }
 
+// ---------------------------------------------------------------------------
+// fetchUnifiedMenu — single-flight, scope-keyed.
+//
+// Several mounts of UnifiedAgentContextMenu may render on the same page
+// (the /demos/context-menu-v2 page has five). They each call this thunk on
+// mount. That used to produce N parallel HTTP requests because:
+//   (1) Redux's `status === "loading"` doesn't dedup between the moment the
+//       first dispatch fires and the moment the in-flight flag is committed
+//       (both mounts see status=idle and fire).
+//   (2) `createAsyncThunk`'s `condition` runs synchronously against the
+//       current state, so it can't see the promise the first dispatch just
+//       returned.
+//
+// Solution: module-level in-flight promise cache keyed by scopeIndexKey.
+// Any dispatch while a fetch is in flight for the same scope resolves to
+// the same promise. If the scope is already loaded in Redux, we bail in
+// the `condition` option without even running the payload creator. Callers
+// that want to refresh despite a loaded scope must dispatch with
+// `{ ...ref, force: true }`.
+// ---------------------------------------------------------------------------
+
+interface UnifiedMenuFetchArgs extends ScopeRef {
+  force?: boolean;
+}
+
+const inflightUnifiedMenu = new Map<string, Promise<UnifiedMenuResult>>();
+
 export const fetchUnifiedMenu = createAsyncThunk<
   UnifiedMenuResult,
-  ScopeRef | void,
+  UnifiedMenuFetchArgs | ScopeRef | void,
   ThunkApi
->("agentShortcut/fetchUnifiedMenu", async (scopeRef, { dispatch }) => {
-  dispatch(setShortcutsStatus("loading"));
-  try {
+>(
+  "agentShortcut/fetchUnifiedMenu",
+  async (scopeRef, { dispatch, getState }) => {
     const ref: ScopeRef =
       scopeRef && typeof scopeRef === "object" && "scope" in scopeRef
-        ? scopeRef
-        : { scope: "global" };
-    const qs = buildScopeQueryString(ref);
-    const response = await fetch(`/api/agent-context-menu?${qs}`, {
-      method: "GET",
-      credentials: "include",
-    });
-    const payload = await parseJsonOrThrow<{
-      data: UnifiedMenuPlacementGroup[];
-    }>(response);
+        ? { scope: scopeRef.scope, scopeId: scopeRef.scopeId ?? null }
+        : { scope: "global", scopeId: null };
 
-    const categoryDefs: ReturnType<typeof categoryRowToDef>[] = [];
-    const shortcutDefs: AgentShortcut[] = [];
-    const contentBlockDefs: ReturnType<typeof contentBlockRowToDef>[] = [];
+    const key = scopeIndexKey(ref);
 
-    if (process.env.NODE_ENV !== "production") {
-      const placementSummary = (payload.data ?? []).map((p) => ({
-        placement_type: p.placement_type,
-        categories: (p.categories_flat ?? []).length,
-        total_items: (p.categories_flat ?? []).reduce(
-          (sum, g) => sum + (g.items?.length ?? 0),
-          0,
-        ),
-      }));
-      console.log(
-        "[FETCH UNIFIED MENU] scope=%o payload=%o",
-        ref,
-        placementSummary,
-      );
-      console.log("[FETCH UNIFIED MENU] payload", payload);
-    }
+    // Second-check: even with `condition`, a burst of dispatches in the
+    // same tick can all pass the synchronous gate before any of them flips
+    // the in-flight flag. Coalesce them here to one real HTTP call.
+    const existing = inflightUnifiedMenu.get(key);
+    if (existing) return existing;
 
-    for (const placement of payload.data ?? []) {
-      for (const group of placement.categories_flat ?? []) {
-        const categoryRow: CategoryApiRow = {
-          id: group.category.id,
-          label: group.category.label,
-          description: group.category.description,
-          icon_name: group.category.icon_name,
-          color: group.category.color ?? null,
-          sort_order: group.category.sort_order ?? 0,
-          placement_type:
-            group.category.placement_type ?? placement.placement_type,
-          parent_category_id: group.category.parent_category_id,
-          enabled_features: group.category.enabled_features ?? null,
-          metadata: group.category.metadata ?? null,
-          is_active: group.category.is_active ?? true,
-          user_id: group.category.user_id ?? null,
-          organization_id: group.category.organization_id ?? null,
-          project_id: group.category.project_id ?? null,
-          task_id: group.category.task_id ?? null,
-          created_at: group.category.created_at ?? "",
-          updated_at: group.category.updated_at ?? "",
-        };
-        categoryDefs.push(categoryRowToDef(categoryRow));
+    const promise = (async (): Promise<UnifiedMenuResult> => {
+      dispatch(setShortcutsStatus("loading"));
+      try {
+        const qs = buildScopeQueryString(ref);
+        const response = await fetch(`/api/agent-context-menu?${qs}`, {
+          method: "GET",
+          credentials: "include",
+        });
+        const payload = await parseJsonOrThrow<{
+          data: UnifiedMenuPlacementGroup[];
+        }>(response);
 
-        for (const item of group.items ?? []) {
-          if ((item as { type: string }).type === "agent_shortcut") {
-            const shortcutItem = item as UnifiedMenuShortcutItem;
-            const scopeFields = extractScopeFromUnifiedItem(shortcutItem);
-            shortcutDefs.push(
-              shortcutRowToFrontend({
-                ...shortcutItem,
-                category_id: shortcutItem.category_id ?? group.category.id,
-                user_id: scopeFields.userId,
-                organization_id: scopeFields.organizationId,
-                project_id: scopeFields.projectId,
-                task_id: scopeFields.taskId,
-                created_at: shortcutItem.created_at ?? "",
-                updated_at: shortcutItem.updated_at ?? "",
-              }),
-            );
-          } else if ((item as { type: string }).type === "content_block") {
-            const blockItem = item as UnifiedMenuContentBlockItem;
-            const scopeFields = extractScopeFromUnifiedItem(blockItem);
-            contentBlockDefs.push(
-              contentBlockRowToDef({
-                id: blockItem.id,
-                block_id: blockItem.block_id,
-                category_id: blockItem.category_id ?? group.category.id,
-                label: blockItem.label,
-                description: blockItem.description,
-                icon_name: blockItem.icon_name,
-                sort_order: blockItem.sort_order ?? 0,
-                template: blockItem.template,
-                is_active: blockItem.is_active ?? true,
-                user_id: scopeFields.userId,
-                organization_id: scopeFields.organizationId,
-                project_id: scopeFields.projectId,
-                task_id: scopeFields.taskId,
-                created_at: blockItem.created_at ?? "",
-                updated_at: blockItem.updated_at ?? "",
-              }),
-            );
+        const categoryDefs: ReturnType<typeof categoryRowToDef>[] = [];
+        const shortcutDefs: AgentShortcut[] = [];
+        const contentBlockDefs: ReturnType<typeof contentBlockRowToDef>[] = [];
+
+        if (process.env.NODE_ENV !== "production") {
+          const placementSummary = (payload.data ?? []).map((p) => ({
+            placement_type: p.placement_type,
+            categories: (p.categories_flat ?? []).length,
+            total_items: (p.categories_flat ?? []).reduce(
+              (sum, g) => sum + (g.items?.length ?? 0),
+              0,
+            ),
+          }));
+          console.log(
+            "%c[Shortcut] fetchUnifiedMenu scope=%o %o",
+            "color:#0ea5e9;font-weight:bold",
+            ref,
+            placementSummary,
+          );
+        }
+
+        for (const placement of payload.data ?? []) {
+          for (const group of placement.categories_flat ?? []) {
+            const categoryRow: CategoryApiRow = {
+              id: group.category.id,
+              label: group.category.label,
+              description: group.category.description,
+              icon_name: group.category.icon_name,
+              color: group.category.color ?? null,
+              sort_order: group.category.sort_order ?? 0,
+              placement_type:
+                group.category.placement_type ?? placement.placement_type,
+              parent_category_id: group.category.parent_category_id,
+              enabled_features: group.category.enabled_features ?? null,
+              metadata: group.category.metadata ?? null,
+              is_active: group.category.is_active ?? true,
+              user_id: group.category.user_id ?? null,
+              organization_id: group.category.organization_id ?? null,
+              project_id: group.category.project_id ?? null,
+              task_id: group.category.task_id ?? null,
+              created_at: group.category.created_at ?? "",
+              updated_at: group.category.updated_at ?? "",
+            };
+            categoryDefs.push(categoryRowToDef(categoryRow));
+
+            for (const item of group.items ?? []) {
+              if ((item as { type: string }).type === "agent_shortcut") {
+                const shortcutItem = item as UnifiedMenuShortcutItem;
+                const scopeFields = extractScopeFromUnifiedItem(shortcutItem);
+                shortcutDefs.push(
+                  unifiedMenuItemToShortcut({
+                    ...shortcutItem,
+                    category_id: shortcutItem.category_id ?? group.category.id,
+                    user_id: scopeFields.userId,
+                    organization_id: scopeFields.organizationId,
+                    project_id: scopeFields.projectId,
+                    task_id: scopeFields.taskId,
+                    created_at: shortcutItem.created_at ?? "",
+                    updated_at: shortcutItem.updated_at ?? "",
+                  }),
+                );
+              } else if ((item as { type: string }).type === "content_block") {
+                const blockItem = item as UnifiedMenuContentBlockItem;
+                const scopeFields = extractScopeFromUnifiedItem(blockItem);
+                contentBlockDefs.push(
+                  contentBlockRowToDef({
+                    id: blockItem.id,
+                    block_id: blockItem.block_id,
+                    category_id: blockItem.category_id ?? group.category.id,
+                    label: blockItem.label,
+                    description: blockItem.description,
+                    icon_name: blockItem.icon_name,
+                    sort_order: blockItem.sort_order ?? 0,
+                    template: blockItem.template,
+                    is_active: blockItem.is_active ?? true,
+                    user_id: scopeFields.userId,
+                    organization_id: scopeFields.organizationId,
+                    project_id: scopeFields.projectId,
+                    task_id: scopeFields.taskId,
+                    created_at: blockItem.created_at ?? "",
+                    updated_at: blockItem.updated_at ?? "",
+                  }),
+                );
+              }
+            }
           }
         }
+
+        if (categoryDefs.length > 0) {
+          dispatch(upsertCategoriesAction(categoryDefs));
+        }
+        if (shortcutDefs.length > 0) {
+          dispatch(upsertShortcuts(shortcutDefs));
+        }
+        if (contentBlockDefs.length > 0) {
+          dispatch(upsertContentBlocksAction(contentBlockDefs));
+        }
+
+        dispatch(setShortcutScopeLoaded({ scopeRef: ref, loaded: true }));
+        dispatch(setShortcutsStatus("succeeded"));
+
+        return { placements: payload.data ?? [] };
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Failed to load unified menu";
+        dispatch(setShortcutsError(message));
+        dispatch(setShortcutsStatus("failed"));
+        throw error;
+      } finally {
+        inflightUnifiedMenu.delete(key);
       }
-    }
+    })();
 
-    if (categoryDefs.length > 0) {
-      dispatch(upsertCategoriesAction(categoryDefs));
-    }
-    if (shortcutDefs.length > 0) {
-      dispatch(upsertShortcuts(shortcutDefs));
-    }
-    if (contentBlockDefs.length > 0) {
-      dispatch(upsertContentBlocksAction(contentBlockDefs));
-    }
+    inflightUnifiedMenu.set(key, promise);
+    return promise;
+  },
+  {
+    condition: (arg, { getState }) => {
+      // Skip when the scope is already loaded, unless the caller asked to
+      // refresh. `createAsyncThunk`'s condition runs BEFORE the payload
+      // creator and before the "loading" status is set, so this shortcuts
+      // a full dispatch round-trip.
+      const force =
+        arg && typeof arg === "object" && "force" in arg
+          ? Boolean((arg as UnifiedMenuFetchArgs).force)
+          : false;
+      if (force) return true;
 
-    dispatch(setShortcutScopeLoaded({ scopeRef: ref, loaded: true }));
-    dispatch(setShortcutsStatus("succeeded"));
+      const ref: ScopeRef =
+        arg && typeof arg === "object" && "scope" in arg
+          ? { scope: arg.scope, scopeId: arg.scopeId ?? null }
+          : { scope: "global", scopeId: null };
+      const state = getState() as RootState;
+      const key = scopeIndexKey(ref);
+      if (state.agentShortcut.scopeLoaded?.[key]) return false;
+      if (inflightUnifiedMenu.has(key)) return false;
+      return true;
+    },
+  },
+);
 
-    return { placements: payload.data ?? [] };
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Failed to load unified menu";
-    dispatch(setShortcutsError(message));
-    dispatch(setShortcutsStatus("failed"));
-    throw error;
-  }
-});
+/**
+ * Build an AgentShortcut from a unified-menu item. The unified-menu view
+ * writes each item as jsonb, so agent_variable_definitions /
+ * agent_context_slots live alongside the usual shortcut columns when the
+ * view includes them in the jsonb. Read defensively via loose lookup so
+ * we don't silently drop them if the server sends them under a slightly
+ * different shape.
+ */
+function unifiedMenuItemToShortcut(
+  item: UnifiedMenuShortcutItem & Record<string, unknown>,
+): AgentShortcut {
+  const loose = item as Record<string, unknown>;
+  const variableDefinitions = parseVariableDefinitions(
+    loose.agent_variable_definitions ??
+      (loose.agent as { variable_definitions?: unknown } | undefined)
+        ?.variable_definitions,
+  );
+  const contextSlots = parseContextSlots(
+    loose.agent_context_slots ??
+      (loose.agent as { context_slots?: unknown } | undefined)?.context_slots,
+  );
+  const agentName =
+    (loose.agent_name as string | undefined) ??
+    (loose.agent as { name?: string } | undefined)?.name ??
+    null;
+
+  const base = shortcutRowToFrontend(item);
+  return {
+    ...base,
+    agentName,
+    variableDefinitions,
+    contextSlots,
+  };
+}
 
 // ---------------------------------------------------------------------------
 // Re-exports — consumers import the full shortcut-feature CRUD surface from

@@ -1,7 +1,17 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { UnifiedAgentContextMenu } from "@/features/context-menu-v2";
+import dynamic from "next/dynamic";
+
+// Dynamic — never bundles into the initial chunk; hooks + menu body load
+// only when this page actually needs them.
+const UnifiedAgentContextMenu = dynamic(
+  () =>
+    import("@/features/context-menu-v2").then((mod) => ({
+      default: mod.UnifiedAgentContextMenu,
+    })),
+  { ssr: false },
+);
 
 // Five-panel smoke test for the context-menu-v2 surface.
 // Each panel exercises a different combination of:

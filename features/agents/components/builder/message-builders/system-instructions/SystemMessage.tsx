@@ -7,7 +7,17 @@ import {
   useMemo,
 } from "react";
 import { Label } from "@/components/ui/label";
-import { UnifiedAgentContextMenu } from "@/features/context-menu-v2";
+import dynamic from "next/dynamic";
+
+// Dynamic — keeps UnifiedAgentContextMenu + its hooks out of the initial
+// agent-builder bundle; loads only when the editor actually mounts.
+const UnifiedAgentContextMenu = dynamic(
+  () =>
+    import("@/features/context-menu-v2").then((mod) => ({
+      default: mod.UnifiedAgentContextMenu,
+    })),
+  { ssr: false },
+);
 
 // OLD: Need to be replaced
 import { SystemPromptOptimizer } from "@/features/prompts/components/actions/prompt-optimizers/SystemPromptOptimizer";

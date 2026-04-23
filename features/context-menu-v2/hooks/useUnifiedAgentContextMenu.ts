@@ -1,22 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { fetchUnifiedMenu } from "@/features/agents/redux/agent-shortcuts/thunks";
-import {
-  selectAllShortcutsArray,
-  selectIsShortcutScopeLoaded,
-} from "@/features/agents/redux/agent-shortcuts/selectors";
+import { selectAllShortcutsArray } from "@/features/agents/redux/agent-shortcuts/selectors";
 import { selectAllCategoriesArray } from "@/features/agents/redux/agent-shortcut-categories/selectors";
 import { selectAllContentBlocksArray } from "@/features/agents/redux/agent-content-blocks/selectors";
-import {
-  selectContextMenuRows,
-  selectContextMenuHydrated,
-} from "@/lib/redux/slices/contextMenuCacheSlice";
-import {
-  selectAgentContextMenuRows,
-  selectAgentContextMenuHydrated,
-} from "@/lib/redux/slices/agentContextMenuCacheSlice";
 import type { AgentShortcutRecord } from "@/features/agents/redux/agent-shortcuts/types";
 import type { AgentShortcutCategoryRecord } from "@/features/agents/redux/agent-shortcut-categories/types";
 import type { AgentContentBlockRecord } from "@/features/agents/redux/agent-content-blocks/types";
@@ -147,22 +136,9 @@ export function useUnifiedAgentContextMenu(
   const shortcuts = useAppSelector(selectAllShortcutsArray);
   const categories = useAppSelector(selectAllCategoriesArray);
   const contentBlocks = useAppSelector(selectAllContentBlocksArray);
-  // Prefer the agent-specific SSR cache (populated by get_ssr_agent_shell_data).
-  // Fall back to the legacy contextMenuCache as a warm signal during the
-  // prompts→agents migration — both are populated in parallel by DeferredShellData.
-  const agentSsrRows = useAppSelector(selectAgentContextMenuRows);
-  const agentSsrHydrated = useAppSelector(selectAgentContextMenuHydrated);
-  const legacySsrRows = useAppSelector(selectContextMenuRows);
-  const legacySsrHydrated = useAppSelector(selectContextMenuHydrated);
-  const ssrRows = agentSsrHydrated ? agentSsrRows : legacySsrRows;
-  const ssrHydrated = agentSsrHydrated || legacySsrHydrated;
-  const scopeLoaded = useAppSelector((state) =>
-    selectIsShortcutScopeLoaded(state, scope, scopeId ?? null),
-  );
 
-  const [loading, setLoading] = useState(!scopeLoaded);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const fetchedScopeKeyRef = useRef<string | null>(null);
 
   const refresh = useCallback(async () => {
     if (!enabled || placementTypes.length === 0) return;
@@ -177,46 +153,12 @@ export function useUnifiedAgentContextMenu(
     }
   }, [dispatch, enabled, placementTypes.length, scope, scopeId]);
 
-  useEffect(() => {
-    if (!enabled || placementTypes.length === 0) {
-      setLoading(false);
-      return;
-    }
-
-    const scopeKey = `${scope}:${scopeId ?? ""}`;
-
-    // If slices already have data for this scope, skip the fetch.
-    if (scopeLoaded && fetchedScopeKeyRef.current === scopeKey) {
-      setLoading(false);
-      return;
-    }
-
-    if (fetchedScopeKeyRef.current === scopeKey) {
-      return;
-    }
-    fetchedScopeKeyRef.current = scopeKey;
-
-    // Fast path: SSR hydrated context_menu rows (legacy shape from the
-    // deferred shell). Still trigger the agent-menu fetch in parallel so the
-    // agent slices populate. We rely on the agent slices for the actual menu
-    // — the SSR rows just tell us we're warm enough to render immediately.
-    if (ssrHydrated && ssrRows.length > 0 && scope === "global") {
-      setLoading(false);
-      void refresh();
-      return;
-    }
-
-    void refresh();
-  }, [
-    enabled,
-    placementTypes,
-    scope,
-    scopeId,
-    scopeLoaded,
-    ssrHydrated,
-    ssrRows.length,
-    refresh,
-  ]);
+  // Intentionally NO mount-time useEffect that fires refresh(). The menu is
+  // one of the most expensive fetches in the system — it must only run when
+  // the user actually engages. UnifiedAgentContextMenu calls `refresh()`
+  // from its `onOpenChange` handler. The fetchUnifiedMenu thunk dedupes
+  // internally (module-level inflight map + scope-loaded condition) so
+  // rapid opens + multi-mounted menus all resolve to a single HTTP call.
 
   const categoryGroups = useMemo<AgentMenuCategoryGroup[]>(() => {
     if (!enabled || placementTypes.length === 0) return [];

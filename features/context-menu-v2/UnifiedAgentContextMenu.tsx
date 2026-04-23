@@ -214,7 +214,7 @@ export function UnifiedAgentContextMenu({
   const resolvedExcludedContexts =
     excludedContexts ?? (legacyContextFilter ? ["general"] : undefined);
 
-  const { categoryGroups, loading } = useUnifiedAgentContextMenu({
+  const { categoryGroups, loading, refresh } = useUnifiedAgentContextMenu({
     placementTypes: dbPlacementTypes,
     addedContexts: resolvedAddedContexts,
     excludedContexts: resolvedExcludedContexts,
@@ -222,6 +222,18 @@ export function UnifiedAgentContextMenu({
     scope,
     scopeId,
   });
+
+  // Lazy first-fetch: the unified-menu RPC is expensive (full join over
+  // categories × shortcuts × agent/version) so we never kick it off on
+  // render. Fire on the first engagement (right-click or icon open) only.
+  // The thunk itself dedupes, so even if multiple menus open back-to-back
+  // there's at most one HTTP call per scope per session.
+  const hasRefreshedRef = useRef(false);
+  const ensureMenuLoaded = useCallback(() => {
+    if (hasRefreshedRef.current) return;
+    hasRefreshedRef.current = true;
+    void refresh();
+  }, [refresh]);
 
   const { launchShortcut } = useAgentLauncher();
   const {
@@ -732,11 +744,19 @@ export function UnifiedAgentContextMenu({
 
   return (
     <>
-      <ContextMenu onOpenChange={(open) => !open && handleMenuClose()}>
+      <ContextMenu
+        onOpenChange={(open) => {
+          if (open) ensureMenuLoaded();
+          else handleMenuClose();
+        }}
+      >
         <ContextMenuTrigger
           asChild
           onMouseDown={handleMouseDown}
-          onContextMenu={handleContextMenu}
+          onContextMenu={(e) => {
+            ensureMenuLoaded();
+            handleContextMenu(e);
+          }}
         >
           {children}
         </ContextMenuTrigger>
@@ -746,7 +766,13 @@ export function UnifiedAgentContextMenu({
       </ContextMenu>
 
       {enableFloatingIcon && (
-        <DropdownMenu open={dropdownOpen} onOpenChange={handleDropdownClose}>
+        <DropdownMenu
+          open={dropdownOpen}
+          onOpenChange={(open) => {
+            if (open) ensureMenuLoaded();
+            handleDropdownClose(open);
+          }}
+        >
           <DropdownMenuTrigger asChild>
             {shouldRenderFloatingIcon(
               selectionRect,
@@ -757,7 +783,10 @@ export function UnifiedAgentContextMenu({
                 selectionRect={selectionRect}
                 visible={showFloatingIcon}
                 dropdownOpen={dropdownOpen}
-                onOpen={handleOpenFloating}
+                onOpen={() => {
+                  ensureMenuLoaded();
+                  handleOpenFloating();
+                }}
                 onDismiss={() => setShowFloatingIcon(false)}
               />
             ) : (
