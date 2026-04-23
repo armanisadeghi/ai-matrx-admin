@@ -1,47 +1,54 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+/**
+ * FilesResourcePicker
+ *
+ * Browse cloud files and pick one to attach as an AI resource reference.
+ * Migrated in Phase 9: the internals now use the cloud-files system
+ * (features/files/*) instead of supabase.storage — no more buckets, one
+ * unified tree per user. The {onBack, onSelect} surface is unchanged so
+ * every caller keeps working without edits.
+ *
+ * The returned selection shape is:
+ *   { url, type, details }
+ * where `url` is a 1-hour signed URL, `type` is the mime type, and
+ * `details` is the EnhancedFileDetails produced by getFileDetailsByUrl(...)
+ * (legacy utility — same as before).
+ */
+
+import React, { useMemo, useState } from "react";
 import {
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
-  ChevronDown,
-  Search,
-  Loader2,
-  Database,
-  Folder,
   File,
+  Folder,
+  Loader2,
+  Search,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { supabase } from "@/utils/supabase/client";
 import {
   getFileDetailsByUrl,
   type EnhancedFileDetails,
 } from "@/utils/file-operations/constants";
+import { useAppSelector } from "@/lib/redux/hooks";
+import {
+  Api,
+  selectAllFilesMap,
+  selectAllFoldersMap,
+  selectChildrenByFolderId,
+  selectRootFileIds,
+  selectRootFolderIds,
+  selectTreeStatus,
+  useCloudTree,
+  type CloudFileRecord,
+  type CloudFolderRecord,
+} from "@/features/files";
 
-// Types
-type StorageFile = {
-  name: string;
-  id: string | null;
-  type: "file" | "folder";
-  metadata?: {
-    size?: number;
-    mimetype?: string;
-    [key: string]: any;
-  } | null;
-};
-
-/** Stable unique key for list items — `name` alone can duplicate within a bucket path. */
-function storageItemListKey(
-  bucketName: string,
-  parentPath: string,
-  item: StorageFile,
-  index: number,
-): string {
-  if (item.id) return `${bucketName}:${item.id}`;
-  const relPath = parentPath ? `${parentPath}/${item.name}` : item.name;
-  return `${bucketName}:${relPath}:${item.type}:${index}`;
-}
+// ---------------------------------------------------------------------------
+// Types (preserve the legacy surface)
+// ---------------------------------------------------------------------------
 
 type FileSelection = {
   url: string;
@@ -52,11 +59,21 @@ type FileSelection = {
 interface FilesResourcePickerProps {
   onBack: () => void;
   onSelect: (selection: FileSelection) => void;
-  allowedBuckets?: string[]; // Optional: filter to specific buckets
+  /**
+   * Optional: restrict the picker to specific top-level folders (e.g.
+   * `["Images", "Documents"]`). Ignored if empty or omitted.
+   *
+   * The prop is still named `allowedBuckets` to avoid breaking callers —
+   * it's just repurposed as a folder-name filter.
+   */
+  allowedBuckets?: string[];
 }
 
-// Utility functions
-function formatSize(bytes: number | undefined): string {
+// ---------------------------------------------------------------------------
+// Utilities
+// ---------------------------------------------------------------------------
+
+function formatSize(bytes: number | null | undefined): string {
   if (!bytes) return "";
   const units = ["B", "KB", "MB", "GB"];
   let size = bytes;
@@ -68,172 +85,68 @@ function formatSize(bytes: number | undefined): string {
   return `${size.toFixed(1)} ${units[unitIndex]}`;
 }
 
-// Bucket list hook
-function useStorageBuckets() {
-  const [buckets, setBuckets] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string>("");
+// ---------------------------------------------------------------------------
+// Tree node
+// ---------------------------------------------------------------------------
 
-  useEffect(() => {
-    async function fetchBuckets() {
-      try {
-        const { data, error } = await supabase.storage.listBuckets();
-        if (error) throw error;
-        setBuckets(data.map((bucket) => bucket.name));
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to fetch buckets",
-        );
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchBuckets();
-  }, []);
-
-  return { buckets, loading, error };
+interface TreeNodeProps {
+  folderId: string | null; // null = root
+  label: string;
+  level: number;
+  onFileSelect: (file: CloudFileRecord) => void;
+  defaultOpen?: boolean;
 }
 
-// Storage list hook
-function useStorageList(bucketName: string, path: string = "") {
-  const [items, setItems] = useState<StorageFile[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    if (!bucketName) {
-      setItems([]);
-      return;
-    }
-
-    async function loadItems() {
-      setLoading(true);
-      setError("");
-      try {
-        const { data, error } = await supabase.storage
-          .from(bucketName)
-          .list(path);
-
-        if (error) throw error;
-
-        const formattedItems: StorageFile[] = (data || []).map((item) => ({
-          name: item.name,
-          id: item.id,
-          type: item.id === null ? "folder" : "file",
-          metadata: item.metadata,
-        }));
-
-        // Sort: folders first, then alphabetically
-        setItems(
-          formattedItems.sort((a, b) => {
-            if (a.type === "folder" && b.type === "file") return -1;
-            if (a.type === "file" && b.type === "folder") return 1;
-            return a.name.localeCompare(b.name);
-          }),
-        );
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to load contents",
-        );
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadItems();
-  }, [bucketName, path]);
-
-  return { items, loading, error };
-}
-
-// Tree Node Component
-function TreeNode({
-  item,
-  path,
-  bucketName,
+function FolderNode({
+  folderId,
+  label,
+  level,
   onFileSelect,
-  level = 0,
-}: {
-  item: StorageFile;
-  path: string;
-  bucketName: string;
-  onFileSelect: (path: string, file: StorageFile) => void;
-  level?: number;
-}) {
-  const [isOpen, setIsOpen] = useState(false);
-  const fullPath = path ? `${path}/${item.name}` : item.name;
+  defaultOpen = false,
+}: TreeNodeProps) {
+  const [open, setOpen] = useState(defaultOpen);
+  const foldersById = useAppSelector(selectAllFoldersMap);
+  const filesById = useAppSelector(selectAllFilesMap);
+  const childrenByFolderId = useAppSelector(selectChildrenByFolderId);
+  const rootFolderIds = useAppSelector(selectRootFolderIds);
+  const rootFileIds = useAppSelector(selectRootFileIds);
 
-  const {
-    items: children,
-    loading,
-    error,
-  } = useStorageList(
-    bucketName,
-    isOpen && item.type === "folder" ? fullPath : "",
-  );
-
-  const handleClick = () => {
-    if (item.type === "folder") {
-      setIsOpen(!isOpen);
-    } else {
-      onFileSelect(fullPath, item);
-    }
-  };
+  const children = folderId
+    ? (childrenByFolderId[folderId] ?? { folderIds: [], fileIds: [] })
+    : { folderIds: rootFolderIds, fileIds: rootFileIds };
 
   const paddingLeft = level * 1.25;
 
   return (
     <div>
-      <button
-        onClick={handleClick}
-        className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
-        style={{ paddingLeft: `${paddingLeft}rem` }}
-      >
-        <div className="flex items-center min-w-0 w-full">
-          <div className="flex items-center flex-shrink-0">
-            {item.type === "folder" && (
+      {folderId !== null ? (
+        <button
+          onClick={() => setOpen((o) => !o)}
+          className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
+          style={{ paddingLeft: `${paddingLeft}rem` }}
+        >
+          <div className="flex items-center min-w-0 w-full">
+            <div className="flex items-center flex-shrink-0">
               <div className="w-4 h-4 mr-1">
-                {isOpen ? (
+                {open ? (
                   <ChevronDown className="h-3.5 w-3.5 text-gray-500" />
                 ) : (
                   <ChevronRight className="h-3.5 w-3.5 text-gray-500" />
                 )}
               </div>
-            )}
-            {item.type === "folder" ? (
               <Folder className="h-3.5 w-3.5 mr-2 text-blue-600 dark:text-blue-500" />
-            ) : (
-              <File className="h-3.5 w-3.5 mr-2 text-gray-600 dark:text-gray-400" />
-            )}
-          </div>
-          <span className="text-xs truncate flex-1 text-gray-900 dark:text-gray-100">
-            {item.name}
-          </span>
-          {item.type === "file" && item.metadata?.size && (
-            <span className="text-[10px] text-gray-500 dark:text-gray-400 ml-2 flex-shrink-0">
-              {formatSize(item.metadata.size)}
+            </div>
+            <span className="text-xs truncate flex-1 text-gray-900 dark:text-gray-100">
+              {label}
             </span>
-          )}
-        </div>
-      </button>
+          </div>
+        </button>
+      ) : null}
 
-      {isOpen && item.type === "folder" && (
+      {(open || folderId === null) && (
         <div>
-          {loading ? (
-            <div
-              className="text-[10px] text-gray-500 dark:text-gray-400 py-1"
-              style={{ paddingLeft: `${(level + 1) * 1.25}rem` }}
-            >
-              Loading...
-            </div>
-          ) : error ? (
-            <div
-              className="text-[10px] text-red-600 dark:text-red-400 py-1"
-              style={{ paddingLeft: `${(level + 1) * 1.25}rem` }}
-            >
-              {error}
-            </div>
-          ) : children.length === 0 ? (
+          {children.folderIds.length === 0 &&
+          children.fileIds.length === 0 ? (
             <div
               className="text-[10px] text-gray-500 dark:text-gray-400 py-1"
               style={{ paddingLeft: `${(level + 1) * 1.25}rem` }}
@@ -241,21 +154,52 @@ function TreeNode({
               Empty folder
             </div>
           ) : (
-            children.map((child, childIndex) => (
-              <TreeNode
-                key={storageItemListKey(
-                  bucketName,
-                  fullPath,
-                  child,
-                  childIndex,
-                )}
-                item={child}
-                path={fullPath}
-                bucketName={bucketName}
-                onFileSelect={onFileSelect}
-                level={level + 1}
-              />
-            ))
+            <>
+              {children.folderIds.map((id) => {
+                const folder = foldersById[id];
+                if (!folder || folder.deletedAt) return null;
+                return (
+                  <FolderNode
+                    key={id}
+                    folderId={id}
+                    label={folder.folderName}
+                    level={folderId === null ? 0 : level + 1}
+                    onFileSelect={onFileSelect}
+                  />
+                );
+              })}
+              {children.fileIds.map((id) => {
+                const file = filesById[id];
+                if (!file || file.deletedAt) return null;
+                return (
+                  <button
+                    key={id}
+                    onClick={() => onFileSelect(file)}
+                    className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
+                    style={{
+                      paddingLeft: `${
+                        folderId === null ? 0 : (level + 1) * 1.25
+                      }rem`,
+                    }}
+                  >
+                    <div className="flex items-center min-w-0 w-full">
+                      <div className="flex items-center flex-shrink-0">
+                        <div className="w-4 h-4 mr-1" />
+                        <File className="h-3.5 w-3.5 mr-2 text-gray-600 dark:text-gray-400" />
+                      </div>
+                      <span className="text-xs truncate flex-1 text-gray-900 dark:text-gray-100">
+                        {file.fileName}
+                      </span>
+                      {file.fileSize ? (
+                        <span className="text-[10px] text-gray-500 dark:text-gray-400 ml-2 flex-shrink-0">
+                          {formatSize(file.fileSize)}
+                        </span>
+                      ) : null}
+                    </div>
+                  </button>
+                );
+              })}
+            </>
           )}
         </div>
       )}
@@ -263,100 +207,84 @@ function TreeNode({
   );
 }
 
-// Main Component
+// ---------------------------------------------------------------------------
+// Main component
+// ---------------------------------------------------------------------------
+
 export function FilesResourcePicker({
   onBack,
   onSelect,
   allowedBuckets,
 }: FilesResourcePickerProps) {
-  const {
-    buckets: allBuckets,
-    loading: bucketsLoading,
-    error: bucketsError,
-  } = useStorageBuckets();
-  const [selectedBucket, setSelectedBucket] = useState<string>("");
-  const [isViewingBuckets, setIsViewingBuckets] = useState(true);
+  const currentUserId = useAppSelector(
+    (s: unknown) =>
+      (s as { user?: { id?: string | null } }).user?.id ?? null,
+  );
+  useCloudTree(currentUserId ?? null);
+  const treeStatus = useAppSelector(selectTreeStatus);
+  const foldersById = useAppSelector(selectAllFoldersMap);
+  const rootFolderIds = useAppSelector(selectRootFolderIds);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Filter buckets if allowedBuckets is provided
-  const buckets = useMemo(() => {
-    if (!allowedBuckets || allowedBuckets.length === 0) return allBuckets;
-    return allBuckets.filter((bucket) => allowedBuckets.includes(bucket));
-  }, [allBuckets, allowedBuckets]);
+  // Root-level "buckets" are the top-level folders of the user's tree.
+  const rootFolders = useMemo<CloudFolderRecord[]>(() => {
+    const all = rootFolderIds
+      .map((id) => foldersById[id])
+      .filter((f): f is CloudFolderRecord => !!f && !f.deletedAt);
+    if (allowedBuckets && allowedBuckets.length > 0) {
+      return all.filter((f) => allowedBuckets.includes(f.folderName));
+    }
+    return all;
+  }, [rootFolderIds, foldersById, allowedBuckets]);
 
-  // Get root items for selected bucket
-  const { items, loading: itemsLoading } = useStorageList(selectedBucket);
+  const filteredRootFolders = useMemo(() => {
+    if (!searchQuery.trim()) return rootFolders;
+    const q = searchQuery.toLowerCase();
+    return rootFolders.filter((f) => f.folderName.toLowerCase().includes(q));
+  }, [rootFolders, searchQuery]);
 
-  // Filter buckets by search
-  const filteredBuckets = useMemo(() => {
-    if (!searchQuery.trim()) return buckets;
-    const query = searchQuery.toLowerCase();
-    return buckets.filter((bucket) => bucket.toLowerCase().includes(query));
-  }, [buckets, searchQuery]);
-
-  const handleBucketSelect = (bucket: string) => {
-    setSelectedBucket(bucket);
-    setIsViewingBuckets(false);
-  };
-
-  const handleBackToBuckets = () => {
-    setIsViewingBuckets(true);
-    setSearchQuery("");
-  };
-
-  const handleFileSelect = async (path: string, file: StorageFile) => {
+  const handleFileSelect = async (file: CloudFileRecord) => {
     setIsProcessing(true);
     try {
-      // Check if bucket is public by attempting to get public URL
-      const { data: publicUrlData } = await supabase.storage
-        .from(selectedBucket)
-        .getPublicUrl(path);
+      // Fetch a short-lived signed URL. Unlike legacy storage, every
+      // cloud-files URL is signed — we don't need the "public vs private"
+      // dance the old picker did.
+      const { data } = await Api.Files.getSignedUrl(file.id, {
+        expiresIn: 3600,
+      });
+      const fileUrl = data.url;
 
-      let fileUrl = publicUrlData.publicUrl;
-      let isPublic = true;
+      // Reuse the legacy EnhancedFileDetails shape so downstream callers
+      // (resource registry, attachment pills, etc.) read the same fields.
+      // The helper tolerates a partial metadata object — cast to sidestep
+      // the strict StorageMetadata interface (it demands several fields we
+      // don't have here, like eTag/lastModified).
+      const baseDetails = getFileDetailsByUrl(
+        fileUrl,
+        {
+          size: file.fileSize ?? 0,
+          mimetype: file.mimeType ?? "application/octet-stream",
+        } as unknown as Parameters<typeof getFileDetailsByUrl>[1],
+      );
 
-      // Try to fetch the public URL to see if it's actually accessible
-      try {
-        const response = await fetch(publicUrlData.publicUrl, {
-          method: "HEAD",
-        });
-        if (!response.ok) {
-          // If public URL doesn't work, get signed URL
-          isPublic = false;
-          const { data: signedData, error: signedError } =
-            await supabase.storage
-              .from(selectedBucket)
-              .createSignedUrl(path, 3600); // 1 hour expiry
-
-          if (signedError) throw signedError;
-          fileUrl = signedData.signedUrl;
-        }
-      } catch {
-        // If HEAD request fails, assume private and get signed URL
-        isPublic = false;
-        const { data: signedData, error: signedError } = await supabase.storage
-          .from(selectedBucket)
-          .createSignedUrl(path, 3600);
-
-        if (signedError) throw signedError;
-        fileUrl = signedData.signedUrl;
-      }
-
-      // Use the existing file operations utility to get complete file details
-      const fileDetails = getFileDetailsByUrl(fileUrl, file.metadata as any);
-
-      // Enhance with bucket and path info
       const enhancedDetails: EnhancedFileDetails = {
-        ...fileDetails,
-        bucket: selectedBucket,
-        path: path,
+        ...baseDetails,
+        // `bucket` is legacy — we map it to the parent folder path so
+        // downstream code that reads it still has a meaningful value.
+        bucket: file.parentFolderId
+          ? (foldersById[file.parentFolderId]?.folderPath ?? "")
+          : "",
+        path: file.filePath,
       };
 
-      // Build proper structure for FilePreviewSheet
       onSelect({
         url: fileUrl,
-        type: fileDetails.mimetype || "application/octet-stream",
+        type:
+          baseDetails.mimetype ||
+          file.mimeType ||
+          "application/octet-stream",
         details: enhancedDetails,
       });
     } catch (error) {
@@ -366,6 +294,9 @@ export function FilesResourcePicker({
     }
   };
 
+  const loading = treeStatus === "loading" || treeStatus === "idle";
+  const error = treeStatus === "error";
+
   return (
     <div className="flex flex-col max-h-[min(460px,70dvh)]">
       {/* Header */}
@@ -374,90 +305,57 @@ export function FilesResourcePicker({
           variant="ghost"
           size="sm"
           className="h-6 w-6 p-0 flex-shrink-0"
-          onClick={isViewingBuckets ? onBack : handleBackToBuckets}
+          onClick={onBack}
           disabled={isProcessing}
         >
           <ChevronLeft className="w-4 h-4" />
         </Button>
-        <Database className="w-4 h-4 flex-shrink-0 text-gray-600 dark:text-gray-400" />
+        <Folder className="w-4 h-4 flex-shrink-0 text-gray-600 dark:text-gray-400" />
         <span className="text-sm font-medium text-gray-700 dark:text-gray-300 flex-1 truncate">
-          {isViewingBuckets ? "Storage Buckets" : selectedBucket}
+          Cloud Files
         </span>
       </div>
 
       {/* Search */}
-      {isViewingBuckets && (
-        <div className="px-2 py-2 border-b border-border">
-          <div className="relative">
-            <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
-            <Input
-              type="text"
-              placeholder="Search buckets..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-7 text-xs pl-7 pr-2 bg-background border-gray-300 dark:border-gray-700"
-            />
-          </div>
+      <div className="px-2 py-2 border-b border-border">
+        <div className="relative">
+          <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+          <Input
+            type="text"
+            placeholder="Filter top-level folders…"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="h-7 text-xs pl-7 pr-2 bg-background border-gray-300 dark:border-gray-700"
+          />
         </div>
-      )}
+      </div>
 
       {/* Content */}
       <div className="flex-1 min-h-0 overflow-y-auto scrollbar-thin relative">
-        {bucketsLoading ? (
-          <div className="flex items-center justify-center h-full">
+        {loading ? (
+          <div className="flex items-center justify-center h-full py-8">
             <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
           </div>
-        ) : bucketsError ? (
+        ) : error ? (
           <div className="text-xs text-red-600 dark:text-red-400 text-center py-8">
-            Error loading buckets
+            Error loading files
           </div>
-        ) : isViewingBuckets ? (
-          // Show buckets
-          <div className="p-1">
-            {filteredBuckets.length === 0 ? (
-              <div className="text-xs text-gray-500 dark:text-gray-400 text-center py-8">
-                {searchQuery ? "No buckets found" : "No storage buckets"}
-              </div>
-            ) : (
-              <div className="space-y-0.5">
-                {filteredBuckets.map((bucket) => (
-                  <button
-                    key={bucket}
-                    onClick={() => handleBucketSelect(bucket)}
-                    className="w-full flex items-center gap-2 px-2 py-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors group"
-                  >
-                    <Database className="w-4 h-4 flex-shrink-0 text-purple-600 dark:text-purple-500" />
-                    <span className="flex-1 text-xs font-medium text-gray-900 dark:text-gray-100 text-left truncate">
-                      {bucket}
-                    </span>
-                    <ChevronRight className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300 flex-shrink-0" />
-                  </button>
-                ))}
-              </div>
-            )}
+        ) : filteredRootFolders.length === 0 ? (
+          <div className="text-xs text-gray-500 dark:text-gray-400 text-center py-8">
+            {searchQuery ? "No folders match" : "No files yet"}
           </div>
         ) : (
-          // Show file tree
           <div className="p-1">
-            {itemsLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
-              </div>
-            ) : items.length === 0 ? (
-              <div className="text-xs text-gray-500 dark:text-gray-400 text-center py-8">
-                Empty bucket
-              </div>
-            ) : (
-              items.map((item, itemIndex) => (
-                <TreeNode
-                  key={storageItemListKey(selectedBucket, "", item, itemIndex)}
-                  item={item}
-                  path=""
-                  bucketName={selectedBucket}
-                  onFileSelect={handleFileSelect}
-                />
-              ))
-            )}
+            {/* Render each top-level folder as an expandable tree. */}
+            {filteredRootFolders.map((folder) => (
+              <FolderNode
+                key={folder.id}
+                folderId={folder.id}
+                label={folder.folderName}
+                level={0}
+                onFileSelect={handleFileSelect}
+              />
+            ))}
           </div>
         )}
 

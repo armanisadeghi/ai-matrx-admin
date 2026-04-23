@@ -1,0 +1,175 @@
+# FEATURE.md — `settings`
+
+**Status:** `active`
+**Tier:** `1`
+**Last updated:** 2026-04-23
+
+---
+
+## Purpose
+
+The single user-facing surface for every preference in the app — a VS Code-style window with a hierarchical tree on desktop and an iOS-style push-nav drawer on mobile. Every preference across every Redux slice (`userPreferences`, `theme`, `adminPreferences`, `layout`, `windowManager`) is read and written through one unified hook (`useSetting`) and composed from one tightly controlled set of primitives. No tab imports Redux directly; no tab imports shadcn directly.
+
+---
+
+## Entry points
+
+**Routes**
+- `app/(authenticated)/settings/preferences/page.tsx` — legacy URL kept alive as a redirect. Dispatches `openOverlay({ overlayId: "userPreferencesWindow", data: { initialTabId } })` and forwards to `/dashboard`. Legacy `?tab=` values are aliased to new registry ids.
+- `app/(authenticated)/settings-shell-demo/page.tsx` — dev demo page with Open Settings button + admin-view toggle.
+- `app/(authenticated)/settings-primitives/page.tsx` — primitive gallery (every control, every state).
+- `app/(authenticated)/settings-tree-demo/page.tsx` — tree + drawer-nav demo with a fake 20-node tree.
+- `app/(authenticated)/settings-hooks-demo/page.tsx` — `useSetting` across 3 slices.
+
+**Overlay ids** (dispatched via `openOverlay(...)`)
+- `userPreferencesWindow` — canonical. Every caller should use this one.
+- `userPreferences` — legacy modal id. Resolves to the same shell via `SettingsShellOverlay`.
+
+**Hooks**
+- `useSetting<T>(path)` — read/write any setting. `[value, setter]`. Throws at init if the path's slice isn't registered.
+- `useSettingPersistence(path)` — returns `"synced" | "local-only" | "session"` for surfacing badges.
+- `useSettingsSearch(query, { isAdmin })` — ranked hits (label > keyword > description).
+- `usePreferencesModal()` — Phase 8 shim, same API as the deleted legacy hook but dispatches into overlaySlice.
+
+**Public API** — `@/features/settings`
+- `SettingsShell`, `SettingsShellOverlay`, `SettingsTabHost`
+- `useSetting`, `useSettingPersistence`, `useSettingsSearch`, `countSearchHits`
+- `settingsRegistry`, `getVisibleTabs`, `getTabTree`, `getTabTreeNodes`, `findTab`
+- `parseSettingsPath`, `getSliceBinding`, `sliceBindings`
+- Types: `SettingsPath`, `SettingsPersistence`, `SettingsTabDef`, `ResolvedSettingsTab`, `SettingsSearchHit`, `SliceBinding`
+
+**Primitives** — `@/components/official/settings`
+- Form: `SettingsSwitch`, `SettingsSelect`, `SettingsSlider`, `SettingsNumberInput`, `SettingsTextInput`, `SettingsTextarea`, `SettingsRadioGroup`, `SettingsCheckbox`, `SettingsSegmented`, `SettingsColorPicker`, `SettingsMultiSelect`, `SettingsButton`, `SettingsLink`, `SettingsKeybinding`, `SettingsModelPicker`
+- Layout: `SettingsSection`, `SettingsSubHeader`, `SettingsCallout`, `SettingsGrid`, `SettingsReadOnlyValue`
+- Tree: `SettingsTree`, `SettingsDrawerNav`, `SettingsBreadcrumb`
+- Shared types: `SettingsBadge`, `SettingsCommonProps`, `SettingsRowVariant`, `SettingsRowDensity`, `SettingsControlSize`, `SettingsOption`, `SettingsTreeNode`
+
+**Redux slice(s) exposed through `useSetting`**
+- `userPreferences` (`lib/redux/slices/userPreferencesSlice.ts`) — 17 modules; persistence: **synced** (warm-cache: IDB + localStorage + Supabase).
+- `theme` (`styles/themes/themeSlice.ts`) — `{ mode: "light" | "dark" }`; persistence: **synced** (boot-critical: pre-paint localStorage).
+- `adminPreferences` (`lib/redux/slices/adminPreferencesSlice.ts`) — server override; persistence: **local-only** (flagged for sync migration).
+- `layout` (`lib/redux/slices/layoutSlice.ts`) — layoutStyle + isInWindow; persistence: **local-only** (flagged for sync migration).
+- `windowManager` (`lib/redux/slices/windowManagerSlice.ts`) — action-only writes (`toggleHidden`, `restoreAll`); persistence: **session**.
+
+---
+
+## Data model
+
+**Database tables** (Supabase)
+- `user_preferences` — single JSONB blob per user, mutated through the userPreferences warm-cache sync policy. This feature doesn't touch the table directly; the sync engine owns the fetch/write contract.
+
+**Key types**
+- `SettingsTabDef` (`features/settings/types.ts`) — registry entry shape.
+- `SliceBinding` (`features/settings/slice-bindings.ts`) — per-slice `{ read, write, persistence }` contract.
+- `SettingsTreeNode` (`components/official/settings/tree/types.ts`) — tree rendering node.
+
+---
+
+## Key flows
+
+### 1. User clicks "Open settings" (or any entry point that dispatches the overlay)
+
+Trigger: `dispatch(openOverlay({ overlayId: "userPreferencesWindow", data?: { initialTabId? } }))`.
+
+Path:
+- `UnifiedOverlayController` iterates `ALL_WINDOW_REGISTRY_ENTRIES`, renders one `<OverlaySurface>` per entry.
+- `OverlaySurface` for `userPreferencesWindow` reads its `isOpen` from `overlaySlice`, lazy-loads `componentImport`, and mounts the resolved component with `{ isOpen: true, onClose, ...data }`.
+- The resolved component is `SettingsShellOverlay` (Phase 8), which ignores the passed props and reads `overlaySlice` directly so it also catches the legacy `userPreferences` modal id.
+- The overlay adapter computes `initialTabId` (remapping legacy tab ids when needed) and renders `<SettingsShell isOpen initialTabId isAdmin onClose />`.
+- On desktop: `SettingsShell` renders a `WindowPanel` with `<SettingsTree>` in the sidebar and `<SettingsTabHost>` in the body.
+- On mobile (`useIsMobile()` → true): `SettingsShell` mounts `<SettingsDrawerNav>` instead — iOS-style push-nav.
+
+Exit: `SettingsShell.onClose` dispatches `closeOverlay` for both ids; `OverlaySurface` unmounts; lazy-loaded tabs stay in the React.lazy module cache for fast reopen.
+
+### 2. User toggles a preference
+
+Trigger: a primitive's `onValueChange` inside a tab calls `setter(v)` from `useSetting(path)`.
+
+Path:
+- `useSetting` parses the path (`parseSettingsPath`), looks up the slice binding (`getSliceBinding`), and dispatches `binding.write(key, value)`.
+- For `userPreferences.*`, the write resolves to `setPreference({ module, preference, value })` — the warm-cache sync policy's middleware picks it up, debounces ≤250ms, and writes to IDB + localStorage mirror + Supabase.
+- For `theme.mode`, the write is `setMode(value)` — boot-critical middleware synchronously writes to localStorage and broadcasts across tabs.
+- For `adminPreferences.*` / `layout.*`, the write goes to Redux only — no persistence tier yet (flagged for migration).
+
+Exit: Every subscribed component re-renders on the slice update; the sync engine's debounced write flushes in the background.
+
+### 3. Deep link: `/?panels=user_preferences`
+
+Trigger: browser navigates to any URL containing `?panels=user_preferences` on mount.
+
+Path:
+- `initUrlHydration` registers a `user_preferences` hydrator that dispatches `openOverlay({ overlayId: "userPreferencesWindow" })`.
+- The rest of the flow matches Flow 1.
+
+Exit: Window opens at the default tab. If additional query params (e.g. `&user_preferences_id=…`) are present, the registry's `urlSync.key` + `instanceId` wiring applies.
+
+### 4. Adding a new tab (developer flow)
+
+Trigger: Developer adds a new setting.
+
+Path:
+1. Decide where the value lives. Existing slice → use `useSetting("slice.key")`. New preference → add to `UserPreferences` types + defaults + reducer, the sync engine picks it up automatically. Genuinely new slice → add a binding in `features/settings/slice-bindings.ts`.
+2. Create `features/settings/tabs/MyTab.tsx` composing ONLY primitives from `@/components/official/settings`. No Redux imports. No shadcn imports. No `className` on primitives.
+3. Add a registry entry in `features/settings/registry.ts` with `{ id, label, icon, parentId?, component: lazyTab(...), persistence }`.
+4. Done. The tree, breadcrumb, search, and admin gating pick it up automatically.
+
+---
+
+## Invariants & gotchas
+
+- **Primitives have no `className` prop.** Ever. Variations must be new enum values on existing props. If you need a visual variation that isn't supported, add a prop to the primitive — don't pass `className`.
+- **Tabs never import Redux.** They can call `useSelector` only for *read-only derived state that isn't a preference* (e.g. in `WindowsTab` where open-window counts come directly from `windowManager.windows`). For anything writable, `useSetting` is the only path.
+- **Tabs never import shadcn.** All form controls come from `@/components/official/settings`. The one documented exception is `AiModelsTab`, which lazy-wraps the legacy `AiModelsPreferences` until a `SettingsModelList` primitive exists.
+- **`useSetting` throws at init when the slice isn't bound.** Treat that as a "fix your slice binding" signal, not a caller bug. Add to `slice-bindings.ts`.
+- **Writing through `useSetting` for `windowManager` requires an action-only key.** `toggleHidden`, `restoreAll` — no `read` roundtrip. For the full `minimizeAll(payload)` write you need viewport dims, so call `useAppDispatch()` directly with `minimizeAll(...)` (see `WindowsTab`).
+- **`persistence: "local-only"` and `persistence: "session"` are flags, not final states.** They document which slices still need a sync policy.
+- **The legacy `userPreferences` modal overlay id still resolves to the new shell.** Kept so nothing downstream has to change. Remove the modal registry entry once every caller has migrated to `userPreferencesWindow`.
+- **Do NOT regress on `components/user-preferences/AiModelsPreferences.tsx`.** It's kept on purpose — it's the only remaining legacy `*Preferences.tsx` still referenced (by `AiModelsTab`). Deleting it breaks the shell.
+- **Category tabs (e.g. `id: "general"`, `id: "ai"`) have `component: Placeholder`.** The tree's folder nodes only expand/collapse, they don't activate. The placeholder is never rendered for them; it's still required to satisfy the type.
+
+---
+
+## Related features
+
+- **Depends on:**
+  - `features/window-panels` — `WindowPanel`, `UnifiedOverlayController`, `OverlaySurface`, `windowRegistry`.
+  - `lib/redux/slices/overlaySlice` — open/close dispatching.
+  - `lib/redux/slices/userPreferencesSlice` — primary write target.
+  - `lib/sync/*` — warm-cache + boot-critical persistence engine.
+  - `components/official/settings/*` — primitives library.
+- **Depended on by:**
+  - Every feature that surfaces a user preference (messaging, voice, coding, flashcards, …).
+  - `hooks/user-preferences/usePreferencesModal.ts` (Phase 8 shim).
+  - `hooks/user-preferences/usePreferenceValue.ts` (Phase 8 shim).
+- **Cross-links:**
+  - `features/window-panels/FEATURE.md`
+  - `.cursor/skills/ios-mobile-first/SKILL.md`
+  - `.cursor/skills/settings-system/SKILL.md`
+
+---
+
+## Current work / migration state
+
+Phase 1–8 shipped. Phase 9 (this doc + skill) closes the original project.
+
+**Follow-up candidates** (not blocking):
+- Migrate `adminPreferences`, `layout`, and the email-preferences API to the sync engine so those tabs can drop their `local-only` flag.
+- Build a `SettingsModelList` primitive and replace the legacy `AiModelsPreferences` wrapper.
+- Reintroduce `AgentContextPreferences` as a proper tab built on the new agent system.
+- Reassess `general.notifications` aliasing to `MessagingTab` once a dedicated Notifications preferences module exists.
+
+---
+
+## Change log
+
+- `2026-04-23` — Phase 1–9 initial migration shipped.
+  - 20 primitives + 3 tree components under `@/components/official/settings`.
+  - `useSetting(path)` + 5 slice bindings; registry of 30+ tabs.
+  - `SettingsShell` + `SettingsShellOverlay` mounted via `WindowPanel` on desktop, Vaul drawer push-nav on mobile.
+  - Every legacy `components/user-preferences/*.tsx` deleted except `AiModelsPreferences` and `StandalonePromptsPreferences`.
+  - `/settings/preferences?tab=X` kept alive as redirect; `usePreferencesModal` and `usePreferenceValue` shimmed.
+  - Follow-on work flagged in registry via the `persistence` field.
+
+---
+
+> **Keep-docs-live rule (CLAUDE.md):** after any substantive change to this feature, update this file's status, add flows you introduced/removed, and append to the Change log. Stale FEATURE.md cascades across parallel agents. Treat doc updates with the same weight as code changes in the same PR.

@@ -60,6 +60,7 @@ const ImageGenerationTab = lazyTab(() => import("./tabs/ImageGenerationTab"));
 const PhotoEditingTab = lazyTab(() => import("./tabs/PhotoEditingTab"));
 const VideoConferenceTab = lazyTab(() => import("./tabs/VideoConferenceTab"));
 const CodingTab = lazyTab(() => import("./tabs/CodingTab"));
+const CodeWorkspaceTab = lazyTab(() => import("./tabs/CodeWorkspaceTab"));
 const FlashcardsTab = lazyTab(() => import("./tabs/FlashcardsTab"));
 const AiModelsTab = lazyTab(() => import("./tabs/AiModelsTab"));
 const AdminServerTab = lazyTab(() => import("./tabs/AdminServerTab"));
@@ -243,6 +244,26 @@ export const settingsRegistry: SettingsTabDef[] = [
     icon: Code,
     parentId: "editor",
     component: CodingTab,
+    persistence: "synced",
+  },
+  {
+    id: "editor.codeWorkspace",
+    label: "Code workspace",
+    icon: MessageSquare,
+    parentId: "editor",
+    description:
+      "Which agents appear in the /code chat and how history is grouped.",
+    searchKeywords: [
+      "agents",
+      "filter",
+      "tags",
+      "categories",
+      "chat",
+      "history",
+      "conversations",
+      "favorites",
+    ],
+    component: CodeWorkspaceTab,
     persistence: "synced",
   },
   {

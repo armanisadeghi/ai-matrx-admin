@@ -10,9 +10,9 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { generateDirectoryStructure } from "@/actions/directory.actions";
 import { DirectoryTreeConfig } from "@/components/DirectoryTree/config";
 import { DirectoryTree } from "@/components/DirectoryTree/DirectoryTree";
-import type { DirectoryType, FileContentResult } from "@/utils/fileSystemTypes";
-import { getFileType, loadFileContent } from "@/utils/fileContentHandlers";
-import { getFileStats } from "@/actions/file.actions";
+import type { FileContentResult } from "@/utils/fileSystemTypes";
+import { getFileType } from "@/utils/fileContentKind";
+import { getFileStats, loadExplorerFileContent } from "@/actions/file.actions";
 import { FileViewer } from "./FileViewer";
 import { FileOperationsToolbar } from "./FileOperationsToolbar";
 import { FileDetailsPanel } from "./FileDetailsPanel";
@@ -99,7 +99,7 @@ const LocalFileAccess = () => {
       const dirPath = parts;
 
       const stats = await getFileStats(filename, {
-        type: selectedDirectory as DirectoryType,
+        type: selectedDirectory === "project" ? "custom" : "app",
         path: dirPath,
       });
 
@@ -111,10 +111,10 @@ const LocalFileAccess = () => {
         path,
       };
 
-      const content = await loadFileContent(
+      const content = await loadExplorerFileContent(
         dirPath,
         filename,
-        selectedDirectory as "app" | "public" | "custom",
+        selectedDirectory as "project" | "current",
       );
 
       setFileState((prev) => ({

@@ -8,6 +8,17 @@
  * back to the Node global here so the Dexie wrapper runs unmodified.
  */
 
+// Dummy Supabase env vars so `utils/supabase/client.ts` doesn't throw when
+// tests transitively import code that instantiates the browser client at
+// module load (e.g. Tools-grid selectors pull in modelRegistrySlice).
+// Tests never hit real Supabase — mocks or fake-indexeddb stand in.
+if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+  process.env.NEXT_PUBLIC_SUPABASE_URL = "http://localhost:54321";
+}
+if (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = "test-anon-key";
+}
+
 if (typeof (globalThis as { structuredClone?: unknown }).structuredClone !== "function") {
     // Node ≥17 ships a global `structuredClone`, but jsdom strips it from the
     // test-local `globalThis`. `v8.deserialize(v8.serialize(v))` gives us the

@@ -1,48 +1,132 @@
 'use client';
 
 import React from 'react';
-import PreferenceModuleWrapper from './PreferenceModuleWrapper';
-import PromptsPreferences from './PromptsPreferences';
+import { MessageSquare } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  SettingsModelPicker,
+  SettingsSection,
+  SettingsSelect,
+  SettingsSlider,
+  SettingsSubHeader,
+  SettingsSwitch,
+} from '@/components/official/settings';
+import { useSetting } from '@/features/settings/hooks/useSetting';
+import type { ThinkingMode } from '@/lib/redux/slices/userPreferencesSlice';
 
 interface StandalonePromptsPreferencesProps {
-    onSaveSuccess?: () => void;
-    onCancel?: () => void;
-    showFooter?: boolean;
+  onSaveSuccess?: () => void;
+  onCancel?: () => void;
+  showFooter?: boolean;
 }
 
+const thinkingOptions: { value: ThinkingMode; label: string }[] = [
+  { value: 'none', label: 'None' },
+  { value: 'simple', label: 'Simple' },
+  { value: 'deep', label: 'Deep' },
+];
+
 /**
- * Standalone Prompts Preferences with its own save/cancel functionality
- * 
- * Use this component when you want to show just the prompts preferences
- * with save/cancel buttons (e.g., in a modal or dedicated section)
- * 
- * @example
- * ```tsx
- * <StandalonePromptsPreferences 
- *   onSaveSuccess={() => {
- *     toast.success('Preferences saved!');
- *     closeModal();
- *   }}
- *   onCancel={() => closeModal()}
- * />
- * ```
+ * Prompts module preferences using the unified settings bindings (synced like other settings).
  */
 const StandalonePromptsPreferences: React.FC<StandalonePromptsPreferencesProps> = ({
-    onSaveSuccess,
-    onCancel,
-    showFooter = true
+  onSaveSuccess,
+  onCancel,
+  showFooter = true,
 }) => {
-    return (
-        <PreferenceModuleWrapper 
-            module="prompts" 
-            showFooter={showFooter}
-            onSaveSuccess={onSaveSuccess}
-            onCancel={onCancel}
-        >
-            <PromptsPreferences />
-        </PreferenceModuleWrapper>
-    );
+  const [showSettingsOnMainPage, setShowSettingsOnMainPage] = useSetting<boolean>(
+    'userPreferences.prompts.showSettingsOnMainPage',
+  );
+  const [defaultModel, setDefaultModel] = useSetting<string>(
+    'userPreferences.prompts.defaultModel',
+  );
+  const [defaultTemperature, setDefaultTemperature] = useSetting<number>(
+    'userPreferences.prompts.defaultTemperature',
+  );
+  const [alwaysIncludeInternalWebSearch, setAlwaysIncludeInternalWebSearch] =
+    useSetting<boolean>('userPreferences.prompts.alwaysIncludeInternalWebSearch');
+  const [includeThinkingInAutoPrompts, setIncludeThinkingInAutoPrompts] =
+    useSetting<ThinkingMode>('userPreferences.prompts.includeThinkingInAutoPrompts');
+  const [submitOnEnter, setSubmitOnEnter] = useSetting<boolean>(
+    'userPreferences.prompts.submitOnEnter',
+  );
+  const [autoClearResponsesInEditMode, setAutoClearResponsesInEditMode] =
+    useSetting<boolean>('userPreferences.prompts.autoClearResponsesInEditMode');
+
+  return (
+    <div className="flex flex-col gap-4 min-h-0">
+      <SettingsSubHeader
+        title="Prompt defaults"
+        description="Defaults for prompt surfaces and the prompt builder. Changes sync to your account like other settings."
+        icon={MessageSquare}
+      />
+
+      <div className="flex-1 min-h-0 overflow-y-auto pr-1">
+        <SettingsSection title="General">
+          <SettingsSwitch
+            label="Show settings on main page"
+            checked={showSettingsOnMainPage}
+            onCheckedChange={setShowSettingsOnMainPage}
+          />
+          <SettingsModelPicker
+            label="Default model"
+            description="Used when a prompt does not specify a model."
+            value={defaultModel}
+            onValueChange={setDefaultModel}
+            scope="active"
+          />
+          <SettingsSlider
+            label="Default temperature"
+            description="0 = deterministic, 2 = very creative."
+            value={defaultTemperature}
+            onValueChange={setDefaultTemperature}
+            min={0}
+            max={2}
+            step={0.01}
+            precision={2}
+          />
+          <SettingsSwitch
+            label="Always include internal web search"
+            checked={alwaysIncludeInternalWebSearch}
+            onCheckedChange={setAlwaysIncludeInternalWebSearch}
+          />
+          <SettingsSelect<ThinkingMode>
+            label="Thinking in auto prompts"
+            value={includeThinkingInAutoPrompts}
+            onValueChange={setIncludeThinkingInAutoPrompts}
+            options={thinkingOptions}
+          />
+          <SettingsSwitch
+            label="Submit on Enter"
+            checked={submitOnEnter}
+            onCheckedChange={setSubmitOnEnter}
+          />
+          <SettingsSwitch
+            label="Auto-clear responses in edit mode"
+            description="Clear prior assistant output when editing a prompt in place."
+            checked={autoClearResponsesInEditMode}
+            onCheckedChange={setAutoClearResponsesInEditMode}
+            last
+          />
+        </SettingsSection>
+      </div>
+
+      {showFooter ? (
+        <div className="flex justify-end gap-2 pt-3 border-t border-border shrink-0">
+          <Button type="button" variant="outline" size="sm" onClick={() => onCancel?.()}>
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            onClick={() => onSaveSuccess?.()}
+          >
+            Done
+          </Button>
+        </div>
+      ) : null}
+    </div>
+  );
 };
 
 export default StandalonePromptsPreferences;
-

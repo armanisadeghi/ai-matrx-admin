@@ -11,3 +11,4 @@ export * from "./useCloudTree";
 export * from "./useSharing";
 export * from "./useFileSearch";
 export * from "./useUploadAndGet";
+export * from "./useUploadAndShare";

@@ -180,7 +180,7 @@ function GridFolder({
       onDoubleClick={onActivate}
     >
       <div
-        className="relative aspect-[4/3] bg-muted/30 flex items-center justify-center"
+        className="relative aspect-[4/3] bg-primary/5 flex items-center justify-center"
         onClick={onActivate}
       >
         <FolderIconWithMembers isShared={isShared} size={56} />

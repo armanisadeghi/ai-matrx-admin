@@ -552,10 +552,37 @@
   to   { transform: translateX(0);     opacity: 1; }
 }
 
+/* Used by MobileCardSurface — subtle slide-up + fade for window-panel
+   card overlays on mobile. Driven by --window-surface-* tokens. */
+@keyframes card-enter {
+  from { transform: translateY(8px); opacity: 0; }
+  to   { transform: translateY(0);   opacity: 1; }
+}
+
 @layer base {
   :root {
     /* Layout Header Heights - Unified: 2.5rem (h-10) for both mobile and desktop */
     --header-height: 2.5rem;
+
+    /* Window Panels — tray + chrome tokens.
+       JS constants in features/window-panels/constants/tray.ts stay the
+       source of truth for slot-placement math (reducers can't read CSS);
+       these tokens drive styling in WindowTray / WindowPanel chrome so
+       themes can override chip dimensions without touching the slice. */
+    --window-tray-chip-w: 270px;
+    --window-tray-chip-h: 100px;
+    --window-tray-chip-w-mobile: 180px;
+    --window-tray-chip-h-mobile: 72px;
+    --window-tray-gap: 8px;
+    --window-tray-bottom: 12px;
+    --window-tray-right: 12px;
+
+    /* Mobile surface timing — shared between MobileDrawerSurface (vaul
+       handles its own), MobileCardSurface, and the fullscreen mobile
+       takeover so open/close transitions feel uniform. */
+    --window-surface-enter-duration: 220ms;
+    --window-surface-exit-duration: 180ms;
+    --window-surface-easing: cubic-bezier(0.32, 0.72, 0, 1);
 
     /* Glass Effect — iOS-inspired frosted glass
        Philosophy: low opacity + low blur + displacement = real glass.

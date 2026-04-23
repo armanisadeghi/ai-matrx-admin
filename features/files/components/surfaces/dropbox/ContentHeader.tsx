@@ -118,7 +118,7 @@ export function ContentHeader({
   return (
     <div
       className={cn(
-        "flex flex-col gap-3 border-b bg-background px-4 py-3 shrink-0",
+        "flex flex-col gap-3 border-b border-border/70 bg-background px-4 py-3 shrink-0",
         className,
       )}
     >
@@ -231,7 +231,7 @@ function HeaderButton({
       className={cn(
         "inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm",
         variant === "primary"
-          ? "border-foreground bg-foreground text-background hover:bg-foreground/90"
+          ? "border-primary bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
           : "border-border bg-background text-foreground hover:bg-accent",
       )}
     >

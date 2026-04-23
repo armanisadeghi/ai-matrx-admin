@@ -7,6 +7,9 @@ interface UserProfileHeaderProps {
 }
 
 export function UserProfileHeader({ userData }: UserProfileHeaderProps) {
+  const displayName =
+    userData.userMetadata.name ?? userData.email ?? "You";
+  const initial = displayName.charAt(0).toUpperCase() || "?";
   return (
     <label htmlFor="shell-user-menu" className="block">
       <Link
@@ -17,7 +20,7 @@ export function UserProfileHeader({ userData }: UserProfileHeaderProps) {
           <span className="relative block h-7 w-7 shrink-0 overflow-hidden rounded-full">
             <Image
               src={userData.userMetadata.avatarUrl}
-              alt={userData.userMetadata.name}
+              alt={displayName}
               fill
               className="object-cover"
               sizes="28px"
@@ -27,12 +30,12 @@ export function UserProfileHeader({ userData }: UserProfileHeaderProps) {
           </span>
         ) : (
           <span className="w-7 h-7 rounded-full bg-[var(--shell-glass-bg-active)] flex items-center justify-center text-xs font-semibold text-[var(--shell-nav-text)] shrink-0">
-            {userData.userMetadata.name.charAt(0).toUpperCase()}
+            {initial}
           </span>
         )}
         <span className="flex flex-col min-w-0">
           <span className="text-base font-medium text-foreground truncate">
-            {userData.userMetadata.name}
+            {displayName}
           </span>
           {userData.email && (
             <span className="text-xs text-foreground truncate">

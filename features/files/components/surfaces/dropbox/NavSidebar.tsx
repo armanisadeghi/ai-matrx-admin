@@ -53,7 +53,7 @@ export function NavSidebar({ section }: NavSidebarProps) {
   return (
     <aside
       aria-label="Cloud files secondary"
-      className="flex h-full flex-col overflow-hidden bg-background"
+      className="flex h-full flex-col overflow-hidden bg-muted/30"
     >
       <div className="flex items-center justify-between px-3 pb-2 pt-3 shrink-0">
         <h2 className="text-base font-semibold tracking-tight">Home</h2>
@@ -71,9 +71,9 @@ export function NavSidebar({ section }: NavSidebarProps) {
                   <Link
                     href={item.href}
                     className={cn(
-                      "flex items-center justify-between rounded-md px-2 py-1.5 text-sm",
+                      "flex items-center justify-between rounded-md px-2 py-1.5 text-sm transition-colors",
                       active
-                        ? "bg-accent text-foreground font-medium"
+                        ? "bg-primary/10 text-primary font-semibold"
                         : "text-foreground/80 hover:bg-accent/60",
                     )}
                   >

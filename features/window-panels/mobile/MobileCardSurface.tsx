@@ -68,6 +68,8 @@ export default function MobileCardSurface({
         "z-[9999] flex flex-col",
         "rounded-xl overflow-hidden",
         "bg-card/97 backdrop-blur-xl border border-border/60 shadow-2xl",
+        // Themes can override via --window-surface-* tokens in globals.css
+        "animate-[card-enter_var(--window-surface-enter-duration,220ms)_var(--window-surface-easing,ease-out)]",
       )}
       style={{ maxHeight, paddingBottom: "env(safe-area-inset-bottom)" }}
     >

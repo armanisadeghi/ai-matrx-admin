@@ -48,6 +48,7 @@ export interface FileTableProps {
   filter: FilterChipKey | null;
   onActivateFolder: (folderId: string) => void;
   onActivateFile: (fileId: string) => void;
+  emptyState?: React.ReactNode;
   className?: string;
 }
 
@@ -65,6 +66,7 @@ export function FileTable({
   filter,
   onActivateFolder,
   onActivateFile,
+  emptyState,
   className,
 }: FileTableProps) {
   const dispatch = useAppDispatch();
@@ -118,6 +120,9 @@ export function FileTable({
   );
 
   if (rows.length === 0) {
+    if (emptyState) {
+      return <div className={cn("h-full w-full", className)}>{emptyState}</div>;
+    }
     return (
       <div
         className={cn(

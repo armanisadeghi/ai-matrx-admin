@@ -11,6 +11,7 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import { PageShell } from "@/features/files";
+import { readSidebarModeCookie } from "@/features/files/utils/server-cookies";
 
 interface PageProps {
   params: Promise<{ fileId: string }>;
@@ -31,10 +32,14 @@ export default async function CloudFileDetailPage({ params }: PageProps) {
     notFound();
   }
 
+  const sidebarMode = await readSidebarModeCookie();
+
   return (
     <PageShell
+      section="all"
       initialFolderId={data.parent_folder_id}
       initialFileId={data.id}
+      initialSidebarMode={sidebarMode}
     />
   );
 }

@@ -37,9 +37,9 @@ export function FilterChips({ active, onToggle, className }: FilterChipsProps) {
             aria-pressed={isActive}
             onClick={() => onToggle(key)}
             className={cn(
-              "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm",
+              "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm transition-colors",
               isActive
-                ? "border-foreground bg-foreground text-background"
+                ? "border-primary/30 bg-primary/10 text-primary"
                 : "border-border bg-background text-foreground hover:bg-accent",
             )}
           >

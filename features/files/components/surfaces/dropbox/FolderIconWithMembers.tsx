@@ -33,8 +33,8 @@ export function FolderIconWithMembers({
         size={size}
         colorClass={
           isShared
-            ? "text-blue-500"
-            : "text-sky-500 dark:text-sky-400"
+            ? "text-indigo-500 dark:text-indigo-400"
+            : "text-primary"
         }
       />
       {isShared ? (

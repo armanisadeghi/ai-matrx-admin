@@ -121,6 +121,30 @@ export interface TextGenerationPreferences {
   plagiarismCheckEnabled: boolean;
 }
 
+/**
+ * How a feature (e.g. the /code workspace) decides which agents to surface
+ * in the Chat picker and History sidebar.
+ *
+ * - `all`        — no filter; show every user agent
+ * - `tags`       — include agents whose tags intersect `tags`
+ * - `categories` — include agents whose category is in `categories`
+ * - `favorites`  — include only `isFavorite` agents
+ * - `explicit`   — include only the exact agent ids in `agentIds`
+ *
+ * Stored in `userPreferences.coding.agentFilter` and seeded into a
+ * `ConversationHistorySidebar` scope. Users can clear the filter at any
+ * time (the UI sets `mode = "all"`).
+ */
+export interface CodeAgentFilter {
+  mode: "all" | "tags" | "categories" | "favorites" | "explicit";
+  tags: string[];
+  categories: string[];
+  agentIds: string[];
+}
+
+/** How the conversation history sidebar groups rows by default. */
+export type ConversationHistoryGrouping = "date" | "agent";
+
 // Preferences for coding settings
 export interface CodingPreferences {
   preferredLanguage: string;
@@ -132,6 +156,20 @@ export interface CodingPreferences {
   codeFormatting: boolean;
   aiActivityLevel: string;
   voiceAssistance: boolean;
+
+  /** Seed for the Chat + History agent filter in the /code workspace. */
+  agentFilter: CodeAgentFilter;
+  /** Default grouping for the code-workspace conversation history. */
+  historyGrouping: ConversationHistoryGrouping;
+  /** How many conversations to fetch per page in the code-workspace history. */
+  historyPageSize: number;
+  /**
+   * Client-side favorite conversations. The `cx_conversation` table has no
+   * favorite column yet; we persist ids in preferences so favorites still
+   * follow the user across devices (via the user_preferences JSON blob).
+   * Promote to a DB column later without touching consumers.
+   */
+  favoriteConversationIds: string[];
 }
 
 export interface FlashcardPreferences {
@@ -347,6 +385,15 @@ export const initializeUserPreferencesState = (
       codeFormatting: true,
       aiActivityLevel: "medium",
       voiceAssistance: false,
+      agentFilter: {
+        mode: "all",
+        tags: [],
+        categories: [],
+        agentIds: [],
+      },
+      historyGrouping: "date",
+      historyPageSize: 30,
+      favoriteConversationIds: [],
     },
     playground: {
       lastRecipeId: "",
@@ -515,39 +562,62 @@ const userPreferencesSlice = createSlice({
     // `REHYDRATE_ACTION_TYPE`. We merge the payload shallowly into each
     // module, preserving `_meta` (transient UI/load state, intentionally NOT
     // persisted per A15/partialize).
-    builder.addCase(
-      REHYDRATE_ACTION_TYPE,
-      (state, action: RehydrateAction) => {
-        if (action.payload.sliceName !== "userPreferences") return;
-        const loaded = action.payload.state as Partial<UserPreferences> | undefined;
-        if (!loaded) return;
+    builder.addCase(REHYDRATE_ACTION_TYPE, (state, action: RehydrateAction) => {
+      if (action.payload.sliceName !== "userPreferences") return;
+      const loaded = action.payload.state as
+        | Partial<UserPreferences>
+        | undefined;
+      if (!loaded) return;
 
-        if (loaded.display) state.display = { ...state.display, ...loaded.display };
-        if (loaded.prompts) state.prompts = { ...state.prompts, ...loaded.prompts };
-        if (loaded.voice) state.voice = { ...state.voice, ...loaded.voice };
-        if (loaded.textToSpeech) state.textToSpeech = { ...state.textToSpeech, ...loaded.textToSpeech };
-        if (loaded.assistant) state.assistant = { ...state.assistant, ...loaded.assistant };
-        if (loaded.email) state.email = { ...state.email, ...loaded.email };
-        if (loaded.videoConference) state.videoConference = { ...state.videoConference, ...loaded.videoConference };
-        if (loaded.photoEditing) state.photoEditing = { ...state.photoEditing, ...loaded.photoEditing };
-        if (loaded.imageGeneration) state.imageGeneration = { ...state.imageGeneration, ...loaded.imageGeneration };
-        if (loaded.textGeneration) state.textGeneration = { ...state.textGeneration, ...loaded.textGeneration };
-        if (loaded.coding) state.coding = { ...state.coding, ...loaded.coding };
-        if (loaded.flashcard) state.flashcard = { ...state.flashcard, ...loaded.flashcard };
-        if (loaded.playground) state.playground = { ...state.playground, ...loaded.playground };
-        if (loaded.aiModels) state.aiModels = { ...state.aiModels, ...loaded.aiModels };
-        if (loaded.system) state.system = { ...state.system, ...loaded.system };
-        if (loaded.messaging) state.messaging = { ...state.messaging, ...loaded.messaging };
-        if (loaded.agentContext) state.agentContext = { ...state.agentContext, ...loaded.agentContext };
+      if (loaded.display)
+        state.display = { ...state.display, ...loaded.display };
+      if (loaded.prompts)
+        state.prompts = { ...state.prompts, ...loaded.prompts };
+      if (loaded.voice) state.voice = { ...state.voice, ...loaded.voice };
+      if (loaded.textToSpeech)
+        state.textToSpeech = { ...state.textToSpeech, ...loaded.textToSpeech };
+      if (loaded.assistant)
+        state.assistant = { ...state.assistant, ...loaded.assistant };
+      if (loaded.email) state.email = { ...state.email, ...loaded.email };
+      if (loaded.videoConference)
+        state.videoConference = {
+          ...state.videoConference,
+          ...loaded.videoConference,
+        };
+      if (loaded.photoEditing)
+        state.photoEditing = { ...state.photoEditing, ...loaded.photoEditing };
+      if (loaded.imageGeneration)
+        state.imageGeneration = {
+          ...state.imageGeneration,
+          ...loaded.imageGeneration,
+        };
+      if (loaded.textGeneration)
+        state.textGeneration = {
+          ...state.textGeneration,
+          ...loaded.textGeneration,
+        };
+      if (loaded.coding) state.coding = { ...state.coding, ...loaded.coding };
+      if (loaded.flashcard)
+        state.flashcard = { ...state.flashcard, ...loaded.flashcard };
+      if (loaded.playground)
+        state.playground = { ...state.playground, ...loaded.playground };
+      if (loaded.aiModels)
+        state.aiModels = { ...state.aiModels, ...loaded.aiModels };
+      if (loaded.system) state.system = { ...state.system, ...loaded.system };
+      if (loaded.messaging)
+        state.messaging = { ...state.messaging, ...loaded.messaging };
+      if (loaded.agentContext)
+        state.agentContext = { ...state.agentContext, ...loaded.agentContext };
 
-        // Snapshot the loaded state so `resetToLoadedPreferences` still works.
-        const { _meta, ...currentPreferences } = state;
-        state._meta.loadedPreferences = { ...currentPreferences } as UserPreferences;
-        // Engine-managed persistence = never "unsaved" from the user's POV.
-        state._meta.hasUnsavedChanges = false;
-        state._meta.error = null;
-      },
-    );
+      // Snapshot the loaded state so `resetToLoadedPreferences` still works.
+      const { _meta, ...currentPreferences } = state;
+      state._meta.loadedPreferences = {
+        ...currentPreferences,
+      } as UserPreferences;
+      // Engine-managed persistence = never "unsaved" from the user's POV.
+      state._meta.hasUnsavedChanges = false;
+      state._meta.error = null;
+    });
   },
 });
 

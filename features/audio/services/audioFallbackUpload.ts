@@ -4,23 +4,30 @@
  * When chunked transcription fails, uploads the full audio blob via the new
  * cloud-files backend, obtains a short-lived signed URL, hands it to the
  * URL-based transcription API (Groq Developer Plan supports up to 100 MB via
- * URL), and then soft-deletes the temporary upload.
+ * URL), and then hard-deletes the temporary upload.
  *
  * Migrated from direct `supabase.storage` usage to the new cloud-files
- * system in Phase 8. Files live under the user's `.audio-fallback/` folder
- * with `visibility: 'private'` and are deleted immediately after transcription.
+ * system in Phase 8.
+ *
+ * Folder convention (from features/files/utils/folder-conventions.ts):
+ *   - Staging files live under `.matrx-tmp/transcripts/` — hidden from the
+ *     user's tree. They're hard-deleted on success AND on failure, so the
+ *     folder should stay empty in the normal case. If a process crashes
+ *     between upload and delete, a janitor / user can trivially clean up.
  */
 
 "use client";
 
 import { getStore } from "@/lib/redux/store";
-import { Api, deleteFile, uploadFiles } from "@/features/files";
+import {
+  Api,
+  CloudFolders,
+  deleteFile,
+  ensureFolderPath,
+  uploadFiles,
+} from "@/features/files";
 import { AUDIO_API_ROUTES, RETRY_CONFIG } from "../constants";
 import { TranscriptionResult, TranscriptionOptions } from "../types";
-
-// All fallback uploads live under this folder in the user's tree. Kept
-// private and short-lived — files are deleted after transcription.
-const FALLBACK_FOLDER = ".audio-fallback";
 
 function generateFileName(): string {
   const ts = new Date().toISOString().replace(/[:.]/g, "-");
@@ -46,6 +53,23 @@ async function uploadWithRetry(
 
   let lastError: Error | null = null;
 
+  // Resolve the hidden staging folder once. `ensureFolderPath` is idempotent
+  // — subsequent attempts reuse the existing folder.
+  let parentFolderId: string | null = null;
+  try {
+    parentFolderId = await store
+      .dispatch(
+        ensureFolderPath({
+          folderPath: CloudFolders.TMP_TRANSCRIPTS,
+          visibility: "private",
+        }),
+      )
+      .unwrap();
+  } catch {
+    // If folder creation fails (RLS, transient network), fall back to root.
+    parentFolderId = null;
+  }
+
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       const fileName = generateFileName();
@@ -53,21 +77,17 @@ async function uploadWithRetry(
         type: blob.type || "audio/webm",
       });
 
-      // Upload via the cloud-files REST API. `uploadFiles` handles
-      // folder resolution (auto-creates `.audio-fallback/` if missing).
       const { uploaded, failed } = await store
         .dispatch(
           uploadFiles({
             files: [file],
-            parentFolderId: null,
+            parentFolderId,
             visibility: "private",
             metadata: {
               origin: "audio-fallback",
               blob_type: blob.type || "audio/webm",
+              ephemeral: true,
             },
-            // Pre-create the folder via uploadFiles's default behavior:
-            // we use the logical path by setting `file.name = fileName`
-            // and prepending the folder path via ensureFolderPath.
             concurrency: 1,
           }),
         )
@@ -78,14 +98,7 @@ async function uploadWithRetry(
       }
       const fileId = uploaded[0];
 
-      // Move into the `.audio-fallback/` folder via an ensureFolderPath +
-      // moveFile dance. Simpler: use the Files REST API directly to patch
-      // the file's folder via metadata. The cleanest approach here is
-      // to perform the upload directly with a folder-prefixed file name.
-      // For the MVP we leave the file at the root — it's private and
-      // cleaned up immediately after transcription.
-
-      // Grab a short-lived URL for the transcription service.
+      // Short-lived signed URL for the transcription service (10 min).
       const { data: url } = await Api.Files.getSignedUrl(fileId, {
         expiresIn: 600,
       });

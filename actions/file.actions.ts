@@ -2,7 +2,22 @@
 'use server';
 
 import { fileHelpers } from '@/utils/fileSystemUtil';
-import type { DirectoryType } from '@/utils/fileSystemTypes';
+import type { DirectoryType, FileContentResult } from '@/utils/fileSystemTypes';
+import { loadFileContent } from '@/utils/loadFileContent.server';
+
+export type ExplorerDirectoryScope = 'project' | 'current';
+
+/**
+ * Load a file for the admin local file explorer. Maps UI scope to filesystem roots.
+ */
+export async function loadExplorerFileContent(
+    path: string[],
+    filename: string,
+    scope: ExplorerDirectoryScope,
+): Promise<FileContentResult> {
+    const directoryType = scope === 'project' ? 'custom' : 'app';
+    return loadFileContent(path, filename, directoryType);
+}
 
 interface FileParams {
     filename: string;

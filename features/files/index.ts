@@ -107,6 +107,19 @@ export * from "./hooks";
 // Utils — pure helpers (path, format, mime, icon-map, preview-capabilities)
 export * as Utils from "./utils";
 
+// Folder conventions — surfaced at the top level because every consumer
+// migration needs them. (Also available via Utils.* for wildcard callers.)
+export {
+  CloudFolders,
+  CloudFolderDescriptions,
+  folderForTask,
+  folderForConversation,
+  folderForAgentApp,
+  folderForPodcast,
+  isHiddenFolder,
+  isConventionalFolder,
+} from "./utils/folder-conventions";
+
 // Core components — Phase 3
 export * from "./components/core";
 

@@ -11,6 +11,8 @@
     "start": "next start",
     "lint": "next lint",
     "test": "ts-node -P tsconfig.json tests/setup.ts",
+    "test:unit": "jest --no-coverage",
+    "test:window-panels": "jest features/window-panels/__tests__ --no-coverage",
     "clean": "rimraf .next node_modules/.cache",
     "clean:deep": "rimraf .next .turbo node_modules/.cache tsconfig.tsbuildinfo",
     "clean:worktrees": "find .claude/worktrees -type d \\( -name .next -o -name .turbo -o -name node_modules \\) -prune -exec rm -rf {} + 2>/dev/null; echo 'worktree caches cleared'",

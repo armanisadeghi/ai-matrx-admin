@@ -37,6 +37,7 @@ export interface FileGridProps {
   filter: FilterChipKey | null;
   onActivateFolder: (folderId: string) => void;
   onActivateFile: (fileId: string) => void;
+  emptyState?: React.ReactNode;
   className?: string;
 }
 
@@ -54,6 +55,7 @@ export function FileGrid({
   filter,
   onActivateFolder,
   onActivateFile,
+  emptyState,
   className,
 }: FileGridProps) {
   const dispatch = useAppDispatch();
@@ -89,6 +91,9 @@ export function FileGrid({
   );
 
   if (rows.length === 0) {
+    if (emptyState) {
+      return <div className={cn("h-full w-full", className)}>{emptyState}</div>;
+    }
     return (
       <div
         className={cn(

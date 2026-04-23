@@ -31,7 +31,8 @@ Live map of every legacy file-handling surface in the repo and its new replaceme
 | Legacy path | New path | Status | Notes |
 |---|---|---|---|
 | `app/api/images/upload` | backend `/files/upload` | legacy | Remove after consumers migrate |
-| `app/api/code-files/upload` | backend `/files/upload` | legacy | — |
+| `app/api/code-files/upload` | backend `/files/upload` (via `lib/code-files/objectStore.ts`) | **replaced** | Migrated 2026-04-23. Routes + objectStore now write to `Code/Editor/{fileId}.txt` in cloud-files; `s3_bucket` column repurposed as sentinel (`cloud-files` vs legacy `code-editor`). Both formats coexist during the transition. |
+| `app/api/agent-apps/generate-favicon` | backend `/files/upload` + share link | **replaced** | Migrated 2026-04-23. Favicon uploads to `Agent Apps/{appId}/favicon.svg` via the server client (explicit JWT) and persists a no-expiry share URL in `agent_apps.favicon_url`. |
 | `app/api/podcasts/upload-assets` | backend `/files/upload` | legacy | — |
 | `app/api/slack/upload*` | backend `/files/upload` | legacy | — |
 
@@ -109,13 +110,13 @@ Live map of every legacy file-handling surface in the repo and its new replaceme
 
 | Legacy path | New path | Status | Notes |
 |---|---|---|---|
-| `features/resource-manager/resource-picker/FilesResourcePicker.tsx` | `features/files/components/pickers/FilePicker.tsx` | legacy | — |
+| `features/resource-manager/resource-picker/FilesResourcePicker.tsx` | rewritten in-place to use cloud-files tree | **replaced** | Migrated 2026-04-23. Same `{onBack,onSelect}` surface; internals now browse the cloud-files tree (top-level folders act as "buckets"). Returns a signed URL in `selection.url`. `allowedBuckets` repurposed as a folder-name filter. |
 
 ## Feature-specific upload surfaces
 
 | Legacy path | New path | Status | Notes |
 |---|---|---|---|
-| `features/tasks/services/taskService.ts` (attachments) | `uploadFiles` thunk | legacy | — |
+| `features/tasks/services/taskService.ts` (attachments) | `uploadFiles` thunk + `folderForTask()` | **replaced** | Migrated 2026-04-23. Uploads land under `Task Attachments/{taskId}/` (user-visible). `file_path` column now stores the cloud-files UUID; `getAttachmentUrl` is async and returns a signed URL. Legacy rows (non-UUID `file_path`) still open via the old public-URL fallback. `TaskAttachments.tsx` updated to await the URL. |
 | `features/audio/services/audioFallbackUpload.ts` | `uploadFiles` thunk | **replaced** | Migrated 2026-04-23. Uploads via cloud-files REST, transcribes via signed URL, hard-deletes on completion. |
 | Slack upload flows | `uploadFiles` thunk | legacy | — |
 | Broker upload flows | `uploadFiles` thunk | legacy | — |
@@ -135,10 +136,10 @@ These must all migrate; grep pattern: `supabase.storage.from` / `storage.upload`
 | `utils/supabase/StorageManager.ts` (getBucket, listBuckets) | legacy |
 | `utils/supabase/bucket-manager.ts` (all methods) | legacy |
 | `utils/file-operations/FileSystemManager.ts` (listBuckets) | legacy |
-| `features/tasks/services/taskService.ts` (getPublicUrl, remove) | legacy |
+| `features/tasks/services/taskService.ts` (getPublicUrl, remove) | **replaced** |
 | `features/audio/services/audioFallbackUpload.ts` (remove) | **replaced** |
-| `features/resource-manager/resource-picker/FilesResourcePicker.tsx` (listBuckets) | legacy |
-| `lib/code-files/objectStore.ts` (remove ops) | legacy |
+| `features/resource-manager/resource-picker/FilesResourcePicker.tsx` (listBuckets) | **replaced** |
+| `lib/code-files/objectStore.ts` (remove ops) | **replaced** |
 
 ---
 

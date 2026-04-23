@@ -142,6 +142,7 @@ Every Tier 1 / Tier 2 feature has a `FEATURE.md` inside its feature directory. T
 | Scope system | `features/scope-system/FEATURE.md` |
 | Code editor | `features/code-editor/FEATURE.md` |
 | Window Panels (all overlays) | `features/window-panels/FEATURE.md` |
+| Settings system (preferences shell, primitives, `useSetting`) | `features/settings/FEATURE.md` + `.cursor/skills/settings-system/SKILL.md` |
 
 ### Tier 2 — secondary features
 

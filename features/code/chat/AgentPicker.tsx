@@ -1,8 +1,16 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Bot, ChevronDown, Loader2, Search } from "lucide-react";
+import {
+  Bot,
+  ChevronDown,
+  Filter,
+  Loader2,
+  Search,
+  Settings2,
+  X,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
@@ -10,20 +18,46 @@ import {
   selectAgentsSliceStatus,
 } from "@/features/agents/redux/agent-definition/selectors";
 import { fetchAgentsListFull } from "@/features/agents/redux/agent-definition/thunks";
+import {
+  describeFilter,
+  makeSelectAgentsForFilter,
+} from "@/features/agents/redux/agent-filter";
+import type { AgentDefinitionRecord } from "@/features/agents/types/agent-definition.types";
+import type { CodeAgentFilter } from "@/lib/redux/slices/userPreferencesSlice";
+import { openOverlay } from "@/lib/redux/slices/overlaySlice";
+import { setPreference } from "@/lib/redux/slices/userPreferencesSlice";
 import { HOVER_ROW } from "../styles/tokens";
 
 interface AgentPickerProps {
   /** Shown inside the empty chat panel. */
   variant?: "empty-state" | "inline";
+  /**
+   * Filter applied to the agent roster before display. Pass `null` to
+   * surface every active agent (legacy behavior). The picker still shows
+   * a "Filter: …" chip + "clear filter" affordance whenever a filter is
+   * present, so the user can always bypass it.
+   */
+  filter?: CodeAgentFilter | null;
+  /**
+   * Settings tab opened by the picker's settings cog. Defaults to the
+   * /code workspace tab; other consumers can point this elsewhere.
+   */
+  settingsTabId?: string;
   className?: string;
 }
 
 /**
  * Small picker that writes `?agentId=…` into the current URL, which is how
  * the code workspace's chat + history slots resolve which agent to render.
+ *
+ * When a `filter` is provided the picker honours it — but a header chip
+ * lets the user temporarily turn the filter off to reach any of their
+ * other agents without leaving the workspace.
  */
 export const AgentPicker: React.FC<AgentPickerProps> = ({
   variant = "empty-state",
+  filter = null,
+  settingsTabId = "editor.codeWorkspace",
   className,
 }) => {
   const dispatch = useAppDispatch();
@@ -33,7 +67,22 @@ export const AgentPicker: React.FC<AgentPickerProps> = ({
   const currentAgentId = searchParams.get("agentId");
 
   const status = useAppSelector(selectAgentsSliceStatus);
-  const agents = useAppSelector(selectActiveAgents);
+  const allAgents = useAppSelector(selectActiveAgents);
+
+  // The picker supports a local "bypass filter" toggle — if the user wants
+  // to jump to an agent outside the saved filter, they can flip this on for
+  // the session without editing preferences.
+  const [bypassFilter, setBypassFilter] = useState(false);
+
+  const selectFilteredAgents = useMemo(() => makeSelectAgentsForFilter(), []);
+  const filteredAgents = useAppSelector((state) =>
+    selectFilteredAgents(state, filter),
+  );
+
+  const agents: AgentDefinitionRecord[] =
+    bypassFilter || !filter || filter.mode === "all"
+      ? allAgents
+      : filteredAgents;
 
   const [open, setOpen] = useState(variant === "empty-state");
   const [query, setQuery] = useState("");
@@ -44,7 +93,7 @@ export const AgentPicker: React.FC<AgentPickerProps> = ({
     }
   }, [status, dispatch]);
 
-  const filtered = useMemo(() => {
+  const filteredList = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return agents.slice(0, 50);
     return agents
@@ -57,17 +106,58 @@ export const AgentPicker: React.FC<AgentPickerProps> = ({
       .slice(0, 50);
   }, [agents, query]);
 
-  const select = (agentId: string) => {
-    const next = new URLSearchParams(searchParams.toString());
-    next.set("agentId", agentId);
-    next.delete("conversationId");
-    router.replace(`${pathname}?${next.toString()}`);
-    setOpen(false);
-  };
+  const select = useCallback(
+    (agentId: string) => {
+      const next = new URLSearchParams(searchParams.toString());
+      next.set("agentId", agentId);
+      next.delete("conversationId");
+      router.replace(`${pathname}?${next.toString()}`);
+      setOpen(false);
+    },
+    [pathname, router, searchParams],
+  );
+
+  const openFilterSettings = useCallback(() => {
+    dispatch(
+      openOverlay({
+        overlayId: "userPreferencesWindow",
+        data: { initialTabId: settingsTabId },
+      }),
+    );
+  }, [dispatch, settingsTabId]);
+
+  const clearFilterPreference = useCallback(() => {
+    // Permanently switch the saved filter back to "all". The user can still
+    // reopen settings to narrow it again later.
+    dispatch(
+      setPreference({
+        module: "coding",
+        preference: "agentFilter",
+        value: {
+          mode: "all" as const,
+          tags: [] as string[],
+          categories: [] as string[],
+          agentIds: [] as string[],
+        } satisfies CodeAgentFilter,
+      }),
+    );
+    setBypassFilter(false);
+  }, [dispatch]);
 
   const currentAgent = currentAgentId
-    ? agents.find((a) => a.id === currentAgentId)
+    ? allAgents.find((a) => a.id === currentAgentId)
     : null;
+
+  const filterChip =
+    filter && filter.mode !== "all" ? (
+      <FilterChip
+        label={describeFilter(filter)}
+        bypassed={bypassFilter}
+        onToggleBypass={() => setBypassFilter((v) => !v)}
+        onEdit={openFilterSettings}
+        onClear={clearFilterPreference}
+      />
+    ) : null;
 
   if (variant === "inline") {
     return (
@@ -88,13 +178,21 @@ export const AgentPicker: React.FC<AgentPickerProps> = ({
         </button>
         {open && (
           <AgentList
-            agents={filtered}
+            agents={filteredList}
             currentAgentId={currentAgentId}
             query={query}
             setQuery={setQuery}
             status={status}
             onSelect={select}
             onClose={() => setOpen(false)}
+            header={filterChip}
+            footer={
+              <FilterFooter
+                filter={filter}
+                bypassFilter={bypassFilter}
+                onOpenSettings={openFilterSettings}
+              />
+            }
             className="absolute right-0 top-8 z-10 w-80 rounded border border-neutral-200 bg-white shadow-md dark:border-neutral-800 dark:bg-neutral-950"
           />
         )}
@@ -122,17 +220,108 @@ export const AgentPicker: React.FC<AgentPickerProps> = ({
         select.
       </div>
       <AgentList
-        agents={filtered}
+        agents={filteredList}
         currentAgentId={currentAgentId}
         query={query}
         setQuery={setQuery}
         status={status}
         onSelect={select}
+        header={filterChip}
+        footer={
+          <FilterFooter
+            filter={filter}
+            bypassFilter={bypassFilter}
+            onOpenSettings={openFilterSettings}
+          />
+        }
         className="w-full max-w-sm rounded border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950"
       />
     </div>
   );
 };
+
+// ── Inline components ────────────────────────────────────────────────────────
+
+function FilterChip({
+  label,
+  bypassed,
+  onToggleBypass,
+  onEdit,
+  onClear,
+}: {
+  label: string;
+  bypassed: boolean;
+  onToggleBypass: () => void;
+  onEdit: () => void;
+  onClear: () => void;
+}) {
+  return (
+    <div
+      className={cn(
+        "flex items-center gap-1 border-b px-2 py-1 text-[11px]",
+        "border-neutral-200 bg-neutral-50 text-neutral-600 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300",
+      )}
+    >
+      <Filter size={11} className="shrink-0" />
+      <span className="min-w-0 truncate">
+        {bypassed ? "Filter off — showing all" : label}
+      </span>
+      <div className="ml-auto flex items-center gap-0.5">
+        <button
+          type="button"
+          onClick={onToggleBypass}
+          className="rounded px-1.5 py-0.5 text-[10px] hover:bg-neutral-200 dark:hover:bg-neutral-800"
+          title={bypassed ? "Re-apply filter" : "Show all agents (temp)"}
+        >
+          {bypassed ? "Re-apply" : "Show all"}
+        </button>
+        <button
+          type="button"
+          onClick={onEdit}
+          className="rounded p-0.5 hover:bg-neutral-200 dark:hover:bg-neutral-800"
+          title="Edit filter in Settings"
+          aria-label="Edit filter in settings"
+        >
+          <Settings2 size={11} />
+        </button>
+        <button
+          type="button"
+          onClick={onClear}
+          className="rounded p-0.5 hover:bg-neutral-200 dark:hover:bg-neutral-800"
+          title="Clear filter permanently"
+          aria-label="Clear filter"
+        >
+          <X size={11} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function FilterFooter({
+  filter,
+  bypassFilter,
+  onOpenSettings,
+}: {
+  filter: CodeAgentFilter | null;
+  bypassFilter: boolean;
+  onOpenSettings: () => void;
+}) {
+  const hasFilter = Boolean(filter && filter.mode !== "all");
+  if (!hasFilter && !bypassFilter) {
+    return (
+      <button
+        type="button"
+        onClick={onOpenSettings}
+        className="flex w-full items-center gap-1.5 border-t border-neutral-200 px-3 py-1.5 text-left text-[11px] text-neutral-500 hover:bg-neutral-50 hover:text-neutral-700 dark:border-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-200"
+      >
+        <Settings2 size={11} />
+        Filter which agents show up here
+      </button>
+    );
+  }
+  return null;
+}
 
 function AgentList({
   agents,
@@ -142,6 +331,8 @@ function AgentList({
   status,
   onSelect,
   onClose,
+  header,
+  footer,
   className,
 }: {
   agents: ReturnType<typeof selectActiveAgents>;
@@ -151,10 +342,13 @@ function AgentList({
   status: string;
   onSelect: (id: string) => void;
   onClose?: () => void;
+  header?: React.ReactNode;
+  footer?: React.ReactNode;
   className?: string;
 }) {
   return (
     <div className={className}>
+      {header}
       <div className="flex items-center gap-1.5 border-b border-neutral-200 px-2 py-1.5 dark:border-neutral-800">
         <Search size={12} className="text-neutral-400" />
         <input
@@ -210,6 +404,7 @@ function AgentList({
           </button>
         ))}
       </div>
+      {footer}
     </div>
   );
 }

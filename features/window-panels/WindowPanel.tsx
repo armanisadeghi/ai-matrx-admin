@@ -168,6 +168,14 @@ export interface WindowPanelProps extends UseWindowPanelOptions {
    * Useful if the child needs to track its own session id (rare).
    */
   onSessionSaved?: (sessionId: string) => void;
+  /**
+   * Phase 7 — Async snapshot hook for windows with heavy in-memory
+   * buffers (Scraper results, PDF Extractor history, Markdown tester
+   * state, Voice Pad transcripts). Opt-in via `heavySnapshot: true` on
+   * the registry entry — WindowPanel awaits this BEFORE writing to DB
+   * and merges the result into `data.snapshot`.
+   */
+  onHeavySnapshot?: () => Promise<Record<string, unknown>>;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -201,6 +209,7 @@ export function WindowPanel({
   overlayId,
   onCollectData,
   onSessionSaved,
+  onHeavySnapshot,
   ...hookOpts
 }: WindowPanelProps) {
   // Pass title into hook so it reaches Redux
@@ -258,6 +267,10 @@ export function WindowPanel({
    * merge it with whatever the child provides via onCollectData(), then
    * save to the DB. This is the shared path for both explicit saves and
    * piggyback saves.
+   *
+   * Phase 7: when `onHeavySnapshot` is provided, awaits the snapshot and
+   * merges the result into `data.snapshot` before writing. Fire-and-forget
+   * — errors are swallowed (persistence layer already logs).
    */
   const handleSaveWindowState = useCallback(() => {
     if (!overlayId) return;
@@ -267,8 +280,32 @@ export function WindowPanel({
       sidebarOpen,
       zIndex,
     };
-    const data = onCollectData?.() ?? {};
-    persistence.saveWindow(overlayId, panelState, data, onSessionSaved);
+    const base = onCollectData?.() ?? {};
+
+    if (!onHeavySnapshot) {
+      persistence.saveWindow(overlayId, panelState, base, onSessionSaved);
+      return;
+    }
+
+    // Heavy-snapshot path — await the async buffer serializer, then save.
+    void (async () => {
+      try {
+        const snapshot = await onHeavySnapshot();
+        persistence.saveWindow(
+          overlayId,
+          panelState,
+          { ...base, snapshot },
+          onSessionSaved,
+        );
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          `[WindowPanel] heavy snapshot failed for "${overlayId}", saving without it:`,
+          err,
+        );
+        persistence.saveWindow(overlayId, panelState, base, onSessionSaved);
+      }
+    })();
   }, [
     overlayId,
     windowState,
@@ -277,8 +314,51 @@ export function WindowPanel({
     zIndex,
     onCollectData,
     onSessionSaved,
+    onHeavySnapshot,
     persistence,
   ]);
+
+  /**
+   * Phase 7 — Autosave-on-blur: when the registry entry opts in via
+   * `autosave: true` (or implicitly via `heavySnapshot: true`), save the
+   * window state whenever the tab becomes hidden or the window unmounts.
+   * A 500 ms debounce guards against a flurry of visibility events.
+   *
+   * Only the most recent save wins — earlier pending timers are canceled.
+   */
+  const saveRef = useRef(handleSaveWindowState);
+  saveRef.current = handleSaveWindowState;
+
+  useEffect(() => {
+    if (!overlayId) return;
+    const entry = getRegistryEntryByOverlayId(overlayId);
+    if (!entry || (!entry.autosave && !entry.heavySnapshot)) return;
+    if (entry.ephemeral) return;
+
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const scheduleSave = () => {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => {
+        timer = null;
+        saveRef.current();
+      }, 500);
+    };
+
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") scheduleSave();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      if (timer) {
+        clearTimeout(timer);
+        timer = null;
+      }
+      // Flush once on unmount so unloading mid-session doesn't lose state.
+      saveRef.current();
+    };
+  }, [overlayId]);
 
   /**
    * Wrap the onClose prop to also delete the DB row for this window.

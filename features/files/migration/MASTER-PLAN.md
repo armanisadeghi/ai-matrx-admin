@@ -17,6 +17,7 @@ Full rationale and context: [../FEATURE.md](../FEATURE.md). Full approved plan: 
 | 4 | Surface wrappers | ✅ complete | 3 days | phases/phase-04-surfaces.md |
 | 5 | Routes (`app/(a)/cloud-files/`) | ✅ complete | 2 days | phases/phase-05-routes.md |
 | 6 | WindowPanel integration | ✅ complete | 2 days | phases/phase-06-window-panel.md |
+| 6.5 | Dropbox-style `PageShell` redesign | ✅ complete | 1 day | phases/phase-06-5-dropbox-ui.md |
 | 7 | Hooks + pickers | ✅ complete | 2 days | phases/phase-07-hooks-pickers.md |
 | 8 | First consumer migration | ✅ complete | 1–2 days | phases/phase-08-first-consumer.md |
 | 9 | Progressive consumer migration | 🟡 in progress | 1–2 weeks | phases/phase-09-consumers.md |
@@ -88,6 +89,23 @@ Exit criteria: end-to-end browse, upload, preview, share works from cold load; z
 `CloudFilesWindow` in [features/window-panels/windows/](../../window-panels/windows/) + registry entry.
 
 Exit criteria: opens from command palette; persists `activeFolderId`, `activeTab`, view prefs; mobile falls back to full-screen.
+
+### Phase 6.5 — Dropbox-style `PageShell` redesign ✅
+
+Reskin `app/(a)/cloud-files/` to match the Dropbox web app. Pure presentation-layer work on top of the Phase 2 state + Phase 3 core components — no backend, redux, or API changes.
+
+Critical files:
+- Rewrite [../components/surfaces/PageShell.tsx](../components/surfaces/PageShell.tsx).
+- New [../components/surfaces/dropbox/](../components/surfaces/dropbox/) subtree (IconRail, NavSidebar, NavSidebarFlatFolders, SidebarModeToggle, TopBar, NewMenu, ContentHeader, FilterChips, ViewModeToggle, FileTable, FileTableRow, FileGrid, FileGridCell, SharedAvatarStack, FolderIconWithMembers, AccessBadge, EmptyState).
+- New [../utils/server-cookies.ts](../utils/server-cookies.ts) — SSR read of the sidebar-mode cookie.
+- New routes: `app/(a)/cloud-files/{photos,shared,requests,starred,activity,folders}/page.tsx`.
+- Existing routes updated to pass `section` and `initialSidebarMode` props.
+
+Decisions:
+- Starred / Activity / File requests ship with "Coming soon" empty states — backend work (`cld_user_stars`, `cld_file_activity`, `cld_file_requests`) is a follow-up.
+- Sidebar has a flat-folders ↔ full-tree toggle persisted via cookie. Default = flat.
+
+Not changed: Redux slice, thunks, selectors, API client, realtime middleware, core components, WindowPanelShell, MobileStack, EmbeddedShell, PickerShell.
 
 ### Phase 7 — Hooks + pickers
 

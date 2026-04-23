@@ -4,6 +4,14 @@ import { requireUserId } from "@/utils/auth/getUserId";
 import { getSharedWithMe } from "@/utils/permissions/service";
 import type { DbRpcRow } from "@/types/supabase-rpc";
 import type { DatabaseTask } from "../types";
+import {
+  Api as FilesApi,
+  deleteFile as cloudDeleteFile,
+  ensureFolderPath,
+  folderForTask,
+  uploadFiles as cloudUploadFiles,
+} from "@/features/files";
+import { getStore } from "@/lib/redux/store";
 
 export interface CreateTaskInput {
   title: string;
@@ -172,20 +180,67 @@ export async function getTaskAttachments(
   }
 }
 
+/**
+ * Upload a task attachment. Migrated to cloud-files in Phase 9 — the file
+ * now lives under `Task Attachments/{taskId}/` in the user's cloud-files
+ * tree, so they can open the Files app and see every attachment grouped by
+ * task. The attachment row's `file_path` column stores the cloud-files
+ * UUID (not a storage path) — use `getAttachmentUrl(filePath)` to resolve
+ * to a fresh signed URL when opening.
+ *
+ * UUID regex check in `isCloudFileId` below decides whether a given
+ * `file_path` is a new-format cloud-files id or a legacy storage path.
+ * Legacy rows continue working against the old system until they're
+ * migrated or deleted — see features/files/migration/INVENTORY.md.
+ */
 export async function uploadTaskAttachment(
   taskId: string,
   file: File,
 ): Promise<TaskAttachment | null> {
   try {
     const userId = requireUserId();
-    const storagePath = `task-attachments/${taskId}/${Date.now()}-${file.name}`;
-    const { error: uploadError } = await supabase.storage
-      .from("attachments")
-      .upload(storagePath, file, { upsert: false });
-    if (uploadError) {
-      console.error("Error uploading file:", uploadError.message);
+    const store = getStore();
+    if (!store) {
+      console.error("Redux store not ready for upload");
       return null;
     }
+
+    // Ensure the user-visible folder `Task Attachments/{taskId}` exists.
+    let parentFolderId: string | null = null;
+    try {
+      parentFolderId = await store
+        .dispatch(
+          ensureFolderPath({
+            folderPath: folderForTask(taskId),
+            visibility: "private",
+          }),
+        )
+        .unwrap();
+    } catch (err) {
+      console.error("Failed to ensure task attachments folder:", err);
+    }
+
+    const { uploaded, failed } = await store
+      .dispatch(
+        cloudUploadFiles({
+          files: [file],
+          parentFolderId,
+          visibility: "private",
+          metadata: {
+            origin: "task-attachment",
+            task_id: taskId,
+          },
+          concurrency: 1,
+        }),
+      )
+      .unwrap();
+
+    if (failed.length > 0 || uploaded.length === 0) {
+      console.error("Task attachment upload failed:", failed);
+      return null;
+    }
+    const fileId = uploaded[0];
+
     const { data, error: insertError } = await supabase
       .from("ctx_task_attachments")
       .insert({
@@ -193,13 +248,23 @@ export async function uploadTaskAttachment(
         file_name: file.name,
         file_type: file.type || null,
         file_size: file.size,
-        file_path: storagePath,
+        // Store the cloud-files UUID here. `getAttachmentUrl` detects this
+        // format and hits the cloud-files signed-URL endpoint.
+        file_path: fileId,
         uploaded_by: userId,
       })
       .select()
       .single();
     if (insertError) {
       console.error("Error recording attachment:", insertError.message);
+      // Best-effort cleanup of the orphaned cloud-files upload.
+      try {
+        await store
+          .dispatch(cloudDeleteFile({ fileId, hardDelete: false }))
+          .unwrap();
+      } catch {
+        /* best effort */
+      }
       return null;
     }
     return data;
@@ -209,7 +274,33 @@ export async function uploadTaskAttachment(
   }
 }
 
-export function getAttachmentUrl(filePath: string): string {
+/** Detects cloud-files UUID format so migration can run alongside legacy rows. */
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function isCloudFileId(filePath: string): boolean {
+  return UUID_REGEX.test(filePath);
+}
+
+/**
+ * Resolve an attachment's `file_path` column to a URL that can be opened in
+ * the browser. Async because the cloud-files system only vends short-lived
+ * signed URLs. Falls back to the legacy public-URL path for rows that pre-date
+ * the Phase 9 migration.
+ */
+export async function getAttachmentUrl(filePath: string): Promise<string> {
+  if (isCloudFileId(filePath)) {
+    try {
+      const { data } = await FilesApi.Files.getSignedUrl(filePath, {
+        expiresIn: 3600,
+      });
+      return data.url;
+    } catch (err) {
+      console.error("Error resolving cloud-files signed URL:", err);
+      return "";
+    }
+  }
+  // Legacy: supabase.storage path. Left for backwards compat until legacy
+  // rows are purged in Phase 11.
   const { data } = supabase.storage.from("attachments").getPublicUrl(filePath);
   return data.publicUrl;
 }
@@ -219,7 +310,23 @@ export async function deleteTaskAttachment(
   filePath: string,
 ): Promise<boolean> {
   try {
-    await supabase.storage.from("attachments").remove([filePath]);
+    if (isCloudFileId(filePath)) {
+      const store = getStore();
+      if (store) {
+        try {
+          await store
+            .dispatch(cloudDeleteFile({ fileId: filePath, hardDelete: false }))
+            .unwrap();
+        } catch (err) {
+          // Non-fatal — the DB row still gets removed, and the realtime
+          // subscription + trash tab let the user recover/purge.
+          console.error("cloud-files delete failed:", err);
+        }
+      }
+    } else {
+      // Legacy storage path.
+      await supabase.storage.from("attachments").remove([filePath]);
+    }
     const { error } = await supabase
       .from("ctx_task_attachments")
       .delete()

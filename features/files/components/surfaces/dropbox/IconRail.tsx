@@ -52,7 +52,7 @@ export function IconRail({ section, className }: IconRailProps) {
     <nav
       aria-label="Cloud files primary"
       className={cn(
-        "flex w-[60px] shrink-0 flex-col items-center gap-1 border-r bg-background py-3",
+        "flex w-[60px] shrink-0 flex-col items-center gap-1 border-r border-border/70 bg-muted/20 py-3",
         className,
       )}
     >
@@ -67,7 +67,7 @@ export function IconRail({ section, className }: IconRailProps) {
             className={cn(
               "flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground transition",
               "hover:bg-accent hover:text-foreground",
-              active && "bg-accent text-foreground ring-1 ring-border",
+              active && "bg-primary/10 text-primary ring-1 ring-primary/20",
               item.disabled && "pointer-events-none opacity-40",
             )}
           >

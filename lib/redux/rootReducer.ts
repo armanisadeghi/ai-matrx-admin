@@ -72,6 +72,7 @@ import agentCacheReducer from "./slices/agentCacheSlice";
 import agentDefinitionReducer from "@/features/agents/redux/agent-definition/slice";
 // agentConversations — superseded by conversationList. File remains on disk.
 import { conversationListReducer } from "@/features/agents/redux/conversation-list";
+import { conversationHistoryReducer } from "@/features/agents/redux/conversation-history";
 import agentShortcutReducer from "@/features/agents/redux/agent-shortcuts/slice";
 import agentShortcutCategoryReducer from "@/features/agents/redux/agent-shortcut-categories/slice";
 import agentContentBlockReducer from "@/features/agents/redux/agent-content-blocks/slice";
@@ -346,6 +347,10 @@ export const createRootReducer = (initialState: InitialReduxState) => {
     // Entities live once in `byConversationId`; view selectors project into
     // global / per-agent lists.
     conversationList: conversationListReducer,
+    // Scope-keyed, multi-agent, paginated history for feature sidebars.
+    // Each consumer (e.g. /code) registers a `scopeId` and gets its own
+    // filtered/grouped view.
+    conversationHistory: conversationHistoryReducer,
     agentShortcut: agentShortcutReducer,
     agentShortcutCategory: agentShortcutCategoryReducer,
     agentContentBlock: agentContentBlockReducer,

@@ -35,8 +35,8 @@ export function EmptyState({
         className,
       )}
     >
-      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-        <Icon className="h-7 w-7 text-muted-foreground" aria-hidden="true" />
+      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 ring-1 ring-primary/20">
+        <Icon className="h-7 w-7 text-primary" aria-hidden="true" />
       </div>
       <div className="space-y-1">
         <h2 className="text-base font-semibold text-foreground">

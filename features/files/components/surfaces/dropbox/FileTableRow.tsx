@@ -222,7 +222,7 @@ function RowActions({ visible, onShare, onCopyLink, fileId }: RowActionsProps) {
           e.stopPropagation();
           onShare();
         }}
-        className="inline-flex items-center gap-1 rounded-full bg-foreground px-3 py-1 text-xs font-medium text-background hover:bg-foreground/90"
+        className="inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground hover:bg-primary/90 shadow-sm"
       >
         <Share2 className="h-3 w-3" aria-hidden="true" />
         Share
@@ -267,7 +267,7 @@ function FolderRowActions({ visible, onShare }: FolderRowActionsProps) {
           e.stopPropagation();
           onShare();
         }}
-        className="inline-flex items-center gap-1 rounded-full bg-foreground px-3 py-1 text-xs font-medium text-background hover:bg-foreground/90"
+        className="inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground hover:bg-primary/90 shadow-sm"
       >
         <Share2 className="h-3 w-3" aria-hidden="true" />
         Share

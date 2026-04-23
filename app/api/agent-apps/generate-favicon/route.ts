@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/adminClient";
+import { Api, folderForAgentApp } from "@/features/files";
 
 const FAVICON_COLORS = [
   "#3b82f6",
@@ -47,8 +48,24 @@ function generateFaviconSVG(color: string, initials: string): string {
 </svg>`;
 }
 
+function resolveAppOrigin(req: NextRequest): string {
+  // Prefer the incoming request's origin so share URLs are always correct
+  // behind preview deploys, custom domains, etc. Fall back to env.
+  const origin = req.nextUrl.origin;
+  if (origin) return origin;
+  return (
+    process.env.NEXT_PUBLIC_APP_URL ??
+    (process.env.NEXT_PUBLIC_VERCEL_URL
+      ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+      : "http://localhost:3000")
+  );
+}
+
 export async function POST(request: NextRequest) {
   try {
+    // The `agent_apps` table isn't in the generated Database types yet; the
+    // original route used an `as unknown as any` escape hatch — preserved
+    // here until the types regenerate.
     const supabase = (await createClient()) as unknown as any;
     const {
       data: { user },
@@ -56,6 +73,16 @@ export async function POST(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 },
+      );
+    }
+
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!session?.access_token) {
       return NextResponse.json(
         { success: false, error: "Unauthorized" },
         { status: 401 },
@@ -76,7 +103,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { data: app, error: appError } = await supabase
+    // Admin client for the ownership check + the agent_apps row update. The
+    // favicon BYTES now live in cloud-files under `Agent Apps/{appId}/` —
+    // uploaded via the user's session so RLS + ownership line up correctly.
+    const adminClient = createAdminClient() as unknown as any;
+    const { data: app, error: appError } = await adminClient
       .from("agent_apps")
       .select("id, user_id")
       .eq("id", appId)
@@ -99,38 +130,33 @@ export async function POST(request: NextRequest) {
     const faviconColor = color || getColorFromString(name);
     const initials = getInitials(name);
     const svg = generateFaviconSVG(faviconColor, initials);
+    const svgBytes = new TextEncoder().encode(svg);
 
-    const adminClient = createAdminClient() as unknown as any;
-    const storagePath = `agent-app-favicons/${appId}.svg`;
+    // Upload to cloud-files under `Agent Apps/{appId}/favicon.svg` AND
+    // create a persistent share link so the URL we persist into the DB row
+    // doesn't expire. Using the session JWT keeps RLS honest — the file is
+    // owned by the user, which means they can see it in their Files app.
+    const ctx = Api.Server.createServerContext({
+      accessToken: session.access_token,
+    });
 
-    await adminClient.storage.from("app-assets").remove([storagePath]);
-
-    const svgBuffer = new TextEncoder().encode(svg);
-    const { error: uploadError } = await adminClient.storage
-      .from("app-assets")
-      .upload(storagePath, svgBuffer, {
-        contentType: "image/svg+xml",
-        cacheControl: "86400",
-        upsert: true,
-      });
-
-    if (uploadError) {
-      console.error("Favicon upload error:", uploadError);
-      return NextResponse.json(
-        { success: false, error: "Failed to upload favicon" },
-        { status: 500 },
-      );
-    }
-
-    const { data: urlData } = adminClient.storage
-      .from("app-assets")
-      .getPublicUrl(storagePath);
-
-    const faviconUrl = urlData.publicUrl;
+    const { fileId, shareUrl } = await Api.Server.uploadAndShare(ctx, {
+      file: svgBytes,
+      filePath: `${folderForAgentApp(appId)}/favicon.svg`,
+      fileName: "favicon.svg",
+      contentType: "image/svg+xml",
+      visibility: "private",
+      permissionLevel: "read",
+      metadata: {
+        origin: "agent-app-favicon",
+        agent_app_id: appId,
+      },
+      appOrigin: resolveAppOrigin(request),
+    });
 
     const { error: updateError } = await adminClient
       .from("agent_apps")
-      .update({ favicon_url: faviconUrl })
+      .update({ favicon_url: shareUrl })
       .eq("id", appId);
 
     if (updateError) {
@@ -139,14 +165,17 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      faviconUrl,
+      faviconUrl: shareUrl,
+      faviconFileId: fileId,
       color: faviconColor,
       initials,
     });
   } catch (error) {
     console.error("Generate favicon error:", error);
+    const message =
+      error instanceof Error ? error.message : "Internal server error";
     return NextResponse.json(
-      { success: false, error: "Internal server error" },
+      { success: false, error: message },
       { status: 500 },
     );
   }

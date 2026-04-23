@@ -3,15 +3,15 @@
  *
  * Folder deep-link. URL `/cloud-files/reports/2026/q1` resolves to the folder
  * with folder_path = "reports/2026/q1" server-side, then hands off to the
- * client PageShell with `initialFolderId` so the view lands on the correct
- * folder without a client-side round-trip.
+ * Dropbox-style PageShell with `initialFolderId` so the view lands on the
+ * correct folder without a client-side round-trip.
  *
- * Falls back to the root view if the path can't be resolved (rather than
- * 404ing — keeps the experience graceful for moved/renamed folders).
+ * Falls back to the root view if the path can't be resolved.
  */
 
 import { createClient } from "@/utils/supabase/server";
 import { PageShell } from "@/features/files";
+import { readSidebarModeCookie } from "@/features/files/utils/server-cookies";
 
 interface PageProps {
   params: Promise<{ path?: string[] }>;
@@ -33,5 +33,13 @@ export default async function CloudFilesDeepLinkPage({ params }: PageProps) {
     initialFolderId = data?.id ?? null;
   }
 
-  return <PageShell initialFolderId={initialFolderId} />;
+  const sidebarMode = await readSidebarModeCookie();
+
+  return (
+    <PageShell
+      section="all"
+      initialFolderId={initialFolderId}
+      initialSidebarMode={sidebarMode}
+    />
+  );
 }

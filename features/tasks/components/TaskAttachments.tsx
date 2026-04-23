@@ -64,9 +64,13 @@ export default function TaskAttachments({ taskId }: TaskAttachmentsProps) {
     setDeletingId(null);
   };
 
-  const handleOpen = (filePath: string) => {
-    const url = taskService.getAttachmentUrl(filePath);
-    window.open(url, '_blank');
+  const handleOpen = async (filePath: string) => {
+    // getAttachmentUrl is async since the cloud-files migration (signed URLs
+    // are short-lived, so we fetch one on demand). Fire-and-forget window.open
+    // works because we call it synchronously after the await resolves, while
+    // still inside the click handler's gesture window.
+    const url = await taskService.getAttachmentUrl(filePath);
+    if (url) window.open(url, '_blank');
   };
 
   return (
@@ -135,7 +139,7 @@ export default function TaskAttachments({ taskId }: TaskAttachmentsProps) {
               <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button
                   type="button"
-                  onClick={() => handleOpen(attachment.file_path)}
+                  onClick={() => void handleOpen(attachment.file_path)}
                   className="p-1 text-muted-foreground hover:text-foreground transition-colors"
                   title="Open file"
                 >
