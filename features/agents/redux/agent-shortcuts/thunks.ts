@@ -1217,6 +1217,50 @@ export const fetchUnifiedMenu = createAsyncThunk<
   },
 );
 
+// ---------------------------------------------------------------------------
+// ensureShortcutLoaded — lazy guarantee that a shortcut is in Redux.
+//
+// Triggering a shortcut programmatically (e.g. from AgentGenerator) used to
+// fail hard if the unified menu hadn't been fetched yet. That's a timing
+// bug dressed up as a "not found" error — the shortcut exists, it just
+// hasn't been loaded.
+//
+// This thunk:
+//   1. Returns immediately if the shortcut is already in Redux.
+//   2. Otherwise dispatches fetchUnifiedMenu (which is single-flight +
+//      dedup'd; multiple simultaneous ensureShortcutLoaded calls collapse
+//      to one HTTP call).
+//   3. Re-checks; if still missing, throws a specific "truly missing"
+//      error with enough context for the caller to surface it.
+//
+// Call this before launchAgentExecution when you have a specific shortcut
+// id in hand. It's idempotent — safe to call in a useEffect on every
+// mount of a UI that depends on a specific shortcut.
+// ---------------------------------------------------------------------------
+
+export const ensureShortcutLoaded = createAsyncThunk<
+  void,
+  string,
+  ThunkApi
+>("agentShortcut/ensureLoaded", async (shortcutId, { dispatch, getState }) => {
+  const existing = (getState() as RootState).agentShortcut.shortcuts[shortcutId];
+  if (existing) return;
+
+  // Fall back to the full menu. The menu fetch is scope-keyed + single-
+  // flight, so rapid-fire calls from multiple UIs collapse to one HTTP.
+  // We pick scope="user" because the view returns every shortcut the
+  // current user can see (global + user + org + project + task), gated by
+  // RLS on the underlying tables.
+  await dispatch(fetchUnifiedMenu({ scope: "user", scopeId: null })).unwrap();
+
+  const after = (getState() as RootState).agentShortcut.shortcuts[shortcutId];
+  if (!after) {
+    throw new Error(
+      `Shortcut ${shortcutId} not available to this user. The id may be stale, the shortcut may be inactive, or the user lacks access. (Menu fetch completed without returning this shortcut.)`,
+    );
+  }
+});
+
 /**
  * Build an AgentShortcut from a unified-menu item. The unified-menu view
  * writes each item as jsonb, so agent_variable_definitions /

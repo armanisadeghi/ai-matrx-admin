@@ -29,6 +29,7 @@ import { resolveVisibilitySettings } from "../instance-ui-state/instance-ui-stat
 import { fetchAgentExecutionMinimal } from "@/features/agents/redux/agent-definition/thunks";
 import { selectAgentExecutionPayload } from "@/features/agents/redux/agent-definition/selectors";
 import { getShortcutRecordFromState } from "@/features/agents/redux/agent-shortcuts/selectors";
+import { ensureShortcutLoaded } from "@/features/agents/redux/agent-shortcuts/thunks";
 import {
   createManualInstance,
   createInstanceFromShortcut,
@@ -271,6 +272,12 @@ export const launchAgentExecution = createAsyncThunk<
   // =========================================================================
 
   if (shortcutId) {
+    // Guarantee the shortcut is in Redux before we try to use it. This is
+    // a no-op when the unified menu already loaded it; otherwise it kicks
+    // off a single-flight menu fetch and re-checks. Only a truly missing
+    // shortcut (stale id, inactive, no access) reaches the throw below.
+    await dispatch(ensureShortcutLoaded(shortcutId)).unwrap();
+
     const state = getState() as RootState;
     const shortcut = getShortcutRecordFromState(state, shortcutId);
 
