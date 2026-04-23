@@ -123,31 +123,100 @@ export const launchAgentExecution = createAsyncThunk<
     shortcutId,
     manual,
     sourceFeature,
-    applicationScope,
-    displayMode: displayModeOverride,
-    autoRun = false,
-    allowChat,
+    applicationScope: flatApplicationScope,
+    displayMode: flatDisplayMode,
+    autoRun: flatAutoRun = false,
+    allowChat: flatAllowChat,
     showVariables,
-    showVariablePanel,
-    showDefinitionMessages,
-    showDefinitionMessageContent,
-    showPreExecutionGate,
+    showVariablePanel: flatShowVariablePanel,
+    showDefinitionMessages: flatShowDefinitionMessages,
+    showDefinitionMessageContent: flatShowDefinitionMessageContent,
+    showPreExecutionGate: flatShowPreExecutionGate,
     showAutoClearToggle,
     autoClearConversation,
     apiEndpointMode = "agent",
-    userInput,
+    userInput: flatUserInput,
     variables,
     overrides,
-    variablesPanelStyle,
-    hideReasoning,
-    hideToolResults,
-    preExecutionMessage,
-    bypassGateSeconds,
+    variablesPanelStyle: flatVariablesPanelStyle,
+    hideReasoning: flatHideReasoning,
+    hideToolResults: flatHideToolResults,
+    preExecutionMessage: flatPreExecutionMessage,
+    bypassGateSeconds: flatBypassGateSeconds,
     jsonExtraction,
-    originalText,
-    widgetHandleId,
+    originalText: flatOriginalText,
+    widgetHandleId: flatWidgetHandleId,
     isEphemeral,
+    runtime,
+    config,
   } = options;
+
+  // ── Nested (new) shape wins over flat (legacy) shape ──────────────────────
+  // New callers (useShortcutTrigger, triggerShortcut, launchShortcut) put
+  // scope / userInput / originalText under `runtime.*` and per-run config
+  // overrides under `config.*`. Legacy callers used top-level flat fields.
+  // Pull from both so everyone works.
+  const applicationScope = runtime?.applicationScope ?? flatApplicationScope;
+  const userInput = runtime?.userInput ?? flatUserInput;
+  const originalText = runtime?.originalText ?? flatOriginalText;
+  const widgetHandleId = runtime?.widgetHandleId ?? flatWidgetHandleId;
+
+  const displayModeOverride = config?.displayMode ?? flatDisplayMode;
+  const autoRun = config?.autoRun ?? flatAutoRun;
+  const allowChat = config?.allowChat ?? flatAllowChat;
+  const showVariablePanel =
+    config?.showVariablePanel ?? flatShowVariablePanel;
+  const showDefinitionMessages =
+    config?.showDefinitionMessages ?? flatShowDefinitionMessages;
+  const showDefinitionMessageContent =
+    config?.showDefinitionMessageContent ?? flatShowDefinitionMessageContent;
+  const showPreExecutionGate =
+    config?.showPreExecutionGate ?? flatShowPreExecutionGate;
+  const preExecutionMessage =
+    config?.preExecutionMessage ?? flatPreExecutionMessage;
+  const bypassGateSeconds =
+    config?.bypassGateSeconds ?? flatBypassGateSeconds;
+  const hideReasoning = config?.hideReasoning ?? flatHideReasoning;
+  const hideToolResults = config?.hideToolResults ?? flatHideToolResults;
+  const variablesPanelStyle =
+    config?.variablesPanelStyle ?? flatVariablesPanelStyle;
+
+  // ── Trace: launch envelope ────────────────────────────────────────────────
+  // One line summarizing what the caller actually sent, then a structured
+  // view of the live runtime/scope so "variable didn't map" bugs surface
+  // immediately in the console.
+  if (typeof window !== "undefined") {
+    console.groupCollapsed(
+      `%c[Shortcut] launchAgentExecution ${shortcutId ? `shortcut=${shortcutId}` : agentId ? `agent=${agentId}` : "manual"}`,
+      "color:#6366f1;font-weight:bold",
+    );
+    console.log("source:", sourceFeature ?? "(unset)");
+    console.log(
+      "applicationScope (keys):",
+      applicationScope ? Object.keys(applicationScope) : "(none)",
+    );
+    if (applicationScope) {
+      for (const [k, v] of Object.entries(applicationScope)) {
+        const preview =
+          typeof v === "string"
+            ? `"${v.slice(0, 80)}"${v.length > 80 ? "…" : ""} (${v.length} chars)`
+            : v && typeof v === "object"
+              ? `<${Array.isArray(v) ? "array" : "object"} ${Object.keys(v as object).length} keys>`
+              : String(v);
+        console.log(`  ${k} →`, preview);
+      }
+    }
+    console.log(
+      "userInput:",
+      userInput ? `"${userInput.slice(0, 80)}"${userInput.length > 80 ? "…" : ""}` : "(none)",
+    );
+    console.log(
+      "caller config override:",
+      config ? Object.keys(config) : "(none)",
+    );
+    console.log("apiEndpointMode:", apiEndpointMode);
+    console.groupEnd();
+  }
 
   // =========================================================================
   // Step 0: Resolve visibility.
@@ -181,15 +250,31 @@ export const launchAgentExecution = createAsyncThunk<
   // silently dropped at assembly time (selectResolvedVariables only emits
   // values for defined vars).
   //
-  // This check is a no-op when the payload is already ready (both this
-  // `isReady` gate and `fetchAgentExecutionMinimal`'s own early return).
-  // Shortcut path skips: the shortcut's own load flow takes care of it.
+  // Applies to BOTH the direct-agent and the shortcut paths. Previously the
+  // shortcut path assumed `buildAgentShortcutMenu` had already merged the
+  // agent into Redux, but any programmatic trigger that runs before (or
+  // independently of) the menu build leaves the snapshot empty and every
+  // scope → variable mapping silently drops. Always verify.
   // =========================================================================
-  if (agentId && !shortcutId) {
+  const resolvedAgentId =
+    agentId ??
+    (shortcutId
+      ? getShortcutRecordFromState(getState() as RootState, shortcutId)
+          ?.agentId ?? null
+      : null);
+
+  if (resolvedAgentId) {
     const preState = getState() as RootState;
-    const payload = selectAgentExecutionPayload(preState, agentId);
+    const payload = selectAgentExecutionPayload(preState, resolvedAgentId);
     if (!payload.isReady) {
-      await dispatch(fetchAgentExecutionMinimal(agentId)).unwrap();
+      if (typeof window !== "undefined") {
+        console.log(
+          `%c[Shortcut]%c agent ${resolvedAgentId} not loaded — fetching execution payload before mapping`,
+          "color:#f59e0b;font-weight:bold",
+          "color:inherit",
+        );
+      }
+      await dispatch(fetchAgentExecutionMinimal(resolvedAgentId)).unwrap();
     }
   }
 

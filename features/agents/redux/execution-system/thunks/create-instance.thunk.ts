@@ -281,6 +281,54 @@ export const createInstanceFromShortcut = createAsyncThunk<
 
   const snapshot = readAgentSnapshot(state, agentId);
 
+  // ── Trace: what the shortcut actually tells us to do ────────────────────
+  if (typeof window !== "undefined") {
+    console.groupCollapsed(
+      `%c[Shortcut] createInstanceFromShortcut — "${shortcut.label ?? shortcut.id}"`,
+      "color:#0ea5e9;font-weight:bold",
+    );
+    console.log("shortcutId:", shortcut.id);
+    console.log("agentId:", agentId, "| versionId:", shortcut.agentVersionId, "| useLatest:", shortcut.useLatest);
+    console.log("displayMode:", shortcut.displayMode, "| autoRun:", shortcut.autoRun, "| allowChat:", shortcut.allowChat);
+    console.log(
+      "scopeMappings (UI key → agent variable):",
+      shortcut.scopeMappings ?? "(none)",
+    );
+    console.log(
+      "contextMappings (UI key → context slot):",
+      shortcut.contextMappings ?? "(none)",
+    );
+    console.log(
+      "defaultVariables:",
+      shortcut.defaultVariables ?? "(none)",
+    );
+    console.log(
+      "contextOverrides:",
+      shortcut.contextOverrides ?? "(none)",
+    );
+    console.log("llmOverrides:", shortcut.llmOverrides ?? "(none)");
+    console.log(
+      "defaultUserInput:",
+      shortcut.defaultUserInput ?? "(none)",
+    );
+    console.log(
+      "agent snapshot loaded:",
+      snapshot.variableDefinitions.length > 0 || snapshot.contextSlots.length > 0
+        ? `${snapshot.variableDefinitions.length} variables, ${snapshot.contextSlots.length} context slots`
+        : "⚠ EMPTY — agent not in Redux; mapping will likely fail silently",
+    );
+    console.log(
+      "agent variables:",
+      snapshot.variableDefinitions.map((v) => v.name),
+    );
+    console.log(
+      "agent context slots:",
+      snapshot.contextSlots.map((s) => s.key),
+    );
+    console.log("uiScopes (applicationScope) keys:", Object.keys(uiScopes));
+    console.groupEnd();
+  }
+
   dispatch(
     createInstance({
       conversationId,
@@ -414,6 +462,37 @@ export const createInstanceFromShortcut = createAsyncThunk<
   dispatch(
     initInstanceMessages({ conversationId, apiEndpointMode: apiEndpointMode }),
   );
+
+  // ── Trace: final summary of what got seeded on the instance ────────────
+  if (typeof window !== "undefined") {
+    const finalState = getState() as RootState;
+    const variableEntry =
+      finalState.instanceVariableValues?.byConversationId?.[conversationId];
+    const userValues = variableEntry?.userValues ?? {};
+    const scopeValues = variableEntry?.scopeValues ?? {};
+    const contextDict =
+      finalState.instanceContext?.byConversationId?.[conversationId] ?? {};
+    const finalUserInput =
+      finalState.instanceUserInput?.byConversationId?.[conversationId]?.text ??
+      "";
+    const overrideEntry =
+      finalState.instanceModelOverrides?.byConversationId?.[conversationId];
+    console.groupCollapsed(
+      `%c[Shortcut] instance seeded — conversationId=${conversationId}`,
+      "color:#22c55e;font-weight:bold",
+    );
+    console.log("variables (scope-mapped):", scopeValues);
+    console.log("variables (user-edit layer):", userValues);
+    console.log("context entries:", contextDict);
+    console.log(
+      "userInput:",
+      finalUserInput
+        ? `"${finalUserInput.slice(0, 80)}"${finalUserInput.length > 80 ? "…" : ""}`
+        : "(empty)",
+    );
+    console.log("llm overrides:", overrideEntry ?? "(none)");
+    console.groupEnd();
+  }
 
   return conversationId;
 });
