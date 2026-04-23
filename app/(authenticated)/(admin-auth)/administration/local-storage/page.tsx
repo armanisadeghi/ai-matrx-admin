@@ -1,9 +1,9 @@
-import LocalStorageAdmin from "@/app/(authenticated)/admin/components/LocalStorageAdmin";
+import LocalStorageAdmin from "@/features/administration/local-storage/LocalStorageAdmin";
 
 export default function Page() {
-    return (
-        <div>
-            <LocalStorageAdmin />
-        </div>
-    );
+  return (
+    <div>
+      <LocalStorageAdmin />
+    </div>
+  );
 }

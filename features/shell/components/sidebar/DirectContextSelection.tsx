@@ -37,16 +37,18 @@ import { useNavTree } from "@/features/agent-context/hooks/useNavTree";
 import { selectDefaultContextPreferences } from "@/lib/redux/selectors/userPreferenceSelectors";
 import {
   ContextRow,
-  DynamicIcon,
   type PickerOption,
 } from "@/features/agent-context/components/ContextPickerPrimitives";
+import { DynamicIcon } from "@/components/official/icons/IconResolver";
 
 interface DirectContextSelectionProps {
   /** Start expanded (e.g., when rendered inside a bottom sheet). Default: false */
   defaultExpanded?: boolean;
 }
 
-export function DirectContextSelection({ defaultExpanded = false }: DirectContextSelectionProps) {
+export function DirectContextSelection({
+  defaultExpanded = false,
+}: DirectContextSelectionProps) {
   const dispatch = useAppDispatch();
 
   // ── Redux context state ────────────────────────────────────────────────────

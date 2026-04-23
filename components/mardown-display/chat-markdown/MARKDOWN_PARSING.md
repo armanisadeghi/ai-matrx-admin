@@ -86,8 +86,7 @@ Complete flow of markdown and block processing from stream input to rendered out
 |------|-------------|------|
 | Stream-aware wrapper | Accumulates `chunk` events → `processedContent`; extracts tool blocks | `components/mardown-display/chat-markdown/StreamAwareChatMarkdown.tsx` |
 | Canonical blocks builder | Converts `StreamEvent[]` → `CanonicalBlock[]` (text + tool_call) | `lib/chat-protocol/from-stream.ts` |
-| Tool block adapter | Converts `ToolCallBlock` → legacy format for visualization | `lib/chat-protocol/index.ts` (exports `toolCallBlockToLegacy`) |
-| Tool visualization | Renders tool call blocks | `features/chat/components/response/assistant-message/stream/ToolCallVisualization.tsx` |
+| Tool visualization | Renders a `ToolCallBlock` by mapping it into `ToolLifecycleEntry` and handing it to the shell at `features/tool-call-visualization/components/ToolCallVisualization.tsx` |
 
 ---
 

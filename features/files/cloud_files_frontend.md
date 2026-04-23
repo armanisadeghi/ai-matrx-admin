@@ -43,12 +43,12 @@ system into the React frontend. It replaces all previous direct uses of
         ┌─────────────────┐   ┌──────────────┐
         │ Supabase        │◄──│   S3 bucket  │
         │ Postgres (RLS)  │   │ (private)    │
-        │  cloud_files    │   └──────────────┘
-        │  cloud_folders  │
-        │  cloud_versions │
-        │  cloud_perms    │
-        │  cloud_shares   │
-        │  cloud_groups   │
+        │  cld_files    │   └──────────────┘
+        │  cld_folders  │
+        │  cld_versions │
+        │  cld_perms    │
+        │  cld_shares   │
+        │  cld_groups   │
         └─────────────────┘
 ```
 
@@ -60,7 +60,7 @@ system into the React frontend. It replaces all previous direct uses of
 | File bytes (S3) | **Backend only** — React never touches S3 directly |
 | Metadata reads (lists, tree, versions, permissions) | **supabase-js** — RLS auto-filters to what the user can see |
 | Writes, permission changes, version restores, share-link creation | **Backend API** — enforces admin/write/read checks |
-| Realtime updates | **supabase-js** — subscribe to `cloud_files` / `cloud_file_versions` |
+| Realtime updates | **supabase-js** — subscribe to `cld_files` / `cld_file_versions` |
 
 > **Rule of thumb:** If it needs to mutate state or return file bytes, hit the backend. Otherwise read directly from Supabase.
 
@@ -121,14 +121,14 @@ useEffect(() => {
 
   const channel = supabase.channel(`files:${user.id}`)
     .on('postgres_changes',
-      { event: '*', schema: 'public', table: 'cloud_files',
+      { event: '*', schema: 'public', table: 'cld_files',
         filter: `owner_id=eq.${user.id}` },
       (payload) => dispatch(cloudFileChanged(payload)))
     .on('postgres_changes',
-      { event: '*', schema: 'public', table: 'cloud_file_versions' },
+      { event: '*', schema: 'public', table: 'cld_file_versions' },
       (payload) => dispatch(cloudVersionChanged(payload)))
     .on('postgres_changes',
-      { event: '*', schema: 'public', table: 'cloud_file_permissions',
+      { event: '*', schema: 'public', table: 'cld_file_permissions',
         filter: `grantee_id=eq.${user.id}` },
       (payload) => dispatch(cloudPermissionChanged(payload)))
     .subscribe();
@@ -153,7 +153,7 @@ All read paths below are RLS-filtered — the user only sees files they own, fil
 
 ```ts
 const { data, error } = await supabase
-  .from('cloud_files')
+  .from('cld_files')
   .select('*')
   .is('deleted_at', null)
   .order('file_path');
@@ -165,7 +165,7 @@ Use the RPC — single round-trip, includes effective permission for each row:
 
 ```ts
 const { data, error } = await supabase
-  .rpc('cloud_get_user_file_tree', { p_user_id: user.id });
+  .rpc('cld_get_user_file_tree', { p_user_id: user.id });
 // data: Array<{ id, file_path, visibility, effective_permission, … }>
 ```
 
@@ -175,13 +175,13 @@ Look up the folder row first, then filter files by `parent_folder_id`:
 
 ```ts
 const { data: folder } = await supabase
-  .from('cloud_folders')
+  .from('cld_folders')
   .select('id')
   .eq('folder_path', 'reports/2026')
   .single();
 
 const { data: files } = await supabase
-  .from('cloud_files')
+  .from('cld_files')
   .select('*')
   .eq('parent_folder_id', folder?.id);
 ```
@@ -190,7 +190,7 @@ const { data: files } = await supabase
 
 ```ts
 const { data } = await supabase
-  .from('cloud_file_versions')
+  .from('cld_file_versions')
   .select('*')
   .eq('file_id', fileId)
   .order('version_number', { ascending: false });
@@ -200,7 +200,7 @@ const { data } = await supabase
 
 ```ts
 const { data } = await supabase
-  .from('cloud_files')
+  .from('cld_files')
   .select('*')
   .eq('id', fileId)
   .single();
@@ -210,7 +210,7 @@ const { data } = await supabase
 
 ```ts
 const { data } = await supabase
-  .from('cloud_file_permissions')
+  .from('cld_file_permissions')
   .select('*')
   .eq('resource_id', fileId)
   .eq('resource_type', 'file');
@@ -622,7 +622,7 @@ await supabase.storage.from('user-files').remove([`${userId}/reports/q1.json`]);
 After:
 
 ```ts
-// Soft delete (preserves bytes — recoverable from cloud_file_versions)
+// Soft delete (preserves bytes — recoverable from cld_file_versions)
 await api(`/files/${fileId}`, { method: 'DELETE' });
 
 // Hard delete
@@ -649,7 +649,7 @@ All errors come back in the AIDream `APIError` envelope:
 | 404 | `share_link_invalid` | Token expired, exhausted, or deactivated | Show "link no longer valid" |
 | 413 | `file_too_large` | Exceeds 100 MB upload cap | Use a different flow (or ask for streaming upload) |
 | 500 | `internal` | Server error — logged with `request_id` | Report `request_id` if persistent |
-| 503 | `cloud_sync_unavailable` | Backend isn't configured for cloud sync | Backend issue, not a client one |
+| 503 | `cld_sync_unavailable` | Backend isn't configured for cloud sync | Backend issue, not a client one |
 
 ---
 
@@ -658,7 +658,7 @@ All errors come back in the AIDream `APIError` envelope:
 When wiring a new feature, confirm you've:
 
 - [ ] Got a valid Supabase JWT on both `supabase-js` and `Authorization: Bearer …`.
-- [ ] Subscribed to `cloud_files` realtime (or set up query invalidation).
+- [ ] Subscribed to `cld_files` realtime (or set up query invalidation).
 - [ ] Used `file_id` (not `file_path`) as the stable identifier.
 - [ ] Caught `403` + `404` distinctly from `500`.
 - [ ] Refetched signed URLs before they expire.

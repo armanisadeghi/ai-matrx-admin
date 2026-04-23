@@ -12,7 +12,8 @@ import { Plus, Trash, Upload } from "lucide-react";
 import { formatLabel, formatPlaceholder } from "../utils/label-util";
 import { SchemaField } from "@/constants/socket-constants";
 import ArrayField from "./ArrayField";
-import * as LucideIcons from "lucide-react";
+import { File, Files } from "lucide-react";
+import { DynamicIcon } from "@/components/official/icons/IconResolver";
 import { cn } from "@/lib/utils"; // Assuming you have a cn utility for classnames
 
 export type FieldType =
@@ -159,7 +160,7 @@ const FormField: React.FC<FormFieldProps> = ({
         if (componentType === "multifileupload") {
             // Use ICON_NAME with fallback to deprecated iconName
             const iconName = field.ICON_NAME || field.iconName || "Files";
-            const Icon = (LucideIcons as any)[iconName] || LucideIcons.Files;
+            const Icon = (props: any) => <DynamicIcon name={iconName} fallbackIcon="Files" {...props} />;
             const placeholder = field.DESCRIPTION || formatPlaceholder(fieldKey);
             const componentProps = getComponentProps();
 
@@ -337,7 +338,7 @@ const FormField: React.FC<FormFieldProps> = ({
 
     // Use ICON_NAME with fallback to deprecated iconName
     const iconName = field.ICON_NAME || field.iconName || "File";
-    const Icon = (LucideIcons as any)[iconName] || LucideIcons.File;
+    const Icon = (props: any) => <DynamicIcon name={iconName} fallbackIcon="File" {...props} />;
     const placeholder = field.DESCRIPTION || formatPlaceholder(fieldKey);
 
     // Get component type and props

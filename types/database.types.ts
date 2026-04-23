@@ -580,147 +580,6 @@ export type Database = {
           },
         ]
       }
-      agent_conversations: {
-        Row: {
-          config_settings: Json
-          created_at: string
-          id: string
-          messages: Json
-          model_id: string
-          parent_conversation_id: string | null
-          status: string | null
-          system_instruction: string | null
-          title: string | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          config_settings?: Json
-          created_at?: string
-          id?: string
-          messages?: Json
-          model_id: string
-          parent_conversation_id?: string | null
-          status?: string | null
-          system_instruction?: string | null
-          title?: string | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          config_settings?: Json
-          created_at?: string
-          id?: string
-          messages?: Json
-          model_id?: string
-          parent_conversation_id?: string | null
-          status?: string | null
-          system_instruction?: string | null
-          title?: string | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "agent_conversations_model_id_fkey"
-            columns: ["model_id"]
-            isOneToOne: false
-            referencedRelation: "ai_model"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "agent_conversations_parent_conversation_id_fkey"
-            columns: ["parent_conversation_id"]
-            isOneToOne: false
-            referencedRelation: "agent_conversations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      agent_requests: {
-        Row: {
-          cached_tokens: number
-          conversation_id: string
-          created_at: string
-          duration_ms: number | null
-          endpoint: string | null
-          error_message: string | null
-          estimated_cost: number | null
-          full_usage: Json | null
-          id: string
-          input_tokens: number
-          iterations: number | null
-          metadata: Json | null
-          model_id: string
-          output_tokens: number
-          prompt_id: string | null
-          status: string | null
-          timing_stats: Json | null
-          tool_call_stats: Json | null
-          total_tokens: number
-          user_id: string
-        }
-        Insert: {
-          cached_tokens?: number
-          conversation_id: string
-          created_at?: string
-          duration_ms?: number | null
-          endpoint?: string | null
-          error_message?: string | null
-          estimated_cost?: number | null
-          full_usage?: Json | null
-          id?: string
-          input_tokens?: number
-          iterations?: number | null
-          metadata?: Json | null
-          model_id: string
-          output_tokens?: number
-          prompt_id?: string | null
-          status?: string | null
-          timing_stats?: Json | null
-          tool_call_stats?: Json | null
-          total_tokens?: number
-          user_id: string
-        }
-        Update: {
-          cached_tokens?: number
-          conversation_id?: string
-          created_at?: string
-          duration_ms?: number | null
-          endpoint?: string | null
-          error_message?: string | null
-          estimated_cost?: number | null
-          full_usage?: Json | null
-          id?: string
-          input_tokens?: number
-          iterations?: number | null
-          metadata?: Json | null
-          model_id?: string
-          output_tokens?: number
-          prompt_id?: string | null
-          status?: string | null
-          timing_stats?: Json | null
-          tool_call_stats?: Json | null
-          total_tokens?: number
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "agent_requests_conversation_id_fkey"
-            columns: ["conversation_id"]
-            isOneToOne: false
-            referencedRelation: "agent_conversations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "agent_requests_model_id_fkey"
-            columns: ["model_id"]
-            isOneToOne: false
-            referencedRelation: "ai_model"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       agx_agent: {
         Row: {
           agent_type: string
@@ -3180,7 +3039,7 @@ export type Database = {
         }
         Relationships: []
       }
-      cloud_file_permissions: {
+      cld_file_permissions: {
         Row: {
           expires_at: string | null
           granted_at: string
@@ -3216,7 +3075,7 @@ export type Database = {
         }
         Relationships: []
       }
-      cloud_file_versions: {
+      cld_file_versions: {
         Row: {
           change_summary: string | null
           checksum: string | null
@@ -3252,15 +3111,15 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "cloud_file_versions_file_id_fkey"
+            foreignKeyName: "cld_file_versions_file_id_fkey"
             columns: ["file_id"]
             isOneToOne: false
-            referencedRelation: "cloud_files"
+            referencedRelation: "cld_files"
             referencedColumns: ["id"]
           },
         ]
       }
-      cloud_files: {
+      cld_files: {
         Row: {
           checksum: string | null
           created_at: string
@@ -3314,15 +3173,15 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "cloud_files_parent_folder_id_fkey"
+            foreignKeyName: "cld_files_parent_folder_id_fkey"
             columns: ["parent_folder_id"]
             isOneToOne: false
-            referencedRelation: "cloud_folders"
+            referencedRelation: "cld_folders"
             referencedColumns: ["id"]
           },
         ]
       }
-      cloud_folders: {
+      cld_folders: {
         Row: {
           created_at: string
           deleted_at: string | null
@@ -3361,15 +3220,15 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "cloud_folders_parent_id_fkey"
+            foreignKeyName: "cld_folders_parent_id_fkey"
             columns: ["parent_id"]
             isOneToOne: false
-            referencedRelation: "cloud_folders"
+            referencedRelation: "cld_folders"
             referencedColumns: ["id"]
           },
         ]
       }
-      cloud_share_links: {
+      cld_share_links: {
         Row: {
           created_at: string
           created_by: string | null
@@ -3411,7 +3270,7 @@ export type Database = {
         }
         Relationships: []
       }
-      cloud_user_group_members: {
+      cld_user_group_members: {
         Row: {
           added_at: string
           added_by: string | null
@@ -3438,15 +3297,15 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "cloud_user_group_members_group_id_fkey"
+            foreignKeyName: "cld_user_group_members_group_id_fkey"
             columns: ["group_id"]
             isOneToOne: false
-            referencedRelation: "cloud_user_groups"
+            referencedRelation: "cld_user_groups"
             referencedColumns: ["id"]
           },
         ]
       }
-      cloud_user_groups: {
+      cld_user_groups: {
         Row: {
           created_at: string
           id: string
@@ -18710,6 +18569,11 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      cld_get_effective_permission: {
+        Args: { p_file_id: string; p_user_id: string }
+        Returns: string
+      }
+      cld_get_user_file_tree: { Args: { p_user_id: string }; Returns: Json }
       cleanup_deleted_sandboxes: {
         Args: { retention_days?: number }
         Returns: number
@@ -18761,11 +18625,6 @@ export type Database = {
           isSetofReturn: false
         }
       }
-      cloud_get_effective_permission: {
-        Args: { p_file_id: string; p_user_id: string }
-        Returns: string
-      }
-      cloud_get_user_file_tree: { Args: { p_user_id: string }; Returns: Json }
       convert_compiled_recipe_to_prompt: {
         Args: {
           p_compiled_recipe_id?: string

@@ -8,10 +8,7 @@ import { ToolCallVisualization } from "@/features/tool-call-visualization";
 import { hasCustomRenderer } from "@/features/tool-call-visualization/registry/registry";
 import type { ToolLifecycleEntry } from "@/features/agents/types/request.types";
 import type { ToolEventPayload } from "@/types/python-generated/stream-events";
-import type {
-  ToolStreamEvent,
-  FinalPayload,
-} from "@/app/(public)/demos/api-tests/tool-testing/types";
+import type { ToolStreamEvent, FinalPayload } from "./types";
 
 /**
  * Build a canonical `ToolLifecycleEntry` from the tool-testing stream events

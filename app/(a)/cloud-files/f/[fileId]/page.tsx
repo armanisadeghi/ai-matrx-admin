@@ -21,7 +21,7 @@ export default async function CloudFileDetailPage({ params }: PageProps) {
 
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("cloud_files")
+    .from("cld_files")
     .select("id, parent_folder_id")
     .eq("id", fileId)
     .is("deleted_at", null)

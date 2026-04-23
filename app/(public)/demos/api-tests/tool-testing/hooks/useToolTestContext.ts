@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { useAppSelector } from '@/lib/redux/hooks';
 import { selectUserId } from '@/lib/redux/selectors/userSelectors';
 import { supabase } from '@/utils/supabase/client';
-import type { TestContext } from '../types';
+import type { TestContext } from '@/features/tool-call-visualization/testing/types';
 
 const CONVERSATION_COOKIE_KEY = 'tool_test_conversation_id';
 

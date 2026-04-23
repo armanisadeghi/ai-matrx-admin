@@ -7,7 +7,7 @@
  * ---------
  *   - Dispatch `cloudFilesRealtime/attach` (from
  *     CloudFilesRealtimeProvider on mount with a valid user id). Middleware
- *     opens a channel and subscribes to cloud_* table changes.
+ *     opens a channel and subscribes to cld_* table changes.
  *   - Dispatch `cloudFilesRealtime/detach` on logout/unmount. Middleware tears
  *     the channel down.
  *   - On reconnect after error, middleware re-runs the tree RPC via
@@ -158,9 +158,7 @@ export const cloudFilesRealtimeMiddleware: Middleware = (store) => {
     await teardown();
 
     subscribedUserId = userId;
-    dispatch(
-      setRealtimeStatus({ status: "connecting", userId }),
-    );
+    dispatch(setRealtimeStatus({ status: "connecting", userId }));
 
     channel = supabase
       .channel(`cloud-files:${userId}`)
@@ -172,7 +170,7 @@ export const cloudFilesRealtimeMiddleware: Middleware = (store) => {
         {
           event: "*",
           schema: "public",
-          table: "cloud_files",
+          table: "cld_files",
           filter: `owner_id=eq.${userId}`,
         },
         (payload) => handleFilePayload(payload),
@@ -183,18 +181,18 @@ export const cloudFilesRealtimeMiddleware: Middleware = (store) => {
         {
           event: "*",
           schema: "public",
-          table: "cloud_folders",
+          table: "cld_folders",
           filter: `owner_id=eq.${userId}`,
         },
         (payload) => handleFolderPayload(payload),
       )
-      // Versions — no owner filter (FK to cloud_files; RLS enforces).
+      // Versions — no owner filter (FK to cld_files; RLS enforces).
       .on(
         "postgres_changes",
         {
           event: "*",
           schema: "public",
-          table: "cloud_file_versions",
+          table: "cld_file_versions",
         },
         (payload) => handleVersionPayload(payload),
       )
@@ -204,7 +202,7 @@ export const cloudFilesRealtimeMiddleware: Middleware = (store) => {
         {
           event: "*",
           schema: "public",
-          table: "cloud_file_permissions",
+          table: "cld_file_permissions",
           filter: `grantee_id=eq.${userId}`,
         },
         (payload) => handlePermissionPayload(payload),
@@ -215,7 +213,7 @@ export const cloudFilesRealtimeMiddleware: Middleware = (store) => {
         {
           event: "*",
           schema: "public",
-          table: "cloud_share_links",
+          table: "cld_share_links",
         },
         (payload) => handleShareLinkPayload(payload),
       )
@@ -433,8 +431,7 @@ export const cloudFilesRealtimeMiddleware: Middleware = (store) => {
     if (!resourceId) return;
 
     const state = store.getState() as RootState;
-    const existing =
-      state.cloudFiles.permissionsByResourceId[resourceId] ?? [];
+    const existing = state.cloudFiles.permissionsByResourceId[resourceId] ?? [];
 
     if (payload.eventType === "DELETE") {
       const deletedId = oldRow?.id;
@@ -450,13 +447,8 @@ export const cloudFilesRealtimeMiddleware: Middleware = (store) => {
 
     if (!newRow?.id) return;
     const converted = dbRowToCloudFilePermission(newRow);
-    const next = [
-      converted,
-      ...existing.filter((p) => p.id !== converted.id),
-    ];
-    dispatch(
-      upsertPermissionsForResource({ resourceId, permissions: next }),
-    );
+    const next = [converted, ...existing.filter((p) => p.id !== converted.id)];
+    dispatch(upsertPermissionsForResource({ resourceId, permissions: next }));
   }
 
   function handleShareLinkPayload(
@@ -469,8 +461,7 @@ export const cloudFilesRealtimeMiddleware: Middleware = (store) => {
     if (!resourceId) return;
 
     const state = store.getState() as RootState;
-    const existing =
-      state.cloudFiles.shareLinksByResourceId[resourceId] ?? [];
+    const existing = state.cloudFiles.shareLinksByResourceId[resourceId] ?? [];
 
     if (payload.eventType === "DELETE") {
       const deletedToken = oldRow?.share_token;
@@ -482,13 +473,8 @@ export const cloudFilesRealtimeMiddleware: Middleware = (store) => {
 
     if (!newRow?.id) return;
     const converted = dbRowToCloudShareLink(newRow);
-    const next = [
-      converted,
-      ...existing.filter((l) => l.id !== converted.id),
-    ];
-    dispatch(
-      upsertShareLinksForResource({ resourceId, shareLinks: next }),
-    );
+    const next = [converted, ...existing.filter((l) => l.id !== converted.id)];
+    dispatch(upsertShareLinksForResource({ resourceId, shareLinks: next }));
   }
 
   // -------------------------------------------------------------------------

@@ -3,7 +3,7 @@
  *
  * File-version endpoints.
  *
- * Backend contract: features/files/cloud_files_frontend.md §6 (Versions).
+ * Backend contract: features/files/cld_files_frontend.md §6 (Versions).
  */
 
 import {

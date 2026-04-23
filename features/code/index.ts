@@ -43,3 +43,23 @@ export type {
 // Hooks
 export { useOpenFile } from "./hooks/useOpenFile";
 export { useTerminalSession } from "./hooks/useTerminalSession";
+
+// Runtime — programmatic control for agent tools and server actions.
+export {
+  registerWorkspace,
+  getWorkspace,
+  tryGetWorkspace,
+  listWorkspaceIds,
+  subscribeWorkspace,
+  DEFAULT_WORKSPACE_ID,
+  runShellCommand,
+  readWorkspaceFile,
+  writeWorkspaceFile,
+  listWorkspaceDirectory,
+  openWorkspaceFile,
+  appendAgentTerminalLine,
+} from "./runtime";
+export type { WorkspaceRuntimeHandle } from "./runtime";
+
+// Chat slots (for custom hosts that want their own rightSlot/farRightSlot).
+export { ChatPanelSlot, ChatHistorySlot, AgentPicker } from "./chat";

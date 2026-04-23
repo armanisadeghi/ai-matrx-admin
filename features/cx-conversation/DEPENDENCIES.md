@@ -24,10 +24,11 @@ These are stable, project-wide utilities. No action needed.
 | `@/lib/redux/slices/adminPreferencesSlice` (selectIsUsingLocalhost) | sendMessage thunk | OWNED |
 | `@/lib/api/stream-parser` (parseNdjsonStream) | sendMessage thunk | OWNED |
 | `@/lib/api/endpoints` (ENDPOINTS, BACKEND_URLS) | sendMessage thunk | OWNED |
-| `@/lib/chat-protocol` (extractPersistableToolBlocks, toolCallBlockToLegacy, buildCanonicalBlocks) | sendMessage thunk, StreamingContentBlocks | OWNED |
-| `@/lib/tool-renderers` (getToolName, getInlineRenderer, etc.) | ToolCallVisualization | OWNED |
-| `@/lib/utils` (cn) | ToolCallVisualization | SHARED |
-| `@/types/python-generated/stream-events` (StreamEvent, etc.) | Multiple | OWNED |
+| `@/lib/chat-protocol` (extractPersistableToolBlocks, buildCanonicalBlocks) | sendMessage thunk, StreamingContentBlocks | OWNED |
+| `@/features/tool-call-visualization` (ToolCallVisualization shell, renderer registry, ToolRendererProps) | AssistantMessage, StreamingContentBlocks | OWNED |
+| `@/features/agents/types/request.types` (ToolLifecycleEntry) | StreamingContentBlocks (maps ToolCallBlock → ToolLifecycleEntry) | OWNED |
+| `@/lib/utils` (cn) | Shared UI | SHARED |
+| `@/types/python-generated/stream-events` (TypedStreamEvent, ToolEventPayload) | Multiple | OWNED |
 | `@/components/ui/*` (Button, etc.) | Multiple | SHARED |
 | `lucide-react` | Multiple | EXTERNAL |
 | `uuid` | Multiple | EXTERNAL |
@@ -71,7 +72,6 @@ fully self-contained, these are the ones to internalize.
 |--------|---------|--------|
 | `@/features/chat/hooks/useDomCapturePrint` | AssistantMessage | **Consider internalizing** — small utility |
 | `@/features/chat/utils/markdown-print-utils` | MessageOptionsMenu | **Consider internalizing** — small utility |
-| `@/features/chat/components/response/tool-updates` (ToolUpdatesOverlay) | ToolCallVisualization | **Keep** — complex component |
 
 ### HTML Pages
 | Import | Used By | Action |
@@ -104,16 +104,17 @@ fully self-contained, these are the ones to internalize.
 | `@/utils/markdown-processors/parse-markdown-for-speech` | AssistantMessage | **Keep** — small utility |
 | `@/components/matrx/buttons/markdown-copy-utils` | MessageOptionsMenu | **Keep** — shared utility |
 
-### Socket Types (legacy)
-| Import | Used By | Action |
-|--------|---------|--------|
-| `@/lib/redux/socket-io/socket.types` (ToolCallObject) | ToolCallVisualization | **Internalize** — only the type is needed |
+---
+
+## Tool rendering (delegated)
+
+Tool-call rendering is owned entirely by `@/features/tool-call-visualization`. Conversation surfaces import the `ToolCallVisualization` shell and hand it a `ToolLifecycleEntry` (from `@/features/agents/types/request.types`).
 
 ---
 
 ## Summary: Internalization Candidates
 
-If the goal is full self-containment, these 3 items are the prime candidates:
+If the goal is full self-containment, these items are the prime candidates:
 
 1. **`@/features/prompts/utils/resource-parsing`** — Copy the 3 functions
    (`parseResourcesFromMessage`, `extractMessageWithoutResources`, `messageContainsResources`)
@@ -121,9 +122,6 @@ If the goal is full self-containment, these 3 items are the prime candidates:
 
 2. **`@/features/chat/hooks/useDomCapturePrint`** — Copy into
    `components/conversation/hooks/useDomCapturePrint.ts`
-
-3. **`@/lib/redux/socket-io/socket.types` → `ToolCallObject`** — Copy the interface
-   into `lib/redux/chatConversations/types.ts`
 
 Everything else is either a shared UI primitive, a lazy-loaded opt-in feature,
 or a project-wide utility that *should* be shared rather than duplicated.

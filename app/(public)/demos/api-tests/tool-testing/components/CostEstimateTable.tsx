@@ -2,7 +2,7 @@
 
 import { Badge } from '@/components/ui/badge';
 import { DollarSign, Hash, FileText, Info } from 'lucide-react';
-import type { CostEstimate } from '../types';
+import type { CostEstimate } from '@/features/tool-call-visualization/testing/types';
 
 interface CostEstimateTableProps {
   costEstimate: CostEstimate | null;

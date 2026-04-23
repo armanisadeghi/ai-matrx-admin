@@ -13,7 +13,7 @@ export async function getFunctions() {
 
     if (error) throw error;
 
-    revalidatePath("/admin/database");
+    revalidatePath("/administration/database");
     return data;
   } catch (error) {
     console.error("Error fetching functions:", error);
@@ -29,7 +29,7 @@ export async function getPermissions() {
 
     if (error) throw error;
 
-    revalidatePath("/admin/database");
+    revalidatePath("/administration/database");
     return data;
   } catch (error) {
     console.error("Error fetching permissions:", error);

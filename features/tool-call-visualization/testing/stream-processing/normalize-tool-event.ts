@@ -1,9 +1,9 @@
 import type { ToolEventPayload } from "@/types/python-generated/stream-events";
-import type { ToolStreamEvent } from "../../types";
+import type { ToolStreamEvent } from "../types";
 
 /**
  * Normalizes a wire `tool_event.data` payload into the strict `ToolStreamEvent`
- * shape used by the tool-testing UI and `buildToolCallObjectsForPreview`.
+ * shape used by the tool-testing UI.
  */
 export function toolEventPayloadToToolStreamEvent(
   data: ToolEventPayload,

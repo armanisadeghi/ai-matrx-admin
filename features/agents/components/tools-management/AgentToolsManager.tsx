@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback, useEffect } from "react";
-import * as LucideIcons from "lucide-react";
+import { DynamicIcon } from "@/components/official/icons/IconResolver";
 import {
   Wrench,
   Search,
@@ -102,20 +102,7 @@ type ToolsTab = "server" | "custom" | "client" | "mcp";
 const ALL_CATEGORY = "__all__";
 const ENABLED_CATEGORY = "__enabled__";
 
-// Resolve a Lucide icon name string to the actual React component
-function DynamicIcon({
-  name,
-  className,
-}: {
-  name: string;
-  className?: string;
-}) {
-  const IconComponent = (LucideIcons as Record<string, unknown>)[name] as
-    | React.ComponentType<{ className?: string }>
-    | undefined;
-  if (!IconComponent) return null;
-  return <IconComponent className={className} />;
-}
+
 
 // Deterministic color palette for category icons — muted, professional tones
 // that work in both light and dark mode.

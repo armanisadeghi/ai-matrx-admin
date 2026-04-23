@@ -25,7 +25,7 @@ export default async function CloudFilesDeepLinkPage({ params }: PageProps) {
   if (folderPath) {
     const supabase = await createClient();
     const { data } = await supabase
-      .from("cloud_folders")
+      .from("cld_folders")
       .select("id")
       .eq("folder_path", folderPath)
       .is("deleted_at", null)

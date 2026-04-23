@@ -183,7 +183,8 @@ import {
 } from "@/utils/icons/matrx-public-svg-registry";
 
 // Statically imported Lucide icons map (commonly used icons for optimal bundle size)
-const staticLucideIconMap: Record<string, any> = {
+// Exported so callers can spread it as a scope without importing the full lucide namespace.
+export const staticLucideIconMap: Record<string, any> = {
   Zap,
   Home,
   User,

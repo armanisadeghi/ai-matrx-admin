@@ -36,7 +36,8 @@ The component will:
 */
 import React, { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import * as LucideIcons from "lucide-react";
+import { File } from "lucide-react";
+import { DynamicIcon } from "@/components/official/icons/IconResolver";
 import { cn } from "@/lib/utils";
 import { SchemaField } from "@/constants/socket-schema";
 import { formatLabel, formatPlaceholder } from "@/components/socket/utils/label-util";
@@ -99,7 +100,7 @@ const SocketTaskMultiFileUpload: React.FC<SocketTaskMultiFileUploadProps> = ({
         [taskName, fullPath]
       );
 
-    const Icon = (LucideIcons as any)[fieldDefinition.ICON_NAME] || LucideIcons.File;
+    const Icon = (props: any) => <DynamicIcon name={fieldDefinition.ICON_NAME} fallbackIcon="File" {...props} />;
     const placeholder = showPlaceholder ? fieldDefinition.DESCRIPTION || formatPlaceholder(fieldName) : "";
     
     // Process component props

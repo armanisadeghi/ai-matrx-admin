@@ -1,16 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import {
-  IconPicker,
-  IconInput,
-  IconValidator,
-} from "@/components/ui/icon-picker";
+import IconInputWithValidation from "@/components/official/icons/IconInputWithValidation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 /**
- * Lazy chunk: full Lucide browser from @/components/ui/icon-picker
+ * Demo chunk: official icon input + validation system
  */
 export default function LucideFullDemo() {
   const [pickerIcon, setPickerIcon] = useState("Folder");
@@ -18,26 +14,29 @@ export default function LucideFullDemo() {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-md border border-amber-500/40 bg-amber-500/10 dark:bg-amber-500/15 px-3 py-2 text-xs text-foreground">
+      <div className="rounded-md border border-emerald-500/40 bg-emerald-500/10 dark:bg-emerald-500/15 px-3 py-2 text-xs text-foreground">
         <p className="font-semibold">How to try discovery</p>
         <ol className="list-decimal list-inside mt-1.5 space-y-1 text-muted-foreground">
           <li>
-            In the first card, click the{" "}
-            <span className="text-foreground font-medium">outlined button</span>{" "}
-            labeled with the small icon +{" "}
-            <code className="font-mono text-foreground">Folder</code> (or
-            “Choose Icon” if empty).
+            Type an icon name (e.g.{" "}
+            <code className="font-mono text-foreground">alarm-clock</code> or
+            paste a JSX import like{" "}
+            <code className="font-mono text-foreground">
+              &lt;Sparkles /&gt;
+            </code>
+            ) — the field auto-corrects it.
           </li>
           <li>
-            A dialog opens: use the search field, scroll the grid, click an icon
-            to select it.
+            Click the{" "}
+            <span className="text-foreground font-medium">spinner icon</span>{" "}
+            inside the field to validate, or press Enter.
           </li>
           <li>
-            In the second card, the same outline button sits{" "}
-            <span className="text-foreground font-medium">
-              to the right of the text field
-            </span>{" "}
-            — that also opens the full grid.
+            Use{" "}
+            <span className="text-foreground font-medium">Search Lucide</span>{" "}
+            to browse the full site in a floating frame, or{" "}
+            <span className="text-foreground font-medium">Icon gallery</span>{" "}
+            for the curated offline grid.
           </li>
         </ol>
       </div>
@@ -45,47 +44,44 @@ export default function LucideFullDemo() {
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm flex flex-wrap items-center gap-2">
-            IconPicker (modal grid)
+            IconInputWithValidation
             <Badge variant="secondary" className="font-mono text-[10px]">
-              @/components/ui/icon-picker
+              @/components/official/icons/IconInputWithValidation
             </Badge>
           </CardTitle>
           <p className="text-xs text-muted-foreground">
-            Discovery UI: click the button below (not this text). Selected:{" "}
+            Full input with live validation, auto-correction, Lucide search, and
+            curated gallery. Selected:{" "}
             <span className="font-mono text-foreground">{pickerIcon}</span>
           </p>
         </CardHeader>
         <CardContent>
-          <IconPicker value={pickerIcon} onChange={setPickerIcon} />
+          <IconInputWithValidation
+            value={pickerIcon}
+            onChange={setPickerIcon}
+          />
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm flex flex-wrap items-center gap-2">
-            IconInput + IconValidator
+            Compact variant (no Lucide link)
             <Badge variant="secondary" className="font-mono text-[10px]">
-              same module
+              showLucideLink={"{false}"}
             </Badge>
           </CardTitle>
           <p className="text-xs text-muted-foreground">
-            Text field with picker side button and validation preview.
+            Same component with the fine-print Lucide link hidden — useful in
+            tight forms.
           </p>
         </CardHeader>
         <CardContent>
-          <IconInput value={inputIcon} onChange={setInputIcon} />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm">IconValidator only</CardTitle>
-          <p className="text-xs text-muted-foreground">
-            Inline validate / preview for a name.
-          </p>
-        </CardHeader>
-        <CardContent>
-          <IconValidator iconName={inputIcon} showPreview />
+          <IconInputWithValidation
+            value={inputIcon}
+            onChange={setInputIcon}
+            showLucideLink={false}
+          />
         </CardContent>
       </Card>
     </div>

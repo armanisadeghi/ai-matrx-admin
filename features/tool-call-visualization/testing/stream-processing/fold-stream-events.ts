@@ -36,7 +36,7 @@ import {
   isEndEvent,
   isBrokerEvent,
 } from "@/types/python-generated/stream-events";
-import type { FinalPayload, ToolStreamEvent } from "../../types";
+import type { FinalPayload, ToolStreamEvent } from "../types";
 import { toolEventPayloadToToolStreamEvent } from "./normalize-tool-event";
 
 /** Wire event that did not match any known V2 discriminator (same as `process-stream` fallback). */

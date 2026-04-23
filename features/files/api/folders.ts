@@ -5,7 +5,7 @@
  * on the backend (no dedicated folder-create endpoint in the current contract
  * — logged in PYTHON_TEAM_COMMS.md if we need one).
  *
- * Backend contract: features/files/cloud_files_frontend.md §6.
+ * Backend contract: features/files/cld_files_frontend.md §6.
  */
 
 import { getJson, type RequestOptions, type ResponseMeta } from "./client";

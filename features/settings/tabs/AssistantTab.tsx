@@ -10,7 +10,7 @@ import {
   SettingsSubHeader,
 } from "@/components/official/settings";
 import { useSetting } from "../hooks/useSetting";
-import type { AIProvider } from "@/lib/redux/slices/userPreferencesSlice";
+import type { AIProvider } from "@/lib/ai/aiChat.types";
 
 const providerOptions: { value: AIProvider; label: string }[] = [
   { value: "default", label: "Default" },

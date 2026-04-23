@@ -16,7 +16,7 @@ import {
   type ReactNode,
 } from "react";
 import { ChevronRight, Check, X, Search, Circle } from "lucide-react";
-import * as LucideIcons from "lucide-react";
+import { DynamicIcon } from "@/components/official/icons/IconResolver";
 import { createPortal } from "react-dom";
 import { cn } from "@/utils/cn";
 
@@ -26,27 +26,6 @@ export interface PickerOption {
   id: string;
   name: string;
   status?: string | null;
-}
-
-// ─── Lucide icon resolver ─────────────────────────────────────────────────────
-
-export function DynamicIcon({
-  name,
-  className,
-}: {
-  name: string;
-  className?: string;
-}) {
-  const icons = LucideIcons as unknown as Record<
-    string,
-    React.ComponentType<{ className?: string }>
-  >;
-  const pascalName = name
-    .split(/[-_\s]/)
-    .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-    .join("");
-  const Icon = icons[pascalName] ?? Circle;
-  return <Icon className={className} />;
 }
 
 // ─── FlyoutItem ──────────────────────────────────────────────────────────────

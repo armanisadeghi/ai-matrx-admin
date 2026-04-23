@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import type { TypedStreamEvent } from "@/types/python-generated/stream-events";
-import type { ToolStreamEvent } from "../types";
+import type { ToolStreamEvent } from "@/features/tool-call-visualization/testing/types";
 
 // ─── Event icon/color mapping ───────────────────────────────────────────────
 

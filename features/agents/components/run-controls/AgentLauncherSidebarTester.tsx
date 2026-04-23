@@ -9,6 +9,7 @@
  */
 
 import { useState } from "react";
+import { getIconComponent } from "@/components/official/icons/IconResolver";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
@@ -23,7 +24,6 @@ import {
   getDisplayMeta,
 } from "@/features/agents/utils/run-ui-utils";
 import { ChevronDown, TestTube2, TestTube } from "lucide-react";
-import * as LucideIcons from "lucide-react";
 import { AgentExecutionTestModal } from "./AgentExecutionTestModal";
 import { TesterSettingsPanel } from "./TesterSettingsPanel";
 
@@ -45,12 +45,7 @@ export function AgentLauncherSidebarTester({
 
   const displayTypes = getAllDisplayTypes().map((displayMode) => {
     const meta = getDisplayMeta(displayMode);
-    const IconComponent = (
-      LucideIcons as unknown as Record<
-        string,
-        React.ComponentType<{ className?: string }>
-      >
-    )[meta.icon];
+    const IconComponent = getIconComponent(meta.icon);
     return {
       name: meta.label,
       icon: IconComponent,

@@ -1,4 +1,6 @@
 import { fetchAIModels } from "@/features/ai-models/server/ai-models-server";
+
+export const dynamic = "force-dynamic";
 import { Card } from "@/components/ui/card";
 import { TestControlsWrapper } from "./TestControlsWrapper";
 

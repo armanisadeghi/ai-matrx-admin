@@ -134,7 +134,10 @@ export const WorkspaceLayout: React.FC<WorkspaceLayoutProps> = ({
               className="h-full min-h-0"
             >
               <ResizablePanel id="editor" defaultSize={70} minSize={20}>
-                <EditorArea />
+                <EditorArea
+                  rightSlotAvailable={Boolean(rightSlot)}
+                  farRightSlotAvailable={Boolean(farRightSlot)}
+                />
               </ResizablePanel>
               <ResizableHandle />
               <ResizablePanel

@@ -6,13 +6,13 @@ Server now sends high-frequency lines as `{"e":"c","t":"..."}` (text) and `{"e":
 
 | File | Why |
 |------|-----|
-| `app/(public)/demos/api-tests/tool-testing/utils/stream-processing-beta/ndjson.ts` | `parseNdjsonStringToStreamEvents` uses raw `JSON.parse` per line — no `normalizeCompactEvent`. Breaks captured/replayed tool-test NDJSON and `ndjsonToFoldState` / `ndjsonToRenderedToolCalls`. |
+| `features/tool-call-visualization/testing/stream-processing/ndjson.ts` | `parseNdjsonStringToStreamEvents` uses raw `JSON.parse` per line — no `normalizeCompactEvent`. Breaks captured/replayed tool-test NDJSON and `ndjsonToFoldState` / `ndjsonToRenderedToolCalls`. |
 
 ## Downstream of the above (ok once `ndjson.ts` normalizes)
 
 | File | Why |
 |------|-----|
-| `app/(public)/demos/api-tests/tool-testing/utils/stream-processing-beta/fold-stream-events.ts` | Expects `event.event === "chunk"` / `"reasoning_chunk"` and `event.data`; fails on compact lines if fed unnormalized events. |
+| `features/tool-call-visualization/testing/stream-processing/fold-stream-events.ts` | Expects `event.event === "chunk"` / `"reasoning_chunk"` and `event.data`; fails on compact lines if fed unnormalized events. |
 
 ## Optional / edge cases
 

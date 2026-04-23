@@ -1,43 +1,43 @@
-import React, { useState, useEffect } from 'react';
-import { LiveProvider, LiveError, LivePreview } from 'react-live';
-import * as UIComponents from '@/components/ui';
-import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
-import { supabase } from '@/utils/supabase/client';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import * as LucideIcons from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { staticLucideIconMap } from "@/components/official/icons/IconResolver";
+import { LiveProvider, LiveError, LivePreview } from "react-live";
+import * as UIComponents from "@/components/ui";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { supabase } from "@/utils/supabase/client";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
-import axios from 'axios';
-import * as _ from 'lodash';
-import * as dateFns from 'date-fns';
+import axios from "axios";
+import * as _ from "lodash";
+import * as dateFns from "date-fns";
 
 /**
  * Enhanced DynamicComponentRenderer that handles imports
  * This component can be used anywhere in your app to render
  * dynamically generated React components
  */
-const DynamicComponentRenderer = ({ code, containerClassName = '' }) => {
-  const [processedCode, setProcessedCode] = useState('');
+const DynamicComponentRenderer = ({ code, containerClassName = "" }) => {
+  const [processedCode, setProcessedCode] = useState("");
   const [error, setError] = useState(null);
-  
+
   // Process the code to handle imports and other transformations
   useEffect(() => {
     try {
       if (!code) {
-        setProcessedCode('');
+        setProcessedCode("");
         return;
       }
-      
+
       // Process import comments and prepare the code
       const transformedCode = processComponentCode(code);
       setProcessedCode(transformedCode);
       setError(null);
     } catch (err) {
-      console.error('Error processing component code:', err);
+      console.error("Error processing component code:", err);
       setError(err.message);
     }
   }, [code]);
-  
+
   // Create a scope with all the required dependencies
   const scope = {
     // React core
@@ -49,31 +49,30 @@ const DynamicComponentRenderer = ({ code, containerClassName = '' }) => {
     useCallback: React.useCallback,
     useMemo: React.useMemo,
     useRef: React.useRef,
-    
+
     // UI Components - spread all components
     ...UIComponents,
-    
-    
+
     // Redux
     useAppDispatch,
     useAppSelector,
-    
+
     // Supabase
     supabase,
-    
+
     // Next.js navigation
     useRouter,
     Link,
-    
-    // Icons
-    ...LucideIcons,
-    
+
+    // Icons (curated static set — avoids bundling the full lucide namespace)
+    ...staticLucideIconMap,
+
     // External libs
     axios,
     _,
-    dateFns
+    dateFns,
   };
-  
+
   // The actual component rendering
   return (
     <div className={`dynamic-component-container ${containerClassName}`}>
@@ -106,32 +105,32 @@ function processComponentCode(code) {
   // Find all import statements and collect the imported items
   const importRegex = /import\s+{([^}]+)}\s+from\s+["']([^"']+)["'];?/g;
   const importMatches = Array.from(code.matchAll(importRegex));
-  
+
   // Remove all import statements from the code
   let processedCode = code;
   for (const match of importMatches) {
-    processedCode = processedCode.replace(match[0], '');
+    processedCode = processedCode.replace(match[0], "");
   }
-  
+
   // Also handle the special import comment format
   const commentImportRegex = /\/\/\s*@import\s+(.+)\s+from\s+['"](.+)['"]/g;
   let commentMatch;
-  
+
   // Remove import comments from the code
   while ((commentMatch = commentImportRegex.exec(processedCode)) !== null) {
-    processedCode = processedCode.replace(commentMatch[0], '');
+    processedCode = processedCode.replace(commentMatch[0], "");
   }
-  
+
   // Remove any render() calls from the code to avoid conflicts
-  processedCode = processedCode.replace(/render\s*\(<.+>\);?/g, '');
-  
+  processedCode = processedCode.replace(/render\s*\(<.+>\);?/g, "");
+
   // Trim extra whitespace that might be left
-  processedCode = processedCode.replace(/^\s*\n/gm, '');
-  
+  processedCode = processedCode.replace(/^\s*\n/gm, "");
+
   // Extract the component name (assuming the first function definition is our component)
   const functionNameMatch = processedCode.match(/function\s+([A-Za-z0-9_]+)/);
   const componentName = functionNameMatch ? functionNameMatch[1] : null;
-  
+
   if (!componentName) {
     throw new Error("Could not find a component function in the code");
   }

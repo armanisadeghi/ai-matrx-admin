@@ -76,7 +76,7 @@ async function runScenario(args: {
     recoveryId = await payloadSafetyStore.savePending({
       kind,
       label,
-      routeHref: "/admin/resilience-lab",
+      routeHref: "/administration/resilience-lab",
       payload: { scenario: label, ts: Date.now() },
       rawUserInput,
     });

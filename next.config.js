@@ -49,10 +49,8 @@ const nextConfig = {
         serverActions: {
             bodySizeLimit: "10mb",
         },
-        // Do not list `lucide-react` here: `import * as LucideIcons from 'lucide-react'`
-        // (icon grid, dynamic icon-by-name) breaks — components lose `iconNode` and Lucide's
-        // Icon.js crashes on `iconNode.map`. Named imports from `lucide-react` still tree-shake.
-        optimizePackageImports: ['zustand'],
+        // Optimize lucide-react (the 1400+ icon barrel file) and zustand to avoid massive SSR chunks
+        optimizePackageImports: ['lucide-react', 'zustand'],
     },
     // Turbopack configuration (Next.js 16 default bundler)
     turbopack: {},

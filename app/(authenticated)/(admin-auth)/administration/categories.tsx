@@ -146,6 +146,14 @@ export const adminCategories = [
         link: "/administration/server-logs",
         isNew: true,
       },
+      {
+        title: "Resilience Lab",
+        description:
+          "Synthetic failure scenarios for the request-recovery + netRequests system. Fires client-simulated and live Python /ai/mock-stream/{scenario} streams through the real resilientFetch + monitorStream stack.",
+        icon: <IconBug />,
+        link: "/administration/resilience-lab",
+        isNew: true,
+      },
     ],
   },
   {

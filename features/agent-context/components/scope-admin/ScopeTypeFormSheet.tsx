@@ -23,7 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { IconPicker } from "@/components/ui/icon-picker";
+import IconInputWithValidation from "@/components/official/icons/IconInputWithValidation";
 import { TailwindColorPicker } from "@/components/ui/TailwindColorPicker";
 
 interface ScopeTypeFormSheetProps {
@@ -205,7 +205,11 @@ export function ScopeTypeFormSheet({
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label className="text-xs">Icon</Label>
-              <IconPicker value={icon} onChange={setIcon} />
+              <IconInputWithValidation
+                value={icon}
+                onChange={setIcon}
+                showLucideLink={false}
+              />
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs">Color</Label>

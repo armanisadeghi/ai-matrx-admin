@@ -1,6 +1,7 @@
 // File location: components/socket-io/form-builder/field-components/SocketTaskJsonEditor.tsx
 import React, { useCallback, useEffect, useState, useMemo, useRef } from "react";
-import * as LucideIcons from "lucide-react";
+import { File } from "lucide-react";
+import { DynamicIcon } from "@/components/official/icons/IconResolver";
 import { cn } from "@/lib/utils";
 import { SchemaField } from "@/constants/socket-schema";
 import { formatLabel, formatPlaceholder } from "@/components/socket/utils/label-util";
@@ -144,7 +145,7 @@ const SocketTaskJsonEditor: React.FC<SocketTaskJsonEditorProps> = ({
         [taskName, fullPath]
       );
 
-    const Icon = (LucideIcons as any)[fieldDefinition.ICON_NAME] || LucideIcons.File;
+    const Icon = (props: any) => <DynamicIcon name={fieldDefinition.ICON_NAME} fallbackIcon="File" {...props} />;
     const placeholder = showPlaceholder ? fieldDefinition.DESCRIPTION || formatPlaceholder(fieldName) : "";
     
     // Process component props

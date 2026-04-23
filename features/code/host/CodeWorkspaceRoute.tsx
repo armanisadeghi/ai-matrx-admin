@@ -2,16 +2,40 @@
 
 import React from "react";
 import { CodeWorkspace, type CodeWorkspaceProps } from "../CodeWorkspace";
+import { ChatHistorySlot, ChatPanelSlot } from "../chat";
+
+export interface CodeWorkspaceRouteProps extends CodeWorkspaceProps {
+  /** Disable the chat column (default: enabled). */
+  hideChat?: boolean;
+  /** Disable the chat history column (default: enabled). */
+  hideHistory?: boolean;
+}
 
 /**
- * Full-viewport host — for /code and similar pages. Consumers can still pass
- * any adapter/slot they like. The container fills the available space inside
- * the authenticated shell.
+ * Full-viewport host — mounted at `/code`. By default the chat and history
+ * columns are wired up using the URL-driven `?agentId=` / `?conversationId=`
+ * pattern. Pass `hideChat` / `hideHistory` to suppress either column, or
+ * override `rightSlot` / `farRightSlot` explicitly to inject your own.
  */
-export const CodeWorkspaceRoute: React.FC<CodeWorkspaceProps> = (props) => {
+export const CodeWorkspaceRoute: React.FC<CodeWorkspaceRouteProps> = ({
+  hideChat,
+  hideHistory,
+  rightSlot,
+  farRightSlot,
+  ...props
+}) => {
+  const resolvedRight =
+    rightSlot ?? (hideChat ? undefined : <ChatPanelSlot basePath="/code" />);
+  const resolvedFarRight =
+    farRightSlot ?? (hideHistory ? undefined : <ChatHistorySlot />);
+
   return (
     <div className="h-[calc(100vh-var(--shell-offset,0px))] w-full">
-      <CodeWorkspace {...props} />
+      <CodeWorkspace
+        {...props}
+        rightSlot={resolvedRight}
+        farRightSlot={resolvedFarRight}
+      />
     </div>
   );
 };

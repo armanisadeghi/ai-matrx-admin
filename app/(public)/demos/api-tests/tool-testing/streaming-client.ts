@@ -7,7 +7,7 @@ import type {
   FinalPayload,
   ToolDefinition,
   TestContext,
-} from "./types";
+} from "@/features/tool-call-visualization/testing/types";
 
 /**
  * Execute a tool test via the Python backend streaming endpoint.

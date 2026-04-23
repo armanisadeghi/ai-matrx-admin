@@ -154,7 +154,7 @@ export interface RecordReservedPayload {
   db_project: string;
   table: string;
   record_id: string;
-  status: "pending";
+  status?: "pending";
   parent_refs?: Record<string, string>;
   metadata?: Record<string, unknown>;
 }
@@ -172,65 +172,60 @@ export interface RecordUpdatePayload {
 // Narrows RecordReservedPayload.metadata / parent_refs by table.
 // Server guarantees these shapes for cx_message, cx_request, cx_tool_call.
 
-export type CxMessageRole = "user" | "assistant" | "system" | "tool";
-
 export interface CxMessageReservedParentRefs {
+  [key: string]: unknown;
   conversation_id: string;
   user_request_id: string;
 }
 
 export interface CxMessageReservedMetadata {
-  role: CxMessageRole;
+  [key: string]: unknown;
+  role: "user" | "assistant" | "system" | "tool";
   position: number;
 }
 
-export interface CxMessageReservedPayload {
-  db_project: string;
-  table: "cx_message";
-  record_id: string;
-  status?: "pending";
-  parent_refs: CxMessageReservedParentRefs;
-  metadata: CxMessageReservedMetadata;
-}
-
 export interface CxRequestReservedParentRefs {
+  [key: string]: unknown;
   conversation_id: string;
   user_request_id: string;
 }
 
 export interface CxRequestReservedMetadata {
+  [key: string]: unknown;
   iteration: number;
 }
 
-export interface CxRequestReservedPayload {
-  db_project: string;
-  table: "cx_request";
-  record_id: string;
-  status?: "pending";
-  parent_refs: CxRequestReservedParentRefs;
-  metadata: CxRequestReservedMetadata;
-}
-
 export interface CxToolCallReservedParentRefs {
+  [key: string]: unknown;
   conversation_id: string;
   user_request_id: string;
   call_id: string;
 }
 
 export interface CxToolCallReservedMetadata {
+  [key: string]: unknown;
   tool_name: string;
   call_id: string;
   iteration: number;
 }
 
-export interface CxToolCallReservedPayload {
-  db_project: string;
+export type CxMessageReservedPayload = RecordReservedPayload & {
+  table: "cx_message";
+  parent_refs: CxMessageReservedParentRefs;
+  metadata: CxMessageReservedMetadata;
+};
+
+export type CxRequestReservedPayload = RecordReservedPayload & {
+  table: "cx_request";
+  parent_refs: CxRequestReservedParentRefs;
+  metadata: CxRequestReservedMetadata;
+};
+
+export type CxToolCallReservedPayload = RecordReservedPayload & {
   table: "cx_tool_call";
-  record_id: string;
-  status?: "pending";
   parent_refs: CxToolCallReservedParentRefs;
   metadata: CxToolCallReservedMetadata;
-}
+};
 
 /** Discriminated union on `table` — narrows metadata/parent_refs for known tables. */
 export type TypedRecordReservedPayload =
@@ -265,13 +260,13 @@ export interface DataPayload {
 }
 
 export interface AudioOutputData {
-  type: "audio_output";
+  type?: "audio_output";
   url: string;
   mime_type: string;
 }
 
 export interface CategorizationResultData {
-  type: "categorization_result";
+  type?: "categorization_result";
   prompt_id: string;
   category: string;
   tags?: string[];
@@ -281,7 +276,7 @@ export interface CategorizationResultData {
 }
 
 export interface ContextChangedData {
-  type: "context_changed";
+  type?: "context_changed";
   key: string;
   command: string;
   object_type?: string;
@@ -292,7 +287,7 @@ export interface ContextChangedData {
 }
 
 export interface ContextPersistFailedData {
-  type: "context_persist_failed";
+  type?: "context_persist_failed";
   key: string;
   command: string;
   source_kind?: string;
@@ -302,7 +297,7 @@ export interface ContextPersistFailedData {
 }
 
 export interface ContextPersistedData {
-  type: "context_persisted";
+  type?: "context_persisted";
   key: string;
   command: string;
   source_kind?: string;
@@ -310,12 +305,12 @@ export interface ContextPersistedData {
 }
 
 export interface ConversationIdData {
-  type: "conversation_id";
+  type?: "conversation_id";
   conversation_id: string;
 }
 
 export interface ConversationLabeledData {
-  type: "conversation_labeled";
+  type?: "conversation_labeled";
   conversation_id: string;
   title: string;
   description?: string;
@@ -335,7 +330,7 @@ export interface QuestionnaireQuestion {
 }
 
 export interface QuestionnaireDisplayData {
-  type: "display_questionnaire";
+  type?: "display_questionnaire";
   introduction: string;
   questions?: QuestionnaireQuestion[];
 }
@@ -348,13 +343,13 @@ export interface FetchResultItem {
 }
 
 export interface FetchResultsData {
-  type: "fetch_results";
+  type?: "fetch_results";
   metadata?: Record<string, unknown>;
   results?: FetchResultItem[];
 }
 
 export interface FunctionResultData {
-  type: "function_result";
+  type?: "function_result";
   function_name: string;
   success: boolean;
   result?: unknown;
@@ -363,25 +358,25 @@ export interface FunctionResultData {
 }
 
 export interface ImageOutputData {
-  type: "image_output";
+  type?: "image_output";
   url: string;
   mime_type: string;
 }
 
 export interface MemoryBufferSpawnedData {
-  type: "memory_buffer_spawned";
+  type?: "memory_buffer_spawned";
   conversation_id: string;
   kind?: "observer" | "reflector";
 }
 
 export interface MemoryContextInjectedData {
-  type: "memory_context_injected";
+  type?: "memory_context_injected";
   conversation_id: string;
   observation_chars?: number;
 }
 
 export interface MemoryErrorData {
-  type: "memory_error";
+  type?: "memory_error";
   conversation_id: string;
   phase?: string;
   error?: string;
@@ -389,7 +384,7 @@ export interface MemoryErrorData {
 }
 
 export interface MemoryObserverCompletedData {
-  type: "memory_observer_completed";
+  type?: "memory_observer_completed";
   conversation_id: string;
   model?: string | null;
   input_tokens?: number;
@@ -399,7 +394,7 @@ export interface MemoryObserverCompletedData {
 }
 
 export interface MemoryReflectorCompletedData {
-  type: "memory_reflector_completed";
+  type?: "memory_reflector_completed";
   conversation_id: string;
   model?: string | null;
   input_tokens?: number;
@@ -409,7 +404,7 @@ export interface MemoryReflectorCompletedData {
 }
 
 export interface PodcastCompleteData {
-  type: "podcast_complete";
+  type?: "podcast_complete";
   show_id: string;
   success: boolean;
   episode_count?: number;
@@ -417,7 +412,7 @@ export interface PodcastCompleteData {
 }
 
 export interface PodcastStageData {
-  type: "podcast_stage";
+  type?: "podcast_stage";
   stage: string;
   success: boolean;
   error?: string | null;
@@ -425,12 +420,12 @@ export interface PodcastStageData {
 }
 
 export interface ScrapeBatchCompleteData {
-  type: "scrape_batch_complete";
+  type?: "scrape_batch_complete";
   total_scraped: number;
 }
 
 export interface SearchErrorData {
-  type: "search_error";
+  type?: "search_error";
   metadata?: Record<string, unknown>;
   error: string;
 }
@@ -444,7 +439,7 @@ export interface SearchResultItem {
 }
 
 export interface SearchResultsData {
-  type: "search_results";
+  type?: "search_results";
   metadata?: Record<string, unknown>;
   results?: SearchResultItem[];
 }
@@ -455,19 +450,19 @@ export interface StructuredInputFailure {
 }
 
 export interface StructuredInputWarningData {
-  type: "structured_input_warning";
+  type?: "structured_input_warning";
   block_type: string;
   failures?: StructuredInputFailure[];
 }
 
 export interface VideoOutputData {
-  type: "video_output";
+  type?: "video_output";
   url: string;
   mime_type: string;
 }
 
 export interface WorkflowStepData {
-  type: "workflow_step";
+  type?: "workflow_step";
   step_name: string;
   status: string;
   data?: Record<string, unknown>;
@@ -501,8 +496,8 @@ export type TypedDataPayload =
 
 /** Fallback for data events whose `type` isn't in TypedDataPayload. */
 export interface UntypedDataPayload {
-  type: string;
   [key: string]: unknown;
+  type: string;
 }
 
 // --- Completion Result Models ---
@@ -595,38 +590,74 @@ export interface PersistenceResult {
 // Each interface narrows CompletionPayload.result to its concrete type.
 // Use TypedCompletionEvent instead of CompletionPayload when you need typed result.
 
+export interface LlmRequestResult {
+  tokens_in?: number;
+  tokens_out?: number;
+  duration_ms?: number;
+  finish_reason?: string;
+  model?: string;
+}
+
 export interface LlmRequestCompletionEvent {
   operation: "llm_request";
   operation_id: string;
-  status: InitCompletionStatus;
+  status: "success" | "failed" | "cancelled";
   result: LlmRequestResult;
+}
+
+export interface ToolExecutionResult {
+  success?: boolean;
+  duration_ms?: number;
+  error?: string | null;
 }
 
 export interface ToolExecutionCompletionEvent {
   operation: "tool_execution";
   operation_id: string;
-  status: InitCompletionStatus;
+  status: "success" | "failed" | "cancelled";
   result: ToolExecutionResult;
+}
+
+export interface UserRequestResult {
+  status?: string;
+  output?: unknown;
+  iterations?: number | null;
+  total_usage?: AggregatedUsageResult | null;
+  timing_stats?: TimingStatsResult | null;
+  tool_call_stats?: ToolCallStatsResult | null;
+  finish_reason?: string | null;
+  metadata?: Record<string, unknown> | null;
 }
 
 export interface UserRequestCompletionEvent {
   operation: "user_request";
   operation_id: string;
-  status: InitCompletionStatus;
+  status: "success" | "failed" | "cancelled";
   result: UserRequestResult;
+}
+
+export interface SubAgentResult {
+  agent_name?: string;
+  success?: boolean;
+  error?: string | null;
 }
 
 export interface SubAgentCompletionEvent {
   operation: "sub_agent";
   operation_id: string;
-  status: InitCompletionStatus;
+  status: "success" | "failed" | "cancelled";
   result: SubAgentResult;
+}
+
+export interface PersistenceResult {
+  records_written?: number;
+  duration_ms?: number;
 }
 
 export interface PersistenceCompletionEvent {
   operation: "persistence";
   operation_id: string;
-  status: InitCompletionStatus;
+  status: "success" | "failed" | "cancelled";
   result: PersistenceResult;
 }
 
@@ -692,6 +723,10 @@ export type TypedToolEventData =
 // Each interface narrows ToolEventPayload.data to its concrete type.
 // Use TypedToolEvent instead of the base ToolEventPayload when you need typed data.
 
+export interface ToolStartedData {
+  arguments?: Record<string, unknown>;
+}
+
 export interface ToolStartedToolEvent {
   event: "tool_started";
   call_id: string;
@@ -700,6 +735,11 @@ export interface ToolStartedToolEvent {
   message?: string | null;
   show_spinner?: boolean;
   data: ToolStartedData;
+}
+
+export interface ToolProgressData {
+  percent?: number | null;
+  metadata?: Record<string, unknown>;
 }
 
 export interface ToolProgressToolEvent {
@@ -712,6 +752,11 @@ export interface ToolProgressToolEvent {
   data: ToolProgressData;
 }
 
+export interface ToolStepData {
+  step: string;
+  metadata?: Record<string, unknown>;
+}
+
 export interface ToolStepToolEvent {
   event: "tool_step";
   call_id: string;
@@ -720,6 +765,10 @@ export interface ToolStepToolEvent {
   message?: string | null;
   show_spinner?: boolean;
   data: ToolStepData;
+}
+
+export interface ToolResultPreviewData {
+  preview: string;
 }
 
 export interface ToolResultPreviewToolEvent {
@@ -732,6 +781,10 @@ export interface ToolResultPreviewToolEvent {
   data: ToolResultPreviewData;
 }
 
+export interface ToolCompletedData {
+  result?: string | Record<string, unknown> | null;
+}
+
 export interface ToolCompletedToolEvent {
   event: "tool_completed";
   call_id: string;
@@ -742,6 +795,11 @@ export interface ToolCompletedToolEvent {
   data: ToolCompletedData;
 }
 
+export interface ToolErrorData {
+  error_type: string;
+  detail?: string | null;
+}
+
 export interface ToolErrorToolEvent {
   event: "tool_error";
   call_id: string;
@@ -750,6 +808,10 @@ export interface ToolErrorToolEvent {
   message?: string | null;
   show_spinner?: boolean;
   data: ToolErrorData;
+}
+
+export interface ToolDelegatedData {
+  arguments?: Record<string, unknown>;
 }
 
 export interface ToolDelegatedToolEvent {
@@ -1836,7 +1898,7 @@ export function isTypedRenderBlock(e: RenderBlockPayload): e is RenderBlockPaylo
 
 export interface TextPart {
   metadata?: Record<string, unknown>;
-  type: "text";
+  type?: "text";
   text?: string;
   id?: string;
   citations?: unknown[];
@@ -1844,7 +1906,7 @@ export interface TextPart {
 
 export interface ThinkingPart {
   metadata?: Record<string, unknown>;
-  type: "thinking";
+  type?: "thinking";
   text?: string;
   id?: string;
   provider?: "openai" | "anthropic" | "google" | "cerebras" | null;
@@ -1855,7 +1917,7 @@ export interface ThinkingPart {
 
 export interface ToolCallPart {
   metadata?: Record<string, unknown>;
-  type: "tool_call";
+  type?: "tool_call";
   id?: string;
   name?: string;
   arguments?: Record<string, unknown>;
@@ -1863,7 +1925,7 @@ export interface ToolCallPart {
 
 export interface ToolResultPart {
   metadata?: Record<string, unknown>;
-  type: "tool_result";
+  type?: "tool_result";
   call_id?: string;
   tool_use_id?: string;
   name?: string;
@@ -1874,8 +1936,8 @@ export interface ToolResultPart {
 
 export interface ImageMediaPart {
   metadata?: Record<string, unknown>;
-  type: "media";
-  kind: "image";
+  type?: "media";
+  kind?: "image";
   url?: string | null;
   file_uri?: string | null;
   mime_type?: string | null;
@@ -1883,8 +1945,8 @@ export interface ImageMediaPart {
 
 export interface AudioMediaPart {
   metadata?: Record<string, unknown>;
-  type: "media";
-  kind: "audio";
+  type?: "media";
+  kind?: "audio";
   url?: string | null;
   file_uri?: string | null;
   mime_type?: string | null;
@@ -1893,8 +1955,8 @@ export interface AudioMediaPart {
 
 export interface VideoMediaPart {
   metadata?: Record<string, unknown>;
-  type: "media";
-  kind: "video";
+  type?: "media";
+  kind?: "video";
   url?: string | null;
   file_uri?: string | null;
   mime_type?: string | null;
@@ -1902,8 +1964,8 @@ export interface VideoMediaPart {
 
 export interface DocumentMediaPart {
   metadata?: Record<string, unknown>;
-  type: "media";
-  kind: "document";
+  type?: "media";
+  kind?: "document";
   url?: string | null;
   file_uri?: string | null;
   mime_type?: string | null;
@@ -1911,29 +1973,29 @@ export interface DocumentMediaPart {
 
 export interface YouTubeMediaPart {
   metadata?: Record<string, unknown>;
-  type: "media";
-  kind: "youtube";
+  type?: "media";
+  kind?: "youtube";
   url: string;
   mime_type?: string | null;
 }
 
 export interface CodeExecPart {
   metadata?: Record<string, unknown>;
-  type: "code_exec";
+  type?: "code_exec";
   language?: string;
   code?: string;
 }
 
 export interface CodeResultPart {
   metadata?: Record<string, unknown>;
-  type: "code_result";
+  type?: "code_result";
   output?: string;
   outcome?: string;
 }
 
 export interface WebSearchPart {
   metadata?: Record<string, unknown>;
-  type: "web_search";
+  type?: "web_search";
   id?: string;
   status?: string;
 }
@@ -1948,7 +2010,7 @@ export interface PreFetchedUrl {
 
 export interface WebpageInputPart {
   metadata?: Record<string, unknown>;
-  type: "input_webpage";
+  type?: "input_webpage";
   urls?: string | PreFetchedUrl[];
   convert_to_text?: boolean;
   optional_context?: boolean;
@@ -1958,7 +2020,7 @@ export interface WebpageInputPart {
 
 export interface NotesInputPart {
   metadata?: Record<string, unknown>;
-  type: "input_notes";
+  type?: "input_notes";
   note_ids?: string[];
   template?: string;
   convert_to_text?: boolean;
@@ -1969,7 +2031,7 @@ export interface NotesInputPart {
 
 export interface TaskInputPart {
   metadata?: Record<string, unknown>;
-  type: "input_task";
+  type?: "input_task";
   task_ids?: string[];
   template?: string;
   convert_to_text?: boolean;
@@ -1980,7 +2042,7 @@ export interface TaskInputPart {
 
 export interface TableInputPart {
   metadata?: Record<string, unknown>;
-  type: "input_table";
+  type?: "input_table";
   bookmarks?: Record<string, unknown>[];
   convert_to_text?: boolean;
   optional_context?: boolean;
@@ -1990,7 +2052,7 @@ export interface TableInputPart {
 
 export interface ListInputPart {
   metadata?: Record<string, unknown>;
-  type: "input_list";
+  type?: "input_list";
   bookmarks?: Record<string, unknown>[];
   convert_to_text?: boolean;
   optional_context?: boolean;
@@ -2000,7 +2062,7 @@ export interface ListInputPart {
 
 export interface DataInputPart {
   metadata?: Record<string, unknown>;
-  type: "input_data";
+  type?: "input_data";
   refs?: Record<string, unknown>[];
   convert_to_text?: boolean;
   optional_context?: boolean;
@@ -2010,7 +2072,7 @@ export interface DataInputPart {
 
 export interface ContextInputPart {
   metadata?: Record<string, unknown>;
-  type: "input_context";
+  type?: "input_context";
   context_id?: string;
   context_name?: string;
   context_data?: Record<string, unknown>;

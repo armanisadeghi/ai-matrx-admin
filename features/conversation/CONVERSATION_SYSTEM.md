@@ -64,7 +64,6 @@ features/conversation/
 │   ├── UserMessage.tsx
 │   ├── MessageOptionsMenu.tsx
 │   ├── StreamingContentBlocks.tsx
-│   ├── ToolCallVisualization.tsx
 │   └── MessageErrorBoundary.tsx
 ├── hooks/                ← Adapter hooks (currently split across features/chat and features/prompts)
 │   ├── useSocketIoSessionAdapter.ts   (deprecated — for /chat transition)
@@ -80,9 +79,9 @@ features/conversation/
 │       └── loadConversationHistory.ts
 ├── index.ts              ← Barrel export for everything
 └── CONVERSATION_SYSTEM.md (this file)
-
-lib/tool-renderers/       ← Stays here (shared library, not feature-specific)
 ```
+
+> Tool-call rendering is delegated to `@/features/tool-call-visualization` — the shell component, renderer registry, dynamic renderers, and admin UI all live there. Conversation surfaces just import `ToolCallVisualization` and hand it a `ToolLifecycleEntry`.
 
 The `ConversationShell` requires only `sessionId`. The parent route must:
 1. Initialize the session: `dispatch(chatConversationsActions.startSession({ sessionId, agentId }))`
@@ -120,8 +119,7 @@ prompt-execution → usePromptExecutionAdapter → chatConversationsSlice[sessio
 | `AssistantMessage.tsx` | 3 content modes (pending/streaming/static), Cartesia TTS, ThumbsUp/Down, copy, edit, PDF export, HTML preview, tool calls | `MessageList` only |
 | `UserMessage.tsx` | XML resource parsing, `ResourcesContainer`, `AttachedResourcesDisplay`, 48px collapse, inline edit (no window.confirm) | `MessageList` only |
 | `MessageOptionsMenu.tsx` | 14-item auth-aware menu: copy variants, edit, HTML preview, email, print/PDF, tasks, scratch, notes, save file, audio, brokers | Lazy-loaded by `AssistantMessage` only |
-| `StreamingContentBlocks.tsx` | NDJSON normal-mode: `buildCanonicalBlocks` → interleaved `MarkdownStream` + `ToolCallVisualization` blocks | `AssistantMessage` only |
-| `ToolCallVisualization.tsx` | Tool call progress/results with registry lookup. **Already in production use.** | `AssistantMessage`, `StreamingContentBlocks`, and **`features/chat/components/response/assistant-message/stream/ChatStreamDisplay.tsx`** (production) |
+| `StreamingContentBlocks.tsx` | NDJSON normal-mode: `buildCanonicalBlocks` → interleaved `MarkdownStream` + `ToolCallVisualization` blocks (the shell is imported from `@/features/tool-call-visualization`) | `AssistantMessage` only |
 | `MessageErrorBoundary.tsx` | Class-based error boundary; amber warning card per message | `MessageList` only |
 | `index.ts` | Barrel export | N/A |
 
@@ -148,19 +146,9 @@ prompt-execution → usePromptExecutionAdapter → chatConversationsSlice[sessio
 | `usePromptExecutionAdapter.ts` | `features/prompts/hooks/` | Reads `promptExecution` slice (messages, streaming text, status), mirrors into `chatConversations` | Only by `usePromptBuilderAdapter` |
 | `usePromptBuilderAdapter.ts` | `features/prompts/hooks/` | Wraps `usePromptExecutionAdapter` for prompt builder context | **None** |
 
-### 3d. Tool Renderer Registry (at `lib/tool-renderers/` — stays here)
+### 3d. Tool Renderer Registry (delegated)
 
-| Location | Status | Notes |
-|----------|--------|-------|
-| `lib/tool-renderers/` | **Canonical** | `ToolCallVisualization` imports directly from here |
-| `features/chat/components/response/tool-renderers/` | **Deprecated shims** | Re-export stubs pointing to `lib/tool-renderers`. Do NOT delete until all consumers update their imports. |
-
-Shim consumers (still using old path):
-- `features/chat/components/response/assistant-message/stream/ChatStreamDisplay.tsx`
-- `components/mardown-display/chat-markdown/EnhancedChatMarkdown.tsx`
-- `app/(public)/demos/api-tests/tool-testing/components/ToolRendererPreview.tsx`
-- `components/admin/mcp-tools/ToolComponentPreview.tsx`
-- `components/admin/ToolUiComponentGenerator.tsx`
+Tool rendering is owned by `@/features/tool-call-visualization`. See `features/tool-call-visualization/FEATURE.md` for the renderer contract (`ToolRendererProps`, `ToolLifecycleEntry`), the static registry, and the dynamic/DB-stored renderer pipeline. Conversation components only import the `ToolCallVisualization` shell.
 
 ### 3e. Deprecated Legacy Files (tagged, still in production)
 
@@ -202,10 +190,10 @@ These are all non-generic dependencies the unified system relies on. They live o
 | Module | Location | Used by | What it provides |
 |--------|----------|---------|-----------------|
 | `buildCanonicalBlocks` | `lib/chat-protocol/index.ts` | `StreamingContentBlocks` | Converts `StreamEvent[]` into ordered `(text | tool_call)[]` blocks |
-| `toolCallBlockToLegacy` | `lib/chat-protocol/index.ts` | `StreamingContentBlocks`, `sendMessage` thunk | Converts `ToolCallBlock` to legacy tool update format for `ToolCallVisualization` |
 | `extractPersistableToolBlocks` | `lib/chat-protocol/index.ts` | `sendMessage` thunk | Extracts completed tool blocks for DB persistence |
-| `ToolCallBlock` type | `lib/chat-protocol/index.ts` | `StreamingContentBlocks` | Type definition |
-| `StreamEvent` type | `types/python-generated/stream-events.ts` | Everywhere streaming is handled | NDJSON event shape |
+| `ToolCallBlock` type | `lib/chat-protocol/index.ts` | `StreamingContentBlocks` | Type definition — mapped to `ToolLifecycleEntry` before being handed to `ToolCallVisualization` |
+| `ToolCallVisualization`, `ToolRendererProps` | `@/features/tool-call-visualization` | `StreamingContentBlocks`, `AssistantMessage` | Tool rendering shell and renderer contract |
+| `StreamEvent` / `ToolEventPayload` types | `types/python-generated/stream-events.ts` | Everywhere streaming is handled | NDJSON wire event shape |
 
 ### 4d. Hooks (used but not owned by this feature)
 
@@ -296,7 +284,6 @@ Each step is independent of the next **except ordering**. A step must pass tsc +
 
 - [x] Created `components/conversation/` with all UI components
 - [x] Created `lib/redux/chatConversations/` slice + thunks
-- [x] Created `lib/tool-renderers/` (moved from `features/chat`)
 - [x] Created adapter hooks (in wrong locations — see Step 1)
 - [x] Registered `chatConversations` in `rootReducer`
 - [x] All TypeScript errors in new files resolved
@@ -319,13 +306,12 @@ Each step is independent of the next **except ordering**. A step must pass tsc +
 - [ ] Move `features/prompts/hooks/usePromptExecutionAdapter.ts` → `features/conversation/hooks/`
 - [ ] Move `features/prompts/hooks/usePromptBuilderAdapter.ts` → `features/conversation/hooks/`
 - [ ] Update `lib/redux/rootReducer.ts` import path to `@/features/conversation/redux`
-- [ ] Update `features/chat/components/response/assistant-message/stream/ChatStreamDisplay.tsx` import from `@/components/conversation/ToolCallVisualization` to `@/features/conversation/components/ToolCallVisualization`
 - [ ] Update all internal cross-references within the moved files
 - [ ] Create `features/conversation/index.ts` barrel exporting all public API
 - [ ] Run `NODE_OPTIONS="--max-old-space-size=8192" npx tsc --noEmit` — zero new errors
 - [ ] Commit: `refactor: relocate conversation system to features/conversation/`
 
-**Verification:** `/chat` route still works (only production consumer of `ToolCallVisualization`)
+**Verification:** `/chat` route still works.
 
 ---
 
@@ -472,11 +458,6 @@ Same components as `/p/chat` (`ChatContext`, `ChatInputWithControls`, `MessageDi
 - [ ] Delete `features/chat/components/response/user-message/UserMessage.tsx`
 - [ ] Delete `features/public-chat/components/MessageDisplay.tsx` (after verifying no remaining imports)
 - [ ] Delete `features/public-chat/hooks/useAgentChat.ts` (after verifying `/p/chat` streaming works via `sendMessage` thunk)
-- [ ] Update shim consumers to import directly from `@/lib/tool-renderers` (remove shim dependency):
-  - `features/chat/components/response/assistant-message/stream/ChatStreamDisplay.tsx`
-  - `components/mardown-display/chat-markdown/EnhancedChatMarkdown.tsx`
-  - Demo and admin tool files
-- [ ] Delete `features/chat/components/response/tool-renderers/` shim directory
 - [ ] Run tsc — zero errors
 - [ ] Final commit: `feat: remove deprecated conversation UI legacy code`
 

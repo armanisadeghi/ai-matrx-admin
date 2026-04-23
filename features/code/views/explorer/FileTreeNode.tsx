@@ -124,7 +124,7 @@ export const FileTreeNode: React.FC<FileTreeNodeProps> = ({
               className="px-2 text-[11px] text-neutral-500"
               style={{ paddingLeft: 8 + (depth + 1) * 12 }}
             >
-              Loading\u2026
+              Loading…
             </div>
           )}
           {children?.map((child) => (

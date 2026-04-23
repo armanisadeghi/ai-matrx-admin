@@ -22,7 +22,7 @@ import type { Database } from "@/types/database.types";
 import type { FieldFlags } from "@/features/agents/redux/shared/field-flags";
 
 // ---------------------------------------------------------------------------
-// 1. Enums (backend contract — copied verbatim from cloud_files_frontend.md §7)
+// 1. Enums (backend contract — copied verbatim from cld_files_frontend.md §7)
 // ---------------------------------------------------------------------------
 
 export type Visibility = "public" | "private" | "shared";
@@ -37,27 +37,27 @@ export type GranteeType = "user" | "group";
 // These are the authoritative shapes for reads via supabase-js. Always use
 // these (not hand-rolled shapes) to track schema changes automatically.
 //
-// Note on table naming: The Python team's doc uses `cloud_file_share_links`
-// and `cloud_file_groups`. The actual DB tables are `cloud_share_links` and
-// `cloud_user_groups` / `cloud_user_group_members`. See PYTHON_TEAM_COMMS.md.
+// Note on table naming: The Python team's doc uses `cld_file_share_links`
+// and `cld_file_groups`. The actual DB tables are `cld_share_links` and
+// `cld_user_groups` / `cld_user_group_members`. See PYTHON_TEAM_COMMS.md.
 
 type CloudTables = Database["public"]["Tables"];
 
-export type CloudFileRow = CloudTables["cloud_files"]["Row"];
-export type CloudFileInsert = CloudTables["cloud_files"]["Insert"];
-export type CloudFileUpdate = CloudTables["cloud_files"]["Update"];
+export type CloudFileRow = CloudTables["cld_files"]["Row"];
+export type CloudFileInsert = CloudTables["cld_files"]["Insert"];
+export type CloudFileUpdate = CloudTables["cld_files"]["Update"];
 
-export type CloudFolderRow = CloudTables["cloud_folders"]["Row"];
-export type CloudFolderInsert = CloudTables["cloud_folders"]["Insert"];
-export type CloudFolderUpdate = CloudTables["cloud_folders"]["Update"];
+export type CloudFolderRow = CloudTables["cld_folders"]["Row"];
+export type CloudFolderInsert = CloudTables["cld_folders"]["Insert"];
+export type CloudFolderUpdate = CloudTables["cld_folders"]["Update"];
 
-export type CloudFileVersionRow = CloudTables["cloud_file_versions"]["Row"];
+export type CloudFileVersionRow = CloudTables["cld_file_versions"]["Row"];
 export type CloudFilePermissionRow =
-  CloudTables["cloud_file_permissions"]["Row"];
-export type CloudShareLinkRow = CloudTables["cloud_share_links"]["Row"];
-export type CloudUserGroupRow = CloudTables["cloud_user_groups"]["Row"];
+  CloudTables["cld_file_permissions"]["Row"];
+export type CloudShareLinkRow = CloudTables["cld_share_links"]["Row"];
+export type CloudUserGroupRow = CloudTables["cld_user_groups"]["Row"];
 export type CloudUserGroupMemberRow =
-  CloudTables["cloud_user_group_members"]["Row"];
+  CloudTables["cld_user_group_members"]["Row"];
 
 // ---------------------------------------------------------------------------
 // 3. API (REST) types — from Python OpenAPI schemas
@@ -170,7 +170,7 @@ export interface CloudUserGroupMember {
 }
 
 // ---------------------------------------------------------------------------
-// 5. Tree RPC types — cloud_get_user_file_tree
+// 5. Tree RPC types — cld_get_user_file_tree
 // ---------------------------------------------------------------------------
 //
 // The Supabase-generated type is `Json` — we hand-type the expected shape
@@ -467,7 +467,7 @@ export interface LedgerEntry {
 
 export type { BackendApiError } from "@/lib/api/errors";
 
-/** Files-specific error codes. Aligned with cloud_files_frontend.md §11. */
+/** Files-specific error codes. Aligned with cld_files_frontend.md §11. */
 export type CloudFilesErrorCode =
   | "invalid_request"
   | "invalid_metadata"
@@ -477,7 +477,7 @@ export type CloudFilesErrorCode =
   | "share_link_invalid"
   | "file_too_large"
   | "internal"
-  | "cloud_sync_unavailable";
+  | "cld_sync_unavailable";
 
 // ---------------------------------------------------------------------------
 // 13. Type guards

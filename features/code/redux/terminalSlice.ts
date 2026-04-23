@@ -9,6 +9,9 @@ export interface TerminalLine {
   exitCode?: number;
   cwd?: string;
   tab: BottomTabId;
+  /** Who originated this line — defaults to "user" when omitted. Agent-driven
+   *  runs are tagged "agent" so the UI can badge them. */
+  source?: "user" | "agent";
 }
 
 export interface CodeTerminalState {

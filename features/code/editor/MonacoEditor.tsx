@@ -84,7 +84,7 @@ export const MonacoEditor: React.FC<MonacoEditorProps> = ({
           (className ?? "")
         }
       >
-        Loading editor\u2026
+        Loading editor…
       </div>
     );
   }

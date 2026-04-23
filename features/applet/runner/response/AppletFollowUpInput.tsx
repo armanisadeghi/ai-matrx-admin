@@ -31,7 +31,6 @@ import { selectResolvedBaseUrl } from "@/lib/redux/slices/apiConfigSlice";
 import {
   addResponse,
   appendTextChunk,
-  appendRawToolEvent,
   updateErrorResponse,
   markResponseEnd,
 } from "@/lib/redux/socket-io/slices/socketResponseSlice";
@@ -44,7 +43,6 @@ import {
 import type {
   ChunkPayload,
   ErrorPayload,
-  TypedStreamEvent,
 } from "@/types/python-generated/stream-events";
 
 export interface FollowUpTurn {
@@ -146,12 +144,6 @@ export default function AppletFollowUpInput({
             break;
           }
           case "tool_event":
-            dispatch(
-              appendRawToolEvent({
-                listenerId,
-                event: event as TypedStreamEvent,
-              }),
-            );
             break;
           case "error": {
             const errData = event.data as unknown as ErrorPayload;

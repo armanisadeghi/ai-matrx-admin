@@ -3,7 +3,7 @@
  *
  * Grant / revoke permissions on files and folders.
  *
- * Backend contract: features/files/cloud_files_frontend.md §6 (Permissions).
+ * Backend contract: features/files/cld_files_frontend.md §6 (Permissions).
  */
 
 import {
@@ -13,10 +13,7 @@ import {
   type RequestOptions,
   type ResponseMeta,
 } from "./client";
-import type {
-  CloudFilePermissionRow,
-  GrantPermissionRequest,
-} from "../types";
+import type { CloudFilePermissionRow, GrantPermissionRequest } from "../types";
 
 // ---------------------------------------------------------------------------
 // File permissions

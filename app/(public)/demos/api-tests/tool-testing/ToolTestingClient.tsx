@@ -43,7 +43,7 @@ import type {
   ToolStreamEvent,
   FinalPayload,
   ExecutionStatus,
-} from "./types";
+} from "@/features/tool-call-visualization/testing/types";
 
 export default function ToolTestingClient() {
   // ─── Server selection (local vs production) ─────────────────────────────

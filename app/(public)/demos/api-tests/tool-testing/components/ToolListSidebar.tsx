@@ -15,7 +15,7 @@ import {
   Package,
   type LucideIcon,
 } from 'lucide-react';
-import type { ToolDefinition } from '../types';
+import type { ToolDefinition } from '@/features/tool-call-visualization/testing/types';
 import { filterAndSortBySearch } from '@/utils/search-scoring';
 
 const CATEGORY_ICONS: Record<string, LucideIcon> = {

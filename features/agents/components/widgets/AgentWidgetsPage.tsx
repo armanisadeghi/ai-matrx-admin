@@ -14,7 +14,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import * as LucideIcons from "lucide-react";
+import { DynamicIcon } from "@/components/official/icons/IconResolver";
 import { Loader2, TestTube, ChevronDown, Rocket } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { fetchAgentExecutionMinimal } from "@/features/agents/redux/agent-definition/thunks";
@@ -201,7 +201,7 @@ export function AgentWidgetsPage({
     .filter((m) => m !== "direct" && m !== "background")
     .map((displayMode) => {
       const meta = getDisplayMeta(displayMode);
-      const IconComponent = (LucideIcons as any)[meta.icon];
+      const IconComponent = (props: any) => <DynamicIcon name={meta.icon} {...props} />;
       return {
         name: meta.label,
         icon: IconComponent,

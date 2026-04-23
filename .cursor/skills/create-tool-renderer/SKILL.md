@@ -1,461 +1,299 @@
 ---
 name: create-tool-renderer
-description: Create custom MCP tool result displays for the chat interface. Builds both inline (chat-stream preview) and overlay (full-screen modal) components with proper registry integration. Use when the user wants to add a new tool visualization, create a tool renderer, display tool results in chat, or mentions creating components for MCP tool output.
+description: Create custom MCP tool result displays for the chat interface. Builds both inline (chat-stream preview) and overlay (full-screen modal) components that consume the canonical ToolLifecycleEntry, with proper registry integration. Use when the user wants to add a new hardcoded tool visualization, create a tool renderer, display tool results in chat, or mentions creating components for MCP tool output.
 ---
 
-# Create Tool Renderer
+# Create Tool Renderer (Hardcoded)
 
-Build custom visualizations for MCP tool results in the AI Matrx chat interface. Given a tool name and example output data, create production-ready inline + overlay components.
+Build a custom, hand-authored visualization for an MCP tool in the AI Matrx chat interface. Given a tool name and example data, produce production-ready inline + optional overlay components and register them.
+
+This skill covers **hardcoded** (in-repo) renderers only. DB-stored dynamic renderers live in `features/tool-call-visualization/dynamic/` and are authored through the admin UI at `/administration/mcp-tools/[toolId]/ui` using the generator prompt at `features/tool-call-visualization/admin/tool-ui-generator-prompt.ts` — not through this skill.
 
 ## Cardinal Rule: HIDE ABSOLUTELY NOTHING
 
-Every piece of data received from a tool call MUST be displayed to the user. This is non-negotiable.
+Every piece of data in the tool result MUST surface somewhere in the UI.
 
-- If data arrives, it MUST appear somewhere in the UI — inline preview AND full overlay.
-- This is NOT about only showing what looks pretty. It's about showing ALL data in the prettiest way possible.
-- The inline component gives users the most important information at a glance so they rarely need to open the modal.
-- The overlay modal provides EVERYTHING — every field, every nested object, every source, every metadata value.
-- Never truncate data in the overlay Results tab without an expand mechanism. Truncation in inline is acceptable with "View all" to the overlay.
+- Inline: key information at a glance so users rarely need to open the overlay. Truncation here is OK if there is a "View all" button to the overlay.
+- Overlay: every field, every nested object, every source, every metadata value. Long text collapses with "Show more" — it is never omitted.
 - If a field exists in the data, it gets rendered. Period.
 
 ## Prerequisites
 
 The user must provide:
-1. **Tool name** — the exact `mcp_input.name` string (e.g., `"web_search_v1"`)
-2. **Example output data** — a sample of tool updates so you can type the data and build the UI
+1. **Tool name** — the exact backend tool name, matching `entry.toolName` (e.g. `"news_get_headlines"`).
+2. **Example output data** — sample wire events or a captured `ToolLifecycleEntry` so the renderer can be typed and built.
 
-## System Architecture
+## Canonical contract
 
-```
-features/chat/components/response/tool-renderers/
-├── types.ts              # ToolRendererProps, ToolRenderer interfaces
-├── registry.tsx          # Tool registry + helper functions
-├── index.ts              # Barrel exports
-├── GenericRenderer.tsx   # Fallback for unregistered tools
-└── {tool-name}/          # One directory per custom tool
-    ├── {Tool}Inline.tsx  # Required: compact chat-stream display
-    ├── {Tool}Overlay.tsx # Required: full-screen modal display
-    └── index.ts          # Barrel exports
-```
+Every renderer is a React component with these props (from `@/features/tool-call-visualization/types`):
 
-The system wraps every overlay renderer in a `ToolGroupTab` that provides:
-- A blue gradient header bar with tool name, subtitle, result count
-- A toggle icon to switch between **Results**, **Input**, and **Raw** views
-- Support for custom header subtitle and extras via registry functions
-- **CRITICAL: Overlay renderers must NEVER render their own header or summary banner**
-
-If your tool needs to show summary stats (e.g., "3 Passed, 2 Need Attention") or other contextual info in the header, use `getHeaderExtras` in the registry entry — NOT a custom header inside the overlay component.
-
-## Data Shape
-
-Every tool update is a `ToolCallObject`:
-
-```typescript
-interface ToolCallObject {
-    id?: string;
-    type: "mcp_input" | "mcp_output" | "mcp_error" | "step_data" | "user_message";
-    mcp_input?: { name: string; arguments: Record<string, any> };
-    mcp_output?: Record<string, unknown>;
-    mcp_error?: string;
-    step_data?: { type: string; [key: string]: any };
-    user_message?: string;
-}
-```
-
-Your components receive `toolUpdates: ToolCallObject[]` scoped to one tool call group.
-
-### Data Comes in Many Formats
-
-Tool output is NOT always JSON. Data arrives in multiple formats and your parser must handle all of them:
-
-- **JSON objects/arrays** — standard `mcp_output.result` as parsed JSON
-- **Structured text with XML-like tags** — e.g., `<read_result>`, `<search_result>`, `<title>` tags embedded in string output
-- **Markdown with headers** — `###` headers, `**bold**` labels, `*` bullet lists used as semantic structure
-- **Delimited text blocks** — `---` separators, `Title: ...` / `Url: ...` / `Description: ...` key-value patterns
-- **Mixed formats** — JSON output containing markdown strings containing XML-like tags
-
-Your parser function must:
-1. Check if `mcp_output.result` is a string or object
-2. If string: look for known structural patterns (XML tags, markdown headers, key-value blocks, delimiters)
-3. Extract ALL data points — never skip a field because it's hard to parse
-4. Handle `step_data` updates (status changes, summaries, intermediate results)
-5. Handle `user_message` updates (browsing URLs, status messages)
-
-## The Three Modal Tabs
-
-The overlay modal provides three tabs automatically. Understand what each must contain:
-
-### Results Tab (your overlay component)
-This is where your custom overlay renderer lives. It MUST display:
-- **Every data point** from the tool output, organized beautifully
-- **All metadata** — dates, sources, URLs, counts, statuses
-- **All nested data** — expand sections, collapsible cards, tabbed views for sub-categories
-- **All supplementary data** — additional sources, related items, previews, content excerpts
-- View mode toggles, filters, search, and sorting when data volume warrants it
-- Copy functionality for individual sections and full export
-
-### Input Tab (automatic)
-Shows the tool's input arguments. Provided by the system — no action needed.
-
-### Raw Tab (automatic)
-Shows ALL `ToolCallObject` entries as a JSON list. Provided by the system — no action needed. However, raw JSON alone is NOT sufficient for data display — the Results tab must present the same data in a structured, readable format.
-
-## Step-by-Step Workflow
-
-### 1. Create the directory
-
-```
-features/chat/components/response/tool-renderers/{tool-name}/
-```
-
-Use kebab-case for the directory name.
-
-### 2. Analyze and Type ALL Data
-
-Study the example output thoroughly. Type EVERY field, including:
-- Nested objects and arrays
-- Optional fields that may or may not appear
-- String fields that contain structured text (markdown, XML tags, key-value pairs)
-- Metadata like dates, counts, status fields, URLs
-
-Put interfaces at the top of each component file or extract to a shared types file if complex.
-
-### 3. Build a Comprehensive Parser
-
-Create a parser function that extracts ALL data from `toolUpdates`. This is the foundation — if the parser misses data, the UI can never show it.
-
-```typescript
-function parseToolData(updates: ToolCallObject[]): ParsedToolData {
-    const inputUpdate = updates.find((u) => u.type === "mcp_input");
-    const outputUpdate = updates.find((u) => u.type === "mcp_output");
-    const stepDataUpdates = updates.filter((u) => u.type === "step_data");
-    const visibleMessages = updates.filter((u) => u.type === "user_message");
-    const errorUpdate = updates.find((u) => u.type === "mcp_error");
-
-    // Extract from mcp_input
-    const args = inputUpdate?.mcp_input?.arguments ?? {};
-
-    // Extract from mcp_output — handle string vs object
-    const rawResult = outputUpdate?.mcp_output?.result;
-    const resultText = typeof rawResult === "string" ? rawResult
-        : rawResult != null ? JSON.stringify(rawResult) : "";
-    const resultObject = typeof rawResult === "object" ? rawResult : null;
-
-    // Extract from step_data (intermediate results, summaries, status)
-    // Extract from user_message (browsing URLs, progress updates)
-    // Parse structured text if result is a string with known patterns
-
-    return { /* ALL extracted data */ };
-}
-```
-
-### 4. Create the Inline Renderer
-
-**File:** `{tool-name}/{Tool}Inline.tsx`
-
-The inline component renders in the chat stream inside a collapsible accordion. It should give users MOST of what they need without opening the modal.
-
-**Rules:**
-- Always add `"use client";` directive
-- Implement `ToolRendererProps` from `../types`
-- Destructure `toolGroupId = "default"` from props
-- Show the most valuable data upfront — not just 3 items, but the key information the user cares about
-- Use `currentIndex` for progressive reveal: `toolUpdates.slice(0, currentIndex + 1)`
-- Use staggered `animationDelay` with `animate-in fade-in` classes for smooth reveal
-- Always use `e.stopPropagation()` on click handlers (parent is an accordion toggle)
-- Handle missing images with `onError` fallbacks
-- Use responsive grids: `grid-cols-1 md:grid-cols-2 lg:grid-cols-3`
-
-**What the inline MUST show:**
-- A clear status indicator (loading, complete, error)
-- The most important summary/preview of results
-- Key metrics or counts (e.g., "4 Queries, 12 Deep Reads, 48 Additional Sources")
-- A preview of the primary content (analysis excerpt, top results, key findings)
-- A preview of secondary content (first few source cards, top items)
-- Count of remaining items not shown inline
-- A prominent "View full results" button to the overlay
-
-**Standard "View all" button pattern:**
 ```tsx
-{isComplete && onOpenOverlay && (
-    <button
-        onClick={(e) => {
-            e.stopPropagation();
-            onOpenOverlay(`tool-group-${toolGroupId}`);
-        }}
-        className="w-full py-2.5 px-4 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer animate-in fade-in slide-in-from-bottom"
-    >
-        View complete results
-    </button>
+interface ToolRendererProps {
+  entry: ToolLifecycleEntry;
+  events?: ToolEventPayload[];
+  onOpenOverlay?: (initialTab?: string) => void;
+  toolGroupId?: string;
+  isPersisted?: boolean;
+}
+```
+
+### `entry: ToolLifecycleEntry` — primary data source
+
+From `@/features/agents/types/request.types`:
+
+| Field | Meaning |
+|---|---|
+| `callId` | Unique tool invocation id. |
+| `toolName` | Backend tool name. |
+| `status` | `"started" \| "progress" \| "step" \| "result_preview" \| "completed" \| "error"`. |
+| `arguments` | `Record<string, unknown>` — input args sent to the tool. |
+| `startedAt` / `completedAt` | ISO timestamps. |
+| `latestMessage` | Most recent human-readable progress line. |
+| `latestData` | Most recent raw payload (tool-specific). |
+| `result` | Final output (object, string, or null). |
+| `resultPreview` | Short server-sent preview snippet. |
+| `errorType` / `errorMessage` | Populated when `status === "error"`. |
+| `isDelegated` | True for delegated/sub-agent calls. |
+| `events` | The raw `ToolEventPayload[]` for this call, in server order. |
+
+Terminal state: `status === "completed" || status === "error"`.
+
+### `events: ToolEventPayload[]` — optional raw log
+
+Same content as `entry.events`, but passed through as a prop so renderers that rely on per-step data (Brave search step tiles, deep-research read blocks) can consume it without re-extracting. Use this only when the inline summary needs information that isn't flattened into `entry.*`.
+
+### `onOpenOverlay`, `toolGroupId`, `isPersisted`
+
+- `onOpenOverlay(tabId?)` — open the fullscreen overlay, optionally selecting a tab. Tab ids follow `tool-group-${callId}`.
+- `toolGroupId` — mirrors `entry.callId`; use it when calling `onOpenOverlay`.
+- `isPersisted` — true when rendering a DB-loaded snapshot rather than a live stream. Prefer a compact read-only layout in this mode.
+
+## Shared helpers
+
+Import from `@/features/tool-call-visualization/renderers/_shared`:
+
+```ts
+collectMessages(events)      // string[] of all non-empty `message` fields
+filterStepEvents(events, step?)  // tool_step events, optionally filtered by step name
+getArg<T>(entry, key)        // typed getter for entry.arguments[key]
+resultAsObject(entry)        // parses entry.result (handles JSON strings) → object or null
+resultAsString(entry)        // stringifies entry.result for text search / regex
+isTerminal(entry)            // status === "completed" || "error"
+isSuccess(entry)             // status === "completed"
+```
+
+Use these instead of re-implementing extraction logic.
+
+## Overlay shell
+
+The feature wraps every overlay renderer in a `ToolGroupTab` that provides:
+
+- A gradient header bar with tool name, subtitle, result count
+- A toggle between **Results**, **Input**, and **Raw** views
+- Support for custom header subtitle/extras via the registry entry
+
+**CRITICAL:** your overlay component renders inside the Results tab only. It must not render its own header, title banner, or summary strip. Use `getHeaderSubtitle` / `getHeaderExtras` in the registry entry for anything that belongs in the header.
+
+## File layout
+
+```
+features/tool-call-visualization/renderers/<kebab-tool-name>/
+├── <Tool>Inline.tsx    # required
+├── <Tool>Overlay.tsx   # optional — defaults to Inline when missing
+└── index.ts            # barrel
+```
+
+Directory name is kebab-case. Component names are PascalCase and end in `Inline` / `Overlay`.
+
+## Step-by-step
+
+### 1. Create the directory and type the data
+
+Analyze the example output. Type every field, including nested objects, optional fields, string fields that contain structured markdown/XML, and metadata. Put interfaces at the top of the file or in a local `types.ts` if they're shared between inline and overlay.
+
+### 2. Write the inline renderer
+
+`<Tool>Inline.tsx` — renders inside the chat stream, typically in a collapsible accordion.
+
+Rules:
+- `"use client";` directive.
+- Implement `ToolRendererProps` from `@/features/tool-call-visualization/types`.
+- Read `entry.status` for state — do not infer state from array shape. A running tool with no result is valid (`status === "started" | "progress" | "step" | "result_preview"`); show a spinner.
+- For event-driven tools, pass `events` through shared helpers rather than walking them manually.
+- Click handlers inside the accordion must call `e.stopPropagation()` (the accordion header also takes clicks).
+- Handle missing images with `onError` fallbacks.
+- Responsive grids: `grid-cols-1 md:grid-cols-2 lg:grid-cols-3`.
+
+Standard "View all" button:
+
+```tsx
+{isTerminal(entry) && onOpenOverlay && (
+  <button
+    onClick={(e) => {
+      e.stopPropagation();
+      onOpenOverlay(`tool-group-${toolGroupId ?? entry.callId}`);
+    }}
+    className="w-full py-2.5 px-4 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer animate-in fade-in slide-in-from-bottom"
+  >
+    View complete results
+  </button>
 )}
 ```
 
-### 5. Create the Overlay Renderer
+What the inline MUST show:
+- A status indicator (loading / complete / error).
+- The most important summary/preview of results.
+- Key metrics or counts.
+- A preview of primary content (analysis excerpt, top results).
+- A preview of secondary content (first few source cards).
+- Count of remaining items not shown inline.
+- "View complete results" button when terminal.
 
-**File:** `{tool-name}/{Tool}Overlay.tsx`
+### 3. Write the overlay renderer (when needed)
 
-The overlay component renders inside the full-screen modal's Results tab. This is where ALL data lives.
+`<Tool>Overlay.tsx` — renders inside the fullscreen modal's Results tab. This is where ALL data lives.
 
-**Rules:**
-- Always add `"use client";` directive
-- Implement `ToolRendererProps` from `../types`
-- **CRITICAL: Do NOT render any header, title banner, or summary section** — the system provides a blue gradient header automatically via `ToolGroupTab`.
-- Extract data with `useMemo` keyed on `[toolUpdates]`
-- Always provide dark mode variants (`dark:` classes) — but prefer semantic color variables (see Styling below)
-- Handle empty states with an icon + message
-- Wrap content in `<div className="p-6 space-y-6 bg-background">` or similar
-- Start directly with actionable content — no decorative headers
+Rules:
+- `"use client";`.
+- Implement `ToolRendererProps`.
+- Do **not** render a header/title strip — use registry `getHeaderSubtitle` / `getHeaderExtras`.
+- Compute the parsed view with `useMemo` keyed on `[entry, events]`.
+- Wrap content in `<div className="p-6 space-y-6 bg-background">`.
+- Use semantic color variables (`bg-card`, `text-foreground`, `border-border`, `text-primary`, `text-destructive`, …) — they already handle dark mode.
+- Empty states: icon + message.
 
-**What the overlay MUST show — EVERY piece of data:**
-- All input parameters (queries, instructions, URLs, configurations)
-- All intermediate data (browsing progress, step statuses, summaries)
-- All primary output (analysis, results, content)
-- All secondary output (additional sources with full descriptions AND content previews)
-- All metadata (dates, domains, counts, categories, tags)
-- Full text of all content — use collapsible sections for long text, never omit
+Required UX features for data-rich overlays:
+- View mode toggles (e.g. Analysis / Sources / Full Text).
+- Per-section and full-export copy buttons.
+- Collapsible sections for long text (`Show more` / `Show less` — never omit).
+- Search / filter when >10 items.
+- Sort when items have sortable attributes.
+- External links always `target="_blank" rel="noopener noreferrer"` with Lucide `ExternalLink`.
 
-**Required UX features for data-rich overlays:**
-- **View mode toggles** — e.g., Analysis / Sources / Full Text
-- **Copy buttons** — per-section copy AND full export copy
-- **Collapsible sections** — for long text, show truncated with "Show more"/"Show less"
-- **Search/filter** — when more than ~10 items exist
-- **Sort options** — when items have sortable attributes (date, relevance)
-- **External links** — always `target="_blank" rel="noopener noreferrer"` with `ExternalLink` icon
+### 4. Barrel
 
-### 6. Create barrel export
+`<tool-name>/index.ts`:
 
-**File:** `{tool-name}/index.ts`
-
-```tsx
-export { {Tool}Inline } from "./{Tool}Inline";
-export { {Tool}Overlay } from "./{Tool}Overlay";
+```ts
+export { ToolInline } from "./ToolInline";
+export { ToolOverlay } from "./ToolOverlay"; // omit if no overlay
 ```
 
-### 7. Register in the registry
+### 5. Register
 
-**File:** `features/chat/components/response/tool-renderers/registry.tsx`
-
-Add import at the top, then add entry to `toolRendererRegistry`:
+Open `features/tool-call-visualization/registry/registry.tsx`, add an import, and add an entry to `toolRendererRegistry`:
 
 ```tsx
-import { {Tool}Inline, {Tool}Overlay } from "./{tool-name}";
+import { ToolInline, ToolOverlay } from "../renderers/<tool-name>";
 
-// Inside toolRendererRegistry:
-"{exact_mcp_input_name}": {
-    displayName: "Human Readable Name",
-    resultsLabel: "Short Results Label",
-    inline: {Tool}Inline,
-    overlay: {Tool}Overlay,
-    keepExpandedOnStream: true,
+// inside toolRendererRegistry:
+"<exact_tool_name>": {
+  toolName: "<exact_tool_name>",
+  displayName: "Human Readable Name",
+  resultsLabel: "Short Results Label",
+  InlineComponent: ToolInline,
+  OverlayComponent: ToolOverlay,    // optional — falls back to InlineComponent
+  keepExpandedOnStream: true,       // optional — keep accordion open during streaming
+  getHeaderSubtitle: (entry) => {
+    const query = getArg<string>(entry, "query");
+    return typeof query === "string" && query ? query : null;
+  },
+  getHeaderExtras: (entry, events) => {
+    // return JSX to render in the overlay header (badges, counters, etc.)
+    return null;
+  },
 },
 ```
 
-#### Registry Header Customization
+`registerToolRenderer(toolName, renderer)` exists on the same module for runtime registration, but prefer the static `toolRendererRegistry` object for hardcoded tools so the registry is greppable.
 
-The universal blue gradient header auto-detects a subtitle from input args and result counts. If your tool needs a **custom subtitle** or **extra content** in the header, use these optional registry fields:
+### 6. Verify
 
-```tsx
-"{exact_mcp_input_name}": {
-    displayName: "Human Readable Name",
-    resultsLabel: "Short Results Label",
-    inline: {Tool}Inline,
-    overlay: {Tool}Overlay,
-    keepExpandedOnStream: true,
+- [ ] Inline shows meaningful preview data without opening the overlay.
+- [ ] `entry.status` drives the loading/complete/error UI — not array position.
+- [ ] "View complete results" button opens the correct tab.
+- [ ] Overlay Results tab shows ALL data.
+- [ ] Overlay does **not** render its own header.
+- [ ] Registry `getHeaderSubtitle` / `getHeaderExtras` used for anything that belongs in the header.
+- [ ] Dark mode works through semantic color variables.
+- [ ] Empty states handled.
+- [ ] No lint errors.
 
-    getHeaderSubtitle: (toolUpdates) => {
-        // Return a custom string, or null for default behavior
-        return "Custom subtitle text";
-    },
+## Loading states for long-running tools
 
-    getHeaderExtras: (toolUpdates) => {
-        // Return JSX rendered inside the blue gradient header
-        return (
-            <div className="flex items-center gap-3 text-white/90 text-xs mt-1">
-                <span>4 Queries</span>
-                <span>12 Deep Reads</span>
-            </div>
-        );
-    },
-},
-```
+Generic spinners are not acceptable. Drive loading UI from real data whenever possible:
 
-### 8. Add to barrel exports
+1. **Progressive status messages** from `entry.latestMessage` — the backend pushes human-readable progress lines. Display them directly.
+2. **Step-driven progress** via `filterStepEvents(events, stepName)` — render per-step cards with metadata as it arrives.
+3. **Per-item progress** when processing multiple items (URLs, queries): show each item as a card with its own phase and a completion checkmark.
+4. **Aggregate waiting indicator** after individual items complete — cycle through realistic phase descriptions (3–7s random intervals) while waiting for the final result.
+5. **Browsing / activity indicators** for URL-visiting tools — favicon + domain chips with pulsing active state.
 
-**File:** `features/chat/components/response/tool-renderers/index.ts`
+See `features/tool-call-visualization/renderers/web-research/WebResearchInline.tsx` for the gold-standard implementation.
 
-Add: `export * from "./{tool-name}";`
+## Styling
 
-### 9. Verify
-
-- [ ] Inline shows meaningful preview data in the chat stream
-- [ ] Inline shows key metrics, status, and content preview without opening the modal
-- [ ] "View all" button opens the correct modal tab
-- [ ] Overlay Results tab shows ALL data — nothing omitted
-- [ ] Overlay has view modes, copy buttons, collapsible sections as needed
-- [ ] If using `getHeaderExtras`, verify extras appear in the blue header
-- [ ] Dark mode looks correct using semantic color variables
-- [ ] Empty states handled with icon + message
-- [ ] No lint errors
-
-## Loading States for Long-Running Tools
-
-When a tool is long-running (web research, deep analysis, multi-step processes), loading states MUST reflect reality. Generic spinners are NOT acceptable.
-
-### Required Loading Patterns
-
-**1. Progressive status messages** — cycle through realistic phase descriptions:
-```typescript
-const PHASES = [
-    "Scraping page content...",
-    "Reading page content...",
-    "Sending to research agent...",
-    "Summarizing findings...",
-] as const;
-```
-Use randomized durations (3-7s per phase) for natural, non-robotic timing.
-
-**2. Per-item progress cards** — when processing multiple items (URLs, queries):
-- Show each item as a card with its own phase progression
-- Use staggered `animationDelay` for natural appearance
-- Show completion state (checkmark) when an item finishes
-- Active items show pulsing dots or spinner
-
-**3. Aggregate waiting indicator** — after individual items complete:
-- Show a summary "brain" indicator with messages like "Comparing sources...", "Putting it all together..."
-- Use `user_message` updates to drive real status when available
-- Fall back to timed phases only when no real status is streaming
-
-**4. Step data awareness** — use `step_data` updates for real progress:
-```typescript
-const isSummarizing = updates.some(
-    (u) => u.type === "step_data" && u.step_data?.status === "summarizing"
-);
-```
-
-**5. Browsing/activity indicators** — when URLs are being visited:
-- Show favicon + domain for each URL
-- Show active processing state with pulsing animation
-- Transition to completed state as results arrive
-
-See `WebResearchInline.tsx` for the gold-standard implementation of all five patterns.
-
-## Styling Standards
-
-### Color System — USE PROJECT VARIABLES
-
-**CRITICAL:** Use semantic Tailwind color variables defined in `globals.css`. Never hardcode hex/HSL values or use generic Tailwind colors like `blue-500` or `slate-800` unless you have a specific reason.
-
-**Required color classes:**
+Use semantic Tailwind color variables from `globals.css`. Do not hardcode hex/HSL or use generic shades like `blue-500`.
 
 | Purpose | Class |
-|---------|-------|
+|---|---|
 | Primary actions, links, active states | `text-primary`, `bg-primary`, `border-primary` |
-| Primary on colored bg | `text-primary-foreground` |
+| On-primary text | `text-primary-foreground` |
 | Body text | `text-foreground` |
-| Secondary text, labels | `text-muted-foreground` |
+| Secondary / labels | `text-muted-foreground` |
 | Card backgrounds | `bg-card` |
 | Page background | `bg-background` |
 | Subtle backgrounds | `bg-muted`, `bg-accent` |
 | Borders | `border-border` |
-| Success states | `text-success`, `bg-success` |
-| Warning states | `text-warning`, `bg-warning` |
-| Error states | `text-destructive`, `bg-destructive` |
-| Info states | `text-info`, `bg-info` |
+| Success / warning / error / info | `text-success` / `text-warning` / `text-destructive` / `text-info` |
 
-**Opacity modifiers for subtle effects:**
-- `bg-primary/5` — very subtle primary tint for backgrounds
-- `bg-primary/10` — light primary tint for badges, tags
-- `border-primary/20` — subtle primary border for active items
-- `text-foreground/80` — slightly muted body text
+Opacity modifiers: `bg-primary/5`, `bg-primary/10`, `border-primary/20`, `text-foreground/80`.
 
-**Dark mode:** The semantic variables auto-switch for dark mode. Only add explicit `dark:` overrides for special cases. For example: `bg-card` already handles light/dark — no need for `dark:bg-slate-800`.
+Other conventions:
+- Icons: Lucide React only.
+- Cards: `bg-card rounded-lg border border-border`.
+- Hover: `hover:border-primary/30 transition-colors`.
+- Badges: `@/components/ui/badge`.
+- Buttons: `@/components/ui/button`.
+- Markdown rendering: `@/components/mardown-display/chat-markdown/BasicMarkdownContent`.
 
-### Component Library
+Animation classes with staggered delays for lists:
 
-- **Icons:** Lucide React only
-- **Spacing:** `space-y-3` for inline, `space-y-4` or `space-y-6` for overlay
-- **Cards:** `bg-card rounded-lg border border-border`
-- **Hover states:** `hover:border-primary/30 transition-colors`
-- **Badges:** `@/components/ui/badge` — `<Badge variant="default">`
-- **Buttons:** `@/components/ui/button` — `<Button variant="outline" size="sm">`
-- **External links:** Always `target="_blank" rel="noopener noreferrer"` with `ExternalLink` icon
-- **Markdown rendering:** `@/components/mardown-display/chat-markdown/BasicMarkdownContent` for rich text
-
-### Animation Classes
-
-```
-animate-in fade-in slide-in-from-left    — for items entering from the left
-animate-in fade-in slide-in-from-bottom  — for items entering from below
-```
-
-Use staggered delays:
 ```tsx
 style={{
-    animationDelay: `${index * 80}ms`,
-    animationDuration: "300ms",
-    animationFillMode: "backwards",
+  animationDelay: `${index * 80}ms`,
+  animationDuration: "300ms",
+  animationFillMode: "backwards",
 }}
+className="animate-in fade-in slide-in-from-bottom"
 ```
 
-## Reference Example
+## Reference examples
 
-**Best example to study:** The Web Research tool renderer — it handles the most complex data format (JSON + structured text + XML-like patterns + browsing progress).
+| Tool | Folder |
+|---|---|
+| Deep research (event log + steps) | `features/tool-call-visualization/renderers/web-research/` |
+| News headlines (clean `entry.result` only) | `features/tool-call-visualization/renderers/news-api/` |
+| Brave search (pure step-event driven) | `features/tool-call-visualization/renderers/brave-search/` |
+| SEO meta tags (header extras) | `features/tool-call-visualization/renderers/seo-meta-tags/` |
 
-| File | Path |
-|------|------|
-| Inline | `features/chat/components/response/tool-renderers/web-research/WebResearchInline.tsx` |
-| Overlay | `features/chat/components/response/tool-renderers/web-research/WebResearchOverlay.tsx` |
-| Barrel | `features/chat/components/response/tool-renderers/web-research/index.ts` |
-| Registry entry | `registry.tsx` — key `"web_search_v1"` |
+Read the registry entry for whichever example matches your tool shape most closely before writing code.
 
-**What makes it excellent:**
+## Testing
 
-*Inline:*
-- Progressive loading with per-page phase cards and per-phase status messages
-- Realistic timing with randomized durations (not robotic intervals)
-- Query badge pills shown during streaming
-- Status bar that transitions: loading -> analyzing -> complete with stats
-- Browsing progress cards with favicons, domains, and real-time phase indicators
-- Waiting indicator after all pages process with cycling brain messages
-- AI analysis preview (truncated to ~400 chars)
-- Top 3 source preview cards with favicons, dates, descriptions
-- "+N more sources" indicator
-- Prominent "View complete research report" button with full stat line
+- Live harness: `/demos/api-tests/tool-testing` — fires real tool calls against the backend and renders the results through the registry.
+- Fixtures and preview components: `features/tool-call-visualization/testing/` (e.g. `ToolRendererPreview.tsx`, `stream-processing/`) — drop captured events in to render the renderer in isolation without a live backend.
 
-*Overlay:*
-- Three view modes: Analysis / Sources / Full Text (raw export)
-- Search queries shown as badge pills with copy button
-- Agent-to-agent instructions shown in full when present
-- Pages Read section with favicon chips for every URL visited
-- Full AI analysis rendered as markdown, split into section cards when headers are found
-- ALL additional sources shown as rich cards with: title, domain, date, description, content preview (collapsible)
-- Per-section and per-source copy buttons
-- Full text export with "Copy All Text" button
-- Footer stat line
+## Final checklist
 
-*Parser:*
-- Handles `mcp_input` arguments (queries array or single query, instructions)
-- Handles `user_message` browsing URLs
-- Handles `step_data` summaries (web_result_summary with text content)
-- Handles `mcp_output.result` as string — parses structured text blocks with regex
-- Extracts AI analysis text (strips delimiters, headers)
-- Extracts unread source cards from `Title: / Url: / Description: / Content Preview:` blocks
-- Never drops a data point
-
-Read these files before building any new tool renderer. They set the standard.
-
-## Checklist Before Marking Complete
-
-- [ ] Parser extracts EVERY field from the tool data — nothing is ignored
-- [ ] Inline gives users enough info they may not need the modal
-- [ ] Overlay Results tab shows ALL data — every field, every source, every nested value
-- [ ] Overlay has view modes / tabs when multiple data categories exist
-- [ ] Copy buttons exist for sections and full export
-- [ ] Collapsible sections handle long text (never omit, always expandable)
-- [ ] Loading states match reality for long-running tools (not generic spinners)
-- [ ] Colors use semantic project variables (`text-primary`, `bg-card`, `border-border`, etc.)
-- [ ] Dark mode works via semantic variables (no hardcoded colors)
-- [ ] Empty states render with icon + message
-- [ ] No duplicate header in overlay (system provides the blue gradient header)
-- [ ] Registry entry includes `getHeaderExtras` if tool has summary stats
-- [ ] All external links use `target="_blank" rel="noopener noreferrer"`
+- [ ] Uses `entry.status` for state, never array position.
+- [ ] `entry.arguments`, `entry.result`, `entry.errorMessage`, `entry.latestMessage` all surfaced where relevant.
+- [ ] `events` only consumed when step-level info is needed.
+- [ ] All imports point at `@/features/tool-call-visualization/*` (no legacy tool-renderer paths).
+- [ ] Inline + overlay both implement `ToolRendererProps` directly.
+- [ ] Barrel exports created.
+- [ ] Registry entry added under the exact backend tool name.
+- [ ] `getHeaderSubtitle` / `getHeaderExtras` used instead of a custom header.
+- [ ] Dark mode verified via semantic variables.
+- [ ] Empty and error states render.
+- [ ] Lints clean.

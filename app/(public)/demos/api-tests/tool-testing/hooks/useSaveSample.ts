@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import type { TypedStreamEvent } from "@/types/python-generated/stream-events";
-import type { FinalPayload } from "../types";
+import type { FinalPayload } from "@/features/tool-call-visualization/testing/types";
 
 export interface SaveSampleParams {
   toolName: string;

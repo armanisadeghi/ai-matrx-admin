@@ -1,6 +1,6 @@
 "use client";
 
-import { useDatabaseAdmin } from "@/app/(authenticated)/admin/hooks/use-database-admin";
+import { useDatabaseAdmin } from "@/features/administration/hooks/use-database-admin";
 import { EnhancedSQLEditor } from "./enhanced-sql-editor";
 
 export default function DatabaseClient() {

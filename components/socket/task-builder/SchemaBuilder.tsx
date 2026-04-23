@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import AccordionWrapper from "../../matrx/matrx-collapsible/AccordionWrapper";
 import IconInputWithValidation from "@/components/official/icons/IconInputWithValidation.dynamic";
-import * as LucideIcons from "lucide-react";
+import { DynamicIcon, isIconRegisteredSync } from "@/components/official/icons/IconResolver";
 import {
   SchemaField,
   getReferenceOptions,
@@ -56,7 +56,7 @@ const toPythonValue = (value: any): string => {
 
 // Validate if icon exists in Lucide
 const validateIcon = (iconName: string): boolean => {
-  return Boolean((LucideIcons as any)[iconName]);
+  return isIconRegisteredSync(iconName);
 };
 
 const SchemaBuilder: React.FC<SchemaBuilderProps> = ({
@@ -341,7 +341,7 @@ const SchemaBuilder: React.FC<SchemaBuilderProps> = ({
                         {iconValidation[index] === true && field.ICON_NAME && (
                           <div className="mt-1 p-2 bg-gray-50 dark:bg-gray-950 border-border rounded flex justify-center items-center">
                             {React.createElement(
-                              (LucideIcons as any)[field.ICON_NAME],
+                              ((props: any) => <DynamicIcon name={field.ICON_NAME} {...props} />),
                               {
                                 size: 20,
                                 className: "text-gray-700 dark:text-gray-300",

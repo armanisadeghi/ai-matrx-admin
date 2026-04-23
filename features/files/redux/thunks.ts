@@ -91,7 +91,7 @@ type ThunkApi = { dispatch: AppDispatch; state: RootState };
 // ---------------------------------------------------------------------------
 
 /**
- * Loads the full tree for the current user via the cloud_get_user_file_tree
+ * Loads the full tree for the current user via the cld_get_user_file_tree
  * RPC. Normalizes into filesById / foldersById / tree.
  */
 export const loadUserFileTree = createAsyncThunk<
@@ -102,7 +102,7 @@ export const loadUserFileTree = createAsyncThunk<
   dispatch(setTreeStatus({ status: "loading" }));
 
   const { data, error } = await supabase.rpc(
-    "cloud_get_user_file_tree",
+    "cld_get_user_file_tree",
     { p_user_id: userId },
   );
 
@@ -236,12 +236,12 @@ export const loadFolderContents = createAsyncThunk<
 >("cloudFiles/loadFolderContents", async ({ folderId }, { dispatch }) => {
   const [filesRes, foldersRes] = await Promise.all([
     supabase
-      .from("cloud_files")
+      .from("cld_files")
       .select("*")
       .eq("parent_folder_id", folderId)
       .is("deleted_at", null),
     supabase
-      .from("cloud_folders")
+      .from("cld_folders")
       .select("*")
       .eq("parent_id", folderId)
       .is("deleted_at", null),
@@ -278,7 +278,7 @@ export const loadFileVersions = createAsyncThunk<
   ThunkApi
 >("cloudFiles/loadFileVersions", async ({ fileId }, { dispatch }) => {
   const { data, error } = await supabase
-    .from("cloud_file_versions")
+    .from("cld_file_versions")
     .select("*")
     .eq("file_id", fileId)
     .order("version_number", { ascending: false });
@@ -295,7 +295,7 @@ export const loadPermissions = createAsyncThunk<
   ThunkApi
 >("cloudFiles/loadPermissions", async ({ resourceId }, { dispatch }) => {
   const { data, error } = await supabase
-    .from("cloud_file_permissions")
+    .from("cld_file_permissions")
     .select("*")
     .eq("resource_id", resourceId);
   if (error) throw error;
@@ -311,7 +311,7 @@ export const loadShareLinks = createAsyncThunk<
   ThunkApi
 >("cloudFiles/loadShareLinks", async ({ resourceId }, { dispatch }) => {
   const { data, error } = await supabase
-    .from("cloud_share_links")
+    .from("cld_share_links")
     .select("*")
     .eq("resource_id", resourceId)
     .eq("is_active", true);

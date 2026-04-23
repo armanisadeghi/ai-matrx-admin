@@ -40,7 +40,8 @@ The component will:
 */
 import React, { useCallback, useEffect, useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import * as LucideIcons from "lucide-react";
+import { File } from "lucide-react";
+import { DynamicIcon } from "@/components/official/icons/IconResolver";
 import { cn } from "@/lib/utils";
 import { SchemaField } from "@/constants/socket-schema";
 import { formatPlaceholder } from "@/components/socket/utils/label-util";
@@ -102,7 +103,7 @@ const SocketTaskSelect: React.FC<SocketTaskSelectProps> = ({
         [taskName, fullPath]
       );
 
-    const Icon = (LucideIcons as any)[fieldDefinition.ICON_NAME] || LucideIcons.File;
+    const Icon = (props: any) => <DynamicIcon name={fieldDefinition.ICON_NAME} fallbackIcon="File" {...props} />;
     const placeholder = showPlaceholder ? fieldDefinition.DESCRIPTION || formatPlaceholder(fieldName) : "";
     
     // Process component props

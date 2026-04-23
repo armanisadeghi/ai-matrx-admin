@@ -4,7 +4,7 @@ import type {
   StreamEventHandlers,
   ToolStreamEvent,
   FinalPayload,
-} from "../../types";
+} from "../types";
 
 /**
  * Narrows universal `StreamCallbacks` for the tool-testing dashboard: maps the

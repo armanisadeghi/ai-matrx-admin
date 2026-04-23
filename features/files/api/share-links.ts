@@ -4,7 +4,7 @@
  * Share links for files and folders. Authed endpoints for create/list/revoke,
  * plus PUBLIC (no-auth) resolve + download for the /share/:token route.
  *
- * Backend contract: features/files/cloud_files_frontend.md §8.
+ * Backend contract: features/files/cld_files_frontend.md §8.
  */
 
 import {
@@ -30,10 +30,7 @@ export async function listFileShareLinks(
   fileId: string,
   opts: RequestOptions = {},
 ): Promise<{ data: CloudShareLinkRow[]; meta: ResponseMeta }> {
-  return getJson<CloudShareLinkRow[]>(
-    `/files/${fileId}/share-links`,
-    opts,
-  );
+  return getJson<CloudShareLinkRow[]>(`/files/${fileId}/share-links`, opts);
 }
 
 export async function createFileShareLink(
@@ -56,10 +53,7 @@ export async function listFolderShareLinks(
   folderId: string,
   opts: RequestOptions = {},
 ): Promise<{ data: CloudShareLinkRow[]; meta: ResponseMeta }> {
-  return getJson<CloudShareLinkRow[]>(
-    `/folders/${folderId}/share-links`,
-    opts,
-  );
+  return getJson<CloudShareLinkRow[]>(`/folders/${folderId}/share-links`, opts);
 }
 
 export async function createFolderShareLink(

@@ -4,6 +4,7 @@ import React, { useCallback } from "react";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { CodeWorkspace } from "../CodeWorkspace";
 import type { FilesystemAdapter, ProcessAdapter } from "../adapters";
+import { ChatHistorySlot, ChatPanelSlot } from "../chat";
 
 export interface CodeWorkspaceWindowProps {
   windowInstanceId: string;
@@ -11,10 +12,14 @@ export interface CodeWorkspaceWindowProps {
   /** Optional initial adapter. Defaults to mock project. */
   adapter?: FilesystemAdapter;
   process?: ProcessAdapter;
-  /** Optional chat surface injected into the right slot. */
+  /** Explicit right-slot override. When omitted, the default chat surface is
+   *  used (set `hideChat` to hide it entirely). */
   rightSlot?: React.ReactNode;
-  /** Optional chat-history surface injected into the far-right slot. */
+  /** Explicit far-right-slot override. When omitted, the default chat history
+   *  surface is used (set `hideHistory` to hide it entirely). */
   farRightSlot?: React.ReactNode;
+  hideChat?: boolean;
+  hideHistory?: boolean;
   onClose: () => void;
 }
 
@@ -32,6 +37,8 @@ export function CodeWorkspaceWindow({
   process,
   rightSlot,
   farRightSlot,
+  hideChat,
+  hideHistory,
   onClose,
 }: CodeWorkspaceWindowProps) {
   const handleCollectData = useCallback(() => {
@@ -39,6 +46,11 @@ export function CodeWorkspaceWindow({
     // checkpoint the workspace state itself (that lives in Redux already).
     return {};
   }, []);
+
+  const resolvedRight =
+    rightSlot ?? (hideChat ? undefined : <ChatPanelSlot basePath="/code" />);
+  const resolvedFarRight =
+    farRightSlot ?? (hideHistory ? undefined : <ChatHistorySlot />);
 
   return (
     <WindowPanel
@@ -58,8 +70,8 @@ export function CodeWorkspaceWindow({
         <CodeWorkspace
           adapter={adapter}
           process={process}
-          rightSlot={rightSlot}
-          farRightSlot={farRightSlot}
+          rightSlot={resolvedRight}
+          farRightSlot={resolvedFarRight}
         />
       </div>
     </WindowPanel>

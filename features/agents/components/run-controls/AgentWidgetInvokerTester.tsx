@@ -1,5 +1,5 @@
 import { AgentExecutionTestModal } from "./AgentExecutionTestModal";
-import * as LucideIcons from "lucide-react";
+import { DynamicIcon } from "@/components/official/icons/IconResolver";
 import {
   getAllDisplayTypes,
   getDisplayMeta,
@@ -33,7 +33,7 @@ export function AgentWidgetInvokerTester({
 
   const displayTypes = getAllDisplayTypes().map((displayMode) => {
     const meta = getDisplayMeta(displayMode);
-    const IconComponent = (LucideIcons as any)[meta.icon];
+    const IconComponent = (props: any) => <DynamicIcon name={meta.icon} {...props} />;
     return {
       name: meta.label,
       icon: IconComponent,

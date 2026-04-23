@@ -10,9 +10,7 @@
 
 import { createSelector } from "reselect";
 import type { RootState } from "@/lib/redux/store";
-import {
-  sortChildren as sortChildrenUtil,
-} from "./tree-utils";
+import { sortChildren as sortChildrenUtil } from "./tree-utils";
 import type {
   CloudFile,
   CloudFileRecord,
@@ -191,10 +189,7 @@ export const selectChildrenByFolderId = createSelector(
 );
 
 export const selectChildrenOfFolder = createSelector(
-  [
-    selectChildrenByFolderId,
-    (_state: RootState, folderId: string) => folderId,
-  ],
+  [selectChildrenByFolderId, (_state: RootState, folderId: string) => folderId],
   (byId, folderId): TreeChildren =>
     byId[folderId] ?? { folderIds: [], fileIds: [] },
 );
@@ -241,12 +236,7 @@ export const selectActiveFolder = createSelector(
 );
 
 export const selectSortedChildrenOfFolder = createSelector(
-  [
-    selectChildrenOfFolder,
-    selectAllFilesMap,
-    selectAllFoldersMap,
-    selectSort,
-  ],
+  [selectChildrenOfFolder, selectAllFilesMap, selectAllFoldersMap, selectSort],
   (children, filesById, foldersById, sort): TreeChildren =>
     sortChildrenUtil(
       children,
@@ -315,7 +305,7 @@ export const selectPermissionsForResource = createSelector(
 
 /**
  * Returns the highest permission the given user has on the given file.
- * Ownership returns 'admin'; otherwise derives from cloud_file_permissions
+ * Ownership returns 'admin'; otherwise derives from cld_file_permissions
  * where grantee_id matches. Caller must provide userId.
  */
 export const selectEffectivePermissionForFile = createSelector(
@@ -332,7 +322,8 @@ export const selectEffectivePermissionForFile = createSelector(
       write: 2,
       admin: 3,
     };
-    let best: PermissionLevel | null = file.visibility === "public" ? "read" : null;
+    let best: PermissionLevel | null =
+      file.visibility === "public" ? "read" : null;
     for (const perm of permissions) {
       if (perm.granteeId !== userId) continue;
       if (perm.expiresAt && new Date(perm.expiresAt).getTime() < Date.now())

@@ -1,7 +1,8 @@
 // File location: components/socket-io/form-builder/field-components/SocketTaskTextarea.tsx
 import React, { useCallback, useEffect, useState } from "react";
 import { FancyTextarea } from "@/components/ui/textarea";
-import * as LucideIcons from "lucide-react";
+import { File } from "lucide-react";
+import { DynamicIcon } from "@/components/official/icons/IconResolver";
 import { cn } from "@/lib/utils";
 import { SchemaField } from "@/constants/socket-schema";
 import { formatPlaceholder } from "@/components/socket/utils/label-util";
@@ -61,7 +62,7 @@ const SocketTaskTextarea: React.FC<SocketTaskTextareaProps> = ({
         </div>
     );
 
-    const Icon = (LucideIcons as any)[fieldDefinition.ICON_NAME] || LucideIcons.File;
+    const Icon = (props: any) => <DynamicIcon name={fieldDefinition.ICON_NAME} fallbackIcon="File" {...props} />;
     const placeholder = showPlaceholder ? fieldDefinition.DESCRIPTION || formatPlaceholder(fieldName) : "";
     
     const props: Record<string, any> = {};

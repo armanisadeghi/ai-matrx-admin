@@ -17,7 +17,7 @@ import {
   Check,
   ArrowRight,
 } from "lucide-react";
-import SyntaxHighlighter from "@/app/(authenticated)/admin/components/database-admin/SyntaxHighlighter";
+import SyntaxHighlighter from "@/features/administration/database-admin/SyntaxHighlighter";
 
 interface ParsedArgument {
   mode: string;

@@ -3,10 +3,10 @@
  *
  * User groups (for bulk permissions).
  *
- * Backend contract: features/files/cloud_files_frontend.md §6 (Groups).
+ * Backend contract: features/files/cld_files_frontend.md §6 (Groups).
  *
- * DB tables: cloud_user_groups + cloud_user_group_members. (The Python doc
- * uses `cloud_file_groups` naming; see PYTHON_TEAM_COMMS.md.)
+ * DB tables: cld_user_groups + cld_user_group_members. (The Python doc
+ * uses `cld_file_groups` naming; see PYTHON_TEAM_COMMS.md.)
  */
 
 import {

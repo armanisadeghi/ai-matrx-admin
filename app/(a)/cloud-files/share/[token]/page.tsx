@@ -22,8 +22,10 @@ export default async function AuthedSharePage({ params }: PageProps) {
 
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("cloud_share_links")
-    .select("resource_id, resource_type, is_active, expires_at, max_uses, use_count")
+    .from("cld_share_links")
+    .select(
+      "resource_id, resource_type, is_active, expires_at, max_uses, use_count",
+    )
     .eq("share_token", token)
     .eq("is_active", true)
     .maybeSingle();
@@ -35,8 +37,7 @@ export default async function AuthedSharePage({ params }: PageProps) {
   const expired = data.expires_at
     ? new Date(data.expires_at).getTime() < Date.now()
     : false;
-  const exhausted =
-    data.max_uses != null && data.use_count >= data.max_uses;
+  const exhausted = data.max_uses != null && data.use_count >= data.max_uses;
   if (expired || exhausted) {
     redirect(`/share/${encodeURIComponent(token)}`);
   }
@@ -48,7 +49,7 @@ export default async function AuthedSharePage({ params }: PageProps) {
   if (data.resource_type === "folder") {
     // Resolve folder id → path so the deep-link page can land there.
     const { data: folder } = await supabase
-      .from("cloud_folders")
+      .from("cld_folders")
       .select("folder_path")
       .eq("id", data.resource_id)
       .maybeSingle();

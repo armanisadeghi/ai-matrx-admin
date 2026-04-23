@@ -4,7 +4,7 @@
  * REST endpoints under /files/*. Wraps the typed client with endpoint-specific
  * args/returns so thunks don't hand-craft URLs or bodies.
  *
- * Backend contract: features/files/cloud_files_frontend.md §6 (Files).
+ * Backend contract: features/files/cld_files_frontend.md §6 (Files).
  */
 
 import {
@@ -52,8 +52,7 @@ export async function uploadFile(
   if (params.shareWith?.length)
     form.append("share_with", params.shareWith.join(","));
   if (params.shareLevel) form.append("share_level", params.shareLevel);
-  if (params.changeSummary)
-    form.append("change_summary", params.changeSummary);
+  if (params.changeSummary) form.append("change_summary", params.changeSummary);
   if (params.metadata)
     form.append("metadata_json", JSON.stringify(params.metadata));
 
@@ -72,8 +71,7 @@ export async function uploadFileWithProgress(
   if (params.shareWith?.length)
     form.append("share_with", params.shareWith.join(","));
   if (params.shareLevel) form.append("share_level", params.shareLevel);
-  if (params.changeSummary)
-    form.append("change_summary", params.changeSummary);
+  if (params.changeSummary) form.append("change_summary", params.changeSummary);
   if (params.metadata)
     form.append("metadata_json", JSON.stringify(params.metadata));
 

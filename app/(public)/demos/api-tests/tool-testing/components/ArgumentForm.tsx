@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Trash2 } from 'lucide-react';
-import type { ParameterDefinition } from '../types';
+import type { ParameterDefinition } from '@/features/tool-call-visualization/testing/types';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 

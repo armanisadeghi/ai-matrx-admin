@@ -29,9 +29,9 @@ import {
 import { useEnsureHierarchyLoaded } from "@/features/agent-context/hooks/useNavTree";
 import {
   ContextRow,
-  DynamicIcon,
   type PickerOption,
 } from "@/features/agent-context/components/ContextPickerPrimitives";
+import { DynamicIcon } from "@/components/official/icons/IconResolver";
 import { cn } from "@/utils/cn";
 
 export default function AgentContextPreferences() {

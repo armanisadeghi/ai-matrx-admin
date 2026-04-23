@@ -2,7 +2,8 @@ import React, { useState, useEffect, useMemo } from "react";
 import { FancyInput } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import * as LucideIcons from "lucide-react";
+import { Files, Plus, Trash } from "lucide-react";
+import { DynamicIcon } from "@/components/official/icons/IconResolver";
 import { formatLabel, formatPlaceholder } from "../utils/label-util";
 import { SchemaField } from "@/constants/socket-schema";
 
@@ -63,7 +64,7 @@ const ArrayField: React.FC<ArrayFieldProps> = ({ fieldKey, field, fullPath, valu
     // Get the appropriate icon based on iconName in the field or use a default
     const getIcon = useMemo(() => {
         const iconName = field.ICON_NAME || "Files";
-        const Icon = (LucideIcons as any)[iconName] || LucideIcons.Files;
+        const Icon = (props: any) => <DynamicIcon name={iconName} fallbackIcon="Files" {...props} />;
         return <Icon className="w-4 h-4" />;
     }, [field.ICON_NAME]);
 
@@ -82,7 +83,7 @@ const ArrayField: React.FC<ArrayFieldProps> = ({ fieldKey, field, fullPath, valu
                     placeholder={`${formatPlaceholder(fieldKey)} item ${index + 1}`}
                 />
                 <Button variant="destructive" size="sm" onClick={() => handleRemoveItem(index)}>
-                    <LucideIcons.Trash className="w-4 h-4" />
+                    <Trash className="w-4 h-4" />
                 </Button>
             </div>
         ));
@@ -104,7 +105,7 @@ const ArrayField: React.FC<ArrayFieldProps> = ({ fieldKey, field, fullPath, valu
                         variant="outline"
                         className="border-gray-500 text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 rounded-lg"
                     >
-                        <LucideIcons.Plus className="w-5 h-5 mr-1" />
+                        <Plus className="w-5 h-5 mr-1" />
                         Add {formatLabel(fieldKey)}
                     </Button>
                 </div>

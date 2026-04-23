@@ -26,7 +26,6 @@ import type {
   ChunkPayload,
   ErrorPayload,
   PhasePayload,
-  TypedStreamEvent,
 } from "@/types/python-generated/stream-events";
 import type { ChatRequestBody } from "@/lib/api/types";
 
@@ -36,7 +35,6 @@ import {
   updateDataResponse,
   updateInfoResponse,
   updateErrorResponse,
-  appendRawToolEvent,
   markResponseEnd,
 } from "../slices/socketResponseSlice";
 
@@ -376,9 +374,6 @@ export const submitChatFastAPI = createAsyncThunk<
           }
 
           case "tool_event": {
-            // Store the raw TypedStreamEvent so buildCanonicalBlocks can derive ToolCallBlock[]
-            // with correct phase tracking. The canonical selector handles all rendering.
-            dispatch(appendRawToolEvent({ listenerId, event }));
             break;
           }
 

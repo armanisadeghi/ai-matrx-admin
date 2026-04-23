@@ -42,10 +42,10 @@ import { toast } from "sonner";
 import { StreamEventTimeline } from "./StreamEventTimeline";
 import { SchemaValidator, validateAgainstSchema } from "./SchemaValidator";
 import { CostEstimateTable } from "./CostEstimateTable";
-import { ToolRendererPreview } from "./ToolRendererPreview";
+import { ToolRendererPreview } from "@/features/tool-call-visualization/testing/ToolRendererPreview";
 import { useSaveSample } from "../hooks/useSaveSample";
 import type { TypedStreamEvent } from "@/types/python-generated/stream-events";
-import type { ToolStreamEvent, FinalPayload, ExecutionStatus } from "../types";
+import type { ToolStreamEvent, FinalPayload, ExecutionStatus } from "@/features/tool-call-visualization/testing/types";
 
 // ─── Copy button ────────────────────────────────────────────────────────────
 

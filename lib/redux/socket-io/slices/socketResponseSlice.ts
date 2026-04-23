@@ -71,24 +71,6 @@ export const socketResponseSlice = createSlice({
         state[listenerId].errors.push(error);
       }
     },
-    // NO-OP: legacy tool update dispatch. The canonical agent pipeline uses
-    // ToolLifecycleEntry on active-requests instead. Kept here so legacy
-    // socket.io thunks compile without branching.
-    updateToolUpdateResponse: (
-      _state,
-      _action: PayloadAction<{ listenerId: string; toolUpdate: unknown }>,
-    ) => {
-      // intentional no-op
-    },
-    // NO-OP: legacy raw tool event dispatch. The canonical pipeline reads
-    // ToolEventPayload via active-requests; socket.io consumers no longer
-    // participate in tool rendering.
-    appendRawToolEvent: (
-      _state,
-      _action: PayloadAction<{ listenerId: string; event: unknown }>,
-    ) => {
-      // intentional no-op
-    },
     markResponseEnd: (state, action: PayloadAction<string>) => {
       const listenerId = action.payload;
       if (state[listenerId]) {
@@ -105,8 +87,6 @@ export const {
   updateDataResponse,
   updateInfoResponse,
   updateErrorResponse,
-  updateToolUpdateResponse,
-  appendRawToolEvent,
   markResponseEnd,
 } = socketResponseSlice.actions;
 

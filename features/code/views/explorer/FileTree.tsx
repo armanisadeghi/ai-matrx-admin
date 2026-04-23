@@ -52,7 +52,7 @@ export const FileTree: React.FC = () => {
       )}
       {roots === null && !error && (
         <div className="px-3 py-1 text-[11px] text-neutral-500">
-          Loading\u2026
+          Loading…
         </div>
       )}
       {roots?.map((node) => (

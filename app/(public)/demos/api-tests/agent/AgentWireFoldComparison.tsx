@@ -2,7 +2,7 @@
 
 import { Fragment, useMemo } from "react";
 import type { TypedStreamEvent } from "@/types/python-generated/stream-events";
-import { foldBackendStreamEvents } from "@/app/(public)/demos/api-tests/tool-testing/utils/stream-processing-beta";
+import { foldBackendStreamEvents } from "@/features/tool-call-visualization/testing/stream-processing";
 
 type WireEvent = { event: string; data: unknown };
 

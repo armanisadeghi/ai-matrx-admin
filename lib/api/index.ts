@@ -26,13 +26,6 @@ export {
 } from "./stream-parser";
 export type { StreamCallbacks } from "./stream-parser";
 
-// Tool call renderer types (extracted from socket.io)
-export type {
-  ToolCallObject,
-  McpInputObject,
-  StepDataObject,
-} from "./tool-call.types";
-
 // Re-export everything from the canonical types file
 export type {
   // Auto-generated stream event types (V2)

@@ -7,6 +7,8 @@ import { CodeWorkspaceProvider } from "./CodeWorkspaceProvider";
 import { WorkspaceLayout } from "./layout/WorkspaceLayout";
 
 export interface CodeWorkspaceProps {
+  /** Stable id used by agent tools to target this workspace instance. */
+  workspaceId?: string;
   /** Initial filesystem adapter. Defaults to the mock project. */
   adapter?: FilesystemAdapter;
   /** Initial process adapter. Defaults to a mock echo adapter. */
@@ -26,6 +28,7 @@ export interface CodeWorkspaceProps {
  * provider tree but relies on the app-level Redux store for slice state.
  */
 export const CodeWorkspace: React.FC<CodeWorkspaceProps> = ({
+  workspaceId,
   adapter,
   process,
   rightSlot,
@@ -34,7 +37,11 @@ export const CodeWorkspace: React.FC<CodeWorkspaceProps> = ({
   className,
 }) => {
   return (
-    <CodeWorkspaceProvider initialFilesystem={adapter} initialProcess={process}>
+    <CodeWorkspaceProvider
+      workspaceId={workspaceId}
+      initialFilesystem={adapter}
+      initialProcess={process}
+    >
       <div className={cn("flex h-full w-full min-h-0", className)}>
         <WorkspaceLayout
           rightSlot={rightSlot}

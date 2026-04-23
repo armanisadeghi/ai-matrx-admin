@@ -18,7 +18,7 @@ export interface CodeWorkspaceState {
 const initialState: CodeWorkspaceState = {
   activeView: "explorer",
   sideOpen: true,
-  rightOpen: false,
+  rightOpen: true,
   farRightOpen: false,
   activeSandboxId: null,
 };

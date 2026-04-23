@@ -26,7 +26,6 @@ import type {
   ChunkPayload,
   ErrorPayload,
   PhasePayload,
-  TypedStreamEvent,
 } from "@/types/python-generated/stream-events";
 
 import {
@@ -35,7 +34,6 @@ import {
   updateDataResponse,
   updateInfoResponse,
   updateErrorResponse,
-  appendRawToolEvent,
   markResponseEnd,
 } from "../slices/socketResponseSlice";
 
@@ -227,12 +225,6 @@ export const submitAppletAgentThunk = createAsyncThunk<
           }
 
           case "tool_event": {
-            dispatch(
-              appendRawToolEvent({
-                listenerId,
-                event: event as TypedStreamEvent,
-              }),
-            );
             break;
           }
 

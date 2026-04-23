@@ -17,9 +17,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import {
-  selectOrganizationId,
-} from "@/features/agent-context/redux/appContextSlice";
+import { selectOrganizationId } from "@/features/agent-context/redux/appContextSlice";
 import { selectNavOrganizations } from "@/features/agent-context/redux/hierarchySlice";
 import { selectAllTasks } from "@/features/agent-context/redux/tasksSlice";
 import { selectAllProjects } from "@/features/agent-context/redux/projectsSlice";
@@ -35,12 +33,10 @@ import {
   setEntityScopes,
   selectScopeIdsForEntity,
 } from "@/features/agent-context/redux/scope/scopeAssignmentsSlice";
-import {
-  DynamicIcon,
-  type PickerOption,
-} from "@/features/agent-context/components/ContextPickerPrimitives";
+import { type PickerOption } from "@/features/agent-context/components/ContextPickerPrimitives";
 import { setNoteField } from "../redux/slice";
 import { selectNoteById } from "../redux/selectors";
+import { DynamicIcon } from "@/components/official/icons/IconResolver";
 
 // ── Inline picker row (click-to-expand, no hover flyout) ─────────────────
 
@@ -178,7 +174,9 @@ function InlinePickerRow({
                 )}
                 <span className="flex-1 truncate">{opt.name}</span>
                 {opt.status && (
-                  <span className="text-[9px] text-muted-foreground/50">{opt.status}</span>
+                  <span className="text-[9px] text-muted-foreground/50">
+                    {opt.status}
+                  </span>
                 )}
               </button>
             ))}
@@ -221,7 +219,10 @@ interface NoteContextPickerProps {
   className?: string;
 }
 
-export function NoteContextPicker({ noteId, className }: NoteContextPickerProps) {
+export function NoteContextPicker({
+  noteId,
+  className,
+}: NoteContextPickerProps) {
   const dispatch = useAppDispatch();
 
   // ── Note's current hierarchy context ────────────────────────────────────
@@ -259,12 +260,14 @@ export function NoteContextPicker({ noteId, className }: NoteContextPickerProps)
   }, [dispatch, effectiveOrgId]);
 
   // ── Note's current scope assignment IDs ─────────────────────────────────
-  const noteScopeIds = useAppSelector(
-    (state) => selectScopeIdsForEntity(state, "note", noteId),
+  const noteScopeIds = useAppSelector((state) =>
+    selectScopeIdsForEntity(state, "note", noteId),
   );
 
   // ── Scope-filtered project IDs ──────────────────────────────────────────
-  const [scopeFilteredIds, setScopeFilteredIds] = useState<Set<string> | null>(null);
+  const [scopeFilteredIds, setScopeFilteredIds] = useState<Set<string> | null>(
+    null,
+  );
   const activeScopeKey = [...noteScopeIds].sort().join(",");
   const lastScopeKey = useRef("");
 
@@ -350,7 +353,11 @@ export function NoteContextPicker({ noteId, className }: NoteContextPickerProps)
       };
     }
     return {
-      taskOptions: base.map((t) => ({ id: t.id, name: t.title, status: t.status })),
+      taskOptions: base.map((t) => ({
+        id: t.id,
+        name: t.title,
+        status: t.status,
+      })),
       orphanTaskOptions: [],
     };
   }, [allTasks, effectiveOrgId, noteProjectId]);
@@ -400,17 +407,31 @@ export function NoteContextPicker({ noteId, className }: NoteContextPickerProps)
   const handleSelectTask = (id: string | null) => {
     const task = allTasks.find((t) => t.id === id);
     if (task?.project_id && task.project_id !== noteProjectId) {
-      dispatch(setNoteField({ id: noteId, field: "project_id", value: task.project_id }));
+      dispatch(
+        setNoteField({
+          id: noteId,
+          field: "project_id",
+          value: task.project_id,
+        }),
+      );
     }
     dispatch(setNoteField({ id: noteId, field: "task_id", value: id }));
   };
 
   const handleClearAll = useCallback(() => {
-    dispatch(setNoteField({ id: noteId, field: "organization_id", value: null }));
+    dispatch(
+      setNoteField({ id: noteId, field: "organization_id", value: null }),
+    );
     dispatch(setNoteField({ id: noteId, field: "project_id", value: null }));
     dispatch(setNoteField({ id: noteId, field: "task_id", value: null }));
     if (noteScopeIds.length > 0) {
-      dispatch(setEntityScopes({ entity_type: "note", entity_id: noteId, scope_ids: [] }));
+      dispatch(
+        setEntityScopes({
+          entity_type: "note",
+          entity_id: noteId,
+          scope_ids: [],
+        }),
+      );
     }
   }, [dispatch, noteId, noteScopeIds]);
 
@@ -434,7 +455,9 @@ export function NoteContextPicker({ noteId, className }: NoteContextPickerProps)
       {visibleScopeTypes.map((scopeType) => {
         const selectedScopeId =
           noteScopeIds.find((sid) =>
-            allScopes.some((s) => s.id === sid && s.scope_type_id === scopeType.id),
+            allScopes.some(
+              (s) => s.id === sid && s.scope_type_id === scopeType.id,
+            ),
           ) ?? null;
         const selectedScope = selectedScopeId
           ? allScopes.find((s) => s.id === selectedScopeId)
@@ -445,9 +468,7 @@ export function NoteContextPicker({ noteId, className }: NoteContextPickerProps)
         return (
           <InlinePickerRow
             key={scopeType.id}
-            icon={(props) => (
-              <DynamicIcon name={scopeType.icon} {...props} />
-            )}
+            icon={(props) => <DynamicIcon name={scopeType.icon} {...props} />}
             label={scopeType.label_singular}
             selectedName={selectedScope?.name ?? null}
             selectedId={selectedScopeId}

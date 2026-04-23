@@ -12,7 +12,7 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import type { SchemaValidationResult } from '../types';
+import type { SchemaValidationResult } from '@/features/tool-call-visualization/testing/types';
 
 const ajv = new Ajv({ allErrors: true, strict: false });
 

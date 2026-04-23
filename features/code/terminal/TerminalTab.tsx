@@ -102,34 +102,52 @@ export const TerminalTab: React.FC<TerminalTabProps> = ({ className }) => {
               : "No process adapter connected."}
           </div>
         )}
-        {terminalLines.map((line) => (
-          <div key={line.id} className="whitespace-pre-wrap">
-            {line.type === "command" ? (
-              <div className="flex items-center gap-2">
-                <span className="text-green-400">
-                  {line.cwd ? shortCwd(line.cwd) : "$"}
+        {terminalLines.map((line) => {
+          const isAgent = line.source === "agent";
+          return (
+            <div key={line.id} className="whitespace-pre-wrap">
+              {line.type === "command" ? (
+                <div className="flex items-center gap-2">
+                  {isAgent && <AgentBadge />}
+                  <span className="text-green-400">
+                    {line.cwd ? shortCwd(line.cwd) : "$"}
+                  </span>
+                  <span className="text-blue-400">&gt;</span>
+                  <span className="text-neutral-100">{line.text}</span>
+                </div>
+              ) : line.type === "stdout" ? (
+                <span
+                  className={cn(
+                    "text-neutral-200",
+                    isAgent && "border-l-2 border-purple-500/60 pl-2",
+                  )}
+                >
+                  {line.text}
                 </span>
-                <span className="text-blue-400">&gt;</span>
-                <span className="text-neutral-100">{line.text}</span>
-              </div>
-            ) : line.type === "stdout" ? (
-              <span className="text-neutral-200">{line.text}</span>
-            ) : line.type === "stderr" ? (
-              <span className="text-red-400">{line.text}</span>
-            ) : (
-              <span
-                className={cn(
-                  "text-[11px]",
-                  line.exitCode && line.exitCode !== 0
-                    ? "text-red-400"
-                    : "text-neutral-500",
-                )}
-              >
-                {line.text}
-              </span>
-            )}
-          </div>
-        ))}
+              ) : line.type === "stderr" ? (
+                <span
+                  className={cn(
+                    "text-red-400",
+                    isAgent && "border-l-2 border-purple-500/60 pl-2",
+                  )}
+                >
+                  {line.text}
+                </span>
+              ) : (
+                <span
+                  className={cn(
+                    "text-[11px]",
+                    line.exitCode && line.exitCode !== 0
+                      ? "text-red-400"
+                      : "text-neutral-500",
+                  )}
+                >
+                  {line.text}
+                </span>
+              )}
+            </div>
+          );
+        })}
       </div>
       <div className="flex shrink-0 items-center gap-2 border-t border-neutral-800 bg-[#1e1e1e] px-3 py-1.5">
         <span className="text-green-400">{shortCwd(cwd)}</span>
@@ -159,6 +177,14 @@ export const TerminalTab: React.FC<TerminalTabProps> = ({ className }) => {
     </div>
   );
 };
+
+function AgentBadge() {
+  return (
+    <span className="rounded-sm bg-purple-500/20 px-1 text-[9px] font-semibold uppercase tracking-wide text-purple-300">
+      Agent
+    </span>
+  );
+}
 
 function shortCwd(cwd: string): string {
   if (!cwd) return "$";

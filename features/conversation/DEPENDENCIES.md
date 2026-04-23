@@ -16,7 +16,12 @@ These were previously external but have been copied into `features/conversation/
 | `parseResourcesFromMessage`, `messageContainsResources`, `extractMessageWithoutResources` | `@/features/prompts/utils/resource-parsing` | `features/conversation/utils/resource-parsing.ts` |
 | `printMarkdownContent` | `@/features/chat/utils/markdown-print-utils` | `features/conversation/utils/markdown-print.ts` |
 | `useDomCapturePrint` | `@/features/chat/hooks/useDomCapturePrint` | `features/conversation/hooks/useDomCapturePrint.ts` |
-| `ToolCallObject` type | `@/lib/redux/socket-io/socket.types` | `@/lib/api/tool-call.types` (moved to lib) |
+
+---
+
+## Tool rendering (delegated)
+
+Tool-call rendering is **not owned by this feature**. `ToolCallVisualization`, the renderer registry, the `ToolRendererProps` contract, dynamic/DB-stored renderers, and the admin UI all live in `@/features/tool-call-visualization`. Conversation consumers import the shell component and hand it a `ToolLifecycleEntry` from the Redux `active-requests` slice (plus optional raw `ToolEventPayload[]`).
 
 ---
 
@@ -32,11 +37,11 @@ Project-wide utilities with stable interfaces. No action needed.
 | `selectIsUsingLocalhost` | sendMessage thunk | `@/lib/redux/slices/adminPreferencesSlice` |
 | `parseNdjsonStream` | sendMessage thunk | `@/lib/api/stream-parser` |
 | `ENDPOINTS`, `BACKEND_URLS` | sendMessage thunk | `@/lib/api/endpoints` |
-| `buildCanonicalBlocks`, `toolCallBlockToLegacy`, `extractPersistableToolBlocks` | sendMessage thunk, StreamingContentBlocks | `@/lib/chat-protocol` |
-| `getToolName`, `getInlineRenderer`, `getToolDisplayName`, etc. | ToolCallVisualization | `@/lib/tool-renderers` |
-| `cn` | ToolCallVisualization | `@/lib/utils` |
-| `ToolCallObject` type | ToolCallVisualization | `@/lib/api/tool-call.types` |
-| `StreamEvent` type | StreamingContentBlocks | `@/types/python-generated/stream-events` |
+| `buildCanonicalBlocks`, `extractPersistableToolBlocks` | sendMessage thunk, StreamingContentBlocks | `@/lib/chat-protocol` |
+| `ToolCallVisualization`, renderer registry, `ToolRendererProps` | StreamingContentBlocks, AssistantMessage | `@/features/tool-call-visualization` |
+| `ToolLifecycleEntry` type | StreamingContentBlocks (mapping from `ToolCallBlock`) | `@/features/agents/types/request.types` |
+| `cn` | shared UI | `@/lib/utils` |
+| `StreamEvent` / `ToolEventPayload` types | StreamingContentBlocks, sendMessage thunk | `@/types/python-generated/stream-events` |
 | `Button`, `Textarea`, etc. | Multiple | `@/components/ui/*` |
 | `lucide-react` icons | Multiple | npm |
 | `uuid` | useConversationSession | npm |
@@ -102,11 +107,6 @@ Project-wide utilities with stable interfaces. No action needed.
 
 > Auth-gated features only rendered for authenticated users.
 
-### Chat Feature (legacy)
-| Import | Used By | Loading |
-|--------|---------|---------|
-| `ToolUpdatesOverlay` | ToolCallVisualization | Eager |
-
 ### File Upload
 | Import | Used By | Loading |
 |--------|---------|---------|
@@ -125,8 +125,8 @@ Project-wide utilities with stable interfaces. No action needed.
 | External Feature | # Imports | Risk |
 |------------------|-----------|------|
 | `@/lib/redux/*` (core infra) | 15+ | None — project standard |
-| `@/lib/api/*`, `@/lib/chat-protocol` | 5 | None — owned API layer |
-| `@/lib/tool-renderers` | 5 | None — shared library |
+| `@/lib/chat-protocol` | 2 | None — pure helper library |
+| `@/features/tool-call-visualization` | 1 | None — owned rendering surface |
 | `@/components/ui/*` | 4 | None — design system |
 | `@/hooks/tts/*` | 3 | Low — cross-cutting |
 | `@/features/prompts/types/*` | 2 | None — type-only |
@@ -136,9 +136,6 @@ Project-wide utilities with stable interfaces. No action needed.
 | `@/features/canvas/*` | 2 | None — lazy loaded |
 | `@/features/notes/*` | 2 | Low — auth-gated |
 | `@/features/quick-actions/*` | 1 | Low — auth-gated |
-| `@/features/chat/*` | 1 | Low — single component |
 | npm packages | 3 | None — lucide, uuid, sonner |
 
-**Total external feature imports:** ~45
-**Internalized so far:** 4 utilities
-**Recommended next internalization:** None — remaining deps are either shared libraries, type-only, or lazy-loaded cross-cutting features.
+**Internalized so far:** 3 utilities. Remaining deps are shared libraries, type-only, or lazy-loaded cross-cutting features.

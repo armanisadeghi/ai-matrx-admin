@@ -29,12 +29,24 @@ export const EditorTabs: React.FC = () => {
     [dispatch],
   );
 
-  if (order.length === 0) return null;
+  if (order.length === 0) {
+    return (
+      <div
+        role="tablist"
+        className="flex h-full w-full items-center px-2 text-[11px] text-neutral-500 dark:text-neutral-400"
+        aria-label="Editor tabs"
+      >
+        <span className="truncate">
+          No open files — pick one from the Explorer.
+        </span>
+      </div>
+    );
+  }
 
   return (
     <div
       role="tablist"
-      className="flex h-9 w-full shrink-0 items-stretch overflow-x-auto border-b border-neutral-200 bg-neutral-100 dark:border-neutral-800 dark:bg-neutral-900"
+      className="flex h-full w-full items-stretch overflow-x-auto"
     >
       {order.map((id) => {
         const tab = byId[id];

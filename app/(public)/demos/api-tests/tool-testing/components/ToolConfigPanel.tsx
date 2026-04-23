@@ -13,7 +13,7 @@ import {
   Info,
 } from 'lucide-react';
 import { ArgumentForm, buildDefaults } from './ArgumentForm';
-import type { ToolDefinition, ExecutionStatus, ParameterDefinition } from '../types';
+import type { ToolDefinition, ExecutionStatus, ParameterDefinition } from '@/features/tool-call-visualization/testing/types';
 
 interface ToolConfigPanelProps {
   tool: ToolDefinition | null;
