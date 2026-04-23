@@ -10,9 +10,9 @@ import { useAppDispatch } from "@/lib/redux/hooks";
 import {
     UserPreferencesState,
     UserPreferences,
-    saveModulePreferencesToDatabase,
     resetModulePreferences,
-    clearError
+    clearError,
+    clearUnsavedChanges,
 } from '@/lib/redux/slices/userPreferencesSlice';
 
 interface PreferenceModuleWrapperProps {
@@ -53,20 +53,13 @@ const PreferenceModuleWrapper: React.FC<PreferenceModuleWrapperProps> = ({
         loadedPreferences: null,
     };
 
-    const handleSave = async () => {
-        try {
-            const modulePreferences = preferences[module];
-            const result = await dispatch(saveModulePreferencesToDatabase({
-                module,
-                preferences: modulePreferences
-            })).unwrap();
-
-            if (onSaveSuccess) {
-                onSaveSuccess();
-            }
-        } catch (error) {
-            console.error(`Failed to save ${module} preferences:`, error);
-        }
+    const handleSave = () => {
+        // The sync engine persists every mutation transparently (debounced
+        // ≤250ms). This button now just clears the dirty indicator; the
+        // Supabase upsert has already happened (or will within a couple
+        // frames of the last edit).
+        dispatch(clearUnsavedChanges());
+        if (onSaveSuccess) onSaveSuccess();
     };
 
     const handleReset = () => {

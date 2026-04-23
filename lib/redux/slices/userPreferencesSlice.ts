@@ -1,7 +1,19 @@
-import { createSlice, PayloadAction, createAsyncThunk } from "@reduxjs/toolkit";
+// Deep imports (not the `@/lib/sync` barrel) match the pattern used by
+// themeSlice.ts — the barrel re-exports `syncPolicies` from `./registry`,
+// which imports `userPreferencesPolicy` back from this file. Routing through
+// the barrel creates a runtime initialization cycle under Turbopack/Next
+// ("Cannot access 'userPreferencesPolicy' before initialization").
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { definePolicy } from "@/lib/sync/policies/define";
+import {
+  REHYDRATE_ACTION_TYPE,
+  type RehydrateAction,
+} from "@/lib/sync/engine/rehydrate";
+// Note: the Supabase client is imported lazily inside `remote.fetch`/`remote.write`
+// rather than at module load. This keeps unit tests — which mount the slice
+// without the browser Supabase env — from blowing up at import time.
 import { AIProvider } from "@/lib/ai/aiChat.types";
 import { MatrxRecordId } from "@/types/entityTypes";
-import { supabase } from "@/utils/supabase/client";
 
 // Define types for each module's preferences
 export interface DisplayPreferences {
@@ -498,89 +510,44 @@ const userPreferencesSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder
-      // Save all preferences
-      .addCase(savePreferencesToDatabase.pending, (state) => {
-        state._meta.isLoading = true;
-        state._meta.error = null;
-      })
-      .addCase(savePreferencesToDatabase.fulfilled, (state, action) => {
-        state._meta.isLoading = false;
-        state._meta.lastSaved = action.payload.savedAt;
-        state._meta.hasUnsavedChanges = false;
-        state._meta.error = null;
-        // Update loaded preferences to current state after successful save
+    // Sync engine rehydrate — the engine fetches the full preferences body
+    // from (IDB primary → localStorage mirror → remote.fetch) and dispatches
+    // `REHYDRATE_ACTION_TYPE`. We merge the payload shallowly into each
+    // module, preserving `_meta` (transient UI/load state, intentionally NOT
+    // persisted per A15/partialize).
+    builder.addCase(
+      REHYDRATE_ACTION_TYPE,
+      (state, action: RehydrateAction) => {
+        if (action.payload.sliceName !== "userPreferences") return;
+        const loaded = action.payload.state as Partial<UserPreferences> | undefined;
+        if (!loaded) return;
+
+        if (loaded.display) state.display = { ...state.display, ...loaded.display };
+        if (loaded.prompts) state.prompts = { ...state.prompts, ...loaded.prompts };
+        if (loaded.voice) state.voice = { ...state.voice, ...loaded.voice };
+        if (loaded.textToSpeech) state.textToSpeech = { ...state.textToSpeech, ...loaded.textToSpeech };
+        if (loaded.assistant) state.assistant = { ...state.assistant, ...loaded.assistant };
+        if (loaded.email) state.email = { ...state.email, ...loaded.email };
+        if (loaded.videoConference) state.videoConference = { ...state.videoConference, ...loaded.videoConference };
+        if (loaded.photoEditing) state.photoEditing = { ...state.photoEditing, ...loaded.photoEditing };
+        if (loaded.imageGeneration) state.imageGeneration = { ...state.imageGeneration, ...loaded.imageGeneration };
+        if (loaded.textGeneration) state.textGeneration = { ...state.textGeneration, ...loaded.textGeneration };
+        if (loaded.coding) state.coding = { ...state.coding, ...loaded.coding };
+        if (loaded.flashcard) state.flashcard = { ...state.flashcard, ...loaded.flashcard };
+        if (loaded.playground) state.playground = { ...state.playground, ...loaded.playground };
+        if (loaded.aiModels) state.aiModels = { ...state.aiModels, ...loaded.aiModels };
+        if (loaded.system) state.system = { ...state.system, ...loaded.system };
+        if (loaded.messaging) state.messaging = { ...state.messaging, ...loaded.messaging };
+        if (loaded.agentContext) state.agentContext = { ...state.agentContext, ...loaded.agentContext };
+
+        // Snapshot the loaded state so `resetToLoadedPreferences` still works.
         const { _meta, ...currentPreferences } = state;
-        state._meta.loadedPreferences = {
-          ...currentPreferences,
-        } as UserPreferences;
-      })
-      .addCase(savePreferencesToDatabase.rejected, (state, action) => {
-        state._meta.isLoading = false;
-        state._meta.error = action.payload as string;
-      })
-      // Save module preferences
-      .addCase(saveModulePreferencesToDatabase.pending, (state) => {
-        state._meta.isLoading = true;
-        state._meta.error = null;
-      })
-      .addCase(saveModulePreferencesToDatabase.fulfilled, (state, action) => {
-        state._meta.isLoading = false;
-        state._meta.lastSaved = action.payload.savedAt;
+        state._meta.loadedPreferences = { ...currentPreferences } as UserPreferences;
+        // Engine-managed persistence = never "unsaved" from the user's POV.
         state._meta.hasUnsavedChanges = false;
         state._meta.error = null;
-        // Update loaded preferences to current state after successful save
-        const { _meta, ...currentPreferences } = state;
-        state._meta.loadedPreferences = {
-          ...currentPreferences,
-        } as UserPreferences;
-      })
-      .addCase(saveModulePreferencesToDatabase.rejected, (state, action) => {
-        state._meta.isLoading = false;
-        state._meta.error = action.payload as string;
-      })
-      // Load preferences
-      .addCase(loadPreferencesFromDatabase.pending, (state) => {
-        state._meta.isLoading = true;
-        state._meta.error = null;
-      })
-      .addCase(loadPreferencesFromDatabase.fulfilled, (state, action) => {
-        state._meta.isLoading = false;
-        state._meta.error = null;
-        // Load all preferences and store as loaded state
-        const loadedPrefs = action.payload;
-        state.display = { ...loadedPrefs.display };
-        state.prompts = { ...loadedPrefs.prompts };
-        state.voice = { ...loadedPrefs.voice };
-        state.textToSpeech = { ...loadedPrefs.textToSpeech };
-        state.assistant = { ...loadedPrefs.assistant };
-        state.email = { ...loadedPrefs.email };
-        state.videoConference = { ...loadedPrefs.videoConference };
-        state.photoEditing = { ...loadedPrefs.photoEditing };
-        state.imageGeneration = { ...loadedPrefs.imageGeneration };
-        state.textGeneration = { ...loadedPrefs.textGeneration };
-        state.coding = { ...loadedPrefs.coding };
-        state.flashcard = { ...loadedPrefs.flashcard };
-        state.playground = { ...loadedPrefs.playground };
-        state.aiModels = { ...loadedPrefs.aiModels };
-        state.system = { ...loadedPrefs.system };
-        state.messaging = { ...loadedPrefs.messaging };
-        state.agentContext = {
-          ...(loadedPrefs.agentContext ?? {
-            level: "none",
-            organizationId: null,
-            scopeSelections: {},
-            projectId: null,
-            taskId: null,
-          }),
-        };
-        state._meta.loadedPreferences = { ...loadedPrefs };
-        state._meta.hasUnsavedChanges = false;
-      })
-      .addCase(loadPreferencesFromDatabase.rejected, (state, action) => {
-        state._meta.isLoading = false;
-        state._meta.error = action.payload as string;
-      });
+      },
+    );
   },
 });
 
@@ -596,95 +563,83 @@ export const {
 
 export default userPreferencesSlice.reducer;
 
-// Async thunks for Supabase operations
-export const savePreferencesToDatabase = createAsyncThunk(
-  "userPreferences/saveToDatabase",
-  async (preferences: UserPreferences, { getState, rejectWithValue }) => {
-    try {
-      const userId = (getState() as { user: { id: string | null } }).user.id;
-      if (!userId) throw new Error("User not authenticated");
+// ---- Sync engine policy --------------------------------------------------
+//
+// `userPreferencesPolicy` makes the slice a first-class citizen of the
+// unified sync engine. It:
+//   - broadcasts every preference mutation across tabs (<20ms)
+//   - debounces writes to IDB + a localStorage `matrx:idbFallback:*` mirror
+//   - debounces remote.write upsert into `user_preferences` (250ms — prefs
+//     edits are noisy: slider drags, typeahead, etc.)
+//   - hydrates from IDB on cold boot, falling back to the localStorage
+//     mirror, then `remote.fetch` from Supabase
+//   - refreshes in the background after 60s idle to catch edits from other
+//     sessions
+//
+// Replaces: `savePreferencesToDatabase`, `saveModulePreferencesToDatabase`,
+// `loadPreferencesFromDatabase` (deleted in this PR). See
+// `docs/concepts/full-sync-boardcast-storage/phase-2-plan.md` §6.
 
-      const { error } = await supabase.from("user_preferences").upsert({
-        user_id: userId,
-        preferences: preferences,
-      });
+const PREFERENCE_MODULE_KEYS: readonly (keyof UserPreferences)[] = [
+  "display",
+  "prompts",
+  "voice",
+  "textToSpeech",
+  "assistant",
+  "email",
+  "videoConference",
+  "photoEditing",
+  "imageGeneration",
+  "textGeneration",
+  "coding",
+  "flashcard",
+  "playground",
+  "aiModels",
+  "system",
+  "messaging",
+  "agentContext",
+] as const;
 
-      if (error) {
-        throw error;
-      }
-
-      return { savedAt: new Date().toISOString() };
-    } catch (error: any) {
-      return rejectWithValue(error.message || "Failed to save preferences");
-    }
+export const userPreferencesPolicy = definePolicy<UserPreferencesState>({
+  sliceName: "userPreferences",
+  preset: "warm-cache",
+  version: 1, // Bump destroys client caches; Phase 6 adds migration hooks.
+  broadcast: {
+    actions: [
+      "userPreferences/setPreference",
+      "userPreferences/setModulePreferences",
+      "userPreferences/resetModulePreferences",
+      "userPreferences/resetAllPreferences",
+      "userPreferences/resetToLoadedPreferences",
+      "userPreferences/clearUnsavedChanges",
+      "userPreferences/clearError",
+    ],
   },
-);
-
-export const saveModulePreferencesToDatabase = createAsyncThunk(
-  "userPreferences/saveModuleToDatabase",
-  async (
-    {
-      module,
-      preferences,
-    }: {
-      module: keyof UserPreferences;
-      preferences: Partial<UserPreferences[keyof UserPreferences]>;
-    },
-    { getState, rejectWithValue },
-  ) => {
-    try {
-      const state = getState() as { userPreferences: UserPreferencesState };
-      const currentPreferences = { ...state.userPreferences };
-
-      // Remove meta from current preferences
-      const { _meta, ...preferencesWithoutMeta } = currentPreferences;
-
-      // Update the specific module
-      const updatedPreferences = {
-        ...preferencesWithoutMeta,
-        [module]: { ...currentPreferences[module], ...preferences },
-      };
-
-      const userId = (state as { user: { id: string | null } } & typeof state)
-        .user.id;
-      if (!userId) throw new Error("User not authenticated");
-
-      const { error } = await supabase.from("user_preferences").upsert({
-        user_id: userId,
-        preferences: updatedPreferences,
-      });
-
-      if (error) {
-        throw error;
-      }
-
-      return { savedAt: new Date().toISOString() };
-    } catch (error: any) {
-      return rejectWithValue(error.message || "Failed to save preferences");
-    }
-  },
-);
-
-export const loadPreferencesFromDatabase = createAsyncThunk(
-  "userPreferences/loadFromDatabase",
-  async (_, { getState, rejectWithValue }) => {
-    try {
-      const userId = (getState() as { user: { id: string | null } }).user.id;
-      if (!userId) throw new Error("User not authenticated");
-
+  // `_meta` intentionally excluded: transient UI/load state (A15).
+  partialize: PREFERENCE_MODULE_KEYS,
+  staleAfter: 60_000, // background refresh after 1 min idle
+  remote: {
+    debounceMs: 250, // prefs edits are noisy (typing, slider drags)
+    fetch: async ({ identity, signal }) => {
+      if (identity.type !== "auth") return null; // guests have no server state
+      const { supabase } = await import("@/utils/supabase/client");
       const { data, error } = await supabase
         .from("user_preferences")
         .select("preferences")
-        .eq("user_id", userId)
+        .eq("user_id", identity.userId)
+        .abortSignal(signal)
         .single();
-
-      if (error) {
-        throw error;
-      }
-
-      return data.preferences as UserPreferences;
-    } catch (error: any) {
-      return rejectWithValue(error.message || "Failed to load preferences");
-    }
+      if (error || !data) return null;
+      return data.preferences as Partial<UserPreferencesState>;
+    },
+    write: async ({ identity, signal, body }) => {
+      if (identity.type !== "auth") return; // guests only live in client storage
+      const { supabase } = await import("@/utils/supabase/client");
+      await supabase
+        .from("user_preferences")
+        .upsert({ user_id: identity.userId, preferences: body })
+        .abortSignal(signal);
+      void signal; // AbortSignal forwarded via query builder above
+    },
   },
-);
+});

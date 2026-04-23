@@ -14,9 +14,13 @@
 
 import type { Policy } from "./types";
 import { themePolicy } from "@/styles/themes/themeSlice";
+import { userPreferencesPolicy } from "@/lib/redux/slices/userPreferencesSlice";
 
 // Uses `Policy<any>` instead of `Policy<unknown>` because `partialize: readonly (keyof TState)[]`
 // makes TState invariant — `Policy<{ mode: "dark" }>` does not assign to `Policy<unknown>`.
 // A heterogeneous collection of policies is the canonical case for `any` over `unknown`.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const syncPolicies: readonly Policy<any>[] = [themePolicy] as const;
+export const syncPolicies: readonly Policy<any>[] = [
+  themePolicy,
+  userPreferencesPolicy,
+] as const;

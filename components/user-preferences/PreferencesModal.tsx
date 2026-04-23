@@ -13,8 +13,8 @@ import { useAppDispatch } from "@/lib/redux/hooks";
 import {
     UserPreferencesState,
     resetToLoadedPreferences,
-    savePreferencesToDatabase,
-    clearError
+    clearError,
+    clearUnsavedChanges,
 } from '@/lib/redux/slices/userPreferencesSlice';
 import DisplayPreferences from './DisplayPreferences';
 import PromptsPreferences from './PromptsPreferences';
@@ -107,9 +107,11 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
         agentContext: 'Agent Context',
     };
 
-    const handleSave = async () => {
-        const { _meta: _, ...preferencesWithoutMeta } = preferences;
-        await dispatch(savePreferencesToDatabase(preferencesWithoutMeta));
+    const handleSave = () => {
+        // The sync engine's `userPreferencesPolicy` persists every mutation
+        // transparently (debounced ≤250ms). This button just clears the dirty
+        // indicator — the actual Supabase upsert has already happened.
+        dispatch(clearUnsavedChanges());
     };
 
     const handleReset = () => {

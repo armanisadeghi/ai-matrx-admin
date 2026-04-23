@@ -35,7 +35,7 @@ import { useAppDispatch } from "@/lib/redux/hooks";
 import type { RootState } from "@/lib/redux/store";
 import {
   type UserPreferencesState,
-  savePreferencesToDatabase,
+  clearUnsavedChanges,
   resetToLoadedPreferences,
   clearError,
 } from "@/lib/redux/slices/userPreferencesSlice";
@@ -226,8 +226,9 @@ export function VSCodePreferencesModal({
   };
 
   const handleSave = () => {
-    const { _meta: _, ...data } = preferences;
-    dispatch(savePreferencesToDatabase(data));
+    // Sync engine persists every mutation transparently — this button
+    // now just clears the dirty indicator.
+    dispatch(clearUnsavedChanges());
   };
   const handleReset = () => dispatch(resetToLoadedPreferences());
 

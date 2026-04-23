@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { AlertCircle, AlertTriangle, Info, Megaphone, X } from 'lucide-react';
 import { SystemAnnouncement, AnnouncementType } from '@/types/feedback.types';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
-import { setModulePreferences, saveModulePreferencesToDatabase } from '@/lib/redux/slices/userPreferencesSlice';
+import { setModulePreferences } from '@/lib/redux/slices/userPreferencesSlice';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { renderAnnouncementMessage } from '@/utils/render-announcement-message';
@@ -60,19 +60,11 @@ export default function SystemAnnouncementModal({ announcement }: SystemAnnounce
         setIsOpen(false);
 
         if (dontShowAgain) {
-            // Mark this announcement as viewed
+            // Mark this announcement as viewed. The sync engine's
+            // userPreferencesPolicy debounces this change to Supabase
+            // automatically (≤250ms); no explicit save dispatch needed.
             const updatedViewedAnnouncements = [...viewedAnnouncements, announcement.id];
-            
-            // Update Redux state
             dispatch(setModulePreferences({
-                module: 'system',
-                preferences: {
-                    viewedAnnouncements: updatedViewedAnnouncements,
-                },
-            }));
-
-            // Save to database
-            await dispatch(saveModulePreferencesToDatabase({
                 module: 'system',
                 preferences: {
                     viewedAnnouncements: updatedViewedAnnouncements,

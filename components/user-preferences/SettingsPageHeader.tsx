@@ -10,8 +10,8 @@ import type { RootState } from "@/lib/redux/store";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import {
     UserPreferencesState,
-    savePreferencesToDatabase,
     resetToLoadedPreferences,
+    clearUnsavedChanges,
 } from '@/lib/redux/slices/userPreferencesSlice';
 
 interface SettingsHeaderContentProps {
@@ -27,8 +27,11 @@ function SettingsHeaderContent({ title, showBack, backLabel }: SettingsHeaderCon
     const meta = preferences._meta || { isLoading: false, hasUnsavedChanges: false };
 
     const handleSave = () => {
-        const { _meta: _, ...preferencesWithoutMeta } = preferences;
-        dispatch(savePreferencesToDatabase(preferencesWithoutMeta));
+        // The sync engine's `userPreferencesPolicy` persists every mutation
+        // transparently (debounced ≤250ms). This button now just clears the
+        // dirty indicator — the actual Supabase upsert has already happened
+        // (or will within a couple frames of the last edit).
+        dispatch(clearUnsavedChanges());
     };
 
     const handleReset = () => {

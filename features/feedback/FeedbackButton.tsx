@@ -4,10 +4,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { Bug, PartyPopper, X } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { openFeedbackDialog } from "@/lib/redux/slices/overlaySlice";
-import {
-  setModulePreferences,
-  saveModulePreferencesToDatabase,
-} from "@/lib/redux/slices/userPreferencesSlice";
+import { setModulePreferences } from "@/lib/redux/slices/userPreferencesSlice";
 
 interface FeedbackButtonProps {
   className?: string;
@@ -33,14 +30,9 @@ export default function FeedbackButton({
       setShowNewFeatureHighlight(true);
       const timer = setTimeout(() => {
         const newCount = feedbackFeatureViewCount + 1;
+        // Engine debounces the Supabase write automatically (≤250ms).
         dispatch(
           setModulePreferences({
-            module: "system",
-            preferences: { feedbackFeatureViewCount: newCount },
-          }),
-        );
-        dispatch(
-          saveModulePreferencesToDatabase({
             module: "system",
             preferences: { feedbackFeatureViewCount: newCount },
           }),
@@ -57,14 +49,9 @@ export default function FeedbackButton({
       e.stopPropagation();
       e.preventDefault();
       setShowNewFeatureHighlight(false);
+      // Engine debounces the Supabase write automatically.
       dispatch(
         setModulePreferences({
-          module: "system",
-          preferences: { feedbackFeatureViewCount: 5 },
-        }),
-      );
-      dispatch(
-        saveModulePreferencesToDatabase({
           module: "system",
           preferences: { feedbackFeatureViewCount: 5 },
         }),

@@ -31,8 +31,8 @@ import { useAppDispatch } from "@/lib/redux/hooks";
 import type { RootState } from "@/lib/redux/store";
 import {
   type UserPreferencesState,
-  savePreferencesToDatabase,
   resetToLoadedPreferences,
+  clearUnsavedChanges,
 } from "@/lib/redux/slices/userPreferencesSlice";
 import type { PreferenceTab } from "@/components/user-preferences/PreferencesPage";
 
@@ -248,8 +248,10 @@ export default function UserPreferencesWindow({
   };
 
   const handleSave = () => {
-    const { _meta: _, ...data } = preferences;
-    dispatch(savePreferencesToDatabase(data));
+    // The sync engine's `userPreferencesPolicy` persists every mutation
+    // transparently (debounced ≤250ms). This button just clears the dirty
+    // indicator — the actual Supabase upsert has already happened.
+    dispatch(clearUnsavedChanges());
   };
   const handleReset = () => dispatch(resetToLoadedPreferences());
 

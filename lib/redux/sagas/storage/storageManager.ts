@@ -1,4 +1,8 @@
-import { StorageVerification } from '@/hooks/common/useLocalStorageManager';
+type StorageVerification = {
+    success: boolean;
+    message: string;
+    data?: any;
+};
 
 class StorageManager {
     private isClient: boolean;

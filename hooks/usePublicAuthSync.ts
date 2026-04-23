@@ -5,7 +5,6 @@
 import { useEffect, useRef } from 'react';
 import { useAppDispatch } from '@/lib/redux/hooks';
 import { setUser, setFingerprintId } from '@/lib/redux/slices/userSlice';
-import { loadPreferencesFromDatabase } from '@/lib/redux/slices/userPreferencesSlice';
 import { createClient } from '@/utils/supabase/client';
 import { getFingerprint } from '@/lib/services/fingerprint-service';
 
@@ -112,8 +111,10 @@ export function usePublicAuthSync() {
                         accessToken: session?.access_token || null,
                         tokenExpiresAt: session?.expires_at || null,
                     }));
-                    // Hydrate user preferences so components (e.g. FeedbackButton view count) work on public routes
-                    dispatch(loadPreferencesFromDatabase());
+                    // User preferences hydration is now handled automatically
+                    // by the sync engine: it reads from IDB on boot and falls
+                    // back to `userPreferencesPolicy.remote.fetch` (Supabase)
+                    // when IDB misses. No explicit dispatch required.
                 } else {
                     // GUEST USER PATH - get fingerprint for API authentication
                     try {

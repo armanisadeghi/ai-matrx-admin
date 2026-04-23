@@ -92,44 +92,48 @@ Manages modal state.
 const { isOpen, activeTab, openPreferences, closePreferences } = usePreferencesModal();
 ```
 
-### useModulePreferences
-Direct control over saving/resetting specific modules.
-
-```tsx
-import { useModulePreferences } from '@/hooks/user-preferences/useModulePreferences';
-
-const { save, reset, modulePreferences, isLoading, hasChanges, error } = useModulePreferences('prompts');
-
-await save(); // Only saves prompts module
-reset(); // Reset to defaults
-```
-
 ---
 
 ## Redux Actions
 
-### Save All Preferences
+> **Sync engine owns persistence.** Every mutation is persisted automatically by
+> `userPreferencesPolicy` (see `lib/sync/registry.ts`): debounced Supabase upsert
+> ≤250ms, IDB primary cache + `matrx:idbFallback:userPreferences` localStorage
+> mirror, cross-tab broadcast, cold-boot fetch on mount. There is no
+> `save...ToDatabase` thunk — just mutate state and the engine handles the rest.
+
+### Mutate a single module
 ```tsx
-import { savePreferencesToDatabase } from '@/lib/redux/slices/userPreferencesSlice';
+import { setModulePreferences } from '@/lib/redux/slices/userPreferencesSlice';
 
-dispatch(savePreferencesToDatabase(preferencesWithoutMeta));
-```
-
-### Save Single Module
-```tsx
-import { saveModulePreferencesToDatabase } from '@/lib/redux/slices/userPreferencesSlice';
-
-dispatch(saveModulePreferencesToDatabase({ 
-  module: 'prompts', 
-  preferences: promptsPreferences 
+dispatch(setModulePreferences({
+  module: 'prompts',
+  preferences: { defaultModel: 'gpt-4.1-mini' },
 }));
+// Supabase upsert happens automatically within ≤250ms.
 ```
 
-### Reset Module
+### Clear the "unsaved changes" indicator
+The "Save" button in the UI is cosmetic — the engine has already persisted. The
+button just clears the dirty flag:
+```tsx
+import { clearUnsavedChanges } from '@/lib/redux/slices/userPreferencesSlice';
+
+dispatch(clearUnsavedChanges());
+```
+
+### Reset module to defaults
 ```tsx
 import { resetModulePreferences } from '@/lib/redux/slices/userPreferencesSlice';
 
 dispatch(resetModulePreferences('prompts'));
+```
+
+### Discard unsaved edits (reset to last-loaded values)
+```tsx
+import { resetToLoadedPreferences } from '@/lib/redux/slices/userPreferencesSlice';
+
+dispatch(resetToLoadedPreferences());
 ```
 
 ---
@@ -188,8 +192,10 @@ openPreferences('prompts');
 
 ### 4. Custom Save Logic
 ```tsx
-const { save, hasChanges } = useModulePreferences('prompts');
-if (hasChanges) await save();
+// No custom save logic needed — the sync engine persists every mutation.
+// If you want to suppress the "unsaved changes" indicator programmatically:
+const hasChanges = useSelector((s: RootState) => s.userPreferences._meta.hasUnsavedChanges);
+if (hasChanges) dispatch(clearUnsavedChanges());
 ```
 
 ---
@@ -209,7 +215,6 @@ components/user-preferences/
 
 hooks/user-preferences/
 ├── usePreferencesModal.ts       # Modal state management
-├── useModulePreferences.ts      # Module save/reset
 └── usePreferenceValue.ts        # Get/set individual values
 
 lib/redux/
@@ -221,12 +226,13 @@ lib/redux/
 
 ## Key Technical Details
 
-- **Module Isolation**: `saveModulePreferencesToDatabase` only updates specified module
+- **Transparent Persistence**: `userPreferencesPolicy` (sync engine, warm-cache preset) debounces Supabase upserts ≤250ms. No manual save plumbing.
+- **Cold Boot**: Engine auto-fetches on mount if the cached snapshot is older than 60s (`staleAfter: 60_000`). No layout-level preloading needed anymore.
+- **Cross-Tab Sync**: Every mutation broadcasts via `BroadcastChannel` so sibling tabs update in <20ms.
 - **Type Safety**: Full TypeScript with `PreferenceTab` type
 - **Mobile Optimized**: Responsive with iOS-style bottom sheet < 768px
-- **Change Tracking**: `_meta.hasUnsavedChanges` tracks unsaved state
+- **Change Tracking**: `_meta.hasUnsavedChanges` tracks unsaved state (cosmetic — engine has already persisted)
 - **Error Handling**: `_meta.error` for error states
-- **Server-Side Init**: Preferences loaded in layout before any page renders
 
 ---
 

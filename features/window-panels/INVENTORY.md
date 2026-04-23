@@ -133,7 +133,7 @@ Many windows are **mixed**; the table lists the dominant sources and what you mu
 | **GalleryWindow** | `GalleryFloatingWorkspace` | **5** (Unsplash via `useUnsplashSearch` / `useUnsplashGallery`); **4** (search, filters, grid state); **5** (`localStorage` `gallery-window-favorites`) | Query + filters + favorites already partially in LS. |
 | **NewsWindow** | `NewsFloatingWorkspace` | **4** (category/country); **5** (`fetchNews` / external news API) | Filters only; articles are re-fetched. |
 | **ListManagerWindow** | `ListManagerFloatingWorkspace` | **1** (`getAccessibleLists`, `getListWithItems`); **4** (active list id) | `activeListId` + optional scroll. |
-| **UserPreferencesWindow** | Tab lazy panels + `userPreferencesSlice` | **2** (draft in Redux); **1** on `savePreferencesToDatabase` | Prefer reload from **1** after login; tab id for reopen. |
+| **UserPreferencesWindow** | Tab lazy panels + `userPreferencesSlice` | **2** (draft in Redux); **1** via `userPreferencesPolicy` sync engine (auto-persisted, debounced ≤250ms) | Sync engine auto-hydrates on mount; tab id for reopen. |
 | **AgentSettingsWindow** | `AgentSettingsForm`, `AgentSidebar` | **2** agent definition / settings slices; **1** `fetchFullAgent` | `initialAgentId` + opened tab ids. |
 | **AgentContentWindow** | `Messages`, `AgentVariablesPanel`, `AgentToolsManager` | **2** agent-definition Redux; **1** when agent saved to DB | `agentId` + active sub-tab (`messages` / `variables` / `tools`). |
 | **AgentGateWindow** | `AgentGateBody` | **3** (`instance-ui-state`, execution instances); **4** input | Gate is per-run: persist `conversationId` / instance ids if you restore runs. |
