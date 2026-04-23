@@ -349,12 +349,6 @@ export function ShortcutForm({
     if (shortcut) return fromShortcut(shortcut);
     return { ...emptyFormData(), ...(initialValues ?? {}) };
   });
-  const [scopeMappingEnabledKeys, setScopeMappingEnabledKeys] = useState<
-    string[]
-  >(() => {
-    if (shortcut) return Object.keys(shortcut.scopeMappings ?? {});
-    return Object.keys(initialValues?.scopeMappings ?? {});
-  });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -391,18 +385,12 @@ export function ShortcutForm({
     setError(null);
     if (shortcut) {
       setFormData(fromShortcut(shortcut));
-      setScopeMappingEnabledKeys(
-        Object.keys(fromShortcut(shortcut).scopeMappings ?? {}),
-      );
     } else {
       setFormData({
         ...emptyFormData(),
         categoryId: categories[0]?.id ?? "",
         ...(initialValues ?? {}),
       });
-      setScopeMappingEnabledKeys(
-        Object.keys(initialValues?.scopeMappings ?? {}),
-      );
     }
     // `initialValues` is intentionally omitted — it should only seed on mount
     // or when switching between edit/create targets.
@@ -664,16 +652,9 @@ export function ShortcutForm({
           Scope → Variable Mappings
         </LabelWithHelp>
         <ScopeMappingEditor
-          availableScopes={scopeMappingEnabledKeys}
           scopeMappings={formData.scopeMappings}
           variableDefinitions={variableDefinitions as AgentVariableDefinition[]}
-          onScopesChange={(scopes, mappings) => {
-            setScopeMappingEnabledKeys(scopes);
-            handleChange(
-              "scopeMappings",
-              Object.keys(mappings).length > 0 ? mappings : null,
-            );
-          }}
+          onChange={(mappings) => handleChange("scopeMappings", mappings)}
           compact
         />
       </div>

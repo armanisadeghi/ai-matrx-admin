@@ -182,7 +182,6 @@ export function useShortcutQuickCreate({
   const [scopeMappings, setScopeMappings] = useState<Record<string, string>>(
     {},
   );
-  const [availableScopes, setAvailableScopes] = useState<string[]>([]);
 
   // ── Link existing ────────────────────────────────────────────────────────
   const [searchQuery, setSearchQuery] = useState("");
@@ -511,7 +510,6 @@ export function useShortcutQuickCreate({
     setHideToolResults(DEFAULT_AGENT_EXECUTION_CONFIG.hideToolResults);
     setDefaultVariables(null);
     setScopeMappings({});
-    setAvailableScopes([]);
     setJsonError(null);
     setError(null);
     toast({ title: "Reset", description: "Form reset to defaults." });
@@ -575,8 +573,6 @@ export function useShortcutQuickCreate({
     setDefaultVariables,
     scopeMappings,
     setScopeMappings,
-    availableScopes,
-    setAvailableScopes,
 
     // Link existing
     filteredExisting,

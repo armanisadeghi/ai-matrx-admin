@@ -284,8 +284,6 @@ function VariablesTab({ state }: { state: ShortcutQuickCreateState }) {
     setDefaultVariables,
     scopeMappings,
     setScopeMappings,
-    availableScopes,
-    setAvailableScopes,
     isSaving,
   } = state;
 
@@ -321,13 +319,9 @@ function VariablesTab({ state }: { state: ShortcutQuickCreateState }) {
                 agent variables.
               </p>
               <ScopeMappingEditor
-                availableScopes={availableScopes}
                 scopeMappings={scopeMappings}
                 variableDefinitions={variableDefsForScopeMapping}
-                onScopesChange={(scopes, mappings) => {
-                  setAvailableScopes(scopes);
-                  setScopeMappings(mappings);
-                }}
+                onChange={(mappings) => setScopeMappings(mappings ?? {})}
                 compact
               />
             </div>

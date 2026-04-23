@@ -93,7 +93,6 @@ export function LinkAgentToShortcutModal({
   const [scopeMappings, setScopeMappings] = useState<Record<string, string>>(
     {},
   );
-  const [availableScopes, setAvailableScopes] = useState<string[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [enabledFeaturesInput, setEnabledFeaturesInput] = useState("");
@@ -108,7 +107,6 @@ export function LinkAgentToShortcutModal({
     setSelectedCategoryId(categories[0]?.id ?? "");
     setLabel(agent.name);
     setScopeMappings({});
-    setAvailableScopes([]);
     setEnabledFeaturesInput("");
     setError(null);
   }, [isOpen, agent, categories]);
@@ -322,13 +320,9 @@ export function LinkAgentToShortcutModal({
           <div className="space-y-2">
             <Label className="text-sm font-semibold">Scope Mappings</Label>
             <ScopeMappingEditor
-              availableScopes={availableScopes}
               scopeMappings={scopeMappings}
               variableDefinitions={agent.variableDefinitions ?? []}
-              onScopesChange={(scopes, mappings) => {
-                setAvailableScopes(scopes);
-                setScopeMappings(mappings);
-              }}
+              onChange={(mappings) => setScopeMappings(mappings ?? {})}
               compact
             />
           </div>
@@ -430,13 +424,9 @@ export function LinkAgentToShortcutModal({
             <div className="space-y-2 pt-2 border-t border-border">
               <Label className="text-sm font-semibold">Scope Mappings</Label>
               <ScopeMappingEditor
-                availableScopes={availableScopes}
                 scopeMappings={scopeMappings}
                 variableDefinitions={agent.variableDefinitions ?? []}
-                onScopesChange={(scopes, mappings) => {
-                  setAvailableScopes(scopes);
-                  setScopeMappings(mappings);
-                }}
+                onChange={(mappings) => setScopeMappings(mappings ?? {})}
                 compact
               />
             </div>
