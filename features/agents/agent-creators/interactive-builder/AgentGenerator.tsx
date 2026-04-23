@@ -1,6 +1,13 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, Component, type ReactNode, type ErrorInfo } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  Component,
+  type ReactNode,
+  type ErrorInfo,
+} from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { useShortcutTrigger } from "@/features/agents/hooks/useShortcutTrigger";
 import { destroyInstanceIfAllowed } from "@/features/agents/redux/execution-system/conversations";
@@ -55,7 +62,10 @@ interface ErrorBoundaryState {
   error: Error | null;
 }
 
-class GeneratorErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+class GeneratorErrorBoundary extends Component<
+  ErrorBoundaryProps,
+  ErrorBoundaryState
+> {
   state: ErrorBoundaryState = { hasError: false, error: null };
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
@@ -63,7 +73,11 @@ class GeneratorErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundary
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error("[AgentGenerator] Render error caught by boundary:", error, info);
+    console.error(
+      "[AgentGenerator] Render error caught by boundary:",
+      error,
+      info,
+    );
     this.props.onError?.(error);
   }
 
@@ -74,7 +88,9 @@ class GeneratorErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundary
           <div className="flex-none p-2 bg-red-100 dark:bg-red-900/20 border-b border-red-200 dark:border-red-800 flex items-start gap-2">
             <AlertTriangle className="h-3.5 w-3.5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
             <span className="text-xs text-red-700 dark:text-red-300">
-              <strong>Display Error:</strong> {this.state.error?.message ?? "Unknown rendering error"}. Showing raw response below.
+              <strong>Display Error:</strong>{" "}
+              {this.state.error?.message ?? "Unknown rendering error"}. Showing
+              raw response below.
             </span>
           </div>
           <div className="flex-1 overflow-y-auto p-3">
@@ -103,7 +119,11 @@ export function AgentGenerator({ onComplete }: AgentGeneratorProps) {
   const dispatch = useAppDispatch();
   const trigger = useShortcutTrigger();
   const { createAgent } = useAgentBuilder(onComplete);
-  const { publish, publishKey, isActive: isDebugActive } = useDebugContext("AgentGenerator");
+  const {
+    publish,
+    publishKey,
+    isActive: isDebugActive,
+  } = useDebugContext("AgentGenerator");
 
   // Pre-launch form inputs (legitimately local — no instance exists yet).
   // These map 1:1 onto the shortcut's input surface:
@@ -131,7 +151,9 @@ export function AgentGenerator({ onComplete }: AgentGeneratorProps) {
   );
 
   const streamPhase: StreamPhase = useAppSelector(
-    conversationId ? selectStreamPhase(conversationId) : () => "idle" as StreamPhase,
+    conversationId
+      ? selectStreamPhase(conversationId)
+      : () => "idle" as StreamPhase,
   );
 
   const isStreaming = useAppSelector(
@@ -152,10 +174,17 @@ export function AgentGenerator({ onComplete }: AgentGeneratorProps) {
 
   // ── Derived state ─────────────────────────────────────────────────────────
 
-  const isActive = streamPhase !== "idle" && streamPhase !== "complete" && streamPhase !== "error";
-  const hasExtractedJson = extractedSnapshot !== null && extractedSnapshot.type === "object";
-  const extractedValue = hasExtractedJson ? (extractedSnapshot.value as Record<string, unknown>) : null;
-  const extractionFailed = jsonExtractionComplete && !hasExtractedJson && !!streamingText;
+  const isActive =
+    streamPhase !== "idle" &&
+    streamPhase !== "complete" &&
+    streamPhase !== "error";
+  const hasExtractedJson =
+    extractedSnapshot !== null && extractedSnapshot.type === "object";
+  const extractedValue = hasExtractedJson
+    ? (extractedSnapshot.value as Record<string, unknown>)
+    : null;
+  const extractionFailed =
+    jsonExtractionComplete && !hasExtractedJson && !!streamingText;
   const canGenerate = selection.trim().length > 0;
 
   // ── Auto-populate agent name from extraction ─────────────────────────────
@@ -205,9 +234,19 @@ export function AgentGenerator({ onComplete }: AgentGeneratorProps) {
       "User Input (first 100)": userInput.slice(0, 100),
     });
   }, [
-    isDebugActive, conversationId, requestId, streamPhase, isStreaming,
-    jsonExtractionComplete, jsonExtractionRevision, hasExtractedJson,
-    extractedValue, agentName, selection, userInput, publish,
+    isDebugActive,
+    conversationId,
+    requestId,
+    streamPhase,
+    isStreaming,
+    jsonExtractionComplete,
+    jsonExtractionRevision,
+    hasExtractedJson,
+    extractedValue,
+    agentName,
+    selection,
+    userInput,
+    publish,
   ]);
 
   // ── Cleanup on unmount ───────────────────────────────────────────────────
@@ -236,7 +275,7 @@ export function AgentGenerator({ onComplete }: AgentGeneratorProps) {
       const result = await trigger(AGENT_GENERATOR_CONFIG.shortcutId, {
         scope: { selection },
         runtime: { userInput: userInput || undefined },
-        jsonExtraction: AGENT_GENERATOR_CONFIG.jsonExtraction,
+        jsonExtraction: AGENT_GENERATOR_CONFIG.launchDefaults.jsonExtraction,
         sourceFeature: "agent-generator",
       });
       setConversationId(result.conversationId);
@@ -305,7 +344,8 @@ export function AgentGenerator({ onComplete }: AgentGeneratorProps) {
 
   // ── Render ───────────────────────────────────────────────────────────────
 
-  const showResult = hasExtractedJson && jsonExtractionComplete && !isActive && !isStreaming;
+  const showResult =
+    hasExtractedJson && jsonExtractionComplete && !isActive && !isStreaming;
 
   return (
     <div className="w-full h-full flex flex-col">
@@ -324,8 +364,12 @@ export function AgentGenerator({ onComplete }: AgentGeneratorProps) {
                 placeholder="Describe what you want your AI agent to do..."
                 className="min-h-[120px] sm:min-h-[180px] text-sm border border-border rounded-xl"
                 disabled={isActive || isStreaming || showResult}
-                onTranscriptionComplete={() => toast.success("Voice input added")}
-                onTranscriptionError={(error) => toast.error("Voice input failed", { description: error })}
+                onTranscriptionComplete={() =>
+                  toast.success("Voice input added")
+                }
+                onTranscriptionError={(error) =>
+                  toast.error("Voice input failed", { description: error })
+                }
               />
               <p className="text-xs text-gray-500 dark:text-gray-400">
                 Be specific about the main purpose and goals
@@ -343,8 +387,12 @@ export function AgentGenerator({ onComplete }: AgentGeneratorProps) {
                 placeholder="Add any specific requirements, tone, formats, or constraints..."
                 className="min-h-[120px] sm:min-h-[180px] text-sm border border-border rounded-xl"
                 disabled={isActive || isStreaming || showResult}
-                onTranscriptionComplete={() => toast.success("Voice context added")}
-                onTranscriptionError={(error) => toast.error("Voice input failed", { description: error })}
+                onTranscriptionComplete={() =>
+                  toast.success("Voice context added")
+                }
+                onTranscriptionError={(error) =>
+                  toast.error("Voice input failed", { description: error })
+                }
               />
               <p className="text-xs text-gray-500 dark:text-gray-400">
                 Any additional context, requirements, or constraints
@@ -439,7 +487,8 @@ export function AgentGenerator({ onComplete }: AgentGeneratorProps) {
                     <div className="flex-none p-2 bg-amber-100 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800 flex items-start gap-2">
                       <AlertTriangle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
                       <span className="text-xs text-amber-700 dark:text-amber-300">
-                        <strong>JSON Extraction Failed:</strong> Could not extract structured agent config from the response.
+                        <strong>JSON Extraction Failed:</strong> Could not
+                        extract structured agent config from the response.
                       </span>
                     </div>
                   )}
