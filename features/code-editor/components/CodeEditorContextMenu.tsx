@@ -234,6 +234,7 @@ export function CodeEditorContextMenu({
     return (
         <div ref={wrapperRef} className={className}>
             <UnifiedAgentContextMenu
+                sourceFeature="code-editor"
                 isEditable={true}
                 onTextReplace={handleTextReplace}
                 onTextInsertBefore={handleTextInsertBefore}

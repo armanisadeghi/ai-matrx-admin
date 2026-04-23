@@ -29,6 +29,32 @@ export interface AgentShortcut {
   agentVersionId: string | null;
   useLatest: boolean;
 
+  // ── Resolved execution target (derived at load time; stays with the
+  //     shortcut so no fetch is needed at launch) ────────────────────────
+  /**
+   * The id the API must be called with. When `useLatest` is true this
+   * equals `agentId`; when false it equals `agentVersionId` (the frozen
+   * version). Always the safe choice for execution.
+   */
+  resolvedId: string | null;
+  /**
+   * Whether `resolvedId` points at an agx_version row (true) or an
+   * agx_agent row (false). Must be sent with the API call so the server
+   * knows which table to read. Mirrors `!useLatest` for version-pinned
+   * shortcuts.
+   */
+  isVersion: boolean;
+
+  // ── Agent contract (snapshotted with the shortcut at load time) ─────
+  //     These are the agent's declared variables + context slots at the
+  //     shortcut's pinned version. They live on the shortcut so launch
+  //     time never has to look up the agent slice — this is what keeps
+  //     version-pinned shortcuts safe and keeps "agent not loaded" from
+  //     silently dropping every variable.
+  agentName: string | null;
+  variableDefinitions: VariableDefinition[];
+  contextSlots: ContextSlot[];
+
   // ── Where the shortcut appears + scope→agent key routing ────────────
   /** App features/surfaces where this shortcut is available (chat, notes, code-editor, …). */
   enabledFeatures: ShortcutContext[];

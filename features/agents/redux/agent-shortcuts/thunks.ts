@@ -274,6 +274,13 @@ export const buildAgentShortcutMenu = createAsyncThunk<
           item.agent_id !== null &&
           item.resolved_id !== item.agent_id;
 
+        const parsedVariableDefinitions = parseVariableDefinitions(
+          item.agent?.variable_definitions,
+        );
+        const parsedContextSlots = parseContextSlots(
+          item.agent?.context_slots,
+        );
+
         const shortcut: AgentShortcut = {
           id: item.id,
           categoryId,
@@ -286,6 +293,13 @@ export const buildAgentShortcutMenu = createAsyncThunk<
           agentId: item.agent_id,
           agentVersionId: isVersion ? item.resolved_id : null,
           useLatest: item.use_latest,
+
+          resolvedId: item.resolved_id,
+          isVersion,
+
+          agentName: item.agent?.name ?? null,
+          variableDefinitions: parsedVariableDefinitions,
+          contextSlots: parsedContextSlots,
 
           enabledFeatures: item.enabled_features as ShortcutContext[],
           scopeMappings: parseScopeMappings(item.scope_mappings),
@@ -309,20 +323,11 @@ export const buildAgentShortcutMenu = createAsyncThunk<
 
         allShortcuts.push(shortcut);
 
-        if (item.resolved_id && item.agent) {
-          const { name, variable_definitions, context_slots } = item.agent;
-          dispatch(
-            mergePartialAgent({
-              id: item.resolved_id,
-              name,
-              variableDefinitions:
-                parseVariableDefinitions(variable_definitions),
-              contextSlots: parseContextSlots(context_slots),
-              isVersion,
-              parentAgentId: isVersion ? (item.agent_id ?? null) : null,
-            }),
-          );
-        }
+        // Intentionally do NOT mirror the agent into state.agentDefinition
+        // here. Shortcuts execute from their own snapshot (frozen version)
+        // and loading an agent record by the shortcut's agent_id would be
+        // unsafe — the shortcut may be pinned to an older version than
+        // what's "current" in the agents slice.
       }
     }
   }
@@ -400,6 +405,15 @@ export const fetchShortcutsForContext = createAsyncThunk<
         agentVersionId: isVersion ? row.resolved_id : null,
         useLatest: row.use_latest,
 
+        resolvedId: row.resolved_id,
+        isVersion,
+
+        agentName: row.agent_name ?? null,
+        variableDefinitions: parseVariableDefinitions(
+          row.agent_variable_definitions,
+        ),
+        contextSlots: parseContextSlots(row.agent_context_slots),
+
         enabledFeatures: row.enabled_features as ShortcutContext[],
         scopeMappings: parseScopeMappings(row.scope_mappings),
         contextMappings: parseScopeMappings(row.context_mappings),
@@ -418,20 +432,10 @@ export const fetchShortcutsForContext = createAsyncThunk<
       };
 
       shortcuts.push(shortcut);
-
-      if (row.resolved_id && row.agent_variable_definitions !== undefined) {
-        dispatch(
-          mergePartialAgent({
-            id: row.resolved_id,
-            variableDefinitions: parseVariableDefinitions(
-              row.agent_variable_definitions,
-            ),
-            contextSlots: parseContextSlots(row.agent_context_slots),
-            isVersion,
-            parentAgentId: isVersion ? (row.agent_id ?? null) : null,
-          }),
-        );
-      }
+      // Note: we deliberately do not touch state.agentDefinition here —
+      // shortcuts carry their own variableDefinitions + contextSlots
+      // pinned to agentVersionId. Loading the agent record could pull
+      // the wrong (current) version.
     }
 
     dispatch(upsertShortcuts(shortcuts));
@@ -766,6 +770,12 @@ interface ShortcutApiRow {
 }
 
 function shortcutRowToFrontend(row: ShortcutApiRow): AgentShortcut {
+  // The REST endpoint returns the raw agx_shortcut row — no agent join,
+  // so variableDefinitions + contextSlots are left empty. This path is
+  // primarily used by the management UI (ShortcutForm fetches the agent
+  // separately via fetchAgentExecutionMinimal). Never execute a shortcut
+  // loaded ONLY via this path without first hydrating it from the menu RPC.
+  const isVersion = !row.use_latest && row.agent_version_id != null;
   return {
     id: row.id,
     categoryId: row.category_id,
@@ -777,6 +787,11 @@ function shortcutRowToFrontend(row: ShortcutApiRow): AgentShortcut {
     agentId: row.agent_id,
     agentVersionId: row.agent_version_id,
     useLatest: row.use_latest ?? false,
+    resolvedId: isVersion ? row.agent_version_id : row.agent_id,
+    isVersion,
+    agentName: null,
+    variableDefinitions: [],
+    contextSlots: [],
     enabledFeatures: (row.enabled_features as ShortcutContext[]) ?? [],
     scopeMappings: parseScopeMappings(row.scope_mappings),
     contextMappings: parseScopeMappings(row.context_mappings),

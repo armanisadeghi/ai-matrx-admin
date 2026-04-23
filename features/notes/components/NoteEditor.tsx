@@ -608,6 +608,7 @@ export function NoteEditor({
         {/* Editor Content with Unified Context Menu */}
         {editorMode === "plain" && (
           <UnifiedAgentContextMenu
+            sourceFeature="notes"
             getTextarea={() => textareaRef.current}
             contextData={{
               content: localContent,
@@ -684,6 +685,7 @@ export function NoteEditor({
 
         {editorMode === "wysiwyg" && (
           <UnifiedAgentContextMenu
+            sourceFeature="notes"
             contextData={{
               content: localContent,
               context: localContent,
@@ -730,6 +732,7 @@ export function NoteEditor({
 
         {editorMode === "markdown" && (
           <UnifiedAgentContextMenu
+            sourceFeature="notes"
             contextData={{
               content: localContent,
               context: localContent,
@@ -785,6 +788,7 @@ export function NoteEditor({
 
         {editorMode === "preview" && (
           <UnifiedAgentContextMenu
+            sourceFeature="notes"
             contextData={{
               content: localContent,
               context: localContent,

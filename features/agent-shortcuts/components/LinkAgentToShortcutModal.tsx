@@ -153,6 +153,11 @@ export function LinkAgentToShortcutModal({
         agentId: agent.id,
         agentVersionId: useLatest ? null : (agent.currentVersionId ?? null),
         useLatest,
+        resolvedId: useLatest ? agent.id : (agent.currentVersionId ?? null),
+        isVersion: !useLatest && agent.currentVersionId != null,
+        agentName: agent.name,
+        variableDefinitions: [],
+        contextSlots: [],
         enabledFeatures: parseShortcutContextsInput(enabledFeaturesInput),
         scopeMappings:
           Object.keys(scopeMappings).length > 0 ? scopeMappings : null,

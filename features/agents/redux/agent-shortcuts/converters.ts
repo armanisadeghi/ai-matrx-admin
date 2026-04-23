@@ -107,6 +107,20 @@ export function dbRowToAgentShortcut(row: ShortcutRow): AgentShortcut {
     agentVersionId: row.agent_version_id ?? null,
     useLatest: row.use_latest ?? false,
 
+    // Derived execution target — this converter reads the raw DB row (no
+    // agent join) so we compute the resolved id/flag locally. Variable
+    // definitions + context slots stay empty; the RPC loaders populate them
+    // on the menu path.
+    resolvedId:
+      row.use_latest === false && row.agent_version_id
+        ? row.agent_version_id
+        : row.agent_id,
+    isVersion: row.use_latest === false && row.agent_version_id != null,
+
+    agentName: null,
+    variableDefinitions: [],
+    contextSlots: [],
+
     enabledFeatures:
       ((loose.enabled_features ?? loose.enabled_contexts) as unknown as ShortcutContext[]) ?? [],
     scopeMappings:

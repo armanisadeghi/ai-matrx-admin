@@ -602,6 +602,7 @@ export function MessageItem({
       <div className="p-4">
         {isEditing ? (
           <UnifiedAgentContextMenu
+            sourceFeature="agent-builder"
             getTextarea={() => textareaRef.current}
             contextData={{ contextMenuData }}
             enabledPlacements={["ai-action", "content-block", "quick-action"]}

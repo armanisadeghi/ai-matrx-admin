@@ -31,7 +31,10 @@ import { PLACEMENT_TYPES } from "@/features/agent-shortcuts/constants";
 import { insertTextAtTextareaCursor } from "@/utils/text-insertion";
 import type { Scope } from "@/features/agents/redux/shared/scope";
 import type { ApplicationScope } from "@/features/agents/utils/scope-mapping";
-import type { ResultDisplayMode } from "@/features/agents/types/instance.types";
+import type {
+  ResultDisplayMode,
+  SourceFeature,
+} from "@/features/agents/types/instance.types";
 import {
   useUnifiedAgentContextMenu,
   type AgentMenuEntry,
@@ -65,6 +68,16 @@ export type PlacementMode = Partial<Record<PlacementKey, PlacementVisibility>>;
 
 export interface UnifiedAgentContextMenuProps {
   children: React.ReactNode;
+  /**
+   * REQUIRED. Identifies the UI that mounted this context menu so every
+   * shortcut launched from here can be attributed to its true caller.
+   *
+   * Never pass a generic label like "context-menu" — the context menu
+   * itself is shared by many surfaces (notes editor, code editor, agent
+   * builder, demos). Tag the surface instead, e.g. "code-editor",
+   * "notes", "agent-builder", or "demo:context-menu-v2".
+   */
+  sourceFeature: SourceFeature;
   editorId?: string;
   getTextarea?: () => HTMLTextAreaElement | null;
   onContentInserted?: () => void;
@@ -154,6 +167,7 @@ function resolvePlacementMode(
 
 export function UnifiedAgentContextMenu({
   children,
+  sourceFeature,
   editorId,
   getTextarea,
   onContentInserted,
@@ -594,8 +608,8 @@ export function UnifiedAgentContextMenu({
         // in the launch thunk. We forward only minimal overrides — the bundle
         // wins. Runtime values go in `runtime`.
         await launchShortcut(entry.id, applicationScope, {
-          surfaceKey: `context-menu:${entry.id}`,
-          sourceFeature: "context-menu",
+          surfaceKey: `${sourceFeature}:${entry.id}`,
+          sourceFeature,
           config: {
             displayMode: resultDisplay,
           },

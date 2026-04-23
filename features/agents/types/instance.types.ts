@@ -64,16 +64,24 @@ export type SourceFeature =
   | "agent-creator-panel"
   | "agent-generator"
   | "chat-interface"
+  /**
+   * @deprecated The context menu is a shared UI, not a feature. Pass the
+   * real mounting surface (e.g. "notes", "code-editor", "agent-builder",
+   * "demo") so traces identify the caller.
+   */
   | "context-menu"
   | "prompt-app"
   | "research"
   | "chat-route"
   | "code-editor"
+  | "notes"
   | "agent-content-window"
   | "voice-pad-ai"
   | "agent-run-window"
   | "agent-run-history-window"
   | "agent-runs-sidebar"
+  /** Demo / test harness (routes under /demos, example pages). */
+  | "demo"
   /** Triggered directly from application code (hook / helper / automation). */
   | "programmatic";
 

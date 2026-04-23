@@ -360,14 +360,24 @@ export const executeInstance = createAsyncThunk<
           ...(pendingBypass && { cache_bypass: pendingBypass }),
         };
       } else {
-        // Turn 1: POST /ai/agents/{agentId}
+        // Turn 1: POST /ai/agents/{id}
+        //
+        // Agent-vs-version routing: when the instance was launched from a
+        // version-pinned shortcut/app (`initialAgentVersionId` set), we
+        // target the frozen version row instead of the live agent. The
+        // server uses the same endpoint with `is_version: true` to read
+        // from `agx_version` — mirroring executeChatInstance.
+        //
         // Persistent → is_new:true (server creates the cx_conversation row).
         // Ephemeral → is_new:false, store:false (server streams without writing).
-        url = `${baseUrl}/ai/agents/${instance.agentId}`;
+        const pinnedVersionId = instance.initialAgentVersionId ?? null;
+        const targetId = pinnedVersionId ?? instance.agentId;
+        url = `${baseUrl}/ai/agents/${targetId}`;
         routedPayload = {
           ...payload,
           conversation_id: conversationId,
           is_new: !isEphemeral,
+          ...(pinnedVersionId && { is_version: true }),
           ...(isEphemeral && { store: false }),
           ...(pendingBypass && { cache_bypass: pendingBypass }),
         } as Record<string, unknown>;

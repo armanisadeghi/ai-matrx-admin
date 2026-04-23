@@ -242,39 +242,18 @@ export const launchAgentExecution = createAsyncThunk<
   let resolvedDisplayMode: ResultDisplayMode = displayModeOverride ?? "direct";
 
   // =========================================================================
-  // Step 0.5: Ensure the agent's execution payload is in Redux before we
-  // snapshot it into the instance. `createInstance*` reads
-  // `state.agentDefinition.agents[agentId]` via `readAgentSnapshot` — if the
-  // variable definitions haven't been fetched yet, the instance ends up with
-  // `definitions: []` and subsequent `setUserVariableValues` writes are
-  // silently dropped at assembly time (selectResolvedVariables only emits
-  // values for defined vars).
-  //
-  // Applies to BOTH the direct-agent and the shortcut paths. Previously the
-  // shortcut path assumed `buildAgentShortcutMenu` had already merged the
-  // agent into Redux, but any programmatic trigger that runs before (or
-  // independently of) the menu build leaves the snapshot empty and every
-  // scope → variable mapping silently drops. Always verify.
+  // Step 0.5: Ensure the agent's execution payload is in Redux — but only
+  // for the DIRECT-AGENT path. Shortcuts are self-sufficient: they carry
+  // their own variableDefinitions + contextSlots pinned to the frozen
+  // version, and `createInstanceFromShortcut` reads them off the shortcut
+  // record. Calling an agent fetch on the shortcut path would risk loading
+  // the WRONG (current) version of the agent.
   // =========================================================================
-  const resolvedAgentId =
-    agentId ??
-    (shortcutId
-      ? getShortcutRecordFromState(getState() as RootState, shortcutId)
-          ?.agentId ?? null
-      : null);
-
-  if (resolvedAgentId) {
+  if (agentId && !shortcutId) {
     const preState = getState() as RootState;
-    const payload = selectAgentExecutionPayload(preState, resolvedAgentId);
+    const payload = selectAgentExecutionPayload(preState, agentId);
     if (!payload.isReady) {
-      if (typeof window !== "undefined") {
-        console.log(
-          `%c[Shortcut]%c agent ${resolvedAgentId} not loaded — fetching execution payload before mapping`,
-          "color:#f59e0b;font-weight:bold",
-          "color:inherit",
-        );
-      }
-      await dispatch(fetchAgentExecutionMinimal(resolvedAgentId)).unwrap();
+      await dispatch(fetchAgentExecutionMinimal(agentId)).unwrap();
     }
   }
 
