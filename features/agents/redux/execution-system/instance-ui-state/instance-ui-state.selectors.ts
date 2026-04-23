@@ -450,6 +450,19 @@ export const selectIsBlockMode = (state: RootState): boolean =>
 export const selectIsSnapshot = (state: RootState): boolean =>
   state.instanceUIState.isSnapshot;
 
+export const selectIsMemoryToggleRequested = (state: RootState): boolean =>
+  state.instanceUIState.isMemoryToggleRequested;
+
+export const selectMemoryToggleTarget = (state: RootState): boolean =>
+  state.instanceUIState.memoryToggleTarget;
+
+export const selectMemoryModel = (state: RootState): string | null =>
+  state.instanceUIState.memoryModel;
+
+export const selectMemoryScope = (
+  state: RootState,
+): "thread" | "resource" => state.instanceUIState.memoryScope;
+
 // ── Global registry selectors (keyed by display Mode) ────────────────────────
 
 export const selectInstanceIdsByDisplayMode = (

@@ -1141,6 +1141,44 @@ export function callWarmPrompt(promptId: string) {
   });
 }
 
+// ─── Conversation: Observational Memory cost summary ─────────────────────────
+//
+// Admin-only. Aggregates every `cx_observational_memory_event` row for the
+// conversation and returns the authoritative totals + per-event-type
+// breakdown. Non-admin callers receive 403 Forbidden from the backend;
+// this helper exposes that as a typed ApiCallError, never throws.
+
+export type MemoryCostSummary = components["schemas"]["MemoryCostSummary"];
+
+export function callConversationMemoryCost(
+  conversationId: string,
+  options?: {
+    signal?: AbortSignal;
+    scopeOverrides?: Partial<CallScope>;
+    _testOverrides?: TestOverrides;
+  },
+): ThunkAction<
+  Promise<ApiCallResult<MemoryCostSummary>>,
+  RootState,
+  unknown,
+  Action
+> {
+  return callApi({
+    path: "/ai/conversations/{conversation_id}/memory_cost",
+    method: "GET",
+    pathParams: { conversation_id: conversationId },
+    stream: false,
+    signal: options?.signal,
+    scopeOverrides: options?.scopeOverrides,
+    _testOverrides: options?._testOverrides,
+  }) as ThunkAction<
+    Promise<ApiCallResult<MemoryCostSummary>>,
+    RootState,
+    unknown,
+    Action
+  >;
+}
+
 // ─── TODO: Add more wrappers as callers are migrated ─────────────────────────
 // callChat(...)
 // callDirectChat(...)

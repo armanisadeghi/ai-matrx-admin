@@ -40,6 +40,11 @@ import {
   isCxToolCallReservation,
   type ConversationIdData,
   type ConversationLabeledData,
+  type MemoryBufferSpawnedData,
+  type MemoryContextInjectedData,
+  type MemoryErrorData,
+  type MemoryObserverCompletedData,
+  type MemoryReflectorCompletedData,
   type UntypedDataPayload,
 } from "@/types/python-generated/stream-events";
 import {
@@ -68,6 +73,13 @@ import {
   updateExtractedJson,
 } from "../active-requests/active-requests.slice";
 import { confirmServerSync } from "../conversations/conversations.slice";
+import {
+  recordBufferSpawned,
+  recordContextInjected,
+  recordMemoryError,
+  recordObserverCompleted,
+  recordReflectorCompleted,
+} from "../observational-memory/observational-memory.slice";
 import { assertConversationIdMatches } from "../utils/assert-conversation-id";
 import { StreamingJsonTracker } from "@/utils/json/streaming-json-tracker";
 import { StreamBlockAccumulator } from "../utils/stream-block-accumulator";
@@ -514,6 +526,52 @@ export async function processStream({
             conversationId: labeled.conversation_id,
             title: labeled.title,
             description: labeled.description ?? "",
+          }),
+        );
+      } else if (d.type === "memory_context_injected") {
+        // Observational Memory: the Observer's distilled context was injected
+        // into the prompt prior to this turn. Record for the live activity
+        // panel + counter aggregation.
+        dispatch(
+          recordContextInjected({
+            conversationId,
+            requestId,
+            data: d as MemoryContextInjectedData,
+          }),
+        );
+      } else if (d.type === "memory_observer_completed") {
+        dispatch(
+          recordObserverCompleted({
+            conversationId,
+            requestId,
+            data: d as MemoryObserverCompletedData,
+          }),
+        );
+      } else if (d.type === "memory_reflector_completed") {
+        dispatch(
+          recordReflectorCompleted({
+            conversationId,
+            requestId,
+            data: d as MemoryReflectorCompletedData,
+          }),
+        );
+      } else if (d.type === "memory_buffer_spawned") {
+        dispatch(
+          recordBufferSpawned({
+            conversationId,
+            requestId,
+            data: d as MemoryBufferSpawnedData,
+          }),
+        );
+      } else if (d.type === "memory_error") {
+        // Non-fatal: memory failures must never break the assistant turn.
+        // Flag `degraded` on the slice so the UI can show a subtle badge
+        // without interrupting the conversation.
+        dispatch(
+          recordMemoryError({
+            conversationId,
+            requestId,
+            data: d as MemoryErrorData,
           }),
         );
       } else {

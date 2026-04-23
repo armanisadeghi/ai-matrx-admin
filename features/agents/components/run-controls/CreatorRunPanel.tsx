@@ -18,6 +18,7 @@ import {
   RotateCcw,
   AppWindow,
   SlidersHorizontal,
+  Brain,
 } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import {
@@ -25,6 +26,13 @@ import {
   focusWindow,
   selectWindow,
 } from "@/lib/redux/slices/windowManagerSlice";
+import { openOverlay } from "@/lib/redux/slices/overlaySlice";
+import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
+import {
+  selectIsMemoryEnabledForConversation,
+  selectMemoryCounters,
+  selectMemoryDegraded,
+} from "@/features/agents/redux/execution-system/observational-memory/observational-memory.selectors";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { startNewConversation } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
@@ -72,6 +80,12 @@ function ActionsTab({
   onOpenRunSettingsWindow: () => void;
 }) {
   const dispatch = useAppDispatch();
+  const isAdmin = useAppSelector(selectIsAdmin);
+  const isMemoryEnabled = useAppSelector(
+    selectIsMemoryEnabledForConversation(conversationId),
+  );
+  const memoryDegraded = useAppSelector(selectMemoryDegraded(conversationId));
+  const memoryCounters = useAppSelector(selectMemoryCounters(conversationId));
 
   const handleReset = useCallback(() => {
     dispatch(
@@ -83,6 +97,15 @@ function ActionsTab({
       .unwrap()
       .catch((err) => console.error("Failed to reset test instance:", err));
   }, [conversationId, surfaceKey, dispatch]);
+
+  const handleOpenMemoryInspector = useCallback(() => {
+    dispatch(
+      openOverlay({
+        overlayId: "observationalMemoryWindow",
+        data: { selectedConversationId: conversationId },
+      }),
+    );
+  }, [dispatch, conversationId]);
 
   const ActionButton = ({
     onClick,
@@ -145,6 +168,42 @@ function ActionsTab({
           </>
         }
       />
+      {isAdmin && (
+        <button
+          type="button"
+          onClick={handleOpenMemoryInspector}
+          className={cn(
+            "relative flex flex-col items-center justify-center gap-1.5 w-[84px] h-[84px] text-muted-foreground hover:text-foreground bg-muted/10 hover:bg-muted/30 border border-transparent hover:border-border rounded-xl transition-all shrink-0",
+            isMemoryEnabled &&
+              "bg-purple-500/10 border-purple-500/30 text-foreground",
+          )}
+        >
+          <Brain
+            className={cn(
+              "w-7 h-7",
+              isMemoryEnabled ? "text-purple-500" : "text-purple-500/60",
+            )}
+          />
+          <span className="text-[10px] text-center leading-tight font-medium px-1">
+            Memory
+            <br />
+            Inspector
+          </span>
+          {isMemoryEnabled && (
+            <span className="absolute top-1 right-1 flex items-center gap-0.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse" />
+              {memoryCounters.totalEvents > 0 && (
+                <span className="text-[9px] font-mono text-purple-500 leading-none">
+                  {memoryCounters.totalEvents}
+                </span>
+              )}
+            </span>
+          )}
+          {memoryDegraded && (
+            <span className="absolute top-1 left-1 w-1.5 h-1.5 rounded-full bg-amber-500" />
+          )}
+        </button>
+      )}
     </div>
   );
 }

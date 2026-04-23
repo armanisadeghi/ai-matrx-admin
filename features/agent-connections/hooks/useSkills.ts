@@ -11,7 +11,7 @@ import {
   type SklSkillType,
   type SklDefinition,
 } from "../redux/skl";
-import { useScope } from "./useScope";
+import { useViewScope } from "./useViewScope";
 
 export interface UseSkillsArgs {
   types?: SklSkillType[];
@@ -27,7 +27,7 @@ export interface UseSkillsResult {
 
 export function useSkills({ types }: UseSkillsArgs = {}): UseSkillsResult {
   const dispatch = useAppDispatch();
-  const { scope, scopeId } = useScope();
+  const { scope, scopeId } = useViewScope();
   const status = useAppSelector(selectSkillDefinitionsStatus);
   const error = useAppSelector((s) => s.skl.definitions.error);
 
@@ -39,11 +39,11 @@ export function useSkills({ types }: UseSkillsArgs = {}): UseSkillsResult {
   const filteredSkills = useAppSelector(filteredSelector);
   const grouped = useAppSelector(selectSkillDefinitionsGrouped);
 
+  const typesKey = types?.join(",");
   useEffect(() => {
-    void dispatch(
-      fetchSkillDefinitions({ scope, scopeId, types }),
-    );
-  }, [dispatch, scope, scopeId, types?.join(",")]);
+    void dispatch(fetchSkillDefinitions({ scope, scopeId, types }));
+    // Depend on the stable typesKey so array identity doesn't cause refetch.
+  }, [dispatch, scope, scopeId, typesKey]);
 
   return useMemo(
     () => ({

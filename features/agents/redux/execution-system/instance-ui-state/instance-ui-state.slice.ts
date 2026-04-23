@@ -75,12 +75,49 @@ export interface InstanceUIStateSlice {
    * thunks and serialized onto the wire payload.
    */
   isSnapshot: boolean;
+
+  /**
+   * Admin-only — when true, the next outbound turn sends `memory: true` to
+   * enable Observational Memory on the conversation. From that point on the
+   * backend persists the flag on `cx_conversation.metadata` and the flag no
+   * longer needs to be resent.
+   *
+   * Unlike `isBlockMode` / `isSnapshot`, which are sent on every turn, this
+   * is a **one-shot signal** — see the execute thunks for the consumption
+   * logic (they clear this flag after emitting it).
+   */
+  isMemoryToggleRequested: boolean;
+
+  /**
+   * Admin-only — the target enabled state when `isMemoryToggleRequested`
+   * fires. `true` enables, `false` disables. Ignored when the toggle flag
+   * is false.
+   */
+  memoryToggleTarget: boolean;
+
+  /**
+   * Admin-only — optional `memory_model` override sent with the memory
+   * toggle. When null, the backend falls back to `MATRX_OM_DEFAULT_MODEL`.
+   * Example values: "google/gemini-2.5-flash", "openai/gpt-5-mini".
+   */
+  memoryModel: string | null;
+
+  /**
+   * Admin-only — `memory_scope` sent with the memory toggle.
+   *   "thread"   (default) — memory scoped to this conversation
+   *   "resource" — memory scoped across conversations for this user
+   */
+  memoryScope: "thread" | "resource";
 }
 
 const initialState: InstanceUIStateSlice = {
   byConversationId: {},
   isBlockMode: false,
   isSnapshot: false,
+  isMemoryToggleRequested: false,
+  memoryToggleTarget: true,
+  memoryModel: null,
+  memoryScope: "thread",
 };
 
 // =============================================================================
@@ -521,6 +558,36 @@ const instanceUIStateSlice = createSlice({
     setUseSnapshot(state, action: PayloadAction<boolean>) {
       state.isSnapshot = action.payload;
     },
+
+    // ── Observational Memory (admin-only) ────────────────────────────────────
+
+    /**
+     * Queue a one-shot `memory: true|false` signal to ride the next outbound
+     * turn. The execute thunks read + clear this on each call.
+     */
+    requestMemoryToggle(
+      state,
+      action: PayloadAction<{ enabled: boolean }>,
+    ) {
+      state.isMemoryToggleRequested = true;
+      state.memoryToggleTarget = action.payload.enabled;
+    },
+
+    /** Clear the queued toggle after it has been sent. */
+    clearMemoryToggleRequest(state) {
+      state.isMemoryToggleRequested = false;
+    },
+
+    setMemoryModel(state, action: PayloadAction<string | null>) {
+      state.memoryModel = action.payload;
+    },
+
+    setMemoryScope(
+      state,
+      action: PayloadAction<"thread" | "resource">,
+    ) {
+      state.memoryScope = action.payload;
+    },
   },
 
   extraReducers: (builder) => {
@@ -571,6 +638,10 @@ export const {
   removeInstanceUIState,
   setUseBlockMode,
   setUseSnapshot,
+  requestMemoryToggle,
+  clearMemoryToggleRequest,
+  setMemoryModel,
+  setMemoryScope,
 } = instanceUIStateSlice.actions;
 
 export default instanceUIStateSlice.reducer;

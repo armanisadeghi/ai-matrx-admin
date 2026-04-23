@@ -3,15 +3,44 @@
 import React, { useState } from "react";
 import { Sparkles, ArrowUp } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { OVERVIEW_CARDS } from "../../constants";
 import type { AgentConnectionsSection } from "../../types";
+import { selectLiveAgents } from "@/features/agents/redux/agent-definition/selectors";
+import { selectMcpCatalog } from "@/features/agents/redux/mcp/mcp.slice";
+import {
+  selectSkillDefinitionsCount,
+  selectRenderDefinitionsCount,
+  selectResourcesCount,
+} from "../../redux/skl";
+import { setActiveSection } from "../../redux/ui";
 
-interface OverviewSectionProps {
-  onNavigate: (section: AgentConnectionsSection) => void;
-}
-
-export function OverviewSection({ onNavigate }: OverviewSectionProps) {
+export function OverviewSection() {
+  const dispatch = useAppDispatch();
   const [prompt, setPrompt] = useState("");
+
+  const agentsCount = useAppSelector(selectLiveAgents).length;
+  const mcpCount = useAppSelector(selectMcpCatalog).length;
+  const skillsCount = useAppSelector(selectSkillDefinitionsCount);
+  const renderBlocksCount = useAppSelector(selectRenderDefinitionsCount);
+  const resourcesCount = useAppSelector(selectResourcesCount);
+
+  const countFor = (section: AgentConnectionsSection): number | null => {
+    switch (section) {
+      case "agents":
+        return agentsCount;
+      case "skills":
+        return skillsCount;
+      case "renderBlocks":
+        return renderBlocksCount;
+      case "resources":
+        return resourcesCount;
+      case "mcpServers":
+        return mcpCount;
+      default:
+        return null;
+    }
+  };
 
   return (
     <div className="flex flex-col gap-6 px-8 py-6 max-w-5xl mx-auto w-full">
@@ -73,11 +102,12 @@ export function OverviewSection({ onNavigate }: OverviewSectionProps) {
         {OVERVIEW_CARDS.map((card) => {
           const Icon = card.icon;
           const actionLabel = card.action === "new" ? "New..." : "Browse...";
+          const count = countFor(card.value);
           return (
             <button
               key={card.value}
               type="button"
-              onClick={() => onNavigate(card.value)}
+              onClick={() => dispatch(setActiveSection(card.value))}
               className={cn(
                 "group flex flex-col gap-3 rounded-xl border border-border",
                 "bg-background p-5 text-left transition-colors",
@@ -86,9 +116,14 @@ export function OverviewSection({ onNavigate }: OverviewSectionProps) {
             >
               <div className="flex items-center gap-2">
                 <Icon className="h-4 w-4 text-foreground" />
-                <span className="text-base font-semibold text-foreground">
+                <span className="text-base font-semibold text-foreground flex-1">
                   {card.label}
                 </span>
+                {typeof count === "number" && count > 0 && (
+                  <span className="text-xs text-muted-foreground tabular-nums">
+                    {count}
+                  </span>
+                )}
               </div>
               <p className="text-sm text-muted-foreground leading-snug">
                 {card.description}

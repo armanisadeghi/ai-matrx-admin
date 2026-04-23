@@ -41,7 +41,10 @@ const nextConfig = {
         ],
     },
     
-    reactCompiler: true,
+    // TEMP: disabled to measure build-time impact. React Compiler adds a per-component
+    // analysis pass that scales super-linearly with the codebase. Re-enable once we've
+    // baselined compile time with it off.
+    reactCompiler: false,
     experimental: {
         serverActions: {
             bodySizeLimit: "10mb",
@@ -185,6 +188,11 @@ module.exports = withSentryConfig(analyzedConfig, {
     project: process.env.SENTRY_PROJECT,
     silent: !process.env.CI,
     widenClientFileUpload: true,
+    // Skip sourcemap upload on preview/dev builds. Production keeps full Sentry.
+    // Saves ~30-45s of bundling + upload and avoids the post-compile injection pass on previews.
+    sourcemaps: {
+        disable: process.env.VERCEL_ENV !== "production",
+    },
     webpack: {
         treeshake: {
             removeDebugLogging: true,

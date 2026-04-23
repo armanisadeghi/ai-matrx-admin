@@ -665,6 +665,9 @@ const REGISTRY: WindowRegistryEntry[] = [
     label: "Agent Connections",
     defaultData: {
       activeSection: "overview",
+      scope: "user",
+      scopeId: null,
+      selectedItemId: null,
     },
   },
 
@@ -730,6 +733,18 @@ const REGISTRY: WindowRegistryEntry[] = [
     label: "Find Usages (Admin)",
     defaultData: { agentId: null },
     ephemeral: true,
+  },
+
+  // ── Observational Memory (admin-gated per-conversation inspector) ─────────
+  {
+    slug: "observational-memory-window",
+    overlayId: "observationalMemoryWindow",
+    label: "Memory Inspector",
+    // selectedConversationId: the conversation being inspected (admin selects
+    //   from the sidebar list of conversations that have memory enabled or
+    //   have emitted memory events this session). Persisting the selection
+    //   lets admins reopen to the same conversation after a reload.
+    defaultData: { selectedConversationId: null },
   },
 ];
 

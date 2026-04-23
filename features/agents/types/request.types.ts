@@ -551,6 +551,18 @@ export interface AssembledAgentStartRequest {
   block_mode?: boolean;
   /** Admin: capture a full server-side snapshot of the request + response for offline inspection. */
   snapshot?: boolean;
+  /**
+   * Admin-only Observational Memory toggle (tri-state):
+   *   null / omitted → inherit the conversation's persisted state
+   *   true           → enable + persist on cx_conversation.metadata
+   *   false          → disable + persist
+   * Non-admin values are silently ignored by the server.
+   */
+  memory?: boolean | null;
+  /** Admin-only: per-conversation Observer/Reflector model override. */
+  memory_model?: string | null;
+  /** Admin-only: "thread" (default) or "resource" scope for memory. */
+  memory_scope?: "thread" | "resource";
 }
 
 /**
@@ -570,6 +582,17 @@ export interface AssembledConversationRequest {
   block_mode?: boolean;
   /** Admin: capture a full server-side snapshot of the request + response for offline inspection. */
   snapshot?: boolean;
+  /**
+   * Admin-only Observational Memory toggle (tri-state):
+   *   null / omitted → inherit conversation's persisted state
+   *   true           → enable + persist
+   *   false          → disable + persist
+   */
+  memory?: boolean | null;
+  /** Admin-only: per-conversation Observer/Reflector model override. */
+  memory_model?: string | null;
+  /** Admin-only: "thread" (default) or "resource" scope for memory. */
+  memory_scope?: "thread" | "resource";
 }
 
 /**

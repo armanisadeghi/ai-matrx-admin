@@ -73,9 +73,15 @@ import {
 } from "@/features/agents/types/widget-handle.types";
 import {
   selectIsBlockMode,
+  selectIsMemoryToggleRequested,
   selectIsSnapshot,
+  selectMemoryModel,
+  selectMemoryScope,
+  selectMemoryToggleTarget,
   selectWidgetHandleIdFor,
 } from "../instance-ui-state/instance-ui-state.selectors";
+import { clearMemoryToggleRequest } from "../instance-ui-state/instance-ui-state.slice";
+import { setMemoryEnabledOptimistic } from "../observational-memory/observational-memory.slice";
 
 // =============================================================================
 // Turn Conversion Utility
@@ -336,6 +342,21 @@ export function assembleChatRequest(
   if (selectIsBlockMode(state)) request.block_mode = true;
   if (selectIsSnapshot(state)) request.snapshot = true;
 
+  // Observational Memory — one-shot per-conversation toggle. Payload writes
+  // ONLY when the admin explicitly requested a toggle this turn. The
+  // execute thunk is responsible for clearing the request + pushing the
+  // optimistic Redux update after assembly.
+  if (selectIsMemoryToggleRequested(state)) {
+    const target = selectMemoryToggleTarget(state);
+    request.memory = target;
+    if (target) {
+      const memoryModel = selectMemoryModel(state);
+      const memoryScope = selectMemoryScope(state);
+      if (memoryModel) request.memory_model = memoryModel;
+      if (memoryScope) request.memory_scope = memoryScope;
+    }
+  }
+
   // Stable agx_agent.id for server logging / linkage (chat has no /agents/{id} URL).
   // Version snapshots use parentAgentId; live agents use their own id.
   request.agent_id = agent.parentAgentId ?? agent.id;
@@ -387,6 +408,22 @@ export const executeChatInstance = createAsyncThunk<
         throw new Error(
           `Failed to assemble chat request for ${conversationId}. Check that the agent has a modelId set.`,
         );
+      }
+
+      // Observational Memory — if we emitted a `memory` signal this turn,
+      // mirror it optimistically into the observational-memory slice so the
+      // Creator Panel toggle reflects the change immediately, and clear the
+      // queued one-shot toggle so it doesn't re-fire next turn.
+      if (typeof payload.memory === "boolean") {
+        dispatch(
+          setMemoryEnabledOptimistic({
+            conversationId,
+            enabled: payload.memory,
+            model: payload.memory_model ?? null,
+            scope: payload.memory_scope ?? null,
+          }),
+        );
+        dispatch(clearMemoryToggleRequest());
       }
 
       // Resolve base URL

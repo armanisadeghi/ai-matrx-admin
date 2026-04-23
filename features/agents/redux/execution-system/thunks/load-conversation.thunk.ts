@@ -47,6 +47,10 @@ import {
   setContextEntries,
 } from "../instance-context/instance-context.slice";
 import { setFocus } from "../conversation-focus/conversation-focus.slice";
+import {
+  setMemoryMetadata,
+  type ObservationalMemoryMetadata,
+} from "../observational-memory/observational-memory.slice";
 
 // =============================================================================
 // Bundle shape
@@ -691,6 +695,25 @@ export const loadConversation = createAsyncThunk<
             key,
             value,
           })),
+        }),
+      );
+    }
+
+    // ── 5b. Observational Memory (admin-gated per-conversation feature) ──────
+    // The `observational_memory` block on cx_conversation.metadata persists the
+    // admin's enable/disable + model + scope choices across turns. Hydrating
+    // it here ensures the Creator Panel toggle and the ObservationalMemory
+    // window both reflect the server-confirmed state the moment a past
+    // conversation is reopened.
+    const memoryMeta = metaObj.observational_memory as
+      | ObservationalMemoryMetadata
+      | undefined
+      | null;
+    if (memoryMeta && typeof memoryMeta === "object") {
+      dispatch(
+        setMemoryMetadata({
+          conversationId,
+          metadata: memoryMeta,
         }),
       );
     }

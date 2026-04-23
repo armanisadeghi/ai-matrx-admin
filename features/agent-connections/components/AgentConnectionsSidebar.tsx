@@ -3,29 +3,56 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectLiveAgents } from "@/features/agents/redux/agent-definition/selectors";
+import { selectMcpCatalog } from "@/features/agents/redux/mcp/mcp.slice";
+import {
+  selectSkillDefinitionsCount,
+  selectRenderDefinitionsCount,
+  selectResourcesCount,
+} from "../redux/skl";
 import { SIDEBAR_SECTIONS } from "../constants";
 import type { AgentConnectionsSection } from "../types";
-
-export type SectionCounts = Partial<Record<AgentConnectionsSection, number>>;
 
 interface AgentConnectionsSidebarProps {
   activeSection: AgentConnectionsSection;
   onSelect: (section: AgentConnectionsSection) => void;
-  counts?: SectionCounts;
 }
 
 export function AgentConnectionsSidebar({
   activeSection,
   onSelect,
-  counts,
 }: AgentConnectionsSidebarProps) {
+  const agentsCount = useAppSelector(selectLiveAgents).length;
+  const mcpCount = useAppSelector(selectMcpCatalog).length;
+  const skillsCount = useAppSelector(selectSkillDefinitionsCount);
+  const renderBlocksCount = useAppSelector(selectRenderDefinitionsCount);
+  const resourcesCount = useAppSelector(selectResourcesCount);
+
+  const countFor = (value: AgentConnectionsSection): number | null => {
+    switch (value) {
+      case "agents":
+        return agentsCount;
+      case "skills":
+        return skillsCount;
+      case "renderBlocks":
+        return renderBlocksCount;
+      case "resources":
+        return resourcesCount;
+      case "mcpServers":
+        return mcpCount;
+      default:
+        return null;
+    }
+  };
+
   return (
     <ScrollArea className="flex-1 w-full">
       <div className="flex flex-col gap-0.5 p-2">
         {SIDEBAR_SECTIONS.map((section) => {
           const Icon = section.icon;
           const isActive = section.value === activeSection;
-          const count = counts?.[section.value];
+          const count = countFor(section.value);
           return (
             <button
               key={section.value}

@@ -58,9 +58,15 @@ import {
 } from "@/features/agents/types/widget-handle.types";
 import {
   selectIsBlockMode,
+  selectIsMemoryToggleRequested,
   selectIsSnapshot,
+  selectMemoryModel,
+  selectMemoryScope,
+  selectMemoryToggleTarget,
   selectWidgetHandleIdFor,
 } from "../instance-ui-state/instance-ui-state.selectors";
+import { clearMemoryToggleRequest } from "../instance-ui-state/instance-ui-state.slice";
+import { setMemoryEnabledOptimistic } from "../observational-memory/observational-memory.slice";
 import {
   registerAbortController,
   unregisterAbortController,
@@ -161,6 +167,19 @@ export function assembleRequest(
   const block_mode = selectIsBlockMode(state);
   const snapshot = selectIsSnapshot(state);
 
+  // Observational Memory — one-shot per-conversation admin signal. When
+  // `isMemoryToggleRequested` is true we attach `memory`, `memory_model`,
+  // and `memory_scope` to this turn's payload. The server persists the
+  // resulting block on `cx_conversation.metadata.observational_memory`, so
+  // subsequent turns should NOT re-send unless the admin changes state.
+  //
+  // The thunk (not assembleRequest) is responsible for clearing the queued
+  // toggle after assembling — keeps this selector logic pure.
+  const memoryToggleRequested = selectIsMemoryToggleRequested(state);
+  const memoryTarget = selectMemoryToggleTarget(state);
+  const memoryModel = selectMemoryModel(state);
+  const memoryScope = selectMemoryScope(state);
+
   // Assemble snake_case body
   const request: AssembledAgentStartRequest = { stream: true };
 
@@ -176,6 +195,15 @@ export function assembleRequest(
   if (sourceFeature) request.source_feature = sourceFeature;
   if (block_mode) request.block_mode = true;
   if (snapshot) request.snapshot = true;
+  if (memoryToggleRequested) {
+    request.memory = memoryTarget;
+    if (memoryTarget) {
+      // Only send model/scope on enable — the server needs them to
+      // initialize the metadata block. On disable they're ignored.
+      if (memoryModel) request.memory_model = memoryModel;
+      if (memoryScope) request.memory_scope = memoryScope;
+    }
+  }
 
   return request;
 }
@@ -226,6 +254,24 @@ export const executeInstance = createAsyncThunk<
         throw new Error(`Failed to assemble request for ${conversationId}`);
       }
       if (debug) payload.debug = true;
+
+      // Observational Memory — if we emitted a `memory` signal this turn,
+      // (a) optimistically mirror it into the observational-memory slice so
+      //     the Creator Panel toggle reflects the change immediately, and
+      // (b) clear the queued toggle so it doesn't re-fire on the next turn.
+      //     The server persists the authoritative state on
+      //     cx_conversation.metadata; we reconcile on bundle reload.
+      if (typeof payload.memory === "boolean") {
+        dispatch(
+          setMemoryEnabledOptimistic({
+            conversationId,
+            enabled: payload.memory,
+            model: payload.memory_model ?? null,
+            scope: payload.memory_scope ?? null,
+          }),
+        );
+        dispatch(clearMemoryToggleRequest());
+      }
 
       const variables = payload.variables;
 
@@ -357,6 +403,9 @@ export const executeInstance = createAsyncThunk<
           ...(debug && { debug: true }),
           ...(payload.block_mode && { block_mode: true }),
           ...(payload.snapshot && { snapshot: true }),
+          ...(typeof payload.memory === "boolean" && { memory: payload.memory }),
+          ...(payload.memory_model && { memory_model: payload.memory_model }),
+          ...(payload.memory_scope && { memory_scope: payload.memory_scope }),
           ...(pendingBypass && { cache_bypass: pendingBypass }),
         };
       } else {

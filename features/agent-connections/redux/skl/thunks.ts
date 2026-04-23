@@ -50,6 +50,47 @@ function applyScopeFilter<Q extends { eq: Function; is: Function }>(
   return query.eq(column, args.scopeId) as Q;
 }
 
+/**
+ * Stamp scope fields onto a write payload so the row is created in the caller's
+ * current scope. Belt-and-suspenders: RLS would catch cross-scope writes too,
+ * but enforcing here means the UI can't accidentally write with the wrong
+ * ownership even if the draft object was built from stale state.
+ */
+interface ScopeStampInput {
+  user_id?: string | null;
+  organization_id?: string | null;
+  project_id?: string | null;
+  task_id?: string | null;
+}
+
+async function stampScopeForWrite<T extends ScopeStampInput>(
+  payload: T,
+  args: ScopedQueryArgs,
+): Promise<T> {
+  const { data: userData } = await supabase.auth.getUser();
+  const userId = userData?.user?.id ?? null;
+  const stamped: T = { ...payload };
+  if (args.scope === "user") {
+    stamped.user_id = userId;
+    stamped.organization_id = null;
+    stamped.project_id = null;
+    stamped.task_id = null;
+  } else if (args.scope === "organization") {
+    stamped.user_id = userId;
+    stamped.organization_id = args.scopeId;
+    stamped.project_id = null;
+    stamped.task_id = null;
+  } else if (args.scope === "project") {
+    stamped.user_id = userId;
+    stamped.project_id = args.scopeId;
+    stamped.task_id = null;
+  } else if (args.scope === "task") {
+    stamped.user_id = userId;
+    stamped.task_id = args.scopeId;
+  }
+  return stamped;
+}
+
 // ─── Skill Definitions ──────────────────────────────────────────────────────
 
 interface FetchSkillsArgs extends ScopedQueryArgs {
@@ -92,13 +133,19 @@ export const createSkillDefinition = createAsyncThunk(
     args: {
       draft: Partial<SklDefinition> &
         Pick<SklDefinition, "skillId" | "label" | "description">;
+      scope: Scope;
+      scopeId: string | null;
     },
     { dispatch },
   ) => {
     const payload = sklDefinitionToInsert(args.draft);
+    const stamped = await stampScopeForWrite(payload, {
+      scope: args.scope,
+      scopeId: args.scopeId,
+    });
     const { data, error } = await supabase
       .from("skl_definitions")
-      .insert(payload)
+      .insert(stamped)
       .select()
       .single();
     if (error) throw error;
@@ -143,7 +190,10 @@ export const deleteSkillDefinition = createAsyncThunk(
 
 export const duplicateSkillDefinition = createAsyncThunk(
   "skl/duplicateSkillDefinition",
-  async (args: { id: string }, { getState, dispatch }) => {
+  async (
+    args: { id: string; scope: Scope; scopeId: string | null },
+    { getState, dispatch },
+  ) => {
     const state = getState() as { skl: { definitions: { byId: Record<string, SklDefinition> } } };
     const source = state.skl.definitions.byId[args.id];
     if (!source) throw new Error(`Skill ${args.id} not found`);
@@ -155,7 +205,11 @@ export const duplicateSkillDefinition = createAsyncThunk(
       label: `${source.label} (copy)`,
     };
     const result = await dispatch(
-      createSkillDefinition({ draft: copy }),
+      createSkillDefinition({
+        draft: copy,
+        scope: args.scope,
+        scopeId: args.scopeId,
+      }),
     ).unwrap();
     return result;
   },
@@ -198,13 +252,19 @@ export const createRenderDefinition = createAsyncThunk(
           SklRenderDefinition,
           "blockId" | "label" | "iconName" | "template"
         >;
+      scope: Scope;
+      scopeId: string | null;
     },
     { dispatch },
   ) => {
     const payload = sklRenderDefinitionToInsert(args.draft);
+    const stamped = await stampScopeForWrite(payload, {
+      scope: args.scope,
+      scopeId: args.scopeId,
+    });
     const { data, error } = await supabase
       .from("skl_render_definitions")
-      .insert(payload)
+      .insert(stamped)
       .select()
       .single();
     if (error) throw error;
@@ -266,8 +326,16 @@ export const fetchRenderComponents = createAsyncThunk(
 
 export const fetchCategories = createAsyncThunk(
   "skl/fetchCategories",
-  async (_args: ScopedQueryArgs, { dispatch }) => {
-    const { data, error } = await supabase.from("skl_categories").select("*");
+  async (args: ScopedQueryArgs, { dispatch }) => {
+    const { data: userData } = await supabase.auth.getUser();
+    const userId = userData?.user?.id ?? null;
+    let query = supabase
+      .from("skl_categories")
+      .select("*")
+      .order("sort_order", { ascending: true })
+      .order("label", { ascending: true });
+    query = applyScopeFilter(query, args, userId);
+    const { data, error } = await query;
     if (error) throw error;
     const rows = (data ?? []).map(rowToSklCategory);
     dispatch(sklActions.categoriesReceived(rows));

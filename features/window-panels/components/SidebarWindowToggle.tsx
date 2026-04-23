@@ -52,6 +52,7 @@ import {
   Frame,
   BookMarked,
   Sparkles,
+  Brain,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -1212,6 +1213,19 @@ export default function SidebarWindowToggle() {
                       act(() =>
                         dispatch(
                           openOverlay({ overlayId: "agentDebugWindow" }),
+                        ),
+                      )
+                    }
+                  />
+                  <MenuGridItem
+                    icon={<Brain className="w-3.5 h-3.5" />}
+                    label="Memory Inspector"
+                    onClick={() =>
+                      act(() =>
+                        dispatch(
+                          openOverlay({
+                            overlayId: "observationalMemoryWindow",
+                          }),
                         ),
                       )
                     }

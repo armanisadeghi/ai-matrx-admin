@@ -70,6 +70,7 @@ import agentShortcutReducer from "@/features/agents/redux/agent-shortcuts/slice"
 import agentShortcutCategoryReducer from "@/features/agents/redux/agent-shortcut-categories/slice";
 import agentContentBlockReducer from "@/features/agents/redux/agent-content-blocks/slice";
 import { sklReducer } from "@/features/agent-connections/redux/skl";
+import { agentConnectionsUiReducer } from "@/features/agent-connections/redux/ui";
 import { agentAppReducer } from "@/features/agents/redux/agent-apps/slice";
 import agentConsumersReducer from "@/features/agents/redux/agent-consumers/slice";
 import toolsReducer from "@/features/agents/redux/tools/tools.slice";
@@ -121,6 +122,7 @@ import { instanceUserInputReducer } from "@/features/agents/redux/execution-syst
 import { conversationsReducer } from "@/features/agents/redux/execution-system/conversations";
 import { activeRequestsReducer } from "@/features/agents/redux/execution-system/active-requests";
 import { observabilityReducer } from "@/features/agents/redux/execution-system/observability";
+import { observationalMemoryReducer } from "@/features/agents/redux/execution-system/observational-memory";
 import { cacheBypassReducer } from "@/features/agents/redux/execution-system/message-crud";
 import { messagesReducer } from "@/features/agents/redux/execution-system/messages";
 import { conversationFocusReducer } from "@/features/agents/redux/execution-system/conversation-focus";
@@ -332,6 +334,7 @@ export const createRootReducer = (initialState: InitialReduxState) => {
     agentShortcutCategory: agentShortcutCategoryReducer,
     agentContentBlock: agentContentBlockReducer,
     skl: sklReducer,
+    agentConnectionsUi: agentConnectionsUiReducer,
     // agentApp — scaffolded alongside agentShortcut. Thunks are stubbed until
     // the App DB surface ships; the slice is registered so consumers can
     // read/write state without further plumbing later.
@@ -379,6 +382,12 @@ export const createRootReducer = (initialState: InitialReduxState) => {
     // Observability — Runner-only debug data (cx_user_request, cx_request,
     // cx_tool_call + live stream timelines). Populated by commit path + RPC.
     observability: observabilityReducer,
+
+    // Observational Memory — Admin-gated per-conversation memory feature.
+    // Captures the persisted enabled/model/scope block, live memory_*
+    // stream events, running cost/token counters, and the authoritative
+    // cost rollup from GET /conversations/:id/memory_cost.
+    observationalMemory: observationalMemoryReducer,
 
     // Cache-bypass — one-shot per-conversation flags flipped after direct
     // DB writes (edits, forks, deletes). Read + cleared by the execute

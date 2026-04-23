@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FileText } from "lucide-react";
+import { Brain, FileText } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -23,6 +23,12 @@ import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 import { DEFAULT_BUILDER_ADVANCED_SETTINGS } from "@/features/agents/types/instance.types";
 import { SystemInstructionModal } from "../builder/message-builders/system-instructions/SystemInstructionModal";
 import { NumberStepper } from "@/components/official-candidate/NumberStepper";
+import { openOverlay } from "@/lib/redux/slices/overlaySlice";
+import { MemoryControls } from "@/features/agents/components/observational-memory/components/MemoryControls";
+import {
+  selectIsMemoryEnabledForConversation,
+  selectMemoryDegraded,
+} from "@/features/agents/redux/execution-system/observational-memory/observational-memory.selectors";
 
 interface RunSettingsEditorProps {
   conversationId: string;
@@ -68,7 +74,19 @@ export function RunSettingsEditor({ conversationId }: RunSettingsEditorProps) {
   const isAdmin = useAppSelector(selectIsAdmin);
   const isBlockMode = useAppSelector(selectIsBlockMode);
   const isSnapshot = useAppSelector(selectIsSnapshot);
+  const isMemoryEnabledForThisConversation = useAppSelector(
+    selectIsMemoryEnabledForConversation(conversationId),
+  );
+  const isMemoryDegraded = useAppSelector(selectMemoryDegraded(conversationId));
   const [sysModalOpen, setSysModalOpen] = useState(false);
+
+  const openMemoryInspector = () =>
+    dispatch(
+      openOverlay({
+        overlayId: "observationalMemoryWindow",
+        data: { selectedConversationId: conversationId },
+      }),
+    );
 
   return (
     <>
@@ -196,6 +214,29 @@ export function RunSettingsEditor({ conversationId }: RunSettingsEditorProps) {
               checked={isSnapshot}
               onChange={(v) => dispatch(setUseSnapshot(v))}
             />
+
+            {/* ── Observational Memory (admin-gated, per-conversation) ───── */}
+            <Separator className="!my-1.5" />
+            <div className="px-0.5 pb-0.5 text-[10px] uppercase tracking-wide text-muted-foreground/70">
+              Observational Memory
+            </div>
+            <MemoryControls conversationId={conversationId} variant="compact" />
+            <Button
+              variant={
+                isMemoryEnabledForThisConversation ? "default" : "outline"
+              }
+              size="sm"
+              className="w-full h-7 text-xs mt-1.5"
+              onClick={openMemoryInspector}
+            >
+              <Brain className="w-3 h-3 mr-1.5" />
+              Open Memory Inspector
+              {isMemoryDegraded && (
+                <span className="ml-1.5 text-[10px] text-amber-500">
+                  · degraded
+                </span>
+              )}
+            </Button>
           </>
         )}
       </div>

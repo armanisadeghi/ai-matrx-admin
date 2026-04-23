@@ -14,7 +14,7 @@ import {
   type SklRenderDefinition,
   type ShortcutCategoryRow,
 } from "../redux/skl";
-import { useScope } from "./useScope";
+import { useViewScope } from "./useViewScope";
 
 export interface UseRenderBlocksResult {
   definitions: SklRenderDefinition[];
@@ -28,7 +28,7 @@ export interface UseRenderBlocksResult {
 
 export function useRenderBlocks(): UseRenderBlocksResult {
   const dispatch = useAppDispatch();
-  const { scope, scopeId } = useScope();
+  const { scope, scopeId } = useViewScope();
 
   const definitions = useAppSelector(selectAllRenderDefinitions);
   const byCategoryId = useAppSelector(selectRenderDefinitionsByCategory);

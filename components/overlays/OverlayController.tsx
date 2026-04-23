@@ -656,6 +656,12 @@ const AgentDebugWindow = dynamic(
   { ssr: false },
 );
 
+const ObservationalMemoryWindow = dynamic(
+  () =>
+    import("@/features/window-panels/windows/agents/ObservationalMemoryWindow"),
+  { ssr: false },
+);
+
 const ChatDebugWindow = dynamic(
   () => import("@/features/window-panels/windows/admin/ChatDebugWindow"),
   { ssr: false },
@@ -1039,6 +1045,13 @@ export const OverlayController: React.FC = () => {
   );
   const agentDebugWindowData = useAppSelector((s) =>
     selectOverlayData(s, "agentDebugWindow"),
+  );
+
+  const isObservationalMemoryWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "observationalMemoryWindow"),
+  );
+  const observationalMemoryWindowData = useAppSelector((s) =>
+    selectOverlayData(s, "observationalMemoryWindow"),
   );
 
   const isChatDebugWindowOpen = useAppSelector((s) =>
@@ -1507,12 +1520,28 @@ export const OverlayController: React.FC = () => {
               | "overview"
               | "agents"
               | "skills"
+              | "renderBlocks"
+              | "resources"
               | "instructions"
               | "prompts"
               | "hooks"
               | "mcpServers"
               | "plugins"
               | undefined) ?? "overview"
+          }
+          initialScope={
+            (agentConnectionsWindowData?.scope as
+              | "user"
+              | "organization"
+              | "project"
+              | "task"
+              | undefined) ?? "user"
+          }
+          initialSelectedItemId={
+            (agentConnectionsWindowData?.selectedItemId as
+              | string
+              | null
+              | undefined) ?? null
           }
         />
       )}
@@ -2519,6 +2548,19 @@ export const OverlayController: React.FC = () => {
           initialAgentId={agentDebugWindowData?.initialAgentId as string | null}
           initialConversationId={
             agentDebugWindowData?.initialConversationId as string | null
+          }
+        />
+      )}
+
+      {isObservationalMemoryWindowOpen && (
+        <ObservationalMemoryWindow
+          isOpen={true}
+          onClose={() => close("observationalMemoryWindow")}
+          initialSelectedConversationId={
+            (observationalMemoryWindowData?.selectedConversationId as
+              | string
+              | null
+              | undefined) ?? null
           }
         />
       )}
