@@ -103,318 +103,7 @@ export type Database = {
         }
         Relationships: []
       }
-      agent_app_categories: {
-        Row: {
-          description: string | null
-          icon: string | null
-          id: string
-          name: string
-          sort_order: number | null
-        }
-        Insert: {
-          description?: string | null
-          icon?: string | null
-          id: string
-          name: string
-          sort_order?: number | null
-        }
-        Update: {
-          description?: string | null
-          icon?: string | null
-          id?: string
-          name?: string
-          sort_order?: number | null
-        }
-        Relationships: []
-      }
-      agent_app_errors: {
-        Row: {
-          app_id: string
-          created_at: string
-          error_code: string | null
-          error_details: Json | null
-          error_message: string | null
-          error_type: string
-          execution_id: string | null
-          expected_variables: Json | null
-          id: string
-          resolution_notes: string | null
-          resolved: boolean | null
-          resolved_at: string | null
-          resolved_by: string | null
-          variables_sent: Json | null
-        }
-        Insert: {
-          app_id: string
-          created_at?: string
-          error_code?: string | null
-          error_details?: Json | null
-          error_message?: string | null
-          error_type: string
-          execution_id?: string | null
-          expected_variables?: Json | null
-          id?: string
-          resolution_notes?: string | null
-          resolved?: boolean | null
-          resolved_at?: string | null
-          resolved_by?: string | null
-          variables_sent?: Json | null
-        }
-        Update: {
-          app_id?: string
-          created_at?: string
-          error_code?: string | null
-          error_details?: Json | null
-          error_message?: string | null
-          error_type?: string
-          execution_id?: string | null
-          expected_variables?: Json | null
-          id?: string
-          resolution_notes?: string | null
-          resolved?: boolean | null
-          resolved_at?: string | null
-          resolved_by?: string | null
-          variables_sent?: Json | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "agent_app_errors_app_id_fkey"
-            columns: ["app_id"]
-            isOneToOne: false
-            referencedRelation: "agent_apps"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "agent_app_errors_execution_id_fkey"
-            columns: ["execution_id"]
-            isOneToOne: false
-            referencedRelation: "agent_app_executions"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      agent_app_executions: {
-        Row: {
-          app_id: string
-          cost: number | null
-          created_at: string
-          error_message: string | null
-          error_type: string | null
-          execution_time_ms: number | null
-          fingerprint: string | null
-          id: string
-          ip_address: unknown
-          metadata: Json | null
-          referer: string | null
-          success: boolean | null
-          task_id: string
-          tokens_used: number | null
-          user_agent: string | null
-          user_id: string | null
-          variables_provided: Json | null
-          variables_used: Json | null
-        }
-        Insert: {
-          app_id: string
-          cost?: number | null
-          created_at?: string
-          error_message?: string | null
-          error_type?: string | null
-          execution_time_ms?: number | null
-          fingerprint?: string | null
-          id?: string
-          ip_address?: unknown
-          metadata?: Json | null
-          referer?: string | null
-          success?: boolean | null
-          task_id: string
-          tokens_used?: number | null
-          user_agent?: string | null
-          user_id?: string | null
-          variables_provided?: Json | null
-          variables_used?: Json | null
-        }
-        Update: {
-          app_id?: string
-          cost?: number | null
-          created_at?: string
-          error_message?: string | null
-          error_type?: string | null
-          execution_time_ms?: number | null
-          fingerprint?: string | null
-          id?: string
-          ip_address?: unknown
-          metadata?: Json | null
-          referer?: string | null
-          success?: boolean | null
-          task_id?: string
-          tokens_used?: number | null
-          user_agent?: string | null
-          user_id?: string | null
-          variables_provided?: Json | null
-          variables_used?: Json | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "agent_app_executions_app_id_fkey"
-            columns: ["app_id"]
-            isOneToOne: false
-            referencedRelation: "agent_apps"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      agent_app_rate_limits: {
-        Row: {
-          app_id: string
-          blocked_reason: string | null
-          blocked_until: string | null
-          created_at: string
-          execution_count: number
-          fingerprint: string | null
-          first_execution_at: string
-          id: string
-          ip_address: unknown
-          is_blocked: boolean | null
-          last_execution_at: string
-          updated_at: string
-          user_id: string | null
-          window_start_at: string
-        }
-        Insert: {
-          app_id: string
-          blocked_reason?: string | null
-          blocked_until?: string | null
-          created_at?: string
-          execution_count?: number
-          fingerprint?: string | null
-          first_execution_at?: string
-          id?: string
-          ip_address?: unknown
-          is_blocked?: boolean | null
-          last_execution_at?: string
-          updated_at?: string
-          user_id?: string | null
-          window_start_at?: string
-        }
-        Update: {
-          app_id?: string
-          blocked_reason?: string | null
-          blocked_until?: string | null
-          created_at?: string
-          execution_count?: number
-          fingerprint?: string | null
-          first_execution_at?: string
-          id?: string
-          ip_address?: unknown
-          is_blocked?: boolean | null
-          last_execution_at?: string
-          updated_at?: string
-          user_id?: string | null
-          window_start_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "agent_app_rate_limits_app_id_fkey"
-            columns: ["app_id"]
-            isOneToOne: false
-            referencedRelation: "agent_apps"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      agent_app_versions: {
-        Row: {
-          agent_id: string | null
-          agent_version_id: string | null
-          allowed_imports: Json | null
-          app_id: string
-          category: string | null
-          change_note: string | null
-          changed_at: string
-          component_code: string | null
-          component_language: string | null
-          description: string | null
-          id: string
-          layout_config: Json | null
-          name: string | null
-          pinned_version: number | null
-          status: string | null
-          styling_config: Json | null
-          tagline: string | null
-          tags: string[] | null
-          variable_schema: Json | null
-          version_number: number
-        }
-        Insert: {
-          agent_id?: string | null
-          agent_version_id?: string | null
-          allowed_imports?: Json | null
-          app_id: string
-          category?: string | null
-          change_note?: string | null
-          changed_at?: string
-          component_code?: string | null
-          component_language?: string | null
-          description?: string | null
-          id?: string
-          layout_config?: Json | null
-          name?: string | null
-          pinned_version?: number | null
-          status?: string | null
-          styling_config?: Json | null
-          tagline?: string | null
-          tags?: string[] | null
-          variable_schema?: Json | null
-          version_number: number
-        }
-        Update: {
-          agent_id?: string | null
-          agent_version_id?: string | null
-          allowed_imports?: Json | null
-          app_id?: string
-          category?: string | null
-          change_note?: string | null
-          changed_at?: string
-          component_code?: string | null
-          component_language?: string | null
-          description?: string | null
-          id?: string
-          layout_config?: Json | null
-          name?: string | null
-          pinned_version?: number | null
-          status?: string | null
-          styling_config?: Json | null
-          tagline?: string | null
-          tags?: string[] | null
-          variable_schema?: Json | null
-          version_number?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "agent_app_versions_agent_id_fkey"
-            columns: ["agent_id"]
-            isOneToOne: false
-            referencedRelation: "agx_agent"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "agent_app_versions_agent_version_id_fkey"
-            columns: ["agent_version_id"]
-            isOneToOne: false
-            referencedRelation: "agx_version"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "agent_app_versions_app_id_fkey"
-            columns: ["app_id"]
-            isOneToOne: false
-            referencedRelation: "agent_apps"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      agent_apps: {
+      aga_apps: {
         Row: {
           agent_id: string
           agent_version_id: string | null
@@ -558,24 +247,335 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "agent_apps_agent_id_fkey"
+            foreignKeyName: "aga_apps_agent_id_fkey"
             columns: ["agent_id"]
             isOneToOne: false
             referencedRelation: "agx_agent"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "agent_apps_agent_version_id_fkey"
+            foreignKeyName: "aga_apps_agent_version_id_fkey"
             columns: ["agent_version_id"]
             isOneToOne: false
             referencedRelation: "agx_version"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "agent_apps_organization_id_fkey"
+            foreignKeyName: "aga_apps_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aga_categories: {
+        Row: {
+          description: string | null
+          icon: string | null
+          id: string
+          name: string
+          sort_order: number | null
+        }
+        Insert: {
+          description?: string | null
+          icon?: string | null
+          id: string
+          name: string
+          sort_order?: number | null
+        }
+        Update: {
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+          sort_order?: number | null
+        }
+        Relationships: []
+      }
+      aga_errors: {
+        Row: {
+          app_id: string
+          created_at: string
+          error_code: string | null
+          error_details: Json | null
+          error_message: string | null
+          error_type: string
+          execution_id: string | null
+          expected_variables: Json | null
+          id: string
+          resolution_notes: string | null
+          resolved: boolean | null
+          resolved_at: string | null
+          resolved_by: string | null
+          variables_sent: Json | null
+        }
+        Insert: {
+          app_id: string
+          created_at?: string
+          error_code?: string | null
+          error_details?: Json | null
+          error_message?: string | null
+          error_type: string
+          execution_id?: string | null
+          expected_variables?: Json | null
+          id?: string
+          resolution_notes?: string | null
+          resolved?: boolean | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          variables_sent?: Json | null
+        }
+        Update: {
+          app_id?: string
+          created_at?: string
+          error_code?: string | null
+          error_details?: Json | null
+          error_message?: string | null
+          error_type?: string
+          execution_id?: string | null
+          expected_variables?: Json | null
+          id?: string
+          resolution_notes?: string | null
+          resolved?: boolean | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          variables_sent?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aga_errors_app_id_fkey"
+            columns: ["app_id"]
+            isOneToOne: false
+            referencedRelation: "aga_apps"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aga_errors_execution_id_fkey"
+            columns: ["execution_id"]
+            isOneToOne: false
+            referencedRelation: "aga_executions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aga_executions: {
+        Row: {
+          app_id: string
+          cost: number | null
+          created_at: string
+          error_message: string | null
+          error_type: string | null
+          execution_time_ms: number | null
+          fingerprint: string | null
+          id: string
+          ip_address: unknown
+          metadata: Json | null
+          referer: string | null
+          success: boolean | null
+          task_id: string
+          tokens_used: number | null
+          user_agent: string | null
+          user_id: string | null
+          variables_provided: Json | null
+          variables_used: Json | null
+        }
+        Insert: {
+          app_id: string
+          cost?: number | null
+          created_at?: string
+          error_message?: string | null
+          error_type?: string | null
+          execution_time_ms?: number | null
+          fingerprint?: string | null
+          id?: string
+          ip_address?: unknown
+          metadata?: Json | null
+          referer?: string | null
+          success?: boolean | null
+          task_id: string
+          tokens_used?: number | null
+          user_agent?: string | null
+          user_id?: string | null
+          variables_provided?: Json | null
+          variables_used?: Json | null
+        }
+        Update: {
+          app_id?: string
+          cost?: number | null
+          created_at?: string
+          error_message?: string | null
+          error_type?: string | null
+          execution_time_ms?: number | null
+          fingerprint?: string | null
+          id?: string
+          ip_address?: unknown
+          metadata?: Json | null
+          referer?: string | null
+          success?: boolean | null
+          task_id?: string
+          tokens_used?: number | null
+          user_agent?: string | null
+          user_id?: string | null
+          variables_provided?: Json | null
+          variables_used?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aga_executions_app_id_fkey"
+            columns: ["app_id"]
+            isOneToOne: false
+            referencedRelation: "aga_apps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aga_rate_limits: {
+        Row: {
+          app_id: string
+          blocked_reason: string | null
+          blocked_until: string | null
+          created_at: string
+          execution_count: number
+          fingerprint: string | null
+          first_execution_at: string
+          id: string
+          ip_address: unknown
+          is_blocked: boolean | null
+          last_execution_at: string
+          updated_at: string
+          user_id: string | null
+          window_start_at: string
+        }
+        Insert: {
+          app_id: string
+          blocked_reason?: string | null
+          blocked_until?: string | null
+          created_at?: string
+          execution_count?: number
+          fingerprint?: string | null
+          first_execution_at?: string
+          id?: string
+          ip_address?: unknown
+          is_blocked?: boolean | null
+          last_execution_at?: string
+          updated_at?: string
+          user_id?: string | null
+          window_start_at?: string
+        }
+        Update: {
+          app_id?: string
+          blocked_reason?: string | null
+          blocked_until?: string | null
+          created_at?: string
+          execution_count?: number
+          fingerprint?: string | null
+          first_execution_at?: string
+          id?: string
+          ip_address?: unknown
+          is_blocked?: boolean | null
+          last_execution_at?: string
+          updated_at?: string
+          user_id?: string | null
+          window_start_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aga_rate_limits_app_id_fkey"
+            columns: ["app_id"]
+            isOneToOne: false
+            referencedRelation: "aga_apps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aga_versions: {
+        Row: {
+          agent_id: string | null
+          agent_version_id: string | null
+          allowed_imports: Json | null
+          app_id: string
+          category: string | null
+          change_note: string | null
+          changed_at: string
+          component_code: string | null
+          component_language: string | null
+          description: string | null
+          id: string
+          layout_config: Json | null
+          name: string | null
+          pinned_version: number | null
+          status: string | null
+          styling_config: Json | null
+          tagline: string | null
+          tags: string[] | null
+          variable_schema: Json | null
+          version_number: number
+        }
+        Insert: {
+          agent_id?: string | null
+          agent_version_id?: string | null
+          allowed_imports?: Json | null
+          app_id: string
+          category?: string | null
+          change_note?: string | null
+          changed_at?: string
+          component_code?: string | null
+          component_language?: string | null
+          description?: string | null
+          id?: string
+          layout_config?: Json | null
+          name?: string | null
+          pinned_version?: number | null
+          status?: string | null
+          styling_config?: Json | null
+          tagline?: string | null
+          tags?: string[] | null
+          variable_schema?: Json | null
+          version_number: number
+        }
+        Update: {
+          agent_id?: string | null
+          agent_version_id?: string | null
+          allowed_imports?: Json | null
+          app_id?: string
+          category?: string | null
+          change_note?: string | null
+          changed_at?: string
+          component_code?: string | null
+          component_language?: string | null
+          description?: string | null
+          id?: string
+          layout_config?: Json | null
+          name?: string | null
+          pinned_version?: number | null
+          status?: string | null
+          styling_config?: Json | null
+          tagline?: string | null
+          tags?: string[] | null
+          variable_schema?: Json | null
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aga_versions_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agx_agent"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aga_versions_agent_version_id_fkey"
+            columns: ["agent_version_id"]
+            isOneToOne: false
+            referencedRelation: "agx_version"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aga_versions_app_id_fkey"
+            columns: ["app_id"]
+            isOneToOne: false
+            referencedRelation: "aga_apps"
             referencedColumns: ["id"]
           },
         ]
@@ -16993,7 +16993,7 @@ export type Database = {
       }
     }
     Views: {
-      agent_context_menu_view: {
+      agx_context_menu_view: {
         Row: {
           categories_flat: Json | null
           placement_type: string | null
@@ -20008,7 +20008,7 @@ export type Database = {
       }
       generate_invitation_code: { Args: never; Returns: string }
       generate_invitation_token: { Args: never; Returns: string }
-      get_agent_app_public_data: {
+      get_aga_public_data: {
         Args: { p_app_id?: string; p_slug?: string }
         Returns: {
           allowed_imports: Json

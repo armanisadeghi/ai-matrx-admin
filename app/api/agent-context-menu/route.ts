@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
       };
     };
 
-    const builder = untyped.from("agent_context_menu_view").select("*");
+    const builder = untyped.from("agx_context_menu_view").select("*");
     const { data, error } = placementType
       ? await builder.eq("placement_type", placementType)
       : await builder;

@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import type { ContextMenuRow } from '@/utils/supabase/ssrShellData';
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import type { ContextMenuRow } from "@/utils/supabase/ssrShellData";
 
 export interface AgentContextMenuCacheState {
   rows: ContextMenuRow[];
@@ -14,7 +14,7 @@ const initialState: AgentContextMenuCacheState = {
 };
 
 /**
- * Stores raw agent_context_menu_view rows fetched server-side via
+ * Stores raw agx_context_menu_view rows fetched server-side via
  * get_ssr_agent_shell_data() RPC (additive companion to the legacy
  * get_ssr_shell_data() RPC). Populated once at hydration time from
  * the SSR shell data call — DeferredShellData writes here in parallel
@@ -26,7 +26,7 @@ const initialState: AgentContextMenuCacheState = {
  * (Phase 18), this slice becomes the sole context-menu SSR cache.
  */
 const agentContextMenuCacheSlice = createSlice({
-  name: 'agentContextMenuCache',
+  name: "agentContextMenuCache",
   initialState,
   reducers: {
     setAgentContextMenuRows(state, action: PayloadAction<ContextMenuRow[]>) {
@@ -40,10 +40,8 @@ const agentContextMenuCacheSlice = createSlice({
   },
 });
 
-export const {
-  setAgentContextMenuRows,
-  clearAgentContextMenuCache,
-} = agentContextMenuCacheSlice.actions;
+export const { setAgentContextMenuRows, clearAgentContextMenuCache } =
+  agentContextMenuCacheSlice.actions;
 
 // Selectors typed against a minimal shape — compatible with public/bootstrap state
 // and any state that includes agentContextMenuCache

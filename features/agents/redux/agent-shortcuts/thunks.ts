@@ -1026,7 +1026,7 @@ export const updateShortcut = createAsyncThunk<
 });
 
 // ---------------------------------------------------------------------------
-// Unified menu — reads from agent_context_menu_view via GET /api/agent-context-menu
+// Unified menu — reads from agx_context_menu_view via GET /api/agent-context-menu
 // Populates shortcuts + categories + content blocks in a single pass.
 // ---------------------------------------------------------------------------
 
