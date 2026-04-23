@@ -31,10 +31,15 @@ import {
   selectTrayWindows,
 } from "@/lib/redux/slices/windowManagerSlice";
 
+import { TRAY_GAP_X, TRAY_CHIP_W_DESKTOP } from "./constants/tray";
+
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const CHIP_WIDTH = 210;
-const CHIP_GAP = 8;
+// Desktop chip width for rendered tray chips. The slot-placement math in
+// windowManagerSlice uses TRAY_CHIP_W (270) — rendered chip is visually
+// narrower; slot maths account for the difference via TRAY_GAP_X.
+const CHIP_WIDTH = Math.min(210, TRAY_CHIP_W_DESKTOP);
+const CHIP_GAP = TRAY_GAP_X;
 const TRAY_BOTTOM = 12;
 const TRAY_RIGHT = 12;
 
