@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import {
     CloudUpload,
     Download,
+    Eye,
     FileDown,
     FolderInput,
     Gauge,
@@ -58,6 +59,9 @@ interface ExportPanelProps {
     onDownloadAll: () => void;
     onDownloadSelected: () => void;
     onSaveAll: (folder: string) => void;
+    onOpenPreview?: () => void;
+    canOpenPreview?: boolean;
+    isPreviewOpen?: boolean;
 }
 
 export function ExportPanel({
@@ -89,6 +93,9 @@ export function ExportPanel({
     onDownloadAll,
     onDownloadSelected,
     onSaveAll,
+    onOpenPreview,
+    canOpenPreview = false,
+    isPreviewOpen = false,
 }: ExportPanelProps) {
     const [folder, setFolder] = useState("image-studio");
 
@@ -109,6 +116,34 @@ export function ExportPanel({
                     onFitChange={onFitChange}
                     onPositionChange={onPositionChange}
                 />
+
+                {onOpenPreview && (
+                    <button
+                        type="button"
+                        onClick={onOpenPreview}
+                        disabled={!canOpenPreview}
+                        className={cn(
+                            "w-full h-9 rounded-lg text-xs font-medium flex items-center justify-center gap-1.5 transition-colors",
+                            isPreviewOpen
+                                ? "bg-primary/10 border border-primary text-primary"
+                                : canOpenPreview
+                                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                                  : "bg-muted text-muted-foreground cursor-not-allowed",
+                        )}
+                        title={
+                            canOpenPreview
+                                ? isPreviewOpen
+                                    ? "Preview window is already open"
+                                    : "Open a floating live crop preview"
+                                : "Add at least one file and pick a preset first"
+                        }
+                    >
+                        <Eye className="h-3.5 w-3.5" />
+                        {isPreviewOpen
+                            ? "Preview open — focus it"
+                            : "Open live crop preview"}
+                    </button>
+                )}
 
                 <div className="h-px bg-border" />
 

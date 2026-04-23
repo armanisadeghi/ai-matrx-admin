@@ -10,6 +10,14 @@ import {
   setCustomServerUrl,
   clearAdminPreferences,
 } from "@/lib/redux/slices/adminPreferencesSlice";
+import {
+  setIsInWindow,
+  setLayoutStyle,
+} from "@/lib/redux/slices/layoutSlice";
+import {
+  toggleWindowsHidden,
+  restoreAll,
+} from "@/lib/redux/slices/windowManagerSlice";
 import type { SettingsPersistence } from "./types";
 
 /**
@@ -93,6 +101,31 @@ export const sliceBindings: Record<string, SliceBinding> = {
       throw new Error(`adminPreferences has no writable key "${key}"`);
     },
     persistence: "local-only",
+  },
+
+  // ── layout — not yet synced; tracks shell layout preference ───────────────
+  layout: {
+    read: (state, key) => readDotted(state.layout, key),
+    write: (key, value) => {
+      if (key === "isInWindow") return setIsInWindow(Boolean(value));
+      if (key === "layoutStyle")
+        return setLayoutStyle(value as "normal" | "extendedBottom" | "window");
+      throw new Error(`layout has no writable key "${key}"`);
+    },
+    persistence: "local-only",
+  },
+
+  // ── windowManager — fully transient. Only the global hidden flag and the
+  // "restore all" action are exposed here. `minimizeAll` needs viewport
+  // dimensions and must be dispatched directly by its caller.
+  windowManager: {
+    read: (state, key) => readDotted(state.windowManager, key),
+    write: (key) => {
+      if (key === "toggleHidden") return toggleWindowsHidden();
+      if (key === "restoreAll") return restoreAll();
+      throw new Error(`windowManager has no writable key "${key}"`);
+    },
+    persistence: "session",
   },
 };
 

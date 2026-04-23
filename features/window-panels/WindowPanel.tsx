@@ -51,6 +51,9 @@ import {
   arrangeActiveWindows,
 } from "@/lib/redux/slices/windowManagerSlice";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { getRegistryEntryByOverlayId } from "./registry/windowRegistry";
+import MobileDrawerSurface from "./mobile/MobileDrawerSurface";
+import MobileCardSurface from "./mobile/MobileCardSurface";
 import { selectIsDebugMode } from "@/lib/redux/slices/adminDebugSlice";
 import { useUrlSync } from "./url-sync/useUrlSync";
 import { useWindowPersistence } from "./WindowPersistenceManager";
@@ -533,9 +536,63 @@ export function WindowPanel({
   ) : null;
 
   // ────────────────────────────────────────────────────────────────────────
-  // MOBILE — full-screen, one window at a time, sidebar toggle
+  // MOBILE — presentation varies by registry.mobilePresentation:
+  //   "drawer"     → bottom-sheet (vaul) with optional nested sidebar drawer
+  //   "card"       → small z-stacked floating card (utility windows)
+  //   "hidden"     → do not mount on mobile at all
+  //   "fullscreen" → one window at a time, fullscreen takeover (default)
   // ────────────────────────────────────────────────────────────────────────
   if (isMobile) {
+    const regEntry = overlayId
+      ? getRegistryEntryByOverlayId(overlayId)
+      : undefined;
+    const mobilePresentation = regEntry?.mobilePresentation ?? "fullscreen";
+    const mobileSidebarAs = regEntry?.mobileSidebarAs ?? "drawer";
+
+    if (mobilePresentation === "hidden") {
+      if (process.env.NODE_ENV !== "production" && overlayId) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          `[WindowPanel] overlay "${overlayId}" has mobilePresentation: "hidden" but was opened on mobile. Add a different mobilePresentation to its registry entry or gate opening.`,
+        );
+      }
+      return null;
+    }
+
+    if (mobilePresentation === "drawer") {
+      return (
+        <MobileDrawerSurface
+          isOpen={true}
+          title={titleNode ?? title}
+          onClose={handleClose}
+          sidebar={sidebar}
+          sidebarAs={mobileSidebarAs}
+          footer={footerBar}
+          actionsLeft={actionsLeft}
+          actionsRight={resolvedActionsRight}
+          bodyClassName={bodyClassName}
+        >
+          {children}
+        </MobileDrawerSurface>
+      );
+    }
+
+    if (mobilePresentation === "card") {
+      return (
+        <MobileCardSurface
+          isOpen={true}
+          title={titleNode ?? title}
+          onClose={handleClose}
+          footer={footerBar}
+          actionsRight={resolvedActionsRight}
+          bodyClassName={bodyClassName}
+        >
+          {children}
+        </MobileCardSurface>
+      );
+    }
+
+    // mobilePresentation === "fullscreen" — legacy behavior (default).
     const mobileBody =
       hasSidebar && activePaneMobile === "sidebar" ? (
         <div className={cn("h-full overflow-y-auto", sidebarClassName)}>

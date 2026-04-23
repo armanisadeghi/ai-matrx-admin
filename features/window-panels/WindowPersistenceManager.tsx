@@ -42,6 +42,7 @@ import {
   type PanelState,
 } from "./registry/windowRegistry";
 import type { WindowEntry } from "@/lib/redux/slices/windowManagerSlice";
+import { clampRectToCurrentViewport } from "./utils/rectClamp";
 
 // ─── Context ──────────────────────────────────────────────────────────────────
 
@@ -129,7 +130,19 @@ export function WindowPersistenceManager({
       if (saved) {
         const parsed = JSON.parse(saved) as Record<string, WindowEntry> | null;
         if (parsed && typeof parsed === "object") {
-          dispatch(restoreWindowState(parsed));
+          // Clamp each stored rect into the current viewport before seeding
+          // Redux — the saved geometry may be from a larger screen.
+          const clamped: Record<string, WindowEntry> = {};
+          for (const [id, entry] of Object.entries(parsed)) {
+            if (!entry || typeof entry !== "object") continue;
+            clamped[id] = {
+              ...entry,
+              windowed: entry.windowed
+                ? clampRectToCurrentViewport(entry.windowed)
+                : entry.windowed,
+            };
+          }
+          dispatch(restoreWindowState(clamped));
         }
         localStorage.removeItem(LEGACY_LS_KEY);
       }
@@ -168,14 +181,17 @@ export function WindowPersistenceManager({
             }),
           );
 
-          // Build the geometry entry for windowManagerSlice
+          // Build the geometry entry for windowManagerSlice. Clamp the
+          // restored rect into the current viewport — a rect saved at a
+          // larger screen can land off-screen on a smaller device.
           const ps = session.panel_state as PanelState | null;
           if (ps?.rect) {
+            const clamped = clampRectToCurrentViewport(ps.rect);
             windowEntries[regEntry.overlayId] = {
               id: regEntry.overlayId,
               title: session.label ?? regEntry.label,
               state: ps.windowState ?? "windowed",
-              windowed: ps.rect,
+              windowed: clamped,
               preMinimizedRect: null,
               zIndex: ps.zIndex ?? 1000,
               traySlot: null,

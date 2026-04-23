@@ -7,6 +7,7 @@ import {
     ChevronDown,
     ChevronUp,
     Edit3,
+    Eye,
     FileImage,
     Loader2,
     Trash2,
@@ -28,18 +29,24 @@ interface StudioFileCardProps {
     selectedPresetIds: string[];
     /** Variant filenames that are selected for bundled actions. */
     selectedVariantFilenames: Set<string>;
+    /** True when the crop preview window is currently focused on this file. */
+    isPreviewActive?: boolean;
     onToggleVariantSelect: (filename: string) => void;
     onRemove: () => void;
     onRename: (base: string) => void;
+    /** Open the live crop preview window, pointed at this file. */
+    onPreviewRequested?: () => void;
 }
 
 export function StudioFileCard({
     file,
     selectedPresetIds,
     selectedVariantFilenames,
+    isPreviewActive,
     onToggleVariantSelect,
     onRemove,
     onRename,
+    onPreviewRequested,
 }: StudioFileCardProps) {
     const [collapsed, setCollapsed] = useState(false);
     const [renaming, setRenaming] = useState(false);
@@ -161,6 +168,25 @@ export function StudioFileCard({
                         <span className="rounded-full bg-destructive/10 border border-destructive/30 text-destructive px-2 py-0.5 text-[11px] font-medium flex items-center gap-1">
                             <AlertCircle className="h-3 w-3" /> Error
                         </span>
+                    )}
+                    {onPreviewRequested && (
+                        <button
+                            type="button"
+                            onClick={onPreviewRequested}
+                            className={
+                                isPreviewActive
+                                    ? "h-7 rounded-md border border-primary bg-primary/10 text-primary px-2 text-[11px] font-medium flex items-center gap-1"
+                                    : "h-7 rounded-md border border-border hover:border-primary/50 hover:bg-primary/5 text-muted-foreground hover:text-foreground px-2 text-[11px] font-medium flex items-center gap-1"
+                            }
+                            title={
+                                isPreviewActive
+                                    ? "Preview window is focused on this file"
+                                    : "Open the live crop preview for this file"
+                            }
+                        >
+                            <Eye className="h-3 w-3" />
+                            {isPreviewActive ? "Previewing" : "Preview"}
+                        </button>
                     )}
                     <button
                         type="button"

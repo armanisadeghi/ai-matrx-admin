@@ -24,6 +24,8 @@ import {
   Settings as SettingsIcon,
   MessageSquare,
   Camera,
+  AppWindow,
+  Activity,
 } from "lucide-react";
 import type { SettingsTabDef, ResolvedSettingsTab } from "./types";
 import type { SettingsTreeNode } from "@/components/official/settings";
@@ -61,6 +63,11 @@ const CodingTab = lazyTab(() => import("./tabs/CodingTab"));
 const FlashcardsTab = lazyTab(() => import("./tabs/FlashcardsTab"));
 const AiModelsTab = lazyTab(() => import("./tabs/AiModelsTab"));
 const AdminServerTab = lazyTab(() => import("./tabs/AdminServerTab"));
+const LayoutTab = lazyTab(() => import("./tabs/LayoutTab"));
+const WindowsTab = lazyTab(() => import("./tabs/WindowsTab"));
+const SystemTab = lazyTab(() => import("./tabs/SystemTab"));
+const LanguageTab = lazyTab(() => import("./tabs/LanguageTab"));
+const PrivacyTab = lazyTab(() => import("./tabs/PrivacyTab"));
 
 export const settingsRegistry: SettingsTabDef[] = [
   // ── General ───────────────────────────────────────────────────────────────
@@ -87,7 +94,9 @@ export const settingsRegistry: SettingsTabDef[] = [
     label: "Language & Region",
     icon: Globe,
     parentId: "general",
-    component: Placeholder,
+    description: "Per-feature language defaults.",
+    searchKeywords: ["locale", "region", "language"],
+    component: LanguageTab,
     persistence: "synced",
   },
   {
@@ -95,8 +104,18 @@ export const settingsRegistry: SettingsTabDef[] = [
     label: "Privacy",
     icon: ShieldCheck,
     parentId: "general",
-    description: "Telemetry, personalization",
-    component: Placeholder,
+    description: "Data capture and telemetry preferences.",
+    searchKeywords: ["telemetry", "tracking", "watching"],
+    component: PrivacyTab,
+    persistence: "synced",
+  },
+  {
+    id: "general.system",
+    label: "System",
+    icon: Activity,
+    parentId: "general",
+    description: "Internal counters and onboarding state.",
+    component: SystemTab,
     persistence: "synced",
   },
 
@@ -135,6 +154,26 @@ export const settingsRegistry: SettingsTabDef[] = [
     parentId: "appearance",
     component: AppearanceTab,
     persistence: "synced",
+  },
+  {
+    id: "appearance.layout",
+    label: "Shell layout",
+    icon: Layers,
+    parentId: "appearance",
+    description: "How the shell chrome arranges around content.",
+    searchKeywords: ["window", "frame", "chrome"],
+    component: LayoutTab,
+    persistence: "local-only",
+  },
+  {
+    id: "appearance.windows",
+    label: "Windows",
+    icon: AppWindow,
+    parentId: "appearance",
+    description: "Actions for floating panels on this screen.",
+    searchKeywords: ["minimize", "restore", "hide"],
+    component: WindowsTab,
+    persistence: "session",
   },
 
   // ── AI & Models ───────────────────────────────────────────────────────────

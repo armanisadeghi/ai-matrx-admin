@@ -13,12 +13,13 @@
  * zero layout shift.
  */
 
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { PresetCatalog } from "./PresetCatalog";
 import { StudioDropZone } from "./StudioDropZone";
 import { StudioFileCard } from "./StudioFileCard";
 import { ExportPanel } from "./ExportPanel";
+import { CropPreviewWindow } from "./CropPreviewWindow";
 import { useImageStudio } from "../hooks/useImageStudio";
 import {
     downloadVariantsAsZip,
@@ -39,6 +40,35 @@ export function ImageStudioShell({ defaultFolder }: ImageStudioShellProps) {
     // the preset id + the file's filename base.
     const [selectedFilenames, setSelectedFilenames] = useState<Set<string>>(
         new Set(),
+    );
+
+    // ── Crop preview window state ─────────────────────────────────────────
+    const [previewOpen, setPreviewOpen] = useState(false);
+    const [previewFileId, setPreviewFileId] = useState<string | null>(null);
+    const [previewPresetId, setPreviewPresetId] = useState<string | null>(null);
+
+    // Auto-pick sensible defaults so the window has something to show.
+    useEffect(() => {
+        if (!previewFileId && studio.files[0]) {
+            setPreviewFileId(studio.files[0].id);
+        }
+    }, [previewFileId, studio.files]);
+    useEffect(() => {
+        if (
+            (!previewPresetId || !studio.selectedPresetIds.includes(previewPresetId)) &&
+            studio.selectedPresetIds[0]
+        ) {
+            setPreviewPresetId(studio.selectedPresetIds[0]);
+        }
+    }, [previewPresetId, studio.selectedPresetIds]);
+
+    const openPreview = useCallback(
+        (opts?: { fileId?: string; presetId?: string }) => {
+            if (opts?.fileId) setPreviewFileId(opts.fileId);
+            if (opts?.presetId) setPreviewPresetId(opts.presetId);
+            setPreviewOpen(true);
+        },
+        [],
     );
     const toggleVariantSelect = useCallback((filename: string) => {
         setSelectedFilenames((prev) => {
@@ -123,8 +153,17 @@ export function ImageStudioShell({ defaultFolder }: ImageStudioShellProps) {
             <div className="hidden md:flex flex-col w-72 lg:w-80 xl:w-96 border-r border-border bg-card/30 min-h-0">
                 <PresetCatalog
                     selectedIds={studio.selectedPresetIds}
-                    onToggle={studio.togglePreset}
-                    onApplyBundle={studio.applyBundle}
+                    onToggle={(id) => {
+                        studio.togglePreset(id);
+                        // Focus the preview on whichever preset the user just picked.
+                        if (!studio.selectedPresetIds.includes(id)) {
+                            setPreviewPresetId(id);
+                        }
+                    }}
+                    onApplyBundle={(ids) => {
+                        studio.applyBundle(ids);
+                        if (ids[0]) setPreviewPresetId(ids[0]);
+                    }}
                     onDeselectAll={studio.deselectAllPresets}
                 />
             </div>
@@ -166,9 +205,13 @@ export function ImageStudioShell({ defaultFolder }: ImageStudioShellProps) {
                                         file={f}
                                         selectedPresetIds={studio.selectedPresetIds}
                                         selectedVariantFilenames={selectedFilenames}
+                                        isPreviewActive={previewFileId === f.id && previewOpen}
                                         onToggleVariantSelect={toggleVariantSelect}
                                         onRemove={() => studio.removeFile(f.id)}
                                         onRename={(base) => studio.setFilenameBase(f.id, base)}
+                                        onPreviewRequested={() =>
+                                            openPreview({ fileId: f.id })
+                                        }
                                     />
                                 ))}
                             </div>
@@ -212,8 +255,30 @@ export function ImageStudioShell({ defaultFolder }: ImageStudioShellProps) {
                     onDownloadAll={handleDownloadAll}
                     onDownloadSelected={handleDownloadSelected}
                     onSaveAll={handleSaveAll}
+                    onOpenPreview={() => openPreview()}
+                    canOpenPreview={
+                        studio.files.length > 0 && studio.selectedPresetIds.length > 0
+                    }
+                    isPreviewOpen={previewOpen}
                 />
             </div>
+
+            {/* Live crop preview — floating WindowPanel */}
+            {previewOpen && (
+                <CropPreviewWindow
+                    files={studio.files}
+                    selectedPresetIds={studio.selectedPresetIds}
+                    activeFileId={previewFileId}
+                    activePresetId={previewPresetId}
+                    onActiveFileChange={setPreviewFileId}
+                    onActivePresetChange={setPreviewPresetId}
+                    fit={studio.fit}
+                    position={studio.position}
+                    backgroundColor={studio.backgroundColor}
+                    onPositionChange={studio.setPosition}
+                    onClose={() => setPreviewOpen(false)}
+                />
+            )}
         </div>
     );
 }

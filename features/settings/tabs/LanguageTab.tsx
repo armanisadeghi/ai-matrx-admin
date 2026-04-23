@@ -1,0 +1,85 @@
+"use client";
+
+import { Globe } from "lucide-react";
+import {
+  SettingsSelect,
+  SettingsSection,
+  SettingsSubHeader,
+  SettingsCallout,
+} from "@/components/official/settings";
+import { useSetting } from "../hooks/useSetting";
+
+const languageOptions = [
+  { value: "en", label: "English" },
+  { value: "es", label: "Spanish" },
+  { value: "fr", label: "French" },
+  { value: "de", label: "German" },
+  { value: "it", label: "Italian" },
+  { value: "pt", label: "Portuguese" },
+  { value: "zh", label: "Chinese" },
+  { value: "ja", label: "Japanese" },
+  { value: "ko", label: "Korean" },
+  { value: "ru", label: "Russian" },
+  { value: "hi", label: "Hindi" },
+  { value: "nl", label: "Dutch" },
+  { value: "pl", label: "Polish" },
+  { value: "sv", label: "Swedish" },
+  { value: "tr", label: "Turkish" },
+];
+
+/**
+ * Language defaults. Right now there's no single "app language" slice — each
+ * feature maintains its own `language` preference. This tab surfaces every
+ * language field so users don't have to hunt across tabs.
+ */
+export default function LanguageTab() {
+  const [voiceLang, setVoiceLang] = useSetting<string>(
+    "userPreferences.voice.language",
+  );
+  const [textLang, setTextLang] = useSetting<string>(
+    "userPreferences.textGeneration.language",
+  );
+  const [flashcardLang, setFlashcardLang] = useSetting<string>(
+    "userPreferences.flashcard.language",
+  );
+
+  return (
+    <>
+      <SettingsSubHeader
+        title="Language & Region"
+        description="Per-feature language defaults."
+        icon={Globe}
+      />
+
+      <SettingsCallout tone="info">
+        Language is set per feature — there's no global language override yet.
+        Change each domain's default here.
+      </SettingsCallout>
+
+      <SettingsSection title="Language defaults">
+        <SettingsSelect
+          label="Voice input"
+          description="Speech-to-text recognition language."
+          value={voiceLang}
+          onValueChange={setVoiceLang}
+          options={languageOptions}
+        />
+        <SettingsSelect
+          label="Text generation"
+          description="Default language for generated text."
+          value={textLang}
+          onValueChange={setTextLang}
+          options={languageOptions}
+        />
+        <SettingsSelect
+          label="Flashcards"
+          description="Default language for study content."
+          value={flashcardLang}
+          onValueChange={setFlashcardLang}
+          options={languageOptions}
+          last
+        />
+      </SettingsSection>
+    </>
+  );
+}
