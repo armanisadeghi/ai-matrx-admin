@@ -52,6 +52,8 @@ Run against `http://localhost:3000/sync-demo/preferences` with `pnpm dev` up.
 5. Expected: demo renders with the bumped temperature immediately (<20ms after first paint). **No `user_preferences` GET in the network log** (warm path bypasses Supabase since `staleAfter` hasn't elapsed — 60s).
 6. Result: ☐ PASS ☐ FAIL ☐ NOTES:
 
+**First-run regression (Arman, 2026-04-22):** one unwanted Supabase POST on warm refresh. Root cause: middleware's `lastPersistedRef` was empty at boot, so the first post-boot action (any action) tripped the `!==` reference check and scheduled a no-op debounced flush → IDB + LS mirror + `remote.write` POST. Fixed in commit `472f23acc` — middleware now seeds `lastPersistedRef` / `lastAppliedRef` from `api.getState()` on first invocation, before `next(action)`. Re-run §3.1 after pulling that commit; expected: zero `user_preferences` traffic.
+
 ### 3.2 Cross-tab sync ≤20ms
 
 1. Open two tabs of the demo.
@@ -67,6 +69,8 @@ Run against `http://localhost:3000/sync-demo/preferences` with `pnpm dev` up.
 3. Observe: first paint is instant (defaults from `initialState`). Within ~500ms, the demo's IDB-record section repopulates (engine's boot-time `remote.fetch` returned data, REHYDRATE dispatched, engine persisted to IDB).
 4. Network tab: one `user_preferences?select=preferences&user_id=eq.…` request during the boot window.
 5. Result: ☐ PASS ☐ FAIL ☐ NOTES:
+
+**First-run regression (Arman, 2026-04-22):** cold boot correctly emitted the expected GET, then *also* emitted an unwanted POST. Additionally, repeating the same cold-boot scenario kept cold-fetching forever — the REHYDRATE-dispatched data never landed in IDB because the middleware deliberately skips REHYDRATE on the persist path. Fixed in commit `472f23acc` — `invokeRemoteFetch` now persists the fetched body directly to IDB + LS mirror after a successful dispatch, bypassing the middleware. Combined with the §3.1 fix (which eliminates the baseline-seed POST), the expected cold-boot trace is now: *one* `user_preferences` GET, zero POSTs, and the next hard-refresh is warm (zero network).
 
 ### 3.4 IDB-unavailable degradation
 
@@ -147,12 +151,14 @@ Running total is expected to cross net-negative in Phase 6 and stay there.
 ## 6. Jest evidence
 
 ```
-$ pnpm jest lib/sync/
+$ npx jest lib/sync/
 Test Suites: 13 passed, 13 total
-Tests:       88 passed, 88 total
+Tests:       93 passed, 93 total
 Snapshots:   0 total
 Time:        ~3s
 ```
+
+(Count grew from 88 → 93 in commit `472f23acc` — +5 regression tests covering the §3.1/§3.3 fixes: middleware boot-seeding, post-REHYDRATE baseline refresh, and `invokeRemoteFetch` cache-warming.)
 
 Suites (alphabetized):
 
