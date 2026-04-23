@@ -15,8 +15,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { setMode, toggleMode } from "@/styles/themes/themeSlice";
+import type { IdentityKey } from "@/lib/sync";
 
 interface BroadcastEvent {
     at: number;
@@ -25,6 +26,7 @@ interface BroadcastEvent {
 
 export function ThemeDemoClient() {
     const dispatch = useAppDispatch();
+    const store = useAppStore();
     const mode = useAppSelector((s) => s.theme.mode);
     const [storageRaw, setStorageRaw] = useState<string | null>(null);
     const [events, setEvents] = useState<BroadcastEvent[]>([]);
@@ -33,6 +35,11 @@ export function ThemeDemoClient() {
     // applier changes without polling.
     const [mounted, setMounted] = useState(false);
     const [htmlHasDark, setHtmlHasDark] = useState(false);
+    // Phase 1.G — dev-only identity-swap control. Closes Phase 1 success
+    // criterion #5 ("same-profile runtime identity swap"). Reading the live
+    // key off the store so the UI reflects swaps immediately.
+    const [identityKey, setIdentityKey] = useState<string>("");
+    const [identityInput, setIdentityInput] = useState<string>("guest:fake-xyz");
 
     // Poll localStorage so the on-screen envelope reflects writes in real time.
     useEffect(() => {
@@ -70,6 +77,35 @@ export function ThemeDemoClient() {
         return () => bc.close();
     }, []);
 
+    // Poll the live identity off the store for display. `setIdentity` mutates
+    // a closure in `makeStore`, so there's no Redux selector to subscribe to —
+    // a 500ms poll is the cheapest way to surface swaps in the debug panel.
+    useEffect(() => {
+        const read = () => setIdentityKey(store._sync.identity.key);
+        read();
+        const id = window.setInterval(read, 500);
+        return () => window.clearInterval(id);
+    }, [store]);
+
+    function swapIdentity(key: string): void {
+        if (!key.trim()) return;
+        // Construct a minimal IdentityKey consistent with the `auth:` / `guest:`
+        // discriminator rule in `lib/sync/types.ts`. Dev-only control.
+        const next: IdentityKey = key.startsWith("auth:")
+            ? {
+                  type: "auth",
+                  userId: key.slice("auth:".length),
+                  key: key as `auth:${string}`,
+              }
+            : {
+                  type: "guest",
+                  fingerprintId: key.startsWith("guest:") ? key.slice("guest:".length) : key,
+                  key: (key.startsWith("guest:") ? key : `guest:${key}`) as `guest:${string}`,
+              };
+        store._sync.setIdentity(next);
+        setIdentityKey(next.key);
+    }
+
     return (
         <div className="flex h-[calc(100vh-2.5rem)] flex-col gap-4 overflow-y-auto bg-textured p-6">
             <header>
@@ -95,7 +131,41 @@ export function ThemeDemoClient() {
                     <dd className="whitespace-pre-wrap break-all font-mono text-xs">
                         {storageRaw ?? "(null)"}
                     </dd>
+                    <dt className="text-muted-foreground">live identityKey:</dt>
+                    <dd className="font-mono text-xs">{mounted ? identityKey : "—"}</dd>
                 </dl>
+            </section>
+
+            <section className="rounded-md border border-border bg-card p-4">
+                <h2 className="mb-2 text-sm font-medium text-muted-foreground">
+                    Identity swap (dev only)
+                </h2>
+                <p className="mb-3 text-xs text-muted-foreground">
+                    Swap the store's identity at runtime. Subsequent persists
+                    stamp the new key; inbound broadcasts from the old identity
+                    are filtered out. Format: <code>auth:&lt;userId&gt;</code>
+                    {" "}or <code>guest:&lt;fingerprint&gt;</code>.
+                </p>
+                <div className="flex flex-wrap items-center gap-2">
+                    <input
+                        className="rounded-md border border-border bg-background px-2 py-1 text-xs font-mono"
+                        value={identityInput}
+                        onChange={(e) => setIdentityInput(e.target.value)}
+                        placeholder="guest:fake-xyz"
+                    />
+                    <button
+                        className="rounded-md border border-border px-3 py-1 text-sm hover:bg-accent"
+                        onClick={() => swapIdentity(identityInput)}
+                    >
+                        swap
+                    </button>
+                    <button
+                        className="rounded-md border border-border px-3 py-1 text-sm hover:bg-accent"
+                        onClick={() => swapIdentity(`guest:fake-${Date.now()}`)}
+                    >
+                        random guest
+                    </button>
+                </div>
             </section>
 
             <section className="rounded-md border border-border bg-card p-4">
