@@ -1123,10 +1123,11 @@ export const fetchUnifiedMenu = createAsyncThunk<
         ),
       }));
       console.log(
-        "[fetchUnifiedMenu] scope=%o payload=%o",
+        "[FETCH UNIFIED MENU] scope=%o payload=%o",
         ref,
         placementSummary,
       );
+      console.log("[FETCH UNIFIED MENU] payload", payload);
     }
 
     for (const placement of payload.data ?? []) {

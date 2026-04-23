@@ -45,7 +45,6 @@ import { useToast } from "@/components/ui/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAgentShortcuts } from "../hooks/useAgentShortcuts";
 import { useAgentShortcutCrud } from "../hooks/useAgentShortcutCrud";
-import { DEFAULT_AVAILABLE_SCOPES } from "../constants";
 import { ScopeMappingEditor } from "./ScopeMappingEditor";
 import type { AgentVariableDefinition } from "./ScopeMappingEditor";
 import type { ScopeProps } from "../types";
@@ -94,9 +93,7 @@ export function LinkAgentToShortcutModal({
   const [scopeMappings, setScopeMappings] = useState<Record<string, string>>(
     {},
   );
-  const [availableScopes, setAvailableScopes] = useState<string[]>(
-    DEFAULT_AVAILABLE_SCOPES,
-  );
+  const [availableScopes, setAvailableScopes] = useState<string[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [enabledFeaturesInput, setEnabledFeaturesInput] = useState("");
@@ -111,7 +108,7 @@ export function LinkAgentToShortcutModal({
     setSelectedCategoryId(categories[0]?.id ?? "");
     setLabel(agent.name);
     setScopeMappings({});
-    setAvailableScopes(DEFAULT_AVAILABLE_SCOPES);
+    setAvailableScopes([]);
     setEnabledFeaturesInput("");
     setError(null);
   }, [isOpen, agent, categories]);

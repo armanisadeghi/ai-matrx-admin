@@ -71,7 +71,7 @@ import { DefaultContextSlotValuesEditor } from "./DefaultContextSlotValuesEditor
 import { ShortcutScopePicker } from "./ShortcutScopePicker";
 import { ShortcutContextsPicker } from "./ShortcutContextsPicker";
 import { useAgentShortcutCrud } from "../hooks/useAgentShortcutCrud";
-import { DEFAULT_AVAILABLE_SCOPES, RESULT_DISPLAY_OPTIONS } from "../constants";
+import { RESULT_DISPLAY_OPTIONS } from "../constants";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectAgentById } from "@/features/agents/redux/agent-definition/selectors";
 import { fetchAgentExecutionMinimal } from "@/features/agents/redux/agent-definition/thunks";
@@ -349,6 +349,12 @@ export function ShortcutForm({
     if (shortcut) return fromShortcut(shortcut);
     return { ...emptyFormData(), ...(initialValues ?? {}) };
   });
+  const [scopeMappingEnabledKeys, setScopeMappingEnabledKeys] = useState<
+    string[]
+  >(() => {
+    if (shortcut) return Object.keys(shortcut.scopeMappings ?? {});
+    return Object.keys(initialValues?.scopeMappings ?? {});
+  });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -385,12 +391,18 @@ export function ShortcutForm({
     setError(null);
     if (shortcut) {
       setFormData(fromShortcut(shortcut));
+      setScopeMappingEnabledKeys(
+        Object.keys(fromShortcut(shortcut).scopeMappings ?? {}),
+      );
     } else {
       setFormData({
         ...emptyFormData(),
         categoryId: categories[0]?.id ?? "",
         ...(initialValues ?? {}),
       });
+      setScopeMappingEnabledKeys(
+        Object.keys(initialValues?.scopeMappings ?? {}),
+      );
     }
     // `initialValues` is intentionally omitted — it should only seed on mount
     // or when switching between edit/create targets.
@@ -583,9 +595,7 @@ export function ShortcutForm({
       </div>
 
       <div className="space-y-1.5">
-        <LabelWithHelp
-          help="Pick the surfaces this shortcut appears in. Leave empty to show everywhere. When a host sets a feature filter, the shortcut must include that tag (or stay empty) to appear."
-        >
+        <LabelWithHelp help="Pick the surfaces this shortcut appears in. Leave empty to show everywhere. When a host sets a feature filter, the shortcut must include that tag (or stay empty) to appear.">
           Enabled features
         </LabelWithHelp>
         <ShortcutContextsPicker
@@ -645,8 +655,8 @@ export function ShortcutForm({
           className="text-sm font-semibold"
           help={
             <>
-              Route a surface-provided scope key (selection, content, file
-              path, …) into one of the agent&apos;s{" "}
+              Route a surface-provided scope key (selection, content, file path,
+              …) into one of the agent&apos;s{" "}
               <span className="font-mono">{`{{variables}}`}</span>.
             </>
           }
@@ -654,24 +664,16 @@ export function ShortcutForm({
           Scope → Variable Mappings
         </LabelWithHelp>
         <ScopeMappingEditor
-          availableScopes={
-            formData.scopeMappings
-              ? Array.from(
-                  new Set([
-                    ...Object.keys(formData.scopeMappings),
-                    ...DEFAULT_AVAILABLE_SCOPES,
-                  ]),
-                )
-              : DEFAULT_AVAILABLE_SCOPES
-          }
+          availableScopes={scopeMappingEnabledKeys}
           scopeMappings={formData.scopeMappings}
           variableDefinitions={variableDefinitions as AgentVariableDefinition[]}
-          onScopesChange={(_scopes, mappings) =>
+          onScopesChange={(scopes, mappings) => {
+            setScopeMappingEnabledKeys(scopes);
             handleChange(
               "scopeMappings",
               Object.keys(mappings).length > 0 ? mappings : null,
-            )
-          }
+            );
+          }}
           compact
         />
       </div>

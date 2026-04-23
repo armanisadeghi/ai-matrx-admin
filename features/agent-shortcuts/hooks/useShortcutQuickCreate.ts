@@ -31,7 +31,7 @@ import {
   type ShortcutContext,
 } from "@/features/agents/utils/shortcut-context-utils";
 import type { AgentScope } from "../constants";
-import { DEFAULT_AVAILABLE_SCOPES, PLACEMENT_TYPES } from "../constants";
+import { PLACEMENT_TYPES } from "../constants";
 import { useAgentShortcuts } from "./useAgentShortcuts";
 import { useAgentShortcutCrud } from "./useAgentShortcutCrud";
 import type { ShortcutFormData } from "../types";
@@ -182,9 +182,7 @@ export function useShortcutQuickCreate({
   const [scopeMappings, setScopeMappings] = useState<Record<string, string>>(
     {},
   );
-  const [availableScopes, setAvailableScopes] = useState<string[]>(
-    DEFAULT_AVAILABLE_SCOPES,
-  );
+  const [availableScopes, setAvailableScopes] = useState<string[]>([]);
 
   // ── Link existing ────────────────────────────────────────────────────────
   const [searchQuery, setSearchQuery] = useState("");
@@ -513,7 +511,7 @@ export function useShortcutQuickCreate({
     setHideToolResults(DEFAULT_AGENT_EXECUTION_CONFIG.hideToolResults);
     setDefaultVariables(null);
     setScopeMappings({});
-    setAvailableScopes(DEFAULT_AVAILABLE_SCOPES);
+    setAvailableScopes([]);
     setJsonError(null);
     setError(null);
     toast({ title: "Reset", description: "Form reset to defaults." });

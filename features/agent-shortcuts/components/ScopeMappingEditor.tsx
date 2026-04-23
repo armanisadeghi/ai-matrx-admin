@@ -26,13 +26,15 @@ export interface AgentVariableDefinition {
 }
 
 export interface ScopeMappingEditorProps {
+  /**
+   * Scope keys whose checkbox is **on** (user enabled that row for mapping).
+   * Empty `[]` means every standard row is **unchecked** — it does **not** hide rows.
+   * All standard keys in `DEFAULT_AVAILABLE_SCOPES` always render in the list below.
+   */
   availableScopes: string[];
   scopeMappings: Record<string, string> | null;
   variableDefinitions: AgentVariableDefinition[];
-  onScopesChange: (
-    scopes: string[],
-    mappings: Record<string, string>,
-  ) => void;
+  onScopesChange: (scopes: string[], mappings: Record<string, string>) => void;
   compact?: boolean;
 }
 
@@ -59,10 +61,9 @@ export function ScopeMappingEditor({
   const [newScopeName, setNewScopeName] = useState("");
 
   const mappings = scopeMappings ?? {};
-  // The union: every standard scope is always listed (checkbox), plus any
-  // custom keys the designer has added or that the current mapping references.
-  const enabledScopes =
-    availableScopes.length > 0 ? availableScopes : DEFAULT_AVAILABLE_SCOPES;
+  // Which scope keys have their checkbox on (checked). Not defaulted to all
+  // standard scopes — the parent must persist this list; empty means none.
+  const enabledScopes = availableScopes;
   const customScopes = Array.from(
     new Set([
       ...enabledScopes.filter((s) => !STANDARD_SCOPES.includes(s)),
@@ -114,7 +115,7 @@ export function ScopeMappingEditor({
     onScopesChange(newScopes, newMappings);
   };
 
-  const renderVariableSelect = (scopeName: string, _isEnabled: boolean) => {
+  const renderVariableSelect = (scopeName: string, isRowEnabled: boolean) => {
     const currentVarName = mappings[scopeName] ?? "";
     const hasVariables = variableDefinitions.length > 0;
     const placeholder = hasVariables
@@ -125,7 +126,7 @@ export function ScopeMappingEditor({
       <Select
         value={currentVarName || "_none_"}
         onValueChange={(value) => handleMappingChange(scopeName, value)}
-        disabled={!hasVariables}
+        disabled={!isRowEnabled || !hasVariables}
       >
         <SelectTrigger className={compact ? "h-7 text-xs" : "h-8"}>
           <SelectValue>
@@ -219,10 +220,7 @@ export function ScopeMappingEditor({
                 key={scopeName}
                 className={`flex items-center gap-3 ${compact ? "p-2" : "p-3"} border-b border-border last:border-b-0`}
               >
-                <div
-                  className="flex-shrink-0"
-                  style={{ width: "130px" }}
-                >
+                <div className="flex-shrink-0" style={{ width: "130px" }}>
                   <div
                     className={`font-medium font-mono ${compact ? "text-xs" : "text-sm"}`}
                   >

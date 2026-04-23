@@ -15460,6 +15460,371 @@ export type Database = {
           },
         ]
       }
+      wf_checkpoint: {
+        Row: {
+          channel_values: Json
+          created_at: string
+          id: string
+          interrupt_payload: Json | null
+          metadata: Json
+          next_invocations: Json
+          parent_checkpoint_id: string | null
+          pending_writes: Json
+          run_id: string
+          step: number
+          thread_id: string
+        }
+        Insert: {
+          channel_values?: Json
+          created_at?: string
+          id?: string
+          interrupt_payload?: Json | null
+          metadata?: Json
+          next_invocations?: Json
+          parent_checkpoint_id?: string | null
+          pending_writes?: Json
+          run_id: string
+          step: number
+          thread_id: string
+        }
+        Update: {
+          channel_values?: Json
+          created_at?: string
+          id?: string
+          interrupt_payload?: Json | null
+          metadata?: Json
+          next_invocations?: Json
+          parent_checkpoint_id?: string | null
+          pending_writes?: Json
+          run_id?: string
+          step?: number
+          thread_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wf_checkpoint_parent_checkpoint_id_fkey"
+            columns: ["parent_checkpoint_id"]
+            isOneToOne: false
+            referencedRelation: "wf_checkpoint"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wf_checkpoint_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "wf_run"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wf_definition: {
+        Row: {
+          category: string | null
+          channels: Json
+          created_at: string
+          description: string | null
+          edges: Json
+          entry_nodes: Json
+          id: string
+          is_active: boolean
+          is_archived: boolean
+          is_favorite: boolean
+          is_public: boolean
+          metadata: Json
+          name: string
+          nodes: Json
+          organization_id: string | null
+          project_id: string | null
+          source_definition_id: string | null
+          source_snapshot_at: string | null
+          strict_channels: boolean
+          tags: string[]
+          task_id: string | null
+          updated_at: string
+          user_id: string | null
+          version: number
+          viewport: Json
+        }
+        Insert: {
+          category?: string | null
+          channels?: Json
+          created_at?: string
+          description?: string | null
+          edges?: Json
+          entry_nodes?: Json
+          id?: string
+          is_active?: boolean
+          is_archived?: boolean
+          is_favorite?: boolean
+          is_public?: boolean
+          metadata?: Json
+          name: string
+          nodes?: Json
+          organization_id?: string | null
+          project_id?: string | null
+          source_definition_id?: string | null
+          source_snapshot_at?: string | null
+          strict_channels?: boolean
+          tags?: string[]
+          task_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+          version?: number
+          viewport?: Json
+        }
+        Update: {
+          category?: string | null
+          channels?: Json
+          created_at?: string
+          description?: string | null
+          edges?: Json
+          entry_nodes?: Json
+          id?: string
+          is_active?: boolean
+          is_archived?: boolean
+          is_favorite?: boolean
+          is_public?: boolean
+          metadata?: Json
+          name?: string
+          nodes?: Json
+          organization_id?: string | null
+          project_id?: string | null
+          source_definition_id?: string | null
+          source_snapshot_at?: string | null
+          strict_channels?: boolean
+          tags?: string[]
+          task_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+          version?: number
+          viewport?: Json
+        }
+        Relationships: []
+      }
+      wf_definition_version: {
+        Row: {
+          category: string | null
+          change_note: string | null
+          changed_at: string
+          changed_by_user_id: string | null
+          channels: Json | null
+          definition_id: string
+          description: string | null
+          edges: Json | null
+          entry_nodes: Json | null
+          id: string
+          is_active: boolean | null
+          metadata: Json | null
+          name: string | null
+          nodes: Json | null
+          strict_channels: boolean | null
+          tags: string[] | null
+          version_number: number
+          viewport: Json | null
+        }
+        Insert: {
+          category?: string | null
+          change_note?: string | null
+          changed_at?: string
+          changed_by_user_id?: string | null
+          channels?: Json | null
+          definition_id: string
+          description?: string | null
+          edges?: Json | null
+          entry_nodes?: Json | null
+          id?: string
+          is_active?: boolean | null
+          metadata?: Json | null
+          name?: string | null
+          nodes?: Json | null
+          strict_channels?: boolean | null
+          tags?: string[] | null
+          version_number: number
+          viewport?: Json | null
+        }
+        Update: {
+          category?: string | null
+          change_note?: string | null
+          changed_at?: string
+          changed_by_user_id?: string | null
+          channels?: Json | null
+          definition_id?: string
+          description?: string | null
+          edges?: Json | null
+          entry_nodes?: Json | null
+          id?: string
+          is_active?: boolean | null
+          metadata?: Json | null
+          name?: string | null
+          nodes?: Json | null
+          strict_channels?: boolean | null
+          tags?: string[] | null
+          version_number?: number
+          viewport?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wf_definition_version_definition_id_fkey"
+            columns: ["definition_id"]
+            isOneToOne: false
+            referencedRelation: "wf_definition"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wf_node_outcome: {
+        Row: {
+          attempt: number
+          channel_writes: Json
+          completed_at: string
+          duration_ms: number
+          error: Json | null
+          id: string
+          node_id: string
+          output: Json
+          run_id: string
+          sends: Json
+          step: number
+        }
+        Insert: {
+          attempt?: number
+          channel_writes?: Json
+          completed_at?: string
+          duration_ms?: number
+          error?: Json | null
+          id?: string
+          node_id: string
+          output?: Json
+          run_id: string
+          sends?: Json
+          step: number
+        }
+        Update: {
+          attempt?: number
+          channel_writes?: Json
+          completed_at?: string
+          duration_ms?: number
+          error?: Json | null
+          id?: string
+          node_id?: string
+          output?: Json
+          run_id?: string
+          sends?: Json
+          step?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wf_node_outcome_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "wf_run"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wf_run: {
+        Row: {
+          agent_id: string | null
+          agent_version_id: string | null
+          completed_at: string | null
+          conversation_id: string | null
+          created_at: string
+          definition_hash: string
+          definition_id: string
+          definition_version_id: string | null
+          error: Json | null
+          id: string
+          input: Json
+          interrupt_payload: Json | null
+          last_checkpoint_id: string | null
+          metadata: Json
+          organization_id: string | null
+          output: Json | null
+          parent_run_id: string | null
+          project_id: string | null
+          started_at: string | null
+          status: string
+          steps_executed: number
+          task_id: string | null
+          thread_id: string
+          user_id: string | null
+        }
+        Insert: {
+          agent_id?: string | null
+          agent_version_id?: string | null
+          completed_at?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          definition_hash: string
+          definition_id: string
+          definition_version_id?: string | null
+          error?: Json | null
+          id?: string
+          input?: Json
+          interrupt_payload?: Json | null
+          last_checkpoint_id?: string | null
+          metadata?: Json
+          organization_id?: string | null
+          output?: Json | null
+          parent_run_id?: string | null
+          project_id?: string | null
+          started_at?: string | null
+          status?: string
+          steps_executed?: number
+          task_id?: string | null
+          thread_id: string
+          user_id?: string | null
+        }
+        Update: {
+          agent_id?: string | null
+          agent_version_id?: string | null
+          completed_at?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          definition_hash?: string
+          definition_id?: string
+          definition_version_id?: string | null
+          error?: Json | null
+          id?: string
+          input?: Json
+          interrupt_payload?: Json | null
+          last_checkpoint_id?: string | null
+          metadata?: Json
+          organization_id?: string | null
+          output?: Json | null
+          parent_run_id?: string | null
+          project_id?: string | null
+          started_at?: string | null
+          status?: string
+          steps_executed?: number
+          task_id?: string | null
+          thread_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wf_run_definition_id_fkey"
+            columns: ["definition_id"]
+            isOneToOne: false
+            referencedRelation: "wf_definition"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wf_run_definition_version_id_fkey"
+            columns: ["definition_version_id"]
+            isOneToOne: false
+            referencedRelation: "wf_definition_version"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wf_run_parent_run_id_fkey"
+            columns: ["parent_run_id"]
+            isOneToOne: false
+            referencedRelation: "wf_run"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       window_sessions: {
         Row: {
           created_at: string | null

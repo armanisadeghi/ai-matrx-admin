@@ -337,8 +337,7 @@ export const createInstanceFromShortcut = createAsyncThunk<
     console.log("defaultUserInput:", shortcut.defaultUserInput ?? "(none)");
     console.log(
       "agent contract (carried by the shortcut):",
-      shortcutVariableDefinitions.length > 0 ||
-        shortcutContextSlots.length > 0
+      shortcutVariableDefinitions.length > 0 || shortcutContextSlots.length > 0
         ? `${shortcutVariableDefinitions.length} variables, ${shortcutContextSlots.length} context slots`
         : "⚠ EMPTY — shortcut was loaded without variable defs (probably via REST, not the menu RPC)",
     );
@@ -419,12 +418,9 @@ export const createInstanceFromShortcut = createAsyncThunk<
       isCreator: false,
       hideReasoning: hideReasoning ?? shortcut.hideReasoning,
       hideToolResults: hideToolResults ?? shortcut.hideToolResults,
-      preExecutionMessage:
-        preExecutionMessage ?? shortcut.preExecutionMessage,
-      bypassGateSeconds:
-        bypassGateSeconds ?? shortcut.bypassGateSeconds ?? 0,
-      variablesPanelStyle:
-        variablesPanelStyle ?? shortcut.variablesPanelStyle,
+      preExecutionMessage: preExecutionMessage ?? shortcut.preExecutionMessage,
+      bypassGateSeconds: bypassGateSeconds ?? shortcut.bypassGateSeconds ?? 0,
+      variablesPanelStyle: variablesPanelStyle ?? shortcut.variablesPanelStyle,
       jsonExtraction,
       originalText,
     }),
@@ -435,7 +431,10 @@ export const createInstanceFromShortcut = createAsyncThunk<
   //   2. Shortcut.defaultVariables                  (this dispatch)
   //   3. Scope-mapped values from applicationScope  (next dispatch — overrides 2)
   //   4. User edits via the variable panel          (later, runtime)
-  if (shortcut.defaultVariables && Object.keys(shortcut.defaultVariables).length > 0) {
+  if (
+    shortcut.defaultVariables &&
+    Object.keys(shortcut.defaultVariables).length > 0
+  ) {
     dispatch(
       setUserVariableValues({
         conversationId,
@@ -469,12 +468,9 @@ export const createInstanceFromShortcut = createAsyncThunk<
 
   // Apply LLM overrides from the shortcut config
   if (shortcut.llmOverrides && Object.keys(shortcut.llmOverrides).length > 0) {
-    const { setOverrides } = await import(
-      "../instance-model-overrides/instance-model-overrides.slice"
-    );
-    dispatch(
-      setOverrides({ conversationId, changes: shortcut.llmOverrides }),
-    );
+    const { setOverrides } =
+      await import("../instance-model-overrides/instance-model-overrides.slice");
+    dispatch(setOverrides({ conversationId, changes: shortcut.llmOverrides }));
   }
 
   // Apply shortcut.defaultUserInput (designer's extra instructions)
