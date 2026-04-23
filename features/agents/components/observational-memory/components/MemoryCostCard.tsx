@@ -208,6 +208,17 @@ export function MemoryCostCard({
   );
 }
 
+/** Coerce an unknown JSON value (from the openapi `{ [k]: unknown }` map) to
+ *  a finite number, or null when it isn't representable. */
+function toNum(v: unknown): number | null {
+  if (typeof v === "number" && Number.isFinite(v)) return v;
+  if (typeof v === "string") {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
+  }
+  return null;
+}
+
 function CostStat({
   label,
   value,

@@ -149,8 +149,7 @@ export function AgentGenerator({ onComplete }: AgentGeneratorProps) {
   // load-failure as a real error state instead of letting the launch fail
   // at click time.
   const generatorShortcut = useAppSelector(
-    (state) =>
-      state.agentShortcut.shortcuts[GENERATOR_SHORTCUT.id] ?? null,
+    (state) => state.agentShortcut.shortcuts[GENERATOR_SHORTCUT.id] ?? null,
   );
   const [shortcutLoadError, setShortcutLoadError] = useState<string | null>(
     null,
@@ -208,10 +207,17 @@ export function AgentGenerator({ onComplete }: AgentGeneratorProps) {
 
   // ── Derived state ─────────────────────────────────────────────────────────
 
-  const isActive = streamPhase !== "idle" && streamPhase !== "complete" && streamPhase !== "error";
-  const hasExtractedJson = extractedSnapshot !== null && extractedSnapshot.type === "object";
-  const extractedValue = hasExtractedJson ? (extractedSnapshot.value as Record<string, unknown>) : null;
-  const extractionFailed = jsonExtractionComplete && !hasExtractedJson && !!streamingText;
+  const isActive =
+    streamPhase !== "idle" &&
+    streamPhase !== "complete" &&
+    streamPhase !== "error";
+  const hasExtractedJson =
+    extractedSnapshot !== null && extractedSnapshot.type === "object";
+  const extractedValue = hasExtractedJson
+    ? (extractedSnapshot.value as Record<string, unknown>)
+    : null;
+  const extractionFailed =
+    jsonExtractionComplete && !hasExtractedJson && !!streamingText;
   const canGenerate =
     selection.trim().length > 0 && shortcutReady && !shortcutLoadError;
 
@@ -424,8 +430,12 @@ export function AgentGenerator({ onComplete }: AgentGeneratorProps) {
                   isStreaming ||
                   showResult
                 }
-                onTranscriptionComplete={() => toast.success("Voice input added")}
-                onTranscriptionError={(error) => toast.error("Voice input failed", { description: error })}
+                onTranscriptionComplete={() =>
+                  toast.success("Voice input added")
+                }
+                onTranscriptionError={(error) =>
+                  toast.error("Voice input failed", { description: error })
+                }
               />
               <p className="text-xs text-gray-500 dark:text-gray-400">
                 Be specific about the main purpose and goals
@@ -449,8 +459,12 @@ export function AgentGenerator({ onComplete }: AgentGeneratorProps) {
                   isStreaming ||
                   showResult
                 }
-                onTranscriptionComplete={() => toast.success("Voice context added")}
-                onTranscriptionError={(error) => toast.error("Voice input failed", { description: error })}
+                onTranscriptionComplete={() =>
+                  toast.success("Voice context added")
+                }
+                onTranscriptionError={(error) =>
+                  toast.error("Voice input failed", { description: error })
+                }
               />
               <p className="text-xs text-gray-500 dark:text-gray-400">
                 Any additional context, requirements, or constraints
