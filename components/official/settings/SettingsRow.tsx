@@ -1,0 +1,198 @@
+"use client";
+
+import { AlertTriangle, AlertCircle, HelpCircle } from "lucide-react";
+import { cn } from "@/lib/utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import type {
+  SettingsCommonProps,
+  SettingsRowVariant,
+  SettingsRowDensity,
+  SettingsBadge,
+} from "./types";
+
+type SettingsRowProps = SettingsCommonProps & {
+  /** Layout variant. Defaults to "inline". */
+  variant?: SettingsRowVariant;
+  /** Row density. Defaults to "default". */
+  density?: SettingsRowDensity;
+  /** The control (switch, input, slider, etc.) rendered on the right or below. */
+  children: React.ReactNode;
+  /** Whether this row is the last in a section. Removes trailing border. */
+  last?: boolean;
+};
+
+const densityStyles: Record<SettingsRowDensity, string> = {
+  compact: "py-2.5",
+  default: "py-3.5",
+  comfortable: "py-4.5",
+};
+
+const badgeStyles: Record<SettingsBadge["variant"], string> = {
+  default:
+    "bg-muted text-muted-foreground border border-border",
+  new: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20",
+  beta: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20",
+  experimental:
+    "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20",
+  deprecated:
+    "bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20",
+  admin:
+    "bg-zinc-800 text-zinc-100 dark:bg-zinc-200 dark:text-zinc-900 border border-zinc-700 dark:border-zinc-300",
+};
+
+function BadgePill({ badge }: { badge: SettingsBadge }) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center rounded px-1.5 py-0 text-[10px] font-semibold uppercase tracking-wide leading-4",
+        badgeStyles[badge.variant],
+      )}
+    >
+      {badge.label}
+    </span>
+  );
+}
+
+/**
+ * SettingsRow — base layout for every settings control.
+ *
+ * Rarely used directly by tab authors. Each primitive (SettingsSwitch,
+ * SettingsSelect, etc.) composes this internally and exposes a flat prop API.
+ *
+ * Variants handle layout differences; NEVER accept a className.
+ */
+export function SettingsRow({
+  label,
+  description,
+  warning,
+  error,
+  badge,
+  icon: Icon,
+  disabled,
+  modified,
+  id,
+  helpText,
+  variant = "inline",
+  density = "default",
+  children,
+  last,
+}: SettingsRowProps) {
+  const generatedId =
+    id ?? `settings-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+
+  const labelBlock = (
+    <div className="flex-1 min-w-0">
+      <div className="flex items-center gap-1.5 flex-wrap">
+        {modified && (
+          <span
+            aria-label="Modified from default"
+            className="h-1.5 w-1.5 rounded-full bg-primary shrink-0"
+          />
+        )}
+        {Icon && (
+          <Icon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+        )}
+        <label
+          htmlFor={generatedId}
+          className={cn(
+            "text-sm font-medium text-foreground leading-snug",
+            disabled && "opacity-50",
+          )}
+        >
+          {label}
+        </label>
+        {badge && <BadgePill badge={badge} />}
+        {helpText && (
+          <TooltipProvider delayDuration={150}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  aria-label="Help"
+                  className="inline-flex items-center justify-center text-muted-foreground hover:text-foreground"
+                >
+                  <HelpCircle className="h-3.5 w-3.5" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-xs text-xs">
+                {helpText}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
+      </div>
+      {description && (
+        <div
+          className={cn(
+            "text-xs text-muted-foreground mt-0.5 leading-snug",
+            disabled && "opacity-50",
+          )}
+        >
+          {description}
+        </div>
+      )}
+      {warning && (
+        <div className="mt-1 flex items-start gap-1.5 text-xs text-amber-600 dark:text-amber-400">
+          <AlertTriangle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+          <span className="leading-snug">{warning}</span>
+        </div>
+      )}
+      {error && (
+        <div className="mt-1 flex items-start gap-1.5 text-xs text-red-600 dark:text-red-400">
+          <AlertCircle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+          <span className="leading-snug">{error}</span>
+        </div>
+      )}
+    </div>
+  );
+
+  if (variant === "block") {
+    return (
+      <div
+        className={cn(
+          "px-4 border-b border-border/40",
+          densityStyles[density],
+          last && "border-b-0",
+          disabled && "pointer-events-none",
+        )}
+      >
+        {children}
+      </div>
+    );
+  }
+
+  if (variant === "stacked") {
+    return (
+      <div
+        className={cn(
+          "px-4 border-b border-border/40",
+          densityStyles[density],
+          last && "border-b-0",
+          disabled && "pointer-events-none",
+        )}
+      >
+        <div className="mb-2.5">{labelBlock}</div>
+        <div className={cn(disabled && "opacity-50")}>{children}</div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={cn(
+        "flex items-center gap-4 px-4 border-b border-border/40",
+        densityStyles[density],
+        last && "border-b-0",
+        disabled && "pointer-events-none",
+      )}
+    >
+      {labelBlock}
+      <div className={cn("shrink-0", disabled && "opacity-50")}>{children}</div>
+    </div>
+  );
+}

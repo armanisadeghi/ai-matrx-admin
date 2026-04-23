@@ -53,8 +53,30 @@ import {
 import { selectAllModels } from "@/features/ai-models/redux/modelRegistrySlice";
 import { SmartModelSelect } from "@/features/ai-models/components/smart/SmartModelSelect";
 import type { LLMParams } from "@/features/agents/types/agent-api-types";
+import type { ModelConstraint } from "@/features/ai-models/types";
 import { useConfigValidation } from "./validation/useConfigValidation";
 import type { ValidationIssue } from "./validation/types";
+import {
+  applyAllFixableIssues,
+  applyFixForIssue,
+  canFixIssue,
+} from "./validation/apply-fix";
+import {
+  analyzeModelChange,
+  type ModelChangePlan,
+} from "./reconciliation/analyze";
+import { ModelChangeReconciliation } from "./reconciliation/ModelChangeReconciliation";
+import { SettingsJsonEditor } from "./json/SettingsJsonEditor";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 // ── Tab type ─────────────────────────────────────────────────────────────────
 type SettingsTab = "settings" | "raw" | "raw-edit" | "model-config";
@@ -256,6 +278,11 @@ interface IssueTableProps {
   onView: (key: string) => void;
   onRemove: (key: string) => void;
   onFixEnum: (key: string) => void;
+  onFixAll?: () => void;
+  onRemoveAllUnknown?: () => void;
+  onResetAll?: () => void;
+  fixableCount?: number;
+  unknownCount?: number;
 }
 
 function IssueTable({
@@ -264,8 +291,14 @@ function IssueTable({
   onView,
   onRemove,
   onFixEnum,
+  onFixAll,
+  onRemoveAllUnknown,
+  onResetAll,
+  fixableCount = 0,
+  unknownCount = 0,
 }: IssueTableProps) {
   const [copied, setCopied] = useState(false);
+  const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
 
   if (issues.length === 0) return null;
 
@@ -309,6 +342,45 @@ function IssueTable({
             )}
           </div>
         </div>
+
+        {/* Bulk action toolbar */}
+        {(onFixAll || onRemoveAllUnknown || onResetAll) && (
+          <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-yellow-50/40 dark:bg-yellow-950/30 border-b border-yellow-200 dark:border-yellow-800/50 flex-wrap">
+            {onFixAll && fixableCount > 0 && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-6 text-[11px] px-2"
+                onClick={onFixAll}
+                title="Apply the suggested fix to every fixable issue"
+              >
+                Fix all fixable ({fixableCount})
+              </Button>
+            )}
+            {onRemoveAllUnknown && unknownCount > 0 && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-6 text-[11px] px-2"
+                onClick={onRemoveAllUnknown}
+                title="Remove every unknown/unsupported key"
+              >
+                Remove all unknown ({unknownCount})
+              </Button>
+            )}
+            {onResetAll && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-6 text-[11px] px-2 text-destructive hover:text-destructive ml-auto"
+                onClick={() => setResetConfirmOpen(true)}
+                title="Clear every setting — starts from an empty object"
+              >
+                Reset all settings
+              </Button>
+            )}
+          </div>
+        )}
 
         {/* Column headers — 4 columns: setting | detail | type | actions */}
         <div className="grid grid-cols-[120px_1fr_80px_48px] items-center gap-2 px-2.5 py-1 bg-yellow-50/60 dark:bg-yellow-950/20 border-b border-yellow-200 dark:border-yellow-800/50">
@@ -416,6 +488,31 @@ function IssueTable({
           );
         })}
       </div>
+
+      <AlertDialog open={resetConfirmOpen} onOpenChange={setResetConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reset all settings?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This clears every setting on this agent to an empty object. The
+              model stays the same. You can re-enable individual settings
+              afterward, or pick defaults from the new model.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setResetConfirmOpen(false);
+                onResetAll?.();
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Reset everything
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </TooltipProvider>
   );
 }
@@ -826,8 +923,6 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
   }, [settings]);
 
   const [jsonText, setJsonText] = useState("");
-  const [jsonError, setJsonError] = useState<string | null>(null);
-  const jsonTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   // ── Validation engine ──────────────────────────────────────────────────────
   const { validation, highlightMap: jsonHighlights } = useConfigValidation({
@@ -858,10 +953,78 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
     };
   }, [allIssues, modelId, models, currentSettings, modelConstraints]);
 
+  // ── Model change reconciliation ───────────────────────────────────────────
+  const [pendingModelChange, setPendingModelChange] = useState<{
+    newModelId: string;
+    newModelName: string;
+    oldModelName: string;
+    plan: ModelChangePlan;
+  } | null>(null);
+
   const handleModelChange = (newModelId: string) => {
-    dispatch(
-      setAgentField({ id: agentId, field: "modelId", value: newModelId }),
+    if (!newModelId || newModelId === modelId) return;
+
+    const newModel = models.find((m) => m.id === newModelId);
+    if (!newModel) {
+      dispatch(
+        setAgentField({ id: agentId, field: "modelId", value: newModelId }),
+      );
+      return;
+    }
+
+    // `useModelControls` is a pure function despite the "use" prefix — safe to
+    // call on-demand for any model, not just the currently selected one.
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const { normalizedControls: newControls } = useModelControls(
+      models,
+      newModelId,
     );
+    const newConstraints: ModelConstraint[] | null = Array.isArray(
+      newModel.constraints,
+    )
+      ? (newModel.constraints as ModelConstraint[])
+      : null;
+
+    const plan = analyzeModelChange(
+      currentSettings,
+      newModelId,
+      newModel,
+      newControls,
+      newConstraints,
+    );
+
+    if (plan.incompatible.length === 0) {
+      // No incompatibilities — commit immediately.
+      dispatch(
+        setAgentField({ id: agentId, field: "modelId", value: newModelId }),
+      );
+      return;
+    }
+
+    const oldModel = models.find((m) => m.id === modelId);
+    setPendingModelChange({
+      newModelId,
+      newModelName: newModel.common_name ?? newModel.name ?? newModelId,
+      oldModelName: oldModel?.common_name ?? oldModel?.name ?? "current model",
+      plan,
+    });
+  };
+
+  const handleReconciliationCommit = (nextSettings: LLMParams) => {
+    if (!pendingModelChange) return;
+    dispatch(
+      setAgentField({
+        id: agentId,
+        field: "modelId",
+        value: pendingModelChange.newModelId,
+      }),
+    );
+    dispatch(setAgentSettings({ id: agentId, settings: nextSettings }));
+    setPendingModelChange(null);
+  };
+
+  const handleReconciliationCancel = () => {
+    setPendingModelChange(null);
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1008,53 +1171,15 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
   useEffect(() => {
     if (activeTab === "raw" || activeTab === "raw-edit") {
       setJsonText(buildFullSettingsJson());
-      setJsonError(null);
-      if (activeTab === "raw-edit") {
-        setTimeout(() => jsonTextareaRef.current?.focus(), 50);
-      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
 
-  const handleJsonApply = () => {
-    try {
-      const parsed = JSON.parse(jsonText) as Record<string, unknown>;
-      const { model_id, tools, ...llmParams } = parsed;
-
-      if (model_id !== undefined && typeof model_id === "string") {
-        dispatch(
-          setAgentField({ id: agentId, field: "modelId", value: model_id }),
-        );
-      }
-      if (tools !== undefined && Array.isArray(tools)) {
-        dispatch(setAgentTools({ id: agentId, tools: tools as string[] }));
-      }
-
-      setJsonError(null);
-      dispatch(
-        setAgentSettings({ id: agentId, settings: llmParams as LLMParams }),
-      );
-      const newEnabled = new Set<string>();
-      Object.entries(llmParams).forEach(([key, value]) => {
-        if (value !== null && value !== undefined) newEnabled.add(key);
-      });
-      setEnabledSettings(newEnabled);
-      setActiveTab("settings");
-    } catch (e) {
-      setJsonError(e instanceof Error ? e.message : "Invalid JSON");
-    }
-  };
-
   // Issue table handlers
   const handleIssueView = (key: string) => {
+    void key;
     setJsonText(buildFullSettingsJson());
     setActiveTab("raw");
-    setTimeout(() => {
-      const el = jsonTextareaRef.current;
-      if (!el) return;
-      const idx = el.value.indexOf(`"${key}"`);
-      if (idx >= 0) el.setSelectionRange(idx, idx + key.length + 2);
-    }, 100);
   };
 
   const handleIssueRemove = (key: string) => {
@@ -1066,21 +1191,45 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
   };
 
   const handleIssueFix = (key: string) => {
-    const control = getControl(key);
-    if (!control) return;
-    // Reset to first valid enum option or control default
-    const fix =
-      control.type === "enum" && control.enum?.length
-        ? control.enum[0]
-        : control.default;
-    if (fix !== undefined && fix !== null) {
-      dispatch(
-        setAgentSettings({
-          id: agentId,
-          settings: { ...currentSettings, [key]: fix },
-        }),
-      );
+    // Find the first issue on this key and route through the shared fix helper.
+    const issue = allIssues.find((i) => i.key === key);
+    if (!issue) return;
+    const next = applyFixForIssue(issue, currentSettings, normalizedControls);
+    dispatch(setAgentSettings({ id: agentId, settings: next }));
+  };
+
+  // ── Bulk IssueTable handlers ─────────────────────────────────────────────
+
+  const fixableIssues = useMemo(
+    () => allIssues.filter((i) => canFixIssue(i, normalizedControls)),
+    [allIssues, normalizedControls],
+  );
+  const unknownIssues = useMemo(
+    () => allIssues.filter((i) => i.category === "unrecognized_key"),
+    [allIssues],
+  );
+
+  const handleFixAll = () => {
+    const next = applyAllFixableIssues(
+      fixableIssues,
+      currentSettings,
+      normalizedControls,
+    );
+    dispatch(setAgentSettings({ id: agentId, settings: next }));
+  };
+
+  const handleRemoveAllUnknown = () => {
+    const next = { ...currentSettings } as Record<string, unknown>;
+    for (const issue of unknownIssues) {
+      delete next[issue.key];
     }
+    dispatch(
+      setAgentSettings({ id: agentId, settings: next as LLMParams }),
+    );
+  };
+
+  const handleResetAll = () => {
+    dispatch(setAgentSettings({ id: agentId, settings: {} as LLMParams }));
   };
 
   // ── render helpers ────────────────────────────────────────────────────────
@@ -1396,6 +1545,11 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
                 onView={handleIssueView}
                 onRemove={handleIssueRemove}
                 onFixEnum={handleIssueFix}
+                onFixAll={handleFixAll}
+                onRemoveAllUnknown={handleRemoveAllUnknown}
+                onResetAll={handleResetAll}
+                fixableCount={fixableIssues.length}
+                unknownCount={unknownIssues.length}
               />
             )}
 
@@ -1554,52 +1708,49 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
           </div>
         )}
 
-        {/* ── RAW EDITABLE TAB (full-height textarea) ────────────────────── */}
+        {/* ── RAW EDITABLE TAB (forgiving JSON editor) ─────────────────────── */}
         {activeTab === "raw-edit" && (
           <div className="flex flex-col h-full gap-2">
             <p className="text-[10px] text-muted-foreground flex-shrink-0">
               Edit the full JSON payload directly, then apply your changes.
+              Trailing commas and <code>// comments</code> are fine.
             </p>
 
-            <Textarea
-              ref={jsonTextareaRef}
-              value={jsonText}
-              onChange={(e) => {
-                setJsonText(e.target.value);
-                setJsonError(null);
+            <SettingsJsonEditor
+              initialValue={jsonText}
+              onApply={(parsed) => {
+                const { model_id, tools, ...llmParams } = parsed;
+                if (model_id !== undefined && typeof model_id === "string") {
+                  dispatch(
+                    setAgentField({
+                      id: agentId,
+                      field: "modelId",
+                      value: model_id,
+                    }),
+                  );
+                }
+                if (tools !== undefined && Array.isArray(tools)) {
+                  dispatch(
+                    setAgentTools({ id: agentId, tools: tools as string[] }),
+                  );
+                }
+                dispatch(
+                  setAgentSettings({
+                    id: agentId,
+                    settings: llmParams as LLMParams,
+                  }),
+                );
+                const newEnabled = new Set<string>();
+                Object.entries(llmParams).forEach(([key, value]) => {
+                  if (value !== null && value !== undefined)
+                    newEnabled.add(key);
+                });
+                setEnabledSettings(newEnabled);
+                setActiveTab("settings");
               }}
-              placeholder='{"temperature": 0.7, "max_output_tokens": 1024}'
-              spellCheck={false}
-              autoGrow={true}
+              onReset={() => setJsonText(buildFullSettingsJson())}
+              minHeight={360}
             />
-
-            {jsonError && (
-              <div className="flex-shrink-0 px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded text-xs text-red-800 dark:text-red-200">
-                <strong>Parse error:</strong> {jsonError}
-              </div>
-            )}
-
-            <div className="flex items-center justify-between gap-2 flex-shrink-0">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setJsonText(buildFullSettingsJson());
-                  setJsonError(null);
-                }}
-                className="h-7 text-xs"
-              >
-                Reset
-              </Button>
-              <Button
-                size="sm"
-                onClick={handleJsonApply}
-                className="h-7 text-xs gap-1.5"
-              >
-                <Save className="w-3 h-3" />
-                Apply changes
-              </Button>
-            </div>
           </div>
         )}
 
@@ -1608,6 +1759,19 @@ export function AgentSettingsCore({ agentId }: AgentSettingsCoreProps) {
           <ModelConfigViewer normalizedControls={normalizedControls} />
         )}
       </div>
+
+      {/* Model-change reconciliation dialog */}
+      {pendingModelChange && (
+        <ModelChangeReconciliation
+          isOpen={true}
+          onClose={handleReconciliationCancel}
+          oldModelName={pendingModelChange.oldModelName}
+          newModelName={pendingModelChange.newModelName}
+          oldSettings={currentSettings}
+          plan={pendingModelChange.plan}
+          onCommit={handleReconciliationCommit}
+        />
+      )}
     </div>
   );
 }

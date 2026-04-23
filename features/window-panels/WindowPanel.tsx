@@ -861,11 +861,24 @@ function WindowHeader({
         )}
       </div>
 
-      {/* Absolute Centered title — always visible, including when minimized */}
+      {/* Absolute Centered title — always visible, including when minimized.
+          The outer wrapper keeps pointer-events-none so string titles don't
+          block the draggable header behind them. For interactive title nodes
+          (e.g. a dropdown), we re-enable pointer events on an inner wrapper
+          and stop pointer-down from initiating a window drag. */}
       <div className="absolute inset-x-0 top-0 bottom-0 flex items-center justify-center pointer-events-none">
-        <span className="text-xs font-medium text-foreground/80 truncate px-16">
-          {title ?? ""}
-        </span>
+        {typeof title === "string" || title == null ? (
+          <span className="text-xs font-medium text-foreground/80 truncate px-16">
+            {title ?? ""}
+          </span>
+        ) : (
+          <div
+            className="pointer-events-auto max-w-full px-16 flex items-center"
+            onPointerDown={(e) => e.stopPropagation()}
+          >
+            {title}
+          </div>
+        )}
       </div>
 
       {/* Right action zone */}

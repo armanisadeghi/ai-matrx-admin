@@ -84,6 +84,15 @@ export default function VoicePadAi({ instanceId }: VoicePadAiProps) {
       : liveTranscript
     : baseText;
 
+  // Invariant: what we send to the AI MUST equal what the user sees in the
+  // transcript textarea. `baseText` is derived from Redux (draftText ?? entries)
+  // and changes on every keystroke. Async flows (auto-process on transcription
+  // complete, mic callback that may have been captured by a child component)
+  // must read the latest value via a ref to avoid stale-closure drift between
+  // the textarea and the AI input.
+  const baseTextRef = useRef(baseText);
+  baseTextRef.current = baseText;
+
   const handleClose = useCallback(() => {
     dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId }));
   }, [dispatch, instanceId]);
@@ -94,12 +103,22 @@ export default function VoicePadAi({ instanceId }: VoicePadAiProps) {
       const trimmed = text.trim();
       if (!trimmed) return;
 
-      dispatch(
-        addTranscriptEntry({ overlayId: OVERLAY_ID, instanceId, text }),
-      );
+      // Read the current visible baseText (which includes any user edits in
+      // draftText) and append the new transcript to it. This exact string is
+      // both rendered in the textarea and sent to the agent.
+      const previous = baseTextRef.current;
+      const combined = previous ? previous + "\n\n" + trimmed : trimmed;
 
-      // Auto-fire the agent as soon as transcription lands.
-      const combined = allText ? allText + "\n\n" + trimmed : trimmed;
+      dispatch(addTranscriptEntry({ overlayId: OVERLAY_ID, instanceId, text }));
+      // Lock draftText to `combined` so the textarea renders exactly what we
+      // just sent to the AI. Without this, a pre-existing draftText would
+      // diverge from the newly appended entries and the visible text would no
+      // longer match the model input.
+      dispatch(
+        setDraftText({ overlayId: OVERLAY_ID, instanceId, text: combined }),
+      );
+      baseTextRef.current = combined;
+
       const agent =
         AI_POST_PROCESS_AGENTS.find((a) => a.id === agentIdRef.current) ??
         AI_POST_PROCESS_AGENTS[0];
@@ -110,7 +129,7 @@ export default function VoicePadAi({ instanceId }: VoicePadAiProps) {
         context: contextRef.current,
       });
     },
-    [ai, allText, dispatch, instanceId],
+    [ai, dispatch, instanceId],
   );
 
   const handleLiveTranscript = useCallback((text: string) => {
@@ -125,13 +144,18 @@ export default function VoicePadAi({ instanceId }: VoicePadAiProps) {
 
   const handleDraftChange = useCallback(
     (value: string) => {
-      dispatch(setDraftText({ overlayId: OVERLAY_ID, instanceId, text: value }));
+      dispatch(
+        setDraftText({ overlayId: OVERLAY_ID, instanceId, text: value }),
+      );
     },
     [dispatch, instanceId],
   );
 
   const handleProcess = useCallback(() => {
-    const transcript = baseText.trim();
+    // Always read the latest visible text via the ref. Same invariant as the
+    // auto-process path: the string sent to the agent must equal the string
+    // in the textarea at the moment of submission.
+    const transcript = baseTextRef.current.trim();
     if (!transcript) {
       toast.info("Record or type a transcript first");
       return;
@@ -142,7 +166,7 @@ export default function VoicePadAi({ instanceId }: VoicePadAiProps) {
       transcript,
       context: userContext,
     });
-  }, [ai, baseText, selectedAgent, userContext]);
+  }, [ai, selectedAgent, userContext]);
 
   const handleCopyResponse = useCallback(async () => {
     const text = editedResponse ?? ai.accumulatedText;
@@ -167,10 +191,10 @@ export default function VoicePadAi({ instanceId }: VoicePadAiProps) {
     ai.phase === "idle"
       ? "AI response appears here once transcription is processed..."
       : isBusyEarly && ai.accumulatedText.length === 0
-      ? "Launching agent..."
-      : ai.phase === "error"
-      ? ai.error ?? "Something went wrong."
-      : "Waiting for response...";
+        ? "Launching agent..."
+        : ai.phase === "error"
+          ? (ai.error ?? "Something went wrong.")
+          : "Waiting for response...";
 
   const sidebar = (
     <div className="flex h-full min-h-0 flex-col bg-background">
@@ -205,7 +229,8 @@ export default function VoicePadAi({ instanceId }: VoicePadAiProps) {
                   var: <code>{agent.transcriptVariableKey}</code>
                   {agent.contextSlotKey && (
                     <>
-                      {" "}· ctx: <code>{agent.contextSlotKey}</code>
+                      {" "}
+                      · ctx: <code>{agent.contextSlotKey}</code>
                     </>
                   )}
                 </span>
