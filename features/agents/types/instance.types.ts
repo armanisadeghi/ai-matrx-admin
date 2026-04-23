@@ -720,6 +720,17 @@ export interface ManagedAgentOptions {
    * the active request slice. Read via selectExtractedJson / selectFirstExtractedObject.
    */
   jsonExtraction?: JsonExtractionConfig;
+
+  /**
+   * Fires as soon as the instance has been created but BEFORE the stream
+   * starts. Lets streaming UIs mount their Redux selectors keyed to this
+   * conversationId immediately instead of waiting for the awaited Promise
+   * to resolve (which, for direct-mode runs, can be 30+ seconds).
+   *
+   * Purely a side-channel for the caller — the launch thunk still owns the
+   * conversation lifecycle.
+   */
+  onConversationCreated?: (conversationId: string) => void;
 }
 
 // =============================================================================

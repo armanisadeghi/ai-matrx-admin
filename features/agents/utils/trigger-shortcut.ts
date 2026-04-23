@@ -33,6 +33,8 @@ export interface TriggerShortcutArgs {
     applicationScope?: ApplicationScope;
   };
   jsonExtraction?: JsonExtractionConfig;
+  /** Fires as soon as the instance is created, before the stream runs. */
+  onConversationCreated?: (conversationId: string) => void;
   extra?: Partial<ManagedAgentOptions>;
 }
 
@@ -62,6 +64,7 @@ export function triggerShortcut(
     config,
     runtime,
     jsonExtraction,
+    onConversationCreated,
     extra,
   } = args;
 
@@ -80,6 +83,7 @@ export function triggerShortcut(
     ...(config ? { config } : {}),
     ...(mergedRuntime ? { runtime: mergedRuntime } : {}),
     ...(jsonExtraction ? { jsonExtraction } : {}),
+    ...(onConversationCreated ? { onConversationCreated } : {}),
     ...(extra ?? {}),
   };
 

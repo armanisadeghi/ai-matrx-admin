@@ -66,6 +66,14 @@ export interface TriggerShortcutOptions {
   > & { applicationScope?: ApplicationScope };
 
   /**
+   * Fires as soon as the instance has been created, BEFORE the stream
+   * starts. Use this to mount streaming UI selectors keyed to the
+   * conversationId immediately — waiting for the awaited Promise means
+   * the UI sits dead for the full duration of the stream (30–60s).
+   */
+  onConversationCreated?: (conversationId: string) => void;
+
+  /**
    * Escape hatch — anything else on `ManagedAgentOptions`. Rarely needed.
    * Takes precedence over the convenience fields above if both are set.
    */
@@ -100,6 +108,7 @@ export function useShortcutTrigger() {
         config,
         runtime,
         jsonExtraction,
+        onConversationCreated,
         extra,
       } = options;
 
@@ -117,6 +126,7 @@ export function useShortcutTrigger() {
         sourceFeature: sourceFeature ?? "programmatic",
         ...(config ? { config } : {}),
         ...(mergedRuntime ? { runtime: mergedRuntime } : {}),
+        ...(onConversationCreated ? { onConversationCreated } : {}),
         ...(jsonExtraction ? { jsonExtraction } : {}),
         ...(extra ?? {}),
       };
