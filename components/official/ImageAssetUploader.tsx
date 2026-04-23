@@ -91,9 +91,12 @@ const PRESET_VARIANT_LABELS: Record<ImagePreset, Array<{ key: keyof ImageUploade
         { key: 'image_url',     label: '1400×1400', title: 'Cover art' },
         { key: 'og_image_url',  label: '1200×630',  title: 'OG / Social' },
         { key: 'thumbnail_url', label: '400×400',   title: 'Thumbnail' },
+        { key: 'tiny_url',      label: '128×128',   title: 'Tiny icon' },
     ],
     cover: [
-        { key: 'image_url', label: '1200×630', title: 'Cover' },
+        { key: 'image_url',     label: '1200×630', title: 'Cover' },
+        { key: 'thumbnail_url', label: '600×315',  title: 'Thumbnail' },
+        { key: 'tiny_url',      label: '200×105',  title: 'Tiny' },
     ],
     avatar: [
         { key: 'image_url',     label: '400×400', title: 'Avatar' },
@@ -115,8 +118,8 @@ const PRESET_VARIANT_LABELS: Record<ImagePreset, Array<{ key: keyof ImageUploade
 };
 
 const PRESET_BLURB: Record<ImagePreset, string> = {
-    social: 'Auto-generates 1400×1400, 1200×630, 400×400',
-    cover: 'Generates 1200×630 link preview',
+    social: 'Auto-generates 1400×1400, 1200×630, 400×400, 128×128',
+    cover: 'Auto-generates 1200×630, 600×315, 200×105',
     avatar: 'Generates 400×400, 128×128, 48×48',
     logo: 'Generates 512×512, 200×200, 64×64',
     favicon: 'Generates 192×192, 64×64',

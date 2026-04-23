@@ -938,21 +938,23 @@ ${wordPressCSS}
                                                              </p>
                                                          </div>
 
-                                                         {/* OG Image — drag-drop with Sharp-processed 1200×630, or paste a URL */}
+                                                         {/* Social Share Image — drop ONE image, get 4 auto-generated sizes */}
                                                          <div>
                                                              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                                 Open Graph Image (optional)
+                                                                 Social Share Image (optional)
                                                              </label>
                                                              <ImageAssetUploader
-                                                                 preset="cover"
+                                                                 preset="social"
                                                                  currentUrl={ogImage || null}
-                                                                 onComplete={(result) => setOgImage(result?.primary_url ?? '')}
+                                                                 currentVariants={{ og_image_url: ogImage || null }}
+                                                                 onComplete={(result) =>
+                                                                     setOgImage(result?.og_image_url ?? result?.primary_url ?? '')
+                                                                 }
                                                                  disabled={!user}
-                                                                 label="OG Image"
-                                                                 hideVariantBadges
+                                                                 label="Social Share Image"
                                                              />
                                                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                                                 Shown when shared on social media. Drops generate 1200×630; toggle "Use URL" to paste one.
+                                                                 Drop one image — auto-generates 1400×1400 cover, 1200×630 link preview, 400×400 thumb, and 128×128 tiny.
                                                              </p>
                                                          </div>
 

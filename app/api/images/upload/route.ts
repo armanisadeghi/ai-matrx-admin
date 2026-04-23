@@ -49,9 +49,12 @@ export const IMAGE_PRESETS = {
         { key: 'image_url',     width: 1400, height: 1400, suffix: 'cover' },
         { key: 'og_image_url',  width: 1200, height: 630,  suffix: 'og' },
         { key: 'thumbnail_url', width: 400,  height: 400,  suffix: 'thumb' },
+        { key: 'tiny_url',      width: 128,  height: 128,  suffix: 'tiny' },
     ],
     cover: [
         { key: 'image_url',     width: 1200, height: 630,  suffix: 'cover' },
+        { key: 'thumbnail_url', width: 600,  height: 315,  suffix: 'thumb' },
+        { key: 'tiny_url',      width: 200,  height: 105,  suffix: 'tiny' },
     ],
     avatar: [
         { key: 'image_url',     width: 400, height: 400, suffix: 'avatar' },

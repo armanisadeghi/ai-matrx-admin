@@ -212,23 +212,30 @@ export function SavePageTab({ state, actions, user }: HtmlPreviewTabProps) {
                         </p>
                     </div>
 
-                    {/* OG Image — drag-drop with Sharp-processed variants, or paste a URL */}
+                    {/* Social Share Image — drop ONE image, get 4 auto-generated sizes */}
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             Social Share Image
                         </label>
                         <ImageAssetUploader
-                            preset="cover"
+                            preset="social"
                             currentUrl={state.metadata.ogImage || null}
+                            currentVariants={{
+                                og_image_url: state.metadata.ogImage || null,
+                            }}
                             onComplete={(result) => {
-                                actions.setMetadataField('ogImage', result?.primary_url ?? '');
+                                // Prefer the 1200×630 OG variant for the link-preview URL.
+                                // Falls back to the primary 1400×1400 cover if OG isn't available.
+                                actions.setMetadataField(
+                                    'ogImage',
+                                    result?.og_image_url ?? result?.primary_url ?? ''
+                                );
                             }}
                             disabled={!user}
-                            label="OG Image"
-                            hideVariantBadges
+                            label="Social Share Image"
                         />
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                            Drop an image to auto-generate the 1200×630 link preview, or toggle "Use URL" to paste one.
+                            Drop one image — we generate 1400×1400 cover, 1200×630 link preview, 400×400 thumb, and 128×128 tiny. The 1200×630 variant is used for the social share URL.
                         </p>
                     </div>
 
