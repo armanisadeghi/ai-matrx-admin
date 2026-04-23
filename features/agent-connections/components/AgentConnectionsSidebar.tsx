@@ -6,14 +6,18 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { SIDEBAR_SECTIONS } from "../constants";
 import type { AgentConnectionsSection } from "../types";
 
+export type SectionCounts = Partial<Record<AgentConnectionsSection, number>>;
+
 interface AgentConnectionsSidebarProps {
   activeSection: AgentConnectionsSection;
   onSelect: (section: AgentConnectionsSection) => void;
+  counts?: SectionCounts;
 }
 
 export function AgentConnectionsSidebar({
   activeSection,
   onSelect,
+  counts,
 }: AgentConnectionsSidebarProps) {
   return (
     <ScrollArea className="flex-1 w-full">
@@ -21,6 +25,7 @@ export function AgentConnectionsSidebar({
         {SIDEBAR_SECTIONS.map((section) => {
           const Icon = section.icon;
           const isActive = section.value === activeSection;
+          const count = counts?.[section.value];
           return (
             <button
               key={section.value}
@@ -35,9 +40,9 @@ export function AgentConnectionsSidebar({
             >
               <Icon className="h-4 w-4 shrink-0" />
               <span className="flex-1 truncate">{section.label}</span>
-              {typeof section.count === "number" && (
+              {typeof count === "number" && count > 0 && (
                 <span className="text-xs text-muted-foreground tabular-nums">
-                  {section.count}
+                  {count}
                 </span>
               )}
             </button>

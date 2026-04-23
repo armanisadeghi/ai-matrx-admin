@@ -368,6 +368,46 @@ export interface ImageOutputData {
   mime_type: string;
 }
 
+export interface MemoryBufferSpawnedData {
+  type: "memory_buffer_spawned";
+  conversation_id: string;
+  kind?: "observer" | "reflector";
+}
+
+export interface MemoryContextInjectedData {
+  type: "memory_context_injected";
+  conversation_id: string;
+  observation_chars?: number;
+}
+
+export interface MemoryErrorData {
+  type: "memory_error";
+  conversation_id: string;
+  phase?: string;
+  error?: string;
+  model?: string | null;
+}
+
+export interface MemoryObserverCompletedData {
+  type: "memory_observer_completed";
+  conversation_id: string;
+  model?: string | null;
+  input_tokens?: number;
+  output_tokens?: number;
+  cost?: number;
+  duration_ms?: number | null;
+}
+
+export interface MemoryReflectorCompletedData {
+  type: "memory_reflector_completed";
+  conversation_id: string;
+  model?: string | null;
+  input_tokens?: number;
+  output_tokens?: number;
+  cost?: number;
+  duration_ms?: number | null;
+}
+
 export interface PodcastCompleteData {
   type: "podcast_complete";
   show_id: string;
@@ -444,6 +484,11 @@ export type TypedDataPayload =
   | FetchResultsData
   | FunctionResultData
   | ImageOutputData
+  | MemoryBufferSpawnedData
+  | MemoryContextInjectedData
+  | MemoryErrorData
+  | MemoryObserverCompletedData
+  | MemoryReflectorCompletedData
   | PodcastCompleteData
   | PodcastStageData
   | QuestionnaireDisplayData

@@ -69,6 +69,7 @@ import { conversationListReducer } from "@/features/agents/redux/conversation-li
 import agentShortcutReducer from "@/features/agents/redux/agent-shortcuts/slice";
 import agentShortcutCategoryReducer from "@/features/agents/redux/agent-shortcut-categories/slice";
 import agentContentBlockReducer from "@/features/agents/redux/agent-content-blocks/slice";
+import { sklReducer } from "@/features/agent-connections/redux/skl";
 import { agentAppReducer } from "@/features/agents/redux/agent-apps/slice";
 import agentConsumersReducer from "@/features/agents/redux/agent-consumers/slice";
 import toolsReducer from "@/features/agents/redux/tools/tools.slice";
@@ -330,6 +331,7 @@ export const createRootReducer = (initialState: InitialReduxState) => {
     agentShortcut: agentShortcutReducer,
     agentShortcutCategory: agentShortcutCategoryReducer,
     agentContentBlock: agentContentBlockReducer,
+    skl: sklReducer,
     // agentApp — scaffolded alongside agentShortcut. Thunks are stubbed until
     // the App DB surface ships; the slice is registered so consumers can
     // read/write state without further plumbing later.

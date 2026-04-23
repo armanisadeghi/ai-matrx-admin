@@ -1004,6 +1004,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/ai/conversation/{conversation_id}/memory_cost": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Conversation Memory Cost
+         * @description Admin-only: aggregate observational-memory cost for this conversation.
+         *
+         *     Memory LLM calls bypass ``cx_request`` — their cost lives in
+         *     ``cx_observational_memory_event`` only. This endpoint rolls that up so
+         *     you can see what the Observer/Reflector is costing per conversation.
+         */
+        get: operations["get_conversation_memory_cost_ai_conversation__conversation_id__memory_cost_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ai/conversations/{conversation_id}/memory_cost": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Conversation Memory Cost
+         * @description Admin-only: aggregate observational-memory cost for this conversation.
+         *
+         *     Memory LLM calls bypass ``cx_request`` — their cost lives in
+         *     ``cx_observational_memory_event`` only. This endpoint rolls that up so
+         *     you can see what the Observer/Reflector is costing per conversation.
+         */
+        get: operations["get_conversation_memory_cost_ai_conversations__conversation_id__memory_cost_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/ai/cancel/{request_id}": {
         parameters: {
             query?: never;
@@ -2241,6 +2289,318 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/workflow/node-types": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Node Types
+         * @description Return a JSON-Schema palette of every registered node type.
+         *
+         *     Consumed by Matrx Studio to render the node palette + auto-generated
+         *     config forms. Calling this before `register_builtin_nodes()` has been
+         *     called at startup returns an empty list — that's a configuration error,
+         *     surfaced by an empty palette rather than a 500.
+         */
+        get: operations["list_node_types_workflow_node_types_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/actions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Actions
+         * @description Return the action catalog — everything registered via ``@action``.
+         *
+         *     Separate from ``/workflow/node-types`` because actions carry richer
+         *     metadata (determinism, tags, source module) than raw node types, and
+         *     the UI shows them in their own "Actions" palette section.
+         */
+        get: operations["list_actions_actions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/workflows": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Workflows */
+        get: operations["list_workflows_workflows_get"];
+        put?: never;
+        /** Create Workflow */
+        post: operations["create_workflow_workflows_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/workflows/{definition_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Workflow */
+        get: operations["get_workflow_workflows__definition_id__get"];
+        put?: never;
+        post?: never;
+        /** Archive Workflow */
+        delete: operations["archive_workflow_workflows__definition_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/workflows/{definition_id}/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Workflow Versions */
+        get: operations["list_workflow_versions_workflows__definition_id__versions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/workflows/{definition_id}/draft": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Save Workflow Draft */
+        patch: operations["save_workflow_draft_workflows__definition_id__draft_patch"];
+        trace?: never;
+    };
+    "/workflows/{definition_id}/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Publish Workflow */
+        post: operations["publish_workflow_workflows__definition_id__publish_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/workflows/validate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Validate Workflow
+         * @description Validate a definition against the registry. No auth — stateless check.
+         */
+        post: operations["validate_workflow_workflows_validate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/workflows/{definition_id}/runs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Start Workflow Run */
+        post: operations["start_workflow_run_workflows__definition_id__runs_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/runs/{run_id}/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Resume Workflow Run */
+        post: operations["resume_workflow_run_runs__run_id__resume_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/runs/{run_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Run */
+        get: operations["get_run_runs__run_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/runs/{run_id}/checkpoints": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Run Checkpoints */
+        get: operations["list_run_checkpoints_runs__run_id__checkpoints_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/runs/{run_id}/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Run Events
+         * @description Recorded scheduler events for a run, ordered by event_ts.
+         *
+         *     Populated by EventRecordingEmitter for both inline and queued runs —
+         *     workflows executed as worker jobs (no live stream) still leave a full
+         *     history in wf_node_events.
+         */
+        get: operations["list_run_events_runs__run_id__events_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/triggers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Triggers */
+        get: operations["list_triggers_triggers_get"];
+        put?: never;
+        /** Create Trigger */
+        post: operations["create_trigger_triggers_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/triggers/{trigger_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Trigger */
+        get: operations["get_trigger_triggers__trigger_id__get"];
+        put?: never;
+        post?: never;
+        /** Delete Trigger */
+        delete: operations["delete_trigger_triggers__trigger_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Trigger */
+        patch: operations["update_trigger_triggers__trigger_id__patch"];
+        trace?: never;
+    };
+    "/triggers/{trigger_id}/fire": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Fire Trigger
+         * @description Fire a trigger on demand. Accepts webhook + manual kinds.
+         *
+         *     Webhook triggers with a configured ``webhook_secret`` REQUIRE the
+         *     caller to pass it via ``X-Matrx-Trigger-Secret``. That's the auth
+         *     boundary — no JWT needed (webhook callers are usually machines).
+         *     Manual triggers and webhook triggers without a secret are public;
+         *     rate-limiting + tenant-scoped definitions are the operational
+         *     controls (future: RLS policies).
+         */
+        post: operations["fire_trigger_triggers__trigger_id__fire_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/prompts": {
         parameters: {
             query?: never;
@@ -2989,6 +3349,11 @@ export interface components {
             /** Is New */
             is_new?: boolean | null;
             /**
+             * Is Version
+             * @default false
+             */
+            is_version: boolean;
+            /**
              * Block Mode
              * @default false
              */
@@ -2998,6 +3363,15 @@ export interface components {
              * @default false
              */
             snapshot: boolean;
+            /** Memory */
+            memory?: boolean | null;
+            /** Memory Model */
+            memory_model?: string | null;
+            /**
+             * Memory Scope
+             * @default thread
+             */
+            memory_scope: string;
             cache_bypass?: components["schemas"]["CacheBypass"] | null;
         };
         /** AnalyzeBulkRequest */
@@ -3187,6 +3561,28 @@ export interface components {
             /** Error */
             error?: string | null;
         };
+        /**
+         * ChannelSpec
+         * @description Declarative spec for a channel in a workflow definition.
+         *
+         *     Channels hold JSON-serializable values only. Pydantic models are dumped at
+         *     write time via .model_dump(mode='json'). This rule is enforced in the
+         *     channel manager and makes checkpoints round-trip losslessly.
+         */
+        ChannelSpec: {
+            /** Name */
+            name: string;
+            /**
+             * Reducer
+             * @default replace
+             * @enum {string}
+             */
+            reducer: "replace" | "append" | "merge" | "sum" | "last_writer_wins" | "topic_map";
+            /** Description */
+            description?: string | null;
+            /** Default */
+            default?: unknown;
+        };
         /** ChatRequest */
         ChatRequest: {
             /** Model */
@@ -3370,6 +3766,15 @@ export interface components {
              * @default false
              */
             snapshot: boolean;
+            /** Memory */
+            memory?: boolean | null;
+            /** Memory Model */
+            memory_model?: string | null;
+            /**
+             * Memory Scope
+             * @default thread
+             */
+            memory_scope: string;
             cache_bypass?: components["schemas"]["CacheBypass"] | null;
             /** Metadata */
             metadata?: {
@@ -3507,7 +3912,117 @@ export interface components {
              * @default false
              */
             snapshot: boolean;
+            /** Memory */
+            memory?: boolean | null;
+            /** Memory Model */
+            memory_model?: string | null;
+            /**
+             * Memory Scope
+             * @default thread
+             */
+            memory_scope: string;
             cache_bypass?: components["schemas"]["CacheBypass"] | null;
+        };
+        /** CreateTriggerRequest */
+        CreateTriggerRequest: {
+            /** Definition Id */
+            definition_id: string;
+            /** Name */
+            name: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "cron" | "webhook" | "manual";
+            /**
+             * Cron Expression
+             * @description Required when kind='cron'. Standard 5-field syntax.
+             */
+            cron_expression?: string | null;
+            /**
+             * Timezone
+             * @description IANA timezone name.
+             * @default UTC
+             */
+            timezone: string;
+            /**
+             * Webhook Secret
+             * @description Optional secret required as X-Matrx-Trigger-Secret on webhook fires.
+             */
+            webhook_secret?: string | null;
+            /** Default Inputs */
+            default_inputs?: {
+                [key: string]: unknown;
+            };
+            /**
+             * Max Steps
+             * @default 1000
+             */
+            max_steps: number;
+            /** Description */
+            description?: string | null;
+            /** Definition Version Id */
+            definition_version_id?: string | null;
+        };
+        /** CreateWorkflowRequest */
+        CreateWorkflowRequest: {
+            /** Name */
+            name: string;
+            /** Description */
+            description?: string | null;
+            definition?: components["schemas"]["Definition"];
+            /** Tags */
+            tags?: string[];
+            /** Category */
+            category?: string | null;
+            /**
+             * Is Public
+             * @default false
+             */
+            is_public: boolean;
+        };
+        /**
+         * Definition
+         * @description The canonical workflow definition — ReactFlow-compatible, user-authored.
+         *
+         *     This shape matches what the XYFlow canvas posts directly. The backend
+         *     validates it with Pydantic but NEVER rewrites the user's JSON. Compilation
+         *     produces a separate CompiledGraph; the Definition remains the source of
+         *     truth for the UI.
+         */
+        Definition: {
+            /**
+             * Version
+             * @default 1
+             * @constant
+             */
+            version: "1";
+            /** Nodes */
+            nodes?: components["schemas"]["NodeDef"][];
+            /** Edges */
+            edges?: components["schemas"]["EdgeDef"][];
+            viewport?: components["schemas"]["Viewport"];
+            /**
+             * Channels
+             * @description Explicitly declared channels. A node that writes to a channel not declared here gets an implicit 'replace' channel at compile time unless strict_channels=True.
+             */
+            channels?: components["schemas"]["ChannelSpec"][];
+            /**
+             * Strict Channels
+             * @default false
+             */
+            strict_channels: boolean;
+            /**
+             * Entry Nodes
+             * @description Optional. If set, the scheduler starts from these node ids. If empty, the compiler derives entry nodes (nodes with no incoming edges).
+             */
+            entry_nodes?: string[];
+            /** Metadata */
+            metadata?: {
+                [key: string]: unknown;
+            };
+        } & {
+            [key: string]: unknown;
         };
         /** DirectChatRequest */
         DirectChatRequest: {
@@ -3562,6 +4077,38 @@ export interface components {
              */
             proxy_type: string;
         };
+        /**
+         * EdgeDef
+         * @description User-authored edge in a ReactFlow-compatible definition.
+         *
+         *     The edge's semantic `kind` (DATA / CONTROL / CONDITIONAL / ERROR / STREAM)
+         *     lives under data.kind. `type` on ReactFlow is purely a visual style hint.
+         *     Conditional edges carry a predicate expression under data.condition that
+         *     the compiler validates.
+         */
+        EdgeDef: {
+            /** Id */
+            id: string;
+            /** Source */
+            source: string;
+            /** Target */
+            target: string;
+            /** Sourcehandle */
+            sourceHandle?: string | null;
+            /** Targethandle */
+            targetHandle?: string | null;
+            /**
+             * Type
+             * @description ReactFlow visual style hint (e.g. 'smoothstep'). Not the semantic kind.
+             */
+            type?: string | null;
+            /** Data */
+            data?: {
+                [key: string]: unknown;
+            };
+        } & {
+            [key: string]: unknown;
+        };
         /** ExtensionContentSubmit */
         ExtensionContentSubmit: {
             /** Html Content */
@@ -3603,6 +4150,33 @@ export interface components {
              * @default 100
              */
             use_ocr_threshold: number;
+        };
+        /** FireResponse */
+        FireResponse: {
+            /** Trigger Id */
+            trigger_id: string;
+            /** Run Id */
+            run_id: string;
+            /** Job Id */
+            job_id: string;
+            /**
+             * Mode
+             * @default queued
+             * @constant
+             */
+            mode: "queued";
+        };
+        /** FireTriggerRequest */
+        FireTriggerRequest: {
+            /**
+             * Inputs
+             * @description Merged on top of the trigger's default_inputs for this invocation.
+             */
+            inputs?: {
+                [key: string]: unknown;
+            };
+        } & {
+            [key: string]: unknown;
         };
         /**
          * ForkRequest
@@ -3830,6 +4404,25 @@ export interface components {
             /** Is Relevant */
             is_relevant?: boolean | null;
         };
+        /** MemoryCostSummary */
+        MemoryCostSummary: {
+            /** Conversation Id */
+            conversation_id: string;
+            /** Total Cost */
+            total_cost: number;
+            /** Total Input Tokens */
+            total_input_tokens: number;
+            /** Total Output Tokens */
+            total_output_tokens: number;
+            /** Event Count */
+            event_count: number;
+            /** By Event Type */
+            by_event_type: {
+                [key: string]: {
+                    [key: string]: unknown;
+                };
+            };
+        };
         /**
          * MessageUpdate
          * @description Fields the client can edit on an existing ``cx_message`` row.
@@ -3884,6 +4477,30 @@ export interface components {
              * @default true
              */
             include_preamble: boolean;
+        };
+        /**
+         * NodeDef
+         * @description User-authored node in a ReactFlow-compatible definition.
+         *
+         *     The `data.config` payload is validated against the registered NodeSpec's
+         *     `config_schema` at compile time — not at definition time — so the raw JSON
+         *     round-trips cleanly regardless of whether the target NodeSpec is loaded.
+         */
+        NodeDef: {
+            /** Id */
+            id: string;
+            /**
+             * Type
+             * @description NodeSpec.type — must match a registered node type at compile time.
+             */
+            type: string;
+            position: components["schemas"]["Position"];
+            /** Data */
+            data?: {
+                [key: string]: unknown;
+            };
+        } & {
+            [key: string]: unknown;
         };
         /** PdfPipelineOptions */
         PdfPipelineOptions: {
@@ -4062,6 +4679,13 @@ export interface components {
          * @enum {string}
          */
         PodcastType: "educational" | "news" | "persian";
+        /** Position */
+        Position: {
+            /** X */
+            x: number;
+            /** Y */
+            y: number;
+        };
         /**
          * PostPrepOption
          * @enum {string}
@@ -4155,6 +4779,11 @@ export interface components {
         PromptWarmRequest: {
             /** Source */
             source?: string | null;
+        };
+        /** PublishRequest */
+        PublishRequest: {
+            /** Change Note */
+            change_note?: string | null;
         };
         /** QuickScrapeRequest */
         QuickScrapeRequest: {
@@ -4259,6 +4888,26 @@ export interface components {
                 [key: string]: unknown;
             }[];
         };
+        /** ResumeRunRequest */
+        ResumeRunRequest: {
+            /** Checkpoint Id */
+            checkpoint_id: string;
+            /** Resume Value */
+            resume_value?: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Max Steps
+             * @default 1000
+             */
+            max_steps: number;
+            /**
+             * Mode
+             * @default inline
+             * @enum {string}
+             */
+            mode: "inline" | "queued";
+        };
         /** RetryClaimRequest */
         RetryClaimRequest: {
             /** Item Ids */
@@ -4290,6 +4939,42 @@ export interface components {
         };
         /** RunPipelineRequest */
         RunPipelineRequest: Record<string, never>;
+        /** RunWorkflowRequest */
+        RunWorkflowRequest: {
+            /** Inputs */
+            inputs?: {
+                [key: string]: unknown;
+            };
+            /**
+             * Version Number
+             * @description If set, run the snapshot at this version_number instead of the current draft.
+             */
+            version_number?: number | null;
+            /** Thread Id */
+            thread_id?: string | null;
+            /** Conversation Id */
+            conversation_id?: string | null;
+            /**
+             * Max Steps
+             * @default 1000
+             */
+            max_steps: number;
+            /**
+             * Mode
+             * @description 'inline' streams the run through this HTTP response as NDJSON. 'queued' enqueues a wf_job row and returns immediately with the run_id — a worker process picks it up. Use queued for anything expected to run longer than a typical HTTP request, for long scrape+LLM chains, or when the caller doesn't need streaming.
+             * @default inline
+             * @enum {string}
+             */
+            mode: "inline" | "queued";
+        };
+        /** SaveDraftRequest */
+        SaveDraftRequest: {
+            definition: components["schemas"]["Definition"];
+            /** Name */
+            name?: string | null;
+            /** Description */
+            description?: string | null;
+        };
         /** SavedViewCreate */
         SavedViewCreate: {
             /** Table Name */
@@ -4702,6 +5387,15 @@ export interface components {
                 [key: string]: unknown;
             } | null;
         };
+        /** UpdateTriggerActiveRequest */
+        UpdateTriggerActiveRequest: {
+            /** Is Active */
+            is_active: boolean;
+        };
+        /** ValidateRequest */
+        ValidateRequest: {
+            definition: components["schemas"]["Definition"];
+        };
         /** ValidationError */
         ValidationError: {
             /** Location */
@@ -4714,6 +5408,53 @@ export interface components {
             input?: unknown;
             /** Context */
             ctx?: Record<string, never>;
+        };
+        /**
+         * ValidationIssue
+         * @description A single problem with a Definition. Rendered as a badge in the UI.
+         */
+        ValidationIssue: {
+            /** Path */
+            path: string;
+            /** Message */
+            message: string;
+            /** Node Id */
+            node_id?: string | null;
+            /** Edge Id */
+            edge_id?: string | null;
+            /**
+             * Severity
+             * @default error
+             */
+            severity: string;
+        };
+        /** ValidationResult */
+        ValidationResult: {
+            /** Valid */
+            valid: boolean;
+            /**
+             * Issues
+             * @default []
+             */
+            issues: components["schemas"]["ValidationIssue"][];
+        };
+        /** Viewport */
+        Viewport: {
+            /**
+             * X
+             * @default 0
+             */
+            x: number;
+            /**
+             * Y
+             * @default 0
+             */
+            y: number;
+            /**
+             * Zoom
+             * @default 1
+             */
+            zoom: number;
         };
         /** WarmRequest */
         aidream__api__routers__agents__WarmRequest: {
@@ -6067,6 +6808,68 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_conversation_memory_cost_ai_conversation__conversation_id__memory_cost_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MemoryCostSummary"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_conversation_memory_cost_ai_conversations__conversation_id__memory_cost_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MemoryCostSummary"];
                 };
             };
             /** @description Validation Error */
@@ -8644,6 +9447,710 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_node_types_workflow_node_types_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    }[];
+                };
+            };
+        };
+    };
+    list_actions_actions_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    }[];
+                };
+            };
+        };
+    };
+    list_workflows_workflows_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+                include_archived?: boolean;
+                project_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    }[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_workflow_workflows_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateWorkflowRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_workflow_workflows__definition_id__get: {
+        parameters: {
+            query?: {
+                is_version?: boolean;
+                version_number?: number | null;
+            };
+            header?: never;
+            path: {
+                definition_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    archive_workflow_workflows__definition_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                definition_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: boolean;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_workflow_versions_workflows__definition_id__versions_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                definition_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    }[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_workflow_draft_workflows__definition_id__draft_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                definition_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveDraftRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    publish_workflow_workflows__definition_id__publish_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                definition_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PublishRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    validate_workflow_workflows_validate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ValidateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    start_workflow_run_workflows__definition_id__runs_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                definition_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RunWorkflowRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    resume_workflow_run_runs__run_id__resume_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResumeRunRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_run_runs__run_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_run_checkpoints_runs__run_id__checkpoints_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    }[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_run_events_runs__run_id__events_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    }[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_triggers_triggers_get: {
+        parameters: {
+            query?: {
+                definition_id?: string | null;
+                kind?: ("cron" | "webhook" | "manual") | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    }[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_trigger_triggers_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateTriggerRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_trigger_triggers__trigger_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                trigger_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_trigger_triggers__trigger_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                trigger_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: boolean;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_trigger_triggers__trigger_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                trigger_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateTriggerActiveRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: boolean;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    fire_trigger_triggers__trigger_id__fire_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-matrx-trigger-secret"?: string | null;
+            };
+            path: {
+                trigger_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["FireTriggerRequest"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FireResponse"];
                 };
             };
             /** @description Validation Error */

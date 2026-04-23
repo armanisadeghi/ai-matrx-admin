@@ -2,6 +2,8 @@ import {
   Home,
   Hexagon,
   Lightbulb,
+  Blocks,
+  FolderOpen,
   BookOpen,
   Bookmark,
   Zap,
@@ -12,12 +14,14 @@ import type { OverviewCard, SidebarSection } from "./types";
 
 export const SIDEBAR_SECTIONS: SidebarSection[] = [
   { value: "overview", label: "Overview", icon: Home },
-  { value: "agents", label: "Agents", icon: Hexagon, count: 8 },
-  { value: "skills", label: "Skills", icon: Lightbulb, count: 25 },
+  { value: "agents", label: "Agents", icon: Hexagon },
+  { value: "skills", label: "Skills", icon: Lightbulb },
+  { value: "renderBlocks", label: "Render Blocks", icon: Blocks },
+  { value: "resources", label: "Resources", icon: FolderOpen },
   { value: "instructions", label: "Instructions", icon: BookOpen },
-  { value: "prompts", label: "Prompts", icon: Bookmark, count: 1 },
-  { value: "hooks", label: "Hooks", icon: Zap, count: 5 },
-  { value: "mcpServers", label: "MCP Servers", icon: Server, count: 8 },
+  { value: "prompts", label: "Prompts", icon: Bookmark },
+  { value: "hooks", label: "Hooks", icon: Zap },
+  { value: "mcpServers", label: "MCP Servers", icon: Server },
   { value: "plugins", label: "Plugins", icon: Plug },
 ];
 
@@ -37,6 +41,22 @@ export const OVERVIEW_CARDS: OverviewCard[] = [
     description:
       "Create reusable skill files that provide domain-specific knowledge and workflows.",
     action: "new",
+  },
+  {
+    value: "renderBlocks",
+    label: "Render Blocks",
+    icon: Blocks,
+    description:
+      "Structured LLM output templates that map 1:1 to React renderer components across every surface.",
+    action: "new",
+  },
+  {
+    value: "resources",
+    label: "Resources",
+    icon: FolderOpen,
+    description:
+      "Scripts, references, and assets attached to skills that load only when the skill is invoked.",
+    action: "browse",
   },
   {
     value: "instructions",
@@ -71,3 +91,25 @@ export const OVERVIEW_CARDS: OverviewCard[] = [
     action: "browse",
   },
 ];
+
+export const SKILL_TYPES = [
+  "render_block",
+  "convention",
+  "workflow",
+  "task",
+  "reference",
+  "mode",
+  "agent_behavior",
+] as const;
+
+export type SkillType = (typeof SKILL_TYPES)[number];
+
+export const SKILL_TYPE_LABELS: Record<SkillType, string> = {
+  render_block: "Render Block",
+  convention: "Convention",
+  workflow: "Workflow",
+  task: "Task",
+  reference: "Reference",
+  mode: "Mode",
+  agent_behavior: "Agent Behavior",
+};

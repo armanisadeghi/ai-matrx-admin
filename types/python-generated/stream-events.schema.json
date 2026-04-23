@@ -2098,6 +2098,225 @@
     "title": "ContextPersistFailedData",
     "type": "object"
   },
+  "MemoryContextInjectedData": {
+    "additionalProperties": false,
+    "description": "Prior observations were prepended to the system prompt for this turn.\n\nEmitted once per memory-enabled turn, BEFORE the LLM call, if any\nobservations exist yet. ``observation_chars`` is the raw character\nlength of the injected block — useful for sizing UI badges.",
+    "properties": {
+      "type": {
+        "const": "memory_context_injected",
+        "default": "memory_context_injected",
+        "title": "Type",
+        "type": "string"
+      },
+      "conversation_id": {
+        "title": "Conversation Id",
+        "type": "string"
+      },
+      "observation_chars": {
+        "default": 0,
+        "title": "Observation Chars",
+        "type": "integer"
+      }
+    },
+    "required": [
+      "conversation_id"
+    ],
+    "title": "MemoryContextInjectedData",
+    "type": "object"
+  },
+  "MemoryObserverCompletedData": {
+    "additionalProperties": false,
+    "description": "The Observer LLM extracted observations from unobserved messages.\n\nFires when the message-token threshold was crossed and a synchronous\n(or buffered) Observer call completed. ``cost`` is in USD.",
+    "properties": {
+      "type": {
+        "const": "memory_observer_completed",
+        "default": "memory_observer_completed",
+        "title": "Type",
+        "type": "string"
+      },
+      "conversation_id": {
+        "title": "Conversation Id",
+        "type": "string"
+      },
+      "model": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Model"
+      },
+      "input_tokens": {
+        "default": 0,
+        "title": "Input Tokens",
+        "type": "integer"
+      },
+      "output_tokens": {
+        "default": 0,
+        "title": "Output Tokens",
+        "type": "integer"
+      },
+      "cost": {
+        "default": 0,
+        "title": "Cost",
+        "type": "number"
+      },
+      "duration_ms": {
+        "anyOf": [
+          {
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Duration Ms"
+      }
+    },
+    "required": [
+      "conversation_id"
+    ],
+    "title": "MemoryObserverCompletedData",
+    "type": "object"
+  },
+  "MemoryReflectorCompletedData": {
+    "additionalProperties": false,
+    "description": "The Reflector LLM compressed existing observations.\n\nFires when the observation-token threshold was crossed. Compression can\ntake multiple internal attempts with escalating levels; this event\nrepresents the final successful result.",
+    "properties": {
+      "type": {
+        "const": "memory_reflector_completed",
+        "default": "memory_reflector_completed",
+        "title": "Type",
+        "type": "string"
+      },
+      "conversation_id": {
+        "title": "Conversation Id",
+        "type": "string"
+      },
+      "model": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Model"
+      },
+      "input_tokens": {
+        "default": 0,
+        "title": "Input Tokens",
+        "type": "integer"
+      },
+      "output_tokens": {
+        "default": 0,
+        "title": "Output Tokens",
+        "type": "integer"
+      },
+      "cost": {
+        "default": 0,
+        "title": "Cost",
+        "type": "number"
+      },
+      "duration_ms": {
+        "anyOf": [
+          {
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Duration Ms"
+      }
+    },
+    "required": [
+      "conversation_id"
+    ],
+    "title": "MemoryReflectorCompletedData",
+    "type": "object"
+  },
+  "MemoryBufferSpawnedData": {
+    "additionalProperties": false,
+    "description": "An asynchronous observer/reflector buffering task was spawned.\n\nLets the UI show \"memory processing in background\" without blocking\nthe main stream. ``kind`` distinguishes observer buffering from\nreflector buffering.",
+    "properties": {
+      "type": {
+        "const": "memory_buffer_spawned",
+        "default": "memory_buffer_spawned",
+        "title": "Type",
+        "type": "string"
+      },
+      "conversation_id": {
+        "title": "Conversation Id",
+        "type": "string"
+      },
+      "kind": {
+        "default": "observer",
+        "enum": [
+          "observer",
+          "reflector"
+        ],
+        "title": "Kind",
+        "type": "string"
+      }
+    },
+    "required": [
+      "conversation_id"
+    ],
+    "title": "MemoryBufferSpawnedData",
+    "type": "object"
+  },
+  "MemoryErrorData": {
+    "additionalProperties": false,
+    "description": "An OM operation failed. The main conversation turn is unaffected —\nmemory errors are non-fatal by design, but the UI may want to surface\na subtle indicator that memory is degraded.",
+    "properties": {
+      "type": {
+        "const": "memory_error",
+        "default": "memory_error",
+        "title": "Type",
+        "type": "string"
+      },
+      "conversation_id": {
+        "title": "Conversation Id",
+        "type": "string"
+      },
+      "phase": {
+        "default": "",
+        "title": "Phase",
+        "type": "string"
+      },
+      "error": {
+        "default": "",
+        "title": "Error",
+        "type": "string"
+      },
+      "model": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Model"
+      }
+    },
+    "required": [
+      "conversation_id"
+    ],
+    "title": "MemoryErrorData",
+    "type": "object"
+  },
   "ToolStartedData": {
     "additionalProperties": false,
     "properties": {

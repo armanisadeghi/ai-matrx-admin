@@ -4,17 +4,25 @@ export type AgentConnectionsSection =
   | "overview"
   | "agents"
   | "skills"
+  | "renderBlocks"
+  | "resources"
   | "instructions"
   | "prompts"
   | "hooks"
   | "mcpServers"
   | "plugins";
 
+export type Scope = "user" | "organization" | "project" | "task";
+
+export interface ScopeRef {
+  scope: Scope;
+  scopeId: string | null;
+}
+
 export interface SidebarSection {
   value: AgentConnectionsSection;
   label: string;
   icon: LucideIcon;
-  count?: number;
 }
 
 export interface OverviewCard {

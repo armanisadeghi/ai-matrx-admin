@@ -5813,6 +5813,175 @@ export type Database = {
           },
         ]
       }
+      cx_observational_memory: {
+        Row: {
+          active_observations: string | null
+          buffered_observations: Json
+          buffered_reflection: string | null
+          buffered_reflection_input_tokens: number
+          buffered_reflection_tokens: number
+          config: Json | null
+          conversation_id: string | null
+          created_at: string
+          current_task: string | null
+          deleted_at: string | null
+          generation_count: number
+          id: string
+          is_buffering_observation: boolean
+          is_buffering_reflection: boolean
+          last_buffered_at_time: string | null
+          last_buffered_at_tokens: number
+          last_observed_at: string | null
+          metadata: Json
+          observation_token_count: number
+          observed_message_ids: Json
+          observed_timezone: string | null
+          pending_message_tokens: number
+          reflected_observation_line_count: number
+          scope: string
+          suggested_response: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active_observations?: string | null
+          buffered_observations?: Json
+          buffered_reflection?: string | null
+          buffered_reflection_input_tokens?: number
+          buffered_reflection_tokens?: number
+          config?: Json | null
+          conversation_id?: string | null
+          created_at?: string
+          current_task?: string | null
+          deleted_at?: string | null
+          generation_count?: number
+          id?: string
+          is_buffering_observation?: boolean
+          is_buffering_reflection?: boolean
+          last_buffered_at_time?: string | null
+          last_buffered_at_tokens?: number
+          last_observed_at?: string | null
+          metadata?: Json
+          observation_token_count?: number
+          observed_message_ids?: Json
+          observed_timezone?: string | null
+          pending_message_tokens?: number
+          reflected_observation_line_count?: number
+          scope?: string
+          suggested_response?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active_observations?: string | null
+          buffered_observations?: Json
+          buffered_reflection?: string | null
+          buffered_reflection_input_tokens?: number
+          buffered_reflection_tokens?: number
+          config?: Json | null
+          conversation_id?: string | null
+          created_at?: string
+          current_task?: string | null
+          deleted_at?: string | null
+          generation_count?: number
+          id?: string
+          is_buffering_observation?: boolean
+          is_buffering_reflection?: boolean
+          last_buffered_at_time?: string | null
+          last_buffered_at_tokens?: number
+          last_observed_at?: string | null
+          metadata?: Json
+          observation_token_count?: number
+          observed_message_ids?: Json
+          observed_timezone?: string | null
+          pending_message_tokens?: number
+          reflected_observation_line_count?: number
+          scope?: string
+          suggested_response?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cx_observational_memory_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "cx_conversation"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cx_observational_memory_event: {
+        Row: {
+          completed_at: string | null
+          conversation_id: string | null
+          cost: number
+          created_at: string
+          duration_ms: number | null
+          error: string | null
+          event_type: string
+          id: string
+          input_tokens: number
+          memory_record_id: string | null
+          metadata: Json
+          model: string | null
+          output_tokens: number
+          success: boolean
+          trigger_reason: string | null
+          triggered_at: string
+          user_id: string
+          user_request_id: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          conversation_id?: string | null
+          cost?: number
+          created_at?: string
+          duration_ms?: number | null
+          error?: string | null
+          event_type: string
+          id?: string
+          input_tokens?: number
+          memory_record_id?: string | null
+          metadata?: Json
+          model?: string | null
+          output_tokens?: number
+          success?: boolean
+          trigger_reason?: string | null
+          triggered_at?: string
+          user_id: string
+          user_request_id?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          conversation_id?: string | null
+          cost?: number
+          created_at?: string
+          duration_ms?: number | null
+          error?: string | null
+          event_type?: string
+          id?: string
+          input_tokens?: number
+          memory_record_id?: string | null
+          metadata?: Json
+          model?: string | null
+          output_tokens?: number
+          success?: boolean
+          trigger_reason?: string | null
+          triggered_at?: string
+          user_id?: string
+          user_request_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cx_observational_memory_event_memory_record_id_fkey"
+            columns: ["memory_record_id"]
+            isOneToOne: false
+            referencedRelation: "cx_observational_memory"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cx_request: {
         Row: {
           ai_model_id: string
@@ -13208,6 +13377,358 @@ export type Database = {
         }
         Relationships: []
       }
+      skl_categories: {
+        Row: {
+          category_key: string
+          color: string | null
+          created_at: string
+          description: string | null
+          icon_name: string | null
+          id: string
+          is_active: boolean
+          label: string
+          metadata: Json | null
+          organization_id: string | null
+          parent_category_id: string | null
+          project_id: string | null
+          sort_order: number
+          task_id: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          category_key: string
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          icon_name?: string | null
+          id?: string
+          is_active?: boolean
+          label: string
+          metadata?: Json | null
+          organization_id?: string | null
+          parent_category_id?: string | null
+          project_id?: string | null
+          sort_order?: number
+          task_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          category_key?: string
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          icon_name?: string | null
+          id?: string
+          is_active?: boolean
+          label?: string
+          metadata?: Json | null
+          organization_id?: string | null
+          parent_category_id?: string | null
+          project_id?: string | null
+          sort_order?: number
+          task_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "skl_categories_parent_category_id_fkey"
+            columns: ["parent_category_id"]
+            isOneToOne: false
+            referencedRelation: "skl_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      skl_definitions: {
+        Row: {
+          allowed_tools: Json | null
+          body: string | null
+          category_id: string | null
+          config: Json | null
+          created_at: string
+          description: string
+          disable_auto_invocation: boolean
+          icon_name: string | null
+          id: string
+          is_active: boolean
+          is_public: boolean
+          is_system: boolean
+          label: string
+          model_preference: string | null
+          organization_id: string | null
+          parent_skill_id: string | null
+          platform_targets: Json | null
+          project_id: string | null
+          skill_id: string
+          skill_type: Database["public"]["Enums"]["skl_skill_type"]
+          sort_order: number
+          task_id: string | null
+          trigger_patterns: Json | null
+          updated_at: string
+          user_id: string | null
+          version: string | null
+        }
+        Insert: {
+          allowed_tools?: Json | null
+          body?: string | null
+          category_id?: string | null
+          config?: Json | null
+          created_at?: string
+          description: string
+          disable_auto_invocation?: boolean
+          icon_name?: string | null
+          id?: string
+          is_active?: boolean
+          is_public?: boolean
+          is_system?: boolean
+          label: string
+          model_preference?: string | null
+          organization_id?: string | null
+          parent_skill_id?: string | null
+          platform_targets?: Json | null
+          project_id?: string | null
+          skill_id: string
+          skill_type?: Database["public"]["Enums"]["skl_skill_type"]
+          sort_order?: number
+          task_id?: string | null
+          trigger_patterns?: Json | null
+          updated_at?: string
+          user_id?: string | null
+          version?: string | null
+        }
+        Update: {
+          allowed_tools?: Json | null
+          body?: string | null
+          category_id?: string | null
+          config?: Json | null
+          created_at?: string
+          description?: string
+          disable_auto_invocation?: boolean
+          icon_name?: string | null
+          id?: string
+          is_active?: boolean
+          is_public?: boolean
+          is_system?: boolean
+          label?: string
+          model_preference?: string | null
+          organization_id?: string | null
+          parent_skill_id?: string | null
+          platform_targets?: Json | null
+          project_id?: string | null
+          skill_id?: string
+          skill_type?: Database["public"]["Enums"]["skl_skill_type"]
+          sort_order?: number
+          task_id?: string | null
+          trigger_patterns?: Json | null
+          updated_at?: string
+          user_id?: string | null
+          version?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "skl_definitions_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "skl_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "skl_definitions_parent_skill_id_fkey"
+            columns: ["parent_skill_id"]
+            isOneToOne: false
+            referencedRelation: "skl_definitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      skl_render_components: {
+        Row: {
+          component_key: string
+          created_at: string
+          id: string
+          import_path: string | null
+          is_active: boolean
+          parser_config: Json | null
+          parser_key: string | null
+          platform: string
+          props_schema: Json | null
+          render_definition_id: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          component_key: string
+          created_at?: string
+          id?: string
+          import_path?: string | null
+          is_active?: boolean
+          parser_config?: Json | null
+          parser_key?: string | null
+          platform?: string
+          props_schema?: Json | null
+          render_definition_id: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          component_key?: string
+          created_at?: string
+          id?: string
+          import_path?: string | null
+          is_active?: boolean
+          parser_config?: Json | null
+          parser_key?: string | null
+          platform?: string
+          props_schema?: Json | null
+          render_definition_id?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "skl_render_components_render_definition_id_fkey"
+            columns: ["render_definition_id"]
+            isOneToOne: false
+            referencedRelation: "skl_render_definitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      skl_render_definitions: {
+        Row: {
+          block_id: string
+          category_id: string | null
+          created_at: string
+          description: string | null
+          icon_name: string
+          id: string
+          is_active: boolean
+          is_public: boolean
+          label: string
+          organization_id: string | null
+          project_id: string | null
+          skill_id: string | null
+          sort_order: number
+          task_id: string | null
+          template: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          block_id: string
+          category_id?: string | null
+          created_at?: string
+          description?: string | null
+          icon_name: string
+          id?: string
+          is_active?: boolean
+          is_public?: boolean
+          label: string
+          organization_id?: string | null
+          project_id?: string | null
+          skill_id?: string | null
+          sort_order?: number
+          task_id?: string | null
+          template: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          block_id?: string
+          category_id?: string | null
+          created_at?: string
+          description?: string | null
+          icon_name?: string
+          id?: string
+          is_active?: boolean
+          is_public?: boolean
+          label?: string
+          organization_id?: string | null
+          project_id?: string | null
+          skill_id?: string | null
+          sort_order?: number
+          task_id?: string | null
+          template?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "skl_render_definitions_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "shortcut_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "skl_render_definitions_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "shortcuts_by_placement_view"
+            referencedColumns: ["category_id"]
+          },
+          {
+            foreignKeyName: "skl_render_definitions_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skl_definitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      skl_resources: {
+        Row: {
+          content: string | null
+          created_at: string
+          filename: string
+          id: string
+          is_active: boolean
+          mime_type: string | null
+          resource_type: string
+          skill_id: string
+          sort_order: number
+          storage_path: string | null
+          updated_at: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          filename: string
+          id?: string
+          is_active?: boolean
+          mime_type?: string | null
+          resource_type?: string
+          skill_id: string
+          sort_order?: number
+          storage_path?: string | null
+          updated_at?: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          filename?: string
+          id?: string
+          is_active?: boolean
+          mime_type?: string | null
+          resource_type?: string
+          skill_id?: string
+          sort_order?: number
+          storage_path?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "skl_resources_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skl_definitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sms_consent: {
         Row: {
           consent_type: string
@@ -15672,6 +16193,130 @@ export type Database = {
           },
         ]
       }
+      wf_job: {
+        Row: {
+          attempt: number
+          checkpoint_id: string | null
+          claimed_at: string | null
+          claimed_by: string | null
+          created_at: string
+          id: string
+          inputs: Json
+          kind: string
+          last_error: Json | null
+          max_attempts: number
+          max_steps: number
+          priority: number
+          resume_value: Json | null
+          run_id: string
+          updated_at: string
+          visible_at: string
+        }
+        Insert: {
+          attempt?: number
+          checkpoint_id?: string | null
+          claimed_at?: string | null
+          claimed_by?: string | null
+          created_at?: string
+          id?: string
+          inputs?: Json
+          kind: string
+          last_error?: Json | null
+          max_attempts?: number
+          max_steps?: number
+          priority?: number
+          resume_value?: Json | null
+          run_id: string
+          updated_at?: string
+          visible_at?: string
+        }
+        Update: {
+          attempt?: number
+          checkpoint_id?: string | null
+          claimed_at?: string | null
+          claimed_by?: string | null
+          created_at?: string
+          id?: string
+          inputs?: Json
+          kind?: string
+          last_error?: Json | null
+          max_attempts?: number
+          max_steps?: number
+          priority?: number
+          resume_value?: Json | null
+          run_id?: string
+          updated_at?: string
+          visible_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wf_job_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "wf_run"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wf_node_events: {
+        Row: {
+          attempt: number | null
+          checkpoint_id: string | null
+          created_at: string
+          duration_ms: number | null
+          error_message: string | null
+          error_type: string | null
+          event_ts: string
+          event_type: string
+          id: string
+          node_id: string | null
+          payload: Json
+          run_id: string
+          spec_type: string | null
+          step: number | null
+        }
+        Insert: {
+          attempt?: number | null
+          checkpoint_id?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          error_message?: string | null
+          error_type?: string | null
+          event_ts?: string
+          event_type: string
+          id?: string
+          node_id?: string | null
+          payload: Json
+          run_id: string
+          spec_type?: string | null
+          step?: number | null
+        }
+        Update: {
+          attempt?: number | null
+          checkpoint_id?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          error_message?: string | null
+          error_type?: string | null
+          event_ts?: string
+          event_type?: string
+          id?: string
+          node_id?: string | null
+          payload?: Json
+          run_id?: string
+          spec_type?: string | null
+          step?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wf_node_events_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "wf_run"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wf_node_outcome: {
         Row: {
           attempt: number
@@ -15821,6 +16466,96 @@ export type Database = {
             columns: ["parent_run_id"]
             isOneToOne: false
             referencedRelation: "wf_run"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wf_trigger: {
+        Row: {
+          created_at: string
+          cron_expression: string | null
+          default_inputs: Json
+          definition_id: string
+          definition_version_id: string | null
+          description: string | null
+          fire_count: number
+          id: string
+          is_active: boolean
+          kind: string
+          last_fired_at: string | null
+          last_run_id: string | null
+          max_steps: number
+          name: string
+          next_run_at: string | null
+          organization_id: string | null
+          project_id: string | null
+          task_id: string | null
+          timezone: string
+          updated_at: string
+          user_id: string | null
+          webhook_secret: string | null
+        }
+        Insert: {
+          created_at?: string
+          cron_expression?: string | null
+          default_inputs?: Json
+          definition_id: string
+          definition_version_id?: string | null
+          description?: string | null
+          fire_count?: number
+          id?: string
+          is_active?: boolean
+          kind: string
+          last_fired_at?: string | null
+          last_run_id?: string | null
+          max_steps?: number
+          name: string
+          next_run_at?: string | null
+          organization_id?: string | null
+          project_id?: string | null
+          task_id?: string | null
+          timezone?: string
+          updated_at?: string
+          user_id?: string | null
+          webhook_secret?: string | null
+        }
+        Update: {
+          created_at?: string
+          cron_expression?: string | null
+          default_inputs?: Json
+          definition_id?: string
+          definition_version_id?: string | null
+          description?: string | null
+          fire_count?: number
+          id?: string
+          is_active?: boolean
+          kind?: string
+          last_fired_at?: string | null
+          last_run_id?: string | null
+          max_steps?: number
+          name?: string
+          next_run_at?: string | null
+          organization_id?: string | null
+          project_id?: string | null
+          task_id?: string | null
+          timezone?: string
+          updated_at?: string
+          user_id?: string | null
+          webhook_secret?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wf_trigger_definition_id_fkey"
+            columns: ["definition_id"]
+            isOneToOne: false
+            referencedRelation: "wf_definition"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wf_trigger_definition_version_id_fkey"
+            columns: ["definition_version_id"]
+            isOneToOne: false
+            referencedRelation: "wf_definition_version"
             referencedColumns: ["id"]
           },
         ]
@@ -22301,6 +23036,14 @@ export type Database = {
         | "4xl"
         | "5xl"
         | "default"
+      skl_skill_type:
+        | "render_block"
+        | "convention"
+        | "workflow"
+        | "task"
+        | "reference"
+        | "mode"
+        | "agent_behavior"
       source_component:
         | "Input"
         | "NumberInput"
@@ -23039,6 +23782,15 @@ export const Constants = {
         "4xl",
         "5xl",
         "default",
+      ],
+      skl_skill_type: [
+        "render_block",
+        "convention",
+        "workflow",
+        "task",
+        "reference",
+        "mode",
+        "agent_behavior",
       ],
       source_component: [
         "Input",
