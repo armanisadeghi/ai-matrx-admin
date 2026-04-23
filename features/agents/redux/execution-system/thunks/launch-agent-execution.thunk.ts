@@ -444,9 +444,20 @@ export const launchAgentExecution = createAsyncThunk<
   //
   // The gate blocks thunk execution only — the real overlay still opens so
   // the component is always ready to render once the user continues.
+  //
+  // NOTE: createInstanceFromShortcut has already merged caller overrides
+  // with the shortcut's own config into instance-ui-state. Read back from
+  // there as the source of truth so a shortcut that sets showPreExecutionGate
+  // doesn't get ignored just because the caller didn't re-specify it.
   // =========================================================================
 
-  if (showPreExecutionGate) {
+  const seededUiState =
+    (getState() as RootState).instanceUIState.byConversationId[conversationId];
+  const effectiveShowPreExecutionGate =
+    showPreExecutionGate ?? seededUiState?.showPreExecutionGate ?? false;
+  const effectiveAutoRun = autoRun ?? seededUiState?.autoRun ?? false;
+
+  if (effectiveShowPreExecutionGate) {
     const downstreamOverlayId = DISPLAY_MODE_TO_OVERLAY_ID[resolvedDisplayMode];
     dispatch(
       openAgentGateWindow({
@@ -476,9 +487,19 @@ export const launchAgentExecution = createAsyncThunk<
 
   // =========================================================================
   // Step 5: autoRun=false — component is open, user triggers execution manually.
+  // Uses the resolved autoRun (caller override → instance-ui-state →
+  // hard default false) so shortcut-level `autoRun: true` actually fires.
   // =========================================================================
 
-  if (!autoRun) {
+  if (!effectiveAutoRun) {
+    if (typeof window !== "undefined") {
+      console.log(
+        "%c[Shortcut]%c autoRun=false — waiting for user to trigger execution (conversationId=%s)",
+        "color:#6366f1;font-weight:bold",
+        "color:inherit",
+        conversationId,
+      );
+    }
     return { conversationId };
   }
 
