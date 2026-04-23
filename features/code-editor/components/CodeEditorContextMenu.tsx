@@ -14,7 +14,16 @@
 'use client';
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { UnifiedAgentContextMenu } from '@/features/context-menu-v2';
+import dynamic from 'next/dynamic';
+
+// Dynamic — keeps UnifiedAgentContextMenu out of the code-editor bundle.
+const UnifiedAgentContextMenu = dynamic(
+  () =>
+    import('@/features/context-menu-v2').then((mod) => ({
+      default: mod.UnifiedAgentContextMenu,
+    })),
+  { ssr: false },
+);
 import { PLACEMENT_TYPES } from '@/features/agent-shortcuts/constants';
 import type { editor } from 'monaco-editor';
 
