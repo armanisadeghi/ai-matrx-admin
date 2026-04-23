@@ -29,6 +29,7 @@ import {
 } from "../utils/agent-config-extractor";
 import { useAgentBuilder } from "../services/agentBuilderService";
 import { getSystemShortcut } from "@/features/agents/constants/system-shortcuts";
+import { ensureShortcutLoaded } from "@/features/agents/redux/agent-shortcuts/thunks";
 import { useDebugContext } from "@/hooks/useDebugContext";
 
 const GENERATOR_SHORTCUT = getSystemShortcut("agent-generator-01");
@@ -142,6 +143,37 @@ export function AgentGenerator({ onComplete }: AgentGeneratorProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
 
+  // ── Generator-shortcut readiness ─────────────────────────────────────────
+  // The generator is pinned to a specific shortcut. Warm it on mount so the
+  // user never has to wait after clicking Generate, and surface any
+  // load-failure as a real error state instead of letting the launch fail
+  // at click time.
+  const generatorShortcut = useAppSelector(
+    (state) =>
+      state.agentShortcut.shortcuts[GENERATOR_SHORTCUT.id] ?? null,
+  );
+  const [shortcutLoadError, setShortcutLoadError] = useState<string | null>(
+    null,
+  );
+  const shortcutReady = generatorShortcut !== null;
+
+  useEffect(() => {
+    if (shortcutReady) return;
+    let cancelled = false;
+    setShortcutLoadError(null);
+    dispatch(ensureShortcutLoaded(GENERATOR_SHORTCUT.id))
+      .unwrap()
+      .catch((err) => {
+        if (cancelled) return;
+        const message =
+          err instanceof Error ? err.message : "Failed to load generator";
+        setShortcutLoadError(message);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [shortcutReady, dispatch]);
+
   // ── Redux selectors (all keyed by conversationId or requestId) ──────────
 
   const streamingText = useAppSelector(
@@ -176,18 +208,12 @@ export function AgentGenerator({ onComplete }: AgentGeneratorProps) {
 
   // ── Derived state ─────────────────────────────────────────────────────────
 
-  const isActive =
-    streamPhase !== "idle" &&
-    streamPhase !== "complete" &&
-    streamPhase !== "error";
-  const hasExtractedJson =
-    extractedSnapshot !== null && extractedSnapshot.type === "object";
-  const extractedValue = hasExtractedJson
-    ? (extractedSnapshot.value as Record<string, unknown>)
-    : null;
-  const extractionFailed =
-    jsonExtractionComplete && !hasExtractedJson && !!streamingText;
-  const canGenerate = selection.trim().length > 0;
+  const isActive = streamPhase !== "idle" && streamPhase !== "complete" && streamPhase !== "error";
+  const hasExtractedJson = extractedSnapshot !== null && extractedSnapshot.type === "object";
+  const extractedValue = hasExtractedJson ? (extractedSnapshot.value as Record<string, unknown>) : null;
+  const extractionFailed = jsonExtractionComplete && !hasExtractedJson && !!streamingText;
+  const canGenerate =
+    selection.trim().length > 0 && shortcutReady && !shortcutLoadError;
 
   // ── Auto-populate agent name from extraction ─────────────────────────────
 
@@ -359,6 +385,27 @@ export function AgentGenerator({ onComplete }: AgentGeneratorProps) {
       <div className="flex-1 flex flex-col lg:grid lg:grid-cols-[40%_60%] gap-3 sm:gap-4 px-4 sm:px-6 overflow-y-auto lg:overflow-hidden min-h-0 py-3 sm:py-4">
         {/* Input Section */}
         <div className="flex flex-col min-h-0 space-y-3 sm:space-y-4 overflow-y-auto lg:overflow-visible">
+          {/* Generator readiness banner — shortcut is being fetched, or a
+              load failure means Generate is not wired. Separate from the
+              streaming state so users know why the button is disabled. */}
+          {!shortcutReady && !shortcutLoadError && (
+            <div className="flex items-center gap-2 p-2 rounded-md bg-muted/50 border border-border text-xs text-muted-foreground">
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              Loading generator configuration…
+            </div>
+          )}
+          {shortcutLoadError && (
+            <div className="flex items-start gap-2 p-2 rounded-md bg-destructive/10 border border-destructive/30 text-xs text-destructive">
+              <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <div className="font-medium">Generator unavailable</div>
+                <div className="text-[11px] opacity-80">
+                  {shortcutLoadError}
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="space-y-3 sm:space-y-4">
             <div className="space-y-2">
               <Label className="text-xs sm:text-sm font-medium flex items-center gap-2">
@@ -370,13 +417,15 @@ export function AgentGenerator({ onComplete }: AgentGeneratorProps) {
                 onChange={(e) => setSelection(e.target.value)}
                 placeholder="Describe what you want your AI agent to do..."
                 className="min-h-[120px] sm:min-h-[180px] text-sm border border-border rounded-xl"
-                disabled={isActive || isStreaming || showResult}
-                onTranscriptionComplete={() =>
-                  toast.success("Voice input added")
+                disabled={
+                  !shortcutReady ||
+                  !!shortcutLoadError ||
+                  isActive ||
+                  isStreaming ||
+                  showResult
                 }
-                onTranscriptionError={(error) =>
-                  toast.error("Voice input failed", { description: error })
-                }
+                onTranscriptionComplete={() => toast.success("Voice input added")}
+                onTranscriptionError={(error) => toast.error("Voice input failed", { description: error })}
               />
               <p className="text-xs text-gray-500 dark:text-gray-400">
                 Be specific about the main purpose and goals
@@ -393,13 +442,15 @@ export function AgentGenerator({ onComplete }: AgentGeneratorProps) {
                 onChange={(e) => setUserInput(e.target.value)}
                 placeholder="Add any specific requirements, tone, formats, or constraints..."
                 className="min-h-[120px] sm:min-h-[180px] text-sm border border-border rounded-xl"
-                disabled={isActive || isStreaming || showResult}
-                onTranscriptionComplete={() =>
-                  toast.success("Voice context added")
+                disabled={
+                  !shortcutReady ||
+                  !!shortcutLoadError ||
+                  isActive ||
+                  isStreaming ||
+                  showResult
                 }
-                onTranscriptionError={(error) =>
-                  toast.error("Voice input failed", { description: error })
-                }
+                onTranscriptionComplete={() => toast.success("Voice context added")}
+                onTranscriptionError={(error) => toast.error("Voice input failed", { description: error })}
               />
               <p className="text-xs text-gray-500 dark:text-gray-400">
                 Any additional context, requirements, or constraints
@@ -588,6 +639,11 @@ export function AgentGenerator({ onComplete }: AgentGeneratorProps) {
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   Generating...
+                </>
+              ) : !shortcutReady && !shortcutLoadError ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Loading...
                 </>
               ) : (
                 <>
