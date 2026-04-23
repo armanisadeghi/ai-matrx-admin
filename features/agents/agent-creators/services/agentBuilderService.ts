@@ -93,18 +93,50 @@ export async function createAgentFromBuilder(
     }
 
     const supabase = createClient();
+
+    // RLS on agx_agent requires `user_id = auth.uid()` for inserts. When
+    // missing, the server rejects the row and the error body can come
+    // back as an empty object ({}), which produced the mystery
+    // "Agent insert error: {}" in production. Resolve the current user
+    // first and stamp it on the payload.
+    const { data: authData, error: authError } = await supabase.auth.getUser();
+    if (authError || !authData.user?.id) {
+      const msg =
+        authError?.message ??
+        "You must be signed in to create an agent.";
+      toast.error("Failed to create agent", { description: msg });
+      return { success: false, error: msg };
+    }
+
+    const payload = {
+      ...configToInsertPayload(config),
+      user_id: authData.user.id,
+    } satisfies AgentInsert;
+
     const { data, error: insertError } = await supabase
       .from("agx_agent")
-      .insert(configToInsertPayload(config))
+      .insert(payload)
       .select("id")
       .single();
 
     if (insertError) {
-      console.error("Agent insert error:", insertError);
-      toast.error("Failed to create agent", {
-        description: insertError.message,
+      // Supabase returns an error shape like
+      //   { message, details, hint, code }
+      // but RLS denials sometimes arrive with all fields blank. Pull
+      // whatever we can so the user sees something useful.
+      const message =
+        insertError.message ||
+        insertError.details ||
+        insertError.hint ||
+        "Insert was rejected (possibly by RLS).";
+      console.error("Agent insert error:", {
+        message: insertError.message,
+        details: insertError.details,
+        hint: insertError.hint,
+        code: insertError.code,
       });
-      return { success: false, error: insertError.message };
+      toast.error("Failed to create agent", { description: message });
+      return { success: false, error: message };
     }
 
     toast.success("Agent created!", { description: "Opening the builder..." });

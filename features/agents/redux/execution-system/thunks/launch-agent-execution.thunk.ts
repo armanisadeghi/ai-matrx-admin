@@ -150,6 +150,7 @@ export const launchAgentExecution = createAsyncThunk<
     isEphemeral,
     runtime,
     config,
+    onConversationCreated,
   } = options;
 
   // ── Nested (new) shape wins over flat (legacy) shape ──────────────────────
@@ -316,6 +317,12 @@ export const launchAgentExecution = createAsyncThunk<
       }),
     ).unwrap();
 
+    // Fire the "instance exists" hook NOW — before the stream runs — so
+    // streaming UIs can mount their Redux selectors and show feedback
+    // immediately instead of waiting the full 30-60s until the Promise
+    // resolves.
+    onConversationCreated?.(conversationId);
+
     if (variables && Object.keys(variables).length > 0) {
       dispatch(setUserVariableValues({ conversationId, values: variables }));
     }
@@ -350,6 +357,8 @@ export const launchAgentExecution = createAsyncThunk<
         ...(isEphemeral !== undefined ? { isEphemeral } : {}),
       }),
     ).unwrap();
+
+    onConversationCreated?.(conversationId);
 
     if (applicationScope) {
       const agState = getState() as RootState;
@@ -401,6 +410,8 @@ export const launchAgentExecution = createAsyncThunk<
         widgetHandleId,
       }),
     ).unwrap();
+
+    onConversationCreated?.(conversationId);
 
     if (variables && Object.keys(variables).length > 0) {
       dispatch(setUserVariableValues({ conversationId, values: variables }));

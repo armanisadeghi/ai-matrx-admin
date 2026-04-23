@@ -47,6 +47,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import MarkdownStream from "@/components/MarkdownStream";
+import { AgentStreamingResponse } from "./AgentJsonDisplay";
 import { VoiceTextarea } from "@/features/audio";
 
 // =============================================================================
@@ -303,21 +304,30 @@ export function AgentGenerator({ onComplete }: AgentGeneratorProps) {
 
     if (conversationId) dispatch(destroyInstanceIfAllowed(conversationId));
     setAgentName("");
+    // Clear any prior conversationId so the streaming UI resets immediately
+    // — the onConversationCreated callback below sets the new one as soon
+    // as the instance lands in Redux, before the stream starts.
+    setConversationId(null);
 
     try {
       // The shortcut owns the agent, display mode, and the scope → variable
       // routing. All we supply is the live scope data.
       //
+      // CRITICAL: use onConversationCreated to mount the streaming UI the
+      // moment the instance exists. Awaiting trigger() alone means the UI
+      // sits frozen for the full 30-60s stream — conversationId wouldn't
+      // land until after `pollForCompletion` resolves.
+      //
       // jsonExtraction still comes from the caller — it's in
       // GENERATOR_SHORTCUT.temporaryConfigs (will move onto the shortcut
       // row in a future migration).
-      const result = await trigger(GENERATOR_SHORTCUT.id, {
+      await trigger(GENERATOR_SHORTCUT.id, {
         scope: { selection },
         runtime: { userInput: userInput || undefined },
         jsonExtraction: GENERATOR_SHORTCUT.temporaryConfigs?.jsonExtraction,
         sourceFeature: "agent-generator",
+        onConversationCreated: (id) => setConversationId(id),
       });
-      setConversationId(result.conversationId);
     } catch (err) {
       console.error("Agent generation failed:", err);
       toast.error("Failed to generate agent", {
@@ -545,12 +555,17 @@ export function AgentGenerator({ onComplete }: AgentGeneratorProps) {
                   </div>
                   <div className="flex-1 overflow-y-auto p-3">
                     {streamingText ? (
-                      <MarkdownStream
+                      <AgentStreamingResponse
                         content={streamingText}
                         isStreamActive={true}
-                        hideCopyButton={true}
+                        extracted={extractedValue}
                       />
-                    ) : null}
+                    ) : (
+                      <div className="flex flex-col items-center justify-center h-full text-center text-xs text-muted-foreground">
+                        <Loader2 className="h-5 w-5 animate-spin text-purple-600 dark:text-purple-400 mb-2" />
+                        Waiting for the stream to start…
+                      </div>
+                    )}
                   </div>
                 </div>
               ) : streamingText ? (
@@ -573,10 +588,10 @@ export function AgentGenerator({ onComplete }: AgentGeneratorProps) {
                     </div>
                   )}
                   <div className="flex-1 overflow-y-auto p-3">
-                    <MarkdownStream
+                    <AgentStreamingResponse
                       content={streamingText}
                       isStreamActive={false}
-                      hideCopyButton={true}
+                      extracted={extractedValue}
                     />
                   </div>
                 </div>

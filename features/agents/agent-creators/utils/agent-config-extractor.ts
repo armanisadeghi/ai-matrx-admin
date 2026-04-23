@@ -66,8 +66,30 @@ function extractMessages(obj: Record<string, unknown>): MessageEntry[] {
     )
     .map((m) => ({
       role: String(m.role),
-      content: String(m.content),
+      // Agents ship content as an array of `{type, text}` parts (matches
+      // the agx_agent.messages JSONB shape). String() on an array
+      // produces "[object Object]" — flatten it to the text segments so
+      // the builder insert payload re-wraps a valid text part.
+      content: flattenAgentContent(m.content),
     }));
+}
+
+function flattenAgentContent(content: unknown): string {
+  if (typeof content === "string") return content;
+  if (Array.isArray(content)) {
+    return content
+      .map((p) => {
+        if (typeof p === "string") return p;
+        if (p && typeof p === "object") {
+          const text = (p as { text?: unknown }).text;
+          return typeof text === "string" ? text : "";
+        }
+        return "";
+      })
+      .filter(Boolean)
+      .join("\n");
+  }
+  return "";
 }
 
 /**
@@ -77,7 +99,14 @@ function extractMessages(obj: Record<string, unknown>): MessageEntry[] {
  * them into proper VariableDefinition objects with all required keys present.
  */
 function extractVariables(obj: Record<string, unknown>): VariableDefinition[] {
-  const raw = obj.variableDefaults ?? obj.variables ?? obj.variable_defaults;
+  // Agent JSON uses `variable_definitions` (agx_agent column name). The
+  // older prompt shape used `variableDefaults`. Support both so legacy
+  // shortcuts keep working while we converge on the agent shape.
+  const raw =
+    obj.variable_definitions ??
+    obj.variableDefaults ??
+    obj.variables ??
+    obj.variable_defaults;
   if (!Array.isArray(raw)) return [];
 
   return raw
