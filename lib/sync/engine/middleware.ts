@@ -24,6 +24,7 @@ import type { PersistenceAdapter } from "../persistence/types";
 import type { SyncChannel } from "../channel";
 import { isRehydrateAction } from "./rehydrate";
 import { applyPrePaintDescriptors } from "./applyPrePaint";
+import { createRemoteWriteScheduler, type RemoteWriteScheduler } from "./remoteWrite";
 
 interface ActionWithMeta {
     type: string;
@@ -79,6 +80,11 @@ export interface SyncMiddlewareContext {
     policies: readonly Policy<any>[];
     channel: SyncChannel;
     getIdentity: () => IdentityKey;
+    /**
+     * Test-only override for the warm-cache debounce window's default. Policy-
+     * level `remote.debounceMs` still wins. Production callers omit this.
+     */
+    defaultDebounceMs?: number;
 }
 
 /**
@@ -105,6 +111,15 @@ export function createSyncMiddleware(ctx: SyncMiddlewareContext): Middleware {
     // when the slice state hasn't changed. Separate map because persist skips
     // rehydrate actions (see below) but DOM apply does not.
     const lastAppliedRef = new Map<string, unknown>();
+    // Warm-cache debounced write sink (IDB + remote.write). Lazily constructed
+    // so stores that don't use warm-cache don't install a pagehide listener.
+    let remoteWriteScheduler: RemoteWriteScheduler | null = null;
+    const hasWarmCache = ctx.policies.some(
+        (p) => getPreset(p.config.preset).writeStrategy === "debounced",
+    );
+    // Track identity across actions so a swap clears in-flight writes (and
+    // we never re-key a write-in-progress to the new identity).
+    let lastSeenIdentity = ctx.getIdentity().key;
 
     return (api: MiddlewareAPI) => (next: Dispatch) => (action: unknown) => {
         const result = next(action as Action);
@@ -141,28 +156,58 @@ export function createSyncMiddleware(ctx: SyncMiddlewareContext): Middleware {
             }
         }
 
-        // --- Persist (sync write-through for boot-critical) ---
+        // Detect identity swap between actions. The sync context's getIdentity
+        // is a closure over `currentIdentity` in `makeStore`; if it changed,
+        // cancel any pending debounced writes so they don't land under the
+        // wrong identity.
+        const currentIdentityKey = ctx.getIdentity().key;
+        if (currentIdentityKey !== lastSeenIdentity) {
+            lastSeenIdentity = currentIdentityKey;
+            remoteWriteScheduler?.onIdentitySwap();
+        }
+
+        // --- Persist (sync write-through for boot-critical; debounced for warm-cache) ---
         // Rehydrate actions flow through reducers but must NOT trigger a re-persist.
         if (!isRehydrateAction(a)) {
             for (const policy of ctx.policies) {
                 const caps = getPreset(policy.config.preset);
-                if (caps.writeStrategy !== "sync") continue;
-                // Only write when this action actually targets the slice. A cheap heuristic:
-                // the action's slice prefix matches the sliceName (RTK convention: `${sliceName}/...`)
-                // OR the slice state object reference changed.
+                if (caps.writeStrategy === "none") continue;
+                // Only write when the slice state reference changed.
                 const sliceState = selectSliceState(api.getState(), policy.config.sliceName);
                 if (sliceState === undefined) continue;
                 if (lastPersistedRef.get(policy.config.sliceName) === sliceState) continue;
                 lastPersistedRef.set(policy.config.sliceName, sliceState);
 
                 const body = serializeBody(policy, sliceState);
-                adapterFor(policy).write(policy.storageKey, {
-                    version: policy.config.version,
-                    identityKey: ctx.getIdentity().key,
-                    body,
-                });
+
+                if (caps.writeStrategy === "sync") {
+                    // boot-critical: synchronous localStorage write-through.
+                    adapterFor(policy).write(policy.storageKey, {
+                        version: policy.config.version,
+                        identityKey: ctx.getIdentity().key,
+                        body,
+                    });
+                } else if (caps.writeStrategy === "debounced") {
+                    // warm-cache: debounced write — both IDB and remote.write
+                    // (if declared) flush after quiescence. Lazy scheduler
+                    // construction on first use.
+                    if (!remoteWriteScheduler) {
+                        remoteWriteScheduler = createRemoteWriteScheduler({
+                            policies: ctx.policies,
+                            store: { getState: api.getState, dispatch: api.dispatch } as Parameters<
+                                typeof createRemoteWriteScheduler
+                            >[0]["store"],
+                            getIdentity: ctx.getIdentity,
+                            ...(ctx.defaultDebounceMs !== undefined
+                                ? { defaultDebounceMs: ctx.defaultDebounceMs }
+                                : {}),
+                        });
+                    }
+                    remoteWriteScheduler.schedule(policy.config.sliceName, body);
+                }
             }
         }
+        void hasWarmCache;
 
         // --- Apply pre-paint descriptors at runtime ---
         // Mirrors the one-shot inline SyncBootScript so DOM class/attribute

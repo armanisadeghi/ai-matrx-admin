@@ -10,7 +10,7 @@
  */
 
 /** Phase 1 supports three presets. Phase 2 adds `warm-cache`; Phase 11 adds `live-data`. */
-export type PresetName = "volatile" | "ui-broadcast" | "boot-critical";
+export type PresetName = "volatile" | "ui-broadcast" | "boot-critical" | "warm-cache";
 
 /**
  * Declarative DOM mutation applied by `SyncBootScript` before first paint.
@@ -109,7 +109,65 @@ export interface PolicyConfig<TState = unknown> {
 
     /** Pre-paint DOM mutation(s). Must be declarative / JSON-serializable. */
     prePaint?: PrePaintDescriptor | readonly PrePaintDescriptor[];
+
+    // ---- warm-cache (Phase 2) ------------------------------------------------
+
+    /**
+     * If set, the engine schedules a background refresh via `remote.fetch`
+     * this many milliseconds after the last rehydrate. Absent = never
+     * auto-refresh. Only legal when `remote.fetch` is also declared —
+     * staleness without a recovery path would just log errors forever.
+     */
+    staleAfter?: number;
+    /**
+     * Per-policy server integration. `warm-cache` policies use these to read
+     * from / write to the source of truth (typically Supabase). Legal only on
+     * `warm-cache` + future `live-data` presets (validator enforces).
+     *
+     *   - `fetch`  — cold-boot + stale-refresh + `_sync.refresh()` call path.
+     *   - `write`  — debounced write-through on broadcast-listed actions.
+     *   - `debounceMs` — default 150, minimum 50. Prevents thundering herd.
+     */
+    remote?: {
+        fetch?: FallbackFn<TState>;
+        write?: WriteRemoteFn<TState>;
+        debounceMs?: number;
+    };
 }
+
+/**
+ * Context passed to a policy's `remote.fetch`. `identity` is live (follows
+ * identity swaps). `signal` aborts when the caller supersedes the read
+ * (rapid re-fetch, identity swap, tab hidden).
+ */
+export interface FallbackContext {
+    identity: IdentityKey;
+    signal: AbortSignal;
+    reason: "cold-boot" | "stale-refresh" | "manual";
+}
+
+/**
+ * Context passed to a policy's `remote.write`. `body` is the post-reducer,
+ * partialize-filtered, serialize-transformed slice state — whatever
+ * `serializeBody` produced for the persistence adapter.
+ */
+export interface WriteContext<TState = unknown> {
+    identity: IdentityKey;
+    signal: AbortSignal;
+    body: TState;
+}
+
+/**
+ * Result of a fallback read. `null` means "no data upstream; stay on current
+ * state". A partial state is merged into the slice via the policy's
+ * `deserialize` hook (or shallow-assigned if `deserialize` is absent).
+ */
+export type FallbackFn<TState> = (
+    ctx: FallbackContext,
+) => Promise<Partial<TState> | null>;
+
+/** Write sink. Errors are caught + logged; the next change retries. */
+export type WriteRemoteFn<TState> = (ctx: WriteContext<TState>) => Promise<void>;
 
 /**
  * A validated, frozen policy. Produced by `definePolicy()`; consumed by the

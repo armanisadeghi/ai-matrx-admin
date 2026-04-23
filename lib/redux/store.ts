@@ -37,10 +37,17 @@ let storeInstance: AppStore | null = null;
 /**
  * Sync engine context attached to the store as `_sync`. Consumed by
  * `StoreProvider` to drive `bootSync` without double-opening the channel.
+ *
+ * `identity` stays live (updated on every swap) so passive readers — like
+ * the demo panel — get the current value. `getIdentity()` is the same read
+ * wrapped as a function, required by the middleware/scheduler internals
+ * that hold a stable reference across renders.
  */
 export interface StoreSyncContext {
   channel: SyncChannel;
   identity: IdentityKey;
+  /** Live identity getter. Use this over `identity` when holding a reference across swaps. */
+  getIdentity: () => IdentityKey;
   /** Runtime identity swap (auth flip). Phase 4 wires a reactive listener. */
   setIdentity: (next: IdentityKey) => void;
 }
@@ -169,9 +176,13 @@ export const makeStore = (
   const syncContext: StoreSyncContext = {
     channel: syncChannel,
     identity: initialIdentity,
+    getIdentity: () => currentIdentity,
     setIdentity: (next: IdentityKey) => {
       currentIdentity = next;
       syncChannel.setIdentity(next);
+      // Keep the public `.identity` snapshot in lockstep with the closure so
+      // passive readers (demo UI, dev console) don't observe a stale key.
+      syncContext.identity = next;
     },
   };
   // Attach sync context so StoreProvider can call bootSync with the same

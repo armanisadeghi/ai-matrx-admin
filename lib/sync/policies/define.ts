@@ -133,6 +133,43 @@ export function definePolicy<TState>(config: PolicyConfig<TState>): Policy<TStat
     const prePaintDescriptors = toDescriptorArray(config.prePaint);
     prePaintDescriptors.forEach((d, i) => validatePrePaintDescriptor(d, sliceName, i));
 
+    // Rule: remote only valid on presets that allow it (warm-cache + live-data).
+    if (config.remote !== undefined && !caps.allowsRemote) {
+        fail(`"${sliceName}": preset "${preset}" does not allow remote.fetch / remote.write`);
+    }
+    if (config.remote !== undefined) {
+        const { fetch: rFetch, write: rWrite, debounceMs } = config.remote;
+        if (rFetch !== undefined && typeof rFetch !== "function") {
+            fail(`"${sliceName}": remote.fetch must be a function`);
+        }
+        if (rWrite !== undefined && typeof rWrite !== "function") {
+            fail(`"${sliceName}": remote.write must be a function`);
+        }
+        if (debounceMs !== undefined) {
+            if (!Number.isFinite(debounceMs) || debounceMs < 50) {
+                fail(
+                    `"${sliceName}": remote.debounceMs must be ≥ 50 (got ${String(debounceMs)})`,
+                );
+            }
+        }
+    }
+
+    // Rule: staleAfter only valid on presets that allow it AND only paired
+    // with remote.fetch (otherwise staleness has no recovery path).
+    if (config.staleAfter !== undefined) {
+        if (!caps.allowsStaleAfter) {
+            fail(`"${sliceName}": preset "${preset}" does not allow staleAfter`);
+        }
+        if (!Number.isFinite(config.staleAfter) || config.staleAfter <= 0) {
+            fail(
+                `"${sliceName}": staleAfter must be a positive number (got ${String(config.staleAfter)})`,
+            );
+        }
+        if (config.remote?.fetch === undefined) {
+            fail(`"${sliceName}": staleAfter requires remote.fetch to be declared`);
+        }
+    }
+
     // Validate broadcast action uniqueness within this policy (cheap hygiene).
     if (hasBroadcast) {
         const seen = new Set<string>();

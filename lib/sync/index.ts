@@ -30,6 +30,10 @@ export type {
     SystemFallback,
     IdentityKey,
     SyncActionMeta,
+    FallbackContext,
+    WriteContext,
+    FallbackFn,
+    WriteRemoteFn,
 } from "./types";
 export type { SyncMessage } from "./messages";
 export type { RehydrateAction } from "./engine/rehydrate";

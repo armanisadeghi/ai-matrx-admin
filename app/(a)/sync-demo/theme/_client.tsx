@@ -80,8 +80,10 @@ export function ThemeDemoClient() {
     // Poll the live identity off the store for display. `setIdentity` mutates
     // a closure in `makeStore`, so there's no Redux selector to subscribe to —
     // a 500ms poll is the cheapest way to surface swaps in the debug panel.
+    // Reads via `getIdentity()` which is the stable contract — `.identity` is
+    // also kept in lockstep but the getter doesn't rely on that.
     useEffect(() => {
-        const read = () => setIdentityKey(store._sync.identity.key);
+        const read = () => setIdentityKey(store._sync.getIdentity().key);
         read();
         const id = window.setInterval(read, 500);
         return () => window.clearInterval(id);

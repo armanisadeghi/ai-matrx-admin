@@ -22,8 +22,10 @@ import type { Store } from "@reduxjs/toolkit";
 import { logger } from "../logger";
 import { openSyncChannel, type SyncChannel } from "../channel";
 import { localStorageAdapter, readLegacyKey, removeLegacyKey } from "../persistence/local-storage";
+import { readSlice as readIdbSlice } from "../persistence/idb";
 import { getPreset } from "../policies/presets";
 import { buildRehydrateAction } from "./rehydrate";
+import { createStaleRefreshScheduler, invokeRemoteFetch, type StaleRefreshRegistration } from "./remoteFetch";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { IdentityKey, Policy } from "../types";
 
@@ -54,14 +56,33 @@ export interface BootOptions {
     policies: readonly Policy<any>[];
     /** Override for tests. Defaults to `openSyncChannel`. */
     openChannel?: (identity: IdentityKey) => SyncChannel;
+    /**
+     * Live identity getter. If omitted, defaults to `() => identity` (snapshot).
+     * The store in production wires this through `store._sync.getIdentity` so
+     * the stale-refresh scheduler + remote fetches see the current identity
+     * after a swap without a fresh `bootSync` call.
+     */
+    getIdentity?: () => IdentityKey;
 }
 
 export interface BootResult {
     channel: SyncChannel;
     /** Keys of slices that rehydrated from localStorage. */
     hydratedFromStorage: readonly string[];
+    /**
+     * Resolves to the set of slice names rehydrated from IDB (and/or the
+     * localStorage `idbFallback` mirror). Always resolves — never rejects.
+     * Callers don't need to await this; it's exposed for tests + the demo.
+     */
+    idbHydration: Promise<readonly string[]>;
     /** Number of legacy migrations that ran. */
     legacyMigrated: number;
+    /**
+     * Stale-refresh scheduler for `warm-cache` policies. Call `cancelAll()`
+     * on teardown (the browser store is a singleton, so this is rarely
+     * needed — tests + SSR transitions are the main customers).
+     */
+    stale: StaleRefreshRegistration;
 }
 
 function runLegacyMigrations(policies: readonly Policy<any>[], identity: IdentityKey): number {
@@ -144,6 +165,135 @@ function rehydrateFromStorage(
     return hydrated;
 }
 
+/**
+ * IDB hydration pass for `warm-cache` slices. Runs after the synchronous
+ * localStorage pass has dispatched any boot-critical rehydrates, so first
+ * paint is never blocked on this. If IDB itself is unavailable (private
+ * browsing, Safari ITP, quota exhausted), we try the `matrx:idbFallback:*`
+ * localStorage mirror written by `remoteWrite.ts` — the mirror is the
+ * resilience tier for the IDB path.
+ *
+ * Returns the set of slice names that were successfully rehydrated.
+ */
+async function hydrateFromIdb(
+    policies: readonly Policy<any>[],
+    identity: IdentityKey,
+    store: Store,
+    alreadyHydrated: ReadonlySet<string>,
+): Promise<string[]> {
+    const hydrated: string[] = [];
+    const warmCachePolicies = policies.filter(
+        (p) => getPreset(p.config.preset).storageTier === "idb",
+    );
+
+    for (const policy of warmCachePolicies) {
+        if (alreadyHydrated.has(policy.config.sliceName)) continue;
+        try {
+            const record = await readIdbSlice(
+                identity.key,
+                policy.config.sliceName,
+                policy.config.version,
+            );
+            if (record) {
+                if (record.identityKey !== identity.key) {
+                    logger.debug("boot.idb.identityMismatch", {
+                        sliceName: policy.config.sliceName,
+                    });
+                    continue;
+                }
+                let state: unknown = record.body;
+                if (typeof policy.config.deserialize === "function") {
+                    try {
+                        state = policy.config.deserialize(record.body);
+                    } catch (err) {
+                        logger.error("boot.idb.deserialize.failed", {
+                            sliceName: policy.config.sliceName,
+                            meta: {
+                                error: err instanceof Error ? err.message : String(err),
+                            },
+                        });
+                        continue;
+                    }
+                }
+                store.dispatch(
+                    buildRehydrateAction(policy.config.sliceName, state, {
+                        fromRehydrate: true,
+                    }),
+                );
+                hydrated.push(policy.config.sliceName);
+                logger.debug("boot.idb.hit", { sliceName: policy.config.sliceName });
+                continue;
+            }
+
+            // IDB miss — try the localStorage `idbFallback` mirror.
+            const fallbackKey = `matrx:idbFallback:${policy.config.sliceName}`;
+            const fallbackRecord = localStorageAdapter.read(fallbackKey);
+            if (
+                fallbackRecord &&
+                fallbackRecord.version === policy.config.version &&
+                fallbackRecord.identityKey === identity.key
+            ) {
+                let state: unknown = fallbackRecord.body;
+                if (typeof policy.config.deserialize === "function") {
+                    try {
+                        state = policy.config.deserialize(fallbackRecord.body);
+                    } catch (err) {
+                        logger.error("boot.idbFallback.deserialize.failed", {
+                            sliceName: policy.config.sliceName,
+                            meta: {
+                                error: err instanceof Error ? err.message : String(err),
+                            },
+                        });
+                        continue;
+                    }
+                }
+                store.dispatch(
+                    buildRehydrateAction(policy.config.sliceName, state, {
+                        fromRehydrate: true,
+                    }),
+                );
+                hydrated.push(policy.config.sliceName);
+                logger.info("boot.idbFallback.hit", {
+                    sliceName: policy.config.sliceName,
+                });
+                continue;
+            }
+            logger.debug("boot.idb.miss", { sliceName: policy.config.sliceName });
+        } catch (err) {
+            logger.warn("boot.idb.read.failed", {
+                sliceName: policy.config.sliceName,
+                meta: { error: err instanceof Error ? err.message : String(err) },
+            });
+        }
+    }
+    return hydrated;
+}
+
+/**
+ * For every warm-cache policy that ended boot with no cached data (IDB miss
+ * AND fallback miss) and declares `remote.fetch`, fire a single cold-boot
+ * fetch. Fire-and-forget — `invokeRemoteFetch` never rejects.
+ */
+function scheduleColdBootFallbacks(
+    policies: readonly Policy<any>[],
+    hydrated: ReadonlySet<string>,
+    store: Store,
+    getIdentity: () => IdentityKey,
+): void {
+    for (const policy of policies) {
+        const caps = getPreset(policy.config.preset);
+        if (caps.storageTier !== "idb") continue;
+        if (hydrated.has(policy.config.sliceName)) continue;
+        if (!policy.config.remote?.fetch) continue;
+        void invokeRemoteFetch({
+            policy,
+            store,
+            getIdentity,
+            reason: "cold-boot",
+        });
+    }
+}
+
 function attachChannelListener(
     channel: SyncChannel,
     policies: readonly Policy<any>[],
@@ -194,6 +344,7 @@ export async function bootSync(options: BootOptions): Promise<BootResult> {
     const started = typeof performance !== "undefined" ? performance.now() : 0;
     const { store, identity, policies } = options;
     const openChannel = options.openChannel ?? openSyncChannel;
+    const getIdentity = options.getIdentity ?? (() => identity);
 
     logger.info("boot.start", { meta: { identity: identity.key, policyCount: policies.length } });
 
@@ -202,11 +353,37 @@ export async function bootSync(options: BootOptions): Promise<BootResult> {
     const hydratedFromStorage = rehydrateFromStorage(policies, identity, store);
     attachChannelListener(channel, policies, store);
 
+    // --- Async IDB hydration (warm-cache slices) ---
+    // Doesn't block boot; callers can await `result.idbHydration` when they
+    // need the final set (tests + demo). Cold-boot fallbacks are scheduled
+    // after IDB resolves so a policy with both cached data AND remote.fetch
+    // doesn't fire an unnecessary request.
+    const hydratedFromLocal = new Set(hydratedFromStorage);
+    const idbHydration: Promise<readonly string[]> = (async () => {
+        let hydrated: readonly string[] = [];
+        try {
+            hydrated = await hydrateFromIdb(policies, identity, store, hydratedFromLocal);
+        } catch (err) {
+            logger.warn("boot.idb.pass.failed", {
+                meta: { error: err instanceof Error ? err.message : String(err) },
+            });
+        }
+        const after = new Set<string>([...hydratedFromLocal, ...hydrated]);
+        scheduleColdBootFallbacks(policies, after, store, getIdentity);
+        return hydrated;
+    })();
+
+    // --- Stale refresh scheduler (warm-cache + staleAfter + remote.fetch) ---
+    // Arms timers immediately; each fire re-arms itself so the loop survives
+    // across identity swaps (the in-flight fetch picks up current identity
+    // via `getIdentity`).
+    const stale = createStaleRefreshScheduler(policies, store, getIdentity);
+
     const elapsed = typeof performance !== "undefined" ? performance.now() - started : 0;
     logger.info("boot.complete", {
         ms: elapsed,
         meta: { hydrated: hydratedFromStorage.length, legacyMigrated },
     });
 
-    return { channel, hydratedFromStorage, legacyMigrated };
+    return { channel, hydratedFromStorage, idbHydration, legacyMigrated, stale };
 }

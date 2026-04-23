@@ -39,6 +39,9 @@ function getOrCreateClientStore(
     identity: store._sync.identity,
     policies: syncPolicies,
     openChannel: () => store._sync.channel,
+    // Live getter so Phase 2 stale-refresh + remote-fetch see the current
+    // identity after a runtime swap (store._sync.setIdentity).
+    getIdentity: () => store._sync.getIdentity(),
   });
   clientStore = store;
   return store;
