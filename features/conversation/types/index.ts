@@ -34,14 +34,6 @@ export type {
 // Stream event types
 export type { TypedStreamEvent } from "@/types/python-generated/stream-events";
 
-// Tool call types (from lib/api, not socket-io)
-export type {
-  ToolCallObject,
-  ToolCallPhase,
-  McpInputObject,
-  StepDataObject,
-} from "@/lib/api/tool-call.types";
-
 // Hook types
 export type {
   ConversationSessionConfig,

@@ -13,7 +13,8 @@ import {
     BookOpenCheck,
     ScanSearch,
 } from "lucide-react";
-import { ToolRendererProps } from "../types";
+import type { ToolRendererProps } from "../../types";
+import { collectMessages, filterStepEvents, isTerminal, resultAsString } from "../_shared";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -210,53 +211,29 @@ function BrowsingCard({
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const DeepResearchInline: React.FC<ToolRendererProps> = ({
-    toolUpdates,
-    currentIndex,
+    entry,
+    events,
     onOpenOverlay,
     toolGroupId = "default",
 }) => {
     const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
-    const visibleUpdates =
-        currentIndex !== undefined
-            ? toolUpdates.slice(0, currentIndex + 1)
-            : toolUpdates;
+    const isComplete = isTerminal(entry);
 
-    if (visibleUpdates.length === 0) return null;
-
-    // Check completion status
-    const outputUpdate = visibleUpdates.find((u) => u.type === "mcp_output");
-    const isComplete = !!outputUpdate;
-
-    // Get the raw result string
-    const rawResult = outputUpdate?.mcp_output?.result;
-    const resultText =
-        typeof rawResult === "string"
-            ? rawResult
-            : rawResult != null
-              ? JSON.stringify(rawResult)
-              : undefined;
-
-    // Parse research data
+    const resultText = resultAsString(entry);
     const parsed = resultText ? parseResearchOutput(resultText) : null;
     const readResults = parsed?.readResults ?? [];
     const unreadResults = parsed?.unreadResults ?? [];
     const displayResults = readResults.slice(0, 4);
 
-    // Extract browsing URLs from user_message updates
-    const browsingUrls = visibleUpdates
-        .filter(
-            (u) =>
-                u.type === "user_visible_message" &&
-                (u.user_message || u.user_visible_message)?.startsWith("Browsing ")
-        )
-        .map((u) => (u.user_message || u.user_visible_message)?.replace("Browsing ", "") || "");
+    // Browsing URLs come from progress messages ("Browsing <url>") during the
+    // stream.  Summarizing state comes from a tool_step event.
+    const browsingUrls = collectMessages(events)
+        .filter((m) => m.startsWith("Browsing "))
+        .map((m) => m.replace("Browsing ", ""));
 
-    // Check for summarizing step (step_data may have a loose shape at runtime)
-    const isSummarizing = visibleUpdates.some(
-        (u) =>
-            u.type === "step_data" &&
-            (u.step_data as unknown as Record<string, unknown> | undefined)?.status === "summarizing"
+    const isSummarizing = filterStepEvents(events).some(
+        (e) => (e.metadata as Record<string, unknown>)?.status === "summarizing",
     );
 
     const handleCopy = async (text: string, index: number) => {

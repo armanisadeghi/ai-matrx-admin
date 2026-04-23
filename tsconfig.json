@@ -92,6 +92,7 @@
     "_armani",
     "_dev",
     ".next",
+    ".claude",
     "out",
     "utils/schema/schemaUtils.ts"
   ],

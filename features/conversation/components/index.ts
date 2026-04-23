@@ -28,7 +28,7 @@ export type { AssistantMessageProps } from "@/features/cx-conversation/Assistant
 export { UserMessage } from "@/features/cx-conversation/UserMessage";
 export { MessageErrorBoundary } from "@/features/cx-conversation/MessageErrorBoundary";
 // ── Tool visualization ───────────────────────────────────────────────────────
-export { default as ToolCallVisualization } from "@/features/cx-conversation/ToolCallVisualization";
+export { ToolCallVisualization } from "@/features/tool-call-visualization";
 
 // ── Menus ────────────────────────────────────────────────────────────────────
 export { default as MessageOptionsMenu } from "@/features/agents/components/run/message-actions/MessageOptionsMenu";

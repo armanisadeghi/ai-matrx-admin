@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
-import { ToolIncidentsPage } from "@/components/admin/mcp-tools/ToolIncidentsPage";
+import { ToolIncidentsPage } from "@/features/tool-call-visualization/admin/mcp-tools/ToolIncidentsPage";
 import { Loader2 } from "lucide-react";
 
 interface Props {

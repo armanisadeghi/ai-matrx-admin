@@ -90,37 +90,12 @@ export interface SocketBrokerObject {
   source_id?: string; // Defaults to listenerId if not provided
 }
 
-// ToolCallObject and related types have been extracted to lib/api/tool-call.types.ts
-// Re-export here so existing authenticated-route imports continue to work.
-import type {
-  McpInputObject as _McpInputObject,
-  StepDataObject as _StepDataObject,
-  ToolCallObject as _ToolCallObject,
-} from "@/lib/api/tool-call.types";
-export type McpInputObject = _McpInputObject;
-export type StepDataObject = _StepDataObject;
-export type ToolCallObject = _ToolCallObject;
-
-import type { TypedStreamEvent } from "@/types/python-generated/stream-events";
-
 export interface ResponseState {
   text: string;
   textChunks: string[];
   data: any[];
   info: SocketInfoObject[];
   errors: SocketErrorObject[];
-  /**
-   * Tool updates for the legacy socket.io task path (submitTaskThunk).
-   * The FastAPI chat paths (submitChatFastAPI, executeMessageFastAPIThunk) do NOT
-   * populate this — use rawToolEvents + selectPrimaryResponseToolBlocksByTaskId instead.
-   */
-  toolUpdates: ToolCallObject[];
-  /**
-   * Raw tool_event StreamEvents for the FastAPI chat paths.
-   * Derive ToolCallBlock[] via selectPrimaryResponseToolBlocksByTaskId.
-   * The legacy socket.io task path does NOT populate this — use toolUpdates for those.
-   */
-  rawToolEvents: TypedStreamEvent[];
   ended: boolean;
   taskId: string;
 }

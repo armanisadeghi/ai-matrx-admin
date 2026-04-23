@@ -76,7 +76,7 @@ export interface QuickNoteSaveCoreProps {
   saveLabel?: string;
 }
 
-const VIEW_MODES: Array<{ value: EditorMode; label: string; icon: React.ElementType }> = [
+const VIEW_MODES: Array<{ value: EditorMode; label: string; icon: React.ComponentType<{ className?: string }> }> = [
   { value: "plain", label: "Edit only", icon: FileText },
   { value: "split", label: "Split view", icon: Columns2 },
   { value: "preview", label: "Preview only", icon: Eye },

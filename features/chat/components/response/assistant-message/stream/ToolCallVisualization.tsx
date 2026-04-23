@@ -1,9 +1,9 @@
 /**
- * @deprecated This component has moved to @/components/conversation/ToolCallVisualization
+ * @deprecated This component has moved to @/features/tool-call-visualization
  * This file re-exports from the canonical location for backwards compatibility.
- * Update your imports to use @/components/conversation/ToolCallVisualization instead.
+ * Update your imports to use @/features/tool-call-visualization instead.
  */
 export {
-  default,
-  default as ToolCallVisualization,
-} from "@/features/cx-conversation/ToolCallVisualization";
+  ToolCallVisualization,
+  ToolCallVisualization as default,
+} from "@/features/tool-call-visualization";

@@ -172,14 +172,30 @@ export interface WindowRegistryEntry {
    * Tools grid (or other generic entry points). Runs client-side at click
    * time; can read Redux state via selectors passed by the grid host.
    */
-  seedData?: (
-    ctx: unknown,
-  ) => Record<string, unknown> | undefined;
+  seedData?: (ctx: unknown) => Record<string, unknown> | undefined;
 }
 
 // ─── Registry ─────────────────────────────────────────────────────────────────
 
 const REGISTRY: WindowRegistryEntry[] = [
+  // ── Code Workspace (VSCode-style IDE) ─────────────────────────────────────
+  {
+    slug: "code-workspace",
+    overlayId: "codeWorkspaceWindow",
+    kind: "window",
+    label: "Code Workspace",
+    componentImport: () =>
+      import("@/features/code/host/CodeWorkspaceWindow").then((m) => ({
+        default: m.CodeWorkspaceWindow,
+      })),
+    defaultData: {
+      title: null,
+      sandboxId: null,
+    },
+    mobilePresentation: "fullscreen",
+    instanceMode: "multi",
+  },
+
   // ── Code Editor ───────────────────────────────────────────────────────────
   {
     slug: "code-editor-window",
@@ -187,9 +203,9 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "window",
     label: "Code Editor",
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/code/CodeEditorWindow"
-      ).then((m) => ({ default: m.CodeEditorWindow })),
+      import("@/features/window-panels/windows/code/CodeEditorWindow").then(
+        (m) => ({ default: m.CodeEditorWindow }),
+      ),
     defaultData: {
       files: [],
       fileIds: [],
@@ -208,9 +224,9 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "window",
     label: "Code Files",
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/code/CodeFileManagerWindow"
-      ).then((m) => ({ default: m.CodeFileManagerWindow })),
+      import("@/features/window-panels/windows/code/CodeFileManagerWindow").then(
+        (m) => ({ default: m.CodeFileManagerWindow }),
+      ),
     defaultData: {
       selectedFolderId: null,
       searchQuery: "",
@@ -228,9 +244,9 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "window",
     label: "Smart Multi-file Editor",
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/multi-file-smart-code-editor/MultiFileSmartCodeEditorWindow"
-      ).then((m) => ({ default: m.MultiFileSmartCodeEditorWindow })),
+      import("@/features/window-panels/windows/multi-file-smart-code-editor/MultiFileSmartCodeEditorWindow").then(
+        (m) => ({ default: m.MultiFileSmartCodeEditorWindow }),
+      ),
     // Ephemeral for the same reasons as the single-file variant — the agent
     // conversation cannot survive a reload, so we skip persistence.
     defaultData: {
@@ -254,9 +270,9 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "window",
     label: "Smart Code Editor",
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/smart-code-editor/SmartCodeEditorWindow"
-      ).then((m) => ({ default: m.SmartCodeEditorWindow })),
+      import("@/features/window-panels/windows/smart-code-editor/SmartCodeEditorWindow").then(
+        (m) => ({ default: m.SmartCodeEditorWindow }),
+      ),
     // Ephemeral: the agent conversation is a live stream — re-opening after
     // a reload would restore geometry but could not restore the agent state,
     // so we skip DB persistence entirely. `callbackGroupId` also can't cross
@@ -313,9 +329,7 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "window",
     label: "Quick Save Note",
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/notes/QuickNoteSaveWindow"
-      ),
+      import("@/features/window-panels/windows/notes/QuickNoteSaveWindow"),
     defaultData: { initialContent: "", defaultFolder: "Scratch" },
     ephemeral: true,
     mobilePresentation: "drawer",
@@ -341,9 +355,7 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "window",
     label: "Tasks",
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/context-scopes/QuickTasksWindow"
-      ),
+      import("@/features/window-panels/windows/context-scopes/QuickTasksWindow"),
     defaultData: { orgId: null, projectId: null, taskId: null, search: "" },
     mobilePresentation: "drawer",
     mobileSidebarAs: "drawer",
@@ -357,9 +369,7 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "window",
     label: "Create Task",
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/tasks/TaskQuickCreateWindow"
-      ),
+      import("@/features/window-panels/windows/tasks/TaskQuickCreateWindow"),
     defaultData: {
       entity_type: null,
       entity_id: null,
@@ -463,9 +473,7 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "window",
     label: "Site frame",
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/iframe/BrowserFrameWindow"
-      ),
+      import("@/features/window-panels/windows/iframe/BrowserFrameWindow"),
     defaultData: {
       url: "https://lucide.dev/icons/",
       windowTitle: null,
@@ -478,9 +486,7 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "window",
     label: "Site workbench",
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/iframe/BrowserWorkbenchWindow"
-      ),
+      import("@/features/window-panels/windows/iframe/BrowserWorkbenchWindow"),
     defaultData: {
       bookmarks: [],
       tabs: [],
@@ -524,9 +530,7 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "window",
     label: "Agent Settings",
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/agents/AgentSettingsWindow"
-      ),
+      import("@/features/window-panels/windows/agents/AgentSettingsWindow"),
     defaultData: { initialAgentId: null, openedTabIds: [], activeTabId: null },
     mobilePresentation: "drawer",
     mobileSidebarAs: "drawer",
@@ -540,9 +544,7 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "window",
     label: "Run History",
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/agents/AgentRunHistoryWindow"
-      ),
+      import("@/features/window-panels/windows/agents/AgentRunHistoryWindow"),
     defaultData: { agentId: null, selectedConversationId: null },
     mobilePresentation: "fullscreen",
   },
@@ -574,9 +576,7 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "window",
     label: "Agent Advanced Editor",
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/agents/AgentContentWindow"
-      ),
+      import("@/features/window-panels/windows/agents/AgentContentWindow"),
     // activeTab: "messages" | "system" | "model" | "variables" | "tools" | "context" | "settings" | "share"
     defaultData: { initialAgentId: null, activeTab: "messages", tabs: null },
     mobilePresentation: "drawer",
@@ -591,9 +591,7 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "window",
     label: "Agent Editor (Sidebar)",
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/agents/AgentContentSidebarWindow"
-      ),
+      import("@/features/window-panels/windows/agents/AgentContentSidebarWindow"),
     defaultData: { initialAgentId: null, activeTab: "messages" },
     mobilePresentation: "drawer",
     mobileSidebarAs: "drawer",
@@ -645,9 +643,7 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "window",
     label: "Instance UI State",
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/admin/InstanceUIStateWindow"
-      ),
+      import("@/features/window-panels/windows/admin/InstanceUIStateWindow"),
     defaultData: { selectedConversationId: null },
     ephemeral: true,
     mobilePresentation: "card",
@@ -660,9 +656,7 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "window",
     label: "Execution Inspector",
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/admin/ExecutionInspectorWindow"
-      ),
+      import("@/features/window-panels/windows/admin/ExecutionInspectorWindow"),
     defaultData: {},
     ephemeral: true,
     mobilePresentation: "card",
@@ -676,9 +670,9 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "window",
     label: "Context Switcher",
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/context-scopes/ContextSwitcherWindow"
-      ).then((m) => ({ default: m.ContextSwitcherWindow })),
+      import("@/features/window-panels/windows/context-scopes/ContextSwitcherWindow").then(
+        (m) => ({ default: m.ContextSwitcherWindow }),
+      ),
     defaultData: {},
     // Redux slice handles context ids; geometry is enough to restore
     mobilePresentation: "drawer",
@@ -691,9 +685,7 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "window",
     label: "New Organization / Project",
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/context-scopes/HierarchyCreationWindow"
-      ),
+      import("@/features/window-panels/windows/context-scopes/HierarchyCreationWindow"),
     defaultData: { entityType: null, presetIds: {} },
     ephemeral: true,
     mobilePresentation: "drawer",
@@ -784,9 +776,7 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "window",
     label: "Upload Files",
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/files/FileUploadWindow"
-      ),
+      import("@/features/window-panels/windows/files/FileUploadWindow"),
     defaultData: {},
     ephemeral: true, // file blobs cannot be restored
     mobilePresentation: "drawer",
@@ -800,9 +790,9 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "window",
     label: "File Preview",
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/files/FilePreviewWindow"
-      ).then((m) => ({ default: m.FilePreviewWindow })),
+      import("@/features/window-panels/windows/files/FilePreviewWindow").then(
+        (m) => ({ default: m.FilePreviewWindow }),
+      ),
     defaultData: { bucket: null, path: null, url: null },
     mobilePresentation: "fullscreen",
     instanceMode: "multi",
@@ -815,9 +805,9 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "window",
     label: "Image Viewer",
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/image/ImageViewerWindow"
-      ).then((m) => ({ default: m.ImageViewerWindow })),
+      import("@/features/window-panels/windows/image/ImageViewerWindow").then(
+        (m) => ({ default: m.ImageViewerWindow }),
+      ),
     defaultData: { images: [], initialIndex: 0 },
     mobilePresentation: "fullscreen",
     instanceMode: "multi",
@@ -829,9 +819,7 @@ const REGISTRY: WindowRegistryEntry[] = [
     overlayId: "imageUploaderWindow",
     kind: "window",
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/image/ImageUploaderWindow"
-      ),
+      import("@/features/window-panels/windows/image/ImageUploaderWindow"),
     // Ephemeral: the callback group that ties this window back to its caller
     // cannot survive a reload, so restoring geometry would leave the window
     // disconnected from the page that opened it. Open fresh each time.
@@ -872,9 +860,7 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "window",
     label: "Voice Pad",
     componentImport: () =>
-      import(
-        "@/components/official-candidate/voice-pad/components/VoicePad"
-      ),
+      import("@/components/official-candidate/voice-pad/components/VoicePad"),
     defaultData: { transcript: null },
     mobilePresentation: "fullscreen",
     urlSync: { key: "voice" },
@@ -885,9 +871,7 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "window",
     label: "Advanced Voice Pad",
     componentImport: () =>
-      import(
-        "@/components/official-candidate/voice-pad/components/VoicePadAdvanced"
-      ),
+      import("@/components/official-candidate/voice-pad/components/VoicePadAdvanced"),
     defaultData: { transcript: null },
     mobilePresentation: "fullscreen",
   },
@@ -897,9 +881,7 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "window",
     label: "Transcription Cleanup",
     componentImport: () =>
-      import(
-        "@/components/official-candidate/voice-pad/components/VoicePadAi"
-      ),
+      import("@/components/official-candidate/voice-pad/components/VoicePadAi"),
     defaultData: { transcript: null },
     mobilePresentation: "fullscreen",
   },
@@ -911,9 +893,9 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "sheet",
     label: "AI Results",
     componentImport: () =>
-      import(
-        "@/features/prompts/components/results-display/QuickAIResultsSheet"
-      ).then((m) => ({ default: m.QuickAIResultsSheet })),
+      import("@/features/prompts/components/results-display/QuickAIResultsSheet").then(
+        (m) => ({ default: m.QuickAIResultsSheet }),
+      ),
     defaultData: {},
     ephemeral: true,
   },
@@ -925,9 +907,9 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "widget",
     label: "Stream Debug",
     componentImport: () =>
-      import(
-        "@/features/agents/components/debug/StreamDebugFloating"
-      ).then((m) => ({ default: m.StreamDebugFloating })),
+      import("@/features/agents/components/debug/StreamDebugFloating").then(
+        (m) => ({ default: m.StreamDebugFloating }),
+      ),
     // requestId is optional — when set, the panel is pinned to a specific
     // request (e.g. the one that produced an assistant message). When null,
     // the panel tracks the latest request for the conversation.
@@ -942,9 +924,7 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "window",
     label: "Response Analysis",
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/agents/MessageAnalysisWindow"
-      ),
+      import("@/features/window-panels/windows/agents/MessageAnalysisWindow"),
     // Creator-only window that inspects the request tied to a given assistant
     // message: token usage, cost, timings, tool calls, client metrics,
     // session totals. Ephemeral because `activeRequests` in Redux doesn't
@@ -966,9 +946,7 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "window",
     label: "Stream History",
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/admin/StreamDebugHistoryWindow"
-      ),
+      import("@/features/window-panels/windows/admin/StreamDebugHistoryWindow"),
     defaultData: { initialConversationId: null },
     ephemeral: true,
     mobilePresentation: "card",
@@ -995,9 +973,7 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "modal",
     label: "JSON Truncator",
     componentImport: () =>
-      import(
-        "@/components/official-candidate/json-truncator/JsonTruncatorDialog"
-      ),
+      import("@/components/official-candidate/json-truncator/JsonTruncatorDialog"),
     defaultData: { input: null },
     ephemeral: true,
     urlSync: { key: "json_truncator" },
@@ -1025,9 +1001,7 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "window",
     label: "Projects",
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/context-scopes/ProjectsWindow"
-      ),
+      import("@/features/window-panels/windows/context-scopes/ProjectsWindow"),
     defaultData: { orgId: null },
     mobilePresentation: "fullscreen",
   },
@@ -1039,9 +1013,7 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "window",
     label: "MD Debug",
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/agents/AgentAssistantMarkdownDebugWindow"
-      ),
+      import("@/features/window-panels/windows/agents/AgentAssistantMarkdownDebugWindow"),
     defaultData: {},
     ephemeral: true,
     mobilePresentation: "card",
@@ -1054,8 +1026,7 @@ const REGISTRY: WindowRegistryEntry[] = [
     overlayId: "agentImportWindow",
     kind: "window",
     label: "Import Agent",
-    componentImport: () =>
-      import("@/features/agents/import/AgentImportWindow"),
+    componentImport: () => import("@/features/agents/import/AgentImportWindow"),
     defaultData: { selectedSource: "agent-json", pastedText: "" },
     mobilePresentation: "drawer",
   },
@@ -1067,9 +1038,9 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "window",
     label: "Content Editor",
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/content-editors/ContentEditorWindow"
-      ).then((m) => ({ default: m.ContentEditorWindow })),
+      import("@/features/window-panels/windows/content-editors/ContentEditorWindow").then(
+        (m) => ({ default: m.ContentEditorWindow }),
+      ),
     // callbackGroupId is omitted from persisted data — live callbacks cannot
     // survive a reload; the reopened window restores value but emits no events
     // until a new caller re-registers.
@@ -1090,9 +1061,9 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "window",
     label: "Content List Editor",
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/content-editors/ContentEditorListWindow"
-      ).then((m) => ({ default: m.ContentEditorListWindow })),
+      import("@/features/window-panels/windows/content-editors/ContentEditorListWindow").then(
+        (m) => ({ default: m.ContentEditorListWindow }),
+      ),
     defaultData: {
       documents: [],
       activeDocumentId: null,
@@ -1111,9 +1082,9 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "window",
     label: "Content Workspace",
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/content-editors/ContentEditorWorkspaceWindow"
-      ).then((m) => ({ default: m.ContentEditorWorkspaceWindow })),
+      import("@/features/window-panels/windows/content-editors/ContentEditorWorkspaceWindow").then(
+        (m) => ({ default: m.ContentEditorWorkspaceWindow }),
+      ),
     defaultData: {
       documents: [],
       openDocumentIds: [],
@@ -1133,9 +1104,7 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "window",
     label: "Agent Connections",
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/agents/AgentConnectionsWindow"
-      ),
+      import("@/features/window-panels/windows/agents/AgentConnectionsWindow"),
     defaultData: {
       activeSection: "overview",
       scope: "user",
@@ -1153,9 +1122,9 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "window",
     label: "Matrx Agent Optimizer",
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/agents/AgentPlaceholderWindows"
-      ).then((m) => ({ default: m.AgentOptimizerWindow })),
+      import("@/features/window-panels/windows/agents/AgentPlaceholderWindows").then(
+        (m) => ({ default: m.AgentOptimizerWindow }),
+      ),
     defaultData: { agentId: null },
     ephemeral: true,
     mobilePresentation: "fullscreen",
@@ -1166,9 +1135,9 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "window",
     label: "Interface Variations",
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/agents/AgentPlaceholderWindows"
-      ).then((m) => ({ default: m.AgentInterfaceVariationsWindow })),
+      import("@/features/window-panels/windows/agents/AgentPlaceholderWindows").then(
+        (m) => ({ default: m.AgentInterfaceVariationsWindow }),
+      ),
     defaultData: { agentId: null },
     ephemeral: true,
     mobilePresentation: "fullscreen",
@@ -1179,9 +1148,7 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "window",
     label: "Create Agent App",
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/agents/AgentCreateAppWindow"
-      ),
+      import("@/features/window-panels/windows/agents/AgentCreateAppWindow"),
     defaultData: { agentId: null },
     ephemeral: true,
     mobilePresentation: "fullscreen",
@@ -1192,9 +1159,9 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "window",
     label: "Data Storage Support",
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/agents/AgentPlaceholderWindows"
-      ).then((m) => ({ default: m.AgentDataStorageWindow })),
+      import("@/features/window-panels/windows/agents/AgentPlaceholderWindows").then(
+        (m) => ({ default: m.AgentDataStorageWindow }),
+      ),
     defaultData: { agentId: null },
     ephemeral: true,
     mobilePresentation: "fullscreen",
@@ -1205,9 +1172,9 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "window",
     label: "Find Usages",
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/agents/AgentPlaceholderWindows"
-      ).then((m) => ({ default: m.AgentFindUsagesWindow })),
+      import("@/features/window-panels/windows/agents/AgentPlaceholderWindows").then(
+        (m) => ({ default: m.AgentFindUsagesWindow }),
+      ),
     defaultData: { agentId: null },
     ephemeral: true,
     mobilePresentation: "fullscreen",
@@ -1218,9 +1185,7 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "window",
     label: "Convert to System Agent",
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/agents/AgentConvertSystemWindow"
-      ),
+      import("@/features/window-panels/windows/agents/AgentConvertSystemWindow"),
     defaultData: { agentId: null },
     ephemeral: true,
     mobilePresentation: "fullscreen",
@@ -1231,9 +1196,7 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "window",
     label: "Create Shortcut",
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/agents/AgentShortcutQuickCreateWindow"
-      ),
+      import("@/features/window-panels/windows/agents/AgentShortcutQuickCreateWindow"),
     // activeTab: which tab of the quick-create form the user last had open
     //   ("essentials" | "variables" | "details" | "advanced" | "link" | "json").
     //   agentId is required to make the window meaningful — it's the live
@@ -1250,9 +1213,9 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "window",
     label: "Find Usages (Admin)",
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/agents/AgentPlaceholderWindows"
-      ).then((m) => ({ default: m.AgentAdminFindUsagesWindow })),
+      import("@/features/window-panels/windows/agents/AgentPlaceholderWindows").then(
+        (m) => ({ default: m.AgentAdminFindUsagesWindow }),
+      ),
     defaultData: { agentId: null },
     ephemeral: true,
     mobilePresentation: "fullscreen",
@@ -1265,9 +1228,7 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "window",
     label: "Memory Inspector",
     componentImport: () =>
-      import(
-        "@/features/window-panels/windows/agents/ObservationalMemoryWindow"
-      ),
+      import("@/features/window-panels/windows/agents/ObservationalMemoryWindow"),
     // selectedConversationId: the conversation being inspected (admin selects
     //   from the sidebar list of conversations that have memory enabled or
     //   have emitted memory events this session). Persisting the selection
@@ -1293,9 +1254,7 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "widget",
     label: "Markdown Editor (fullscreen)",
     componentImport: () =>
-      import(
-        "@/components/mardown-display/markdown-classification/FullscreenMarkdownEditor"
-      ),
+      import("@/components/mardown-display/markdown-classification/FullscreenMarkdownEditor"),
     defaultData: {},
     ephemeral: true,
   },
@@ -1339,9 +1298,9 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "widget",
     label: "Undo History",
     componentImport: () =>
-      import(
-        "@/features/agents/components/undo-history/UndoHistoryOverlay"
-      ).then((m) => ({ default: m.UndoHistoryOverlay })),
+      import("@/features/agents/components/undo-history/UndoHistoryOverlay").then(
+        (m) => ({ default: m.UndoHistoryOverlay }),
+      ),
     defaultData: {},
     ephemeral: true,
   },
@@ -1363,9 +1322,9 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "widget",
     label: "HTML Preview",
     componentImport: () =>
-      import(
-        "@/features/cx-conversation/components/HtmlPreviewBridge"
-      ).then((m) => ({ default: m.HtmlPreviewBridge })),
+      import("@/features/cx-conversation/components/HtmlPreviewBridge").then(
+        (m) => ({ default: m.HtmlPreviewBridge }),
+      ),
     defaultData: {},
     ephemeral: true,
     instanceMode: "multi",
@@ -1376,9 +1335,7 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "widget",
     label: "Fullscreen Chat Editor",
     componentImport: () =>
-      import(
-        "@/components/mardown-display/chat-markdown/FullScreenMarkdownEditor"
-      ),
+      import("@/components/mardown-display/chat-markdown/FullScreenMarkdownEditor"),
     defaultData: {},
     ephemeral: true,
     instanceMode: "multi",
@@ -1389,9 +1346,9 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "widget",
     label: "Content History",
     componentImport: () =>
-      import(
-        "@/features/agents/components/TO-BE-ORGANIZED/ContentHistoryViewer"
-      ).then((m) => ({ default: m.ContentHistoryViewer })),
+      import("@/features/agents/components/TO-BE-ORGANIZED/ContentHistoryViewer").then(
+        (m) => ({ default: m.ContentHistoryViewer }),
+      ),
     defaultData: {},
     ephemeral: true,
     instanceMode: "multi",
@@ -1402,9 +1359,9 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "widget",
     label: "Save to Notes",
     componentImport: () =>
-      import(
-        "@/features/notes/actions/quick-save/QuickNoteSaveOverlay"
-      ).then((m) => ({ default: m.QuickNoteSaveOverlay })),
+      import("@/features/notes/actions/quick-save/QuickNoteSaveOverlay").then(
+        (m) => ({ default: m.QuickNoteSaveOverlay }),
+      ),
     defaultData: {},
     ephemeral: true,
     instanceMode: "multi",
@@ -1415,9 +1372,9 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "widget",
     label: "Save to Notes (fullscreen)",
     componentImport: () =>
-      import(
-        "@/features/notes/actions/quick-save/QuickNoteSaveOverlay"
-      ).then((m) => ({ default: m.QuickNoteSaveOverlay })),
+      import("@/features/notes/actions/quick-save/QuickNoteSaveOverlay").then(
+        (m) => ({ default: m.QuickNoteSaveOverlay }),
+      ),
     defaultData: {},
     ephemeral: true,
     instanceMode: "multi",
@@ -1428,9 +1385,9 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "widget",
     label: "Save Code",
     componentImport: () =>
-      import("@/features/code-files/actions/QuickSaveCodeDialog").then(
-        (m) => ({ default: m.QuickSaveCodeDialog }),
-      ),
+      import("@/features/code-files/actions/QuickSaveCodeDialog").then((m) => ({
+        default: m.QuickSaveCodeDialog,
+      })),
     defaultData: {},
     ephemeral: true,
     instanceMode: "multi",
@@ -1517,9 +1474,9 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "modal",
     label: "Preferences",
     componentImport: () =>
-      import(
-        "@/components/user-preferences/VSCodePreferencesModal"
-      ).then((m) => ({ default: m.VSCodePreferencesModal })),
+      import("@/components/user-preferences/VSCodePreferencesModal").then(
+        (m) => ({ default: m.VSCodePreferencesModal }),
+      ),
     defaultData: {},
     ephemeral: true,
   },
@@ -1540,8 +1497,7 @@ const REGISTRY: WindowRegistryEntry[] = [
     overlayId: "emailDialog",
     kind: "modal",
     label: "Email Input",
-    componentImport: () =>
-      import("@/components/dialogs/EmailInputDialog"),
+    componentImport: () => import("@/components/dialogs/EmailInputDialog"),
     defaultData: {},
     ephemeral: true,
     instanceMode: "multi",
@@ -1572,9 +1528,9 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "widget",
     label: "Agent (full modal)",
     componentImport: () =>
-      import(
-        "@/features/agents/components/agent-widgets/AgentFullModal"
-      ).then((m) => ({ default: m.AgentFullModal })),
+      import("@/features/agents/components/agent-widgets/AgentFullModal").then(
+        (m) => ({ default: m.AgentFullModal }),
+      ),
     defaultData: {},
     ephemeral: true,
     instanceMode: "multi",
@@ -1585,9 +1541,9 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "widget",
     label: "Agent (compact)",
     componentImport: () =>
-      import(
-        "@/features/agents/components/agent-widgets/AgentCompactModal"
-      ).then((m) => ({ default: m.AgentCompactModal })),
+      import("@/features/agents/components/agent-widgets/AgentCompactModal").then(
+        (m) => ({ default: m.AgentCompactModal }),
+      ),
     defaultData: {},
     ephemeral: true,
     instanceMode: "multi",
@@ -1598,9 +1554,9 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "widget",
     label: "Agent Chat Bubble",
     componentImport: () =>
-      import(
-        "@/features/agents/components/agent-widgets/AgentChatBubble"
-      ).then((m) => ({ default: m.AgentChatBubble })),
+      import("@/features/agents/components/agent-widgets/AgentChatBubble").then(
+        (m) => ({ default: m.AgentChatBubble }),
+      ),
     defaultData: {},
     ephemeral: true,
     instanceMode: "multi",
@@ -1611,9 +1567,9 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "widget",
     label: "Agent (inline)",
     componentImport: () =>
-      import(
-        "@/features/agents/components/agent-widgets/AgentInlineOverlay"
-      ).then((m) => ({ default: m.AgentInlineOverlay })),
+      import("@/features/agents/components/agent-widgets/AgentInlineOverlay").then(
+        (m) => ({ default: m.AgentInlineOverlay }),
+      ),
     defaultData: {},
     ephemeral: true,
     instanceMode: "multi",
@@ -1624,9 +1580,9 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "widget",
     label: "Agent (sidebar)",
     componentImport: () =>
-      import(
-        "@/features/agents/components/agent-widgets/AgentSidebarOverlay"
-      ).then((m) => ({ default: m.AgentSidebarOverlay })),
+      import("@/features/agents/components/agent-widgets/AgentSidebarOverlay").then(
+        (m) => ({ default: m.AgentSidebarOverlay }),
+      ),
     defaultData: {},
     ephemeral: true,
     instanceMode: "multi",
@@ -1637,9 +1593,9 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "widget",
     label: "Agent (flexible)",
     componentImport: () =>
-      import(
-        "@/features/agents/components/agent-widgets/AgentFlexiblePanel"
-      ).then((m) => ({ default: m.AgentFlexiblePanel })),
+      import("@/features/agents/components/agent-widgets/AgentFlexiblePanel").then(
+        (m) => ({ default: m.AgentFlexiblePanel }),
+      ),
     defaultData: {},
     ephemeral: true,
     instanceMode: "multi",
@@ -1650,9 +1606,9 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "widget",
     label: "Agent (panel)",
     componentImport: () =>
-      import(
-        "@/features/agents/components/agent-widgets/AgentPanelOverlay"
-      ).then((m) => ({ default: m.AgentPanelOverlay })),
+      import("@/features/agents/components/agent-widgets/AgentPanelOverlay").then(
+        (m) => ({ default: m.AgentPanelOverlay }),
+      ),
     defaultData: {},
     ephemeral: true,
     instanceMode: "multi",
@@ -1663,9 +1619,9 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "widget",
     label: "Agent (toast)",
     componentImport: () =>
-      import(
-        "@/features/agents/components/agent-widgets/AgentToastOverlay"
-      ).then((m) => ({ default: m.AgentToastOverlay })),
+      import("@/features/agents/components/agent-widgets/AgentToastOverlay").then(
+        (m) => ({ default: m.AgentToastOverlay }),
+      ),
     defaultData: {},
     ephemeral: true,
     instanceMode: "multi",
@@ -1676,9 +1632,9 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "widget",
     label: "Agent (floating chat)",
     componentImport: () =>
-      import(
-        "@/features/agents/components/agent-widgets/AgentFloatingChat"
-      ).then((m) => ({ default: m.AgentFloatingChat })),
+      import("@/features/agents/components/agent-widgets/AgentFloatingChat").then(
+        (m) => ({ default: m.AgentFloatingChat }),
+      ),
     defaultData: {},
     ephemeral: true,
     instanceMode: "multi",
@@ -1689,9 +1645,9 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "widget",
     label: "Agent Chat (collapsible)",
     componentImport: () =>
-      import(
-        "@/features/agents/components/agent-widgets/ChatCollapsible"
-      ).then((m) => ({ default: m.ChatCollapsible })),
+      import("@/features/agents/components/agent-widgets/ChatCollapsible").then(
+        (m) => ({ default: m.ChatCollapsible }),
+      ),
     defaultData: {},
     ephemeral: true,
     instanceMode: "multi",
@@ -1702,9 +1658,9 @@ const REGISTRY: WindowRegistryEntry[] = [
     kind: "widget",
     label: "Agent Chat Assistant",
     componentImport: () =>
-      import(
-        "@/features/agents/components/agent-widgets/chat-assistant/AgentChatAssistant"
-      ).then((m) => ({ default: m.AgentChatAssistant })),
+      import("@/features/agents/components/agent-widgets/chat-assistant/AgentChatAssistant").then(
+        (m) => ({ default: m.AgentChatAssistant }),
+      ),
     defaultData: {},
     ephemeral: true,
     instanceMode: "multi",
@@ -1760,9 +1716,7 @@ export function isPersistableWindow(overlayId: string): boolean {
  * Filter entries by kind. Useful for the unified renderer's per-kind
  * render loops.
  */
-export function getEntriesByKind(
-  kind: OverlayKind,
-): WindowRegistryEntry[] {
+export function getEntriesByKind(kind: OverlayKind): WindowRegistryEntry[] {
   return REGISTRY.filter((e) => e.kind === kind);
 }
 

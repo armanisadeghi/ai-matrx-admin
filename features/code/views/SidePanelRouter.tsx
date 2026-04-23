@@ -1,0 +1,38 @@
+"use client";
+
+import React from "react";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectActiveView } from "../redux";
+import { ExplorerPanel } from "./explorer/ExplorerPanel";
+import { SearchPanel } from "./search/SearchPanel";
+import { GitPanel } from "./git/GitPanel";
+import { RunPanel } from "./run/RunPanel";
+import { ExtensionsPanel } from "./extensions/ExtensionsPanel";
+import { SandboxesPanel } from "./sandboxes/SandboxesPanel";
+
+/**
+ * Dispatches to the right side-panel view based on the active activity bar
+ * selection. Keeping this switch here (rather than mounting all views at
+ * once) keeps DOM lightweight and ensures each view remounts with a fresh
+ * state whenever the user actively picks it.
+ */
+export const SidePanelRouter: React.FC = () => {
+  const activeView = useAppSelector(selectActiveView);
+
+  switch (activeView) {
+    case "explorer":
+      return <ExplorerPanel />;
+    case "search":
+      return <SearchPanel />;
+    case "git":
+      return <GitPanel />;
+    case "run":
+      return <RunPanel />;
+    case "extensions":
+      return <ExtensionsPanel />;
+    case "sandboxes":
+      return <SandboxesPanel />;
+    default:
+      return null;
+  }
+};

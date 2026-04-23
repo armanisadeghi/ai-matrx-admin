@@ -80,8 +80,6 @@ export interface ConversationMessage {
   // ── Streaming & tool updates ──────────────────────────────────────────────────────────
   /** Stream events for NDJSON normal-mode streaming (interleaved text + tool blocks) */
   streamEvents?: TypedStreamEvent[];
-  /** Display-ready tool call objects (mcp_input/mcp_output pairs) — for rendering */
-  toolUpdates?: unknown[];
   /**
    * Full CxToolCall DB records for every tool call on this message.
    * Only present on DB-loaded messages that invoked tools.

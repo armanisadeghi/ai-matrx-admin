@@ -10,7 +10,6 @@ import { parseTaggedContent } from "@/components/mardown-display/markdown-classi
 import ThinkingVisualization from "@/components/mardown-display/blocks/thinking-reasoning/ThinkingVisualization";
 import ReasoningVisualization from "@/components/mardown-display/blocks/thinking-reasoning/ReasoningVisualization";
 import QuestionnaireLoadingVisualization from "@/components/mardown-display/chat-markdown/QuestionnaireLoadingVisualization";
-import ToolCallVisualization from "@/features/cx-conversation/ToolCallVisualization";
 import type { RootState } from "@/lib/redux/store";
 import ControlledLoadingIndicator from "@/features/chat/components/response/chat-loading/ControlledLoadingIndicator";
 import { createChatSelectors } from "@/lib/redux/entity/custom-selectors/chatSelectors";
@@ -18,9 +17,7 @@ import {
   selectTaskFirstListenerId,
   selectTaskStreamingById,
   createTaskResponseSelectors,
-  selectPrimaryResponseToolBlocksByTaskId,
 } from "@/lib/redux/socket-io";
-import { toolCallBlockToLegacy } from "@/lib/chat-protocol";
 import markdownComponents from "./markdownComponents";
 
 const ReactMarkdown = dynamic(() => import("react-markdown"), { ssr: false });
@@ -44,18 +41,6 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(
     const streamData = useAppSelector(responseSelectors.selectData);
     const isStreamEnded = useAppSelector(responseSelectors.selectEnded);
     const streamError = useAppSelector(responseSelectors.selectErrors);
-
-    // Canonical tool blocks — derived from rawToolEvents via buildCanonicalBlocks.
-    // Selector is stable per taskId; re-runs only when rawToolEvents changes.
-    const toolBlockSelector = useMemo(
-      () => selectPrimaryResponseToolBlocksByTaskId(taskId),
-      [taskId],
-    );
-    const toolBlocks = useAppSelector(toolBlockSelector);
-    const streamToolUpdates = useMemo(
-      () => toolBlocks.flatMap((b) => toolCallBlockToLegacy(b)),
-      [toolBlocks],
-    );
 
     const isStreaming = useAppSelector((state: RootState) =>
       selectTaskStreamingById(state, taskId),
@@ -122,24 +107,15 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(
     }, [content]);
 
     const renderContent = () => {
-      const hasToolUpdates = streamToolUpdates.length > 0;
       const hasContent = content.length >= 2;
 
       // Only show content if streaming
-      if (!isStreaming && !hasToolUpdates) {
+      if (!isStreaming) {
         return null;
       }
 
       return (
         <>
-          {/* Show tool updates - collapsed if content has started */}
-          {hasToolUpdates && (
-            <ToolCallVisualization
-              toolUpdates={streamToolUpdates}
-              hasContent={hasContent}
-            />
-          )}
-
           {hasContent &&
             parsedContent.contentSegments.map((segment, index) => (
               <React.Fragment key={index}>
@@ -170,23 +146,6 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(
         </>
       );
     };
-
-    // Show tool updates if they exist, even with no text content yet
-    if (streamToolUpdates.length > 0) {
-      return (
-        <div className="mb-3 w-full text-left">
-          {content.length >= 2 ? (
-            <div className={containerStyles}>
-              <div className="text-md leading-relaxed tracking-wide">
-                {renderContent()}
-              </div>
-            </div>
-          ) : (
-            renderContent()
-          )}
-        </div>
-      );
-    }
 
     if (content.length < 2) {
       if (!isStreaming && hasListenerId) {

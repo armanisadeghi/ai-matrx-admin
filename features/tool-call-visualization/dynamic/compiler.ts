@@ -17,8 +17,11 @@ import {
 import type {
     ToolUiComponentRow,
     CompiledToolRenderer,
+    ContractVersion,
     DynamicRendererProps,
 } from "./types";
+import type { ToolLifecycleEntry } from "@/features/agents/types/request.types";
+import type { ToolEventPayload } from "@/types/python-generated/stream-events";
 
 // ---------------------------------------------------------------------------
 // Code transformation helpers
@@ -267,60 +270,50 @@ function compileUtilityCode(
  * otherwise Babel sees `return` at the top level of a script and throws
  * "return outside of function".
  */
+type CompiledHeaderFn = (
+    entry: ToolLifecycleEntry,
+    events?: ToolEventPayload[],
+) => any;
+
 function compileHeaderFunction(
     code: string,
     language: "tsx" | "jsx",
     allowedImports: string[],
-    existingScope?: Record<string, any>
-): (toolUpdates: unknown[]) => any {
+    contractVersion: ContractVersion,
+    existingScope?: Record<string, any>,
+): CompiledHeaderFn {
     const scope = existingScope
         ? { ...existingScope }
         : buildToolRendererScope(allowedImports);
 
     let processedCode = stripImports(code);
 
-    // ── Detect if the raw code is already a complete, exportable callable ──
-    // Only patterns WITH `export` are truly complete — replaceExportDefault will
-    // reliably produce a `return` or append `return Name;` for all of them.
-    //
-    // Named function declarations WITHOUT export (e.g. `function foo(){}`) look
-    // "complete" but the factory can't return them without explicit `return foo;`.
-    // We treat them as NOT complete so they get wrapped before Babel instead.
     const trimmedRaw = processedCode.trim();
     const isAlreadyComplete =
         trimmedRaw.startsWith("export default") ||
         /^export\s+(?:async\s+)?function\s+\w+/.test(trimmedRaw) ||
         /^export\s+(?:const|let|var)\s+\w+\s*=/.test(trimmedRaw);
 
+    // Parameter list depends on contract version for backwards-compat with
+    // bare-function-body code stored in v1 components.
+    const paramList = contractVersion === 2 ? "entry, events" : "toolUpdates";
+
     if (!isAlreadyComplete) {
-        // Bare function body (has top-level `return`, `if`, etc.).
-        // Wrap it BEFORE Babel so `return` is inside a function — valid JS.
-        processedCode = `export default function __headerFn__(toolUpdates) {\n${processedCode}\n}`;
+        processedCode = `export default function __headerFn__(${paramList}) {\n${processedCode}\n}`;
     }
 
-    // Now Babel is always given syntactically complete code
     processedCode = babelTransform(processedCode, language);
     processedCode = replaceExportDefault(processedCode);
 
-    // After replaceExportDefault:
-    //   export default function X()  → `return function X()...`   starts with "return "
-    //   export function X()          → `function X()...\nreturn X;`  ends with return
-    // Both make factory() return the function correctly.
-    //
-    // `function X()` WITHOUT `export` is NOT ready: declaring a function inside
-    // `new Function(...)` without returning it makes factory() return undefined.
     const trimmed = processedCode.trim();
     const isReadyToExecute = trimmed.startsWith("return ");
 
     if (!isReadyToExecute) {
-        // Named function declaration that replaceExportDefault didn't touch:
-        // append `return Name;` so the factory actually returns it.
         const namedFnMatch = trimmed.match(/^function\s+(\w+)\s*\(/);
         if (namedFnMatch) {
             processedCode = processedCode.trimEnd() + `\nreturn ${namedFnMatch[1]};`;
         } else {
-            // Unknown shape — wrap as a returning factory function
-            processedCode = `return function headerFn(toolUpdates) {\n${processedCode}\n}`;
+            processedCode = `return function headerFn(${paramList}) {\n${processedCode}\n}`;
         }
     }
 
@@ -328,16 +321,23 @@ function compileHeaderFunction(
     const { paramNames, paramValues } = getScopeFunctionParameters(scope);
 
     const factory = new Function(...paramNames, processedCode);
-    const fn = factory(...paramValues);
+    const rawFn = factory(...paramValues);
 
-    if (typeof fn !== "function") {
+    if (typeof rawFn !== "function") {
         throw new Error(
             "Header code must export default a function. " +
-                `Got ${typeof fn} instead.`
+                `Got ${typeof rawFn} instead.`,
         );
     }
 
-    return fn;
+    // v1 components expect (toolUpdates) — adapt them so the registry can call
+    // everything with the v2 (entry, events) signature.  v1 is treated as a
+    // no-op header (returns null/undefined) because ToolCallObject is gone.
+    if (contractVersion === 1) {
+        return () => null;
+    }
+
+    return rawFn as CompiledHeaderFn;
 }
 
 
@@ -351,31 +351,70 @@ function compileHeaderFunction(
  *
  * @throws Error if inline_code fails to compile (it's required).
  */
+/**
+ * Runtime policy: v1 components are compiled but always fall back to the
+ * GenericRenderer via a stub that throws, because their internal data shape
+ * (`ToolCallObject[]`) no longer exists.  Admins must migrate them.
+ */
+function makeV1Stub(
+    toolName: string,
+): React.ComponentType<DynamicRendererProps> {
+    const Stub: React.ComponentType<DynamicRendererProps> = () => {
+        throw new Error(
+            `tool_ui_component "${toolName}" uses contract v1 (ToolCallObject-based) ` +
+                `which is no longer supported. Migrate the component to contract v2 ` +
+                `(entry / events based) from the admin UI.`,
+        );
+    };
+    Stub.displayName = `V1ContractStub(${toolName})`;
+    return Stub;
+}
+
 export function compileToolUiComponent(
-    row: ToolUiComponentRow
+    row: ToolUiComponentRow,
 ): CompiledToolRenderer {
     const { allowed_imports } = row;
     const language: "jsx" | "tsx" = row.language === "jsx" ? "jsx" : "tsx";
 
-    // 1. Compile utility code first (if any) so its exports are in scope
+    // contract_version is a first-class DB column (check constraint 1 | 2).
+    const contractVersion: ContractVersion = row.contract_version === 2 ? 2 : 1;
+
+    // v1 components: compile nothing — the whole renderer becomes a stub that
+    // throws into the error boundary → GenericRenderer fallback.
+    if (contractVersion === 1) {
+        const Stub = makeV1Stub(row.tool_name);
+        return {
+            toolName: row.tool_name,
+            displayName: row.display_name,
+            resultsLabel: row.results_label,
+            keepExpandedOnStream: row.keep_expanded_on_stream,
+            version: String(row.version),
+            componentId: row.id,
+            contractVersion,
+            InlineComponent: Stub,
+            OverlayComponent: null,
+            getHeaderExtras: null,
+            getHeaderSubtitle: null,
+        };
+    }
+
+    // v2 — canonical (entry, events) contract — compile normally.
     let sharedScope: Record<string, any> | undefined;
     if (row.utility_code?.trim()) {
         sharedScope = compileUtilityCode(
             row.utility_code,
             language,
-            allowed_imports
+            allowed_imports,
         );
     }
 
-    // 2. Compile inline component (required)
     const InlineComponent = compileComponentCode(
         row.inline_code,
         language,
         allowed_imports,
-        sharedScope
+        sharedScope,
     );
 
-    // 3. Compile overlay component (optional)
     let OverlayComponent: React.ComponentType<DynamicRendererProps> | null =
         null;
     if (row.overlay_code?.trim()) {
@@ -384,52 +423,48 @@ export function compileToolUiComponent(
                 row.overlay_code,
                 language,
                 allowed_imports,
-                sharedScope
+                sharedScope,
             );
         } catch (err) {
             console.error(
                 `[DynamicToolRenderer] Failed to compile overlay for ${row.tool_name}:`,
-                err
+                err,
             );
         }
     }
 
-    // 4. Compile header extras (optional)
-    let getHeaderExtras:
-        | ((toolUpdates: unknown[]) => React.ReactNode)
-        | null = null;
+    let getHeaderExtras: CompiledHeaderFn | null = null;
     if (row.header_extras_code?.trim()) {
         try {
             getHeaderExtras = compileHeaderFunction(
                 row.header_extras_code,
                 language,
                 allowed_imports,
-                sharedScope
+                contractVersion,
+                sharedScope,
             );
         } catch (err) {
             console.error(
                 `[DynamicToolRenderer] Failed to compile header extras for ${row.tool_name}:`,
-                err
+                err,
             );
         }
     }
 
-    // 5. Compile header subtitle (optional)
-    let getHeaderSubtitle:
-        | ((toolUpdates: unknown[]) => string | null)
-        | null = null;
+    let getHeaderSubtitle: CompiledHeaderFn | null = null;
     if (row.header_subtitle_code?.trim()) {
         try {
             getHeaderSubtitle = compileHeaderFunction(
                 row.header_subtitle_code,
                 language,
                 allowed_imports,
-                sharedScope
+                contractVersion,
+                sharedScope,
             );
         } catch (err) {
             console.error(
                 `[DynamicToolRenderer] Failed to compile header subtitle for ${row.tool_name}:`,
-                err
+                err,
             );
         }
     }
@@ -441,6 +476,7 @@ export function compileToolUiComponent(
         keepExpandedOnStream: row.keep_expanded_on_stream,
         version: String(row.version),
         componentId: row.id,
+        contractVersion,
         InlineComponent,
         OverlayComponent,
         getHeaderExtras,

@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { CheckCircle, AlertTriangle, FileText, Copy, Check } from "lucide-react";
-import { ToolRendererProps } from "../types";
+import type { ToolRendererProps } from "../../types";
+import { resultAsObject } from "../_shared";
 
 interface DescriptionAnalysis {
     description: string;
@@ -22,47 +23,34 @@ interface SeoDescriptionsResult {
  * Compact inline renderer for SEO Meta Descriptions checker
  * Shows description validation with clear pass/fail indicators and copy buttons
  */
-export const SeoMetaDescriptionsInline: React.FC<ToolRendererProps> = ({ 
-    toolUpdates,
-    currentIndex,
+export const SeoMetaDescriptionsInline: React.FC<ToolRendererProps> = ({
+    entry,
     onOpenOverlay,
-    toolGroupId = "default" 
+    toolGroupId = "default",
 }) => {
     const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
-    
-    const visibleUpdates = currentIndex !== undefined 
-        ? toolUpdates.slice(0, currentIndex + 1) 
-        : toolUpdates;
-    
+
+    const result = useMemo(() => resultAsObject(entry) as unknown as SeoDescriptionsResult | null, [entry]);
+
     const copyToClipboard = async (text: string, index: number) => {
         await navigator.clipboard.writeText(text);
         setCopiedIndex(index);
         setTimeout(() => setCopiedIndex(null), 2000);
     };
-    
-    if (visibleUpdates.length === 0) return null;
-    
+
+    if (!result || !result.description_analysis || result.description_analysis.length === 0) {
+        return null;
+    }
+
+    const analysis = result.description_analysis;
+    const displayItems = analysis.slice(0, 10);
+    const hasMore = analysis.length > displayItems.length;
+    const passedCount = analysis.filter((a) => a.description_ok).length;
+    const failedCount = analysis.length - passedCount;
+
     return (
         <div className="space-y-5">
-            {visibleUpdates.map((update, index) => {
-                // Handle SEO descriptions output
-                if (update.type === "mcp_output" && update.mcp_output) {
-                    const rawResult = update.mcp_output.result;
-                    if (!rawResult || typeof rawResult !== 'object') return null;
-                    const result = rawResult as SeoDescriptionsResult;
-                    
-                    if (!result.description_analysis || result.description_analysis.length === 0) {
-                        return null;
-                    }
-                    
-                    const analysis = result.description_analysis;
-                    const displayItems = analysis.slice(0, 10); // Show first 10
-                    const hasMore = analysis.length > displayItems.length;
-                    const passedCount = analysis.filter(a => a.description_ok).length;
-                    const failedCount = analysis.length - passedCount;
-                    
-                    return (
-                        <div key={`seo-descriptions-${index}`} className="space-y-2">
+            <div className="space-y-2">
                             {/* Header */}
                             <div className="flex items-center gap-2 text-sm font-medium text-foreground/90">
                                 <FileText className="w-4 h-4 text-primary" />
@@ -159,16 +147,11 @@ export const SeoMetaDescriptionsInline: React.FC<ToolRendererProps> = ({
                                         animationFillMode: 'backwards'
                                     }}
                                 >
-                                    <FileText className="w-4 h-4" />
-                                    <span>{hasMore ? `View all ${analysis.length} descriptions` : `View ${analysis.length} ${analysis.length === 1 ? 'description' : 'descriptions'}`}</span>
-                                </button>
-                            )}
-                        </div>
-                    );
-                }
-                
-                return null;
-            })}
+                    <FileText className="w-4 h-4" />
+                    <span>{hasMore ? `View all ${analysis.length} descriptions` : `View ${analysis.length} ${analysis.length === 1 ? 'description' : 'descriptions'}`}</span>
+                </button>
+            )}
+            </div>
         </div>
     );
 };

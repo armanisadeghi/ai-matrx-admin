@@ -199,7 +199,9 @@ export const fetchGlobalConversations = createAsyncThunk<
   { rejectValue: string }
 >(
   "conversationList/fetchGlobalConversations",
-  async (args, { dispatch, rejectWithValue }) => {
+  async (rawArgs, { dispatch, rejectWithValue }) => {
+    // `void` is identical to `undefined` at runtime; cast enables optional chaining
+    const args = rawArgs as FetchGlobalConversationsArgs | undefined;
     const limit = args?.limit ?? CONVERSATION_LIST_PAGE_SIZE;
     const offset = args?.offset ?? 0;
     const replace = args?.replace ?? true;

@@ -46,7 +46,7 @@ export async function PUT(
             "inline_code", "overlay_code", "utility_code",
             "header_extras_code", "header_subtitle_code",
             "keep_expanded_on_stream", "allowed_imports", "language",
-            "is_active", "version", "notes",
+            "is_active", "version", "notes", "contract_version",
         ];
 
         const updateData: Record<string, unknown> = {};

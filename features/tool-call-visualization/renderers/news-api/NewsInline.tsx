@@ -2,14 +2,11 @@
 
 import React, { useMemo } from "react";
 import { Newspaper, Calendar, ExternalLink, Loader2, AlertCircle } from "lucide-react";
-import { ToolRendererProps } from "../types";
-import { ToolCallObject } from "@/lib/redux/socket-io/socket.types";
+import type { ToolRendererProps } from "../../types";
+import { getArg, resultAsObject, isTerminal } from "../_shared";
 
 interface NewsArticle {
-    source: {
-        id: string | null;
-        name: string;
-    };
+    source: { id: string | null; name: string };
     author: string | null;
     title: string;
     description: string | null;
@@ -28,56 +25,58 @@ interface ParsedNewsData {
     isError: boolean;
 }
 
-function parseNewsData(toolUpdates: ToolCallObject[]): ParsedNewsData {
-    const inputUpdate = toolUpdates.find((u) => u.type === "mcp_input");
-    const args = inputUpdate?.mcp_input?.arguments ?? {};
-    const query = typeof args.query === "string" ? args.query : null;
+function parseNewsData(
+    entry: ToolRendererProps["entry"],
+): ParsedNewsData {
+    const query = getArg<string>(entry, "query") ?? null;
+    const terminal = isTerminal(entry);
 
-    const errorUpdate = toolUpdates.find((u) => u.type === "mcp_error");
-    if (errorUpdate) {
-        return { articles: [], totalResults: 0, query, isLoading: false, isComplete: true, isError: true };
+    if (entry.status === "error") {
+        return {
+            articles: [],
+            totalResults: 0,
+            query,
+            isLoading: false,
+            isComplete: true,
+            isError: true,
+        };
     }
 
-    const outputUpdate = toolUpdates.find((u) => u.type === "mcp_output");
-    if (outputUpdate?.mcp_output) {
-        const rawResult = outputUpdate.mcp_output.result;
-        let result: { articles?: NewsArticle[]; total_results?: number } | null = null;
-
-        if (typeof rawResult === "object" && rawResult !== null) {
-            result = rawResult as typeof result;
-        } else if (typeof rawResult === "string") {
-            try { result = JSON.parse(rawResult); } catch { /* ignore */ }
-        }
-
-        if (result?.articles) {
-            return {
-                articles: result.articles,
-                totalResults: result.total_results ?? result.articles.length,
-                query,
-                isLoading: false,
-                isComplete: true,
-                isError: false,
-            };
-        }
+    const result = resultAsObject(entry);
+    if (result) {
+        const articles = Array.isArray(result.articles)
+            ? (result.articles as NewsArticle[])
+            : [];
+        return {
+            articles,
+            totalResults:
+                typeof result.total_results === "number"
+                    ? (result.total_results as number)
+                    : articles.length,
+            query,
+            isLoading: false,
+            isComplete: true,
+            isError: false,
+        };
     }
 
-    const isComplete = toolUpdates.some((u) => u.type === "mcp_output" || u.type === "mcp_error");
-    return { articles: [], totalResults: 0, query, isLoading: !isComplete, isComplete, isError: false };
+    return {
+        articles: [],
+        totalResults: 0,
+        query,
+        isLoading: !terminal,
+        isComplete: terminal,
+        isError: false,
+    };
 }
 
 export const NewsInline: React.FC<ToolRendererProps> = ({
-    toolUpdates,
-    currentIndex,
+    entry,
     onOpenOverlay,
     toolGroupId = "default",
 }) => {
-    const visibleUpdates = currentIndex !== undefined
-        ? toolUpdates.slice(0, currentIndex + 1)
-        : toolUpdates;
+    const data = useMemo(() => parseNewsData(entry), [entry]);
 
-    const data = useMemo(() => parseNewsData(visibleUpdates), [visibleUpdates]);
-
-    // Loading state — show while waiting for mcp_output
     if (data.isLoading) {
         return (
             <div className="space-y-3 animate-in fade-in">
@@ -87,7 +86,6 @@ export const NewsInline: React.FC<ToolRendererProps> = ({
                         Fetching news{data.query ? ` for "${data.query}"` : ""}...
                     </span>
                 </div>
-                {/* Skeleton cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     {[1, 2, 3].map((i) => (
                         <div key={i} className="rounded-lg bg-card border border-border overflow-hidden">
@@ -105,7 +103,6 @@ export const NewsInline: React.FC<ToolRendererProps> = ({
         );
     }
 
-    // Error state
     if (data.isError) {
         return (
             <div className="flex items-center gap-2 text-sm text-destructive py-3">
@@ -115,7 +112,6 @@ export const NewsInline: React.FC<ToolRendererProps> = ({
         );
     }
 
-    // Empty state
     if (data.isComplete && data.articles.length === 0) {
         return (
             <div className="flex items-center gap-2 text-sm text-muted-foreground py-3">
@@ -130,7 +126,6 @@ export const NewsInline: React.FC<ToolRendererProps> = ({
 
     return (
         <div className="space-y-3">
-            {/* Article grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {displayArticles.map((article, index) => (
                     <a
@@ -145,7 +140,6 @@ export const NewsInline: React.FC<ToolRendererProps> = ({
                             animationFillMode: "backwards",
                         }}
                     >
-                        {/* Article Image */}
                         {article.url_to_image ? (
                             <div className="relative w-full aspect-video bg-muted overflow-hidden">
                                 <img
@@ -164,7 +158,6 @@ export const NewsInline: React.FC<ToolRendererProps> = ({
                             </div>
                         )}
 
-                        {/* Article Content */}
                         <div className="p-3 space-y-1.5">
                             <div className="flex items-center justify-between gap-2">
                                 <span className="text-xs font-medium text-primary truncate">
@@ -200,7 +193,6 @@ export const NewsInline: React.FC<ToolRendererProps> = ({
                 ))}
             </div>
 
-            {/* View all button */}
             {onOpenOverlay && (
                 <button
                     onClick={(e) => {

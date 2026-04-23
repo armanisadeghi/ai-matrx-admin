@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, lazy, Suspense } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Volume2,
   Download,
@@ -21,10 +21,6 @@ import { buildContentBlocksForSave } from "@/features/cx-conversation/utils/buil
 import { chatConversationsActions } from "./_legacy-stubs";
 import { AssistantActionBar } from "@/features/cx-chat/components/messages/AssistantActionBar";
 import type { ConversationMessage } from "./_legacy-stubs";
-
-const ToolCallVisualization = lazy(
-  () => import("@/features/cx-conversation/ToolCallVisualization"),
-);
 
 // ============================================================================
 // PROPS
@@ -140,11 +136,6 @@ export function AssistantMessage({
       setIsDownloading(false);
     }
   };
-
-  const hasDbToolUpdates =
-    !message.streamEvents &&
-    message.toolUpdates &&
-    (message.toolUpdates as unknown[]).length > 0;
 
   const isError = message.status === "error";
   const isAudioResponse = !!audioUrl;
@@ -264,20 +255,6 @@ export function AssistantMessage({
           !isAudioResponse &&
           !(isStreamActive && !message.content && isTtsRequest) && (
             <>
-              {hasDbToolUpdates && (
-                <Suspense fallback={null}>
-                  <ToolCallVisualization
-                    toolUpdates={
-                      message.toolUpdates as Parameters<
-                        typeof ToolCallVisualization
-                      >[0]["toolUpdates"]
-                    }
-                    hasContent={!!message.content}
-                    className="mb-2"
-                  />
-                </Suspense>
-              )}
-
               <div ref={captureRef}>
                 <MarkdownStream
                   content={message.content}

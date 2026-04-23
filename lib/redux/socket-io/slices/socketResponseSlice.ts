@@ -2,9 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import {
   ResponsesState,
   SocketErrorObject,
-  ToolCallObject,
 } from "../socket.types";
-import type { TypedStreamEvent } from "@/types/python-generated/stream-events";
 
 const initialState: ResponsesState = {};
 
@@ -23,8 +21,6 @@ export const socketResponseSlice = createSlice({
         data: [],
         info: [],
         errors: [],
-        toolUpdates: [],
-        rawToolEvents: [],
         ended: false,
         taskId,
       };
@@ -75,23 +71,23 @@ export const socketResponseSlice = createSlice({
         state[listenerId].errors.push(error);
       }
     },
+    // NO-OP: legacy tool update dispatch. The canonical agent pipeline uses
+    // ToolLifecycleEntry on active-requests instead. Kept here so legacy
+    // socket.io thunks compile without branching.
     updateToolUpdateResponse: (
-      state,
-      action: PayloadAction<{ listenerId: string; toolUpdate: ToolCallObject }>,
+      _state,
+      _action: PayloadAction<{ listenerId: string; toolUpdate: unknown }>,
     ) => {
-      const { listenerId, toolUpdate } = action.payload;
-      if (state[listenerId]) {
-        state[listenerId].toolUpdates.push(toolUpdate);
-      }
+      // intentional no-op
     },
+    // NO-OP: legacy raw tool event dispatch. The canonical pipeline reads
+    // ToolEventPayload via active-requests; socket.io consumers no longer
+    // participate in tool rendering.
     appendRawToolEvent: (
-      state,
-      action: PayloadAction<{ listenerId: string; event: TypedStreamEvent }>,
+      _state,
+      _action: PayloadAction<{ listenerId: string; event: unknown }>,
     ) => {
-      const { listenerId, event } = action.payload;
-      if (state[listenerId]) {
-        state[listenerId].rawToolEvents.push(event);
-      }
+      // intentional no-op
     },
     markResponseEnd: (state, action: PayloadAction<string>) => {
       const listenerId = action.payload;

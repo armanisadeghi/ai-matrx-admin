@@ -1465,7 +1465,7 @@ export default function ExecutionInstanceInspector({
             <span className="truncate">
               Focus:{" "}
               {Object.entries(focusSurfaces)
-                .map(([s, c]) => `${s} → ${shortId(c)}`)
+                .map(([s, c]) => `${s} → ${shortId(c.display)}`)
                 .join(", ")}
             </span>
           </>

@@ -1,69 +1,42 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Search, ExternalLink, Globe, Copy, Check } from "lucide-react";
-import { ToolRendererProps } from "../types";
+import type { ToolRendererProps } from "../../types";
+import { resultAsString } from "../_shared";
 
 interface SearchResult {
     query: string;
-    results: Array<{
-        title: string;
-        url: string;
-        snippet: string;
-    }>;
+    results: Array<{ title: string; url: string; snippet: string }>;
 }
 
-/**
- * Overlay renderer for core web search tool
- * Shows all search queries and their complete results
- */
-export const CoreWebSearchOverlay: React.FC<ToolRendererProps> = ({ 
-    toolUpdates,
-    currentIndex 
-}) => {
-    const [copySuccess, setCopySuccess] = useState(false);
-    
-    const visibleUpdates = currentIndex !== undefined 
-        ? toolUpdates.slice(0, currentIndex + 1) 
-        : toolUpdates;
-    
-    const outputUpdates = visibleUpdates.filter(u => u.type === "mcp_output");
-    
-    // Parse search results
-    const parseResults = (resultText: string): SearchResult | null => {
-        if (!resultText) return null;
-        
-        // Extract query from first line
-        const queryMatch = resultText.match(/🔍 Results for "(.+?)":/);
-        if (!queryMatch) return null;
-        
+function parseMultiSearchResult(text: string | null): SearchResult[] {
+    if (!text) return [];
+    const sections = text.split(/(?=🔍 Results for )/g);
+    const out: SearchResult[] = [];
+    for (const section of sections) {
+        const queryMatch = section.match(/🔍 Results for "(.+?)":/);
+        if (!queryMatch) continue;
         const query = queryMatch[1];
-        const results: Array<{ title: string; url: string; snippet: string }> = [];
-        
-        // Parse numbered results
-        const lines = resultText.split('\n');
-        for (const line of lines) {
-            const match = line.match(/^\d+\.\s+(.+?)\s+\((.+?)\)\s+[–-]\s+(.+)$/);
-            if (match) {
-                results.push({
-                    title: match[1].trim(),
-                    url: match[2].trim(),
-                    snippet: match[3].trim()
-                });
+        const results: SearchResult["results"] = [];
+        for (const line of section.split("\n")) {
+            const m = line.match(/^\d+\.\s+(.+?)\s+\((.+?)\)\s+[–-]\s+(.+)$/);
+            if (m) {
+                results.push({ title: m[1].trim(), url: m[2].trim(), snippet: m[3].trim() });
             }
         }
-        
-        return { query, results };
-    };
-    
-    const searchResults: SearchResult[] = outputUpdates
-        .map(u => {
-            const raw = u.mcp_output?.result;
-            const text = typeof raw === 'string' ? raw : raw != null ? JSON.stringify(raw) : '';
-            return parseResults(text);
-        })
-        .filter((r): r is SearchResult => r !== null);
-    
+        out.push({ query, results });
+    }
+    return out;
+}
+
+export const CoreWebSearchOverlay: React.FC<ToolRendererProps> = ({ entry }) => {
+    const [copySuccess, setCopySuccess] = useState(false);
+
+    const searchResults = useMemo(
+        () => parseMultiSearchResult(resultAsString(entry)),
+        [entry],
+    );
     const totalResults = searchResults.reduce((acc, r) => acc + r.results.length, 0);
     
     const getDomain = (url: string) => {

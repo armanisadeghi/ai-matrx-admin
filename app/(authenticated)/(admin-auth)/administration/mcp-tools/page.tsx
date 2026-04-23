@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { McpToolsManager } from "@/components/admin/McpToolsManager";
+import { McpToolsManager } from "@/features/tool-call-visualization/admin/McpToolsManager";
 import { Loader2 } from "lucide-react";
 
 export default function McpToolsPage() {

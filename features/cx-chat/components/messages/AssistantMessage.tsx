@@ -21,7 +21,6 @@ import { buildContentBlocksForSave } from "@/features/cx-chat/utils/buildContent
 import { chatConversationsActions } from "../../_legacy-stubs";
 import { AssistantActionBar } from "./AssistantActionBar";
 import type { ConversationMessage } from "@/features/cx-chat/types/conversation";
-import type { ToolCallObject } from "@/lib/api/tool-call.types";
 
 // ============================================================================
 // PROPS
@@ -260,9 +259,6 @@ export function AssistantMessage({
                 <MarkdownStream
                   content={message.content}
                   events={message.streamEvents}
-                  toolUpdates={
-                    message.toolUpdates as ToolCallObject[] | undefined
-                  }
                   isStreamActive={
                     isStreamActive && message.status === "streaming"
                   }

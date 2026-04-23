@@ -47,8 +47,6 @@ export const ActiveEventsPanel = ({ onSelectEvent, selectedListenerId }: ActiveE
     data: [],
     info: [],
     errors: [],
-    toolUpdates: [],
-    rawToolEvents: [],
     ended: false,
     taskId: '',
   };

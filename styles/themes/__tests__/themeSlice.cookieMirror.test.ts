@@ -180,8 +180,8 @@ describe("StoreProvider theme-cookie subscription pattern", () => {
             payload: {
                 sliceName: "theme",
                 state: { mode: "dark" },
-                source: "localStorage",
             },
+            meta: { fromRehydrate: true },
         };
         store.dispatch(rehydrate);
         await Promise.resolve();
@@ -202,8 +202,8 @@ describe("StoreProvider theme-cookie subscription pattern", () => {
             payload: {
                 sliceName: "theme",
                 state: { mode: "dark" },
-                source: "localStorage",
             },
+            meta: { fromRehydrate: true },
         };
         store.dispatch(rehydrate);
         await Promise.resolve();

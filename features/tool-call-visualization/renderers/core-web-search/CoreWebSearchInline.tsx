@@ -1,148 +1,140 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import { Search, ExternalLink, Loader2, CheckCircle } from "lucide-react";
-import { ToolRendererProps } from "../types";
+import type { ToolRendererProps } from "../../types";
+import { getArg, resultAsString, isTerminal } from "../_shared";
 
 interface SearchResult {
     query: string;
-    results: Array<{
-        title: string;
-        url: string;
-        snippet: string;
-    }>;
+    results: Array<{ title: string; url: string; snippet: string }>;
 }
 
 /**
- * Inline renderer for core web search tool
- * Shows multiple parallel searches with compact results
+ * Parse the serialized `core_web_search` result text which may contain
+ * multiple search sections of the form:
+ *
+ *   🔍 Results for "query":
+ *   1. Title (URL) – Description
+ *   ...
  */
-export const CoreWebSearchInline: React.FC<ToolRendererProps> = ({ 
-    toolUpdates,
-    currentIndex,
-    onOpenOverlay,
-    toolGroupId = "default" 
-}) => {
-    const visibleUpdates = currentIndex !== undefined 
-        ? toolUpdates.slice(0, currentIndex + 1) 
-        : toolUpdates;
-    
-    if (visibleUpdates.length === 0) return null;
-    
-    // Extract all queries from mcp_input updates
-    const queries = visibleUpdates
-        .filter(u => u.type === "mcp_input" && u.mcp_input?.arguments?.query)
-        .map(u => u.mcp_input!.arguments!.query as string);
-    
-    // Extract all results from mcp_output updates
-    const outputUpdates = visibleUpdates.filter(u => u.type === "mcp_output");
-    const isComplete = outputUpdates.length > 0;
-    
-    // Parse search results
-    const parseResults = (resultText: string): SearchResult | null => {
-        if (!resultText) return null;
-        
-        // Extract query from first line: "🔍 Results for \"query\":"
-        const queryMatch = resultText.match(/🔍 Results for "(.+?)":/);
-        if (!queryMatch) return null;
-        
+function parseMultiSearchResult(text: string | null): SearchResult[] {
+    if (!text) return [];
+    const sections = text.split(/(?=🔍 Results for )/g);
+    const out: SearchResult[] = [];
+    for (const section of sections) {
+        const queryMatch = section.match(/🔍 Results for "(.+?)":/);
+        if (!queryMatch) continue;
         const query = queryMatch[1];
-        const results: Array<{ title: string; url: string; snippet: string }> = [];
-        
-        // Parse numbered results
-        const lines = resultText.split('\n');
-        for (const line of lines) {
-            // Match format: "1. Title (URL) – Description..."
-            const match = line.match(/^\d+\.\s+(.+?)\s+\((.+?)\)\s+[–-]\s+(.+)$/);
-            if (match) {
-                results.push({
-                    title: match[1].trim(),
-                    url: match[2].trim(),
-                    snippet: match[3].trim()
-                });
+        const results: SearchResult["results"] = [];
+        for (const line of section.split("\n")) {
+            const m = line.match(/^\d+\.\s+(.+?)\s+\((.+?)\)\s+[–-]\s+(.+)$/);
+            if (m) {
+                results.push({ title: m[1].trim(), url: m[2].trim(), snippet: m[3].trim() });
             }
         }
-        
-        return { query, results };
-    };
-    
-    const searchResults: SearchResult[] = outputUpdates
-        .map(u => {
-            const raw = u.mcp_output?.result;
-            const text = typeof raw === 'string' ? raw : raw != null ? JSON.stringify(raw) : '';
-            return parseResults(text);
-        })
-        .filter((r): r is SearchResult => r !== null);
-    
-    const getDomain = (url: string) => {
-        try {
-            const urlObj = new URL(url);
-            return urlObj.hostname.replace('www.', '');
-        } catch {
-            return url;
+        out.push({ query, results });
+    }
+    return out;
+}
+
+function getDomain(url: string): string {
+    try {
+        return new URL(url).hostname.replace("www.", "");
+    } catch {
+        return url;
+    }
+}
+
+export const CoreWebSearchInline: React.FC<ToolRendererProps> = ({
+    entry,
+    onOpenOverlay,
+    toolGroupId = "default",
+}) => {
+    const isComplete = isTerminal(entry);
+
+    const queries: string[] = useMemo(() => {
+        const argQueries = getArg<unknown>(entry, "queries");
+        if (Array.isArray(argQueries)) {
+            return argQueries.filter((q): q is string => typeof q === "string");
         }
-    };
-    
+        const singleQuery = getArg<unknown>(entry, "query");
+        return typeof singleQuery === "string" ? [singleQuery] : [];
+    }, [entry]);
+
+    const searchResults = useMemo(
+        () => parseMultiSearchResult(resultAsString(entry)),
+        [entry],
+    );
+
+    // If the server didn't give us query args, fall back to the parsed result queries.
+    const displayQueries = queries.length > 0
+        ? queries
+        : searchResults.map((r) => r.query);
+
     return (
         <div className="space-y-3">
-            {/* Search Status */}
             <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
                 {isComplete ? (
                     <>
                         <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
                         <span className="font-medium">
-                            Searched {queries.length} {queries.length === 1 ? 'query' : 'queries'} • {searchResults.reduce((acc, r) => acc + r.results.length, 0)} results
+                            Searched {displayQueries.length}{" "}
+                            {displayQueries.length === 1 ? "query" : "queries"} •{" "}
+                            {searchResults.reduce((a, r) => a + r.results.length, 0)} results
                         </span>
                     </>
                 ) : (
                     <>
                         <Loader2 className="w-4 h-4 animate-spin text-blue-600 dark:text-blue-400" />
-                        <span className="font-medium">Searching {queries.length} {queries.length === 1 ? 'query' : 'queries'}...</span>
+                        <span className="font-medium">
+                            Searching {displayQueries.length}{" "}
+                            {displayQueries.length === 1 ? "query" : "queries"}...
+                        </span>
                     </>
                 )}
             </div>
-            
-            {/* Search Queries - Compact Pills */}
-            {queries.length > 0 && (
+
+            {displayQueries.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
-                    {queries.map((query, index) => (
+                    {displayQueries.map((query, index) => (
                         <div
                             key={index}
                             className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 animate-in fade-in slide-in-from-left"
-                            style={{ 
+                            style={{
                                 animationDelay: `${index * 40}ms`,
-                                animationDuration: '200ms',
-                                animationFillMode: 'backwards'
+                                animationDuration: "200ms",
+                                animationFillMode: "backwards",
                             }}
                         >
                             <Search className="w-3 h-3 text-blue-600 dark:text-blue-400 flex-shrink-0" />
-                            <span className="text-xs text-blue-700 dark:text-blue-300 truncate max-w-[300px]" title={query}>
+                            <span
+                                className="text-xs text-blue-700 dark:text-blue-300 truncate max-w-[300px]"
+                                title={query}
+                            >
                                 {query}
                             </span>
                         </div>
                     ))}
                 </div>
             )}
-            
-            {/* Top Results - Show 2 from each search */}
+
             {isComplete && searchResults.length > 0 && (
                 <div className="space-y-3">
                     {searchResults.slice(0, 3).map((search, searchIndex) => (
                         <div
                             key={searchIndex}
                             className="space-y-1.5 animate-in fade-in slide-in-from-bottom"
-                            style={{ 
-                                animationDelay: `${(queries.length * 40) + (searchIndex * 100)}ms`,
-                                animationDuration: '300ms',
-                                animationFillMode: 'backwards'
+                            style={{
+                                animationDelay: `${displayQueries.length * 40 + searchIndex * 100}ms`,
+                                animationDuration: "300ms",
+                                animationFillMode: "backwards",
                             }}
                         >
-                            {/* Query Label */}
                             <div className="text-xs font-medium text-slate-600 dark:text-slate-400 px-1">
-                                "{search.query.length > 60 ? search.query.slice(0, 60) + '...' : search.query}"
+                                &quot;{search.query.length > 60 ? search.query.slice(0, 60) + "..." : search.query}&quot;
                             </div>
-                            
-                            {/* Top 2 Results */}
+
                             {search.results.slice(0, 2).map((result, resultIndex) => (
                                 <a
                                     key={resultIndex}
@@ -167,7 +159,7 @@ export const CoreWebSearchInline: React.FC<ToolRendererProps> = ({
                                     </p>
                                 </a>
                             ))}
-                            
+
                             {search.results.length > 2 && (
                                 <div className="text-xs text-slate-500 dark:text-slate-500 px-1">
                                     +{search.results.length - 2} more results
@@ -175,7 +167,7 @@ export const CoreWebSearchInline: React.FC<ToolRendererProps> = ({
                             )}
                         </div>
                     ))}
-                    
+
                     {searchResults.length > 3 && (
                         <div className="text-xs text-slate-500 dark:text-slate-500 px-1">
                             +{searchResults.length - 3} more searches
@@ -183,8 +175,7 @@ export const CoreWebSearchInline: React.FC<ToolRendererProps> = ({
                     )}
                 </div>
             )}
-            
-            {/* View All Results Button */}
+
             {isComplete && searchResults.length > 0 && onOpenOverlay && (
                 <button
                     onClick={(e) => {
@@ -192,10 +183,10 @@ export const CoreWebSearchInline: React.FC<ToolRendererProps> = ({
                         onOpenOverlay(`tool-group-${toolGroupId}`);
                     }}
                     className="w-full py-2.5 px-4 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 text-blue-700 dark:text-blue-300 text-sm font-medium hover:from-blue-100 hover:to-indigo-100 dark:hover:from-blue-900/30 dark:hover:to-indigo-900/30 transition-all duration-200 flex items-center justify-center gap-2 border border-blue-200 dark:border-blue-800 hover:border-blue-300 dark:hover:border-blue-700 cursor-pointer animate-in fade-in slide-in-from-bottom"
-                    style={{ 
-                        animationDelay: `${(queries.length * 40) + (Math.min(searchResults.length, 3) * 100) + 100}ms`,
-                        animationDuration: '300ms',
-                        animationFillMode: 'backwards'
+                    style={{
+                        animationDelay: `${displayQueries.length * 40 + Math.min(searchResults.length, 3) * 100 + 100}ms`,
+                        animationDuration: "300ms",
+                        animationFillMode: "backwards",
                     }}
                 >
                     <Search className="w-4 h-4" />
@@ -205,4 +196,3 @@ export const CoreWebSearchInline: React.FC<ToolRendererProps> = ({
         </div>
     );
 };
-

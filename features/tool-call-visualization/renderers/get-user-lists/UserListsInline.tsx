@@ -2,8 +2,9 @@
 
 import React, { useMemo } from "react";
 import { List, CheckSquare, Lock, Globe, Users, Search, ChevronRight } from "lucide-react";
-import { ToolRendererProps } from "../types";
-import { ToolCallObject } from "@/lib/redux/socket-io/socket.types";
+import type { ToolRendererProps } from "../../types";
+import type { ToolLifecycleEntry } from "@/features/agents/types/request.types";
+import { getArg, isTerminal, resultAsObject } from "../_shared";
 
 interface UserList {
     id: string;
@@ -28,67 +29,52 @@ interface ParsedListsData {
     isError: boolean;
 }
 
-function parseListsData(toolUpdates: ToolCallObject[]): ParsedListsData {
-    const inputUpdate = toolUpdates.find((u) => u.type === "mcp_input");
-    const args = inputUpdate?.mcp_input?.arguments ?? {};
-    const search_term = typeof args.search_term === "string" ? args.search_term : undefined;
+function parseListsData(entry: ToolLifecycleEntry): ParsedListsData {
+    const search_term = getArg<string>(entry, "search_term");
 
-    const errorUpdate = toolUpdates.find((u) => u.type === "mcp_error");
-    if (errorUpdate) {
-        return { lists: [], page: 1, page_size: 10, count: 0, search_term, isLoading: false, isComplete: true, isError: true };
+    const isError = entry.status === "error";
+    const done = isTerminal(entry);
+
+    if (isError) {
+        return {
+            lists: [],
+            page: 1,
+            page_size: 10,
+            count: 0,
+            search_term,
+            isLoading: false,
+            isComplete: true,
+            isError: true,
+        };
     }
 
-    // Try mcp_output first (streaming path)
-    const outputUpdate = toolUpdates.find((u) => u.type === "mcp_output");
-    if (outputUpdate?.mcp_output) {
-        const rawResult = outputUpdate.mcp_output.result;
-        let result: { lists?: UserList[]; page?: number; page_size?: number; count?: number } | null = null;
+    const result = resultAsObject(entry) as
+        | { lists?: UserList[]; page?: number; page_size?: number; count?: number }
+        | null;
 
-        if (typeof rawResult === "object" && rawResult !== null) {
-            result = rawResult as typeof result;
-        } else if (typeof rawResult === "string") {
-            try { result = JSON.parse(rawResult); } catch { /* ignore */ }
-        }
-
-        if (result?.lists) {
-            return {
-                lists: result.lists,
-                page: result.page ?? 1,
-                page_size: result.page_size ?? 10,
-                count: result.count ?? result.lists.length,
-                search_term,
-                isLoading: false,
-                isComplete: true,
-                isError: false,
-            };
-        }
+    if (result?.lists) {
+        return {
+            lists: result.lists,
+            page: result.page ?? 1,
+            page_size: result.page_size ?? 10,
+            count: result.count ?? result.lists.length,
+            search_term,
+            isLoading: false,
+            isComplete: true,
+            isError: false,
+        };
     }
 
-    // Try step_data / tool_event path (streaming events contain tool_completed)
-    const stepUpdates = toolUpdates.filter((u) => u.type === "step_data");
-    for (const step of stepUpdates) {
-        const sd = step.step_data;
-        if (!sd) continue;
-        // tool_completed event has data.result.lists
-        const content = sd.content as Record<string, unknown>;
-        const nested = content?.data as Record<string, unknown> | undefined;
-        const result = (content?.result ?? nested?.result) as { lists?: UserList[]; page?: number; page_size?: number; count?: number } | undefined;
-        if (result?.lists) {
-            return {
-                lists: result.lists,
-                page: result.page ?? 1,
-                page_size: result.page_size ?? 10,
-                count: result.count ?? result.lists.length,
-                search_term,
-                isLoading: false,
-                isComplete: true,
-                isError: false,
-            };
-        }
-    }
-
-    const isComplete = toolUpdates.some((u) => u.type === "mcp_output" || u.type === "mcp_error");
-    return { lists: [], page: 1, page_size: 10, count: 0, search_term, isLoading: !isComplete, isComplete, isError: false };
+    return {
+        lists: [],
+        page: 1,
+        page_size: 10,
+        count: 0,
+        search_term,
+        isLoading: !done,
+        isComplete: done,
+        isError: false,
+    };
 }
 
 function formatDate(iso: string): string {
@@ -110,14 +96,11 @@ function getVisibilityInfo(list: UserList): { label: string; icon: React.ReactNo
 }
 
 export const UserListsInline: React.FC<ToolRendererProps> = ({
-    toolUpdates,
-    currentIndex,
+    entry,
     onOpenOverlay,
     toolGroupId = "default",
 }) => {
-    const visibleUpdates = currentIndex !== undefined ? toolUpdates.slice(0, currentIndex + 1) : toolUpdates;
-
-    const data = useMemo(() => parseListsData(visibleUpdates), [visibleUpdates]);
+    const data = useMemo(() => parseListsData(entry), [entry]);
 
     if (data.isLoading) {
         return (

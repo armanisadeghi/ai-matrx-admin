@@ -134,7 +134,7 @@ export function reportRuntimeError(
     toolName: string,
     componentType: IncidentPayload["component_type"],
     error: unknown,
-    toolUpdates?: unknown[],
+    snapshot?: unknown,
     componentId?: string,
     componentVersion?: string
 ): void {
@@ -148,7 +148,7 @@ export function reportRuntimeError(
         error_type: "runtime",
         error_message: err.message,
         error_stack: err.stack,
-        tool_update_snapshot: toolUpdates,
+        tool_update_snapshot: snapshot,
         component_version: componentVersion,
     });
 }

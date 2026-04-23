@@ -18,8 +18,9 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ToolRendererProps } from "../types";
-import { ToolCallObject } from "@/lib/redux/socket-io/socket.types";
+import type { ToolRendererProps } from "../../types";
+import type { ToolLifecycleEntry } from "@/features/agents/types/request.types";
+import { getArg, resultAsObject } from "../_shared";
 import { filterAndSortBySearch } from "@/utils/search-scoring";
 
 interface UserList {
@@ -43,58 +44,26 @@ interface ParsedListsData {
     isError: boolean;
 }
 
-function parseListsData(toolUpdates: ToolCallObject[]): ParsedListsData {
-    const inputUpdate = toolUpdates.find((u) => u.type === "mcp_input");
-    const args = inputUpdate?.mcp_input?.arguments ?? {};
-    const search_term = typeof args.search_term === "string" && args.search_term ? args.search_term : undefined;
+function parseListsData(entry: ToolLifecycleEntry): ParsedListsData {
+    const search_term = getArg<string>(entry, "search_term");
 
-    const errorUpdate = toolUpdates.find((u) => u.type === "mcp_error");
-    if (errorUpdate) {
+    if (entry.status === "error") {
         return { lists: [], page: 1, page_size: 10, count: 0, search_term, isError: true };
     }
 
-    // mcp_output path (direct from tool result)
-    const outputUpdate = toolUpdates.find((u) => u.type === "mcp_output");
-    if (outputUpdate?.mcp_output) {
-        const rawResult = outputUpdate.mcp_output.result;
-        let result: { lists?: UserList[]; page?: number; page_size?: number; count?: number } | null = null;
+    const result = resultAsObject(entry) as
+        | { lists?: UserList[]; page?: number; page_size?: number; count?: number }
+        | null;
 
-        if (typeof rawResult === "object" && rawResult !== null) {
-            result = rawResult as typeof result;
-        } else if (typeof rawResult === "string") {
-            try { result = JSON.parse(rawResult); } catch { /* ignore */ }
-        }
-
-        if (result?.lists) {
-            return {
-                lists: result.lists,
-                page: result.page ?? 1,
-                page_size: result.page_size ?? 10,
-                count: result.count ?? result.lists.length,
-                search_term,
-                isError: false,
-            };
-        }
-    }
-
-    // step_data path (streaming tool_event)
-    const stepUpdates = toolUpdates.filter((u) => u.type === "step_data");
-    for (const step of stepUpdates) {
-        const sd = step.step_data;
-        if (!sd) continue;
-        const content = sd.content as Record<string, unknown>;
-        const nested = content?.data as Record<string, unknown> | undefined;
-        const result = (content?.result ?? nested?.result) as { lists?: UserList[]; page?: number; page_size?: number; count?: number } | undefined;
-        if (result?.lists) {
-            return {
-                lists: result.lists,
-                page: result.page ?? 1,
-                page_size: result.page_size ?? 10,
-                count: result.count ?? result.lists.length,
-                search_term,
-                isError: false,
-            };
-        }
+    if (result?.lists) {
+        return {
+            lists: result.lists,
+            page: result.page ?? 1,
+            page_size: result.page_size ?? 10,
+            count: result.count ?? result.lists.length,
+            search_term,
+            isError: false,
+        };
     }
 
     return { lists: [], page: 1, page_size: 10, count: 0, search_term, isError: false };
@@ -126,14 +95,14 @@ function getVisibility(list: UserList): { label: string; icon: React.ReactNode; 
 type SortKey = "name" | "created" | "updated" | "items";
 type SortDir = "asc" | "desc";
 
-export const UserListsOverlay: React.FC<ToolRendererProps> = ({ toolUpdates }) => {
+export const UserListsOverlay: React.FC<ToolRendererProps> = ({ entry }) => {
     const [search, setSearch] = useState("");
     const [sortKey, setSortKey] = useState<SortKey>("created");
     const [sortDir, setSortDir] = useState<SortDir>("desc");
     const [visFilter, setVisFilter] = useState<"all" | "public" | "private" | "users">("all");
     const [copiedId, setCopiedId] = useState<string | null>(null);
 
-    const data = useMemo(() => parseListsData(toolUpdates), [toolUpdates]);
+    const data = useMemo(() => parseListsData(entry), [entry]);
 
     const filteredAndSorted = useMemo(() => {
         let items = [...data.lists];

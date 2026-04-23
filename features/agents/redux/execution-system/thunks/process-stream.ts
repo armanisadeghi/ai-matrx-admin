@@ -649,6 +649,7 @@ export async function processStream({
             status: "started",
             arguments: (toolData.data as Record<string, unknown>) ?? {},
             isDelegated: true,
+            event: toolData,
           }),
         );
 
@@ -687,6 +688,7 @@ export async function processStream({
             status: lifecycleStatus,
             message: toolData.message,
             data: toolData.data as Record<string, unknown> | null,
+            event: toolData,
             ...(toolData.event === "tool_completed" && {
               result: (toolData.data as Record<string, unknown>)?.result,
             }),

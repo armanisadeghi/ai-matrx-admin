@@ -30,11 +30,6 @@
  *   buildCanonicalMessages   CxMessage[] + CxToolCall[]? → CanonicalMessage[]
  *   buildCanonicalMessage    CxMessage  + CxToolCall[]? → CanonicalMessage | null
  *
- * ─── ADAPTERS (legacy compatibility) ─────────────────────────────────────────
- *   canonicalToLegacy        CanonicalMessage  → LegacyChatMessage
- *   canonicalArrayToLegacy   CanonicalMessage[] → LegacyChatMessage[]
- *   toolCallBlockToLegacy    ToolCallBlock → LegacyToolCallObject[]
- *
  * ─── TYPE GUARDS ─────────────────────────────────────────────────────────────
  *   isTextBlock / isThinkingBlock / isMediaBlock / isToolCallBlock / isErrorBlock
  */
@@ -77,16 +72,3 @@ export {
 
 // DB normalizer
 export { buildCanonicalMessages, buildCanonicalMessage } from "./from-db";
-
-// Legacy adapters
-export type {
-  LegacyChatMessage,
-  LegacyToolCallObject,
-  LegacyMcpInput,
-} from "./adapters";
-
-export {
-  canonicalToLegacy,
-  canonicalArrayToLegacy,
-  toolCallBlockToLegacy,
-} from "./adapters";

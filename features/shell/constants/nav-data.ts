@@ -150,6 +150,14 @@ export const primaryNavItems: ShellNavItem[] = [
     color: "orange",
   },
   {
+    label: "Code",
+    href: "/code",
+    iconName: "Code2",
+    section: "primary",
+    description: "VSCode-style workspace for sandbox and cloud projects",
+    color: "indigo",
+  },
+  {
     label: "Messages",
     href: "/messages",
     iconName: "Mail",

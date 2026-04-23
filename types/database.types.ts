@@ -14773,6 +14773,7 @@ export type Database = {
       tool_ui_components: {
         Row: {
           allowed_imports: string[]
+          contract_version: number
           created_at: string
           created_by: string | null
           display_name: string
@@ -14795,6 +14796,7 @@ export type Database = {
         }
         Insert: {
           allowed_imports?: string[]
+          contract_version?: number
           created_at?: string
           created_by?: string | null
           display_name: string
@@ -14817,6 +14819,7 @@ export type Database = {
         }
         Update: {
           allowed_imports?: string[]
+          contract_version?: number
           created_at?: string
           created_by?: string | null
           display_name?: string

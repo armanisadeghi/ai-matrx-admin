@@ -1,4 +1,4 @@
-import { ToolCreatePage } from "@/components/admin/mcp-tools/ToolCreatePage";
+import { ToolCreatePage } from "@/features/tool-call-visualization/admin/mcp-tools/ToolCreatePage";
 
 export default function NewToolRoute() {
     return <ToolCreatePage />;

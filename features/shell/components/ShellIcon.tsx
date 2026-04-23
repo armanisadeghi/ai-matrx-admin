@@ -34,6 +34,7 @@ import {
   Plus,
   ArrowLeftRight,
   Loader2,
+  Code2,
   type LucideProps,
 } from "lucide-react";
 
@@ -70,6 +71,7 @@ const iconMap: Record<string, React.ComponentType<LucideProps>> = {
   Plus,
   ArrowLeftRight,
   Loader2,
+  Code2,
 };
 
 interface ShellIconProps extends LucideProps {

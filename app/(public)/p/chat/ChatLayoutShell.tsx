@@ -183,7 +183,6 @@ function ChatLayoutInner({ children }: { children: React.ReactNode }) {
         content: msg.content,
         timestamp: msg.timestamp || new Date(),
         status: msg.status,
-        toolUpdates: msg.toolUpdates?.length > 0 ? msg.toolUpdates : undefined,
         isCondensed: msg.isCondensed || undefined,
       }));
 

@@ -10,7 +10,6 @@ import React, {
 } from "react";
 import type { PromptVariable } from "@/features/prompts/types/core";
 import type { PublicResource, ContentItem } from "../types/content";
-import type { ToolCallObject } from "@/lib/api/tool-call.types";
 import type { TypedStreamEvent } from "@/types/python-generated/stream-events";
 
 // ============================================================================
@@ -28,8 +27,6 @@ export interface ChatMessage {
   /** Content items sent to API (for reference) */
   contentItems?: ContentItem[];
   variables?: Record<string, any>;
-  /** Tool call/result history for DB-loaded messages (displayed via ToolCallVisualization) */
-  toolUpdates?: ToolCallObject[];
   /** Whether this is a condensed message (out of context window but still visible) */
   isCondensed?: boolean;
   /** Stream events for block-mode messages — passed to MarkdownStream instead of plain content */

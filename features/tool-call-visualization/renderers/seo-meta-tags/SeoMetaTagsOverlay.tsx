@@ -4,7 +4,8 @@ import React, { useState, useMemo } from "react";
 import { CheckCircle, AlertTriangle, FileText, Filter, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ToolRendererProps } from "../types";
+import type { ToolRendererProps } from "../../types";
+import { resultAsObject } from "../_shared";
 
 interface MetaTagResult {
     title: string;
@@ -35,21 +36,14 @@ const DESC_PIXEL_LIMIT = 920;
  * NOTE: Does NOT render its own header — the universal ToolGroupTab header
  * handles title/subtitle/stats via getHeaderExtras in the registry.
  */
-export const SeoMetaTagsOverlay: React.FC<ToolRendererProps> = ({ toolUpdates }) => {
+export const SeoMetaTagsOverlay: React.FC<ToolRendererProps> = ({ entry }) => {
     const [filterStatus, setFilterStatus] = useState<"all" | "passed" | "failed">("all");
-    
-    // Extract SEO data from tool updates
+
     const seoData = useMemo(() => {
-        const outputUpdate = toolUpdates.find((u) => u.type === "mcp_output");
-        if (!outputUpdate?.mcp_output) return null;
-        
-        const rawResult = outputUpdate.mcp_output.result;
-        if (!rawResult || typeof rawResult !== 'object') return null;
-        const result = rawResult as SeoMetaTagsResult;
-        if (!result.batch_analysis) return null;
-        
-        return result;
-    }, [toolUpdates]);
+        const obj = resultAsObject(entry) as unknown as SeoMetaTagsResult | null;
+        if (!obj?.batch_analysis) return null;
+        return obj;
+    }, [entry]);
     
     // Filter results
     const filteredResults = useMemo(() => {

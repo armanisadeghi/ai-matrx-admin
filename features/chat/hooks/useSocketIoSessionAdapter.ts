@@ -34,10 +34,7 @@ const chatConversationsActions = {
   setSessionStatus: (_payload: unknown) => ({ type: "noop" as const, payload: _payload }),
   setConversationId: (_payload: unknown) => ({ type: "noop" as const, payload: _payload }),
 };
-import {
-  selectPrimaryResponseTextByTaskId,
-  selectResponseToolUpdatesByListenerId,
-} from "@/lib/redux/socket-io/selectors/socket-response-selectors";
+import { selectPrimaryResponseTextByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 
 interface UseSocketIoSessionAdapterOptions {
   sessionId: string;
@@ -61,12 +58,6 @@ export function useSocketIoSessionAdapter({
 
   const streamingText = useAppSelector((state) =>
     enabled && taskId ? selectPrimaryResponseTextByTaskId(taskId)(state) : null,
-  );
-
-  const toolUpdates = useAppSelector((state) =>
-    enabled && listenerId
-      ? selectResponseToolUpdatesByListenerId(listenerId)(state)
-      : null,
   );
 
   // Create an assistant message placeholder on taskId change
@@ -142,19 +133,6 @@ export function useSocketIoSessionAdapter({
       }),
     );
   }, [streamingText, enabled, taskId, sessionId, dispatch]);
-
-  // Sync tool updates when they arrive
-  useEffect(() => {
-    if (!enabled || !toolUpdates || !assistantMessageIdRef.current) return;
-
-    dispatch(
-      chatConversationsActions.updateMessage({
-        sessionId,
-        messageId: assistantMessageIdRef.current,
-        updates: { toolUpdates: toolUpdates as unknown[] },
-      }),
-    );
-  }, [toolUpdates, enabled, sessionId, dispatch]);
 
   return {
     assistantMessageId: assistantMessageIdRef.current,

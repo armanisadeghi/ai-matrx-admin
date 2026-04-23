@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { CheckCircle, AlertTriangle, FileText, Copy, Check } from "lucide-react";
-import { ToolRendererProps } from "../types";
+import type { ToolRendererProps } from "../../types";
+import { resultAsObject } from "../_shared";
 
 interface MetaTagResult {
     title: string;
@@ -25,47 +26,34 @@ interface SeoMetaTagsResult {
  * Compact inline renderer for SEO Meta Tags checker
  * Shows validation results with color-coded status indicators
  */
-export const SeoMetaTagsInline: React.FC<ToolRendererProps> = ({ 
-    toolUpdates,
-    currentIndex,
+export const SeoMetaTagsInline: React.FC<ToolRendererProps> = ({
+    entry,
     onOpenOverlay,
-    toolGroupId = "default" 
+    toolGroupId = "default",
 }) => {
     const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
-    
-    const visibleUpdates = currentIndex !== undefined 
-        ? toolUpdates.slice(0, currentIndex + 1) 
-        : toolUpdates;
-    
-    const copyToClipboard = async (text: string, index: number, type: 'title' | 'description') => {
+
+    const result = useMemo(() => resultAsObject(entry) as unknown as SeoMetaTagsResult | null, [entry]);
+
+    const copyToClipboard = async (text: string, index: number, _type: 'title' | 'description') => {
         await navigator.clipboard.writeText(text);
         setCopiedIndex(index);
         setTimeout(() => setCopiedIndex(null), 2000);
     };
-    
-    if (visibleUpdates.length === 0) return null;
-    
+
+    if (!result || !result.batch_analysis || result.batch_analysis.length === 0) {
+        return null;
+    }
+
+    const analysis = result.batch_analysis;
+    const displayItems = analysis.slice(0, 10);
+    const hasMore = analysis.length > displayItems.length;
+    const passedCount = analysis.filter((a) => a.overall_ok).length;
+    const failedCount = analysis.length - passedCount;
+
     return (
         <div className="space-y-5">
-            {visibleUpdates.map((update, index) => {
-                // Handle SEO meta tags output
-                if (update.type === "mcp_output" && update.mcp_output) {
-                    const rawResult = update.mcp_output.result;
-                    if (!rawResult || typeof rawResult !== 'object') return null;
-                    const result = rawResult as SeoMetaTagsResult;
-                    
-                    if (!result.batch_analysis || result.batch_analysis.length === 0) {
-                        return null;
-                    }
-                    
-                    const analysis = result.batch_analysis;
-                    const displayItems = analysis.slice(0, 10); // Show first 10
-                    const hasMore = analysis.length > displayItems.length;
-                    const passedCount = analysis.filter(a => a.overall_ok).length;
-                    const failedCount = analysis.length - passedCount;
-                    
-                    return (
-                        <div key={`seo-${index}`} className="space-y-3">
+            <div className="space-y-3">
                             {/* Header */}
                             <div className="flex items-center gap-2 text-sm font-medium text-foreground/90">
                                 <FileText className="w-4 h-4 text-primary" />
@@ -180,17 +168,11 @@ export const SeoMetaTagsInline: React.FC<ToolRendererProps> = ({
                                         animationFillMode: 'backwards'
                                     }}
                                 >
-                                    <FileText className="w-4 h-4" />
-                                    <span>{hasMore ? `View all ${analysis.length} meta tag analyses` : `View ${analysis.length} meta tag ${analysis.length === 1 ? 'analysis' : 'analyses'}`}</span>
-                                </button>
-                            )}
-                        </div>
-                    );
-                }
-                
-                // Don't render anything for other update types
-                return null;
-            })}
+                    <FileText className="w-4 h-4" />
+                    <span>{hasMore ? `View all ${analysis.length} meta tag analyses` : `View ${analysis.length} meta tag ${analysis.length === 1 ? 'analysis' : 'analyses'}`}</span>
+                </button>
+            )}
+            </div>
         </div>
     );
 };

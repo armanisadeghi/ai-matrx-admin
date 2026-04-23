@@ -7,7 +7,7 @@ type Tone = "info" | "warning" | "error" | "success";
 
 const toneStyles: Record<
   Tone,
-  { container: string; icon: string; Icon: React.ElementType }
+  { container: string; icon: string; Icon: React.ComponentType<{ className?: string }> }
 > = {
   info: {
     container:

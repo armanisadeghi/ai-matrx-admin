@@ -10,8 +10,9 @@
  */
 
 import "fake-indexeddb/auto";
-import { configureStore, createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import { REHYDRATE_ACTION_TYPE } from "../engine/rehydrate";
+import { configureStore, createSlice } from "@reduxjs/toolkit";
+import { REHYDRATE_ACTION_TYPE, isRehydrateAction } from "../engine/rehydrate";
+import type { RehydrateAction } from "../engine/rehydrate";
 import {
     createStaleRefreshScheduler,
     invokeRemoteFetch,
@@ -39,11 +40,12 @@ function makeSetup(fetchImpl: (ctx: {
         initialState: { value: "initial", loaded: false } as WarmState,
         reducers: {},
         extraReducers: (b) => {
-            b.addCase(
-                REHYDRATE_ACTION_TYPE,
-                (state, action: PayloadAction<{ sliceName: string; state: Partial<WarmState> }>) => {
-                    if (action.payload.sliceName === "warm") {
-                        Object.assign(state, action.payload.state);
+            b.addMatcher(
+                isRehydrateAction,
+                (state, action: RehydrateAction) => {
+                    const payload = action.payload as { sliceName: string; state: Partial<WarmState> };
+                    if (payload.sliceName === "warm") {
+                        Object.assign(state, payload.state);
                     }
                 },
             );
@@ -239,11 +241,12 @@ describe("invokeRemoteFetch", () => {
             initialState: { value: "initial", loaded: false } as WarmState,
             reducers: {},
             extraReducers: (b) => {
-                b.addCase(
-                    REHYDRATE_ACTION_TYPE,
-                    (state, action: PayloadAction<{ sliceName: string; state: Partial<WarmState> }>) => {
-                        if (action.payload.sliceName === "warm") {
-                            Object.assign(state, action.payload.state);
+                b.addMatcher(
+                    isRehydrateAction,
+                    (state, action: RehydrateAction) => {
+                        const payload = action.payload as { sliceName: string; state: Partial<WarmState> };
+                        if (payload.sliceName === "warm") {
+                            Object.assign(state, payload.state);
                         }
                     },
                 );
@@ -308,11 +311,12 @@ describe("invokeRemoteFetch", () => {
             initialState: { value: "initial", loaded: false } as WarmState,
             reducers: {},
             extraReducers: (b) => {
-                b.addCase(
-                    REHYDRATE_ACTION_TYPE,
-                    (state, action: PayloadAction<{ sliceName: string; state: Partial<WarmState> }>) => {
-                        if (action.payload.sliceName === "warm") {
-                            Object.assign(state, action.payload.state);
+                b.addMatcher(
+                    isRehydrateAction,
+                    (state, action: RehydrateAction) => {
+                        const payload = action.payload as { sliceName: string; state: Partial<WarmState> };
+                        if (payload.sliceName === "warm") {
+                            Object.assign(state, payload.state);
                         }
                     },
                 );
@@ -392,7 +396,7 @@ describe("createStaleRefreshScheduler", () => {
             preset: "warm-cache",
             version: 1,
             broadcast: { actions: ["x"] },
-            remote: { fetch: async () => void missedFetch.push("no-stale") || null },
+            remote: { fetch: async () => { missedFetch.push("no-stale"); return null; } },
         });
         const slice = createSlice({
             name: "no-stale",
@@ -415,7 +419,7 @@ describe("createStaleRefreshScheduler", () => {
             version: 1,
             broadcast: { actions: ["x"] },
             staleAfter: 1000,
-            remote: { fetch: async () => void calls.push("fetch") || null },
+            remote: { fetch: async () => { calls.push("fetch"); return null; } },
         });
         const slice = createSlice({
             name: "warm",

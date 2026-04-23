@@ -1,72 +1,15 @@
 "use client";
 
-import { useAppSelector } from "@/lib/redux/hooks";
-import { selectToolLifecycle } from "@/features/agents/redux/execution-system/active-requests/active-requests.selectors";
-import type { ToolLifecycleEntry } from "@/features/agents/types/request.types";
-import type { ToolCallObject, ToolCallPhase } from "@/lib/api/tool-call.types";
-import ToolCallVisualization from "@/features/cx-conversation/ToolCallVisualization";
+/**
+ * ToolCallCard — a single tool call card.
+ *
+ * Renders one ToolLifecycleEntry inside the canonical shell. Used by
+ * InlineToolCalls when tool cards need to be interleaved with the text
+ * stream at specific positions.
+ */
 
-function statusToPhase(status: ToolLifecycleEntry["status"]): ToolCallPhase {
-  switch (status) {
-    case "completed":
-      return "complete";
-    case "error":
-      return "error";
-    default:
-      return "running";
-  }
-}
-
-function toToolCallObjects(entry: ToolLifecycleEntry): ToolCallObject[] {
-  const objects: ToolCallObject[] = [];
-
-  objects.push({
-    id: entry.callId,
-    type: "mcp_input",
-    mcp_input: {
-      name: entry.toolName,
-      arguments: entry.arguments,
-    },
-    phase: statusToPhase(entry.status),
-  });
-
-  if (entry.latestMessage) {
-    objects.push({
-      id: entry.callId,
-      type: "user_message",
-      user_message: entry.latestMessage,
-    });
-  }
-
-  if (entry.latestData && Object.keys(entry.latestData).length > 0) {
-    objects.push({
-      id: entry.callId,
-      type: "step_data",
-      step_data: {
-        type: entry.status,
-        content: entry.latestData,
-      },
-    });
-  }
-
-  if (entry.status === "completed" && entry.result != null) {
-    objects.push({
-      id: entry.callId,
-      type: "mcp_output",
-      mcp_output: { result: entry.result },
-    });
-  }
-
-  if (entry.status === "error" && entry.errorMessage) {
-    objects.push({
-      id: entry.callId,
-      type: "mcp_error",
-      mcp_error: entry.errorMessage,
-    });
-  }
-
-  return objects;
-}
+import { ToolCallVisualization } from "@/features/tool-call-visualization";
+import { useToolLifecycle } from "@/features/tool-call-visualization";
 
 interface ToolCallCardProps {
   requestId: string;
@@ -74,17 +17,10 @@ interface ToolCallCardProps {
 }
 
 export function ToolCallCard({ requestId, callId }: ToolCallCardProps) {
-  const lifecycle = useAppSelector(selectToolLifecycle(requestId, callId));
-
+  const lifecycle = useToolLifecycle(requestId, callId);
   if (!lifecycle) return null;
 
-  const toolCallObjects = toToolCallObjects(lifecycle);
-
   return (
-    <ToolCallVisualization
-      toolUpdates={toolCallObjects}
-      hasContent={true}
-      className="my-2"
-    />
+    <ToolCallVisualization entries={[lifecycle]} className="my-2" />
   );
 }

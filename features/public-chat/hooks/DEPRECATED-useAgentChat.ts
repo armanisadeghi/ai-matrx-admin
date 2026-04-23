@@ -15,10 +15,6 @@ import type {
 } from "@/lib/api/types";
 import { parseNdjsonStream } from "@/lib/api/stream-parser";
 import {
-  extractPersistableToolBlocks,
-  toolCallBlockToLegacy,
-} from "@/lib/chat-protocol";
-import {
   buildContentArray,
   ContentItem,
   PublicResource,
@@ -345,19 +341,8 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
         }
       }
 
-      // Extract completed tool blocks from the stream and convert to legacy
-      // ToolCallObject[] for DB-loaded message display. phase='complete' is
-      // set on the mcp_input entry so ToolCallVisualization shows checkmarks.
-      const persistableBlocks = extractPersistableToolBlocks(
-        streamEventsRef.current,
-      );
-      const toolUpdates = persistableBlocks.flatMap((b) =>
-        toolCallBlockToLegacy(b),
-      );
-
       updateMessage(assistantMessageId, {
         status: "complete",
-        ...(toolUpdates.length > 0 ? { toolUpdates } : {}),
         ...(blockMode && blockEventsBuffer.length > 0
           ? { streamEvents: [...blockEventsBuffer] }
           : {}),

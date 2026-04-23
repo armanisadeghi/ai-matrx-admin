@@ -53,6 +53,11 @@ import textDiffReducer from "./slices/textDiffSlice";
 import noteVersionsReducer from "./slices/noteVersionsSlice";
 import notesReducer from "@/features/notes/redux/slice";
 import { codeFilesReducer } from "@/features/code-files/redux/slice";
+import {
+  codeWorkspaceReducer,
+  codeTabsReducer,
+  codeTerminalReducer,
+} from "@/features/code/redux";
 import { cloudFilesReducer } from "@/features/files/redux/slice";
 import messagingReducer from "@/features/messaging/redux/messagingSlice";
 import smsReducer from "@/features/sms/redux/smsSlice";
@@ -233,6 +238,11 @@ export const createRootReducer = (initialState: InitialReduxState) => {
     noteVersions: noteVersionsReducer,
     notes: notesReducer,
     codeFiles: codeFilesReducer,
+
+    // New VSCode-style workspace (features/code) ----------------------------
+    codeWorkspace: codeWorkspaceReducer,
+    codeTabs: codeTabsReducer,
+    codeTerminal: codeTerminalReducer,
     // New cloud-files system (migration from Supabase Storage buckets).
     // Reads via supabase-js + cloud_get_user_file_tree RPC. Writes via REST at
     // ${NEXT_PUBLIC_BACKEND_URL}/files/*. Live updates via the

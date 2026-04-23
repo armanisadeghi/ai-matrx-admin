@@ -31,11 +31,10 @@ import MarkdownStream from "@/components/MarkdownStream";
 import type { ChatMessage } from "../context/DEPRECATED-ChatContext";
 import type { PublicResource, PublicResourceType } from "../types/content";
 import type { TypedStreamEvent } from "@/types/python-generated/stream-events";
-import {
-  buildCanonicalBlocks,
-  toolCallBlockToLegacy,
-} from "@/lib/chat-protocol";
+import { buildCanonicalBlocks } from "@/lib/chat-protocol";
 import type { ToolCallBlock } from "@/lib/chat-protocol";
+import { ToolCallVisualization as CanonicalToolCallVisualization } from "@/features/tool-call-visualization";
+import type { ToolLifecycleEntry } from "@/features/agents/types/request.types";
 import {
   parseResourcesFromMessage,
   extractMessageWithoutResources,
@@ -107,10 +106,45 @@ const FullScreenMarkdownEditor = lazy(
 const PublicMessageOptionsMenu = lazy(
   () => import("./PublicMessageOptionsMenu"),
 );
-const ToolCallVisualization = lazy(
-  () =>
-    import("@/features/chat/components/response/assistant-message/stream/ToolCallVisualization"),
-);
+function toolBlockToLifecycleEntry(block: ToolCallBlock): ToolLifecycleEntry {
+  const now = new Date().toISOString();
+  const status: ToolLifecycleEntry["status"] =
+    block.phase === "complete"
+      ? "completed"
+      : block.phase === "error"
+        ? "error"
+        : block.phase === "running"
+          ? "progress"
+          : "started";
+  const rawArgs: unknown =
+    (block.input as { arguments?: unknown })?.arguments ??
+    (block.input as unknown) ??
+    {};
+  const args: Record<string, unknown> =
+    rawArgs && typeof rawArgs === "object" && !Array.isArray(rawArgs)
+      ? (rawArgs as Record<string, unknown>)
+      : {};
+  return {
+    callId: block.callId,
+    toolName: block.toolName,
+    status,
+    arguments: args,
+    startedAt: now,
+    completedAt:
+      block.phase === "complete" || block.phase === "error" ? now : null,
+    latestMessage: null,
+    latestData: null,
+    result:
+      block.output !== undefined
+        ? (block.output as { result?: unknown }).result ?? block.output
+        : null,
+    resultPreview: null,
+    errorType: null,
+    errorMessage: block.error ? String(block.error) : null,
+    isDelegated: false,
+    events: [],
+  };
+}
 
 // ============================================================================
 // STREAMING CONTENT BLOCKS
@@ -161,18 +195,15 @@ function StreamingContentBlocks({
                 b.type === "text" && (b as { content: string }).content.trim(),
             );
 
-          // Convert canonical block → legacy ToolCallObject[] for the renderer.
-          // phase is embedded on the mcp_input entry so the renderer can read it.
-          const toolUpdates = toolCallBlockToLegacy(toolBlock);
+          const entry = toolBlockToLifecycleEntry(toolBlock);
 
           return (
-            <Suspense key={`stream-tool-${toolBlock.callId}`} fallback={null}>
-              <ToolCallVisualization
-                toolUpdates={toolUpdates}
-                hasContent={hasContentAfter}
-                className="mb-2"
-              />
-            </Suspense>
+            <CanonicalToolCallVisualization
+              key={`stream-tool-${toolBlock.callId}`}
+              entries={[entry]}
+              hasContent={hasContentAfter}
+              className="mb-2"
+            />
           );
         }
 
@@ -497,9 +528,6 @@ function AssistantMessage({
     );
   }
 
-  // Check if this is a DB-loaded message with tool updates (no active stream)
-  const hasDbToolUpdates =
-    !streamEvents && message.toolUpdates && message.toolUpdates.length > 0;
   const hasStreamEvents = streamEvents && streamEvents.length > 0;
   // Block mode: message carries its own events (content_block protocol)
   const hasBlockModeEvents =
@@ -507,17 +535,6 @@ function AssistantMessage({
 
   return (
     <div>
-      {/* Tool call visualization for DB-loaded messages */}
-      {hasDbToolUpdates && (
-        <Suspense fallback={null}>
-          <ToolCallVisualization
-            toolUpdates={message.toolUpdates!}
-            hasContent={!!message.content}
-            className="mb-2"
-          />
-        </Suspense>
-      )}
-
       {/* Block mode: use MarkdownStream with events prop (content_block protocol) */}
       {hasBlockModeEvents ? (
         <MarkdownStream

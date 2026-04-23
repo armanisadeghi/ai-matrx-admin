@@ -6,8 +6,9 @@
  *
  * RULES FOR DYNAMIC TOOL COMPONENTS:
  * ─────────────────────────────────────────────────────────────────────────
- * 1. Components receive `props` with shape: { toolUpdates, currentIndex,
- *    onOpenOverlay, toolGroupId }
+ * 1. Components receive `props` with shape: { entry, events, onOpenOverlay,
+ *    toolGroupId, isPersisted } — see `ToolRendererProps` in
+ *    features/tool-call-visualization/types.ts
  * 2. All React hooks are available: useState, useEffect, useMemo,
  *    useCallback, useRef, Fragment
  * 3. All Lucide icons are available by name (e.g. <Globe />, <Search />).

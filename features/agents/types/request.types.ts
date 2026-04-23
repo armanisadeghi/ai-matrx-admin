@@ -27,6 +27,7 @@ import type {
   TypedDataPayload,
   UntypedDataPayload,
   MessagePart,
+  ToolEventPayload,
 } from "@/types/python-generated/stream-events";
 
 // =============================================================================
@@ -122,6 +123,13 @@ export interface ToolLifecycleEntry {
   errorType: string | null;
   errorMessage: string | null;
   isDelegated: boolean;
+
+  /**
+   * Raw event log for this tool call, appended in server emission order.
+   * Renderers that need step-by-step data (e.g. Brave search step_data tiles)
+   * consume this directly.
+   */
+  events: ToolEventPayload[];
 }
 
 // =============================================================================

@@ -1,129 +1,34 @@
 "use client";
+
+/**
+ * ToolHandlers — inline tool-call cards for the markdown stream.
+ *
+ * Two active surfaces:
+ *   - `InlineToolCard`    — live stream path, one card per tool callId
+ *     inside an active request. Reads `ToolLifecycleEntry` from Redux.
+ *   - `DbToolCard`        — DB-loaded turn path. Builds a synthetic
+ *     `ToolLifecycleEntry` from a persisted content segment.
+ *
+ * Both route through the canonical shell at
+ * `@/features/tool-call-visualization` — there is no more reshaping
+ * into the deprecated `ToolCallObject` format.
+ */
+
 import React, { useMemo } from "react";
-import ToolCallVisualization from "@/features/chat/components/response/assistant-message/stream/ToolCallVisualization";
-import { useSelector } from "react-redux";
-import { selectPrimaryResponseToolBlocksByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
-import { toolCallBlockToLegacy } from "@/lib/chat-protocol";
-import type { ToolCallObject } from "@/lib/redux/socket-io/socket.types";
+
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectHideToolResults } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import {
   selectToolLifecycle,
   type ContentSegmentDbTool,
 } from "@/features/agents/redux/execution-system/active-requests/active-requests.selectors";
 import type { ToolLifecycleEntry } from "@/features/agents/types/request.types";
-import type { ToolCallPhase } from "@/lib/api/tool-call.types";
-import { useAppSelector } from "@/lib/redux/hooks";
-import { selectHideToolResults } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
-
-// ============================================================================
-// REDUX TOOL UPDATES — isolated subscriber so text-chunk re-renders don't
-// cause this to re-execute, and tool-event updates don't re-render text blocks.
-// ============================================================================
-
-interface ReduxToolVisualizationProps {
-  taskId: string;
-  hasContent: boolean;
-  className?: string;
-}
-
-/**
- * Subscribes to Redux rawToolEvents for a given taskId and renders
- * ToolCallVisualization. Isolated so that:
- *   - Text chunk re-renders (from parent) don't re-run the canonical selector.
- *   - New tool events re-render only this component, not the text blocks.
- */
-export const ReduxToolVisualization: React.FC<ReduxToolVisualizationProps> = ({
-  taskId,
-  hasContent,
-  className,
-}) => {
-  // Stable selector instance — created once per taskId change (during render, not after).
-  // selectPrimaryResponseToolBlocksByTaskId(taskId) produces a memoized createSelector instance;
-  // keeping one reference per taskId ensures the memoization cache is reused across renders.
-  const selector = useMemo(
-    () => selectPrimaryResponseToolBlocksByTaskId(taskId),
-    [taskId],
-  );
-
-  const toolBlocks = useSelector(selector);
-  const toolUpdates: ToolCallObject[] = useMemo(
-    () =>
-      toolBlocks.flatMap(
-        (b: any) => toolCallBlockToLegacy(b) as ToolCallObject[],
-      ),
-    [toolBlocks],
-  );
-
-  if (toolUpdates.length === 0) return null;
-
-  return (
-    <ToolCallVisualization
-      toolUpdates={toolUpdates}
-      hasContent={hasContent}
-      className={className}
-    />
-  );
-};
+import { ToolCallVisualization } from "@/features/tool-call-visualization";
 
 // ============================================================================
 // INLINE TOOL CARD — subscribes to a single tool's lifecycle by callId.
 // Renders independently; only re-renders when this specific tool changes.
 // ============================================================================
-
-function lifecycleToPhase(status: ToolLifecycleEntry["status"]): ToolCallPhase {
-  switch (status) {
-    case "completed":
-      return "complete";
-    case "error":
-      return "error";
-    default:
-      return "running";
-  }
-}
-
-function lifecycleToToolObjects(entry: ToolLifecycleEntry): ToolCallObject[] {
-  const objects: ToolCallObject[] = [];
-
-  objects.push({
-    id: entry.callId,
-    type: "mcp_input",
-    mcp_input: { name: entry.toolName, arguments: entry.arguments },
-    phase: lifecycleToPhase(entry.status),
-  });
-
-  if (entry.latestMessage) {
-    objects.push({
-      id: entry.callId,
-      type: "user_message",
-      user_message: entry.latestMessage,
-    });
-  }
-
-  if (entry.latestData && Object.keys(entry.latestData).length > 0) {
-    objects.push({
-      id: entry.callId,
-      type: "step_data",
-      step_data: { type: entry.status, content: entry.latestData },
-    });
-  }
-
-  if (entry.status === "completed" && entry.result != null) {
-    objects.push({
-      id: entry.callId,
-      type: "mcp_output",
-      mcp_output: { result: entry.result },
-    });
-  }
-
-  if (entry.status === "error" && entry.errorMessage) {
-    objects.push({
-      id: entry.callId,
-      type: "mcp_error",
-      mcp_error: entry.errorMessage,
-    });
-  }
-
-  return objects;
-}
 
 interface InlineToolCardProps {
   requestId: string;
@@ -131,8 +36,7 @@ interface InlineToolCardProps {
   /**
    * Owning conversation id. Required so this card can self-gate on the
    * instance-level `hideToolResults` flag — when true, this component
-   * renders nothing. Parent callers should still pass the card; we
-   * intentionally centralize the visibility check here so a single
+   * renders nothing. Centralizing the visibility check here means a single
    * setting silences every tool call on the surface with no scattered
    * conditionals.
    */
@@ -146,18 +50,14 @@ export const InlineToolCard: React.FC<InlineToolCardProps> = ({
 }) => {
   const hidden = useAppSelector(selectHideToolResults(conversationId));
   const lifecycle = useAppSelector(selectToolLifecycle(requestId, callId));
-  const toolObjects = useMemo(
-    () => (lifecycle ? lifecycleToToolObjects(lifecycle) : []),
-    [lifecycle],
-  );
 
   if (hidden) return null;
-  if (toolObjects.length === 0) return null;
+  if (!lifecycle) return null;
 
   return (
     <ToolCallVisualization
-      toolUpdates={toolObjects}
-      hasContent={true}
+      entries={[lifecycle]}
+      hasContent
       className="my-2"
     />
   );
@@ -165,8 +65,6 @@ export const InlineToolCard: React.FC<InlineToolCardProps> = ({
 
 // ============================================================================
 // DB TOOL CARD — renders a completed tool call from DB-loaded message parts.
-// Reads segment data directly, subscribes to `hideToolResults` so this
-// component self-gates when the surface has the flag set.
 // ============================================================================
 
 interface DbToolCardProps {
@@ -180,43 +78,40 @@ export const DbToolCard: React.FC<DbToolCardProps> = ({
   conversationId,
 }) => {
   const hidden = useAppSelector(selectHideToolResults(conversationId));
-  const toolObjects = useMemo((): ToolCallObject[] => {
-    const objects: ToolCallObject[] = [];
 
-    objects.push({
-      id: segment.callId,
-      type: "mcp_input",
-      mcp_input: { name: segment.toolName, arguments: segment.arguments },
-      phase: "complete" as ToolCallPhase,
-    });
-
-    if (segment.result != null) {
-      if (segment.isError) {
-        objects.push({
-          id: segment.callId,
-          type: "mcp_error",
-          mcp_error: String(segment.result),
-        });
-      } else {
-        // DB stores output as a JSON string — parse it so ToolCallVisualization
-        // gets the same object shape as the streaming path.
-        let parsed: unknown = segment.result;
-        if (typeof parsed === "string") {
-          try {
-            parsed = JSON.parse(parsed);
-          } catch {
-            // leave as raw string if not valid JSON
-          }
-        }
-        objects.push({
-          id: segment.callId,
-          type: "mcp_output",
-          mcp_output: { result: parsed },
-        });
+  const entry = useMemo<ToolLifecycleEntry>(() => {
+    // DB stores result as a JSON string — parse it so renderers see the
+    // same shape as the live-stream path.
+    let parsedResult: unknown = segment.result;
+    if (typeof parsedResult === "string" && !segment.isError) {
+      try {
+        parsedResult = JSON.parse(parsedResult);
+      } catch {
+        // leave as raw string if not valid JSON
       }
     }
 
-    return objects;
+    const now = new Date().toISOString();
+    return {
+      callId: segment.callId,
+      toolName: segment.toolName,
+      status: segment.isError ? "error" : "completed",
+      arguments: segment.arguments ?? {},
+      startedAt: now,
+      completedAt: now,
+      latestMessage: null,
+      latestData: null,
+      result: segment.isError ? null : parsedResult,
+      resultPreview: null,
+      errorType: null,
+      errorMessage: segment.isError
+        ? typeof segment.result === "string"
+          ? segment.result
+          : JSON.stringify(segment.result)
+        : null,
+      isDelegated: false,
+      events: [],
+    };
   }, [
     segment.callId,
     segment.toolName,
@@ -226,12 +121,12 @@ export const DbToolCard: React.FC<DbToolCardProps> = ({
   ]);
 
   if (hidden) return null;
-  if (toolObjects.length === 0) return null;
 
   return (
     <ToolCallVisualization
-      toolUpdates={toolObjects}
-      hasContent={true}
+      entries={[entry]}
+      hasContent
+      isPersisted
       className="my-2"
     />
   );

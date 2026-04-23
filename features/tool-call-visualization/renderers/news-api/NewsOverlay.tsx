@@ -4,14 +4,12 @@ import React, { useState, useMemo } from "react";
 import { Newspaper, Calendar, ExternalLink, Filter, SortAsc, AlertCircle, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ToolRendererProps } from "../types";
-import { ToolCallObject } from "@/lib/redux/socket-io/socket.types";
+import type { ToolRendererProps } from "../../types";
+import type { ToolLifecycleEntry } from "@/features/agents/types/request.types";
+import { getArg, resultAsObject } from "../_shared";
 
 interface NewsArticle {
-    source: {
-        id: string | null;
-        name: string;
-    };
+    source: { id: string | null; name: string };
     author: string | null;
     title: string;
     description: string | null;
@@ -28,47 +26,33 @@ interface ParsedNewsResult {
     isError: boolean;
 }
 
-function parseNewsResult(toolUpdates: ToolCallObject[]): ParsedNewsResult {
-    const inputUpdate = toolUpdates.find((u) => u.type === "mcp_input");
-    const query = typeof inputUpdate?.mcp_input?.arguments?.query === "string"
-        ? inputUpdate.mcp_input.arguments.query
-        : null;
-
-    if (toolUpdates.some((u) => u.type === "mcp_error")) {
+function parseNewsResult(entry: ToolLifecycleEntry): ParsedNewsResult {
+    const query = getArg<string>(entry, "query") ?? null;
+    if (entry.status === "error") {
         return { articles: [], totalResults: 0, query, isError: true };
     }
-
-    const outputUpdate = toolUpdates.find((u) => u.type === "mcp_output");
-    if (outputUpdate?.mcp_output) {
-        const rawResult = outputUpdate.mcp_output.result;
-        let result: { articles?: NewsArticle[]; total_results?: number } | null = null;
-
-        if (typeof rawResult === "object" && rawResult !== null) {
-            result = rawResult as typeof result;
-        } else if (typeof rawResult === "string") {
-            try { result = JSON.parse(rawResult); } catch { /* ignore */ }
-        }
-
-        if (result?.articles) {
-            return {
-                articles: result.articles,
-                totalResults: result.total_results ?? result.articles.length,
-                query,
-                isError: false,
-            };
-        }
-    }
-
-    return { articles: [], totalResults: 0, query, isError: false };
+    const result = resultAsObject(entry);
+    const articles = Array.isArray(result?.articles)
+        ? (result!.articles as NewsArticle[])
+        : [];
+    return {
+        articles,
+        totalResults:
+            typeof result?.total_results === "number"
+                ? (result!.total_results as number)
+                : articles.length,
+        query,
+        isError: false,
+    };
 }
 
-export const NewsOverlay: React.FC<ToolRendererProps> = ({ toolUpdates }) => {
+export const NewsOverlay: React.FC<ToolRendererProps> = ({ entry }) => {
     const [selectedSource, setSelectedSource] = useState<string>("all");
     const [sortBy, setSortBy] = useState<"newest" | "oldest">("newest");
 
     const { articles: allArticles, totalResults, query, isError } = useMemo(
-        () => parseNewsResult(toolUpdates),
-        [toolUpdates]
+        () => parseNewsResult(entry),
+        [entry],
     );
 
     // Get unique sources for filter buttons

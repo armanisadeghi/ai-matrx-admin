@@ -14,7 +14,8 @@ import {
     ChevronUp,
     Link2,
 } from "lucide-react";
-import { ToolRendererProps } from "../types";
+import type { ToolRendererProps } from "../../types";
+import { resultAsString } from "../_shared";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -137,31 +138,15 @@ function CollapsibleText({ text }: { text: string }) {
 // Component
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const DeepResearchOverlay: React.FC<ToolRendererProps> = ({
-    toolUpdates,
-    currentIndex,
-}) => {
+export const DeepResearchOverlay: React.FC<ToolRendererProps> = ({ entry }) => {
     const [viewMode, setViewMode] = useState<"cards" | "fulltext">("cards");
     const [copyAllSuccess, setCopyAllSuccess] = useState(false);
     const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
-    const visibleUpdates =
-        currentIndex !== undefined
-            ? toolUpdates.slice(0, currentIndex + 1)
-            : toolUpdates;
-
-    const outputUpdate = visibleUpdates.find((u) => u.type === "mcp_output");
-    const rawResult = outputUpdate?.mcp_output?.result;
-    const resultText =
-        typeof rawResult === "string"
-            ? rawResult
-            : rawResult != null
-              ? JSON.stringify(rawResult)
-              : undefined;
-
+    const resultText = resultAsString(entry);
     const parsed = useMemo(
         () => (resultText ? parseResearchOutput(resultText) : null),
-        [resultText]
+        [resultText],
     );
 
     const readResults = parsed?.readResults ?? [];

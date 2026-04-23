@@ -20,7 +20,6 @@ import {
   selectResponseDataByListenerId,
   selectResponseInfoByListenerId,
   selectResponseErrorsByListenerId,
-  selectResponseToolUpdatesByListenerId,
 } from "@/lib/redux/socket-io";
 
 const INFO = false;
@@ -68,9 +67,6 @@ const ResponseColumn: React.FC<{ isOverlay?: boolean }> = ({
   );
   const errorsResponse = useAppSelector(
     selectResponseErrorsByListenerId(firstListenerId),
-  );
-  const toolUpdatesResponse = useAppSelector(
-    selectResponseToolUpdatesByListenerId(firstListenerId),
   );
   const isTaskComplete = useAppSelector(
     selectResponseEndedByListenerId(firstListenerId),

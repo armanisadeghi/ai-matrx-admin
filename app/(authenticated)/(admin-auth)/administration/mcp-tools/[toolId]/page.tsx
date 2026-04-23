@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
-import { ToolViewPage } from "@/components/admin/mcp-tools/ToolViewPage";
+import { ToolViewPage } from "@/features/tool-call-visualization/admin/mcp-tools/ToolViewPage";
 import { Loader2 } from "lucide-react";
 
 interface Props {

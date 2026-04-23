@@ -24,7 +24,6 @@ const MarkdownStreamImpl: React.FC<MarkdownStreamProps> = ({
   messageId,
   allowFullScreenEditor,
   hideCopyButton,
-  toolUpdates,
   onError,
   onPhaseUpdate,
   serverProcessedBlocks,
@@ -57,7 +56,6 @@ const MarkdownStreamImpl: React.FC<MarkdownStreamProps> = ({
           messageId={messageId}
           allowFullScreenEditor={allowFullScreenEditor}
           hideCopyButton={hideCopyButton}
-          toolUpdates={toolUpdates}
           onError={onError}
           onPhaseUpdate={onPhaseUpdate}
           serverProcessedBlocks={serverProcessedBlocks}

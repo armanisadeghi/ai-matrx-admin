@@ -271,6 +271,13 @@ export function useShortcutQuickCreate({
         agentId,
         agentVersionId: useLatest ? null : agentVersionId,
         useLatest,
+        // Derived execution target (server will resolve on create; provide
+        // best-effort values so the slice has a valid record immediately)
+        resolvedId: useLatest ? agentId : (agentVersionId ?? agentId),
+        isVersion: !useLatest && agentVersionId != null,
+        agentName: agent?.name ?? null,
+        variableDefinitions: agent?.variableDefinitions ?? [],
+        contextSlots: agent?.contextSlots ?? [],
         // Surfaces & scope routing
         enabledFeatures: finalSurfaces,
         scopeMappings:
@@ -297,6 +304,8 @@ export function useShortcutQuickCreate({
     },
     [
       agent?.name,
+      agent?.variableDefinitions,
+      agent?.contextSlots,
       agentId,
       agentVersionId,
       allowChat,

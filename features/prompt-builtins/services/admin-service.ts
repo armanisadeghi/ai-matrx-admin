@@ -70,7 +70,7 @@ function mapShortcutCategoryFromDb(row: ShortcutCategoryRow): ShortcutCategory {
     sort_order: row.sort_order ?? 999,
     is_active: row.is_active ?? true,
     metadata: parseShortcutCategoryMetadata(row.metadata),
-    enabled_contexts: parseEnabledContexts(row.enabled_contexts),
+    enabled_contexts: parseEnabledContexts(row.enabled_features),
   };
 }
 

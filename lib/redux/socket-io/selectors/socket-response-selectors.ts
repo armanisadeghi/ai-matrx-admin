@@ -7,8 +7,6 @@ import {
   ResponseState,
 } from "@/lib/redux/socket-io/socket.types";
 import { selectTaskListenerIds, selectTaskById } from "./socket-task-selectors";
-import { buildCanonicalBlocks } from "@/lib/chat-protocol";
-import type { ToolCallBlock } from "@/lib/chat-protocol";
 
 // Shared constants to avoid creating new array references
 export const EMPTY_ARRAY: any[] = [];
@@ -17,7 +15,6 @@ const EMPTY_RESPONSE_STATE = {
   data: EMPTY_ARRAY,
   info: EMPTY_ARRAY,
   errors: EMPTY_ARRAY,
-  toolUpdates: EMPTY_ARRAY,
   ended: false,
 };
 
@@ -102,15 +99,6 @@ export const selectResponseErrorsByListenerId = (
     return response.errors ?? EMPTY_ARRAY;
   });
 
-export const selectResponseToolUpdatesByListenerId = (
-  listenerId: string | undefined,
-) =>
-  createSelector([selectResponseByListenerId(listenerId)], (response) => {
-    // Ensure transformation to avoid reselect identity function warning
-    if (!listenerId || !response) return EMPTY_ARRAY;
-    return response.toolUpdates ?? EMPTY_ARRAY;
-  });
-
 export const selectResponseEndedByListenerId = (
   listenerId: string | undefined,
 ) =>
@@ -126,14 +114,6 @@ export const selectHasResponseErrorsByListenerId = (
   createSelector(
     [selectResponseErrorsByListenerId(listenerId)],
     (errors) => errors.length > 0,
-  );
-
-export const selectHasResponseToolUpdatesByListenerId = (
-  listenerId: string | undefined,
-) =>
-  createSelector(
-    [selectResponseToolUpdatesByListenerId(listenerId)],
-    (toolUpdates) => toolUpdates.length > 0,
   );
 
 // ==================== Combined Task-Response Selectors ====================
@@ -183,7 +163,6 @@ export const selectTaskResults = (taskId: string) =>
             data: [],
             info: [],
             errors: [],
-            toolUpdates: [],
             ended: false,
           };
         }
@@ -193,7 +172,6 @@ export const selectTaskResults = (taskId: string) =>
           data: response.data || [],
           info: response.info || [],
           errors: response.errors || [],
-          toolUpdates: response.toolUpdates || [],
           ended: response.ended || false,
         };
       }
@@ -207,7 +185,6 @@ export const selectTaskResults = (taskId: string) =>
             data: [...combined.data, ...response.data],
             info: [...combined.info, ...response.info],
             errors: [...combined.errors, ...response.errors],
-            toolUpdates: [...combined.toolUpdates, ...response.toolUpdates],
             ended: combined.ended && response.ended,
           };
         },
@@ -216,7 +193,6 @@ export const selectTaskResults = (taskId: string) =>
           data: [],
           info: [],
           errors: [],
-          toolUpdates: [],
           ended: true,
         },
       );
@@ -303,13 +279,6 @@ export const selectPrimaryResponseErrorsByTaskId = (taskId: string) =>
     return response.errors ?? EMPTY_ARRAY;
   });
 
-export const selectPrimaryResponseToolUpdatesByTaskId = (taskId: string) =>
-  createSelector([selectPrimaryResponseForTask(taskId)], (response) => {
-    // Ensure transformation to avoid reselect identity function warning
-    if (!taskId || !response) return EMPTY_ARRAY;
-    return response.toolUpdates ?? EMPTY_ARRAY;
-  });
-
 export const selectPrimaryResponseEndedByTaskId = (taskId: string) =>
   createSelector([selectPrimaryResponseForTask(taskId)], (response) => {
     // Ensure transformation to avoid reselect identity function warning
@@ -321,12 +290,6 @@ export const selectHasPrimaryResponseErrorsByTaskId = (taskId: string) =>
   createSelector(
     [selectPrimaryResponseErrorsByTaskId(taskId)],
     (errors) => errors.length > 0,
-  );
-
-export const selectHasPrimaryResponseToolUpdatesByTaskId = (taskId: string) =>
-  createSelector(
-    [selectPrimaryResponseToolUpdatesByTaskId(taskId)],
-    (toolUpdates) => toolUpdates.length > 0,
   );
 
 export const selectPrimaryCombinedTextByTaskId = (taskId: string) =>
@@ -355,12 +318,6 @@ export const selectFirstPrimaryResponseInfoByTaskId = (taskId: string) =>
 export const selectFirstPrimaryResponseErrorByTaskId = (taskId: string) =>
   createSelector([selectPrimaryResponseErrorsByTaskId(taskId)], (errors) =>
     errors.length > 0 ? errors[0] : null,
-  );
-
-export const selectFirstPrimaryResponseToolUpdateByTaskId = (taskId: string) =>
-  createSelector(
-    [selectPrimaryResponseToolUpdatesByTaskId(taskId)],
-    (toolUpdates) => (toolUpdates.length > 0 ? toolUpdates[0] : null),
   );
 
 // ==================== Selector Factory for Dynamic Usage ====================
@@ -394,10 +351,6 @@ export const createTaskResponseSelectors = (taskId: string) => {
       [baseSelector],
       (response) => response?.errors || EMPTY_ARRAY,
     ),
-    selectToolUpdates: createSelector(
-      [baseSelector],
-      (response) => response?.toolUpdates || EMPTY_ARRAY,
-    ),
     selectEnded: createSelector(
       [baseSelector],
       (response) => response?.ended || false,
@@ -405,10 +358,6 @@ export const createTaskResponseSelectors = (taskId: string) => {
     selectHasErrors: createSelector(
       [baseSelector],
       (response) => (response?.errors?.length || 0) > 0,
-    ),
-    selectHasToolUpdates: createSelector(
-      [baseSelector],
-      (response) => (response?.toolUpdates?.length || 0) > 0,
     ),
   };
 };
@@ -424,34 +373,3 @@ export const selectCombinedText = (listenerId: string) =>
     }
     return response.text || "";
   });
-
-// ==================== Canonical Protocol Selectors ====================
-// These selectors derive ToolCallBlock[] from rawToolEvents via buildCanonicalBlocks.
-// memoized by createSelector — recomputes only when rawToolEvents reference changes.
-
-const EMPTY_TOOL_BLOCKS: ToolCallBlock[] = [];
-
-export const selectPrimaryResponseRawToolEventsByTaskId = (taskId: string) =>
-  createSelector([selectPrimaryResponseForTask(taskId)], (response) => {
-    if (!taskId || !response) return EMPTY_ARRAY;
-    return response.rawToolEvents || EMPTY_ARRAY;
-  });
-
-/**
- * Returns ToolCallBlock[] derived from raw tool StreamEvents via buildCanonicalBlocks.
- * This is the canonical source for tool data — prefer over selectPrimaryResponseToolUpdatesByTaskId
- * for new consumers. The adapter in adapters.ts can convert to legacy ToolCallObject[] if needed.
- */
-export const selectPrimaryResponseToolBlocksByTaskId = (taskId: string) =>
-  createSelector(
-    [selectPrimaryResponseRawToolEventsByTaskId(taskId)],
-    (rawToolEvents) => {
-      if (!rawToolEvents || rawToolEvents.length === 0)
-        return EMPTY_TOOL_BLOCKS;
-      const blocks = buildCanonicalBlocks(rawToolEvents as any);
-      const toolBlocks = blocks.filter(
-        (b): b is ToolCallBlock => b.type === "tool_call",
-      );
-      return toolBlocks.length > 0 ? toolBlocks : EMPTY_TOOL_BLOCKS;
-    },
-  );

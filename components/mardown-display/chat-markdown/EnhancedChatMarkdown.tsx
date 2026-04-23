@@ -1,19 +1,11 @@
 "use client";
 
-import React, {
-  useState,
-  useEffect,
-  useMemo,
-  useCallback,
-  useContext,
-} from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { cn } from "@/styles/themes/utils";
 import { splitContentIntoBlocksV2 } from "../markdown-classification/processors/utils/content-splitter-v2";
 import { RenderBlock } from "./block-registry/BlockRenderer";
 import { InlineCopyButton } from "@/components/matrx/buttons/MarkdownCopyButton";
 import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
-import ToolCallVisualization from "@/features/chat/components/response/assistant-message/stream/ToolCallVisualization";
-import { ReactReduxContext } from "react-redux";
 import FullScreenMarkdownEditor from "./FullScreenMarkdownEditor";
 import { InlineStatusIndicator } from "./internal-handlers/InlineStatusIndicator";
 import {
@@ -27,7 +19,6 @@ import { selectMessageInterleavedContent } from "@/features/agents/redux/executi
 import type { RenderBlockPayload } from "@/types/python-generated/stream-events";
 import { useAppSelector } from "@/lib/redux/hooks";
 import {
-  ReduxToolVisualization,
   InlineToolCard,
   DbToolCard,
 } from "./internal-handlers/ToolHandlers";
@@ -61,7 +52,6 @@ export interface ChatMarkdownDisplayProps {
   messageId?: string;
   allowFullScreenEditor?: boolean;
   hideCopyButton?: boolean;
-  toolUpdates?: any[]; // Optional: Pass tool updates directly (bypasses Redux selector)
   /** Pre-processed blocks from server (new content_block protocol). Bypasses client-side parsing. */
   serverProcessedBlocks?: ServerProcessedBlock[];
   /**
@@ -109,17 +99,12 @@ export const EnhancedChatMarkdownInternal: React.FC<
   messageId,
   allowFullScreenEditor = true,
   hideCopyButton = true,
-  toolUpdates: toolUpdatesProp,
   serverProcessedBlocks,
   applyLocalEdits = true,
 }) => {
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [editedContent, setEditedContent] = useState<string | null>(null);
   const [hasError, setHasError] = useState(false);
-
-  const reduxContext = useContext(ReactReduxContext);
-  const hasReduxProvider =
-    reduxContext !== null && reduxContext.store !== undefined;
 
   const requestTextSelector = useMemo(
     () => (requestId ? selectAccumulatedText(requestId) : _selectEmptyString),
@@ -174,8 +159,6 @@ export const EnhancedChatMarkdownInternal: React.FC<
   const hasDbInterleavedSpecial = messageInterleavedContent.some(
     (s) => s.type === "db_tool" || s.type === "thinking",
   );
-
-  const toolUpdates = toolUpdatesProp ?? [];
 
   useEffect(() => {
     if (isStreamActive) {
@@ -500,37 +483,7 @@ export const EnhancedChatMarkdownInternal: React.FC<
     requestId &&
     unifiedSlots.some((s) => s.kind === "tool" || s.kind === "status");
 
-  if (isWaitingForContent && !hasPreTextSegments && toolUpdates.length === 0) {
-    const hasReduxTaskId =
-      hasReduxProvider && !!taskId && toolUpdatesProp === undefined;
-
-    if (hasReduxTaskId) {
-      return (
-        <div className="mb-1 w-full min-w-0 text-left overflow-x-hidden">
-          <MarkdownErrorBoundary
-            fallback={null}
-            onError={(error) =>
-              console.error(
-                "[MarkdownStream] ReduxToolVisualization error:",
-                error,
-              )
-            }
-          >
-            <ReduxToolVisualization
-              taskId={taskId!}
-              hasContent={false}
-              className="mb-2"
-            />
-          </MarkdownErrorBoundary>
-          <div className={containerStyles}>
-            <div className="flex items-center justify-start py-6">
-              <MatrxMiniLoader />
-            </div>
-          </div>
-        </div>
-      );
-    }
-
+  if (isWaitingForContent && !hasPreTextSegments) {
     try {
       return (
         <div className="mb-1 w-full min-w-0 text-left overflow-x-hidden">
@@ -550,44 +503,6 @@ export const EnhancedChatMarkdownInternal: React.FC<
   try {
     return (
       <div className="mb-1 w-full min-w-0 text-left overflow-x-hidden">
-        {/* Redux-based tool updates: isolated subscriber, only re-renders on tool events */}
-        {hasReduxProvider && taskId && toolUpdatesProp === undefined && (
-          <MarkdownErrorBoundary
-            fallback={null}
-            onError={(error) =>
-              console.error(
-                "[MarkdownStream] ReduxToolVisualization error:",
-                error,
-              )
-            }
-          >
-            <ReduxToolVisualization
-              taskId={taskId}
-              hasContent={!!resolvedContent.trim()}
-              className="mb-2"
-            />
-          </MarkdownErrorBoundary>
-        )}
-
-        {/* Prop-based tool updates (event mode / legacy adapter) */}
-        {toolUpdatesProp !== undefined && toolUpdates.length > 0 && (
-          <MarkdownErrorBoundary
-            fallback={null}
-            onError={(error) =>
-              console.error(
-                "[MarkdownStream] ToolCallVisualization error:",
-                error,
-              )
-            }
-          >
-            <ToolCallVisualization
-              toolUpdates={toolUpdates}
-              hasContent={!!resolvedContent.trim()}
-              className="mb-2"
-            />
-          </MarkdownErrorBoundary>
-        )}
-
         <div className={containerStyles}>
           {hasUnifiedSpecial && requestId
             ? unifiedSlots.map((slot, i) => {

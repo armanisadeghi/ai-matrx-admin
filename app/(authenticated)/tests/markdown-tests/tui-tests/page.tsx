@@ -182,6 +182,7 @@ export default function TuiTestPage() {
                                 state={htmlPreviewState}
                                 actions={htmlPreviewState}
                                 user={user}
+                                isAgentSystem={false}
                             />
                         </div>
                     </div>

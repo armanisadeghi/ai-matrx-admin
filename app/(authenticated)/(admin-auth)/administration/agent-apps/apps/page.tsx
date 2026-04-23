@@ -56,6 +56,7 @@ import {
   fetchAgentAppsAdmin,
   updateAgentAppAdmin,
   type AgentAppAdminView,
+  type UpdateAgentAppAdminInput,
 } from "@/lib/services/agent-apps-admin-service";
 
 type SortField =
@@ -302,7 +303,7 @@ export default function AgentAppsAdminListPage() {
 
   const handleMutate = async (
     id: string,
-    patch: Parameters<typeof updateAgentAppAdmin>[0],
+    patch: Omit<UpdateAgentAppAdminInput, "id">,
     description: string,
   ) => {
     try {

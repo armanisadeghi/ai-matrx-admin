@@ -3,121 +3,88 @@
 import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Info, Eye } from "lucide-react";
-import type { ToolCallObject } from "@/lib/api/tool-call.types";
-import { hasCustomRenderer } from "@/features/chat/components/response/tool-renderers/registry";
-import ToolCallVisualization from "@/features/chat/components/response/assistant-message/stream/ToolCallVisualization";
+
+import { ToolCallVisualization } from "@/features/tool-call-visualization";
+import { hasCustomRenderer } from "@/features/tool-call-visualization/registry/registry";
+import type { ToolLifecycleEntry } from "@/features/agents/types/request.types";
+import type { ToolEventPayload } from "@/types/python-generated/stream-events";
 import type { ToolStreamEvent, FinalPayload } from "../types";
 
 /**
- * Bridge streaming tool test events into the ToolCallObject[] format
- * that our existing tool renderer system expects.
+ * Build a canonical `ToolLifecycleEntry` from the tool-testing stream events
+ * and final payload so the preview renders identically to the live agent-run
+ * visualization.
  */
-function buildToolCallObjects(
+function buildLifecycleEntry(
   toolName: string,
   args: Record<string, unknown>,
   toolEvents: ToolStreamEvent[],
   finalPayload: FinalPayload | null,
-): ToolCallObject[] {
-  const objects: ToolCallObject[] = [];
+): ToolLifecycleEntry {
+  const callId = toolEvents[0]?.call_id ?? "test-call";
+  const startedAt = new Date().toISOString();
 
-  // 1. mcp_input — always first
-  objects.push({
-    id: toolEvents[0]?.call_id ?? "test-call",
-    type: "mcp_input",
-    mcp_input: {
-      name: toolName,
-      arguments: args,
-    },
-  });
+  // Re-shape the local ToolStreamEvent[] into ToolEventPayload[] so
+  // renderers that walk `entry.events` see the exact wire shape.
+  const events: ToolEventPayload[] = toolEvents.map(
+    (e) =>
+      ({
+        event: e.event,
+        call_id: e.call_id,
+        tool_name: e.tool_name,
+        timestamp: e.timestamp,
+        message: e.message,
+        show_spinner: e.show_spinner,
+        data: e.data,
+      }) as unknown as ToolEventPayload,
+  );
 
-  // 2. Map tool events to step_data / user_message
-  for (const event of toolEvents) {
-    switch (event.event) {
-      case "tool_progress":
-      case "tool_step": {
-        const msg = event.message;
-        if (msg) {
-          objects.push({
-            id: event.call_id,
-            type: "user_message",
-            user_message: msg,
-          });
-        }
-        if (Object.keys(event.data).length > 0) {
-          objects.push({
-            id: event.call_id,
-            type: "step_data",
-            step_data: {
-              type: event.event,
-              content: event.data,
-            },
-          });
-        }
-        break;
-      }
-      case "tool_result_preview":
-        if (event.data.preview) {
-          objects.push({
-            id: event.call_id,
-            type: "step_data",
-            step_data: {
-              type: "result_preview",
-              content: event.data,
-            },
-          });
-        }
-        break;
-      case "tool_started": {
-        const startedMsg = event.message;
-        if (startedMsg) {
-          objects.push({
-            id: event.call_id,
-            type: "user_message",
-            user_message: startedMsg,
-          });
-        }
-        break;
-      }
-      case "tool_completed": {
-        // The completed event carries the full result — map it to mcp_output
-        // so renderers see a complete output before finalPayload is set.
-        // finalPayload will later add its own mcp_output; we deduplicate by
-        // checking whether one already exists before pushing from finalPayload.
-        const completedResult = event.data.result;
-        if (completedResult !== undefined) {
-          objects.push({
-            id: event.call_id,
-            type: "mcp_output",
-            mcp_output: {
-              result: completedResult,
-            },
-          });
-        }
-        break;
-      }
-      case "tool_error":
-        objects.push({
-          id: event.call_id,
-          type: "mcp_error",
-          mcp_error: event.message ?? "Tool execution failed",
-        });
-        break;
-    }
-  }
+  const errorEvent = toolEvents.find((e) => e.event === "tool_error");
+  const completedEvent = toolEvents.find((e) => e.event === "tool_completed");
+  const latestProgress = [...toolEvents]
+    .reverse()
+    .find((e) => e.event === "tool_progress" || e.event === "tool_step");
 
-  // 3. mcp_output — from final payload, only if tool_completed didn't already produce one
-  const alreadyHasOutput = objects.some((o) => o.type === "mcp_output");
-  if (!alreadyHasOutput && finalPayload?.output?.full_result) {
-    objects.push({
-      id: toolEvents[0]?.call_id ?? "test-call",
-      type: "mcp_output",
-      mcp_output: {
-        result: finalPayload.output.full_result.output,
-      },
-    });
-  }
+  const completedAt =
+    completedEvent || errorEvent ? new Date().toISOString() : null;
 
-  return objects;
+  const finalResult =
+    (finalPayload?.output as { full_result?: { output?: unknown } } | null)
+      ?.full_result?.output ??
+    (completedEvent?.data.result as unknown) ??
+    null;
+
+  const status: ToolLifecycleEntry["status"] = errorEvent
+    ? "error"
+    : completedEvent || finalResult !== null
+      ? "completed"
+      : latestProgress
+        ? "progress"
+        : "started";
+
+  return {
+    callId,
+    toolName,
+    status,
+    arguments: args,
+    startedAt,
+    completedAt,
+    latestMessage: latestProgress?.message ?? null,
+    latestData:
+      latestProgress && Object.keys(latestProgress.data).length > 0
+        ? latestProgress.data
+        : null,
+    result: errorEvent ? null : finalResult,
+    resultPreview: null,
+    errorType: null,
+    errorMessage: errorEvent
+      ? typeof errorEvent.message === "string"
+        ? errorEvent.message
+        : "Tool execution failed"
+      : null,
+    isDelegated: false,
+    events,
+  };
 }
 
 // ─── Component ──────────────────────────────────────────────────────────────
@@ -139,12 +106,12 @@ export function ToolRendererPreview({
 }: ToolRendererPreviewProps) {
   const hasRenderer = hasCustomRenderer(toolName);
 
-  const toolCallObjects = useMemo(
-    () => buildToolCallObjects(toolName, args, toolEvents, finalPayload),
+  const entry = useMemo(
+    () => buildLifecycleEntry(toolName, args, toolEvents, finalPayload),
     [toolName, args, toolEvents, finalPayload],
   );
 
-  if (toolCallObjects.length <= 1 && !isRunning) {
+  if (toolEvents.length === 0 && !isRunning && !finalPayload) {
     return (
       <div className="flex flex-col items-center justify-center py-8 gap-2 text-muted-foreground">
         <Eye className="h-6 w-6 opacity-40" />
@@ -155,7 +122,6 @@ export function ToolRendererPreview({
 
   return (
     <div className="space-y-2 p-3">
-      {/* Renderer badge */}
       <div className="flex items-center gap-2">
         <span className="text-xs font-semibold">Rendered via:</span>
         {hasRenderer ? (
@@ -169,14 +135,12 @@ export function ToolRendererPreview({
         )}
       </div>
 
-      {/* Full tool visualization — same shell used in real chat */}
-      <ToolCallVisualization toolUpdates={toolCallObjects} />
+      <ToolCallVisualization entries={[entry]} hasContent />
 
-      {/* Data bridge info */}
       <p className="text-[10px] text-muted-foreground">
         <Info className="h-3 w-3 inline mr-1" />
-        {toolCallObjects.length} ToolCallObject(s) generated from{" "}
-        {toolEvents.length} stream events
+        Rendering from canonical ToolLifecycleEntry · {toolEvents.length} stream
+        events · status: {entry.status}
       </p>
     </div>
   );

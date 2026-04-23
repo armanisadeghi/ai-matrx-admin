@@ -108,7 +108,8 @@ export interface AgentValueDefaults {
 }
 
 export interface AgentExecutionConfig
-  extends AgentPresentationConfig,
+  extends
+    AgentPresentationConfig,
     AgentEnvironmentBindings,
     AgentValueDefaults {}
 
@@ -162,11 +163,24 @@ export function resolveExecutionConfig(
   for (const layer of layers) {
     if (!layer) continue;
     for (const key of Object.keys(layer) as Array<keyof AgentExecutionConfig>) {
-      const v = layer[key];
-      if (v !== undefined) {
-        (out as Record<string, unknown>)[key] = v;
-      }
+      assignIfDefined(out, key, layer[key]);
     }
   }
   return out;
+}
+
+/**
+ * Per-key copy that preserves the K → AgentExecutionConfig[K] relationship.
+ * Without the generic K, `target[key] = value` would require the intersection
+ * of every field's value type (which collapses to `never`) because `key`
+ * would carry the full `keyof AgentExecutionConfig` union.
+ */
+function assignIfDefined<K extends keyof AgentExecutionConfig>(
+  target: AgentExecutionConfig,
+  key: K,
+  value: AgentExecutionConfig[K] | undefined,
+): void {
+  if (value !== undefined) {
+    target[key] = value;
+  }
 }

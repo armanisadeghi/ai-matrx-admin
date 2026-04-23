@@ -16,10 +16,8 @@ export type {
 export {
   foldBackendStreamEvents,
   foldStreamEventsToToolTestState,
-  streamEventsToRenderedToolCalls,
 } from "./fold-stream-events";
 
-export { buildToolCallObjectsForPreview } from "./build-tool-call-objects";
 export {
   buildToolTesterStreamCallbacks,
   buildToolTestStreamCallbacks,
@@ -27,6 +25,5 @@ export {
 export { toolEventPayloadToToolStreamEvent } from "./normalize-tool-event";
 export {
   ndjsonToFoldState,
-  ndjsonToRenderedToolCalls,
   parseNdjsonStringToStreamEvents,
 } from "./ndjson";

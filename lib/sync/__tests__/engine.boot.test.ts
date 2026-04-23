@@ -3,10 +3,11 @@
  * legacy-key migration.
  */
 
-import { configureStore, createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import { configureStore, createSlice } from "@reduxjs/toolkit";
 import { bootSync } from "../engine/boot";
 import { definePolicy } from "../policies/define";
-import { REHYDRATE_ACTION_TYPE } from "../engine/rehydrate";
+import { REHYDRATE_ACTION_TYPE, isRehydrateAction } from "../engine/rehydrate";
+import type { RehydrateAction } from "../engine/rehydrate";
 import type { SyncChannel } from "../channel";
 import type { IdentityKey } from "../types";
 
@@ -46,10 +47,11 @@ function makeThemeSetup() {
         initialState: { mode: "dark" as "light" | "dark" },
         reducers: {},
         extraReducers: (b) => {
-            b.addCase(
-                REHYDRATE_ACTION_TYPE,
-                (state, action: PayloadAction<{ sliceName: string; state: { mode: "light" | "dark" } }>) => {
-                    if (action.payload.sliceName === "theme") state.mode = action.payload.state.mode;
+            b.addMatcher(
+                isRehydrateAction,
+                (state, action: RehydrateAction) => {
+                    const payload = action.payload as { sliceName: string; state: { mode: "light" | "dark" } };
+                    if (payload.sliceName === "theme") state.mode = payload.state.mode;
                 },
             );
         },

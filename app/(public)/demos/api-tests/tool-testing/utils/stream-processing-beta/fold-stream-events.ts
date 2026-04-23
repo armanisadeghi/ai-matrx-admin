@@ -37,8 +37,6 @@ import {
   isBrokerEvent,
 } from "@/types/python-generated/stream-events";
 import type { FinalPayload, ToolStreamEvent } from "../../types";
-import { buildToolCallObjectsForPreview } from "./build-tool-call-objects";
-import type { ToolCallObject } from "@/lib/api/tool-call.types";
 import { toolEventPayloadToToolStreamEvent } from "./normalize-tool-event";
 
 /** Wire event that did not match any known V2 discriminator (same as `process-stream` fallback). */
@@ -333,30 +331,3 @@ export function foldStreamEventsToToolTestState(events: TypedStreamEvent[]): {
   };
 }
 
-/**
- * Tool renderer pipeline: fold → `ToolCallObject[]` for `ToolCallVisualization`.
- */
-export function streamEventsToRenderedToolCalls(input: {
-  toolName: string;
-  args: Record<string, unknown>;
-  streamEvents: TypedStreamEvent[];
-}): {
-  fold: BackendStreamFoldState;
-  toolEvents: ToolStreamEvent[];
-  finalPayload: FinalPayload | null;
-  toolCallObjects: ToolCallObject[];
-} {
-  const fold = foldBackendStreamEvents(input.streamEvents);
-  const toolCallObjects = buildToolCallObjectsForPreview(
-    input.toolName,
-    input.args,
-    fold.toolStreamEvents,
-    fold.toolTesterFinalPayload,
-  );
-  return {
-    fold,
-    toolEvents: fold.toolStreamEvents,
-    finalPayload: fold.toolTesterFinalPayload,
-    toolCallObjects,
-  };
-}

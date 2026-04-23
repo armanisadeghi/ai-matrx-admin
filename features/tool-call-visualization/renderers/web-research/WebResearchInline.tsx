@@ -13,8 +13,16 @@ import {
     Link2,
     Brain,
 } from "lucide-react";
-import { ToolRendererProps } from "../types";
-import { ToolCallObject } from "@/lib/redux/socket-io/socket.types";
+import type { ToolRendererProps } from "../../types";
+import type { ToolLifecycleEntry } from "@/features/agents/types/request.types";
+import type { ToolEventPayload } from "@/types/python-generated/stream-events";
+import {
+    collectMessages,
+    filterStepEvents,
+    getArg,
+    isTerminal,
+    resultAsString,
+} from "../_shared";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -39,40 +47,26 @@ interface ParsedWebResearch {
 // Parser — extracts ALL data from the tool updates
 // ─────────────────────────────────────────────────────────────────────────────
 
-function parseWebResearch(updates: ToolCallObject[]): ParsedWebResearch {
-    const inputUpdate = updates.find((u) => u.type === "mcp_input");
-    const args = inputUpdate?.mcp_input?.arguments ?? {};
-    const queries: string[] = Array.isArray(args.queries)
-        ? (args.queries as string[])
-        : typeof args.query === "string"
-          ? [args.query as string]
+function parseWebResearch(
+    entry: ToolLifecycleEntry,
+    events: ToolEventPayload[] | undefined,
+): ParsedWebResearch {
+    const queriesArg = getArg<unknown>(entry, "queries");
+    const queries: string[] = Array.isArray(queriesArg)
+        ? (queriesArg as string[])
+        : typeof getArg<string>(entry, "query") === "string"
+          ? [getArg<string>(entry, "query") as string]
           : [];
-    const instructions =
-        typeof args.instructions === "string"
-            ? (args.instructions as string)
-            : "";
+    const instructions = (getArg<string>(entry, "instructions") as string) ?? "";
 
-    const summaryUpdate = updates.find(
-        (u) =>
-            u.type === "step_data" &&
-            u.step_data?.type === "web_result_summary"
-    );
-    const summaryContent = summaryUpdate?.step_data?.content as
-        | Record<string, unknown>
-        | undefined;
-    const stepDataAnalysis =
-        typeof summaryContent?.text === "string"
-            ? (summaryContent.text as string)
+    const summaryStep = filterStepEvents(events, "web_result_summary")[0];
+    const summaryText =
+        typeof summaryStep?.metadata?.text === "string"
+            ? (summaryStep.metadata.text as string)
             : "";
+    const stepDataAnalysis = summaryText;
 
-    const outputUpdate = updates.find((u) => u.type === "mcp_output");
-    const rawResult = outputUpdate?.mcp_output?.result;
-    const outputText =
-        typeof rawResult === "string"
-            ? rawResult
-            : rawResult != null
-              ? JSON.stringify(rawResult)
-              : "";
+    const outputText = resultAsString(entry) ?? "";
 
     let aiAnalysis = stepDataAnalysis;
     if (!aiAnalysis && outputText) {
@@ -439,50 +433,29 @@ function buildStatLine(
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const WebResearchInline: React.FC<ToolRendererProps> = ({
-    toolUpdates,
-    currentIndex,
+    entry,
+    events,
     onOpenOverlay,
     toolGroupId = "default",
 }) => {
-    const visibleUpdates =
-        currentIndex !== undefined
-            ? toolUpdates.slice(0, currentIndex + 1)
-            : toolUpdates;
+    const browsingUrls = collectMessages(events)
+        .filter((m) => m.startsWith("Browsing "))
+        .map((m) => m.replace("Browsing ", ""));
 
-    if (visibleUpdates.length === 0) return null;
-
-    // Extract browsing URLs
-    const browsingUrls = visibleUpdates
-        .filter(
-            (u) =>
-                u.type === "user_visible_message" &&
-                (u.user_message || u.user_visible_message)?.startsWith("Browsing ")
-        )
-        .map((u) => (u.user_message || u.user_visible_message)?.replace("Browsing ", "") || "");
-
-    // Extract queries (always available, even from DB)
-    const inputUpdate = visibleUpdates.find((u) => u.type === "mcp_input");
-    const inputArgs = inputUpdate?.mcp_input?.arguments ?? {};
-    const queries: string[] = Array.isArray(inputArgs.queries)
-        ? (inputArgs.queries as string[])
-        : typeof inputArgs.query === "string"
-          ? [inputArgs.query as string]
+    const queriesArg = getArg<unknown>(entry, "queries");
+    const queries: string[] = Array.isArray(queriesArg)
+        ? (queriesArg as string[])
+        : typeof getArg<string>(entry, "query") === "string"
+          ? [getArg<string>(entry, "query") as string]
           : [];
 
-    // Check completion
-    const outputUpdate = visibleUpdates.find((u) => u.type === "mcp_output");
-    const isComplete = !!outputUpdate;
+    const isComplete = isTerminal(entry);
 
-    // Check for summarizing step
-    const isSummarizing = visibleUpdates.some(
-        (u) =>
-            u.type === "step_data" &&
-            (u.step_data as unknown as Record<string, unknown> | undefined)
-                ?.status === "summarizing"
+    const isSummarizing = filterStepEvents(events).some(
+        (e) => (e.metadata as Record<string, unknown>)?.status === "summarizing",
     );
 
-    // Parse all data when complete
-    const parsed = isComplete ? parseWebResearch(visibleUpdates) : null;
+    const parsed = isComplete ? parseWebResearch(entry, events) : null;
     const analysisPreview = parsed
         ? extractAnalysisPreview(parsed.aiAnalysis)
         : "";

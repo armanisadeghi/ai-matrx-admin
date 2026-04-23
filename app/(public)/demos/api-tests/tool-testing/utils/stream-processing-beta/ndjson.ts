@@ -1,12 +1,7 @@
 import type { TypedStreamEvent } from "@/types/python-generated/stream-events";
 import { expandCompactEvent, isCompactEvent } from "@/types/python-generated/stream-events";
-import type { ToolCallObject } from "@/lib/api/tool-call.types";
-import type { FinalPayload, ToolStreamEvent } from "../../types";
 import type { BackendStreamFoldState } from "./fold-stream-events";
-import {
-  foldBackendStreamEvents,
-  streamEventsToRenderedToolCalls,
-} from "./fold-stream-events";
+import { foldBackendStreamEvents } from "./fold-stream-events";
 
 /**
  * Parse newline-delimited JSON (as produced by the Python streaming endpoint)
@@ -34,29 +29,7 @@ export function parseNdjsonStringToStreamEvents(ndjson: string): TypedStreamEven
   return out;
 }
 
-/**
- * Parse captured NDJSON from a tool test run → same outputs as the Rendered tab
- * pipeline (`fold` + `buildToolCallObjectsForPreview`).
- */
-export function ndjsonToRenderedToolCalls(input: {
-  toolName: string;
-  args: Record<string, unknown>;
-  ndjson: string;
-}): {
-  fold: BackendStreamFoldState;
-  toolEvents: ToolStreamEvent[];
-  finalPayload: FinalPayload | null;
-  toolCallObjects: ToolCallObject[];
-} {
-  const streamEvents = parseNdjsonStringToStreamEvents(input.ndjson);
-  return streamEventsToRenderedToolCalls({
-    toolName: input.toolName,
-    args: input.args,
-    streamEvents,
-  });
-}
-
-/** NDJSON → full universal fold (no tool renderer bridge). */
+/** NDJSON → full universal fold. */
 export function ndjsonToFoldState(ndjson: string): BackendStreamFoldState {
   return foldBackendStreamEvents(parseNdjsonStringToStreamEvents(ndjson));
 }

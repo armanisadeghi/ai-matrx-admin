@@ -47,6 +47,7 @@ import type {
   InfoPayload,
   TypedDataPayload,
   UntypedDataPayload,
+  ToolEventPayload,
 } from "@/types/python-generated/stream-events";
 import { generateRequestId } from "../utils";
 import { destroyInstance } from "../conversations/conversations.slice";
@@ -352,6 +353,12 @@ const activeRequestsSlice = createSlice({
         errorType?: string | null;
         errorMessage?: string | null;
         isDelegated?: boolean;
+        /**
+         * Raw event payload (if available). Appended verbatim to the entry's
+         * events[] so renderers can walk the full event log without any
+         * client-side reshaping.
+         */
+        event?: ToolEventPayload;
       }>,
     ) {
       const request = state.byRequestId[action.payload.requestId];
@@ -368,6 +375,7 @@ const activeRequestsSlice = createSlice({
         errorType,
         errorMessage: toolError,
         isDelegated,
+        event,
       } = action.payload;
       const args = action.payload.arguments;
 
@@ -387,6 +395,7 @@ const activeRequestsSlice = createSlice({
         if (status === "completed" || status === "error") {
           existing.completedAt = now;
         }
+        if (event) existing.events.push(event);
       } else {
         request.toolLifecycle[callId] = {
           callId,
@@ -403,6 +412,7 @@ const activeRequestsSlice = createSlice({
           errorType: errorType ?? null,
           errorMessage: toolError ?? null,
           isDelegated: isDelegated ?? false,
+          events: event ? [event] : [],
         };
       }
     },

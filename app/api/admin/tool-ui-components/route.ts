@@ -71,6 +71,7 @@ export async function POST(request: NextRequest) {
             is_active: body.is_active !== undefined ? body.is_active : true,
             version: body.version || "1.0.0",
             notes: body.notes || null,
+            contract_version: body.contract_version === 1 ? 1 : 2,
         };
 
         const { data, error } = await supabase

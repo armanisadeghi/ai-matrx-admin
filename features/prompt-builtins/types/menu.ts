@@ -1,5 +1,5 @@
 import { PromptBuiltin, ScopeMapping, ShortcutCategory } from "./core";
-import type { ResultDisplayMode } from "@/features/agents/utils/run-ui-utils";
+import type { ResultDisplay } from "./execution-modes";
 
 export interface ShortcutItem {
   type: "prompt_shortcut";
@@ -11,7 +11,7 @@ export interface ShortcutItem {
   keyboard_shortcut: string | null;
   scope_mappings: ScopeMapping;
   available_scopes: string[] | null;
-  result_display: ResultDisplayMode;
+  result_display: ResultDisplay;
   auto_run: boolean;
   allow_chat: boolean;
   show_variables: boolean;

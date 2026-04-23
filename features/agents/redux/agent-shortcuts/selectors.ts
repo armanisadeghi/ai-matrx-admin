@@ -149,11 +149,10 @@ export const selectShortcutExecutionConfig = createSelector(
   (record) => {
     if (!record) return null;
     return {
-      resultDisplay: record.resultDisplay,
+      displayMode: record.displayMode,
       allowChat: record.allowChat,
       autoRun: record.autoRun,
-      applyVariables: record.applyVariables,
-      showVariables: record.showVariables,
+      showVariablePanel: record.showVariablePanel,
       showPreExecutionGate: record.showPreExecutionGate,
     };
   },
