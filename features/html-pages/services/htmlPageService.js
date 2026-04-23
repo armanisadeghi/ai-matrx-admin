@@ -18,7 +18,20 @@ export class HTMLPageService {
             body: JSON.stringify({ action, ...params }),
         });
 
-        const data = await response.json();
+        const text = await response.text();
+
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch {
+            // The server returned a non-JSON body (e.g. a Next.js HTML error page,
+            // a Vercel 413 payload-too-large, or a plain-text crash message).
+            // Surface the raw response so the error is diagnosable.
+            const preview = text.slice(0, 300).replace(/\s+/g, ' ').trim();
+            throw new Error(
+                `API returned non-JSON response (HTTP ${response.status}): ${preview}`
+            );
+        }
 
         if (!response.ok) {
             throw new Error(data.error || `API error: ${response.status}`);

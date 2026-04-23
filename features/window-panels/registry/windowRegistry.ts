@@ -465,6 +465,27 @@ const REGISTRY: WindowRegistryEntry[] = [
     defaultData: { images: [], initialIndex: 0 },
   },
 
+  // ── Image Uploader (Sharp variants via /api/images/upload) ────────────────
+  {
+    slug: "image-uploader-window",
+    overlayId: "imageUploaderWindow",
+    // Ephemeral: the callback group that ties this window back to its caller
+    // cannot survive a reload, so restoring geometry would leave the window
+    // disconnected from the page that opened it. Open fresh each time.
+    label: "Upload Image",
+    defaultData: {
+      callbackGroupId: null,
+      preset: "social",
+      bucket: null,
+      folder: null,
+      title: null,
+      description: null,
+      currentUrl: null,
+      allowUrlPaste: true,
+    },
+    ephemeral: true,
+  },
+
   // ── AI Voice ──────────────────────────────────────────────────────────────
   {
     slug: "ai-voice-window",

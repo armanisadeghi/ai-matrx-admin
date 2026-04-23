@@ -23,6 +23,7 @@ import {
   validateOrgSlug,
   useSlugAvailability,
 } from '@/features/organizations';
+import { ImageAssetUploader } from '@/components/official/ImageAssetUploader';
 
 interface CreateOrgModalProps {
   isOpen: boolean;
@@ -267,20 +268,17 @@ export function CreateOrgModal({ isOpen, onClose, onSuccess }: CreateOrgModalPro
             />
           </div>
 
-          {/* Logo URL */}
+          {/* Logo — drag-drop with Sharp variants, or paste a URL */}
           <div className="space-y-2">
-            <Label htmlFor="logoUrl">Logo URL</Label>
-            <Input
-              id="logoUrl"
-              type="url"
-              value={logoUrl}
-              onChange={(e) => setLogoUrl(e.target.value)}
-              placeholder="https://example.com/logo.png"
+            <Label>Logo</Label>
+            <ImageAssetUploader
+              preset="logo"
+              currentUrl={logoUrl || null}
+              onComplete={(result) => setLogoUrl(result?.primary_url ?? '')}
+              folder="organizations/logos"
               disabled={isSubmitting}
+              label="Organization logo"
             />
-            <p className="text-xs text-muted-foreground">
-              Provide a URL to your organization's logo image
-            </p>
           </div>
 
           <DialogFooter>

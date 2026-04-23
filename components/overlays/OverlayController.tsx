@@ -200,6 +200,11 @@ const ImageViewerWindow = dynamic(
   { ssr: false },
 );
 
+const ImageUploaderWindow = dynamic(
+  () => import("@/features/window-panels/windows/image/ImageUploaderWindow"),
+  { ssr: false },
+);
+
 const FilePreviewWindow = dynamic(
   () =>
     import("@/features/window-panels/windows/files/FilePreviewWindow").then(
@@ -855,6 +860,9 @@ export const OverlayController: React.FC = () => {
   );
   const isFileUploadWindowOpen = useAppSelector((s) =>
     selectIsOverlayOpen(s, "fileUploadWindow"),
+  );
+  const imageUploaderWindowInstances = useAppSelector((s) =>
+    selectOpenInstances(s, "imageUploaderWindow"),
   );
 
   const isEmailDialogWindowOpen = useAppSelector((s) =>
@@ -1644,6 +1652,17 @@ export const OverlayController: React.FC = () => {
           onClose={() => close("fileUploadWindow")}
         />
       )}
+
+      {/* Image Uploader — instanced; driven by useOpenImageUploaderWindow */}
+      {imageUploaderWindowInstances.map(({ instanceId, data }) => (
+        <ImageUploaderWindow
+          key={instanceId}
+          instanceId={instanceId}
+          isOpen={true}
+          onClose={() => close("imageUploaderWindow", instanceId)}
+          {...((data ?? {}) as any)}
+        />
+      ))}
 
       {isEmailDialogWindowOpen && (
         <EmailDialogWindow

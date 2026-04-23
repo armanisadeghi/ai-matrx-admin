@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { PreviewPlaceholder } from "../PreviewPlaceholder";
 import type { HtmlPreviewTabProps } from "../types";
+import { ImageAssetUploader } from "@/components/official/ImageAssetUploader";
 
 export function SavePageTab({ state, actions, user }: HtmlPreviewTabProps) {
     const previewUrl = actions.getCurrentPreviewUrl();
@@ -211,21 +212,23 @@ export function SavePageTab({ state, actions, user }: HtmlPreviewTabProps) {
                         </p>
                     </div>
 
-                    {/* OG Image */}
+                    {/* OG Image — drag-drop with Sharp-processed variants, or paste a URL */}
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Social Share Image URL
+                            Social Share Image
                         </label>
-                        <input
-                            type="url"
-                            value={state.metadata.ogImage}
-                            onChange={(e) => actions.setMetadataField('ogImage', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder:text-gray-400 rounded-md bg-textured text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                            placeholder="https://example.com/image.jpg"
+                        <ImageAssetUploader
+                            preset="cover"
+                            currentUrl={state.metadata.ogImage || null}
+                            onComplete={(result) => {
+                                actions.setMetadataField('ogImage', result?.primary_url ?? '');
+                            }}
                             disabled={!user}
+                            label="OG Image"
+                            hideVariantBadges
                         />
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                            1200x630px recommended
+                            Drop an image to auto-generate the 1200×630 link preview, or toggle "Use URL" to paste one.
                         </p>
                     </div>
 

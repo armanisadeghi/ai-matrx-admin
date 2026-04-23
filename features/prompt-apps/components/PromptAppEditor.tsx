@@ -31,6 +31,7 @@ import {
   RefreshCw,
   AlertCircle,
   ArrowDownToLine,
+  Upload,
 } from "lucide-react";
 import Link from "next/link";
 import { supabase } from "@/utils/supabase/client";
@@ -50,6 +51,7 @@ import type { PromptApp } from "../types";
 import { cn } from "@/lib/utils";
 import { PromptAppHeader } from "@/components/layout/new-layout/PageSpecificHeader";
 import { UpdatePromptAppModal } from "./UpdatePromptAppModal";
+import { useOpenImageUploaderWindow } from "@/features/window-panels/windows/image";
 
 // Lazy-load CodeBlock to avoid circular dependency with Providers
 const CodeBlock = lazy(
@@ -145,6 +147,23 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
   const [promptUpdatedAt, setPromptUpdatedAt] = useState<string | null>(null);
   const [isPromptStale, setIsPromptStale] = useState(false);
   const [isUpdatePromptModalOpen, setIsUpdatePromptModalOpen] = useState(false);
+  const openImageUploader = useOpenImageUploaderWindow();
+
+  const handleUploadFavicon = () => {
+    openImageUploader({
+      preset: "favicon",
+      title: "Upload app icon",
+      description: "Drop a square image — we'll generate the 192×192 and 64×64 variants.",
+      currentUrl: editFaviconUrl || null,
+      folder: "prompt-apps/favicons",
+      onUploaded: (e) => {
+        setEditFaviconUrl(e.result.primary_url);
+      },
+      onCleared: () => {
+        setEditFaviconUrl("");
+      },
+    });
+  };
 
   // Regenerate favicon from app name
   const handleRegenerateFavicon = async () => {
@@ -1062,9 +1081,20 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                         id="favicon"
                         value={editFaviconUrl}
                         onChange={(e) => setEditFaviconUrl(e.target.value)}
-                        placeholder="Auto-generated or paste custom icon URL"
+                        placeholder="Auto-generated, uploaded, or pasted URL"
                         className="flex-1 transition-all focus:ring-2 focus:ring-primary/20"
                       />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleUploadFavicon}
+                        title="Upload a custom icon (auto-resized to 192×192 and 64×64)"
+                        className="flex-shrink-0"
+                      >
+                        <Upload className="w-3.5 h-3.5" />
+                        <span className="ml-1.5">Upload</span>
+                      </Button>
                       <Button
                         type="button"
                         variant="outline"
@@ -1083,8 +1113,9 @@ export function PromptAppEditor({ app: initialApp }: PromptAppEditorProps) {
                       </Button>
                     </div>
                     <p className="text-[11px] text-muted-foreground">
-                      Auto-generated from app name on creation. Click Generate
-                      to regenerate, or paste a custom icon URL.
+                      Auto-generated from app name on creation. Click Upload to
+                      drop a custom image, Generate to regenerate from the name,
+                      or paste any URL into the field.
                     </p>
                   </div>
                 </CardContent>
