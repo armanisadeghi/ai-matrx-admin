@@ -123,31 +123,100 @@ export const launchAgentExecution = createAsyncThunk<
     shortcutId,
     manual,
     sourceFeature,
-    applicationScope,
-    displayMode: displayModeOverride,
-    autoRun = false,
-    allowChat,
+    applicationScope: flatApplicationScope,
+    displayMode: flatDisplayMode,
+    autoRun: flatAutoRun = false,
+    allowChat: flatAllowChat,
     showVariables,
-    showVariablePanel,
-    showDefinitionMessages,
-    showDefinitionMessageContent,
-    showPreExecutionGate,
+    showVariablePanel: flatShowVariablePanel,
+    showDefinitionMessages: flatShowDefinitionMessages,
+    showDefinitionMessageContent: flatShowDefinitionMessageContent,
+    showPreExecutionGate: flatShowPreExecutionGate,
     showAutoClearToggle,
     autoClearConversation,
     apiEndpointMode = "agent",
-    userInput,
+    userInput: flatUserInput,
     variables,
     overrides,
-    variablesPanelStyle,
-    hideReasoning,
-    hideToolResults,
-    preExecutionMessage,
-    bypassGateSeconds,
+    variablesPanelStyle: flatVariablesPanelStyle,
+    hideReasoning: flatHideReasoning,
+    hideToolResults: flatHideToolResults,
+    preExecutionMessage: flatPreExecutionMessage,
+    bypassGateSeconds: flatBypassGateSeconds,
     jsonExtraction,
-    originalText,
-    widgetHandleId,
+    originalText: flatOriginalText,
+    widgetHandleId: flatWidgetHandleId,
     isEphemeral,
+    runtime,
+    config,
   } = options;
+
+  // ── Nested (new) shape wins over flat (legacy) shape ──────────────────────
+  // New callers (useShortcutTrigger, triggerShortcut, launchShortcut) put
+  // scope / userInput / originalText under `runtime.*` and per-run config
+  // overrides under `config.*`. Legacy callers used top-level flat fields.
+  // Pull from both so everyone works.
+  const applicationScope = runtime?.applicationScope ?? flatApplicationScope;
+  const userInput = runtime?.userInput ?? flatUserInput;
+  const originalText = runtime?.originalText ?? flatOriginalText;
+  const widgetHandleId = runtime?.widgetHandleId ?? flatWidgetHandleId;
+
+  const displayModeOverride = config?.displayMode ?? flatDisplayMode;
+  const autoRun = config?.autoRun ?? flatAutoRun;
+  const allowChat = config?.allowChat ?? flatAllowChat;
+  const showVariablePanel =
+    config?.showVariablePanel ?? flatShowVariablePanel;
+  const showDefinitionMessages =
+    config?.showDefinitionMessages ?? flatShowDefinitionMessages;
+  const showDefinitionMessageContent =
+    config?.showDefinitionMessageContent ?? flatShowDefinitionMessageContent;
+  const showPreExecutionGate =
+    config?.showPreExecutionGate ?? flatShowPreExecutionGate;
+  const preExecutionMessage =
+    config?.preExecutionMessage ?? flatPreExecutionMessage;
+  const bypassGateSeconds =
+    config?.bypassGateSeconds ?? flatBypassGateSeconds;
+  const hideReasoning = config?.hideReasoning ?? flatHideReasoning;
+  const hideToolResults = config?.hideToolResults ?? flatHideToolResults;
+  const variablesPanelStyle =
+    config?.variablesPanelStyle ?? flatVariablesPanelStyle;
+
+  // ── Trace: launch envelope ────────────────────────────────────────────────
+  // One line summarizing what the caller actually sent, then a structured
+  // view of the live runtime/scope so "variable didn't map" bugs surface
+  // immediately in the console.
+  if (typeof window !== "undefined") {
+    console.groupCollapsed(
+      `%c[Shortcut] launchAgentExecution ${shortcutId ? `shortcut=${shortcutId}` : agentId ? `agent=${agentId}` : "manual"}`,
+      "color:#6366f1;font-weight:bold",
+    );
+    console.log("source:", sourceFeature ?? "(unset)");
+    console.log(
+      "applicationScope (keys):",
+      applicationScope ? Object.keys(applicationScope) : "(none)",
+    );
+    if (applicationScope) {
+      for (const [k, v] of Object.entries(applicationScope)) {
+        const preview =
+          typeof v === "string"
+            ? `"${v.slice(0, 80)}"${v.length > 80 ? "…" : ""} (${v.length} chars)`
+            : v && typeof v === "object"
+              ? `<${Array.isArray(v) ? "array" : "object"} ${Object.keys(v as object).length} keys>`
+              : String(v);
+        console.log(`  ${k} →`, preview);
+      }
+    }
+    console.log(
+      "userInput:",
+      userInput ? `"${userInput.slice(0, 80)}"${userInput.length > 80 ? "…" : ""}` : "(none)",
+    );
+    console.log(
+      "caller config override:",
+      config ? Object.keys(config) : "(none)",
+    );
+    console.log("apiEndpointMode:", apiEndpointMode);
+    console.groupEnd();
+  }
 
   // =========================================================================
   // Step 0: Resolve visibility.
@@ -173,17 +242,12 @@ export const launchAgentExecution = createAsyncThunk<
   let resolvedDisplayMode: ResultDisplayMode = displayModeOverride ?? "direct";
 
   // =========================================================================
-  // Step 0.5: Ensure the agent's execution payload is in Redux before we
-  // snapshot it into the instance. `createInstance*` reads
-  // `state.agentDefinition.agents[agentId]` via `readAgentSnapshot` — if the
-  // variable definitions haven't been fetched yet, the instance ends up with
-  // `definitions: []` and subsequent `setUserVariableValues` writes are
-  // silently dropped at assembly time (selectResolvedVariables only emits
-  // values for defined vars).
-  //
-  // This check is a no-op when the payload is already ready (both this
-  // `isReady` gate and `fetchAgentExecutionMinimal`'s own early return).
-  // Shortcut path skips: the shortcut's own load flow takes care of it.
+  // Step 0.5: Ensure the agent's execution payload is in Redux — but only
+  // for the DIRECT-AGENT path. Shortcuts are self-sufficient: they carry
+  // their own variableDefinitions + contextSlots pinned to the frozen
+  // version, and `createInstanceFromShortcut` reads them off the shortcut
+  // record. Calling an agent fetch on the shortcut path would risk loading
+  // the WRONG (current) version of the agent.
   // =========================================================================
   if (agentId && !shortcutId) {
     const preState = getState() as RootState;

@@ -28,8 +28,10 @@ import {
   extractAgentName,
 } from "../utils/agent-config-extractor";
 import { useAgentBuilder } from "../services/agentBuilderService";
-import { AGENT_GENERATOR_CONFIG } from "./agent-generator.constants";
+import { getSystemShortcut } from "@/features/agents/constants/system-shortcuts";
 import { useDebugContext } from "@/hooks/useDebugContext";
+
+const GENERATOR_SHORTCUT = getSystemShortcut("agent-generator-01");
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -220,7 +222,8 @@ export function AgentGenerator({ onComplete }: AgentGeneratorProps) {
   useEffect(() => {
     if (!isDebugActive) return;
     publish({
-      "Shortcut ID": AGENT_GENERATOR_CONFIG.shortcutId,
+      "Shortcut ID": GENERATOR_SHORTCUT.id,
+      "Shortcut Label": GENERATOR_SHORTCUT.label,
       "Conversation ID": conversationId,
       "Request ID": requestId,
       "Stream Phase": streamPhase,
@@ -270,12 +273,16 @@ export function AgentGenerator({ onComplete }: AgentGeneratorProps) {
     setAgentName("");
 
     try {
-      // The shortcut owns the agent, display mode ("direct"), and the
-      // scope → variable routing. All we supply is the live scope data.
-      const result = await trigger(AGENT_GENERATOR_CONFIG.shortcutId, {
+      // The shortcut owns the agent, display mode, and the scope → variable
+      // routing. All we supply is the live scope data.
+      //
+      // jsonExtraction still comes from the caller — it's in
+      // GENERATOR_SHORTCUT.temporaryConfigs (will move onto the shortcut
+      // row in a future migration).
+      const result = await trigger(GENERATOR_SHORTCUT.id, {
         scope: { selection },
         runtime: { userInput: userInput || undefined },
-        jsonExtraction: AGENT_GENERATOR_CONFIG.launchDefaults.jsonExtraction,
+        jsonExtraction: GENERATOR_SHORTCUT.temporaryConfigs?.jsonExtraction,
         sourceFeature: "agent-generator",
       });
       setConversationId(result.conversationId);

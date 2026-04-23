@@ -654,6 +654,7 @@ export function SystemMessage({
         <div className="p-4">
           {isEditing ? (
             <UnifiedAgentContextMenu
+              sourceFeature="agent-builder"
               getTextarea={() =>
                 textareaRefs.current[systemMessageIndex] || null
               }

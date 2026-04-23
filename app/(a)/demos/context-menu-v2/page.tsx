@@ -84,6 +84,7 @@ export default function ContextMenuV2DemoPage() {
             </p>
           </header>
           <UnifiedAgentContextMenu
+            sourceFeature="demo"
             getTextarea={() => codeRef.current}
             onTextReplace={(v) => {
               setCodeValue(v);
@@ -150,6 +151,7 @@ export default function ContextMenuV2DemoPage() {
             </p>
           </header>
           <UnifiedAgentContextMenu
+            sourceFeature="demo"
             getTextarea={() => contentRef.current}
             onTextReplace={(v) => setContentValue(v)}
             onTextInsertBefore={(t) => setContentValue(t + contentValue)}
@@ -185,6 +187,7 @@ export default function ContextMenuV2DemoPage() {
             </p>
           </header>
           <UnifiedAgentContextMenu
+            sourceFeature="demo"
             isEditable={false}
             addedContexts={["content-editor"]}
             placementMode={{
@@ -216,6 +219,7 @@ export default function ContextMenuV2DemoPage() {
             </p>
           </header>
           <UnifiedAgentContextMenu
+            sourceFeature="demo"
             getTextarea={() => restrictiveRef}
             onTextReplace={(v) => setRestrictiveValue(v)}
             isEditable
@@ -254,6 +258,7 @@ export default function ContextMenuV2DemoPage() {
             </p>
           </header>
           <UnifiedAgentContextMenu
+            sourceFeature="demo"
             getTextarea={() => showcaseRef.current}
             onTextReplace={(v) => setShowcaseValue(v)}
             isEditable

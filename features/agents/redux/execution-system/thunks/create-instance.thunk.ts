@@ -250,7 +250,7 @@ export const createInstanceFromShortcut = createAsyncThunk<
   const {
     shortcutId,
     uiScopes,
-    sourceFeature = "context-menu",
+    sourceFeature,
     displayMode,
     autoRun,
     allowChat,
@@ -277,15 +277,100 @@ export const createInstanceFromShortcut = createAsyncThunk<
 
   if (!shortcut) throw new Error(`Shortcut ${shortcutId} not found`);
 
-  const { agentId } = shortcut;
+  // ──────────────────────────────────────────────────────────────────────
+  // The shortcut is self-sufficient for execution.
+  // We never read from state.agentDefinition here. Doing so would:
+  //   (1) require the agent to be loaded ahead of time, and
+  //   (2) risk reading the CURRENT agent when the shortcut is pinned to
+  //       an older frozen version.
+  // Everything below comes directly off the shortcut record that was
+  // populated by the shortcut-menu RPCs (variable defs + context slots are
+  // snapshotted alongside the shortcut).
+  // ──────────────────────────────────────────────────────────────────────
+  const {
+    agentId,
+    resolvedId,
+    isVersion,
+    variableDefinitions: shortcutVariableDefinitions,
+    contextSlots: shortcutContextSlots,
+  } = shortcut;
 
-  const snapshot = readAgentSnapshot(state, agentId);
+  // ── Trace: what the shortcut tells us to do ─────────────────────────────
+  if (typeof window !== "undefined") {
+    console.groupCollapsed(
+      `%c[Shortcut] createInstanceFromShortcut — "${shortcut.label ?? shortcut.id}"`,
+      "color:#0ea5e9;font-weight:bold",
+    );
+    console.log("shortcutId:", shortcut.id);
+    console.log(
+      "execution target: resolvedId=",
+      resolvedId,
+      "| isVersion=",
+      isVersion,
+      "| (agentId=",
+      agentId,
+      ", agentVersionId=",
+      shortcut.agentVersionId,
+      ", useLatest=",
+      shortcut.useLatest,
+      ")",
+    );
+    console.log(
+      "displayMode:",
+      shortcut.displayMode,
+      "| autoRun:",
+      shortcut.autoRun,
+      "| allowChat:",
+      shortcut.allowChat,
+    );
+    console.log(
+      "scopeMappings (UI key → agent variable):",
+      shortcut.scopeMappings ?? "(none)",
+    );
+    console.log(
+      "contextMappings (UI key → context slot):",
+      shortcut.contextMappings ?? "(none)",
+    );
+    console.log("defaultVariables:", shortcut.defaultVariables ?? "(none)");
+    console.log("contextOverrides:", shortcut.contextOverrides ?? "(none)");
+    console.log("llmOverrides:", shortcut.llmOverrides ?? "(none)");
+    console.log("defaultUserInput:", shortcut.defaultUserInput ?? "(none)");
+    console.log(
+      "agent contract (carried by the shortcut):",
+      shortcutVariableDefinitions.length > 0 ||
+        shortcutContextSlots.length > 0
+        ? `${shortcutVariableDefinitions.length} variables, ${shortcutContextSlots.length} context slots`
+        : "⚠ EMPTY — shortcut was loaded without variable defs (probably via REST, not the menu RPC)",
+    );
+    console.log(
+      "agent variables:",
+      shortcutVariableDefinitions.map((v) => v.name),
+    );
+    console.log(
+      "agent context slots:",
+      shortcutContextSlots.map((s) => s.key),
+    );
+    console.log("uiScopes (applicationScope) keys:", Object.keys(uiScopes));
+    console.log("caller sourceFeature:", sourceFeature ?? "(unset)");
+    console.groupEnd();
+  }
 
   dispatch(
     createInstance({
       conversationId,
       agentId,
-      agentType: snapshot.agentType,
+      // Pass the frozen version id when the shortcut is version-pinned so
+      // downstream URL/body construction targets agx_version instead of
+      // agx_agent. Leaves `agentId` as the live agent id for display +
+      // linking.
+      initialAgentVersionId:
+        !shortcut.useLatest && shortcut.agentVersionId
+          ? shortcut.agentVersionId
+          : null,
+      // Shortcuts never carry an agentType; "user" is the generic fallback
+      // used by everything but the internal system agents. Not load-bearing —
+      // it's a classification hint downstream, not a routing decision.
+      agentType: "user",
       origin: "shortcut" as InstanceOrigin,
       shortcutId,
       sourceFeature,
@@ -295,13 +380,16 @@ export const createInstanceFromShortcut = createAsyncThunk<
   dispatch(
     initInstanceOverrides({
       conversationId,
-      baseSettings: snapshot.baseSettings,
+      // Shortcuts don't carry the agent's baseSettings — those stay with
+      // the agent and are applied server-side. Only `llmOverrides` (the
+      // partial delta the shortcut author set) is applied below.
+      baseSettings: {},
     }),
   );
   dispatch(
     initInstanceVariables({
       conversationId,
-      definitions: snapshot.variableDefinitions,
+      definitions: shortcutVariableDefinitions,
       scopeValues: {},
     }),
   );
@@ -312,11 +400,11 @@ export const createInstanceFromShortcut = createAsyncThunk<
   dispatch(
     initInstanceUIState({
       conversationId,
-      // v2 column names — falls back to shortcut.displayMode (was result_display)
       displayMode: (displayMode ?? shortcut.displayMode) as ResultDisplayMode,
       autoRun: autoRun ?? shortcut.autoRun,
       allowChat: allowChat ?? shortcut.allowChat,
-      showPreExecutionGate: showPreExecutionGate ?? shortcut.showPreExecutionGate,
+      showPreExecutionGate:
+        showPreExecutionGate ?? shortcut.showPreExecutionGate,
       autoClearConversation,
       showAutoClearToggle,
       showVariablePanel: showVariablePanel ?? shortcut.showVariablePanel,
@@ -325,7 +413,10 @@ export const createInstanceFromShortcut = createAsyncThunk<
       showDefinitionMessageContent:
         showDefinitionMessageContent ?? shortcut.showDefinitionMessageContent,
       widgetHandleId,
-      isCreator: snapshot.isCreator,
+      // `isCreator` tags the instance UI for the Agent Builder's preview.
+      // A shortcut always launches a consumer run, never the builder, so
+      // this is false by construction.
+      isCreator: false,
       hideReasoning: hideReasoning ?? shortcut.hideReasoning,
       hideToolResults: hideToolResults ?? shortcut.hideToolResults,
       preExecutionMessage:
@@ -357,10 +448,13 @@ export const createInstanceFromShortcut = createAsyncThunk<
   //   1. Agent context_slots[].default              (already seeded by initInstanceContext)
   //   2. Shortcut.contextOverrides                  (this dispatch)
   //   3. Runtime context entries from scope-mapping (next dispatch — overrides 2)
-  if (shortcut.contextOverrides && Object.keys(shortcut.contextOverrides).length > 0) {
+  if (
+    shortcut.contextOverrides &&
+    Object.keys(shortcut.contextOverrides).length > 0
+  ) {
     const overrideEntries = Object.entries(shortcut.contextOverrides).map(
       ([key, value]) => {
-        const slot = snapshot.contextSlots?.find((s) => s.key === key);
+        const slot = shortcutContextSlots.find((s) => s.key === key);
         return {
           key,
           value,
@@ -370,9 +464,7 @@ export const createInstanceFromShortcut = createAsyncThunk<
         };
       },
     );
-    dispatch(
-      setContextEntries({ conversationId, entries: overrideEntries }),
-    );
+    dispatch(setContextEntries({ conversationId, entries: overrideEntries }));
   }
 
   // Apply LLM overrides from the shortcut config
@@ -395,8 +487,8 @@ export const createInstanceFromShortcut = createAsyncThunk<
   const { variableValues, contextEntries } = mapScopeToInstance(
     uiScopes,
     shortcut.scopeMappings,
-    snapshot.variableDefinitions,
-    snapshot.contextSlots,
+    shortcutVariableDefinitions,
+    shortcutContextSlots,
     shortcut.contextMappings,
   );
 
@@ -414,6 +506,37 @@ export const createInstanceFromShortcut = createAsyncThunk<
   dispatch(
     initInstanceMessages({ conversationId, apiEndpointMode: apiEndpointMode }),
   );
+
+  // ── Trace: final summary of what got seeded on the instance ────────────
+  if (typeof window !== "undefined") {
+    const finalState = getState() as RootState;
+    const variableEntry =
+      finalState.instanceVariableValues?.byConversationId?.[conversationId];
+    const userValues = variableEntry?.userValues ?? {};
+    const scopeValues = variableEntry?.scopeValues ?? {};
+    const contextDict =
+      finalState.instanceContext?.byConversationId?.[conversationId] ?? {};
+    const finalUserInput =
+      finalState.instanceUserInput?.byConversationId?.[conversationId]?.text ??
+      "";
+    const overrideEntry =
+      finalState.instanceModelOverrides?.byConversationId?.[conversationId];
+    console.groupCollapsed(
+      `%c[Shortcut] instance seeded — conversationId=${conversationId}`,
+      "color:#22c55e;font-weight:bold",
+    );
+    console.log("variables (scope-mapped):", scopeValues);
+    console.log("variables (user-edit layer):", userValues);
+    console.log("context entries:", contextDict);
+    console.log(
+      "userInput:",
+      finalUserInput
+        ? `"${finalUserInput.slice(0, 80)}"${finalUserInput.length > 80 ? "…" : ""}`
+        : "(empty)",
+    );
+    console.log("llm overrides:", overrideEntry ?? "(none)");
+    console.groupEnd();
+  }
 
   return conversationId;
 });
