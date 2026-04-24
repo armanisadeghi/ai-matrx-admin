@@ -11,14 +11,8 @@ import os from "os";
  * without hardcoding a username.
  */
 const LOCAL_LOG_FILES: Record<string, string> = {
-  "local-python-run": path.join(
-    /* turbopackIgnore: true */ os.homedir(),
-    "code/aidream/temp/logs/run_py.log",
-  ),
-  "local-python-dev": path.join(
-    /* turbopackIgnore: true */ os.homedir(),
-    "code/aidream/temp/logs/aidreamdev.log",
-  ),
+  "local-python-run": `${os.homedir()}/code/aidream/temp/logs/run_py.log`,
+  "local-python-dev": `${os.homedir()}/code/aidream/temp/logs/aidreamdev.log`,
 };
 
 /** Read the last `lines` lines from a file without loading the whole thing */

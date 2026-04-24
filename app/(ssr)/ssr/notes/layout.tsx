@@ -24,6 +24,24 @@ export interface NoteSummary {
   position: number;
 }
 
+const highlightStyles = `
+/* CSS Highlights API for the markdown preview panel. */
+::highlight(notes-find-match) {
+  background-color: hsl(48 100% 60% / 0.45);
+  color: inherit;
+}
+::highlight(notes-find-match-active) {
+  background-color: hsl(24 100% 55% / 0.7);
+  color: inherit;
+}
+.dark ::highlight(notes-find-match) {
+  background-color: hsl(48 100% 55% / 0.35);
+}
+.dark ::highlight(notes-find-match-active) {
+  background-color: hsl(24 100% 55% / 0.55);
+}
+`;
+
 export default function NotesLayout({
   children,
 }: {
@@ -35,6 +53,7 @@ export default function NotesLayout({
       style={{ paddingTop: "var(--shell-header-h)" }}
     >
       {/* Shell sentinels — one class, zero logic. shell.css handles all consequences. */}
+      <style dangerouslySetInnerHTML={{ __html: highlightStyles }} />
       <span className="shell-hide-dock" aria-hidden="true" />
       <aside className="notes-sidebar flex flex-col overflow-hidden border-r border-border/30 pt-0 pb-2.5">
         <SidebarClient />
