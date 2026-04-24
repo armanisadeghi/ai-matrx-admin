@@ -6,6 +6,7 @@ import {
   PanelBottom,
   PanelRight,
   PanelRightOpen,
+  Save,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -21,6 +22,12 @@ import {
 interface EditorToolbarProps {
   rightSlotAvailable: boolean;
   farRightSlotAvailable: boolean;
+  /** Trigger a save of the currently active editor tab. */
+  onSaveActiveTab?: () => void;
+  /** The active tab has unsaved edits — used to spotlight the save button. */
+  hasDirtyActiveTab?: boolean;
+  /** Whether there's an active tab at all (disables save when false). */
+  hasActiveTab?: boolean;
   className?: string;
 }
 
@@ -32,6 +39,9 @@ interface EditorToolbarProps {
 export const EditorToolbar: React.FC<EditorToolbarProps> = ({
   rightSlotAvailable,
   farRightSlotAvailable,
+  onSaveActiveTab,
+  hasDirtyActiveTab = false,
+  hasActiveTab = false,
   className,
 }) => {
   const dispatch = useAppDispatch();
@@ -46,6 +56,21 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
         className,
       )}
     >
+      {onSaveActiveTab && (
+        <ToolbarButton
+          icon={Save}
+          active={hasDirtyActiveTab}
+          disabled={!hasActiveTab}
+          label={
+            hasDirtyActiveTab
+              ? "Save (\u2318S)"
+              : hasActiveTab
+                ? "All changes saved"
+                : "No file open"
+          }
+          onClick={onSaveActiveTab}
+        />
+      )}
       <ToolbarButton
         icon={PanelBottom}
         active={terminalOpen}
@@ -77,23 +102,28 @@ function ToolbarButton({
   label,
   onClick,
   active,
+  disabled = false,
 }: {
   icon: React.ComponentType<{ size?: number }>;
   label: string;
   onClick: () => void;
   active: boolean;
+  disabled?: boolean;
 }) {
   return (
     <button
       type="button"
       aria-label={label}
       aria-pressed={active}
+      disabled={disabled}
       title={label}
       onClick={onClick}
       className={cn(
         "flex h-7 w-7 items-center justify-center rounded-sm text-neutral-500 hover:bg-neutral-200 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100",
         active &&
           "bg-blue-500/10 text-blue-600 dark:bg-blue-400/15 dark:text-blue-300",
+        disabled &&
+          "cursor-not-allowed opacity-40 hover:bg-transparent hover:text-neutral-500 dark:hover:bg-transparent dark:hover:text-neutral-400",
       )}
     >
       <Icon size={14} />

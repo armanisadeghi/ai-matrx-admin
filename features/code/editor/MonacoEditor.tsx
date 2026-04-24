@@ -1,7 +1,11 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import Editor, { type OnMount, type OnChange } from "@monaco-editor/react";
+import Editor, {
+  type OnMount,
+  type OnChange,
+  type BeforeMount,
+} from "@monaco-editor/react";
 // Monaco's editor type is pulled directly from @monaco-editor/react re-exports
 // where possible; the handful of shapes we need are narrowed locally.
 import { configureMonaco } from "./monaco-config";
@@ -17,6 +21,12 @@ type StandaloneCodeEditor = {
   onDidChangeCursorPosition: (cb: (e: unknown) => void) => {
     dispose: () => void;
   };
+  addCommand: (keybinding: number, handler: () => void) => void;
+};
+
+type MonacoNamespace = {
+  KeyMod: { CtrlCmd: number };
+  KeyCode: { KeyS: number };
 };
 
 export interface MonacoEditorProps {
@@ -31,6 +41,9 @@ export interface MonacoEditorProps {
   /** Called when the editor is mounted. Gives the host access to imperative
    *  APIs (e.g. focus, format, scroll). */
   onEditorMount?: (editor: StandaloneCodeEditor) => void;
+  /** Invoked when the user hits Cmd/Ctrl+S inside the editor. Host decides
+   *  what to do (route to code_files / filesystem adapter / etc). */
+  onSave?: () => void;
   /** Tailwind class to size/position the editor. */
   className?: string;
 }
@@ -42,11 +55,20 @@ export const MonacoEditor: React.FC<MonacoEditorProps> = ({
   readOnly = false,
   onChange,
   onEditorMount,
+  onSave,
   className,
 }) => {
   const [isConfigured, setIsConfigured] = useState(false);
   const isDark = useMonacoTheme();
   const editorRef = useRef<StandaloneCodeEditor | null>(null);
+  const monacoRef = useRef<MonacoNamespace | null>(null);
+  // Keep latest onSave in a ref so the keybinding always sees the fresh
+  // callback without needing to re-register the command (addCommand has no
+  // dispose hook that's easy to thread through).
+  const onSaveRef = useRef<MonacoEditorProps["onSave"]>(onSave);
+  useEffect(() => {
+    onSaveRef.current = onSave;
+  }, [onSave]);
 
   // Fire Monaco configuration exactly once per app session.
   useEffect(() => {
@@ -59,10 +81,21 @@ export const MonacoEditor: React.FC<MonacoEditorProps> = ({
     };
   }, []);
 
+  const handleBeforeMount: BeforeMount = useCallback((monaco) => {
+    monacoRef.current = monaco as unknown as MonacoNamespace;
+  }, []);
+
   const handleMount: OnMount = useCallback(
     (editor) => {
-      editorRef.current = editor as unknown as StandaloneCodeEditor;
-      onEditorMount?.(editorRef.current);
+      const ed = editor as unknown as StandaloneCodeEditor;
+      editorRef.current = ed;
+      const monaco = monacoRef.current;
+      if (monaco) {
+        ed.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
+          onSaveRef.current?.();
+        });
+      }
+      onEditorMount?.(ed);
     },
     [onEditorMount],
   );
@@ -97,6 +130,7 @@ export const MonacoEditor: React.FC<MonacoEditorProps> = ({
         path={path}
         theme={theme}
         onChange={handleChange}
+        beforeMount={handleBeforeMount}
         onMount={handleMount}
         options={{
           readOnly,

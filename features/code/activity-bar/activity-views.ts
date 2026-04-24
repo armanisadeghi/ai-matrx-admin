@@ -5,6 +5,7 @@ import {
   Play,
   Blocks,
   Server,
+  Library,
   type LucideIcon,
 } from "lucide-react";
 import type { ActivityViewId } from "../types";
@@ -34,6 +35,7 @@ export const ACTIVITY_VIEWS: ActivityViewDescriptor[] = [
     shortcut: "\u2318\u21E7X",
   },
   { id: "sandboxes", label: "Sandboxes", icon: Server },
+  { id: "library", label: "Code Library", icon: Library },
 ];
 
 export function getActivityView(id: ActivityViewId): ActivityViewDescriptor {

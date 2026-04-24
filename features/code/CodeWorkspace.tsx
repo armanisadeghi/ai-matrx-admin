@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import type { FilesystemAdapter, ProcessAdapter } from "./adapters";
 import { CodeWorkspaceProvider } from "./CodeWorkspaceProvider";
 import { WorkspaceLayout } from "./layout/WorkspaceLayout";
+import { useOpenCodeFileFromUrl } from "./hooks/useOpenCodeFileFromUrl";
 
 export interface CodeWorkspaceProps {
   /** Stable id used by agent tools to target this workspace instance. */
@@ -42,6 +43,7 @@ export const CodeWorkspace: React.FC<CodeWorkspaceProps> = ({
       initialFilesystem={adapter}
       initialProcess={process}
     >
+      <UrlOpenFileBridge />
       <div className={cn("flex h-full w-full min-h-0", className)}>
         <WorkspaceLayout
           rightSlot={rightSlot}
@@ -54,3 +56,11 @@ export const CodeWorkspace: React.FC<CodeWorkspaceProps> = ({
 };
 
 export default CodeWorkspace;
+
+/** Zero-render bridge that watches `?open=<codeFileId>` and opens the file.
+ *  Split out into its own component so it can call hooks that depend on
+ *  `CodeWorkspaceProvider` being mounted. */
+const UrlOpenFileBridge: React.FC = () => {
+  useOpenCodeFileFromUrl();
+  return null;
+};

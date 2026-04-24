@@ -43,6 +43,26 @@ export type {
 // Hooks
 export { useOpenFile } from "./hooks/useOpenFile";
 export { useTerminalSession } from "./hooks/useTerminalSession";
+export {
+  useOpenLibraryFile,
+  libraryTabId,
+  isLibraryTabId,
+  codeFileIdFromTabId,
+  LIBRARY_TAB_PREFIX,
+} from "./hooks/useOpenLibraryFile";
+export { useSaveActiveTab } from "./hooks/useSaveActiveTab";
+export type { SaveResult } from "./hooks/useSaveActiveTab";
+
+// Cross-surface actions — use these from any feature that generates code to
+// drop content into the `/code` workspace with a single call.
+export {
+  useSaveAndOpenInCodeEditor,
+  CHAT_CAPTURES_FOLDER_NAME,
+} from "./actions/saveAndOpenInCodeEditor";
+export type {
+  SaveAndOpenInCodeEditorInput,
+  SaveAndOpenInCodeEditorResult,
+} from "./actions/saveAndOpenInCodeEditor";
 
 // Runtime — programmatic control for agent tools and server actions.
 export {

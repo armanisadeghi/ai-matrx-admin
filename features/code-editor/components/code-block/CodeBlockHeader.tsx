@@ -26,6 +26,7 @@ import {
   Code2,
   Brain,
   FileCode,
+  SquareArrowOutUpRight,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/styles/themes/utils";
@@ -33,6 +34,11 @@ import LanguageDisplay from "@/features/code-editor/components/code-block/Langua
 import IconButton from "@/components/official/IconButton";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { openSaveToCode } from "@/lib/redux/slices/overlaySlice";
+import {
+  useSaveAndOpenInCodeEditor,
+  CHAT_CAPTURES_FOLDER_NAME,
+} from "@/features/code";
+import { extensionForLanguage } from "@/features/code-files";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -268,7 +274,9 @@ const CodeBlockButtons: React.FC<CodeBlockButtonsProps> = ({
   customBuiltinKeys = [],
 }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isOpeningInEditor, setIsOpeningInEditor] = useState(false);
   const dispatch = useAppDispatch();
+  const saveAndOpenInCodeEditor = useSaveAndOpenInCodeEditor();
 
   const handleSaveToCode = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -279,6 +287,32 @@ const CodeBlockButtons: React.FC<CodeBlockButtonsProps> = ({
         language,
       }),
     );
+  };
+
+  const handleOpenInEditor = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!code?.trim() || isOpeningInEditor) return;
+    setIsOpeningInEditor(true);
+    try {
+      const ext = extensionForLanguage(language);
+      const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+      const name = `snippet-${stamp}.${ext}`;
+      await saveAndOpenInCodeEditor({
+        name,
+        language,
+        content: code,
+        folderName: CHAT_CAPTURES_FOLDER_NAME,
+        tags: ["chat-capture"],
+        metadata: {
+          source: "chat-code-block",
+          savedAt: new Date().toISOString(),
+        },
+      });
+    } catch (err) {
+      console.error("[CodeBlockHeader] open-in-editor failed", err);
+    } finally {
+      setIsOpeningInEditor(false);
+    }
   };
 
   // Merge default keys with custom keys and make unique
@@ -406,6 +440,25 @@ const CodeBlockButtons: React.FC<CodeBlockButtonsProps> = ({
           onClick={handleSaveToCode}
           tooltipSide="bottom"
           className="text-rose-600 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300"
+        />
+      )}
+
+      {/* Save & open in /code editor — one-click path from chat to the
+          full workspace. Uses the shared save-and-open helper so the
+          destination (Chat Captures folder) stays consistent with every
+          other surface that does this. */}
+      {!isMobile && (
+        <IconButton
+          icon={isOpeningInEditor ? Loader2 : SquareArrowOutUpRight}
+          tooltip="Save and open in editor"
+          size="sm"
+          variant="ghost"
+          onClick={handleOpenInEditor}
+          tooltipSide="bottom"
+          className={cn(
+            "text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300",
+            isOpeningInEditor && "animate-spin",
+          )}
         />
       )}
 

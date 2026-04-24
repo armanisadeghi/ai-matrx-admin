@@ -71,7 +71,8 @@ export type ActivityViewId =
   | "git"
   | "run"
   | "extensions"
-  | "sandboxes";
+  | "sandboxes"
+  | "library";
 
 export type BottomTabId =
   | "problems"

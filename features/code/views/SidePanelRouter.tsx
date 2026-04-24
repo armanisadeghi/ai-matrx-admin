@@ -9,6 +9,7 @@ import { GitPanel } from "./git/GitPanel";
 import { RunPanel } from "./run/RunPanel";
 import { ExtensionsPanel } from "./extensions/ExtensionsPanel";
 import { SandboxesPanel } from "./sandboxes/SandboxesPanel";
+import { LibraryPanel } from "./library/LibraryPanel";
 
 /**
  * Dispatches to the right side-panel view based on the active activity bar
@@ -32,6 +33,8 @@ export const SidePanelRouter: React.FC = () => {
       return <ExtensionsPanel />;
     case "sandboxes":
       return <SandboxesPanel />;
+    case "library":
+      return <LibraryPanel />;
     default:
       return null;
   }

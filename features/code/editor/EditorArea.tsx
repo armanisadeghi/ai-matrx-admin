@@ -1,11 +1,17 @@
 "use client";
 
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect } from "react";
 import { FileCode } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { cn } from "@/lib/utils";
+import { codeFilesActions } from "@/features/code-files";
 import { selectActiveTab, updateTabContent } from "../redux";
 import { AVATAR_RESERVE, EDITOR_BG } from "../styles/tokens";
+import {
+  codeFileIdFromTabId,
+  isLibraryTabId,
+} from "../hooks/useOpenLibraryFile";
+import { useSaveActiveTab } from "../hooks/useSaveActiveTab";
 import { EditorTabs } from "./EditorTabs";
 import { EditorToolbar } from "./EditorToolbar";
 import { MonacoEditor } from "./MonacoEditor";
@@ -27,14 +33,49 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
 }) => {
   const dispatch = useAppDispatch();
   const activeTab = useAppSelector(selectActiveTab);
+  const saveActiveTab = useSaveActiveTab();
 
   const handleChange = useCallback(
     (next: string) => {
       if (!activeTab) return;
       dispatch(updateTabContent({ id: activeTab.id, content: next }));
+      // Mirror edits of library tabs into the code-files slice so its own
+      // dirty-tracking + auto-save machinery stays in sync with Monaco.
+      if (isLibraryTabId(activeTab.id)) {
+        const codeFileId = codeFileIdFromTabId(activeTab.id);
+        if (codeFileId) {
+          dispatch(
+            codeFilesActions.setLocalContent({ id: codeFileId, content: next }),
+          );
+        }
+      }
     },
     [dispatch, activeTab],
   );
+
+  const handleSave = useCallback(() => {
+    void saveActiveTab().then((result) => {
+      if (result && !result.ok) {
+        console.error("[EditorArea] save failed", result.error);
+      }
+    });
+  }, [saveActiveTab]);
+
+  // Fallback save shortcut for when focus is in the editor area but not
+  // inside Monaco itself (e.g. on the tab strip). Mirrors Cmd/Ctrl+S.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const mod = e.metaKey || e.ctrlKey;
+      if (mod && !e.shiftKey && !e.altKey && (e.key === "s" || e.key === "S")) {
+        // Only intercept when there's actually something to save.
+        if (!activeTab) return;
+        e.preventDefault();
+        handleSave();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [activeTab, handleSave]);
 
   return (
     <div className={cn("flex h-full min-h-0 flex-col", EDITOR_BG, className)}>
@@ -50,6 +91,9 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
         <EditorToolbar
           rightSlotAvailable={rightSlotAvailable}
           farRightSlotAvailable={farRightSlotAvailable}
+          onSaveActiveTab={handleSave}
+          hasDirtyActiveTab={Boolean(activeTab?.dirty)}
+          hasActiveTab={Boolean(activeTab)}
         />
       </div>
       <div className="relative flex-1 min-h-0">
@@ -60,6 +104,7 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
             language={activeTab.language}
             path={activeTab.path}
             onChange={handleChange}
+            onSave={handleSave}
           />
         ) : (
           <EmptyEditorState />
