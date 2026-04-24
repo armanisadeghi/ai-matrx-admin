@@ -657,3 +657,34 @@
 .dark ::highlight(notes-find-match-active) {
   background-color: hsl(24 100% 55% / 0.55);
 }
+
+/* ── Recent change flash (undo / redo / realtime) ──────────────────────── */
+/* Briefly tints the region of the textarea that just changed so the user
+   can see what undo/redo did, then fades away. */
+.find-match-overlay mark.recent-change {
+  background-color: hsl(142 70% 45% / 0.45);
+  color: transparent;
+  border-radius: 2px;
+  animation: notes-recent-change-fade 1500ms ease-out forwards;
+}
+.find-match-overlay mark.recent-change-caret {
+  background-color: transparent;
+  border-left: 2px solid hsl(142 70% 45% / 0.9);
+  animation: notes-recent-change-caret-fade 1500ms ease-out forwards;
+}
+.dark .find-match-overlay mark.recent-change {
+  background-color: hsl(142 70% 50% / 0.4);
+}
+.dark .find-match-overlay mark.recent-change-caret {
+  border-left-color: hsl(142 70% 60% / 0.9);
+}
+@keyframes notes-recent-change-fade {
+  0%   { background-color: hsl(142 70% 45% / 0.55); }
+  60%  { background-color: hsl(142 70% 45% / 0.45); }
+  100% { background-color: hsl(142 70% 45% / 0); }
+}
+@keyframes notes-recent-change-caret-fade {
+  0%   { border-left-color: hsl(142 70% 45% / 1); }
+  60%  { border-left-color: hsl(142 70% 45% / 0.9); }
+  100% { border-left-color: hsl(142 70% 45% / 0); }
+}

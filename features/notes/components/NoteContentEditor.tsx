@@ -40,12 +40,14 @@ import { supabase } from "@/utils/supabase/client";
 import { NoteEditorCore, type EditorMode } from "./NoteEditorCore";
 import { FindReplaceBar } from "./FindReplaceBar";
 import { FindMatchOverlay } from "./FindMatchOverlay";
+import { RecentChangeOverlay } from "./RecentChangeOverlay";
 import { MoveNoteDialog } from "./MoveNoteDialog";
 import { ShareModal } from "@/features/sharing/components/ShareModal";
 import { useIsOwner } from "@/utils/permissions";
 import { selectFindReplaceState } from "../redux/selectors";
 import { computeMatches } from "../utils/findMatches";
 import { usePreviewFindHighlight } from "../hooks/usePreviewFindHighlight";
+import { getDiffRange, type DiffRange } from "../utils/diffRange";
 
 const NoteConflictWindow = dynamic(
   () =>
@@ -133,6 +135,21 @@ export function NoteContentEditor({ noteId }: NoteContentEditorProps) {
   // unacceptable for long notes mid-edit.
   const [resetGen, setResetGen] = useState(0);
 
+  // ── Recent-change flash state ─────────────────────────────────────
+  // Tracks the diff range of the last externally-applied content change
+  // (undo, redo, realtime). The RecentChangeOverlay renders a fading
+  // highlight here; we clear it after the fade so it doesn't linger.
+  // Declared above the note-switch block because that block's state
+  // setter would otherwise hit a TDZ error.
+  const [recentChange, setRecentChange] = useState<{
+    range: DiffRange;
+    flashKey: number;
+  } | null>(null);
+  const recentChangeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+  const flashKeyRef = useRef(0);
+
   // ── Note switch: reset local content from Redux immediately.
   // Done during render because it must happen before children render with
   // the wrong noteId's content; the guard makes it strictly one-shot.
@@ -141,6 +158,9 @@ export function NoteContentEditor({ noteId }: NoteContentEditorProps) {
     lastReduxRef.current = reduxContent;
     setLocalContent(reduxContent);
     setResetGen((n) => n + 1);
+    // The recent-change flash is per-note — its range is meaningless once
+    // we've swapped to a different document.
+    setRecentChange(null);
   }
 
   // ── External Redux updates (realtime, undo, fetch completion).
@@ -150,7 +170,9 @@ export function NoteContentEditor({ noteId }: NoteContentEditorProps) {
   // touch state, so they don't trigger any extra renders. For genuine
   // external updates we only update localContent (and NOT resetGen), so
   // child editors receive the new value as a controlled prop without
-  // remounting — preserving scroll position and cursor.
+  // remounting — preserving scroll position and cursor. We also compute a
+  // single-region diff and arm the recent-change flash so the user can see
+  // exactly what undo/redo just touched.
   useEffect(() => {
     if (reduxContent === lastReduxRef.current) return;
 
@@ -164,9 +186,43 @@ export function NoteContentEditor({ noteId }: NoteContentEditorProps) {
     // Don't clobber in-flight local edits.
     if (syncTimerRef.current) return;
 
+    const previous = localContentRef.current;
     lastReduxRef.current = reduxContent;
     setLocalContent(reduxContent);
+
+    // Skip the flash for trivial / massive changes:
+    // - Initial load (previous was empty) would highlight the entire doc.
+    // - Wholesale replacements (>80% of the doc changed) read as a remote
+    //   overwrite, not a focused edit; flashing the whole thing is noise.
+    if (previous.length === 0) return;
+    const range = getDiffRange(previous, reduxContent);
+    if (!range) return;
+    const changedSpan = Math.max(
+      range.end - range.start,
+      range.oldEnd - range.start,
+    );
+    const docSpan = Math.max(reduxContent.length, previous.length);
+    if (docSpan > 0 && changedSpan / docSpan > 0.8) return;
+
+    flashKeyRef.current += 1;
+    setRecentChange({ range, flashKey: flashKeyRef.current });
+
+    if (recentChangeTimerRef.current) {
+      clearTimeout(recentChangeTimerRef.current);
+    }
+    recentChangeTimerRef.current = setTimeout(() => {
+      recentChangeTimerRef.current = null;
+      setRecentChange(null);
+    }, 1600);
   }, [reduxContent]);
+
+  useEffect(() => {
+    return () => {
+      if (recentChangeTimerRef.current) {
+        clearTimeout(recentChangeTimerRef.current);
+      }
+    };
+  }, []);
 
   // ── Debounced sync: local -> Redux ─────────────────────────────────
   const syncToRedux = useCallback(
@@ -397,14 +453,25 @@ export function NoteContentEditor({ noteId }: NoteContentEditorProps) {
             className="flex-1 min-h-0"
             resetKey={`${noteId}:${resetGen}`}
             findOverlay={
-              findReplaceState?.isOpen &&
-              (editorMode === "plain" || editorMode === "split") ? (
-                <NoteFindMatchOverlayRedux
-                  instanceId={instanceId}
-                  noteId={noteId}
-                  textareaRef={textareaRef}
-                  content={localContent}
-                />
+              editorMode === "plain" || editorMode === "split" ? (
+                <>
+                  {findReplaceState?.isOpen && (
+                    <NoteFindMatchOverlayRedux
+                      instanceId={instanceId}
+                      noteId={noteId}
+                      textareaRef={textareaRef}
+                      content={localContent}
+                    />
+                  )}
+                  {recentChange && (
+                    <RecentChangeOverlay
+                      textareaRef={textareaRef}
+                      content={localContent}
+                      range={recentChange.range}
+                      flashKey={recentChange.flashKey}
+                    />
+                  )}
+                </>
               ) : null
             }
             previewContainerRef={previewContainerRef}
