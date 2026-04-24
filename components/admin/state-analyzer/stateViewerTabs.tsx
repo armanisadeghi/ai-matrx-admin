@@ -599,12 +599,12 @@ export function getStateViewerTabs(
     })),
 
     {
-      id: "fileSystem",
-      label: "File System",
+      id: "cloudFiles",
+      label: "Cloud Files",
       content: (
         <GenericSliceViewer
-          sliceKey="fileSystem"
-          state={completeState.fileSystem}
+          sliceKey="cloudFiles"
+          state={completeState.cloudFiles}
         />
       ),
     },
@@ -683,13 +683,6 @@ export function getStateViewerTabs(
       id: "ui",
       label: "UI",
       content: <GenericSliceViewer sliceKey="ui" state={completeState.ui} />,
-    },
-    {
-      id: "storage",
-      label: "Storage",
-      content: (
-        <GenericSliceViewer sliceKey="storage" state={completeState.storage} />
-      ),
     },
     {
       id: "messageActions",

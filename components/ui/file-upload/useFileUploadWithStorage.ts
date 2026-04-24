@@ -1,369 +1,315 @@
-import { useState, useCallback } from "react";
-import FileSystemManager from "@/utils/file-operations/FileSystemManager";
-import { EnhancedFileDetails, getFileDetailsByUrl } from "@/utils/file-operations/constants";
-import { IconComponent, StorageMetadata } from "@/utils/file-operations/types";
-import { useAppSelector } from "@/lib/redux/hooks";
+/**
+ * useFileUploadWithStorage — LEGACY COMPAT WRAPPER
+ *
+ * The original hook wrote to Supabase Storage via `FileSystemManager` and a
+ * `(bucket, path)` pair. Phase 9 migrated the internals to the new
+ * cloud-files system (features/files/*) while preserving the exact public
+ * surface so the ~14 feature consumers keep working without edits.
+ *
+ * How it maps:
+ *   - `bucket` → a top-level cloud-files folder name (see mapLegacyBucket).
+ *   - `path`   → appended as a subfolder path.
+ *   - Upload  → cloud-files `uploadFiles` thunk + `createShareLink` with no
+ *     expiry. The returned `url` is the SHARE URL (stable, persistable).
+ *   - `metadata` → synthesized from File properties. `localId` → fileId.
+ *   - User-assets methods (`uploadToPublicUserAssets`, `uploadToPrivateUserAssets`)
+ *     route to dedicated top-level folders.
+ *
+ * Scheduled for deletion in Phase 11 once callers migrate to
+ * `useUploadAndShare` / `useUploadAndGet` from `@/features/files`.
+ */
+
+import { useCallback, useMemo, useState } from "react";
+import {
+  getFileDetailsByUrl,
+  type EnhancedFileDetails,
+} from "@/utils/file-operations/constants";
+import type { StorageMetadata } from "@/utils/file-operations/types";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
+import {
+  CloudFolders,
+  createShareLink,
+  ensureFolderPath,
+  uploadFiles as cloudUploadFiles,
+} from "@/features/files";
 
-// type FileCategory = "CODE" | "DOCUMENT" | "AUDIO" | "IMAGE" | "VIDEO" | "ARCHIVE" | "DATA" | "UNKNOWN" | "FOLDER";
+// ---------------------------------------------------------------------------
+// Bucket → folder mapping
+// ---------------------------------------------------------------------------
 
-// type EnhancedFileDetails = {
-//     category: FileCategory;
-//     subCategory: string;
-//     icon: IconComponent;
-//     color?: string;
-//     canPreview?: boolean;
-//     filename: string;
-//     extension: string;
-//     iconName: string;
-//     bucket?: string;
-//     path?: string;
-//     quickPreview?: boolean;
-//     mimetype?: string;
-//     size?: number;
-//     localId?: string;
-// };
-
-// Define the result type with optional new fields
-interface UploadResult {
-    url: string;
-    type: string;
-    details: EnhancedFileDetails;
-    metadata?: StorageMetadata; // Optional to avoid breaking existing code
-    localId?: string; // Optional to avoid breaking existing code
+function mapLegacyBucket(bucket: string): string {
+  switch (bucket) {
+    case "user-public-assets":
+      return "Shared Assets";
+    case "user-private-assets":
+      return "Private Assets";
+    case "images":
+    case "Images":
+      return CloudFolders.IMAGES;
+    case "audio":
+    case "Audio":
+      return CloudFolders.AUDIO;
+    case "audio-recordings":
+      return CloudFolders.AUDIO_RECORDINGS;
+    case "documents":
+    case "Documents":
+      return CloudFolders.DOCUMENTS;
+    case "code":
+    case "Code":
+      return CloudFolders.CODE;
+    case "userContent":
+      return "My Files";
+    case "any-file":
+      return "Uploads";
+    case "attachments":
+      return CloudFolders.CHAT_ATTACHMENTS;
+    default:
+      // Pass through unknown bucket names as folder names.
+      return bucket;
+  }
 }
 
-const classifyFileType = (mimeType: string): string => {
-    if (!mimeType) return "unknown";
-    const type = mimeType.toLowerCase();
-    if (type.startsWith("image/")) return "image";
-    if (type.startsWith("text/") || type === "application/json") return "text";
-    if (type.startsWith("video/")) return "video";
-    if (type.startsWith("audio/")) return "audio";
-    if (type === "application/pdf") return "pdf";
-    return "other";
-};
+function composeFolderPath(bucket: string, path?: string): string {
+  const top = mapLegacyBucket(bucket).replace(/^\/+|\/+$/g, "");
+  const sub = (path ?? "").replace(/^\/+|\/+$/g, "");
+  return sub ? `${top}/${sub}` : top;
+}
+
+// ---------------------------------------------------------------------------
+// Result shape (matches legacy)
+// ---------------------------------------------------------------------------
+
+interface UploadResult {
+  url: string;
+  type: string;
+  details: EnhancedFileDetails;
+  metadata?: StorageMetadata;
+  localId?: string;
+}
+
+function classifyFileType(mimeType: string): string {
+  if (!mimeType) return "unknown";
+  const type = mimeType.toLowerCase();
+  if (type.startsWith("image/")) return "image";
+  if (type.startsWith("text/") || type === "application/json") return "text";
+  if (type.startsWith("video/")) return "video";
+  if (type.startsWith("audio/")) return "audio";
+  if (type === "application/pdf") return "pdf";
+  return "other";
+}
+
+function synthesizeMetadata(file: File): StorageMetadata {
+  // StorageMetadata is a legacy shape. We fill in what we have from the File
+  // and leave the rest as empty strings / reasonable defaults — downstream
+  // callers read `size` and `mimetype` almost exclusively.
+  return {
+    eTag: "",
+    size: file.size,
+    mimetype: file.type || "application/octet-stream",
+    cacheControl: "max-age=3600",
+    lastModified: new Date(file.lastModified).toISOString(),
+    contentLength: file.size,
+  } as StorageMetadata;
+}
+
+// ---------------------------------------------------------------------------
+// Hook
+// ---------------------------------------------------------------------------
 
 export const useFileUploadWithStorage = (bucket: string, path?: string) => {
-    const [results, setResults] = useState<UploadResult[]>([]);
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+  const dispatch = useAppDispatch();
+  const userId = useAppSelector(selectUserId);
+  const [results, setResults] = useState<UploadResult[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-    const userId = useAppSelector(selectUserId);
-    const fileSystemManager = FileSystemManager.getInstance();
+  // -------------------------------------------------------------------------
+  // Core primitive — upload one file to a given folder path, return the
+  // legacy-shaped UploadResult with a persistent share URL.
+  // -------------------------------------------------------------------------
 
-    const ensureFolderExists = useCallback(
-        async (folderPath: string) => {
-            if (!folderPath) return true;
-            const pathSegments = folderPath.split("/").filter((segment) => segment.length > 0);
-            let currentPath = "";
-            for (const segment of pathSegments) {
-                currentPath = currentPath ? `${currentPath}/${segment}` : segment;
-                const { data, error } = await fileSystemManager.getSupabase().storage.from(bucket).list(currentPath);
-                if (error && error.message.includes("not found")) {
-                    const success = await fileSystemManager.createFolder(bucket, currentPath);
-                    if (!success) throw new Error(`Failed to create folder: ${currentPath}`);
-                } else if (error) {
-                    throw error;
-                }
-            }
-            return true;
-        },
-        [bucket]
-    );
+  const uploadOneTo = useCallback(
+    async (folderPath: string, file: File): Promise<UploadResult | null> => {
+      try {
+        setIsLoading(true);
+        setError(null);
 
-    const uploadFile = useCallback(
-        async (file: File) => {
-            try {
-                setIsLoading(true);
-                setError(null);
+        const parentFolderId = await dispatch(
+          ensureFolderPath({
+            folderPath,
+            visibility: "private",
+          }),
+        ).unwrap();
 
-                await ensureFolderExists(path || "");
-                const filePath = path ? `${path}/${file.name}` : file.name;
+        const { uploaded, failed } = await dispatch(
+          cloudUploadFiles({
+            files: [file],
+            parentFolderId,
+            visibility: "private",
+            concurrency: 1,
+            metadata: {
+              origin: "legacy-compat:useFileUploadWithStorage",
+              legacy_bucket: bucket,
+            },
+          }),
+        ).unwrap();
 
-                const uploadResult = await fileSystemManager.uploadFile(bucket, filePath, file);
-                if (!uploadResult.success) throw new Error(`Failed to upload ${file.name}`);
-
-                const { signedUrl, metadata, localId } = uploadResult;
-                if (!signedUrl) throw new Error(`No signed URL returned for ${file.name}`);
-
-                const fileType = classifyFileType(file.type);
-                const fileDetails = getFileDetailsByUrl(signedUrl, metadata, localId);
-
-                const result: UploadResult = {
-                    url: signedUrl,
-                    type: fileType,
-                    details: fileDetails,
-                    metadata,
-                };
-                setResults((prev) => [...prev, result]);
-
-                return result;
-            } catch (err) {
-                setError(err.message || "Upload failed");
-                return null;
-            } finally {
-                setIsLoading(false);
-            }
-        },
-        [bucket, path, ensureFolderExists]
-    );
-
-    const uploadFiles = useCallback(
-        async (files: File[]) => {
-            try {
-                setIsLoading(true);
-                setError(null);
-
-                await ensureFolderExists(path || "");
-                const uploadResults: UploadResult[] = [];
-
-                for (const file of files) {
-                    const filePath = path ? `${path}/${file.name}` : file.name;
-                    const uploadResult = await fileSystemManager.uploadFile(bucket, filePath, file);
-
-                    if (!uploadResult.success) throw new Error(`Failed to upload ${file.name}`);
-                    const { signedUrl, metadata, localId } = uploadResult;
-                    if (!signedUrl) throw new Error(`No signed URL returned for ${file.name}`);
-
-                    const fileType = classifyFileType(file.type);
-                    const fileDetails = getFileDetailsByUrl(signedUrl);
-
-                    uploadResults.push({
-                        url: signedUrl,
-                        type: fileType,
-                        details: fileDetails,
-                        metadata,
-                    });
-                }
-
-                setResults(uploadResults);
-                return uploadResults;
-            } catch (err) {
-                setError(err.message || "Batch upload failed");
-                return [];
-            } finally {
-                setIsLoading(false);
-            }
-        },
-        [bucket, path, ensureFolderExists]
-    );
-
-    const getLocalFile = useCallback(async (localId: string) => {
-        try {
-            const localFile = await fileSystemManager.getLocalFile(localId);
-            return localFile;
-        } catch (err) {
-            console.error(`Error retrieving local file for ${localId}:`, err);
-            return null;
+        if (failed.length > 0 || uploaded.length === 0) {
+          throw new Error(failed[0] ?? "Upload failed");
         }
-    }, []);
 
-    // New method to create user-specific directories
-    const createUserDirectories = useCallback(async () => {
-        try {
-            setIsLoading(true);
-            setError(null);
+        const fileId = uploaded[0];
+        const link = await dispatch(
+          createShareLink({
+            resourceId: fileId,
+            resourceType: "file",
+            permissionLevel: "read",
+          }),
+        ).unwrap();
 
-            if (!userId) throw new Error("User ID is not available");
+        const origin =
+          typeof window !== "undefined" ? window.location.origin : "";
+        const shareUrl = `${origin.replace(/\/$/, "")}/share/${link.shareToken}`;
 
-            const success = await fileSystemManager.createUserDirectories(userId);
-            if (!success) throw new Error("Failed to create user directories");
+        const metadata = synthesizeMetadata(file);
+        const details = getFileDetailsByUrl(shareUrl, metadata, fileId);
 
-            return true;
-        } catch (err) {
-            setError(err.message || "Failed to create user directories");
-            return false;
-        } finally {
-            setIsLoading(false);
-        }
-    }, [userId]);
+        const result: UploadResult = {
+          url: shareUrl,
+          type: classifyFileType(file.type),
+          details,
+          metadata,
+          // Re-use the cloud-files UUID as the localId so callers that
+          // stored this id can still reason about the file.
+          localId: fileId,
+        };
+        setResults((prev) => [...prev, result]);
+        return result;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        setError(message || "Upload failed");
+        return null;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [dispatch, bucket],
+  );
 
-    // New method to upload a single file to public user assets
-    const uploadToPublicUserAssets = useCallback(
-        async (file: File) => {
-            try {
-                setIsLoading(true);
-                setError(null);
+  const uploadMultipleTo = useCallback(
+    async (
+      folderPath: string,
+      files: File[],
+    ): Promise<UploadResult[]> => {
+      const out: UploadResult[] = [];
+      for (const file of files) {
+        const r = await uploadOneTo(folderPath, file);
+        if (r) out.push(r);
+      }
+      return out;
+    },
+    [uploadOneTo],
+  );
 
-                if (!userId) throw new Error("User ID is not available");
+  // -------------------------------------------------------------------------
+  // Public API — mirrors the legacy signatures exactly.
+  // -------------------------------------------------------------------------
 
-                const bucket = "user-public-assets";
-                const userDir = `user-${userId}`;
-                const filePath = `${userDir}/${file.name}`;
+  const defaultFolder = useMemo(
+    () => composeFolderPath(bucket, path),
+    [bucket, path],
+  );
 
-                const uploadResult = await fileSystemManager.uploadFile(bucket, filePath, file);
-                if (!uploadResult.success) throw new Error(`Failed to upload ${file.name}`);
+  const uploadFile = useCallback(
+    (file: File) => uploadOneTo(defaultFolder, file),
+    [uploadOneTo, defaultFolder],
+  );
 
-                const { signedUrl, metadata, localId } = uploadResult;
-                if (!signedUrl) throw new Error(`No signed URL returned for ${file.name}`);
+  const uploadFiles = useCallback(
+    async (files: File[]): Promise<UploadResult[]> => {
+      const res = await uploadMultipleTo(defaultFolder, files);
+      setResults(res);
+      return res;
+    },
+    [uploadMultipleTo, defaultFolder],
+  );
 
-                const fileType = classifyFileType(file.type);
-                const fileDetails = getFileDetailsByUrl(signedUrl, metadata, localId);
+  const getLocalFile = useCallback(async (_localId: string) => {
+    // Legacy concept — the new system doesn't maintain a separate local-file
+    // store. Callers using this rarely depend on it strictly; return null
+    // and let them fall back to the remote URL.
+    return null;
+  }, []);
 
-                const result: UploadResult = {
-                    url: signedUrl,
-                    type: fileType,
-                    details: fileDetails,
-                    metadata,
-                    localId,
-                };
-                setResults((prev) => [...prev, result]);
+  const createUserDirectories = useCallback(async (): Promise<boolean> => {
+    try {
+      setIsLoading(true);
+      if (!userId) throw new Error("User ID is not available");
+      await dispatch(
+        ensureFolderPath({
+          folderPath: "Shared Assets",
+          visibility: "private",
+        }),
+      ).unwrap();
+      await dispatch(
+        ensureFolderPath({
+          folderPath: "Private Assets",
+          visibility: "private",
+        }),
+      ).unwrap();
+      return true;
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to create user directories",
+      );
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [dispatch, userId]);
 
-                return result;
-            } catch (err) {
-                setError(err.message || "Upload to public assets failed");
-                return null;
-            } finally {
-                setIsLoading(false);
-            }
-        },
-        [userId]
-    );
+  const uploadToPublicUserAssets = useCallback(
+    (file: File) => uploadOneTo("Shared Assets", file),
+    [uploadOneTo],
+  );
 
-    // New method to upload multiple files to public user assets
-    const uploadMultipleToPublicUserAssets = useCallback(
-        async (files: File[]) => {
-            try {
-                setIsLoading(true);
-                setError(null);
+  const uploadMultipleToPublicUserAssets = useCallback(
+    async (files: File[]) => {
+      const res = await uploadMultipleTo("Shared Assets", files);
+      setResults(res);
+      return res;
+    },
+    [uploadMultipleTo],
+  );
 
-                if (!userId) throw new Error("User ID is not available");
+  const uploadToPrivateUserAssets = useCallback(
+    (file: File) => uploadOneTo("Private Assets", file),
+    [uploadOneTo],
+  );
 
-                const bucket = "user-public-assets";
-                const userDir = `user-${userId}`;
-                const uploadResults: UploadResult[] = [];
+  const uploadMultipleToPrivateUserAssets = useCallback(
+    async (files: File[]) => {
+      const res = await uploadMultipleTo("Private Assets", files);
+      setResults(res);
+      return res;
+    },
+    [uploadMultipleTo],
+  );
 
-                for (const file of files) {
-                    const filePath = `${userDir}/${file.name}`;
-                    const uploadResult = await fileSystemManager.uploadFile(bucket, filePath, file);
-
-                    if (!uploadResult.success) throw new Error(`Failed to upload ${file.name}`);
-                    const { signedUrl, metadata, localId } = uploadResult;
-                    if (!signedUrl) throw new Error(`No signed URL returned for ${file.name}`);
-
-                    const fileType = classifyFileType(file.type);
-                    const fileDetails = getFileDetailsByUrl(signedUrl, metadata, localId);
-
-                    uploadResults.push({
-                        url: signedUrl,
-                        type: fileType,
-                        details: fileDetails,
-                        metadata,
-                        localId,
-                    });
-                }
-
-                setResults(uploadResults);
-                return uploadResults;
-            } catch (err) {
-                setError(err.message || "Batch upload to public assets failed");
-                return [];
-            } finally {
-                setIsLoading(false);
-            }
-        },
-        [userId]
-    );
-
-    // New method to upload a single file to private user assets
-    const uploadToPrivateUserAssets = useCallback(
-        async (file: File) => {
-            try {
-                setIsLoading(true);
-                setError(null);
-
-                if (!userId) throw new Error("User ID is not available");
-
-                const bucket = "user-private-assets";
-                const userDir = `user-${userId}`;
-                const filePath = `${userDir}/${file.name}`;
-
-                const uploadResult = await fileSystemManager.uploadFile(bucket, filePath, file);
-                if (!uploadResult.success) throw new Error(`Failed to upload ${file.name}`);
-
-                const { signedUrl, metadata, localId } = uploadResult;
-                if (!signedUrl) throw new Error(`No signed URL returned for ${file.name}`);
-
-                const fileType = classifyFileType(file.type);
-                const fileDetails = getFileDetailsByUrl(signedUrl, metadata, localId);
-
-                const result: UploadResult = {
-                    url: signedUrl,
-                    type: fileType,
-                    details: fileDetails,
-                    metadata,
-                    localId,
-                };
-                setResults((prev) => [...prev, result]);
-
-                return result;
-            } catch (err) {
-                setError(err.message || "Upload to private assets failed");
-                return null;
-            } finally {
-                setIsLoading(false);
-            }
-        },
-        [userId]
-    );
-
-    // New method to upload multiple files to private user assets
-    const uploadMultipleToPrivateUserAssets = useCallback(
-        async (files: File[]) => {
-            try {
-                setIsLoading(true);
-                setError(null);
-
-                if (!userId) throw new Error("User ID is not available");
-
-                const bucket = "user-private-assets";
-                const userDir = `user-${userId}`;
-                const uploadResults: UploadResult[] = [];
-
-                for (const file of files) {
-                    const filePath = `${userDir}/${file.name}`;
-                    const uploadResult = await fileSystemManager.uploadFile(bucket, filePath, file);
-
-                    if (!uploadResult.success) throw new Error(`Failed to upload ${file.name}`);
-                    const { signedUrl, metadata, localId } = uploadResult;
-                    if (!signedUrl) throw new Error(`No signed URL returned for ${file.name}`);
-
-                    const fileType = classifyFileType(file.type);
-                    const fileDetails = getFileDetailsByUrl(signedUrl, metadata, localId);
-
-                    uploadResults.push({
-                        url: signedUrl,
-                        type: fileType,
-                        details: fileDetails,
-                        metadata,
-                        localId,
-                    });
-                }
-
-                setResults(uploadResults);
-                return uploadResults;
-            } catch (err) {
-                setError(err.message || "Batch upload to private assets failed");
-                return [];
-            } finally {
-                setIsLoading(false);
-            }
-        },
-        [userId]
-    );
-
-    return {
-        uploadFile,
-        uploadFiles,
-        getLocalFile,
-        createUserDirectories, // New method to create user directories
-        uploadToPublicUserAssets, // New method for single public upload
-        uploadMultipleToPublicUserAssets, // New method for multiple public uploads
-        uploadToPrivateUserAssets, // New method for single private upload
-        uploadMultipleToPrivateUserAssets, // New method for multiple private uploads
-        results,
-        isLoading,
-        error,
-    };
+  return {
+    uploadFile,
+    uploadFiles,
+    getLocalFile,
+    createUserDirectories,
+    uploadToPublicUserAssets,
+    uploadMultipleToPublicUserAssets,
+    uploadToPrivateUserAssets,
+    uploadMultipleToPrivateUserAssets,
+    results,
+    isLoading,
+    error,
+  };
 };

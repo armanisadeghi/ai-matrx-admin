@@ -1,27 +1,29 @@
 import Link from "next/link";
-import { Suspense } from "react";
 import {
     ArrowLeft,
     ArrowRight,
+    CloudUpload,
+    FolderOpen,
     Layers,
     Library,
     Sparkles,
 } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
-import { getUserStudioLibrary } from "@/features/image-studio/server/library";
-import {
-    LibraryGrid,
-    LibrarySummaryBar,
-} from "@/features/image-studio/components/LibraryGrid";
+import { CloudFolders } from "@/features/files";
 
 /**
  * /image-studio/library
  *
- * Server Component. Static shell renders instantly with fixed-dimension
- * placeholders; the user's actual library streams in through a nested
- * Suspense boundary (uses server-only data fetch + react cache()).
+ * The Image Studio save flow now writes to the user's Cloud Files library at
+ * `{CloudFolders.IMAGES_GENERATED}/<folder-segment>` using the shared cloud
+ * pipeline. There's a dedicated explorer for all cloud files at
+ * `/cloud-files` — this page is a lightweight landing that directs users
+ * there and explains the folder convention.
+ *
+ * Pure Server Component. No client JS ships from this route.
  */
 export default function LibraryPage() {
+    const libraryPath = CloudFolders.IMAGES_GENERATED;
+
     return (
         <main className="min-h-[calc(100dvh-2.5rem)] overflow-y-auto bg-background">
             <header className="border-b border-border bg-card/40 sticky top-0 z-10 backdrop-blur">
@@ -37,7 +39,7 @@ export default function LibraryPage() {
                         <div className="min-w-0">
                             <h1 className="text-sm font-semibold flex items-center gap-1.5 truncate">
                                 <Library className="h-3.5 w-3.5 text-primary" />
-                                My Image Library
+                                Image Studio — Library
                             </h1>
                         </div>
                     </div>
@@ -61,59 +63,103 @@ export default function LibraryPage() {
                 </div>
             </header>
 
-            <div className="container mx-auto px-4 sm:px-6 md:px-10 py-8 max-w-[1400px] space-y-6">
-                <div className="max-w-3xl space-y-2">
+            <div className="container mx-auto px-4 sm:px-6 md:px-10 py-10 max-w-[1100px] space-y-8">
+                {/* Hero explainer */}
+                <section className="space-y-2">
                     <h2 className="text-2xl md:text-3xl font-semibold tracking-tight">
-                        Saved exports
+                        Your saves live in Cloud Files
                     </h2>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                        Every Image Studio export you&rsquo;ve saved to your library,
-                        grouped by session. Each tile is a public URL — click to open
-                        the raw file in a new tab. Copy the URL from the image
-                        properties to paste into your app.
+                    <p className="text-sm text-muted-foreground leading-relaxed max-w-3xl">
+                        Every variant you save from the Studio lands in your{" "}
+                        <code className="font-mono text-foreground">{libraryPath}</code>{" "}
+                        folder inside Cloud Files. That&rsquo;s the same library that backs
+                        every other tool in the app, so your image presets are instantly
+                        browsable alongside the rest of your content — versioned, sharable,
+                        and searchable.
                     </p>
-                </div>
-                <Suspense fallback={<LibrarySkeleton />}>
-                    <LibraryBody />
-                </Suspense>
+                </section>
+
+                {/* Primary CTA card */}
+                <section className="rounded-2xl border border-border bg-card overflow-hidden">
+                    <div className="p-5 md:p-6 flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
+                        <div className="h-12 w-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                            <FolderOpen className="h-6 w-6" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <h3 className="text-base font-semibold">Open your library</h3>
+                            <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+                                Jump straight to Cloud Files. Filter by the{" "}
+                                <span className="font-mono">{libraryPath}</span> folder to
+                                see only Studio output, or navigate the whole tree.
+                            </p>
+                        </div>
+                        <Link
+                            href="/cloud-files"
+                            className="inline-flex items-center gap-2 rounded-lg bg-primary text-primary-foreground px-4 py-2 text-sm font-medium shadow-sm hover:bg-primary/90 transition-colors"
+                        >
+                            Go to Cloud Files
+                            <ArrowRight className="h-4 w-4" />
+                        </Link>
+                    </div>
+                </section>
+
+                {/* Workflow reminder */}
+                <section className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <StepCard
+                        icon={<Sparkles className="h-4 w-4" />}
+                        title="1. Generate"
+                        body="Drop an image, pick presets, hit Generate."
+                    />
+                    <StepCard
+                        icon={<CloudUpload className="h-4 w-4" />}
+                        title="2. Save"
+                        body="Click &lsquo;Save all to library&rsquo; — variants upload under Images/Generated."
+                    />
+                    <StepCard
+                        icon={<Library className="h-4 w-4" />}
+                        title="3. Reuse"
+                        body="Browse them anywhere Cloud Files is available — chat pickers, agent apps, sharing links."
+                    />
+                </section>
+
+                {/* Folder convention note */}
+                <section className="rounded-xl border border-dashed border-border bg-muted/20 p-4">
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                        <span className="font-semibold text-foreground">
+                            Folder convention:
+                        </span>{" "}
+                        Studio saves go to{" "}
+                        <code className="font-mono">{libraryPath}/&lt;your-folder&gt;</code>.
+                        The folder name comes from the &ldquo;Save to library&rdquo; field in
+                        the export panel — defaults to{" "}
+                        <code className="font-mono">image-studio</code>. Every variant of a
+                        single save session shares that folder, so grouped downloads and
+                        renames stay coherent.
+                    </p>
+                </section>
             </div>
         </main>
     );
 }
 
-async function LibraryBody() {
-    const snapshot = await getUserStudioLibrary();
+function StepCard({
+    icon,
+    title,
+    body,
+}: {
+    icon: React.ReactNode;
+    title: string;
+    body: string;
+}) {
     return (
-        <div className="space-y-6">
-            <LibrarySummaryBar
-                sessionCount={snapshot.sessions.length}
-                totalVariants={snapshot.totalVariants}
-                totalBytes={snapshot.totalBytes}
-            />
-            <LibraryGrid sessions={snapshot.sessions} />
-        </div>
-    );
-}
-
-function LibrarySkeleton() {
-    return (
-        <div className="space-y-6">
-            <Skeleton className="h-11 w-80 rounded-xl" />
-            {Array.from({ length: 2 }).map((_, i) => (
-                <div
-                    key={i}
-                    className="rounded-2xl border border-border overflow-hidden"
-                >
-                    <div className="h-12 border-b border-border bg-muted/30 p-2.5">
-                        <Skeleton className="h-full w-64" />
-                    </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 p-3">
-                        {Array.from({ length: 8 }).map((_, j) => (
-                            <Skeleton key={j} className="h-32 rounded-lg" />
-                        ))}
-                    </div>
-                </div>
-            ))}
+        <div className="rounded-xl border border-border bg-card p-4">
+            <div className="h-8 w-8 rounded-md bg-primary/10 text-primary flex items-center justify-center mb-2">
+                {icon}
+            </div>
+            <h4 className="font-semibold text-sm">{title}</h4>
+            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                {body}
+            </p>
         </div>
     );
 }

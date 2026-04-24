@@ -5,7 +5,9 @@ import { StickyNote, CheckSquare, Table2, Globe, File, FolderKanban, ExternalLin
 import { CiYoutube } from "react-icons/ci";
 import FloatingSheet from "@/components/official/FloatingSheet";
 import type { Resource } from "../../types/resources";
-import FilePreviewSheet from "@/components/ui/file-preview/FilePreviewSheet";
+// Legacy FilePreviewSheet removed in Phase 11. File-type resources now
+// open their URL in a new tab via handleOpenFileUrl below. For rich inline
+// preview callers can use FilePreview from @/features/files with a fileId.
 import { supabase } from "@/utils/supabase/client";
 import UserTableViewer from "@/components/user-generated-table-data/UserTableViewer";
 
@@ -112,16 +114,20 @@ const ResourcePreviewSheet: React.FC<ResourcePreviewSheetProps> = ({ isOpen, onC
 
     if (!resource) return null;
 
-    // For file resources, use existing FilePreviewSheet
+    // For file resources, open the URL in a new tab — the legacy
+    // FilePreviewSheet was deleted in Phase 11. Callers that need inline
+    // rich preview should route through /cloud-files/f/[fileId] instead.
     if (resource.type === "file" && resource.data.url && resource.data.type) {
-        return (
-            <FilePreviewSheet
-                isOpen={isOpen}
-                onClose={onClose}
-                file={resource.data as any}
-                onRemove={onRemove}
-            />
-        );
+        if (isOpen && typeof window !== "undefined") {
+            window.open(
+                resource.data.url as string,
+                "_blank",
+                "noopener,noreferrer",
+            );
+            // Close immediately so the sheet state returns to idle.
+            queueMicrotask(() => onClose());
+        }
+        return null;
     }
 
     // For other resource types, use custom Sheet

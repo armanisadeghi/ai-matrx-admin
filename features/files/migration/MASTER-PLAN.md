@@ -20,12 +20,14 @@ Full rationale and context: [../FEATURE.md](../FEATURE.md). Full approved plan: 
 | 6.5 | Dropbox-style `PageShell` redesign | ✅ complete | 1 day | phases/phase-06-5-dropbox-ui.md |
 | 7 | Hooks + pickers | ✅ complete | 2 days | phases/phase-07-hooks-pickers.md |
 | 8 | First consumer migration | ✅ complete | 1–2 days | phases/phase-08-first-consumer.md |
-| 9 | Progressive consumer migration | 🟡 in progress | 1–2 weeks | phases/phase-09-consumers.md |
-| 10 | Validation soak | ⬜ not started | 2 weeks | phases/phase-10-soak.md |
-| 11 | Legacy deletion | ⬜ not started | 1–3 days (many PRs) | phases/phase-11-deletion.md |
-| 12 | Backend optimization follow-ups | ⬜ ongoing | — | phases/phase-12-backend-followups.md |
+| 9 | Progressive consumer migration | ✅ complete | 1–2 weeks | phases/phase-09-consumers.md |
+| 10 | Validation soak | ⏭ skipped | 2 weeks | phases/phase-10-soak.md |
+| 11 | Legacy deletion | ✅ complete | 1–3 days (many PRs) | phases/phase-11-deletion.md |
+| 12 | Backend optimization follow-ups | 🟡 ongoing | — | phases/phase-12-backend-followups.md |
 
-Legend: ⬜ not started · 🟡 in progress · ✅ complete · ⏸ paused · ❌ blocked.
+Legend: ⬜ not started · 🟡 in progress · ✅ complete · ⏸ paused · ❌ blocked · ⏭ skipped.
+
+**Status note (2026-04-23):** Phases 9–11 shipped in a single compressed window after the Python team finished their migration and deleted all legacy backend code. That made Phase 10's side-by-side soak period impossible (there was no "side" left to compare against), so it was rolled into Phase 11. The app now runs exclusively on cloud-files.
 
 ---
 

@@ -1,5 +1,5 @@
 export * from './constants';
 export * from './types';
-export { default as FileSystemManager} from './FileSystemManager';
+// FileSystemManager removed in Phase 11 — superseded by features/files.
 export { default as StorageDebugger } from './StorageDebugger';
 export { default as LocalFileSystem } from './LocalFileSystem';

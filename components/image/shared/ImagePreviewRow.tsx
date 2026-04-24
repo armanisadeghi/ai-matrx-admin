@@ -4,7 +4,9 @@ import React, { useRef, useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { useSelectedImages, ImageSource } from '../context/SelectedImagesProvider';
 import { cn } from '@/lib/utils';
-import FilePreviewSheet from '@/components/ui/file-preview/FilePreviewSheet';
+// Legacy FilePreviewSheet removed in Phase 11 — clicking an image now opens
+// the source URL in a new tab. Callers that need inline rich preview should
+// render @/features/files FilePreview with a fileId instead.
 import { QuickImagePreview } from './QuickImagePreview';
 import { EnhancedFileDetails } from '@/utils/file-operations/constants';
 
@@ -98,11 +100,7 @@ export function ImagePreviewRow({
   
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [showScrollButtons, setShowScrollButtons] = useState(false);
-  const [previewFile, setPreviewFile] = useState<{
-    url: string;
-    type: string;
-    details?: EnhancedFileDetails;
-  } | null>(null);
+  // Legacy previewFile state removed in Phase 11.
   
   useEffect(() => {
     const checkScroll = () => {
@@ -159,23 +157,9 @@ export function ImagePreviewRow({
   };
 
   const handleImageClick = (image: ImageSource) => {
-    setPreviewFile({
-      url: image.url,
-      type: 'image',
-      details: {
-        category: 'IMAGE',
-        subCategory: image.metadata?.title ? 'Image' : 'Unknown',
-        extension: image.url.split('.').pop() || '',
-        filename: image.metadata?.title || 'Image',
-        iconName: 'image',
-        mimetype: 'image/jpeg',
-        canPreview: true
-      } as EnhancedFileDetails
-    });
-  };
-
-  const closePreview = () => {
-    setPreviewFile(null);
+    if (typeof window !== "undefined") {
+      window.open(image.url, "_blank", "noopener,noreferrer");
+    }
   };
 
   const renderImage = (image: ImageSource) => {
@@ -284,13 +268,6 @@ export function ImagePreviewRow({
         )}
       </div>
 
-      {previewFile && (
-        <FilePreviewSheet
-          isOpen={!!previewFile}
-          onClose={closePreview}
-          file={previewFile}
-        />
-      )}
     </>
   );
 } 

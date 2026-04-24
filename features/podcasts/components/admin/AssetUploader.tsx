@@ -7,19 +7,32 @@
  * variants) with a podcast-only video-upload section that posts directly
  * to the Python backend via `useBackendApi`.
  *
- * All image handling now lives in `components/official/ImageAssetUploader.tsx`
- * and `/api/images/upload` so non-podcast features can share the same pipeline.
+ * All image handling lives in `components/official/ImageAssetUploader.tsx`
+ * and `/api/images/upload` (cloud-files-backed since the Phase 11 migration)
+ * so non-podcast features can share the same pipeline. Video still posts
+ * directly to Python via `useBackendApi()`.
  */
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { AlertCircle, CheckCircle2, Loader2, Trash2, Video } from 'lucide-react';
 import { useBackendApi } from '@/hooks/useBackendApi';
 import { ENDPOINTS } from '@/lib/api/endpoints';
-import type { UploadAssetsResponse } from '@/app/api/podcasts/upload-assets/route';
 import {
     ImageAssetUploader,
     type ImageUploaderResult,
 } from '@/components/official/ImageAssetUploader';
+
+/**
+ * Shape returned by the Python podcast-video upload endpoint
+ * (`/media/podcast/upload-video`). Mirrors the legacy shape from the retired
+ * `/api/podcasts/upload-assets` route so callers don't need to change.
+ */
+interface UploadAssetsResponse {
+    video_url: string | null;
+    image_url: string | null;
+    og_image_url: string | null;
+    thumbnail_url: string | null;
+}
 
 export interface AssetUrls {
     image_url: string | null;

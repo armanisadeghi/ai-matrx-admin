@@ -99,13 +99,8 @@ const QuickDataSheet = dynamic(
   { ssr: false },
 );
 
-const QuickFilesSheet = dynamic(
-  () =>
-    import("@/features/quick-actions/components/QuickFilesSheet").then(
-      (mod) => ({ default: mod.QuickFilesSheet }),
-    ),
-  { ssr: false },
-);
+// Legacy QuickFilesSheet removed in Phase 11 — cloud-files route is the
+// entry point now.
 
 const UtilitiesOverlay = dynamic(
   () =>
@@ -209,20 +204,8 @@ const ImageUploaderWindow = dynamic(
   { ssr: false },
 );
 
-const FilePreviewWindow = dynamic(
-  () =>
-    import("@/features/window-panels/windows/files/FilePreviewWindow").then(
-      (m) => ({
-        default: m.FilePreviewWindow,
-      }),
-    ),
-  { ssr: false },
-);
-
-const FileUploadWindow = dynamic(
-  () => import("@/features/window-panels/windows/files/FileUploadWindow"),
-  { ssr: false },
-);
+// Legacy FilePreviewWindow + FileUploadWindow removed in Phase 11 —
+// cloud-files window handles both inline.
 
 const ShareModal = dynamic(
   () =>
@@ -425,10 +408,8 @@ const QuickTasksWindow = dynamic(
   { ssr: false },
 );
 
-const QuickFiles = dynamic(
-  () => import("@/features/window-panels/windows/files/QuickFilesWindow"),
-  { ssr: false },
-);
+// Legacy QuickFiles window removed in Phase 11 — use cloudFilesWindow
+// (registered in Phase 6) instead.
 
 const QuickDataWindow = dynamic(
   () => import("@/features/window-panels/windows/QuickDataWindow"),
@@ -776,9 +757,6 @@ export const OverlayController: React.FC = () => {
   const isQuickDataOpen = useAppSelector((s) =>
     selectIsOverlayOpen(s, "quickData"),
   );
-  const isQuickFilesOpen = useAppSelector((s) =>
-    selectIsOverlayOpen(s, "quickFiles"),
-  );
   const isQuickUtilitiesOpen = useAppSelector((s) =>
     selectIsOverlayOpen(s, "quickUtilities"),
   );
@@ -851,16 +829,9 @@ export const OverlayController: React.FC = () => {
   const isQuickDataWindowOpen = useAppSelector((s) =>
     selectIsOverlayOpen(s, "quickDataWindow"),
   );
-  const isQuickFilesWindowOpen = useAppSelector((s) =>
-    selectIsOverlayOpen(s, "quickFilesWindow"),
-  );
-
-  const filePreviewInstances = useAppSelector((s) =>
-    selectOpenInstances(s, "filePreviewWindow"),
-  );
-  const isFileUploadWindowOpen = useAppSelector((s) =>
-    selectIsOverlayOpen(s, "fileUploadWindow"),
-  );
+  // Legacy quickFilesWindow / filePreviewWindow / fileUploadWindow
+  // selectors removed in Phase 11 — all three overlayIds were removed from
+  // the registry; the new cloudFilesWindow replaces them.
   const imageUploaderWindowInstances = useAppSelector((s) =>
     selectOpenInstances(s, "imageUploaderWindow"),
   );
@@ -1346,23 +1317,7 @@ export const OverlayController: React.FC = () => {
         </FloatingSheet>
       )}
 
-      {isQuickFilesOpen && (
-        <FloatingSheet
-          isOpen={true}
-          onClose={() => close("quickFiles")}
-          title=""
-          position="right"
-          width="2xl"
-          height="full"
-          closeOnBackdropClick={true}
-          closeOnEsc={true}
-          showCloseButton={false}
-          contentClassName="p-0"
-          lockScroll={false}
-        >
-          <QuickFilesSheet onClose={() => close("quickFiles")} />
-        </FloatingSheet>
-      )}
+      {/* Legacy QuickFilesSheet ("quickFiles" overlay) removed in Phase 11. */}
 
       {isQuickUtilitiesOpen && (
         <UtilitiesOverlay
@@ -1548,9 +1503,7 @@ export const OverlayController: React.FC = () => {
         />
       )}
 
-      {isQuickFilesWindowOpen && (
-        <QuickFiles isOpen={true} onClose={() => close("quickFilesWindow")} />
-      )}
+      {/* Legacy quickFilesWindow removed in Phase 11 — use cloudFilesWindow. */}
 
       {isScraperWindowOpen && (
         <ScraperWindow isOpen={true} onClose={() => close("scraperWindow")} />
@@ -1649,26 +1602,10 @@ export const OverlayController: React.FC = () => {
       })}
 
       {/* File Preview — instanced, multiple can be open simultaneously */}
-      {filePreviewInstances.map(({ instanceId, data }) => {
-        if (!data) return null;
-        return (
-          <FilePreviewWindow
-            key={instanceId}
-            instanceId={instanceId}
-            isOpen={true}
-            onClose={() => close("filePreviewWindow", instanceId)}
-            data={data}
-          />
-        );
-      })}
-
-      {/* File Upload — singleton */}
-      {isFileUploadWindowOpen && (
-        <FileUploadWindow
-          isOpen={true}
-          onClose={() => close("fileUploadWindow")}
-        />
-      )}
+      {/* Legacy filePreviewWindow + fileUploadWindow removed in Phase 11.
+          File previews now use FilePreview from @/features/files or the
+          /cloud-files/f/[fileId] route; uploads use the dropzone inside
+          the cloud-files window or useUploadAndGet / useUploadAndShare. */}
 
       {/* Image Uploader — instanced; driven by useOpenImageUploaderWindow */}
       {imageUploaderWindowInstances.map(({ instanceId, data }) => (

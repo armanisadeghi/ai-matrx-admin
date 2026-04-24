@@ -12,7 +12,9 @@
  * Side effects:
  *   - Creates + revokes object URLs for the original previews
  *   - Calls /api/images/studio/process per file when the user clicks "Generate"
- *   - Calls /api/images/studio/save when the user clicks "Save to library"
+ *   - Dispatches cloud-files thunks when the user clicks "Save to library" —
+ *     variants land under `Images/Generated/image-studio/{folder}` and are
+ *     addressable by `fileId` from the cloudFiles slice thereafter.
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -23,11 +25,15 @@ import type {
     ProcessStudioRequestBody,
     ProcessStudioResponse,
     ProcessedVariant,
-    SaveStudioRequestBody,
-    SaveStudioResponse,
     StudioSourceFile,
 } from "../types";
 import { slugifyFilename } from "../utils/slugify-filename";
+import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
+import {
+    CloudFolders,
+    ensureFolderPath,
+    uploadFiles,
+} from "@/features/files";
 
 const DEFAULT_QUALITY = 88;
 const DEFAULT_FORMAT: OutputFormat = "webp";
@@ -50,7 +56,7 @@ export interface UseImageStudioResult {
     position: ImagePosition;
     isProcessing: boolean;
     isSaving: boolean;
-    lastSaveResult: SaveStudioResponse | null;
+    lastSaveResult: import("../types").SaveStudioResult | null;
     error: string | null;
 
     // File management
@@ -110,6 +116,9 @@ async function decodeDimensions(file: File): Promise<{ width: number; height: nu
 export function useImageStudio(
     options: UseImageStudioOptions = {},
 ): UseImageStudioResult {
+    const dispatch = useAppDispatch();
+    const store = useAppStore();
+
     const [files, setFiles] = useState<StudioSourceFile[]>([]);
     const [selectedPresetIds, setSelectedPresetIds] = useState<string[]>([]);
     const [format, setFormat] = useState<OutputFormat>(DEFAULT_FORMAT);
@@ -119,7 +128,9 @@ export function useImageStudio(
     const [position, setPosition] = useState<ImagePosition>(DEFAULT_POSITION);
     const [isProcessing, setIsProcessing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
-    const [lastSaveResult, setLastSaveResult] = useState<SaveStudioResponse | null>(null);
+    const [lastSaveResult, setLastSaveResult] = useState<
+        import("../types").SaveStudioResult | null
+    >(null);
     const [error, setError] = useState<string | null>(null);
 
     // Revoke object URLs on unmount
@@ -280,7 +291,7 @@ export function useImageStudio(
                                     compressionRatio: v.compressionRatio,
                                     fit: v.fit,
                                     position: v.position,
-                                    publicUrl: null,
+                                    fileId: null,
                                     savedAt: null,
                                 };
                             }
@@ -312,57 +323,118 @@ export function useImageStudio(
 
     const saveAll = useCallback(
         async (folder?: string) => {
-            const variantsToSave: SaveStudioRequestBody["variants"] = [];
+            // Collect every variant that hasn't been saved yet.
+            const pending: Array<{
+                studioFileId: string;
+                variantKey: string;
+                filename: string;
+                presetId: string;
+                dataUrl: string;
+            }> = [];
             for (const f of files) {
-                for (const v of Object.values(f.variants)) {
-                    if (v.savedAt) continue; // skip already-saved
-                    variantsToSave.push({
-                        dataUrl: v.dataUrl,
+                for (const [key, v] of Object.entries(f.variants)) {
+                    if (v.savedAt) continue;
+                    pending.push({
+                        studioFileId: f.id,
+                        variantKey: key,
                         filename: v.filename,
                         presetId: v.presetId,
+                        dataUrl: v.dataUrl,
                     });
                 }
             }
-            if (variantsToSave.length === 0) return;
+            if (pending.length === 0) return;
 
             setIsSaving(true);
             setError(null);
-            try {
-                const res = await fetch("/api/images/studio/save", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        folder: folder ?? options.defaultFolder ?? "image-studio",
-                        variants: variantsToSave,
-                    } satisfies SaveStudioRequestBody),
-                });
-                if (!res.ok) {
-                    const body = await res.json().catch(() => ({}));
-                    throw new Error(
-                        (body as { error?: string }).error ?? `Save failed (${res.status})`,
-                    );
-                }
-                const data = (await res.json()) as SaveStudioResponse;
-                setLastSaveResult(data);
 
-                // Fold the public URLs back into state
-                const urlByFilename = new Map<string, string>();
-                for (const v of data.variants) {
-                    if (v.publicUrl && !v.error) urlByFilename.set(v.filename, v.publicUrl);
-                }
-                const savedAt = new Date().toISOString();
-                setFiles((prev) =>
-                    prev.map((f) => {
-                        const updated: Record<string, ProcessedVariant> = {};
-                        for (const [id, v] of Object.entries(f.variants)) {
-                            const publicUrl = urlByFilename.get(v.filename);
-                            updated[id] = publicUrl
-                                ? { ...v, publicUrl, savedAt }
-                                : v;
-                        }
-                        return { ...f, variants: updated };
+            try {
+                // Convert every data URL into a real File so we can feed the
+                // cloud-files upload pipeline. Filenames come from the server
+                // (already preset-aware + slugged).
+                const uploadables = await Promise.all(
+                    pending.map(async (p) => {
+                        const blob = await fetch(p.dataUrl).then((r) => r.blob());
+                        return {
+                            ...p,
+                            file: new File([blob], p.filename, {
+                                type: blob.type || "image/webp",
+                            }),
+                        };
                     }),
                 );
+
+                // Anchor the save under the canonical Images/Generated tree so
+                // everything the studio produces is grouped and filterable.
+                const folderSegment = (folder ?? options.defaultFolder ?? "image-studio")
+                    .trim()
+                    .replace(/^\/+|\/+$/g, "");
+                const folderPath = folderSegment
+                    ? `${CloudFolders.IMAGES_GENERATED}/${folderSegment}`
+                    : CloudFolders.IMAGES_GENERATED;
+
+                const parentFolderId = await dispatch(
+                    ensureFolderPath({ folderPath, visibility: "private" }),
+                ).unwrap();
+
+                // Snapshot existing file ids so we can detect which ones are
+                // the new arrivals (uploadFiles runs workers in parallel and
+                // doesn't preserve order in its `uploaded` array).
+                const knownIdsBefore = new Set<string>(
+                    Object.keys(store.getState().cloudFiles.filesById),
+                );
+
+                const result = await dispatch(
+                    uploadFiles({
+                        files: uploadables.map((u) => u.file),
+                        parentFolderId,
+                        visibility: "private",
+                        metadata: {
+                            source: "image-studio",
+                            folder_segment: folderSegment,
+                        },
+                        concurrency: 3,
+                    }),
+                ).unwrap();
+
+                // Match new file ids back to variants by filename so we can
+                // stamp each variant with its cloud `fileId`.
+                const fresh = Object.values(store.getState().cloudFiles.filesById).filter(
+                    (f) => !knownIdsBefore.has(f.id),
+                );
+                const fileIdByName = new Map<string, string>();
+                for (const file of fresh) {
+                    fileIdByName.set(file.fileName, file.id);
+                }
+
+                const failedFilenamesSet = new Set<string>(result.failed);
+                const savedAt = new Date().toISOString();
+
+                setFiles((prev) =>
+                    prev.map((sourceFile) => {
+                        const nextVariants: Record<string, ProcessedVariant> = {};
+                        for (const [key, v] of Object.entries(sourceFile.variants)) {
+                            if (failedFilenamesSet.has(v.filename)) {
+                                nextVariants[key] = v; // leave unchanged on failure
+                                continue;
+                            }
+                            const fileId = fileIdByName.get(v.filename);
+                            if (!fileId) {
+                                nextVariants[key] = v; // couldn't correlate; treat as unsaved
+                                continue;
+                            }
+                            nextVariants[key] = { ...v, fileId, savedAt };
+                        }
+                        return { ...sourceFile, variants: nextVariants };
+                    }),
+                );
+
+                setLastSaveResult({
+                    folderPath,
+                    parentFolderId,
+                    savedCount: result.uploaded.length,
+                    failedFilenames: result.failed,
+                });
             } catch (err) {
                 const msg = err instanceof Error ? err.message : "Save failed";
                 setError(msg);
@@ -370,7 +442,7 @@ export function useImageStudio(
                 setIsSaving(false);
             }
         },
-        [files, options.defaultFolder],
+        [dispatch, files, options.defaultFolder, store],
     );
 
     const totalVariantCount = useMemo(

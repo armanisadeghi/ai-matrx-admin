@@ -14,7 +14,7 @@ export { UtilitiesOverlay } from './components/UtilitiesOverlay';
 // Quick Sheet Components
 export { QuickChatSheet } from './components/QuickChatSheet';
 export { QuickDataSheet } from './components/QuickDataSheet';
-export { QuickFilesSheet } from './components/QuickFilesSheet';
+// QuickFilesSheet removed in Phase 11 — use /cloud-files route instead.
 
 // Hooks
 export { useQuickActions } from './hooks/useQuickActions';

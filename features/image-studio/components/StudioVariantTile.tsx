@@ -76,9 +76,12 @@ export function StudioVariantTile({
     const presetName = preset?.name ?? variant.presetId;
 
     const handleCopyUrl = async () => {
-        const url = variant.publicUrl ?? variant.dataUrl;
+        // After save, the variant lives in Cloud Files as `variant.fileId`. A
+        // signed URL would require an async round-trip; for now we keep the
+        // copy action instant by always copying the data URL (which works
+        // anywhere: browser tab, HTML, Markdown, etc.).
         try {
-            await navigator.clipboard.writeText(url);
+            await navigator.clipboard.writeText(variant.dataUrl);
             setCopied(true);
             setTimeout(() => setCopied(false), 1500);
         } catch {
@@ -207,7 +210,7 @@ export function StudioVariantTile({
                     type="button"
                     onClick={handleCopyUrl}
                     className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-xs text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-                    title={variant.publicUrl ? "Copy public URL" : "Copy data URL"}
+                    title="Copy data URL to clipboard"
                 >
                     {copied ? (
                         <>
@@ -221,15 +224,13 @@ export function StudioVariantTile({
                         </>
                     )}
                 </button>
-                {variant.publicUrl && (
+                {variant.fileId && (
                     <>
                         <div className="w-px bg-border" />
                         <a
-                            href={variant.publicUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                            href={`/cloud-files/f/${variant.fileId}`}
                             className="flex items-center justify-center px-2 py-1.5 text-xs text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-                            title="Open public URL in a new tab"
+                            title="Open this variant in Cloud Files"
                         >
                             <ExternalLink className="h-3 w-3" />
                         </a>

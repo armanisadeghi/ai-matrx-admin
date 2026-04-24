@@ -95,10 +95,21 @@ export interface ProcessedVariant {
     fit: ImageFit;
     /** Position actually applied (cover only). */
     position: ImagePosition | null;
-    /** Public Supabase URL, set only once the variant is saved. */
-    publicUrl?: string | null;
+    /** Cloud-files file id once the variant has been saved to the library. */
+    fileId?: string | null;
     /** Saved-to-library state — controlled by the save step. */
     savedAt?: string | null;
+}
+
+export interface SaveStudioResult {
+    /** Logical folder path the variants landed in (e.g. "Images/Generated/image-studio/my-set"). */
+    folderPath: string;
+    /** Cloud-files parent folder id. */
+    parentFolderId: string;
+    /** Number of variants that uploaded successfully. */
+    savedCount: number;
+    /** Filenames that failed to upload (if any). */
+    failedFilenames: string[];
 }
 
 // ── Processing request / response ─────────────────────────────────────────
@@ -159,35 +170,7 @@ export interface ProcessStudioResponse {
     variants: ProcessStudioResponseVariant[];
 }
 
-// ── Save request / response ───────────────────────────────────────────────
-
-export interface SaveStudioVariantInput {
-    /** A data URL produced by the process route. */
-    dataUrl: string;
-    /** Filename to write in storage (without any user prefix). */
-    filename: string;
-    /** Optional preset id — stored alongside the file for lookup later. */
-    presetId?: string;
-}
-
-export interface SaveStudioRequestBody {
-    /** Supabase bucket (default: "userContent"). */
-    bucket?: string;
-    /** Folder under `{userId}/...` — slug-ified server-side. */
-    folder?: string;
-    /** Variants to persist. */
-    variants: SaveStudioVariantInput[];
-}
-
-export interface SaveStudioResponseVariant {
-    filename: string;
-    presetId?: string;
-    publicUrl: string;
-    error?: string;
-}
-
-export interface SaveStudioResponse {
-    bucket: string;
-    folder: string;
-    variants: SaveStudioResponseVariant[];
-}
+// ── Save pipeline (cloud-files) ───────────────────────────────────────────
+// Saving is no longer a bespoke POST — variants are uploaded via the
+// `uploadFiles` thunk from `@/features/files` after ensuring the target
+// folder exists with `ensureFolderPath`. See `useImageStudio.saveAll`.

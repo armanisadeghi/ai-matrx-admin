@@ -4,7 +4,10 @@ import React, { useState } from 'react';
 import { useSelectedImages, ImageSource } from '../context/SelectedImagesProvider';
 import { Check, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import FilePreviewSheet from '@/components/ui/file-preview/FilePreviewSheet';
+// Legacy FilePreviewSheet removed in Phase 11. When no onImageClick handler
+// is provided we now open the image URL in a new browser tab as a simple
+// lightweight preview. Callers that need inline rich preview should use
+// FilePreview from @/features/files with a fileId.
 import { EnhancedFileDetails } from '@/utils/file-operations/constants';
 import { SelectableImageCard } from './SelectableImageCard';
 
@@ -58,35 +61,14 @@ export function ImageGrid({
   selectable = false,
   rounded = 'md',
 }: ImageGridProps) {
-  const [previewFile, setPreviewFile] = useState<{
-    url: string;
-    type: string;
-    details?: EnhancedFileDetails;
-  } | null>(null);
-  
   const handleImageView = (image: ImageSource) => {
     if (onImageClick) {
       onImageClick(image);
       return;
     }
-
-    setPreviewFile({
-      url: image.url,
-      type: 'image',
-      details: {
-        category: 'IMAGE',
-        subCategory: image.metadata?.title ? 'Image' : 'Unknown',
-        extension: image.url.split('.').pop() || '',
-        filename: image.metadata?.title || image.id,
-        iconName: 'image',
-        mimetype: 'image/jpeg',
-        canPreview: true
-      } as EnhancedFileDetails
-    });
-  };
-
-  const closePreview = () => {
-    setPreviewFile(null);
+    if (typeof window !== "undefined") {
+      window.open(image.url, "_blank", "noopener,noreferrer");
+    }
   };
 
   if (!images || images.length === 0) {
@@ -142,13 +124,6 @@ export function ImageGrid({
         ))}
       </div>
 
-      {previewFile && (
-        <FilePreviewSheet
-          isOpen={!!previewFile}
-          onClose={closePreview}
-          file={previewFile}
-        />
-      )}
     </>
   );
-} 
+}

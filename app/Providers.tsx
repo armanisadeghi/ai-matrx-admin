@@ -9,8 +9,6 @@ import { RefProvider } from "@/lib/refs";
 import { ToastProvider } from "@/providers/toast-context";
 import { ModuleHeaderProvider } from "@/providers/ModuleHeaderProvider";
 import { ContextMenuProvider } from "@/providers/ContextMenuProvider";
-import { FileSystemProvider } from "@/lib/redux/fileSystem/Provider";
-import { FilePreviewProvider } from "@/components/file-system/preview";
 import { PersistentComponentProvider } from "@/providers/persistance/PersistentComponentProvider";
 import { SelectedImagesProvider } from "@/components/image/context/SelectedImagesProvider";
 import { UniformHeightProvider } from "@/features/applet/runner/layouts/core/UniformHeightWrapper";
@@ -29,25 +27,14 @@ import {
 } from "@/features/tasks/widgets";
 import { CloudFilesPickerHost } from "@/features/files";
 
-/*
-
-NotesProvider removed — notes now use Redux (features/notes/redux/)
-import { EntityProvider } from "@/providers/entity-context/EntityProvider";
-import { SchemaProvider } from "@/providers/SchemaProvider";
-import { AudioModalProvider } from "@/providers/AudioModalProvider";
-import { FileSystemProvider as OldFileSystemProvider } from "@/providers/FileSystemProvider";
-
-
-*/
-
-const allowedBuckets = [
-  "userContent",
-  "Audio",
-  "Images",
-  "Documents",
-  "Code",
-  "any-file",
-] as const;
+// Phase 11 — legacy file system providers removed:
+//   - lib/redux/fileSystem/Provider (FileSystemProvider)
+//   - components/file-system/preview (FilePreviewProvider)
+//   - providers/FileSystemProvider (OldFileSystemProvider)
+//   - providers/packs/FilesPack
+// All file management now lives in features/files/* via Redux + realtime
+// middleware. The CloudFilesPickerHost below exposes openFilePicker() /
+// openFolderPicker() / openSaveAs() app-wide.
 
 let globalUserId: string | null = null;
 
@@ -66,67 +53,43 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
   setGlobalUserId(initialReduxState.user.id);
 
   return (
-    // <SchemaProvider initialSchema={initialReduxState?.globalCache}>
     <ReactQueryProvider>
       <StoreProvider initialState={initialReduxState}>
         <PersistentComponentProvider>
-            {/* <EntityProvider> */}
-            <ContextMenuProvider>
-              <ToastProvider>
-                <RefProvider>
-                  <FileSystemProvider
-                    initialBucket="Audio"
-                    allowedBuckets={allowedBuckets}
-                  >
-                    <FilePreviewProvider>
-                      {/* <OldFileSystemProvider> */}
-                      <TooltipProvider delayDuration={200}>
-                        {/* <AudioModalProvider> */}
-                        <ModuleHeaderProvider>
-                          <UniformHeightProvider>
-                            <SelectedImagesProvider>
-                              <TranscriptsProvider>
-                                <AudioRecoveryProvider>
-                                  <RequestRecoveryProvider>
-                                    {children}
-                                    <RecoveryWindow />
-                                    <RecoveryNudge />
-                                    <DeferredSingletons />
-                                    <GlobalTaskShortcut />
-                                    <CreateTaskFromSourceDialog />
-                                    {/* Cloud-files imperative pickers:
-                                        openFilePicker() / openFolderPicker() / openSaveAs()
-                                        are callable from anywhere in the app once this host
-                                        mounts. See features/files/components/pickers/. */}
-                                    <CloudFilesPickerHost />
-                                  </RequestRecoveryProvider>
-                                </AudioRecoveryProvider>
-                              </TranscriptsProvider>
-                            </SelectedImagesProvider>
-                          </UniformHeightProvider>
-                        </ModuleHeaderProvider>
-                        <Toaster />
-                        {/* </AudioModalProvider> */}
-                      </TooltipProvider>
-                      {/* </OldFileSystemProvider> */}
-                    </FilePreviewProvider>
-                  </FileSystemProvider>
-                </RefProvider>
-              </ToastProvider>
-            </ContextMenuProvider>
-            {/* </EntityProvider> */}
-          </PersistentComponentProvider>
+          <ContextMenuProvider>
+            <ToastProvider>
+              <RefProvider>
+                <TooltipProvider delayDuration={200}>
+                  <ModuleHeaderProvider>
+                    <UniformHeightProvider>
+                      <SelectedImagesProvider>
+                        <TranscriptsProvider>
+                          <AudioRecoveryProvider>
+                            <RequestRecoveryProvider>
+                              {children}
+                              <RecoveryWindow />
+                              <RecoveryNudge />
+                              <DeferredSingletons />
+                              <GlobalTaskShortcut />
+                              <CreateTaskFromSourceDialog />
+                              {/* Cloud-files imperative pickers:
+                                  openFilePicker() / openFolderPicker() / openSaveAs()
+                                  are callable from anywhere in the app once this host
+                                  mounts. See features/files/components/pickers/. */}
+                              <CloudFilesPickerHost />
+                            </RequestRecoveryProvider>
+                          </AudioRecoveryProvider>
+                        </TranscriptsProvider>
+                      </SelectedImagesProvider>
+                    </UniformHeightProvider>
+                  </ModuleHeaderProvider>
+                  <Toaster />
+                </TooltipProvider>
+              </RefProvider>
+            </ToastProvider>
+          </ContextMenuProvider>
+        </PersistentComponentProvider>
       </StoreProvider>
     </ReactQueryProvider>
-    // </SchemaProvider>
   );
 }
-
-/*
-PROVIDER ANALYSIS:
-
-
-- FileSystemProvider - Terrible on init
-
-
-*/

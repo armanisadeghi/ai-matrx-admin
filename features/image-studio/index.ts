@@ -14,15 +14,14 @@ export type {
 
 // Types
 export type {
+    ImageFit,
+    ImagePosition,
     ProcessStudioRequestBody,
     ProcessStudioResponse,
     ProcessStudioResponseVariant,
     ProcessVariantSpec,
     ProcessedVariant,
-    SaveStudioRequestBody,
-    SaveStudioResponse,
-    SaveStudioResponseVariant,
-    SaveStudioVariantInput,
+    SaveStudioResult,
     StudioFileStatus,
     StudioSourceFile,
 } from "./types";

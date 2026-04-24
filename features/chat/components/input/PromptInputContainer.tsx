@@ -4,7 +4,10 @@ import React, { useState, useCallback, useEffect, useRef } from "react";
 import TextInput from "./TextInput";
 import InputBottomControls from "./InputBottomControls";
 import { FileUploadWithStorage } from "@/components/ui/file-upload/FileUploadWithStorage";
-import FileChipsWithPreview from "@/components/ui/file-preview/FileChipsWithPreview";
+// Legacy FileChipsWithPreview removed in Phase 11. We render chips inline
+// below with the same shape (filename + remove button). For rich preview
+// use FilePreview from @/features/files with a fileId.
+import { X } from "lucide-react";
 import { EnhancedFileDetails } from "@/utils/file-operations/constants";
 import useChatBasics from "@/features/chat/hooks/useChatBasics";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -220,10 +223,33 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
 
   return (
     <div className="relative">
-      <FileChipsWithPreview
-        files={fileManager.files}
-        onRemoveFile={fileManager.removeFile}
-      />
+      {fileManager.files.length > 0 ? (
+        <div className="flex flex-wrap items-center gap-1.5 px-1 py-1">
+          {fileManager.files.map((file, idx) => {
+            const name =
+              (file as { details?: { filename?: string } }).details?.filename ??
+              (file as { url?: string }).url?.split("/").pop() ??
+              `file-${idx}`;
+            return (
+              <span
+                key={(file as { url?: string }).url ?? idx}
+                className="inline-flex items-center gap-1 rounded-md border bg-card px-2 py-0.5 text-xs"
+                title={name}
+              >
+                <span className="truncate max-w-[16ch]">{name}</span>
+                <button
+                  type="button"
+                  onClick={() => fileManager.removeFile(idx)}
+                  aria-label="Remove"
+                  className="flex h-4 w-4 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </span>
+            );
+          })}
+        </div>
+      ) : null}
       {resources.length > 0 && (
         <ResourceChips resources={resources} onRemove={handleRemoveResource} />
       )}

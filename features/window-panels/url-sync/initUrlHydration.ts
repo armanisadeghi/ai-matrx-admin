@@ -66,9 +66,10 @@ export function initUrlHydration() {
     dispatch(openOverlay({ overlayId: "quickDataWindow" }));
   });
 
-  // Quick Files Window
+  // Cloud Files Window (legacy URL key "files" still honored — points at the
+  // new cloud-files window registered in Phase 6).
   registerPanelHydrator("files", (dispatch) => {
-    dispatch(openOverlay({ overlayId: "quickFilesWindow" }));
+    dispatch(openOverlay({ overlayId: "cloudFilesWindow" }));
   });
 
   // State Analyzer Window

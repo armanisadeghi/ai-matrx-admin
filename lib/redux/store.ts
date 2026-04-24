@@ -6,7 +6,8 @@ import createSagaMiddleware from "redux-saga";
 import { createRootSaga } from "@/lib/redux/sagas/rootSaga";
 import { createRootReducer } from "@/lib/redux/rootReducer";
 import { loggerMiddleware } from "@/utils/logger";
-import { storageMiddleware } from "./storage/storageMiddleware";
+// Phase 11: legacy `storageMiddleware` removed. Cloud-files state is
+// driven by `cloudFilesRealtimeMiddleware` (imported below).
 import { enableMapSet } from "immer";
 import { entitySagaMiddleware } from "./entity/entitySagaMiddleware";
 import { socketMiddleware } from "./socket-io/connection/socketMiddleware";
@@ -163,7 +164,6 @@ export const makeStore = (
         sagaMiddleware,
         loggerMiddleware,
         socketMiddleware,
-        storageMiddleware,
         syncMiddleware,
         entitySagaMiddleware,
         autoSaveMiddleware,

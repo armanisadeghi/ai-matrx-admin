@@ -6,9 +6,10 @@
  * Drag-and-drop image upload with Sharp-processed variants on the server.
  *
  * Pipeline: client sends the raw file to `/api/images/upload`, the server
- * resizes and writes every configured variant to Supabase Storage, and
- * returns the resulting public URLs. All variants come from the same
- * original image, so they stay in lock-step.
+ * resizes and writes every configured variant to cloud-files (one file per
+ * variant under `Images/<folder>/<uuid>/`), and returns persistent share
+ * URLs. All variants come from the same original image, so they stay in
+ * lock-step and all appear together in the user's Files tree.
  *
  * Built from the proven podcast cover-art flow so any place that needs
  * "upload an image and get back a set of public URLs" can share the same
@@ -54,9 +55,12 @@ export interface ImageAssetUploaderProps {
     currentUrl?: string | null;
     /** Optional pre-computed variants to seed the preview (from a prior upload). */
     currentVariants?: Partial<ImageUploaderVariants> | null;
-    /** Supabase bucket to write to. Default: "userContent". */
+    /**
+     * @deprecated Ignored since the cloud-files migration. Kept for back-compat.
+     * All variants now land in `Images/<folder>/<uuid>/` regardless of this value.
+     */
     bucket?: string;
-    /** Optional folder prefix under the user's folder (e.g. "logos" → {userId}/logos/{uuid}/). */
+    /** Optional folder prefix under `Images/` (e.g. "logos" → `Images/logos/{uuid}/`). */
     folder?: string;
     /** Compact mode — smaller drop zone, one-line status. */
     compact?: boolean;

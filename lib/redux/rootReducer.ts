@@ -22,9 +22,9 @@ import {
   initializeEntitySlices,
 } from "./entity/entitySlice";
 import { fieldReducer } from "@/lib/redux/concepts/fields/fieldSlice";
-import { storageReducer } from "./storage";
-import { createFileSystemSlice } from "./fileSystem/slice";
-import { AvailableBuckets, FileManagement } from "./fileSystem/types";
+// Phase 11: legacy `./storage` and `./fileSystem` imports removed.
+// Cloud-files state lives in `features/files/redux` (registered as
+// `cloudFiles` below).
 import { UnifiedSchemaCache } from "@/types/entityTypes";
 
 import socketConnectionReducer from "./socket-io/slices/socketConnectionsSlice";
@@ -136,33 +136,9 @@ import { conversationFocusReducer } from "@/features/agents/redux/execution-syst
 import agentAssistantMarkdownDraftReducer from "@/features/agents/redux/agent-assistant-markdown-draft.slice";
 import { netRequestsReducer, netHealthReducer } from "@/lib/redux/net";
 
-export type FileSystemState = { [K in AvailableBuckets]: FileManagement };
-
-export const availableBuckets = [
-  "userContent",
-  "Audio",
-  "Images",
-  "Documents",
-  "Videos",
-  "Code",
-  "any-file",
-  "userContent",
-  "code-editor",
-  "Notes",
-  "Spreadsheets",
-  "audio-recordings",
-  "app-assets",
-] as const;
-
-const fileSystemReducers = availableBuckets.reduce<{
-  [K in AvailableBuckets]: Reducer<FileManagement>;
-}>(
-  (acc, bucket) => {
-    acc[bucket] = createFileSystemSlice(bucket).reducer;
-    return acc;
-  },
-  {} as { [K in AvailableBuckets]: Reducer<FileManagement> },
-);
+// Phase 11 removed the legacy `fileSystemReducers` + `availableBuckets`
+// + `FileSystemState` exports. The new `cloudFiles` slice below is the
+// single source of truth for file state.
 
 const featureReducers = Object.keys(featureSchemas).reduce(
   (acc, featureName) => {
@@ -256,7 +232,8 @@ export const createRootReducer = (initialState: InitialReduxState) => {
 
     ...featureReducers,
     ...moduleReducers,
-    fileSystem: combineReducers(fileSystemReducers) as Reducer<FileSystemState>,
+    // Phase 11: `fileSystem` and `storage` slices removed. Cloud-files state
+    // lives under `cloudFiles` (features/files/redux/slice.ts).
     entities: entitiesReducer,
     entityFields: fieldReducer,
     layout: layoutReducer,
@@ -265,7 +242,6 @@ export const createRootReducer = (initialState: InitialReduxState) => {
     flashcardChat: flashcardChatReducer,
     globalCache: globalCacheSlice.reducer,
     ui: uiReducer,
-    storage: storageReducer,
 
     // ===== LEGACY CX CHAT SLICES — UNMOUNTED =====
     // `activeChat`, `chatConversations`, `cxConversations`, `agentConversations`

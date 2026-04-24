@@ -26,7 +26,8 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { openSaveToNotes } from "@/lib/redux/slices/overlaySlice";
-import { openFilePreview } from "@/features/window-panels/windows/files/FilePreviewWindow";
+// Legacy openFilePreview removed in Phase 11 — we just open the source URL
+// in a new tab now (signed / share URLs are browser-loadable directly).
 import { useAppDispatch } from "@/lib/redux/hooks";
 import {
   usePdfExtractor,
@@ -62,13 +63,12 @@ export function PdfExtractorFloatingWorkspace({
   const handleViewOriginal = useCallback(() => {
     const doc = activeTab?.document;
     if (!doc?.source) return;
-    openFilePreview(dispatch, {
-      url: doc.source,
-      fileName: doc.name,
-      mimeType: "application/pdf",
-      instanceId: `pdf-extract-preview-${doc.id}`,
-    });
-  }, [dispatch, activeTab]);
+    // The source URL is a share URL or public S3 URL; open it in a new tab
+    // rather than reproducing the legacy floating preview window.
+    if (typeof window !== "undefined") {
+      window.open(doc.source, "_blank", "noopener,noreferrer");
+    }
+  }, [activeTab]);
 
   const footer = useMemo(() => {
     if (extractor.activeTabId === "new") {

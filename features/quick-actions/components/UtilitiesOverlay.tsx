@@ -7,7 +7,9 @@ import { NotesLayout } from '@/features/notes';
 import TaskApp from '@/features/tasks/components/TaskApp';
 import { QuickChatSheet } from './QuickChatSheet';
 import { QuickDataSheet } from './QuickDataSheet';
-import { QuickFilesSheet } from './QuickFilesSheet';
+// Legacy QuickFilesSheet removed in Phase 11. The Files tab below now
+// links to the new /cloud-files route instead of rendering an inline sheet.
+import Link from "next/link";
 import { ActivePromptResults } from '@/features/prompts/components/results-display/ActivePromptResults';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -88,8 +90,18 @@ export function UtilitiesOverlay({ isOpen, onClose, initialTab = 'notes' }: Util
                 </div>
             ) as any,
             content: (
-                <div className="h-full">
-                    <QuickFilesSheet hideHeader />
+                <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
+                    <FolderOpen className="h-10 w-10 text-muted-foreground" aria-hidden="true" />
+                    <p className="text-sm font-medium">Your files</p>
+                    <p className="max-w-xs text-xs text-muted-foreground">
+                        Browse, upload, and share files from the dedicated Cloud Files page.
+                    </p>
+                    <Link
+                        href="/cloud-files"
+                        className="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground hover:bg-primary/90"
+                    >
+                        Open Cloud Files
+                    </Link>
                 </div>
             ),
         },

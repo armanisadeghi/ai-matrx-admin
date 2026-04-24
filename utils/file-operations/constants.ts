@@ -44,7 +44,23 @@ import { FaFilePdf } from "react-icons/fa";
 import { GrDocumentCsv } from "react-icons/gr";
 import { GrDocumentTxt } from "react-icons/gr";
 
-import { TwoColorPythonIcon } from "@/components/DirectoryTree/custom-icons";
+// Phase 11 — DirectoryTree was deleted. TwoColorPythonIcon now lives under
+// features/code/styles (same implementation).
+import { TwoColorPythonIcon } from "@/features/code/styles/custom-icons";
+
+// Phase 11 — matrxSystemIcons was deleted with DirectoryTree. We stub the
+// subset actually used below with icons that are already imported in this
+// file. The map shape is preserved so downstream reads (`.File.Icon`,
+// `.Folder.Icon`) keep working without touching callers.
+const MatrxIcon = {
+    Code: { File: { Icon: IconFileCode }, Folder: { Icon: Folder } },
+    Text: { File: { Icon: IconFileText }, Folder: { Icon: Folder } },
+    Audio: { File: { Icon: FileAudio }, Folder: { Icon: Folder } },
+    Image: { File: { Icon: FileImage }, Folder: { Icon: Folder } },
+    Video: { File: { Icon: FileVideo }, Folder: { Icon: Folder } },
+    Data: { File: { Icon: IconFileDatabase }, Folder: { Icon: Folder } },
+    Archive: { File: { Icon: IconFileZip }, Folder: { Icon: Folder } },
+};
 import {
     CategoryConfig,
     ContextMenuActions,
@@ -519,60 +535,9 @@ export const isSystemFile = (path: string): boolean => {
     return SYSTEM_FILES.has(name);
 };
 
-import { FaFolderTree } from "react-icons/fa6";
-import { MatrxIcon } from "@/components/DirectoryTree/matrxSystemIcons";
-
-export const BUCKET_DEFAULTS = {
-    "code-editor": {
-        color: "text-blue-500",
-        icon: MatrxIcon.Code.Folder.Icon,
-    },
-    Code: {
-        color: "text-blue-500",
-        icon: MatrxIcon.Code.Folder.Icon,
-    },
-    Images: {
-        color: "text-green-500",
-        icon: MatrxIcon.Image.Folder.Icon,
-    },
-    Audio: {
-        color: "text-yellow-500",
-        icon: MatrxIcon.Audio.Folder.Icon,
-    },
-    Videos: {
-        color: "text-purple-500",
-        icon: MatrxIcon.Video.Folder.Icon,
-    },
-    Documents: {
-        color: "text-pink-500",
-        icon: MatrxIcon.Text.Folder.Icon,
-    },
-    "any-file": {
-        color: "text-red-500",
-        icon: FaFolderTree,
-    },
-    "Any File": {
-        color: "text-red-500",
-        icon: FaFolderTree,
-    },
-    Spreadsheets: {
-        color: "text-red-500",
-        icon: MatrxIcon.Spreadsheet.Folder.Icon,
-    },
-    Notes: {
-        color: "",
-        icon: MatrxIcon.Notes.Folder.Letter,
-    },
-};
-
-export const getBucketDetails = (bucketName: string) => {
-    return (
-        BUCKET_DEFAULTS[bucketName] || {
-            color: "text-gray-500",
-            icon: FaFolderTree,
-        }
-    );
-};
+// Phase 11 — BUCKET_DEFAULTS + getBucketDetails removed (zero callers).
+// The cloud-files system uses folder paths instead of named buckets, and
+// folder icons are provided by features/files/utils/icon-map.ts.
 
 // Updated type definition
 export type EnhancedFileDetails = Omit<FileTypeDetails, "icon"> & {

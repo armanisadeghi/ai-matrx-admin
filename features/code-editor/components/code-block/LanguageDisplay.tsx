@@ -25,7 +25,7 @@ import {
 import { SiJavascript } from "react-icons/si";
 import { SiTypescript } from "react-icons/si";
 import { PiFileSqlBold } from "react-icons/pi";
-import { TwoColorPythonIcon } from "@/components/DirectoryTree/custom-icons";
+import { TwoColorPythonIcon } from "@/features/code/styles/custom-icons";
 
 // Default icon size that's a bit larger than before
 const DEFAULT_ICON_SIZE = 18;

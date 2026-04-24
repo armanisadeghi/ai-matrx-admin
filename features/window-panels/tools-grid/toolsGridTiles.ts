@@ -377,11 +377,14 @@ export const TOOLS_GRID_TILES: ReadonlyArray<ToolsGridTile> = [
 
   // ── Files & Web ────────────────────────────────────────────────────────
   {
+    // Repoints the legacy "quick-files" tile at the new cloud-files window
+    // registered in Phase 6. The legacy `quickFilesWindow` overlay id was
+    // removed in Phase 11.
     id: "tile.quick-files",
     label: "Files",
     icon: FolderSearch,
     category: "files-web",
-    overlayId: "quickFilesWindow",
+    overlayId: "cloudFilesWindow",
   },
   {
     id: "tile.gallery",
@@ -416,11 +419,14 @@ export const TOOLS_GRID_TILES: ReadonlyArray<ToolsGridTile> = [
     overlayId: "browserWorkbenchWindow",
   },
   {
+    // The legacy `fileUploadWindow` was removed in Phase 11. Upload now
+    // happens inside the main Cloud Files window via the dropzone, so this
+    // tile opens the same window as `tile.quick-files`.
     id: "tile.file-upload",
     label: "Upload",
     icon: ArrowUp,
     category: "files-web",
-    overlayId: "fileUploadWindow",
+    overlayId: "cloudFilesWindow",
   },
   {
     // Route-navigation tile — escapes the overlay model entirely.

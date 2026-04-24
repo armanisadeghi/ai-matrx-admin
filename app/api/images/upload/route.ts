@@ -3,14 +3,19 @@ export const runtime = 'nodejs';
 /**
  * Generalized IMAGE upload route.
  *
- * Accepts a single image file + a preset name (or explicit variants),
- * runs Sharp server-side to generate every configured size, uploads each
- * variant to Supabase Storage, and returns the resulting public URLs.
+ * Accepts a single image file + a preset name, runs Sharp server-side to
+ * generate every configured size, uploads each variant to the cloud-files
+ * backend via `ServerFiles.uploadAndShare`, and returns the resulting
+ * permanent share URLs.
  *
- * Originated as the podcast cover-art pipeline (see
- * features/podcasts/components/admin/AssetUploader.tsx). Generalized so any
- * place in the app that needs "upload an image and get back consistently
- * sized variants" can share the same server implementation.
+ * Previously this route wrote to Supabase Storage. After the cloud-files
+ * migration (Phase C6, 2026-04-23) it goes through the new backend so:
+ *
+ *   • Every variant appears in the user's cloud-files tree under
+ *     `Images/<folder-or-Generated>/<uuid>/` — visible in `/cloud-files`.
+ *   • The returned URLs are share links (`/share/:token`) that never
+ *     expire; safe to persist into DB rows as OG / cover images.
+ *   • The caller API is unchanged — same FormData in, same JSON shape out.
  *
  * Presets (keyed on the client):
  *   - social   : 1400²  cover, 1200×630 OG, 400²  thumbnail      (default)
@@ -25,9 +30,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import sharp from 'sharp';
 import { randomUUID } from 'crypto';
+import { Api, CloudFolders } from '@/features/files';
 
 // ── Config ────────────────────────────────────────────────────────────────
-const DEFAULT_BUCKET = 'userContent';
 const MAX_IMAGE_SIZE = 20 * 1024 * 1024; // 20MB
 const JPEG_QUALITY = 85;
 
@@ -84,15 +89,13 @@ export interface ImageUploadResponse {
     thumbnail_url: string | null;
     tiny_url: string | null;
     preset: string;
+    /** Always "cloud-files" since the migration. Kept for backward-compat. */
     bucket: string;
+    /** The cloud-files folder path where variants were written. */
     folder: string;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────
-function getSupabasePublicUrl(supabaseUrl: string, bucket: string, filePath: string): string {
-    return `${supabaseUrl}/storage/v1/object/public/${bucket}/${filePath}`;
-}
-
 function isPresetName(value: unknown): value is ImagePreset {
     return typeof value === 'string' && value in IMAGE_PRESETS;
 }
@@ -100,21 +103,37 @@ function isPresetName(value: unknown): value is ImagePreset {
 function sanitizeFolderSegment(raw: string | null): string | null {
     if (!raw) return null;
     const cleaned = raw
-        .replace(/[^a-zA-Z0-9\-_/]/g, '')
+        // Cloud-files folder names allow spaces + most printable chars, but we
+        // still strip control chars and normalize slashes.
+        .replace(/[\u0000-\u001f]/g, '')
         .replace(/\/+/g, '/')
         .replace(/^\/+|\/+$/g, '');
     return cleaned || null;
 }
 
+function resolveAppOrigin(req: NextRequest): string {
+    const origin = req.nextUrl.origin;
+    if (origin) return origin;
+    return (
+        process.env.NEXT_PUBLIC_APP_URL ??
+        (process.env.NEXT_PUBLIC_VERCEL_URL
+            ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+            : 'http://localhost:3000')
+    );
+}
+
+interface UploadedVariantInfo {
+    url: string;
+}
+
 async function processAndUploadImage(
-    supabase: Awaited<ReturnType<typeof createClient>>,
-    supabaseUrl: string,
+    ctx: ReturnType<typeof Api.Server.createServerContext>,
     imageBuffer: Buffer,
-    bucket: string,
-    folder: string,
+    folderPath: string,
+    appOrigin: string,
     variants: readonly ImageVariantSpec[],
-): Promise<Partial<Record<ImageVariantKey, string>>> {
-    const results: Partial<Record<ImageVariantKey, string>> = {};
+): Promise<Partial<Record<ImageVariantKey, UploadedVariantInfo>>> {
+    const results: Partial<Record<ImageVariantKey, UploadedVariantInfo>> = {};
 
     for (const variant of variants) {
         const processed = await sharp(imageBuffer)
@@ -122,13 +141,24 @@ async function processAndUploadImage(
             .jpeg({ quality: JPEG_QUALITY, progressive: true })
             .toBuffer();
 
-        const filePath = `${folder}/${variant.suffix}.jpg`;
-        const { error } = await supabase.storage
-            .from(bucket)
-            .upload(filePath, processed, { contentType: 'image/jpeg', upsert: true });
+        const filePath = `${folderPath}/${variant.suffix}.jpg`;
+        const { shareUrl } = await Api.Server.uploadAndShare(ctx, {
+            file: processed,
+            filePath,
+            fileName: `${variant.suffix}.jpg`,
+            contentType: 'image/jpeg',
+            visibility: 'private',
+            permissionLevel: 'read',
+            metadata: {
+                origin: 'images-upload-route',
+                preset_variant: variant.key,
+                width: variant.width,
+                height: variant.height,
+            },
+            appOrigin,
+        });
 
-        if (error) throw new Error(`Failed to upload ${variant.suffix}: ${error.message}`);
-        results[variant.key] = getSupabasePublicUrl(supabaseUrl, bucket, filePath);
+        results[variant.key] = { url: shareUrl };
     }
 
     return results;
@@ -144,16 +174,18 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-        if (!supabaseUrl) {
-            return NextResponse.json({ error: 'Supabase URL not configured' }, { status: 500 });
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.access_token) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
         const formData = await request.formData();
         const file = formData.get('file') as File | null;
         const presetRaw = formData.get('preset');
-        const bucketRaw = formData.get('bucket');
         const folderRaw = formData.get('folder');
+        // `bucket` is accepted for back-compat but ignored — everything goes
+        // to cloud-files now. (Legacy callers send "userContent",
+        // "podcast-assets", etc.)
 
         if (!file) {
             return NextResponse.json({ error: 'No file provided' }, { status: 400 });
@@ -168,24 +200,33 @@ export async function POST(request: NextRequest) {
         const preset: ImagePreset = isPresetName(presetRaw) ? presetRaw : 'social';
         const variants = IMAGE_PRESETS[preset];
 
-        const bucket = (typeof bucketRaw === 'string' && bucketRaw) || DEFAULT_BUCKET;
+        // Build the cloud-files folder path. Users see their uploads under
+        // `Images/<custom-folder-or-Generated>/<uuid>/` — grouped with the
+        // rest of their images rather than scattered by caller feature.
+        const customFolder = sanitizeFolderSegment(
+            typeof folderRaw === 'string' ? folderRaw : null,
+        );
+        const folderRoot = customFolder
+            ? `${CloudFolders.IMAGES}/${customFolder}`
+            : CloudFolders.IMAGES_GENERATED;
+        const folderPath = `${folderRoot}/${randomUUID()}`;
 
-        const customFolder = sanitizeFolderSegment(typeof folderRaw === 'string' ? folderRaw : null);
-        const folder = customFolder
-            ? `${user.id}/${customFolder}/${randomUUID()}`
-            : `${user.id}/${randomUUID()}`;
+        const ctx = Api.Server.createServerContext({
+            accessToken: session.access_token,
+        });
 
         const fileBuffer = Buffer.from(await file.arrayBuffer());
+        const appOrigin = resolveAppOrigin(request);
+
         const variantUrls = await processAndUploadImage(
-            supabase,
-            supabaseUrl,
+            ctx,
             fileBuffer,
-            bucket,
-            folder,
+            folderPath,
+            appOrigin,
             variants,
         );
 
-        const primary = variantUrls.image_url;
+        const primary = variantUrls.image_url?.url;
         if (!primary) {
             return NextResponse.json(
                 { error: 'Upload completed but no primary variant was produced' },
@@ -196,12 +237,12 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({
             primary_url: primary,
             image_url: primary,
-            og_image_url: variantUrls.og_image_url ?? null,
-            thumbnail_url: variantUrls.thumbnail_url ?? null,
-            tiny_url: variantUrls.tiny_url ?? null,
+            og_image_url: variantUrls.og_image_url?.url ?? null,
+            thumbnail_url: variantUrls.thumbnail_url?.url ?? null,
+            tiny_url: variantUrls.tiny_url?.url ?? null,
             preset,
-            bucket,
-            folder,
+            bucket: 'cloud-files',
+            folder: folderPath,
         } satisfies ImageUploadResponse);
     } catch (err: unknown) {
         console.error('[api/images/upload] error:', err);

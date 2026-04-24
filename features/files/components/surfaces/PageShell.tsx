@@ -36,6 +36,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
+import { pct } from "@/components/matrx/resizable/pct";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -210,35 +211,34 @@ function PageShellDesktop({
 
   return (
     <div
-      style={{ height: "calc(100dvh - var(--header-height))" }}
       className={cn(
-        "flex w-full flex-col overflow-hidden bg-background",
+        "flex h-[calc(100dvh-var(--header-height))] overflow-hidden bg-background",
         className,
       )}
     >
-      <div className="flex min-h-0 flex-1">
-        <IconRail section={section} />
+      <IconRail section={section} />
 
-        <ResizablePanelGroup
-          orientation="horizontal"
-          className="h-full min-h-0 flex-1"
+      <ResizablePanelGroup
+        orientation="horizontal"
+        autoSave="matrx-cloud-files-dropbox-v4"
+        className="h-full min-h-0 w-full"
+      >
+        {/* Nav sidebar */}
+        <ResizablePanel
+          id={PANEL_IDS.SIDE}
+          defaultSize={pct(sidebarDefaultPercent)}
+          minSize={pct(sidebarMinPercent)}
+          maxSize={pct(40)}
+          className="border-r border-border/70"
         >
-          {/* Nav sidebar */}
-          <ResizablePanel
-            id={PANEL_IDS.SIDE}
-            defaultSize={sidebarDefaultPercent}
-            minSize={sidebarMinPercent}
-            maxSize={40}
-            className="min-w-0 border-r border-border/70"
-          >
-            <NavSidebar section={section} />
-          </ResizablePanel>
+          <NavSidebar section={section} />
+        </ResizablePanel>
 
-          <ResizableHandle />
+        <ResizableHandle />
 
-          {/* Main */}
-          <ResizablePanel id={PANEL_IDS.MAIN} minSize={40}>
-            <div className="flex h-full flex-col overflow-hidden">
+        {/* Main */}
+        <ResizablePanel id={PANEL_IDS.MAIN} minSize={pct(40)}>
+          <div className="flex h-full flex-col overflow-hidden">
             <TopBar
               parentFolderId={activeFolderId}
               searchQuery={searchQuery}
@@ -340,10 +340,9 @@ function PageShellDesktop({
                 </div>
               </>
             )}
-            </div>
-          </ResizablePanel>
-        </ResizablePanelGroup>
-      </div>
+          </div>
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </div>
   );
 }

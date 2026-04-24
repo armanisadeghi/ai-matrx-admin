@@ -381,20 +381,6 @@ const REGISTRY: WindowRegistryEntry[] = [
     mobilePresentation: "drawer",
   },
 
-  // ── Quick Files ───────────────────────────────────────────────────────────
-  {
-    slug: "quick-files-window",
-    overlayId: "quickFilesWindow",
-    kind: "window",
-    label: "Files",
-    componentImport: () =>
-      import("@/features/window-panels/windows/files/QuickFilesWindow"),
-    defaultData: { bucket: null, path: null },
-    mobilePresentation: "drawer",
-    mobileSidebarAs: "drawer",
-    urlSync: { key: "files" },
-  },
-
   // ── Cloud Files (new — backed by cld_* tables + Python/S3 backend) ───────
   // Full-fledged floating window for the new cloud-files system. Mirrors the
   // `/cloud-files` route experience inside a draggable WindowPanel with
@@ -797,34 +783,10 @@ const REGISTRY: WindowRegistryEntry[] = [
     urlSync: { key: "markdown_editor" },
   },
 
-  // ── File Upload ───────────────────────────────────────────────────────────
-  {
-    slug: "file-upload-window",
-    overlayId: "fileUploadWindow",
-    kind: "window",
-    label: "Upload Files",
-    componentImport: () =>
-      import("@/features/window-panels/windows/files/FileUploadWindow"),
-    defaultData: {},
-    ephemeral: true, // file blobs cannot be restored
-    mobilePresentation: "drawer",
-    mobileSidebarAs: "drawer",
-  },
-
-  // ── File Preview ──────────────────────────────────────────────────────────
-  {
-    slug: "file-preview-window",
-    overlayId: "filePreviewWindow",
-    kind: "window",
-    label: "File Preview",
-    componentImport: () =>
-      import("@/features/window-panels/windows/files/FilePreviewWindow").then(
-        (m) => ({ default: m.FilePreviewWindow }),
-      ),
-    defaultData: { bucket: null, path: null, url: null },
-    mobilePresentation: "fullscreen",
-    instanceMode: "multi",
-  },
+  // Phase 11 removed the legacy `fileUploadWindow` and `filePreviewWindow`
+  // entries. Uploads now happen inline inside the cloud-files window's
+  // dropzone; previews use the `FilePreview` component (or the
+  // `/cloud-files/f/[fileId]` route).
 
   // ── Image Viewer ──────────────────────────────────────────────────────────
   {
@@ -1470,18 +1432,8 @@ const REGISTRY: WindowRegistryEntry[] = [
     defaultData: {},
     ephemeral: true,
   },
-  {
-    slug: "quick-files-sheet",
-    overlayId: "quickFiles",
-    kind: "sheet",
-    label: "Quick Files",
-    componentImport: () =>
-      import("@/features/quick-actions/components/QuickFilesSheet").then(
-        (m) => ({ default: m.QuickFilesSheet }),
-      ),
-    defaultData: {},
-    ephemeral: true,
-  },
+  // Phase 11 removed the legacy `quickFiles` sheet — mobile/desktop file
+  // access now goes through the cloud-files route + floating window.
   {
     slug: "quick-utilities-sheet",
     overlayId: "quickUtilities",
