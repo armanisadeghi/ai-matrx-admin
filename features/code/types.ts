@@ -44,6 +44,17 @@ export interface EditorFile {
   pristineContent: string;
   /** True iff `content !== pristineContent`. Computed by the slice. */
   dirty?: boolean;
+  /**
+   * Remote `updated_at` captured at load time for source-backed tabs
+   * (prompt apps, agent apps, tool UIs). Used by the optimistic
+   * concurrency check inside `useSaveActiveTab`. Undefined for tabs
+   * that don't need conflict detection (filesystem, code_files).
+   *
+   * TODO: Once sources support Realtime subscriptions, this field will
+   * be pushed forward live and the conflict path becomes a warning
+   * instead of a hard stop.
+   */
+  remoteUpdatedAt?: string;
 }
 
 // ─── Process / terminal ──────────────────────────────────────────────────────

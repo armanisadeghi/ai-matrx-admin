@@ -52,6 +52,30 @@ export {
 } from "./hooks/useOpenLibraryFile";
 export { useSaveActiveTab } from "./hooks/useSaveActiveTab";
 export type { SaveResult } from "./hooks/useSaveActiveTab";
+export { useOpenSourceEntry } from "./hooks/useOpenSourceEntry";
+export { useLibrarySource } from "./hooks/useLibrarySource";
+
+// Library-source adapters — importing this module has a side effect:
+// it registers the builtin adapters (prompt_apps, aga_apps,
+// tool_ui_components) so the Code Library tree and save router see
+// them. Re-exported here so downstream features can register their
+// own custom sources without reaching into the subpath.
+export {
+  getLibrarySource,
+  listLibrarySources,
+  registerLibrarySource,
+  getAdapterForTabId,
+  RemoteConflictError,
+  isRemoteConflictError,
+} from "./library-sources";
+export type {
+  LibrarySourceAdapter,
+  LoadedSourceEntry,
+  SaveSourceArgs,
+  SaveSourceResult,
+  SourceEntry,
+  SourceEntryField,
+} from "./library-sources";
 
 // Cross-surface actions — use these from any feature that generates code to
 // drop content into the `/code` workspace with a single call.

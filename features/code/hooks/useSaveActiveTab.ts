@@ -2,6 +2,7 @@
 
 import { useCallback } from "react";
 import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
+import { createClient } from "@/utils/supabase/client";
 import {
   codeFilesActions,
   saveFileNow,
@@ -11,14 +12,20 @@ import {
   markTabSaved,
   selectActiveTab,
   selectTabById,
+  setTabRemoteUpdatedAt,
 } from "../redux/tabsSlice";
 import { useCodeWorkspace } from "../CodeWorkspaceProvider";
 import { codeFileIdFromTabId, isLibraryTabId } from "./useOpenLibraryFile";
+import { getAdapterForTabId, isRemoteConflictError } from "../library-sources";
 
 export interface SaveResult {
   tabId: string;
   ok: boolean;
   error?: string;
+  /** True when the save was rejected because the remote row had been
+   *  updated since the tab was loaded. UI can use this to show a
+   *  reload/overwrite choice instead of a generic error toast. */
+  conflict?: boolean;
 }
 
 /**
@@ -87,7 +94,52 @@ export function useSaveActiveTab() {
         }
       }
 
-      // Branch 2: filesystem-adapter tab → writeFile to the adapter.
+      // Branch 2: library-source tab (prompt_apps, aga_apps, tool_ui_components, …)
+      // → route to the registered adapter. Single source of truth: the
+      // adapter writes straight back to the original row + column, with
+      // an optimistic `updated_at` guard against remote overwrites.
+      const sourceAdapter = getAdapterForTabId(tab.id);
+      if (sourceAdapter) {
+        const parsed = sourceAdapter.parseTabId(tab.id);
+        if (!parsed) {
+          return {
+            tabId: tab.id,
+            ok: false,
+            error: `Malformed ${sourceAdapter.sourceId} tab id`,
+          };
+        }
+        try {
+          const supabase = createClient();
+          const result = await sourceAdapter.save(supabase, {
+            rowId: parsed.rowId,
+            fieldId: parsed.fieldId,
+            content: tab.content,
+            expectedUpdatedAt: tab.remoteUpdatedAt,
+          });
+          dispatch(markTabSaved(tab.id));
+          dispatch(
+            setTabRemoteUpdatedAt({
+              id: tab.id,
+              remoteUpdatedAt: result.updatedAt,
+            }),
+          );
+          return { tabId: tab.id, ok: true };
+        } catch (err) {
+          if (isRemoteConflictError(err)) {
+            return {
+              tabId: tab.id,
+              ok: false,
+              conflict: true,
+              error:
+                "This row was modified somewhere else after you opened it. Reload the tab to pick up the remote changes before saving.",
+            };
+          }
+          const message = err instanceof Error ? err.message : String(err);
+          return { tabId: tab.id, ok: false, error: message };
+        }
+      }
+
+      // Branch 3: filesystem-adapter tab → writeFile to the adapter.
       if (!filesystem.writable || !filesystem.writeFile) {
         return {
           tabId: tab.id,

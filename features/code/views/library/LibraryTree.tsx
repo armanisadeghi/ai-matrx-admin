@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { ChevronRight, FolderHeart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
@@ -11,6 +12,8 @@ import {
   selectCodeFilesListError,
   selectCodeFoldersLoaded,
   selectTopLevelFolders,
+  type CodeFolder,
+  type CodeFileRecord,
 } from "@/features/code-files";
 import { selectActiveTabId } from "../../redux";
 import {
@@ -25,6 +28,8 @@ import {
 } from "../../styles/tokens";
 import { FileIcon } from "../../styles/file-icon";
 import { LibraryTreeNode } from "./LibraryTreeNode";
+import { listLibrarySources } from "../../library-sources";
+import { SourceFolderNode } from "./SourceFolderNode";
 
 const selectRootFiles = makeSelectFilesInFolder(null);
 
@@ -80,6 +85,7 @@ export const LibraryTree: React.FC<{ refreshKey?: number }> = ({
   }
 
   const empty = topFolders.length === 0 && rootFiles.length === 0;
+  const sources = listLibrarySources();
 
   return (
     <div
@@ -87,63 +93,151 @@ export const LibraryTree: React.FC<{ refreshKey?: number }> = ({
       aria-label="Code library"
       className="flex-1 overflow-y-auto py-1"
     >
-      {empty && (
-        <div className="px-3 py-4 text-[11px] text-neutral-500">
-          <p>No saved code yet.</p>
-          <p className="mt-1">
-            Save code blocks from chat or HTML pages to see them here.
-          </p>
+      {/* Root: user's own saved files (code_files table). Kept as a
+          collapsible root so it sits visually alongside the source
+          adapters below and can be stashed when the user isn't using it. */}
+      <MyFilesRoot
+        depth={0}
+        empty={empty}
+        topFolders={topFolders}
+        rootFiles={rootFiles}
+        activeTabId={activeTabId ?? null}
+        openFile={openFile}
+      />
+
+      {/* Adapter-backed source roots. Each one is lazy — entries are
+          fetched when the user expands it, so the Library panel stays
+          cheap to open. */}
+      {sources.map((adapter) => (
+        <SourceFolderNode key={adapter.sourceId} adapter={adapter} depth={0} />
+      ))}
+    </div>
+  );
+};
+
+// ---------------------------------------------------------------------------
+// "My Files" root — wraps the existing code_files tree so it sits as a
+// peer of the registered source folders instead of fighting for space at
+// the top level.
+// ---------------------------------------------------------------------------
+
+interface MyFilesRootProps {
+  depth: number;
+  empty: boolean;
+  topFolders: readonly CodeFolder[];
+  rootFiles: readonly CodeFileRecord[];
+  activeTabId: string | null;
+  openFile: (codeFileId: string) => void;
+}
+
+const MyFilesRoot: React.FC<MyFilesRootProps> = ({
+  depth,
+  empty,
+  topFolders,
+  rootFiles,
+  activeTabId,
+  openFile,
+}) => {
+  const [expanded, setExpanded] = useState(true);
+  const toggle = () => setExpanded((e) => !e);
+
+  return (
+    <div className="select-none">
+      <div
+        role="treeitem"
+        aria-expanded={expanded}
+        tabIndex={0}
+        onClick={toggle}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            toggle();
+          }
+        }}
+        className={cn(
+          "flex items-center gap-1 text-[13px] cursor-pointer rounded-sm",
+          ROW_HEIGHT,
+          TEXT_BODY,
+          HOVER_ROW,
+        )}
+        style={{ paddingLeft: 8 + depth * 12 }}
+        title="Files you've saved or captured"
+      >
+        <ChevronRight
+          size={12}
+          className={cn(
+            "shrink-0 text-neutral-500 transition-transform",
+            expanded && "rotate-90",
+          )}
+        />
+        <FolderHeart size={14} className="shrink-0 text-emerald-500" />
+        <span className="truncate">My Files</span>
+      </div>
+
+      {expanded && (
+        <div role="group">
+          {empty && (
+            <div
+              className="py-2 text-[11px] text-neutral-500"
+              style={{ paddingLeft: 8 + (depth + 1) * 12 }}
+            >
+              <p>No saved code yet.</p>
+              <p className="mt-1">
+                Save code blocks from chat or HTML pages to see them here.
+              </p>
+            </div>
+          )}
+
+          {topFolders.map((folder) => (
+            <LibraryTreeNode
+              key={folder.id}
+              folder={folder}
+              depth={depth + 1}
+              onOpenFile={openFile}
+              activeTabId={activeTabId}
+            />
+          ))}
+
+          {rootFiles.map((file) => {
+            const tabId = libraryTabId(file.id);
+            const active = activeTabId === tabId;
+            return (
+              <div
+                key={file.id}
+                role="treeitem"
+                aria-selected={active}
+                tabIndex={0}
+                onClick={() => openFile(file.id)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    openFile(file.id);
+                  }
+                }}
+                className={cn(
+                  "flex items-center gap-1 text-[13px] cursor-pointer rounded-sm",
+                  ROW_HEIGHT,
+                  TEXT_BODY,
+                  HOVER_ROW,
+                  active && ACTIVE_ROW,
+                )}
+                style={{ paddingLeft: 8 + (depth + 1) * 12 }}
+                title={file.path ?? file.name}
+              >
+                <span className="inline-block w-3" />
+                <FileIcon name={file.name} kind="file" />
+                <span className="truncate">{file.name}</span>
+                {file._dirty && (
+                  <span
+                    className="ml-1 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-neutral-400 dark:bg-neutral-500"
+                    aria-label="Unsaved changes"
+                  />
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
-
-      {topFolders.map((folder) => (
-        <LibraryTreeNode
-          key={folder.id}
-          folder={folder}
-          depth={0}
-          onOpenFile={openFile}
-          activeTabId={activeTabId}
-        />
-      ))}
-
-      {rootFiles.map((file) => {
-        const tabId = libraryTabId(file.id);
-        const active = activeTabId === tabId;
-        return (
-          <div
-            key={file.id}
-            role="treeitem"
-            aria-selected={active}
-            tabIndex={0}
-            onClick={() => openFile(file.id)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                openFile(file.id);
-              }
-            }}
-            className={cn(
-              "flex items-center gap-1 text-[13px] cursor-pointer rounded-sm",
-              ROW_HEIGHT,
-              TEXT_BODY,
-              HOVER_ROW,
-              active && ACTIVE_ROW,
-            )}
-            style={{ paddingLeft: 8 }}
-            title={file.path ?? file.name}
-          >
-            <span className="inline-block w-3" />
-            <FileIcon name={file.name} kind="file" />
-            <span className="truncate">{file.name}</span>
-            {file._dirty && (
-              <span
-                className="ml-1 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-neutral-400 dark:bg-neutral-500"
-                aria-label="Unsaved changes"
-              />
-            )}
-          </div>
-        );
-      })}
     </div>
   );
 };

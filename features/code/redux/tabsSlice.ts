@@ -60,6 +60,38 @@ const slice = createSlice({
       tab.pristineContent = tab.content;
       tab.dirty = false;
     },
+    /** Refresh the `remoteUpdatedAt` stored alongside a tab — used by
+     *  the source adapter save path to keep the optimistic guard in
+     *  sync with the row after a successful write. */
+    setTabRemoteUpdatedAt(
+      state,
+      action: PayloadAction<{ id: string; remoteUpdatedAt: string }>,
+    ) {
+      const tab = state.byId[action.payload.id];
+      if (!tab) return;
+      tab.remoteUpdatedAt = action.payload.remoteUpdatedAt;
+    },
+    /** Replace a tab's buffer wholesale — used when the user elects to
+     *  "Reload from remote" after a conflict, or when an external
+     *  source (e.g. the save-and-open helper) wants to refresh a tab
+     *  whose row has moved on. */
+    replaceTabContent(
+      state,
+      action: PayloadAction<{
+        id: string;
+        content: string;
+        remoteUpdatedAt?: string;
+      }>,
+    ) {
+      const tab = state.byId[action.payload.id];
+      if (!tab) return;
+      tab.content = action.payload.content;
+      tab.pristineContent = action.payload.content;
+      tab.dirty = false;
+      if (action.payload.remoteUpdatedAt !== undefined) {
+        tab.remoteUpdatedAt = action.payload.remoteUpdatedAt;
+      }
+    },
     moveTab(state, action: PayloadAction<{ id: string; toIndex: number }>) {
       const { id, toIndex } = action.payload;
       const from = state.order.indexOf(id);
@@ -85,6 +117,8 @@ export const {
   setActiveTab,
   updateTabContent,
   markTabSaved,
+  setTabRemoteUpdatedAt,
+  replaceTabContent,
   moveTab,
   closeAllTabs,
 } = slice.actions;
