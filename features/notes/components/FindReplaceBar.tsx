@@ -1,7 +1,24 @@
 "use client";
 
 // FindReplaceBar — Inline VSCode-style find & replace bar.
-// Positioned at top of editor area. Receives textareaRef for selection highlighting.
+// Positioned at top of editor area. Receives the textarea ref + preview
+// container ref for scroll-into-view and match highlighting.
+//
+// Focus rules:
+//   - Typing in the find input NEVER moves focus to the textarea. We don't
+//     touch textarea.focus() during `setQuery` — so cursor position and
+//     input composition are preserved.
+//   - Navigation (next / prev / Enter / Shift+Enter) scrolls the active
+//     match into view but also does NOT move focus. Scrolling is done by
+//     setting textarea.scrollTop directly, computed from the mirror overlay.
+//   - Only explicit close / replace flushes focus back to the textarea.
+//
+// Highlighting:
+//   - All matches get a yellow background via <FindMatchOverlay> (mirror div).
+//   - The active match gets an orange highlight.
+//   - In split / preview modes the markdown preview pane uses the CSS
+//     Custom Highlight API (see usePreviewFindHighlight) to paint matches
+//     directly on the rendered HTML.
 
 import React, { useRef, useEffect, useCallback } from "react";
 import {
@@ -18,7 +35,6 @@ import {
 import { cn } from "@/lib/utils";
 import { useNotesInstanceId } from "../context/NotesInstanceContext";
 import { useFindReplace } from "../hooks/useFindReplace";
-import type { FindMatch } from "../utils/findMatches";
 
 interface FindReplaceBarProps {
   noteId: string;
@@ -30,25 +46,36 @@ export function FindReplaceBar({ noteId, textareaRef }: FindReplaceBarProps) {
   const fr = useFindReplace(instanceId, noteId);
   const findInputRef = useRef<HTMLInputElement>(null);
 
-  // ── Auto-focus find input on mount ───────────────────────────────
+  // ── Auto-focus find input on mount ────────────────────────────────
   useEffect(() => {
     findInputRef.current?.focus();
     findInputRef.current?.select();
   }, []);
 
-  // ── Highlight current match in textarea ──────────────────────────
+  // ── Sync native selection with the active match ───────────────────
+  // We still want the textarea's native selection to track the active
+  // match so "replace" / "replace all" and user keyboard shortcuts can
+  // act on it. But we deliberately DO NOT call focus() — we just update
+  // the selection range while the textarea is unfocused. Browsers keep
+  // the selection persisted across focus events, so a later focus()
+  // restores the highlight without us needing to steal it now.
   useEffect(() => {
     const ta = textareaRef.current;
-    if (!ta || fr.matches.length === 0 || fr.currentMatchIndex < 0) return;
+    if (!ta) return;
+    if (fr.matches.length === 0 || fr.currentMatchIndex < 0) return;
     const match = fr.matches[fr.currentMatchIndex];
     if (!match) return;
-    ta.setSelectionRange(match.start, match.end);
-    // Scroll match into view — move cursor briefly to trigger scroll
-    ta.blur();
-    ta.focus({ preventScroll: false });
+    // Skip if the textarea itself is currently focused — in that case
+    // the user is editing and we shouldn't yank their caret around.
+    if (document.activeElement === ta) return;
+    try {
+      ta.setSelectionRange(match.start, match.end);
+    } catch {
+      // Ignore — can happen if the textarea was unmounted mid-flight.
+    }
   }, [textareaRef, fr.matches, fr.currentMatchIndex]);
 
-  // ── Keyboard shortcuts ───────────────────────────────────────────
+  // ── Keyboard shortcuts ────────────────────────────────────────────
   const handleFindKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (e.key === "Enter") {
@@ -80,6 +107,33 @@ export function FindReplaceBar({ noteId, textareaRef }: FindReplaceBarProps) {
     },
     [fr, textareaRef],
   );
+
+  // After replace we want focus back in the find input so the user can
+  // keep pressing Enter to step through / replace. Without this, focus
+  // would shift to the button that was clicked.
+  const refocusFind = useCallback(() => {
+    requestAnimationFrame(() => findInputRef.current?.focus());
+  }, []);
+
+  const handleNext = useCallback(() => {
+    fr.next();
+    refocusFind();
+  }, [fr, refocusFind]);
+
+  const handlePrev = useCallback(() => {
+    fr.prev();
+    refocusFind();
+  }, [fr, refocusFind]);
+
+  const handleReplaceOne = useCallback(() => {
+    fr.replaceOne();
+    refocusFind();
+  }, [fr, refocusFind]);
+
+  const handleReplaceAll = useCallback(() => {
+    fr.replaceAll();
+    refocusFind();
+  }, [fr, refocusFind]);
 
   if (!fr.isOpen) return null;
 
@@ -131,21 +185,30 @@ export function FindReplaceBar({ noteId, textareaRef }: FindReplaceBarProps) {
           {/* Option toggles */}
           <button
             className={toggleBtnClass(fr.caseSensitive)}
-            onClick={() => fr.toggle("caseSensitive")}
+            onClick={() => {
+              fr.toggle("caseSensitive");
+              refocusFind();
+            }}
             title="Match Case"
           >
             <CaseSensitive />
           </button>
           <button
             className={toggleBtnClass(fr.wholeWord)}
-            onClick={() => fr.toggle("wholeWord")}
+            onClick={() => {
+              fr.toggle("wholeWord");
+              refocusFind();
+            }}
             title="Whole Word"
           >
             <WholeWord />
           </button>
           <button
             className={toggleBtnClass(fr.useRegex)}
-            onClick={() => fr.toggle("useRegex")}
+            onClick={() => {
+              fr.toggle("useRegex");
+              refocusFind();
+            }}
             title="Use Regular Expression"
           >
             <Regex />
@@ -160,7 +223,7 @@ export function FindReplaceBar({ noteId, textareaRef }: FindReplaceBarProps) {
         {/* Nav buttons */}
         <button
           className={actionBtnClass}
-          onClick={fr.prev}
+          onClick={handlePrev}
           disabled={fr.matchCount === 0}
           title="Previous Match (Shift+Enter)"
         >
@@ -168,7 +231,7 @@ export function FindReplaceBar({ noteId, textareaRef }: FindReplaceBarProps) {
         </button>
         <button
           className={actionBtnClass}
-          onClick={fr.next}
+          onClick={handleNext}
           disabled={fr.matchCount === 0}
           title="Next Match (Enter)"
         >
@@ -206,7 +269,7 @@ export function FindReplaceBar({ noteId, textareaRef }: FindReplaceBarProps) {
           {/* Replace one */}
           <button
             className={actionBtnClass}
-            onClick={fr.replaceOne}
+            onClick={handleReplaceOne}
             disabled={fr.matchCount === 0}
             title="Replace (Enter)"
           >
@@ -216,7 +279,7 @@ export function FindReplaceBar({ noteId, textareaRef }: FindReplaceBarProps) {
           {/* Replace all */}
           <button
             className={actionBtnClass}
-            onClick={fr.replaceAll}
+            onClick={handleReplaceAll}
             disabled={fr.matchCount === 0}
             title="Replace All (Shift+Enter)"
           >

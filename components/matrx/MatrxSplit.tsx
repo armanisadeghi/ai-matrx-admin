@@ -54,6 +54,19 @@ export interface MatrxSplitProps {
    * still go through `onChange`.
    */
   onPreviewChange?: (value: string) => void;
+  /**
+   * Optional node rendered absolutely on top of the editor textarea — used
+   * by features like find/replace to paint match highlights without
+   * interfering with textarea input. Must be pointer-events:none for the
+   * textarea to remain interactive.
+   */
+  editorOverlay?: React.ReactNode;
+  /**
+   * Optional ref to the preview pane's scroll container. Consumers use
+   * this to register CSS-highlight ranges for search matches, measure
+   * scroll position, etc.
+   */
+  previewContainerRef?: React.Ref<HTMLDivElement | null>;
 }
 
 /**
@@ -96,6 +109,8 @@ export function MatrxSplit({
   allowFullScreenEditor,
   previewMarkdownClassName,
   onPreviewChange,
+  editorOverlay,
+  previewContainerRef,
 }: MatrxSplitProps) {
   const previewChange = onPreviewChange ?? onChange;
   const isMobile = useIsMobile();
@@ -104,6 +119,14 @@ export function MatrxSplit({
   const internalTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const previewRef = useRef<HTMLDivElement | null>(null);
   const isSyncing = useRef(false);
+
+  const mergedPreviewRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      previewRef.current = node;
+      setRef(previewContainerRef, node);
+    },
+    [previewContainerRef],
+  );
 
   // ── Local textarea state ──────────────────────────────────────────────
   // The textarea is driven from `localValue`, not from the `value` prop.
@@ -251,21 +274,24 @@ export function MatrxSplit({
         {/* Content area — single scroll region, no nesting */}
         <div className="flex-1 min-h-0 relative">
           {mobileView === "edit" ? (
-            <textarea
-              ref={mergedTextareaRef}
-              value={localValue}
-              onChange={(e) => handleLocalChange(e.target.value)}
-              placeholder={placeholder}
-              aria-label="Markdown editor"
-              className={cn(
-                "absolute inset-0 h-full w-full resize-none border-none bg-transparent p-4 leading-[1.7] font-[inherit] text-foreground outline-none placeholder:text-muted-foreground overflow-y-auto scrollbar-thin-auto",
-                textareaClassName,
-              )}
-              style={{ fontSize: "16px" }}
-            />
+            <>
+              <textarea
+                ref={mergedTextareaRef}
+                value={localValue}
+                onChange={(e) => handleLocalChange(e.target.value)}
+                placeholder={placeholder}
+                aria-label="Markdown editor"
+                className={cn(
+                  "absolute inset-0 h-full w-full resize-none border-none bg-transparent p-4 leading-[1.7] font-[inherit] text-foreground outline-none placeholder:text-muted-foreground overflow-y-auto scrollbar-thin-auto",
+                  textareaClassName,
+                )}
+                style={{ fontSize: "16px" }}
+              />
+              {editorOverlay}
+            </>
           ) : (
             <div
-              ref={previewRef}
+              ref={mergedPreviewRef}
               className={cn(
                 "absolute inset-0 overflow-y-auto py-2 px-4 pb-safe scrollbar-thin-auto",
                 previewClassName,
@@ -300,25 +326,28 @@ export function MatrxSplit({
       className={cn("h-full w-full", className)}
     >
       <ResizablePanel defaultSize={defaultLayout[0]} minSize={20}>
-        <textarea
-          ref={mergedTextareaRef}
-          value={localValue}
-          onChange={(e) => handleLocalChange(e.target.value)}
-          onScroll={handleEditorScroll}
-          placeholder={placeholder}
-          aria-label="Markdown editor"
-          className={cn(
-            "h-full w-full resize-none border-none bg-transparent p-4 text-sm leading-[1.7] font-[inherit] text-foreground outline-none placeholder:text-muted-foreground overflow-y-auto scrollbar-thin-auto",
-            textareaClassName,
-          )}
-        />
+        <div className="relative h-full w-full">
+          <textarea
+            ref={mergedTextareaRef}
+            value={localValue}
+            onChange={(e) => handleLocalChange(e.target.value)}
+            onScroll={handleEditorScroll}
+            placeholder={placeholder}
+            aria-label="Markdown editor"
+            className={cn(
+              "h-full w-full resize-none border-none bg-transparent p-4 text-sm leading-[1.7] font-[inherit] text-foreground outline-none placeholder:text-muted-foreground overflow-y-auto scrollbar-thin-auto",
+              textareaClassName,
+            )}
+          />
+          {editorOverlay}
+        </div>
       </ResizablePanel>
 
       <ResizableHandle withHandle />
 
       <ResizablePanel defaultSize={defaultLayout[1]} minSize={20}>
         <div
-          ref={previewRef}
+          ref={mergedPreviewRef}
           onScroll={handlePreviewScroll}
           className={cn(
             "h-full overflow-y-auto py-2 px-5 scrollbar-thin-auto",

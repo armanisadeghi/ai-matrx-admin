@@ -102,6 +102,18 @@ export interface NoteEditorCoreProps {
    * update arrives (note switch, realtime update, undo, fetch).
    */
   resetKey?: string;
+  /**
+   * Optional overlay rendered absolutely on top of the primary editor surface
+   * (plain textarea, or the editor side in split mode). Must be
+   * pointer-events:none so the textarea stays interactive. Used by find &
+   * replace to paint match highlights.
+   */
+  findOverlay?: React.ReactNode;
+  /**
+   * Optional ref to the preview scroll container. Consumers use this to
+   * register CSS highlight ranges, measure scroll, etc.
+   */
+  previewContainerRef?: React.Ref<HTMLDivElement | null>;
 }
 
 /**
@@ -127,6 +139,8 @@ export function NoteEditorCore({
   previewClassName,
   syncScroll = true,
   resetKey,
+  findOverlay,
+  previewContainerRef,
 }: NoteEditorCoreProps) {
   const internalTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const internalTuiRef = useRef<any>(null);
@@ -198,25 +212,28 @@ export function NoteEditorCore({
 
       {/* ── Plain Text ──────────────────────────────────────────────── */}
       {editorMode === "plain" && (
-        <Textarea
-          ref={(el) => {
-            if (textareaRef && "current" in textareaRef) {
-              (
-                textareaRef as React.MutableRefObject<HTMLTextAreaElement | null>
-              ).current = el;
-            }
-          }}
-          value={content}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          readOnly={readOnly}
-          className={cn(
-            "absolute inset-0 w-full h-full resize-none border-0",
-            "focus-visible:ring-0 focus-visible:ring-offset-0",
-            "text-sm leading-relaxed bg-transparent p-3 pb-[50vh]",
-            textareaClassName,
-          )}
-        />
+        <>
+          <Textarea
+            ref={(el) => {
+              if (textareaRef && "current" in textareaRef) {
+                (
+                  textareaRef as React.MutableRefObject<HTMLTextAreaElement | null>
+                ).current = el;
+              }
+            }}
+            value={content}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={placeholder}
+            readOnly={readOnly}
+            className={cn(
+              "absolute inset-0 w-full h-full resize-none border-0",
+              "focus-visible:ring-0 focus-visible:ring-offset-0",
+              "text-sm leading-relaxed bg-transparent p-3 pb-[50vh]",
+              textareaClassName,
+            )}
+          />
+          {findOverlay}
+        </>
       )}
 
       {/* ── Split View (MatrxSplit) ─────────────────────────────────── */}
@@ -232,12 +249,25 @@ export function NoteEditorCore({
           className="absolute inset-0"
           syncScroll={syncScroll}
           allowFullScreenEditor={true}
+          editorOverlay={findOverlay}
+          previewContainerRef={previewContainerRef}
         />
       )}
 
       {/* ── Preview (Markdown with full edit-through) ───────────────── */}
       {editorMode === "preview" && (
         <div
+          ref={(el) => {
+            if (previewContainerRef) {
+              if (typeof previewContainerRef === "function") {
+                previewContainerRef(el);
+              } else {
+                (
+                  previewContainerRef as React.MutableRefObject<HTMLDivElement | null>
+                ).current = el;
+              }
+            }
+          }}
           className={cn(
             "h-full overflow-y-auto max-w-3xl mx-auto py-2 px-4 pb-safe scrollbar-thin-auto",
             previewClassName,

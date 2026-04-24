@@ -6,7 +6,7 @@
 // Includes context menu. Renders via NoteEditorCore internally.
 // ZERO PROP DRILLING — reads everything from Redux selectors + NotesInstanceContext.
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
@@ -39,10 +39,13 @@ import { analyzeDiff } from "../utils/diffAnalysis";
 import { supabase } from "@/utils/supabase/client";
 import { NoteEditorCore, type EditorMode } from "./NoteEditorCore";
 import { FindReplaceBar } from "./FindReplaceBar";
+import { FindMatchOverlay } from "./FindMatchOverlay";
 import { MoveNoteDialog } from "./MoveNoteDialog";
 import { ShareModal } from "@/features/sharing/components/ShareModal";
 import { useIsOwner } from "@/utils/permissions";
 import { selectFindReplaceState } from "../redux/selectors";
+import { computeMatches } from "../utils/findMatches";
+import { usePreviewFindHighlight } from "../hooks/usePreviewFindHighlight";
 
 const NoteConflictWindow = dynamic(
   () =>
@@ -82,6 +85,7 @@ export function NoteContentEditor({ noteId }: NoteContentEditorProps) {
 
   const { isOwner } = useIsOwner("note", noteId);
   const findReplaceState = useAppSelector(selectFindReplaceState(instanceId));
+  const previewContainerRef = useRef<HTMLDivElement | null>(null);
 
   // ── Dialog state ──────────────────────────────────────────────────
   const [moveDialogOpen, setMoveDialogOpen] = useState(false);
@@ -120,11 +124,13 @@ export function NoteContentEditor({ noteId }: NoteContentEditorProps) {
     localContentRef.current = localContent;
   }, [localContent]);
 
-  // ── Reset generation — bumps ONLY when we accept an authoritative
-  // external content value (note switch, realtime update, undo, fetch).
-  // Self-originated Redux echoes (our own debounced dispatch coming back
-  // through the selector) must NOT bump this — otherwise every debounce
-  // cycle would remount the rich editors via `resetKey`.
+  // ── Reset generation — bumps ONLY on note switch, so the rich editor
+  // subtree remounts only when we navigate between different notes.
+  // Undo/redo, realtime updates, and fetch completions flow through via
+  // the normal `content` prop — child components (MatrxSplit, MarkdownStream)
+  // already reconcile external value changes internally. Remounting on
+  // those events would reset the user's scroll position, which is
+  // unacceptable for long notes mid-edit.
   const [resetGen, setResetGen] = useState(0);
 
   // ── Note switch: reset local content from Redux immediately.
@@ -141,7 +147,10 @@ export function NoteContentEditor({ noteId }: NoteContentEditorProps) {
   // Runs in an effect, not during render, to avoid cascading set-state during
   // the keystroke path. Self-originated echoes are detected by comparing
   // against our local content — those only update `lastReduxRef` and do NOT
-  // touch state, so they don't trigger any extra renders.
+  // touch state, so they don't trigger any extra renders. For genuine
+  // external updates we only update localContent (and NOT resetGen), so
+  // child editors receive the new value as a controlled prop without
+  // remounting — preserving scroll position and cursor.
   useEffect(() => {
     if (reduxContent === lastReduxRef.current) return;
 
@@ -157,7 +166,6 @@ export function NoteContentEditor({ noteId }: NoteContentEditorProps) {
 
     lastReduxRef.current = reduxContent;
     setLocalContent(reduxContent);
-    setResetGen((n) => n + 1);
   }, [reduxContent]);
 
   // ── Debounced sync: local -> Redux ─────────────────────────────────
@@ -388,7 +396,26 @@ export function NoteContentEditor({ noteId }: NoteContentEditorProps) {
             placeholder="Start typing..."
             className="flex-1 min-h-0"
             resetKey={`${noteId}:${resetGen}`}
+            findOverlay={
+              findReplaceState?.isOpen &&
+              (editorMode === "plain" || editorMode === "split") ? (
+                <NoteFindMatchOverlayRedux
+                  instanceId={instanceId}
+                  noteId={noteId}
+                  textareaRef={textareaRef}
+                  content={localContent}
+                />
+              ) : null
+            }
+            previewContainerRef={previewContainerRef}
           />
+          {findReplaceState?.isOpen &&
+            (editorMode === "split" || editorMode === "preview") && (
+              <NotePreviewFindHighlightRedux
+                instanceId={instanceId}
+                containerRef={previewContainerRef}
+              />
+            )}
         </div>
       </NoteContextMenu>
 
@@ -411,4 +438,90 @@ export function NoteContentEditor({ noteId }: NoteContentEditorProps) {
       />
     </>
   );
+}
+
+// ── Redux-connected find overlays ────────────────────────────────────────────
+// Kept here (not exported to the general component tree) because they're
+// tightly coupled to the NoteContentEditor's local `content` state and the
+// per-instance find/replace Redux slice.
+
+function NoteFindMatchOverlayRedux({
+  instanceId,
+  noteId,
+  textareaRef,
+  content,
+}: {
+  instanceId: string;
+  noteId: string;
+  textareaRef: React.RefObject<HTMLTextAreaElement | null>;
+  content: string;
+}) {
+  const fr = useAppSelector(selectFindReplaceState(instanceId));
+  // Compute matches directly against the local content (what the user sees
+  // in the textarea right now), not the debounced Redux content. Otherwise
+  // a freshly-typed character would briefly mis-position every highlight.
+  const matches = useMemo(() => {
+    if (!fr?.query) return [];
+    return computeMatches(content, fr.query, {
+      caseSensitive: fr.caseSensitive,
+      useRegex: fr.useRegex,
+      wholeWord: fr.wholeWord,
+    });
+  }, [content, fr?.query, fr?.caseSensitive, fr?.useRegex, fr?.wholeWord]);
+
+  // Bump a scroll token each time the user navigates so the overlay knows
+  // to scroll the active match into view. Content changes alone shouldn't
+  // force a scroll — that would disrupt editing.
+  const activeIndex = fr?.currentMatchIndex ?? -1;
+  const [scrollToken, setScrollToken] = useState(0);
+  const prevActiveRef = useRef(activeIndex);
+  useEffect(() => {
+    if (prevActiveRef.current !== activeIndex) {
+      prevActiveRef.current = activeIndex;
+      setScrollToken((n) => n + 1);
+    }
+  }, [activeIndex]);
+
+  if (!fr?.isOpen) return null;
+  return (
+    <FindMatchOverlay
+      textareaRef={textareaRef}
+      content={content}
+      matches={matches}
+      activeIndex={activeIndex}
+      scrollToken={scrollToken}
+    />
+  );
+}
+
+function NotePreviewFindHighlightRedux({
+  instanceId,
+  containerRef,
+}: {
+  instanceId: string;
+  containerRef: React.RefObject<HTMLDivElement | null>;
+}) {
+  const fr = useAppSelector(selectFindReplaceState(instanceId));
+  const [scrollToken, setScrollToken] = useState(0);
+  const prevActiveRef = useRef(fr?.currentMatchIndex ?? -1);
+  useEffect(() => {
+    const current = fr?.currentMatchIndex ?? -1;
+    if (prevActiveRef.current !== current) {
+      prevActiveRef.current = current;
+      setScrollToken((n) => n + 1);
+    }
+  }, [fr?.currentMatchIndex]);
+
+  usePreviewFindHighlight({
+    containerRef,
+    query: fr?.query ?? "",
+    caseSensitive: fr?.caseSensitive ?? false,
+    useRegex: fr?.useRegex ?? false,
+    wholeWord: fr?.wholeWord ?? false,
+    activeIndex: fr?.currentMatchIndex ?? -1,
+    matchCount: fr?.matchCount ?? 0,
+    scrollToken,
+    enabled: !!fr?.isOpen,
+  });
+  return null;
 }
