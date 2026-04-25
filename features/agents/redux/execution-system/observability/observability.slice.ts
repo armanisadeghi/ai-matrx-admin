@@ -160,10 +160,16 @@ export interface ObservabilityState {
   /** userRequestId → child requestIds (in order of issue). */
   requestsByUserRequestId: Record<string, string[]>;
 
-  /** `cx_tool_call` records, keyed by tool_call.id. */
+  /** `cx_tool_call` records, keyed by tool_call.id (UUID). */
   toolCalls: Record<string, CxToolCallRecord>;
   /** userRequestId → child toolCallIds (in order of issue). */
   toolCallsByUserRequestId: Record<string, string[]>;
+  /**
+   * Secondary index: callId (e.g. "gemini_-123...") → tool_call UUID.
+   * Allows O(1) lookup when only the wire-format callId is known (e.g. when
+   * building ToolLifecycleEntry from a persisted cx_message content block).
+   */
+  toolCallsByCallId: Record<string, string>;
 
   /** Live timelines, keyed by userRequestId. Survives stream end. */
   timelines: Record<string, ObservabilityUserRequestTimeline>;
@@ -183,6 +189,7 @@ const initialState: ObservabilityState = {
   requestsByUserRequestId: {},
   toolCalls: {},
   toolCallsByUserRequestId: {},
+  toolCallsByCallId: {},
   timelines: {},
   reservations: {},
 };
@@ -244,6 +251,7 @@ const observabilitySlice = createSlice({
     upsertToolCall(state, action: PayloadAction<CxToolCallRecord>) {
       const record = action.payload;
       state.toolCalls[record.id] = record;
+      state.toolCallsByCallId[record.callId] = record.id;
       if (record.userRequestId) {
         const list = state.toolCallsByUserRequestId[record.userRequestId] ?? [];
         if (!list.includes(record.id)) {
@@ -333,10 +341,11 @@ const observabilitySlice = createSlice({
         state.requestsByUserRequestId[urid] = ids;
       }
 
-      // tool calls grouped by userRequestId
+      // tool calls grouped by userRequestId; also populate callId secondary index
       const toolGroups: Record<string, string[]> = {};
       for (const tc of toolCalls) {
         state.toolCalls[tc.id] = tc;
+        state.toolCallsByCallId[tc.callId] = tc.id;
         if (tc.userRequestId) {
           (toolGroups[tc.userRequestId] ??= []).push(tc.id);
         }
@@ -357,7 +366,11 @@ const observabilitySlice = createSlice({
         for (const rid of reqIds) delete state.requests[rid];
         delete state.requestsByUserRequestId[urid];
         const toolIds = state.toolCallsByUserRequestId[urid] ?? [];
-        for (const tid of toolIds) delete state.toolCalls[tid];
+        for (const tid of toolIds) {
+          const tc = state.toolCalls[tid];
+          if (tc) delete state.toolCallsByCallId[tc.callId];
+          delete state.toolCalls[tid];
+        }
         delete state.toolCallsByUserRequestId[urid];
         delete state.timelines[urid];
       }

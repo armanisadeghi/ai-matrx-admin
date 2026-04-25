@@ -192,9 +192,9 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
         return `\n\n$$${mathContent}$$\n\n`;
       },
     );
-    // \(...\) → $...$ (inline math)
+    // \(...\) → $$...$$ (display math — single-dollar inline disabled to prevent false positives)
     processed = processed.replace(/\\\((.*?)\\\)/g, (match, mathContent) => {
-      return `$${mathContent}$`;
+      return `\n\n$$${mathContent}$$\n\n`;
     });
 
     // Support non-standard [...] format for display math (some smaller models use this)
@@ -784,8 +784,12 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
         }}
       />
       <ReactMarkdown
-        remarkPlugins={[remarkGfm, remarkBreaks, remarkMath]}
-        rehypePlugins={[rehypeKatex]}
+        remarkPlugins={[
+          remarkGfm,
+          remarkBreaks,
+          [remarkMath, { singleDollarTextMath: false }],
+        ]}
+        rehypePlugins={[[rehypeKatex, { strict: "ignore" }]]}
         components={components}
       >
         {processedContent}

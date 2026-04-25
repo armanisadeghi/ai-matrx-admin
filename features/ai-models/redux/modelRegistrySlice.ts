@@ -101,9 +101,9 @@ type ModelOptionRow = Pick<
 export const fetchModelOptions = createAsyncThunk(
   "modelRegistry/fetchModelOptions",
   async (_, { rejectWithValue }) => {
-    console.log(
-      "[modelRegistry] fetchModelOptions — fetching from Supabase client",
-    );
+    // console.log(
+    //   "[modelRegistry] fetchModelOptions — fetching from Supabase client",
+    // );
     try {
       const supabase = createClient();
       const { data, error } = await supabase
@@ -127,11 +127,11 @@ export const fetchModelOptions = createAsyncThunk(
       const shouldFetch =
         fetchScope !== "active" && fetchScope !== "all" && !isLoading;
       if (!shouldFetch) {
-        console.log(
-          "[modelRegistry] fetchModelOptions skipped — already loaded (fetchScope:",
-          fetchScope,
-          ")",
-        );
+        // console.log(
+        //   "[modelRegistry] fetchModelOptions skipped — already loaded (fetchScope:",
+        //   fetchScope,
+        //   ")",
+        // );
       }
       return shouldFetch;
     },

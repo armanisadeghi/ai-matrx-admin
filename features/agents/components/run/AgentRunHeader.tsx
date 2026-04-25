@@ -9,11 +9,7 @@ import { AgentNewRunButton } from "../shared/AgentNewRunButton";
 interface AgentRunHeaderProps {
   agentId: string;
   agentName: string;
-  conversationId: string;
   surfaceKey: string;
-  conversationIdFromUrl?: string;
-  /** Back-link target. Defaults to `/agents`. Admin passes
-   *  `/administration/system-agents/agents`. */
   backHref?: string;
   /** Base path for mode-switch navigation. Defaults to `/agents`. */
   basePath?: string;
@@ -22,14 +18,12 @@ interface AgentRunHeaderProps {
 export function AgentRunHeader({
   agentId,
   agentName,
-  conversationId,
   surfaceKey,
-  conversationIdFromUrl,
   backHref = "/agents",
   basePath = "/agents",
 }: AgentRunHeaderProps) {
   return (
-    <div className="hidden lg:flex items-center justify-between w-full gap-2 shrink-0 pr-12">
+    <div className="hidden lg:flex items-center justify-between w-full gap-2 shrink-0">
       <div className="flex items-center">
         <Link href={backHref} aria-label="Back to Agents">
           <ChevronLeftTapButton />
@@ -37,11 +31,7 @@ export function AgentRunHeader({
 
         {/* Agent selector — shows current agent, lets you switch */}
         <AgentSelectorIsland agentId={agentId} initialName={agentName} />
-        <AgentNewRunButton
-          agentId={agentId}
-          conversationId={conversationId}
-          surfaceKey={surfaceKey}
-        />
+        <AgentNewRunButton surfaceKey={surfaceKey} />
       </div>
       <div>
         <AgentModeController agentId={agentId} basePath={basePath} />

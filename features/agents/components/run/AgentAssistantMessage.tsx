@@ -15,9 +15,23 @@
  * Committed turn:    messageId is always set. requestId may also be set
  *                    while the ActiveRequest entry hasn't been cleaned up.
  * DB-loaded turn:    messageId is set, requestId is null.
+ *
+ * TOOL CALL DECOUPLING
+ * --------------------
+ * For persisted turns (isStreamActive=false, messageId set) this component
+ * renders the message content as an ordered sequence of typed blocks rather
+ * than flattening everything to a single markdown string.  When it encounters
+ * a `tool_call` block it renders <PersistedToolCallCard> — a self-contained
+ * component that fetches its own data from Redux and knows nothing about
+ * the parent message renderer.  Text/thinking blocks are grouped and passed
+ * to <MarkdownStream> as before.
+ *
+ * For live streaming the requestId-driven <MarkdownStream> path is unchanged.
+ * Tool call visualisation during streaming is handled inside
+ * StreamAwareChatMarkdown via <LiveToolCallCard>.
  */
 
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import MarkdownStream from "@/components/MarkdownStream";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { useDebugContext } from "@/hooks/useDebugContext";
@@ -30,6 +44,7 @@ import { AssistantError } from "./AssistantError";
 import { AssistantActionBar } from "@/features/agents/components/run/message-actions/AssistantActionBar";
 import { RetryConfirmDialog } from "@/features/agents/components/run/message-actions/RetryConfirmDialog";
 import { atomicRetry } from "@/features/agents/redux/execution-system/message-crud";
+import { PersistedToolCallCard } from "@/features/tool-call-visualization/components/PersistedToolCallCard";
 import { Button } from "@/components/ui/button";
 import { RotateCw } from "lucide-react";
 import { toast } from "sonner";
@@ -77,7 +92,73 @@ export function AgentAssistantMessage({
     messageId ? selectMessageById(conversationId, messageId) : () => undefined,
   );
 
-  const content = extractFlatText(record);
+  // Flat text is still needed by AssistantActionBar (copy, print, share).
+  const flatText = extractFlatText(record);
+
+  /**
+   * For persisted (non-streaming) turns, split the content array into an
+   * ordered sequence of typed render segments:
+   *   - "text"      → a MarkdownStream with the accumulated text
+   *   - "tool_call" → a PersistedToolCallCard that owns its own Redux reads
+   *
+   * Consecutive text/thinking blocks are merged into one markdown segment so
+   * the layout matches what extractFlatText used to produce.
+   *
+   * During a live stream we ignore this and let MarkdownStream + its internal
+   * StreamAwareChatMarkdown handle everything via the requestId / event path.
+   */
+  type TextSegment = { type: "text"; text: string };
+  type ToolSegment = {
+    type: "tool_call";
+    callId: string;
+    toolName: string;
+    args: Record<string, unknown>;
+  };
+  type RenderSegment = TextSegment | ToolSegment;
+
+  const renderSegments = useMemo((): RenderSegment[] => {
+    // Only split blocks when showing a persisted (committed/DB-loaded) turn.
+    if (!record?.content || !Array.isArray(record.content)) return [];
+
+    const blocks = record.content as Array<{
+      type?: string;
+      text?: string;
+      id?: string;
+      name?: string;
+      arguments?: unknown;
+    }>;
+
+    const segments: RenderSegment[] = [];
+    let pendingText = "";
+
+    const flushText = () => {
+      const trimmed = pendingText.trim();
+      if (trimmed) segments.push({ type: "text", text: trimmed });
+      pendingText = "";
+    };
+
+    for (const block of blocks) {
+      if (block.type === "tool_call") {
+        flushText();
+        const rawArgs = block.arguments;
+        const args =
+          rawArgs && typeof rawArgs === "object" && !Array.isArray(rawArgs)
+            ? (rawArgs as Record<string, unknown>)
+            : {};
+        segments.push({
+          type: "tool_call",
+          callId: block.id ?? "",
+          toolName: block.name ?? "unknown_tool",
+          args,
+        });
+      } else if (typeof block.text === "string" && block.text.length > 0) {
+        if (pendingText.length > 0) pendingText += "\n";
+        pendingText += block.text;
+      }
+    }
+    flushText();
+    return segments;
+  }, [record?.content]);
 
   // A retry is supported when we have an actual cx_message row to anchor on
   // (atomicRetry needs to truncate from a position, which requires the
@@ -134,6 +215,64 @@ export function AgentAssistantMessage({
     );
   }
 
+  /**
+   * Persisted turn with known content blocks: render each segment in order.
+   * Tool call blocks become self-contained PersistedToolCallCards; text blocks
+   * go to MarkdownStream exactly as before.
+   *
+   * We stay on the old single-MarkdownStream path when:
+   *   - The stream is still active (requestId drives the display)
+   *   - There are no segments (empty message or record not yet loaded)
+   *   - The message only contains text (no tool_call blocks) — in that case
+   *     renderSegments has exactly one TextSegment, same as before
+   */
+  const hasToolCallBlocks = renderSegments.some((s) => s.type === "tool_call");
+
+  if (!isStreamActive && messageId && hasToolCallBlocks) {
+    return (
+      <div ref={captureRef}>
+        {renderSegments.map((segment, i) => {
+          if (segment.type === "tool_call") {
+            return (
+              <PersistedToolCallCard
+                key={segment.callId || i}
+                callId={segment.callId}
+                toolName={segment.toolName}
+                arguments={segment.args}
+              />
+            );
+          }
+          return (
+            <MarkdownStream
+              key={i}
+              requestId={undefined}
+              turnId={messageId}
+              conversationId={conversationId}
+              messageId={messageId}
+              content={segment.text}
+              isStreamActive={false}
+              hideCopyButton={true}
+              allowFullScreenEditor={false}
+            />
+          );
+        })}
+        <AssistantActionBar
+          content={flatText}
+          messageId={messageId}
+          conversationId={conversationId}
+          metadata={
+            record?.metadata
+              ? (record.metadata as Record<string, unknown>)
+              : null
+          }
+          onFullPrint={handleFullPrint}
+          isCapturing={isCapturing}
+          surfaceKey={surfaceKey}
+        />
+      </div>
+    );
+  }
+
   return (
     <div ref={captureRef}>
       <MarkdownStream
@@ -141,14 +280,14 @@ export function AgentAssistantMessage({
         turnId={messageId}
         conversationId={conversationId}
         messageId={messageId ?? undefined}
-        content={content}
+        content={flatText}
         isStreamActive={isStreamActive}
         hideCopyButton={true}
         allowFullScreenEditor={false}
       />
       {!isStreamActive && messageId && (
         <AssistantActionBar
-          content={content}
+          content={flatText}
           messageId={messageId}
           conversationId={conversationId}
           metadata={

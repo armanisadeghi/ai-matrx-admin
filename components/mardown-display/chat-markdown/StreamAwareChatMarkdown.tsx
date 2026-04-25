@@ -13,8 +13,7 @@ import type {
   TextBlock,
 } from "@/lib/chat-protocol";
 import { MarkdownErrorBoundary } from "./internal-handlers/MarkdownErrorBoundary";
-import { ToolCallVisualization } from "@/features/tool-call-visualization";
-import { toolCallBlockToLifecycleEntry } from "@/features/tool-call-visualization/utils";
+import { LiveToolCallCard } from "@/features/tool-call-visualization/components/LiveToolCallCard";
 
 // ---------------------------------------------------------------------------
 // Server-processed block state — used when backend sends render_block events
@@ -380,7 +379,6 @@ export const StreamAwareChatMarkdown: React.FC<
               .some(
                 (b) => b.type === "text" && (b as TextBlock).content.trim(),
               );
-            const entry = toolCallBlockToLifecycleEntry(toolBlock);
 
             return (
               <MarkdownErrorBoundary
@@ -388,16 +386,18 @@ export const StreamAwareChatMarkdown: React.FC<
                 fallback={null}
                 onError={(error) =>
                   console.error(
-                    "[MarkdownStream] ToolCallVisualization error:",
+                    "[MarkdownStream] LiveToolCallCard error:",
                     error,
                   )
                 }
               >
-                <ToolCallVisualization
-                  entries={[entry]}
-                  hasContent={hasContentAfter}
-                  className="mb-2"
-                />
+                {requestId ? (
+                  <LiveToolCallCard
+                    requestId={requestId}
+                    callId={toolBlock.callId}
+                    hasContentAfter={hasContentAfter}
+                  />
+                ) : null}
               </MarkdownErrorBoundary>
             );
           }

@@ -89,6 +89,19 @@ export const selectToolCallById =
     state.observability.toolCalls[id];
 
 /**
+ * Look up a tool call by its wire-format callId (e.g. "gemini_-179343880511712762").
+ * Uses the secondary index populated by hydrateObservability / upsertToolCall,
+ * so this is O(1) — safe to call from render-critical paths.
+ */
+export const selectToolCallByCallId =
+  (callId: string) =>
+  (state: RootState): CxToolCallRecord | undefined => {
+    const uuid = state.observability.toolCallsByCallId[callId];
+    if (!uuid) return undefined;
+    return state.observability.toolCalls[uuid];
+  };
+
+/**
  * Tool calls attached to a specific cx_message — used by destructive
  * actions (delete, retry) to warn the user about cascaded deletions.
  * Returns only non-soft-deleted rows.

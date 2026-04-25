@@ -125,17 +125,17 @@ export function AgentConversationDisplay({
 
   // Diagnostic logging — unconditional (not behind NODE_ENV check) so the
   // single path "Runner loads conversation" can be observed from production.
-  useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.log(
-      "[AgentConversationDisplay] cid=%s messages=%d phase=%s active=%s entries=%d",
-      conversationId,
-      messages.length,
-      phase ?? "idle",
-      isActive,
-      displayEntries.length,
-    );
-  }, [conversationId, messages.length, phase, isActive, displayEntries.length]);
+  // useEffect(() => {
+  //   // eslint-disable-next-line no-console
+  //   console.log(
+  //     "[AgentConversationDisplay] cid=%s messages=%d phase=%s active=%s entries=%d",
+  //     conversationId,
+  //     messages.length,
+  //     phase ?? "idle",
+  //     isActive,
+  //     displayEntries.length,
+  //   );
+  // }, [conversationId, messages.length, phase, isActive, displayEntries.length]);
 
   const prevLengthRef = useRef(displayEntries.length);
   useEffect(() => {

@@ -322,13 +322,13 @@ async function fetchConversationBundle(
 
   const messages = (messagesRes.data ?? []) as unknown as CxMessageRow[];
   // eslint-disable-next-line no-console
-  console.log(
-    "[loadConversation] Fallback queries: messages=%d toolCalls=%d userRequests=%d requests=%d",
-    messages.length,
-    toolCallsRes.data?.length ?? 0,
-    userRequestsRes.data?.length ?? 0,
-    requestsRes.data?.length ?? 0,
-  );
+  // console.log(
+  //   "[loadConversation] Fallback queries: messages=%d toolCalls=%d userRequests=%d requests=%d",
+  //   messages.length,
+  //   toolCallsRes.data?.length ?? 0,
+  //   userRequestsRes.data?.length ?? 0,
+  //   requestsRes.data?.length ?? 0,
+  // );
   if (messagesRes.error) {
     // eslint-disable-next-line no-console
     console.error(
@@ -523,11 +523,11 @@ export const loadConversation = createAsyncThunk<
     { dispatch },
   ) => {
     // eslint-disable-next-line no-console
-    console.log(
-      "[loadConversation] START cid=%s surfaceKey=%s",
-      conversationId,
-      surfaceKey ?? "(none)",
-    );
+    // console.log(
+    //   "[loadConversation] START cid=%s surfaceKey=%s",
+    //   conversationId,
+    //   surfaceKey ?? "(none)",
+    // );
     let bundle: CxConversationBundle;
     try {
       bundle = await fetchConversationBundle(conversationId, {
@@ -541,12 +541,12 @@ export const loadConversation = createAsyncThunk<
     }
     const conv = bundle.conversation;
     // eslint-disable-next-line no-console
-    console.log(
-      "[loadConversation] bundle received: conv=%s messages=%d toolCalls=%d",
-      conv?.id ?? "(none)",
-      bundle.messages?.length ?? 0,
-      bundle.tool_calls?.length ?? 0,
-    );
+    // console.log(
+    //   "[loadConversation] bundle received: conv=%s messages=%d toolCalls=%d",
+    //   conv?.id ?? "(none)",
+    //   bundle.messages?.length ?? 0,
+    //   bundle.tool_calls?.length ?? 0,
+    // );
 
     // ── 1. Conversation record (includes sidebar + scope + relation fields) ──
     dispatch(
@@ -602,24 +602,25 @@ export const loadConversation = createAsyncThunk<
     // ── 2. Messages (DB-faithful) ────────────────────────────────────────────
     const messageRecords = bundle.messages.map(messageRowToRecord);
     // eslint-disable-next-line no-console
-    console.log(
-      "[loadConversation] hydrateMessages dispatching %d records. first=%o last=%o",
-      messageRecords.length,
-      messageRecords[0]
-        ? {
-            id: messageRecords[0].id,
-            role: messageRecords[0].role,
-            pos: messageRecords[0].position,
-          }
-        : null,
-      messageRecords[messageRecords.length - 1]
-        ? {
-            id: messageRecords[messageRecords.length - 1].id,
-            role: messageRecords[messageRecords.length - 1].role,
-            pos: messageRecords[messageRecords.length - 1].position,
-          }
-        : null,
-    );
+    // console.log(
+    //   "[loadConversation] hydrateMessages dispatching %d records. first=%o last=%o",
+    //   messageRecords.length,
+    //   messageRecords[0]
+    //     ? {
+    //         id: messageRecords[0].id,
+    //         role: messageRecords[0].role,
+    //         pos: messageRecords[0].position,
+    //       }
+    //     : null,
+    //   messageRecords[messageRecords.length - 1]
+    //     ? {
+    //         id: messageRecords[messageRecords.length - 1].id,
+    //         role: messageRecords[messageRecords.length - 1].role,
+    //         pos: messageRecords[messageRecords.length - 1].position,
+    //       }
+    //     : null,
+    // );
+
     dispatch(hydrateMessages({ conversationId, messages: messageRecords }));
 
     // ── 3. Variables — stamp the DB `variables` JSON into userValues so the
@@ -734,10 +735,10 @@ export const loadConversation = createAsyncThunk<
     }
 
     // eslint-disable-next-line no-console
-    console.log(
-      "[loadConversation] DONE cid=%s — all 7 dimensions hydrated",
-      conversationId,
-    );
+    // console.log(
+    //   "[loadConversation] DONE cid=%s — all 7 dimensions hydrated",
+    //   conversationId,
+    // );
     return { conversationId };
   },
 );

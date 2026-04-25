@@ -289,7 +289,9 @@ export interface ConfigurableMarkdownContentProps {
 // Component
 // ---------------------------------------------------------------------------
 
-export const ConfigurableMarkdownContent: React.FC<ConfigurableMarkdownContentProps> = ({
+export const ConfigurableMarkdownContent: React.FC<
+  ConfigurableMarkdownContentProps
+> = ({
   content,
   isStreamActive,
   onEditRequest,
@@ -344,22 +346,31 @@ export const ConfigurableMarkdownContent: React.FC<ConfigurableMarkdownContentPr
       (match, mathContent) => `\n\n$$${mathContent}$$\n\n`,
     );
 
-    processed = processed.replace(/\\\((.*?)\\\)/g, (match, mathContent) => `$${mathContent}$`);
+    processed = processed.replace(
+      /\\\((.*?)\\\)/g,
+      (match, mathContent) => `\n\n$$${mathContent}$$\n\n`,
+    );
 
     processed = processed.replace(
       /\[[\s\n]*([\s\S]*?)[\s\n]*\](?!\()/g,
       (match, content) => {
         const trimmedContent = content.trim();
 
-        if (content.includes("\\") && (content.includes("\n") || content.length >= 3)) {
+        if (
+          content.includes("\\") &&
+          (content.includes("\n") || content.length >= 3)
+        ) {
           return `\n\n$$${content}$$\n\n`;
         }
 
-        const isMultilineBrackets = match.startsWith("[\n") || match.startsWith("[ \n");
+        const isMultilineBrackets =
+          match.startsWith("[\n") || match.startsWith("[ \n");
         if (isMultilineBrackets && trimmedContent.length >= 3) {
           const hasMathOperators = /[+\-=×÷*/]/.test(trimmedContent);
           const hasProseWords =
-            /\b(note|step|example|optional|the|is|are|was|were|for|with|this|that)\b/i.test(trimmedContent);
+            /\b(note|step|example|optional|the|is|are|was|were|for|with|this|that)\b/i.test(
+              trimmedContent,
+            );
           const mathLikeRatio =
             (trimmedContent.match(/[0-9+\-=×÷*/()xy\s]/g) || []).length /
             trimmedContent.length;
@@ -424,8 +435,12 @@ export const ConfigurableMarkdownContent: React.FC<ConfigurableMarkdownContentPr
 
   const handleEdit = () => onEditRequest?.();
 
-  const handleMouseEnter = !isStreamActive ? () => setIsHovering(true) : undefined;
-  const handleMouseLeave = !isStreamActive ? () => setIsHovering(false) : undefined;
+  const handleMouseEnter = !isStreamActive
+    ? () => setIsHovering(true)
+    : undefined;
+  const handleMouseLeave = !isStreamActive
+    ? () => setIsHovering(false)
+    : undefined;
 
   // ---------------------------------------------------------------------------
   // Build configurable components map
@@ -470,190 +485,231 @@ export const ConfigurableMarkdownContent: React.FC<ConfigurableMarkdownContentPr
         },
 
         // ---- p ----
-        p: componentOverrides?.p ?? (({ node, children, ...props }: any) => {
-          const childArray = React.Children.toArray(children);
+        p:
+          componentOverrides?.p ??
+          (({ node, children, ...props }: any) => {
+            const childArray = React.Children.toArray(children);
 
-          if (childArray.length === 1 && childArray[0] === "\u00A0") {
-            return <div className={spacing.blankLineHeight} />;
-          }
-
-          let isMathOnly = false;
-          if (childArray.length === 1) {
-            const child = childArray[0] as any;
-            if (child && typeof child === "object" && child.props?.className) {
-              isMathOnly = child.props.className.includes("katex");
+            if (childArray.length === 1 && childArray[0] === "\u00A0") {
+              return <div className={spacing.blankLineHeight} />;
             }
-          }
 
-          const paragraphText = extractText(children);
-          const paragraphDirection = detectTextDirection(paragraphText);
-          const paragraphDirClasses = getDirectionClasses(paragraphDirection);
+            let isMathOnly = false;
+            if (childArray.length === 1) {
+              const child = childArray[0] as any;
+              if (
+                child &&
+                typeof child === "object" &&
+                child.props?.className
+              ) {
+                isMathOnly = child.props.className.includes("katex");
+              }
+            }
 
-          if (isMathOnly) {
+            const paragraphText = extractText(children);
+            const paragraphDirection = detectTextDirection(paragraphText);
+            const paragraphDirClasses = getDirectionClasses(paragraphDirection);
+
+            if (isMathOnly) {
+              return (
+                <p
+                  className={cn(
+                    typography.fontFamily,
+                    typography.tracking,
+                    typography.leading,
+                    "text-base text-center",
+                    spacing.mathParagraphMb,
+                  )}
+                  {...props}
+                >
+                  {children}
+                </p>
+              );
+            }
+
             return (
               <p
                 className={cn(
                   typography.fontFamily,
                   typography.tracking,
                   typography.leading,
-                  "text-base text-center",
-                  spacing.mathParagraphMb,
+                  getFontSize(paragraphDirection),
+                  spacing.paragraphMb,
+                  "pl-0 ml-0",
+                  paragraphDirClasses,
                 )}
+                dir={paragraphDirection}
                 {...props}
               >
                 {children}
               </p>
             );
-          }
-
-          return (
-            <p
-              className={cn(
-                typography.fontFamily,
-                typography.tracking,
-                typography.leading,
-                getFontSize(paragraphDirection),
-                spacing.paragraphMb,
-                "pl-0 ml-0",
-                paragraphDirClasses,
-              )}
-              dir={paragraphDirection}
-              {...props}
-            >
-              {children}
-            </p>
-          );
-        }),
+          }),
 
         // ---- strong ----
-        strong: componentOverrides?.strong ?? (({ node, children, ...props }: any) => {
-          const parentTagName = node.parent?.tagName?.toLowerCase() || "";
-          const isInHeading = ["h1", "h2", "h3", "h4", "h5", "h6"].includes(parentTagName);
-          const boldText = extractText(children);
-          const boldDirection = detectTextDirection(boldText);
+        strong:
+          componentOverrides?.strong ??
+          (({ node, children, ...props }: any) => {
+            const parentTagName = node.parent?.tagName?.toLowerCase() || "";
+            const isInHeading = ["h1", "h2", "h3", "h4", "h5", "h6"].includes(
+              parentTagName,
+            );
+            const boldText = extractText(children);
+            const boldDirection = detectTextDirection(boldText);
 
-          return (
-            <strong
-              className={cn(
-                isInHeading ? "" : "font-extrabold",
-                getDirectionClasses(boldDirection),
-              )}
-              dir={boldDirection}
-              {...props}
-            >
-              {children}
-            </strong>
-          );
-        }),
+            return (
+              <strong
+                className={cn(
+                  isInHeading ? "" : "font-extrabold",
+                  getDirectionClasses(boldDirection),
+                )}
+                dir={boldDirection}
+                {...props}
+              >
+                {children}
+              </strong>
+            );
+          }),
 
         // ---- em ----
-        em: componentOverrides?.em ?? (({ node, children, ...props }: any) => {
-          const parentTagName = node.parent?.tagName?.toLowerCase() || "";
-          const isInHeading = ["h1", "h2", "h3", "h4", "h5", "h6"].includes(parentTagName);
-          const italicText = extractText(children);
-          const italicDirection = detectTextDirection(italicText);
+        em:
+          componentOverrides?.em ??
+          (({ node, children, ...props }: any) => {
+            const parentTagName = node.parent?.tagName?.toLowerCase() || "";
+            const isInHeading = ["h1", "h2", "h3", "h4", "h5", "h6"].includes(
+              parentTagName,
+            );
+            const italicText = extractText(children);
+            const italicDirection = detectTextDirection(italicText);
 
-          return (
-            <em
-              className={cn(
-                "italic",
-                isInHeading ? "" : cn(colors.emColorLight, colors.emColorDark),
-                getDirectionClasses(italicDirection),
-              )}
-              dir={italicDirection}
-              {...props}
-            >
-              {children}
-            </em>
-          );
-        }),
+            return (
+              <em
+                className={cn(
+                  "italic",
+                  isInHeading
+                    ? ""
+                    : cn(colors.emColorLight, colors.emColorDark),
+                  getDirectionClasses(italicDirection),
+                )}
+                dir={italicDirection}
+                {...props}
+              >
+                {children}
+              </em>
+            );
+          }),
 
         // ---- blockquote ----
-        blockquote: componentOverrides?.blockquote ?? (({ node, children, ...props }: any) => {
-          const blockquoteText = extractText(children);
-          const blockquoteDirection = detectTextDirection(blockquoteText);
-          const isRtl = blockquoteDirection === "rtl";
+        blockquote:
+          componentOverrides?.blockquote ??
+          (({ node, children, ...props }: any) => {
+            const blockquoteText = extractText(children);
+            const blockquoteDirection = detectTextDirection(blockquoteText);
+            const isRtl = blockquoteDirection === "rtl";
 
-          return (
-            <blockquote
-              className={cn(
-                isRtl ? cn(spacing.blockquotePr, "border-r-4") : cn(spacing.blockquotePl, "border-l-4"),
-                spacing.blockquotePy,
-                colors.blockquoteBorderLight,
-                colors.blockquoteBorderDark,
-                "italic",
-                colors.blockquoteTextLight,
-                colors.blockquoteTextDark,
-                colors.blockquoteBgLight,
-                colors.blockquoteBgDark,
-                getDirectionClasses(blockquoteDirection),
-              )}
-              dir={blockquoteDirection}
-              {...props}
-            >
-              {children}
-            </blockquote>
-          );
-        }),
+            return (
+              <blockquote
+                className={cn(
+                  isRtl
+                    ? cn(spacing.blockquotePr, "border-r-4")
+                    : cn(spacing.blockquotePl, "border-l-4"),
+                  spacing.blockquotePy,
+                  colors.blockquoteBorderLight,
+                  colors.blockquoteBorderDark,
+                  "italic",
+                  colors.blockquoteTextLight,
+                  colors.blockquoteTextDark,
+                  colors.blockquoteBgLight,
+                  colors.blockquoteBgDark,
+                  getDirectionClasses(blockquoteDirection),
+                )}
+                dir={blockquoteDirection}
+                {...props}
+              >
+                {children}
+              </blockquote>
+            );
+          }),
 
         // ---- ul ----
-        ul: componentOverrides?.ul ?? (({ node, children, ...props }: any) => {
-          const listText = extractText(children);
-          const listDirection = detectTextDirection(listText);
+        ul:
+          componentOverrides?.ul ??
+          (({ node, children, ...props }: any) => {
+            const listText = extractText(children);
+            const listDirection = detectTextDirection(listText);
 
-          return (
-            <ul
-              className={cn(
-                "list-disc",
-                spacing.listMb,
-                typography.leading,
-                getFontSize(listDirection),
-                spacing.listPl,
-                getDirectionClasses(listDirection),
-              )}
-              dir={listDirection}
-              {...props}
-            >
-              {children}
-            </ul>
-          );
-        }),
+            return (
+              <ul
+                className={cn(
+                  "list-disc",
+                  spacing.listMb,
+                  typography.leading,
+                  getFontSize(listDirection),
+                  spacing.listPl,
+                  getDirectionClasses(listDirection),
+                )}
+                dir={listDirection}
+                {...props}
+              >
+                {children}
+              </ul>
+            );
+          }),
 
         // ---- ol ----
-        ol: componentOverrides?.ol ?? (({ node, children, ...props }: any) => {
-          const listText = extractText(children);
-          const listDirection = detectTextDirection(listText);
+        ol:
+          componentOverrides?.ol ??
+          (({ node, children, ...props }: any) => {
+            const listText = extractText(children);
+            const listDirection = detectTextDirection(listText);
 
-          return (
-            <ol
-              className={cn(
-                "list-decimal",
-                spacing.listMb,
-                typography.leading,
-                getFontSize(listDirection),
-                spacing.listPl,
-                getDirectionClasses(listDirection),
-              )}
-              dir={listDirection}
-              {...props}
-            >
-              {children}
-            </ol>
-          );
-        }),
+            return (
+              <ol
+                className={cn(
+                  "list-decimal",
+                  spacing.listMb,
+                  typography.leading,
+                  getFontSize(listDirection),
+                  spacing.listPl,
+                  getDirectionClasses(listDirection),
+                )}
+                dir={listDirection}
+                {...props}
+              >
+                {children}
+              </ol>
+            );
+          }),
 
         // ---- li ----
-        li: componentOverrides?.li ?? (({ node, children, ...props }: any) => {
-          const itemText = extractText(children);
-          const itemDirection = detectTextDirection(itemText);
-          const isTaskItem = node?.properties?.className?.includes("task-list-item");
+        li:
+          componentOverrides?.li ??
+          (({ node, children, ...props }: any) => {
+            const itemText = extractText(children);
+            const itemDirection = detectTextDirection(itemText);
+            const isTaskItem =
+              node?.properties?.className?.includes("task-list-item");
 
-          if (isTaskItem) {
+            if (isTaskItem) {
+              return (
+                <li
+                  className={cn(
+                    spacing.listItemMb,
+                    "flex items-center",
+                    getFontSize(itemDirection),
+                    getDirectionClasses(itemDirection),
+                  )}
+                  dir={itemDirection}
+                >
+                  {children}
+                </li>
+              );
+            }
+
             return (
               <li
                 className={cn(
                   spacing.listItemMb,
-                  "flex items-center",
                   getFontSize(itemDirection),
                   getDirectionClasses(itemDirection),
                 )}
@@ -662,149 +718,171 @@ export const ConfigurableMarkdownContent: React.FC<ConfigurableMarkdownContentPr
                 {children}
               </li>
             );
-          }
-
-          return (
-            <li
-              className={cn(
-                spacing.listItemMb,
-                getFontSize(itemDirection),
-                getDirectionClasses(itemDirection),
-              )}
-              dir={itemDirection}
-            >
-              {children}
-            </li>
-          );
-        }),
+          }),
 
         // ---- link ----
         a: LinkWrapper,
 
         // ---- headings ----
-        h1: componentOverrides?.h1 ?? (({ node, children, ...props }: any) => {
-          const headingText = extractText(children);
-          const headingDirection = detectTextDirection(headingText);
-          return (
-            <h1
-              className={cn(headings.h1, colors.headingColor, getDirectionClasses(headingDirection))}
-              dir={headingDirection}
-              {...props}
-            >
-              {children}
-            </h1>
-          );
-        }),
-
-        h2: componentOverrides?.h2 ?? (({ node, children, ...props }: any) => {
-          const headingText = extractText(children);
-          const headingDirection = detectTextDirection(headingText);
-          return (
-            <h2
-              className={cn(headings.h2, colors.headingColor, getDirectionClasses(headingDirection))}
-              dir={headingDirection}
-              {...props}
-            >
-              {children}
-            </h2>
-          );
-        }),
-
-        h3: componentOverrides?.h3 ?? (({ node, children, ...props }: any) => {
-          const headingText = extractText(children);
-          const headingDirection = detectTextDirection(headingText);
-          return (
-            <h3
-              className={cn(headings.h3, colors.headingColor, getDirectionClasses(headingDirection))}
-              dir={headingDirection}
-              {...props}
-            >
-              {children}
-            </h3>
-          );
-        }),
-
-        h4: componentOverrides?.h4 ?? (({ node, children, ...props }: any) => {
-          const headingText = extractText(children);
-          const headingDirection = detectTextDirection(headingText);
-          return (
-            <h4
-              className={cn(headings.h4, colors.headingColor, getDirectionClasses(headingDirection))}
-              dir={headingDirection}
-              {...props}
-            >
-              {children}
-            </h4>
-          );
-        }),
-
-        // ---- pre ----
-        pre: componentOverrides?.pre ?? (({ node, children, ...props }: any) => (
-          <pre className={spacing.preMy} {...props}>
-            {children}
-          </pre>
-        )),
-
-        // ---- code (inline only) ----
-        code: componentOverrides?.code ?? (({ node, inline, className, children, ...props }: any) => {
-          const isCodeBlock =
-            Array.isArray(children) &&
-            children.length === 1 &&
-            typeof children[0] === "string" &&
-            children[0] === "pygame";
-
-          if (!isCodeBlock && (inline === true || inline === undefined)) {
+        h1:
+          componentOverrides?.h1 ??
+          (({ node, children, ...props }: any) => {
+            const headingText = extractText(children);
+            const headingDirection = detectTextDirection(headingText);
             return (
-              <code
+              <h1
                 className={cn(
-                  "px-1.5 py-0 rounded font-mono text-sm font-medium",
-                  colors.codeBgLight,
-                  colors.codeTextLight,
-                  colors.codeBgDark,
-                  colors.codeTextDark,
-                  className,
+                  headings.h1,
+                  colors.headingColor,
+                  getDirectionClasses(headingDirection),
                 )}
-                style={{ overflowWrap: "anywhere", wordBreak: "normal" }}
+                dir={headingDirection}
                 {...props}
               >
                 {children}
-              </code>
+              </h1>
             );
-          }
-          return null;
-        }),
+          }),
+
+        h2:
+          componentOverrides?.h2 ??
+          (({ node, children, ...props }: any) => {
+            const headingText = extractText(children);
+            const headingDirection = detectTextDirection(headingText);
+            return (
+              <h2
+                className={cn(
+                  headings.h2,
+                  colors.headingColor,
+                  getDirectionClasses(headingDirection),
+                )}
+                dir={headingDirection}
+                {...props}
+              >
+                {children}
+              </h2>
+            );
+          }),
+
+        h3:
+          componentOverrides?.h3 ??
+          (({ node, children, ...props }: any) => {
+            const headingText = extractText(children);
+            const headingDirection = detectTextDirection(headingText);
+            return (
+              <h3
+                className={cn(
+                  headings.h3,
+                  colors.headingColor,
+                  getDirectionClasses(headingDirection),
+                )}
+                dir={headingDirection}
+                {...props}
+              >
+                {children}
+              </h3>
+            );
+          }),
+
+        h4:
+          componentOverrides?.h4 ??
+          (({ node, children, ...props }: any) => {
+            const headingText = extractText(children);
+            const headingDirection = detectTextDirection(headingText);
+            return (
+              <h4
+                className={cn(
+                  headings.h4,
+                  colors.headingColor,
+                  getDirectionClasses(headingDirection),
+                )}
+                dir={headingDirection}
+                {...props}
+              >
+                {children}
+              </h4>
+            );
+          }),
+
+        // ---- pre ----
+        pre:
+          componentOverrides?.pre ??
+          (({ node, children, ...props }: any) => (
+            <pre className={spacing.preMy} {...props}>
+              {children}
+            </pre>
+          )),
+
+        // ---- code (inline only) ----
+        code:
+          componentOverrides?.code ??
+          (({ node, inline, className, children, ...props }: any) => {
+            const isCodeBlock =
+              Array.isArray(children) &&
+              children.length === 1 &&
+              typeof children[0] === "string" &&
+              children[0] === "pygame";
+
+            if (!isCodeBlock && (inline === true || inline === undefined)) {
+              return (
+                <code
+                  className={cn(
+                    "px-1.5 py-0 rounded font-mono text-sm font-medium",
+                    colors.codeBgLight,
+                    colors.codeTextLight,
+                    colors.codeBgDark,
+                    colors.codeTextDark,
+                    className,
+                  )}
+                  style={{ overflowWrap: "anywhere", wordBreak: "normal" }}
+                  {...props}
+                >
+                  {children}
+                </code>
+              );
+            }
+            return null;
+          }),
 
         // ---- img ----
-        img: componentOverrides?.img ?? (({ node, ...props }: any) => (
-          <img
-            className={cn("max-w-full h-auto rounded-md", spacing.imgMy)}
-            {...props}
-            alt={props.alt || "Image"}
-          />
-        )),
+        img:
+          componentOverrides?.img ??
+          (({ node, ...props }: any) => (
+            <img
+              className={cn("max-w-full h-auto rounded-md", spacing.imgMy)}
+              {...props}
+              alt={props.alt || "Image"}
+            />
+          )),
 
         // ---- hr ----
-        hr: componentOverrides?.hr ?? (({ node, ...props }: any) => (
-          <hr
-            className={cn(
-              spacing.hrMy,
-              "border-t",
-              colors.hrBorderLight,
-              colors.hrBorderDark,
-            )}
-            {...props}
-          />
-        )),
+        hr:
+          componentOverrides?.hr ??
+          (({ node, ...props }: any) => (
+            <hr
+              className={cn(
+                spacing.hrMy,
+                "border-t",
+                colors.hrBorderLight,
+                colors.hrBorderDark,
+              )}
+              {...props}
+            />
+          )),
 
         // ---- br ----
         br: ({ node, ...props }: any) => <br />,
 
         // ---- div / span (pass-through) ----
         div: ({ node, className, children, ...props }: any) => (
-          <div className={className} {...props}>{children}</div>
+          <div className={className} {...props}>
+            {children}
+          </div>
         ),
         span: ({ node, className, children, ...props }: any) => (
-          <span className={className} {...props}>{children}</span>
+          <span className={className} {...props}>
+            {children}
+          </span>
         ),
 
         // ---- tables (hidden by default, overridable) ----
@@ -836,7 +914,8 @@ export const ConfigurableMarkdownContent: React.FC<ConfigurableMarkdownContentPr
         font-size: 1.5em;
     }
     /* Override pre tags that contain inline code (indented text blocks) */
-    .math-content-wrapper pre:has(> code.${colors.codeBgLight.replace("bg-", "")
+    .math-content-wrapper pre:has(> code.${colors.codeBgLight
+      .replace("bg-", "")
       .replace("/", "\\/")
       .replace("[", "\\[")
       .replace("]", "\\]")}) {
@@ -848,7 +927,8 @@ export const ConfigurableMarkdownContent: React.FC<ConfigurableMarkdownContentPr
         padding: 0;
         margin: 0;
     }
-    .math-content-wrapper pre:has(> code.${colors.codeBgLight.replace("bg-", "")
+    .math-content-wrapper pre:has(> code.${colors.codeBgLight
+      .replace("bg-", "")
       .replace("/", "\\/")
       .replace("[", "\\[")
       .replace("]", "\\]")}) > code {
@@ -873,8 +953,12 @@ export const ConfigurableMarkdownContent: React.FC<ConfigurableMarkdownContentPr
     >
       <style dangerouslySetInnerHTML={{ __html: dynamicStyles }} />
       <ReactMarkdown
-        remarkPlugins={[remarkGfm, remarkBreaks, remarkMath]}
-        rehypePlugins={[rehypeKatex]}
+        remarkPlugins={[
+          remarkGfm,
+          remarkBreaks,
+          [remarkMath, { singleDollarTextMath: false }],
+        ]}
+        rehypePlugins={[[rehypeKatex, { strict: "ignore" }]]}
         components={components}
       >
         {processedContent}
@@ -893,7 +977,11 @@ export const ConfigurableMarkdownContent: React.FC<ConfigurableMarkdownContentPr
           {onEditRequest && (
             <button
               onClick={handleEdit}
-              className={cn("p-1 pt-6 rounded-md ml-1", colors.editButtonColor, colors.editButtonHoverColor)}
+              className={cn(
+                "p-1 pt-6 rounded-md ml-1",
+                colors.editButtonColor,
+                colors.editButtonHoverColor,
+              )}
               title="Edit content"
             >
               <PencilIcon className="w-4 h-4" />

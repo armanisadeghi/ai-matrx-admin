@@ -1157,12 +1157,12 @@ export const fetchUnifiedMenu = createAsyncThunk<
               0,
             ),
           }));
-          console.log(
-            "%c[Shortcut] fetchUnifiedMenu scope=%o %o",
-            "color:#0ea5e9;font-weight:bold",
-            ref,
-            placementSummary,
-          );
+          // console.log(
+          //   "%c[Shortcut] fetchUnifiedMenu scope=%o %o",
+          //   "color:#0ea5e9;font-weight:bold",
+          //   ref,
+          //   placementSummary,
+          // );
         }
 
         for (const placement of payload.data ?? []) {
@@ -1308,28 +1308,29 @@ export const fetchUnifiedMenu = createAsyncThunk<
 // mount of a UI that depends on a specific shortcut.
 // ---------------------------------------------------------------------------
 
-export const ensureShortcutLoaded = createAsyncThunk<
-  void,
-  string,
-  ThunkApi
->("agentShortcut/ensureLoaded", async (shortcutId, { dispatch, getState }) => {
-  const existing = (getState() as RootState).agentShortcut.shortcuts[shortcutId];
-  if (existing) return;
+export const ensureShortcutLoaded = createAsyncThunk<void, string, ThunkApi>(
+  "agentShortcut/ensureLoaded",
+  async (shortcutId, { dispatch, getState }) => {
+    const existing = (getState() as RootState).agentShortcut.shortcuts[
+      shortcutId
+    ];
+    if (existing) return;
 
-  // Fall back to the full menu. The menu fetch is scope-keyed + single-
-  // flight, so rapid-fire calls from multiple UIs collapse to one HTTP.
-  // We pick scope="user" because the view returns every shortcut the
-  // current user can see (global + user + org + project + task), gated by
-  // RLS on the underlying tables.
-  await dispatch(fetchUnifiedMenu({ scope: "user", scopeId: null })).unwrap();
+    // Fall back to the full menu. The menu fetch is scope-keyed + single-
+    // flight, so rapid-fire calls from multiple UIs collapse to one HTTP.
+    // We pick scope="user" because the view returns every shortcut the
+    // current user can see (global + user + org + project + task), gated by
+    // RLS on the underlying tables.
+    await dispatch(fetchUnifiedMenu({ scope: "user", scopeId: null })).unwrap();
 
-  const after = (getState() as RootState).agentShortcut.shortcuts[shortcutId];
-  if (!after) {
-    throw new Error(
-      `Shortcut ${shortcutId} not available to this user. The id may be stale, the shortcut may be inactive, or the user lacks access. (Menu fetch completed without returning this shortcut.)`,
-    );
-  }
-});
+    const after = (getState() as RootState).agentShortcut.shortcuts[shortcutId];
+    if (!after) {
+      throw new Error(
+        `Shortcut ${shortcutId} not available to this user. The id may be stale, the shortcut may be inactive, or the user lacks access. (Menu fetch completed without returning this shortcut.)`,
+      );
+    }
+  },
+);
 
 /**
  * Build an AgentShortcut from a unified-menu item. The unified-menu view

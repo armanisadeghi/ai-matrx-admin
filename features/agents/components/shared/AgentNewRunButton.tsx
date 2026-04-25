@@ -5,31 +5,21 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { startNewConversation } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
 import { PlusTapButton } from "@/components/icons/tap-buttons";
-import { selectAgentName } from "@/features/agents/redux/agent-definition/selectors";
+import { selectFocusedConversation } from "@/features/agents/redux/execution-system/conversation-focus/conversation-focus.selectors";
 
 interface AgentNewRunButtonProps {
-  agentId: string;
-  conversationId: string;
   surfaceKey: string;
 }
 
-/**
- * Self-contained "new run" button.
- * Derives surfaceKey from agentId, reads the focused conversationId from Redux,
- * and clears the URL ?conversationId param — no props needed from the parent.
- */
-export function AgentNewRunButton({
-  agentId,
-  conversationId,
-  surfaceKey,
-}: AgentNewRunButtonProps) {
-  const agentName = useAppSelector((state) => selectAgentName(state, agentId));
+export function AgentNewRunButton({ surfaceKey }: AgentNewRunButtonProps) {
+  const conversationId = useAppSelector(selectFocusedConversation(surfaceKey));
   const dispatch = useAppDispatch();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const handleNewRun = useCallback(() => {
+    if (!conversationId) return;
     const params = new URLSearchParams(searchParams.toString());
     params.delete("conversationId");
     router.replace(`${pathname}?${params.toString()}`);

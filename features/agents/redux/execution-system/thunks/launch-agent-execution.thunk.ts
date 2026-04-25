@@ -175,8 +175,7 @@ export const launchAgentExecution = createAsyncThunk<
   const displayModeOverride = config?.displayMode ?? flatDisplayMode;
   const autoRun = config?.autoRun ?? flatAutoRun;
   const allowChat = config?.allowChat ?? flatAllowChat;
-  const showVariablePanel =
-    config?.showVariablePanel ?? flatShowVariablePanel;
+  const showVariablePanel = config?.showVariablePanel ?? flatShowVariablePanel;
   const showDefinitionMessages =
     config?.showDefinitionMessages ?? flatShowDefinitionMessages;
   const showDefinitionMessageContent =
@@ -185,8 +184,7 @@ export const launchAgentExecution = createAsyncThunk<
     config?.showPreExecutionGate ?? flatShowPreExecutionGate;
   const preExecutionMessage =
     config?.preExecutionMessage ?? flatPreExecutionMessage;
-  const bypassGateSeconds =
-    config?.bypassGateSeconds ?? flatBypassGateSeconds;
+  const bypassGateSeconds = config?.bypassGateSeconds ?? flatBypassGateSeconds;
   const hideReasoning = config?.hideReasoning ?? flatHideReasoning;
   const hideToolResults = config?.hideToolResults ?? flatHideToolResults;
   const variablesPanelStyle =
@@ -196,38 +194,38 @@ export const launchAgentExecution = createAsyncThunk<
   // One line summarizing what the caller actually sent, then a structured
   // view of the live runtime/scope so "variable didn't map" bugs surface
   // immediately in the console.
-  if (typeof window !== "undefined") {
-    console.groupCollapsed(
-      `%c[Shortcut] launchAgentExecution ${shortcutId ? `shortcut=${shortcutId}` : agentId ? `agent=${agentId}` : "manual"}`,
-      "color:#6366f1;font-weight:bold",
-    );
-    console.log("source:", sourceFeature ?? "(unset)");
-    console.log(
-      "applicationScope (keys):",
-      applicationScope ? Object.keys(applicationScope) : "(none)",
-    );
-    if (applicationScope) {
-      for (const [k, v] of Object.entries(applicationScope)) {
-        const preview =
-          typeof v === "string"
-            ? `"${v.slice(0, 80)}"${v.length > 80 ? "…" : ""} (${v.length} chars)`
-            : v && typeof v === "object"
-              ? `<${Array.isArray(v) ? "array" : "object"} ${Object.keys(v as object).length} keys>`
-              : String(v);
-        console.log(`  ${k} →`, preview);
-      }
-    }
-    console.log(
-      "userInput:",
-      userInput ? `"${userInput.slice(0, 80)}"${userInput.length > 80 ? "…" : ""}` : "(none)",
-    );
-    console.log(
-      "caller config override:",
-      config ? Object.keys(config) : "(none)",
-    );
-    console.log("apiEndpointMode:", apiEndpointMode);
-    console.groupEnd();
-  }
+  // if (typeof window !== "undefined") {
+  //   console.groupCollapsed(
+  //     `%c[Shortcut] launchAgentExecution ${shortcutId ? `shortcut=${shortcutId}` : agentId ? `agent=${agentId}` : "manual"}`,
+  //     "color:#6366f1;font-weight:bold",
+  //   );
+  //   console.log("source:", sourceFeature ?? "(unset)");
+  //   console.log(
+  //     "applicationScope (keys):",
+  //     applicationScope ? Object.keys(applicationScope) : "(none)",
+  //   );
+  //   if (applicationScope) {
+  //     for (const [k, v] of Object.entries(applicationScope)) {
+  //       const preview =
+  //         typeof v === "string"
+  //           ? `"${v.slice(0, 80)}"${v.length > 80 ? "…" : ""} (${v.length} chars)`
+  //           : v && typeof v === "object"
+  //             ? `<${Array.isArray(v) ? "array" : "object"} ${Object.keys(v as object).length} keys>`
+  //             : String(v);
+  //       console.log(`  ${k} →`, preview);
+  //     }
+  //   }
+  //   console.log(
+  //     "userInput:",
+  //     userInput ? `"${userInput.slice(0, 80)}"${userInput.length > 80 ? "…" : ""}` : "(none)",
+  //   );
+  //   console.log(
+  //     "caller config override:",
+  //     config ? Object.keys(config) : "(none)",
+  //   );
+  //   console.log("apiEndpointMode:", apiEndpointMode);
+  //   console.groupEnd();
+  // }
 
   // =========================================================================
   // Step 0: Resolve visibility.
@@ -462,8 +460,8 @@ export const launchAgentExecution = createAsyncThunk<
   // doesn't get ignored just because the caller didn't re-specify it.
   // =========================================================================
 
-  const seededUiState =
-    (getState() as RootState).instanceUIState.byConversationId[conversationId];
+  const seededUiState = (getState() as RootState).instanceUIState
+    .byConversationId[conversationId];
   const effectiveShowPreExecutionGate =
     showPreExecutionGate ?? seededUiState?.showPreExecutionGate ?? false;
   const effectiveAutoRun = autoRun ?? seededUiState?.autoRun ?? false;
@@ -504,12 +502,12 @@ export const launchAgentExecution = createAsyncThunk<
 
   if (!effectiveAutoRun) {
     if (typeof window !== "undefined") {
-      console.log(
-        "%c[Shortcut]%c autoRun=false — waiting for user to trigger execution (conversationId=%s)",
-        "color:#6366f1;font-weight:bold",
-        "color:inherit",
-        conversationId,
-      );
+      // console.log(
+      //   "%c[Shortcut]%c autoRun=false — waiting for user to trigger execution (conversationId=%s)",
+      //   "color:#6366f1;font-weight:bold",
+      //   "color:inherit",
+      //   conversationId,
+      // );
     }
     return { conversationId };
   }

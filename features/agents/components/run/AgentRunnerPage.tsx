@@ -220,15 +220,13 @@ export function AgentRunnerPage({
   return (
     <div className="relative flex flex-col h-full overflow-hidden">
       <DebugSessionActivator />
-      <AgentRunHeader
+      {/* <AgentRunHeader
         agentId={agentId}
         agentName={agentName}
-        conversationId={conversationId}
         surfaceKey={surfaceKey}
-        conversationIdFromUrl={conversationIdFromUrl}
         backHref={backHref}
         basePath={basePath}
-      />
+      /> */}
 
       {/* Main conversation area */}
       <div className="flex-1 overflow-hidden flex justify-center min-w-0">
