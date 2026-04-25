@@ -61,6 +61,29 @@ export interface ToolRendererProps {
 }
 
 /**
+ * A single custom tab contributed by a tool renderer to the overlay's
+ * top-level tab bar. When a tool registers `OverlayTabs`, these specs
+ * REPLACE the default "Results" tab and are rendered before the
+ * standard "Input" and "Raw" admin tabs.
+ *
+ * Tab IDs MUST NOT collide with the reserved IDs "results", "input",
+ * or "raw".
+ */
+export interface ToolOverlayTabSpec {
+  /** Unique tab id (e.g. "report", "sources", "fulltext"). */
+  id: string;
+
+  /** Display label shown in the tab bar. */
+  label: string;
+
+  /**
+   * The component rendered when this tab is active. Receives the
+   * standard ToolRendererProps for the selected tool entry.
+   */
+  Component: React.ComponentType<ToolRendererProps>;
+}
+
+/**
  * Static registry entry for a tool.
  */
 export interface ToolRenderer {
@@ -81,6 +104,18 @@ export interface ToolRenderer {
 
   /** Optional overlay component. Defaults to InlineComponent. */
   OverlayComponent?: React.ComponentType<ToolRendererProps>;
+
+  /**
+   * Optional list of custom overlay tabs. When provided (and the overlay
+   * is showing exactly one entry of this tool), these tabs REPLACE the
+   * default "Results" tab in the overlay's top-level tab bar — yielding
+   * `[...OverlayTabs, Input, Raw]`.
+   *
+   * Takes precedence over `OverlayComponent` when both are set. For
+   * multi-tool groups, the overlay falls back to the standard
+   * `[Results, Input, Raw]` shape with an entry selector.
+   */
+  OverlayTabs?: ToolOverlayTabSpec[];
 
   /**
    * Optional custom subtitle for the overlay header.

@@ -9,7 +9,7 @@ import EditFlashcardDialog from './EditFlashcardDialog';
 import { Progress } from "@/components/ui/progress";
 import AiAssistModal from '../ai/AiAssistModal';
 import { useFlashcard } from "@/hooks/flashcard-app/useFlashcard";
-import MatrxTable from "@/app/(legacy)/legacy/tests/matrx-table/components/MatrxTable";
+import MatrxTable from "@/app/(authenticated)/tests/matrx-table/components/MatrxTable";
 import {
     SmallComponentLoading,
     MediumComponentLoading,

@@ -1,16 +1,24 @@
 "use client";
 
 /**
- * ToolUpdatesOverlay (canonical, v2 contract)
+ * ToolUpdatesOverlay (canonical, v3 contract)
  *
- * Fullscreen overlay with the THREE standard top-level tabs:
+ * Top-level tab structure:
  *
- *   1. Results — custom renderer (per registry) or default OutputView
- *   2. Input   — argument inspector
- *   3. Raw     — full lifecycle entry + events JSON
+ *   • Default (no custom contributions or multi-tool group):
+ *       [ Results | Input | Raw ]
+ *
+ *   • Single-tool with `OverlayTabs` registered in the tool registry:
+ *       [ ...OverlayTabs | Input | Raw ]   (the tool's tabs REPLACE "Results")
+ *
+ *   • Single-tool with only `OverlayComponent` (no OverlayTabs):
+ *       [ Results=OverlayComponent | Input | Raw ]
+ *
+ *   • Single-tool in error state — always falls back to:
+ *       [ Results (ErrorView) | Input | Raw ]
  *
  * For tool groups with multiple entries (rare), an inline entry selector
- * strip lets the user pick which tool's data to inspect within each tab.
+ * strip inside each tab lets the user pick which tool's data to inspect.
  *
  * This shell deliberately renders no heavy header / gradient / per-tool
  * outer tab — the FullScreenOverlay's own tab bar is the only outer chrome.
@@ -38,9 +46,11 @@ import type { ToolLifecycleEntry } from "@/features/agents/types/request.types";
 
 import {
   getOverlayRenderer,
+  getOverlayTabs,
   getToolDisplayName,
   hasCustomRenderer,
 } from "../registry/registry";
+import type { ToolOverlayTabSpec, ToolRendererProps } from "../types";
 import { resultAsString } from "../renderers/_shared";
 
 // ─── Small local UI helpers ───────────────────────────────────────────────────
@@ -506,6 +516,27 @@ const RawTabContent: React.FC<{
   );
 };
 
+// ─── Custom overlay-tab content shell ─────────────────────────────────────────
+//
+// Renders one of a tool's registered `ToolOverlayTabSpec` components for the
+// currently selected entry. Used only in single-tool mode.
+
+const CustomOverlayTabContent: React.FC<{
+  entry: ToolLifecycleEntry;
+  Component: React.ComponentType<ToolRendererProps>;
+}> = ({ entry, Component }) => (
+  <div className="flex flex-col h-full">
+    <div className="flex-1 overflow-auto">
+      <Component
+        entry={entry}
+        events={entry.events}
+        toolGroupId={entry.callId}
+        isPersisted={false}
+      />
+    </div>
+  </div>
+);
+
 // ─── Main overlay ─────────────────────────────────────────────────────────────
 
 export interface ToolUpdatesOverlayProps {
@@ -513,24 +544,16 @@ export interface ToolUpdatesOverlayProps {
   onClose: () => void;
   entries: ToolLifecycleEntry[];
   /**
-   * Optional initial focus. Accepts:
-   *   - "results" | "input" | "raw" → top-level tab to open
+   * Optional initial focus. Accepts any of:
+   *   - "input" | "raw"             → admin tabs (always present)
+   *   - "results"                   → default Results tab (when no
+   *                                    OverlayTabs are registered)
+   *   - any custom tab id           → e.g. "report", "sources", "fulltext"
+   *                                    when the tool registers OverlayTabs
    *   - "tool-group-{callId}"       → legacy contract; selects that entry
-   *                                    and opens the Results tab.
+   *                                    and opens the first tab.
    */
   initialTab?: string;
-}
-
-const TOP_TABS: ReadonlyArray<"results" | "input" | "raw"> = [
-  "results",
-  "input",
-  "raw",
-] as const;
-
-type TopTabId = (typeof TOP_TABS)[number];
-
-function isTopTabId(value: string | undefined): value is TopTabId {
-  return value === "results" || value === "input" || value === "raw";
 }
 
 export const ToolUpdatesOverlay: React.FC<ToolUpdatesOverlayProps> = ({
@@ -558,23 +581,26 @@ export const ToolUpdatesOverlay: React.FC<ToolUpdatesOverlayProps> = ({
     if (isOpen && initialCallId) setSelectedCallId(initialCallId);
   }, [isOpen, initialCallId]);
 
-  const resolvedTopTab: TopTabId = isTopTabId(initialTab)
-    ? initialTab
-    : "results";
+  // Selected entry — used to decide whether to expand custom OverlayTabs.
+  const selectedEntry = useMemo(
+    () =>
+      entries.find((e) => e.callId === selectedCallId) ?? entries[0] ?? null,
+    [entries, selectedCallId],
+  );
 
-  const tabs: TabDefinition[] = useMemo(
-    () => [
-      {
-        id: "results",
-        label: "Results",
-        content: (
-          <ResultsTabContent
-            entries={entries}
-            selectedCallId={selectedCallId}
-            onSelect={setSelectedCallId}
-          />
-        ),
-      },
+  // Custom OverlayTabs are only expanded when:
+  //   1. The group contains exactly one entry.
+  //   2. That entry is not in error state.
+  //   3. The tool's registry record provides OverlayTabs.
+  const customOverlayTabs: ToolOverlayTabSpec[] | null = useMemo(() => {
+    if (entries.length !== 1) return null;
+    if (!selectedEntry) return null;
+    if (selectedEntry.status === "error") return null;
+    return getOverlayTabs(selectedEntry.toolName);
+  }, [entries.length, selectedEntry]);
+
+  const tabs: TabDefinition[] = useMemo(() => {
+    const adminTabs: TabDefinition[] = [
       {
         id: "input",
         label: "Input",
@@ -597,9 +623,50 @@ export const ToolUpdatesOverlay: React.FC<ToolUpdatesOverlayProps> = ({
           />
         ),
       },
-    ],
-    [entries, selectedCallId],
-  );
+    ];
+
+    if (customOverlayTabs && selectedEntry) {
+      const customTabDefs: TabDefinition[] = customOverlayTabs.map((spec) => ({
+        id: spec.id,
+        label: spec.label,
+        content: (
+          <CustomOverlayTabContent
+            entry={selectedEntry}
+            Component={spec.Component}
+          />
+        ),
+      }));
+      return [...customTabDefs, ...adminTabs];
+    }
+
+    return [
+      {
+        id: "results",
+        label: "Results",
+        content: (
+          <ResultsTabContent
+            entries={entries}
+            selectedCallId={selectedCallId}
+            onSelect={setSelectedCallId}
+          />
+        ),
+      },
+      ...adminTabs,
+    ];
+  }, [entries, selectedCallId, customOverlayTabs, selectedEntry]);
+
+  // Resolve which tab to open initially. Honor any explicit id that exists
+  // in the resolved tabs; otherwise fall back to the first tab.
+  const resolvedTopTab = useMemo(() => {
+    if (
+      initialTab &&
+      !initialTab.startsWith("tool-group-") &&
+      tabs.some((t) => t.id === initialTab)
+    ) {
+      return initialTab;
+    }
+    return tabs[0]?.id ?? "results";
+  }, [initialTab, tabs]);
 
   // Compute a meaningful title for the overlay header.
   const title = useMemo(() => {

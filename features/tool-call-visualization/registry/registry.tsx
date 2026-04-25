@@ -6,7 +6,12 @@ import { CheckCircle, AlertTriangle } from "lucide-react";
 import type { ToolLifecycleEntry } from "@/features/agents/types/request.types";
 import type { ToolEventPayload } from "@/types/python-generated/stream-events";
 
-import type { ToolRegistry, ToolRenderer, ToolRendererProps } from "../types";
+import type {
+  ToolOverlayTabSpec,
+  ToolRegistry,
+  ToolRenderer,
+  ToolRendererProps,
+} from "../types";
 import { GenericRenderer } from "./GenericRenderer";
 
 import { BraveSearchInline } from "../renderers/brave-search";
@@ -27,7 +32,7 @@ import {
 } from "../renderers/core-web-search";
 import {
   DeepResearchInline,
-  DeepResearchOverlay,
+  deepResearchOverlayTabs,
 } from "../renderers/deep-research";
 import { UserListsInline, UserListsOverlay } from "../renderers/get-user-lists";
 import BraveSearchDisplay from "@/features/workflows/results/registered-components/BraveSearchDisplay";
@@ -274,7 +279,7 @@ export const toolRendererRegistry: ToolRegistry = {
     displayName: "Deep Research",
     resultsLabel: "Research Results",
     InlineComponent: DeepResearchInline,
-    OverlayComponent: DeepResearchOverlay,
+    OverlayTabs: deepResearchOverlayTabs,
     keepExpandedOnStream: true,
     getHeaderSubtitle: (entry) => {
       const query = getArg<string>(entry, "query");
@@ -300,7 +305,7 @@ export const toolRendererRegistry: ToolRegistry = {
     displayName: "Deep Research",
     resultsLabel: "Research Results",
     InlineComponent: DeepResearchInline,
-    OverlayComponent: DeepResearchOverlay,
+    OverlayTabs: deepResearchOverlayTabs,
     keepExpandedOnStream: true,
     getHeaderSubtitle: (entry) => {
       const query = getArg<string>(entry, "query");
@@ -358,7 +363,7 @@ export const toolRendererRegistry: ToolRegistry = {
     displayName: "Web Page Reader",
     resultsLabel: "Pages Read",
     InlineComponent: DeepResearchInline,
-    OverlayComponent: DeepResearchOverlay,
+    OverlayTabs: deepResearchOverlayTabs,
     keepExpandedOnStream: true,
   },
 };
@@ -406,6 +411,31 @@ export function getInlineRenderer(
   }
 
   return GenericRenderer;
+}
+
+/**
+ * Returns the custom overlay tabs registered for a tool, or `null` if the
+ * tool only registers a single OverlayComponent (or nothing at all).
+ *
+ * When this returns a non-empty array, the ToolUpdatesOverlay should
+ * expand these into top-level tabs and SKIP the default "Results" tab.
+ */
+export function getOverlayTabs(
+  toolName: string | null,
+): ToolOverlayTabSpec[] | null {
+  if (!toolName) return null;
+  const renderer = toolRendererRegistry[toolName];
+  if (renderer?.OverlayTabs && renderer.OverlayTabs.length > 0) {
+    return renderer.OverlayTabs;
+  }
+  // Dynamic renderers do not currently support OverlayTabs.
+  return null;
+}
+
+/** True when the tool contributes its own top-level overlay tabs. */
+export function hasOverlayTabs(toolName: string | null): boolean {
+  const tabs = getOverlayTabs(toolName);
+  return tabs !== null && tabs.length > 0;
 }
 
 export function getOverlayRenderer(

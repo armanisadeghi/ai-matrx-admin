@@ -1,2 +1,7 @@
 export { DeepResearchInline } from "./DeepResearchInline";
-export { DeepResearchOverlay } from "./DeepResearchOverlay";
+export {
+  DeepResearchReportTab,
+  DeepResearchSourcesTab,
+  DeepResearchFullTextTab,
+  deepResearchOverlayTabs,
+} from "./DeepResearchOverlay";

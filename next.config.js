@@ -74,8 +74,7 @@ const nextConfig = {
             // to keep bookmarks + external links working until internal links
             // are fully audited; promote to permanent in a follow-up.
             // See ~/.claude/plans/the-entity-system-which-bubbly-wind.md
-            { source: '/demo/:path*', destination: '/legacy/demo/:path*', permanent: false },
-            { source: '/demo', destination: '/legacy/demo', permanent: false },
+            // Whole-route entity moves (route exclusively used entities).
             { source: '/entity-crud/:path*', destination: '/legacy/entity-crud/:path*', permanent: false },
             { source: '/entity-crud', destination: '/legacy/entity-crud', permanent: false },
             // /entities was renamed to /entity-admin under /legacy
@@ -83,8 +82,6 @@ const nextConfig = {
             { source: '/entities', destination: '/legacy/entity-admin', permanent: false },
             { source: '/workflow-entity/:path*', destination: '/legacy/workflow-entity/:path*', permanent: false },
             { source: '/workflow-entity', destination: '/legacy/workflow-entity', permanent: false },
-            { source: '/tests/:path*', destination: '/legacy/tests/:path*', permanent: false },
-            { source: '/tests', destination: '/legacy/tests', permanent: false },
             { source: '/workflows-new/:path*', destination: '/legacy/workflows-new/:path*', permanent: false },
             { source: '/workflows-new', destination: '/legacy/workflows-new', permanent: false },
             { source: '/workflows/:path*', destination: '/legacy/workflows/:path*', permanent: false },
@@ -92,8 +89,26 @@ const nextConfig = {
             // /deprecated/chat moved to /legacy/chat (the "deprecated" prefix dropped)
             { source: '/deprecated/chat/:path*', destination: '/legacy/chat/:path*', permanent: false },
             { source: '/deprecated/chat', destination: '/legacy/chat', permanent: false },
-            { source: '/admin/:path*', destination: '/legacy/admin/:path*', permanent: false },
-            { source: '/admin', destination: '/legacy/admin', permanent: false },
+            // Surgical subroute moves: /admin, /tests, /demo stay slim. ONLY
+            // the entity-using subfolders that ACTUALLY have URL routes moved
+            // to /legacy/*. (admin/components is a helper folder, not URL routes,
+            // so it stays under /admin entirely.)
+            { source: '/tests/advanced-data-table/:path*', destination: '/legacy/tests/advanced-data-table/:path*', permanent: false },
+            { source: '/tests/advanced-data-table', destination: '/legacy/tests/advanced-data-table', permanent: false },
+            { source: '/tests/dynamic-entity-test/:path*', destination: '/legacy/tests/dynamic-entity-test/:path*', permanent: false },
+            { source: '/tests/dynamic-entity-test', destination: '/legacy/tests/dynamic-entity-test', permanent: false },
+            { source: '/tests/dynamic-layouts/:path*', destination: '/legacy/tests/dynamic-layouts/:path*', permanent: false },
+            { source: '/tests/dynamic-layouts', destination: '/legacy/tests/dynamic-layouts', permanent: false },
+            { source: '/tests/fetch-test/:path*', destination: '/legacy/tests/fetch-test/:path*', permanent: false },
+            { source: '/tests/fetch-test', destination: '/legacy/tests/fetch-test', permanent: false },
+            { source: '/tests/forms/:path*', destination: '/legacy/tests/forms/:path*', permanent: false },
+            { source: '/tests/forms', destination: '/legacy/tests/forms', permanent: false },
+            { source: '/tests/relationship-management/:path*', destination: '/legacy/tests/relationship-management/:path*', permanent: false },
+            { source: '/tests/relationship-management', destination: '/legacy/tests/relationship-management', permanent: false },
+            { source: '/demo/component-demo/:path*', destination: '/legacy/demo/component-demo/:path*', permanent: false },
+            { source: '/demo/component-demo', destination: '/legacy/demo/component-demo', permanent: false },
+            { source: '/demo/many-to-many-ui/:path*', destination: '/legacy/demo/many-to-many-ui/:path*', permanent: false },
+            { source: '/demo/many-to-many-ui', destination: '/legacy/demo/many-to-many-ui', permanent: false },
         ];
     },
     async rewrites() {

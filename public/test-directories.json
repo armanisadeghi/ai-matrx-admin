@@ -4,10 +4,6 @@
     "name": "_maps"
   },
   {
-    "path": "/tests/advanced-data-table",
-    "name": "advanced-data-table"
-  },
-  {
     "path": "/tests/animation-tests",
     "name": "animation-tests"
   },
@@ -40,28 +36,12 @@
     "name": "direct-chat-test"
   },
   {
-    "path": "/tests/dynamic-entity-test",
-    "name": "dynamic-entity-test"
-  },
-  {
     "path": "/tests/dynamic-gateway-concept",
     "name": "dynamic-gateway-concept"
   },
   {
-    "path": "/tests/dynamic-layouts",
-    "name": "dynamic-layouts"
-  },
-  {
-    "path": "/tests/fetch-test",
-    "name": "fetch-test"
-  },
-  {
     "path": "/tests/field-tests",
     "name": "field-tests"
-  },
-  {
-    "path": "/tests/forms",
-    "name": "forms"
   },
   {
     "path": "/tests/full-screen-demo",
@@ -112,10 +92,6 @@
     "name": "qr-labels"
   },
   {
-    "path": "/tests/relationship-management",
-    "name": "relationship-management"
-  },
-  {
     "path": "/tests/slack",
     "name": "slack"
   },
@@ -138,5 +114,29 @@
   {
     "path": "/tests/workflow-source-config",
     "name": "workflow-source-config"
+  },
+  {
+    "path": "/legacy/tests/advanced-data-table",
+    "name": "advanced-data-table"
+  },
+  {
+    "path": "/legacy/tests/dynamic-entity-test",
+    "name": "dynamic-entity-test"
+  },
+  {
+    "path": "/legacy/tests/dynamic-layouts",
+    "name": "dynamic-layouts"
+  },
+  {
+    "path": "/legacy/tests/fetch-test",
+    "name": "fetch-test"
+  },
+  {
+    "path": "/legacy/tests/forms",
+    "name": "forms"
+  },
+  {
+    "path": "/legacy/tests/relationship-management",
+    "name": "relationship-management"
   }
 ]

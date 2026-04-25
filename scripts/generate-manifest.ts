@@ -25,15 +25,36 @@ async function generateManifest() {
         console.log('🚀 Starting manifest generation...');
 
         const projectRoot = await findProjectRoot(__dirname);
-        const testsPath = path.join(projectRoot, 'app', '(authenticated)', 'tests');
 
-        const entries = await fs.readdir(testsPath, { withFileTypes: true });
-        const directories = entries
-            .filter(dirent => dirent.isDirectory())
-            .map(dirent => ({
-                path: `/tests/${dirent.name}`,
-                name: dirent.name
-            }));
+        // Entity-isolation migration: /tests is mid-audit. Some test routes
+        // moved to (legacy)/legacy/tests because they actually used the
+        // entity system; the rest will return to (authenticated)/tests.
+        // Look in both locations and merge — drop duplicates by name.
+        const candidatePaths = [
+            { path: path.join(projectRoot, 'app', '(authenticated)', 'tests'), urlPrefix: '/tests' },
+            { path: path.join(projectRoot, 'app', '(legacy)', 'legacy', 'tests'), urlPrefix: '/legacy/tests' },
+        ];
+
+        const seen = new Set<string>();
+        const directories: { path: string; name: string }[] = [];
+
+        for (const { path: dirPath, urlPrefix } of candidatePaths) {
+            try {
+                const entries = await fs.readdir(dirPath, { withFileTypes: true });
+                for (const dirent of entries) {
+                    if (!dirent.isDirectory()) continue;
+                    if (seen.has(dirent.name)) continue;
+                    seen.add(dirent.name);
+                    directories.push({
+                        path: `${urlPrefix}/${dirent.name}`,
+                        name: dirent.name,
+                    });
+                }
+            } catch (err) {
+                if ((err as NodeJS.ErrnoException).code !== 'ENOENT') throw err;
+                // Directory doesn't exist yet — skip it.
+            }
+        }
 
         const publicDir = path.join(projectRoot, 'public');
         await fs.mkdir(publicDir, { recursive: true });
