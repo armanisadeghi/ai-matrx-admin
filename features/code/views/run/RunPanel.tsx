@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Loader2, Play, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCodeWorkspace } from "../../CodeWorkspaceProvider";
-import { runShellCommand } from "../../runtime";
+import { runShellCommand } from "../../runtime/agentTools";
 import { SidePanelAction, SidePanelHeader } from "../SidePanelChrome";
 import { HOVER_ROW, ROW_HEIGHT } from "../../styles/tokens";
 

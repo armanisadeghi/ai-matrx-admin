@@ -3,7 +3,7 @@ import "server-only";
 import { readdir } from "fs/promises";
 import { join } from "path";
 
-export { groupRoutes, getRouteLabel, toModulePages, sortGroupKeys } from "./shared";
+export { groupRoutes, toModulePages, sortGroupKeys } from "./shared";
 
 export async function scanRoutes(
   dir: string,

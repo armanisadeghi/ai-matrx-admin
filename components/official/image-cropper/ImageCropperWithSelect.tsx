@@ -78,4 +78,5 @@ const ImageCropperWithSelect = ({
   );
 };
 
-export default ImageCropperWithSelect; 
+export { ImageCropperWithSelect };
+export default ImageCropperWithSelect;

@@ -3,7 +3,7 @@ import React, { useMemo } from 'react';
 import { ScrollArea } from '@/components/ui';
 import { UnifiedLayoutProps } from "@/components/matrx/Entity/prewired-components/layouts/types";
 import { EntityKeys } from '@/types/entityTypes';
-import { getEntityFormComponent } from '../forms';
+import { getEntityFormComponent } from "@/app/entities/forms/entityFormRegistry";
 
 const EntityRightColumnLayout: React.FC<{
     selectedEntity: EntityKeys | null;

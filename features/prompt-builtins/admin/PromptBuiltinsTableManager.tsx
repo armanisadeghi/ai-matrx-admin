@@ -58,7 +58,7 @@ import {
   Pen,
 } from "lucide-react";
 import Link from "next/link";
-import type { PromptBuiltin, PromptShortcut, ShortcutCategory } from "../types";
+import type { PromptBuiltin, PromptShortcut, ShortcutCategory } from "../types/core";
 import {
   fetchPromptBuiltins,
   fetchPromptBuiltinsWithSource,

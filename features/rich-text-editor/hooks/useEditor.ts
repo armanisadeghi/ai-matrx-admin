@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { extractEncodedTextFromDom } from '../utils/editorUtils';
-import { useEditorContext } from "@/features/rich-text-editor/providers/rich-text-editor/Provider";
+import { useEditorContext } from "@/providers/rich-text-editor/Provider";
 import { useEditorStyles } from './useEditorStyles';
 import { useDragAndDrop } from './useDragAndDrop';
 import { useChipCreation } from './useChipCreation';

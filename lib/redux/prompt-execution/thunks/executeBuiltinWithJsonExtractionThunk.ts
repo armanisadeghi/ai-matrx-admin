@@ -1,6 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import type { AppDispatch, RootState } from "@/lib/redux/store";
-import { startPromptInstance, executeMessage } from "./";
+import { startPromptInstance } from "./startInstanceThunk";
+import { executeMessage } from "./executeMessageThunk";
 import { createBuiltinConfig } from "../builtins";
 import {
   selectStreamingTextForInstance,

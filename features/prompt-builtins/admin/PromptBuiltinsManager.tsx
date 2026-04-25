@@ -68,7 +68,7 @@ import {
   UpdateShortcutCategoryInput,
   CreatePromptShortcutInput,
   UpdatePromptShortcutInput,
-} from "../types";
+} from "../types/core";
 import { ContentBlockDB } from "@/types/content-blocks-db";
 import {
   fetchShortcutCategories,
@@ -90,7 +90,7 @@ import {
   getPlacementTypeMeta,
   COMMON_SCOPE_CONFIGURATIONS,
 } from "../constants";
-import { RESULT_DISPLAY_META, type ResultDisplay } from "../types";
+import { RESULT_DISPLAY_META, type ResultDisplay } from "../types/execution-modes";
 import { getUserFriendlyError } from "../utils/error-handler";
 import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
 import { SelectPromptForBuiltinModal } from "./SelectPromptForBuiltinModal";

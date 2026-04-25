@@ -15,7 +15,7 @@ import { FaMicrosoft } from "react-icons/fa";
 import SuspenseLoader from "@/components/loaders/SuspenseLoader";
 
 const HtmlPreviewModal = lazy(
-  () => import("../../../features/html-pages/components/HtmlPreviewModal"),
+  () => import("@/features/html-pages/components/HtmlPreviewModal"),
 );
 
 /**

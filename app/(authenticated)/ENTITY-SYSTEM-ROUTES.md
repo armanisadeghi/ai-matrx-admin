@@ -19,6 +19,7 @@
 | `/admin/**` | `app/(authenticated)/admin/layout.tsx` | Entity Testing Lab, Entity Browser tabs — useEntity, useQuickReference, createEntitySelectors | 2026-03-23 |
 | `/tests/**` | `app/(authenticated)/tests/layout.tsx` | Multiple entity test pages — MergedEntityLayout, SingleEntityLayout, useEntity, entity JSON builders | 2026-03-23 |
 | `/demo/**` | `app/(authenticated)/demo/layout.tsx` | Many-to-many UI demos, entity select demos — useCreateManyToMany, entity options | 2026-03-23 |
+| `/workflows/**` | `app/(authenticated)/workflows/WorkflowsLayoutClient.tsx` | useCombinedFunctionsWithArgs → useRegisteredFunctionWithFetch → useEntityWithFetch → useEntitySelectors → getEntitySlice | 2026-04-25 |
 
 ---
 
@@ -32,7 +33,7 @@ These routes have no entity imports and must stay lightweight:
 - `/flashcard`, `/flash-cards/*` — No entity imports
 - `/prompt-apps/*` — No entity imports
 - `/ai/prompts/*` — No entity imports
-- `/workflows-new/*` — Separate workflow-nodes slice, not entity system
+- `/workflows-new/*` — Separate workflow-nodes slice, not entity system (note: `/workflows` DOES use entity system — see table above)
 - `/apps/*`, `/apps/app-builder/*` — No entity imports
 - `/sandbox` — No entity imports
 - `/image-editing` — No entity imports
@@ -66,5 +67,5 @@ These providers depend on the entity system and now only render inside entity ro
 
 ---
 
-*Last updated: 2026-03-23*
+*Last updated: 2026-04-25*
 *Reference audit: docs/entities-slice-route-audit.md*

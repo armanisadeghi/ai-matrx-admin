@@ -24,9 +24,9 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Plus, Edit2 } from "lucide-react";
 import IconInputWithValidation from "@/components/official/icons/IconInputWithValidation.dynamic";
-import { ShortcutCategory, PromptBuiltin, PromptShortcut } from "../types";
+import { ShortcutCategory, PromptBuiltin, PromptShortcut } from "../types/core";
 import { PLACEMENT_TYPES, getPlacementTypeMeta } from "../constants";
-import { RESULT_DISPLAY_META, type ResultDisplay } from "../types";
+import { RESULT_DISPLAY_META, type ResultDisplay } from "../types/execution-modes";
 
 interface PromptBuiltinEditPanelProps {
   selectedItem:

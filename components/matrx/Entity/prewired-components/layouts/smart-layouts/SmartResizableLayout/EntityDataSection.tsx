@@ -4,7 +4,8 @@ import {
     CardContent,
     ScrollArea
 } from '@/components/ui';
-import {EnhancedCard, LayoutHeader} from '../../parts';
+import { EnhancedCard } from "../../parts/EnhancedCard";
+import { LayoutHeader } from "../../parts/LayoutHeader";
 import {useAppSelector} from "@/lib/redux/hooks";
 import {selectEntityPrettyName} from "@/lib/redux/schema/globalCacheSelectors";
 import EntitySmartContent from "@/components/matrx/Entity/prewired-components/layouts/smart-layouts/NotSmartEntityContent";

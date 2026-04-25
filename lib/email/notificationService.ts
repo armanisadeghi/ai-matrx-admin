@@ -6,7 +6,7 @@ import {
   CommentAddedEmail,
   MessageReceivedEmail,
   DueDateReminderEmail,
-} from "./templates";
+} from "./templates/NotificationEmail";
 import { createAdminClient } from "@/utils/supabase/adminClient";
 import type { Database } from "@/types/database.types";
 

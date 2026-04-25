@@ -19,7 +19,7 @@ import {
   ShortcutCategory,
   CreateShortcutCategoryInput,
   UpdateShortcutCategoryInput,
-} from "../types";
+} from "../types/core";
 import {
   PLACEMENT_TYPES,
   getPlacementTypeMeta,

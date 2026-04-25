@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { Save, X, Loader2 } from 'lucide-react';
-import { ShortcutCategory } from '../types';
+import { ShortcutCategory } from '../types/core';
 import {
   CategoryFormFields,
   CategoryFormData,

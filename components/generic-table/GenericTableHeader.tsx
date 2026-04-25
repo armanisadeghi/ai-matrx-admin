@@ -26,7 +26,7 @@ interface GenericTableHeaderProps {
   onRefresh?: () => void;
 }
 
-export default function GenericTableHeader({
+function GenericTableHeader({
   searchTerm,
   onSearchChange,
   onCreateItem,
@@ -100,3 +100,6 @@ export default function GenericTableHeader({
     </div>
   );
 }
+
+export { GenericTableHeader };
+export default GenericTableHeader;

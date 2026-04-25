@@ -26,7 +26,10 @@ import {
   selectSortedChildrenOfFolder,
   selectSortedRootChildren,
 } from "@/features/files/redux/selectors";
-import { setActiveFileId, setActiveFolderId } from "@/features/files/redux/slice";
+import {
+  setActiveFileId,
+  setActiveFolderId,
+} from "@/features/files/redux/slice";
 import { loadFolderContents } from "@/features/files/redux/thunks";
 import { FileIcon } from "@/features/files/components/core/FileIcon/FileIcon";
 import { FileMeta } from "@/features/files/components/core/FileMeta/FileMeta";
@@ -441,7 +444,8 @@ function FloatingUploadAction({ parentFolderId }: FloatingUploadActionProps) {
               if (!storeInstance) throw new Error("Store not ready");
               return { store: storeInstance };
             });
-            const { uploadFiles } = await import("../../redux/thunks");
+            const { uploadFiles } =
+              await import("@/features/files/redux/thunks");
             void store.dispatch(
               uploadFiles({
                 files,

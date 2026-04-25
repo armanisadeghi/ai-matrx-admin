@@ -12,7 +12,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCodeWorkspace } from "../../CodeWorkspaceProvider";
-import { listWorkspaceIds, subscribeWorkspace } from "../../runtime";
+import { listWorkspaceIds, subscribeWorkspace } from "../../runtime/workspaceRegistry";
 import { SidePanelHeader } from "../SidePanelChrome";
 
 interface ExtensionsPanelProps {

@@ -61,7 +61,7 @@ import {
   Check,
   AlertTriangle,
 } from "lucide-react";
-import { ShortcutCategory, PromptBuiltin, PromptShortcut } from "../types";
+import { ShortcutCategory, PromptBuiltin, PromptShortcut } from "../types/core";
 import {
   fetchShortcutCategories,
   fetchPromptBuiltins,

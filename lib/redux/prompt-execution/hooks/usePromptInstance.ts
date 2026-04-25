@@ -20,12 +20,19 @@
 import { useCallback } from 'react';
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import {
-  // Basic selectors (from slice)
   selectInstance,
   selectUIState,
   selectMessages,
-  
-  // Memoized selectors (from selectors.ts)
+  EMPTY_MESSAGES,
+  EMPTY_OBJECT,
+  DEFAULT_UI_STATE,
+  updateVariable,
+  updateVariables,
+  clearConversation,
+  setExpandedVariable,
+  toggleShowVariables,
+} from '../slice';
+import {
   selectDisplayMessages,
   selectMergedVariables,
   selectIsReadyToExecute,
@@ -35,19 +42,7 @@ import {
   selectIsExecuting,
   selectIsStreaming,
   selectHasError,
-  
-  // Actions
-  updateVariable,
-  updateVariables,
-  clearConversation,
-  setExpandedVariable,
-  toggleShowVariables,
-  
-  // Stable references
-  EMPTY_MESSAGES,
-  EMPTY_OBJECT,
-  DEFAULT_UI_STATE,
-} from '../index';
+} from '../selectors';
 import { executeMessage } from '../thunks/executeMessageThunk';
 
 /**

@@ -88,21 +88,13 @@ export const DISPLAY_MODE_OPTIONS: {
   },
 ];
 
-export function displayModeSupportsChat(mode: AppDisplayMode): boolean {
+function displayModeSupportsChat(mode: AppDisplayMode): boolean {
   for (const option of DISPLAY_MODE_OPTIONS) {
     if (option.value === mode) return option.supportsChat;
   }
   return false;
 }
 
-export function getDefaultDisplayMode(): AppDisplayMode {
+function getDefaultDisplayMode(): AppDisplayMode {
   return "form";
 }
-
-export {
-  formTemplate,
-  formToChatTemplate,
-  chatTemplate,
-  centeredInputTemplate,
-  chatWithHistoryTemplate,
-};

@@ -1,4 +1,4 @@
-import { ApplicationScope, ScopeMapping, PromptExecutionData } from '../types';
+import { ApplicationScope, ScopeMapping, PromptExecutionData } from '../types/core';
 import { PromptVariable } from '@/features/prompts/types/core';
 import { SCOPE_UNAVAILABLE_VALUES } from '../constants';
 

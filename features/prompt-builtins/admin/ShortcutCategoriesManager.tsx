@@ -57,7 +57,7 @@ import {
   ShortcutCategory,
   CreateShortcutCategoryInput,
   UpdateShortcutCategoryInput,
-} from '../types';
+} from '../types/core';
 import {
   fetchShortcutCategories,
   createShortcutCategory,

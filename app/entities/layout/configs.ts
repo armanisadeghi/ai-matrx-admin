@@ -15,7 +15,7 @@ import {
 import { EntityKeys } from "@/types/entityTypes";
 import { SmartCrudWrapperProps } from "@/components/matrx/Entity/prewired-components/layouts/smart-layouts/smart-actions/SmartCrudWrapper";
 import { ComponentDensity, QuickReferenceComponentType, PageLayoutOptions } from "@/types/componentConfigTypes";
-import { EntityFormType } from "../forms";
+import type { EntityFormType } from "@/app/entities/forms/entityFormRegistry";
 
 export const SMART_CRUD_PROP_DEFAULTS: Partial<SmartCrudWrapperProps> = {
     options: {

@@ -13,7 +13,7 @@ import {
   PromptBuiltin,
   PromptShortcut,
   CreatePromptShortcutInput,
-} from '../types';
+} from '../types/core';
 import {
   fetchShortcutCategories,
   updatePromptShortcut,

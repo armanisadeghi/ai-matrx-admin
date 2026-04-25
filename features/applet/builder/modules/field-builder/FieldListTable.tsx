@@ -13,7 +13,7 @@ import GenericDataTable, {
   type ActionConfig,
   type CustomTableSettings,
 } from "@/components/generic-table/GenericDataTable";
-import { GenericTableHeader } from "@/components/generic-table/GenericTableHeader";
+import GenericTableHeader from "@/components/generic-table/GenericTableHeader";
 
 interface FieldListTableProps {
     // Core functionality props

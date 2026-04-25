@@ -17,17 +17,14 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 import { useAgentListCore } from "./useAgentListCore";
-import {
-  AgentListContent,
-  AgentDetailCard,
-  AgentSortPanel,
-  AgentCategoriesPanel,
-  AgentTagsPanel,
-  AgentMobileSubView,
-  PANEL_HEIGHT,
-  LIST_MAX_HEIGHT,
-} from "./core";
-import type { RightPanel } from "./core";
+import { AgentListContent } from "./core/AgentListContent";
+import { AgentDetailCard } from "./core/AgentDetailCard";
+import { AgentSortPanel } from "./core/AgentSortPanel";
+import { AgentCategoriesPanel } from "./core/AgentCategoriesPanel";
+import { AgentTagsPanel } from "./core/AgentTagsPanel";
+import { AgentMobileSubView } from "./core/AgentMobileSubView";
+import { PANEL_HEIGHT, LIST_MAX_HEIGHT } from "./core/types";
+import type { RightPanel } from "./core/types";
 
 const CONSUMER_ID = "agent-list-dropdown";
 

@@ -10,18 +10,16 @@ import type { HtmlPreviewState, HtmlPreviewActions } from "./types";
 import TuiEditorContent, {
   type TuiEditorContentRef,
 } from "@/components/mardown-display/chat-markdown/tui/TuiEditorContent";
-import {
-  MarkdownPlainTextTab,
-  MarkdownPreviewTab,
-  HtmlCodeFilesTab,
-  CustomCopyTab,
-  SavePageTab,
-  MatrxSplitTab,
-  MarkdownWysiwygTab,
-  HtmlCodeTab,
-  CompleteHtmlTab,
-  EditHtmlTab,
-} from "./tabs";
+import { MarkdownPlainTextTab } from "./tabs/MarkdownPlainTextTab";
+import { MarkdownPreviewTab } from "./tabs/MarkdownPreviewTab";
+import { HtmlCodeFilesTab } from "./tabs/HtmlCodeFilesTab";
+import { CustomCopyTab } from "./tabs/CustomCopyTab";
+import { SavePageTab } from "./tabs/SavePageTab";
+import { MatrxSplitTab } from "./tabs/MatrxSplitTab";
+import { MarkdownWysiwygTab } from "./tabs/MarkdownWysiwygTab";
+import { HtmlCodeTab } from "./tabs/HtmlCodeTab";
+import { CompleteHtmlTab } from "./tabs/CompleteHtmlTab";
+import { EditHtmlTab } from "./tabs/EditHtmlTab";
 
 interface HtmlPreviewFullScreenEditorProps {
   isOpen: boolean;

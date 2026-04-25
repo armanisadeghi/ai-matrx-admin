@@ -99,4 +99,5 @@ const EasyImageCropper = ({
   );
 };
 
-export default EasyImageCropper; 
+export { EasyImageCropper };
+export default EasyImageCropper;

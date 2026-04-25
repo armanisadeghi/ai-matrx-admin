@@ -7,7 +7,7 @@ import { densityConfig } from "@/config/ui/entity-layout-config";
 import { ErrorDisplay } from "@/components/matrx/Entity/field-actions/components/StateComponents";
 import { EntityKeys, EntityData } from '@/types/entityTypes';
 import { EntityError } from '@/lib/redux/entity/types/stateTypes';
-import { SMART_LAYOUT_COMPONENTS } from "./";
+import { SMART_LAYOUT_COMPONENTS } from "./index";
 import { UnifiedLayoutProps } from "@/components/matrx/Entity/prewired-components/layouts/types";
 
 const EntitySmartLayout: React.FC<UnifiedLayoutProps> = (props) => {

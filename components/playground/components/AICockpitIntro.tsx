@@ -5,7 +5,7 @@ import { PlusCircle, Book, Boxes, Sparkles, Zap } from 'lucide-react';
 import { BackgroundBeamsWithCollision } from '@/components/ui/background-beams-with-collision';
 import QuickRefSelect from '@/app/entities/quick-reference/QuickRefSelectFloatingLabel';
 import QuickRefSearchableSelect from '@/app/entities/quick-reference/QuickRefSearchableSelect';
-import { RecipeTemplatesGallery } from '../templates';
+import { RecipeTemplatesGallery } from "../templates/RecipeTemplatesGallery";
 
 const AICockpitIntro = ({ onNewRecipe }) => {
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });

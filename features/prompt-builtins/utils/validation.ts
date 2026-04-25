@@ -1,4 +1,4 @@
-import { ScopeMapping } from '../types';
+import { ScopeMapping } from '../types/core';
 import { PromptVariable } from '@/features/prompts/types/core';
 
 /**

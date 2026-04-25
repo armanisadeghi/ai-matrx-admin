@@ -28,21 +28,8 @@
  * ```
  */
 
-// Core scheduler (module-level singleton)
-export {
-    registerIdleTask,
-    onFlushComplete,
-    getSchedulerState,
-    resetScheduler,
-    type IdlePriority,
-    type IdleRegistration,
-    type UnregisterFn,
-} from './idle-scheduler';
-
 // React hooks
 export {
     useIdleTask,
     useIdleReady,
-    useIdleGate,
-    useIdleRegister,
 } from './hooks';

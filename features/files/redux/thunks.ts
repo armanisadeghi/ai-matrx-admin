@@ -335,7 +335,7 @@ export const loadShareLinks = createAsyncThunk<
 
 export const createFolder = createAsyncThunk<
   string,
-  import("../types").CreateFolderArg,
+  import("@/features/files/types").CreateFolderArg,
   ThunkApi
 >("cloudFiles/createFolder", async (arg, { dispatch, getState }) => {
   const state = getState();
@@ -393,7 +393,7 @@ export const createFolder = createAsyncThunk<
 
 export const deleteFolder = createAsyncThunk<
   void,
-  import("../types").DeleteFolderArg,
+  import("@/features/files/types").DeleteFolderArg,
   ThunkApi
 >("cloudFiles/deleteFolder", async (arg, { dispatch, getState }) => {
   const state = getState();
@@ -425,7 +425,7 @@ export const deleteFolder = createAsyncThunk<
  */
 export const ensureFolderPath = createAsyncThunk<
   string,
-  import("../types").EnsureFolderPathArg,
+  import("@/features/files/types").EnsureFolderPathArg,
   ThunkApi
 >("cloudFiles/ensureFolderPath", async (arg, { dispatch, getState }) => {
   const segments = arg.folderPath

@@ -22,11 +22,11 @@
  */
 
 import type { AppDisplayMode } from "../types/promptAppTypes";
-import formTemplate from "./form-template";
-import formToChatTemplate from "./form-to-chat-template";
-import chatTemplate from "./chat-template";
-import centeredInputTemplate from "./centered-input-template";
-import chatWithHistoryTemplate from "./chat-with-history-template";
+import formTemplate from "./templates/form-template";
+import formToChatTemplate from "./templates/form-to-chat-template";
+import chatTemplate from "./templates/chat-template";
+import centeredInputTemplate from "./templates/centered-input-template";
+import chatWithHistoryTemplate from "./templates/chat-with-history-template";
 
 /**
  * Get the sample template code for a given display mode.
