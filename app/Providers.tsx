@@ -22,6 +22,7 @@ import DeferredSingletons from "./DeferredSingletons";
 import GlobalTaskShortcut from "@/features/tasks/widgets/GlobalTaskShortcut";
 import CreateTaskFromSourceDialog from "@/features/tasks/widgets/CreateTaskFromSourceDialog";
 import { CloudFilesPickerHost } from "@/features/files/components/pickers/CloudFilesPickerHost";
+import { setGlobalUserIdAndToken } from "@/lib/globalState";
 
 // Phase 11 — legacy file system providers removed:
 //   - lib/redux/fileSystem/Provider (FileSystemProvider)
@@ -47,6 +48,17 @@ interface ProvidersProps {
 
 export function Providers({ children, initialReduxState }: ProvidersProps) {
   setGlobalUserId(initialReduxState.user.id);
+  // Mirror to lib/globalState so consumers (e.g. entity sagas via
+  // addUserIdToData) see the userId synchronously on first client render,
+  // not just after DeferredShellData fires post-paint. This used to be
+  // covered implicitly because direct-schema imported getGlobalUserId from
+  // here; now that the import points at lib/globalState (to break a TDZ
+  // cycle through the store), we have to seed lib/globalState ourselves.
+  setGlobalUserIdAndToken(
+    initialReduxState.user.id ?? "",
+    initialReduxState.user.accessToken ?? "",
+    initialReduxState.user.isAdmin ?? false,
+  );
 
   return (
     <ReactQueryProvider>

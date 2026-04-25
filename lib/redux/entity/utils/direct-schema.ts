@@ -24,7 +24,7 @@ import { MatrxVariant } from '@/components/ui/types';
 import { getGlobalCache } from '@/utils/schema/schema-processing/processSchema';
 import { RelationshipDetails } from '@/utils/schema/fullRelationships';
 import { EntityMetadata, EntityFieldRecord } from '../types/stateTypes';
-import { getGlobalUserId } from '@/app/Providers';
+import { getGlobalUserId } from '@/lib/globalState';
 import { TypeBrand } from '@/utils/schema/initialSchemas';
 import { EntityNameOfficial, relationships } from '@/types/schema';
 
