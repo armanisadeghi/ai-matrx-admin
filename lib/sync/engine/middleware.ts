@@ -12,7 +12,12 @@
  * migration retires legacy broadcast plumbing earlier.
  */
 
-import type { Action, Middleware, MiddlewareAPI, Dispatch } from "@reduxjs/toolkit";
+import type {
+  Action,
+  Middleware,
+  MiddlewareAPI,
+  Dispatch,
+} from "@reduxjs/toolkit";
 import { logger } from "../logger";
 import { buildActionMessage, type ActionMessage } from "../messages";
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -24,67 +29,76 @@ import type { PersistenceAdapter } from "../persistence/types";
 import type { SyncChannel } from "../channel";
 import { isRehydrateAction } from "./rehydrate";
 import { applyPrePaintDescriptors } from "./applyPrePaint";
-import { createRemoteWriteScheduler, type RemoteWriteScheduler } from "./remoteWrite";
+import {
+  createRemoteWriteScheduler,
+  type RemoteWriteScheduler,
+} from "./remoteWrite";
 
 interface ActionWithMeta {
-    type: string;
-    payload?: unknown;
-    meta?: SyncActionMeta;
+  type: string;
+  payload?: unknown;
+  meta?: SyncActionMeta;
 }
 
 function hasMetaFromBroadcast(action: unknown): boolean {
-    return (
-        action !== null &&
-        typeof action === "object" &&
-        (action as { meta?: SyncActionMeta }).meta?.fromBroadcast === true
-    );
+  return (
+    action !== null &&
+    typeof action === "object" &&
+    (action as { meta?: SyncActionMeta }).meta?.fromBroadcast === true
+  );
 }
 
 function adapterFor(policy: Policy<any>): PersistenceAdapter {
-    const caps = getPreset(policy.config.preset);
-    return caps.persists ? localStorageAdapter : noopAdapter;
+  const caps = getPreset(policy.config.preset);
+  return caps.persists ? localStorageAdapter : noopAdapter;
 }
 
 function selectSliceState(rootState: unknown, sliceName: string): unknown {
-    if (rootState === null || typeof rootState !== "object") return undefined;
-    return (rootState as Record<string, unknown>)[sliceName];
+  if (rootState === null || typeof rootState !== "object") return undefined;
+  return (rootState as Record<string, unknown>)[sliceName];
 }
 
-function partialize(state: unknown, keys: readonly PropertyKey[] | undefined): unknown {
-    if (!keys || keys.length === 0) return state;
-    if (state === null || typeof state !== "object") return state;
-    const src = state as Record<PropertyKey, unknown>;
-    const out: Record<PropertyKey, unknown> = {};
-    for (const k of keys) out[k] = src[k];
-    return out;
+function partialize(
+  state: unknown,
+  keys: readonly PropertyKey[] | undefined,
+): unknown {
+  if (!keys || keys.length === 0) return state;
+  if (state === null || typeof state !== "object") return state;
+  const src = state as Record<PropertyKey, unknown>;
+  const out: Record<PropertyKey, unknown> = {};
+  for (const k of keys) out[k] = src[k];
+  return out;
 }
 
 function serializeBody(policy: Policy<any>, sliceState: unknown): unknown {
-    const cfg = policy.config;
-    const filtered = partialize(sliceState, cfg.partialize as readonly PropertyKey[] | undefined);
-    if (typeof cfg.serialize === "function") {
-        try {
-            return cfg.serialize(filtered as never);
-        } catch (err) {
-            logger.error("persist.serialize.failed", {
-                sliceName: cfg.sliceName,
-                meta: { error: err instanceof Error ? err.message : String(err) },
-            });
-            return null;
-        }
+  const cfg = policy.config;
+  const filtered = partialize(
+    sliceState,
+    cfg.partialize as readonly PropertyKey[] | undefined,
+  );
+  if (typeof cfg.serialize === "function") {
+    try {
+      return cfg.serialize(filtered as never);
+    } catch (err) {
+      logger.error("persist.serialize.failed", {
+        sliceName: cfg.sliceName,
+        meta: { error: err instanceof Error ? err.message : String(err) },
+      });
+      return null;
     }
-    return filtered;
+  }
+  return filtered;
 }
 
 export interface SyncMiddlewareContext {
-    policies: readonly Policy<any>[];
-    channel: SyncChannel;
-    getIdentity: () => IdentityKey;
-    /**
-     * Test-only override for the warm-cache debounce window's default. Policy-
-     * level `remote.debounceMs` still wins. Production callers omit this.
-     */
-    defaultDebounceMs?: number;
+  policies: readonly Policy<any>[];
+  channel: SyncChannel;
+  getIdentity: () => IdentityKey;
+  /**
+   * Test-only override for the warm-cache debounce window's default. Policy-
+   * level `remote.debounceMs` still wins. Production callers omit this.
+   */
+  defaultDebounceMs?: number;
 }
 
 /**
@@ -92,188 +106,202 @@ export interface SyncMiddlewareContext {
  * once at store creation.
  */
 export function createSyncMiddleware(ctx: SyncMiddlewareContext): Middleware {
-    // Index broadcast actions → policies for O(1) lookup.
-    const broadcastIndex = new Map<string, Policy<any>>();
-    for (const p of ctx.policies) {
-        for (const actionType of p.broadcastActions) {
-            if (broadcastIndex.has(actionType)) {
-                logger.warn("policy.broadcast.duplicate", {
-                    meta: { actionType, sliceName: p.config.sliceName },
-                });
-            }
-            broadcastIndex.set(actionType, p);
+  // Index broadcast actions → policies for O(1) lookup.
+  const broadcastIndex = new Map<string, Policy<any>>();
+  for (const p of ctx.policies) {
+    for (const actionType of p.broadcastActions) {
+      if (broadcastIndex.has(actionType)) {
+        logger.warn("policy.broadcast.duplicate", {
+          meta: { actionType, sliceName: p.config.sliceName },
+        });
+      }
+      broadcastIndex.set(actionType, p);
+    }
+  }
+
+  // Track previous slice state refs so we only persist when the slice changed.
+  const lastPersistedRef = new Map<string, unknown>();
+  // Same idea for runtime DOM application — avoid re-applying on every action
+  // when the slice state hasn't changed. Separate map because persist skips
+  // rehydrate actions (see below) but DOM apply does not.
+  const lastAppliedRef = new Map<string, unknown>();
+  // Seeded on the first action's `api.getState()` — captures the SSR /
+  // preloaded baseline so we don't falsely persist it back on the first
+  // post-boot user action. Without this, `lastPersistedRef.get(sliceName)`
+  // is `undefined` for every slice at boot, and the first non-REHYDRATE
+  // action (e.g. a broker-setValue) triggers a redundant debounced write:
+  // IDB + LS mirror + remote.write. For
+  // `warm-cache` policies like `userPreferences` that remote.write is a
+  // visible Supabase upsert that Arman saw in the Phase 2 browser
+  // checklist (one POST on warm refresh; a GET+POST pair on cold refresh).
+  let seededFromBoot = false;
+  // Warm-cache debounced write sink (IDB + remote.write). Lazily constructed
+  // so stores that don't use warm-cache don't install a pagehide listener.
+  let remoteWriteScheduler: RemoteWriteScheduler | null = null;
+  const hasWarmCache = ctx.policies.some(
+    (p) => getPreset(p.config.preset).writeStrategy === "debounced",
+  );
+  // Track identity across actions so a swap clears in-flight writes (and
+  // we never re-key a write-in-progress to the new identity).
+  let lastSeenIdentity = ctx.getIdentity().key;
+
+  return (api: MiddlewareAPI) => (next: Dispatch) => (action: unknown) => {
+    // Seed baselines BEFORE `next(action)` so the first mutation is
+    // compared against the boot state — not against the post-action
+    // state. Must run exactly once per middleware instance.
+    if (!seededFromBoot) {
+      seededFromBoot = true;
+      const bootState = api.getState();
+      for (const policy of ctx.policies) {
+        const sliceState = selectSliceState(bootState, policy.config.sliceName);
+        if (sliceState !== undefined) {
+          lastPersistedRef.set(policy.config.sliceName, sliceState);
+          lastAppliedRef.set(policy.config.sliceName, sliceState);
         }
+      }
     }
 
-    // Track previous slice state refs so we only persist when the slice changed.
-    const lastPersistedRef = new Map<string, unknown>();
-    // Same idea for runtime DOM application — avoid re-applying on every action
-    // when the slice state hasn't changed. Separate map because persist skips
-    // rehydrate actions (see below) but DOM apply does not.
-    const lastAppliedRef = new Map<string, unknown>();
-    // Seeded on the first action's `api.getState()` — captures the SSR /
-    // preloaded baseline so we don't falsely persist it back on the first
-    // post-boot user action. Without this, `lastPersistedRef.get(sliceName)`
-    // is `undefined` for every slice at boot, and the first non-REHYDRATE
-    // action (a broker-setValue, a PostHog identify, etc.) triggers a
-    // redundant debounced write: IDB + LS mirror + remote.write. For
-    // `warm-cache` policies like `userPreferences` that remote.write is a
-    // visible Supabase upsert that Arman saw in the Phase 2 browser
-    // checklist (one POST on warm refresh; a GET+POST pair on cold refresh).
-    let seededFromBoot = false;
-    // Warm-cache debounced write sink (IDB + remote.write). Lazily constructed
-    // so stores that don't use warm-cache don't install a pagehide listener.
-    let remoteWriteScheduler: RemoteWriteScheduler | null = null;
-    const hasWarmCache = ctx.policies.some(
-        (p) => getPreset(p.config.preset).writeStrategy === "debounced",
-    );
-    // Track identity across actions so a swap clears in-flight writes (and
-    // we never re-key a write-in-progress to the new identity).
-    let lastSeenIdentity = ctx.getIdentity().key;
+    const result = next(action as Action);
 
-    return (api: MiddlewareAPI) => (next: Dispatch) => (action: unknown) => {
-        // Seed baselines BEFORE `next(action)` so the first mutation is
-        // compared against the boot state — not against the post-action
-        // state. Must run exactly once per middleware instance.
-        if (!seededFromBoot) {
-            seededFromBoot = true;
-            const bootState = api.getState();
-            for (const policy of ctx.policies) {
-                const sliceState = selectSliceState(bootState, policy.config.sliceName);
-                if (sliceState !== undefined) {
-                    lastPersistedRef.set(policy.config.sliceName, sliceState);
-                    lastAppliedRef.set(policy.config.sliceName, sliceState);
-                }
-            }
+    // Ignore rehydrate echoes and anything without a string type.
+    if (
+      action === null ||
+      typeof action !== "object" ||
+      typeof (action as { type?: unknown }).type !== "string"
+    ) {
+      return result;
+    }
+    const a = action as ActionWithMeta;
+
+    // --- Broadcast ---
+    const broadcastPolicy = broadcastIndex.get(a.type);
+    if (broadcastPolicy && !hasMetaFromBroadcast(a)) {
+      try {
+        const identity = ctx.getIdentity();
+        const sliceState = selectSliceState(
+          api.getState(),
+          broadcastPolicy.config.sliceName,
+        );
+        const msg: ActionMessage = buildActionMessage(
+          identity.key,
+          broadcastPolicy.config.sliceName,
+          broadcastPolicy.config.version,
+          { type: a.type, payload: a.payload },
+        );
+        ctx.channel.post(msg);
+        // Hint to TS — we may use sliceState below.
+        void sliceState;
+      } catch (err) {
+        logger.error("broadcast.emit.failed", {
+          meta: { error: err instanceof Error ? err.message : String(err) },
+        });
+      }
+    }
+
+    // Detect identity swap between actions. The sync context's getIdentity
+    // is a closure over `currentIdentity` in `makeStore`; if it changed,
+    // cancel any pending debounced writes so they don't land under the
+    // wrong identity.
+    const currentIdentityKey = ctx.getIdentity().key;
+    if (currentIdentityKey !== lastSeenIdentity) {
+      lastSeenIdentity = currentIdentityKey;
+      remoteWriteScheduler?.onIdentitySwap();
+    }
+
+    // --- Persist (sync write-through for boot-critical; debounced for warm-cache) ---
+    // Rehydrate actions flow through reducers but must NOT trigger a re-persist.
+    if (!isRehydrateAction(a)) {
+      for (const policy of ctx.policies) {
+        const caps = getPreset(policy.config.preset);
+        if (caps.writeStrategy === "none") continue;
+        // Only write when the slice state reference changed.
+        const sliceState = selectSliceState(
+          api.getState(),
+          policy.config.sliceName,
+        );
+        if (sliceState === undefined) continue;
+        if (lastPersistedRef.get(policy.config.sliceName) === sliceState)
+          continue;
+        lastPersistedRef.set(policy.config.sliceName, sliceState);
+
+        const body = serializeBody(policy, sliceState);
+
+        if (caps.writeStrategy === "sync") {
+          // boot-critical: synchronous localStorage write-through.
+          adapterFor(policy).write(policy.storageKey, {
+            version: policy.config.version,
+            identityKey: ctx.getIdentity().key,
+            body,
+          });
+        } else if (caps.writeStrategy === "debounced") {
+          // warm-cache: debounced write — both IDB and remote.write
+          // (if declared) flush after quiescence. Lazy scheduler
+          // construction on first use.
+          if (!remoteWriteScheduler) {
+            remoteWriteScheduler = createRemoteWriteScheduler({
+              policies: ctx.policies,
+              store: {
+                getState: api.getState,
+                dispatch: api.dispatch,
+              } as Parameters<typeof createRemoteWriteScheduler>[0]["store"],
+              getIdentity: ctx.getIdentity,
+              ...(ctx.defaultDebounceMs !== undefined
+                ? { defaultDebounceMs: ctx.defaultDebounceMs }
+                : {}),
+            });
+          }
+          remoteWriteScheduler.schedule(policy.config.sliceName, body);
         }
-
-        const result = next(action as Action);
-
-        // Ignore rehydrate echoes and anything without a string type.
-        if (
-            action === null ||
-            typeof action !== "object" ||
-            typeof (action as { type?: unknown }).type !== "string"
-        ) {
-            return result;
+      }
+    } else {
+      // REHYDRATE path: the reducer just replaced slice state with data
+      // pulled from a persistent source (IDB, LS fallback, remote.fetch,
+      // or peer HYDRATE_RESPONSE). That new state IS the persisted
+      // baseline — update `lastPersistedRef` so the first subsequent
+      // mutation is compared against it. Without this, a user edit
+      // right after rehydrate would be detected as "changed since boot
+      // seed" and flushed back to the same source we just read from.
+      for (const policy of ctx.policies) {
+        const caps = getPreset(policy.config.preset);
+        if (caps.writeStrategy === "none") continue;
+        const sliceState = selectSliceState(
+          api.getState(),
+          policy.config.sliceName,
+        );
+        if (sliceState !== undefined) {
+          lastPersistedRef.set(policy.config.sliceName, sliceState);
         }
-        const a = action as ActionWithMeta;
+      }
+    }
+    void hasWarmCache;
 
-        // --- Broadcast ---
-        const broadcastPolicy = broadcastIndex.get(a.type);
-        if (broadcastPolicy && !hasMetaFromBroadcast(a)) {
-            try {
-                const identity = ctx.getIdentity();
-                const sliceState = selectSliceState(api.getState(), broadcastPolicy.config.sliceName);
-                const msg: ActionMessage = buildActionMessage(
-                    identity.key,
-                    broadcastPolicy.config.sliceName,
-                    broadcastPolicy.config.version,
-                    { type: a.type, payload: a.payload },
-                );
-                ctx.channel.post(msg);
-                // Hint to TS — we may use sliceState below.
-                void sliceState;
-            } catch (err) {
-                logger.error("broadcast.emit.failed", {
-                    meta: { error: err instanceof Error ? err.message : String(err) },
-                });
-            }
-        }
+    // --- Apply pre-paint descriptors at runtime ---
+    // Mirrors the one-shot inline SyncBootScript so DOM class/attribute
+    // state stays in lockstep with Redux for local toggles, inbound
+    // broadcasts, AND rehydrate (boot). Idempotent: skips if slice state
+    // reference didn't change.
+    for (const policy of ctx.policies) {
+      if (policy.prePaintDescriptors.length === 0) continue;
+      const sliceState = selectSliceState(
+        api.getState(),
+        policy.config.sliceName,
+      );
+      if (sliceState === undefined) continue;
+      if (lastAppliedRef.get(policy.config.sliceName) === sliceState) continue;
+      lastAppliedRef.set(policy.config.sliceName, sliceState);
+      try {
+        applyPrePaintDescriptors(
+          policy.prePaintDescriptors,
+          sliceState as Record<string, unknown>,
+        );
+      } catch (err) {
+        logger.error("apply.prePaint.failed", {
+          sliceName: policy.config.sliceName,
+          meta: { error: err instanceof Error ? err.message : String(err) },
+        });
+      }
+    }
 
-        // Detect identity swap between actions. The sync context's getIdentity
-        // is a closure over `currentIdentity` in `makeStore`; if it changed,
-        // cancel any pending debounced writes so they don't land under the
-        // wrong identity.
-        const currentIdentityKey = ctx.getIdentity().key;
-        if (currentIdentityKey !== lastSeenIdentity) {
-            lastSeenIdentity = currentIdentityKey;
-            remoteWriteScheduler?.onIdentitySwap();
-        }
-
-        // --- Persist (sync write-through for boot-critical; debounced for warm-cache) ---
-        // Rehydrate actions flow through reducers but must NOT trigger a re-persist.
-        if (!isRehydrateAction(a)) {
-            for (const policy of ctx.policies) {
-                const caps = getPreset(policy.config.preset);
-                if (caps.writeStrategy === "none") continue;
-                // Only write when the slice state reference changed.
-                const sliceState = selectSliceState(api.getState(), policy.config.sliceName);
-                if (sliceState === undefined) continue;
-                if (lastPersistedRef.get(policy.config.sliceName) === sliceState) continue;
-                lastPersistedRef.set(policy.config.sliceName, sliceState);
-
-                const body = serializeBody(policy, sliceState);
-
-                if (caps.writeStrategy === "sync") {
-                    // boot-critical: synchronous localStorage write-through.
-                    adapterFor(policy).write(policy.storageKey, {
-                        version: policy.config.version,
-                        identityKey: ctx.getIdentity().key,
-                        body,
-                    });
-                } else if (caps.writeStrategy === "debounced") {
-                    // warm-cache: debounced write — both IDB and remote.write
-                    // (if declared) flush after quiescence. Lazy scheduler
-                    // construction on first use.
-                    if (!remoteWriteScheduler) {
-                        remoteWriteScheduler = createRemoteWriteScheduler({
-                            policies: ctx.policies,
-                            store: { getState: api.getState, dispatch: api.dispatch } as Parameters<
-                                typeof createRemoteWriteScheduler
-                            >[0]["store"],
-                            getIdentity: ctx.getIdentity,
-                            ...(ctx.defaultDebounceMs !== undefined
-                                ? { defaultDebounceMs: ctx.defaultDebounceMs }
-                                : {}),
-                        });
-                    }
-                    remoteWriteScheduler.schedule(policy.config.sliceName, body);
-                }
-            }
-        } else {
-            // REHYDRATE path: the reducer just replaced slice state with data
-            // pulled from a persistent source (IDB, LS fallback, remote.fetch,
-            // or peer HYDRATE_RESPONSE). That new state IS the persisted
-            // baseline — update `lastPersistedRef` so the first subsequent
-            // mutation is compared against it. Without this, a user edit
-            // right after rehydrate would be detected as "changed since boot
-            // seed" and flushed back to the same source we just read from.
-            for (const policy of ctx.policies) {
-                const caps = getPreset(policy.config.preset);
-                if (caps.writeStrategy === "none") continue;
-                const sliceState = selectSliceState(api.getState(), policy.config.sliceName);
-                if (sliceState !== undefined) {
-                    lastPersistedRef.set(policy.config.sliceName, sliceState);
-                }
-            }
-        }
-        void hasWarmCache;
-
-        // --- Apply pre-paint descriptors at runtime ---
-        // Mirrors the one-shot inline SyncBootScript so DOM class/attribute
-        // state stays in lockstep with Redux for local toggles, inbound
-        // broadcasts, AND rehydrate (boot). Idempotent: skips if slice state
-        // reference didn't change.
-        for (const policy of ctx.policies) {
-            if (policy.prePaintDescriptors.length === 0) continue;
-            const sliceState = selectSliceState(api.getState(), policy.config.sliceName);
-            if (sliceState === undefined) continue;
-            if (lastAppliedRef.get(policy.config.sliceName) === sliceState) continue;
-            lastAppliedRef.set(policy.config.sliceName, sliceState);
-            try {
-                applyPrePaintDescriptors(
-                    policy.prePaintDescriptors,
-                    sliceState as Record<string, unknown>,
-                );
-            } catch (err) {
-                logger.error("apply.prePaint.failed", {
-                    sliceName: policy.config.sliceName,
-                    meta: { error: err instanceof Error ? err.message : String(err) },
-                });
-            }
-        }
-
-        return result;
-    };
+    return result;
+  };
 }

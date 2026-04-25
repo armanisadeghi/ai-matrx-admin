@@ -22,8 +22,31 @@ import { AudioPreview } from "./previewers/AudioPreview";
 import { TextPreview } from "./previewers/TextPreview";
 import { GenericPreview } from "./previewers/GenericPreview";
 
-// Heavy — only loaded when a PDF is actually opened (bundle-dynamic-imports).
+// Heavy / lazy-loaded previewers. Each is its own chunk so non-matching
+// callers never pay the bundle cost. (See bundle-dynamic-imports rule.)
 const PdfPreview = dynamic(() => import("./previewers/PdfPreview"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-full w-full items-center justify-center">
+      <div className="h-6 w-40 animate-pulse rounded bg-muted" />
+    </div>
+  ),
+});
+// react-markdown + remark + rehype-prism + KaTeX is ~250KB combined.
+const MarkdownPreview = dynamic(
+  () => import("./previewers/MarkdownPreview"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-full w-full items-center justify-center">
+        <div className="h-6 w-40 animate-pulse rounded bg-muted" />
+      </div>
+    ),
+  },
+);
+// SheetJS (XLSX parser) is ~600KB; PapaParse alone is small but lives in
+// the same chunk so the import path is uniform.
+const DataPreview = dynamic(() => import("./previewers/DataPreview"), {
   ssr: false,
   loading: () => (
     <div className="flex h-full w-full items-center justify-center">
@@ -126,11 +149,20 @@ export function FilePreview({
       );
     case "pdf":
       return <PdfPreview url={url} className={className} />;
+    case "markdown":
+      return <MarkdownPreview url={url} className={className} />;
+    case "data":
+    case "spreadsheet":
+      return (
+        <DataPreview
+          url={url}
+          fileName={file.fileName}
+          className={className}
+        />
+      );
     case "code":
     case "text":
-    case "data":
       return <TextPreview url={url} className={className} />;
-    case "spreadsheet":
     case "generic":
     default:
       return (

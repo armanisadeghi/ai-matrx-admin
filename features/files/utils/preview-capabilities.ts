@@ -47,13 +47,16 @@ export function getPreviewCapability(
     kind === "pdf" ||
     kind === "code" ||
     kind === "text" ||
-    kind === "data";
+    kind === "markdown" ||
+    kind === "data" ||
+    kind === "spreadsheet";
 
   const sizeOk =
     kind === "image" ||
     kind === "video" ||
     kind === "audio" ||
     kind === "pdf" ||
+    kind === "spreadsheet" ||
     fileSize == null ||
     fileSize <= MAX_INLINE_PREVIEW_BYTES;
 

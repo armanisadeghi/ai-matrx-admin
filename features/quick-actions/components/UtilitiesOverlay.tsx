@@ -131,7 +131,7 @@ export function UtilitiesOverlay({ isOpen, onClose, initialTab = 'notes' }: Util
             case 'data':
                 return '/data';
             case 'files':
-                return '/files';
+                return '/cloud-files';
             default:
                 return null;
         }

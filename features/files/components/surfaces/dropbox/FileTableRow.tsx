@@ -8,7 +8,7 @@
 
 "use client";
 
-import { useCallback, useState } from "react";
+import { forwardRef, useCallback, useState } from "react";
 import { Copy, MoreHorizontal, Share2, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -240,7 +240,11 @@ function RowActions({ visible, onShare, onCopyLink, fileId }: RowActionsProps) {
         <Star className="h-3.5 w-3.5" />
       </IconButton>
       <FileContextMenu fileId={fileId}>
-        <IconButton label="More">
+        <IconButton
+          label="More"
+          onClick={(e) => e.stopPropagation()}
+          onDoubleClick={(e) => e.stopPropagation()}
+        >
           <MoreHorizontal className="h-3.5 w-3.5" />
         </IconButton>
       </FileContextMenu>
@@ -279,35 +283,39 @@ function FolderRowActions({ visible, onShare }: FolderRowActionsProps) {
   );
 }
 
-interface IconButtonProps {
+interface IconButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   label: string;
-  title?: string;
-  disabled?: boolean;
-  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   children: React.ReactNode;
 }
 
-function IconButton({
-  label,
-  title,
-  disabled,
-  onClick,
-  children,
-}: IconButtonProps) {
-  return (
-    <button
-      type="button"
-      aria-label={label}
-      title={title ?? label}
-      disabled={disabled}
-      onClick={onClick}
-      className={cn(
-        "flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground",
-        "hover:bg-accent hover:text-foreground",
-        disabled && "pointer-events-none opacity-40",
-      )}
-    >
-      {children}
-    </button>
-  );
-}
+/**
+ * forwardRef + spread {...rest} is mandatory for use with Radix's
+ * `<DropdownMenuTrigger asChild>`. Without ref forwarding Radix can't anchor
+ * the menu and click-to-open silently fails on some renders. Without prop
+ * spread, Radix's injected `onClick`/`aria-*`/`data-state` props get dropped.
+ * Both bugs caused the "..." menu to "not always work".
+ */
+const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
+  function IconButton({ label, title, disabled, className, children, ...rest }, ref) {
+    return (
+      <button
+        ref={ref}
+        type="button"
+        aria-label={label}
+        title={title ?? label}
+        disabled={disabled}
+        className={cn(
+          "flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground",
+          "hover:bg-accent hover:text-foreground",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+          disabled && "pointer-events-none opacity-40",
+          className,
+        )}
+        {...rest}
+      >
+        {children}
+      </button>
+    );
+  },
+);

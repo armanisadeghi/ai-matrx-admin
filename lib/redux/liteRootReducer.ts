@@ -131,8 +131,6 @@ import {
 // - entities, globalCache, entityFields: Entity system (~134 slices + 108K schema)
 // - workflows, workflowNodes: Saga-dependent
 // - appBuilder, appletBuilder, etc.: Feature-specific builders (injected with entity system)
-// - fileSystem: Bucket-based file management (injected via provider packs)
-// - storage: File storage state (injected with fileSystem)
 // - componentDefinitions: App runner component defs (injected on demand)
 // - customAppRuntime, customAppletRuntime: App runners (injected on demand)
 // ============================================================================

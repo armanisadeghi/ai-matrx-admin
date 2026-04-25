@@ -6,17 +6,21 @@
  * Differs from the assistant bar in two ways:
  *   1. No like / dislike — rating is for model output, not your own input.
  *   2. Adds "Edit & resubmit" — the common user action of re-asking a
- *      question with different wording. On save, the conversation forks at
- *      the prior turn, the user's message content is updated on the fork
- *      head, and the user can hit Send from the input bar to launch the
- *      new AI turn on the branch.
+ *      question with different wording. On editor save, the host opens the
+ *      EditResubmitOutcomeDialog so the user can choose Fork (preserve
+ *      original) or Overwrite (replace this turn and re-run on the same
+ *      conversation). Either choice auto-fires the next agent turn.
  *
  * Plain "Edit" is also present — use it when you want to correct the
  * recorded user message WITHOUT re-running the AI (for transcript
  * curation, typo fixes, etc.).
+ *
+ * The action bar also owns the destructive delete dialog state (so the
+ * overflow-menu Delete item just calls back into this component to open
+ * it). That keeps dialog ownership in one place per message bubble.
  */
 
-import React, { useRef, useState, lazy, Suspense } from "react";
+import React, { useRef, useState, lazy, Suspense, useCallback } from "react";
 import { Copy, Check, Edit, Send, MoreHorizontal } from "lucide-react";
 import {
   TapTargetButtonForGroup,
@@ -24,14 +28,17 @@ import {
 } from "@/components/icons/TapTargetButton";
 import { copyToClipboard } from "@/components/matrx/buttons/markdown-copy-utils";
 import { SpeakerButton } from "@/features/tts/components/SpeakerButton";
-import { useAppDispatch } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   openFullScreenEditor,
   closeOverlay,
 } from "@/lib/redux/slices/overlaySlice";
 import type { Json } from "@/types/database.types";
-import type { RootState } from "@/lib/redux/store";
+import { selectMessagePosition } from "@/features/agents/redux/execution-system/messages/messages.selectors";
 import { toast } from "sonner";
+import { EditResubmitOutcomeDialog } from "./EditResubmitOutcomeDialog";
+import { DeleteMessageDialog } from "./DeleteMessageDialog";
+import { showForkOutcomeToast } from "./ForkOutcomeToast";
 
 function serializeSaveError(error: unknown): {
   logPayload: Record<string, unknown>;
@@ -84,6 +91,13 @@ export interface UserActionBarProps {
   conversationId: string;
   /** Optional metadata (passed to the overflow menu's save/export items). */
   metadata?: Record<string, unknown> | null;
+  /**
+   * UI surface this action bar belongs to. Threaded into the overflow
+   * menu so fork / delete / edit-and-resubmit outcomes route correctly
+   * via the surfaces registry. Optional — falls back to no navigation
+   * when omitted (e.g. when embedded outside a registered surface).
+   */
+  surfaceKey?: string;
 }
 
 export function UserActionBar({
@@ -91,12 +105,30 @@ export function UserActionBar({
   messageId,
   conversationId,
   metadata = null,
+  surfaceKey,
 }: UserActionBarProps) {
   const dispatch = useAppDispatch();
 
   const [isCopied, setIsCopied] = useState(false);
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
   const moreOptionsButtonRef = useRef<HTMLDivElement>(null);
+
+  // ── Edit & resubmit dialog state ──────────────────────────────────────
+  // Opens AFTER the editor closes with new content. The dialog asks the
+  // user whether to fork (preserve) or overwrite (replace + re-run).
+  const [resubmitDialogOpen, setResubmitDialogOpen] = useState(false);
+  const [pendingResubmitContent, setPendingResubmitContent] = useState<
+    string | null
+  >(null);
+
+  // ── Delete dialog state ────────────────────────────────────────────────
+  // Triggered from the overflow menu's "Delete message" item. Owns the
+  // destructive-vs-fork choice + cascade warning.
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+  const messagePosition = useAppSelector(
+    selectMessagePosition(conversationId, messageId),
+  );
 
   const handleCopy = async () => {
     await copyToClipboard(content, {
@@ -148,8 +180,10 @@ export function UserActionBar({
   };
 
   const handleEditAndResubmit = () => {
-    // Fork + edit + surface the fork head. The user can hit Send from the
-    // input bar to launch the new AI turn on the branch.
+    // Open the editor. On save, stash the new content + open the
+    // fork-vs-overwrite choice dialog. The dialog runs the chosen flow
+    // and auto-fires the next agent turn so the user can watch the new
+    // response come in.
     const instanceId = `user-edit-resubmit-${messageId}`;
     dispatch(
       openFullScreenEditor({
@@ -157,52 +191,220 @@ export function UserActionBar({
         instanceId,
         messageId,
         analysisData: metadata ?? undefined,
-        onSave: async (newContent: string) => {
-          try {
-            const { forkConversation, editMessage } =
-              await import("@/features/agents/redux/execution-system/message-crud");
-            // Read position right before firing. Fork at (position - 1) so
-            // this message becomes the next turn on the branch, replacing
-            // whatever originally came after.
-            const positionThunk = (_: unknown, getState: () => RootState) => {
-              const entry =
-                getState().messages.byConversationId[conversationId];
-              const msg = entry?.byId?.[messageId];
-              const position = msg?.position ?? 0;
-              const forkPosition = Math.max(0, position - 1);
-              return dispatch(
-                forkConversation({
-                  conversationId,
-                  atPosition: forkPosition,
-                }),
-              ).unwrap();
-            };
-            await dispatch(positionThunk as never);
-
-            await dispatch(
-              editMessage({
-                conversationId,
-                messageId,
-                newContent: [
-                  { type: "text", text: newContent },
-                ] as unknown as Json,
-              }),
-            ).unwrap();
-            toast.success("Forked — edit saved on the new branch");
-          } catch (err) {
-            const { logPayload, message } = serializeSaveError(err);
-            // eslint-disable-next-line no-console
-            console.error(
-              "[UserActionBar] edit & resubmit failed",
-              JSON.stringify(logPayload, null, 2),
-            );
-            toast.error(message);
-          }
+        onSave: (newContent: string) => {
+          setPendingResubmitContent(newContent);
+          setResubmitDialogOpen(true);
           dispatch(closeOverlay({ overlayId: "fullScreenEditor", instanceId }));
         },
       }),
     );
   };
+
+  const handleResubmitChooseFork = useCallback(async () => {
+    if (pendingResubmitContent == null) return;
+    const newContent = pendingResubmitContent;
+    setPendingResubmitContent(null);
+
+    try {
+      const { forkConversation, editMessage } = await import(
+        "@/features/agents/redux/execution-system/message-crud"
+      );
+      const { executeInstance } = await import(
+        "@/features/agents/redux/execution-system/thunks/execute-instance.thunk"
+      );
+      const { setUserInputText } = await import(
+        "@/features/agents/redux/execution-system/instance-user-input/instance-user-input.slice"
+      );
+
+      const forkPosition = Math.max(0, (messagePosition ?? 0) - 1);
+      const forkResult = await dispatch(
+        forkConversation({
+          conversationId,
+          atPosition: forkPosition,
+        }),
+      ).unwrap();
+      const newConversationId = forkResult.conversationId;
+
+      // forkConversation hydrates the new conversation's messages before
+      // resolving. The user message we want to edit was at `messagePosition`
+      // in the source; the duplicated row sits at the same position on the
+      // fork with a fresh id. Look it up via a thunk-style read.
+      const findEditedMessageId = dispatch(
+        ((_: unknown, getState: () => import("@/lib/redux/store").RootState) => {
+          const entry =
+            getState().messages.byConversationId[newConversationId];
+          if (!entry) return null;
+          const userMsg = Object.values(entry.byId).find(
+            (m) =>
+              m.role === "user" && m.position === (messagePosition ?? 0),
+          );
+          return userMsg?.id ?? null;
+        }) as never,
+      ) as unknown as string | null;
+
+      if (typeof findEditedMessageId !== "string") {
+        toast.error("Couldn't find the edited message on the new fork");
+        return;
+      }
+
+      await dispatch(
+        editMessage({
+          conversationId: newConversationId,
+          messageId: findEditedMessageId,
+          newContent: [
+            { type: "text", text: newContent },
+          ] as unknown as Json,
+        }),
+      ).unwrap();
+
+      // Surface the new conversation BEFORE firing the turn so the
+      // streaming bubble lands in the right place.
+      if (surfaceKey) {
+        const { requestSurfaceNavigation } = await import(
+          "@/features/agents/redux/surfaces"
+        );
+        await dispatch(
+          requestSurfaceNavigation({
+            surfaceKey,
+            conversationId: newConversationId,
+            reason: "fork",
+          }),
+        );
+      } else {
+        // Embedded without a registered surface — fall back to a toast
+        // so the user can still navigate manually.
+        showForkOutcomeToast({
+          dispatch,
+          surfaceKey: "",
+          newConversationId,
+        });
+      }
+
+      dispatch(
+        setUserInputText({
+          conversationId: newConversationId,
+          text: newContent,
+        }),
+      );
+      void dispatch(executeInstance({ conversationId: newConversationId }));
+    } catch (err) {
+      const { logPayload, message } = serializeSaveError(err);
+      // eslint-disable-next-line no-console
+      console.error(
+        "[UserActionBar] fork edit-and-resubmit failed",
+        JSON.stringify(logPayload, null, 2),
+      );
+      toast.error(message);
+    }
+  }, [pendingResubmitContent, dispatch, conversationId, messagePosition, surfaceKey]);
+
+  const handleResubmitChooseOverwrite = useCallback(async () => {
+    if (pendingResubmitContent == null) return;
+    const newContent = pendingResubmitContent;
+    setPendingResubmitContent(null);
+
+    try {
+      const { overwriteAndResend } = await import(
+        "@/features/agents/redux/execution-system/message-crud"
+      );
+      await dispatch(
+        overwriteAndResend({
+          conversationId,
+          messageId,
+          newContent,
+        }),
+      ).unwrap();
+    } catch (err) {
+      const { logPayload, message } = serializeSaveError(err);
+      // eslint-disable-next-line no-console
+      console.error(
+        "[UserActionBar] overwrite-and-resend failed",
+        JSON.stringify(logPayload, null, 2),
+      );
+      toast.error(message);
+    }
+  }, [pendingResubmitContent, dispatch, conversationId, messageId]);
+
+  const handleConfirmDelete = useCallback(async () => {
+    try {
+      const { deleteMessage } = await import(
+        "@/features/agents/redux/execution-system/message-crud"
+      );
+      await dispatch(
+        deleteMessage({ conversationId, messageId }),
+      ).unwrap();
+      toast.success("Message deleted");
+    } catch (err) {
+      const { logPayload, message } = serializeSaveError(err);
+      // eslint-disable-next-line no-console
+      console.error(
+        "[UserActionBar] delete failed",
+        JSON.stringify(logPayload, null, 2),
+      );
+      toast.error(message);
+    }
+  }, [dispatch, conversationId, messageId]);
+
+  const handleConfirmDeleteFork = useCallback(async () => {
+    try {
+      const { forkConversation, deleteMessage } = await import(
+        "@/features/agents/redux/execution-system/message-crud"
+      );
+      const forkPosition = Math.max(0, (messagePosition ?? 0) - 1);
+      const forkResult = await dispatch(
+        forkConversation({ conversationId, atPosition: forkPosition }),
+      ).unwrap();
+      const newConversationId = forkResult.conversationId;
+
+      // Find the duplicated user message on the fork at the same position.
+      const findCopiedId = dispatch(
+        ((_: unknown, getState: () => import("@/lib/redux/store").RootState) => {
+          const entry =
+            getState().messages.byConversationId[newConversationId];
+          if (!entry) return null;
+          const match = Object.values(entry.byId).find(
+            (m) => m.position === (messagePosition ?? 0),
+          );
+          return match?.id ?? null;
+        }) as never,
+      ) as unknown as string | null;
+
+      if (typeof findCopiedId === "string") {
+        await dispatch(
+          deleteMessage({
+            conversationId: newConversationId,
+            messageId: findCopiedId,
+          }),
+        ).unwrap();
+      }
+
+      if (surfaceKey) {
+        const { requestSurfaceNavigation } = await import(
+          "@/features/agents/redux/surfaces"
+        );
+        await dispatch(
+          requestSurfaceNavigation({
+            surfaceKey,
+            conversationId: newConversationId,
+            reason: "fork",
+          }),
+        );
+      }
+      toast.success("Forked without this message");
+    } catch (err) {
+      const { logPayload, message } = serializeSaveError(err);
+      // eslint-disable-next-line no-console
+      console.error(
+        "[UserActionBar] fork-and-delete failed",
+        JSON.stringify(logPayload, null, 2),
+      );
+      toast.error(message);
+    }
+  }, [dispatch, conversationId, messagePosition, surfaceKey]);
+
+  // The "Fork without this message" path needs a position - 1 anchor;
+  // when this is the very first message there's nowhere to fork before it.
+  const canFork = (messagePosition ?? 0) > 0;
 
   return (
     <>
@@ -253,9 +455,30 @@ export function UserActionBar({
             conversationId={conversationId}
             metadata={metadata}
             anchorElement={moreOptionsButtonRef.current}
+            surfaceKey={surfaceKey}
+            onRequestDelete={() => setDeleteDialogOpen(true)}
           />
         </Suspense>
       )}
+
+      <EditResubmitOutcomeDialog
+        open={resubmitDialogOpen}
+        onOpenChange={(open) => {
+          setResubmitDialogOpen(open);
+          if (!open) setPendingResubmitContent(null);
+        }}
+        onChooseFork={handleResubmitChooseFork}
+        onChooseOverwrite={handleResubmitChooseOverwrite}
+      />
+
+      <DeleteMessageDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        messageId={messageId}
+        canFork={canFork}
+        onConfirmDelete={handleConfirmDelete}
+        onConfirmFork={handleConfirmDeleteFork}
+      />
     </>
   );
 }

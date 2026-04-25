@@ -17,9 +17,9 @@
  * DB-loaded turn:    messageId is set, requestId is null.
  */
 
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import MarkdownStream from "@/components/MarkdownStream";
-import { useAppSelector } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { useDebugContext } from "@/hooks/useDebugContext";
 import { selectErrorIsFatal } from "@/features/agents/redux/execution-system/active-requests/active-requests.selectors";
 import {
@@ -28,6 +28,11 @@ import {
 } from "@/features/agents/redux/execution-system/messages/messages.selectors";
 import { AssistantError } from "./AssistantError";
 import { AssistantActionBar } from "@/features/agents/components/run/message-actions/AssistantActionBar";
+import { RetryConfirmDialog } from "@/features/agents/components/run/message-actions/RetryConfirmDialog";
+import { atomicRetry } from "@/features/agents/redux/execution-system/message-crud";
+import { Button } from "@/components/ui/button";
+import { RotateCw } from "lucide-react";
+import { toast } from "sonner";
 import { useDomCapturePrint } from "@/features/conversation/hooks/useDomCapturePrint";
 
 interface AgentAssistantMessageProps {
@@ -36,6 +41,11 @@ interface AgentAssistantMessageProps {
   /** Server-assigned `cx_message.id` — present for committed and DB-loaded turns. */
   messageId?: string;
   isStreamActive?: boolean;
+  /**
+   * Optional surface key for routing fork / retry outcomes via the
+   * surfaces registry. Threaded down to AssistantActionBar.
+   */
+  surfaceKey?: string;
   compact?: boolean;
 }
 
@@ -44,9 +54,13 @@ export function AgentAssistantMessage({
   requestId,
   messageId,
   isStreamActive = false,
+  surfaceKey,
   compact = false,
 }: AgentAssistantMessageProps) {
   useDebugContext("AgentAssistantMessage");
+
+  const dispatch = useAppDispatch();
+  const [retryDialogOpen, setRetryDialogOpen] = useState(false);
 
   const { captureRef, isCapturing, captureAsPDF } = useDomCapturePrint();
   const handleFullPrint = useCallback(() => {
@@ -65,8 +79,59 @@ export function AgentAssistantMessage({
 
   const content = extractFlatText(record);
 
+  // A retry is supported when we have an actual cx_message row to anchor on
+  // (atomicRetry needs to truncate from a position, which requires the
+  // failed message to be persisted). Live-stream errors before any
+  // record_reserved event don't qualify; the user can just resend.
+  const canRetry = Boolean(messageId);
+
+  const handleRetry = useCallback(async () => {
+    if (!messageId) return;
+    try {
+      await dispatch(
+        atomicRetry({
+          conversationId,
+          failedMessageId: messageId,
+        }),
+      ).unwrap();
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : typeof err === "object" && err && "message" in err
+            ? String((err as { message?: string }).message)
+            : "Retry failed";
+      toast.error(message);
+    }
+  }, [dispatch, conversationId, messageId]);
+
   if (isFatalError) {
-    return <AssistantError error="An error occurred during streaming." />;
+    return (
+      <div className="flex flex-col gap-2 mt-1">
+        <AssistantError error="An error occurred during streaming." />
+        {canRetry && (
+          <div className="ml-10">
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-1.5"
+              onClick={() => setRetryDialogOpen(true)}
+            >
+              <RotateCw className="w-3.5 h-3.5" />
+              Retry from scratch
+            </Button>
+          </div>
+        )}
+        {messageId && (
+          <RetryConfirmDialog
+            open={retryDialogOpen}
+            onOpenChange={setRetryDialogOpen}
+            failedMessageId={messageId}
+            onConfirm={handleRetry}
+          />
+        )}
+      </div>
+    );
   }
 
   return (
@@ -93,6 +158,7 @@ export function AgentAssistantMessage({
           }
           onFullPrint={handleFullPrint}
           isCapturing={isCapturing}
+          surfaceKey={surfaceKey}
         />
       )}
     </div>

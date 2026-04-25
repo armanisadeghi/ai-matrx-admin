@@ -1,12 +1,19 @@
 "use client";
 
 import React from "react";
+import dynamic from "next/dynamic";
 import { ReactQueryProvider } from "@/providers/ReactQueryProvider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import StoreProvider from "@/providers/StoreProvider";
 import { InitialReduxState, LiteInitialReduxState } from "@/types/reduxTypes";
 import { PublicAuthSync } from "./PublicAuthSync";
-import OverlayController from "@/components/overlays/OverlayController";
+
+// Bundle dedup (Phase 6): legacy OverlayController (~2,500 LOC) is
+// chunked off the initial bundle. Only loaded at runtime when V2 is OFF.
+const OverlayController = dynamic(
+  () => import("@/components/overlays/OverlayController"),
+  { ssr: false },
+);
 import UnifiedOverlayController from "@/features/window-panels/UnifiedOverlayController";
 
 const USE_OVERLAYS_V2 =

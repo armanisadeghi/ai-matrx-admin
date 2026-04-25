@@ -169,11 +169,13 @@ If you build a new long-running endpoint, conform to this contract. Do not inven
 - [`WIDGET_HANDLE_SYSTEM.md`](./WIDGET_HANDLE_SYSTEM.md) — widget tool stream integration
 - [`DURABLE_TOOL_CALLS_CLIENT_INTEGRATION.md`](./DURABLE_TOOL_CALLS_CLIENT_INTEGRATION.md) — durable delegated tools
 - [`AGENT_ORCHESTRATION.md`](./AGENT_ORCHESTRATION.md) — turn-level loop semantics
+- [`PYTHON_RESUME_SPEC.md`](./PYTHON_RESUME_SPEC.md) — failure recovery + truncation contract for the Python team (atomic retry, last-good-step resume, `record_resumed` event)
 
 ---
 
 ## Change log
 
+- `2026-04-24` — claude: linked the new `PYTHON_RESUME_SPEC.md`. Documents the future `record_resumed` event, `cx_truncate_conversation_after` RPC, and `cx_message.last_completed_block_index`/`failure_reason` columns that the failure-recovery client flows are designed for.
 - `2026-04-22` — claude: initial higher-level contract doc. Promotes the existing `STREAM_STATUS_LIFECYCLE.md` as the reference.
 
 ---

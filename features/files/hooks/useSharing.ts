@@ -18,6 +18,8 @@ import {
   selectActiveShareLinksForResource,
   selectPermissionsForResource,
   selectShareLinksForResource,
+  EMPTY_CLOUD_FILE_PERMISSIONS,
+  EMPTY_CLOUD_SHARE_LINKS,
 } from "../redux/selectors";
 import {
   createShareLink as createShareLinkThunk,
@@ -47,8 +49,12 @@ export interface UseSharingResult {
   shareLinks: CloudShareLink[];
   activeShareLinks: CloudShareLink[];
   refresh: () => Promise<void>;
-  grantPermission: (args: Omit<GrantPermissionArg, "resourceId" | "resourceType">) => Promise<void>;
-  revokePermission: (args: Omit<RevokePermissionArg, "resourceId" | "resourceType">) => Promise<void>;
+  grantPermission: (
+    args: Omit<GrantPermissionArg, "resourceId" | "resourceType">,
+  ) => Promise<void>;
+  revokePermission: (
+    args: Omit<RevokePermissionArg, "resourceId" | "resourceType">,
+  ) => Promise<void>;
   createShareLink: (
     args: Omit<CreateShareLinkArg, "resourceId" | "resourceType">,
   ) => Promise<CloudShareLink>;
@@ -108,9 +114,7 @@ export function useSharing(
   );
 
   const createShareLink = useCallback(
-    async (
-      args: Omit<CreateShareLinkArg, "resourceId" | "resourceType">,
-    ) => {
+    async (args: Omit<CreateShareLinkArg, "resourceId" | "resourceType">) => {
       return dispatch(
         createShareLinkThunk({ ...args, resourceId, resourceType }),
       ).unwrap();
@@ -137,8 +141,8 @@ export function useSharing(
   );
 
   return {
-    permissions,
-    shareLinks,
+    permissions: permissions ?? EMPTY_CLOUD_FILE_PERMISSIONS,
+    shareLinks: shareLinks ?? EMPTY_CLOUD_SHARE_LINKS,
     activeShareLinks,
     refresh,
     grantPermission,

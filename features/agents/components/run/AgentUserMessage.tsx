@@ -51,6 +51,11 @@ interface AgentUserMessageProps {
   conversationId: string;
   /** Server-assigned `cx_message.id` or client temp id for an optimistic user message. */
   messageId: string;
+  /**
+   * Optional surface key for routing fork / delete / retry outcomes via
+   * the surfaces registry. Threaded down to UserActionBar.
+   */
+  surfaceKey?: string;
   compact?: boolean;
 }
 
@@ -467,6 +472,7 @@ function AttachmentChip({ block }: { block: NormalisedBlock }) {
 export function AgentUserMessage({
   conversationId,
   messageId,
+  surfaceKey,
   compact = false,
 }: AgentUserMessageProps) {
   const record = useAppSelector(selectMessageById(conversationId, messageId));
@@ -605,6 +611,7 @@ export function AgentUserMessage({
           messageId={messageId}
           conversationId={conversationId}
           metadata={metadata}
+          surfaceKey={surfaceKey}
         />
       </div>
     </div>

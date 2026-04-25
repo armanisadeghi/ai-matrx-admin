@@ -21,6 +21,8 @@
 import { parseHttpError, BackendApiError } from "@/lib/api/errors";
 import { BACKEND_URLS } from "@/lib/api/endpoints";
 import { supabase } from "@/utils/supabase/client";
+import { getStore } from "@/lib/redux/store";
+import { selectResolvedBaseUrl } from "@/lib/redux/slices/apiConfigSlice";
 
 // ---------------------------------------------------------------------------
 // Request ID helper
@@ -42,8 +44,41 @@ export function newRequestId(): string {
 // Base URL
 // ---------------------------------------------------------------------------
 
-function resolveBaseUrl(override?: string): string {
+/**
+ * Resolves the active backend URL the browser should hit.
+ *
+ * Priority:
+ *   1. Explicit `override` (tests, edge cases).
+ *   2. Redux `apiConfigSlice.activeServer` (set by the admin server-toggle UI
+ *      — `production` / `development` / `staging` / `localhost` / `gpu` /
+ *      `custom`). This is the SAME selector `useBackendApi` reads, so the
+ *      cloud-files client follows whichever server the user picked instead
+ *      of hard-locking to production.
+ *   3. Env-var fallback for runtimes without a store yet (rare — e.g. a
+ *      module-level call before the StoreProvider mounts).
+ *
+ * **Bug fix 2026-04-24:** before this change, the cloud-files client read
+ * `BACKEND_URLS.production` directly and ignored the localhost toggle, so
+ * dev traffic never hit a local Python server. See
+ * [features/files/migration/INVENTORY.md] under Phase 12.
+ */
+export function resolveBaseUrl(override?: string): string {
   if (override) return override.replace(/\/$/, "");
+
+  // 1. Honor the active server from Redux (the same selector useBackendApi reads).
+  const store = getStore();
+  if (store) {
+    try {
+      const fromStore = selectResolvedBaseUrl(
+        store.getState() as Parameters<typeof selectResolvedBaseUrl>[0],
+      );
+      if (fromStore) return fromStore.replace(/\/$/, "");
+    } catch {
+      // Selector failed (slice not registered yet, etc.) — fall through.
+    }
+  }
+
+  // 2. Env-var fallback for early/SSR contexts.
   const configured =
     (BACKEND_URLS.production as string | undefined) ||
     (process.env.NEXT_PUBLIC_BACKEND_URL as string | undefined);

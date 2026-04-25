@@ -37,6 +37,8 @@ export function OverviewSection() {
         return resourcesCount;
       case "mcpServers":
         return mcpCount;
+      // subagents/commands/registries: counts wire in once their data
+      // sources land (kind column, schema, registry sync).
       default:
         return null;
     }

@@ -72,7 +72,10 @@ export function AgentConversationColumn({
           onScroll={handleScroll}
           className="h-full overflow-y-auto pt-12"
         >
-          <AgentConversationDisplay conversationId={displayId} />
+          <AgentConversationDisplay
+            conversationId={displayId}
+            surfaceKey={surfaceKey}
+          />
         </div>
         <div
           className="pointer-events-none absolute bottom-0 left-0 right-0 h-3"

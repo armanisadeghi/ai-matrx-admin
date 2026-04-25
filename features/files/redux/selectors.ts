@@ -26,6 +26,10 @@ import type {
   UploadState,
 } from "../types";
 
+/** Stable empties — never use `?? []` in selector outputs (new ref every run → Reselect stability warnings). */
+export const EMPTY_CLOUD_FILE_PERMISSIONS: CloudFilePermission[] = [];
+export const EMPTY_CLOUD_SHARE_LINKS: CloudShareLink[] = [];
+
 // ---------------------------------------------------------------------------
 // Slice root
 // ---------------------------------------------------------------------------
@@ -299,8 +303,8 @@ export const selectVersionsForFile = createSelector(
 
 export const selectPermissionsForResource = createSelector(
   [selectSlice, (_s: RootState, resourceId: string) => resourceId],
-  (slice, resourceId): CloudFilePermission[] =>
-    slice.permissionsByResourceId[resourceId] ?? [],
+  (slice, resourceId): CloudFilePermission[] | undefined =>
+    slice.permissionsByResourceId[resourceId],
 );
 
 /**
@@ -324,6 +328,7 @@ export const selectEffectivePermissionForFile = createSelector(
     };
     let best: PermissionLevel | null =
       file.visibility === "public" ? "read" : null;
+    if (!permissions) return best;
     for (const perm of permissions) {
       if (perm.granteeId !== userId) continue;
       if (perm.expiresAt && new Date(perm.expiresAt).getTime() < Date.now())
@@ -342,13 +347,17 @@ export const selectEffectivePermissionForFile = createSelector(
 
 export const selectShareLinksForResource = createSelector(
   [selectSlice, (_s: RootState, resourceId: string) => resourceId],
-  (slice, resourceId): CloudShareLink[] =>
-    slice.shareLinksByResourceId[resourceId] ?? [],
+  (slice, resourceId): CloudShareLink[] | undefined =>
+    slice.shareLinksByResourceId[resourceId],
 );
 
 export const selectActiveShareLinksForResource = createSelector(
   [selectShareLinksForResource],
-  (links): CloudShareLink[] => links.filter((l) => l.isActive),
+  (links): CloudShareLink[] => {
+    if (!links?.length) return EMPTY_CLOUD_SHARE_LINKS;
+    const active = links.filter((l) => l.isActive);
+    return active.length ? active : EMPTY_CLOUD_SHARE_LINKS;
+  },
 );
 
 // ---------------------------------------------------------------------------

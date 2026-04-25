@@ -3,14 +3,17 @@ import type { LucideIcon } from "lucide-react";
 export type AgentConnectionsSection =
   | "overview"
   | "agents"
+  | "subagents"
   | "skills"
   | "renderBlocks"
   | "resources"
   | "instructions"
   | "prompts"
+  | "commands"
   | "hooks"
   | "mcpServers"
-  | "plugins";
+  | "plugins"
+  | "registries";
 
 export type Scope = "user" | "organization" | "project" | "task";
 

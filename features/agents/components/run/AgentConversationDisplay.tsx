@@ -60,6 +60,13 @@ interface DisplayEntry {
 
 interface AgentConversationDisplayProps {
   conversationId: string;
+  /**
+   * The UI surface this transcript belongs to. Threaded into per-message
+   * action bars so fork / delete / retry outcomes route correctly via the
+   * surfaces registry. Optional — components fall back to local behavior
+   * when omitted (e.g. embedded previews).
+   */
+  surfaceKey?: string;
   compact?: boolean;
 }
 
@@ -75,6 +82,7 @@ function isEmptyReservedAssistant(record: {
 
 export function AgentConversationDisplay({
   conversationId,
+  surfaceKey,
   compact = false,
 }: AgentConversationDisplayProps) {
   const messages = useAppSelector(selectConversationMessages(conversationId));
@@ -152,6 +160,7 @@ export function AgentConversationDisplay({
               key={entry.key}
               conversationId={conversationId}
               messageId={entry.messageId}
+              surfaceKey={surfaceKey}
               compact={compact}
             />
           );
@@ -165,6 +174,7 @@ export function AgentConversationDisplay({
               requestId={entry.requestId ?? undefined}
               messageId={entry.messageId ?? undefined}
               isStreamActive={entry.isStreamActive}
+              surfaceKey={surfaceKey}
               compact={compact}
             />
           );

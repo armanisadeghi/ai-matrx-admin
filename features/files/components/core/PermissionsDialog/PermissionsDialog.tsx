@@ -175,9 +175,7 @@ export function PermissionsDialogBody({
             <span className="text-muted-foreground">Type</span>
             <select
               value={granteeType}
-              onChange={(e) =>
-                setGranteeType(e.target.value as GranteeType)
-              }
+              onChange={(e) => setGranteeType(e.target.value as GranteeType)}
               className="rounded-md border bg-background px-2 py-1 text-sm"
             >
               <option value="user">User</option>
@@ -197,9 +195,7 @@ export function PermissionsDialogBody({
             </select>
           </label>
           <label className="flex flex-col gap-1 text-xs sm:col-span-2">
-            <span className="text-muted-foreground">
-              Expires (optional)
-            </span>
+            <span className="text-muted-foreground">Expires (optional)</span>
             <input
               type="datetime-local"
               value={expiresAt}
@@ -208,9 +204,7 @@ export function PermissionsDialogBody({
             />
           </label>
         </div>
-        {error ? (
-          <p className="text-xs text-destructive">{error}</p>
-        ) : null}
+        {error ? <p className="text-xs text-destructive">{error}</p> : null}
         <button
           type="button"
           onClick={handleGrant}
@@ -231,7 +225,7 @@ export function PermissionsDialogBody({
         <h3 className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
           Current access
         </h3>
-        {permissions.length === 0 ? (
+        {!permissions?.length ? (
           <p className="text-sm text-muted-foreground py-2">
             Only the owner has explicit access.
           </p>

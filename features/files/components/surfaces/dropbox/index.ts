@@ -6,6 +6,7 @@
  */
 
 export { AccessBadge } from "./AccessBadge";
+export { BulkActionsBar } from "./BulkActionsBar";
 export { ContentHeader } from "./ContentHeader";
 export { EmptyState } from "./EmptyState";
 export { FileGrid } from "./FileGrid";

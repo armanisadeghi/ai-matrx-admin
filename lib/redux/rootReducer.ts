@@ -133,6 +133,7 @@ import { observationalMemoryReducer } from "@/features/agents/redux/execution-sy
 import { cacheBypassReducer } from "@/features/agents/redux/execution-system/message-crud";
 import { messagesReducer } from "@/features/agents/redux/execution-system/messages";
 import { conversationFocusReducer } from "@/features/agents/redux/execution-system/conversation-focus";
+import { surfacesReducer } from "@/features/agents/redux/surfaces";
 import agentAssistantMarkdownDraftReducer from "@/features/agents/redux/agent-assistant-markdown-draft.slice";
 import { netRequestsReducer, netHealthReducer } from "@/lib/redux/net";
 
@@ -393,6 +394,9 @@ export const createRootReducer = (initialState: InitialReduxState) => {
 
     // Surface Focus Registry — tracks which conversationId is active per UI surface
     conversationFocus: conversationFocusReducer,
+    // Surface Registry — consumers (pages, windows, widgets) self-register here
+    // so shared action components can route fork/delete/retry outcomes correctly.
+    surfaces: surfacesReducer,
     agentAssistantMarkdownDraft: agentAssistantMarkdownDraftReducer,
 
     // MCP Catalog — global server registry + per-user connection state

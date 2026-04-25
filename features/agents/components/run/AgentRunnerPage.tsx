@@ -11,9 +11,15 @@
  */
 
 import { useEffect, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { fetchAgentExecutionMinimal } from "@/features/agents/redux/agent-definition/thunks";
+import {
+  registerSurface,
+  unregisterSurface,
+  selectPendingNavigation,
+  clearPendingNavigation,
+} from "@/features/agents/redux/surfaces";
 import {
   selectAgentExecutionPayload,
   selectAgentName,
@@ -52,6 +58,7 @@ export function AgentRunnerPage({
 }: AgentRunnerPageProps) {
   const dispatch = useAppDispatch();
   const store = useAppStore();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const isMobile = useIsMobile();
 
@@ -97,6 +104,36 @@ export function AgentRunnerPage({
 
   const sourceFeature = "agent-runner";
   const surfaceKey = `${sourceFeature}:${agentId}`;
+
+  // Register this page as a `page` surface so action bars and shared
+  // components can route fork/retry navigation outcomes correctly. The
+  // basePath is what the routing thunk references when a navigation
+  // intent fires; the effect below resolves it against the live agentId.
+  useEffect(() => {
+    dispatch(
+      registerSurface({
+        surfaceKey,
+        kind: "page",
+        basePath: `${basePath}/[agentId]/run`,
+      }),
+    );
+    return () => {
+      dispatch(unregisterSurface(surfaceKey));
+    };
+  }, [dispatch, surfaceKey, basePath]);
+
+  // Pending navigation handler — when a shared action (fork, retry) wants
+  // to jump us to a different conversationId, it writes here. We turn it
+  // into a router.replace and clear the slot so consumers stay idempotent.
+  const pendingNavigation = useAppSelector(
+    selectPendingNavigation(surfaceKey),
+  );
+  useEffect(() => {
+    if (!pendingNavigation) return;
+    const target = `${basePath}/${agentId}/run?conversationId=${pendingNavigation.conversationId}`;
+    router.replace(target);
+    dispatch(clearPendingNavigation({ surfaceKey }));
+  }, [pendingNavigation, router, dispatch, surfaceKey, basePath, agentId]);
 
   const { conversationId } = useAgentLauncher(agentId, {
     surfaceKey,

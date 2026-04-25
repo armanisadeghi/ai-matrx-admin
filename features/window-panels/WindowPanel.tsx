@@ -58,6 +58,9 @@ import { selectIsDebugMode } from "@/lib/redux/slices/adminDebugSlice";
 import { useUrlSync } from "./url-sync/useUrlSync";
 import { useWindowPersistence } from "./WindowPersistenceManager";
 import { Save } from "lucide-react";
+import { DebugStrip } from "./WindowPanel/DebugStrip";
+import { MobileWindowHeader } from "./WindowPanel/MobileHeader";
+import { SnapButton } from "./WindowPanel/SnapButton";
 
 // ─── Resize handle descriptors ───────────────────────────────────────────────
 
@@ -810,96 +813,7 @@ export function WindowPanel({
   return portalTarget ? createPortal(el, portalTarget) : null;
 }
 
-// ─── DebugStrip ───────────────────────────────────────────────────────────────
-
-interface DebugStripProps {
-  rect: { x: number; y: number; width: number; height: number };
-  zIndex: number;
-}
-
-function DebugStrip({ rect, zIndex }: DebugStripProps) {
-  const [vp, setVp] = useState(() =>
-    typeof window === "undefined"
-      ? { vw: 0, vh: 0, sw: 0, sh: 0, dpr: 1 }
-      : {
-          vw: window.innerWidth,
-          vh: window.innerHeight,
-          sw: window.screen.width,
-          sh: window.screen.height,
-          dpr: window.devicePixelRatio ?? 1,
-        },
-  );
-
-  useEffect(() => {
-    const update = () =>
-      setVp({
-        vw: window.innerWidth,
-        vh: window.innerHeight,
-        sw: window.screen.width,
-        sh: window.screen.height,
-        dpr: window.devicePixelRatio ?? 1,
-      });
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, []);
-
-  const windowEntries: [string, number][] = [
-    ["x", rect.x],
-    ["y", rect.y],
-    ["w", rect.width],
-    ["h", rect.height],
-    ["z", zIndex],
-  ];
-
-  const viewportEntries: [string, number | string][] = [
-    ["vw", vp.vw],
-    ["vh", vp.vh],
-    ["sw", vp.sw],
-    ["sh", vp.sh],
-    ["dpr", vp.dpr],
-  ];
-
-  return (
-    <div className="flex flex-col gap-0.5 px-3 py-1.5 border-b border-amber-500/20 bg-amber-500/5 shrink-0 font-mono text-[10px]">
-      {/* Row 1 — window position/size */}
-      <div className="flex items-center gap-3 flex-wrap">
-        <span className="text-amber-400/50 uppercase tracking-wide text-[9px]">
-          win
-        </span>
-        {windowEntries.map(([label, val]) => (
-          <span
-            key={label}
-            className="inline-flex items-center gap-0.5 leading-none"
-          >
-            <span className="text-amber-500/60">{label}:</span>
-            <span className="text-amber-400 font-bold tabular-nums">
-              {Math.round(val as number)}
-            </span>
-          </span>
-        ))}
-      </div>
-      {/* Row 2 — viewport / screen */}
-      <div className="flex items-center gap-3 flex-wrap">
-        <span className="text-sky-400/50 uppercase tracking-wide text-[9px]">
-          vp
-        </span>
-        {viewportEntries.map(([label, val]) => (
-          <span
-            key={label}
-            className="inline-flex items-center gap-0.5 leading-none"
-          >
-            <span className="text-sky-500/60">{label}:</span>
-            <span className="text-sky-400 font-bold tabular-nums">
-              {typeof val === "number" && !Number.isInteger(val)
-                ? val.toFixed(2)
-                : Math.round(val as number)}
-            </span>
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-}
+// DebugStrip extracted to ./WindowPanel/DebugStrip.tsx (Phase 6).
 
 // ─── WindowHeader ─────────────────────────────────────────────────────────────
 
@@ -1475,129 +1389,8 @@ function GreenTrafficLight({
   );
 }
 
-// ─── MobileWindowHeader ─────────────────────────────────────────────────────
-// Simplified header for mobile: close + minimize, segmented sidebar toggle, actions
+// MobileWindowHeader extracted to ./WindowPanel/MobileHeader.tsx (Phase 6).
 
-interface MobileWindowHeaderProps {
-  title?: React.ReactNode;
-  actionsRight?: React.ReactNode;
-  onMinimize: () => void;
-  onClose?: () => void;
-  hasSidebar: boolean;
-  activePaneMobile: "main" | "sidebar";
-  onSetActivePane: (pane: "main" | "sidebar") => void;
-}
-
-function MobileWindowHeader({
-  title,
-  actionsRight,
-  onMinimize,
-  onClose,
-  hasSidebar,
-  activePaneMobile,
-  onSetActivePane,
-}: MobileWindowHeaderProps) {
-  const titleText = typeof title === "string" ? title : "Content";
-  return (
-    <div className="flex items-center gap-1.5 px-2 py-1.5 min-h-[36px] shrink-0 border-b border-border/50 bg-muted/40 select-none">
-      {/* Close + Minimize */}
-      <div className="flex items-center gap-1.5 shrink-0">
-        {onClose && (
-          <button
-            type="button"
-            className="w-6 h-6 rounded-full bg-red-500 flex items-center justify-center"
-            onClick={onClose}
-            aria-label="Close"
-          >
-            <X className="w-2.5 h-2.5 stroke-[3]" style={{ color: "#000" }} />
-          </button>
-        )}
-        <button
-          type="button"
-          className="w-6 h-6 rounded-full bg-yellow-400 flex items-center justify-center"
-          onClick={onMinimize}
-          aria-label="Minimize"
-        >
-          <Minus className="w-2.5 h-2.5 stroke-[3]" style={{ color: "#000" }} />
-        </button>
-      </div>
-
-      {/* Center: sidebar toggle or title */}
-      <div className="flex-1 flex items-center justify-center min-w-0">
-        {hasSidebar ? (
-          <div className="inline-flex rounded-lg bg-muted/60 p-0.5 text-xs">
-            <button
-              type="button"
-              className={cn(
-                "px-3 py-1 rounded-md transition-colors whitespace-nowrap",
-                activePaneMobile === "sidebar"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground",
-              )}
-              onClick={() => onSetActivePane("sidebar")}
-            >
-              Sidebar
-            </button>
-            <button
-              type="button"
-              className={cn(
-                "px-3 py-1 rounded-md transition-colors truncate max-w-[120px]",
-                activePaneMobile === "main"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground",
-              )}
-              onClick={() => onSetActivePane("main")}
-            >
-              {titleText}
-            </button>
-          </div>
-        ) : (
-          <span className="text-xs font-medium text-foreground/80 truncate">
-            {title ?? ""}
-          </span>
-        )}
-      </div>
-
-      {/* Right actions */}
-      {actionsRight && (
-        <div className="flex items-center gap-0.5 shrink-0 text-foreground/80 [&_svg]:text-foreground/80">
-          {actionsRight}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ─── SnapButton ───────────────────────────────────────────────────────────────
-
-function SnapButton({
-  label,
-  icon,
-  onClick,
-  wide,
-}: {
-  label: string;
-  icon: React.ReactNode;
-  onClick: () => void;
-  wide?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      title={label}
-      aria-label={label}
-      onClick={onClick}
-      onPointerDown={(e) => e.stopPropagation()}
-      className={cn(
-        "flex items-center justify-center rounded-lg p-1.5",
-        "bg-muted/60 hover:bg-accent border border-border/50",
-        "transition-colors text-foreground/70",
-        wide ? "col-span-2" : "col-span-1",
-      )}
-    >
-      {icon}
-    </button>
-  );
-}
+// SnapButton extracted to ./WindowPanel/SnapButton.tsx (Phase 6).
 
 export default WindowPanel;

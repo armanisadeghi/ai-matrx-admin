@@ -49,7 +49,9 @@ export function useQuickActions() {
 
   const openQuickFiles = useCallback(
     (data?: any) => {
-      dispatch(openOverlay({ overlayId: "quickFiles", data }));
+      // Phase 11 removed the legacy `quickFiles` sheet. Quick file access
+      // now opens the cloud-files window registered in Phase 6.
+      dispatch(openOverlay({ overlayId: "cloudFilesWindow", data }));
     },
     [dispatch],
   );

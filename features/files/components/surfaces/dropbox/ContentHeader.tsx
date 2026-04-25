@@ -13,27 +13,23 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import {
-  ExternalLink,
-  Settings2,
-  Share2,
-  Upload,
-} from "lucide-react";
+import { ExternalLink, Settings2, Share2, Upload } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   selectAllFoldersMap,
   selectPermissionsForResource,
   selectActiveShareLinksForResource,
-} from "../../../redux/selectors";
+  EMPTY_CLOUD_FILE_PERMISSIONS,
+} from "@/features/files/redux/selectors";
 import {
   setActiveFileId,
   setActiveFolderId,
-} from "../../../redux/slice";
-import { FileBreadcrumbs } from "../../core/FileBreadcrumbs";
-import { PermissionsDialog } from "../../core/PermissionsDialog";
-import { ShareLinkDialog } from "../../core/ShareLinkDialog";
-import type { Visibility } from "../../../types";
+} from "@/features/files/redux/slice";
+import { FileBreadcrumbs } from "@/features/files/components/core/FileBreadcrumbs";
+import { PermissionsDialog } from "@/features/files/components/core/PermissionsDialog";
+import { ShareLinkDialog } from "@/features/files/components/core/ShareLinkDialog";
+import type { Visibility } from "@/features/files/types";
 import { AccessBadge } from "./AccessBadge";
 import { SharedAvatarStack } from "./SharedAvatarStack";
 import { FilterChips } from "./FilterChips";
@@ -79,18 +75,18 @@ export function ContentHeader({
   const permissions = useAppSelector((s) =>
     activeFolderId
       ? selectPermissionsForResource(s, activeFolderId)
-      : ([] as never),
+      : undefined,
   );
   const shareLinks = useAppSelector((s) =>
     activeFolderId
       ? selectActiveShareLinksForResource(s, activeFolderId)
-      : ([] as never),
+      : undefined,
   );
 
   const title = folder?.folderName ?? SECTION_TITLES[section];
   const visibility: Visibility = folder?.visibility ?? "private";
   const granteeIds = useMemo(
-    () => (permissions ?? []).map((p) => p.granteeId),
+    () => (permissions ?? EMPTY_CLOUD_FILE_PERMISSIONS).map((p) => p.granteeId),
     [permissions],
   );
   const memberCount = useMemo(() => new Set(granteeIds).size, [granteeIds]);
@@ -105,13 +101,12 @@ export function ContentHeader({
 
   const handleOpenShareLink = async () => {
     if (!activeFolderId) return;
-    const link = shareLinks[0];
+    const link = shareLinks?.[0];
     if (!link) {
       setShareOpen(true);
       return;
     }
-    const origin =
-      typeof window !== "undefined" ? window.location.origin : "";
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
     window.open(`${origin}/share/${link.shareToken}`, "_blank");
   };
 
@@ -149,9 +144,13 @@ export function ContentHeader({
             <div className="flex items-center gap-2">
               <NewMenu parentFolderId={activeFolderId} />
               <HeaderButton
-                onClick={() => document
-                  .querySelector<HTMLInputElement>('input[type="file"][multiple]')
-                  ?.click()}
+                onClick={() =>
+                  document
+                    .querySelector<HTMLInputElement>(
+                      'input[type="file"][multiple]',
+                    )
+                    ?.click()
+                }
                 label="Upload"
                 icon={<Upload className="h-4 w-4" />}
               />

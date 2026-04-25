@@ -41,6 +41,8 @@ export function AgentConnectionsSidebar({
         return resourcesCount;
       case "mcpServers":
         return mcpCount;
+      // subagents/commands/registries: counts come online with their data
+      // sources (kind column, schema, registry sync respectively).
       default:
         return null;
     }

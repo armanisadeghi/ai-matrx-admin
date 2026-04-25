@@ -1,8 +1,17 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useIdleReady, useIdleTask } from "@/utils/idle-scheduler";
 import { PersistentDOMConnector } from "@/providers/persistance/PersistentDOMConnector";
-import OverlayController from "@/components/overlays/OverlayController";
+
+// Bundle dedup (Phase 6): the legacy ~2,500-line OverlayController is
+// chunked off the initial bundle so its weight only ships when V2 is OFF
+// at runtime. UnifiedOverlayController stays static — it's tiny (~60 LOC)
+// and uses `componentImport` per registry entry to lazy-load each window.
+const OverlayController = dynamic(
+  () => import("@/components/overlays/OverlayController"),
+  { ssr: false },
+);
 import UnifiedOverlayController from "@/features/window-panels/UnifiedOverlayController";
 
 // Opt-in switch to the registry-driven controller. Default off until the
@@ -19,7 +28,6 @@ import AdminFeatureProvider from "@/features/admin/AdminFeatureProvider";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { brokerActions } from "@/lib/redux/brokerSlice";
-import { identifyUser } from "@/providers/PostHogProvider";
 import { fetchFullContext } from "@/features/agent-context/redux/hierarchyThunks";
 // `loadPreferences` + `preferencesMiddleware` removed in PR 1.B. The middleware
 // was never wired into the store chain (confirmed dead); client-side
@@ -103,12 +111,6 @@ export default function DeferredSingletons() {
     if (user?.id) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       dispatch(fetchFullContext() as any);
-    }
-  });
-
-  useIdleTask("posthog-identify", 3, () => {
-    if (user?.id) {
-      identifyUser(user.id, { email: user.email });
     }
   });
 

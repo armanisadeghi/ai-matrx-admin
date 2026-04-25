@@ -56,6 +56,7 @@ export type PreviewKind =
   | "video"
   | "pdf"
   | "text"
+  | "markdown"
   | "data"
   | "spreadsheet"
   | "generic";
@@ -182,8 +183,8 @@ const EXTENSION_OVERRIDES: Record<string, Partial<FileTypeDetails> & { category:
   yml: { category: "CODE", icon: Braces, color: "text-amber-500", subCategory: "YAML" },
   toml: { category: "CODE", icon: Braces, color: "text-amber-500", subCategory: "TOML" },
   // Documents
-  md: { category: "DOCUMENT", icon: FileText, color: "text-slate-400", subCategory: "MARKDOWN" },
-  mdx: { category: "DOCUMENT", icon: FileText, color: "text-slate-400", subCategory: "MARKDOWN" },
+  md: { category: "DOCUMENT", icon: FileText, color: "text-slate-400", subCategory: "MARKDOWN", previewKind: "markdown" },
+  mdx: { category: "DOCUMENT", icon: FileText, color: "text-slate-400", subCategory: "MARKDOWN", previewKind: "markdown" },
   txt: { category: "DOCUMENT", icon: FileText, color: "text-muted-foreground", subCategory: "PLAIN" },
   log: { category: "DOCUMENT", icon: FileText, color: "text-muted-foreground", subCategory: "LOG" },
   pdf: { category: "DOCUMENT", icon: FileType, color: "text-red-500", subCategory: "PDF", previewKind: "pdf" },

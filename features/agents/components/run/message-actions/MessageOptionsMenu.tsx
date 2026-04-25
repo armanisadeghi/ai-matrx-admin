@@ -45,6 +45,16 @@ export interface MessageOptionsMenuProps {
   showFullPrint?: boolean;
   onFullPrint?: () => void;
   isCapturing?: boolean;
+  /**
+   * UI surface this menu belongs to. Forwarded into the action context so
+   * fork outcomes route through the surfaces registry.
+   */
+  surfaceKey?: string;
+  /**
+   * Called when the user picks "Delete message". The host owns the
+   * destructive-vs-fork dialog state. Omit to hide the item.
+   */
+  onRequestDelete?: () => void;
 }
 
 export function MessageOptionsMenu({
@@ -59,6 +69,8 @@ export function MessageOptionsMenu({
   showFullPrint = false,
   onFullPrint,
   isCapturing = false,
+  surfaceKey,
+  onRequestDelete,
 }: MessageOptionsMenuProps) {
   const dispatch = useAppDispatch();
   const user = useAppSelector(selectUser);
@@ -104,6 +116,8 @@ export function MessageOptionsMenu({
     isCapturing,
     isCreator,
     streamRequestId,
+    surfaceKey: surfaceKey ?? null,
+    onRequestDelete,
   };
 
   const menuItems =

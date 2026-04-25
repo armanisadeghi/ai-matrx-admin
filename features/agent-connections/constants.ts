@@ -1,28 +1,34 @@
 import {
   Home,
   Hexagon,
+  Bot,
   Lightbulb,
   Blocks,
   FolderOpen,
   BookOpen,
   Bookmark,
+  TerminalSquare,
   Zap,
   Server,
   Plug,
+  Library,
 } from "lucide-react";
 import type { OverviewCard, SidebarSection } from "./types";
 
 export const SIDEBAR_SECTIONS: SidebarSection[] = [
   { value: "overview", label: "Overview", icon: Home },
   { value: "agents", label: "Agents", icon: Hexagon },
+  { value: "subagents", label: "Sub-agents", icon: Bot },
   { value: "skills", label: "Skills", icon: Lightbulb },
   { value: "renderBlocks", label: "Render Blocks", icon: Blocks },
   { value: "resources", label: "Resources", icon: FolderOpen },
   { value: "instructions", label: "Instructions", icon: BookOpen },
   { value: "prompts", label: "Prompts", icon: Bookmark },
+  { value: "commands", label: "Commands", icon: TerminalSquare },
   { value: "hooks", label: "Hooks", icon: Zap },
   { value: "mcpServers", label: "MCP Servers", icon: Server },
   { value: "plugins", label: "Plugins", icon: Plug },
+  { value: "registries", label: "Registries", icon: Library },
 ];
 
 export const OVERVIEW_CARDS: OverviewCard[] = [
@@ -32,6 +38,14 @@ export const OVERVIEW_CARDS: OverviewCard[] = [
     icon: Hexagon,
     description:
       "Define custom agents with specialized personas, tool access, and instructions for specific tasks.",
+    action: "new",
+  },
+  {
+    value: "subagents",
+    label: "Sub-agents",
+    icon: Bot,
+    description:
+      "Specialist agents invoked by other agents for focused tasks like reviewing code, debugging, or optimizing performance.",
     action: "new",
   },
   {
@@ -83,11 +97,27 @@ export const OVERVIEW_CARDS: OverviewCard[] = [
     action: "browse",
   },
   {
+    value: "commands",
+    label: "Commands",
+    icon: TerminalSquare,
+    description:
+      "Slash commands that wrap a prompt + tools so you can invoke a workflow with a single keyword.",
+    action: "new",
+  },
+  {
     value: "plugins",
     label: "Plugins",
     icon: Plug,
     description:
       "Install and manage agent plugins that add additional tools, skills, and integrations.",
+    action: "browse",
+  },
+  {
+    value: "registries",
+    label: "Registries",
+    icon: Library,
+    description:
+      "Connect external sources like the Vercel plugin or Anthropic skills repos to discover and install community items.",
     action: "browse",
   },
 ];

@@ -13,7 +13,7 @@
 
 import { useMemo, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { AlertCircle, ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
 import "react-pdf/dist/Page/TextLayer.css";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import { cn } from "@/lib/utils";
@@ -52,11 +52,31 @@ export default function PdfPreview({ url, className }: PdfPreviewProps) {
     return (
       <div
         className={cn(
-          "flex h-full w-full items-center justify-center text-sm text-destructive p-4",
+          "flex h-full w-full flex-col items-center justify-center gap-3 p-6 text-center",
           className,
         )}
+        role="alert"
       >
-        {error}
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+          <AlertCircle className="h-6 w-6 text-destructive" />
+        </div>
+        <div className="space-y-1">
+          <h3 className="text-sm font-semibold">Couldn't load this PDF</h3>
+          <p className="max-w-md text-xs text-muted-foreground break-words">
+            {error}
+          </p>
+        </div>
+        {url ? (
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90"
+          >
+            <ExternalLink className="h-3.5 w-3.5" />
+            Open in new tab
+          </a>
+        ) : null}
       </div>
     );
   }

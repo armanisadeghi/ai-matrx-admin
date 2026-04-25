@@ -88,6 +88,26 @@ export const selectToolCallById =
   (state: RootState): CxToolCallRecord | undefined =>
     state.observability.toolCalls[id];
 
+/**
+ * Tool calls attached to a specific cx_message — used by destructive
+ * actions (delete, retry) to warn the user about cascaded deletions.
+ * Returns only non-soft-deleted rows.
+ */
+export const selectToolCallsForMessage = (messageId: string) =>
+  createSelector(
+    (state: RootState) => state.observability.toolCalls,
+    (byId): CxToolCallRecord[] => {
+      const out: CxToolCallRecord[] = [];
+      for (const id in byId) {
+        const rec = byId[id];
+        if (rec.messageId === messageId && !rec.deletedAt) {
+          out.push(rec);
+        }
+      }
+      return out.length === 0 ? EMPTY_TOOL_CALLS : out;
+    },
+  );
+
 // ---------------------------------------------------------------------------
 // Timelines
 // ---------------------------------------------------------------------------

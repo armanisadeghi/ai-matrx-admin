@@ -12,3 +12,6 @@ export { editMessage } from "./edit-message.thunk";
 export { forkConversation } from "./fork-conversation.thunk";
 export { softDeleteConversation } from "./soft-delete-conversation.thunk";
 export { invalidateConversationCache } from "./invalidate-conversation-cache.thunk";
+export { deleteMessage } from "./delete-message.thunk";
+export { overwriteAndResend } from "./overwrite-and-resend.thunk";
+export { atomicRetry } from "./atomic-retry.thunk";

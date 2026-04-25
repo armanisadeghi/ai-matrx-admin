@@ -39,7 +39,6 @@ import {
   IconShieldLock,
   IconSquareToggle,
   IconTestPipe,
-  IconUpload,
   IconUsers,
 } from "@tabler/icons-react";
 import React from "react";
@@ -426,21 +425,6 @@ export const adminCategories = [
     icon: <IconFolder className="w-6 h-6" />,
     iconColor: "text-amber-600",
     features: [
-      {
-        title: "System Files",
-        description:
-          "Upload and manage public files for app-wide use including voice samples, documentation, images, and sample files. Easily copy URLs for use in code.",
-        icon: <IconUpload />,
-        link: "/administration/system-files",
-        isNew: true,
-      },
-      {
-        title: "Access Local Files",
-        description:
-          "Directly access and browse files stored on the local filesystem, enabling quick file management.",
-        icon: <IconFolder />,
-        link: "/administration/file-explorer",
-      },
       {
         title: "Local Storage Admin",
         description:

@@ -1,0 +1,259 @@
+/**
+ * features/files/components/surfaces/PreviewPane.tsx
+ *
+ * Side-panel preview for a single file. Lives to the RIGHT of the file list
+ * inside PageShell — never replaces the list, so the user always has a way
+ * back. Header bar exposes copy-link, download, "Open full view" (routes to
+ * `/cloud-files/f/{fileId}`), and a Close (X) action that clears the active
+ * file selection so the panel collapses.
+ *
+ * Why this exists separately from FilePreview:
+ *   - FilePreview only renders the file's body (image, video, PDF, etc.).
+ *   - This wrapper owns the header bar, navigation actions, and the escape
+ *     hatch the user needs when triaging files quickly.
+ */
+
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import {
+  Check,
+  Copy,
+  Download,
+  ExternalLink,
+  Loader2,
+  X,
+} from "lucide-react";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { cn } from "@/lib/utils";
+import { selectFileById } from "../../redux/selectors";
+import { setActiveFileId } from "../../redux/slice";
+import { useFileActions } from "../core/FileActions";
+import { FilePreview } from "../core/FilePreview";
+import { FileIcon } from "../core/FileIcon";
+import { PreviewErrorBoundary } from "./PreviewErrorBoundary";
+
+export interface PreviewPaneProps {
+  fileId: string;
+  /**
+   * Called when the user clicks the close (X) button. Defaults to dispatching
+   * `setActiveFileId(null)`. Override only if you have a specific surface
+   * that needs to e.g. also navigate back.
+   */
+  onClose?: () => void;
+  /**
+   * Called when the user clicks "Open full view". Defaults to routing to
+   * `/cloud-files/f/{fileId}`.
+   */
+  onOpen?: () => void;
+  className?: string;
+}
+
+export function PreviewPane({
+  fileId,
+  onClose,
+  onOpen,
+  className,
+}: PreviewPaneProps) {
+  const dispatch = useAppDispatch();
+  const router = useRouter();
+  const pathname = usePathname();
+  const file = useAppSelector((s) => selectFileById(s, fileId));
+  const actions = useFileActions(fileId);
+
+  const [downloading, setDownloading] = useState(false);
+  const [copying, setCopying] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const handleClose = useCallback(() => {
+    if (onClose) {
+      onClose();
+      return;
+    }
+    // Always clear the active selection so the panel unmounts.
+    dispatch(setActiveFileId(null));
+    // If we're on a `/cloud-files/f/{fileId}` URL, the route hydrates
+    // `initialFileId` on every mount — clearing state alone isn't enough,
+    // because reload or any soft navigation back here would re-open the
+    // panel. Pop the user back to `/cloud-files` so the URL also resets.
+    if (pathname?.startsWith("/cloud-files/f/")) {
+      router.push("/cloud-files");
+    }
+  }, [dispatch, onClose, pathname, router]);
+
+  const handleOpen = useCallback(() => {
+    if (onOpen) {
+      onOpen();
+      return;
+    }
+    router.push(`/cloud-files/f/${fileId}`);
+  }, [fileId, onOpen, router]);
+
+  // Esc closes the preview — matches Dropbox / Drive muscle memory and is the
+  // last-line escape hatch if the user can't see the close button for any
+  // reason (covered by an error UI, off-screen, etc.).
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      // Don't steal Esc from open inputs / context menus / dialogs.
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA")) return;
+      if (t?.isContentEditable) return;
+      handleClose();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [handleClose]);
+
+  const handleDownload = useCallback(async () => {
+    if (downloading) return;
+    setDownloading(true);
+    try {
+      await actions.download();
+    } finally {
+      setDownloading(false);
+    }
+  }, [actions, downloading]);
+
+  const handleCopyLink = useCallback(async () => {
+    if (copying) return;
+    setCopying(true);
+    try {
+      const url = await actions.copyShareUrl();
+      if (url) {
+        setCopied(true);
+        // Reset the icon back to a clipboard after a short tick.
+        window.setTimeout(() => setCopied(false), 1600);
+      }
+    } finally {
+      setCopying(false);
+    }
+  }, [actions, copying]);
+
+  return (
+    <div
+      className={cn(
+        "flex h-full min-h-0 flex-col overflow-hidden bg-card",
+        className,
+      )}
+      role="complementary"
+      aria-label="File preview"
+    >
+      {/* Header */}
+      <div className="flex items-center gap-2 border-b border-border bg-muted/30 px-3 py-2 shrink-0">
+        <div className="flex min-w-0 flex-1 items-center gap-2">
+          {file ? (
+            <FileIcon
+              fileName={file.fileName}
+              size={16}
+              className="shrink-0"
+            />
+          ) : null}
+          <p
+            className="truncate text-sm font-medium"
+            title={file?.fileName ?? ""}
+          >
+            {file?.fileName ?? "Loading…"}
+          </p>
+        </div>
+
+        <div className="flex items-center gap-0.5 shrink-0">
+          <PreviewIconButton
+            onClick={handleCopyLink}
+            disabled={!file || copying}
+            title="Copy share link"
+            ariaLabel="Copy share link"
+          >
+            {copying ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : copied ? (
+              <Check className="h-3.5 w-3.5 text-success" />
+            ) : (
+              <Copy className="h-3.5 w-3.5" />
+            )}
+          </PreviewIconButton>
+          <PreviewIconButton
+            onClick={handleDownload}
+            disabled={!file || downloading}
+            title="Download"
+            ariaLabel="Download"
+          >
+            {downloading ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Download className="h-3.5 w-3.5" />
+            )}
+          </PreviewIconButton>
+          <PreviewIconButton
+            onClick={handleOpen}
+            disabled={!file}
+            title="Open full view"
+            ariaLabel="Open full view"
+          >
+            <ExternalLink className="h-3.5 w-3.5" />
+          </PreviewIconButton>
+          <div className="mx-1 h-4 w-px bg-border" />
+          {/* Close — clean icon button (no text). Esc keyboard shortcut also
+           * works. The user can't get trapped: this lives in the panel
+           * header, not the page header, so it doesn't collide with the
+           * top-right user-avatar dropdown. */}
+          <PreviewIconButton
+            onClick={handleClose}
+            title="Close preview (Esc)"
+            ariaLabel="Close preview"
+          >
+            <X className="h-4 w-4" />
+          </PreviewIconButton>
+        </div>
+      </div>
+
+      {/* Body — wrapped in an error boundary so a previewer crash (e.g. PDF
+       * worker fetch failure) shows a recoverable fallback inside the pane
+       * instead of taking down the whole app. */}
+      <div className="flex-1 min-h-0 overflow-hidden">
+        <PreviewErrorBoundary fileId={fileId}>
+          <FilePreview fileId={fileId} className="h-full w-full" />
+        </PreviewErrorBoundary>
+      </div>
+    </div>
+  );
+}
+
+// ─── Local sub-component ─────────────────────────────────────────────────
+
+interface PreviewIconButtonProps {
+  onClick: () => void;
+  children: React.ReactNode;
+  title: string;
+  ariaLabel: string;
+  disabled?: boolean;
+  tone?: "default" | "muted";
+}
+
+function PreviewIconButton({
+  onClick,
+  children,
+  title,
+  ariaLabel,
+  disabled,
+  tone = "default",
+}: PreviewIconButtonProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      title={title}
+      aria-label={ariaLabel}
+      className={cn(
+        "flex h-7 w-7 items-center justify-center rounded-md transition-colors disabled:cursor-not-allowed disabled:opacity-50",
+        tone === "muted"
+          ? "text-muted-foreground hover:bg-accent hover:text-foreground"
+          : "text-foreground hover:bg-accent",
+      )}
+    >
+      {children}
+    </button>
+  );
+}

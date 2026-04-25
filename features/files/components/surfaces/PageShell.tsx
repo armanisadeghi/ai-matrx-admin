@@ -10,10 +10,14 @@
  *   │
  *   └── ResizablePanelGroup
  *         ├── NavSidebar (resizable, cookie-persisted)
- *         └── Main pane
- *               ├── TopBar (+ New, search)
- *               ├── ContentHeader (breadcrumbs, title, actions, chips, toggle)
- *               └── File table / grid / file preview / empty state
+ *         ├── Main pane
+ *         │     ├── TopBar (+ New, search)
+ *         │     ├── ContentHeader (breadcrumbs, title, actions, chips, toggle)
+ *         │     └── File table / grid / empty state
+ *         └── PreviewPane (only when activeFileId is set — slides in on the
+ *               right; never replaces the list, so the user always has an
+ *               escape route via the Close (X) button or by clicking the
+ *               list behind the panel).
  *
  * Mobile delegates to the existing MobileStack — that surface remains
  * unchanged in this pass.
@@ -50,12 +54,13 @@ import {
   selectViewMode,
 } from "../../redux/selectors";
 import { setActiveFileId, setActiveFolderId } from "../../redux/slice";
-import { FilePreview } from "../core/FilePreview";
 import { FileTree } from "../core/FileTree";
 import { FileUploadDropzone } from "../core/FileUploadDropzone";
 import { OnboardingEmptyState } from "./OnboardingEmptyState";
 import { MobileStack } from "./MobileStack";
+import { PreviewPane } from "./PreviewPane";
 import {
+  BulkActionsBar,
   ContentHeader,
   EmptyState,
   FileGrid,
@@ -106,14 +111,22 @@ export function PageShell(props: PageShellProps) {
 const PANEL_IDS = {
   SIDE: "cloud-files-side",
   MAIN: "cloud-files-main",
+  /** Preview is mounted only when a file is selected — autoSave still
+   * remembers its width via this stable id. */
+  PREVIEW: "cloud-files-preview",
 } as const;
+
+/** Default preview width as a percent of the parent group. */
+const PREVIEW_DEFAULT_PCT = 38;
+const PREVIEW_MIN_PCT = 10;
+const PREVIEW_MAX_PCT = 60;
 
 function PageShellDesktop({
   initialFolderId,
   initialFileId,
   section = "all",
-  sidebarDefaultPercent = 18,
-  sidebarMinPercent = 14,
+  sidebarDefaultPercent = 12,
+  sidebarMinPercent = 6,
   className,
 }: PageShellProps) {
   const dispatch = useAppDispatch();
@@ -202,12 +215,15 @@ function PageShellDesktop({
   }, [section, rootFiles, allFiles]);
 
   const showPlaceholder = section === "requests" || section === "activity";
+  // The list ALWAYS renders unless we're showing a placeholder section or the
+  // empty-onboarding hero. Selecting a file no longer replaces the main pane —
+  // preview slides in as a separate side panel on the right.
   const showTableOrGrid =
     !showPlaceholder &&
-    !activeFileId &&
     !(isEmpty && (section === "all" || section === "folders"));
 
   const activeFile = activeFileId ? filesById[activeFileId] : null;
+  const showPreviewPane = !!activeFile;
 
   return (
     <div
@@ -237,7 +253,10 @@ function PageShellDesktop({
         <ResizableHandle />
 
         {/* Main */}
-        <ResizablePanel id={PANEL_IDS.MAIN} minSize={pct(40)}>
+        <ResizablePanel
+          id={PANEL_IDS.MAIN}
+          minSize={pct(showPreviewPane ? 30 : 40)}
+        >
           <div className="flex h-full flex-col overflow-hidden">
             <TopBar
               parentFolderId={activeFolderId}
@@ -270,12 +289,7 @@ function PageShellDesktop({
                 />
 
                 <div className="flex-1 overflow-hidden">
-                  {activeFile ? (
-                    <FilePreview
-                      fileId={activeFile.id}
-                      className="h-full w-full"
-                    />
-                  ) : showPlaceholder ? (
+                  {showPlaceholder ? (
                     <SectionPlaceholder section={section} />
                   ) : isEmpty && section === "all" ? (
                     <FileUploadDropzone
@@ -342,7 +356,33 @@ function PageShellDesktop({
             )}
           </div>
         </ResizablePanel>
+
+        {/* Preview pane — only mounted when a file is selected. The user
+         * always has an escape: the Close (X) button on the header bar
+         * clears `activeFileId`, which collapses this panel and reveals the
+         * full file list behind it. The list itself is also still partially
+         * visible behind the resize handle — clicking it (e.g. picking a
+         * different file) just swaps the previewed file. autoSave keeps the
+         * preferred width across mounts. */}
+        {showPreviewPane && (
+          <>
+            <ResizableHandle />
+            <ResizablePanel
+              id={PANEL_IDS.PREVIEW}
+              defaultSize={pct(PREVIEW_DEFAULT_PCT)}
+              minSize={pct(PREVIEW_MIN_PCT)}
+              maxSize={pct(PREVIEW_MAX_PCT)}
+              className="border-l border-border/70"
+            >
+              <PreviewPane fileId={activeFile!.id} />
+            </ResizablePanel>
+          </>
+        )}
       </ResizablePanelGroup>
+
+      {/* Bulk-actions toolbar — fixed-position pill at the bottom of the
+       * viewport. Renders nothing unless one or more rows are selected. */}
+      <BulkActionsBar />
     </div>
   );
 }

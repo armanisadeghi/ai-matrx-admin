@@ -9,6 +9,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { AlertCircle, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface TextPreviewProps {
@@ -56,14 +57,48 @@ export function TextPreview({
   }, [url, maxBytes]);
 
   if (error) {
+    // Honest error UI — distinguishes "we can't reach the file" (network /
+    // CORS / expired URL) from "we can't render this format" (which is a
+    // capability problem, not a fetch problem). The previous version always
+    // said "Preview failed" which the user correctly called out as misleading.
+    const isNetworkLike =
+      error.toLowerCase().includes("fetch") ||
+      error.toLowerCase().includes("network") ||
+      error.startsWith("HTTP ");
     return (
       <div
         className={cn(
-          "flex h-full w-full items-center justify-center text-sm text-destructive p-4",
+          "flex h-full w-full flex-col items-center justify-center gap-3 p-6 text-center",
           className,
         )}
+        role="alert"
       >
-        Preview failed: {error}
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+          <AlertCircle className="h-6 w-6 text-destructive" />
+        </div>
+        <div className="space-y-1">
+          <h3 className="text-sm font-semibold">
+            {isNetworkLike
+              ? "Couldn't reach this file"
+              : "Couldn't read this file"}
+          </h3>
+          <p className="max-w-md text-xs text-muted-foreground break-words">
+            {isNetworkLike
+              ? "The browser couldn't fetch the file's contents. The signed URL may have expired, the backend may be unreachable, or CORS may be blocking the request."
+              : error}
+          </p>
+        </div>
+        {url ? (
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90"
+          >
+            <ExternalLink className="h-3.5 w-3.5" />
+            Open in new tab
+          </a>
+        ) : null}
       </div>
     );
   }

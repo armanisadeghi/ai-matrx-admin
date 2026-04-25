@@ -39,6 +39,7 @@ import {
   FileType,
   Activity,
   BarChart3,
+  Trash2,
 } from "lucide-react";
 import { copyToClipboard } from "@/components/matrx/buttons/markdown-copy-utils";
 import { printMarkdownContent } from "@/features/conversation/utils/markdown-print";
@@ -109,6 +110,20 @@ export interface MessageActionContext {
    * conversation.
    */
   streamRequestId: string | null;
+  /**
+   * UI surface this action menu belongs to. Used to route fork / delete
+   * outcomes through the surfaces registry so the right kind of state
+   * update happens (URL replace for pages, focus update for windows /
+   * widgets). `null` disables surface-aware navigation.
+   */
+  surfaceKey: string | null;
+  /**
+   * Optional callback fired when an action wants to open the
+   * destructive-vs-fork dialog for this message. Provided by the host
+   * action bar (which owns the dialog state). When omitted, destructive
+   * actions fall through to a direct delete with no fork option.
+   */
+  onRequestDelete?: () => void;
 }
 
 // ============================================================================
@@ -731,12 +746,13 @@ function editContentItem(ctx: MessageActionContext): MenuItem {
 /**
  * USER MESSAGES ONLY — edit the user's prompt AND resubmit from that point.
  *
- * Flow: opens the full-screen editor prefilled with the user's current text;
- * on save the thunk forks the conversation at `position - 1` (so the user's
- * new version replaces what came next), writes the edited content onto the
- * fork head's user message, then launches a fresh AI turn using the edit as
- * input. This is the "I want to re-ask this question a different way" path.
+ * As of the surface-aware refactor, the canonical entry point for this
+ * flow is the inline Send-icon button on UserActionBar (always visible on
+ * hover for every user message). The host owns the editor + fork-vs-
+ * overwrite dialog state, so the menu item is no longer registered. The
+ * factory is kept here for legacy callers and to document the flow.
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function editAndResubmitItem(ctx: MessageActionContext): MenuItem {
   const { content, conversationId, messageId, metadata, dispatch, onClose } =
     ctx;
@@ -823,7 +839,7 @@ function editAndResubmitItem(ctx: MessageActionContext): MenuItem {
  *     response — useful to keep this answer but try a different continuation.
  */
 function forkAtMessageItem(ctx: MessageActionContext): MenuItem {
-  const { conversationId, messageId, dispatch, onClose } = ctx;
+  const { conversationId, messageId, surfaceKey, dispatch, onClose } = ctx;
   return {
     key: "fork-at-message",
     icon: GitBranch,
@@ -845,7 +861,22 @@ function forkAtMessageItem(ctx: MessageActionContext): MenuItem {
             forkConversation({ conversationId, atPosition: position }),
           ).unwrap();
         };
-        await dispatch(positionThunk as never);
+        const result = (await dispatch(positionThunk as never)) as unknown as {
+          conversationId: string;
+        };
+
+        // Post-fork affordance: offer the user a one-click jump to the new
+        // branch. They can also "Stay here" — the new branch is reachable
+        // from the conversation sidebar either way. Toast (not modal)
+        // because forking is reversible and we don't want to break flow.
+        if (surfaceKey && result?.conversationId) {
+          const { showForkOutcomeToast } = await import("./ForkOutcomeToast");
+          showForkOutcomeToast({
+            dispatch,
+            surfaceKey,
+            newConversationId: result.conversationId,
+          });
+        }
       } catch (err) {
         // eslint-disable-next-line no-console
         console.error("[fork-at-message] failed", err);
@@ -854,9 +885,37 @@ function forkAtMessageItem(ctx: MessageActionContext): MenuItem {
       }
     },
     category: "Edit",
-    successMessage: "Conversation forked",
+    // The post-fork toast handles success messaging; suppress the
+    // generic "Conversation forked" success toast so we don't double up.
+    showToast: false,
     errorMessage: "Failed to fork conversation",
     hidden: !conversationId || !messageId,
+  };
+}
+
+/**
+ * Delete this message. The host (UserActionBar / AssistantActionBar) owns
+ * the destructive-vs-fork dialog and passes `onRequestDelete` into the
+ * context. We just call back to it here so the menu can stay simple.
+ *
+ * If `onRequestDelete` isn't wired (e.g. older host), the item hides —
+ * better than a dead button.
+ */
+function deleteMessageItem(ctx: MessageActionContext): MenuItem {
+  const { conversationId, messageId, onRequestDelete, onClose } = ctx;
+  const enabled = Boolean(conversationId && messageId && onRequestDelete);
+  return {
+    key: "delete-message",
+    icon: Trash2,
+    iconColor: "text-red-500 dark:text-red-400",
+    label: "Delete message",
+    action: () => {
+      onClose();
+      onRequestDelete?.();
+    },
+    category: "Edit",
+    showToast: false,
+    hidden: !enabled,
   };
 }
 
@@ -999,6 +1058,7 @@ export function getAssistantMessageActions(
   return [
     editContentItem(ctx),
     forkAtMessageItem(ctx),
+    deleteMessageItem(ctx),
     ...creatorItems(ctx),
     ...copyItems(ctx),
     ...assistantOnlyItems(ctx),
@@ -1020,10 +1080,13 @@ export function getAssistantMessageActions(
  * play/pause toggle, with markdown cleanup), not in this menu.
  */
 export function getUserMessageActions(ctx: MessageActionContext): MenuItem[] {
+  // Note: "Edit & resubmit" lives only on the inline UserActionBar Send
+  // button now — the host owns the editor + fork-vs-overwrite dialog
+  // state. Keeping it out of this menu eliminates the duplicate flow.
   return [
     editContentItem(ctx),
-    editAndResubmitItem(ctx),
     forkAtMessageItem(ctx),
+    deleteMessageItem(ctx),
     ...creatorItems(ctx),
     ...copyItems(ctx),
     ...exportItems(ctx),

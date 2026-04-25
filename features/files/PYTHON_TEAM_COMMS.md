@@ -19,6 +19,26 @@ Live ledger of questions, feature requests, and backend-side asks. Every interac
 
 ## Open items
 
+### 2026-04-24 — Q: CORS on `/health` and the rest of `/files/*` for browser dev?
+
+**Status:** 🟡 awaiting.
+**Context:** We just shipped a diagnostic harness at `/ssr/demos/cloud-files-debug` that fires every cloud-files endpoint from the browser so devs can see exactly where the pipeline breaks. With the admin server-toggle set to `localhost`, the page POSTs to `http://localhost:8000/files/upload`. We need confirmation that:
+  1. `/health` accepts unauthenticated GETs from `Origin: http://localhost:3000` (and our deployed origins).
+  2. The full `/files/*` API permits the browser's preflight `OPTIONS` for `Authorization`, `Content-Type`, `X-Request-Id`.
+**Ask:** Confirm CORS allowlist; if it's environment-conditional, document the rule.
+**Blocker?** No, but a missing `Access-Control-Allow-*` will produce confusing "Network error" rows in the diagnostic log instead of a clear 4xx.
+
+---
+
+### 2026-04-24 — Req: Server-side respect of dev backend overrides
+
+**Status:** 🟠 deferred — internal frontend follow-up first.
+**Priority:** Low.
+**Context:** [features/files/api/server-client.ts](api/server-client.ts) (used by App Router route handlers like `/api/agent-apps/generate-favicon` and `/api/images/upload`) resolves the backend URL from `BACKEND_URLS.production` only — server contexts have no Redux store to read the active environment from. In production this is fine. In local dev, server-side cloud-files calls always hit prod even when the developer flipped the admin toggle to localhost.
+**Ask:** None of the Python team — this is an FE plumbing item we'll solve on our side (likely by reading a `Cookie: matrx_active_server` set by the admin toggle and parsed in `createServerContext`). Logged here so it doesn't get lost.
+
+---
+
 ### 2026-04-23 — Q: Table naming discrepancy between doc and DB
 
 **Status:** 🟡 awaiting.
