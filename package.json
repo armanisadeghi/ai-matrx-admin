@@ -186,6 +186,7 @@
     "react-swipeable": "latest",
     "react-syntax-highlighter": "^16.1.1",
     "react-table": "latest",
+    "react-textarea-autosize": "^8.5.9",
     "react-use-websocket": "latest",
     "reactflow": "^11.11.4",
     "recharts": "^3.8.0",

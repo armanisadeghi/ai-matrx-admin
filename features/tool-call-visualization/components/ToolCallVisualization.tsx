@@ -22,7 +22,7 @@
  * There is no ToolCallObject anywhere in this tree.
  */
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   CheckCircle,
   ChevronDown,
@@ -33,6 +33,8 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import type { ToolLifecycleEntry } from "@/features/agents/types/request.types";
 
 import {
@@ -75,6 +77,7 @@ const RequestDrivenShell: React.FC<{
   return (
     <ToolCallVisualizationInner
       entries={entries}
+      requestId={requestId}
       hasContent={hasContent}
       isPersisted={isPersisted}
       className={className}
@@ -86,15 +89,29 @@ const RequestDrivenShell: React.FC<{
 
 const ToolCallVisualizationInner: React.FC<{
   entries: ToolLifecycleEntry[];
+  /**
+   * Optional live request id. When set, the window-panel surface
+   * subscribes to live lifecycle entries and stays in sync as new
+   * events stream in. Entries-driven callers (persisted snapshots)
+   * leave this undefined and pass an `entries` snapshot to the window.
+   */
+  requestId?: string;
   hasContent?: boolean;
   isPersisted?: boolean;
   className?: string;
-}> = ({ entries, hasContent = false, isPersisted = false, className }) => {
+}> = ({
+  entries,
+  requestId,
+  hasContent = false,
+  isPersisted = false,
+  className,
+}) => {
   const [isExpanded, setIsExpanded] = useState<boolean>(true);
   const [isOverlayOpen, setIsOverlayOpen] = useState<boolean>(false);
   const [initialOverlayTab, setInitialOverlayTab] = useState<
     string | undefined
   >(undefined);
+  const dispatch = useAppDispatch();
 
   console.log("[TOOL CALL VISUALIZATION INNER] entries:", entries);
   // Prefetch any dynamic renderers for tools in this group.
@@ -153,6 +170,32 @@ const ToolCallVisualizationInner: React.FC<{
     setInitialOverlayTab(tabId);
     setIsOverlayOpen(true);
   };
+
+  const handleOpenWindowPanel = useCallback(
+    (initialTab?: string) => {
+      const callIds = entries.map((e) => e.callId);
+      const seedCallId = entries[0]?.callId ?? "no-entry";
+      // Stable per-group id so re-clicking the inline button focuses the
+      // existing window instead of spawning a duplicate. `instanceMode:
+      // "multi"` lets multiple distinct groups coexist.
+      const instanceId = `tool-call-${seedCallId}`;
+      dispatch(
+        openOverlay({
+          overlayId: "toolCallWindow",
+          instanceId,
+          data: {
+            requestId: requestId ?? null,
+            callIds,
+            // Snapshot only when we have no live request to subscribe to.
+            entries: requestId ? null : entries,
+            initialCallId: null,
+            initialTab: initialTab ?? null,
+          },
+        }),
+      );
+    },
+    [dispatch, entries, requestId],
+  );
 
   return (
     <div
@@ -253,6 +296,7 @@ const ToolCallVisualizationInner: React.FC<{
                   entry={entry}
                   events={entry.events}
                   onOpenOverlay={handleOpenOverlay}
+                  onOpenWindowPanel={handleOpenWindowPanel}
                   toolGroupId={entry.callId}
                   isPersisted={isPersisted}
                 />

@@ -12,6 +12,7 @@ import {
   Link2,
   BookOpenCheck,
   ScanSearch,
+  PanelRightOpen,
 } from "lucide-react";
 import type { ToolRendererProps } from "../../types";
 import {
@@ -257,6 +258,7 @@ export const DeepResearchInline: React.FC<ToolRendererProps> = ({
   entry,
   events,
   onOpenOverlay,
+  onOpenWindowPanel,
   toolGroupId = "default",
 }) => {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
@@ -452,27 +454,47 @@ export const DeepResearchInline: React.FC<ToolRendererProps> = ({
         </div>
       )}
 
-      {/* View Full Research Button */}
-      {isComplete && onOpenOverlay && (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onOpenOverlay(`tool-group-${toolGroupId}`);
-          }}
-          className="w-full py-2.5 px-4 rounded-lg bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-900/20 dark:to-purple-900/20 text-violet-700 dark:text-violet-300 text-sm font-medium hover:from-violet-100 hover:to-purple-100 dark:hover:from-violet-900/30 dark:hover:to-purple-900/30 transition-all duration-200 flex items-center justify-center gap-2 border border-violet-200 dark:border-violet-800 hover:border-violet-300 dark:hover:border-violet-700 cursor-pointer animate-in fade-in slide-in-from-bottom"
+      {/* View Full Research Buttons — two visual peers */}
+      {isComplete && (onOpenOverlay || onOpenWindowPanel) && (
+        <div
+          className="flex items-stretch gap-2 animate-in fade-in slide-in-from-bottom"
           style={{
             animationDelay: `${Math.min(displayResults.length, 4) * 70 + 100}ms`,
             animationDuration: "300ms",
             animationFillMode: "backwards",
           }}
         >
-          <BookOpen className="w-4 h-4" />
-          <span>
-            View complete research
-            {readResults.length + unreadResults.length > 0 &&
-              ` (${readResults.length} read${unreadResults.length > 0 ? `, ${unreadResults.length} more` : ""})`}
-          </span>
-        </button>
+          {onOpenOverlay && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenOverlay(`tool-group-${toolGroupId}`);
+              }}
+              className="flex-1 py-2.5 px-4 rounded-lg bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-900/20 dark:to-purple-900/20 text-violet-700 dark:text-violet-300 text-sm font-medium hover:from-violet-100 hover:to-purple-100 dark:hover:from-violet-900/30 dark:hover:to-purple-900/30 transition-all duration-200 flex items-center justify-center gap-2 border border-violet-200 dark:border-violet-800 hover:border-violet-300 dark:hover:border-violet-700 cursor-pointer"
+              title="Open in fullscreen overlay"
+            >
+              <BookOpen className="w-4 h-4" />
+              <span>
+                View complete research
+                {readResults.length + unreadResults.length > 0 &&
+                  ` (${readResults.length} read${unreadResults.length > 0 ? `, ${unreadResults.length} more` : ""})`}
+              </span>
+            </button>
+          )}
+          {onOpenWindowPanel && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenWindowPanel();
+              }}
+              className="flex-shrink-0 py-2.5 px-4 rounded-lg bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-900/20 dark:to-purple-900/20 text-violet-700 dark:text-violet-300 text-sm font-medium hover:from-violet-100 hover:to-purple-100 dark:hover:from-violet-900/30 dark:hover:to-purple-900/30 transition-all duration-200 flex items-center justify-center gap-2 border border-violet-200 dark:border-violet-800 hover:border-violet-300 dark:hover:border-violet-700 cursor-pointer"
+              title="Open in window"
+            >
+              <PanelRightOpen className="w-4 h-4" />
+              <span className="hidden sm:inline">Open in window</span>
+            </button>
+          )}
+        </div>
       )}
     </div>
   );

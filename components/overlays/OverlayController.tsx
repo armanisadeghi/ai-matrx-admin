@@ -523,6 +523,12 @@ const MultiFileSmartCodeEditorWindow = dynamic(
   { ssr: false },
 );
 
+const ToolCallWindowPanel = dynamic(
+  () =>
+    import("@/features/tool-call-visualization/window-panel/ToolCallWindowPanel"),
+  { ssr: false },
+);
+
 const ContentEditorWorkspaceWindow = dynamic(
   () =>
     import("@/features/window-panels/windows/content-editors/ContentEditorWorkspaceWindow").then(
@@ -902,6 +908,9 @@ export const OverlayController: React.FC = () => {
   );
   const multiFileSmartCodeEditorWindowInstances = useAppSelector((s) =>
     selectOpenInstances(s, "multiFileSmartCodeEditorWindow"),
+  );
+  const toolCallWindowInstances = useAppSelector((s) =>
+    selectOpenInstances(s, "toolCallWindow"),
   );
 
   const isScraperWindowOpen = useAppSelector((s) =>
@@ -1348,7 +1357,6 @@ export const OverlayController: React.FC = () => {
           or `userPreferencesWindow` overlay is open — no conditional needed
           here. Both legacy mount points flow through the same component. */}
       <SettingsShellOverlay />
-
 
       {isAnnouncementsOpen && (
         <AnnouncementsViewer
@@ -1848,6 +1856,20 @@ export const OverlayController: React.FC = () => {
           />
         );
       })}
+
+      {toolCallWindowInstances.map(({ instanceId, data }) => (
+        <ToolCallWindowPanel
+          key={instanceId}
+          isOpen={true}
+          instanceId={instanceId}
+          requestId={data?.requestId ?? null}
+          callIds={data?.callIds ?? []}
+          entries={data?.entries ?? null}
+          initialCallId={data?.initialCallId ?? null}
+          initialTab={data?.initialTab ?? null}
+          onClose={() => close("toolCallWindow", instanceId)}
+        />
+      ))}
 
       {/* ── Instanced overlays — .map() renders each open instance ─────── */}
       {/* Each instance gets a stable key so React correctly reconciles them. */}

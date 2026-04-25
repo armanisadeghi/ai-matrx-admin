@@ -47,6 +47,12 @@ export interface ToolRendererProps {
   onOpenOverlay?: (initialTab?: string) => void;
 
   /**
+   * Optional second click action — opens the same data in a draggable
+   * WindowPanel instead of the fullscreen overlay.
+   */
+  onOpenWindowPanel?: (initialTab?: string) => void;
+
+  /**
    * The callId for this renderer's tool. Used to target a specific tab
    * when opening the overlay. Mirrors `entry.callId`.
    */

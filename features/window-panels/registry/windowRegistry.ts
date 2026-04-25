@@ -1211,6 +1211,34 @@ const REGISTRY: WindowRegistryEntry[] = [
     mobilePresentation: "fullscreen",
   },
 
+  // ── Tool Call Window (generic — driven by tool registry's OverlayTabs) ───
+  // Live, ephemeral floating window for inspecting any tool call group. The
+  // payload carries either a `requestId` + `callIds[]` (live mode — the
+  // window subscribes to ordered lifecycle entries and updates as events
+  // arrive) or a snapshot `entries` array (post-stream mode). Entry sidebar
+  // drives selection; main area renders browser-style tabs assembled from
+  // the tool registry's `getOverlayTabs(toolName)` (or the default
+  // [Results | Input | Raw] when no custom tabs are registered).
+  {
+    slug: "tool-call-window",
+    overlayId: "toolCallWindow",
+    kind: "window",
+    label: "Tool Results",
+    componentImport: () =>
+      import("@/features/tool-call-visualization/window-panel/ToolCallWindowPanel"),
+    defaultData: {
+      requestId: null,
+      callIds: [],
+      entries: null,
+      initialCallId: null,
+      initialTab: null,
+    },
+    ephemeral: true,
+    instanceMode: "multi",
+    mobilePresentation: "fullscreen",
+    mobileSidebarAs: "drawer",
+  },
+
   // ── Observational Memory (admin-gated per-conversation inspector) ─────────
   {
     slug: "observational-memory-window",
