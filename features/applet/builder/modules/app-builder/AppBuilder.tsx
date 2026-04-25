@@ -8,7 +8,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/components/ui/use-toast";
 import {
     getAllCustomAppConfigs,
@@ -551,8 +550,6 @@ export const AppBuilder = () => {
                     </Tabs>
                 </CardContent>
             </Card>
-
-            <Toaster />
         </div>
     );
 };

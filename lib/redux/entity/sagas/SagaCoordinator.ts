@@ -1,4 +1,9 @@
-// lib/redux/sagas/SagaCoordinator.ts
+// lib/redux/entity/sagas/SagaCoordinator.ts
+//
+// Moved from `lib/redux/sagas/SagaCoordinator.ts` during the entity-isolation
+// migration so that the slim root saga can avoid importing entity-saga code.
+// See `~/.claude/plans/the-entity-system-which-bubbly-wind.md`.
+
 import { channel, Channel } from "redux-saga";
 import { all, call } from "redux-saga/effects";
 import { EntityKeys } from "@/types/entityTypes";

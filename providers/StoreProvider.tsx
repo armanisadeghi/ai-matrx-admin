@@ -4,38 +4,53 @@
 // module-level singleton so it survives React remounts (HMR, route-level
 // re-renders, parent key changes) — `useRef` alone is per-instance and was
 // re-running `bootSync` on every remount, leaking a fresh BroadcastChannel +
-// channel listener each time (symptom: dozens of `boot.start / boot.complete`
-// in a single session, duplicate broadcast dispatches).
+// channel listener each time.
 //
 // SSR path: `typeof window === "undefined"` — skip the module cache, create a
 // per-render store via `useRef`. Each request stays isolated; `bootSync` is
-// not invoked on the server (localStorage + BroadcastChannel are no-ops there
-// anyway; the first client render runs it).
+// not invoked on the server.
 //
-// Per phase-1-plan.md §6.4 + plan ground-truth delta #9: the awaited portion
-// of `bootSync` is strictly synchronous work, so calling it inside the ref
-// initializer is safe. Peer hydration (Phase 2+) will move to a background
-// `useEffect`.
+// During the entity-isolation migration this provider became factory-agnostic:
+// it accepts an optional `makeStore` prop so that the `(authenticated)` /
+// `(a)` / `(ssr)` route groups (slim) and `(legacy)` (entity-aware) can each
+// pass their own factory. The module-level singleton is keyed by factory
+// reference so navigating between groups produces the correct store. Default
+// remains `makeStore` from `@/lib/redux/store` for back-compat.
+//
+// See `~/.claude/plans/the-entity-system-which-bubbly-wind.md`.
 
 "use client";
 
-import { AppStore, makeStore } from "@/lib/redux/store";
+import {
+  AppStore as SlimAppStore,
+  makeStore as makeSlimStore,
+} from "@/lib/redux/store";
 import { useRef } from "react";
 import { Provider } from "react-redux";
 import { bootSync } from "@/lib/sync/engine/boot";
 import { syncPolicies } from "@/lib/sync/registry";
-import { InitialReduxState, LiteInitialReduxState } from "@/types/reduxTypes";
 import { writeThemeCookie, type ThemeMode } from "@/styles/themes/themeSlice";
 
-// Module-level browser singleton. Populated lazily on first client render.
-// Never populated on the server (the `typeof window` guard below skips it).
-let clientStore: AppStore | null = null;
+// Generic factory shape — both `makeStore` (slim) and `makeEntityStore`
+// (entity) satisfy it. Their return types differ in `getState()` shape, but
+// both expose the same `_sync` context + `subscribe`/`dispatch` surface that
+// the bootstrap code below depends on.
+type AnyStoreFactory = (initialState?: any) => SlimAppStore;
+
+// Module-level browser singleton keyed by factory reference. Each route group
+// passes a different factory and gets its own store. WeakMap would be ideal
+// but factories are stable module-level consts so a regular Map is fine and
+// gives us deterministic lookup.
+const clientStores = new Map<AnyStoreFactory, SlimAppStore>();
 
 function getOrCreateClientStore(
-  initialState?: Partial<InitialReduxState> & LiteInitialReduxState,
-): AppStore {
-  if (clientStore) return clientStore;
-  const store = makeStore(initialState);
+  factory: AnyStoreFactory,
+  initialState?: any,
+): SlimAppStore {
+  const existing = clientStores.get(factory);
+  if (existing) return existing;
+
+  const store = factory(initialState);
   void bootSync({
     store,
     identity: store._sync.identity,
@@ -46,12 +61,8 @@ function getOrCreateClientStore(
     getIdentity: () => store._sync.getIdentity(),
   });
 
-  // Phase 3 PR 3.B: keep the `theme` cookie in lockstep with Redux so the
-  // server-side pre-paint (`app/layout.tsx` reads `theme` from cookies to
-  // set `<html class="dark">` before JS runs) always reflects the user's
-  // last choice on the very first HTML frame. Seeding `lastMode` from the
-  // initial store state avoids a redundant POST when REHYDRATE lands with
-  // the same value the cookie already holds.
+  // Keep the `theme` cookie in lockstep with Redux so the server-side
+  // pre-paint always reflects the user's last choice.
   let lastMode: ThemeMode | undefined = store.getState().theme?.mode;
   store.subscribe(() => {
     const mode = store.getState().theme?.mode;
@@ -61,23 +72,26 @@ function getOrCreateClientStore(
     }
   });
 
-  clientStore = store;
+  clientStores.set(factory, store);
   return store;
 }
 
 export default function StoreProvider({
   children,
   initialState,
+  makeStore = makeSlimStore as AnyStoreFactory,
 }: {
   children: React.ReactNode;
-  initialState?: Partial<InitialReduxState> & LiteInitialReduxState;
+  initialState?: any;
+  makeStore?: AnyStoreFactory;
 }) {
-  const storeRef = useRef<AppStore | null>(null);
+  const storeRef = useRef<SlimAppStore | null>(null);
 
   if (!storeRef.current) {
     if (typeof window !== "undefined") {
-      // Browser: reuse the per-tab singleton. Idempotent across remounts.
-      storeRef.current = getOrCreateClientStore(initialState);
+      // Browser: reuse the per-tab singleton keyed by factory. Idempotent
+      // across remounts.
+      storeRef.current = getOrCreateClientStore(makeStore, initialState);
     } else {
       // SSR: per-request store. No boot (server has no localStorage anyway).
       storeRef.current = makeStore(initialState);

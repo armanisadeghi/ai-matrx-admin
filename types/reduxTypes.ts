@@ -5,15 +5,19 @@ import { GlobalCacheState } from "@/lib/redux/schema/globalCacheSlice";
 import type { AIModel } from "@/features/ai-models/redux/modelRegistrySlice";
 import type { ContextMenuRow } from "@/utils/supabase/ssrShellData";
 
-export interface InitialReduxState {
+/**
+ * Bootstrap state for the slim store (`makeStore`). Used by all routes that
+ * do NOT depend on the legacy entity system (~95% of the app). Contains no
+ * `globalCache` and no entity slices.
+ */
+export interface BaseReduxState {
   user: UserData;
   testRoutes: string[];
-  // Phase 3: made optional. Preferences are no longer fetched server-side;
-  // the `userPreferencesPolicy` warm-cache cold-boot path (IDB → LS → remote.fetch)
+  // Preferences are no longer fetched server-side; the
+  // `userPreferencesPolicy` warm-cache cold-boot path (IDB → LS → remote.fetch)
   // owns hydration entirely on the client. `resolveStoreBootstrapState` falls
   // back to `initializeUserPreferencesState(defaultUserPreferences)` when absent.
   userPreferences?: Record<string, any>;
-  globalCache: GlobalCacheState;
   // Optional SSR pre-population.
   // contextMenuCache shape matches ContextMenuCacheState exactly — safe as preloaded state.
   // modelRegistry and sms need action-based hydration (their shapes don't match raw arrays)
@@ -23,10 +27,24 @@ export interface InitialReduxState {
 }
 
 /**
- * Optional bootstrap fields for `StoreProvider` / `makeStore` on public routes.
- *
- * @deprecated Prefer `Partial<InitialReduxState>` or explicit slice preload keys; the name
- * "lite" referred to the removed lite store.
+ * Bootstrap state for the entity store (`makeEntityStore`). Used by routes
+ * under `app/(legacy)/legacy/*` that need the entity system. Adds the
+ * `globalCache` schema cache on top of `BaseReduxState`.
+ */
+export interface EntityReduxState extends BaseReduxState {
+  globalCache: GlobalCacheState;
+}
+
+/**
+ * @deprecated Migration alias — use `EntityReduxState` for entity routes or
+ * `BaseReduxState` for slim routes. Removed in Phase 5 of the entity-isolation
+ * migration (see `~/.claude/plans/the-entity-system-which-bubbly-wind.md`).
+ */
+export interface InitialReduxState extends EntityReduxState {}
+
+/**
+ * @deprecated Migration alias. Use `Partial<BaseReduxState>` or explicit slice
+ * preload keys. Removed in Phase 5.
  */
 export interface LiteInitialReduxState {
   user?: Partial<UserData>;

@@ -9,7 +9,6 @@ import { GroupsConfigStep } from "@/features/applet/builder/steps/ContainerConfi
 import { FieldsBrokerConfigStep } from "@/features/applet/builder/steps/FieldsBrokerConfigStep";
 import { PreviewConfig } from "@/features/applet/builder/previews/PreviewConfig";
 import { useToast } from "@/components/ui/use-toast";
-import { Toaster } from "@/components/ui/toaster";
 import { LoadingSpinner } from "@/components/ui/spinner";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { selectAppLoading, selectAppError, selectHasUnsavedAppChanges, selectAppSlug } from "@/lib/redux/app-builder/selectors/appSelectors";
@@ -405,7 +404,6 @@ export const ConfigBuilder = () => {
                     />
                 </Card>
             </div>
-            <Toaster />
             <AppBuilderDebugOverlay position="middle-right" />
         </div>
     );

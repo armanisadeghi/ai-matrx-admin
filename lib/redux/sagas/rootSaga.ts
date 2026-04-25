@@ -1,24 +1,23 @@
 // lib/redux/sagas/rootSaga.ts
+//
+// Slim root saga — entity-free. Used by `makeStore()` (the slim store).
+// Entity-bound routes use `createEntityRootSaga` from `./entity-rootSaga.ts`
+// which wraps this slim saga and adds entity-specific watchers.
+//
+// See `~/.claude/plans/the-entity-system-which-bubbly-wind.md`.
+
 import { all, call, fork } from "redux-saga/effects";
-import { EntityKeys } from "@/types/entityTypes";
-import { SagaCoordinator } from "@/lib/redux/sagas/SagaCoordinator";
 import { createStorageSyncSaga } from "@/lib/redux/sagas/storage/storageSyncSaga";
 import { storageSyncConfig } from "@/lib/redux/sagas/storage/config";
 import { watchDefinitionChanges } from "@/features/agents/redux/execution-system/sagas/syncDefinitionToInstances.saga";
-// import { socketSaga } from '@/lib/redux/features/socket/socketSaga';
 
-export function createRootSaga(entityNames: EntityKeys[]) {
+export function createSlimRootSaga() {
   return function* rootSaga() {
-    const sagaCoordinator = SagaCoordinator.getInstance();
-    sagaCoordinator.setEntityNames(entityNames);
-
     const storageSaga = createStorageSyncSaga(storageSyncConfig);
 
     yield all([
-      call([sagaCoordinator, sagaCoordinator.initializeEntitySagas]),
       call(storageSaga),
       fork(watchDefinitionChanges),
-      // fork(socketSaga),
     ]);
   };
 }

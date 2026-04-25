@@ -1,6 +1,18 @@
 // lib/redux/rootReducer.ts
 "use client";
-import { combineReducers, Reducer } from "@reduxjs/toolkit";
+
+// Slim root reducer — entity-free. Used by `makeStore()` in `./store.ts`
+// for the ~95% of routes that don't touch the deprecated entity system.
+//
+// Entity-bound routes (under `app/(legacy)/legacy/*`) use
+// `createEntityRootReducer` from `./entity-rootReducer.ts`, which composes
+// `slimReducerMap` with the entity slices (`entities`, `entityFields`,
+// `globalCache`, `entitySystem`).
+//
+// See `~/.claude/plans/the-entity-system-which-bubbly-wind.md` for the
+// migration that produced this split.
+
+import { combineReducers } from "@reduxjs/toolkit";
 import { featureSchemas } from "./dynamic/featureSchema";
 import { createFeatureSlice } from "./slices/featureSliceCreator";
 import { createModuleSlice } from "./slices/moduleSliceCreator";
@@ -14,18 +26,7 @@ import testRoutesReducer from "./slices/testRoutesSlice";
 import flashcardChatReducer from "./slices/flashcardChatSlice";
 import adminDebugReducer from "./slices/adminDebugSlice";
 import themeReducer from "@/styles/themes/themeSlice";
-import { InitialReduxState } from "@/types/reduxTypes";
-import { createGlobalCacheSlice } from "@/lib/redux/schema/globalCacheSlice";
 import uiReducer from "./ui/uiSlice";
-import {
-  entitySliceRegistry,
-  initializeEntitySlices,
-} from "./entity/entitySlice";
-import { fieldReducer } from "@/lib/redux/concepts/fields/fieldSlice";
-// Phase 11: legacy `./storage` and `./fileSystem` imports removed.
-// Cloud-files state lives in `features/files/redux` (registered as
-// `cloudFiles` below).
-import { UnifiedSchemaCache } from "@/types/entityTypes";
 
 import socketConnectionReducer from "./socket-io/slices/socketConnectionsSlice";
 import socketResponseReducer from "./socket-io/slices/socketResponseSlice";
@@ -38,8 +39,6 @@ import { fieldBuilderSlice } from "./app-builder/slices/fieldBuilderSlice";
 import customAppRuntimeSlice from "./app-runner/slices/customAppRuntimeSlice";
 import customAppletRuntimeSlice from "./app-runner/slices/customAppletRuntimeSlice";
 
-// import { brokerValuesSlice } from "./app-runner/slices/brokerValuesSlice";
-// import brokersSlice from "./app-runner/slices/brokerSlice";
 import brokerSlice from "./brokerSlice/slice";
 import overlaySlice from "./slices/overlaySlice";
 import overlayDataReducer from "./slices/overlayDataSlice";
@@ -61,14 +60,10 @@ import messagingReducer from "@/features/messaging/redux/messagingSlice";
 import smsReducer from "@/features/sms/redux/smsSlice";
 import adminPreferencesReducer from "./slices/adminPreferencesSlice";
 import apiConfigReducer from "./slices/apiConfigSlice";
-// activeChat — unmounted (Redux unification). File remains on disk.
-import entitySystemReducer from "./slices/entitySystemSlice";
 import urlSyncReducer from "./slices/urlSyncSlice";
 
-// Agent cache — unified slim/core/operational store for user prompts + builtins + shared
 import agentCacheReducer from "./slices/agentCacheSlice";
 import agentDefinitionReducer from "@/features/agents/redux/agent-definition/slice";
-// agentConversations — superseded by conversationList. File remains on disk.
 import { conversationListReducer } from "@/features/agents/redux/conversation-list/conversation-list.slice";
 import { conversationHistoryReducer } from "@/features/agents/redux/conversation-history";
 import agentShortcutReducer from "@/features/agents/redux/agent-shortcuts/slice";
@@ -79,9 +74,7 @@ import { agentConnectionsUiReducer } from "@/features/agent-connections/redux/ui
 import { agentAppReducer } from "@/features/agents/redux/agent-apps/slice";
 import agentConsumersReducer from "@/features/agents/redux/agent-consumers/slice";
 import toolsReducer from "@/features/agents/redux/tools/tools.slice";
-// import agentExecutionReducer from "@/features/agents/_garbage/agent-execution/slice";
 
-// Prompt system
 import promptCacheReducer from "./slices/promptCacheSlice";
 import promptConsumersReducer from "./slices/promptConsumersSlice";
 import contextMenuCacheReducer from "./slices/contextMenuCacheSlice";
@@ -95,11 +88,9 @@ import scopeAssignmentsReducer from "@/features/agent-context/redux/scope/scopeA
 import scopeContextReducer from "@/features/agent-context/redux/scope/scopeContextSlice";
 import promptEditorReducer from "./slices/promptEditorSlice";
 import modelRegistryReducer from "../../features/ai-models/redux/modelRegistrySlice";
-// chatConversations — unmounted (Redux unification). File remains on disk.
 import { messageActionsReducer } from "@/features/agents/redux/execution-system/message-actions/message-actions.slice";
 import agentSettingsReducer from "./slices/agent-settings/agentSettingsSlice";
 
-// cxConversations — superseded by conversationList. File remains on disk.
 import artifactsReducer from "./slices/artifactsSlice";
 import htmlPagesReducer from "./slices/htmlPagesSlice";
 
@@ -132,10 +123,6 @@ import agentAssistantMarkdownDraftReducer from "@/features/agents/redux/agent-as
 import { default as netRequestsReducer } from "@/lib/redux/net/netRequestsSlice";
 import { default as netHealthReducer } from "@/lib/redux/net/netHealthSlice";
 
-// Phase 11 removed the legacy `fileSystemReducers` + `availableBuckets`
-// + `FileSystemState` exports. The new `cloudFiles` slice below is the
-// single source of truth for file state.
-
 const featureReducers = Object.keys(featureSchemas).reduce(
   (acc, featureName) => {
     const featureSchema =
@@ -161,248 +148,158 @@ const moduleReducers = Object.keys(moduleSchemas).reduce(
   {} as Record<string, any>,
 );
 
-export const createRootReducer = (initialState: InitialReduxState) => {
-  const entityNames = initialState.globalCache?.entityNames ?? [];
-  const hasEntities = entityNames.length > 0;
+/**
+ * Slice map for the slim store. Every key here is a non-entity slice — safe
+ * to mount on routes that don't import the entity system.
+ *
+ * `createEntityRootReducer` (in ./entity-rootReducer.ts) spreads this map and
+ * appends the entity-only keys (`entities`, `entityFields`, `globalCache`,
+ * `entitySystem`).
+ */
+export const slimReducerMap = {
+  user: userReducer,
+  userPreferences: userPreferencesReducer,
 
-  if (hasEntities) {
-    console.warn(
-      "[WARNING REDUX STARTED WITH LARGE INITIAL STATE] --- WARNING... ENTITIES MUST BE LAZY LOADED",
-    );
-  }
+  adminDebug: adminDebugReducer,
+  overlays: overlaySlice,
+  overlayData: overlayDataReducer,
+  voicePad: voicePadReducer,
+  windowManager: windowManagerReducer,
+  urlSync: urlSyncReducer,
 
-  initializeEntitySlices(initialState.globalCache.schema);
-  const entityReducers = Object.fromEntries(
-    Array.from(entitySliceRegistry.entries()).map(([key, slice]) => [
-      key,
-      slice.reducer,
-    ]),
-  );
+  // Canvas and Artifacts system ----------
+  canvas: canvasReducer,
+  // Artifact tracking — universal registry for all AI-generated content
+  artifacts: artifactsReducer,
+  // HTML pages — editor session state + page catalog
+  htmlPages: htmlPagesReducer,
 
-  const globalCacheSlice = createGlobalCacheSlice(
-    initialState.globalCache as UnifiedSchemaCache,
-  );
+  // Text diff system
+  textDiff: textDiffReducer,
+  noteVersions: noteVersionsReducer,
+  notes: notesReducer,
+  codeFiles: codeFilesReducer,
 
-  const entitiesReducer =
-    Object.keys(entityReducers).length > 0
-      ? combineReducers(entityReducers)
-      : (((state: Record<string, unknown> = {}) => state) as Reducer);
+  // New VSCode-style workspace (features/code) ----------------------------
+  codeWorkspace: codeWorkspaceReducer,
+  codeTabs: codeTabsReducer,
+  codeTerminal: codeTerminalReducer,
+  // New cloud-files system (migration from Supabase Storage buckets).
+  cloudFiles: cloudFilesReducer,
+  // SMS integration
+  sms: smsReducer,
 
-  return combineReducers({
-    user: userReducer,
-    userPreferences: userPreferencesReducer,
+  theme: themeReducer,
 
-    adminDebug: adminDebugReducer,
-    overlays: overlaySlice,
-    overlayData: overlayDataReducer,
-    voicePad: voicePadReducer,
-    windowManager: windowManagerReducer,
-    urlSync: urlSyncReducer,
+  ...featureReducers,
+  ...moduleReducers,
+  layout: layoutReducer,
+  form: formReducer,
+  testRoutes: testRoutesReducer,
+  flashcardChat: flashcardChatReducer,
+  ui: uiReducer,
 
-    // Canvas and Artifacts system ----------
-    canvas: canvasReducer,
-    // Artifact tracking — universal registry for all AI-generated content
-    artifacts: artifactsReducer,
-    // HTML pages — editor session state + page catalog
-    htmlPages: htmlPagesReducer,
+  // ===== LEGACY CX CHAT SLICES — UNMOUNTED =====
+  // `activeChat`, `chatConversations`, `cxConversations`, `agentConversations`
+  // were removed from the store during the Redux unification.
+  messageActions: messageActionsReducer,
 
-    // Text diff system
-    textDiff: textDiffReducer,
-    noteVersions: noteVersionsReducer,
-    notes: notesReducer,
-    codeFiles: codeFilesReducer,
+  // ===== OLD SOCKET.IO SYSTEM (DEPRECATED) ====
+  socketConnections: socketConnectionReducer,
+  socketResponse: socketResponseReducer,
+  socketTasks: socketTasksReducer,
 
-    // New VSCode-style workspace (features/code) ----------------------------
-    codeWorkspace: codeWorkspaceReducer,
-    codeTabs: codeTabsReducer,
-    codeTerminal: codeTerminalReducer,
-    // New cloud-files system (migration from Supabase Storage buckets).
-    // Reads via supabase-js + cloud_get_user_file_tree RPC. Writes via REST at
-    // ${NEXT_PUBLIC_BACKEND_URL}/files/*. Live updates via the
-    // cloudFilesRealtimeMiddleware (see lib/redux/store.ts).
-    cloudFiles: cloudFilesReducer,
-    // SMS integration
-    sms: smsReducer,
+  // ==== OLD APPLET SYSTEM (DEPRECATED) ====
+  componentDefinitions: componentDefinitionsSlice.reducer,
+  appBuilder: appBuilderSlice.reducer,
+  appletBuilder: appletBuilderSlice.reducer,
+  containerBuilder: containerBuilderSlice.reducer,
+  fieldBuilder: fieldBuilderSlice.reducer,
+  customAppRuntime: customAppRuntimeSlice,
+  customAppletRuntime: customAppletRuntimeSlice,
+  broker: brokerSlice,
 
-    theme: themeReducer,
+  // OLD PROMPT SYSTEM (DEPRECATED)
+  contextMenuCache: contextMenuCacheReducer,
+  agentContextMenuCache: agentContextMenuCacheReducer,
+  agentCache: agentCacheReducer,
+  promptCache: promptCacheReducer,
+  promptConsumers: promptConsumersReducer,
+  promptRunner: promptRunnerReducer,
+  promptExecution: promptExecutionReducer,
+  actionCache: actionCacheReducer,
 
-    ...featureReducers,
-    ...moduleReducers,
-    // Phase 11: `fileSystem` and `storage` slices removed. Cloud-files state
-    // lives under `cloudFiles` (features/files/redux/slice.ts).
-    entities: entitiesReducer,
-    entityFields: fieldReducer,
-    layout: layoutReducer,
-    form: formReducer,
-    testRoutes: testRoutesReducer,
-    flashcardChat: flashcardChatReducer,
-    globalCache: globalCacheSlice.reducer,
-    ui: uiReducer,
+  dbFunctionNode: dbFunctionNodeSlice,
 
-    // ===== LEGACY CX CHAT SLICES — UNMOUNTED =====
-    // `activeChat`, `chatConversations`, `cxConversations`, `agentConversations`
-    // were removed from the store during the Redux unification. Their files
-    // remain on disk so existing chat-feature imports (cx-chat, cx-conversation,
-    // conversation) still compile; chat pages crash at runtime when accessed,
-    // which is expected — chat is being rebuilt from scratch on the new
-    // `conversations` / `messages` / `conversationList` / `observability`
-    // slices. Runner, Builder, and Widgets do not depend on any of these.
-    //
-    // messageActions stays — it moved to
-    // `features/agents/redux/execution-system/message-actions` and is still
-    // used by the Runner's AssistantActionBar. Legacy imports of the old path
-    // have been repointed; see PHASE-3-MIGRATION.md.
-    messageActions: messageActionsReducer,
+  workflows: workflowSlice,
+  workflowNodes: workflowNodeSlice,
 
-    // ===== OLD SOCKET.IO SYSTEM (DEPRECATED) ====
-    socketConnections: socketConnectionReducer,
-    socketResponse: socketResponseReducer,
-    socketTasks: socketTasksReducer,
+  promptEditor: promptEditorReducer,
 
-    // ==== OLD APPLET SYSTEM (DEPRECATED) ====
-    componentDefinitions: componentDefinitionsSlice.reducer,
-    appBuilder: appBuilderSlice.reducer,
-    appletBuilder: appletBuilderSlice.reducer,
-    containerBuilder: containerBuilderSlice.reducer,
-    fieldBuilder: fieldBuilderSlice.reducer,
-    customAppRuntime: customAppRuntimeSlice,
-    customAppletRuntime: customAppletRuntimeSlice,
-    broker: brokerSlice, // Concept broker implementation
+  messaging: messagingReducer,
 
-    // OLD PROMPT SYSTEM - WELL-BUILT but built on socket.io and recipes, not agents. (DEPRECATED)
-    contextMenuCache: contextMenuCacheReducer,
-    // Agent context menu SSR cache — populated by get_ssr_agent_shell_data RPC
-    agentContextMenuCache: agentContextMenuCacheReducer,
-    agentCache: agentCacheReducer,
-    promptCache: promptCacheReducer,
-    promptConsumers: promptConsumersReducer,
-    promptRunner: promptRunnerReducer,
-    promptExecution: promptExecutionReducer,
-    actionCache: actionCacheReducer,
+  adminPreferences: adminPreferencesReducer,
 
-    dbFunctionNode: dbFunctionNodeSlice,
+  agentSettings: agentSettingsReducer,
 
-    workflows: workflowSlice,
-    workflowNodes: workflowNodeSlice,
+  modelRegistry: modelRegistryReducer,
 
-    // Prompt Editor (Redux)
-    promptEditor: promptEditorReducer,
+  apiConfig: apiConfigReducer,
 
-    // Messaging system
-    messaging: messagingReducer,
+  // NEW AGENTS SYSTEM =======================================================
+  agentDefinition: agentDefinitionReducer,
+  conversationList: conversationListReducer,
+  conversationHistory: conversationHistoryReducer,
+  agentShortcut: agentShortcutReducer,
+  agentShortcutCategory: agentShortcutCategoryReducer,
+  agentContentBlock: agentContentBlockReducer,
+  skl: sklReducer,
+  agentConnectionsUi: agentConnectionsUiReducer,
+  agentApp: agentAppReducer,
+  agentConsumers: agentConsumersReducer,
+  tools: toolsReducer,
 
-    // Admin preferences (legacy server fields migrated to apiConfig — kept for UI-only prefs)
-    adminPreferences: adminPreferencesReducer,
+  appContext: appContextReducer,
 
-    // Entity system load status (on-demand schema + slices)
-    entitySystem: entitySystemReducer,
+  hierarchy: hierarchyReducer,
 
-    // Agent Settings — unified settings management for all agent/prompt contexts
-    // (builder, chat session overrides, multi-agent testing)
-    agentSettings: agentSettingsReducer,
+  organizations: organizationsReducer,
+  projects: projectsReducer,
+  tasks: tasksReducer,
 
-    // ==================================== RELATED TO AGENTS: ====================================
+  scopeTypes: scopeTypesReducer,
+  scopes: scopesReducer,
+  scopeAssignments: scopeAssignmentsReducer,
+  scopeContext: scopeContextReducer,
 
-    // (cxConversations unmounted — see note above; superseded by conversationList)
+  tasksUi: taskUiReducer,
+  quickTasksWindow: quickTasksWindowReducer,
+  taskAssociations: taskAssociationsReducer,
 
-    modelRegistry: modelRegistryReducer,
+  conversations: conversationsReducer,
+  instanceModelOverrides: instanceModelOverridesReducer,
+  instanceVariableValues: instanceVariableValuesReducer,
+  instanceResources: instanceResourcesReducer,
+  instanceContext: instanceContextReducer,
+  instanceUserInput: instanceUserInputReducer,
+  instanceClientTools: instanceClientToolsReducer,
+  instanceUIState: instanceUIStateReducer,
 
-    // API config — single source of truth for active server, health, and call log
-    apiConfig: apiConfigReducer,
+  activeRequests: activeRequestsReducer,
+  netRequests: netRequestsReducer,
+  netHealth: netHealthReducer,
+  messages: messagesReducer,
+  observability: observabilityReducer,
 
-    // NEW AGENTS SYSTEM =======================================================
+  observationalMemory: observationalMemoryReducer,
 
-    // Layer 1 — Agent Source
-    agentDefinition: agentDefinitionReducer,
-    // Unified conversation list — replaces the retired `cxConversations`
-    // (global sidebar) and `agentConversations` (per-agent RPC caches).
-    // Entities live once in `byConversationId`; view selectors project into
-    // global / per-agent lists.
-    conversationList: conversationListReducer,
-    // Scope-keyed, multi-agent, paginated history for feature sidebars.
-    // Each consumer (e.g. /code) registers a `scopeId` and gets its own
-    // filtered/grouped view.
-    conversationHistory: conversationHistoryReducer,
-    agentShortcut: agentShortcutReducer,
-    agentShortcutCategory: agentShortcutCategoryReducer,
-    agentContentBlock: agentContentBlockReducer,
-    skl: sklReducer,
-    agentConnectionsUi: agentConnectionsUiReducer,
-    // agentApp — scaffolded alongside agentShortcut. Thunks are stubbed until
-    // the App DB surface ships; the slice is registered so consumers can
-    // read/write state without further plumbing later.
-    agentApp: agentAppReducer,
-    agentConsumers: agentConsumersReducer,
-    tools: toolsReducer,
+  cacheBypass: cacheBypassReducer,
 
-    // Layer 2 — App Context (scope injected automatically into every API call by callApi)
-    appContext: appContextReducer,
+  conversationFocus: conversationFocusReducer,
+  surfaces: surfacesReducer,
+  agentAssistantMarkdownDraft: agentAssistantMarkdownDraftReducer,
 
-    // Hierarchy tree cache — org/project/task tree from RPC
-    hierarchy: hierarchyReducer,
-
-    // Normalized entity slices (hydrated from hierarchy RPC, with data-level tracking)
-    organizations: organizationsReducer,
-    projects: projectsReducer,
-    tasks: tasksReducer,
-
-    // Scope system — ctx_scope_types, ctx_scopes, ctx_scope_assignments, resolved context
-    scopeTypes: scopeTypesReducer,
-    scopes: scopesReducer,
-    scopeAssignments: scopeAssignmentsReducer,
-    scopeContext: scopeContextReducer,
-
-    // Tasks route — UI state, hierarchical projectsWithTasks, scope filter
-    tasksUi: taskUiReducer,
-    quickTasksWindow: quickTasksWindowReducer,
-    taskAssociations: taskAssociationsReducer,
-
-    // Layer 3 — Conversations (entity) + per-conversation content slices
-    conversations: conversationsReducer,
-    instanceModelOverrides: instanceModelOverridesReducer,
-    instanceVariableValues: instanceVariableValuesReducer,
-    instanceResources: instanceResourcesReducer,
-    instanceContext: instanceContextReducer,
-    instanceUserInput: instanceUserInputReducer,
-    instanceClientTools: instanceClientToolsReducer,
-    instanceUIState: instanceUIStateReducer,
-
-    // // Layer 4 — Request Execution
-    activeRequests: activeRequestsReducer,
-    netRequests: netRequestsReducer,
-    netHealth: netHealthReducer,
-    messages: messagesReducer,
-    // Observability — Runner-only debug data (cx_user_request, cx_request,
-    // cx_tool_call + live stream timelines). Populated by commit path + RPC.
-    observability: observabilityReducer,
-
-    // Observational Memory — Admin-gated per-conversation memory feature.
-    // Captures the persisted enabled/model/scope block, live memory_*
-    // stream events, running cost/token counters, and the authoritative
-    // cost rollup from GET /conversations/:id/memory_cost.
-    observationalMemory: observationalMemoryReducer,
-
-    // Cache-bypass — one-shot per-conversation flags flipped after direct
-    // DB writes (edits, forks, deletes). Read + cleared by the execute
-    // thunks so the next outbound AI request carries `cache_bypass`.
-    cacheBypass: cacheBypassReducer,
-
-    // Surface Focus Registry — tracks which conversationId is active per UI surface
-    conversationFocus: conversationFocusReducer,
-    // Surface Registry — consumers (pages, windows, widgets) self-register here
-    // so shared action components can route fork/delete/retry outcomes correctly.
-    surfaces: surfacesReducer,
-    agentAssistantMarkdownDraft: agentAssistantMarkdownDraftReducer,
-
-    // MCP Catalog — global server registry + per-user connection state
-    mcp: mcpReducer,
-
-    // Just garbage that makes no sense!
-    // agentExecution: agentExecutionReducer,
-  });
+  mcp: mcpReducer,
 };
 
-// buttonBuilder: buttonBuilderSlice.reducer,
-// brokerMapping: brokerMappingSlice.reducer,
-// recipeBuilder: recipeBuilderSlice.reducer,
-// workflowBuilder: workflowBuilderSlice.reducer,
+export const createSlimRootReducer = () => combineReducers(slimReducerMap);

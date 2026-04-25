@@ -53,7 +53,7 @@ const nextConfig = {
     },
     // Turbopack configuration (Next.js 16 default bundler)
     turbopack: {},
-    serverExternalPackages: ["@react-pdf/renderer", "canvas", "next-mdx-remote", "vscode-oniguruma", "websocket"],
+    serverExternalPackages: ["canvas", "next-mdx-remote", "vscode-oniguruma", "websocket"],
     typescript: {
         ignoreBuildErrors: true,
     },

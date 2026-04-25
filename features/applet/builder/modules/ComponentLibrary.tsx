@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/components/ui/use-toast";
 import { DownloadIcon, UploadIcon, DatabaseIcon, FileIcon, AppWindowIcon, BoxIcon, LayersIcon, CheckIcon, Copy } from "lucide-react";
 import { CustomAppConfig, FieldDefinition, CustomAppletConfig, AppletContainer, ComponentType } from "@/types/customAppTypes";
@@ -415,7 +414,6 @@ const ComponentLibrary = () => {
                     </Tabs>
                 </CardContent>
             </Card>
-            <Toaster />
         </div>
     );
 };

@@ -5,7 +5,7 @@
 // a route needs entity data. Subsequent calls are no-ops.
 
 import { getStore, runSaga } from "@/lib/redux/store";
-import { createRootReducer } from "@/lib/redux/rootReducer";
+import { createRootReducer } from "@/lib/redux/entity-rootReducer";
 import { entitySliceRegistry } from "./entitySlice";
 import { watchEntitySagas } from "./sagas/watcherSaga";
 import type { InitialReduxState } from "@/types/reduxTypes";

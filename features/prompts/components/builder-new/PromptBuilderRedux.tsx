@@ -38,7 +38,6 @@ import {
   PanelLeftOpen,
 } from "lucide-react";
 import Link from "next/link";
-import { Toaster } from "@/components/ui/sonner";
 import { usePromptsBasePath } from "../../hooks/usePromptsBasePath";
 import { toast } from "sonner";
 import {
@@ -253,8 +252,6 @@ export const PromptBuilderRedux: React.FC<PromptBuilderReduxProps> = ({
             </ResizablePanelGroup>
           </div>
         </div>
-
-        <Toaster />
       </div>
     </TooltipProvider>
   );

@@ -1,9 +1,27 @@
-// app/Providers.tsx
+// app/EntityProviders.tsx
+//
+// Provider tree for the `(legacy)` route group — entity-aware. Mirrors the
+// structure of `app/Providers.tsx` (slim) but passes `makeEntityStore` to
+// `StoreProvider` and inlines the entity-only providers
+// (SchemaProvider + EntityProvider + ChipMenuProvider + EditorProvider) so
+// every entity route gets them without each having to wrap with `<EntityPack>`.
+//
+// Phase 1: scaffold only. Imports `makeEntityStore` (currently a re-export of
+// `makeStore`). Phase 2 will wire `app/(legacy)/layout.tsx` to use this and
+// pass a server-side preloaded `globalCache` so the entity store boots
+// complete (no on-demand fetch).
+//
+// This file is the SOLE app/* surface that imports `lib/redux/entity-store`
+// or any of the entity-only provider modules. The slim `Providers.tsx` must
+// never import from here.
+//
+// See `~/.claude/plans/the-entity-system-which-bubbly-wind.md`.
 
 import React from "react";
+import { Toaster } from "@/components/ui/toaster";
 import StoreProvider from "@/providers/StoreProvider";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { InitialReduxState } from "@/types/reduxTypes";
+import type { EntityReduxState } from "@/types/reduxTypes";
 import { RefProvider } from "@/lib/refs";
 import { ToastProvider } from "@/providers/toast-context";
 import { ModuleHeaderProvider } from "@/providers/ModuleHeaderProvider";
@@ -22,37 +40,25 @@ import GlobalTaskShortcut from "@/features/tasks/widgets/GlobalTaskShortcut";
 import CreateTaskFromSourceDialog from "@/features/tasks/widgets/CreateTaskFromSourceDialog";
 import { CloudFilesPickerHost } from "@/features/files/components/pickers/CloudFilesPickerHost";
 import { setGlobalUserIdAndToken } from "@/lib/globalState";
+import { setGlobalUserId } from "@/app/Providers";
 
-// Phase 11 — legacy file system providers removed:
-//   - lib/redux/fileSystem/Provider (FileSystemProvider)
-//   - components/file-system/preview (FilePreviewProvider)
-//   - providers/FileSystemProvider (OldFileSystemProvider)
-//   - providers/packs/FilesPack
-// All file management now lives in features/files/* via Redux + realtime
-// middleware. The CloudFilesPickerHost below exposes openFilePicker() /
-// openFolderPicker() / openSaveAs() app-wide.
+// Entity-only providers (kept inline here so entity routes don't have to
+// wrap with `<EntityPack>` individually).
+import { EntityPack } from "@/providers/packs/EntityPack";
 
-let globalUserId: string | null = null;
+import { makeEntityStore } from "@/lib/redux/entity-store";
 
-export const setGlobalUserId = (id: string) => {
-  globalUserId = id;
-};
-
-export const getGlobalUserId = () => globalUserId;
-
-interface ProvidersProps {
+interface EntityProvidersProps {
   children: React.ReactNode;
-  initialReduxState?: InitialReduxState;
+  initialReduxState: EntityReduxState;
 }
 
-export function Providers({ children, initialReduxState }: ProvidersProps) {
+export function EntityProviders({
+  children,
+  initialReduxState,
+}: EntityProvidersProps) {
+  // Mirror to both globals (see comment in app/Providers.tsx).
   setGlobalUserId(initialReduxState.user.id);
-  // Mirror to lib/globalState so consumers (e.g. entity sagas via
-  // addUserIdToData) see the userId synchronously on first client render,
-  // not just after DeferredShellData fires post-paint. This used to be
-  // covered implicitly because direct-schema imported getGlobalUserId from
-  // here; now that the import points at lib/globalState (to break a TDZ
-  // cycle through the store), we have to seed lib/globalState ourselves.
   setGlobalUserIdAndToken(
     initialReduxState.user.id ?? "",
     initialReduxState.user.accessToken ?? "",
@@ -61,7 +67,10 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
 
   return (
     <ReactQueryProvider>
-      <StoreProvider initialState={initialReduxState}>
+      <StoreProvider
+        initialState={initialReduxState}
+        makeStore={makeEntityStore}
+      >
         <PersistentComponentProvider>
           <ContextMenuProvider>
             <ToastProvider>
@@ -73,16 +82,12 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                         <TranscriptsProvider>
                           <AudioRecoveryProvider>
                             <RequestRecoveryProvider>
-                              {children}
+                              <EntityPack>{children}</EntityPack>
                               <RecoveryWindow />
                               <RecoveryNudge />
                               <DeferredSingletons />
                               <GlobalTaskShortcut />
                               <CreateTaskFromSourceDialog />
-                              {/* Cloud-files imperative pickers:
-                                  openFilePicker() / openFolderPicker() / openSaveAs()
-                                  are callable from anywhere in the app once this host
-                                  mounts. See features/files/components/pickers/. */}
                               <CloudFilesPickerHost />
                             </RequestRecoveryProvider>
                           </AudioRecoveryProvider>
@@ -90,6 +95,7 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                       </SelectedImagesProvider>
                     </UniformHeightProvider>
                   </ModuleHeaderProvider>
+                  <Toaster />
                 </TooltipProvider>
               </RefProvider>
             </ToastProvider>

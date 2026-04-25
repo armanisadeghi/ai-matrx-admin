@@ -9,7 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Toaster } from '@/components/ui/toaster';
 import { useToast } from '@/components/ui/use-toast';
 import {
   Tabs,
@@ -581,8 +580,6 @@ export const AppletBuilder = () => {
         toggleGroupSelection={toggleGroupSelection}
         addSelectedGroupsToApplet={addSelectedGroupsToApplet}
       />
-      
-      <Toaster />
     </div>
   );
 };

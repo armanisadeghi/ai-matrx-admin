@@ -3,8 +3,16 @@
 
 import { configureStore, ThunkAction, Action } from "@reduxjs/toolkit";
 import createSagaMiddleware from "redux-saga";
-import { createRootSaga } from "@/lib/redux/sagas/rootSaga";
-import { createRootReducer } from "@/lib/redux/rootReducer";
+// Phase 1 of entity-isolation migration: store.ts uses the entity-aware
+// saga for back-compat. Phase 4 flips this to `createSlimRootSaga` from
+// `./sagas/rootSaga`.
+import { createRootSaga } from "@/lib/redux/sagas/entity-rootSaga";
+// Phase 1 of entity-isolation migration: store.ts still uses the entity-aware
+// reducer for back-compat. Phase 4 flips this to `createSlimRootReducer` from
+// `./rootReducer` so the slim chunk no longer pulls in `lib/redux/entity/**`
+// or `utils/schema/initial*Schemas`. See plan in
+// `~/.claude/plans/the-entity-system-which-bubbly-wind.md`.
+import { createRootReducer } from "@/lib/redux/entity-rootReducer";
 import { loggerMiddleware } from "@/utils/logger";
 // Phase 11: legacy `storageMiddleware` removed. Cloud-files state is
 // driven by `cloudFilesRealtimeMiddleware` (imported below).

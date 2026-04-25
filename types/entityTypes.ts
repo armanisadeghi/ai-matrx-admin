@@ -1,6 +1,6 @@
 // types/entityTypes.ts
 
-import { initialAutomationTableSchema } from '@/utils/schema/initialSchemas';
+import type { initialAutomationTableSchema } from '@/utils/schema/initialSchemas';
 import { FetchStrategy } from '@/types/AutomationSchemaTypes';
 import { Draft } from 'immer';
 import { EntityNameOfficial, SchemaEntity } from '@/types/schema';

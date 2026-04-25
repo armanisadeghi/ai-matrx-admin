@@ -17,7 +17,6 @@ import { saveFieldThunk, fetchFieldByIdThunk } from "@/lib/redux/app-builder/thu
 import { addFieldAndCompileContainerThunk } from "@/lib/redux/app-builder/thunks/containerBuilderThunks";
 import { recompileAppletThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
 import { useToast } from "@/components/ui/use-toast";
-import { Toaster } from "@/components/ui/toaster";
 import { LoadingSpinner } from "@/components/ui";
 import SmartFieldBuilder from "./SmartFieldBuilder";
 import FieldEditorActions from "./FieldEditorActions";
@@ -196,7 +195,6 @@ const FieldEditor: React.FC<FieldEditorProps> = ({
                     <FieldPreview fieldId={localFieldId} componentType={componentType} />
                 </div>
             </div>
-            <Toaster />
         </div>
     );
 };

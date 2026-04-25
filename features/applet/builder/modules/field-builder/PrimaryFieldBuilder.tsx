@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
-import { Toaster } from "@/components/ui/toaster";
 import FieldComponentsList from "./FieldComponentsList";
 import FieldEditor from "./editor/FieldEditor";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -231,8 +230,6 @@ const PrimaryFieldBuilder: React.FC<PrimaryFieldBuilderProps> = ({ onFieldSelect
                     </Tabs>
                 </CardContent>
             </Card>
-
-            <Toaster />
         </div>
     );
 };

@@ -1,36 +1,38 @@
-'use client';
+"use client";
 
-import React, { useEffect } from 'react';
+import React, { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { 
-  selectActiveContainerId
-} from '@/lib/redux/app-builder/selectors/containerSelectors';
-import { 
-  startNewContainer 
-} from '@/lib/redux/app-builder/slices/containerBuilderSlice';
-import { useRouter } from 'next/navigation';
-import { v4 as uuidv4 } from 'uuid';
-import { useToast } from '@/components/ui/use-toast';
-import { Toaster } from '@/components/ui/toaster';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { 
-  Form, 
-  FormControl, 
-  FormDescription, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { saveContainerThunk } from '@/lib/redux/app-builder/thunks/containerBuilderThunks';
-import { setLabel, setDescription, setHelpText, setShortLabel, setHideDescription, setIsPublic } from '@/lib/redux/app-builder/slices/containerBuilderSlice';
+import { selectActiveContainerId } from "@/lib/redux/app-builder/selectors/containerSelectors";
+import { startNewContainer } from "@/lib/redux/app-builder/slices/containerBuilderSlice";
+import { useRouter } from "next/navigation";
+import { v4 as uuidv4 } from "uuid";
+import { useToast } from "@/components/ui/use-toast";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { saveContainerThunk } from "@/lib/redux/app-builder/thunks/containerBuilderThunks";
+import {
+  setLabel,
+  setDescription,
+  setHelpText,
+  setShortLabel,
+  setHideDescription,
+  setIsPublic,
+} from "@/lib/redux/app-builder/slices/containerBuilderSlice";
 
 // Define form schema
 const containerFormSchema = z.object({
@@ -50,21 +52,21 @@ export default function ContainerCreatePage() {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const { toast } = useToast();
-  
+
   // Get the active container ID from Redux
   const activeContainerId = useAppSelector(selectActiveContainerId);
-  
+
   // Initialize container creation if there's no active container
   useEffect(() => {
     if (!activeContainerId) {
       // Generate a new UUID for the container
       const newId = uuidv4();
-      
+
       // Start container creation in Redux
       dispatch(startNewContainer({ id: newId }));
     }
   }, [activeContainerId, dispatch]);
-  
+
   // Initialize form
   const form = useForm<ContainerFormValues>({
     resolver: zodResolver(containerFormSchema),
@@ -77,28 +79,46 @@ export default function ContainerCreatePage() {
       isPublic: true,
     },
   });
-  
+
   // Handle form submit
   const onSubmit = async (values: ContainerFormValues) => {
     if (!activeContainerId) return;
-    
+
     try {
       // Update container fields in Redux
       dispatch(setLabel({ id: activeContainerId, label: values.label }));
-      dispatch(setShortLabel({ id: activeContainerId, shortLabel: values.shortLabel }));
-      dispatch(setDescription({ id: activeContainerId, description: values.description }));
-      dispatch(setHideDescription({ id: activeContainerId, hideDescription: values.hideDescription }));
-      dispatch(setHelpText({ id: activeContainerId, helpText: values.helpText }));
-      dispatch(setIsPublic({ id: activeContainerId, isPublic: values.isPublic }));
-      
+      dispatch(
+        setShortLabel({ id: activeContainerId, shortLabel: values.shortLabel }),
+      );
+      dispatch(
+        setDescription({
+          id: activeContainerId,
+          description: values.description,
+        }),
+      );
+      dispatch(
+        setHideDescription({
+          id: activeContainerId,
+          hideDescription: values.hideDescription,
+        }),
+      );
+      dispatch(
+        setHelpText({ id: activeContainerId, helpText: values.helpText }),
+      );
+      dispatch(
+        setIsPublic({ id: activeContainerId, isPublic: values.isPublic }),
+      );
+
       // Save container
-      const savedContainer = await dispatch(saveContainerThunk(activeContainerId)).unwrap();
-      
+      const savedContainer = await dispatch(
+        saveContainerThunk(activeContainerId),
+      ).unwrap();
+
       toast({
         title: "Success",
         description: "Container created successfully",
       });
-      
+
       // Navigate to container view
       router.push(`/apps/app-builder/containers/${savedContainer.id}`);
     } catch (error: any) {
@@ -109,12 +129,12 @@ export default function ContainerCreatePage() {
       });
     }
   };
-  
+
   // Handle cancel button
   const handleCancel = () => {
-    router.push('/apps/app-builder/containers');
+    router.push("/apps/app-builder/containers");
   };
-  
+
   // If no active container ID yet, show loading
   if (!activeContainerId) {
     return (
@@ -123,7 +143,7 @@ export default function ContainerCreatePage() {
       </div>
     );
   }
-  
+
   return (
     <div className="space-y-6">
       <Card className="p-6">
@@ -145,7 +165,7 @@ export default function ContainerCreatePage() {
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="shortLabel"
@@ -162,7 +182,7 @@ export default function ContainerCreatePage() {
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="description"
@@ -170,9 +190,9 @@ export default function ContainerCreatePage() {
                 <FormItem>
                   <FormLabel>Description (Optional)</FormLabel>
                   <FormControl>
-                    <Textarea 
-                      placeholder="Enter a description for this container" 
-                      {...field} 
+                    <Textarea
+                      placeholder="Enter a description for this container"
+                      {...field}
                       rows={3}
                     />
                   </FormControl>
@@ -183,7 +203,7 @@ export default function ContainerCreatePage() {
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="hideDescription"
@@ -204,7 +224,7 @@ export default function ContainerCreatePage() {
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="helpText"
@@ -212,9 +232,9 @@ export default function ContainerCreatePage() {
                 <FormItem>
                   <FormLabel>Help Text (Optional)</FormLabel>
                   <FormControl>
-                    <Textarea 
-                      placeholder="Instructions or help text for users" 
-                      {...field} 
+                    <Textarea
+                      placeholder="Instructions or help text for users"
+                      {...field}
                       rows={2}
                     />
                   </FormControl>
@@ -225,7 +245,7 @@ export default function ContainerCreatePage() {
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="isPublic"
@@ -240,29 +260,23 @@ export default function ContainerCreatePage() {
                   <div className="space-y-1 leading-none">
                     <FormLabel>Public Container</FormLabel>
                     <FormDescription>
-                      If checked, this container will be available for use in multiple apps.
+                      If checked, this container will be available for use in
+                      multiple apps.
                     </FormDescription>
                   </div>
                 </FormItem>
               )}
             />
-            
+
             <div className="flex items-center justify-end space-x-4 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleCancel}
-              >
+              <Button type="button" variant="outline" onClick={handleCancel}>
                 Cancel
               </Button>
-              <Button type="submit">
-                Create Container
-              </Button>
+              <Button type="submit">Create Container</Button>
             </div>
           </form>
         </Form>
       </Card>
-      <Toaster />
     </div>
   );
-} 
+}

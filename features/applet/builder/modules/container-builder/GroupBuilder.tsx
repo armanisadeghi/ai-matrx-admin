@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/components/ui/use-toast";
 import { ComponentGroup, FieldDefinition } from "@/types/customAppTypes";
 import {
@@ -663,8 +662,6 @@ export const GroupBuilder = () => {
                 handleDeleteGroup={handleDeleteGroup}
                 loading={loading}
             />
-            
-            <Toaster />
         </div>
     );
 };
