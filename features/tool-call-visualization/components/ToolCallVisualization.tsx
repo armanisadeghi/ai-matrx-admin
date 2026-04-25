@@ -29,6 +29,7 @@ import {
   ChevronUp,
   Loader2,
   Maximize2,
+  PanelRightOpen,
   Sparkles,
 } from "lucide-react";
 
@@ -53,7 +54,14 @@ type RequestDriven = {
   entries?: never;
 };
 type EntriesDriven = {
-  requestId?: never;
+  /**
+   * Optional request id even on the entries-driven path. Live chat-stream
+   * tool cards (`InlineToolCard` in ToolHandlers) render one lifecycle entry
+   * at a time but still belong to a request — passing `requestId` here lets
+   * the floating-window button merge every tool from that request into one
+   * per-request window instead of spawning a window per card.
+   */
+  requestId?: string;
   entries: ToolLifecycleEntry[];
 };
 
@@ -173,22 +181,27 @@ const ToolCallVisualizationInner: React.FC<{
 
   const handleOpenWindowPanel = useCallback(
     (initialTab?: string) => {
-      const callIds = entries.map((e) => e.callId);
+      // Live mode: ONE window per request. Re-clicking from any tool group in
+      // the same request focuses the same window, and `callIds: []` tells the
+      // panel "show every tool in the request" via LiveEntriesProvider — so
+      // the sidebar fills up as new tools stream in. The clicked tool is
+      // hinted via initialCallId so the window opens focused on it.
+      //
+      // Snapshot mode (no requestId): each group is a self-contained snapshot.
+      // Stable per-group id keeps re-clicks from spawning duplicates.
       const seedCallId = entries[0]?.callId ?? "no-entry";
-      // Stable per-group id so re-clicking the inline button focuses the
-      // existing window instead of spawning a duplicate. `instanceMode:
-      // "multi"` lets multiple distinct groups coexist.
-      const instanceId = `tool-call-${seedCallId}`;
+      const instanceId = requestId
+        ? `tool-call-request-${requestId}`
+        : `tool-call-snapshot-${seedCallId}`;
       dispatch(
         openOverlay({
           overlayId: "toolCallWindow",
           instanceId,
           data: {
             requestId: requestId ?? null,
-            callIds,
-            // Snapshot only when we have no live request to subscribe to.
+            callIds: requestId ? [] : entries.map((e) => e.callId),
             entries: requestId ? null : entries,
-            initialCallId: null,
+            initialCallId: seedCallId !== "no-entry" ? seedCallId : null,
             initialTab: initialTab ?? null,
           },
         }),
@@ -247,6 +260,25 @@ const ToolCallVisualizationInner: React.FC<{
             tabIndex={0}
             onClick={(e) => {
               e.stopPropagation();
+              handleOpenWindowPanel();
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                e.stopPropagation();
+                handleOpenWindowPanel();
+              }
+            }}
+            className="p-1 hover:bg-blue-100 dark:hover:bg-slate-700 rounded transition-colors cursor-pointer"
+            title="Open in floating window"
+          >
+            <PanelRightOpen className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+          </span>
+          <span
+            role="button"
+            tabIndex={0}
+            onClick={(e) => {
+              e.stopPropagation();
               setInitialOverlayTab(undefined);
               setIsOverlayOpen(true);
             }}
@@ -259,7 +291,7 @@ const ToolCallVisualizationInner: React.FC<{
               }
             }}
             className="p-1 hover:bg-blue-100 dark:hover:bg-slate-700 rounded transition-colors cursor-pointer"
-            title="View detailed tool information"
+            title="Open fullscreen overlay"
           >
             <Maximize2 className="w-4 h-4 text-slate-600 dark:text-slate-400" />
           </span>
@@ -356,6 +388,7 @@ export const ToolCallVisualization: React.FC<ToolCallVisualizationProps> = (
   return (
     <ToolCallVisualizationInner
       entries={props.entries ?? []}
+      requestId={props.requestId}
       hasContent={props.hasContent}
       isPersisted={props.isPersisted}
       className={props.className}

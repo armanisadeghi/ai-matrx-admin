@@ -55,7 +55,12 @@ export const InlineToolCard: React.FC<InlineToolCardProps> = ({
   if (!lifecycle) return null;
 
   return (
-    <ToolCallVisualization entries={[lifecycle]} hasContent className="my-2" />
+    <ToolCallVisualization
+      entries={[lifecycle]}
+      requestId={requestId}
+      hasContent
+      className="my-2"
+    />
   );
 };
 

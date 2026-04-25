@@ -38,10 +38,7 @@ import { WindowPanel } from "@/features/window-panels/WindowPanel";
 
 import type { ToolLifecycleEntry } from "@/features/agents/types/request.types";
 
-import {
-  getOverlayTabs,
-  getToolDisplayName,
-} from "../registry/registry";
+import { getOverlayTabs, getToolDisplayName } from "../registry/registry";
 import type { ToolOverlayTabSpec } from "../types";
 import {
   CustomOverlayBody,
@@ -226,6 +223,20 @@ const ToolCallWindowPanelBody: React.FC<{
     return entries[entries.length - 1]?.callId ?? "";
   });
 
+  // Re-focus when the parent re-dispatches openOverlay with a new
+  // `initialCallId` (e.g. user clicked the window button on a different
+  // tool while the same per-request window is already open). We only
+  // honour it when the requested entry is actually present.
+  const lastFocusedRef = useRef<string | null>(initialCallId);
+  useEffect(() => {
+    if (!initialCallId) return;
+    if (initialCallId === lastFocusedRef.current) return;
+    if (entries.some((e) => e.callId === initialCallId)) {
+      lastFocusedRef.current = initialCallId;
+      setSelectedCallId(initialCallId);
+    }
+  }, [initialCallId, entries]);
+
   useEffect(() => {
     if (entries.length === 0) {
       if (selectedCallId !== "") setSelectedCallId("");
@@ -284,10 +295,7 @@ const ToolCallWindowPanelBody: React.FC<{
         id: spec.id,
         label: spec.label,
         content: (
-          <CustomOverlayBody
-            entry={selectedEntry}
-            Component={spec.Component}
-          />
+          <CustomOverlayBody entry={selectedEntry} Component={spec.Component} />
         ),
       }));
       return [...customTabDefs, ...adminTabs];
@@ -343,9 +351,9 @@ const ToolCallWindowPanelBody: React.FC<{
           onSelect={setSelectedCallId}
         />
       }
-      sidebarDefaultSize={220}
-      sidebarMinSize={160}
-      defaultSidebarOpen={entries.length > 1}
+      sidebarDefaultSize={140}
+      sidebarMinSize={80}
+      defaultSidebarOpen={true}
       bodyClassName="p-0 overflow-hidden"
     >
       <div className="flex flex-col h-full overflow-hidden">
