@@ -13,6 +13,12 @@ import { fetchAgentExecutionMinimal } from "@/features/agents/redux/agent-defini
 import { useAgentLauncher } from "@/features/agents/hooks/useAgentLauncher";
 import { createManualInstance } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
 import { loadConversation } from "@/features/agents/redux/execution-system/thunks/load-conversation.thunk";
+import {
+  registerSurface,
+  unregisterSurface,
+  selectPendingNavigation,
+  clearPendingNavigation,
+} from "@/features/agents/redux/surfaces";
 import { AgentConversationColumn } from "@/features/agents/components/shared/AgentConversationColumn";
 import { ChatPageShell } from "./ChatPageShell";
 import { ChatAgentPicker } from "./ChatAgentPicker";
@@ -34,6 +40,33 @@ export function ChatRoomClient({
   const router = useRouter();
 
   const surfaceKey = `${SOURCE_FEATURE}:${agentId}`;
+
+  // Register this client as a `page` surface so action bars can route
+  // fork / retry navigation outcomes correctly (URL change). The
+  // chat route lives at /chat/[conversationId]; the pendingNavigation
+  // effect below handles the actual `router.replace` when an action
+  // dispatches a navigation intent.
+  useEffect(() => {
+    dispatch(
+      registerSurface({
+        surfaceKey,
+        kind: "page",
+        basePath: "/chat/[conversationId]",
+      }),
+    );
+    return () => {
+      dispatch(unregisterSurface(surfaceKey));
+    };
+  }, [dispatch, surfaceKey]);
+
+  const pendingNavigation = useAppSelector(
+    selectPendingNavigation(surfaceKey),
+  );
+  useEffect(() => {
+    if (!pendingNavigation) return;
+    router.replace(`/chat/${pendingNavigation.conversationId}`);
+    dispatch(clearPendingNavigation({ surfaceKey }));
+  }, [pendingNavigation, router, dispatch, surfaceKey]);
 
   const [isInitializing, setIsInitializing] = useState(true);
   const executionPayload = useAppSelector((state) =>

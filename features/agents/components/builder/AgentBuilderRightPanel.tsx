@@ -8,9 +8,15 @@
  * current in-memory builder state, whether saved or not.
  */
 
+import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
+import { useAppDispatch } from "@/lib/redux/hooks";
 import { useAgentLauncher } from "@/features/agents/hooks/useAgentLauncher";
 import { useBuilderContextSeed } from "@/features/agents/hooks/useBuilderContextSeed";
+import {
+  registerSurface,
+  unregisterSurface,
+} from "@/features/agents/redux/surfaces";
 import { AgentConversationColumn } from "../shared/AgentConversationColumn";
 import type { ManagedAgentOptions } from "@/features/agents/types/instance.types";
 
@@ -21,8 +27,25 @@ interface AgentBuilderRightPanelProps {
 export function AgentBuilderRightPanel({
   agentId,
 }: AgentBuilderRightPanelProps) {
+  const dispatch = useAppDispatch();
   const sourceFeature = "agent-builder";
   const surfaceKey = `${sourceFeature}:${agentId}`;
+
+  // Register as a `window` surface — forking during a test run should
+  // swap the test panel's conversation in place via setFocus, NOT
+  // change the builder's URL (the builder route doesn't carry a
+  // conversationId; it's keyed on the agent being edited).
+  useEffect(() => {
+    dispatch(
+      registerSurface({
+        surfaceKey,
+        kind: "window",
+      }),
+    );
+    return () => {
+      dispatch(unregisterSurface(surfaceKey));
+    };
+  }, [dispatch, surfaceKey]);
 
   const agentOptions: ManagedAgentOptions = {
     surfaceKey,

@@ -27,18 +27,10 @@ import {
 import { useAgentLauncher } from "@/features/agents/hooks/useAgentLauncher";
 import { createManualInstance } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
 import { loadConversation } from "@/features/agents/redux/execution-system/thunks/load-conversation.thunk";
-import { AgentLauncherSidebarTester } from "../run-controls/AgentLauncherSidebarTester";
 import { AgentConversationColumn } from "../shared/AgentConversationColumn";
 import { AlertTriangle, Loader2, RotateCw, TestTube2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerDescription,
-} from "@/components/ui/drawer";
 import { AgentRunHeader } from "./AgentRunHeader";
 import { DebugSessionActivator } from "@/features/agents/components/debug/DebugSessionActivator";
 
@@ -69,9 +61,6 @@ export function AgentRunnerPage({
   const [isInitializing, setIsInitializing] = useState(true);
   const [initError, setInitError] = useState<string | null>(null);
   const [initAttempt, setInitAttempt] = useState(0);
-
-  // Mobile drawer state
-  const [testModesDrawerOpen, setTestModesDrawerOpen] = useState(false);
 
   const conversationIdFromUrl = searchParams.get("conversationId") ?? undefined;
 
@@ -125,9 +114,7 @@ export function AgentRunnerPage({
   // Pending navigation handler — when a shared action (fork, retry) wants
   // to jump us to a different conversationId, it writes here. We turn it
   // into a router.replace and clear the slot so consumers stay idempotent.
-  const pendingNavigation = useAppSelector(
-    selectPendingNavigation(surfaceKey),
-  );
+  const pendingNavigation = useAppSelector(selectPendingNavigation(surfaceKey));
   useEffect(() => {
     if (!pendingNavigation) return;
     const target = `${basePath}/${agentId}/run?conversationId=${pendingNavigation.conversationId}`;

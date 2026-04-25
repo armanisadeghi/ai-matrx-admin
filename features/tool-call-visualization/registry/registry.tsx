@@ -270,6 +270,32 @@ export const toolRendererRegistry: ToolRegistry = {
     keepExpandedOnStream: true,
   },
 
+  research_web: {
+    toolName: "research_web",
+    displayName: "Deep Research",
+    resultsLabel: "Research Results",
+    InlineComponent: DeepResearchInline,
+    OverlayComponent: DeepResearchOverlay,
+    keepExpandedOnStream: true,
+    getHeaderSubtitle: (entry) => {
+      const query = getArg<string>(entry, "query");
+      return typeof query === "string" ? query : null;
+    },
+    getHeaderExtras: (entry) => {
+      const raw = resultAsString(entry);
+      if (!raw) return null;
+      const readCount = (raw.match(/<read_result>/g) || []).length;
+      if (readCount === 0) return null;
+      return (
+        <div className="flex items-center gap-3 text-white/90 text-xs mt-1">
+          <span className="flex items-center gap-1">
+            {readCount} {readCount === 1 ? "page" : "pages"} read
+          </span>
+        </div>
+      );
+    },
+  },
+
   core_web_search_and_read: {
     toolName: "core_web_search_and_read",
     displayName: "Deep Research",

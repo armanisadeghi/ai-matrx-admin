@@ -63,6 +63,10 @@ import { useAgentLauncher } from "@/features/agents/hooks/useAgentLauncher";
 import { createManualInstance } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
 import { startNewConversation } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
 import { loadConversation } from "@/features/agents/redux/execution-system/thunks/load-conversation.thunk";
+import {
+  registerSurface,
+  unregisterSurface,
+} from "@/features/agents/redux/surfaces";
 import { AgentListDropdown } from "@/features/agents/components/agent-listings/AgentListDropdown";
 import { AgentConversationColumn } from "@/features/agents/components/shared/AgentConversationColumn";
 import { AgentModeController } from "@/features/agents/components/shared/AgentModeController";
@@ -274,6 +278,22 @@ function AgentRunBody({
   const store = useAppStore();
 
   const surfaceKey = `${SOURCE_FEATURE}:${agentId}`;
+
+  // Register as a `window` surface — fork outcomes update the window's
+  // internal focus (no URL change). The conversation column already
+  // re-renders on focus changes, so no pendingNavigation effect is
+  // needed here.
+  useEffect(() => {
+    dispatch(
+      registerSurface({
+        surfaceKey,
+        kind: "window",
+      }),
+    );
+    return () => {
+      dispatch(unregisterSurface(surfaceKey));
+    };
+  }, [dispatch, surfaceKey]);
 
   // ── Agent execution payload bootstrap (mirrors AgentRunnerPage) ────────────
   const executionPayload = useAppSelector((state) =>
