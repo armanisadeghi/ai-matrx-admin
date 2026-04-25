@@ -1,17 +1,15 @@
 "use client";
 
+import { ContainerDropProvider } from "@/components/official-candidate/container-drop/ContainerDropProvider";
+import { DragOverlayPortal } from "@/components/official-candidate/container-drop/DragOverlayPortal";
+import { SourceTray } from "@/components/official-candidate/container-drop/component-set-1/SourceTray";
+import { DropZone } from "@/components/official-candidate/container-drop/component-set-1/DropZone";
+import { AssignmentTracker } from "@/components/official-candidate/container-drop/component-set-1/AssignmentTracker";
+import { DragOverlayContent } from "@/components/official-candidate/container-drop/component-set-1/DragOverlayContent";
 import {
-  ContainerDropProvider,
-  DragOverlayPortal,
-} from "@/components/official-candidate/container-drop";
-import {
-  SourceTray,
-  DropZone,
-  AssignmentTracker,
-  DragOverlayContent,
   DEFAULT_ITEMS,
   DEFAULT_CONTAINERS,
-} from "@/components/official-candidate/container-drop/component-set-1";
+} from "@/components/official-candidate/container-drop/component-set-1/presets";
 
 export default function ContainerDropDemoPage() {
   return (

@@ -5,7 +5,7 @@ import ConnectionList from './ConnectionList';
 import AccordionWrapper from '@/components/matrx/matrx-collapsible/AccordionWrapper';
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { cn } from '@/lib/utils';
-import { selectAllConnections } from '@/lib/redux/socket-io/selectors';
+import { selectAllConnections } from "@/lib/redux/socket-io/selectors/socket-connection-selectors";
 
 export interface ConnectionManagerProps {
   className?: string;

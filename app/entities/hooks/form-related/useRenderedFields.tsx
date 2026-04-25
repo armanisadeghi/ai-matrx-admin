@@ -4,7 +4,7 @@ import React, { useMemo } from 'react';
 import { useEntityCrud } from '@/lib/redux/entity/hooks/useEntityCrud';
 import { useFieldVisibility } from './useFieldVisibility';
 import { useFieldRenderer } from './useFieldRenderer';
-import { UnifiedLayoutProps } from '@/components/matrx/Entity';
+import { UnifiedLayoutProps } from '@/components/matrx/Entity/prewired-components/layouts/types';
 import { EntityKeys } from '@/types/entityTypes';
 
 export interface RenderedFieldsOptions {

@@ -2,7 +2,7 @@
 
 import React, { useMemo } from 'react';
 import SmartCrudButtons from '@/components/matrx/Entity/prewired-components/layouts/smart-layouts/smart-actions/SmartCrudButtons';
-import { UnifiedLayoutProps } from '@/components/matrx/Entity';
+import { UnifiedLayoutProps } from '@/components/matrx/Entity/prewired-components/layouts/types';
 import { getFormStyle } from './formUtils';
 import FieldSelectionControls from './form-helpers/FieldSelectionControls';
 import { EntityKeys, MatrxRecordId } from '@/types/entityTypes';

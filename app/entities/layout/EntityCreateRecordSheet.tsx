@@ -1,4 +1,4 @@
-import { UnifiedLayoutProps } from '@/components/matrx/Entity';
+import { UnifiedLayoutProps } from '@/components/matrx/Entity/prewired-components/layouts/types';
 import { EntityKeys } from '@/types/entityTypes';
 import EntitySheet from '../fields/other-components/EntitySheet';
 import { createEntitySelectors } from "@/lib/redux/entity/selectors";

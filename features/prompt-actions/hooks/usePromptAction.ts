@@ -1,23 +1,26 @@
 /**
  * usePromptAction Hook
- * 
+ *
  * Simplifies interaction with prompt actions from React components.
  * Provides methods to execute actions and track their state.
  */
 
-import { useCallback, useState } from 'react';
+import { useCallback, useState } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { startPromptAction, type StartActionPayload } from '@/lib/redux/prompt-execution';
-import type { ActionExecutionResult } from '../types';
+import {
+  startPromptAction,
+  type StartActionPayload,
+} from "@/lib/redux/prompt-execution/thunks/startPromptActionThunk";
+import type { ActionExecutionResult } from "../types";
 
 /**
  * Hook for executing and managing prompt actions
- * 
+ *
  * @example
  * ```typescript
  * function MyComponent() {
  *   const { executeAction, loading, error, result } = usePromptAction();
- * 
+ *
  *   const handleClick = async () => {
  *     const result = await executeAction({
  *       actionId: 'action-uuid',
@@ -26,12 +29,12 @@ import type { ActionExecutionResult } from '../types';
  *         projectId: currentProjectId
  *       }
  *     });
- *     
+ *
  *     if (result) {
  *       console.log('Executed:', result.runId);
  *     }
  *   };
- * 
+ *
  *   return (
  *     <button onClick={handleClick} disabled={loading}>
  *       {loading ? 'Executing...' : 'Run Action'}
@@ -51,25 +54,29 @@ export function usePromptAction() {
    * Execute a prompt action
    */
   const executeAction = useCallback(
-    async (payload: StartActionPayload): Promise<ActionExecutionResult | null> => {
+    async (
+      payload: StartActionPayload,
+    ): Promise<ActionExecutionResult | null> => {
       setLoading(true);
       setError(null);
       setResult(null);
 
       try {
-        const executionResult = await dispatch(startPromptAction(payload)).unwrap();
+        const executionResult = await dispatch(
+          startPromptAction(payload),
+        ).unwrap();
         setResult(executionResult);
         return executionResult;
       } catch (err: any) {
-        const errorMessage = err.message || 'Failed to execute action';
+        const errorMessage = err.message || "Failed to execute action";
         setError(errorMessage);
-        console.error('Action execution failed:', err);
+        console.error("Action execution failed:", err);
         return null;
       } finally {
         setLoading(false);
       }
     },
-    [dispatch]
+    [dispatch],
   );
 
   /**
@@ -108,12 +115,12 @@ export function usePromptAction() {
 
 /**
  * Extended hook with action caching and pre-loading
- * 
+ *
  * @example
  * ```typescript
  * function ActionButton({ actionId }: { actionId: string }) {
  *   const { executeAction, loading } = usePromptActionWithCache(actionId);
- * 
+ *
  *   return (
  *     <button
  *       onClick={() => executeAction({
@@ -131,13 +138,13 @@ export function usePromptActionWithCache(actionId: string) {
   const { executeAction: baseExecute, ...rest } = usePromptAction();
 
   const executeAction = useCallback(
-    async (options: Omit<StartActionPayload, 'actionId'>) => {
+    async (options: Omit<StartActionPayload, "actionId">) => {
       return baseExecute({
         ...options,
         actionId,
       });
     },
-    [baseExecute, actionId]
+    [baseExecute, actionId],
   );
 
   return {
@@ -145,4 +152,3 @@ export function usePromptActionWithCache(actionId: string) {
     ...rest,
   };
 }
-

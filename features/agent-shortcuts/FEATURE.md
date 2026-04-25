@@ -2,7 +2,7 @@
 
 **Status:** `migrating` (multi-scope UI in progress; see phases 11–13)
 **Tier:** `1`
-**Last updated:** `2026-04-22`
+**Last updated:** `2026-04-25`
 
 ---
 
@@ -185,6 +185,7 @@ See `features/agents/migration/MASTER-PLAN.md`.
 
 ## Change log
 
+- `2026-04-25` — Org and System Agents shortcut routes: imports use `components/*`, `hooks/*`, and `types` instead of the `@/features/agent-shortcuts` root barrel.
 - `2026-04-22` — claude: initial FEATURE.md extracted from `agent-system-mental-model.md` §5.
 - `2026-04-22` — claude: admin route renamed `administration/agent-shortcuts/` → `administration/system-agents/` and folded into a broader System Agents umbrella (adds builtin-agent builder/runner and system-apps management under the same subnav). All internal link references updated. Shortcuts/categories/content-blocks surfaces unchanged in behavior.
 

@@ -16,7 +16,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useAgentShortcuts } from "@/features/agent-shortcuts";
+import { useAgentShortcuts } from "@/features/agent-shortcuts/hooks/useAgentShortcuts";
 import { useOrgShortcutsContext } from "./OrgShortcutsContext";
 
 const SCOPE = "organization" as const;

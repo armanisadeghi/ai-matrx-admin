@@ -5,7 +5,8 @@ import {
   AnimationPreset,
   ComponentDensity,
 } from "@/types/componentConfigTypes";
-import { densityConfig, UnifiedLayoutProps } from "@/components/matrx/Entity";
+import { densityConfig } from "@/config/ui/entity-layout-config";
+import { UnifiedLayoutProps } from "@/components/matrx/Entity/prewired-components/layouts/types";
 
 export const formComponentAnimation = {
   none: {
@@ -92,7 +93,7 @@ const FormFieldMotionWrapperFinal: React.FC<
         className={cn(
           densityStyles.padding,
           floatingLabel && densityStyles.paddingFloatingLabel,
-          className
+          className,
         )}
       >
         {children}

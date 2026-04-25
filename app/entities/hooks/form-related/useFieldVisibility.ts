@@ -3,7 +3,7 @@
 'use client';
 
 import { useState, useMemo, useCallback } from 'react';
-import { UnifiedLayoutProps } from '@/components/matrx/Entity';
+import { UnifiedLayoutProps } from '@/components/matrx/Entity/prewired-components/layouts/types';
 import { EntityKeys, EntityAnyFieldKey } from '@/types/entityTypes';
 import { useFieldConfiguration } from './useFieldConfiguration';
 

@@ -1,10 +1,16 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Mic, HelpCircle } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { VoiceDiagnosticsDisplay } from '@/features/audio';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import React from "react";
+import { Mic, HelpCircle } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { VoiceDiagnosticsDisplay } from "@/features/audio/components/VoiceDiagnosticsDisplay";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function VoiceSettingsPage() {
   return (
@@ -24,8 +30,9 @@ export default function VoiceSettingsPage() {
       <Alert className="mb-6">
         <HelpCircle className="h-4 w-4" />
         <AlertDescription>
-          Use this page to check if your microphone is working correctly and get help fixing any issues. 
-          Voice input is used throughout the app for transcription and AI assistance.
+          Use this page to check if your microphone is working correctly and get
+          help fixing any issues. Voice input is used throughout the app for
+          transcription and AI assistance.
         </AlertDescription>
       </Alert>
 
@@ -52,19 +59,28 @@ export default function VoiceSettingsPage() {
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li className="flex gap-2">
                 <span>•</span>
-                <span>Prompt Generator - Add voice descriptions for AI prompts</span>
+                <span>
+                  Prompt Generator - Add voice descriptions for AI prompts
+                </span>
               </li>
               <li className="flex gap-2">
                 <span>•</span>
-                <span>Text Fields - Any textarea with a microphone icon supports voice input</span>
+                <span>
+                  Text Fields - Any textarea with a microphone icon supports
+                  voice input
+                </span>
               </li>
               <li className="flex gap-2">
                 <span>•</span>
-                <span>Notes & Documentation - Quickly capture ideas with your voice</span>
+                <span>
+                  Notes & Documentation - Quickly capture ideas with your voice
+                </span>
               </li>
               <li className="flex gap-2">
                 <span>•</span>
-                <span>AI Conversations - Speak instead of typing your questions</span>
+                <span>
+                  AI Conversations - Speak instead of typing your questions
+                </span>
               </li>
             </ul>
           </CardContent>
@@ -76,21 +92,20 @@ export default function VoiceSettingsPage() {
           </CardHeader>
           <CardContent className="space-y-2 text-sm text-muted-foreground">
             <p>
-              • Your voice recordings are sent to our secure transcription service (Groq Whisper API)
+              • Your voice recordings are sent to our secure transcription
+              service (Groq Whisper API)
             </p>
             <p>
               • Recordings are processed in real-time and not stored permanently
             </p>
             <p>
-              • You can revoke microphone permission at any time through your browser settings
+              • You can revoke microphone permission at any time through your
+              browser settings
             </p>
-            <p>
-              • Voice input only works on secure (HTTPS) connections
-            </p>
+            <p>• Voice input only works on secure (HTTPS) connections</p>
           </CardContent>
         </Card>
       </div>
     </div>
   );
 }
-

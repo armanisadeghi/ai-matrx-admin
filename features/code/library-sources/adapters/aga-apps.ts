@@ -1,8 +1,8 @@
 "use client";
 
 import { Bot } from "lucide-react";
+import { extensionForLanguage } from "@/features/code-files/actions/languageOptions";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { extensionForLanguage } from "@/features/code-files";
 import type {
   LibrarySourceAdapter,
   LoadedSourceEntry,

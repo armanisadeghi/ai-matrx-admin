@@ -33,18 +33,20 @@ import {
   type EnhancedFileDetails,
 } from "@/utils/file-operations/constants";
 import { useAppSelector } from "@/lib/redux/hooks";
+import * as Api from "@/features/files/api";
+import { useCloudTree } from "@/features/files/hooks/useCloudTree";
 import {
-  Api,
   selectAllFilesMap,
   selectAllFoldersMap,
   selectChildrenByFolderId,
   selectRootFileIds,
   selectRootFolderIds,
   selectTreeStatus,
-  useCloudTree,
-  type CloudFileRecord,
-  type CloudFolderRecord,
-} from "@/features/files";
+} from "@/features/files/redux/selectors";
+import type {
+  CloudFileRecord,
+  CloudFolderRecord,
+} from "@/features/files/types";
 
 // ---------------------------------------------------------------------------
 // Types (preserve the legacy surface)
@@ -145,8 +147,7 @@ function FolderNode({
 
       {(open || folderId === null) && (
         <div>
-          {children.folderIds.length === 0 &&
-          children.fileIds.length === 0 ? (
+          {children.folderIds.length === 0 && children.fileIds.length === 0 ? (
             <div
               className="text-[10px] text-gray-500 dark:text-gray-400 py-1"
               style={{ paddingLeft: `${(level + 1) * 1.25}rem` }}
@@ -217,8 +218,7 @@ export function FilesResourcePicker({
   allowedBuckets,
 }: FilesResourcePickerProps) {
   const currentUserId = useAppSelector(
-    (s: unknown) =>
-      (s as { user?: { id?: string | null } }).user?.id ?? null,
+    (s: unknown) => (s as { user?: { id?: string | null } }).user?.id ?? null,
   );
   useCloudTree(currentUserId ?? null);
   const treeStatus = useAppSelector(selectTreeStatus);
@@ -261,13 +261,10 @@ export function FilesResourcePicker({
       // The helper tolerates a partial metadata object — cast to sidestep
       // the strict StorageMetadata interface (it demands several fields we
       // don't have here, like eTag/lastModified).
-      const baseDetails = getFileDetailsByUrl(
-        fileUrl,
-        {
-          size: file.fileSize ?? 0,
-          mimetype: file.mimeType ?? "application/octet-stream",
-        } as unknown as Parameters<typeof getFileDetailsByUrl>[1],
-      );
+      const baseDetails = getFileDetailsByUrl(fileUrl, {
+        size: file.fileSize ?? 0,
+        mimetype: file.mimeType ?? "application/octet-stream",
+      } as unknown as Parameters<typeof getFileDetailsByUrl>[1]);
 
       const enhancedDetails: EnhancedFileDetails = {
         ...baseDetails,
@@ -282,9 +279,7 @@ export function FilesResourcePicker({
       onSelect({
         url: fileUrl,
         type:
-          baseDetails.mimetype ||
-          file.mimeType ||
-          "application/octet-stream",
+          baseDetails.mimetype || file.mimeType || "application/octet-stream",
         details: enhancedDetails,
       });
     } catch (error) {

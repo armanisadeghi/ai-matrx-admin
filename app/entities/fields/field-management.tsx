@@ -5,7 +5,7 @@ import React, { useMemo } from 'react';
 import { EntityKeys } from '@/types/entityTypes';
 import { EntityStateField, EntityStatus, EntityOperationMode } from '@/lib/redux/entity/types/stateTypes';
 import { noErrors } from '@/utils/utils';
-import { UnifiedLayoutProps } from '@/components/matrx/Entity';
+import { UnifiedLayoutProps } from '@/components/matrx/Entity/prewired-components/layouts/types';
 import { createEntitySelectors } from "@/lib/redux/entity/selectors";
 import type { RootState } from "@/lib/redux/store";
 import { useAppSelector } from "@/lib/redux/hooks";

@@ -14,8 +14,8 @@
 
 import React, { useEffect, useRef, useCallback, useState } from 'react';
 import { Mic } from 'lucide-react';
+import { useChunkedRecordAndTranscribe } from "@/features/audio/hooks/useChunkedRecordAndTranscribe";
 import { cn } from '@/lib/utils';
-import { useChunkedRecordAndTranscribe } from '@/features/audio/hooks';
 import { TranscriptionResult } from '@/features/audio/types';
 import { RecordingIndicator } from './RecordingIndicator';
 import { TranscriptionLoader } from './TranscriptionLoader';

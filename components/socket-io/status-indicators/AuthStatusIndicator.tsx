@@ -3,7 +3,7 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { Shield, ShieldOff } from 'lucide-react';
-import { selectIsAuthenticated } from '@/lib/redux/socket-io/selectors';
+import { selectIsAuthenticated } from "@/lib/redux/socket-io/selectors/socket-connection-selectors";
 import { StatusIndicator } from '@/components/socket-io/status-indicators/StatusIndicator';
 
 interface AuthStatusIndicatorProps {

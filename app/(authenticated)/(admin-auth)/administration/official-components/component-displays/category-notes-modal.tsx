@@ -1,25 +1,27 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { ComponentEntry } from '../parts/component-list';
-import { ComponentDisplayWrapper } from '../component-usage';
-import { CategoryNotesModal } from '@/features/notes';
-import type { Note } from '@/features/notes';
-import { Button } from '@/components/ui/button';
-import { Database } from 'lucide-react';
+import React, { useState } from "react";
+import { ComponentEntry } from "../parts/component-list";
+import { ComponentDisplayWrapper } from "../component-usage";
+import { CategoryNotesModal } from "@/features/notes/actions/CategoryNotesModal";
+import type { Note } from "@/features/notes/types";
+import { Button } from "@/components/ui/button";
+import { Database } from "lucide-react";
 
 interface ComponentDisplayProps {
   component?: ComponentEntry;
 }
 
-export default function CategoryNotesModalDisplay({ component }: ComponentDisplayProps) {
+export default function CategoryNotesModalDisplay({
+  component,
+}: ComponentDisplayProps) {
   if (!component) return null;
-  
+
   const [isOpen, setIsOpen] = useState(false);
-  
+
   // Example code with all available props and their default values
-  const code = `import { CategoryNotesModal } from '@/features/notes';
-import type { Note } from '@/features/notes';
+  const code = `import { CategoryNotesModal } from '@/features/notes/actions/CategoryNotesModal';
+import type { Note } from '@/features/notes/types';
 import { useState } from 'react';
 
 const [isOpen, setIsOpen] = useState(false);
@@ -52,35 +54,39 @@ const [isOpen, setIsOpen] = useState(false);
             Category Notes Modal Demo
           </h3>
           <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-            Master-detail layout with compact sidebar list and full-height editor.
-            Desktop: Sidebar + Editor side-by-side. Mobile: Collapsible sidebar.
-            Optimized for productivity with minimal padding and maximum content space.
+            Master-detail layout with compact sidebar list and full-height
+            editor. Desktop: Sidebar + Editor side-by-side. Mobile: Collapsible
+            sidebar. Optimized for productivity with minimal padding and maximum
+            content space.
           </p>
-          
+
           <Button onClick={() => setIsOpen(true)} className="w-full">
             <Database className="h-4 w-4 mr-2" />
             Open SQL Templates
           </Button>
-          
+
           <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded border border-blue-200 dark:border-blue-800 space-y-2">
             <p className="text-xs text-blue-800 dark:text-blue-200">
-              <strong>Master-Detail Layout:</strong> Compact sidebar list on left (320px), full-height editor on right.
-              When creating/editing, the editor takes the entire available height for maximum productivity.
+              <strong>Master-Detail Layout:</strong> Compact sidebar list on
+              left (320px), full-height editor on right. When creating/editing,
+              the editor takes the entire available height for maximum
+              productivity.
             </p>
             <p className="text-xs text-blue-800 dark:text-blue-200">
-              <strong>Mobile-Responsive:</strong> Sidebar collapses on mobile with hamburger menu toggle.
-              Small icons, minimal padding - focused on productivity and content, not wasted space.
+              <strong>Mobile-Responsive:</strong> Sidebar collapses on mobile
+              with hamburger menu toggle. Small icons, minimal padding - focused
+              on productivity and content, not wasted space.
             </p>
           </div>
         </div>
-        
+
         <CategoryNotesModal
           open={isOpen}
           onOpenChange={setIsOpen}
           categoryName="SQL Templates"
           selectButtonLabel="Use Template"
           onSelectNote={(note: Note) => {
-            console.log('Selected template:', note.label);
+            console.log("Selected template:", note.label);
             setIsOpen(false);
           }}
           allowCreate={true}
@@ -91,4 +97,3 @@ const [isOpen, setIsOpen] = useState(false);
     </ComponentDisplayWrapper>
   );
 }
-

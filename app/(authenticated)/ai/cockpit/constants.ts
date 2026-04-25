@@ -1,7 +1,7 @@
 // DEPRECATED — This module is scheduled for deletion.
 // Stubbed to avoid entity system crashes during the entity lazy-loading migration.
 
-import type { UnifiedLayoutProps } from "@/components/matrx/Entity";
+import type { UnifiedLayoutProps } from "@/components/matrx/Entity/prewired-components/layouts/types";
 
 export const temptDefaults = {
   currentMode: "default",

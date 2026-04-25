@@ -13,11 +13,8 @@ import QuestionnaireLoadingVisualization from "@/components/mardown-display/chat
 import type { RootState } from "@/lib/redux/store";
 import ControlledLoadingIndicator from "@/features/chat/components/response/chat-loading/ControlledLoadingIndicator";
 import { createChatSelectors } from "@/lib/redux/entity/custom-selectors/chatSelectors";
-import {
-  selectTaskFirstListenerId,
-  selectTaskStreamingById,
-  createTaskResponseSelectors,
-} from "@/lib/redux/socket-io";
+import { createTaskResponseSelectors } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
+import { selectTaskFirstListenerId, selectTaskStreamingById } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
 import markdownComponents from "./markdownComponents";
 
 const ReactMarkdown = dynamic(() => import("react-markdown"), { ssr: false });

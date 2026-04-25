@@ -5,7 +5,7 @@
 import React, { useCallback } from 'react';
 import { EntityKeys } from '@/types/entityTypes';
 import { MatrxRecordId } from '@/lib/redux/entity/types/stateTypes';
-import { UnifiedLayoutProps } from '@/components/matrx/Entity';
+import { UnifiedLayoutProps } from '@/components/matrx/Entity/prewired-components/layouts/types';
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 import FormFieldMotionWrapperFinal from './FormFieldMotionWrapperFinal';

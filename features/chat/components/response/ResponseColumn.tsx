@@ -14,13 +14,7 @@ import {
   selectPrimaryResponseErrorsByTaskId,
 } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 import { selectTaskFirstListenerId } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
-import {
-  selectResponseTextByListenerId,
-  selectResponseEndedByListenerId,
-  selectResponseDataByListenerId,
-  selectResponseInfoByListenerId,
-  selectResponseErrorsByListenerId,
-} from "@/lib/redux/socket-io";
+import { selectResponseTextByListenerId, selectResponseEndedByListenerId, selectResponseDataByListenerId, selectResponseInfoByListenerId, selectResponseErrorsByListenerId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 
 const INFO = false;
 const DEBUG = false;

@@ -1,14 +1,10 @@
 import { useState, useCallback } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { createTask, submitTask } from "@/lib/redux/socket-io/thunks";
+import { createTask } from "@/lib/redux/socket-io/thunks/createTaskThunk";
+import { submitTask } from "@/lib/redux/socket-io/thunks/submitTaskThunk";
 import { setTaskFields } from "@/lib/redux/socket-io/slices/socketTasksSlice";
-import { 
-    selectTaskFirstListenerId,
-    selectResponseDataByListenerId,
-    selectPrimaryResponseEndedByTaskId,
-    selectTaskStatus,
-    selectResponseTextByListenerId
-} from "@/lib/redux/socket-io";
+import { selectResponseDataByListenerId, selectPrimaryResponseEndedByTaskId, selectResponseTextByListenerId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
+import { selectTaskFirstListenerId, selectTaskStatus } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
 
 interface BrokerValue {
     id: string;

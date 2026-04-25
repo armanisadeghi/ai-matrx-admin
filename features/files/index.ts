@@ -1,8 +1,9 @@
 /**
  * features/files/index.ts
  *
- * Public barrel. All external consumers MUST import from here (never from
- * feature subfolders) — prevents accidental coupling to internals.
+ * Legacy aggregate re-export. Prefer direct imports from `./types`, `./api`,
+ * `./redux/*`, `./hooks/*`, `./utils/*`, and `./components/**` (same as the
+ * rest of the repo’s no-barrel migration).
  */
 
 // Types — single source of truth

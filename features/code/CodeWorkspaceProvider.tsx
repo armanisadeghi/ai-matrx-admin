@@ -11,7 +11,7 @@ import { useAppStore } from "@/lib/redux/hooks";
 import type { FilesystemAdapter } from "./adapters/FilesystemAdapter";
 import type { ProcessAdapter } from "./adapters/ProcessAdapter";
 import { MockFilesystemAdapter } from "./adapters/MockFilesystemAdapter";
-import { MockProcessAdapter } from "./adapters/MockProcessAdapter";
+import { MockProcessAdapter } from "./adapters/SandboxProcessAdapter";
 import {
   DEFAULT_WORKSPACE_ID,
   registerWorkspace,

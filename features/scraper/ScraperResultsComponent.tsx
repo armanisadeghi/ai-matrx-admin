@@ -6,7 +6,8 @@ import ScraperDataUtils from "./utils/data-utils";
 import PageTabs from "./parts/core/PageTabs";
 import PageContent from "./parts/core/PageContent";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectPrimaryResponseErrorsByTaskId, selectPrimaryResponseDataByTaskId, selectPrimaryResponseEndedByTaskId, selectTaskStatus } from "@/lib/redux/socket-io";
+import { selectPrimaryResponseErrorsByTaskId, selectPrimaryResponseDataByTaskId, selectPrimaryResponseEndedByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
+import { selectTaskStatus } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
 import { useRenderCount } from "@uidotdev/usehooks";
 
 

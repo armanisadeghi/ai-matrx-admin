@@ -44,11 +44,7 @@
     "sync-types": "node scripts/update-api-types.mjs --skip-typecheck",
     "sync-types:local": "node scripts/update-api-types.mjs --skip-typecheck --local",
     "update-api-types": "node scripts/update-api-types.mjs",
-    "update-api-types:local": "node scripts/update-api-types.mjs --local",
-    "barrels:status": "npx ts-node --project scripts/tsconfig.json scripts/update-barrel-status.ts",
-    "barrels:dry-run": "npx ts-node --project scripts/tsconfig.json scripts/migrate-barrel-imports.ts --dry-run",
-    "barrels:batch": "npx ts-node --project scripts/tsconfig.json scripts/migrate-barrel-imports.ts --batch 5",
-    "barrels:all": "npx ts-node --project scripts/tsconfig.json scripts/migrate-barrel-imports.ts --all"
+    "update-api-types:local": "node scripts/update-api-types.mjs --local"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.43",
@@ -295,7 +291,6 @@
     "jest": "latest",
     "jest-environment-jsdom": "^30.3.0",
     "jsdom": "latest",
-    "knip": "^6.7.0",
     "os-browserify": "latest",
     "postcss": "latest",
     "process": "latest",
@@ -307,7 +302,6 @@
     "tailwindcss": "4.2.1",
     "tailwindcss-3d": "latest",
     "ts-jest": "latest",
-    "ts-morph": "^28.0.0",
     "ts-node": "latest",
     "tsconfig-paths": "latest",
     "tsx": "^4.21.0",

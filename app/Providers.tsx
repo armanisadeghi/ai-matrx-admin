@@ -15,17 +15,15 @@ import { UniformHeightProvider } from "@/features/applet/runner/layouts/core/Uni
 import { ReactQueryProvider } from "@/providers/ReactQueryProvider";
 import { TranscriptsProvider } from "@/features/transcripts/context/TranscriptsContext";
 import { AudioRecoveryProvider } from "@/features/audio/providers/AudioRecoveryProvider";
-import {
-  RequestRecoveryProvider,
-  RecoveryWindow,
-  RecoveryNudge,
-} from "@/features/request-recovery";
+import { RequestRecoveryProvider } from "@/features/request-recovery/providers/RequestRecoveryProvider";
+import { RecoveryWindow } from "@/features/request-recovery/components/RecoveryWindow";
+import { RecoveryNudge } from "@/features/request-recovery/components/RecoveryNudge";
 import DeferredSingletons from "./DeferredSingletons";
 import {
   GlobalTaskShortcut,
   CreateTaskFromSourceDialog,
 } from "@/features/tasks/widgets";
-import { CloudFilesPickerHost } from "@/features/files";
+import { CloudFilesPickerHost } from "@/features/files/components/pickers/CloudFilesPickerHost";
 
 // Phase 11 — legacy file system providers removed:
 //   - lib/redux/fileSystem/Provider (FileSystemProvider)

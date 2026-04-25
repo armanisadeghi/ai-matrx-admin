@@ -39,8 +39,8 @@ import {
 import { QueryHistoryButton } from "@/components/admin/query-history/query-history-button";
 import { saveQuery } from "@/components/admin/query-history/query-storage";
 import { toast } from "sonner";
-import { CategoryNotesModal } from "@/features/notes";
-import type { Note } from "@/features/notes";
+import { CategoryNotesModal } from "@/features/notes/actions/CategoryNotesModal";
+import type { Note } from "@/features/notes/types";
 
 // Define SQL queries as constants to avoid JSX parsing issues
 const SQL_LIST_TABLES =

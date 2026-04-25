@@ -16,17 +16,13 @@ import {
   Search,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { selectAllScopeTypes, fetchScopeTypes } from "@/features/agent-context/redux/scope/scopeTypesSlice";
+import { selectAllScopes, fetchScopes } from "@/features/agent-context/redux/scope/scopesSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectOrganizationId } from "@/features/agent-context/redux/appContextSlice";
 import { selectNavOrganizations } from "@/features/agent-context/redux/hierarchySlice";
 import { selectAllTasks } from "@/features/agent-context/redux/tasksSlice";
 import { selectAllProjects } from "@/features/agent-context/redux/projectsSlice";
-import {
-  selectAllScopeTypes,
-  selectAllScopes,
-  fetchScopeTypes,
-  fetchScopes,
-} from "@/features/agent-context/redux/scope";
 import {
   fetchEntityScopes,
   fetchEntitiesByScopes,

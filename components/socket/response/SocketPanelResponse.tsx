@@ -11,11 +11,8 @@ import {
     TabsContent,
 } from "@/components/ui";
 import { useAppSelector } from "@/lib/redux/hooks";
-import {
-    selectTaskFirstListenerId,
-    selectResponseTextByListenerId,
-    selectResponseDataByListenerId,
-} from "@/lib/redux/socket-io";
+import { selectResponseTextByListenerId, selectResponseDataByListenerId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
+import { selectTaskFirstListenerId } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
 import { MarkdownCopyButton } from "@/components/matrx/buttons/MarkdownCopyButton";
 
 // Import panel components from the registry

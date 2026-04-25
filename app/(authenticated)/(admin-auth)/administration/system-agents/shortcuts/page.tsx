@@ -4,17 +4,17 @@ import React, { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { DownloadCloud } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  DuplicateShortcutModal,
-  ImportShortcutsBrowserModal,
-  PromoteToGlobalModal,
-  ShortcutForm,
-  ShortcutList,
-  useAgentShortcuts,
-  type AgentShortcut,
-  type AgentShortcutCategory,
-  type AgentShortcutRecord,
-} from "@/features/agent-shortcuts";
+import { DuplicateShortcutModal } from "@/features/agent-shortcuts/components/DuplicateShortcutModal";
+import { ImportShortcutsBrowserModal } from "@/features/agent-shortcuts/components/ImportShortcutsBrowserModal";
+import { PromoteToGlobalModal } from "@/features/agent-shortcuts/components/PromoteToGlobalModal";
+import { ShortcutForm } from "@/features/agent-shortcuts/components/ShortcutForm";
+import { ShortcutList } from "@/features/agent-shortcuts/components/ShortcutList";
+import { useAgentShortcuts } from "@/features/agent-shortcuts/hooks/useAgentShortcuts";
+import type {
+  AgentShortcut,
+  AgentShortcutCategory,
+  AgentShortcutRecord,
+} from "@/features/agent-shortcuts/types";
 import {
   shortcutRowToFrontend,
   type AdminNonGlobalShortcutRow,

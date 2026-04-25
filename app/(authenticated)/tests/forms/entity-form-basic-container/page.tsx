@@ -9,7 +9,7 @@ import PreWiredEntityRecordHeader from '@/components/matrx/Entity/records/PreWir
 import ArmaniForm from '@/components/matrx/ArmaniForm/ArmaniForm';
 import SmartCrudButtons from '@/components/matrx/Entity/prewired-components/layouts/smart-layouts/smart-actions/SmartCrudButtons';
 import { getUnifiedLayoutProps, getUpdatedUnifiedLayoutProps } from '@/app/entities/layout/configs';
-import { UnifiedLayoutProps } from '@/components/matrx/Entity';
+import { UnifiedLayoutProps } from '@/components/matrx/Entity/prewired-components/layouts/types';
 
 const EntityFormContainer = React.memo((
     {

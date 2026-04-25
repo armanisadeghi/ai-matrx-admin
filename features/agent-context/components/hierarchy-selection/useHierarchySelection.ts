@@ -3,11 +3,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { useNavTree } from "@/features/agent-context/hooks/useNavTree";
+import { selectScopePickerOptions, EMPTY_SCOPE_PICKER_OPTIONS } from "@/features/agent-context/redux/scope/selectors";
 import { useProjectTasks } from "@/features/agent-context/hooks/useHierarchy";
-import {
-  selectScopePickerOptions,
-  EMPTY_SCOPE_PICKER_OPTIONS,
-} from "@/features/agent-context/redux/scope";
 import { fetchEntitiesByScopes } from "@/features/agent-context/redux/scope/scopeAssignmentsSlice";
 import type {
   HierarchyLevel,

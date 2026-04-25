@@ -26,14 +26,12 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { useNavTree } from "@/features/agent-context/hooks/useNavTree";
 import { selectAllNotesList } from "@/features/notes/redux/selectors";
 import { selectAllTasksFlat } from "@/features/tasks/redux/selectors";
-import {
-  QuickCreateTaskButton,
-  AssociateTaskButton,
-  TaskChip,
-  TaskChipRow,
-  TaskQuickAddBar,
-  TaskTapButton,
-} from "@/features/tasks/widgets";
+import QuickCreateTaskButton from "@/features/tasks/widgets/QuickCreateTaskButton";
+import AssociateTaskButton from "@/features/tasks/widgets/AssociateTaskButton";
+import TaskChip from "@/features/tasks/widgets/TaskChip";
+import TaskChipRow from "@/features/tasks/widgets/TaskChipRow";
+import TaskQuickAddBar from "@/features/tasks/widgets/TaskQuickAddBar";
+import TaskTapButton from "@/features/tasks/widgets/TaskTapButton";
 import TaskAttachmentsPanel from "@/features/tasks/components/TaskAttachmentsPanel";
 import TaskPreviewWindow from "@/features/tasks/components/TaskPreviewWindow";
 import { parseMarkdownChecklist } from "@/components/mardown-display/blocks/tasks/tasklist-parser";
@@ -131,10 +129,7 @@ export default function TasksWidgetsDemo() {
         </Demo>
         <Demo label="Menu item">
           <div className="w-56 rounded-md border border-border bg-card p-1">
-            <QuickCreateTaskButton
-              variant="menu-item"
-              label="Create a task"
-            />
+            <QuickCreateTaskButton variant="menu-item" label="Create a task" />
           </div>
         </Demo>
         <Demo label="With pre-filled title">
@@ -373,7 +368,7 @@ export default function TasksWidgetsDemo() {
       <footer className="border-t border-border/60 pt-6 space-y-2 text-xs text-muted-foreground">
         <div className="font-semibold text-foreground">Drop-in recipes</div>
         <pre className="font-mono bg-muted/40 rounded p-3 text-[11px] whitespace-pre-wrap leading-relaxed">
-{`// Attach anything to a task
+          {`// Attach anything to a task
 <AssociateTaskButton entityType="user_file" entityId={file.id} label={file.filename} />
 
 // Show everything this entity is linked to

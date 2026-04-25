@@ -1,14 +1,9 @@
 import React from "react";
 import type { RootState } from "@/lib/redux/store";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectListenerIdsByTaskId, SocketErrorObject } from "@/lib/redux/socket-io";
-import {
-    selectResponseTextByListenerId,
-    selectResponseEndedByListenerId,
-    selectResponseDataByListenerId,
-    selectResponseInfoByListenerId,
-    selectResponseErrorsByListenerId,
-} from "@/lib/redux/socket-io";
+import { selectListenerIdsByTaskId } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
+import type { SocketErrorObject } from "@/lib/redux/socket-io/socket.types";
+import { selectResponseTextByListenerId, selectResponseEndedByListenerId, selectResponseDataByListenerId, selectResponseInfoByListenerId, selectResponseErrorsByListenerId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 import { selectTaskFirstListenerId } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
 
 export const DebugInfo: React.FC<{

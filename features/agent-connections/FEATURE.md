@@ -113,6 +113,7 @@ Scaffolded UI only. Before adding real behavior:
 
 ## Change log
 
+- `2026-04-25` — `AgentConnectionsWindow` imports sidebar/body from `components/*` and `AgentConnectionsSection` from `types` instead of `@/features/agent-connections` barrel.
 - `2026-04-22` — claude: initial doc.
 
 ---

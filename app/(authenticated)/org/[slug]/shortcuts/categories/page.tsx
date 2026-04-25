@@ -15,14 +15,14 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/components/ui/use-toast";
-import {
-  CategoryForm,
-  CategoryTree,
-  useAgentShortcutCrud,
-  useAgentShortcuts,
-  type AgentShortcutCategory,
-  type PlacementType,
-} from "@/features/agent-shortcuts";
+import { CategoryForm } from "@/features/agent-shortcuts/components/CategoryForm";
+import { CategoryTree } from "@/features/agent-shortcuts/components/CategoryTree";
+import { useAgentShortcutCrud } from "@/features/agent-shortcuts/hooks/useAgentShortcutCrud";
+import { useAgentShortcuts } from "@/features/agent-shortcuts/hooks/useAgentShortcuts";
+import type {
+  AgentShortcutCategory,
+  PlacementType,
+} from "@/features/agent-shortcuts/types";
 import { useOrgShortcutsContext } from "../OrgShortcutsContext";
 
 const SCOPE = "organization" as const;

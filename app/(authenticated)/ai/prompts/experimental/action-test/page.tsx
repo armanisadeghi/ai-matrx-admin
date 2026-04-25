@@ -15,7 +15,7 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, CheckCircle, XCircle, Play, RefreshCw } from "lucide-react";
-import { startPromptAction } from "@/lib/redux/prompt-execution";
+import { startPromptAction } from "@/lib/redux/prompt-execution/thunks/startPromptActionThunk";
 import { usePromptInstance } from "@/lib/redux/prompt-execution/hooks";
 import { Textarea } from "@/components/ui/textarea";
 

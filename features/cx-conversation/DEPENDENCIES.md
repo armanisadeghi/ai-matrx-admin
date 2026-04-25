@@ -56,7 +56,7 @@ fully self-contained, these are the ones to internalize.
 |--------|---------|--------|
 | `@/hooks/tts/simple/useCartesiaControls` | ConversationShell, MessageList, AssistantMessage | **Keep** — TTS is cross-cutting, not chat-specific |
 | `@/hooks/tts/simple/useCartesiaWithPreferences` | MessageOptionsMenu | **Keep** — same reason |
-| `@/features/audio` (useRecordAndTranscribe, TranscriptionLoader) | ConversationInput | **Keep** — voice recording is a shared feature |
+| `@/features/audio/hooks/useRecordAndTranscribe`, `@/features/audio/components/TranscriptionLoader` | ConversationInput | **Keep** — voice recording is a shared feature |
 
 ### Resources & Prompts
 | Import | Used By | Action |

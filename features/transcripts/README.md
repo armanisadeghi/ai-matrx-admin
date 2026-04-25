@@ -4,6 +4,8 @@
 
 The Transcripts feature provides a complete database-backed system for managing audio/video transcripts with full CRUD operations, real-time sync, audio file upload with AI transcription, and seamless organization.
 
+**Imports:** There is no root `index.ts` barrel — import from concrete modules (for example `context/TranscriptsContext`, `components/...`, `service/transcriptsService`, `types`).
+
 **Recently Updated:** Complete UI/UX overhaul with modern layout system, proper mobile support, and enhanced user experience.
 
 ---
@@ -134,7 +136,7 @@ features/transcripts/
 ### Creating a Transcript
 
 ```typescript
-import { useTranscriptsContext } from '@/features/transcripts';
+import { useTranscriptsContext } from '@/features/transcripts/context/TranscriptsContext';
 
 const { createTranscript } = useTranscriptsContext();
 

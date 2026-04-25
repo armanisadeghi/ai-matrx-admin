@@ -5,11 +5,8 @@
 import { getTaskSchema } from "@/constants/socket-schema";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import {
-  createTask,
-  submitTask,
-  createAndSubmitTask,
-} from "@/lib/redux/socket-io/thunks";
+import { createTask } from "@/lib/redux/socket-io/thunks/createTaskThunk";
+import { submitTask, createAndSubmitTask } from "@/lib/redux/socket-io/thunks/submitTaskThunk";
 import {
   setTaskFields,
   deleteTask,

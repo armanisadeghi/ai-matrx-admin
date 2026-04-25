@@ -11,6 +11,10 @@
 // - Sort controls (field cycle + order toggle)
 // - Expand/collapse all folders
 // - Folder context menu (right-click: New Note, Rename, Delete All)
+import { selectAllAssignments } from "@/features/agent-context/redux/scope/scopeAssignmentsSlice";
+import { selectScopeNameMap } from "@/features/agent-context/redux/scope/scopesSlice";
+import { selectScopeTypeLabelMap } from "@/features/agent-context/redux/scope/scopeTypesSlice";
+
 // - Note context menu (right-click: Open, Duplicate, Export, Move, Delete)
 // - Auto-scroll to active note
 // - Auto-expand folder of active note
@@ -96,11 +100,6 @@ import {
   renameFolder,
   deleteFolderNotes,
 } from "../service/notesService";
-import {
-  selectAllAssignments,
-  selectScopeNameMap,
-  selectScopeTypeLabelMap,
-} from "@/features/agent-context/redux/scope";
 import { getFolderIconAndColor, isDefaultFolder } from "../utils/folderUtils";
 import { CreateFolderDialog } from "./CreateFolderDialog";
 import { RenameFolderDialog } from "./RenameFolderDialog";

@@ -5,7 +5,7 @@ import { CopyButton } from "@/components/matrx/buttons/CopyButton";
 import { cn } from "@/lib/utils";
 import { useRef, useEffect, MouseEvent } from "react";
 import StreamDisplayOverlay from "./StreamDisplayOverlay";
-import { selectResponseTextByListenerId } from "@/lib/redux/socket-io";
+import { selectResponseTextByListenerId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 import { useAppSelector } from "@/lib/redux/hooks";
 
 interface StreamTextDisplayProps {

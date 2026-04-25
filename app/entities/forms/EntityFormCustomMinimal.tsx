@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import { UnifiedLayoutProps } from '@/components/matrx/Entity';
+import { UnifiedLayoutProps } from '@/components/matrx/Entity/prewired-components/layouts/types';
 import { useFieldVisibility } from '../hooks/form-related/useFieldVisibility';
 import { FieldRendererOptions, useFieldRenderer } from '../hooks/form-related/useFieldRenderer';
 import { getFormStyle } from './formUtils';

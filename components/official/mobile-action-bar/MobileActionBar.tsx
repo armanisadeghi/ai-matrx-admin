@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Search, SlidersHorizontal, Plus, X, Mic, Loader2 } from "lucide-react";
+import { useRecordAndTranscribe } from "@/features/audio/hooks/useRecordAndTranscribe";
 import { Button } from "@/components/ui/button";
-import { useRecordAndTranscribe } from "@/features/audio/hooks";
 import { TranscriptionResult } from "@/features/audio/types";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";

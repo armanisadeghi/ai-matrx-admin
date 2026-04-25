@@ -11,7 +11,7 @@
  *   <CloudFilesPickerHost />
  *
  *   // Anywhere else:
- *   import { openFilePicker } from "@/features/files";
+ *   import { openFilePicker } from "@/features/files/components/pickers/CloudFilesPickerHost";
  *   const fileIds = await openFilePicker({ multi: true });
  *
  * The imperative functions are NO-OPs until the host mounts. If you call
@@ -20,21 +20,9 @@
 
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import {
-  FilePicker,
-  type UseFilePickerOpenOptions,
-} from "./FilePicker";
-import {
-  FolderPicker,
-  type UseFolderPickerOpenOptions,
-} from "./FolderPicker";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { FilePicker, type UseFilePickerOpenOptions } from "./FilePicker";
+import { FolderPicker, type UseFolderPickerOpenOptions } from "./FolderPicker";
 import {
   SaveAsDialog,
   type SaveAsDestination,
@@ -126,9 +114,8 @@ export async function openSaveAs(
 export function CloudFilesPickerHost() {
   // File picker state
   const [fileOpen, setFileOpen] = useState(false);
-  const [fileOptions, setFileOptions] = useState<UseFilePickerOpenOptions | null>(
-    null,
-  );
+  const [fileOptions, setFileOptions] =
+    useState<UseFilePickerOpenOptions | null>(null);
   const fileResolverRef = useRef<((r: string[] | null) => void) | null>(null);
 
   // Folder picker state

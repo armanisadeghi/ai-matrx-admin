@@ -19,7 +19,7 @@ import type { RootState } from "@/lib/redux/store";
 import { openFeedbackDialog } from "@/lib/redux/slices/overlaySlice";
 import { brokerSelectors } from "@/lib/redux/brokerSlice";
 import { selectTaskFirstListenerId } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
-import { selectResponseTextByListenerId } from "@/lib/redux/socket-io";
+import { selectResponseTextByListenerId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 import AdminMenu from "./AdminMenu";
 import CreatorMenu from "./CreatorMenu";
 import { useMenuAnimations } from "./useMenuAnimations";

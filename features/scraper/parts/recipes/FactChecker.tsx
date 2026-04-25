@@ -7,15 +7,11 @@ import { PageTemplate, Card } from "../../../../components/official/PageTemplate
 import MarkdownRenderer from "@/components/mardown-display/MarkdownRenderer";
 import MarkdownTable from "@/components/mardown-display/tables/MarkdownTable";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { createTask, submitTask } from "@/lib/redux/socket-io/thunks";
+import { createTask } from "@/lib/redux/socket-io/thunks/createTaskThunk";
+import { submitTask } from "@/lib/redux/socket-io/thunks/submitTaskThunk";
 import { setTaskFields } from "@/lib/redux/socket-io/slices/socketTasksSlice";
-import {
-    selectTaskFirstListenerId,
-    selectResponseDataByListenerId,
-    selectResponseTextByListenerId,
-    selectPrimaryResponseEndedByTaskId,
-    selectTaskStatus,
-} from "@/lib/redux/socket-io";
+import { selectResponseDataByListenerId, selectResponseTextByListenerId, selectPrimaryResponseEndedByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
+import { selectTaskFirstListenerId, selectTaskStatus } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
 import MarkdownStream from "@/components/MarkdownStream";
 
 interface FactCheckerPageProps {

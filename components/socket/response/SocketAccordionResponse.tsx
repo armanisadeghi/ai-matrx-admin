@@ -24,16 +24,7 @@ import MarkdownRenderer from "@/components/mardown-display/MarkdownRenderer";
 import FullscreenWrapper from "@/components/matrx/FullscreenWrapper";
 import RawJsonExplorer from "@/components/official/json-explorer/RawJsonExplorer";
 import FullscreenMarkdownEditor from "@/components/mardown-display/markdown-classification/FullscreenMarkdownEditor";
-import {
-    selectTaskResponsesByTaskId,
-    selectResponseTextByListenerId,
-    selectResponseDataByListenerId,
-    selectResponseInfoByListenerId,
-    selectResponseErrorsByListenerId,
-    selectHasResponseErrorsByListenerId,
-    selectResponseEndedByListenerId,
-    selectAllResponses,
-} from "@/lib/redux/socket-io";
+import { selectTaskResponsesByTaskId, selectResponseTextByListenerId, selectResponseDataByListenerId, selectResponseInfoByListenerId, selectResponseErrorsByListenerId, selectHasResponseErrorsByListenerId, selectResponseEndedByListenerId, selectAllResponses } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { selectTaskFirstListenerId } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
 import { brokerActions } from "@/lib/redux/brokerSlice";

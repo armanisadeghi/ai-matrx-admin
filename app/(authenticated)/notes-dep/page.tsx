@@ -1,26 +1,26 @@
 // app/(authenticated)/notes/page.tsx
-'use client';
+"use client";
 
 import React from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { NotesLayout } from "@/features/notes";
+import { NotesLayout } from "@/features/notes/components/NotesLayout";
 import MobileNotesView from "@/features/notes/components/mobile/MobileNotesView";
 
 /**
  * Notes Page - Main notes management interface
- * 
+ *
  * Route: /notes
- * 
+ *
  * Automatically switches between desktop and mobile views based on screen size
  */
 export default function NotesPage() {
-    const isMobile = useIsMobile();
+  const isMobile = useIsMobile();
 
-    // Mobile view - iOS-inspired single-column navigation
-    if (isMobile) {
-        return <MobileNotesView />;
-    }
+  // Mobile view - iOS-inspired single-column navigation
+  if (isMobile) {
+    return <MobileNotesView />;
+  }
 
-    // Desktop view - Sidebar + editor layout
-    return <NotesLayout />;
+  // Desktop view - Sidebar + editor layout
+  return <NotesLayout />;
 }

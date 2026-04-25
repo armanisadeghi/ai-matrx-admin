@@ -1,10 +1,8 @@
 "use client";
 
+import { computeMatchingEntityIdsFromAssignments } from "@/features/agent-context/redux/scope/selectors";
+import { selectAllAssignments } from "@/features/agent-context/redux/scope/scopeAssignmentsSlice";
 import { createSelector } from "@reduxjs/toolkit";
-import {
-  computeMatchingEntityIdsFromAssignments,
-  selectAllAssignments,
-} from "@/features/agent-context/redux/scope";
 import { selectAllProjects } from "@/features/agent-context/redux/projectsSlice";
 import { selectAllTasks } from "@/features/agent-context/redux/tasksSlice";
 import {

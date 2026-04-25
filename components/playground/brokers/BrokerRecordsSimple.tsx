@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useCallback, useMemo, useState } from 'react';
-import { UnifiedLayoutProps } from '@/components/matrx/Entity';
+import { UnifiedLayoutProps } from '@/components/matrx/Entity/prewired-components/layouts/types';
 import { EntityKeys, MatrxRecordId } from '@/types/entityTypes';
 import { MessageBrokerDataOptional } from '@/types/AutomationSchemaTypes';
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";

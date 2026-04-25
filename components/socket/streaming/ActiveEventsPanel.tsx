@@ -3,7 +3,7 @@
 import { Badge } from "@/components/ui";
 import { CheckCircleIcon, XCircleIcon, ActivityIcon, ArrowRightIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { selectAllResponses } from "@/lib/redux/socket-io";
+import { selectAllResponses } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { ResponseState } from "@/lib/redux/socket-io/socket.types";
 // Define the stream data structure to match Redux store

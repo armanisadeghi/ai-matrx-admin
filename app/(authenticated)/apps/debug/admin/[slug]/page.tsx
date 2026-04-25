@@ -1,5 +1,5 @@
 import { fetchAppBySlug } from "@/utils/supabase/fetchAppAndAppletConfig";
-import { AppConfigViewer } from "@/components/admin";
+import AppConfigViewer from "@/components/admin/applet-admin/AppConfigViewer";
 import { CustomAppConfig } from "@/types/customAppTypes";
 
 export default async function Page({

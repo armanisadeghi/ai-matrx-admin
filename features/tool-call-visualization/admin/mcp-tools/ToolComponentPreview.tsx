@@ -45,7 +45,7 @@ import type {
   ToolLifecycleStatus,
 } from "@/features/agents/types/request.types";
 import type { ToolEventPayload } from "@/types/python-generated/stream-events";
-import { ToolCallVisualization } from "@/features/tool-call-visualization";
+import { ToolCallVisualization } from "@/features/tool-call-visualization/components/ToolCallVisualization";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

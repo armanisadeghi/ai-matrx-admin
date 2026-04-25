@@ -1,5 +1,5 @@
 // app/(authenticated)/transcripts/page.tsx
-import { TranscriptsLayout } from "@/features/transcripts";
+import { TranscriptsLayout } from "@/features/transcripts/components/TranscriptsLayout";
 
 /**
  * Transcripts Page - Main transcript management interface
@@ -7,5 +7,5 @@ import { TranscriptsLayout } from "@/features/transcripts";
  * Route: /transcripts
  */
 export default function TranscriptsPage() {
-    return <TranscriptsLayout />;
+  return <TranscriptsLayout />;
 }

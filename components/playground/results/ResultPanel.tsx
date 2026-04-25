@@ -14,12 +14,10 @@ import DraggableToolbar, {
 import { Eye, Code, FileText, Copy, Braces, Plus } from "lucide-react";
 import { FcDownLeft } from "react-icons/fc";
 import { AiOutlineDoubleLeft } from "react-icons/ai";
-import {
-  selectFirstPrimaryResponseDataByTaskId,
-  selectTaskFirstListenerId,
-} from "@/lib/redux/socket-io/selectors";
-import { selectResponseTextByListenerId } from "@/lib/redux/socket-io/selectors";
-import { selectResponseEndedByListenerId } from "@/lib/redux/socket-io/selectors";
+import { selectFirstPrimaryResponseDataByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
+import { selectTaskFirstListenerId } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
+import { selectResponseTextByListenerId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
+import { selectResponseEndedByListenerId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 import { useAppSelector } from "@/lib/redux/hooks";
 import MarkdownStream from "@/components/MarkdownStream";
 

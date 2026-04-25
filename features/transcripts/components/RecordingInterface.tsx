@@ -7,8 +7,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Mic, Square, AlertTriangle, CheckCircle } from 'lucide-react';
 import { motion } from 'motion/react';
 import { cn } from '@/lib/utils';
+import { useSimpleRecorder } from "@/features/audio/hooks/useSimpleRecorder";
 import { RECORDING_LIMITS } from '../constants/recording';
-import { useSimpleRecorder } from '@/features/audio/hooks';
 
 interface RecordingInterfaceProps {
     onRecordingComplete: (audioBlob: Blob, duration: number) => void;

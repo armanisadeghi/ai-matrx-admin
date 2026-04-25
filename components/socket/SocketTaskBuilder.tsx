@@ -2,7 +2,10 @@
 import React, { useEffect, useState } from 'react';
 import { ConfigBuilder } from "@/components/ui";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { selectTaskById, setTaskFields, submitTask, updateTaskFieldByPath } from '@/lib/redux/socket-io';
+import { selectTaskById } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
+import { setTaskFields } from "@/lib/redux/socket-io/slices/socketTasksSlice";
+import { submitTask } from "@/lib/redux/socket-io/thunks/submitTaskThunk";
+import { updateTaskFieldByPath } from "@/lib/redux/socket-io/thunks/taskFieldThunks";
 interface SocketConfigBuilderProps {
   taskId: string;
   className?: string;

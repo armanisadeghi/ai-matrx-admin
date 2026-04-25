@@ -3,18 +3,10 @@
 import React, { useEffect, useState } from "react";
 import { ChevronRight, FolderHeart } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { loadCodeFilesList, loadCodeFolders } from "@/features/code-files/redux/thunks";
+import { makeSelectFilesInFolder, selectCodeFilesListStatus, selectCodeFilesListError, selectCodeFoldersLoaded, selectTopLevelFolders } from "@/features/code-files/redux/selectors";
+import { type CodeFolder, type CodeFileRecord } from "@/features/code-files/redux/code-files.types";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import {
-  loadCodeFilesList,
-  loadCodeFolders,
-  makeSelectFilesInFolder,
-  selectCodeFilesListStatus,
-  selectCodeFilesListError,
-  selectCodeFoldersLoaded,
-  selectTopLevelFolders,
-  type CodeFolder,
-  type CodeFileRecord,
-} from "@/features/code-files";
 import { selectActiveTabId } from "../../redux/tabsSlice";
 import {
   useOpenLibraryFile,

@@ -20,7 +20,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { fetchAgentsListFull } from "@/features/agents/redux/agent-definition/thunks";
 import { selectBuiltinAgents } from "@/features/agents/redux/agent-definition/selectors";
-import { useAgentShortcuts } from "@/features/agent-shortcuts";
+import { useAgentShortcuts } from "@/features/agent-shortcuts/hooks/useAgentShortcuts";
 import { fetchAgentAppsAdmin } from "@/lib/services/agent-apps-admin-service";
 
 const SCOPE = "global" as const;

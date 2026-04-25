@@ -9,17 +9,15 @@ import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAgentListCore } from "@/features/agents/components/agent-listings/useAgentListCore";
 import { AgentListDropdown } from "@/features/agents/components/agent-listings/AgentListDropdown";
-import {
-  AgentListContent,
-  AgentDetailCard,
-  AgentFilterBar,
-  AgentSortPanel,
-  AgentCategoriesPanel,
-  AgentTagsPanel,
-  AgentMobileSubView,
-  SearchInput,
-} from "@/features/agents/components/agent-listings/core";
-import type { RightPanel } from "@/features/agents/components/agent-listings/core";
+import { AgentListContent } from "@/features/agents/components/agent-listings/core/AgentListContent";
+import { AgentDetailCard } from "@/features/agents/components/agent-listings/core/AgentDetailCard";
+import { AgentFilterBar } from "@/features/agents/components/agent-listings/core/AgentFilterBar";
+import { AgentSortPanel } from "@/features/agents/components/agent-listings/core/AgentSortPanel";
+import { AgentCategoriesPanel } from "@/features/agents/components/agent-listings/core/AgentCategoriesPanel";
+import { AgentTagsPanel } from "@/features/agents/components/agent-listings/core/AgentTagsPanel";
+import { AgentMobileSubView } from "@/features/agents/components/agent-listings/core/AgentMobileSubView";
+import { SearchInput } from "@/features/agents/components/agent-listings/core/primitives";
+import type { RightPanel } from "@/features/agents/components/agent-listings/core/types";
 import type { AgentDefinitionRecord } from "@/features/agents/types/agent-definition.types";
 import {
   Drawer,
@@ -40,17 +38,17 @@ function DropdownDefaultDemo() {
       <CardHeader className="pb-2">
         <CardTitle className="text-sm flex items-center gap-2">
           Dropdown - Default Trigger
-          <Badge variant="secondary" className="text-[9px] h-4">AgentListDropdown</Badge>
+          <Badge variant="secondary" className="text-[9px] h-4">
+            AgentListDropdown
+          </Badge>
         </CardTitle>
         <p className="text-[10px] text-muted-foreground">
-          Out-of-the-box dropdown with built-in trigger, search, filters, hover preview.
+          Out-of-the-box dropdown with built-in trigger, search, filters, hover
+          preview.
         </p>
       </CardHeader>
       <CardContent className="space-y-3">
-        <AgentListDropdown
-          onSelect={setSelectedId}
-          label="Agents"
-        />
+        <AgentListDropdown onSelect={setSelectedId} label="Agents" />
         <SelectedDebug label="selected ID" value={selectedId} />
       </CardContent>
     </Card>
@@ -69,19 +67,30 @@ function DropdownCustomTriggerDemo() {
       <CardHeader className="pb-2">
         <CardTitle className="text-sm flex items-center gap-2">
           Dropdown - Custom Trigger
-          <Badge variant="secondary" className="text-[9px] h-4">AgentListDropdown</Badge>
+          <Badge variant="secondary" className="text-[9px] h-4">
+            AgentListDropdown
+          </Badge>
         </CardTitle>
         <p className="text-[10px] text-muted-foreground">
-          Same full-featured dropdown with a completely different trigger button style.
+          Same full-featured dropdown with a completely different trigger button
+          style.
         </p>
       </CardHeader>
       <CardContent className="space-y-3">
         <AgentListDropdown
           onSelect={(id) => setSelectedName(id)}
-          label={selectedName ? `Selected: ${selectedName.slice(0, 8)}...` : "Pick an agent"}
+          label={
+            selectedName
+              ? `Selected: ${selectedName.slice(0, 8)}...`
+              : "Pick an agent"
+          }
           triggerSlot={
             <button className="inline-flex items-center gap-2 h-9 px-4 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
-              <span>{selectedName ? `Agent: ${selectedName.slice(0, 8)}...` : "Choose Agent"}</span>
+              <span>
+                {selectedName
+                  ? `Agent: ${selectedName.slice(0, 8)}...`
+                  : "Choose Agent"}
+              </span>
               <ChevronDown className="w-4 h-4" />
             </button>
           }
@@ -102,7 +111,9 @@ function NavigateModeDemo() {
       <CardHeader className="pb-2">
         <CardTitle className="text-sm flex items-center gap-2">
           Navigate Mode
-          <Badge variant="secondary" className="text-[9px] h-4">navigateTo</Badge>
+          <Badge variant="secondary" className="text-[9px] h-4">
+            navigateTo
+          </Badge>
         </CardTitle>
         <p className="text-[10px] text-muted-foreground">
           Instead of onSelect callback, navigates to a URL pattern on selection.
@@ -129,8 +140,11 @@ function SidebarListDemo() {
   const [rightPanel, setRightPanel] = useState<RightPanel>(null);
   const [catSearch, setCatSearch] = useState("");
   const [tagSearch, setTagSearch] = useState("");
-  const [mobileDetailAgent, setMobileDetailAgent] = useState<AgentDefinitionRecord | null>(null);
-  const [mobileSubView, setMobileSubView] = useState<"sort" | "categories" | "tags" | null>(null);
+  const [mobileDetailAgent, setMobileDetailAgent] =
+    useState<AgentDefinitionRecord | null>(null);
+  const [mobileSubView, setMobileSubView] = useState<
+    "sort" | "categories" | "tags" | null
+  >(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const {
@@ -156,7 +170,9 @@ function SidebarListDemo() {
   });
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useState(() => { ensureLoaded(); });
+  useState(() => {
+    ensureLoaded();
+  });
 
   const onFilterChipClick = (panel: "sort" | "categories" | "tags") => {
     if (isMobile) {
@@ -172,7 +188,8 @@ function SidebarListDemo() {
     setTagSearch("");
   };
 
-  const activeFilterPanel = !isMobile && rightPanel && rightPanel !== "detail" ? rightPanel : null;
+  const activeFilterPanel =
+    !isMobile && rightPanel && rightPanel !== "detail" ? rightPanel : null;
 
   const listContent = (
     <AgentListContent
@@ -199,7 +216,12 @@ function SidebarListDemo() {
   // Desktop: inline filter panels shown below the list
   const desktopContent = (
     <div className="flex h-full">
-      <div className={cn("flex flex-col min-w-0", activeFilterPanel ? "flex-1 border-r border-border" : "flex-1")}>
+      <div
+        className={cn(
+          "flex flex-col min-w-0",
+          activeFilterPanel ? "flex-1 border-r border-border" : "flex-1",
+        )}
+      >
         {listContent}
       </div>
       {activeFilterPanel && (
@@ -213,7 +235,10 @@ function SidebarListDemo() {
               allCategories={allCategories}
               search={catSearch}
               setSearch={setCatSearch}
-              onClose={() => { closeFilterPanel(); setCatSearch(""); }}
+              onClose={() => {
+                closeFilterPanel();
+                setCatSearch("");
+              }}
             />
           )}
           {activeFilterPanel === "tags" && (
@@ -222,7 +247,10 @@ function SidebarListDemo() {
               allTags={allTags}
               search={tagSearch}
               setSearch={setTagSearch}
-              onClose={() => { closeFilterPanel(); setTagSearch(""); }}
+              onClose={() => {
+                closeFilterPanel();
+                setTagSearch("");
+              }}
             />
           )}
         </div>
@@ -235,7 +263,11 @@ function SidebarListDemo() {
     <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
       <DrawerTrigger asChild>
         <button className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md text-xs font-medium border border-border bg-background hover:bg-muted/50 transition-colors w-full justify-between">
-          <span className="truncate">{selectedId ? `Selected: ${selectedId.slice(0, 12)}...` : "Select agent..."}</span>
+          <span className="truncate">
+            {selectedId
+              ? `Selected: ${selectedId.slice(0, 12)}...`
+              : "Select agent..."}
+          </span>
           <List className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
         </button>
       </DrawerTrigger>
@@ -291,10 +323,13 @@ function SidebarListDemo() {
       <CardHeader className="pb-2">
         <CardTitle className="text-sm flex items-center gap-2">
           Sidebar List
-          <Badge variant="secondary" className="text-[9px] h-4">AgentListContent</Badge>
+          <Badge variant="secondary" className="text-[9px] h-4">
+            AgentListContent
+          </Badge>
         </CardTitle>
         <p className="text-[10px] text-muted-foreground">
-          Full list content embedded directly with inline filter panels. On mobile, opens as a bottom drawer with drill-down navigation.
+          Full list content embedded directly with inline filter panels. On
+          mobile, opens as a bottom drawer with drill-down navigation.
         </p>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -321,7 +356,9 @@ function CardGridDemo() {
   const [rightPanel, setRightPanel] = useState<RightPanel>(null);
   const [catSearch, setCatSearch] = useState("");
   const [tagSearch, setTagSearch] = useState("");
-  const [mobileSubView, setMobileSubView] = useState<"sort" | "categories" | "tags" | null>(null);
+  const [mobileSubView, setMobileSubView] = useState<
+    "sort" | "categories" | "tags" | null
+  >(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const {
@@ -342,7 +379,9 @@ function CardGridDemo() {
   });
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useState(() => { ensureLoaded(); });
+  useState(() => {
+    ensureLoaded();
+  });
 
   const onFilterChipClick = (panel: "sort" | "categories" | "tags") => {
     if (isMobile) {
@@ -358,7 +397,8 @@ function CardGridDemo() {
     setTagSearch("");
   };
 
-  const activeFilterPanel = rightPanel && rightPanel !== "detail" ? rightPanel : null;
+  const activeFilterPanel =
+    rightPanel && rightPanel !== "detail" ? rightPanel : null;
 
   const filterBar = (
     <AgentFilterBar
@@ -384,15 +424,21 @@ function CardGridDemo() {
   );
 
   const cardGrid = (
-    <div className={cn(
-      "grid gap-2 overflow-y-auto",
-      isMobile ? "grid-cols-2" : "grid-cols-2 md:grid-cols-3",
-      isMobile ? "max-h-[50dvh]" : "max-h-[280px]",
-    )}>
+    <div
+      className={cn(
+        "grid gap-2 overflow-y-auto",
+        isMobile ? "grid-cols-2" : "grid-cols-2 md:grid-cols-3",
+        isMobile ? "max-h-[50dvh]" : "max-h-[280px]",
+      )}
+    >
       {isLoading ? (
-        <p className="col-span-full text-xs text-muted-foreground text-center py-8">Loading...</p>
+        <p className="col-span-full text-xs text-muted-foreground text-center py-8">
+          Loading...
+        </p>
       ) : agents.length === 0 ? (
-        <p className="col-span-full text-xs text-muted-foreground text-center py-8">No agents found</p>
+        <p className="col-span-full text-xs text-muted-foreground text-center py-8">
+          No agents found
+        </p>
       ) : (
         agents.map((agent) => (
           <button
@@ -409,9 +455,13 @@ function CardGridDemo() {
                 : "border-border bg-card",
             )}
           >
-            <p className="text-xs font-medium truncate">{agent.name || "Untitled"}</p>
+            <p className="text-xs font-medium truncate">
+              {agent.name || "Untitled"}
+            </p>
             {agent.category && (
-              <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{agent.category}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5 truncate">
+                {agent.category}
+              </p>
             )}
           </button>
         ))
@@ -435,7 +485,10 @@ function CardGridDemo() {
               allCategories={allCategories}
               search={catSearch}
               setSearch={setCatSearch}
-              onClose={() => { closeFilterPanel(); setCatSearch(""); }}
+              onClose={() => {
+                closeFilterPanel();
+                setCatSearch("");
+              }}
             />
           )}
           {activeFilterPanel === "tags" && (
@@ -444,7 +497,10 @@ function CardGridDemo() {
               allTags={allTags}
               search={tagSearch}
               setSearch={setTagSearch}
-              onClose={() => { closeFilterPanel(); setTagSearch(""); }}
+              onClose={() => {
+                closeFilterPanel();
+                setTagSearch("");
+              }}
             />
           )}
         </div>
@@ -463,7 +519,11 @@ function CardGridDemo() {
     <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
       <DrawerTrigger asChild>
         <button className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md text-xs font-medium border border-border bg-background hover:bg-muted/50 transition-colors w-full justify-between">
-          <span className="truncate">{selectedId ? `Selected: ${selectedId.slice(0, 12)}...` : "Browse agents..."}</span>
+          <span className="truncate">
+            {selectedId
+              ? `Selected: ${selectedId.slice(0, 12)}...`
+              : "Browse agents..."}
+          </span>
           <List className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
         </button>
       </DrawerTrigger>
@@ -503,10 +563,13 @@ function CardGridDemo() {
       <CardHeader className="pb-2">
         <CardTitle className="text-sm flex items-center gap-2">
           Card Grid
-          <Badge variant="secondary" className="text-[9px] h-4">useAgentListCore + custom cards</Badge>
+          <Badge variant="secondary" className="text-[9px] h-4">
+            useAgentListCore + custom cards
+          </Badge>
         </CardTitle>
         <p className="text-[10px] text-muted-foreground">
-          Hook provides data, filter bar handles filtering, cards are custom rendered. On mobile, opens as a bottom drawer.
+          Hook provides data, filter bar handles filtering, cards are custom
+          rendered. On mobile, opens as a bottom drawer.
         </p>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -523,18 +586,18 @@ function CardGridDemo() {
 
 function DetailCardDemo() {
   const isMobile = useIsMobile();
-  const [selectedAgent, setSelectedAgent] = useState<AgentDefinitionRecord | null>(null);
+  const [selectedAgent, setSelectedAgent] =
+    useState<AgentDefinitionRecord | null>(null);
 
-  const {
-    agents,
-    ensureLoaded,
-  } = useAgentListCore({
+  const { agents, ensureLoaded } = useAgentListCore({
     consumerId: "demo-detail",
     onSelect: () => {},
   });
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useState(() => { ensureLoaded(); });
+  useState(() => {
+    ensureLoaded();
+  });
 
   const previewAgent = selectedAgent ?? agents[0] ?? null;
 
@@ -543,14 +606,22 @@ function DetailCardDemo() {
       <CardHeader className="pb-2">
         <CardTitle className="text-sm flex items-center gap-2">
           Detail Card
-          <Badge variant="secondary" className="text-[9px] h-4">AgentDetailCard</Badge>
+          <Badge variant="secondary" className="text-[9px] h-4">
+            AgentDetailCard
+          </Badge>
         </CardTitle>
         <p className="text-[10px] text-muted-foreground">
-          Standalone detail card — use anywhere: hover preview, sidebar detail, modal content.
+          Standalone detail card — use anywhere: hover preview, sidebar detail,
+          modal content.
         </p>
       </CardHeader>
       <CardContent className="space-y-3">
-        <div className={cn("flex gap-2 overflow-x-auto scrollbar-none pb-1", isMobile && "flex-nowrap")}>
+        <div
+          className={cn(
+            "flex gap-2 overflow-x-auto scrollbar-none pb-1",
+            isMobile && "flex-nowrap",
+          )}
+        >
           {agents.slice(0, isMobile ? 4 : 5).map((a) => (
             <button
               key={a.id}
@@ -567,11 +638,13 @@ function DetailCardDemo() {
           ))}
         </div>
         {previewAgent && (
-          <div className={cn("border border-border rounded-lg overflow-hidden", isMobile ? "h-[280px]" : "h-[300px]")}>
-            <AgentDetailCard
-              agent={previewAgent}
-              onSelect={() => {}}
-            />
+          <div
+            className={cn(
+              "border border-border rounded-lg overflow-hidden",
+              isMobile ? "h-[280px]" : "h-[300px]",
+            )}
+          >
+            <AgentDetailCard agent={previewAgent} onSelect={() => {}} />
           </div>
         )}
       </CardContent>
@@ -583,11 +656,18 @@ function DetailCardDemo() {
 // Debug helper
 // ---------------------------------------------------------------------------
 
-function SelectedDebug({ label, value }: { label: string; value: string | null }) {
+function SelectedDebug({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | null;
+}) {
   return (
     <div className="p-2 bg-muted/30 rounded-md border border-border/50">
       <p className="text-[9px] font-mono text-muted-foreground">
-        {label}: {value ? (
+        {label}:{" "}
+        {value ? (
           <span className="text-foreground">{value}</span>
         ) : (
           <span className="italic">none</span>
@@ -608,17 +688,27 @@ export default function AgentSelectorDemoPage() {
         <h1 className="text-lg md:text-xl font-bold">Agent Selector System</h1>
         <p className="text-xs md:text-sm text-muted-foreground mt-1">
           Composable agent list components extracted from{" "}
-          <code className="text-[11px] bg-muted px-1 rounded">AgentListDropdown</code>.
-          All variants share the same{" "}
-          <code className="text-[11px] bg-muted px-1 rounded">useAgentListCore</code> hook
-          and <code className="text-[11px] bg-muted px-1 rounded">useAgentConsumer</code> Redux state.
+          <code className="text-[11px] bg-muted px-1 rounded">
+            AgentListDropdown
+          </code>
+          . All variants share the same{" "}
+          <code className="text-[11px] bg-muted px-1 rounded">
+            useAgentListCore
+          </code>{" "}
+          hook and{" "}
+          <code className="text-[11px] bg-muted px-1 rounded">
+            useAgentConsumer
+          </code>{" "}
+          Redux state.
         </p>
       </div>
 
       <Separator />
 
       <section className="space-y-4">
-        <h2 className="text-sm md:text-base font-semibold">Dropdown Variants</h2>
+        <h2 className="text-sm md:text-base font-semibold">
+          Dropdown Variants
+        </h2>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <DropdownDefaultDemo />
           <DropdownCustomTriggerDemo />
@@ -629,7 +719,9 @@ export default function AgentSelectorDemoPage() {
       <Separator />
 
       <section className="space-y-4">
-        <h2 className="text-sm md:text-base font-semibold">Embedded Variants</h2>
+        <h2 className="text-sm md:text-base font-semibold">
+          Embedded Variants
+        </h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
           <SidebarListDemo />
           <CardGridDemo />
@@ -639,7 +731,9 @@ export default function AgentSelectorDemoPage() {
       <Separator />
 
       <section className="space-y-4">
-        <h2 className="text-sm md:text-base font-semibold">Standalone Components</h2>
+        <h2 className="text-sm md:text-base font-semibold">
+          Standalone Components
+        </h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
           <DetailCardDemo />
         </div>

@@ -2,7 +2,7 @@
 import React, {useState, useEffect, useRef, useMemo} from 'react';
 import {cn} from '@/lib/utils';
 import {ScrollArea} from '@/components/ui';
-import {UnifiedLayoutProps} from "@/components/matrx/Entity";
+import {UnifiedLayoutProps} from "@/components/matrx/Entity/prewired-components/layouts/types";
 import {useWindowSize} from "@uidotdev/usehooks";
 import DynamicQuickReference from '@/app/entities/quick-reference/dynamic-quick-ref/DynamicQuickReference';
 import {EntityKeys} from '@/types/entityTypes';

@@ -89,6 +89,10 @@ import agentContextMenuCacheReducer from "./slices/agentContextMenuCacheSlice";
 import promptRunnerReducer from "./slices/promptRunnerSlice";
 import promptExecutionReducer from "./prompt-execution/slice";
 import actionCacheReducer from "./prompt-execution/actionCacheSlice";
+import scopeTypesReducer from "@/features/agent-context/redux/scope/scopeTypesSlice";
+import scopesReducer from "@/features/agent-context/redux/scope/scopesSlice";
+import scopeAssignmentsReducer from "@/features/agent-context/redux/scope/scopeAssignmentsSlice";
+import scopeContextReducer from "@/features/agent-context/redux/scope/scopeContextSlice";
 import promptEditorReducer from "./slices/promptEditorSlice";
 import modelRegistryReducer from "../../features/ai-models/redux/modelRegistrySlice";
 // chatConversations — unmounted (Redux unification). File remains on disk.
@@ -105,12 +109,6 @@ import hierarchyReducer from "@/features/agent-context/redux/hierarchySlice";
 import organizationsReducer from "@/features/agent-context/redux/organizationsSlice";
 import projectsReducer from "@/features/agent-context/redux/projectsSlice";
 import tasksReducer from "@/features/agent-context/redux/tasksSlice";
-import {
-  scopeTypesReducer,
-  scopesReducer,
-  scopeAssignmentsReducer,
-  scopeContextReducer,
-} from "@/features/agent-context/redux/scope";
 import taskUiReducer from "@/features/tasks/redux/taskUiSlice";
 import quickTasksWindowReducer from "@/features/tasks/redux/quickTasksWindowSlice";
 import taskAssociationsReducer from "@/features/tasks/redux/taskAssociationsSlice";
@@ -131,7 +129,8 @@ import { default as messagesReducer } from "@/features/agents/redux/execution-sy
 import { default as conversationFocusReducer } from "@/features/agents/redux/execution-system/conversation-focus/conversation-focus.slice";
 import { surfacesReducer } from "@/features/agents/redux/surfaces/surfaces.slice";
 import agentAssistantMarkdownDraftReducer from "@/features/agents/redux/agent-assistant-markdown-draft.slice";
-import { netRequestsReducer, netHealthReducer } from "@/lib/redux/net";
+import { default as netRequestsReducer } from "@/lib/redux/net/netRequestsSlice";
+import { default as netHealthReducer } from "@/lib/redux/net/netHealthSlice";
 
 // Phase 11 removed the legacy `fileSystemReducers` + `availableBuckets`
 // + `FileSystemState` exports. The new `cloudFiles` slice below is the

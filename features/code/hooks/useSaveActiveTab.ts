@@ -2,12 +2,10 @@
 
 import { useCallback } from "react";
 import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
+import { codeFilesActions } from "@/features/code-files/redux/slice";
+import { saveFileNow } from "@/features/code-files/redux/thunks";
+import { selectCodeFileById } from "@/features/code-files/redux/selectors";
 import { createClient } from "@/utils/supabase/client";
-import {
-  codeFilesActions,
-  saveFileNow,
-  selectCodeFileById,
-} from "@/features/code-files";
 import {
   markTabSaved,
   selectActiveTab,

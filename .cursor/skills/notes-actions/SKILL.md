@@ -8,7 +8,7 @@ description: Cross-app notes integration components and patterns. Use when addin
 ## Quick Reference
 
 **Source:** `features/notes/actions/`
-**Imports:** `@/features/notes` (barrel) or `@/features/notes/actions` (explicit)
+**Imports:** Direct paths (e.g. `@/features/notes/actions/SaveToScratchButton`, `@/features/notes/service/notesApi`) — root and `actions/index` barrels were removed.
 **Living doc:** `features/notes/actions/notes-actions.md` — **must be updated** whenever actions are added, removed, or consumed in new files.
 
 ## Available Actions
@@ -45,7 +45,7 @@ dispatch(openSaveToNotes({ content, defaultFolder: 'Scratch' }));
 ### Pattern 2: Drop-in buttons
 
 ```typescript
-import { SaveToScratchButton } from '@/features/notes';
+import { SaveToScratchButton } from '@/features/notes/actions/SaveToScratchButton';
 
 <SaveToScratchButton content={aiResponse} />
 ```
@@ -55,7 +55,7 @@ No provider or overlay wiring needed — the button calls `NotesAPI.create` dire
 ### Pattern 3: Folder-scoped note picker
 
 ```typescript
-import { CategoryNotesModal } from '@/features/notes';
+import { CategoryNotesModal } from '@/features/notes/actions/CategoryNotesModal';
 
 <CategoryNotesModal
   folderName="Prompts"
@@ -68,7 +68,7 @@ Requires `NotesProvider` ancestor.
 ### Pattern 4: Embedded sheet
 
 ```typescript
-import { QuickNotesSheet } from '@/features/notes';
+import { QuickNotesSheet } from '@/features/notes/actions/QuickNotesSheet';
 ```
 
 Used inside `OverlayController` or any layout that provides `NotesProvider`.
@@ -85,8 +85,7 @@ Used inside `OverlayController` or any layout that provides `NotesProvider`.
 
 ## Key Files
 
-- `features/notes/actions/index.ts` — barrel exports
-- `features/notes/index.ts` — top-level barrel (re-exports actions)
+- (Barrels removed — import action components and `NotesAPI` from their source files under `features/notes/`.)
 - `features/notes/actions/notes-actions.md` — living usage reference
 - `features/notes/service/notesApi.ts` — `NotesAPI` (programmatic CRUD)
 - `features/notes/context/NotesContext.tsx` — shared state + realtime

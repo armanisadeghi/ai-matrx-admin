@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Server } from 'lucide-react';
-import { selectPrimaryConnection } from '@/lib/redux/socket-io';
+import { selectPrimaryConnection } from "@/lib/redux/socket-io/selectors/socket-connection-selectors";
 import { StatusIndicator } from '@/components/socket-io/status-indicators/StatusIndicator';
 import { useAppSelector } from "@/lib/redux/hooks";
 

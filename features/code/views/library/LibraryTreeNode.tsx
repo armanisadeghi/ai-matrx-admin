@@ -3,12 +3,9 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { ChevronRight, Folder, FolderOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { makeSelectChildFolders, makeSelectFilesInFolder } from "@/features/code-files/redux/selectors";
+import { type CodeFolder } from "@/features/code-files/redux/code-files.types";
 import { useAppSelector } from "@/lib/redux/hooks";
-import {
-  makeSelectChildFolders,
-  makeSelectFilesInFolder,
-  type CodeFolder,
-} from "@/features/code-files";
 import { FileIcon } from "../../styles/file-icon";
 import {
   ACTIVE_ROW,

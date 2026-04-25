@@ -23,6 +23,8 @@ import {
   History,
   X,
 } from "lucide-react";
+import { fetchScopeTypes } from "@/features/agent-context/redux/scope/scopeTypesSlice";
+import { fetchScopes } from "@/features/agent-context/redux/scope/scopesSlice";
 import { useSearchParams } from "next/navigation";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -51,10 +53,6 @@ import {
   closeSplit,
 } from "../redux/slice";
 import { fetchNotesList, fetchNoteContent, saveNote } from "../redux/thunks";
-import {
-  fetchScopeTypes,
-  fetchScopes,
-} from "@/features/agent-context/redux/scope";
 import { selectOrganizationId } from "@/features/agent-context/redux/appContextSlice";
 import {
   selectOtherUsersActive,

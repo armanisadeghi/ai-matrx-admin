@@ -5,7 +5,7 @@ import { useScraperSocket } from "@/lib/redux/socket-io/hooks/useScraperSocket";
 import { ChevronUp, ChevronDown } from "lucide-react";
 import { ResponsiveSocketHeader } from "@/components/socket-io/headers/ResponsiveSocketHeader";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectTaskStatus } from "@/lib/redux/socket-io";
+import { selectTaskStatus } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
 import ScraperResultsComponent from "@/features/scraper/ScraperResultsComponent";
 
 const DEBUG_MODE = true;

@@ -1,9 +1,11 @@
-import { useMemo } from 'react';
+import { useMemo } from "react";
 import { cn } from "@/lib/utils";
-import { DynamicStyleOptions } from '@/components/matrx/Entity';
+import { DynamicStyleOptions } from "@/components/matrx/Entity/prewired-components/layouts/types";
 
-
-interface UseFieldStylesProps extends Omit<DynamicStyleOptions, 'animationPreset'> {
+interface UseFieldStylesProps extends Omit<
+  DynamicStyleOptions,
+  "animationPreset"
+> {
   disabled?: boolean;
   error?: boolean;
   focused?: boolean;
@@ -14,17 +16,17 @@ interface UseFieldStylesProps extends Omit<DynamicStyleOptions, 'animationPreset
 }
 
 export const useFieldStyles = ({
-  variant = 'default',
-  size = 'default',
-  textSize = 'default',
-  density = 'normal',
+  variant = "default",
+  size = "default",
+  textSize = "default",
+  density = "normal",
   disabled = false,
   error = false,
   focused = false,
   hasValue = false,
   isFloating = false,
-  className = '',
-  customStates = {}
+  className = "",
+  customStates = {},
 }: UseFieldStylesProps) => {
   const baseStyles = useMemo(() => {
     const base = "w-full rounded-md transition-colors";
@@ -42,7 +44,7 @@ export const useFieldStyles = ({
       link: "text-primary underline-offset-4 hover:underline",
       primary: "bg-primary text-primary-foreground hover:bg-primary/90",
     }),
-    []
+    [],
   );
 
   // Component sizes - mapped to common heights
@@ -56,9 +58,9 @@ export const useFieldStyles = ({
       xl: "h-14",
       "2xl": "h-16",
       "3xl": "h-20",
-      icon: "h-10 aspect-square",  // Square aspect ratio for icon inputs
+      icon: "h-10 aspect-square", // Square aspect ratio for icon inputs
     }),
-    []
+    [],
   );
 
   // Text sizes
@@ -74,17 +76,17 @@ export const useFieldStyles = ({
       "3xl": "text-3xl",
       hideText: "sr-only",
     }),
-    []
+    [],
   );
 
   // Minimal internal spacing based on density
   const densityStyles = useMemo(
     () => ({
       compact: "px-0.5 py-0", // Minimal internal spacing
-      normal: "px-1 py-0.5",      // Moderate internal spacing
-      comfortable: "px-2 py-2",  // More generous spacing
+      normal: "px-1 py-0.5", // Moderate internal spacing
+      comfortable: "px-2 py-2", // More generous spacing
     }),
-    []
+    [],
   );
 
   const stateStyles = useMemo(
@@ -94,7 +96,7 @@ export const useFieldStyles = ({
       focused: "ring-2 ring-ring ring-offset-background",
       floating: isFloating ? "pt-4 pb-1" : "", // Only apply if floating label is enabled
     }),
-    [isFloating]
+    [isFloating],
   );
 
   const getFieldStyles = useMemo(() => {
@@ -111,8 +113,8 @@ export const useFieldStyles = ({
       // Apply any custom states
       Object.entries(customStates).reduce(
         (acc, [state, isActive]) => (isActive ? `${acc} ${state}` : acc),
-        ''
-      )
+        "",
+      ),
     );
   }, [
     baseStyles,
@@ -129,28 +131,27 @@ export const useFieldStyles = ({
 
   // Component-specific style getters
   const getInputStyles = useMemo(
-    () => cn(
-      getFieldStyles,
-      "file:border-0 file:bg-transparent file:text-sm file:font-medium",
-      "placeholder:text-muted-foreground"
-    ),
-    [getFieldStyles]
+    () =>
+      cn(
+        getFieldStyles,
+        "file:border-0 file:bg-transparent file:text-sm file:font-medium",
+        "placeholder:text-muted-foreground",
+      ),
+    [getFieldStyles],
   );
 
   const getTextareaStyles = useMemo(
-    () => cn(
-      getFieldStyles,
-      "min-h-[80px] resize-vertical"
-    ),
-    [getFieldStyles]
+    () => cn(getFieldStyles, "min-h-[80px] resize-vertical"),
+    [getFieldStyles],
   );
 
   const getSelectStyles = useMemo(
-    () => cn(
-      getFieldStyles,
-      "pr-8" // Space for the dropdown arrow
-    ),
-    [getFieldStyles]
+    () =>
+      cn(
+        getFieldStyles,
+        "pr-8", // Space for the dropdown arrow
+      ),
+    [getFieldStyles],
   );
 
   // Switch has unique styling needs
@@ -164,21 +165,21 @@ export const useFieldStyles = ({
         "focus-visible:ring-ring focus-visible:ring-offset-2",
         "focus-visible:ring-offset-background disabled:cursor-not-allowed",
         "disabled:opacity-50 data-[state=checked]:bg-primary",
-        "data-[state=unchecked]:bg-input"
+        "data-[state=unchecked]:bg-input",
       ),
       thumb: cn(
         "pointer-events-none block rounded-full bg-background",
         "shadow-lg ring-0 transition-transform data-[state=checked]:translate-x-5",
         "data-[state=unchecked]:translate-x-0",
         // Size-based thumb dimensions
-        size === 'xs' && "h-4 w-4",
-        size === 'sm' && "h-5 w-5",
-        size === 'default' && "h-6 w-6",
-        size === 'lg' && "h-7 w-7",
-        size === 'xl' && "h-8 w-8",
+        size === "xs" && "h-4 w-4",
+        size === "sm" && "h-5 w-5",
+        size === "default" && "h-6 w-6",
+        size === "lg" && "h-7 w-7",
+        size === "xl" && "h-8 w-8",
       ),
     }),
-    [size]
+    [size],
   );
 
   return {

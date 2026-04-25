@@ -13,8 +13,8 @@
 import React, { useCallback, useState } from 'react';
 import { AudioLines } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useRecordAndTranscribe } from "@/features/audio/hooks/useRecordAndTranscribe";
 import { cn } from '@/lib/utils';
-import { useRecordAndTranscribe } from '@/features/audio/hooks';
 import { TranscriptionResult } from '@/features/audio/types';
 import { MicrophoneButton } from '@/features/audio/components/MicrophoneButton';
 import { TranscriptionLoader } from '@/features/audio/components/TranscriptionLoader';

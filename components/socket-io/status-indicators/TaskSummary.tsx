@@ -1,14 +1,7 @@
 import React from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { 
-  selectTaskStatus, 
-  selectTaskValidationState,
-  selectTaskListenerIds,
-  selectTaskError,
-  selectIsTaskComplete,
-  selectResponseEndedByListenerId,
-  selectHasResponseErrorsByListenerId,
-} from "@/lib/redux/socket-io";
+import { selectTaskError, selectIsTaskComplete, selectResponseEndedByListenerId, selectHasResponseErrorsByListenerId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
+import { selectTaskStatus, selectTaskValidationState, selectTaskListenerIds } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
 import { MultiStateStatusIndicator } from "./MultiStateStatusIndicator";
 import { CompactListDisplay } from "./CompactListDisplay";
 // Import Lucide React icons

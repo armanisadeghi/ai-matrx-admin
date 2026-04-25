@@ -25,7 +25,7 @@ import { copyToClipboard } from "@/components/matrx/buttons/markdown-copy-utils"
 import { printMarkdownContent } from "@/features/chat/utils/markdown-print-utils";
 import { loadWordPressCSS } from "@/features/html-pages/css/wordpress-styles";
 import AdvancedMenu, { MenuItem } from "@/components/official/AdvancedMenu";
-import { NotesAPI } from "@/features/notes";
+import { NotesAPI } from "@/features/notes/service/notesApi";
 import { useCartesiaSpeaker } from "@/features/tts/hooks/useCartesiaSpeaker";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { openSaveToNotes } from "@/lib/redux/slices/overlaySlice";

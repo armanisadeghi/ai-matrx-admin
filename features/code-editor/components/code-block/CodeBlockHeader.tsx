@@ -34,11 +34,11 @@ import LanguageDisplay from "@/features/code-editor/components/code-block/Langua
 import IconButton from "@/components/official/IconButton";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { openSaveToCode } from "@/lib/redux/slices/overlaySlice";
+import { extensionForLanguage } from "@/features/code-files/actions/languageOptions";
 import {
   useSaveAndOpenInCodeEditor,
   CHAT_CAPTURES_FOLDER_NAME,
 } from "@/features/code/actions/saveAndOpenInCodeEditor";
-import { extensionForLanguage } from "@/features/code-files";
 import {
   DropdownMenu,
   DropdownMenuContent,

@@ -10,7 +10,7 @@ import {
     DEFAULT_RESIZABLE_LAYOUT_OPTIONS,
     DEFAULT_SELECT_COMPONENT_OPTIONS
 } from './configs';
-import {UnifiedLayoutProps} from '@/components/matrx/Entity';
+import {UnifiedLayoutProps} from '@/components/matrx/Entity/prewired-components/layouts/types';
 import { QuickReferenceComponentType } from '@/types/componentConfigTypes';
 
 export const metadata: Metadata = {

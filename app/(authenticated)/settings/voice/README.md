@@ -113,7 +113,7 @@ interface VoiceDiagnosticsDisplayProps {
 Want to show diagnostics somewhere else? Just import the core component:
 
 ```typescript
-import { VoiceDiagnosticsDisplay } from '@/features/audio';
+import { VoiceDiagnosticsDisplay } from '@/features/audio/components/VoiceDiagnosticsDisplay';
 
 // In a wizard:
 <VoiceDiagnosticsDisplay autoRun={true} />

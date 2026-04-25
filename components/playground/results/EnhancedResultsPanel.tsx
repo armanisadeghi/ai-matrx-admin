@@ -9,9 +9,9 @@ import { Copy } from "lucide-react";
 import { DisplayTheme } from "@/components/mardown-display/themes";
 
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectTaskFirstListenerId } from "@/lib/redux/socket-io/selectors";
-import { selectResponseTextByListenerId } from "@/lib/redux/socket-io/selectors";
-import { selectResponseEndedByListenerId } from "@/lib/redux/socket-io/selectors";
+import { selectTaskFirstListenerId } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
+import { selectResponseTextByListenerId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
+import { selectResponseEndedByListenerId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 
 interface ResultPanelProps {
     id: string;

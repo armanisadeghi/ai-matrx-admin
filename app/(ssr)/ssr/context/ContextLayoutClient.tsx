@@ -4,12 +4,12 @@ import { Suspense, useState } from "react";
 import { usePathname } from "next/navigation";
 import { PanelLeftClose, PanelLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { HierarchyTree } from "@/features/agent-context/components/hierarchy-selection/HierarchyTree";
+import { HierarchyBreadcrumb } from "@/features/agent-context/components/hierarchy-selection/HierarchyBreadcrumb";
 import {
-  HierarchyTree,
-  HierarchyBreadcrumb,
   EMPTY_SELECTION,
-} from "@/features/agent-context/components/hierarchy-selection";
-import type { HierarchySelection } from "@/features/agent-context/components/hierarchy-selection";
+  type HierarchySelection,
+} from "@/features/agent-context/components/hierarchy-selection/types";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ContextLayoutClient({

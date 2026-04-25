@@ -46,7 +46,7 @@ import {
   selectPrimaryResponseTextByTaskId,
   selectPrimaryResponseEndedByTaskId,
 } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
-import { VoiceTextarea } from "@/features/audio";
+import { VoiceTextarea } from "@/components/official/VoiceTextarea";
 import MarkdownStream from "@/components/MarkdownStream";
 
 interface AutoCreatePromptAppFormProps {

@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { IconButton } from '@/components/ui/icon-button';
 import { Trash2, Plug, PlugZap, Star } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { selectIsAdmin, selectPrimaryConnectionId } from '@/lib/redux/socket-io/selectors';
+import { selectIsAdmin, selectPrimaryConnectionId } from "@/lib/redux/socket-io/selectors/socket-connection-selectors";
 interface ConnectionItemProps {
   connection: SocketConnection;
 }

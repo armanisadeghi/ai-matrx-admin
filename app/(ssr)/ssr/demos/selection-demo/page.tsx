@@ -4,16 +4,16 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { HierarchyTree } from "@/features/agent-context/components/hierarchy-selection/HierarchyTree";
+import { HierarchyCascade } from "@/features/agent-context/components/hierarchy-selection/HierarchyCascade";
+import { HierarchyBreadcrumb } from "@/features/agent-context/components/hierarchy-selection/HierarchyBreadcrumb";
+import { HierarchyCommand } from "@/features/agent-context/components/hierarchy-selection/HierarchyCommand";
+import { HierarchyPills } from "@/features/agent-context/components/hierarchy-selection/HierarchyPills";
+import { HierarchyHoverMenu } from "@/features/agent-context/components/hierarchy-selection/HierarchyHoverMenu";
 import {
-  HierarchyTree,
-  HierarchyCascade,
-  HierarchyBreadcrumb,
-  HierarchyCommand,
-  HierarchyPills,
-  HierarchyHoverMenu,
   EMPTY_SELECTION,
-} from "@/features/agent-context/components/hierarchy-selection";
-import type { HierarchySelection } from "@/features/agent-context/components/hierarchy-selection";
+  type HierarchySelection,
+} from "@/features/agent-context/components/hierarchy-selection/types";
 
 // ─── Shared debug widget ──────────────────────────────────────────────────
 

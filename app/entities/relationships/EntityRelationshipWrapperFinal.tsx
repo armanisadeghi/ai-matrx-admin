@@ -6,7 +6,7 @@ import {
   MatrxRecordId,
 } from "@/lib/redux/entity/types/stateTypes";
 import RelatedEntityAccordionFinal from "./RelatedEntityAccordionFinal";
-import { UnifiedLayoutProps } from "@/components/matrx/Entity";
+import { UnifiedLayoutProps } from "@/components/matrx/Entity/prewired-components/layouts/types";
 import { EntityKeys } from "@/types/entityTypes";
 import { createEntitySelectors } from "@/lib/redux/entity/selectors";
 import { useAppSelector } from "@/lib/redux/hooks";

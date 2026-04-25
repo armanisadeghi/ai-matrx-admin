@@ -13,7 +13,7 @@ import {
     spacingConfig,
     getAnimationVariants,
 } from "@/config/ui/entity-layout-config";
-import {UnifiedLayoutProps} from "@/components/matrx/Entity";
+import {UnifiedLayoutProps} from "@/components/matrx/Entity/prewired-components/layouts/types";
 import {EntitySearchInput, EntityButton} from "@/components/matrx/ArmaniForm/field-components";
 import {
     AccordionLayout,

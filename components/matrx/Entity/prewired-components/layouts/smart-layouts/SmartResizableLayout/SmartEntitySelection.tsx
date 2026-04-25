@@ -9,7 +9,7 @@ import {
 import {useAppSelector} from '@/lib/redux/hooks';
 import {selectEntityPrettyName, selectFormattedEntityOptions} from '@/lib/redux/schema/globalCacheSelectors';
 import {EntityKeys} from '@/types/entityTypes';
-import {UnifiedLayoutProps} from "@/components/matrx/Entity";
+import {UnifiedLayoutProps} from "@/components/matrx/Entity/prewired-components/layouts/types";
 
 
 const SmartEntitySelection: React.FC<UnifiedLayoutProps> = (unifiedLayoutProps) => {

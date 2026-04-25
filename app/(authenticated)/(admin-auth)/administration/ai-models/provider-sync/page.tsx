@@ -2,7 +2,7 @@
 
 import { Suspense, useState, useEffect, useCallback } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { aiModelService } from "@/features/ai-models";
+import { aiModelService } from "@/features/ai-models/service";
 import ProviderSyncDashboard from "@/features/ai-models/components/ProviderSyncDashboard";
 import type { AiModel, AiProvider } from "@/features/ai-models/types";
 

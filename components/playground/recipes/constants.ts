@@ -1,5 +1,5 @@
 import { getSimplifiedLayoutProps } from "@/app/entities/layout/configs";
-import { UnifiedLayoutProps } from "@/components/matrx/Entity";
+import { UnifiedLayoutProps } from "@/components/matrx/Entity/prewired-components/layouts/types";
 
 
 export const temptDefaults = {

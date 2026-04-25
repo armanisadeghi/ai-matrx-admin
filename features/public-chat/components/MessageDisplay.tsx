@@ -33,8 +33,8 @@ import type { PublicResource, PublicResourceType } from "../types/content";
 import type { TypedStreamEvent } from "@/types/python-generated/stream-events";
 import { buildCanonicalBlocks } from "@/lib/chat-protocol";
 import type { ToolCallBlock } from "@/lib/chat-protocol";
-import { ToolCallVisualization as CanonicalToolCallVisualization } from "@/features/tool-call-visualization";
-import { toolCallBlockToLifecycleEntry } from "@/features/tool-call-visualization/utils";
+import { ToolCallVisualization as CanonicalToolCallVisualization } from "@/features/tool-call-visualization/components/ToolCallVisualization";
+import { toolCallBlockToLifecycleEntry } from "@/features/tool-call-visualization/utils/toolCallBlockToLifecycleEntry";
 import {
   parseResourcesFromMessage,
   extractMessageWithoutResources,

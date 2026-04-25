@@ -40,12 +40,9 @@ import {
 import { SchemaField } from "@/constants/socket-schema";
 import { formatPlaceholder } from "@/components/socket/utils/label-util";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { 
-  selectFieldValue, 
-  selectConnectionTestMode, 
-  selectTaskNameById,
-  updateTaskFieldByPath 
-} from "@/lib/redux/socket-io";
+import { selectConnectionTestMode } from "@/lib/redux/socket-io/selectors/socket-connection-selectors";
+import { selectFieldValue, selectTaskNameById } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
+import { updateTaskFieldByPath } from "@/lib/redux/socket-io/thunks/taskFieldThunks";
 import { isValidField } from "@/constants/socket-schema";
 import {
   Select,

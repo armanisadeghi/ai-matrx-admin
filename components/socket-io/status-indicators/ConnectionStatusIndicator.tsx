@@ -3,7 +3,7 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { Wifi, WifiOff } from 'lucide-react';
-import { selectIsConnected } from '@/lib/redux/socket-io/selectors';
+import { selectIsConnected } from "@/lib/redux/socket-io/selectors/socket-connection-selectors";
 import { StatusIndicator } from '@/components/socket-io/status-indicators/StatusIndicator';
 
 interface ConnectionStatusIndicatorProps {

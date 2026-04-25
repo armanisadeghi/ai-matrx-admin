@@ -2,14 +2,14 @@
 
 import React, { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import {
-  DuplicateShortcutModal,
-  ShortcutForm,
-  ShortcutList,
-  useAgentShortcuts,
-  type AgentShortcut,
-  type AgentShortcutRecord,
-} from "@/features/agent-shortcuts";
+import { DuplicateShortcutModal } from "@/features/agent-shortcuts/components/DuplicateShortcutModal";
+import { ShortcutForm } from "@/features/agent-shortcuts/components/ShortcutForm";
+import { ShortcutList } from "@/features/agent-shortcuts/components/ShortcutList";
+import { useAgentShortcuts } from "@/features/agent-shortcuts/hooks/useAgentShortcuts";
+import type {
+  AgentShortcut,
+  AgentShortcutRecord,
+} from "@/features/agent-shortcuts/types";
 import { useOrgShortcutsContext } from "../OrgShortcutsContext";
 
 const SCOPE = "organization" as const;

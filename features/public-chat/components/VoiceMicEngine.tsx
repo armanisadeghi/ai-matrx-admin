@@ -1,7 +1,7 @@
 'use client';
 
+import { useRecordAndTranscribe } from "@/features/audio/hooks/useRecordAndTranscribe";
 import { useEffect, useRef, useCallback, type MutableRefObject } from 'react';
-import { useRecordAndTranscribe } from '@/features/audio/hooks';
 import { VoiceTroubleshootingModal } from '@/features/audio/components/VoiceTroubleshootingModal';
 import { useState } from 'react';
 import { toast } from 'sonner';

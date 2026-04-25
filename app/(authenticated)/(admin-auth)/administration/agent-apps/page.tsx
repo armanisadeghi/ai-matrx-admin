@@ -19,7 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
-import { AgentAppsGrid } from "@/features/agent-apps";
+import { AgentAppsGrid } from "@/features/agent-apps/components/layouts/AgentAppsGrid";
 import {
   fetchAgentAppCategories,
   fetchAgentAppsAdmin,
@@ -247,7 +247,9 @@ export default function AgentAppsAdminDashboardPage() {
                 variant="ghost"
                 size="sm"
                 className="h-7 text-xs"
-                onClick={() => handleNavigate("/administration/agent-apps/apps")}
+                onClick={() =>
+                  handleNavigate("/administration/agent-apps/apps")
+                }
               >
                 See all
                 <ArrowRight className="h-3 w-3 ml-1" />
@@ -285,7 +287,9 @@ export default function AgentAppsAdminDashboardPage() {
                 variant="ghost"
                 size="sm"
                 className="h-7 text-xs"
-                onClick={() => handleNavigate("/administration/agent-apps/apps")}
+                onClick={() =>
+                  handleNavigate("/administration/agent-apps/apps")
+                }
               >
                 See all
                 <ArrowRight className="h-3 w-3 ml-1" />
@@ -312,8 +316,8 @@ export default function AgentAppsAdminDashboardPage() {
               </div>
               <p>
                 This surface aggregates every agent-backed public app on the
-                platform. Use it to feature, verify, moderate, and override
-                rate limits. Individual owners manage their own apps from the
+                platform. Use it to feature, verify, moderate, and override rate
+                limits. Individual owners manage their own apps from the
                 authenticated agent-apps route; this admin surface is the
                 superset across all owners.
               </p>

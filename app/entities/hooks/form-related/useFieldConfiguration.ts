@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { useAppStore } from '@/lib/redux/hooks';
 import { createEntitySelectors } from '@/lib/redux/entity/selectors';
-import { UnifiedLayoutProps } from '@/components/matrx/Entity';
+import { UnifiedLayoutProps } from '@/components/matrx/Entity/prewired-components/layouts/types';
 import { EntityKeys, EntityAnyFieldKey } from '@/types/entityTypes';
 import { processFormConfig } from '@/lib/redux/entity/utils/processFormConfig';
 

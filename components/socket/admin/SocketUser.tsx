@@ -6,7 +6,7 @@ import { SocketAccordionResponse } from "@/components/socket/response/SocketAcco
 import { SocketHeaderFull } from "@/components/socket-io/headers/SocketHeaderFull";
 import { useState } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectAllTasks, selectTaskById } from "@/lib/redux/socket-io";
+import { selectAllTasks, selectTaskById } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
 import SocketStreamMonitor from "../streaming/SocketStreamMonitor";
 
 interface SocketUserProps {

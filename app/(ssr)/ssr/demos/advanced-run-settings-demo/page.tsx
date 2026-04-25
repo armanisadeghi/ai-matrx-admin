@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
+import { AdvancedRunSettings } from "@/features/agents/components/run-controls/AdvancedRunSettings/AdvancedRunSettings";
 import {
-  AdvancedRunSettings,
   DEFAULT_ADVANCED_RUN_SETTINGS,
-  computeComplexity,
   type AdvancedRunSettingsValue,
-} from '@/features/agents/components/run-controls/AdvancedRunSettings';
+} from "@/features/agents/components/run-controls/AdvancedRunSettings/constants";
+import { computeComplexity } from "@/features/agents/components/run-controls/AdvancedRunSettings/complexity";
 
 export default function AdvancedRunSettingsDemoPage() {
   const [value, setValue] = useState<AdvancedRunSettingsValue>(
@@ -31,7 +31,9 @@ export default function AdvancedRunSettingsDemoPage() {
 
         <aside className="rounded-xl border border-border bg-card overflow-hidden self-start xl:sticky xl:top-6">
           <div className="px-4 py-2 border-b border-border bg-muted/30">
-            <h2 className="text-xs font-semibold text-foreground">Live value</h2>
+            <h2 className="text-xs font-semibold text-foreground">
+              Live value
+            </h2>
           </div>
           <div className="px-4 py-3 space-y-3 text-[11px]">
             <div className="flex items-baseline justify-between gap-2">

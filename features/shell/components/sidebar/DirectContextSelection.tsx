@@ -27,11 +27,9 @@ import {
 } from "@/features/agent-context/redux/appContextSlice";
 import { selectNavOrganizations } from "@/features/agent-context/redux/hierarchySlice";
 import { selectAllTasks } from "@/features/agent-context/redux/tasksSlice";
+import { selectAllScopeTypes } from "@/features/agent-context/redux/scope/scopeTypesSlice";
+import { selectAllScopes } from "@/features/agent-context/redux/scope/scopesSlice";
 import { selectAllProjects } from "@/features/agent-context/redux/projectsSlice";
-import {
-  selectAllScopeTypes,
-  selectAllScopes,
-} from "@/features/agent-context/redux/scope";
 import { fetchEntitiesByScopes } from "@/features/agent-context/redux/scope/scopeAssignmentsSlice";
 import { useNavTree } from "@/features/agent-context/hooks/useNavTree";
 import { selectDefaultContextPreferences } from "@/lib/redux/selectors/userPreferenceSelectors";

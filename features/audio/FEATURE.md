@@ -2,7 +2,7 @@
 
 **Status:** `active`
 **Tier:** `2`
-**Last updated:** `2026-04-22`
+**Last updated:** `2026-04-25`
 
 > Combined doc covering the three audio-adjacent features. This doc lives under `features/audio/` as the umbrella.
 
@@ -22,7 +22,7 @@ Three sibling features that together form the audio pipeline:
 
 **Audio — `features/audio/`**
 - `components/`, `hooks/`, `services/`, `utils/`, `providers/`, `voice/`
-- `constants.ts`, `types.ts`, `index.ts`
+- `constants.ts`, `types.ts` (no root barrel — import from concrete modules, e.g. `hooks/useRecordAndTranscribe`, `components/TranscriptionLoader`; `VoiceTextarea` / `VoiceInputButton` live under `components/official/`)
 
 **TTS — `features/tts/`**
 - `components/`, `hooks/`, `service/`, `constants/`, `context/`
@@ -118,6 +118,7 @@ Verify exact schemas in Supabase before extending.
 
 ## Change log
 
+- `2026-04-25` — Removed `features/audio` barrel `index.ts` files; consumers import from source files (and official voice components) per project no-barrel policy.
 - `2026-04-22` — claude: initial combined FEATURE.md for audio + tts + podcasts.
 
 ---

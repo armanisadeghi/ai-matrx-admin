@@ -9,15 +9,10 @@ import {
   X,
 } from "lucide-react";
 import * as icons from "lucide-react";
+import { EMPTY_SCOPE_PICKER_OPTIONS, selectScopePickerOptions } from "@/features/agent-context/redux/scope/selectors";
+import { fetchScopeTypes, selectScopeTypesLoading } from "@/features/agent-context/redux/scope/scopeTypesSlice";
+import { fetchScopes, selectScopesLoading } from "@/features/agent-context/redux/scope/scopesSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import {
-  EMPTY_SCOPE_PICKER_OPTIONS,
-  fetchScopeTypes,
-  fetchScopes,
-  selectScopePickerOptions,
-  selectScopesLoading,
-  selectScopeTypesLoading,
-} from "@/features/agent-context/redux/scope";
 import { selectOrganizationId } from "@/features/agent-context/redux/appContextSlice";
 import {
   selectFilterScopeIds,

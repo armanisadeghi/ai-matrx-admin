@@ -11,9 +11,13 @@
  */
 
 import Link from "next/link";
-import { AlertTriangle, Download, FileIcon as FileIconLucide } from "lucide-react";
+import {
+  AlertTriangle,
+  Download,
+  FileIcon as FileIconLucide,
+} from "lucide-react";
 import { PublicDownloadButton } from "./_components/PublicDownloadButton";
-import type { ShareLinkResolveResponse } from "@/features/files";
+import type { ShareLinkResolveResponse } from "@/features/files/types";
 
 interface PageProps {
   params: Promise<{ token: string }>;
@@ -48,9 +52,15 @@ export default async function PublicSharePage({ params }: PageProps) {
     return <InvalidShare />;
   }
 
-  const { file, url, expires_at: expiresAt, max_uses: maxUses, use_count: useCount } =
-    info;
-  const remaining = maxUses != null ? Math.max(0, maxUses - (useCount ?? 0)) : null;
+  const {
+    file,
+    url,
+    expires_at: expiresAt,
+    max_uses: maxUses,
+    use_count: useCount,
+  } = info;
+  const remaining =
+    maxUses != null ? Math.max(0, maxUses - (useCount ?? 0)) : null;
 
   return (
     <div className="min-h-dvh flex items-center justify-center bg-background px-4 py-8">
@@ -141,8 +151,7 @@ function InvalidShare() {
         <div>
           <h2 className="text-base font-semibold">Link no longer valid</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            This share link has expired, been revoked, or reached its use
-            limit.
+            This share link has expired, been revoked, or reached its use limit.
           </p>
         </div>
         <Link

@@ -4,7 +4,7 @@ import React from "react";
 import { EntitySearchInput } from "../field-components";
 import { spacingConfig } from "@/config/ui/entity-layout-config";
 import SmartCrudButtons from "../../Entity/prewired-components/layouts/smart-layouts/smart-actions/SmartCrudButtons";
-import { UnifiedLayoutProps } from "../../Entity";
+import { UnifiedLayoutProps } from "@/components/matrx/Entity/prewired-components/layouts/types";
 import { useEntityCrud } from "@/lib/redux/entity/hooks/useEntityCrud";
 import { useFieldVisibility } from "@/app/entities/hooks/form-related/useFieldVisibility";
 import { useFieldRenderer } from "@/app/entities/hooks/form-related/useFieldRenderer";

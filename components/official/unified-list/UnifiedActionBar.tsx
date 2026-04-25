@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Search, SlidersHorizontal, Plus, X, Mic } from "lucide-react";
+import { useRecordAndTranscribe } from "@/features/audio/hooks/useRecordAndTranscribe";
 import { Button } from "@/components/ui/button";
-import { useRecordAndTranscribe } from "@/features/audio/hooks";
 import { TranscriptionResult } from "@/features/audio/types";
 import { toast } from "sonner";
 import { RecordingOverlay } from "@/features/audio/components/RecordingOverlay";

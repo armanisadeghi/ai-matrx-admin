@@ -15,8 +15,8 @@
 import React, { useCallback, useState, useRef, useEffect } from "react";
 import { Copy, Check, Mic, Loader2, AlertCircle } from "lucide-react";
 import { motion } from "motion/react";
+import { useRecordAndTranscribe } from "@/features/audio/hooks/useRecordAndTranscribe";
 import { cn } from "@/lib/utils";
-import { useRecordAndTranscribe } from "@/features/audio/hooks";
 import { TranscriptionResult } from "@/features/audio/types";
 import { VoiceTroubleshootingModal } from "@/features/audio/components/VoiceTroubleshootingModal";
 import {

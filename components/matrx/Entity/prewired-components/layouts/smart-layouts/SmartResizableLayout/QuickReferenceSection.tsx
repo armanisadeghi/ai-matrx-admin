@@ -6,7 +6,7 @@ import {
 } from '@/components/ui';
 import {EnhancedCard, LayoutHeader} from '../../parts';
 import {ComponentDensity} from "@/types/componentConfigTypes";
-import {UnifiedLayoutProps} from "@/components/matrx/Entity";
+import {UnifiedLayoutProps} from "@/components/matrx/Entity/prewired-components/layouts/types";
 
 export const QuickReferenceSection: React.FC<UnifiedLayoutProps> = (unifiedLayoutProps) => {
     const rightColumnRef = unifiedLayoutProps.layoutState.rightColumnRef;

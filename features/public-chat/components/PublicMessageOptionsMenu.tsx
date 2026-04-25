@@ -29,7 +29,7 @@ import { loadWordPressCSS } from "@/features/html-pages/css/wordpress-styles";
 import AdvancedMenu, { MenuItem } from "@/components/official/AdvancedMenu";
 import { EmailInputDialog } from "@/components/dialogs/EmailInputDialog";
 import { AuthGateDialog } from "@/components/dialogs/AuthGateDialog";
-import { NotesAPI } from "@/features/notes";
+import { NotesAPI } from "@/features/notes/service/notesApi";
 import { toast } from "sonner";
 import { useSelector } from "react-redux";
 import { selectUser } from "@/lib/redux/slices/userSlice";

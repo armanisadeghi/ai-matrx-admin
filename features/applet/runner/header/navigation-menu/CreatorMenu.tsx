@@ -12,7 +12,7 @@ import {
     selectCurrentTaskId,
     selectCurrentTaskFirstListenerId,
 } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
-import { selectResponseEndedByListenerId, selectResponseTextByListenerId } from "@/lib/redux/socket-io";
+import { selectResponseEndedByListenerId, selectResponseTextByListenerId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 import { openOverlay, selectIsOverlayOpen } from "@/lib/redux/slices/overlaySlice";
 import { appletLayoutOptionsArray } from "@/features/applet/constants/layout-options";
 import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";

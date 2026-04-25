@@ -7,7 +7,7 @@ import { getAllFieldPaths } from "@/constants/socket-schema";
 import SocketAccordionResponse from "@/components/socket/response/SocketAccordionResponse";
 import AccordionWrapper from "@/components/matrx/matrx-collapsible/AccordionWrapper";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectTaskById } from "@/lib/redux/socket-io";
+import { selectTaskById } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
 import TaskDebugDisplay from "@/components/socket-io/form-builder/TaskDebugDisplay";
 
 const AdminFormDemo = ({ debugMode }: { debugMode: boolean }) => {

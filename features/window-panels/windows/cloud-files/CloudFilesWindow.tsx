@@ -24,11 +24,11 @@ import { useState } from "react";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/lib/redux/store";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { CloudFilesRealtimeProvider } from "@/features/files/providers/CloudFilesRealtimeProvider";
 import {
-  CloudFilesRealtimeProvider,
   WindowPanelShell,
   type CloudFilesWindowTab,
-} from "@/features/files";
+} from "@/features/files/components/surfaces/WindowPanelShell";
 
 export interface CloudFilesWindowProps {
   isOpen: boolean;
@@ -59,10 +59,7 @@ export default function CloudFilesWindow({
     >
       <CloudFilesRealtimeProvider userId={userId}>
         <div className="flex h-full w-full flex-col overflow-hidden bg-background">
-          <WindowPanelShell
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-          />
+          <WindowPanelShell activeTab={activeTab} onTabChange={setActiveTab} />
         </div>
       </CloudFilesRealtimeProvider>
     </WindowPanel>

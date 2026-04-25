@@ -4,6 +4,8 @@ AI-driven text editing with diff visualization, version history, and smart chang
 
 ## Overview
 
+**Imports:** There is no root or folder `index.ts` barrel — import from `lib/…`, `components/…`, `hooks/…`, `types`, or `service/…` directly.
+
 The Text Diff system enables collaborative editing between users and AI by:
 - Parsing AI-generated diff responses
 - Applying changes with strict → fuzzy matching fallback
@@ -16,7 +18,7 @@ The Text Diff system enables collaborative editing between users and AI by:
 ### 1. Initialize a Diff Session
 
 ```typescript
-import { useDiffHandler } from '@/features/text-diff';
+import { useDiffHandler } from '@/features/text-diff/hooks/useDiffHandler';
 
 function MyEditor() {
   const diffHandler = useDiffHandler({
@@ -47,7 +49,8 @@ if (result.success) {
 ### 3. Display Diffs
 
 ```typescript
-import { DiffViewer, DiffControls } from '@/features/text-diff/components';
+import { DiffViewer } from '@/features/text-diff/components/DiffViewer';
+import { DiffControls } from '@/features/text-diff/components/DiffControls';
 import { useAppSelector } from '@/lib/redux';
 import { selectPendingDiffs } from '@/lib/redux/slices/textDiffSlice';
 
@@ -249,7 +252,7 @@ Example: Integrating with `update-text` functionality:
 
 ```typescript
 import { usePromptExecution } from '@/features/prompts/hooks/usePromptExecution';
-import { useDiffHandler } from '@/features/text-diff';
+import { useDiffHandler } from '@/features/text-diff/hooks/useDiffHandler';
 
 function NoteEditorWithAI({ noteId, noteContent }) {
   const { execute, streamingText, isExecuting } = usePromptExecution();

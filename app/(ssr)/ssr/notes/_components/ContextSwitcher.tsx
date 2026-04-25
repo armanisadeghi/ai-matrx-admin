@@ -1,9 +1,7 @@
 "use client";
 
-import {
-  HierarchyCommand,
-  useHierarchyReduxBridge,
-} from "@/features/agent-context/components/hierarchy-selection";
+import { HierarchyCommand } from "@/features/agent-context/components/hierarchy-selection/HierarchyCommand";
+import { useHierarchyReduxBridge } from "@/features/agent-context/components/hierarchy-selection/useReduxBridge";
 
 export default function ContextSwitcher() {
   const { value, onChange } = useHierarchyReduxBridge();

@@ -6,7 +6,7 @@ import JsonToCollapsible from "@/components/matrx/matrx-collapsible/json-to-coll
 import StreamDisplayOverlay from "./StreamDisplayOverlay";
 import { MouseEvent } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectResponseByListenerId } from "@/lib/redux/socket-io";
+import { selectResponseByListenerId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 
 interface SocketFullResponseDisplayProps {
     title?: string;

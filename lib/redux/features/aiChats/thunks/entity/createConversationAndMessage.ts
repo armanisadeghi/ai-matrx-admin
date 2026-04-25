@@ -6,7 +6,8 @@ import { createAppThunk } from "@/lib/redux/utils";
 import { EntityKeys, MatrxRecordId } from "@/types/entityTypes";
 import { saveRecordsInOrder } from "@/lib/redux/entity/thunks/createRecordThunk";
 import { getChatActionsWithThunks } from "@/lib/redux/entity/custom-actions/chatActions";
-import { setTaskFields, submitTask } from "@/lib/redux/socket-io";
+import { setTaskFields } from "@/lib/redux/socket-io/slices/socketTasksSlice";
+import { submitTask } from "@/lib/redux/socket-io/thunks/submitTaskThunk";
 
 const INFO = true;
 const DEBUG = false;

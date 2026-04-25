@@ -1,12 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import {
-  ContentBlockForm,
-  ContentBlockList,
-  useAgentShortcuts,
-  type AgentContentBlock,
-} from "@/features/agent-shortcuts";
+import { ContentBlockForm } from "@/features/agent-shortcuts/components/ContentBlockForm";
+import { ContentBlockList } from "@/features/agent-shortcuts/components/ContentBlockList";
+import { useAgentShortcuts } from "@/features/agent-shortcuts/hooks/useAgentShortcuts";
+import type { AgentContentBlock } from "@/features/agent-shortcuts/types";
 import { useOrgShortcutsContext } from "../OrgShortcutsContext";
 
 const SCOPE = "organization" as const;

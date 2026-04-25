@@ -2,18 +2,12 @@
 
 import { useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { CodeFilesAPI } from "@/features/code-files/service/codeFilesApi";
+import { codeFilesActions } from "@/features/code-files/redux/slice";
+import { createCodeFileThunk, loadCodeFolders } from "@/features/code-files/redux/thunks";
+import { selectAllCodeFolders, selectCodeFoldersLoaded } from "@/features/code-files/redux/selectors";
+import { type CodeFile, type CodeFolder } from "@/features/code-files/redux/code-files.types";
 import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
-import {
-  CodeFilesAPI,
-  codeFilesActions,
-  createCodeFileThunk,
-  loadCodeFolders,
-  selectAllCodeFolders,
-  selectCodeFoldersLoaded,
-  type CodeFile,
-  type CodeFolder,
-} from "@/features/code-files";
-
 /** Default top-level folder used for anything auto-saved from chat. Callers
  *  can override per-call. Kept as a constant so multiple callers agree on
  *  the destination without duplicating a string literal. */

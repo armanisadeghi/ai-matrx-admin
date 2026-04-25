@@ -1,6 +1,6 @@
 import { EntityStateField } from '@/lib/redux/entity/types/stateTypes';
 import { ComponentDensity } from '@/types/componentConfigTypes';
-import { UnifiedLayoutProps } from '@/components/matrx/Entity';
+import { UnifiedLayoutProps } from '@/components/matrx/Entity/prewired-components/layouts/types';
 
 export const filterRelFields = (relationshipFields: EntityStateField[], unifiedLayoutProps: UnifiedLayoutProps) => {
     const fields = relationshipFields || [];

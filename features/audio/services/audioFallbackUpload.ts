@@ -19,13 +19,13 @@
 "use client";
 
 import { getStore } from "@/lib/redux/store";
+import * as Api from "@/features/files/api";
+import { CloudFolders } from "@/features/files/utils/folder-conventions";
 import {
-  Api,
-  CloudFolders,
   deleteFile,
-  ensureFolderPath,
   uploadFiles,
-} from "@/features/files";
+  ensureFolderPath,
+} from "@/features/files/redux/thunks";
 import { AUDIO_API_ROUTES, RETRY_CONFIG } from "../constants";
 import { TranscriptionResult, TranscriptionOptions } from "../types";
 
@@ -194,9 +194,7 @@ export async function uploadAndTranscribeFull(
         const store = getStore();
         if (store) {
           await store
-            .dispatch(
-              deleteFile({ fileId: handle.fileId, hardDelete: true }),
-            )
+            .dispatch(deleteFile({ fileId: handle.fileId, hardDelete: true }))
             .unwrap();
         }
       } catch {

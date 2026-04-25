@@ -1,6 +1,12 @@
 "use client";
 
-import React, { use, useCallback, useEffect, useState, useTransition } from "react";
+import React, {
+  use,
+  useCallback,
+  useEffect,
+  useState,
+  useTransition,
+} from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -16,12 +22,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
-import {
-  AgentAppAdminActions,
-  AgentAppEditor,
-  UpdateAgentAppModal,
-  type AgentApp,
-} from "@/features/agent-apps";
+import { AgentAppAdminActions } from "@/features/agent-apps/components/AgentAppAdminActions";
+import { AgentAppEditor } from "@/features/agent-apps/components/AgentAppEditor";
+import { UpdateAgentAppModal } from "@/features/agent-apps/components/UpdateAgentAppModal";
+import type { AgentApp } from "@/features/agent-apps/types";
 import type {
   AgentAppAdminView,
   UpdateAgentAppAdminInput,
@@ -84,7 +88,9 @@ export default function AdminEditAgentAppPage({
     });
   };
 
-  const handleAdminUpdate = async (patch: Partial<UpdateAgentAppAdminInput>) => {
+  const handleAdminUpdate = async (
+    patch: Partial<UpdateAgentAppAdminInput>,
+  ) => {
     if (!app) return;
     try {
       const updated = await updateAgentAppAdmin({ id: app.id, ...patch });

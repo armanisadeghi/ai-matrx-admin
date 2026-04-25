@@ -23,7 +23,7 @@ import {
   type ContentSegmentDbTool,
 } from "@/features/agents/redux/execution-system/active-requests/active-requests.selectors";
 import type { ToolLifecycleEntry } from "@/features/agents/types/request.types";
-import { ToolCallVisualization } from "@/features/tool-call-visualization";
+import { ToolCallVisualization } from "@/features/tool-call-visualization/components/ToolCallVisualization";
 
 // ============================================================================
 // INLINE TOOL CARD — subscribes to a single tool's lifecycle by callId.
@@ -55,11 +55,7 @@ export const InlineToolCard: React.FC<InlineToolCardProps> = ({
   if (!lifecycle) return null;
 
   return (
-    <ToolCallVisualization
-      entries={[lifecycle]}
-      hasContent
-      className="my-2"
-    />
+    <ToolCallVisualization entries={[lifecycle]} hasContent className="my-2" />
   );
 };
 

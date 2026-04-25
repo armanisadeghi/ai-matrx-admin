@@ -44,7 +44,7 @@ import {
   normalizePromptMessagesFromDb,
   normalizePromptSettingsFromDb,
 } from "@/features/prompts/utils/normalize-prompt-db-json";
-import { VoiceInputButton } from "@/features/audio";
+import { VoiceInputButton } from "@/components/official/VoiceInputButton";
 import type { SystemPromptDB } from "@/types/system-prompts-db";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";

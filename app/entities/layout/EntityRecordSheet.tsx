@@ -1,4 +1,4 @@
-import { UnifiedLayoutProps } from '@/components/matrx/Entity';
+import { UnifiedLayoutProps } from '@/components/matrx/Entity/prewired-components/layouts/types';
 import { EntityKeys, MatrxRecordId } from '@/types/entityTypes';
 import EntityFormAnyRecord from '../forms/EntityFormAnyRecordWithRelated';
 import EntitySheet from '../fields/other-components/EntitySheet';

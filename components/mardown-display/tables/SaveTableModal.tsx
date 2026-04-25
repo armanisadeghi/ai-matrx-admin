@@ -12,8 +12,10 @@ import { ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MultiStepLoader } from "@/components/ui/multi-step-loader";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { selectTaskStatus, selectPrimaryResponseEndedByTaskId, selectFirstPrimaryResponseDataByTaskId } from "@/lib/redux/socket-io";
-import { createTask, submitTask } from "@/lib/redux/socket-io/thunks";
+import { selectPrimaryResponseEndedByTaskId, selectFirstPrimaryResponseDataByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
+import { selectTaskStatus } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
+import { createTask } from "@/lib/redux/socket-io/thunks/createTaskThunk";
+import { submitTask } from "@/lib/redux/socket-io/thunks/submitTaskThunk";
 import { updateTaskField, setTaskFields } from "@/lib/redux/socket-io/slices/socketTasksSlice";
 import { v4 as uuidv4 } from "uuid";
 

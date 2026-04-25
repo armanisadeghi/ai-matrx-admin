@@ -3,11 +3,9 @@
 import React, { useCallback, useEffect } from "react";
 import { Settings } from "lucide-react";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
-import {
-  AgentConnectionsSidebar,
-  AgentConnectionsBody,
-  type AgentConnectionsSection,
-} from "@/features/agent-connections";
+import { AgentConnectionsSidebar } from "@/features/agent-connections/components/AgentConnectionsSidebar";
+import { AgentConnectionsBody } from "@/features/agent-connections/components/AgentConnectionsBody";
+import type { AgentConnectionsSection } from "@/features/agent-connections/types";
 import { ScopePicker } from "@/features/agent-connections/components/ScopePicker";
 import {
   hydrateAgentConnectionsUi,
@@ -16,11 +14,7 @@ import {
   selectSelectedItemId,
   setActiveSection,
 } from "@/features/agent-connections/redux/ui";
-import {
-  useAppDispatch,
-  useAppSelector,
-  useAppStore,
-} from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import type { Scope } from "@/features/agent-connections/types";
 
 interface AgentConnectionsWindowProps {

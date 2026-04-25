@@ -4,7 +4,7 @@ import { NestedResizableLayout, Section } from '@/components/matrx/resizable/Nes
 import { EntitySelectionSection } from './EntitySelectionSection';
 import { QuickReferenceSection } from './QuickReferenceSection';
 import { EntityDataSection } from './EntityDataSection';
-import { UnifiedLayoutProps } from "@/components/matrx/Entity";
+import { UnifiedLayoutProps } from "@/components/matrx/Entity/prewired-components/layouts/types";
 import { DEFAULT_RESIZABLE_LAYOUT_OPTIONS } from '@/app/(authenticated)/tests/forms/entity-management-smart-fields/configs';
 
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { UnifiedLayoutProps } from '@/components/matrx/Entity';
+import { UnifiedLayoutProps } from '@/components/matrx/Entity/prewired-components/layouts/types';
 import { EntityKeys, MatrxRecordId } from '@/types/entityTypes';
 import type { RootState } from "@/lib/redux/store";
 import { selectEntityPrettyName } from "@/lib/redux/schema/globalCacheSelectors";

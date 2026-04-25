@@ -5,25 +5,29 @@ import { Button } from "@/components/ui/button";
 import { formatText } from "@/utils/text/text-case-converter";
 import { VariableInputComponent } from "../variable-inputs";
 import { PromptInputButton } from "../PromptInputButton";
-import { ResourceChips, type Resource, ResourcePreviewSheet } from "../resource-display";
+import {
+  ResourceChips,
+  type Resource,
+  ResourcePreviewSheet,
+} from "../resource-display";
 import { useClipboardPaste } from "@/components/ui/file-upload/useClipboardPaste";
 import { useFileUploadWithStorage } from "@/components/ui/file-upload/useFileUploadWithStorage";
-import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
-import { useRecordAndTranscribe } from '@/features/audio';
-import { TranscriptionLoader } from '@/features/audio';
-import { toast } from 'sonner';
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
+import { useRecordAndTranscribe } from "@/features/audio/hooks/useRecordAndTranscribe";
+import { TranscriptionLoader } from "@/features/audio/components/TranscriptionLoader";
+import { toast } from "sonner";
 import {
   selectVariableDefinitions,
   selectCurrentInput,
   selectResources,
   selectUserVariables,
-} from '@/lib/redux/prompt-execution/selectors';
+} from "@/lib/redux/prompt-execution/selectors";
 import {
   setCurrentInput,
   updateVariable,
   removeResource,
-} from '@/lib/redux/prompt-execution/slice';
-import { SmartResourcePickerButton } from './SmartResourcePickerButton';
+} from "@/lib/redux/prompt-execution/slice";
+import { SmartResourcePickerButton } from "./SmartResourcePickerButton";
 
 interface CompactPromptInputProps {
   /**
@@ -47,14 +51,14 @@ interface CompactPromptInputProps {
 
 /**
  * CompactPromptInput - Condensed Redux-driven prompt input component
- * 
+ *
  * Space-efficient version of SmartPromptInput optimized for modal dialogs.
  * Features:
  * - Variables displayed directly (no popovers)
  * - Single-line input instead of textarea
  * - Minimal padding and spacing
  * - Full feature parity with SmartPromptInput
- * 
+ *
  * Ideal for inline AI triggers (context menus, toolbars, etc.)
  */
 export function CompactPromptInput({
@@ -72,17 +76,31 @@ export function CompactPromptInput({
   const inputRef = useRef<HTMLInputElement>(null);
 
   // ========== LOCAL STATE (UI-only) ==========
-  const [previewResource, setPreviewResource] = useState<{ resource: Resource; index: number } | null>(null);
+  const [previewResource, setPreviewResource] = useState<{
+    resource: Resource;
+    index: number;
+  } | null>(null);
 
   // ========== REDUX STATE (Conditional on runId) ==========
   // Instance-specific selectors (return stable defaults if runId undefined)
-  const variableDefaults = useAppSelector(state => runId ? selectVariableDefinitions(state, runId) : []);
-  const chatInput = useAppSelector(state => runId ? selectCurrentInput(state, runId) : '');
-  const resources = useAppSelector(state => runId ? selectResources(state, runId) : []);
-  const variableValues = useAppSelector(state => runId ? selectUserVariables(state, runId) : {});
+  const variableDefaults = useAppSelector((state) =>
+    runId ? selectVariableDefinitions(state, runId) : [],
+  );
+  const chatInput = useAppSelector((state) =>
+    runId ? selectCurrentInput(state, runId) : "",
+  );
+  const resources = useAppSelector((state) =>
+    runId ? selectResources(state, runId) : [],
+  );
+  const variableValues = useAppSelector((state) =>
+    runId ? selectUserVariables(state, runId) : {},
+  );
 
   // File upload hook for paste support
-  const { uploadMultipleToPrivateUserAssets } = useFileUploadWithStorage(uploadBucket, uploadPath);
+  const { uploadMultipleToPrivateUserAssets } = useFileUploadWithStorage(
+    uploadBucket,
+    uploadPath,
+  );
 
   // Voice transcription hook
   const {
@@ -100,7 +118,7 @@ export function CompactPromptInput({
       }
     },
     onError: (error) => {
-      toast.error('Transcription failed', {
+      toast.error("Transcription failed", {
         description: error,
       });
     },
@@ -117,59 +135,83 @@ export function CompactPromptInput({
   }, [isRecording, isTranscribing, startRecording, stopRecording]);
 
   // Handle resource removal
-  const handleRemoveResource = useCallback((index: number) => {
-    if (runId) {
-      dispatch(removeResource({ runId, index }));
-    }
-  }, [runId, dispatch]);
+  const handleRemoveResource = useCallback(
+    (index: number) => {
+      if (runId) {
+        dispatch(removeResource({ runId, index }));
+      }
+    },
+    [runId, dispatch],
+  );
 
   // Handle resource preview
-  const handlePreviewResource = useCallback((resource: Resource, index: number) => {
-    setPreviewResource({ resource, index });
-  }, []);
+  const handlePreviewResource = useCallback(
+    (resource: Resource, index: number) => {
+      setPreviewResource({ resource, index });
+    },
+    [],
+  );
 
   // Handle pasted images
-  const handlePasteImage = useCallback(async (file: File) => {
-    if (!runId) return;
+  const handlePasteImage = useCallback(
+    async (file: File) => {
+      if (!runId) return;
 
-    try {
-      const results = await uploadMultipleToPrivateUserAssets([file]);
-      if (results && results.length > 0) {
-        // Use the upload thunk instead
-        const { uploadAndAddFileResource } = await import('@/lib/redux/prompt-execution/thunks/resourceThunks');
-        await dispatch(uploadAndAddFileResource({
-          runId,
-          file,
-          bucket: uploadBucket,
-          path: uploadPath,
-          uploadFn: uploadMultipleToPrivateUserAssets,
-        }));
+      try {
+        const results = await uploadMultipleToPrivateUserAssets([file]);
+        if (results && results.length > 0) {
+          // Use the upload thunk instead
+          const { uploadAndAddFileResource } =
+            await import("@/lib/redux/prompt-execution/thunks/resourceThunks");
+          await dispatch(
+            uploadAndAddFileResource({
+              runId,
+              file,
+              bucket: uploadBucket,
+              path: uploadPath,
+              uploadFn: uploadMultipleToPrivateUserAssets,
+            }),
+          );
+        }
+      } catch (error) {
+        console.error("Failed to upload pasted image:", error);
       }
-    } catch (error) {
-      console.error("Failed to upload pasted image:", error);
-    }
-  }, [runId, dispatch, uploadBucket, uploadPath, uploadMultipleToPrivateUserAssets]);
+    },
+    [
+      runId,
+      dispatch,
+      uploadBucket,
+      uploadPath,
+      uploadMultipleToPrivateUserAssets,
+    ],
+  );
 
   // Setup clipboard paste - cast input ref to textarea ref type (paste events work identically)
   useClipboardPaste({
     textareaRef: inputRef as unknown as React.RefObject<HTMLTextAreaElement>,
     onPasteImage: handlePasteImage,
-    disabled: !enablePasteImages || !runId
+    disabled: !enablePasteImages || !runId,
   });
 
   // Handle chat input change
-  const handleChatInputChange = useCallback((value: string) => {
-    if (runId) {
-      dispatch(setCurrentInput({ runId, input: value }));
-    }
-  }, [runId, dispatch]);
+  const handleChatInputChange = useCallback(
+    (value: string) => {
+      if (runId) {
+        dispatch(setCurrentInput({ runId, input: value }));
+      }
+    },
+    [runId, dispatch],
+  );
 
   // Handle variable value change
-  const handleVariableValueChange = useCallback((variableName: string, value: string) => {
-    if (runId) {
-      dispatch(updateVariable({ runId, variableName, value }));
-    }
-  }, [runId, dispatch]);
+  const handleVariableValueChange = useCallback(
+    (variableName: string, value: string) => {
+      if (runId) {
+        dispatch(updateVariable({ runId, variableName, value }));
+      }
+    },
+    [runId, dispatch],
+  );
 
   // If no runId, show loading state
   if (!runId) {
@@ -180,7 +222,7 @@ export function CompactPromptInput({
             disabled
             placeholder="Initializing..."
             className="flex-1 bg-transparent border-none outline-none text-sm text-gray-400 dark:text-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500"
-            style={{ fontSize: '16px' }}
+            style={{ fontSize: "16px" }}
           />
         </div>
       </div>
@@ -193,7 +235,8 @@ export function CompactPromptInput({
       {variableDefaults.length > 0 && (
         <div className="space-y-0 bg-background mb-0">
           {variableDefaults.map((variable, index) => {
-            const value = variableValues[variable.name] ?? variable.defaultValue ?? '';
+            const value =
+              variableValues[variable.name] ?? variable.defaultValue ?? "";
             const isLast = index === variableDefaults.length - 1;
             const isFirst = index === 0;
 
@@ -202,10 +245,14 @@ export function CompactPromptInput({
                 key={variable.name}
                 className={!isLast ? "py-1 border-b-2 border-border" : ""}
               >
-                <div className={`px-3 ${isFirst ? 'pt-2.5' : 'pt-2'} ${!isLast ? 'pb-2' : 'pb-2.5'}`}>
+                <div
+                  className={`px-3 ${isFirst ? "pt-2.5" : "pt-2"} ${!isLast ? "pb-2" : "pb-2.5"}`}
+                >
                   <VariableInputComponent
                     value={value}
-                    onChange={(newValue) => handleVariableValueChange(variable.name, newValue)}
+                    onChange={(newValue) =>
+                      handleVariableValueChange(variable.name, newValue)
+                    }
                     variableName={formatText(variable.name)}
                     customComponent={variable.customComponent}
                     helpText={variable.helpText}
@@ -234,13 +281,18 @@ export function CompactPromptInput({
         {/* Voice Input - Show transcription loader when processing */}
         {isTranscribing && !isRecording ? (
           <div className="px-1 py-0.5 mb-2">
-            <TranscriptionLoader message="Transcribing" duration={duration} size="sm" />
+            <TranscriptionLoader
+              message="Transcribing"
+              duration={duration}
+              size="sm"
+            />
           </div>
         ) : isRecording ? (
           <div className="flex items-center gap-2 bg-blue-50 dark:bg-blue-900/20 rounded-md px-2 py-1 mb-2">
             <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
             <span className="text-xs font-medium text-blue-700 dark:text-blue-300">
-              Recording... {Math.floor(duration / 60)}:{String(duration % 60).padStart(2, '0')}
+              Recording... {Math.floor(duration / 60)}:
+              {String(duration % 60).padStart(2, "0")}
             </span>
             <button
               type="button"
@@ -262,9 +314,14 @@ export function CompactPromptInput({
               onChange={(e) => handleChatInputChange(e.target.value)}
               placeholder={placeholder}
               className="flex-1 bg-transparent border-none outline-none text-sm text-gray-900 dark:text-gray-200 placeholder:text-xs placeholder:text-gray-400 dark:placeholder:text-gray-500 min-w-0"
-              style={{ fontSize: '16px' }} // iOS zoom prevention
+              style={{ fontSize: "16px" }} // iOS zoom prevention
               onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey && onSubmit && !isSendDisabled) {
+                if (
+                  e.key === "Enter" &&
+                  !e.shiftKey &&
+                  onSubmit &&
+                  !isSendDisabled
+                ) {
                   e.preventDefault();
                   onSubmit();
                 }
@@ -318,4 +375,3 @@ export function CompactPromptInput({
     </div>
   );
 }
-

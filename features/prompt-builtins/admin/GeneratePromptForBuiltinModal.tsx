@@ -31,7 +31,7 @@ import {
 import { toast } from "sonner";
 import MarkdownStream from "@/components/MarkdownStream";
 import { extractJsonFromText } from "@/features/prompts/utils/json-extraction";
-import { VoiceInputButton } from "@/features/audio";
+import { VoiceInputButton } from "@/components/official/VoiceInputButton";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import type { Json } from "@/types/database.types";

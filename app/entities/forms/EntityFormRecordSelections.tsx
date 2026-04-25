@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { UnifiedLayoutProps } from '@/components/matrx/Entity';
+import { UnifiedLayoutProps } from '@/components/matrx/Entity/prewired-components/layouts/types';
 import { createEntitySelectors } from "@/lib/redux/entity/selectors";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { EntityKeys } from '@/types/entityTypes';

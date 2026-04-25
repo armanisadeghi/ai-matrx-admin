@@ -1,25 +1,25 @@
 /**
  * Text Diff Redux Slice
- * 
+ *
  * Manages diff session state for text editing with AI assistance
  */
 
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import type { RootState } from '../store';
-import { 
-  DiffState, 
-  PendingDiff, 
-  AcceptedDiff, 
-  RejectedDiff 
-} from '@/features/text-diff/types';
-import { TextDiff } from '@/features/text-diff';
-import { applyDiffs, previewDiff } from '@/features/text-diff';
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import type { RootState } from "../store";
+import {
+  DiffState,
+  PendingDiff,
+  AcceptedDiff,
+  RejectedDiff,
+} from "@/features/text-diff/types";
+import type { TextDiff } from "@/features/text-diff/lib/parseDiff";
+import { applyDiffs, previewDiff } from "@/features/text-diff/lib/applyDiff";
 
 const initialState: DiffState = {
   sourceId: null,
-  sourceType: 'note',
-  originalText: '',
-  currentText: '',
+  sourceType: "note",
+  originalText: "",
+  currentText: "",
   pendingDiffs: [],
   acceptedDiffs: [],
   rejectedDiffs: [],
@@ -30,7 +30,7 @@ const initialState: DiffState = {
 };
 
 const textDiffSlice = createSlice({
-  name: 'textDiff',
+  name: "textDiff",
   initialState,
   reducers: {
     // Initialize a diff session
@@ -38,9 +38,9 @@ const textDiffSlice = createSlice({
       state,
       action: PayloadAction<{
         sourceId: string;
-        sourceType: 'note' | 'custom';
+        sourceType: "note" | "custom";
         initialText: string;
-      }>
+      }>,
     ) => {
       state.sourceId = action.payload.sourceId;
       state.sourceType = action.payload.sourceType;
@@ -59,14 +59,14 @@ const textDiffSlice = createSlice({
     addPendingDiffs: (state, action: PayloadAction<TextDiff[]>) => {
       state.isProcessing = true;
       state.error = null;
-      
+
       const newPendingDiffs: PendingDiff[] = [];
       const failedDiffs: string[] = [];
-      
+
       for (const diff of action.payload) {
         // Generate preview
         const preview = previewDiff(state.currentText, diff);
-        
+
         if (preview.success && preview.before && preview.after) {
           newPendingDiffs.push({
             id: diff.id,
@@ -76,15 +76,15 @@ const textDiffSlice = createSlice({
               after: preview.after,
               lineRange: preview.lineRange,
             },
-            status: 'pending',
+            status: "pending",
             createdAt: new Date().toISOString(),
           });
         } else {
           // Collect failed diffs for user-facing error message
-          failedDiffs.push(`${diff.id}: ${preview.error || 'Unknown error'}`);
+          failedDiffs.push(`${diff.id}: ${preview.error || "Unknown error"}`);
         }
       }
-      
+
       // Set user-friendly error if any diffs failed
       if (failedDiffs.length > 0) {
         if (failedDiffs.length === action.payload.length) {
@@ -95,7 +95,7 @@ const textDiffSlice = createSlice({
           state.error = `${failedDiffs.length} of ${action.payload.length} diff(s) could not be matched. Successfully loaded ${newPendingDiffs.length} change(s).`;
         }
       }
-      
+
       state.pendingDiffs = [...state.pendingDiffs, ...newPendingDiffs];
       state.isProcessing = false;
     },
@@ -103,22 +103,22 @@ const textDiffSlice = createSlice({
     // Accept a single diff
     acceptDiff: (state, action: PayloadAction<string>) => {
       const diffId = action.payload;
-      const pendingIndex = state.pendingDiffs.findIndex(d => d.id === diffId);
-      
+      const pendingIndex = state.pendingDiffs.findIndex((d) => d.id === diffId);
+
       if (pendingIndex === -1) {
         state.error = `Diff ${diffId} not found in pending`;
         return;
       }
-      
+
       const pendingDiff = state.pendingDiffs[pendingIndex];
-      
+
       // Apply the diff
       const result = applyDiffs(state.currentText, [pendingDiff.diff]);
-      
+
       if (result.success && result.newText) {
         state.currentText = result.newText;
         state.isDirty = true;
-        
+
         // Move to accepted
         state.acceptedDiffs.push({
           id: pendingDiff.id,
@@ -126,27 +126,30 @@ const textDiffSlice = createSlice({
           acceptedAt: new Date().toISOString(),
           appliedText: result.newText,
         });
-        
+
         // Remove from pending
         state.pendingDiffs.splice(pendingIndex, 1);
         state.error = null;
       } else {
-        state.error = result.error || 'Failed to apply diff';
+        state.error = result.error || "Failed to apply diff";
       }
     },
 
     // Reject a single diff
-    rejectDiff: (state, action: PayloadAction<{ diffId: string; reason?: string }>) => {
+    rejectDiff: (
+      state,
+      action: PayloadAction<{ diffId: string; reason?: string }>,
+    ) => {
       const { diffId, reason } = action.payload;
-      const pendingIndex = state.pendingDiffs.findIndex(d => d.id === diffId);
-      
+      const pendingIndex = state.pendingDiffs.findIndex((d) => d.id === diffId);
+
       if (pendingIndex === -1) {
         state.error = `Diff ${diffId} not found in pending`;
         return;
       }
-      
+
       const pendingDiff = state.pendingDiffs[pendingIndex];
-      
+
       // Move to rejected
       state.rejectedDiffs.push({
         id: pendingDiff.id,
@@ -154,7 +157,7 @@ const textDiffSlice = createSlice({
         rejectedAt: new Date().toISOString(),
         reason,
       });
-      
+
       // Remove from pending
       state.pendingDiffs.splice(pendingIndex, 1);
       state.error = null;
@@ -163,30 +166,30 @@ const textDiffSlice = createSlice({
     // Accept all pending diffs
     acceptAllDiffs: (state) => {
       if (state.pendingDiffs.length === 0) return;
-      
-      const diffsToApply = state.pendingDiffs.map(pd => pd.diff);
+
+      const diffsToApply = state.pendingDiffs.map((pd) => pd.diff);
       const result = applyDiffs(state.currentText, diffsToApply);
-      
+
       if (result.success && result.newText) {
         state.currentText = result.newText;
         state.isDirty = true;
-        
+
         // Move all to accepted
         const timestamp = new Date().toISOString();
         state.acceptedDiffs = [
           ...state.acceptedDiffs,
-          ...state.pendingDiffs.map(pd => ({
+          ...state.pendingDiffs.map((pd) => ({
             id: pd.id,
             diff: pd.diff,
             acceptedAt: timestamp,
             appliedText: result.newText!,
           })),
         ];
-        
+
         state.pendingDiffs = [];
         state.error = null;
       } else {
-        state.error = result.error || 'Failed to apply all diffs';
+        state.error = result.error || "Failed to apply all diffs";
       }
     },
 
@@ -194,18 +197,18 @@ const textDiffSlice = createSlice({
     rejectAllDiffs: (state, action: PayloadAction<string | undefined>) => {
       const reason = action.payload;
       const timestamp = new Date().toISOString();
-      
+
       // Move all to rejected
       state.rejectedDiffs = [
         ...state.rejectedDiffs,
-        ...state.pendingDiffs.map(pd => ({
+        ...state.pendingDiffs.map((pd) => ({
           id: pd.id,
           diff: pd.diff,
           rejectedAt: timestamp,
           reason,
         })),
       ];
-      
+
       state.pendingDiffs = [];
       state.error = null;
     },
@@ -213,25 +216,25 @@ const textDiffSlice = createSlice({
     // Undo last accepted diff
     undoLastAccept: (state) => {
       if (state.acceptedDiffs.length === 0) {
-        state.error = 'No diffs to undo';
+        state.error = "No diffs to undo";
         return;
       }
-      
+
       // Get the last accepted diff
       const lastAccepted = state.acceptedDiffs[state.acceptedDiffs.length - 1];
-      
+
       // Restore text to before this diff was applied
       // We need to reapply all diffs except the last one
       const diffsToReapply = state.acceptedDiffs
         .slice(0, -1)
-        .map(ad => ad.diff);
-      
+        .map((ad) => ad.diff);
+
       if (diffsToReapply.length > 0) {
         const result = applyDiffs(state.originalText, diffsToReapply);
         if (result.success && result.newText) {
           state.currentText = result.newText;
         } else {
-          state.error = 'Failed to undo diff';
+          state.error = "Failed to undo diff";
           return;
         }
       } else {
@@ -239,7 +242,7 @@ const textDiffSlice = createSlice({
         state.currentText = state.originalText;
         state.isDirty = false;
       }
-      
+
       // Remove from accepted
       state.acceptedDiffs.pop();
     },
@@ -287,13 +290,17 @@ export const {
 
 // Selectors
 export const selectDiffState = (state: RootState) => state.textDiff;
-export const selectPendingDiffs = (state: RootState) => state.textDiff.pendingDiffs;
-export const selectAcceptedDiffs = (state: RootState) => state.textDiff.acceptedDiffs;
-export const selectRejectedDiffs = (state: RootState) => state.textDiff.rejectedDiffs;
+export const selectPendingDiffs = (state: RootState) =>
+  state.textDiff.pendingDiffs;
+export const selectAcceptedDiffs = (state: RootState) =>
+  state.textDiff.acceptedDiffs;
+export const selectRejectedDiffs = (state: RootState) =>
+  state.textDiff.rejectedDiffs;
 export const selectIsDirty = (state: RootState) => state.textDiff.isDirty;
-export const selectCurrentText = (state: RootState) => state.textDiff.currentText;
-export const selectCanUndo = (state: RootState) => state.textDiff.acceptedDiffs.length > 0;
+export const selectCurrentText = (state: RootState) =>
+  state.textDiff.currentText;
+export const selectCanUndo = (state: RootState) =>
+  state.textDiff.acceptedDiffs.length > 0;
 export const selectDiffError = (state: RootState) => state.textDiff.error;
 
 export default textDiffSlice.reducer;
-

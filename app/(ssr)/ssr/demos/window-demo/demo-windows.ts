@@ -1,12 +1,10 @@
 import type { ComponentType } from "react";
 import type { LucideIcon } from "lucide-react";
 import { BarChart3, Code2, Settings, Terminal } from "lucide-react";
-import {
-  AnalyticsWindowBody,
-  CodeEditorWindowBody,
-  LogViewerWindowBody,
-  SettingsWindowBody,
-} from "./window-bodies";
+import { AnalyticsWindowBody } from "./window-bodies/AnalyticsWindowBody";
+import { CodeEditorWindowBody } from "./window-bodies/CodeEditorWindowBody";
+import { LogViewerWindowBody } from "./window-bodies/LogViewerWindowBody";
+import { SettingsWindowBody } from "./window-bodies/SettingsWindowBody";
 
 export interface DemoWindowDefinition {
   title: string;

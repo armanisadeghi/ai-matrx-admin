@@ -3,7 +3,7 @@
 import React from 'react';
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import ConnectionItem from './ConnectionItem';
-import { selectAllConnections } from '@/lib/redux/socket-io/selectors';
+import { selectAllConnections } from "@/lib/redux/socket-io/selectors/socket-connection-selectors";
 
 const ConnectionList: React.FC = () => {
   const connections = useAppSelector(selectAllConnections);

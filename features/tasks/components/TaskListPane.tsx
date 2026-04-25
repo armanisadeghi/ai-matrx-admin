@@ -22,8 +22,8 @@ import {
   setSelectedTaskId,
   setNewTaskTitle,
 } from "@/features/tasks/redux/taskUiSlice";
+import { selectScopeNameMap } from "@/features/agent-context/redux/scope/scopesSlice";
 import { createTaskThunk, toggleTaskCompleteThunk } from "@/features/tasks/redux/thunks";
-import { selectScopeNameMap } from "@/features/agent-context/redux/scope";
 import {
   selectOrganizationId,
   selectScopeSelectionsContext,

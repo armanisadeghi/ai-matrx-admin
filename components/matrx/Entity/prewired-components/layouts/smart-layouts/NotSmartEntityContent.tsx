@@ -3,7 +3,7 @@
 import React from 'react';
 import { EntityKeys } from '@/types/entityTypes';
 import { FormLoadingTwoColumn } from "@/components/matrx/LoadingComponents";
-import { UnifiedLayoutProps } from '@/components/matrx/Entity';
+import { UnifiedLayoutProps } from '@/components/matrx/Entity/prewired-components/layouts/types';
 import { getUnifiedLayoutProps, getUpdatedUnifiedLayoutProps } from '@/app/entities/layout/configs';
 import ArmaniForm from "@/components/matrx/ArmaniForm/ArmaniForm";
 import { useEntityCrud } from '@/lib/redux/entity/hooks/useEntityCrud';

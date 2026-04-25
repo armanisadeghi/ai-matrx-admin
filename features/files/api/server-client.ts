@@ -13,15 +13,15 @@
  * USAGE (inside an App Router route handler):
  *
  *   import { createClient } from "@/utils/supabase/server";
- *   import { ServerFiles } from "@/features/files";
+ *   import * as Server from "@/features/files/api/server-client";
  *
  *   export async function POST(req) {
  *     const supabase = await createClient();
  *     const { data: { session } } = await supabase.auth.getSession();
  *     if (!session) return new Response("Unauthorized", { status: 401 });
  *
- *     const ctx = ServerFiles.createServerContext({ accessToken: session.access_token });
- *     const { data } = await ServerFiles.uploadFile(ctx, {
+ *     const ctx = Server.createServerContext({ accessToken: session.access_token });
+ *     const { data } = await Server.uploadFile(ctx, {
  *       file: someFileLikeObject,
  *       filePath: "Agent Apps/abc/favicon.svg",
  *       visibility: "private",
@@ -163,10 +163,11 @@ export async function uploadFile(
 
   const headers = buildHeaders(ctx, false, requestId);
 
-  const response = await fetch(
-    `${resolveBaseUrl(ctx)}/files/upload`,
-    { method: "POST", headers, body: form },
-  );
+  const response = await fetch(`${resolveBaseUrl(ctx)}/files/upload`, {
+    method: "POST",
+    headers,
+    body: form,
+  });
   if (!response.ok) throw await parseHttpError(response);
   const data = (await response.json()) as FileUploadResponse;
   return { data, requestId };

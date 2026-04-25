@@ -175,3 +175,7 @@ The consolidation (Phases 1–10) eliminated six legacy homes for tool UI:
 - `components/admin/` tool admin UI → moved to `features/tool-call-visualization/admin/`
 
 Historical planning and analysis docs from the pre-consolidation era have been archived at `docs/archive/tool-call-legacy/`.
+
+## Change log
+
+- `2026-04-25` — Consumers of `ToolCallVisualization` and `toolCallBlockToLifecycleEntry` import from `components/ToolCallVisualization` and `utils/toolCallBlockToLifecycleEntry` instead of the feature root barrel.

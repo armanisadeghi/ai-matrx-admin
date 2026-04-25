@@ -2,10 +2,9 @@ import {
   fetchAppAndAppletConfig,
   fetchAppletBySlug,
 } from "@/utils/supabase/fetchAppAndAppletConfig";
-import {
-  AppletConfigViewer,
+import AppletConfigViewer, {
   customAppletConfigToAppletViewerConfig,
-} from "@/components/admin";
+} from "@/components/admin/applet-admin/AppletConfigViewer";
 
 export default async function AppletPage({
   params,

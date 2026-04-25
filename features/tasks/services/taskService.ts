@@ -4,13 +4,13 @@ import { requireUserId } from "@/utils/auth/getUserId";
 import { getSharedWithMe } from "@/utils/permissions/service";
 import type { DbRpcRow } from "@/types/supabase-rpc";
 import type { DatabaseTask } from "../types";
+import * as FilesApi from "@/features/files/api";
 import {
-  Api as FilesApi,
   deleteFile as cloudDeleteFile,
-  ensureFolderPath,
-  folderForTask,
   uploadFiles as cloudUploadFiles,
-} from "@/features/files";
+} from "@/features/files/redux/thunks";
+import { ensureFolderPath } from "@/features/files/redux/thunks";
+import { folderForTask } from "@/features/files/utils/folder-conventions";
 import { getStore } from "@/lib/redux/store";
 
 export interface CreateTaskInput {
@@ -518,7 +518,10 @@ async function sendTaskAssignmentNotification(
  */
 export async function deleteTask(taskId: string): Promise<boolean> {
   try {
-    const { error } = await supabase.from("ctx_tasks").delete().eq("id", taskId);
+    const { error } = await supabase
+      .from("ctx_tasks")
+      .delete()
+      .eq("id", taskId);
 
     if (error) {
       console.error("Error deleting task:", error.message);

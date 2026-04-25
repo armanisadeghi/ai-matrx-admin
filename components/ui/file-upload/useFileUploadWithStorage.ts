@@ -16,7 +16,7 @@
  *     route to dedicated top-level folders.
  *
  * Scheduled for deletion in Phase 11 once callers migrate to
- * `useUploadAndShare` / `useUploadAndGet` from `@/features/files`.
+ * `useUploadAndShare` / `useUploadAndGet` from `@/features/files/hooks`.
  */
 
 import { useCallback, useMemo, useState } from "react";
@@ -27,12 +27,12 @@ import {
 import type { StorageMetadata } from "@/utils/file-operations/types";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
+import { CloudFolders } from "@/features/files/utils/folder-conventions";
+import { ensureFolderPath } from "@/features/files/redux/thunks";
 import {
-  CloudFolders,
   createShareLink,
-  ensureFolderPath,
   uploadFiles as cloudUploadFiles,
-} from "@/features/files";
+} from "@/features/files/redux/thunks";
 
 // ---------------------------------------------------------------------------
 // Bucket → folder mapping
@@ -198,10 +198,7 @@ export const useFileUploadWithStorage = (bucket: string, path?: string) => {
   );
 
   const uploadMultipleTo = useCallback(
-    async (
-      folderPath: string,
-      files: File[],
-    ): Promise<UploadResult[]> => {
+    async (folderPath: string, files: File[]): Promise<UploadResult[]> => {
       const out: UploadResult[] = [];
       for (const file of files) {
         const r = await uploadOneTo(folderPath, file);

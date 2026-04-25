@@ -44,7 +44,7 @@ import MarkdownStream from "@/components/MarkdownStream";
 import { extractJsonFromText } from "@/features/prompts/utils/json-extraction";
 import { useRouter } from "next/navigation";
 import { usePromptsBasePath } from "../../../hooks/usePromptsBasePath";
-import { VoiceTextarea } from "@/features/audio";
+import { VoiceTextarea } from "@/components/official/VoiceTextarea";
 import { PromptJsonDisplay } from "./PromptJsonDisplay";
 import { extractNonJsonContent } from "./progressive-json-parser";
 import { PROMPT_BUILTINS } from "@/lib/redux/prompt-execution/builtins";
@@ -100,7 +100,9 @@ export function PromptGenerator({ isOpen, onClose }: PromptGeneratorProps) {
 
         // Auto-populate the prompt name if available
         const maybeName =
-          typeof result.data === "object" && result.data !== null && "name" in result.data
+          typeof result.data === "object" &&
+          result.data !== null &&
+          "name" in result.data
             ? (result.data as { name?: unknown }).name
             : undefined;
         if (maybeName && typeof maybeName === "string") {

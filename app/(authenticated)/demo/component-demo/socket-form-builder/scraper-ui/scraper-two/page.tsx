@@ -5,7 +5,8 @@ import DynamicForm from "@/components/socket/form-builder/DynamicForm";
 import ScraperResults from "./ScraperResults";
 import { ResponsiveSocketHeader } from "@/components/socket-io/headers/ResponsiveSocketHeader";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { createTask, submitTask } from "@/lib/redux/socket-io/thunks";
+import { createTask } from "@/lib/redux/socket-io/thunks/createTaskThunk";
+import { submitTask } from "@/lib/redux/socket-io/thunks/submitTaskThunk";
 import { updateTaskField, setTaskFields } from "@/lib/redux/socket-io/slices/socketTasksSlice";
 import { v4 as uuidv4 } from "uuid";
 

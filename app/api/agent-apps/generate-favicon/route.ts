@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/adminClient";
-import { Api, folderForAgentApp } from "@/features/files";
+import * as Api from "@/features/files/api";
+import { folderForAgentApp } from "@/features/files/utils/folder-conventions";
 
 const FAVICON_COLORS = [
   "#3b82f6",

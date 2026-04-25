@@ -2,7 +2,8 @@
 
 import React from 'react';
 import { useAppSelector } from '@/lib/redux/hooks';
-import { selectTaskFirstListenerId, selectResponseTextByListenerId, selectResponseDataByListenerId } from '@/lib/redux/socket-io/selectors';
+import { selectResponseTextByListenerId, selectResponseDataByListenerId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
+import { selectTaskFirstListenerId } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
 import { BasePanelProps } from './types';
 
 // Import existing parsers

@@ -1,7 +1,7 @@
 // lib/redux/entity/utils/processFormConfig.ts
 
 import { EntityKeys, EntityAnyFieldKey } from '@/types/entityTypes';
-import { UnifiedLayoutProps } from '@/components/matrx/Entity';
+import { UnifiedLayoutProps } from '@/components/matrx/Entity/prewired-components/layouts/types';
 
 interface ProcessedFormConfig<TEntity extends EntityKeys> {
   entitiesToHide: string[];

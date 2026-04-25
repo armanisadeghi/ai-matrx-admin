@@ -100,6 +100,7 @@ Key types live in `features/notes/` — import from the feature barrel, not inte
 
 ## Change log
 
+- `2026-04-25` — Removed `@/features/notes` barrel imports; consumers use `components/NotesLayout`, `service/notesApi`, `actions/CategoryNotesModal`, `types` (no new barrel file).
 - `2026-04-22` — claude: initial FEATURE.md extracted from README.md.
 
 ---

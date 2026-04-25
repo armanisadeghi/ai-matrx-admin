@@ -14,7 +14,8 @@
 // a maintenance job later; old files continue working in the meantime.
 
 import { createClient as createServerSupabase } from "@/utils/supabase/server";
-import { Api, CloudFolders } from "@/features/files";
+import * as Api from "@/features/files/api";
+import { CloudFolders } from "@/features/files/utils/folder-conventions";
 
 /** Sentinel value stored in `code_files.s3_bucket` for new cloud-files-backed rows. */
 export const CLOUD_FILES_BUCKET = "cloud-files";

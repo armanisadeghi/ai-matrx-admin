@@ -3,19 +3,12 @@
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import { Plus, X, Search, Check, Folder } from "lucide-react";
 import * as icons from "lucide-react";
+import { fetchScopeTypes, selectScopeTypesLoading } from "@/features/agent-context/redux/scope/scopeTypesSlice";
+import { fetchScopes, selectScopesLoading } from "@/features/agent-context/redux/scope/scopesSlice";
+import { fetchEntityScopes, setEntityScopes, selectScopeIdsForEntity } from "@/features/agent-context/redux/scope/scopeAssignmentsSlice";
+import { selectEntityScopesWithLabels, selectScopePickerOptions } from "@/features/agent-context/redux/scope/selectors";
+import type { ScopePickerOption } from "@/features/agent-context/redux/scope/types";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import {
-  fetchScopeTypes,
-  fetchScopes,
-  fetchEntityScopes,
-  setEntityScopes,
-  selectEntityScopesWithLabels,
-  selectScopePickerOptions,
-  selectScopeIdsForEntity,
-  selectScopeTypesLoading,
-  selectScopesLoading,
-} from "@/features/agent-context/redux/scope";
-import type { ScopePickerOption } from "@/features/agent-context/redux/scope";
 import {
   Popover,
   PopoverContent,

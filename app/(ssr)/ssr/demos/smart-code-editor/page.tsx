@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useOpenSmartCodeEditorWindow } from "@/features/window-panels/windows/smart-code-editor";
+import { useOpenSmartCodeEditorWindow } from "@/features/window-panels/windows/smart-code-editor/useOpenSmartCodeEditorWindow";
 import type {
   CodeEditorAgentConfig,
   CodeFile,

@@ -7,9 +7,9 @@ import MarkdownRenderer from '@/components/mardown-display/MarkdownRenderer';
 import DraggableToolbar, { ToolbarAction } from '../components/DraggableToolbar';
 import { Eye, Code, FileText, Copy } from 'lucide-react';
 import { useAppSelector } from '@/lib/redux/hooks';
-import { selectTaskFirstListenerId } from '@/lib/redux/socket-io/selectors';
-import { selectResponseTextByListenerId } from '@/lib/redux/socket-io/selectors';
-import { selectResponseEndedByListenerId } from '@/lib/redux/socket-io/selectors';
+import { selectTaskFirstListenerId } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
+import { selectResponseTextByListenerId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
+import { selectResponseEndedByListenerId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 
 
 interface ResultPanelProps {

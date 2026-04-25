@@ -84,7 +84,8 @@ When voice input fails:
 ### For Developers
 
 ```typescript
-import { VoiceTextarea, runMicrophoneDiagnostics } from '@/features/audio';
+import { VoiceTextarea } from '@/components/official/VoiceTextarea';
+import { runMicrophoneDiagnostics, canUserFixIssue } from '@/features/audio/utils/microphone-diagnostics';
 
 // Run diagnostics programmatically
 const diagnostics = await runMicrophoneDiagnostics();

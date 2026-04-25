@@ -3,12 +3,9 @@
 import React, { useState } from "react";
 import { FolderPlus, RefreshCw } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { loadCodeFilesList, loadCodeFolders } from "@/features/code-files/redux/thunks";
+import { selectCodeFilesListStatus } from "@/features/code-files/redux/selectors";
 import { cn } from "@/lib/utils";
-import {
-  loadCodeFilesList,
-  loadCodeFolders,
-  selectCodeFilesListStatus,
-} from "@/features/code-files";
 import { SidePanelHeader, SidePanelAction } from "../SidePanelChrome";
 import { LibraryTree } from "./LibraryTree";
 

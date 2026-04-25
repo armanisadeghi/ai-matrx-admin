@@ -8,7 +8,7 @@ import { ErrorDisplay } from '../../../field-actions/components/StateComponents'
 import { EntityKeys, EntityData } from '@/types/entityTypes';
 import { EntityError } from '@/lib/redux/entity/types/stateTypes';
 import { SMART_LAYOUT_COMPONENTS } from "./";
-import { UnifiedLayoutProps } from "@/components/matrx/Entity";
+import { UnifiedLayoutProps } from "@/components/matrx/Entity/prewired-components/layouts/types";
 
 const EntitySmartLayout: React.FC<UnifiedLayoutProps> = (props) => {
     const className = 'className' in props ? (props as any).className : undefined;

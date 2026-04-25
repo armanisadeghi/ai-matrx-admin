@@ -2,7 +2,7 @@
 
 **Status:** `stable`
 **Tier:** `2`
-**Last updated:** `2026-04-22`
+**Last updated:** `2026-04-25`
 
 ---
 
@@ -13,6 +13,8 @@ The catalog and configuration surface for every LLM available to the product —
 ---
 
 ## Entry points
+
+**Imports:** There is no root `index.ts` barrel — import from `components/…`, `service.ts`, `types.ts`, `hooks/…`, `redux/…`, `audit/…`, and `server/…` as needed.
 
 **Routes**
 - `app/(authenticated)/(admin-auth)/administration/ai-models/page.tsx` — admin model registry (table + detail panel + tab presets)
@@ -135,6 +137,7 @@ Configuration surface is stable. The consumer side is mid-migration: prompt/buil
 
 ## Change log
 
+- `2026-04-25` — Removed `features/ai-models/index.ts`; admin routes and provider-sync use direct imports to `components/*` and `service.ts` (same exports as before).
 - `2026-04-22` — claude: initial doc.
 
 ---

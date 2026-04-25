@@ -3,8 +3,8 @@
 import React, { useState } from 'react';
 import { MicrophoneIconButton, MicVariant } from '@/features/audio/components/MicrophoneIconButton';
 import { VoiceTextarea } from '@/components/official/VoiceTextarea';
+import { useRecordAndTranscribe } from "@/features/audio/hooks/useRecordAndTranscribe";
 import { VoiceInputButton } from '@/components/official/VoiceInputButton';
-import { useRecordAndTranscribe } from '@/features/audio/hooks';
 import { toast } from 'sonner';
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {

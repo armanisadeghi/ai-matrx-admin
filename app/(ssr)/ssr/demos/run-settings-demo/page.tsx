@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 /**
  * Simple Run Settings demo
@@ -13,13 +13,13 @@
  *      so the sizing reads in context.
  */
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   SimpleRunSettings,
-  SimpleRunSettingsButton,
   type SimpleRunSettingsValue,
-} from '@/features/agents/components/run-controls/SimpleRunSettings';
-import { ArrowUp, Mic, Paperclip } from 'lucide-react';
+} from "@/features/agents/components/run-controls/SimpleRunSettings/SimpleRunSettings";
+import { SimpleRunSettingsButton } from "@/features/agents/components/run-controls/SimpleRunSettings/SimpleRunSettingsButton";
+import { ArrowUp, Mic, Paperclip } from "lucide-react";
 
 function Section({
   title,
@@ -68,8 +68,11 @@ function StateBadge({ value }: { value: SimpleRunSettingsValue | null }) {
 }
 
 export default function RunSettingsDemoPage() {
-  const [inlineValue, setInlineValue] = useState<SimpleRunSettingsValue | null>(null);
-  const [popoverValue, setPopoverValue] = useState<SimpleRunSettingsValue | null>(null);
+  const [inlineValue, setInlineValue] = useState<SimpleRunSettingsValue | null>(
+    null,
+  );
+  const [popoverValue, setPopoverValue] =
+    useState<SimpleRunSettingsValue | null>(null);
 
   return (
     <div className="h-full overflow-y-auto bg-textured">
@@ -79,9 +82,9 @@ export default function RunSettingsDemoPage() {
             Simple Run Settings
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Consumer-facing settings panel. Model names are hidden — we
-            describe what the AI is good at, not which provider it comes
-            from. Wiring to Redux / the override slice is a separate pass.
+            Consumer-facing settings panel. Model names are hidden — we describe
+            what the AI is good at, not which provider it comes from. Wiring to
+            Redux / the override slice is a separate pass.
           </p>
         </div>
 
@@ -107,13 +110,8 @@ export default function RunSettingsDemoPage() {
           description="Click the gear to open. Clicking the selected card / pill is a no-op. A blue dot appears on the gear when the current run is customised."
         >
           <div className="flex items-center gap-4">
-            <SimpleRunSettingsButton
-              size="md"
-              onChange={setPopoverValue}
-            />
-            <p className="text-xs text-muted-foreground">
-              ← click the gear
-            </p>
+            <SimpleRunSettingsButton size="md" onChange={setPopoverValue} />
+            <p className="text-xs text-muted-foreground">← click the gear</p>
             <div className="flex-1" />
             <StateBadge value={popoverValue} />
           </div>
@@ -137,33 +135,30 @@ export default function RunSettingsDemoPage() {
             </button>
           </div>
           <p className="text-xs text-muted-foreground mt-3">
-            In the actual input toolbar you&apos;d drop{' '}
+            In the actual input toolbar you&apos;d drop{" "}
             <code className="bg-muted/60 rounded px-1 py-0.5 font-mono text-[11px]">
               &lt;SimpleRunSettingsButton size=&quot;sm&quot; /&gt;
-            </code>{' '}
+            </code>{" "}
             next to the mic.
           </p>
         </Section>
 
         {/* ── 4. Caveats / next steps ─────────────────────────────────── */}
-        <Section
-          title="Wiring notes (for the next pass)"
-          description=""
-        >
+        <Section title="Wiring notes (for the next pass)" description="">
           <ul className="text-xs text-muted-foreground space-y-1.5 list-disc pl-5">
             <li>
-              The <span className="font-mono">onChange</span> callback
-              already returns both the capability id and the resolved
-              underlying model id — feed that directly into{' '}
+              The <span className="font-mono">onChange</span> callback already
+              returns both the capability id and the resolved underlying model
+              id — feed that directly into{" "}
               <span className="font-mono">
-                setOverrides({'{'}conversationId, changes: {'{'}model_id{'}'}
-                {'}'})
-              </span>{' '}
+                setOverrides({"{"}conversationId, changes: {"{"}model_id{"}"}
+                {"}"})
+              </span>{" "}
               when we&apos;re ready.
             </li>
             <li>
               Reasoning level is a single string the server can translate to
-              either <span className="font-mono">reasoning_effort</span> or{' '}
+              either <span className="font-mono">reasoning_effort</span> or{" "}
               <span className="font-mono">thinking_level</span> — the UI
               doesn&apos;t need to know which.
             </li>

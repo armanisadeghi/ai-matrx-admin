@@ -2,8 +2,9 @@
 
 import { useCallback } from "react";
 import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
+import { loadCodeFileFull } from "@/features/code-files/redux/thunks";
+import { selectCodeFileById } from "@/features/code-files/redux/selectors";
 import { openTab, setActiveTab } from "../redux/tabsSlice";
-import { loadCodeFileFull, selectCodeFileById } from "@/features/code-files";
 import { languageFromFilename } from "../styles/file-icon";
 
 /** Tab id prefix for files backed by the `code_files` table.

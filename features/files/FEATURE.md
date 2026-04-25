@@ -2,7 +2,7 @@
 
 **Status:** ✅ Phase 11 complete. Legacy system deleted, cloud-files is the only file system in the app.
 **Owner:** Files migration team.
-**Last updated:** 2026-04-23.
+**Last updated:** 2026-04-25.
 
 This is the live architecture doc for the new file management system under `features/files/`. It supersedes the legacy Supabase-Storage-based system progressively over 12 phases ([migration/MASTER-PLAN.md](migration/MASTER-PLAN.md)).
 
@@ -350,3 +350,5 @@ See [migration/MASTER-PLAN.md](migration/MASTER-PLAN.md) for the phase-ordered p
   **(4) File Versions tab.** [components/surfaces/PreviewPane.tsx](components/surfaces/PreviewPane.tsx) now has a tab strip below the action header (Preview / Versions). Tab state is local to the component and resets when the user picks a different file (each fileId gets its own remount). The Versions tab renders new [components/core/FileVersions/FileVersionsList.tsx](components/core/FileVersions/FileVersionsList.tsx) — calls `loadFileVersions` thunk on mount, lists versions newest-first with version number, locale-formatted date, formatted size, short checksum, optional change-summary, "Current" badge on the latest, and a Restore button per non-current version. Restore uses an alert-dialog confirm and the existing `restoreVersion` thunk (which server-side creates a new top version pointing at the chosen version's storage URI — nothing is destroyed). The "Show versions" context-menu item from (3) opens this tab directly via the CustomEvent bus.
 
   **Verification:** `pnpm type-check` clean across `features/files/**`. Zero new files outside the established folder layout (`components/core/{FileInfo,FileVersions}/` follow the same pattern as `FileIcon`, `FileMeta`, etc.). No public API surface changes — `f/[fileId]/page.tsx`, `PageShell` props, and every existing caller still compile unchanged.
+
+- **2026-04-25** — Removed reliance on the root `features/files/index.ts` barrel for cross-package imports: consumers now point at `types`, `api` (namespace), `redux/thunks`, `redux/selectors`, `hooks/useCloudTree`, `utils/folder-conventions`, and specific `components/` + `providers/` modules. The index file remains as a compatibility re-export but should not be used for new code.

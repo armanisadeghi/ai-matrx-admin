@@ -28,8 +28,8 @@ import {
 } from "./resource-display";
 import { useClipboardPaste } from "@/components/ui/file-upload/useClipboardPaste";
 import { useFileUploadWithStorage } from "@/components/ui/file-upload/useFileUploadWithStorage";
-import { useRecordAndTranscribe } from "@/features/audio";
-import { TranscriptionLoader } from "@/features/audio";
+import { useRecordAndTranscribe } from "@/features/audio/hooks/useRecordAndTranscribe";
+import { TranscriptionLoader } from "@/features/audio/components/TranscriptionLoader";
 import { toast } from "sonner";
 
 interface PromptInputProps {

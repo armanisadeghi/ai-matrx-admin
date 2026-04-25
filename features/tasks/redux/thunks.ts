@@ -14,8 +14,8 @@ import {
   removeTaskFromSlice,
   type TaskRecord,
 } from "@/features/agent-context/redux/tasksSlice";
+import { setEntityScopes } from "@/features/agent-context/redux/scope/scopeAssignmentsSlice";
 import { adjustProjectTaskCount } from "@/features/agent-context/redux/projectsSlice";
-import { setEntityScopes } from "@/features/agent-context/redux/scope";
 import {
   setIsCreatingProject,
   setIsCreatingTask,

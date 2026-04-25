@@ -14,12 +14,8 @@ import {
 } from "@/features/scraper/utils/scraper-utils";
 
 import { useAppSelector } from "@/lib/redux/hooks";
-import {
-    selectTaskStatus,
-    selectPrimaryResponseEndedByTaskId,
-    selectPrimaryResponseDataByTaskId,
-    selectHasPrimaryResponseErrorsByTaskId,
-} from "@/lib/redux/socket-io";
+import { selectPrimaryResponseEndedByTaskId, selectPrimaryResponseDataByTaskId, selectHasPrimaryResponseErrorsByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
+import { selectTaskStatus } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
 
 interface RemovalDetail {
     attribute: string;

@@ -6,12 +6,9 @@ import {
   Check, X, AlertCircle, Clock, Play, Box, Copy, 
   ChevronDown, ChevronUp, Info
 } from "lucide-react";
-import {
-  selectIsConnected, 
-  selectTaskValidationState, 
-  selectTasksByStatus,
-  selectHasResponseErrorsByListenerId
-} from "@/lib/redux/socket-io";
+import { selectIsConnected } from "@/lib/redux/socket-io/selectors/socket-connection-selectors";
+import { selectHasResponseErrorsByListenerId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
+import { selectTaskValidationState, selectTasksByStatus } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
 
 // Legacy binary status indicator
 interface BinaryStatusIndicatorProps {

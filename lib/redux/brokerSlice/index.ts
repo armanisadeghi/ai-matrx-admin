@@ -1,19 +1,4 @@
-import { coreSelectors } from "./selectors/core";
-
-
-import { optionsSelectors, tableSelectors, textSelectors, dynamicSelectors, numberSelectors, booleanSelectors, dateSelectors } from "./selectors";
-
-// Combine selectors
-export const brokerSelectors = {
-    ...coreSelectors,
-    ...optionsSelectors,
-    ...tableSelectors,
-    ...textSelectors,
-    ...dynamicSelectors,
-    ...numberSelectors,
-    ...booleanSelectors,
-    ...dateSelectors,
-};
+export { brokerSelectors } from "./brokerSelectors";
 
 // Re-export types
 export * from "./types";

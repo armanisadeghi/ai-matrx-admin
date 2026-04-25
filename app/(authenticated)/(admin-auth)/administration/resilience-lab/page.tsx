@@ -45,14 +45,12 @@ import {
   HeartbeatTimeoutError,
   TotalTimeoutError,
 } from "@/lib/net/errors";
-import { useRequestRecovery } from "@/features/request-recovery";
+import { useRequestRecovery } from "@/features/request-recovery/providers/RequestRecoveryProvider";
 import { selectActiveNetRequests } from "@/lib/redux/net/selectors";
 import { selectResolvedBaseUrl } from "@/lib/redux/slices/apiConfigSlice";
 import { selectAccessToken } from "@/lib/redux/slices/userSlice";
 
-type RunResult =
-  | { ok: true; detail: string }
-  | { ok: false; error: string };
+type RunResult = { ok: true; detail: string } | { ok: false; error: string };
 
 function shortId() {
   return `lab_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
@@ -860,11 +858,7 @@ export default function ResilienceLabPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="flex gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={fireThreeThenReload}
-          >
+          <Button size="sm" variant="outline" onClick={fireThreeThenReload}>
             Fire 3 scenarios
           </Button>
           <Button size="sm" variant="ghost" onClick={recovery.open}>
@@ -892,9 +886,11 @@ export default function ResilienceLabPage() {
           </CardTitle>
           <CardDescription className="text-xs">
             Hits the Python mock router at{" "}
-            <code className="text-[11px]">POST /ai/mock-stream/{"{scenario}"}</code>.
-            Exercises the real resilientFetch + monitorStream stack end-to-end
-            against a live server. Tag {" "}
+            <code className="text-[11px]">
+              POST /ai/mock-stream/{"{scenario}"}
+            </code>
+            . Exercises the real resilientFetch + monitorStream stack end-to-end
+            against a live server. Tag{" "}
             <span className="font-semibold">PASS</span> means the outcome
             matched the scenario's expectation (success or specific failure);{" "}
             <span className="font-semibold">UNEXPECTED</span> means something

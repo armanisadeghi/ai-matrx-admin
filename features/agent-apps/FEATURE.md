@@ -147,6 +147,7 @@ Thunks stub and throw. Backing DB table not yet created. UI rendering path in bu
 
 ## Change log
 
+- `2026-04-25` — Admin route imports: `AgentAppsGrid`, editor shell components, and `AgentApp` type now use direct paths (`components/layouts/…`, `components/…`, `types`) instead of `@/features/agent-apps` barrel.
 - `2026-04-22` — claude: initial FEATURE.md extracted from `agent-system-mental-model.md` §6.
 - `2026-04-22` — claude: `POST /api/agent-apps` now accepts `scope: "global"` for admins, writing rows with all scope columns null via `createAdminClient()`. New admin UI lives at `administration/system-agents/apps/` (list + `apps/new/` form). This is distinct from `administration/agent-apps/` (moderation of user-published apps). `fetchAgentAppsAdmin` gained a `scope: "global" | "user"` filter.
 

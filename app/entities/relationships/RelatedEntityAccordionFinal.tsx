@@ -7,7 +7,7 @@ import {getUpdatedUnifiedLayoutProps} from "@/app/entities/layout/configs";
 
 import {EntityKeys} from "@/types/entityTypes";
 import {MatrxRecordId} from "@/lib/redux/entity/types/stateTypes";
-import {UnifiedLayoutProps} from "@/components/matrx/Entity";
+import {UnifiedLayoutProps} from "@/components/matrx/Entity/prewired-components/layouts/types";
 import { useFetchRelatedFinal } from '../hooks/useFetchRelatedFinal';
 
 export interface RelatedEntityAccordionFinalProps {

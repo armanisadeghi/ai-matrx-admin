@@ -9,7 +9,8 @@ import { formatLabel, formatPlaceholder } from "@/components/socket/utils/label-
 import { updateTaskFieldByPath } from "@/lib/redux/socket-io/thunks/taskFieldThunks";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { FieldOverrides } from "@/components/socket/form-builder/FormField";
-import { selectConnectionTestMode, selectTaskNameById, selectFieldValue } from "@/lib/redux/socket-io";
+import { selectConnectionTestMode } from "@/lib/redux/socket-io/selectors/socket-connection-selectors";
+import { selectTaskNameById, selectFieldValue } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
 import { isValidField } from "@/constants/socket-schema";
 import { Label } from "@/components/ui/label";
 

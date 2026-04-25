@@ -27,8 +27,8 @@ import {
   Upload,
   Mic,
 } from "lucide-react";
+import { useAudioTranscription } from "@/features/audio/hooks/useAudioTranscription";
 import { useTranscriptsContext } from "../context/TranscriptsContext";
-import { useAudioTranscription } from "@/features/audio/hooks";
 import { useToastManager } from "@/hooks/useToastManager";
 import {
   FileUploadWithStorage,
