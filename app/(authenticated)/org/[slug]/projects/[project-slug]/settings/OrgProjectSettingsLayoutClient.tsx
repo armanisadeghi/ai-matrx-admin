@@ -13,8 +13,8 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { useProject } from "@/features/projects";
-import { getOrganizationBySlug } from "@/features/organizations";
+import { useProject } from "@/features/projects/hooks";
+import { getOrganizationBySlug } from "@/features/organizations/service";
 import { ProjectSidebar } from "@/features/projects/components/ProjectSidebar";
 
 export function OrgProjectSettingsLayoutClient({
@@ -38,7 +38,8 @@ export function OrgProjectSettingsLayoutClient({
         if (!org) return;
         setOrgId(org.id);
 
-        const { getProjectBySlug } = await import("@/features/projects");
+        const { getProjectBySlug } =
+          await import("@/features/projects/service");
         const proj = await getProjectBySlug(projectSlug, org.id);
         if (proj) setProjectId(proj.id);
       } catch (err) {

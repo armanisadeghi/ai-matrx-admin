@@ -13,8 +13,8 @@ import {
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import type { TaskFilterType } from "@/features/tasks/types";
+import { selectProjects } from "@/features/tasks/redux/selectors";
 import {
-  selectProjects,
   selectNewProjectName,
   selectActiveProject,
   selectShowAllProjects,
@@ -28,10 +28,12 @@ import {
   setShowAllProjects,
   setShowCompleted,
   setFilter,
+} from "@/features/tasks/redux/taskUiSlice";
+import {
   createProjectThunk,
   updateProjectThunk,
   deleteProjectThunk,
-} from "@/features/tasks/redux";
+} from "@/features/tasks/redux/thunks";
 import EditableProjectName from "./EditableProjectName";
 import TaskScopeFilter from "./TaskScopeFilter";
 import { Button } from "@/components/ui/button";

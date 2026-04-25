@@ -6,8 +6,8 @@ import { Puzzle, Settings, ArrowLeft, Loader2, CheckSquare } from 'lucide-react'
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import { getPersonalProjectBySlug, getProjectUserRole } from '@/features/projects';
-import type { Project, ProjectRole } from '@/features/projects';
+import { getPersonalProjectBySlug, getProjectUserRole } from '@/features/projects/service';
+import type { Project, ProjectRole } from '@/features/projects/types';
 
 /**
  * Personal Project Detail Page

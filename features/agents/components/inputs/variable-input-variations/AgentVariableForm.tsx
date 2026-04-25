@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ChevronDown } from "lucide-react";
-import { VoiceTextarea } from "@/features/audio";
+import { VoiceTextarea } from "@/components/official/VoiceTextarea";
 import { formatText } from "@/utils/text/text-case-converter";
 import { cn } from "@/lib/utils";
 import { motion } from "motion/react";

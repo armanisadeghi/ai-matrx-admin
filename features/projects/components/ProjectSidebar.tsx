@@ -5,8 +5,8 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { Puzzle, Crown, Shield, User as UserIcon, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useOrgProjects } from '@/features/projects';
-import type { ProjectWithRole } from '@/features/projects';
+import { useOrgProjects } from '../hooks';
+import type { ProjectWithRole } from '../types';
 
 interface ProjectSidebarProps {
   organizationId: string;

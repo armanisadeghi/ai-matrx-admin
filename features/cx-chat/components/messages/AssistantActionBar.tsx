@@ -26,7 +26,7 @@ import {
 import { SpeakerButton } from "@/features/tts/components/SpeakerButton";
 import { copyToClipboard } from "@/components/matrx/buttons/markdown-copy-utils";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { messageActionsActions } from "@/features/agents/redux/execution-system/message-actions";
+import { messageActionsActions } from "@/features/agents/redux/execution-system/message-actions/message-actions.slice";
 import {
   openFullScreenEditor,
   openContentHistory,

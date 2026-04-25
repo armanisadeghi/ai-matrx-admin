@@ -18,7 +18,11 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import type { AppDispatch, RootState } from "@/lib/redux/store";
 import { supabase } from "@/utils/supabase/client";
 
-import { Files, Folders, Permissions, ShareLinks, Versions } from "../api";
+import * as Files from "../api/files";
+import * as Folders from "../api/folders";
+import * as Permissions from "../api/permissions";
+import * as ShareLinks from "../api/share-links";
+import * as Versions from "../api/versions";
 import { newRequestId } from "../api/client";
 import {
   apiFileRecordToCloudFile,
@@ -29,10 +33,7 @@ import {
   dbRowToCloudShareLink,
   parseCloudTreeRows,
 } from "./converters";
-import {
-  registerRequest,
-  releaseRequest,
-} from "./request-ledger";
+import { registerRequest, releaseRequest } from "./request-ledger";
 import { buildTreeState } from "./tree-utils";
 import {
   addFilePendingRequest,
@@ -102,10 +103,9 @@ export const loadUserFileTree = createAsyncThunk<
 >("cloudFiles/loadUserFileTree", async ({ userId }, { dispatch }) => {
   dispatch(setTreeStatus({ status: "loading" }));
 
-  const { data, error } = await supabase.rpc(
-    "cld_get_user_file_tree",
-    { p_user_id: userId },
-  );
+  const { data, error } = await supabase.rpc("cld_get_user_file_tree", {
+    p_user_id: userId,
+  });
 
   if (error) {
     dispatch(setTreeStatus({ status: "error", error: error.message }));
@@ -211,11 +211,13 @@ export const loadUserFileTree = createAsyncThunk<
       ]),
     ),
   });
-  dispatch(replaceTree({
-    rootFolderIds: tree.rootFolderIds,
-    rootFileIds: tree.rootFileIds,
-    childrenByFolderId: tree.childrenByFolderId,
-  }));
+  dispatch(
+    replaceTree({
+      rootFolderIds: tree.rootFolderIds,
+      rootFileIds: tree.rootFileIds,
+      childrenByFolderId: tree.childrenByFolderId,
+    }),
+  );
 });
 
 /**
@@ -618,66 +620,61 @@ export const clearUploadEntry = createAsyncThunk<
 // Writes — optimistic metadata updates
 // ---------------------------------------------------------------------------
 
-export const renameFile = createAsyncThunk<
-  void,
-  RenameFileArg,
-  ThunkApi
->("cloudFiles/rename", async ({ fileId, newName }, { dispatch, getState }) => {
-  const record = getFileFromState(getState(), fileId);
-  if (!record) throw new Error(`File not found: ${fileId}`);
+export const renameFile = createAsyncThunk<void, RenameFileArg, ThunkApi>(
+  "cloudFiles/rename",
+  async ({ fileId, newName }, { dispatch, getState }) => {
+    const record = getFileFromState(getState(), fileId);
+    if (!record) throw new Error(`File not found: ${fileId}`);
 
-  const requestId = newRequestId();
-  const snapshot: CloudFileFieldSnapshot = {
-    fileName: record.fileName,
-    filePath: record.filePath,
-  };
+    const requestId = newRequestId();
+    const snapshot: CloudFileFieldSnapshot = {
+      fileName: record.fileName,
+      filePath: record.filePath,
+    };
 
-  // Compute new file path (replace final segment).
-  const pathParts = record.filePath.split("/");
-  pathParts[pathParts.length - 1] = newName;
-  const newPath = pathParts.join("/");
+    // Compute new file path (replace final segment).
+    const pathParts = record.filePath.split("/");
+    pathParts[pathParts.length - 1] = newName;
+    const newPath = pathParts.join("/");
 
-  dispatch(setFileField({ id: fileId, field: "fileName", value: newName }));
-  dispatch(setFileField({ id: fileId, field: "filePath", value: newPath }));
-  dispatch(addFilePendingRequest({ id: fileId, requestId }));
-  registerRequest({
-    requestId,
-    kind: "rename",
-    resourceId: fileId,
-    resourceType: "file",
-  });
+    dispatch(setFileField({ id: fileId, field: "fileName", value: newName }));
+    dispatch(setFileField({ id: fileId, field: "filePath", value: newPath }));
+    dispatch(addFilePendingRequest({ id: fileId, requestId }));
+    registerRequest({
+      requestId,
+      kind: "rename",
+      resourceId: fileId,
+      resourceType: "file",
+    });
 
-  try {
-    // Rename is expressed as a metadata patch in the backend (file_path is
-    // derived server-side from file_name + parent). We use the metadata field
-    // as the vehicle since there's no dedicated rename endpoint today.
-    await Files.patchFile(
-      fileId,
-      {
-        metadata: {
-          ...record.metadata,
-          __rename_request__: { new_name: newName, request_id: requestId },
+    try {
+      // Rename is expressed as a metadata patch in the backend (file_path is
+      // derived server-side from file_name + parent). We use the metadata field
+      // as the vehicle since there's no dedicated rename endpoint today.
+      await Files.patchFile(
+        fileId,
+        {
+          metadata: {
+            ...record.metadata,
+            __rename_request__: { new_name: newName, request_id: requestId },
+          },
         },
-      },
-      { requestId },
-    );
-    dispatch(markFileSaved({ id: fileId }));
-  } catch (err) {
-    dispatch(rollbackFileOptimisticUpdate({ id: fileId, snapshot }));
-    const msg = err instanceof Error ? err.message : String(err);
-    dispatch(setFileError({ id: fileId, error: msg }));
-    throw err;
-  } finally {
-    dispatch(removeFilePendingRequest({ id: fileId, requestId }));
-    releaseRequest(requestId);
-  }
-});
+        { requestId },
+      );
+      dispatch(markFileSaved({ id: fileId }));
+    } catch (err) {
+      dispatch(rollbackFileOptimisticUpdate({ id: fileId, snapshot }));
+      const msg = err instanceof Error ? err.message : String(err);
+      dispatch(setFileError({ id: fileId, error: msg }));
+      throw err;
+    } finally {
+      dispatch(removeFilePendingRequest({ id: fileId, requestId }));
+      releaseRequest(requestId);
+    }
+  },
+);
 
-export const moveFile = createAsyncThunk<
-  void,
-  MoveFileArg,
-  ThunkApi
->(
+export const moveFile = createAsyncThunk<void, MoveFileArg, ThunkApi>(
   "cloudFiles/move",
   async ({ fileId, newParentFolderId }, { dispatch, getState }) => {
     const record = getFileFromState(getState(), fileId);
@@ -828,49 +825,48 @@ export const updateFileMetadata = createAsyncThunk<
 // Writes — delete
 // ---------------------------------------------------------------------------
 
-export const deleteFile = createAsyncThunk<
-  void,
-  DeleteFileArg,
-  ThunkApi
->("cloudFiles/delete", async ({ fileId, hardDelete }, { dispatch, getState }) => {
-  const record = getFileFromState(getState(), fileId);
-  if (!record) return; // nothing to do
-  const parentFolderId = record.parentFolderId;
-  const requestId = newRequestId();
+export const deleteFile = createAsyncThunk<void, DeleteFileArg, ThunkApi>(
+  "cloudFiles/delete",
+  async ({ fileId, hardDelete }, { dispatch, getState }) => {
+    const record = getFileFromState(getState(), fileId);
+    if (!record) return; // nothing to do
+    const parentFolderId = record.parentFolderId;
+    const requestId = newRequestId();
 
-  // Optimistic remove.
-  dispatch(removeFile({ id: fileId }));
-  dispatch(
-    detachChildFromFolder({
-      parentFolderId,
-      kind: "file",
-      id: fileId,
-    }),
-  );
-  registerRequest({
-    requestId,
-    kind: "delete",
-    resourceId: fileId,
-    resourceType: "file",
-  });
-
-  try {
-    await Files.deleteFile(fileId, { hardDelete }, { requestId });
-  } catch (err) {
-    // Rollback — reinsert the record and reattach to its parent.
-    dispatch(upsertFile(record));
+    // Optimistic remove.
+    dispatch(removeFile({ id: fileId }));
     dispatch(
-      attachChildToFolder({
+      detachChildFromFolder({
         parentFolderId,
         kind: "file",
         id: fileId,
       }),
     );
-    throw err;
-  } finally {
-    releaseRequest(requestId);
-  }
-});
+    registerRequest({
+      requestId,
+      kind: "delete",
+      resourceId: fileId,
+      resourceType: "file",
+    });
+
+    try {
+      await Files.deleteFile(fileId, { hardDelete }, { requestId });
+    } catch (err) {
+      // Rollback — reinsert the record and reattach to its parent.
+      dispatch(upsertFile(record));
+      dispatch(
+        attachChildToFolder({
+          parentFolderId,
+          kind: "file",
+          id: fileId,
+        }),
+      );
+      throw err;
+    } finally {
+      releaseRequest(requestId);
+    }
+  },
+);
 
 // ---------------------------------------------------------------------------
 // Writes — versions
@@ -892,11 +888,9 @@ export const restoreVersion = createAsyncThunk<
       resourceType: "file",
     });
     try {
-      const { data } = await Versions.restoreVersion(
-        fileId,
-        versionNumber,
-        { requestId },
-      );
+      const { data } = await Versions.restoreVersion(fileId, versionNumber, {
+        requestId,
+      });
       dispatch(upsertFile(apiFileRecordToCloudFile(data)));
       // Reload version list to pick up the new synthetic version row.
       await dispatch(loadFileVersions({ fileId })).unwrap();
@@ -932,16 +926,12 @@ export const grantPermission = createAsyncThunk<
     };
     const { data } =
       arg.resourceType === "folder"
-        ? await Permissions.grantFolderPermission(
-            arg.resourceId,
-            body,
-            { requestId },
-          )
-        : await Permissions.grantFilePermission(
-            arg.resourceId,
-            body,
-            { requestId },
-          );
+        ? await Permissions.grantFolderPermission(arg.resourceId, body, {
+            requestId,
+          })
+        : await Permissions.grantFilePermission(arg.resourceId, body, {
+            requestId,
+          });
     dispatch(
       upsertPermissionsForResource({
         resourceId: arg.resourceId,
@@ -1019,20 +1009,14 @@ export const createShareLink = createAsyncThunk<
     };
     const { data } =
       arg.resourceType === "folder"
-        ? await ShareLinks.createFolderShareLink(
-            arg.resourceId,
-            body,
-            { requestId },
-          )
-        : await ShareLinks.createFileShareLink(
-            arg.resourceId,
-            body,
-            { requestId },
-          );
+        ? await ShareLinks.createFolderShareLink(arg.resourceId, body, {
+            requestId,
+          })
+        : await ShareLinks.createFileShareLink(arg.resourceId, body, {
+            requestId,
+          });
     const link = dbRowToCloudShareLink(data);
-    await dispatch(
-      loadShareLinks({ resourceId: arg.resourceId }),
-    ).unwrap();
+    await dispatch(loadShareLinks({ resourceId: arg.resourceId })).unwrap();
     return link;
   } finally {
     releaseRequest(requestId);

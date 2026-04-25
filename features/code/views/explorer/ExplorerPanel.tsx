@@ -17,7 +17,7 @@ import {
   selectExplorerRootOverride,
   setActiveView,
   setExplorerRootOverride,
-} from "../../redux";
+} from "../../redux/codeWorkspaceSlice";
 import { useCodeWorkspace } from "../../CodeWorkspaceProvider";
 import { SidePanelHeader, SidePanelAction } from "../SidePanelChrome";
 import { FileTree } from "./FileTree";

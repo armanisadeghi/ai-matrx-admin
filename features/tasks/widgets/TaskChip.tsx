@@ -4,10 +4,8 @@ import React from "react";
 import Link from "next/link";
 import { X, CircleDashed, CheckCircle2, Flag } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import {
-  dissociateFromTask,
-  setSelectedTaskId,
-} from "@/features/tasks/redux";
+import { dissociateFromTask } from "@/features/tasks/redux/taskAssociationsSlice";
+import { setSelectedTaskId } from "@/features/tasks/redux/taskUiSlice";
 import { selectTaskById } from "@/features/agent-context/redux/tasksSlice";
 import { cn } from "@/utils/cn";
 

@@ -1,18 +1,27 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { Building2, Plus, Search, Users, Crown, Shield, User as UserIcon, Loader2 } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { useUserOrganizations } from '@/features/organizations';
-import { OrganizationCard } from './OrganizationCard';
-import { CreateOrgModal } from './CreateOrgModal';
-import { filterAndSortBySearch } from '@/utils/search-scoring';
+import React, { useState } from "react";
+import {
+  Building2,
+  Plus,
+  Search,
+  Users,
+  Crown,
+  Shield,
+  User as UserIcon,
+  Loader2,
+} from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { useUserOrganizations } from "../hooks";
+import { OrganizationCard } from "./OrganizationCard";
+import { CreateOrgModal } from "./CreateOrgModal";
+import { filterAndSortBySearch } from "@/utils/search-scoring";
 
 /**
  * OrganizationList - Main component for displaying user's organizations
- * 
+ *
  * Features:
  * - Displays all organizations user belongs to
  * - Personal org shown first with special styling
@@ -22,17 +31,17 @@ import { filterAndSortBySearch } from '@/utils/search-scoring';
  * - Loading and empty states
  */
 export function OrganizationList() {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  
+
   const { organizations, loading, error, refresh } = useUserOrganizations();
 
   // Filter organizations based on search
   const filteredOrgs = searchTerm
     ? filterAndSortBySearch(organizations, searchTerm, [
-        { get: (o) => o.name, weight: 'title' },
-        { get: (o) => o.slug, weight: 'subtitle' },
-        { get: (o) => o.description, weight: 'body' },
+        { get: (o) => o.name, weight: "title" },
+        { get: (o) => o.slug, weight: "subtitle" },
+        { get: (o) => o.description, weight: "body" },
       ])
     : organizations;
 
@@ -81,7 +90,10 @@ export function OrganizationList() {
           <p className="text-muted-foreground mb-6">
             Create your first organization to start collaborating with your team
           </p>
-          <Button onClick={() => setIsCreateModalOpen(true)} className="bg-blue-500 hover:bg-blue-600">
+          <Button
+            onClick={() => setIsCreateModalOpen(true)}
+            className="bg-blue-500 hover:bg-blue-600"
+          >
             <Plus className="h-4 w-4 mr-2" />
             Create Organization
           </Button>
@@ -133,7 +145,11 @@ export function OrganizationList() {
           </h2>
           <div className="space-y-3">
             {teamOrgs.map((org) => (
-              <OrganizationCard key={org.id} organization={org} onUpdate={refresh} />
+              <OrganizationCard
+                key={org.id}
+                organization={org}
+                onUpdate={refresh}
+              />
             ))}
           </div>
         </div>
@@ -144,7 +160,9 @@ export function OrganizationList() {
         <Card className="p-8">
           <div className="text-center">
             <Search className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No organizations found</h3>
+            <h3 className="text-lg font-semibold mb-2">
+              No organizations found
+            </h3>
             <p className="text-muted-foreground">
               Try adjusting your search terms
             </p>
@@ -161,4 +179,3 @@ export function OrganizationList() {
     </div>
   );
 }
-

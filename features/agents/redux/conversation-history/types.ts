@@ -11,7 +11,7 @@
  * this one owns scope-specific views that span multiple agents at once.
  */
 
-import type { ConversationListItem } from "@/features/agents/redux/conversation-list";
+import type { ConversationListItem } from "@/features/agents/redux/conversation-list/conversation-list.types";
 
 /**
  * How the sidebar is grouped in a given scope. Mirrors

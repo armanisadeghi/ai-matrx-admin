@@ -42,7 +42,7 @@ import { useCallback, useMemo } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectMessageContent } from "@/features/agents/redux/execution-system/messages/messages.selectors";
-import { editMessage } from "@/features/agents/redux/execution-system/message-crud";
+import { editMessage } from "@/features/agents/redux/execution-system/message-crud/edit-message.thunk";
 import type { Json } from "@/types/database.types";
 
 // =============================================================================
@@ -140,8 +140,7 @@ export function useMessageBlockPersistence({
       if (blocks.length === 0) return;
 
       // Resolve target id — existing or freshly minted.
-      const targetId =
-        blockState?._matrxBlockId ?? blockId ?? uuidv4();
+      const targetId = blockState?._matrxBlockId ?? blockId ?? uuidv4();
 
       // Build the new content array with the target block's patch merged in.
       // Untouched blocks keep their references, so any selector watching

@@ -17,8 +17,8 @@ import {
   selectOrganizationId,
   selectScopeSelectionsContext,
 } from "@/features/agent-context/redux/appContextSlice";
+import { selectProjects, selectFilteredTasks } from "@/features/tasks/redux/selectors";
 import {
-  selectProjects,
   selectActiveProject,
   selectShowAllProjects,
   selectNewTaskTitle,
@@ -28,15 +28,16 @@ import {
   selectTasksLoading,
   selectSearchQuery,
   selectSortBy,
-  selectFilteredTasks,
   setNewTaskTitle,
   setNewProjectName,
   setSearchQuery,
   setSortBy,
+} from "@/features/tasks/redux/taskUiSlice";
+import {
   createTaskThunk,
   createProjectThunk,
   toggleTaskCompleteThunk,
-} from "@/features/tasks/redux";
+} from "@/features/tasks/redux/thunks";
 import {
   HierarchyCascade,
   useHierarchyReduxBridge,

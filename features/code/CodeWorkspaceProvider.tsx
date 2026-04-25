@@ -8,9 +8,14 @@ import React, {
   useState,
 } from "react";
 import { useAppStore } from "@/lib/redux/hooks";
-import type { FilesystemAdapter, ProcessAdapter } from "./adapters";
-import { MockFilesystemAdapter, MockProcessAdapter } from "./adapters";
-import { DEFAULT_WORKSPACE_ID, registerWorkspace } from "./runtime";
+import type { FilesystemAdapter } from "./adapters/FilesystemAdapter";
+import type { ProcessAdapter } from "./adapters/ProcessAdapter";
+import { MockFilesystemAdapter } from "./adapters/MockFilesystemAdapter";
+import { MockProcessAdapter } from "./adapters/MockProcessAdapter";
+import {
+  DEFAULT_WORKSPACE_ID,
+  registerWorkspace,
+} from "./runtime/workspaceRegistry";
 
 /** What consumers of the workspace context can read + mutate. */
 export interface CodeWorkspaceContextValue {

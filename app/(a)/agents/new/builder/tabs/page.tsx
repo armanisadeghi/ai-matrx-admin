@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Layout } from "lucide-react";
-import { ComprehensiveBuilder } from "@/features/agents/agent-creators/interactive-builder";
+import { ComprehensiveBuilder } from "@/features/agents/agent-creators/interactive-builder/ComprehensiveBuilder";
 
 export const metadata = { title: "Comprehensive Agent Builder | AI Matrx" };
 

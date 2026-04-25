@@ -7,7 +7,7 @@ import {
   disconnectMcpServer as disconnectMcpServerService,
 } from "@/features/agents/services/mcp.service";
 import type { UpsertConnectionParams } from "@/features/agents/services/mcp.service";
-import type { McpToolSchema } from "@/features/agents/services/mcp-client";
+import type { McpToolSchema } from "@/features/agents/services/mcp-client/tool-discovery";
 
 // ---------------------------------------------------------------------------
 // State
@@ -16,7 +16,12 @@ import type { McpToolSchema } from "@/features/agents/services/mcp-client";
 /** Discovered tools/resources/prompts for a single MCP server */
 export interface McpServerDiscovery {
   tools: McpToolSchema[];
-  resources: Array<{ uri: string; name: string; description?: string; mimeType?: string }>;
+  resources: Array<{
+    uri: string;
+    name: string;
+    description?: string;
+    mimeType?: string;
+  }>;
   prompts: Array<{ name: string; description?: string }>;
   status: "idle" | "loading" | "succeeded" | "failed";
   error: string | null;
@@ -73,16 +78,19 @@ export const discoverServerTools = createAsyncThunk(
     const response = await fetch(`/api/mcp/servers/${serverId}/tools`);
     if (!response.ok) {
       const body = await response.json().catch(() => ({}));
-      throw new Error(
-        body.error ?? `Discovery failed (${response.status})`,
-      );
+      throw new Error(body.error ?? `Discovery failed (${response.status})`);
     }
     return (await response.json()) as {
       serverId: string;
       serverName: string;
       serverSlug: string;
       tools: McpToolSchema[];
-      resources: Array<{ uri: string; name: string; description?: string; mimeType?: string }>;
+      resources: Array<{
+        uri: string;
+        name: string;
+        description?: string;
+        mimeType?: string;
+      }>;
       prompts: Array<{ name: string; description?: string }>;
     };
   },
@@ -245,10 +253,8 @@ export const selectMcpCatalogByCategory = (state: RootState) => {
 export const selectMcpDiscoveries = (state: RootState) =>
   selectMcpState(state).discoveries;
 
-export const selectMcpServerDiscovery = (
-  state: RootState,
-  serverId: string,
-) => selectMcpState(state).discoveries[serverId] ?? null;
+export const selectMcpServerDiscovery = (state: RootState, serverId: string) =>
+  selectMcpState(state).discoveries[serverId] ?? null;
 
 export const selectMcpServerTools = (state: RootState, serverId: string) =>
   selectMcpState(state).discoveries[serverId]?.tools ?? [];
@@ -264,7 +270,9 @@ export const selectMcpServerDiscoveryStatus = (
  */
 export const selectAllDiscoveredMcpTools = (state: RootState) => {
   const discoveries = selectMcpState(state).discoveries;
-  const allTools: Array<McpToolSchema & { serverId: string; serverName: string }> = [];
+  const allTools: Array<
+    McpToolSchema & { serverId: string; serverName: string }
+  > = [];
 
   for (const [serverId, discovery] of Object.entries(discoveries)) {
     if (discovery.status !== "succeeded") continue;

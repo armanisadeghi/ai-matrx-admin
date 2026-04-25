@@ -21,7 +21,7 @@ import { useMemo, useTransition } from "react";
 import { AlertCircle, ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useAgentShortcuts } from "@/features/agent-shortcuts";
+import { useAgentShortcuts } from "@/features/agent-shortcuts/hooks/useAgentShortcuts";
 import { ShortcutForm } from "@/features/agent-shortcuts/components/ShortcutForm";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";

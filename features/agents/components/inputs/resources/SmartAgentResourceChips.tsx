@@ -32,13 +32,11 @@ import { removeResource } from "@/features/agents/redux/execution-system/instanc
 import type {
   ManagedResource,
   ResourceBlockType,
-} from "@/features/agents/types";
-import {
-  NoteHoverPreview,
-  TaskHoverPreview,
-  WebpageHoverPreview,
-  DataRefHoverPreview,
-} from "../../previews";
+} from "@/features/agents/types/instance.types";
+import { NoteHoverPreview } from "@/features/agents/components/previews/NoteHoverPreview";
+import { TaskHoverPreview } from "@/features/agents/components/previews/TaskHoverPreview";
+import { WebpageHoverPreview } from "@/features/agents/components/previews/WebpageHoverPreview";
+import { DataRefHoverPreview } from "@/features/agents/components/previews/DataRefHoverPreview";
 import type { DataRef } from "@/features/agents/types/message-types";
 
 function getBlockTypeDisplay(blockType: ResourceBlockType) {
@@ -244,7 +242,12 @@ function wrapWithPreview(
       const preview =
         typeof resource.preview === "string" ? resource.preview : null;
       return (
-        <WebpageHoverPreview url={url} snippet={preview} side="top" align="start">
+        <WebpageHoverPreview
+          url={url}
+          snippet={preview}
+          side="top"
+          align="start"
+        >
           {chip}
         </WebpageHoverPreview>
       );

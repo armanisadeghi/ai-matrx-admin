@@ -5,7 +5,7 @@ import { Settings as SettingsIcon, ShieldCheck } from "lucide-react";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/lib/redux/store";
 import { Button } from "@/components/ui/button";
-import { SettingsShell } from "@/features/settings";
+import { SettingsShell } from "@/features/settings/components/SettingsShell";
 
 export default function SettingsShellDemoPage() {
   const [open, setOpen] = useState(false);

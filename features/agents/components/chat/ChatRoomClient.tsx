@@ -18,7 +18,7 @@ import {
   unregisterSurface,
   selectPendingNavigation,
   clearPendingNavigation,
-} from "@/features/agents/redux/surfaces";
+} from "@/features/agents/redux/surfaces/surfaces.slice";
 import { AgentConversationColumn } from "@/features/agents/components/shared/AgentConversationColumn";
 import { ChatPageShell } from "./ChatPageShell";
 import { ChatAgentPicker } from "./ChatAgentPicker";
@@ -59,9 +59,7 @@ export function ChatRoomClient({
     };
   }, [dispatch, surfaceKey]);
 
-  const pendingNavigation = useAppSelector(
-    selectPendingNavigation(surfaceKey),
-  );
+  const pendingNavigation = useAppSelector(selectPendingNavigation(surfaceKey));
   useEffect(() => {
     if (!pendingNavigation) return;
     router.replace(`/chat/${pendingNavigation.conversationId}`);

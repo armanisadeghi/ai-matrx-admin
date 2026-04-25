@@ -8,7 +8,13 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { updateProject, validateProjectName, type Project, type ProjectRole, getRoleLabel } from '@/features/projects';
+import { updateProject } from '../service';
+import {
+  validateProjectName,
+  getRoleLabel,
+  type Project,
+  type ProjectRole,
+} from '../types';
 import { format } from 'date-fns';
 
 interface GeneralSettingsProps {

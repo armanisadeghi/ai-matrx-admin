@@ -25,7 +25,7 @@ import type { RootState } from "@/lib/redux/store";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 import { selectAgentById } from "@/features/agents/redux/agent-definition/selectors";
-import { ShareModal } from "@/features/sharing";
+import { ShareModal } from "@/features/sharing/components/ShareModal";
 import { AgentActionModal } from "./AgentActionModal";
 import { AgentSneakPeekModal } from "./AgentSneakPeekModal";
 import { ComingSoonModal } from "./ComingSoonModal";

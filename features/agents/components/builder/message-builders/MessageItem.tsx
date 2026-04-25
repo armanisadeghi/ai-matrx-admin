@@ -30,9 +30,11 @@ import dynamic from "next/dynamic";
 // message-builder bundle.
 const UnifiedAgentContextMenu = dynamic(
   () =>
-    import("@/features/context-menu-v2").then((mod) => ({
-      default: mod.UnifiedAgentContextMenu,
-    })),
+    import("@/features/context-menu-v2/UnifiedAgentContextMenu").then(
+      (mod) => ({
+        default: mod.UnifiedAgentContextMenu,
+      }),
+    ),
   { ssr: false },
 );
 import { HighlightedText } from "@/features/agents/components/variables-management/HighlightedText";

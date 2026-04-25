@@ -36,7 +36,7 @@ import {
   getComponentTypeOptions,
   getComponentTypeMeta,
 } from "@/features/agents/components/inputs/variable-input-variations/variable-input-options";
-import { VariableInputComponent } from "@/features/agents/components/inputs/input-components";
+import { VariableInputComponent } from "@/features/agents/components/inputs/input-components/VariableInputComponent";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { selectAgentVariableDefinitions } from "@/features/agents/redux/agent-definition/selectors";
 import { setAgentVariableDefinitions } from "@/features/agents/redux/agent-definition/slice";
@@ -101,7 +101,9 @@ export function AgentVariableEditor({
   const meta = getComponentTypeMeta(componentType);
   const effective = extractEffectiveValues(cc);
 
-  const sanitizedDraft = nameDraft.trim() ? sanitizeVariableName(nameDraft) : "";
+  const sanitizedDraft = nameDraft.trim()
+    ? sanitizeVariableName(nameDraft)
+    : "";
   const showSanitizationPreview = shouldShowSanitizationPreview(nameDraft);
   const isDuplicate =
     !!sanitizedDraft &&
@@ -121,13 +123,13 @@ export function AgentVariableEditor({
 
   const updateVariable = (patch: Partial<VariableDefinition>) => {
     dispatchVariables(
-      variables.map((v) =>
-        v.name === variableName ? { ...v, ...patch } : v,
-      ),
+      variables.map((v) => (v.name === variableName ? { ...v, ...patch } : v)),
     );
   };
 
-  const updateCustomComponent = (fields: Partial<BuildCustomComponentInput>) => {
+  const updateCustomComponent = (
+    fields: Partial<BuildCustomComponentInput>,
+  ) => {
     const current = extractEffectiveValues(variable.customComponent);
     const next = buildCustomComponent({ ...current, ...fields });
     updateVariable({ customComponent: next });
@@ -188,8 +190,7 @@ export function AgentVariableEditor({
   const handleMaxChange = (max: number | undefined) =>
     updateCustomComponent({ max });
 
-  const handleStepChange = (step: number) =>
-    updateCustomComponent({ step });
+  const handleStepChange = (step: number) => updateCustomComponent({ step });
 
   // ── Preview custom-component (for the default-value input at the bottom) ──
   const previewCc: VariableCustomComponent | undefined = buildCustomComponent({

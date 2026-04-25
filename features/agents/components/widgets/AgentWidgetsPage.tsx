@@ -36,11 +36,9 @@ import type {
   ManagedAgentOptions,
   ResultDisplayMode,
 } from "@/features/agents/types/instance.types";
-import type {
-  JsonExtractionConfig,
-  LLMParams,
-  VariablesPanelStyle,
-} from "@/features/agents/types";
+import type { JsonExtractionConfig } from "@/features/agents/types/instance.types";
+import type { LLMParams } from "@/features/agents/types/agent-api-types";
+import type { VariablesPanelStyle } from "@/features/agents/components/inputs/variable-input-variations/variable-input-options";
 import { ApiEndpointMode } from "@/features/agents/types/instance.types";
 import type { ApplicationScope } from "@/features/agents/utils/scope-mapping";
 import {
@@ -201,7 +199,9 @@ export function AgentWidgetsPage({
     .filter((m) => m !== "direct" && m !== "background")
     .map((displayMode) => {
       const meta = getDisplayMeta(displayMode);
-      const IconComponent = (props: any) => <DynamicIcon name={meta.icon} {...props} />;
+      const IconComponent = (props: any) => (
+        <DynamicIcon name={meta.icon} {...props} />
+      );
       return {
         name: meta.label,
         icon: IconComponent,

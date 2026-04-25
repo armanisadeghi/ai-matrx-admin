@@ -16,7 +16,8 @@ import {
 } from "../redux/tabsSlice";
 import { useCodeWorkspace } from "../CodeWorkspaceProvider";
 import { codeFileIdFromTabId, isLibraryTabId } from "./useOpenLibraryFile";
-import { getAdapterForTabId, isRemoteConflictError } from "../library-sources";
+import { getAdapterForTabId } from "../library-sources/registry";
+import { isRemoteConflictError } from "../library-sources/types";
 
 export interface SaveResult {
   tabId: string;

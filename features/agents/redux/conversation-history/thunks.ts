@@ -11,7 +11,7 @@
 
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { supabase } from "@/utils/supabase/client";
-import type { ConversationListItem } from "@/features/agents/redux/conversation-list";
+import type { ConversationListItem } from "@/features/agents/redux/conversation-list/conversation-list.types";
 import type { AppThunk, RootState } from "@/lib/redux/store";
 import { setScopePageSuccess, setScopeStatus, configureScope } from "./slice";
 import { CONVERSATION_HISTORY_TTL_MS, defaultScopeState } from "./types";

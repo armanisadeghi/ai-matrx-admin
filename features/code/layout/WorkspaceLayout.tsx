@@ -22,12 +22,14 @@ import {
   selectFarRightOpen,
   selectRightOpen,
   selectSideOpen,
-  selectTerminalOpen,
   setFarRightOpen,
   setRightOpen,
   setSideOpen,
-  setTerminalOpen,
-} from "../redux";
+} from "../redux/codeWorkspaceSlice";
+import {
+  selectTerminalOpen,
+  setOpen as setTerminalOpen,
+} from "../redux/terminalSlice";
 import { PANE_BORDER, SIDE_PANEL_BG, WORKSPACE_BG } from "../styles/tokens";
 
 export interface WorkspaceLayoutProps {

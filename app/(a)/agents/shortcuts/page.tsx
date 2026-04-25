@@ -14,7 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { useAgentShortcuts } from "@/features/agent-shortcuts";
+import { useAgentShortcuts } from "@/features/agent-shortcuts/hooks/useAgentShortcuts";
 
 const SCOPE = "user" as const;
 

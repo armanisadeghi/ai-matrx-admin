@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { AlertTriangle, Trash2, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import React, { useState } from "react";
+import { AlertTriangle, Trash2, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,10 +14,11 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
-import { deleteOrganization, type Organization } from '@/features/organizations';
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { deleteOrganization } from "../service";
+import type { Organization } from "../types";
 
 interface DangerZoneProps {
   organization: Organization;
@@ -25,7 +26,7 @@ interface DangerZoneProps {
 
 /**
  * DangerZone - Tab for destructive organization actions
- * 
+ *
  * Features:
  * - Delete organization (owner only)
  * - Requires typing org name to confirm
@@ -36,7 +37,7 @@ interface DangerZoneProps {
 export function DangerZone({ organization }: DangerZoneProps) {
   const router = useRouter();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [confirmName, setConfirmName] = useState('');
+  const [confirmName, setConfirmName] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
 
   const isConfirmationValid = confirmName === organization.name;
@@ -44,7 +45,7 @@ export function DangerZone({ organization }: DangerZoneProps) {
   // Handle organization deletion
   const handleDeleteOrganization = async () => {
     if (!isConfirmationValid) {
-      toast.error('Please type the organization name correctly');
+      toast.error("Please type the organization name correctly");
       return;
     }
 
@@ -54,17 +55,17 @@ export function DangerZone({ organization }: DangerZoneProps) {
       const result = await deleteOrganization(organization.id);
 
       if (result.success) {
-        toast.success('Organization deleted successfully');
+        toast.success("Organization deleted successfully");
         setIsDeleteDialogOpen(false);
-        
+
         // Redirect to organizations list
-        router.push('/settings/organizations');
+        router.push("/settings/organizations");
       } else {
-        toast.error(result.error || 'Failed to delete organization');
+        toast.error(result.error || "Failed to delete organization");
       }
     } catch (error: any) {
-      console.error('Error deleting organization:', error);
-      toast.error(error.message || 'An unexpected error occurred');
+      console.error("Error deleting organization:", error);
+      toast.error(error.message || "An unexpected error occurred");
     } finally {
       setIsDeleting(false);
     }
@@ -76,9 +77,12 @@ export function DangerZone({ organization }: DangerZoneProps) {
       <div className="border border-red-200 dark:border-red-800 rounded-lg p-4 space-y-4">
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-1">
-            <h3 className="font-medium text-red-900 dark:text-red-100">Delete Organization</h3>
+            <h3 className="font-medium text-red-900 dark:text-red-100">
+              Delete Organization
+            </h3>
             <p className="text-sm text-muted-foreground">
-              Permanently remove this organization and all data. This cannot be undone.
+              Permanently remove this organization and all data. This cannot be
+              undone.
             </p>
           </div>
           <Button
@@ -99,7 +103,10 @@ export function DangerZone({ organization }: DangerZoneProps) {
       </div>
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
         <AlertDialogContent className="max-w-lg">
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2 text-red-600 dark:text-red-400">
@@ -108,8 +115,9 @@ export function DangerZone({ organization }: DangerZoneProps) {
             </AlertDialogTitle>
             <AlertDialogDescription className="space-y-4">
               <p>
-                This action will permanently delete <strong>{organization.name}</strong> and all
-                of its data. This cannot be undone.
+                This action will permanently delete{" "}
+                <strong>{organization.name}</strong> and all of its data. This
+                cannot be undone.
               </p>
 
               <div className="space-y-2">
@@ -121,7 +129,9 @@ export function DangerZone({ organization }: DangerZoneProps) {
                   value={confirmName}
                   onChange={(e) => setConfirmName(e.target.value)}
                   placeholder={organization.name}
-                  className={confirmName && !isConfirmationValid ? 'border-red-500' : ''}
+                  className={
+                    confirmName && !isConfirmationValid ? "border-red-500" : ""
+                  }
                   disabled={isDeleting}
                   autoComplete="off"
                 />
@@ -146,9 +156,7 @@ export function DangerZone({ organization }: DangerZoneProps) {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>
-              Cancel
-            </AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteOrganization}
               disabled={!isConfirmationValid || isDeleting}
@@ -172,4 +180,3 @@ export function DangerZone({ organization }: DangerZoneProps) {
     </div>
   );
 }
-

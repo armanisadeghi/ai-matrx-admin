@@ -39,9 +39,9 @@ import {
 import { StatusBadge } from "../shared/StatusBadge";
 import type { ResearchTopic } from "../../types";
 import { supabase } from "@/utils/supabase/client";
-import { CreateOrgModal } from "@/features/organizations";
-import { ProjectFormSheet } from "@/features/projects";
-import type { Project } from "@/features/projects";
+import { CreateOrgModal } from "@/features/organizations/components/CreateOrgModal";
+import { ProjectFormSheet } from "@/features/projects/components/ProjectFormSheet";
+import type { Project } from "@/features/projects/types";
 
 function useFilteredTopics(filter: ReturnType<typeof useHierarchyFilter>) {
   const { selectedProjectId, filteredProjects } = filter;

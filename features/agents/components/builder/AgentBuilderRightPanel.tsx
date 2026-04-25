@@ -16,7 +16,7 @@ import { useBuilderContextSeed } from "@/features/agents/hooks/useBuilderContext
 import {
   registerSurface,
   unregisterSurface,
-} from "@/features/agents/redux/surfaces";
+} from "@/features/agents/redux/surfaces/surfaces.slice";
 import { AgentConversationColumn } from "../shared/AgentConversationColumn";
 import type { ManagedAgentOptions } from "@/features/agents/types/instance.types";
 

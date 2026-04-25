@@ -21,13 +21,13 @@ import type {
   AgentType,
   VariableDefinition,
 } from "@/features/agents/types/agent-definition.types";
-import type { LLMParams } from "@/features/agents/types";
+import type { LLMParams } from "@/features/agents/types/agent-api-types";
 import type { ApiEndpointMode } from "@/features/agents/types/instance.types";
 import { getShortcutRecordFromState } from "@/features/agents/redux/agent-shortcuts/selectors";
 import { executeInstance } from "./execute-instance.thunk";
 import { executeChatInstance } from "./execute-chat-instance.thunk";
 
-import { generateConversationId } from "../utils";
+import { generateConversationId } from "../utils/ids";
 import {
   createInstance,
   destroyInstance,

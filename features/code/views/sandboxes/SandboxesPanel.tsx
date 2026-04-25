@@ -17,14 +17,17 @@ import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import type { SandboxInstance, SandboxStatus } from "@/types/sandbox";
 import { ACTIVE_SANDBOX_STATUSES } from "@/types/sandbox";
+import { MockFilesystemAdapter } from "../../adapters/MockFilesystemAdapter";
 import {
-  MockFilesystemAdapter,
   MockProcessAdapter,
-  SandboxFilesystemAdapter,
   SandboxProcessAdapter,
-} from "../../adapters";
+} from "../../adapters/SandboxProcessAdapter";
+import { SandboxFilesystemAdapter } from "../../adapters/SandboxFilesystemAdapter";
 import { useCodeWorkspace } from "../../CodeWorkspaceProvider";
-import { selectActiveSandboxId, setActiveSandboxId } from "../../redux";
+import {
+  selectActiveSandboxId,
+  setActiveSandboxId,
+} from "../../redux/codeWorkspaceSlice";
 import { SidePanelAction, SidePanelHeader } from "../SidePanelChrome";
 import {
   ACTIVE_ROW,

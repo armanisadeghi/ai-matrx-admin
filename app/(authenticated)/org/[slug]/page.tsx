@@ -29,8 +29,8 @@ import {
   getOrganizationBySlug,
   getUserRole,
   getOrganizationMembers,
-  type OrganizationMemberWithUser,
-} from "@/features/organizations";
+} from "@/features/organizations/service";
+import type { OrganizationMemberWithUser } from "@/features/organizations/types";
 import { format } from "date-fns";
 
 /**

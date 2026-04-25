@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Sliders } from "lucide-react";
-import { ExperienceCustomizerBuilder } from "@/features/agents/agent-creators/interactive-builder";
+import { ExperienceCustomizerBuilder } from "@/features/agents/agent-creators/interactive-builder/ExperienceCustomizerBuilder";
 
 export const metadata = { title: "AI Experience Customizer | AI Matrx" };
 

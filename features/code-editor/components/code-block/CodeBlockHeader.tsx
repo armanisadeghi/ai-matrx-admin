@@ -37,7 +37,7 @@ import { openSaveToCode } from "@/lib/redux/slices/overlaySlice";
 import {
   useSaveAndOpenInCodeEditor,
   CHAT_CAPTURES_FOLDER_NAME,
-} from "@/features/code";
+} from "@/features/code/actions/saveAndOpenInCodeEditor";
 import { extensionForLanguage } from "@/features/code-files";
 import {
   DropdownMenu,

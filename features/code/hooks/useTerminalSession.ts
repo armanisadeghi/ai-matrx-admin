@@ -9,7 +9,7 @@ import {
   pushHistory,
   selectTerminalExecuting,
   setExecuting,
-} from "../redux";
+} from "../redux/terminalSlice";
 
 /**
  * Drives a single "terminal tab" session against the workspace's ProcessAdapter.

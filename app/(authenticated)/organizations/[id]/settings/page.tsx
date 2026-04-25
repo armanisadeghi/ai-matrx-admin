@@ -1,18 +1,18 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { useOrganization, useUserRole } from '@/features/organizations';
-import { OrgSettings } from '@/features/organizations/components/OrgSettings';
+import React from "react";
+import { useParams, useRouter } from "next/navigation";
+import { ArrowLeft, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { useOrganization, useUserRole } from "@/features/organizations/hooks";
+import { OrgSettings } from "@/features/organizations/components/OrgSettings";
 
 /**
  * Organization Settings Page
- * 
+ *
  * Route: /organizations/[id]/settings
- * 
+ *
  * Features:
  * - Load organization details
  * - Check user permissions
@@ -24,8 +24,17 @@ export default function OrganizationSettingsPage() {
   const router = useRouter();
   const organizationId = params.id as string;
 
-  const { organization, loading: orgLoading, error: orgError } = useOrganization(organizationId);
-  const { role, loading: roleLoading, isOwner, isAdmin } = useUserRole(organizationId);
+  const {
+    organization,
+    loading: orgLoading,
+    error: orgError,
+  } = useOrganization(organizationId);
+  const {
+    role,
+    loading: roleLoading,
+    isOwner,
+    isAdmin,
+  } = useUserRole(organizationId);
 
   const loading = orgLoading || roleLoading;
 
@@ -35,7 +44,9 @@ export default function OrganizationSettingsPage() {
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
           <Loader2 className="h-6 w-6 animate-spin text-primary mx-auto mb-3" />
-          <p className="text-sm text-muted-foreground">Loading organization...</p>
+          <p className="text-sm text-muted-foreground">
+            Loading organization...
+          </p>
         </div>
       </div>
     );
@@ -51,9 +62,14 @@ export default function OrganizationSettingsPage() {
               Organization Not Found
             </h2>
             <p className="text-sm text-red-700 dark:text-red-300 mb-4">
-              {orgError || 'This organization doesn\'t exist or you don\'t have access.'}
+              {orgError ||
+                "This organization doesn't exist or you don't have access."}
             </p>
-            <Button onClick={() => router.push('/settings/organizations')} variant="outline" size="sm">
+            <Button
+              onClick={() => router.push("/settings/organizations")}
+              variant="outline"
+              size="sm"
+            >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Organizations
             </Button>
@@ -75,7 +91,11 @@ export default function OrganizationSettingsPage() {
             <p className="text-sm text-amber-700 dark:text-amber-300 mb-4">
               You are not a member of this organization.
             </p>
-            <Button onClick={() => router.push('/settings/organizations')} variant="outline" size="sm">
+            <Button
+              onClick={() => router.push("/settings/organizations")}
+              variant="outline"
+              size="sm"
+            >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Organizations
             </Button>
@@ -96,4 +116,3 @@ export default function OrganizationSettingsPage() {
     </div>
   );
 }
-

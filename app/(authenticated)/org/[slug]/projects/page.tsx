@@ -1,13 +1,16 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Puzzle } from 'lucide-react';
-import { useParams } from 'next/navigation';
-import { OrgResourceLayout } from '../OrgResourceLayout';
-import { ProjectList } from '@/features/projects/components/ProjectList';
-import { useOrganization } from '@/features/organizations';
-import { getOrganizationBySlug, getUserRole } from '@/features/organizations';
-import { Loader2 } from 'lucide-react';
+import React from "react";
+import { Puzzle } from "lucide-react";
+import { useParams } from "next/navigation";
+import { OrgResourceLayout } from "../OrgResourceLayout";
+import { ProjectList } from "@/features/projects/components/ProjectList";
+import { useOrganization } from "@/features/organizations/hooks";
+import {
+  getOrganizationBySlug,
+  getUserRole,
+} from "@/features/organizations/service";
+import { Loader2 } from "lucide-react";
 
 /**
  * Organization Projects Page
@@ -36,7 +39,7 @@ export default function OrgProjectsPage() {
     load();
   }, [slug]);
 
-  const canCreate = userOrgRole === 'owner' || userOrgRole === 'admin';
+  const canCreate = userOrgRole === "owner" || userOrgRole === "admin";
 
   return (
     <OrgResourceLayout

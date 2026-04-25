@@ -53,10 +53,12 @@ http://localhost:3000/api/dev-login?token=${DEV_LOGIN_TOKEN}&next=/tasks
 ## File Organization
 
 - **General dirs:** `/components`, `/hooks`, `/utils`, `/constants`, `/types`, `/providers`
-- **Feature dirs:** `/features/[feature-name]/` containing: `index.ts`, `types.ts`, `components/`, `hooks/`, `service.ts`, `utils.ts`, `constants.ts`, `state/`
+- **Feature dirs:** `/features/[feature-name]/` containing: `types.ts`, `components/`, `hooks/`, `service.ts`, `utils.ts`, `constants.ts`, `state/`
 - **Route example:** `app/(authenticated)/notes/page.tsx` → Feature: `features/notes/`
 - One README.md per feature, created **only after code is tested** — never multiple .md files
 - Never save files to project root
+
+> **⚠️ Barrel imports (`index.ts` re-export files) are being eliminated.** Do not create new `index.ts` barrel files. Import directly from source files (e.g. `import { Foo } from '@/features/foo/components/Foo'` not `@/features/foo'`). Gradually replace existing barrel imports when touching a file. ESLint rule `no-barrel-files/no-barrel-files` is active and will warn on violations.
 
 ---
 

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Library, Sparkles } from "lucide-react";
-import { ALL_PRESETS, PRESET_CATEGORIES, PresetCatalogReadOnly } from "@/features/image-studio";
+import { PresetCatalogReadOnly } from "@/features/image-studio/components/PresetCatalog";
+import { ALL_PRESETS, PRESET_CATEGORIES } from "@/features/image-studio/presets";
 
 /**
  * /image-studio/presets

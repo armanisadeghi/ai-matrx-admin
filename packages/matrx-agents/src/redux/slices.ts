@@ -60,8 +60,9 @@ export {
   clearMessages,
 } from "@/features/agents/redux/execution-system/messages/messages.slice";
 
+export { conversationListCacheKey } from "@/features/agents/redux/conversation-list/conversation-list.types";
 export {
-  observabilityReducer,
+  default as observabilityReducer,
   upsertUserRequest,
   patchUserRequest,
   upsertRequest,
@@ -73,13 +74,12 @@ export {
   upsertReservation as upsertObservabilityReservation,
   hydrateObservability,
   clearForConversation,
-} from "@/features/agents/redux/execution-system/observability";
+} from "@/features/agents/redux/execution-system/observability/observability.slice";
 
 // ── Unified list (sidebar + agent caches) ──────────────────────────────────
 export {
   conversationListReducer,
   conversationListActions,
-  conversationListCacheKey,
   setGlobalListLoading,
   setGlobalListSuccess,
   setGlobalListError,
@@ -99,23 +99,23 @@ export {
   invalidateAgentCache,
   clearAllAgentCaches,
   resetConversationList,
-} from "@/features/agents/redux/conversation-list";
+} from "@/features/agents/redux/conversation-list/conversation-list.slice";
 
 // ── Per-conversation companions ────────────────────────────────────────────
-export { instanceUIStateReducer } from "@/features/agents/redux/execution-system/instance-ui-state";
-export { instanceClientToolsReducer } from "@/features/agents/redux/execution-system/instance-client-tools";
-export { instanceContextReducer } from "@/features/agents/redux/execution-system/instance-context";
-export { instanceModelOverridesReducer } from "@/features/agents/redux/execution-system/instance-model-overrides";
-export { instanceVariableValuesReducer } from "@/features/agents/redux/execution-system/instance-variable-values";
-export { instanceResourcesReducer } from "@/features/agents/redux/execution-system/instance-resources";
-export { instanceUserInputReducer } from "@/features/agents/redux/execution-system/instance-user-input";
-export { conversationFocusReducer } from "@/features/agents/redux/execution-system/conversation-focus";
-export { activeRequestsReducer } from "@/features/agents/redux/execution-system/active-requests";
+export { default as instanceUIStateReducer } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.slice";
+export { default as instanceClientToolsReducer } from "@/features/agents/redux/execution-system/instance-client-tools/instance-client-tools.slice";
+export { default as instanceContextReducer } from "@/features/agents/redux/execution-system/instance-context/instance-context.slice";
+export { default as instanceModelOverridesReducer } from "@/features/agents/redux/execution-system/instance-model-overrides/instance-model-overrides.slice";
+export { default as instanceVariableValuesReducer } from "@/features/agents/redux/execution-system/instance-variable-values/instance-variable-values.slice";
+export { default as instanceResourcesReducer } from "@/features/agents/redux/execution-system/instance-resources/instance-resources.slice";
+export { default as instanceUserInputReducer } from "@/features/agents/redux/execution-system/instance-user-input/instance-user-input.slice";
+export { default as conversationFocusReducer } from "@/features/agents/redux/execution-system/conversation-focus/conversation-focus.slice";
+export { default as activeRequestsReducer } from "@/features/agents/redux/execution-system/active-requests/active-requests.slice";
 export {
   messageActionsReducer,
   messageActionsActions,
-} from "@/features/agents/redux/execution-system/message-actions";
-export { cacheBypassReducer } from "@/features/agents/redux/execution-system/message-crud";
+} from "@/features/agents/redux/execution-system/message-actions/message-actions.slice";
+export { cacheBypassReducer } from "@/features/agents/redux/execution-system/message-crud/cache-bypass.slice";
 
 // ── Catalogs (agent source) ────────────────────────────────────────────────
 export { default as agentDefinitionReducer } from "@/features/agents/redux/agent-definition/slice";

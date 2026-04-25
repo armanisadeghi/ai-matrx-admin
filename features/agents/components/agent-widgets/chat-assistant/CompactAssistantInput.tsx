@@ -31,8 +31,8 @@ import { Button } from "@/components/ui/button";
 import { ArrowUp, Mic, Braces, CornerDownLeft } from "lucide-react";
 
 // Voice input
-import { useRecordAndTranscribe } from "@/features/audio";
-import { TranscriptionLoader } from "@/features/audio";
+import { useRecordAndTranscribe } from "@/features/audio/hooks/useRecordAndTranscribe";
+import { TranscriptionLoader } from "@/features/audio/components/TranscriptionLoader";
 
 // Resource picker
 import { SmartAgentResourcePickerButton } from "../../inputs/resources/SmartAgentResourcePickerButton";

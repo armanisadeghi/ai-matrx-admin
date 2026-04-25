@@ -13,8 +13,8 @@ import {
   Tags,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useUserOrganizations, useUserRole } from "@/features/organizations";
-import type { OrganizationWithRole } from "@/features/organizations";
+import { useUserOrganizations, useUserRole } from "../hooks";
+import type { OrganizationWithRole } from "../types";
 
 /**
  * Compact organization sidebar for org settings layout

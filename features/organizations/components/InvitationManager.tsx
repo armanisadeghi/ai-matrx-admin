@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { Mail, Send, X, RefreshCw, Loader2, Clock, Copy } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
+import React, { useState } from "react";
+import { Mail, Send, X, RefreshCw, Loader2, Clock, Copy } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,15 +21,11 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { toast } from 'sonner';
-import {
-  useOrganizationInvitations,
-  useInvitationOperations,
-  validateEmail,
-  type OrgRole,
-} from '@/features/organizations';
-import { formatDistanceToNow } from 'date-fns';
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
+import { useOrganizationInvitations, useInvitationOperations } from "../hooks";
+import { validateEmail, type OrgRole } from "../types";
+import { formatDistanceToNow } from "date-fns";
 
 interface InvitationManagerProps {
   organizationId: string;
@@ -39,7 +35,7 @@ interface InvitationManagerProps {
 
 /**
  * InvitationManager - Component for managing organization invitations
- * 
+ *
  * Features:
  * - Send new invitations
  * - List pending invitations
@@ -53,15 +49,25 @@ export function InvitationManager({
   organizationName,
   userRole,
 }: InvitationManagerProps) {
-  const [email, setEmail] = useState('');
-  const [role, setRole] = useState<OrgRole>('member');
-  const [invitationToCancel, setInvitationToCancel] = useState<string | null>(null);
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState<OrgRole>("member");
+  const [invitationToCancel, setInvitationToCancel] = useState<string | null>(
+    null,
+  );
 
-  const { invitations, loading, error, refresh } = useOrganizationInvitations(organizationId);
-  const { invite, cancel, resend, loading: operationLoading } = useInvitationOperations(organizationId);
+  const { invitations, loading, error, refresh } =
+    useOrganizationInvitations(organizationId);
+  const {
+    invite,
+    cancel,
+    resend,
+    loading: operationLoading,
+  } = useInvitationOperations(organizationId);
 
   // Email validation
-  const emailValidation = email ? validateEmail(email) : { valid: false, error: '' };
+  const emailValidation = email
+    ? validateEmail(email)
+    : { valid: false, error: "" };
   const canSubmit = email && emailValidation.valid && !operationLoading;
 
   // Handle send invitation
@@ -74,11 +80,11 @@ export function InvitationManager({
 
     if (result.success) {
       toast.success(`Invitation sent to ${email}`);
-      setEmail('');
-      setRole('member');
+      setEmail("");
+      setRole("member");
       refresh();
     } else {
-      toast.error(result.error || 'Failed to send invitation');
+      toast.error(result.error || "Failed to send invitation");
     }
   };
 
@@ -96,19 +102,22 @@ export function InvitationManager({
       setInvitationToCancel(null);
       refresh();
     } else {
-      toast.error(result.error || 'Failed to cancel invitation');
+      toast.error(result.error || "Failed to cancel invitation");
     }
   };
 
   // Handle resend invitation
-  const handleResendInvitation = async (invitationId: string, invitationEmail: string) => {
+  const handleResendInvitation = async (
+    invitationId: string,
+    invitationEmail: string,
+  ) => {
     const result = await resend(invitationId);
 
     if (result.success) {
       toast.success(`Resent invitation to ${invitationEmail}`);
       refresh();
     } else {
-      toast.error(result.error || 'Failed to resend invitation');
+      toast.error(result.error || "Failed to resend invitation");
     }
   };
 
@@ -142,7 +151,7 @@ export function InvitationManager({
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Email address"
               disabled={operationLoading}
-              className={`h-9 ${email && !emailValidation.valid ? 'border-red-500' : ''}`}
+              className={`h-9 ${email && !emailValidation.valid ? "border-red-500" : ""}`}
             />
             {email && !emailValidation.valid && (
               <p className="text-xs text-red-600 dark:text-red-400 mt-1">
@@ -152,14 +161,19 @@ export function InvitationManager({
           </div>
 
           {/* Role Select */}
-          <Select value={role} onValueChange={(value) => setRole(value as OrgRole)}>
+          <Select
+            value={role}
+            onValueChange={(value) => setRole(value as OrgRole)}
+          >
             <SelectTrigger disabled={operationLoading} className="w-32 h-9">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="member">Member</SelectItem>
               <SelectItem value="admin">Admin</SelectItem>
-              {userRole === 'owner' && <SelectItem value="owner">Owner</SelectItem>}
+              {userRole === "owner" && (
+                <SelectItem value="owner">Owner</SelectItem>
+              )}
             </SelectContent>
           </Select>
 
@@ -179,10 +193,17 @@ export function InvitationManager({
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <span className="text-sm text-muted-foreground">
-            {invitations.length} pending {invitations.length === 1 ? 'invitation' : 'invitations'}
+            {invitations.length} pending{" "}
+            {invitations.length === 1 ? "invitation" : "invitations"}
           </span>
           {invitations.length > 0 && (
-            <Button variant="ghost" size="sm" onClick={refresh} disabled={loading} className="h-7 px-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={refresh}
+              disabled={loading}
+              className="h-7 px-2"
+            >
               <RefreshCw className="h-3.5 w-3.5" />
             </Button>
           )}
@@ -190,7 +211,9 @@ export function InvitationManager({
 
         {invitations.length === 0 ? (
           <div className="text-center py-6 border rounded-lg bg-muted/10">
-            <p className="text-sm text-muted-foreground">No pending invitations</p>
+            <p className="text-sm text-muted-foreground">
+              No pending invitations
+            </p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -198,17 +221,17 @@ export function InvitationManager({
               const expiresAt = new Date(invitation.expiresAt);
               const isExpired = expiresAt < new Date();
               const timeToExpiry = isExpired
-                ? 'Expired'
+                ? "Expired"
                 : `Expires ${formatDistanceToNow(expiresAt, { addSuffix: true })}`;
-              
-              const invitationLink = `${typeof window !== 'undefined' ? window.location.origin : 'https://www.aimatrx.com'}/invitations/accept/${invitation.token}`;
+
+              const invitationLink = `${typeof window !== "undefined" ? window.location.origin : "https://www.aimatrx.com"}/invitations/accept/${invitation.token}`;
 
               const handleCopyLink = async () => {
                 try {
                   await navigator.clipboard.writeText(invitationLink);
-                  toast.success('Invitation link copied to clipboard');
+                  toast.success("Invitation link copied to clipboard");
                 } catch (err) {
-                  toast.error('Failed to copy link');
+                  toast.error("Failed to copy link");
                 }
               };
 
@@ -216,7 +239,7 @@ export function InvitationManager({
                 <div
                   key={invitation.id}
                   className={`flex items-center justify-between p-4 rounded-lg border bg-card ${
-                    isExpired ? 'opacity-60 border-dashed' : ''
+                    isExpired ? "opacity-60 border-dashed" : ""
                   }`}
                 >
                   {/* Invitation Info */}
@@ -238,7 +261,10 @@ export function InvitationManager({
                         {timeToExpiry}
                       </span>
                       <span>
-                        Invited {formatDistanceToNow(new Date(invitation.invitedAt), { addSuffix: true })}
+                        Invited{" "}
+                        {formatDistanceToNow(new Date(invitation.invitedAt), {
+                          addSuffix: true,
+                        })}
                       </span>
                     </div>
                   </div>
@@ -259,12 +285,18 @@ export function InvitationManager({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleResendInvitation(invitation.id, invitation.email)}
+                      onClick={() =>
+                        handleResendInvitation(invitation.id, invitation.email)
+                      }
                       disabled={operationLoading}
-                      title={isExpired ? 'Renew and extend expiry' : 'Resend and extend expiry'}
+                      title={
+                        isExpired
+                          ? "Renew and extend expiry"
+                          : "Resend and extend expiry"
+                      }
                     >
                       <RefreshCw className="h-4 w-4 mr-1" />
-                      {isExpired ? 'Renew' : 'Resend'}
+                      {isExpired ? "Renew" : "Resend"}
                     </Button>
                     <Button
                       variant="ghost"
@@ -285,14 +317,22 @@ export function InvitationManager({
       </div>
 
       {/* Cancel Invitation Confirmation */}
-      <AlertDialog open={!!invitationToCancel} onOpenChange={() => setInvitationToCancel(null)}>
+      <AlertDialog
+        open={!!invitationToCancel}
+        onOpenChange={() => setInvitationToCancel(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Cancel Invitation</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to cancel the invitation to{' '}
-              <strong>{invitations.find((inv) => inv.id === invitationToCancel)?.email}</strong>?
-              They will no longer be able to accept this invitation.
+              Are you sure you want to cancel the invitation to{" "}
+              <strong>
+                {
+                  invitations.find((inv) => inv.id === invitationToCancel)
+                    ?.email
+                }
+              </strong>
+              ? They will no longer be able to accept this invitation.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -309,4 +349,3 @@ export function InvitationManager({
     </div>
   );
 }
-

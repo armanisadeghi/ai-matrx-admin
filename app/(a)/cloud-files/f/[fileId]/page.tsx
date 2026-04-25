@@ -10,7 +10,7 @@
 
 import { notFound } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
-import { PageShell } from "@/features/files";
+import { PageShell } from "@/features/files/components/surfaces/PageShell";
 import { readSidebarModeCookie } from "@/features/files/utils/server-cookies";
 
 interface PageProps {

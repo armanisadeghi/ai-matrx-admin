@@ -16,7 +16,7 @@ import {
   useAssociateTask,
   type TaskSource,
 } from "@/features/tasks/hooks/useAssociateTask";
-import { selectProjects } from "@/features/tasks/redux";
+import { selectProjects } from "@/features/tasks/redux/selectors";
 
 export interface QuickCreateTaskButtonProps {
   /** What we're creating the task from (optional — records an association). */

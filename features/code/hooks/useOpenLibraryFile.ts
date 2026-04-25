@@ -2,7 +2,7 @@
 
 import { useCallback } from "react";
 import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
-import { openTab, setActiveTab } from "../redux";
+import { openTab, setActiveTab } from "../redux/tabsSlice";
 import { loadCodeFileFull, selectCodeFileById } from "@/features/code-files";
 import { languageFromFilename } from "../styles/file-icon";
 

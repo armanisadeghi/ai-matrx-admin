@@ -36,15 +36,15 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useRouter } from "next/navigation";
+import { createProject } from "../service";
 import {
-  createProject,
   generateProjectSlug,
   validateProjectName,
   validateProjectSlug,
-  useProjectSlugAvailability,
-} from "@/features/projects";
+} from "../types";
+import { useProjectSlugAvailability } from "../hooks";
 import { useNavTree } from "@/features/agent-context/hooks/useNavTree";
-import type { Project } from "@/features/projects";
+import type { Project } from "../types";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types

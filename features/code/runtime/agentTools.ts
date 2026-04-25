@@ -4,9 +4,9 @@ import {
   appendLines,
   setExecuting,
   setActiveTab as setTerminalActiveTab,
-  openTab,
-  setTerminalOpen,
-} from "../redux";
+  setOpen as setTerminalOpen,
+} from "../redux/terminalSlice";
+import { openTab } from "../redux/tabsSlice";
 import { languageFromFilename } from "../styles/file-icon";
 import { getWorkspace } from "./workspaceRegistry";
 

@@ -41,18 +41,20 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { fetchConversationHistory } from "@/features/agents/redux/conversation-history/thunks";
 import {
-  fetchConversationHistory,
   makeSelectConversationHistoryScope,
   makeSelectConversationHistoryStatus,
   makeSelectGroupedByAgent,
   makeSelectGroupedByDate,
+} from "@/features/agents/redux/conversation-history/selectors";
+import {
   setScopeAgentIds,
   setScopeGrouping,
   setScopeSearch,
-  type HistoryGrouping,
-} from "@/features/agents/redux/conversation-history";
-import type { ConversationListItem } from "@/features/agents/redux/conversation-list";
+} from "@/features/agents/redux/conversation-history/slice";
+import type { HistoryGrouping } from "@/features/agents/redux/conversation-history/types";
+import type { ConversationListItem } from "@/features/agents/redux/conversation-list/conversation-list.types";
 
 export interface ConversationHistorySidebarProps {
   /** Unique scope key (same across mounts that should share state). */

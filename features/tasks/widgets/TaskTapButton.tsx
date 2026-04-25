@@ -20,12 +20,12 @@ import {
   useAssociateTask,
   type TaskSource,
 } from "@/features/tasks/hooks/useAssociateTask";
+import { selectAllTasksFlat } from "@/features/tasks/redux/selectors";
 import {
   fetchTasksForEntity,
-  selectAllTasksFlat,
   selectTasksForEntity,
   selectTasksForEntityLoading,
-} from "@/features/tasks/redux";
+} from "@/features/tasks/redux/taskAssociationsSlice";
 
 type Variant = "glass" | "transparent" | "solid" | "group";
 

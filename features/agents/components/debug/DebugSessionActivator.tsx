@@ -13,7 +13,7 @@
 
 import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { setDebugSession } from "@/features/agents/redux/execution-system/conversations";
+import { setDebugSession } from "@/features/agents/redux/execution-system/conversations/conversations.slice";
 
 export function DebugSessionActivator() {
   const dispatch = useAppDispatch();

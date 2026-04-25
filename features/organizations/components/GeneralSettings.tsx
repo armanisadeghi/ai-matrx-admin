@@ -1,16 +1,17 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { Save, X, Loader2, Check, Copy, ExternalLink } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { toast } from 'sonner';
-import { updateOrganization, validateOrgName, type Organization, type OrgRole } from '@/features/organizations';
-import { format } from 'date-fns';
-import { ImageAssetUploader } from '@/components/official/ImageAssetUploader';
+import React, { useState, useEffect } from "react";
+import { Save, X, Loader2, Check, Copy, ExternalLink } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
+import { updateOrganization } from "../service";
+import { validateOrgName, type Organization, type OrgRole } from "../types";
+import { format } from "date-fns";
+import { ImageAssetUploader } from "@/components/official/ImageAssetUploader";
 
 interface GeneralSettingsProps {
   organization: Organization;
@@ -20,7 +21,7 @@ interface GeneralSettingsProps {
 
 /**
  * GeneralSettings - Tab for editing general organization details
- * 
+ *
  * Features:
  * - Edit name, description, website, logo
  * - View-only mode for members
@@ -28,40 +29,48 @@ interface GeneralSettingsProps {
  * - Save/cancel functionality
  * - Loading states
  */
-export function GeneralSettings({ organization, canEdit, userRole }: GeneralSettingsProps) {
+export function GeneralSettings({
+  organization,
+  canEdit,
+  userRole,
+}: GeneralSettingsProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   // Form state
   const [name, setName] = useState(organization.name);
-  const [description, setDescription] = useState(organization.description || '');
-  const [website, setWebsite] = useState(organization.website || '');
-  const [logoUrl, setLogoUrl] = useState(organization.logoUrl || '');
+  const [description, setDescription] = useState(
+    organization.description || "",
+  );
+  const [website, setWebsite] = useState(organization.website || "");
+  const [logoUrl, setLogoUrl] = useState(organization.logoUrl || "");
 
   // Reset form when organization changes
   useEffect(() => {
     setName(organization.name);
-    setDescription(organization.description || '');
-    setWebsite(organization.website || '');
-    setLogoUrl(organization.logoUrl || '');
+    setDescription(organization.description || "");
+    setWebsite(organization.website || "");
+    setLogoUrl(organization.logoUrl || "");
     setIsEditing(false);
   }, [organization]);
 
   // Check if form has changes
-  const hasChanges = 
+  const hasChanges =
     name !== organization.name ||
-    description !== (organization.description || '') ||
-    website !== (organization.website || '') ||
-    logoUrl !== (organization.logoUrl || '');
+    description !== (organization.description || "") ||
+    website !== (organization.website || "") ||
+    logoUrl !== (organization.logoUrl || "");
 
   // Validation
-  const nameValidation = name ? validateOrgName(name) : { valid: false, error: 'Name is required' };
+  const nameValidation = name
+    ? validateOrgName(name)
+    : { valid: false, error: "Name is required" };
   const isFormValid = nameValidation.valid;
 
   // Handle save
   const handleSave = async () => {
     if (!isFormValid) {
-      toast.error('Please fix validation errors');
+      toast.error("Please fix validation errors");
       return;
     }
 
@@ -76,15 +85,15 @@ export function GeneralSettings({ organization, canEdit, userRole }: GeneralSett
       });
 
       if (result.success) {
-        toast.success('Organization updated successfully');
+        toast.success("Organization updated successfully");
         setIsEditing(false);
         // The organization prop will be updated by parent refresh
       } else {
-        toast.error(result.error || 'Failed to update organization');
+        toast.error(result.error || "Failed to update organization");
       }
     } catch (error: any) {
-      console.error('Error updating organization:', error);
-      toast.error(error.message || 'An unexpected error occurred');
+      console.error("Error updating organization:", error);
+      toast.error(error.message || "An unexpected error occurred");
     } finally {
       setIsSaving(false);
     }
@@ -93,9 +102,9 @@ export function GeneralSettings({ organization, canEdit, userRole }: GeneralSett
   // Handle cancel
   const handleCancel = () => {
     setName(organization.name);
-    setDescription(organization.description || '');
-    setWebsite(organization.website || '');
-    setLogoUrl(organization.logoUrl || '');
+    setDescription(organization.description || "");
+    setWebsite(organization.website || "");
+    setLogoUrl(organization.logoUrl || "");
     setIsEditing(false);
   };
 
@@ -103,7 +112,7 @@ export function GeneralSettings({ organization, canEdit, userRole }: GeneralSett
   const handleCopyUrl = () => {
     const orgUrl = `https://aimatrx.com/org/${organization.slug}`;
     navigator.clipboard.writeText(orgUrl);
-    toast.success('Organization URL copied to clipboard');
+    toast.success("Organization URL copied to clipboard");
   };
 
   return (
@@ -112,12 +121,21 @@ export function GeneralSettings({ organization, canEdit, userRole }: GeneralSett
       {canEdit && (
         <div className="flex justify-end gap-2">
           {!isEditing ? (
-            <Button onClick={() => setIsEditing(true)} variant="outline" size="sm">
+            <Button
+              onClick={() => setIsEditing(true)}
+              variant="outline"
+              size="sm"
+            >
               Edit
             </Button>
           ) : (
             <>
-              <Button onClick={handleCancel} variant="outline" size="sm" disabled={isSaving}>
+              <Button
+                onClick={handleCancel}
+                variant="outline"
+                size="sm"
+                disabled={isSaving}
+              >
                 <X className="h-4 w-4 mr-1" />
                 Cancel
               </Button>
@@ -158,7 +176,7 @@ export function GeneralSettings({ organization, canEdit, userRole }: GeneralSett
                 placeholder="Organization name"
                 maxLength={50}
                 disabled={isSaving}
-                className={!nameValidation.valid ? 'border-red-500' : ''}
+                className={!nameValidation.valid ? "border-red-500" : ""}
               />
               {!nameValidation.valid && (
                 <p className="text-xs text-red-600 dark:text-red-400">
@@ -196,7 +214,9 @@ export function GeneralSettings({ organization, canEdit, userRole }: GeneralSett
               <Copy className="h-3 w-3 mr-1" />
               Copy
             </Button>
-            <Badge variant="secondary" className="text-xs">Read-only</Badge>
+            <Badge variant="secondary" className="text-xs">
+              Read-only
+            </Badge>
           </div>
           <p className="text-xs text-muted-foreground">
             The slug cannot be changed after creation
@@ -223,7 +243,11 @@ export function GeneralSettings({ organization, canEdit, userRole }: GeneralSett
             </>
           ) : (
             <p className="text-sm">
-              {organization.description || <span className="text-muted-foreground italic">No description provided</span>}
+              {organization.description || (
+                <span className="text-muted-foreground italic">
+                  No description provided
+                </span>
+              )}
             </p>
           )}
         </div>
@@ -252,7 +276,9 @@ export function GeneralSettings({ organization, canEdit, userRole }: GeneralSett
                   {organization.website}
                 </a>
               ) : (
-                <span className="text-muted-foreground italic">No website provided</span>
+                <span className="text-muted-foreground italic">
+                  No website provided
+                </span>
               )}
             </p>
           )}
@@ -265,7 +291,7 @@ export function GeneralSettings({ organization, canEdit, userRole }: GeneralSett
             <ImageAssetUploader
               preset="logo"
               currentUrl={logoUrl || null}
-              onComplete={(result) => setLogoUrl(result?.primary_url ?? '')}
+              onComplete={(result) => setLogoUrl(result?.primary_url ?? "")}
               folder="organizations/logos"
               disabled={isSaving}
               label="Organization logo"
@@ -289,7 +315,9 @@ export function GeneralSettings({ organization, canEdit, userRole }: GeneralSett
                   </a>
                 </>
               ) : (
-                <span className="text-sm text-muted-foreground italic">No logo provided</span>
+                <span className="text-sm text-muted-foreground italic">
+                  No logo provided
+                </span>
               )}
             </div>
           )}
@@ -305,19 +333,27 @@ export function GeneralSettings({ organization, canEdit, userRole }: GeneralSett
             <div>
               <Label className="text-xs text-muted-foreground">Created</Label>
               <p className="text-sm">
-                {organization.createdAt ? format(new Date(organization.createdAt), 'PPP') : 'Unknown'}
+                {organization.createdAt
+                  ? format(new Date(organization.createdAt), "PPP")
+                  : "Unknown"}
               </p>
             </div>
 
             <div>
-              <Label className="text-xs text-muted-foreground">Last Updated</Label>
+              <Label className="text-xs text-muted-foreground">
+                Last Updated
+              </Label>
               <p className="text-sm">
-                {organization.updatedAt ? format(new Date(organization.updatedAt), 'PPP') : 'Unknown'}
+                {organization.updatedAt
+                  ? format(new Date(organization.updatedAt), "PPP")
+                  : "Unknown"}
               </p>
             </div>
 
             <div>
-              <Label className="text-xs text-muted-foreground">Organization Type</Label>
+              <Label className="text-xs text-muted-foreground">
+                Organization Type
+              </Label>
               <p className="text-sm">
                 {organization.isPersonal ? (
                   <Badge variant="secondary">Personal</Badge>
@@ -339,4 +375,3 @@ export function GeneralSettings({ organization, canEdit, userRole }: GeneralSett
     </div>
   );
 }
-

@@ -27,7 +27,7 @@ import {
 import { ResourcePickerMenu } from "@/features/resource-manager/resource-picker/ResourcePickerMenu";
 import { ResourcePickerWindow } from "@/features/window-panels/windows/ResourcePickerWindow";
 import type { Resource } from "@/features/prompts/types/resources";
-import type { ResourceBlockType } from "@/features/agents/types";
+import type { ResourceBlockType } from "@/features/agents/types/instance.types";
 
 // Map prompt-system resource types to agent ResourceBlockType
 function resourceTypeToBlockType(type: Resource["type"]): ResourceBlockType {

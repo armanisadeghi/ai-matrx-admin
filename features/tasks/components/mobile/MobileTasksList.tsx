@@ -3,9 +3,8 @@
 import React, { useState } from 'react';
 import { ChevronRight, Plus, MoreVertical, Search, X, Loader2 } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
+import { selectFilteredTasks, selectProjects } from '@/features/tasks/redux/selectors';
 import {
-  selectFilteredTasks,
-  selectProjects,
   selectNewTaskTitle,
   selectIsCreatingTask,
   selectSearchQuery,
@@ -13,9 +12,8 @@ import {
   selectActiveProject,
   setNewTaskTitle,
   setSearchQuery,
-  createTaskThunk,
-  toggleTaskCompleteThunk,
-} from '@/features/tasks/redux';
+} from '@/features/tasks/redux/taskUiSlice';
+import { createTaskThunk, toggleTaskCompleteThunk } from '@/features/tasks/redux/thunks';
 import {
   selectOrganizationId,
   selectScopeSelectionsContext,

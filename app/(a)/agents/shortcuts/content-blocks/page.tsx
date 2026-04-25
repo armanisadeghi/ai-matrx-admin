@@ -1,12 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import {
-  ContentBlockForm,
-  ContentBlockList,
-  useAgentShortcuts,
-  type AgentContentBlock,
-} from "@/features/agent-shortcuts";
+import { ContentBlockForm } from "@/features/agent-shortcuts/components/ContentBlockForm";
+import { ContentBlockList } from "@/features/agent-shortcuts/components/ContentBlockList";
+import { useAgentShortcuts } from "@/features/agent-shortcuts/hooks/useAgentShortcuts";
+import type { AgentContentBlockDef as AgentContentBlock } from "@/features/agents/redux/agent-content-blocks/types";
 
 const SCOPE = "user" as const;
 

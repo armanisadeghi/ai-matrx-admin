@@ -7,10 +7,8 @@
  */
 
 import type { RootState } from "@/lib/redux/store";
-import type {
-  InstanceModelOverrideState,
-  LLMParams,
-} from "@/features/agents/types";
+import type { InstanceModelOverrideState } from "@/features/agents/types/instance.types";
+import type { LLMParams } from "@/features/agents/types/agent-api-types";
 
 // Keys that exist in the model's controls as UI capability flags (e.g.
 // `{ allowed: true }`) but are NOT part of the LLMParams config_overrides

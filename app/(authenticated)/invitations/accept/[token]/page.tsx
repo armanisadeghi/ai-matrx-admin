@@ -1,20 +1,29 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { Check, X, AlertCircle, Loader2, Building2, Mail, UserPlus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { toast } from 'sonner';
-import { acceptInvitation, type OrganizationInvitationWithOrg } from '@/features/organizations';
-import { supabase } from '@/utils/supabase/client';
+import React, { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import {
+  Check,
+  X,
+  AlertCircle,
+  Loader2,
+  Building2,
+  Mail,
+  UserPlus,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
+import { acceptInvitation } from "@/features/organizations/service";
+import type { OrganizationInvitationWithOrg } from "@/features/organizations/types";
+import { supabase } from "@/utils/supabase/client";
 
 /**
  * Accept Invitation Page
- * 
+ *
  * Route: /invitations/accept/[token]
- * 
+ *
  * Features:
  * - Validates invitation token
  * - Shows invitation details
@@ -30,7 +39,8 @@ export default function AcceptInvitationPage() {
   const [loading, setLoading] = useState(true);
   const [accepting, setAccepting] = useState(false);
   const [declining, setDeclining] = useState(false);
-  const [invitation, setInvitation] = useState<OrganizationInvitationWithOrg | null>(null);
+  const [invitation, setInvitation] =
+    useState<OrganizationInvitationWithOrg | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   // Load invitation details
@@ -43,86 +53,97 @@ export default function AcceptInvitationPage() {
     setError(null);
 
     try {
-      console.log('[Invitation] Starting to load invitation with token:', token);
-      
+      console.log(
+        "[Invitation] Starting to load invitation with token:",
+        token,
+      );
+
       const {
         data: { user },
         error: authError,
       } = await supabase.auth.getUser();
 
-      console.log('[Invitation] Auth check:', { 
-        userId: user?.id, 
-        userEmail: user?.email, 
-        authError: authError?.message 
+      console.log("[Invitation] Auth check:", {
+        userId: user?.id,
+        userEmail: user?.email,
+        authError: authError?.message,
       });
 
       if (!user) {
         // Not logged in - redirect to login with return URL
-        console.log('[Invitation] No user, redirecting to login');
-        router.push(`/login?redirectTo=${encodeURIComponent(`/invitations/accept/${token}`)}`);
+        console.log("[Invitation] No user, redirecting to login");
+        router.push(
+          `/login?redirectTo=${encodeURIComponent(`/invitations/accept/${token}`)}`,
+        );
         return;
       }
 
       // First, try to fetch just the invitation without join
-      console.log('[Invitation] Fetching invitation without join...');
+      console.log("[Invitation] Fetching invitation without join...");
       const { data: invitationOnly, error: inviteOnlyError } = await supabase
-        .from('organization_invitations')
-        .select('*')
-        .eq('token', token)
+        .from("organization_invitations")
+        .select("*")
+        .eq("token", token)
         .single();
-      
-      console.log('[Invitation] Invitation-only result:', { 
-        found: !!invitationOnly, 
+
+      console.log("[Invitation] Invitation-only result:", {
+        found: !!invitationOnly,
         error: inviteOnlyError?.message,
         errorCode: inviteOnlyError?.code,
         errorDetails: inviteOnlyError?.details,
         invitationId: invitationOnly?.id,
         invitationEmail: invitationOnly?.email,
-        expiresAt: invitationOnly?.expires_at
+        expiresAt: invitationOnly?.expires_at,
       });
 
       if (inviteOnlyError) {
-        console.error('[Invitation] Failed to fetch invitation:', inviteOnlyError);
+        console.error(
+          "[Invitation] Failed to fetch invitation:",
+          inviteOnlyError,
+        );
         setError(`Failed to fetch invitation: ${inviteOnlyError.message}`);
         return;
       }
 
       if (!invitationOnly) {
-        console.log('[Invitation] No invitation found for token');
-        setError('Invitation not found');
+        console.log("[Invitation] No invitation found for token");
+        setError("Invitation not found");
         return;
       }
 
       // Check expiry manually
       const isExpired = new Date(invitationOnly.expires_at) <= new Date();
-      console.log('[Invitation] Expiry check:', { 
-        expiresAt: invitationOnly.expires_at, 
+      console.log("[Invitation] Expiry check:", {
+        expiresAt: invitationOnly.expires_at,
         now: new Date().toISOString(),
-        isExpired 
+        isExpired,
       });
 
       if (isExpired) {
-        setError('This invitation has expired');
+        setError("This invitation has expired");
         return;
       }
 
       // Now fetch the organization separately
-      console.log('[Invitation] Fetching organization:', invitationOnly.organization_id);
+      console.log(
+        "[Invitation] Fetching organization:",
+        invitationOnly.organization_id,
+      );
       const { data: orgData, error: orgError } = await supabase
-        .from('organizations')
-        .select('*')
-        .eq('id', invitationOnly.organization_id)
+        .from("organizations")
+        .select("*")
+        .eq("id", invitationOnly.organization_id)
         .single();
 
-      console.log('[Invitation] Organization result:', { 
-        found: !!orgData, 
+      console.log("[Invitation] Organization result:", {
+        found: !!orgData,
         error: orgError?.message,
         errorCode: orgError?.code,
-        orgName: orgData?.name 
+        orgName: orgData?.name,
       });
 
       if (orgError || !orgData) {
-        console.error('[Invitation] Failed to fetch organization:', orgError);
+        console.error("[Invitation] Failed to fetch organization:", orgError);
         // Continue anyway with partial data - we can show the invitation
         // but maybe not all org details
       }
@@ -130,26 +151,28 @@ export default function AcceptInvitationPage() {
       const data = { ...invitationOnly, organizations: orgData };
 
       if (!data) {
-        setError('Invitation not found or has expired');
+        setError("Invitation not found or has expired");
         return;
       }
 
       // Check if invitation is for current user's email
       if (data.email.toLowerCase() !== user.email?.toLowerCase()) {
-        setError(`This invitation is for ${data.email}. Please sign in with that email address.`);
+        setError(
+          `This invitation is for ${data.email}. Please sign in with that email address.`,
+        );
         return;
       }
 
       // Check if user is already a member
       const { data: memberData } = await supabase
-        .from('organization_members')
-        .select('id')
-        .eq('organization_id', data.organization_id)
-        .eq('user_id', user.id)
+        .from("organization_members")
+        .select("id")
+        .eq("organization_id", data.organization_id)
+        .eq("user_id", user.id)
         .single();
 
       if (memberData) {
-        setError('You are already a member of this organization');
+        setError("You are already a member of this organization");
         return;
       }
 
@@ -180,8 +203,8 @@ export default function AcceptInvitationPage() {
 
       setInvitation(transformedInvitation);
     } catch (err: any) {
-      console.error('Error loading invitation:', err);
-      setError('An unexpected error occurred');
+      console.error("Error loading invitation:", err);
+      setError("An unexpected error occurred");
     } finally {
       setLoading(false);
     }
@@ -200,13 +223,13 @@ export default function AcceptInvitationPage() {
         toast.success(`Welcome to ${result.organization.name}!`);
         router.push(`/organizations/${result.organization.id}/settings`);
       } else {
-        toast.error(result.error || 'Failed to accept invitation');
-        setError(result.error || 'Failed to accept invitation');
+        toast.error(result.error || "Failed to accept invitation");
+        setError(result.error || "Failed to accept invitation");
       }
     } catch (err: any) {
-      console.error('Error accepting invitation:', err);
-      toast.error('An unexpected error occurred');
-      setError('An unexpected error occurred');
+      console.error("Error accepting invitation:", err);
+      toast.error("An unexpected error occurred");
+      setError("An unexpected error occurred");
     } finally {
       setAccepting(false);
     }
@@ -215,9 +238,9 @@ export default function AcceptInvitationPage() {
   // Handle decline invitation
   const handleDecline = () => {
     setDeclining(true);
-    toast.info('Invitation declined');
+    toast.info("Invitation declined");
     setTimeout(() => {
-      router.push('/settings/organizations');
+      router.push("/settings/organizations");
     }, 1000);
   };
 
@@ -247,10 +270,13 @@ export default function AcceptInvitationPage() {
             </h2>
             <p className="text-red-700 dark:text-red-300">{error}</p>
             <div className="flex gap-3 justify-center pt-4">
-              <Button onClick={() => router.push('/settings/organizations')} variant="outline">
+              <Button
+                onClick={() => router.push("/settings/organizations")}
+                variant="outline"
+              >
                 Go to Organizations
               </Button>
-              <Button onClick={() => router.push('/dashboard')}>
+              <Button onClick={() => router.push("/dashboard")}>
                 Go to Dashboard
               </Button>
             </div>
@@ -337,7 +363,7 @@ export default function AcceptInvitationPage() {
               <strong>Role:</strong> {invitation.role}
             </p>
             <p>
-              <strong>Expires:</strong>{' '}
+              <strong>Expires:</strong>{" "}
               {new Date(invitation.expiresAt).toLocaleDateString()}
             </p>
           </div>
@@ -385,12 +411,11 @@ export default function AcceptInvitationPage() {
 
           {/* Note */}
           <p className="text-xs text-muted-foreground pt-4">
-            By accepting, you agree to join {invitation.organization.name} and will gain access to
-            shared resources.
+            By accepting, you agree to join {invitation.organization.name} and
+            will gain access to shared resources.
           </p>
         </div>
       </Card>
     </div>
   );
 }
-

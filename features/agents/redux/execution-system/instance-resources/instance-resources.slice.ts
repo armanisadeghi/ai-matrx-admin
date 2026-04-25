@@ -21,9 +21,9 @@ import type {
   ResourceBlockType,
   ResourceOptions,
   ResourceStatus,
-} from "@/features/agents/types";
+} from "@/features/agents/types/instance.types";
 import type { MessagePart } from "@/types/python-generated/stream-events";
-import { generateResourceId } from "../utils";
+import { generateResourceId } from "../utils/ids";
 import { destroyInstance } from "../conversations/conversations.slice";
 
 // =============================================================================
@@ -119,7 +119,8 @@ const instanceResourcesSlice = createSlice({
         errorMessage?: string;
       }>,
     ) {
-      const { conversationId, resourceId, status, errorMessage } = action.payload;
+      const { conversationId, resourceId, status, errorMessage } =
+        action.payload;
       const resource = state.byConversationId[conversationId]?.[resourceId];
       if (resource) {
         resource.status = status;

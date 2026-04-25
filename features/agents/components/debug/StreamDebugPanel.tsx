@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
-import { setDebugSession } from "@/features/agents/redux/execution-system/conversations";
+import { setDebugSession } from "@/features/agents/redux/execution-system/conversations/conversations.slice";
 import { shallowEqual } from "react-redux";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -1554,8 +1554,7 @@ function InstanceDebugView({
   const [activeTab, setActiveTab] = useState<TabId>("events");
 
   const instanceStatus = useAppSelector(
-    (state) =>
-      state.conversations.byConversationId[conversationId]?.status,
+    (state) => state.conversations.byConversationId[conversationId]?.status,
   );
 
   const requestIds = useAppSelector(
@@ -1822,8 +1821,7 @@ function InstanceTab({
   onSelect: () => void;
 }) {
   const status = useAppSelector(
-    (state) =>
-      state.conversations.byConversationId[conversationId]?.status,
+    (state) => state.conversations.byConversationId[conversationId]?.status,
   );
   const requestCount = useAppSelector(
     (state) =>

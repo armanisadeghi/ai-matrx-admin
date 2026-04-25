@@ -59,18 +59,20 @@ import { FileUploadDropzone } from "../core/FileUploadDropzone";
 import { OnboardingEmptyState } from "./OnboardingEmptyState";
 import { MobileStack } from "./MobileStack";
 import { PreviewPane } from "./PreviewPane";
+import { BulkActionsBar } from "./dropbox/BulkActionsBar";
+import { ContentHeader } from "./dropbox/ContentHeader";
+import { EmptyState } from "./dropbox/EmptyState";
+import { FileGrid } from "./dropbox/FileGrid";
+import { FileTable } from "./dropbox/FileTable";
+import type { FilterChipKey } from "./dropbox/FilterChips";
+import { IconRail } from "./dropbox/IconRail";
+import { NavSidebar } from "./dropbox/NavSidebar";
 import {
-  BulkActionsBar,
-  ContentHeader,
-  EmptyState,
-  FileGrid,
-  FileTable,
-  IconRail,
-  NavSidebar,
   SidebarModeProvider,
-  TopBar,
-} from "./dropbox";
-import type { CloudFilesSection, FilterChipKey, SidebarMode } from "./dropbox";
+  type SidebarMode,
+} from "./dropbox/SidebarModeToggle";
+import { TopBar } from "./dropbox/TopBar";
+import type { CloudFilesSection } from "./dropbox/section";
 
 export interface PageShellProps {
   /** Initial selection (for deep-linked routes). */

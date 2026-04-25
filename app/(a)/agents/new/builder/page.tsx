@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Wrench } from "lucide-react";
-import { AgentBuilderPicker } from "@/features/agents/agent-creators/interactive-builder";
+import { AgentBuilderPicker } from "@/features/agents/agent-creators/interactive-builder/AgentBuilderPicker";
 
 export const metadata = { title: "Interactive Agent Builder | AI Matrx" };
 

@@ -3,7 +3,7 @@
 import React, { useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectTerminalLines } from "../redux";
+import { selectTerminalLines } from "../redux/terminalSlice";
 
 interface OutputTabProps {
   className?: string;

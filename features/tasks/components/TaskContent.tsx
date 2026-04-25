@@ -12,11 +12,10 @@ import {
   Folder,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { selectFilteredTasks, selectProjects } from "@/features/tasks/redux/selectors";
 import {
   selectActiveProject,
   selectShowAllProjects,
-  selectFilteredTasks,
-  selectProjects,
   selectNewTaskTitle,
   selectNewProjectName,
   selectIsCreatingTask,
@@ -24,10 +23,12 @@ import {
   selectTasksLoading,
   setNewTaskTitle,
   setNewProjectName,
+} from "@/features/tasks/redux/taskUiSlice";
+import {
   createProjectThunk,
   createTaskThunk,
   toggleTaskCompleteThunk,
-} from "@/features/tasks/redux";
+} from "@/features/tasks/redux/thunks";
 import {
   selectOrganizationId,
   selectScopeSelectionsContext,

@@ -1,7 +1,7 @@
 "use client";
 
 import { ToolCallCard } from "./ToolCallCard";
-import { useToolCallIdsInOrder } from "@/features/tool-call-visualization";
+import { useToolCallIdsInOrder } from "@/features/tool-call-visualization/redux/hooks";
 
 interface InlineToolCallsProps {
   requestId: string;

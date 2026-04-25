@@ -17,7 +17,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   clearPendingSource,
   selectPendingSource,
-} from "@/features/tasks/redux";
+} from "@/features/tasks/redux/taskUiSlice";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 
 export default function CreateTaskFromSourceDialog() {

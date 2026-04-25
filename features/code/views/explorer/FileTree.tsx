@@ -5,7 +5,8 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { useCodeWorkspace } from "../../CodeWorkspaceProvider";
 import { useOpenFile } from "../../hooks/useOpenFile";
 import type { FilesystemNode } from "../../types";
-import { selectActiveTab, selectExplorerRootOverride } from "../../redux";
+import { selectActiveTab } from "../../redux/tabsSlice";
+import { selectExplorerRootOverride } from "../../redux/codeWorkspaceSlice";
 import { FileTreeNode } from "./FileTreeNode";
 import { useFileTreeExpansion } from "./useFileTreeExpansion";
 

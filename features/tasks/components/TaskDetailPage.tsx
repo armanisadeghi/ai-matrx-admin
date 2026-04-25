@@ -23,13 +23,13 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { useAppDispatch } from "@/lib/redux/hooks";
+import { selectProjects } from "@/features/tasks/redux/selectors";
 import {
-  selectProjects,
   updateTaskFieldThunk,
   toggleTaskCompleteThunk,
   deleteTaskThunk,
   moveTaskThunk,
-} from "@/features/tasks/redux";
+} from "@/features/tasks/redux/thunks";
 import { invalidateAndRefetchFullContext } from "@/features/agent-context/redux/hierarchyThunks";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/slices/userSlice";

@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { Puzzle, Settings, ArrowLeft, Loader2, Users } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card } from '@/components/ui/card';
-import { getOrganizationBySlug } from '@/features/organizations';
-import { getProjectBySlug, getProjectUserRole } from '@/features/projects';
-import type { Project, ProjectRole } from '@/features/projects';
+import React from "react";
+import { useParams, useRouter } from "next/navigation";
+import { Puzzle, Settings, ArrowLeft, Loader2, Users } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { getOrganizationBySlug } from "@/features/organizations/service";
+import { getProjectBySlug, getProjectUserRole } from "@/features/projects/service";
+import type { Project, ProjectRole } from "@/features/projects/types";
 
 /**
  * Project Detail Page
@@ -18,7 +18,7 @@ export default function ProjectDetailPage() {
   const params = useParams();
   const router = useRouter();
   const orgSlug = params.slug as string;
-  const projectSlug = params['project-slug'] as string;
+  const projectSlug = params["project-slug"] as string;
 
   const [project, setProject] = React.useState<Project | null>(null);
   const [userRole, setUserRole] = React.useState<ProjectRole | null>(null);
@@ -31,13 +31,13 @@ export default function ProjectDetailPage() {
         setLoading(true);
         const org = await getOrganizationBySlug(orgSlug);
         if (!org) {
-          setError('Organization not found');
+          setError("Organization not found");
           return;
         }
 
         const proj = await getProjectBySlug(projectSlug, org.id);
         if (!proj) {
-          setError('Project not found');
+          setError("Project not found");
           return;
         }
 
@@ -45,7 +45,8 @@ export default function ProjectDetailPage() {
         const role = await getProjectUserRole(proj.id);
         setUserRole(role);
       } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : 'Failed to load project';
+        const msg =
+          err instanceof Error ? err.message : "Failed to load project";
         setError(msg);
       } finally {
         setLoading(false);
@@ -93,7 +94,7 @@ export default function ProjectDetailPage() {
     );
   }
 
-  const canManage = userRole === 'owner' || userRole === 'admin';
+  const canManage = userRole === "owner" || userRole === "admin";
 
   return (
     <div className="h-[calc(100dvh-var(--header-height))] flex flex-col bg-textured">
@@ -114,7 +115,9 @@ export default function ProjectDetailPage() {
               <span className="text-sm text-muted-foreground">/</span>
               <div className="flex items-center gap-2">
                 <Puzzle className="h-4 w-4 text-indigo-600 dark:text-indigo-400 flex-shrink-0" />
-                <span className="text-sm font-medium truncate">{project.name}</span>
+                <span className="text-sm font-medium truncate">
+                  {project.name}
+                </span>
               </div>
             </div>
 
@@ -129,7 +132,9 @@ export default function ProjectDetailPage() {
                   variant="outline"
                   size="sm"
                   onClick={() =>
-                    router.push(`/org/${orgSlug}/projects/${projectSlug}/settings`)
+                    router.push(
+                      `/org/${orgSlug}/projects/${projectSlug}/settings`,
+                    )
                   }
                 >
                   <Settings className="h-4 w-4 mr-2" />
@@ -148,7 +153,9 @@ export default function ProjectDetailPage() {
           <div>
             <h1 className="text-2xl font-bold">{project.name}</h1>
             {project.description && (
-              <p className="text-muted-foreground mt-1">{project.description}</p>
+              <p className="text-muted-foreground mt-1">
+                {project.description}
+              </p>
             )}
           </div>
 
@@ -167,7 +174,9 @@ export default function ProjectDetailPage() {
                   variant="outline"
                   size="sm"
                   onClick={() =>
-                    router.push(`/org/${orgSlug}/projects/${projectSlug}/settings`)
+                    router.push(
+                      `/org/${orgSlug}/projects/${projectSlug}/settings`,
+                    )
                   }
                 >
                   <Settings className="h-4 w-4 mr-2" />

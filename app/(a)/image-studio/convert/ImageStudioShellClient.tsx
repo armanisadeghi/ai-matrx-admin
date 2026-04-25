@@ -5,7 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const ImageStudioShell = dynamic(
   () =>
-    import("@/features/image-studio").then((m) => ({
+    import("@/features/image-studio/components/ImageStudioShell").then((m) => ({
       default: m.ImageStudioShell,
     })),
   {

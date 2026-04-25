@@ -13,7 +13,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { useOrganization } from "@/features/organizations";
+import { useOrganization } from "@/features/organizations/hooks";
 import { OrgSidebar } from "@/features/organizations/components/OrgSidebar";
 
 export default function OrgSettingsLayoutClient({

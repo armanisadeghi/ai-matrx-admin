@@ -18,16 +18,14 @@ import {
   restoreVersion as restoreVersionThunk,
   updateFileMetadata,
 } from "../../../redux/thunks";
-import { Files } from "../../../api";
+import * as Files from "../../../api/files";
 import type { Visibility } from "../../../types";
 
 export interface FileActionHandlers {
   rename: (newName: string) => Promise<void>;
   move: (newParentFolderId: string | null) => Promise<void>;
   setVisibility: (visibility: Visibility) => Promise<void>;
-  updateMetadata: (
-    metadata: Record<string, unknown>,
-  ) => Promise<void>;
+  updateMetadata: (metadata: Record<string, unknown>) => Promise<void>;
   /**
    * Soft delete by default. Pass `{ hard: true }` to remove S3 bytes.
    */
@@ -57,9 +55,7 @@ export function useFileActions(fileId: string): FileActionHandlers {
 
   const move = useCallback(
     async (newParentFolderId: string | null) => {
-      await dispatch(
-        moveFileThunk({ fileId, newParentFolderId }),
-      ).unwrap();
+      await dispatch(moveFileThunk({ fileId, newParentFolderId })).unwrap();
     },
     [dispatch, fileId],
   );
@@ -93,9 +89,7 @@ export function useFileActions(fileId: string): FileActionHandlers {
 
   const restoreVersion = useCallback(
     async (versionNumber: number) => {
-      await dispatch(
-        restoreVersionThunk({ fileId, versionNumber }),
-      ).unwrap();
+      await dispatch(restoreVersionThunk({ fileId, versionNumber })).unwrap();
     },
     [dispatch, fileId],
   );

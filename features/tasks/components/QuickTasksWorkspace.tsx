@@ -12,17 +12,16 @@ import {
   HierarchyCascade,
   EMPTY_SELECTION,
 } from "@/features/agent-context/components/hierarchy-selection";
+import { selectFilteredTasks } from "@/features/tasks/redux/selectors";
 import {
   selectActiveProject,
   selectNewTaskTitle,
   selectIsCreatingTask,
-  selectFilteredTasks,
   setActiveProject,
   setShowAllProjects,
   setNewTaskTitle,
-  createTaskThunk,
-  toggleTaskCompleteThunk,
-} from "@/features/tasks/redux";
+} from "@/features/tasks/redux/taskUiSlice";
+import { createTaskThunk, toggleTaskCompleteThunk } from "@/features/tasks/redux/thunks";
 import {
   selectQuickTasksSelectedOrgId,
   selectQuickTasksSelectedTaskId,
@@ -30,7 +29,7 @@ import {
   setQuickTasksSelectedOrgId,
   setQuickTasksSelectedTaskId,
   setQuickTasksSearchQuery,
-} from "@/features/tasks/redux";
+} from "@/features/tasks/redux/quickTasksWindowSlice";
 import {
   selectOrganizationId,
   selectScopeSelectionsContext,

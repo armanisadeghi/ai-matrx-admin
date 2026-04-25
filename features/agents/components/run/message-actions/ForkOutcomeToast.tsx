@@ -20,7 +20,7 @@
 
 import { toast } from "sonner";
 import type { AppDispatch } from "@/lib/redux/store";
-import { requestSurfaceNavigation } from "@/features/agents/redux/surfaces";
+import { requestSurfaceNavigation } from "@/features/agents/redux/surfaces/request-surface-navigation.thunk";
 
 export interface ShowForkOutcomeToastArgs {
   dispatch: AppDispatch;

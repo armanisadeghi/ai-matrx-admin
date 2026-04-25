@@ -3,13 +3,13 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronRight, FolderOpen, CheckSquare } from 'lucide-react';
 import { useAppSelector } from '@/lib/redux/hooks';
+import { selectProjects } from '@/features/tasks/redux/selectors';
 import {
-  selectProjects,
   selectTaskFilter,
   selectShowCompleted,
   selectTasksLoading,
   selectSortBy,
-} from '@/features/tasks/redux';
+} from '@/features/tasks/redux/taskUiSlice';
 import CompactTaskItem from './CompactTaskItem';
 import { ActiveScopeFilterChips } from './TaskScopeFilter';
 import { sortTasks } from '../utils/taskSorting';

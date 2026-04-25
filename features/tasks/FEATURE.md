@@ -2,7 +2,7 @@
 
 **Status:** `active` — both features in production
 **Tier:** `2`
-**Last updated:** `2026-04-22`
+**Last updated:** `2026-04-25`
 
 > Combined doc. Tasks live under projects; they share the org-scoped architecture documented in `features/projects/CONCEPT-scope-system-redux-architecture.md`.
 
@@ -100,6 +100,7 @@ The scope columns `organization_id` on projects, `project_id` on tasks, plus der
 
 ## Change log
 
+- `2026-04-25` — Stopped using `features/projects/index.ts` and `features/tasks/redux/index.ts` as import entry points: call sites import from `service.ts` / `types.ts` / `hooks.ts` / `components/*` (projects) and from `taskUiSlice` / `selectors` / `thunks` / `taskAssociationsSlice` / `quickTasksWindowSlice` (tasks). Root `index.ts` files remain for re-exports only.
 - `2026-04-22` — claude: initial combined FEATURE.md for tasks + projects.
 
 ---

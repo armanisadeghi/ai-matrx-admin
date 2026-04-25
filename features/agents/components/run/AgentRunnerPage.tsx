@@ -19,7 +19,7 @@ import {
   unregisterSurface,
   selectPendingNavigation,
   clearPendingNavigation,
-} from "@/features/agents/redux/surfaces";
+} from "@/features/agents/redux/surfaces/surfaces.slice";
 import {
   selectAgentExecutionPayload,
   selectAgentName,

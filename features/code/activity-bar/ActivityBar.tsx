@@ -4,7 +4,7 @@ import React from "react";
 import { Settings, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { selectActiveView, setActiveView } from "../redux";
+import { selectActiveView, setActiveView } from "../redux/codeWorkspaceSlice";
 import { ACTIVITY_BAR_BG, PANE_BORDER } from "../styles/tokens";
 import { ActivityBarIcon } from "./ActivityBarIcon";
 import { ACTIVITY_VIEWS } from "./activity-views";

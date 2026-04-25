@@ -5,7 +5,7 @@ import { FileCode } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { cn } from "@/lib/utils";
 import { codeFilesActions } from "@/features/code-files";
-import { selectActiveTab, updateTabContent } from "../redux";
+import { selectActiveTab, updateTabContent } from "../redux/tabsSlice";
 import { AVATAR_RESERVE, EDITOR_BG } from "../styles/tokens";
 import {
   codeFileIdFromTabId,

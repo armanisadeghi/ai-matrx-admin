@@ -26,18 +26,20 @@ import {
   Clock,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { selectProjects } from "@/features/tasks/redux/selectors";
 import {
   selectSelectedTaskId,
   selectTaskEdit,
   selectTaskIsDirty,
   selectOperatingTaskId,
-  selectProjects,
   patchTaskEdit,
   clearTaskEdit,
+} from "@/features/tasks/redux/taskUiSlice";
+import {
   saveTaskEditsThunk,
   toggleTaskCompleteThunk,
   deleteTaskThunk,
-} from "@/features/tasks/redux";
+} from "@/features/tasks/redux/thunks";
 import { selectTaskById } from "@/features/agent-context/redux/tasksSlice";
 import { selectOrganizationId } from "@/features/agent-context/redux/appContextSlice";
 import * as taskService from "@/features/tasks/services/taskService";

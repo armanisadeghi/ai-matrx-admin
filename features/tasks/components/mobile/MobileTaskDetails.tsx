@@ -13,13 +13,13 @@ import {
   MoreVertical,
 } from 'lucide-react';
 import { useAppDispatch } from '@/lib/redux/hooks';
+import { selectProjects } from '@/features/tasks/redux/selectors';
 import {
-  selectProjects,
   updateTaskFieldThunk,
   toggleTaskCompleteThunk,
   deleteTaskThunk,
   moveTaskThunk,
-} from '@/features/tasks/redux';
+} from '@/features/tasks/redux/thunks';
 import { invalidateAndRefetchFullContext } from '@/features/agent-context/redux/hierarchyThunks';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

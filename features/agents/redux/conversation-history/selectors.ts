@@ -1,6 +1,6 @@
 import { createSelector } from "@reduxjs/toolkit";
 import type { RootState } from "@/lib/redux/store";
-import type { ConversationListItem } from "@/features/agents/redux/conversation-list";
+import type { ConversationListItem } from "@/features/agents/redux/conversation-list/conversation-list.types";
 import { selectAgentById } from "@/features/agents/redux/agent-definition/selectors";
 import { defaultScopeState, type ConversationHistoryScopeState } from "./types";
 

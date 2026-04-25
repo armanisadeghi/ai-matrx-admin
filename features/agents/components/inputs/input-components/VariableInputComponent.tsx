@@ -1,19 +1,4 @@
-/**
- * Variable Input Components
- *
- * Custom input components for prompt variables that all return text values.
- * Each VariableComponentType maps directly to a rendered component — no separate variant.
- */
-
-export { ToggleInput } from "./ToggleInput";
-export { RadioGroupInput } from "./RadioGroupInput";
-export { CheckboxGroupInput } from "./CheckboxGroupInput";
-export { SelectInput } from "./SelectInput";
-export { NumberInput } from "./NumberInput";
-export { TextareaInput } from "./TextareaInput";
-export { PillToggleInput } from "./PillToggleInput";
-export { SliderInput } from "./SliderInput";
-export { useContainerWidth } from "./useContainerColumns";
+"use client";
 
 import React from "react";
 import { ToggleInput } from "./ToggleInput";
@@ -24,7 +9,7 @@ import { NumberInput } from "./NumberInput";
 import { TextareaInput } from "./TextareaInput";
 import { PillToggleInput } from "./PillToggleInput";
 import { SliderInput } from "./SliderInput";
-import { VariableCustomComponent } from "@/features/agents/types/agent-definition.types";
+import type { VariableCustomComponent } from "@/features/agents/types/agent-definition.types";
 import { formatText } from "@/utils/text/text-case-converter";
 import { Label } from "@/components/ui/label";
 import { useContainerWidth } from "./useContainerColumns";

@@ -13,11 +13,13 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   selectFarRightOpen,
   selectRightOpen,
-  selectTerminalOpen,
   setFarRightOpen,
   setRightOpen,
-  setTerminalOpen,
-} from "../redux";
+} from "../redux/codeWorkspaceSlice";
+import {
+  selectTerminalOpen,
+  setOpen as setTerminalOpen,
+} from "../redux/terminalSlice";
 
 interface EditorToolbarProps {
   rightSlotAvailable: boolean;

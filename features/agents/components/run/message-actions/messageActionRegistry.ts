@@ -44,13 +44,13 @@ import {
 import { copyToClipboard } from "@/components/matrx/buttons/markdown-copy-utils";
 import { printMarkdownContent } from "@/features/conversation/utils/markdown-print";
 import { loadWordPressCSS } from "@/features/html-pages/css/wordpress-styles";
-import { NotesAPI } from "@/features/notes";
-import { CodeFilesAPI } from "@/features/code-files";
+import { NotesAPI } from "@/features/notes/service/notesApi";
+import { CodeFilesAPI } from "@/features/code-files/service/codeFilesApi";
+import { createTaskWithAssociation } from "@/features/tasks/redux/taskAssociationsSlice";
 import {
-  createTaskWithAssociation,
   setSelectedTaskId,
   setPendingSource,
-} from "@/features/tasks/redux";
+} from "@/features/tasks/redux/taskUiSlice";
 import { toast } from "sonner";
 import {
   openOverlay,
@@ -319,7 +319,7 @@ function exportItems(ctx: MessageActionContext): MenuItem[] {
               if (conversationId && messageId) {
                 try {
                   const { editMessage } =
-                    await import("@/features/agents/redux/execution-system/message-crud");
+                    await import("@/features/agents/redux/execution-system/message-crud/edit-message.thunk");
                   await dispatch(
                     editMessage({
                       conversationId,
@@ -709,7 +709,7 @@ function editContentItem(ctx: MessageActionContext): MenuItem {
             }
             try {
               const { editMessage } =
-                await import("@/features/agents/redux/execution-system/message-crud");
+                await import("@/features/agents/redux/execution-system/message-crud/edit-message.thunk");
               await dispatch(
                 editMessage({
                   conversationId,
@@ -773,8 +773,10 @@ function editAndResubmitItem(ctx: MessageActionContext): MenuItem {
           instanceId,
           onSave: async (newContent: string) => {
             try {
-              const { forkConversation, editMessage } =
-                await import("@/features/agents/redux/execution-system/message-crud");
+              const { forkConversation } =
+                await import("@/features/agents/redux/execution-system/message-crud/fork-conversation.thunk");
+              const { editMessage } =
+                await import("@/features/agents/redux/execution-system/message-crud/edit-message.thunk");
               // Read position from state right before firing. Fork at
               // (position - 1) so the user's new message becomes the next
               // turn on the branch, replacing whatever originally came after.
@@ -852,7 +854,7 @@ function forkAtMessageItem(ctx: MessageActionContext): MenuItem {
       }
       try {
         const { forkConversation } =
-          await import("@/features/agents/redux/execution-system/message-crud");
+          await import("@/features/agents/redux/execution-system/message-crud/fork-conversation.thunk");
         const positionThunk = (_: unknown, getState: () => RootState) => {
           const entry = getState().messages.byConversationId[conversationId];
           const msg = entry?.byId?.[messageId];

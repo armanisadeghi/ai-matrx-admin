@@ -2,15 +2,15 @@
 
 import React, { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import {
-  DuplicateShortcutModal,
-  PromoteToGlobalModal,
-  ShortcutForm,
-  ShortcutList,
-  useAgentShortcuts,
-  type AgentShortcut,
-  type AgentShortcutRecord,
-} from "@/features/agent-shortcuts";
+import { DuplicateShortcutModal } from "@/features/agent-shortcuts/components/DuplicateShortcutModal";
+import { PromoteToGlobalModal } from "@/features/agent-shortcuts/components/PromoteToGlobalModal";
+import { ShortcutForm } from "@/features/agent-shortcuts/components/ShortcutForm";
+import { ShortcutList } from "@/features/agent-shortcuts/components/ShortcutList";
+import { useAgentShortcuts } from "@/features/agent-shortcuts/hooks/useAgentShortcuts";
+import type {
+  AgentShortcut,
+  AgentShortcutRecord,
+} from "@/features/agents/redux/agent-shortcuts/types";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 

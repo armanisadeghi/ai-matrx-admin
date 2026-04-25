@@ -114,7 +114,7 @@ export type {
 export type {
   MessageActionInstance,
   MessageActionsState,
-} from "@/features/agents/redux/execution-system/message-actions";
+} from "@/features/agents/redux/execution-system/message-actions/message-actions.slice";
 
 // ── Shared utility types ────────────────────────────────────────────────────
 export type { FieldFlags } from "@/features/agents/redux/shared/field-flags";

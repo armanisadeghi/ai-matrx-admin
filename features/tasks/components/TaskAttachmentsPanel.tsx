@@ -22,7 +22,7 @@ import {
   selectAssociations,
   selectAssociationCount,
   selectAssociationsLoading,
-} from "@/features/tasks/redux";
+} from "@/features/tasks/redux/taskAssociationsSlice";
 import { cn } from "@/utils/cn";
 
 interface TaskAttachmentsPanelProps {

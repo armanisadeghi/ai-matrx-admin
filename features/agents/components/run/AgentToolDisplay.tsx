@@ -8,8 +8,8 @@
  * drives the tool renderer registry directly — no ToolCallObject reshaping.
  */
 
-import { ToolCallVisualization } from "@/features/tool-call-visualization";
-import { useHasAnyTools } from "@/features/tool-call-visualization";
+import { ToolCallVisualization } from "@/features/tool-call-visualization/components/ToolCallVisualization";
+import { useHasAnyTools } from "@/features/tool-call-visualization/redux/hooks";
 
 interface AgentToolDisplayProps {
   requestId: string;
@@ -19,10 +19,6 @@ export function AgentToolDisplay({ requestId }: AgentToolDisplayProps) {
   const hasTools = useHasAnyTools(requestId);
   if (!hasTools) return null;
   return (
-    <ToolCallVisualization
-      requestId={requestId}
-      hasContent
-      className="mb-2"
-    />
+    <ToolCallVisualization requestId={requestId} hasContent className="mb-2" />
   );
 }

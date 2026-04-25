@@ -17,7 +17,7 @@ import { toast } from "sonner";
 import { AutonomySelector } from "../init/AutonomySelector";
 import { StatusBadge } from "../shared/StatusBadge";
 import { updateTopic } from "../../service";
-import { ProjectFormSheet } from "@/features/projects";
+import { ProjectFormSheet } from "@/features/projects/components/ProjectFormSheet";
 import {
   HierarchyCascade,
   EMPTY_SELECTION,

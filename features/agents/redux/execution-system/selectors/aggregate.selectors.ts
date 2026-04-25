@@ -21,7 +21,7 @@
 
 import { createSelector } from "@reduxjs/toolkit";
 import type { RootState } from "@/lib/redux/store";
-import type { AssembledAgentStartRequest } from "@/features/agents/types";
+import type { AssembledAgentStartRequest } from "@/features/agents/types/request.types";
 import type {
   ActiveRequest,
   PendingToolCall,

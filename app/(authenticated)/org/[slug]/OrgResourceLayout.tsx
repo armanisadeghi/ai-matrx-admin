@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Loader2, Home } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { 
-  getOrganizationBySlug, 
+import React from "react";
+import { useParams, useRouter } from "next/navigation";
+import { ArrowLeft, Loader2, Home } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  getOrganizationBySlug,
   getUserRole,
-  type Organization 
-} from '@/features/organizations';
+} from "@/features/organizations/service";
+import type { Organization } from "@/features/organizations/types";
 
 interface OrgResourceLayoutProps {
   children: React.ReactNode;
@@ -22,12 +22,18 @@ interface OrgResourceLayoutProps {
  * Shared layout for organization resource pages
  * Handles authentication, organization verification, and provides consistent UI
  */
-export function OrgResourceLayout({ children, resourceName, icon }: OrgResourceLayoutProps) {
+export function OrgResourceLayout({
+  children,
+  resourceName,
+  icon,
+}: OrgResourceLayoutProps) {
   const params = useParams();
   const router = useRouter();
   const slug = params.slug as string;
 
-  const [organization, setOrganization] = React.useState<Organization | null>(null);
+  const [organization, setOrganization] = React.useState<Organization | null>(
+    null,
+  );
   const [userRole, setUserRole] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -42,7 +48,7 @@ export function OrgResourceLayout({ children, resourceName, icon }: OrgResourceL
         const org = await getOrganizationBySlug(slug);
 
         if (!org) {
-          setError('Organization not found');
+          setError("Organization not found");
           return;
         }
 
@@ -50,16 +56,18 @@ export function OrgResourceLayout({ children, resourceName, icon }: OrgResourceL
 
         // Check if user is a member (required for accessing resources)
         const role = await getUserRole(org.id);
-        
+
         if (!role) {
-          setError('Access denied. You must be a member to view organization resources.');
+          setError(
+            "Access denied. You must be a member to view organization resources.",
+          );
           return;
         }
 
         setUserRole(role);
       } catch (err: any) {
-        console.error('Error loading organization:', err);
-        setError(err.message || 'Failed to load organization');
+        console.error("Error loading organization:", err);
+        setError(err.message || "Failed to load organization");
       } finally {
         setLoading(false);
       }
@@ -87,20 +95,30 @@ export function OrgResourceLayout({ children, resourceName, icon }: OrgResourceL
         <Card className="max-w-lg w-full p-8 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800">
           <div className="text-center">
             <div className="w-16 h-16 bg-red-100 dark:bg-red-900/40 rounded-full flex items-center justify-center mx-auto mb-4">
-              {icon || <Home className="h-8 w-8 text-red-600 dark:text-red-400" />}
+              {icon || (
+                <Home className="h-8 w-8 text-red-600 dark:text-red-400" />
+              )}
             </div>
             <h2 className="text-xl font-semibold text-red-900 dark:text-red-100 mb-2">
-              {!organization ? 'Organization Not Found' : 'Access Denied'}
+              {!organization ? "Organization Not Found" : "Access Denied"}
             </h2>
             <p className="text-sm text-red-700 dark:text-red-300 mb-6">
-              {error || 'You don\'t have permission to access this resource.'}
+              {error || "You don't have permission to access this resource."}
             </p>
             <div className="flex gap-2 justify-center">
-              <Button onClick={() => router.push(`/org/${slug}`)} variant="outline" size="sm">
+              <Button
+                onClick={() => router.push(`/org/${slug}`)}
+                variant="outline"
+                size="sm"
+              >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Organization
               </Button>
-              <Button onClick={() => router.push('/dashboard')} variant="outline" size="sm">
+              <Button
+                onClick={() => router.push("/dashboard")}
+                variant="outline"
+                size="sm"
+              >
                 <Home className="h-4 w-4 mr-2" />
                 Dashboard
               </Button>
@@ -127,7 +145,7 @@ export function OrgResourceLayout({ children, resourceName, icon }: OrgResourceL
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back
               </Button>
-              
+
               <div className="flex items-center gap-2 min-w-0">
                 <span className="text-sm text-muted-foreground">/</span>
                 <button
@@ -138,13 +156,20 @@ export function OrgResourceLayout({ children, resourceName, icon }: OrgResourceL
                 </button>
                 <span className="text-sm text-muted-foreground">/</span>
                 <div className="flex items-center gap-2">
-                  {icon && <span className="text-primary flex-shrink-0">{icon}</span>}
-                  <span className="text-sm font-medium truncate">{resourceName}</span>
+                  {icon && (
+                    <span className="text-primary flex-shrink-0">{icon}</span>
+                  )}
+                  <span className="text-sm font-medium truncate">
+                    {resourceName}
+                  </span>
                 </div>
               </div>
             </div>
 
-            <Badge variant="secondary" className="text-xs flex-shrink-0 capitalize">
+            <Badge
+              variant="secondary"
+              className="text-xs flex-shrink-0 capitalize"
+            >
               {userRole}
             </Badge>
           </div>
@@ -153,9 +178,7 @@ export function OrgResourceLayout({ children, resourceName, icon }: OrgResourceL
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto">
-        <div className="max-w-7xl mx-auto p-4 md:p-6">
-          {children}
-        </div>
+        <div className="max-w-7xl mx-auto p-4 md:p-6">{children}</div>
       </div>
     </div>
   );

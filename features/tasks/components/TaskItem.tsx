@@ -6,11 +6,13 @@ import {
   selectShowAllProjects,
   selectExpandedTasks,
   selectOperatingTaskId,
+  toggleTaskExpand,
+} from '@/features/tasks/redux/taskUiSlice';
+import {
   toggleTaskCompleteThunk,
   updateTaskFieldThunk,
   deleteTaskThunk,
-  toggleTaskExpand,
-} from '@/features/tasks/redux';
+} from '@/features/tasks/redux/thunks';
 import TaskDetails from './TaskDetails';
 import EditableTaskTitle from './EditableTaskTitle';
 import { ScopeTagsDisplay } from '@/features/agent-context/components/ScopeTagsDisplay';

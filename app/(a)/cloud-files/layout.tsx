@@ -15,7 +15,7 @@
 import type { ReactNode } from "react";
 import { createClient } from "@/utils/supabase/server";
 import { createRouteMetadata } from "@/utils/route-metadata";
-import { CloudFilesRealtimeProvider } from "@/features/files";
+import { CloudFilesRealtimeProvider } from "@/features/files/providers/CloudFilesRealtimeProvider";
 
 export const metadata = createRouteMetadata("/cloud-files", {
   title: "Cloud Files",

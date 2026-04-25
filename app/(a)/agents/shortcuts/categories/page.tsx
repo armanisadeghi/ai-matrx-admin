@@ -14,15 +14,13 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/components/ui/use-toast";
-import {
-  CategoryForm,
-  CategoryTree,
-  DuplicateCategoryModal,
-  useAgentShortcutCrud,
-  useAgentShortcuts,
-  type AgentShortcutCategory,
-  type PlacementType,
-} from "@/features/agent-shortcuts";
+import { CategoryForm } from "@/features/agent-shortcuts/components/CategoryForm";
+import { CategoryTree } from "@/features/agent-shortcuts/components/CategoryTree";
+import { DuplicateCategoryModal } from "@/features/agent-shortcuts/components/DuplicateCategoryModal";
+import { useAgentShortcutCrud } from "@/features/agent-shortcuts/hooks/useAgentShortcutCrud";
+import { useAgentShortcuts } from "@/features/agent-shortcuts/hooks/useAgentShortcuts";
+import type { AgentShortcutCategoryDef as AgentShortcutCategory } from "@/features/agents/redux/agent-shortcut-categories/types";
+import type { PlacementType } from "@/features/agent-shortcuts/constants";
 
 const SCOPE = "user" as const;
 

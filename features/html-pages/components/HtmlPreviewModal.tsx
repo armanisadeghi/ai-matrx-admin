@@ -25,7 +25,7 @@ import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import {
   useSaveAndOpenInCodeEditor,
   CHAT_CAPTURES_FOLDER_NAME,
-} from "@/features/code";
+} from "@/features/code/actions/saveAndOpenInCodeEditor";
 import {
   copyToClipboard,
   removeThinkingContent,

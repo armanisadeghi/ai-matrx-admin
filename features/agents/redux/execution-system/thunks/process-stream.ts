@@ -99,18 +99,16 @@ import {
   type CxUserRequestRecord,
   type CxRequestRecord,
   type CxToolCallRecord,
-} from "../observability";
+} from "../observability/observability.slice";
 import {
   clearUserInput,
   markInputPersisted,
 } from "../instance-user-input/instance-user-input.slice";
 import { clearAllResources } from "../instance-resources/instance-resources.slice";
 import { resetUserVariableValues } from "../instance-variable-values/instance-variable-values.slice";
-import { setInstanceStatus } from "../conversations";
-import {
-  patchAgentConversationMetadata,
-  upsertAgentConversationFromExecutionAction,
-} from "@/features/agents/redux/conversation-list";
+import { setInstanceStatus } from "../conversations/conversations.slice";
+import { patchAgentConversationMetadata } from "@/features/agents/redux/conversation-list/conversation-list.slice";
+import { upsertAgentConversationFromExecutionAction } from "@/features/agents/redux/conversation-list/record-conversation-from-execution";
 import { StreamProfiler } from "@/utils/stream-profiler";
 import { assembleMessageParts } from "../utils/assemble-cx-content-blocks";
 import { callbackManager } from "@/utils/callbackManager";
@@ -808,8 +806,7 @@ export async function processStream({
         const { position } = d.metadata;
         // MessageRecord.role is "system" | "user" | "assistant" — narrow out
         // CxMessageRole's "tool" variant (tool turns live in cx_tool_call).
-        const role =
-          d.metadata.role === "tool" ? "assistant" : d.metadata.role;
+        const role = d.metadata.role === "tool" ? "assistant" : d.metadata.role;
         const owningConversationId =
           d.parent_refs.conversation_id ?? conversationId;
 
@@ -1274,9 +1271,8 @@ export async function processStream({
         conversationId,
         messageId: reservedAssistantMessageId,
         patch: {
-          content: cxContentBlocks as unknown as import(
-            "@/types/database.types"
-          ).Json,
+          content:
+            cxContentBlocks as unknown as import("@/types/database.types").Json,
           status: "active",
           _clientStatus: finalErrorMessage ? "error" : "complete",
           ...(typeof reservedAssistantPosition === "number" && {

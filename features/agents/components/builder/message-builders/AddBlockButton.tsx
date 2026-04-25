@@ -33,7 +33,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { Upload } from "lucide-react";
-import { useOpenImageUploaderWindow } from "@/features/window-panels/windows/image";
+import { useOpenImageUploaderWindow } from "@/features/window-panels/windows/image/useOpenImageUploaderWindow";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -354,12 +354,13 @@ export function BlockRow({
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 text-amber-500" />
-                Unsupported block type: <code className="font-mono">{type}</code>
+                Unsupported block type:{" "}
+                <code className="font-mono">{type}</code>
               </DialogTitle>
             </DialogHeader>
             <p className="text-xs text-muted-foreground">
-              This block type is preserved in the agent definition and will be sent to the API unchanged.
-              Editing is not supported.
+              This block type is preserved in the agent definition and will be
+              sent to the API unchanged. Editing is not supported.
             </p>
             <ScrollArea className="max-h-[60vh] rounded-md border border-border bg-muted/50">
               <pre className="p-4 text-xs font-mono whitespace-pre-wrap break-all">
@@ -404,7 +405,7 @@ export function BlockRow({
           </button>
         </div>
       </div>
-      
+
       {showThumbnail && (
         <div className="pl-5 pt-1 pb-1.5">
           {/* eslint-disable-next-line @next/next/no-img-element */}

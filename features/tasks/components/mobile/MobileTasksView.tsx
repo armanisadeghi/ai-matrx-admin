@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useAppSelector } from '@/lib/redux/hooks';
-import { selectFilteredTasks } from '@/features/tasks/redux';
+import { selectFilteredTasks } from '@/features/tasks/redux/selectors';
 import MobileTasksList from './MobileTasksList';
 import MobileTaskDetails from './MobileTaskDetails';
 

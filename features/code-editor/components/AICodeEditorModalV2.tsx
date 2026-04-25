@@ -4,7 +4,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useAgentLauncher } from "@/features/agents/hooks/useAgentLauncher";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { destroyInstanceIfAllowed } from "@/features/agents/redux/execution-system/conversations";
+import { destroyInstanceIfAllowed } from "@/features/agents/redux/execution-system/conversations/conversations.thunks";
 import { useCanvas } from "@/features/canvas/hooks/useCanvas";
 import { getBuiltinId } from "@/lib/redux/prompt-execution/builtins";
 import { supabase } from "@/utils/supabase/client";

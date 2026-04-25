@@ -10,7 +10,7 @@ import React, {
 } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { useShortcutTrigger } from "@/features/agents/hooks/useShortcutTrigger";
-import { destroyInstanceIfAllowed } from "@/features/agents/redux/execution-system/conversations";
+import { destroyInstanceIfAllowed } from "@/features/agents/redux/execution-system/conversations/conversations.thunks";
 import {
   selectLatestAccumulatedText,
   selectLatestRequestId,
@@ -48,7 +48,7 @@ import {
 import { toast } from "sonner";
 import MarkdownStream from "@/components/MarkdownStream";
 import { AgentStreamingResponse } from "./AgentJsonDisplay";
-import { VoiceTextarea } from "@/features/audio";
+import { VoiceTextarea } from "@/components/official/VoiceTextarea";
 
 // =============================================================================
 // Error Boundary — crash-proof fallback to raw MarkdownStream

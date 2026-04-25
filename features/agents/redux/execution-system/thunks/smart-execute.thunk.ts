@@ -6,7 +6,7 @@ import { executeInstance } from "./execute-instance.thunk";
 import { executeChatInstance } from "./execute-chat-instance.thunk";
 import { splitInputIntoNewConversation } from "./create-instance.thunk";
 import { abortConversation } from "./abort-registry";
-import { setInstanceStatus } from "../conversations";
+import { setInstanceStatus } from "../conversations/conversations.slice";
 import { setRequestStatus } from "../active-requests/active-requests.slice";
 import {
   markInputSubmitted,

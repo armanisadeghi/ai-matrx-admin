@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import AdvancedMenu from "@/components/official/AdvancedMenu";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/slices/userSlice";
-import { selectMessageActionInstance } from "@/features/agents/redux/execution-system/message-actions";
+import { selectMessageActionInstance } from "@/features/agents/redux/execution-system/message-actions/message-actions.slice";
 import {
   selectMessageHasUnsavedChanges,
   selectMessageHasHistory,

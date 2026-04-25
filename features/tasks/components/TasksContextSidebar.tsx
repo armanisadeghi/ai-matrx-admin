@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import * as icons from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { selectProjects, selectValidProjectIds } from "@/features/tasks/redux/selectors";
 import {
   selectSearchQuery,
   selectTaskFilter,
@@ -28,8 +29,6 @@ import {
   selectSortOrder,
   selectActiveProject,
   selectShowAllProjects,
-  selectProjects,
-  selectValidProjectIds,
   setSearchQuery,
   setFilter,
   setShowCompleted,
@@ -39,7 +38,7 @@ import {
   setActiveProject,
   setShowAllProjects,
   type TaskGroupBy,
-} from "@/features/tasks/redux";
+} from "@/features/tasks/redux/taskUiSlice";
 import type { TaskFilterType } from "@/features/tasks/types";
 import type { TaskSortField } from "@/features/tasks/types/sort";
 import { TASK_SORT_OPTIONS } from "@/features/tasks/types/sort";

@@ -52,11 +52,9 @@ import {
   selectAgentName,
 } from "@/features/agents/redux/agent-definition/selectors";
 import { fetchAgentExecutionMinimal } from "@/features/agents/redux/agent-definition/thunks";
-import {
-  fetchAgentConversations,
-  makeSelectAgentConversations,
-  type ConversationListItem,
-} from "@/features/agents/redux/conversation-list";
+import { fetchAgentConversations } from "@/features/agents/redux/conversation-list/conversation-list.thunks";
+import { makeSelectAgentConversations } from "@/features/agents/redux/conversation-list/conversation-list.selectors";
+import type { ConversationListItem } from "@/features/agents/redux/conversation-list/conversation-list.types";
 import { selectLatestConversationId } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
 import { selectFocusedConversation } from "@/features/agents/redux/execution-system/conversation-focus/conversation-focus.selectors";
 import { useAgentLauncher } from "@/features/agents/hooks/useAgentLauncher";
@@ -66,7 +64,7 @@ import { loadConversation } from "@/features/agents/redux/execution-system/thunk
 import {
   registerSurface,
   unregisterSurface,
-} from "@/features/agents/redux/surfaces";
+} from "@/features/agents/redux/surfaces/surfaces.slice";
 import { AgentListDropdown } from "@/features/agents/components/agent-listings/AgentListDropdown";
 import { AgentConversationColumn } from "@/features/agents/components/shared/AgentConversationColumn";
 import { AgentModeController } from "@/features/agents/components/shared/AgentModeController";

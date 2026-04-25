@@ -19,7 +19,7 @@ import {
 import type {
   InstanceUIState,
   BuilderAdvancedSettings,
-} from "@/features/agents/types";
+} from "@/features/agents/types/instance.types";
 
 // ─── Copy helpers ─────────────────────────────────────────────────────────────
 

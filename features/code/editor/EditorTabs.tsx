@@ -7,7 +7,7 @@ import {
   selectActiveTabId,
   selectCodeTabs,
   setActiveTab,
-} from "../redux";
+} from "../redux/tabsSlice";
 import { EditorTab } from "./EditorTab";
 
 export const EditorTabs: React.FC = () => {

@@ -5,7 +5,7 @@ import { Puzzle, Plus, Search, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { useOrgProjects, usePersonalProjects } from '@/features/projects';
+import { useOrgProjects, usePersonalProjects } from '../hooks';
 import { ProjectCard } from './ProjectCard';
 import { CreateProjectModal } from './CreateProjectModal';
 import { filterAndSortBySearch } from '@/utils/search-scoring';

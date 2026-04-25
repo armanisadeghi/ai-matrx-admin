@@ -25,7 +25,7 @@ import {
 import { useAppSelector } from "@/lib/redux/hooks";
 import { useNavTree } from "@/features/agent-context/hooks/useNavTree";
 import { selectAllNotesList } from "@/features/notes/redux/selectors";
-import { selectAllTasksFlat } from "@/features/tasks/redux";
+import { selectAllTasksFlat } from "@/features/tasks/redux/selectors";
 import {
   QuickCreateTaskButton,
   AssociateTaskButton,

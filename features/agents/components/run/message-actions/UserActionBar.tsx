@@ -152,7 +152,7 @@ export function UserActionBar({
         onSave: async (newContent: string) => {
           try {
             const { editMessage } =
-              await import("@/features/agents/redux/execution-system/message-crud");
+              await import("@/features/agents/redux/execution-system/message-crud/edit-message.thunk");
             const nextContent = [
               { type: "text", text: newContent },
             ] as unknown as Json;
@@ -206,15 +206,14 @@ export function UserActionBar({
     setPendingResubmitContent(null);
 
     try {
-      const { forkConversation, editMessage } = await import(
-        "@/features/agents/redux/execution-system/message-crud"
-      );
-      const { executeInstance } = await import(
-        "@/features/agents/redux/execution-system/thunks/execute-instance.thunk"
-      );
-      const { setUserInputText } = await import(
-        "@/features/agents/redux/execution-system/instance-user-input/instance-user-input.slice"
-      );
+      const { forkConversation } =
+        await import("@/features/agents/redux/execution-system/message-crud/fork-conversation.thunk");
+      const { editMessage } =
+        await import("@/features/agents/redux/execution-system/message-crud/edit-message.thunk");
+      const { executeInstance } =
+        await import("@/features/agents/redux/execution-system/thunks/execute-instance.thunk");
+      const { setUserInputText } =
+        await import("@/features/agents/redux/execution-system/instance-user-input/instance-user-input.slice");
 
       const forkPosition = Math.max(0, (messagePosition ?? 0) - 1);
       const forkResult = await dispatch(
@@ -229,18 +228,17 @@ export function UserActionBar({
       // resolving. The user message we want to edit was at `messagePosition`
       // in the source; the duplicated row sits at the same position on the
       // fork with a fresh id. Look it up via a thunk-style read.
-      const findEditedMessageId = dispatch(
-        ((_: unknown, getState: () => import("@/lib/redux/store").RootState) => {
-          const entry =
-            getState().messages.byConversationId[newConversationId];
-          if (!entry) return null;
-          const userMsg = Object.values(entry.byId).find(
-            (m) =>
-              m.role === "user" && m.position === (messagePosition ?? 0),
-          );
-          return userMsg?.id ?? null;
-        }) as never,
-      ) as unknown as string | null;
+      const findEditedMessageId = dispatch(((
+        _: unknown,
+        getState: () => import("@/lib/redux/store").RootState,
+      ) => {
+        const entry = getState().messages.byConversationId[newConversationId];
+        if (!entry) return null;
+        const userMsg = Object.values(entry.byId).find(
+          (m) => m.role === "user" && m.position === (messagePosition ?? 0),
+        );
+        return userMsg?.id ?? null;
+      }) as never) as unknown as string | null;
 
       if (typeof findEditedMessageId !== "string") {
         toast.error("Couldn't find the edited message on the new fork");
@@ -251,18 +249,15 @@ export function UserActionBar({
         editMessage({
           conversationId: newConversationId,
           messageId: findEditedMessageId,
-          newContent: [
-            { type: "text", text: newContent },
-          ] as unknown as Json,
+          newContent: [{ type: "text", text: newContent }] as unknown as Json,
         }),
       ).unwrap();
 
       // Surface the new conversation BEFORE firing the turn so the
       // streaming bubble lands in the right place.
       if (surfaceKey) {
-        const { requestSurfaceNavigation } = await import(
-          "@/features/agents/redux/surfaces"
-        );
+        const { requestSurfaceNavigation } =
+          await import("@/features/agents/redux/surfaces/request-surface-navigation.thunk");
         await dispatch(
           requestSurfaceNavigation({
             surfaceKey,
@@ -296,7 +291,13 @@ export function UserActionBar({
       );
       toast.error(message);
     }
-  }, [pendingResubmitContent, dispatch, conversationId, messagePosition, surfaceKey]);
+  }, [
+    pendingResubmitContent,
+    dispatch,
+    conversationId,
+    messagePosition,
+    surfaceKey,
+  ]);
 
   const handleResubmitChooseOverwrite = useCallback(async () => {
     if (pendingResubmitContent == null) return;
@@ -304,9 +305,8 @@ export function UserActionBar({
     setPendingResubmitContent(null);
 
     try {
-      const { overwriteAndResend } = await import(
-        "@/features/agents/redux/execution-system/message-crud"
-      );
+      const { overwriteAndResend } =
+        await import("@/features/agents/redux/execution-system/message-crud/overwrite-and-resend.thunk");
       await dispatch(
         overwriteAndResend({
           conversationId,
@@ -327,12 +327,9 @@ export function UserActionBar({
 
   const handleConfirmDelete = useCallback(async () => {
     try {
-      const { deleteMessage } = await import(
-        "@/features/agents/redux/execution-system/message-crud"
-      );
-      await dispatch(
-        deleteMessage({ conversationId, messageId }),
-      ).unwrap();
+      const { deleteMessage } =
+        await import("@/features/agents/redux/execution-system/message-crud/delete-message.thunk");
+      await dispatch(deleteMessage({ conversationId, messageId })).unwrap();
       toast.success("Message deleted");
     } catch (err) {
       const { logPayload, message } = serializeSaveError(err);
@@ -347,9 +344,10 @@ export function UserActionBar({
 
   const handleConfirmDeleteFork = useCallback(async () => {
     try {
-      const { forkConversation, deleteMessage } = await import(
-        "@/features/agents/redux/execution-system/message-crud"
-      );
+      const { forkConversation } =
+        await import("@/features/agents/redux/execution-system/message-crud/fork-conversation.thunk");
+      const { deleteMessage } =
+        await import("@/features/agents/redux/execution-system/message-crud/delete-message.thunk");
       const forkPosition = Math.max(0, (messagePosition ?? 0) - 1);
       const forkResult = await dispatch(
         forkConversation({ conversationId, atPosition: forkPosition }),
@@ -357,17 +355,17 @@ export function UserActionBar({
       const newConversationId = forkResult.conversationId;
 
       // Find the duplicated user message on the fork at the same position.
-      const findCopiedId = dispatch(
-        ((_: unknown, getState: () => import("@/lib/redux/store").RootState) => {
-          const entry =
-            getState().messages.byConversationId[newConversationId];
-          if (!entry) return null;
-          const match = Object.values(entry.byId).find(
-            (m) => m.position === (messagePosition ?? 0),
-          );
-          return match?.id ?? null;
-        }) as never,
-      ) as unknown as string | null;
+      const findCopiedId = dispatch(((
+        _: unknown,
+        getState: () => import("@/lib/redux/store").RootState,
+      ) => {
+        const entry = getState().messages.byConversationId[newConversationId];
+        if (!entry) return null;
+        const match = Object.values(entry.byId).find(
+          (m) => m.position === (messagePosition ?? 0),
+        );
+        return match?.id ?? null;
+      }) as never) as unknown as string | null;
 
       if (typeof findCopiedId === "string") {
         await dispatch(
@@ -379,9 +377,8 @@ export function UserActionBar({
       }
 
       if (surfaceKey) {
-        const { requestSurfaceNavigation } = await import(
-          "@/features/agents/redux/surfaces"
-        );
+        const { requestSurfaceNavigation } =
+          await import("@/features/agents/redux/surfaces/request-surface-navigation.thunk");
         await dispatch(
           requestSurfaceNavigation({
             surfaceKey,

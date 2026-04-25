@@ -14,9 +14,11 @@ import {
 import {
   selectIsBlockMode,
   selectIsSnapshot,
+} from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
+import {
   setUseBlockMode,
   setUseSnapshot,
-} from "@/features/agents/redux/execution-system/instance-ui-state";
+} from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.slice";
 
 export default function ChatMobileAdminToggles() {
   const dispatch = useAppDispatch();

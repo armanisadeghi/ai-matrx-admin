@@ -8,8 +8,8 @@
  * stream at specific positions.
  */
 
-import { ToolCallVisualization } from "@/features/tool-call-visualization";
-import { useToolLifecycle } from "@/features/tool-call-visualization";
+import { ToolCallVisualization } from "@/features/tool-call-visualization/components/ToolCallVisualization";
+import { useToolLifecycle } from "@/features/tool-call-visualization/redux/hooks";
 
 interface ToolCallCardProps {
   requestId: string;
@@ -20,7 +20,5 @@ export function ToolCallCard({ requestId, callId }: ToolCallCardProps) {
   const lifecycle = useToolLifecycle(requestId, callId);
   if (!lifecycle) return null;
 
-  return (
-    <ToolCallVisualization entries={[lifecycle]} className="my-2" />
-  );
+  return <ToolCallVisualization entries={[lifecycle]} className="my-2" />;
 }

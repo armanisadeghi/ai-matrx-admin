@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import type { ProjectWithRole } from '@/features/projects';
+import type { ProjectWithRole } from '../types';
 import { cn } from '@/lib/utils';
 
 interface ProjectCardProps {

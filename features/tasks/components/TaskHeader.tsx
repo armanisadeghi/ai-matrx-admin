@@ -3,8 +3,8 @@ import { useAppSelector } from '@/lib/redux/hooks';
 import {
   selectShowAllProjects,
   selectActiveProject,
-  selectProjects,
-} from '@/features/tasks/redux';
+} from '@/features/tasks/redux/taskUiSlice';
+import { selectProjects } from '@/features/tasks/redux/selectors';
 
 export default function TaskHeader() {
   const showAllProjects = useAppSelector(selectShowAllProjects);

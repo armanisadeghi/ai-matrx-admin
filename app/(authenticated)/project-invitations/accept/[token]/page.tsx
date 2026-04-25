@@ -7,9 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { acceptProjectInvitation } from '@/features/projects';
+import { acceptProjectInvitation } from '@/features/projects/service';
 import { supabase } from '@/utils/supabase/client';
-import type { ProjectInvitation, Project } from '@/features/projects';
+import type { ProjectInvitation, Project } from '@/features/projects/types';
 
 type InvitationWithProject = ProjectInvitation & { project: Project };
 

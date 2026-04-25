@@ -4,7 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Loader2, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useOrganization, useUserRole } from "@/features/organizations";
+import { useOrganization, useUserRole } from "@/features/organizations/hooks";
 import { ScopeManagerPage } from "@/features/agent-context/components/scope-admin";
 
 export default function OrganizationScopesPage() {

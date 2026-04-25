@@ -7,7 +7,7 @@
  */
 
 import { formatText } from "@/utils/text/text-case-converter";
-import { VariableInputComponent } from "@/features/agents/components/inputs/input-components";
+import { VariableInputComponent } from "@/features/agents/components/inputs/input-components/VariableInputComponent";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import {
   selectInstanceVariableDefinitions,

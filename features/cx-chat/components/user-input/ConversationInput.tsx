@@ -77,7 +77,7 @@ import type { PromptSettings } from "@/features/prompts/types/core";
 import type {
   ManagedResource,
   ResourceBlockType,
-} from "@/features/agents/types";
+} from "@/features/agents/types/instance.types";
 import type { Resource } from "@/features/prompts/types/resources";
 
 /** Map user-upload MIME to API content-block type (see ResourceBlockType). */

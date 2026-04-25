@@ -1,14 +1,23 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { Building2, Users, Settings, Crown, Shield, User as UserIcon, ChevronRight, ExternalLink } from 'lucide-react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import type { OrganizationWithRole } from '@/features/organizations';
-import { cn } from '@/lib/utils';
+import React, { useState } from "react";
+import {
+  Building2,
+  Users,
+  Settings,
+  Crown,
+  Shield,
+  User as UserIcon,
+  ChevronRight,
+  ExternalLink,
+} from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import type { OrganizationWithRole } from "../types";
+import { cn } from "@/lib/utils";
 
 interface OrganizationCardProps {
   organization: OrganizationWithRole;
@@ -17,7 +26,7 @@ interface OrganizationCardProps {
 
 /**
  * OrganizationCard - Card display for a single organization
- * 
+ *
  * Features:
  * - Shows org name, description, member count
  * - Role badge (Owner/Admin/Member/Personal)
@@ -25,7 +34,10 @@ interface OrganizationCardProps {
  * - Click to navigate to org settings
  * - Special styling for personal orgs
  */
-export function OrganizationCard({ organization, onUpdate }: OrganizationCardProps) {
+export function OrganizationCard({
+  organization,
+  onUpdate,
+}: OrganizationCardProps) {
   const router = useRouter();
   const [isNavigating, setIsNavigating] = useState(false);
 
@@ -37,35 +49,40 @@ export function OrganizationCard({ organization, onUpdate }: OrganizationCardPro
     if (isPersonal) {
       return {
         icon: <UserIcon className="h-3 w-3" />,
-        label: 'Personal',
-        color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
+        label: "Personal",
+        color:
+          "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300",
       };
     }
 
     switch (role) {
-      case 'owner':
+      case "owner":
         return {
           icon: <Crown className="h-3 w-3" />,
-          label: 'Owner',
-          color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300',
+          label: "Owner",
+          color:
+            "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300",
         };
-      case 'admin':
+      case "admin":
         return {
           icon: <Shield className="h-3 w-3" />,
-          label: 'Admin',
-          color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
+          label: "Admin",
+          color:
+            "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
         };
-      case 'member':
+      case "member":
         return {
           icon: <UserIcon className="h-3 w-3" />,
-          label: 'Member',
-          color: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
+          label: "Member",
+          color:
+            "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
         };
       default:
         return {
           icon: <UserIcon className="h-3 w-3" />,
-          label: 'Member',
-          color: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
+          label: "Member",
+          color:
+            "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
         };
     }
   };
@@ -87,19 +104,20 @@ export function OrganizationCard({ organization, onUpdate }: OrganizationCardPro
   };
 
   // Determine available actions based on role
-  const canManageSettings = role === 'owner' || role === 'admin';
-  const canManageMembers = role === 'owner' || role === 'admin';
+  const canManageSettings = role === "owner" || role === "admin";
+  const canManageMembers = role === "owner" || role === "admin";
 
   return (
     <Card
       className={cn(
-        'p-5 transition-all duration-200 hover:shadow-md cursor-pointer group',
-        isPersonal && 'border-purple-200 dark:border-purple-800 bg-purple-50/30 dark:bg-purple-900/10',
-        isNavigating && 'opacity-50 pointer-events-none'
+        "p-5 transition-all duration-200 hover:shadow-md cursor-pointer group",
+        isPersonal &&
+          "border-purple-200 dark:border-purple-800 bg-purple-50/30 dark:bg-purple-900/10",
+        isNavigating && "opacity-50 pointer-events-none",
       )}
       onClick={(e) => {
         if (e.metaKey || e.ctrlKey) {
-          window.open(settingsPath, '_blank');
+          window.open(settingsPath, "_blank");
           return;
         }
         handleNavigate();
@@ -110,12 +128,14 @@ export function OrganizationCard({ organization, onUpdate }: OrganizationCardPro
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 mb-2">
             {/* Icon */}
-            <div className={cn(
-              'flex-shrink-0 w-12 h-12 rounded-lg flex items-center justify-center',
-              isPersonal 
-                ? 'bg-purple-100 dark:bg-purple-900/50' 
-                : 'bg-blue-100 dark:bg-blue-900/50'
-            )}>
+            <div
+              className={cn(
+                "flex-shrink-0 w-12 h-12 rounded-lg flex items-center justify-center",
+                isPersonal
+                  ? "bg-purple-100 dark:bg-purple-900/50"
+                  : "bg-blue-100 dark:bg-blue-900/50",
+              )}
+            >
               {organization.logoUrl ? (
                 <img
                   src={organization.logoUrl}
@@ -123,12 +143,14 @@ export function OrganizationCard({ organization, onUpdate }: OrganizationCardPro
                   className="w-full h-full object-cover rounded-lg"
                 />
               ) : (
-                <Building2 className={cn(
-                  'h-6 w-6',
-                  isPersonal 
-                    ? 'text-purple-600 dark:text-purple-400' 
-                    : 'text-blue-600 dark:text-blue-400'
-                )} />
+                <Building2
+                  className={cn(
+                    "h-6 w-6",
+                    isPersonal
+                      ? "text-purple-600 dark:text-purple-400"
+                      : "text-blue-600 dark:text-blue-400",
+                  )}
+                />
               )}
             </div>
 
@@ -138,7 +160,12 @@ export function OrganizationCard({ organization, onUpdate }: OrganizationCardPro
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 truncate">
                   {organization.name}
                 </h3>
-                <Badge className={cn('flex items-center gap-1 text-xs', roleDisplay.color)}>
+                <Badge
+                  className={cn(
+                    "flex items-center gap-1 text-xs",
+                    roleDisplay.color,
+                  )}
+                >
                   {roleDisplay.icon}
                   {roleDisplay.label}
                 </Badge>
@@ -156,8 +183,8 @@ export function OrganizationCard({ organization, onUpdate }: OrganizationCardPro
             <div className="flex items-center gap-1">
               <Users className="h-4 w-4" />
               <span>
-                {organization.memberCount === 1 
-                  ? '1 member' 
+                {organization.memberCount === 1
+                  ? "1 member"
                   : `${organization.memberCount || 0} members`}
               </span>
             </div>
@@ -179,7 +206,14 @@ export function OrganizationCard({ organization, onUpdate }: OrganizationCardPro
         {/* Right side - Actions */}
         <div className="flex flex-col gap-2 items-end">
           {canManageSettings && !isPersonal && (
-            <Link href={settingsPath} tabIndex={-1} onClick={(e) => { e.stopPropagation(); handleNavigate(e); }}>
+            <Link
+              href={settingsPath}
+              tabIndex={-1}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleNavigate(e);
+              }}
+            >
               <Button
                 variant="ghost"
                 size="sm"
@@ -192,7 +226,14 @@ export function OrganizationCard({ organization, onUpdate }: OrganizationCardPro
           )}
 
           {isPersonal && (
-            <Link href={settingsPath} tabIndex={-1} onClick={(e) => { e.stopPropagation(); handleNavigate(e); }}>
+            <Link
+              href={settingsPath}
+              tabIndex={-1}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleNavigate(e);
+              }}
+            >
               <Button
                 variant="ghost"
                 size="sm"
@@ -205,7 +246,14 @@ export function OrganizationCard({ organization, onUpdate }: OrganizationCardPro
           )}
 
           {!canManageSettings && !isPersonal && (
-            <Link href={settingsPath} tabIndex={-1} onClick={(e) => { e.stopPropagation(); handleNavigate(e); }}>
+            <Link
+              href={settingsPath}
+              tabIndex={-1}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleNavigate(e);
+              }}
+            >
               <Button
                 variant="ghost"
                 size="sm"
@@ -221,4 +269,3 @@ export function OrganizationCard({ organization, onUpdate }: OrganizationCardPro
     </Card>
   );
 }
-

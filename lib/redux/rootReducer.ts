@@ -53,11 +53,9 @@ import textDiffReducer from "./slices/textDiffSlice";
 import noteVersionsReducer from "./slices/noteVersionsSlice";
 import notesReducer from "@/features/notes/redux/slice";
 import { codeFilesReducer } from "@/features/code-files/redux/slice";
-import {
-  codeWorkspaceReducer,
-  codeTabsReducer,
-  codeTerminalReducer,
-} from "@/features/code/redux";
+import codeWorkspaceReducer from "@/features/code/redux/codeWorkspaceSlice";
+import codeTabsReducer from "@/features/code/redux/tabsSlice";
+import codeTerminalReducer from "@/features/code/redux/terminalSlice";
 import { cloudFilesReducer } from "@/features/files/redux/slice";
 import messagingReducer from "@/features/messaging/redux/messagingSlice";
 import smsReducer from "@/features/sms/redux/smsSlice";
@@ -71,7 +69,7 @@ import urlSyncReducer from "./slices/urlSyncSlice";
 import agentCacheReducer from "./slices/agentCacheSlice";
 import agentDefinitionReducer from "@/features/agents/redux/agent-definition/slice";
 // agentConversations — superseded by conversationList. File remains on disk.
-import { conversationListReducer } from "@/features/agents/redux/conversation-list";
+import { conversationListReducer } from "@/features/agents/redux/conversation-list/conversation-list.slice";
 import { conversationHistoryReducer } from "@/features/agents/redux/conversation-history";
 import agentShortcutReducer from "@/features/agents/redux/agent-shortcuts/slice";
 import agentShortcutCategoryReducer from "@/features/agents/redux/agent-shortcut-categories/slice";
@@ -94,7 +92,7 @@ import actionCacheReducer from "./prompt-execution/actionCacheSlice";
 import promptEditorReducer from "./slices/promptEditorSlice";
 import modelRegistryReducer from "../../features/ai-models/redux/modelRegistrySlice";
 // chatConversations — unmounted (Redux unification). File remains on disk.
-import { messageActionsReducer } from "@/features/agents/redux/execution-system/message-actions";
+import { messageActionsReducer } from "@/features/agents/redux/execution-system/message-actions/message-actions.slice";
 import { agentSettingsReducer } from "./slices/agent-settings";
 
 // cxConversations — superseded by conversationList. File remains on disk.
@@ -113,27 +111,25 @@ import {
   scopeAssignmentsReducer,
   scopeContextReducer,
 } from "@/features/agent-context/redux/scope";
-import {
-  taskUiReducer,
-  quickTasksWindowReducer,
-  taskAssociationsReducer,
-} from "@/features/tasks/redux";
+import taskUiReducer from "@/features/tasks/redux/taskUiSlice";
+import quickTasksWindowReducer from "@/features/tasks/redux/quickTasksWindowSlice";
+import taskAssociationsReducer from "@/features/tasks/redux/taskAssociationsSlice";
 
-import { instanceUIStateReducer } from "@/features/agents/redux/execution-system/instance-ui-state";
-import { instanceClientToolsReducer } from "@/features/agents/redux/execution-system/instance-client-tools";
-import { instanceContextReducer } from "@/features/agents/redux/execution-system/instance-context";
-import { instanceModelOverridesReducer } from "@/features/agents/redux/execution-system/instance-model-overrides";
-import { instanceVariableValuesReducer } from "@/features/agents/redux/execution-system/instance-variable-values";
-import { instanceResourcesReducer } from "@/features/agents/redux/execution-system/instance-resources";
-import { instanceUserInputReducer } from "@/features/agents/redux/execution-system/instance-user-input";
-import { conversationsReducer } from "@/features/agents/redux/execution-system/conversations";
-import { activeRequestsReducer } from "@/features/agents/redux/execution-system/active-requests";
-import { observabilityReducer } from "@/features/agents/redux/execution-system/observability";
-import { observationalMemoryReducer } from "@/features/agents/redux/execution-system/observational-memory";
-import { cacheBypassReducer } from "@/features/agents/redux/execution-system/message-crud";
-import { messagesReducer } from "@/features/agents/redux/execution-system/messages";
-import { conversationFocusReducer } from "@/features/agents/redux/execution-system/conversation-focus";
-import { surfacesReducer } from "@/features/agents/redux/surfaces";
+import { default as instanceUIStateReducer } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.slice";
+import { default as instanceClientToolsReducer } from "@/features/agents/redux/execution-system/instance-client-tools/instance-client-tools.slice";
+import { default as instanceContextReducer } from "@/features/agents/redux/execution-system/instance-context/instance-context.slice";
+import { default as instanceModelOverridesReducer } from "@/features/agents/redux/execution-system/instance-model-overrides/instance-model-overrides.slice";
+import { default as instanceVariableValuesReducer } from "@/features/agents/redux/execution-system/instance-variable-values/instance-variable-values.slice";
+import { default as instanceResourcesReducer } from "@/features/agents/redux/execution-system/instance-resources/instance-resources.slice";
+import { default as instanceUserInputReducer } from "@/features/agents/redux/execution-system/instance-user-input/instance-user-input.slice";
+import { default as conversationsReducer } from "@/features/agents/redux/execution-system/conversations/conversations.slice";
+import { default as activeRequestsReducer } from "@/features/agents/redux/execution-system/active-requests/active-requests.slice";
+import { default as observabilityReducer } from "@/features/agents/redux/execution-system/observability/observability.slice";
+import { default as observationalMemoryReducer } from "@/features/agents/redux/execution-system/observational-memory/observational-memory.slice";
+import { cacheBypassReducer } from "@/features/agents/redux/execution-system/message-crud/cache-bypass.slice";
+import { default as messagesReducer } from "@/features/agents/redux/execution-system/messages/messages.slice";
+import { default as conversationFocusReducer } from "@/features/agents/redux/execution-system/conversation-focus/conversation-focus.slice";
+import { surfacesReducer } from "@/features/agents/redux/surfaces/surfaces.slice";
 import agentAssistantMarkdownDraftReducer from "@/features/agents/redux/agent-assistant-markdown-draft.slice";
 import { netRequestsReducer, netHealthReducer } from "@/lib/redux/net";
 

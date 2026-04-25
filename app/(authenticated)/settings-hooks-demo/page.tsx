@@ -17,9 +17,9 @@ import {
 import {
   useSetting,
   useSettingPersistence,
-  useSettingsSearch,
-  findTab,
-} from "@/features/settings";
+} from "@/features/settings/hooks/useSetting";
+import { useSettingsSearch } from "@/features/settings/hooks/useSettingsSearch";
+import { findTab } from "@/features/settings/registry";
 import type { ThinkingMode } from "@/lib/redux/slices/userPreferencesSlice";
 import type { ServerEnvironment } from "@/lib/redux/slices/adminPreferencesSlice";
 import { useState } from "react";

@@ -13,7 +13,7 @@ import {
   selectAllDiscoveredMcpTools,
   selectMcpDiscoveries,
 } from "@/features/agents/redux/mcp/mcp.slice";
-import type { McpToolSchema } from "@/features/agents/services/mcp-client";
+import type { McpToolSchema } from "@/features/agents/services/mcp-client/tool-discovery";
 
 // ─── useMcpCatalog ───────────────────────────────────────────────────────────
 
@@ -115,8 +115,7 @@ export function useMcpAllTools() {
   const discoveries = useAppSelector(selectMcpDiscoveries);
 
   const isLoading = useMemo(
-    () =>
-      Object.values(discoveries).some((d) => d.status === "loading"),
+    () => Object.values(discoveries).some((d) => d.status === "loading"),
     [discoveries],
   );
 
@@ -130,14 +129,11 @@ export function useMcpAllTools() {
       const tool = allTools.find((t) => t.name === toolName);
       if (!tool) throw new Error(`MCP tool not found: ${toolName}`);
 
-      const response = await fetch(
-        `/api/mcp/servers/${tool.serverId}/invoke`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ tool: toolName, arguments: args }),
-        },
-      );
+      const response = await fetch(`/api/mcp/servers/${tool.serverId}/invoke`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tool: toolName, arguments: args }),
+      });
 
       if (!response.ok) {
         const body = await response.json().catch(() => ({}));
@@ -177,8 +173,9 @@ export function useDiscoverAgentMcpTools(serverIds: string[]) {
   }, [dispatch, serverIds, catalog, discoveries]);
 
   const agentTools = useMemo(() => {
-    const tools: Array<McpToolSchema & { serverId: string; serverName: string }> =
-      [];
+    const tools: Array<
+      McpToolSchema & { serverId: string; serverName: string }
+    > = [];
     for (const serverId of serverIds) {
       const discovery = discoveries[serverId];
       if (!discovery || discovery.status !== "succeeded") continue;

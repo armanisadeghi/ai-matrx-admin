@@ -22,7 +22,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { setPreExecutionSatisfied } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.slice";
 import { selectPreExecutionMessage } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { selectHasUserInput } from "@/features/agents/redux/execution-system/instance-user-input/instance-user-input.selectors";
-import { destroyInstanceIfAllowed } from "@/features/agents/redux/execution-system/conversations";
+import { destroyInstanceIfAllowed } from "@/features/agents/redux/execution-system/conversations/conversations.thunks";
 import { selectInstanceAgentName } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { SmartAgentInput } from "./smart-input/SmartAgentInput";
 

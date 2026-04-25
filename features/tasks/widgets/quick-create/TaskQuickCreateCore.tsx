@@ -39,10 +39,8 @@ import {
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { useAssociateTask } from "@/features/tasks/hooks/useAssociateTask";
-import {
-  selectProjects,
-  setSelectedTaskId,
-} from "@/features/tasks/redux";
+import { selectProjects } from "@/features/tasks/redux/selectors";
+import { setSelectedTaskId } from "@/features/tasks/redux/taskUiSlice";
 import {
   selectOrganizationId,
   selectScopeSelectionsContext,
@@ -53,10 +51,8 @@ import { selectAllScopes } from "@/features/agent-context/redux/scope/scopesSlic
 import { selectAllScopeTypes } from "@/features/agent-context/redux/scope/scopeTypesSlice";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { toast } from "sonner";
-import {
-  ConversationHoverPreview,
-  MessageHoverPreview,
-} from "@/features/agents/components/previews";
+import { ConversationHoverPreview } from "@/features/agents/components/previews/ConversationHoverPreview";
+import { MessageHoverPreview } from "@/features/agents/components/previews/MessageHoverPreview";
 
 export type PostSaveAction = "newTab" | "navigate" | "openWindow" | "none";
 type Priority = "low" | "medium" | "high" | "";

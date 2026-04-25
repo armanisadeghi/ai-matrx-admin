@@ -64,7 +64,7 @@ export {
   selectAgentConversationsEntry,
   selectAgentConversationsEntryForInstance,
   selectAgentConversationIds,
-} from "@/features/agents/redux/conversation-list";
+} from "@/features/agents/redux/conversation-list/conversation-list.selectors";
 
 // ── Observability ──────────────────────────────────────────────────────────
 export {
@@ -75,7 +75,7 @@ export {
   selectToolCallsForUserRequest,
   selectToolCallById,
   selectTimelineForUserRequest,
-} from "@/features/agents/redux/execution-system/observability";
+} from "@/features/agents/redux/execution-system/observability/observability.selectors";
 
 // ── Cache-bypass ───────────────────────────────────────────────────────────
 export {
@@ -84,10 +84,10 @@ export {
   markCacheBypass,
   clearCacheBypass,
   clearCacheBypassBucket,
-} from "@/features/agents/redux/execution-system/message-crud";
+} from "@/features/agents/redux/execution-system/message-crud/cache-bypass.slice";
 
 // ── Message actions ────────────────────────────────────────────────────────
 export {
   selectMessageActionInstance,
   messageActionsActions,
-} from "@/features/agents/redux/execution-system/message-actions";
+} from "@/features/agents/redux/execution-system/message-actions/message-actions.slice";

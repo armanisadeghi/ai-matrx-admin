@@ -17,13 +17,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { createProject } from '../service';
 import {
-  createProject,
   generateProjectSlug,
   validateProjectName,
   validateProjectSlug,
-  useProjectSlugAvailability,
-} from '@/features/projects';
+} from '../types';
+import { useProjectSlugAvailability } from '../hooks';
 
 interface CreateProjectModalProps {
   isOpen: boolean;

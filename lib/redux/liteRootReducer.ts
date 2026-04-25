@@ -17,7 +17,7 @@ import overlaySlice from "./slices/overlaySlice";
 import overlayDataReducer from "./slices/overlayDataSlice";
 
 // Message actions instance tracking (registers per-message context for overlay dispatch)
-import { messageActionsReducer } from "@/features/agents/redux/execution-system/message-actions";
+import { messageActionsReducer } from "@/features/agents/redux/execution-system/message-actions/message-actions.slice";
 
 // Artifact registry + HTML page sessions (used by HtmlPreviewBridge in OverlayController)
 import artifactsReducer from "./slices/artifactsSlice";

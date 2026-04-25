@@ -3,7 +3,7 @@
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { useCodeWorkspace } from "../CodeWorkspaceProvider";
-import { openTab } from "../redux";
+import { openTab } from "../redux/tabsSlice";
 import { languageFromFilename } from "../styles/file-icon";
 
 /**

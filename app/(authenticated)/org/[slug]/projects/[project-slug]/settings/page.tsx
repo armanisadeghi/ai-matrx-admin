@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { useProject, useProjectUserRole } from '@/features/projects';
-import { ProjectSettings } from '@/features/projects/components/ProjectSettings';
-import { getOrganizationBySlug } from '@/features/organizations';
+import React from "react";
+import { useParams, useRouter } from "next/navigation";
+import { ArrowLeft, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { useProject, useProjectUserRole } from "@/features/projects/hooks";
+import { ProjectSettings } from "@/features/projects/components/ProjectSettings";
+import { getOrganizationBySlug } from "@/features/organizations/service";
 
 /**
  * Project Settings Page
@@ -17,7 +17,7 @@ export default function ProjectSettingsPage() {
   const params = useParams();
   const router = useRouter();
   const orgSlug = params.slug as string;
-  const projectSlug = params['project-slug'] as string;
+  const projectSlug = params["project-slug"] as string;
 
   const [projectId, setProjectId] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(true);
@@ -28,18 +28,20 @@ export default function ProjectSettingsPage() {
       try {
         const org = await getOrganizationBySlug(orgSlug);
         if (!org) {
-          setError('Organization not found');
+          setError("Organization not found");
           return;
         }
-        const { getProjectBySlug } = await import('@/features/projects');
+        const { getProjectBySlug } =
+          await import("@/features/projects/service");
         const proj = await getProjectBySlug(projectSlug, org.id);
         if (!proj) {
-          setError('Project not found');
+          setError("Project not found");
           return;
         }
         setProjectId(proj.id);
       } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : 'Failed to load project';
+        const msg =
+          err instanceof Error ? err.message : "Failed to load project";
         setError(msg);
       } finally {
         setLoading(false);
@@ -48,8 +50,15 @@ export default function ProjectSettingsPage() {
     load();
   }, [orgSlug, projectSlug]);
 
-  const { project, loading: projectLoading } = useProject(projectId ?? undefined);
-  const { role, loading: roleLoading, isOwner, isAdmin } = useProjectUserRole(projectId ?? undefined);
+  const { project, loading: projectLoading } = useProject(
+    projectId ?? undefined,
+  );
+  const {
+    role,
+    loading: roleLoading,
+    isOwner,
+    isAdmin,
+  } = useProjectUserRole(projectId ?? undefined);
 
   const isLoading = loading || projectLoading || roleLoading;
 

@@ -1,0 +1,12 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "ignore": [
+    ".claude/**",
+    ".cursor/**",
+    ".next/**",
+    "out/**",
+    "coverage/**",
+    "dist/**"
+  ],
+  "ignoreDependencies": ["cross-env", "@types/*"]
+}

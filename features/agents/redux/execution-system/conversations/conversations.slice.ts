@@ -21,9 +21,9 @@ import type {
   InstanceStatus,
   InstanceOrigin,
   SourceFeature,
-} from "@/features/agents/types";
+} from "@/features/agents/types/instance.types";
 import { SOURCE_APP } from "@/features/agents/types/instance.types";
-import { generateConversationId } from "../utils";
+import { generateConversationId } from "../utils/ids";
 import { AgentType } from "@/features/agents/types/agent-definition.types";
 import type { ApiEndpointMode } from "@/features/agents/types/instance.types";
 

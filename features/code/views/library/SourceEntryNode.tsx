@@ -14,7 +14,7 @@ import type {
   LibrarySourceAdapter,
   SourceEntry,
   SourceEntryField,
-} from "../../library-sources";
+} from "../../library-sources/types";
 
 interface SourceEntryNodeProps {
   adapter: LibrarySourceAdapter;

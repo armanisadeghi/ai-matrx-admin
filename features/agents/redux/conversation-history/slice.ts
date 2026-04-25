@@ -1,5 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { ConversationListItem } from "@/features/agents/redux/conversation-list";
+import type { ConversationListItem } from "@/features/agents/redux/conversation-list/conversation-list.types";
 import {
   defaultScopeState,
   type ConversationHistoryScopeState,

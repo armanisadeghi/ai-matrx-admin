@@ -5,7 +5,7 @@
  * inboxes is a follow-up phase.
  */
 
-import { PageShell } from "@/features/files";
+import { PageShell } from "@/features/files/components/surfaces/PageShell";
 import { readSidebarModeCookie } from "@/features/files/utils/server-cookies";
 
 export default async function CloudFilesRequestsPage() {

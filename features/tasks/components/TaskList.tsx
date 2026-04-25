@@ -1,7 +1,7 @@
 import React from 'react';
 import TaskItem from './TaskItem';
 import { useAppSelector } from '@/lib/redux/hooks';
-import { selectTasksLoading } from '@/features/tasks/redux';
+import { selectTasksLoading } from '@/features/tasks/redux/taskUiSlice';
 
 export default function TaskList({ tasks }) {
   const loading = useAppSelector(selectTasksLoading);

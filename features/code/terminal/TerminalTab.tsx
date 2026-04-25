@@ -12,7 +12,7 @@ import {
   selectTerminalHistory,
   selectTerminalLines,
   setExecuting,
-} from "../redux";
+} from "../redux/terminalSlice";
 import { useCodeWorkspace } from "../CodeWorkspaceProvider";
 import { useMonacoTheme } from "../editor/useMonacoTheme";
 

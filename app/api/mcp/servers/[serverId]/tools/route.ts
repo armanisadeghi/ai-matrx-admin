@@ -9,7 +9,8 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
-import { McpClient, McpAuthError } from "@/features/agents/services/mcp-client";
+import { McpClient } from "@/features/agents/services/mcp-client/client";
+import { McpAuthError } from "@/features/agents/services/mcp-client/http-transport";
 import { getValidToken } from "@/features/agents/services/mcp-client/token-refresh";
 
 interface RouteParams {

@@ -4,7 +4,7 @@ import { useCallback } from "react";
 import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
 import { createClient } from "@/utils/supabase/client";
 import { openTab, setActiveTab } from "../redux/tabsSlice";
-import { getLibrarySource } from "../library-sources";
+import { getLibrarySource } from "../library-sources/registry";
 
 /**
  * Open a row from any registered library source as an editor tab. The

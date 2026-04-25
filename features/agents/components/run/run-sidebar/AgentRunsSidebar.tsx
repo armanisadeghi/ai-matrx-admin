@@ -10,12 +10,12 @@ import {
   selectAgentName,
 } from "@/features/agents/redux/agent-definition/selectors";
 import { selectLatestConversationId } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
-import { fetchAgentConversations } from "@/features/agents/redux/conversation-list";
-import { makeSelectAgentConversations } from "@/features/agents/redux/conversation-list";
-import type { ConversationListItem } from "@/features/agents/redux/conversation-list";
+import { fetchAgentConversations } from "@/features/agents/redux/conversation-list/conversation-list.thunks";
+import { makeSelectAgentConversations } from "@/features/agents/redux/conversation-list/conversation-list.selectors";
+import type { ConversationListItem } from "@/features/agents/redux/conversation-list/conversation-list.types";
 import { AgentLauncherSidebarTester } from "../../run-controls/AgentLauncherSidebarTester";
 import { SidebarHeader } from "./SidebarHeader";
-import { ConversationHoverPreview } from "../../previews";
+import { ConversationHoverPreview } from "@/features/agents/components/previews/ConversationHoverPreview";
 
 interface AgentRunsSidebarProps {
   agentId: string;
@@ -190,9 +190,7 @@ function ConversationListRow({
             </span>
           </div>
         </div>
-        {isActive && (
-          <ChevronRight className="w-3 h-3 text-primary shrink-0" />
-        )}
+        {isActive && <ChevronRight className="w-3 h-3 text-primary shrink-0" />}
       </button>
     </ConversationHoverPreview>
   );

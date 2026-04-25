@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { OrganizationList } from "@/features/organizations";
+import { OrganizationList } from "@/features/organizations/components/OrganizationList";
 
 export default function SettingsOrganizationsPage() {
   return (
@@ -9,4 +9,3 @@ export default function SettingsOrganizationsPage() {
     </div>
   );
 }
-

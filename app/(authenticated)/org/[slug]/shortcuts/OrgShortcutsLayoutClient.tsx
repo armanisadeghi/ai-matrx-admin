@@ -21,9 +21,8 @@ import { cn } from "@/lib/utils";
 import {
   getOrganizationBySlug,
   getUserRole,
-  type Organization,
-  type OrgRole,
-} from "@/features/organizations";
+} from "@/features/organizations/service";
+import type { Organization, OrgRole } from "@/features/organizations/types";
 import {
   OrgShortcutsProvider,
   type OrgShortcutsContextValue,
@@ -96,9 +95,7 @@ export function OrgShortcutsLayoutClient({
         setOrganization(org);
         const userRole = await getUserRole(org.id);
         if (!userRole) {
-          setError(
-            "Access denied. You must be a member of this organization.",
-          );
+          setError("Access denied. You must be a member of this organization.");
           return;
         }
         setRole(userRole);

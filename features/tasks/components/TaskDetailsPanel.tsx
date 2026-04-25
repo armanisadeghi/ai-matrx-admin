@@ -25,13 +25,13 @@ import {
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/slices/userSlice";
+import { selectProjects } from "@/features/tasks/redux/selectors";
 import {
-  selectProjects,
   updateTaskFieldThunk,
   toggleTaskCompleteThunk,
   deleteTaskThunk,
   moveTaskThunk,
-} from "@/features/tasks/redux";
+} from "@/features/tasks/redux/thunks";
 import { invalidateAndRefetchFullContext } from "@/features/agent-context/redux/hierarchyThunks";
 import * as taskService from "@/features/tasks/services/taskService";
 import { Input } from "@/components/ui/input";

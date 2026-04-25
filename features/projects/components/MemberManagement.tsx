@@ -37,8 +37,8 @@ import {
   useProjectMembers,
   useProjectMemberOperations,
   useProjectUserRole,
-  type ProjectRole,
-} from "@/features/projects";
+} from "../hooks";
+import type { ProjectRole } from "../types";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import { cn } from "@/lib/utils";

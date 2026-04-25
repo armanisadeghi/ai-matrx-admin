@@ -2,7 +2,7 @@
 
 **Status:** `stable`
 **Tier:** `2`
-**Last updated:** `2026-04-22`
+**Last updated:** `2026-04-25`
 
 > Combined doc for `features/organizations/` and `features/invitations/`. Orgs are the multi-tenant primitive; invitations are the flow that admits users to orgs (and, in mirrored form, to projects). Architecture mirrors `features/projects/`.
 
@@ -188,6 +188,7 @@ Stable. No active migration. If org or project invitation flows evolve, keep `/a
 
 ## Change log
 
+- `2026-04-25` — Removed use of the `features/organizations/index.ts` barrel: imports now target `hooks.ts`, `service.ts`, `types.ts`, and concrete files under `components/` (keeps re-export file for any stragglers; no API change).
 - `2026-04-22` — claude: initial combined doc for organizations + invitations.
 
 ---

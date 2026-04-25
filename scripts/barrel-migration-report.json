@@ -1,0 +1,46 @@
+{
+  "generated_at": "2026-04-25T17:00:17.153Z",
+  "dry_run": true,
+  "barrels_processed": 4,
+  "total_imports_rewritten": 2,
+  "total_manual_review": 0,
+  "barrels": [
+    {
+      "barrel": "app/(public)/free/zip-code-heatmap/components/index.ts",
+      "consumers_found": 0,
+      "imports_rewritten": 0,
+      "manual_review": [],
+      "errors": []
+    },
+    {
+      "barrel": "app/(ssr)/ssr/demos/window-demo/window-bodies/index.ts",
+      "consumers_found": 0,
+      "imports_rewritten": 0,
+      "manual_review": [],
+      "errors": []
+    },
+    {
+      "barrel": "app/entities/forms/index.ts",
+      "consumers_found": 0,
+      "imports_rewritten": 0,
+      "manual_review": [],
+      "errors": [
+        "Could not build export map — no re-exports found or all external"
+      ]
+    },
+    {
+      "barrel": "components/admin/applet-admin/index.ts",
+      "consumers_found": 0,
+      "imports_rewritten": 0,
+      "manual_review": [],
+      "errors": []
+    },
+    {
+      "barrel": "components/admin/index.ts",
+      "consumers_found": 2,
+      "imports_rewritten": 2,
+      "manual_review": [],
+      "errors": []
+    }
+  ]
+}

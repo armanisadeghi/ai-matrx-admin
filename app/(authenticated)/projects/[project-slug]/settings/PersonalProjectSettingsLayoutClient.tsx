@@ -4,8 +4,8 @@ import React from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { ArrowLeft, Puzzle } from "lucide-react";
-import { useProject } from "@/features/projects";
-import { getPersonalProjectBySlug } from "@/features/projects";
+import { useProject } from "@/features/projects/hooks";
+import { getPersonalProjectBySlug } from "@/features/projects/service";
 
 export function PersonalProjectSettingsLayoutClient({
   children,

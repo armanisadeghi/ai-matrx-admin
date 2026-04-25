@@ -6,7 +6,7 @@ import {
   fetchTasksForEntity,
   selectTasksForEntity,
   selectTasksForEntityLoading,
-} from "@/features/tasks/redux";
+} from "@/features/tasks/redux/taskAssociationsSlice";
 import TaskChip from "./TaskChip";
 import AssociateTaskButton from "./AssociateTaskButton";
 import { cn } from "@/utils/cn";

@@ -35,7 +35,7 @@ import {
   selectBuiltinAgents,
   selectLiveAgents,
 } from "@/features/agents/redux/agent-definition/selectors";
-import { useAgentShortcuts } from "@/features/agent-shortcuts";
+import { useAgentShortcuts } from "@/features/agent-shortcuts/hooks/useAgentShortcuts";
 import { selectShortcutsByAgentId } from "@/features/agents/redux/agent-shortcuts/selectors";
 import type { RootState } from "@/lib/redux/store";
 import type { AgentDefinitionRecord } from "@/features/agents/types/agent-definition.types";
@@ -164,11 +164,7 @@ function LineageCard({
           </div>
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
-          <CountBadge
-            count={derived.length}
-            label="Derived"
-            icon={GitBranch}
-          />
+          <CountBadge count={derived.length} label="Derived" icon={GitBranch} />
           <CountBadge
             count={shortcuts.length}
             label="Shortcuts"

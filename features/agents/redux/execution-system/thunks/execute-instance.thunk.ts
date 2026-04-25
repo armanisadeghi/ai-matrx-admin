@@ -24,12 +24,12 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import type { RootState } from "@/lib/redux/store";
 import type { AssembledAgentStartRequest } from "@/features/agents/types/request.types";
 import type { MessagePart } from "@/types/python-generated/stream-events";
-import { generateRequestId } from "../utils";
-import { setInstanceStatus } from "../conversations";
-import { selectResourcePayloads } from "../instance-resources";
-import { selectResolvedVariables } from "../instance-variable-values";
-import { selectSettingsOverridesForApi } from "../instance-model-overrides";
-import { selectContextPayload } from "../instance-context";
+import { generateRequestId } from "../utils/ids";
+import { setInstanceStatus } from "../conversations/conversations.slice";
+import { selectResourcePayloads } from "../instance-resources/instance-resources.selectors";
+import { selectResolvedVariables } from "../instance-variable-values/instance-variable-values.selectors";
+import { selectSettingsOverridesForApi } from "../instance-model-overrides/instance-model-overrides.selectors";
+import { selectContextPayload } from "../instance-context/instance-context.selectors";
 import {
   selectOrganizationId,
   selectProjectId,
@@ -403,7 +403,9 @@ export const executeInstance = createAsyncThunk<
           ...(debug && { debug: true }),
           ...(payload.block_mode && { block_mode: true }),
           ...(payload.snapshot && { snapshot: true }),
-          ...(typeof payload.memory === "boolean" && { memory: payload.memory }),
+          ...(typeof payload.memory === "boolean" && {
+            memory: payload.memory,
+          }),
           ...(payload.memory_model && { memory_model: payload.memory_model }),
           ...(payload.memory_scope && { memory_scope: payload.memory_scope }),
           ...(pendingBypass && { cache_bypass: pendingBypass }),

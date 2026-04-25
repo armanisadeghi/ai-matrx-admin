@@ -2,7 +2,7 @@
 
 **Status:** `active`
 **Tier:** `1`
-**Last updated:** 2026-04-23
+**Last updated:** 2026-04-25
 
 ---
 
@@ -162,6 +162,7 @@ Phase 1–8 shipped. Phase 9 (this doc + skill) closes the original project.
 
 ## Change log
 
+- `2026-04-25` — Internal imports no longer use `features/settings/index.ts`; consumers use `hooks/useSetting`, `hooks/useSettingsSearch`, `registry`, `components/SettingsShell`, etc. Barrel file kept for now.
 - `2026-04-23` — Phase 1–9 initial migration shipped.
   - 20 primitives + 3 tree components under `@/components/official/settings`.
   - `useSetting(path)` + 5 slice bindings; registry of 30+ tabs.

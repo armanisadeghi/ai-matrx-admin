@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { Settings, Users, Mail, AlertTriangle, Send } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import type { Organization, OrgRole } from '@/features/organizations';
-import { GeneralSettings } from './GeneralSettings';
-import { MemberManagement } from './MemberManagement';
-import { InvitationManager } from './InvitationManager';
-import { DangerZone } from './DangerZone';
-import { OrgEmailTab } from './OrgEmailTab';
+import React, { useState } from "react";
+import { Settings, Users, Mail, AlertTriangle, Send } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { Organization, OrgRole } from "../types";
+import { GeneralSettings } from "./GeneralSettings";
+import { MemberManagement } from "./MemberManagement";
+import { InvitationManager } from "./InvitationManager";
+import { DangerZone } from "./DangerZone";
+import { OrgEmailTab } from "./OrgEmailTab";
 
 interface OrgSettingsProps {
   organization: Organization;
@@ -19,13 +19,13 @@ interface OrgSettingsProps {
 
 /**
  * OrgSettings - Main settings component with tabbed interface
- * 
+ *
  * Tabs:
  * - General: Edit org details (admin/owner)
  * - Members: Manage team members (admin/owner)
  * - Invitations: Send/manage invites (admin/owner)
  * - Danger Zone: Delete org (owner only)
- * 
+ *
  * Features:
  * - Permission-based tab visibility
  * - Tab state management
@@ -37,7 +37,7 @@ export function OrgSettings({
   isOwner,
   isAdmin,
 }: OrgSettingsProps) {
-  const [activeTab, setActiveTab] = useState('general');
+  const [activeTab, setActiveTab] = useState("general");
 
   // Determine which tabs are available based on permissions
   const canManageSettings = isOwner || isAdmin;
@@ -54,14 +54,20 @@ export function OrgSettings({
           </TabsTrigger>
 
           {canManageMembers && (
-            <TabsTrigger value="members" className="gap-1.5 px-3 py-1.5 text-sm">
+            <TabsTrigger
+              value="members"
+              className="gap-1.5 px-3 py-1.5 text-sm"
+            >
               <Users className="h-3.5 w-3.5" />
               Members
             </TabsTrigger>
           )}
 
           {canManageSettings && (
-            <TabsTrigger value="invitations" className="gap-1.5 px-3 py-1.5 text-sm">
+            <TabsTrigger
+              value="invitations"
+              className="gap-1.5 px-3 py-1.5 text-sm"
+            >
               <Mail className="h-3.5 w-3.5" />
               Invites
             </TabsTrigger>
@@ -75,7 +81,10 @@ export function OrgSettings({
           )}
 
           {canDelete && (
-            <TabsTrigger value="danger" className="gap-1.5 px-3 py-1.5 text-sm text-red-600 dark:text-red-400 data-[state=active]:text-red-600">
+            <TabsTrigger
+              value="danger"
+              className="gap-1.5 px-3 py-1.5 text-sm text-red-600 dark:text-red-400 data-[state=active]:text-red-600"
+            >
               <AlertTriangle className="h-3.5 w-3.5" />
               Danger
             </TabsTrigger>
@@ -127,15 +136,13 @@ export function OrgSettings({
         {/* Danger Zone Tab */}
         {canDelete && (
           <TabsContent value="danger">
-            <DangerZone
-              organization={organization}
-            />
+            <DangerZone organization={organization} />
           </TabsContent>
         )}
       </Tabs>
 
       {/* Read-only notice for members */}
-      {!canManageSettings && activeTab === 'general' && (
+      {!canManageSettings && activeTab === "general" && (
         <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
           <p className="text-sm text-blue-800 dark:text-blue-200">
             View-only access. Contact an admin to make changes.
@@ -145,4 +152,3 @@ export function OrgSettings({
     </div>
   );
 }
-

@@ -25,11 +25,11 @@ import {
   useAssociateTask,
   type TaskSource,
 } from "@/features/tasks/hooks/useAssociateTask";
+import { selectAllTasksFlat } from "@/features/tasks/redux/selectors";
 import {
   fetchTasksForEntity,
-  selectAllTasksFlat,
   selectTasksForEntity,
-} from "@/features/tasks/redux";
+} from "@/features/tasks/redux/taskAssociationsSlice";
 import { selectTaskById } from "@/features/agent-context/redux/tasksSlice";
 import type { TaskWithProject } from "@/features/tasks/types";
 

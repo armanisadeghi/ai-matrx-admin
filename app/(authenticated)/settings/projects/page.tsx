@@ -13,10 +13,10 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/navigation";
-import { useUserProjects } from "@/features/projects";
-import type { ProjectWithRole } from "@/features/projects";
+import { useUserProjects } from "@/features/projects/hooks";
+import type { ProjectWithRole } from "@/features/projects/types";
 import { cn } from "@/lib/utils";
-import { useUserOrganizations } from "@/features/organizations";
+import { useUserOrganizations } from "@/features/organizations/hooks";
 import { filterAndSortBySearch } from "@/utils/search-scoring";
 
 /**

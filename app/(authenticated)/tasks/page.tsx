@@ -8,7 +8,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   selectSelectedTaskId,
   setSelectedTaskId,
-} from "@/features/tasks/redux";
+} from "@/features/tasks/redux/taskUiSlice";
 import TasksContextSidebar from "@/features/tasks/components/TasksContextSidebar";
 import TaskListPane from "@/features/tasks/components/TaskListPane";
 import TaskEditor from "@/features/tasks/components/TaskEditor";

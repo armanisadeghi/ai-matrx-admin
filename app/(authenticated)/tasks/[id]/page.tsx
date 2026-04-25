@@ -8,7 +8,7 @@ import {
   selectSelectedTaskId,
   selectTasksLoading,
   setSelectedTaskId,
-} from "@/features/tasks/redux";
+} from "@/features/tasks/redux/taskUiSlice";
 import { selectTaskById } from "@/features/agent-context/redux/tasksSlice";
 import { useNavTree } from "@/features/agent-context/hooks/useNavTree";
 import TaskEditor from "@/features/tasks/components/TaskEditor";

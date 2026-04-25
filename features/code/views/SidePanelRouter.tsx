@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectActiveView } from "../redux";
+import { selectActiveView } from "../redux/codeWorkspaceSlice";
 import { ExplorerPanel } from "./explorer/ExplorerPanel";
 import { SearchPanel } from "./search/SearchPanel";
 import { GitPanel } from "./git/GitPanel";

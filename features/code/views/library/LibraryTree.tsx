@@ -15,7 +15,7 @@ import {
   type CodeFolder,
   type CodeFileRecord,
 } from "@/features/code-files";
-import { selectActiveTabId } from "../../redux";
+import { selectActiveTabId } from "../../redux/tabsSlice";
 import {
   useOpenLibraryFile,
   libraryTabId,
@@ -28,7 +28,7 @@ import {
 } from "../../styles/tokens";
 import { FileIcon } from "../../styles/file-icon";
 import { LibraryTreeNode } from "./LibraryTreeNode";
-import { listLibrarySources } from "../../library-sources";
+import { listLibrarySources } from "../../library-sources/registry";
 import { SourceFolderNode } from "./SourceFolderNode";
 
 const selectRootFiles = makeSelectFilesInFolder(null);

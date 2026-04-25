@@ -3,8 +3,8 @@
 
 import React, { useState, useMemo, useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
+import { selectProjects, selectFilteredTasks } from "@/features/tasks/redux/selectors";
 import {
-  selectProjects,
   selectActiveProject,
   selectShowAllProjects,
   selectShowCompleted,
@@ -14,7 +14,6 @@ import {
   selectTasksLoading,
   selectSortBy,
   selectSearchQuery,
-  selectFilteredTasks,
   setActiveProject,
   setShowAllProjects,
   setShowCompleted,
@@ -22,9 +21,8 @@ import {
   setNewTaskTitle,
   setSortBy,
   setSearchQuery,
-  createTaskThunk,
-  toggleTaskCompleteThunk,
-} from "@/features/tasks/redux";
+} from "@/features/tasks/redux/taskUiSlice";
+import { createTaskThunk, toggleTaskCompleteThunk } from "@/features/tasks/redux/thunks";
 import {
   selectOrganizationId,
   selectScopeSelectionsContext,

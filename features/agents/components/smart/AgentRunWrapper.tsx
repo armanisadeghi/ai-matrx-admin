@@ -1,7 +1,7 @@
 "use client";
 
 import { useAgentLauncher } from "../../hooks/useAgentLauncher";
-import { SourceFeature } from "../../types";
+import type { SourceFeature } from "@/features/agents/types/instance.types";
 import { AgentRunner } from "./AgentRunner";
 
 interface AgentRunWrapperProps {

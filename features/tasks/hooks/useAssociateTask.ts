@@ -7,7 +7,7 @@ import {
   dissociateFromTask,
   createTaskWithAssociation,
   createTasksBulk,
-} from "@/features/tasks/redux";
+} from "@/features/tasks/redux/taskAssociationsSlice";
 import {
   selectOrganizationId,
   selectProjectId,

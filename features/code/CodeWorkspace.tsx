@@ -2,7 +2,10 @@
 
 import React from "react";
 import { cn } from "@/lib/utils";
-import type { FilesystemAdapter, ProcessAdapter } from "./adapters";
+// Side effect: register builtin library-source adapters (prompt_apps, aga_apps, tool_ui).
+import "./library-sources";
+import type { FilesystemAdapter } from "./adapters/FilesystemAdapter";
+import type { ProcessAdapter } from "./adapters/ProcessAdapter";
 import { CodeWorkspaceProvider } from "./CodeWorkspaceProvider";
 import { WorkspaceLayout } from "./layout/WorkspaceLayout";
 import { useOpenCodeFileFromUrl } from "./hooks/useOpenCodeFileFromUrl";

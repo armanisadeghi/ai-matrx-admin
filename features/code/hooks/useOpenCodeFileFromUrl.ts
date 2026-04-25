@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { setActiveView } from "../redux";
+import { setActiveView } from "../redux/codeWorkspaceSlice";
 import { useOpenLibraryFile } from "./useOpenLibraryFile";
 
 /**

@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectActiveTabId } from "../../redux/tabsSlice";
 import { HOVER_ROW, ROW_HEIGHT, TEXT_BODY } from "../../styles/tokens";
-import type { LibrarySourceAdapter } from "../../library-sources";
+import type { LibrarySourceAdapter } from "../../library-sources/types";
 import { useLibrarySource } from "../../hooks/useLibrarySource";
 import { useOpenSourceEntry } from "../../hooks/useOpenSourceEntry";
 import { SourceEntryNode } from "./SourceEntryNode";

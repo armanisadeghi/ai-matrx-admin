@@ -8,7 +8,7 @@ import {
     Library,
     Sparkles,
 } from "lucide-react";
-import { CloudFolders } from "@/features/files";
+import { CloudFolders } from "@/features/files/utils/folder-conventions";
 
 /**
  * /image-studio/library

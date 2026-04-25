@@ -24,7 +24,7 @@ import {
   unregisterSurface,
   selectPendingNavigation,
   clearPendingNavigation,
-} from "@/features/agents/redux/surfaces";
+} from "@/features/agents/redux/surfaces/surfaces.slice";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { AssistantCardStack } from "./AssistantCardStack";
 import { CompactAssistantInput } from "./CompactAssistantInput";
@@ -73,9 +73,7 @@ export function AgentChatAssistant({
   // chat-assistant widget for the target conversation and close this
   // one. The user keeps the floating-widget mental model (every widget
   // = one conversation) without losing context.
-  const pendingNavigation = useAppSelector(
-    selectPendingNavigation(surfaceKey),
-  );
+  const pendingNavigation = useAppSelector(selectPendingNavigation(surfaceKey));
   useEffect(() => {
     if (!pendingNavigation) return;
     const target = pendingNavigation.conversationId;

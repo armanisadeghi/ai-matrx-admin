@@ -23,7 +23,7 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { CheckSquare, FolderPlus, Loader2 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { selectProjects } from "@/features/tasks/redux";
+import { selectProjects } from "@/features/tasks/redux/selectors";
 import { invalidateAndRefetchFullContext } from "@/features/agent-context/redux/hierarchyThunks";
 import {
   HierarchyCascade,

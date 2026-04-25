@@ -31,7 +31,7 @@ import {
   selectShowVariablePanel,
 } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { setExpandedVariableId } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.slice";
-import { VariableInputComponent } from "./input-components";
+import { VariableInputComponent } from "./input-components/VariableInputComponent";
 import { formatText } from "@/utils/text/text-case-converter";
 
 interface AgentVariablesInlineProps {

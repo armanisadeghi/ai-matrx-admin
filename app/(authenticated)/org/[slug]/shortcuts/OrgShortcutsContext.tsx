@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext } from "react";
-import type { OrgRole } from "@/features/organizations";
+import type { OrgRole } from "@/features/organizations/types";
 
 export interface OrgShortcutsContextValue {
   slug: string;
@@ -11,7 +11,9 @@ export interface OrgShortcutsContextValue {
   canWrite: boolean;
 }
 
-const OrgShortcutsContext = createContext<OrgShortcutsContextValue | null>(null);
+const OrgShortcutsContext = createContext<OrgShortcutsContextValue | null>(
+  null,
+);
 
 export function OrgShortcutsProvider({
   value,

@@ -26,12 +26,12 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { destroyInstanceIfAllowed } from "@/features/agents/redux/execution-system/conversations";
+import { destroyInstanceIfAllowed } from "@/features/agents/redux/execution-system/conversations/conversations.thunks";
+import { setFocus } from "@/features/agents/redux/execution-system/conversation-focus/conversation-focus.slice";
 import {
-  setFocus,
   selectFocusedConversation,
   selectDisplayConversation,
-} from "@/features/agents/redux/execution-system/conversation-focus";
+} from "@/features/agents/redux/execution-system/conversation-focus/conversation-focus.selectors";
 import type { ApplicationScope } from "@/features/agents/utils/scope-mapping";
 import type { ManagedAgentOptions } from "../types/instance.types";
 import {

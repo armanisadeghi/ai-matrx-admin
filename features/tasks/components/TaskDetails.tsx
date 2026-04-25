@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import { Paperclip, X, Loader2, Maximize2, ExternalLink, Download } from 'lucide-react';
 import { useAppDispatch } from '@/lib/redux/hooks';
-import { updateTaskFieldThunk } from '@/features/tasks/redux';
+import { updateTaskFieldThunk } from '@/features/tasks/redux/thunks';
 import { useDebounce } from '../hooks/useDebounce';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';

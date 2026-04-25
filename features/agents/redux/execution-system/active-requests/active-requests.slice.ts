@@ -49,7 +49,7 @@ import type {
   UntypedDataPayload,
   ToolEventPayload,
 } from "@/types/python-generated/stream-events";
-import { generateRequestId } from "../utils";
+import { generateRequestId } from "../utils/ids";
 import { destroyInstance } from "../conversations/conversations.slice";
 
 // =============================================================================

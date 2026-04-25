@@ -6,7 +6,7 @@ import { Filter, Settings2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
-import type { ConversationListItem } from "@/features/agents/redux/conversation-list";
+import type { ConversationListItem } from "@/features/agents/redux/conversation-list/conversation-list.types";
 import { ConversationHistorySidebar } from "@/features/agents/components/conversation-history";
 import { describeFilter } from "@/features/agents/redux/agent-filter";
 import { SidePanelHeader, SidePanelAction } from "../views/SidePanelChrome";

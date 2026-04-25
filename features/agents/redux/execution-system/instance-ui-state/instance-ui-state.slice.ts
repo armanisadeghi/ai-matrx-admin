@@ -15,9 +15,9 @@ import type {
   BuilderAdvancedSettings,
   InstanceUIState,
   JsonExtractionConfig,
-  ResultDisplayMode,
-  VariablesPanelStyle,
-} from "@/features/agents/types";
+} from "@/features/agents/types/instance.types";
+import type { ResultDisplayMode } from "@/features/agents/utils/run-ui-utils";
+import type { VariablesPanelStyle } from "@/features/agents/components/inputs/variable-input-variations/variable-input-options";
 import { DEFAULT_BUILDER_ADVANCED_SETTINGS } from "@/features/agents/types/instance.types";
 import { destroyInstance } from "../conversations/conversations.slice";
 import { callbackManager } from "@/utils/callbackManager";
@@ -565,10 +565,7 @@ const instanceUIStateSlice = createSlice({
      * Queue a one-shot `memory: true|false` signal to ride the next outbound
      * turn. The execute thunks read + clear this on each call.
      */
-    requestMemoryToggle(
-      state,
-      action: PayloadAction<{ enabled: boolean }>,
-    ) {
+    requestMemoryToggle(state, action: PayloadAction<{ enabled: boolean }>) {
       state.isMemoryToggleRequested = true;
       state.memoryToggleTarget = action.payload.enabled;
     },
@@ -582,10 +579,7 @@ const instanceUIStateSlice = createSlice({
       state.memoryModel = action.payload;
     },
 
-    setMemoryScope(
-      state,
-      action: PayloadAction<"thread" | "resource">,
-    ) {
+    setMemoryScope(state, action: PayloadAction<"thread" | "resource">) {
       state.memoryScope = action.payload;
     },
   },

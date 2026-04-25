@@ -23,13 +23,8 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
-import {
-  useProjectInvitations,
-  useProjectInvitationOperations,
-  validateEmail,
-  getExpiryDisplay,
-  type ProjectRole,
-} from '@/features/projects';
+import { useProjectInvitations, useProjectInvitationOperations } from '../hooks';
+import { validateEmail, getExpiryDisplay, type ProjectRole } from '../types';
 import { formatDistanceToNow } from 'date-fns';
 
 interface InvitationManagerProps {

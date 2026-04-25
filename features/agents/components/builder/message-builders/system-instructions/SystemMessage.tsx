@@ -13,9 +13,11 @@ import dynamic from "next/dynamic";
 // agent-builder bundle; loads only when the editor actually mounts.
 const UnifiedAgentContextMenu = dynamic(
   () =>
-    import("@/features/context-menu-v2").then((mod) => ({
-      default: mod.UnifiedAgentContextMenu,
-    })),
+    import("@/features/context-menu-v2/UnifiedAgentContextMenu").then(
+      (mod) => ({
+        default: mod.UnifiedAgentContextMenu,
+      }),
+    ),
   { ssr: false },
 );
 

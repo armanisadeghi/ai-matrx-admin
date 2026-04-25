@@ -15,15 +15,19 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { useCodeWorkspace } from "../CodeWorkspaceProvider";
 import {
   selectActiveTab,
+} from "../redux/tabsSlice";
+import {
   selectFarRightOpen,
   selectRightOpen,
   selectSideOpen,
-  selectTerminalOpen,
   setFarRightOpen,
   setRightOpen,
   setSideOpen,
-  setTerminalOpen,
-} from "../redux";
+} from "../redux/codeWorkspaceSlice";
+import {
+  selectTerminalOpen,
+  setOpen as setTerminalOpen,
+} from "../redux/terminalSlice";
 
 interface StatusBarProps {
   rightSlotAvailable?: boolean;

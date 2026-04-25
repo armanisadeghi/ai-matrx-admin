@@ -8,12 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectShortcutById } from "@/features/agents/redux/agent-shortcuts/selectors";
-import {
-  DuplicateShortcutModal,
-  ShortcutForm,
-  useAgentShortcuts,
-  type AgentShortcut,
-} from "@/features/agent-shortcuts";
+import { DuplicateShortcutModal } from "@/features/agent-shortcuts/components/DuplicateShortcutModal";
+import { ShortcutForm } from "@/features/agent-shortcuts/components/ShortcutForm";
+import { useAgentShortcuts } from "@/features/agent-shortcuts/hooks/useAgentShortcuts";
+import type { AgentShortcut } from "@/features/agents/redux/agent-shortcuts/types";
 
 const SCOPE = "user" as const;
 
@@ -130,7 +128,8 @@ export default function UserEditShortcutPage({
           Back to shortcuts
         </Button>
         <div className="text-sm text-muted-foreground truncate">
-          Editing <span className="font-medium text-foreground">{resolved.label}</span>
+          Editing{" "}
+          <span className="font-medium text-foreground">{resolved.label}</span>
         </div>
       </div>
 

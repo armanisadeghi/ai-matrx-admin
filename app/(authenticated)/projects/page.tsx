@@ -4,7 +4,7 @@ import React, { useState, useMemo } from "react";
 import { Puzzle, Plus, FolderOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { useUserProjects } from "@/features/projects";
+import { useUserProjects } from "@/features/projects/hooks";
 import { ProjectList } from "@/features/projects/components/ProjectList";
 import { ProjectCard } from "@/features/projects/components/ProjectCard";
 import { ProjectFormSheet } from "@/features/projects/components/ProjectFormSheet";
@@ -14,7 +14,7 @@ import {
 } from "@/features/agent-context/components/hierarchy-selection";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectOrganizationId } from "@/features/agent-context/redux/appContextSlice";
-import { useUserOrganizations } from "@/features/organizations";
+import { useUserOrganizations } from "@/features/organizations/hooks";
 
 /**
  * Standalone Projects Hub

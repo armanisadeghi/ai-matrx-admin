@@ -37,7 +37,7 @@ import {
   extractContentBlocks,
 } from "@/features/agents/redux/execution-system/messages/messages.selectors";
 import { UserActionBar } from "./message-actions/UserActionBar";
-import { BlockHoverPreview } from "../previews";
+import { BlockHoverPreview } from "@/features/agents/components/previews/BlockHoverPreview";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types

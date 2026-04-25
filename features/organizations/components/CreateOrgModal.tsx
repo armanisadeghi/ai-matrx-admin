@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { Plus, Loader2, Check, X, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { Plus, Loader2, Check, X, AlertCircle } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -9,21 +9,17 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
-import {
-  createOrganization,
-  generateSlug,
-  validateOrgName,
-  validateOrgSlug,
-  useSlugAvailability,
-} from '@/features/organizations';
-import { ImageAssetUploader } from '@/components/official/ImageAssetUploader';
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { createOrganization } from "../service";
+import { generateSlug, validateOrgName, validateOrgSlug } from "../types";
+import { useSlugAvailability } from "../hooks";
+import { ImageAssetUploader } from "@/components/official/ImageAssetUploader";
 
 interface CreateOrgModalProps {
   isOpen: boolean;
@@ -33,7 +29,7 @@ interface CreateOrgModalProps {
 
 /**
  * CreateOrgModal - Modal for creating a new organization
- * 
+ *
  * Features:
  * - Auto-generates slug from name
  * - Real-time slug availability checking
@@ -41,22 +37,27 @@ interface CreateOrgModalProps {
  * - Success/error handling
  * - Redirects to new org settings after creation
  */
-export function CreateOrgModal({ isOpen, onClose, onSuccess }: CreateOrgModalProps) {
+export function CreateOrgModal({
+  isOpen,
+  onClose,
+  onSuccess,
+}: CreateOrgModalProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form state
-  const [name, setName] = useState('');
-  const [slug, setSlug] = useState('');
-  const [description, setDescription] = useState('');
-  const [website, setWebsite] = useState('');
-  const [logoUrl, setLogoUrl] = useState('');
+  const [name, setName] = useState("");
+  const [slug, setSlug] = useState("");
+  const [description, setDescription] = useState("");
+  const [website, setWebsite] = useState("");
+  const [logoUrl, setLogoUrl] = useState("");
 
   // Manual slug edit tracking
   const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(false);
 
   // Slug availability check with debouncing
-  const { available: slugAvailable, checking: checkingSlug } = useSlugAvailability(slug, 500);
+  const { available: slugAvailable, checking: checkingSlug } =
+    useSlugAvailability(slug, 500);
 
   // Auto-generate slug from name when name changes (if not manually edited)
   useEffect(() => {
@@ -67,10 +68,14 @@ export function CreateOrgModal({ isOpen, onClose, onSuccess }: CreateOrgModalPro
   }, [name, isSlugManuallyEdited]);
 
   // Validation
-  const nameValidation = name ? validateOrgName(name) : { valid: true, error: '' };
-  const slugValidation = slug ? validateOrgSlug(slug) : { valid: true, error: '' };
+  const nameValidation = name
+    ? validateOrgName(name)
+    : { valid: true, error: "" };
+  const slugValidation = slug
+    ? validateOrgSlug(slug)
+    : { valid: true, error: "" };
 
-  const isFormValid = 
+  const isFormValid =
     name &&
     slug &&
     nameValidation.valid &&
@@ -82,11 +87,11 @@ export function CreateOrgModal({ isOpen, onClose, onSuccess }: CreateOrgModalPro
   useEffect(() => {
     if (!isOpen) {
       setTimeout(() => {
-        setName('');
-        setSlug('');
-        setDescription('');
-        setWebsite('');
-        setLogoUrl('');
+        setName("");
+        setSlug("");
+        setDescription("");
+        setWebsite("");
+        setLogoUrl("");
         setIsSlugManuallyEdited(false);
       }, 200);
     }
@@ -97,7 +102,7 @@ export function CreateOrgModal({ isOpen, onClose, onSuccess }: CreateOrgModalPro
     e.preventDefault();
 
     if (!isFormValid) {
-      toast.error('Please fix validation errors before submitting');
+      toast.error("Please fix validation errors before submitting");
       return;
     }
 
@@ -113,18 +118,18 @@ export function CreateOrgModal({ isOpen, onClose, onSuccess }: CreateOrgModalPro
       });
 
       if (result.success && result.organization) {
-        toast.success('Organization created successfully!');
+        toast.success("Organization created successfully!");
         onClose();
         onSuccess?.();
-        
+
         // Navigate to the new organization's settings page
         router.push(`/organizations/${result.organization.id}/settings`);
       } else {
-        toast.error(result.error || 'Failed to create organization');
+        toast.error(result.error || "Failed to create organization");
       }
     } catch (error: any) {
-      console.error('Error creating organization:', error);
-      toast.error(error.message || 'An unexpected error occurred');
+      console.error("Error creating organization:", error);
+      toast.error(error.message || "An unexpected error occurred");
     } finally {
       setIsSubmitting(false);
     }
@@ -188,7 +193,7 @@ export function CreateOrgModal({ isOpen, onClose, onSuccess }: CreateOrgModalPro
               placeholder="e.g., Acme Corporation"
               maxLength={50}
               disabled={isSubmitting}
-              className={!nameValidation.valid ? 'border-red-500' : ''}
+              className={!nameValidation.valid ? "border-red-500" : ""}
             />
             {!nameValidation.valid && (
               <p className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
@@ -207,7 +212,9 @@ export function CreateOrgModal({ isOpen, onClose, onSuccess }: CreateOrgModalPro
               URL Slug *
             </Label>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">aimatrx.com/org/</span>
+              <span className="text-sm text-muted-foreground">
+                aimatrx.com/org/
+              </span>
               <Input
                 id="slug"
                 value={slug}
@@ -219,9 +226,13 @@ export function CreateOrgModal({ isOpen, onClose, onSuccess }: CreateOrgModalPro
                 maxLength={50}
                 disabled={isSubmitting}
                 className={cn(
-                  'flex-1',
-                  !slugValidation.valid || (!checkingSlug && !slugAvailable) ? 'border-red-500' : '',
-                  slugAvailable && slugValidation.valid ? 'border-green-500' : ''
+                  "flex-1",
+                  !slugValidation.valid || (!checkingSlug && !slugAvailable)
+                    ? "border-red-500"
+                    : "",
+                  slugAvailable && slugValidation.valid
+                    ? "border-green-500"
+                    : "",
                 )}
               />
             </div>
@@ -274,7 +285,7 @@ export function CreateOrgModal({ isOpen, onClose, onSuccess }: CreateOrgModalPro
             <ImageAssetUploader
               preset="logo"
               currentUrl={logoUrl || null}
-              onComplete={(result) => setLogoUrl(result?.primary_url ?? '')}
+              onComplete={(result) => setLogoUrl(result?.primary_url ?? "")}
               folder="organizations/logos"
               disabled={isSubmitting}
               label="Organization logo"
@@ -315,5 +326,4 @@ export function CreateOrgModal({ isOpen, onClose, onSuccess }: CreateOrgModalPro
 }
 
 // Helper to add cn utility
-import { cn } from '@/lib/utils';
-
+import { cn } from "@/lib/utils";

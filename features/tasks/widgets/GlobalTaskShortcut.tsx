@@ -14,7 +14,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useAssociateTask } from "@/features/tasks/hooks/useAssociateTask";
-import { selectProjects, setSelectedTaskId } from "@/features/tasks/redux";
+import { selectProjects } from "@/features/tasks/redux/selectors";
+import { setSelectedTaskId } from "@/features/tasks/redux/taskUiSlice";
 import { useAppDispatch } from "@/lib/redux/hooks";
 
 /**

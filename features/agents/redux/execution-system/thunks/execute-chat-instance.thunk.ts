@@ -27,12 +27,12 @@ import {
   extractContentBlocks,
   extractFlatText,
 } from "../messages/messages.selectors";
-import { generateRequestId } from "../utils";
-import { setInstanceStatus } from "../conversations";
-import { selectSettingsForChatApi } from "../instance-model-overrides";
-import { selectResolvedVariables } from "../instance-variable-values";
-import { selectContextPayload } from "../instance-context";
-import { selectResourcePayloads } from "../instance-resources";
+import { generateRequestId } from "../utils/ids";
+import { setInstanceStatus } from "../conversations/conversations.slice";
+import { selectSettingsForChatApi } from "../instance-model-overrides/instance-model-overrides.selectors";
+import { selectResolvedVariables } from "../instance-variable-values/instance-variable-values.selectors";
+import { selectContextPayload } from "../instance-context/instance-context.selectors";
+import { selectResourcePayloads } from "../instance-resources/instance-resources.selectors";
 import {
   selectAccessToken,
   selectFingerprintId,

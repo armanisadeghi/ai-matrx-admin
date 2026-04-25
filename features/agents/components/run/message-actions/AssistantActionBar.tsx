@@ -120,12 +120,9 @@ export function AssistantActionBar({
 
   const handleConfirmDelete = useCallback(async () => {
     try {
-      const { deleteMessage } = await import(
-        "@/features/agents/redux/execution-system/message-crud"
-      );
-      await dispatch(
-        deleteMessage({ conversationId, messageId }),
-      ).unwrap();
+      const { deleteMessage } =
+        await import("@/features/agents/redux/execution-system/message-crud/delete-message.thunk");
+      await dispatch(deleteMessage({ conversationId, messageId })).unwrap();
       toast.success("Message deleted");
     } catch (err) {
       const { logPayload, message } = serializeSaveError(err);
@@ -140,26 +137,27 @@ export function AssistantActionBar({
 
   const handleConfirmDeleteFork = useCallback(async () => {
     try {
-      const { forkConversation, deleteMessage } = await import(
-        "@/features/agents/redux/execution-system/message-crud"
-      );
+      const { forkConversation } =
+        await import("@/features/agents/redux/execution-system/message-crud/fork-conversation.thunk");
+      const { deleteMessage } =
+        await import("@/features/agents/redux/execution-system/message-crud/delete-message.thunk");
       const forkPosition = Math.max(0, (messagePosition ?? 0) - 1);
       const forkResult = await dispatch(
         forkConversation({ conversationId, atPosition: forkPosition }),
       ).unwrap();
       const newConversationId = forkResult.conversationId;
 
-      const findCopiedId = dispatch(
-        ((_: unknown, getState: () => import("@/lib/redux/store").RootState) => {
-          const entry =
-            getState().messages.byConversationId[newConversationId];
-          if (!entry) return null;
-          const match = Object.values(entry.byId).find(
-            (m) => m.position === (messagePosition ?? 0),
-          );
-          return match?.id ?? null;
-        }) as never,
-      ) as unknown as string | null;
+      const findCopiedId = dispatch(((
+        _: unknown,
+        getState: () => import("@/lib/redux/store").RootState,
+      ) => {
+        const entry = getState().messages.byConversationId[newConversationId];
+        if (!entry) return null;
+        const match = Object.values(entry.byId).find(
+          (m) => m.position === (messagePosition ?? 0),
+        );
+        return match?.id ?? null;
+      }) as never) as unknown as string | null;
 
       if (typeof findCopiedId === "string") {
         await dispatch(
@@ -171,9 +169,8 @@ export function AssistantActionBar({
       }
 
       if (surfaceKey) {
-        const { requestSurfaceNavigation } = await import(
-          "@/features/agents/redux/surfaces"
-        );
+        const { requestSurfaceNavigation } =
+          await import("@/features/agents/redux/surfaces/request-surface-navigation.thunk");
         await dispatch(
           requestSurfaceNavigation({
             surfaceKey,
@@ -216,7 +213,7 @@ export function AssistantActionBar({
         onSave: async (newContent: string) => {
           try {
             const { editMessage } =
-              await import("@/features/agents/redux/execution-system/message-crud");
+              await import("@/features/agents/redux/execution-system/message-crud/edit-message.thunk");
             const nextContent = [
               { type: "text", text: newContent },
             ] as unknown as Json;

@@ -37,7 +37,7 @@ import {
   selectProjectId,
   selectScopeSelectionsContext,
 } from "@/features/agent-context/redux/appContextSlice";
-import { selectProjects } from "@/features/tasks/redux";
+import { selectProjects } from "@/features/tasks/redux/selectors";
 import { selectAllScopes } from "@/features/agent-context/redux/scope/scopesSlice";
 import type { TaskItemType } from "@/components/mardown-display/blocks/tasks/TaskChecklist";
 import { cn } from "@/utils/cn";

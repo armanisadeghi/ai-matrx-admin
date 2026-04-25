@@ -6,9 +6,9 @@ import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   selectTerminalActiveTab,
-  setTerminalActiveTab,
-  setTerminalOpen,
-} from "../redux";
+  setActiveTab as setTerminalActiveTab,
+  setOpen as setTerminalOpen,
+} from "../redux/terminalSlice";
 import type { BottomTabId } from "../types";
 import { BOTTOM_PANEL_BG, PANE_BORDER } from "../styles/tokens";
 import { TerminalTab } from "./TerminalTab";

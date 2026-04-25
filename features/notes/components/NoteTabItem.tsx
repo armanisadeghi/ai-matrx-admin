@@ -48,9 +48,11 @@ import { NoteContextPicker } from "./NoteContextPicker";
 import { useNoteDelete } from "../hooks/useNoteDelete";
 import { useIsOwner } from "@/utils/permissions";
 import { cn } from "@/lib/utils";
+import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog";
 import {
   AlertDialog,
-  AlertDialogContent,
+  AlertDialogPortal,
+  AlertDialogOverlay,
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogDescription,
@@ -161,7 +163,9 @@ export function NoteTabItem({ noteId, instanceId }: NoteTabItemProps) {
     (text: string) => {
       if (!text.trim()) return;
       const sep = content.length > 0 ? "\n\n" : "";
-      dispatch(updateNoteContent({ id: noteId, content: content + sep + text }));
+      dispatch(
+        updateNoteContent({ id: noteId, content: content + sep + text }),
+      );
     },
     [dispatch, noteId, content],
   );
@@ -229,16 +233,29 @@ export function NoteTabItem({ noteId, instanceId }: NoteTabItemProps) {
             onClick={(e) => e.stopPropagation()}
           >
             <button
-              className={cn(actionBtnClass, (isDirty || isSaving) && "text-amber-500")}
+              className={cn(
+                actionBtnClass,
+                (isDirty || isSaving) && "text-amber-500",
+              )}
               onClick={() => dispatch(saveNote(noteId))}
               title="Save (Ctrl+S)"
             >
               <Save />
             </button>
-            <button className={actionBtnClass} onClick={() => { navigator.clipboard.writeText(content).catch(() => {}); }} title="Copy content">
+            <button
+              className={actionBtnClass}
+              onClick={() => {
+                navigator.clipboard.writeText(content).catch(() => {});
+              }}
+              title="Copy content"
+            >
               <Copy />
             </button>
-            <button className={actionBtnClass} onClick={() => setShareOpen(true)} title="Share note">
+            <button
+              className={actionBtnClass}
+              onClick={() => setShareOpen(true)}
+              title="Share note"
+            >
               <Share2 />
             </button>
             <button
@@ -251,7 +268,10 @@ export function NoteTabItem({ noteId, instanceId }: NoteTabItemProps) {
             </button>
             <button
               ref={contextBtnRef}
-              className={cn(actionBtnClass, contextOpen && "text-primary bg-accent")}
+              className={cn(
+                actionBtnClass,
+                contextOpen && "text-primary bg-accent",
+              )}
               onClick={() => setContextOpen((v) => !v)}
               title="Set context"
             >
@@ -291,7 +311,9 @@ export function NoteTabItem({ noteId, instanceId }: NoteTabItemProps) {
               key={f}
               className={cn(
                 "w-full text-left px-3 py-1.5 text-[0.625rem] cursor-pointer transition-colors",
-                f === currentFolder ? "bg-primary/10 text-primary font-medium" : "text-foreground hover:bg-accent",
+                f === currentFolder
+                  ? "bg-primary/10 text-primary font-medium"
+                  : "text-foreground hover:bg-accent",
               )}
               onClick={() => {
                 dispatch(updateNoteFolder({ id: noteId, folder: f }));
@@ -307,7 +329,10 @@ export function NoteTabItem({ noteId, instanceId }: NoteTabItemProps) {
       {/* Context picker dropdown */}
       {contextOpen && isActive && (
         <>
-          <div className="fixed inset-0 z-[100]" onClick={() => setContextOpen(false)} />
+          <div
+            className="fixed inset-0 z-[100]"
+            onClick={() => setContextOpen(false)}
+          />
           <div className="absolute right-0 z-[110] mt-1 w-[260px] py-1 bg-card/95 backdrop-blur-2xl border border-border rounded-lg shadow-lg">
             <NoteContextPicker noteId={noteId} />
           </div>
@@ -317,24 +342,65 @@ export function NoteTabItem({ noteId, instanceId }: NoteTabItemProps) {
       {/* Right-click context menu */}
       {ctxMenu && (
         <>
-          <div className="fixed inset-0 z-[110]" onClick={() => setCtxMenu(null)} />
+          <div
+            className="fixed inset-0 z-[110]"
+            onClick={() => setCtxMenu(null)}
+          />
           <div
             ref={menuRef}
             className="fixed z-[120] min-w-[160px] py-1 bg-card/95 backdrop-blur-2xl border border-border rounded-lg shadow-lg"
             style={{ left: ctxMenu.x, top: ctxMenu.y }}
           >
             {[
-              { icon: <Save className="w-3 h-3" />, label: "Save", fn: () => dispatch(saveNote(noteId)) },
-              { icon: <Copy className="w-3 h-3" />, label: "Copy Content", fn: () => navigator.clipboard.writeText(content).catch(() => {}) },
-              { icon: <CopyPlus className="w-3 h-3" />, label: "Duplicate Note", fn: () => dispatch(copyNote(noteId)) },
-              { icon: <Link2 className="w-3 h-3" />, label: "Share Link", fn: () => setShareOpen(true) },
-              { icon: <Download className="w-3 h-3" />, label: "Export as Markdown", fn: handleExport },
+              {
+                icon: <Save className="w-3 h-3" />,
+                label: "Save",
+                fn: () => dispatch(saveNote(noteId)),
+              },
+              {
+                icon: <Copy className="w-3 h-3" />,
+                label: "Copy Content",
+                fn: () =>
+                  navigator.clipboard.writeText(content).catch(() => {}),
+              },
+              {
+                icon: <CopyPlus className="w-3 h-3" />,
+                label: "Duplicate Note",
+                fn: () => dispatch(copyNote(noteId)),
+              },
+              {
+                icon: <Link2 className="w-3 h-3" />,
+                label: "Share Link",
+                fn: () => setShareOpen(true),
+              },
+              {
+                icon: <Download className="w-3 h-3" />,
+                label: "Export as Markdown",
+                fn: handleExport,
+              },
               null,
-              { icon: <X className="w-3 h-3" />, label: "Close Tab", fn: () => dispatch(removeInstanceTab({ instanceId, noteId })) },
-              { icon: <X className="w-3 h-3" />, label: "Close Other Tabs", fn: handleCloseOtherTabs },
-              { icon: <X className="w-3 h-3" />, label: "Close All Tabs", fn: handleCloseAllTabs },
+              {
+                icon: <X className="w-3 h-3" />,
+                label: "Close Tab",
+                fn: () => dispatch(removeInstanceTab({ instanceId, noteId })),
+              },
+              {
+                icon: <X className="w-3 h-3" />,
+                label: "Close Other Tabs",
+                fn: handleCloseOtherTabs,
+              },
+              {
+                icon: <X className="w-3 h-3" />,
+                label: "Close All Tabs",
+                fn: handleCloseAllTabs,
+              },
               null,
-              { icon: <Trash2 className="w-3 h-3" />, label: "Delete Note", fn: requestDelete, destructive: true },
+              {
+                icon: <Trash2 className="w-3 h-3" />,
+                label: "Delete Note",
+                fn: requestDelete,
+                destructive: true,
+              },
             ].map((item, i) =>
               item === null ? (
                 <div key={`sep-${i}`} className="h-px bg-border/50 my-1" />
@@ -343,9 +409,14 @@ export function NoteTabItem({ noteId, instanceId }: NoteTabItemProps) {
                   key={item.label}
                   className={cn(
                     "flex items-center gap-2 w-full px-3 py-1.5 text-xs transition-colors cursor-pointer",
-                    (item as any).destructive ? "text-destructive hover:bg-destructive/10" : "text-foreground hover:bg-accent",
+                    (item as any).destructive
+                      ? "text-destructive hover:bg-destructive/10"
+                      : "text-foreground hover:bg-accent",
                   )}
-                  onClick={() => { item.fn(); setCtxMenu(null); }}
+                  onClick={() => {
+                    item.fn();
+                    setCtxMenu(null);
+                  }}
                 >
                   {item.icon} {item.label}
                 </button>
@@ -365,22 +436,34 @@ export function NoteTabItem({ noteId, instanceId }: NoteTabItemProps) {
         isOwner={isOwner}
       />
 
-      {/* Delete confirmation */}
-      <AlertDialog open={deleteConfirmOpen} onOpenChange={(open) => { if (!open) cancelDelete(); }}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete note?</AlertDialogTitle>
-            <AlertDialogDescription>
-              &ldquo;{label}&rdquo; will be moved to trash. You can restore it later.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
+      {/* Delete confirmation — overlay and content must exceed window panel z-index (~1000) */}
+      <AlertDialog
+        open={deleteConfirmOpen}
+        onOpenChange={(open) => {
+          if (!open) cancelDelete();
+        }}
+      >
+        <AlertDialogPortal>
+          <AlertDialogOverlay className="z-[10000]" />
+          <AlertDialogPrimitive.Content className="fixed left-[50%] top-[50%] z-[10001] grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 mx-glass-modal p-6 duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg">
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete note?</AlertDialogTitle>
+              <AlertDialogDescription>
+                &ldquo;{label}&rdquo; will be moved to trash. You can restore it
+                later.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={confirmDelete}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogPrimitive.Content>
+        </AlertDialogPortal>
       </AlertDialog>
     </>
   );

@@ -27,18 +27,16 @@ export {
 export { smartExecute } from "@/features/agents/redux/execution-system/thunks/smart-execute.thunk";
 
 // ── Message CRUD (direct DB writes outside the agent pipeline) ─────────────
-export {
-  editMessage,
-  forkConversation,
-  softDeleteConversation,
-  invalidateConversationCache,
-} from "@/features/agents/redux/execution-system/message-crud";
+export { editMessage } from "@/features/agents/redux/execution-system/message-crud/edit-message.thunk";
+export { forkConversation } from "@/features/agents/redux/execution-system/message-crud/fork-conversation.thunk";
+export { softDeleteConversation } from "@/features/agents/redux/execution-system/message-crud/soft-delete-conversation.thunk";
+export { invalidateConversationCache } from "@/features/agents/redux/execution-system/message-crud/invalidate-conversation-cache.thunk";
 
 // ── Conversation-list RPC thunks ───────────────────────────────────────────
 export {
   fetchAgentConversations,
   fetchAgentConversationsNormalized,
-} from "@/features/agents/redux/conversation-list";
+} from "@/features/agents/redux/conversation-list/conversation-list.thunks";
 
 // ── Conversation-list stream-commit helper (legacy parity) ────────────────
 export { upsertConversationFromExecutionAction } from "@/features/agents/redux/conversation-list/record-conversation-from-execution";

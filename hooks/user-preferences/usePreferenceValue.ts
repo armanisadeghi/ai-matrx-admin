@@ -1,7 +1,7 @@
 /**
  * usePreferenceValue — Phase 8 compatibility shim.
  *
- * DEPRECATED: prefer `useSetting(path)` from `@/features/settings`.
+ * DEPRECATED: prefer `useSetting(path)` from `@/features/settings/hooks/useSetting`.
  *
  * Old signature:
  *   const [value, set] = usePreferenceValue("prompts", "defaultTemperature");
@@ -12,9 +12,7 @@
  * call onto `useSetting`, giving callers live-updating state with automatic
  * persistence while still matching the old return shape.
  */
-import {
-  useSetting,
-} from "@/features/settings";
+import { useSetting } from "@/features/settings/hooks/useSetting";
 import type { UserPreferences } from "@/lib/redux/slices/userPreferencesSlice";
 
 export function usePreferenceValue<

@@ -14,9 +14,9 @@ import type { RootState } from "@/lib/redux/store";
 import type {
   BuilderAdvancedSettings,
   InstanceUIState,
-  ResultDisplayMode,
-  VariablesPanelStyle,
-} from "@/features/agents/types";
+} from "@/features/agents/types/instance.types";
+import type { ResultDisplayMode } from "@/features/agents/utils/run-ui-utils";
+import type { VariablesPanelStyle } from "@/features/agents/components/inputs/variable-input-variations/variable-input-options";
 import { DEFAULT_BUILDER_ADVANCED_SETTINGS } from "@/features/agents/types/instance.types";
 import { getShortcutRecordFromState } from "@/features/agents/redux/agent-shortcuts/selectors";
 
@@ -433,8 +433,8 @@ export const selectPreExecutionMessage =
 export const selectBypassGateSeconds =
   (conversationId: string) =>
   (state: RootState): number =>
-    state.instanceUIState.byConversationId[conversationId]
-      ?.bypassGateSeconds ?? 0;
+    state.instanceUIState.byConversationId[conversationId]?.bypassGateSeconds ??
+    0;
 
 export const selectVariableInputStyle =
   (conversationId: string) =>
@@ -459,9 +459,8 @@ export const selectMemoryToggleTarget = (state: RootState): boolean =>
 export const selectMemoryModel = (state: RootState): string | null =>
   state.instanceUIState.memoryModel;
 
-export const selectMemoryScope = (
-  state: RootState,
-): "thread" | "resource" => state.instanceUIState.memoryScope;
+export const selectMemoryScope = (state: RootState): "thread" | "resource" =>
+  state.instanceUIState.memoryScope;
 
 // ── Global registry selectors (keyed by display Mode) ────────────────────────
 

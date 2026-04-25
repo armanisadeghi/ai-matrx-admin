@@ -16,7 +16,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
-import { deleteProject, type Project } from '@/features/projects';
+import { deleteProject } from '../service';
+import type { Project } from '../types';
 
 interface DangerZoneProps {
   project: Project;

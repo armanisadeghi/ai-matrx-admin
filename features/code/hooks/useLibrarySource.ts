@@ -4,7 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { createClient } from "@/utils/supabase/client";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
-import { getLibrarySource, type SourceEntry } from "../library-sources";
+import { getLibrarySource } from "../library-sources/registry";
+import type { SourceEntry } from "../library-sources/types";
 
 type Status = "idle" | "loading" | "ready" | "error";
 

@@ -6,17 +6,15 @@ import { selectResolvedVariables } from "@/features/agents/redux/execution-syste
 import { selectUserInputText } from "@/features/agents/redux/execution-system/instance-user-input/instance-user-input.selectors";
 import { selectAppContext } from "@/features/agent-context/redux/appContextSlice";
 import type {
+  ApiEndpointMode,
+  JsonExtractionConfig,
+  ManagedAgentOptions,
   ResultDisplayMode,
   SourceFeature,
 } from "@/features/agents/types/instance.types";
-import type {
-  JsonExtractionConfig,
-  LLMParams,
-  VariablesPanelStyle,
-} from "@/features/agents/types";
-import type { ManagedAgentOptions } from "@/features/agents/types/instance.types";
+import type { LLMParams } from "@/features/agents/types/agent-api-types";
+import type { VariablesPanelStyle } from "@/features/agents/components/inputs/variable-input-variations/variable-input-options";
 import type { ApplicationScope } from "@/features/agents/utils/scope-mapping";
-import { ApiEndpointMode } from "@/features/agents/types/instance.types";
 
 // Defaults for the simulated editor context (matches the user-supplied sample).
 const DEFAULT_EDITOR_SELECTION = "The capital of France is Paris.";

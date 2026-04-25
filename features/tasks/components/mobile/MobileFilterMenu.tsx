@@ -19,12 +19,13 @@ import {
   selectSortBy,
   selectShowAllProjects,
   selectActiveProject,
+  selectFilterScopeIds,
   setFilter,
   setShowCompleted,
   setSortBy,
   setShowAllProjects,
   setActiveProject,
-} from '@/features/tasks/redux';
+} from '@/features/tasks/redux/taskUiSlice';
 import { TaskFilterType } from '@/features/tasks/types';
 import { TaskSortField } from '@/features/tasks/types/sort';
 
@@ -51,7 +52,6 @@ import {
 import MobileProjectSelector from './MobileProjectSelector';
 import TaskScopeFilter from '../TaskScopeFilter';
 import { useAppSelector } from '@/lib/redux/hooks';
-import { selectFilterScopeIds } from '@/features/tasks/redux';
 import { Filter as FilterIcon } from 'lucide-react';
 
 const Circle = ({ size }: { size: number }) => (
