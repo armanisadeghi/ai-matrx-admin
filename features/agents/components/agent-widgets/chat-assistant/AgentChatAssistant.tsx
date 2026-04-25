@@ -15,10 +15,17 @@
  */
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import { useAppSelector } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectInstanceDisplayTitle } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { selectIsExecuting } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
 import { selectMessageCount } from "@/features/agents/redux/execution-system/messages/messages.selectors";
+import {
+  registerSurface,
+  unregisterSurface,
+  selectPendingNavigation,
+  clearPendingNavigation,
+} from "@/features/agents/redux/surfaces";
+import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { AssistantCardStack } from "./AssistantCardStack";
 import { CompactAssistantInput } from "./CompactAssistantInput";
 import { AssistantControlBar } from "./AssistantControlBar";
@@ -36,9 +43,53 @@ export function AgentChatAssistant({
   stackIndex = 0,
   onClose,
 }: AgentChatAssistantProps) {
+  const dispatch = useAppDispatch();
   const title = useAppSelector(selectInstanceDisplayTitle(conversationId));
   const isExecuting = useAppSelector(selectIsExecuting(conversationId));
   const messageCount = useAppSelector(selectMessageCount(conversationId));
+
+  // Each widget instance owns its own surface, keyed by the conversation
+  // it's bound to. `customNavigation: true` opts into pendingNavigation
+  // semantics — fork outcomes write a slot we read below to spawn a
+  // sibling widget for the new conversation.
+  const surfaceKey = `chat-assistant:${conversationId}`;
+
+  useEffect(() => {
+    dispatch(
+      registerSurface({
+        surfaceKey,
+        kind: "widget",
+        customNavigation: true,
+      }),
+    );
+    return () => {
+      dispatch(unregisterSurface(surfaceKey));
+    };
+  }, [dispatch, surfaceKey]);
+
+  // When fork / retry asks us to navigate, the widget can't simply
+  // change its `conversationId` prop — that's owned by the overlay
+  // controller and keyed off the instanceId. Instead we spawn a NEW
+  // chat-assistant widget for the target conversation and close this
+  // one. The user keeps the floating-widget mental model (every widget
+  // = one conversation) without losing context.
+  const pendingNavigation = useAppSelector(
+    selectPendingNavigation(surfaceKey),
+  );
+  useEffect(() => {
+    if (!pendingNavigation) return;
+    const target = pendingNavigation.conversationId;
+    dispatch(clearPendingNavigation({ surfaceKey }));
+    if (target === conversationId) return;
+
+    dispatch(
+      openOverlay({
+        overlayId: "agentChatAssistant",
+        instanceId: target,
+      }),
+    );
+    onClose();
+  }, [pendingNavigation, dispatch, surfaceKey, conversationId, onClose]);
 
   const { heartbeatInterval, increaseHeartbeat, decreaseHeartbeat } =
     useAssistantHeartbeat(conversationId);
@@ -150,7 +201,10 @@ export function AgentChatAssistant({
             </div>
 
             {/* Message stack — transparent background */}
-            <AssistantCardStack conversationId={conversationId} />
+            <AssistantCardStack
+              conversationId={conversationId}
+              surfaceKey={surfaceKey}
+            />
 
             {/* Compact input with controls */}
             <CompactAssistantInput conversationId={conversationId} />

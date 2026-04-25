@@ -214,6 +214,24 @@ function PageShellDesktop({
     return allFiles.filter((f) => !f.deletedAt);
   }, [section, rootFiles, allFiles]);
 
+  // Tree-wide search: when the user types in the TopBar search box, the table
+  // should match across the ENTIRE tree, not just the current folder. Without
+  // this, a user sitting in folder A would silently fail to find a file in
+  // folder B (a regression flagged in the verification audit). The matching
+  // happens in `row-data.ts:matchesQuery`; we just hand it the full set when
+  // searching, otherwise we keep the folder-scoped behavior.
+  const isSearching = searchQuery.trim().length > 0;
+  const searchScopedFiles = useMemo(() => {
+    if (!isSearching) return scopedFiles;
+    if (section === "trash") return scopedFiles; // already tree-wide
+    return allFiles.filter((f) => !f.deletedAt);
+  }, [isSearching, scopedFiles, section, allFiles]);
+  const searchScopedFolders = useMemo(() => {
+    if (!isSearching) return scopedFolders;
+    if (section === "trash") return scopedFolders;
+    return allFolders.filter((f) => !f.deletedAt);
+  }, [isSearching, scopedFolders, section, allFolders]);
+
   const showPlaceholder = section === "requests" || section === "activity";
   // The list ALWAYS renders unless we're showing a placeholder section or the
   // empty-onboarding hero. Selecting a file no longer replaces the main pane —
@@ -314,12 +332,13 @@ function PageShellDesktop({
                     >
                       {viewMode === "grid" ? (
                         <FileGrid
-                          folders={scopedFolders}
-                          files={scopedFiles}
+                          folders={searchScopedFolders}
+                          files={searchScopedFiles}
                           permissionsByResourceId={permissionsByResourceId}
                           section={section}
                           searchQuery={searchQuery}
                           filter={filter}
+                          treeWideSearch={isSearching}
                           onActivateFolder={handleSelectFolder}
                           onActivateFile={handleSelectFile}
                           emptyState={
@@ -332,12 +351,13 @@ function PageShellDesktop({
                         />
                       ) : (
                         <FileTable
-                          folders={scopedFolders}
-                          files={scopedFiles}
+                          folders={searchScopedFolders}
+                          files={searchScopedFiles}
                           permissionsByResourceId={permissionsByResourceId}
                           section={section}
                           searchQuery={searchQuery}
                           filter={filter}
+                          treeWideSearch={isSearching}
                           onActivateFolder={handleSelectFolder}
                           onActivateFile={handleSelectFile}
                           emptyState={

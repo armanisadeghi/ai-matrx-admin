@@ -9,6 +9,7 @@
 "use client";
 
 import { useState } from "react";
+import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { Copy, MoreHorizontal, Share2, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -31,6 +32,9 @@ export interface FileGridCellProps {
   onToggleSelected: () => void;
   onActivate: () => void;
   onOpenShare: () => void;
+  /** Search-mode breadcrumb under the cell title — when null/undefined the
+   * cell renders its existing meta line (ext • size). */
+  parentPath?: string | null;
 }
 
 export function FileGridCell(props: FileGridCellProps) {
@@ -54,6 +58,7 @@ function GridFile({
   onToggleSelected,
   onActivate,
   onOpenShare,
+  parentPath,
 }: GridFileProps) {
   const [hovered, setHovered] = useState(false);
   const actions = useFileActions(file.id);
@@ -61,16 +66,27 @@ function GridFile({
   const { url } = useSignedUrl(isImage ? file.id : null, { expiresIn: 3600 });
   const ext = file.fileName.split(".").pop()?.toUpperCase() ?? "FILE";
 
+  // File cells are draggable. The activation distance on the parent
+  // PointerSensor (6px) preserves single-click selection.
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: `grid-file-${file.id}`,
+    data: { type: "file", id: file.id },
+  });
+
   return (
     <div
+      ref={setNodeRef}
       className={cn(
         "group flex flex-col rounded-lg border bg-card overflow-hidden transition-shadow",
         selected && "ring-2 ring-ring",
         "hover:shadow-sm",
+        isDragging && "opacity-50",
       )}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onDoubleClick={onActivate}
+      {...attributes}
+      {...listeners}
     >
       <div className="relative aspect-[4/3] bg-muted/50">
         {isImage && url ? (
@@ -140,9 +156,18 @@ function GridFile({
 
       <div className="px-3 py-2">
         <p className="truncate text-sm font-medium">{file.fileName}</p>
-        <p className="text-xs text-muted-foreground">
-          {ext} • {formatFileSize(file.fileSize)}
-        </p>
+        {parentPath ? (
+          <p
+            className="truncate text-xs text-muted-foreground"
+            title={`In ${parentPath}`}
+          >
+            in {parentPath}
+          </p>
+        ) : (
+          <p className="text-xs text-muted-foreground">
+            {ext} • {formatFileSize(file.fileSize)}
+          </p>
+        )}
       </div>
 
       {isShared ? (
@@ -165,15 +190,25 @@ function GridFolder({
   onToggleSelected,
   onActivate,
   onOpenShare,
+  parentPath,
 }: GridFolderProps) {
   const [hovered, setHovered] = useState(false);
 
+  // Folder cells are drop targets. `isOver` highlights the cell while a
+  // file is being dragged over it.
+  const { isOver, setNodeRef } = useDroppable({
+    id: `grid-folder-${folder.id}`,
+    data: { type: "folder", id: folder.id },
+  });
+
   return (
     <div
+      ref={setNodeRef}
       className={cn(
         "group flex flex-col rounded-lg border bg-card overflow-hidden transition-shadow",
         selected && "ring-2 ring-ring",
         "hover:shadow-sm",
+        isOver && "ring-2 ring-primary bg-primary/5",
       )}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -220,7 +255,16 @@ function GridFolder({
 
       <div className="px-3 py-2">
         <p className="truncate text-sm font-medium">{folder.folderName}</p>
-        <p className="text-xs text-muted-foreground">Folder</p>
+        {parentPath ? (
+          <p
+            className="truncate text-xs text-muted-foreground"
+            title={`In ${parentPath}`}
+          >
+            in {parentPath}
+          </p>
+        ) : (
+          <p className="text-xs text-muted-foreground">Folder</p>
+        )}
       </div>
     </div>
   );

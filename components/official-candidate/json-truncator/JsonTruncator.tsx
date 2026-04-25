@@ -96,15 +96,17 @@ interface ArraySliceOpts {
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const DEFAULT_OPTS: TruncateOpts = {
-  leadChars: 15,
-  tailChars: 15,
-  replacement: "...[TRUNCATED]...",
+  leadChars: 45,
+  tailChars: 45,
+  replacement: "... [TRUNCATED] ...",
 };
 
 const DEFAULT_ARRAY_KEEP = 3;
 const AUTO_TRUNCATE_LS_KEY = "data-truncator:auto-threshold";
 const AUTO_ARRAY_LS_KEY = "data-truncator:auto-array-keep";
 const MAX_DEPTH_LS_KEY = "data-truncator:max-depth";
+const AUTO_LEAD_CHARS_LS_KEY = "data-truncator:auto-lead-chars";
+const AUTO_TAIL_CHARS_LS_KEY = "data-truncator:auto-tail-chars";
 const DEFAULT_AUTO_THRESHOLD = 100;
 
 // NumInput is an alias for the shared NumericStepper component.
@@ -995,8 +997,12 @@ function BulkApplyBar({
 interface ControlsProps {
   autoTruncateEnabled: boolean;
   autoThreshold: number;
+  autoLeadChars: number;
+  autoTailChars: number;
   onAutoTruncateToggle: () => void;
   onAutoThresholdChange: (v: number) => void;
+  onAutoLeadCharsChange: (v: number) => void;
+  onAutoTailCharsChange: (v: number) => void;
   autoMatchCount: number;
   autoArrayEnabled: boolean;
   autoArrayKeepN: number;
@@ -1013,19 +1019,27 @@ interface ControlsProps {
 function AutoTruncateBar({
   enabled,
   threshold,
+  leadChars,
+  tailChars,
   onToggle,
   onThresholdChange,
+  onLeadCharsChange,
+  onTailCharsChange,
   matchCount,
 }: {
   enabled: boolean;
   threshold: number;
+  leadChars: number;
+  tailChars: number;
   onToggle: () => void;
   onThresholdChange: (v: number) => void;
+  onLeadCharsChange: (v: number) => void;
+  onTailCharsChange: (v: number) => void;
   matchCount: number;
 }) {
   return (
     <div
-      className={`flex items-center gap-2 px-2 py-0.5 border-b border-border flex-shrink-0 transition-colors ${enabled ? "bg-primary/8 border-primary/30" : "bg-card"}`}
+      className={`flex items-center gap-2 px-2 py-0.5 border-b border-border flex-shrink-0 transition-colors flex-wrap ${enabled ? "bg-primary/8 border-primary/30" : "bg-card"}`}
     >
       <button
         onClick={onToggle}
@@ -1044,6 +1058,25 @@ function AutoTruncateBar({
         className="h-5"
       />
       <span className="text-[10px] text-muted-foreground">chars</span>
+      <span className="w-px h-3 bg-border" />
+      <span className="text-[10px] text-muted-foreground">lead</span>
+      <NumInput
+        value={leadChars}
+        onChange={onLeadCharsChange}
+        min={0}
+        max={500}
+        fallback={DEFAULT_OPTS.leadChars}
+        className="h-5"
+      />
+      <span className="text-[10px] text-muted-foreground">tail</span>
+      <NumInput
+        value={tailChars}
+        onChange={onTailCharsChange}
+        min={0}
+        max={500}
+        fallback={DEFAULT_OPTS.tailChars}
+        className="h-5"
+      />
       {enabled && matchCount > 0 && (
         <span className="text-[10px] text-primary">{matchCount} affected</span>
       )}
@@ -1152,8 +1185,12 @@ function MaxDepthBar({
 function InlineControlsBar({
   autoTruncateEnabled,
   autoThreshold,
+  autoLeadChars,
+  autoTailChars,
   onAutoTruncateToggle,
   onAutoThresholdChange,
+  onAutoLeadCharsChange,
+  onAutoTailCharsChange,
   autoMatchCount,
   autoArrayEnabled,
   autoArrayKeepN,
@@ -1189,6 +1226,25 @@ function InlineControlsBar({
         className="h-5"
       />
       <span className={lbl}>ch</span>
+      {sep}
+      <span className={lbl}>lead</span>
+      <NumInput
+        value={autoLeadChars}
+        onChange={onAutoLeadCharsChange}
+        min={0}
+        max={500}
+        fallback={DEFAULT_OPTS.leadChars}
+        className="h-5"
+      />
+      <span className={lbl}>tail</span>
+      <NumInput
+        value={autoTailChars}
+        onChange={onAutoTailCharsChange}
+        min={0}
+        max={500}
+        fallback={DEFAULT_OPTS.tailChars}
+        className="h-5"
+      />
       {autoTruncateEnabled && autoMatchCount > 0 && (
         <span className="text-[10px] text-primary shrink-0">
           {autoMatchCount}×
@@ -1273,8 +1329,12 @@ interface InputPanelProps {
   fieldCount: number;
   autoTruncateEnabled: boolean;
   autoThreshold: number;
+  autoLeadChars: number;
+  autoTailChars: number;
   setAutoTruncateEnabled: (fn: (prev: boolean) => boolean) => void;
   setAutoThreshold: (v: number) => void;
+  setAutoLeadChars: (v: number) => void;
+  setAutoTailChars: (v: number) => void;
   setOutputEdited: (v: boolean) => void;
   autoMatchCount: number;
   autoArrayEnabled: boolean;
@@ -1301,8 +1361,12 @@ function InputPanel({
   fieldCount,
   autoTruncateEnabled,
   autoThreshold,
+  autoLeadChars,
+  autoTailChars,
   setAutoTruncateEnabled,
   setAutoThreshold,
+  setAutoLeadChars,
+  setAutoTailChars,
   setOutputEdited,
   autoMatchCount,
   autoArrayEnabled,
@@ -1339,9 +1403,19 @@ function InputPanel({
           <AutoTruncateBar
             enabled={autoTruncateEnabled}
             threshold={autoThreshold}
+            leadChars={autoLeadChars}
+            tailChars={autoTailChars}
             onToggle={() => setAutoTruncateEnabled((e) => !e)}
             onThresholdChange={(v) => {
               setAutoThreshold(v);
+              setOutputEdited(false);
+            }}
+            onLeadCharsChange={(v) => {
+              setAutoLeadChars(v);
+              setOutputEdited(false);
+            }}
+            onTailCharsChange={(v) => {
+              setAutoTailChars(v);
               setOutputEdited(false);
             }}
             matchCount={autoMatchCount}
@@ -1774,6 +1848,12 @@ export function JsonTruncator({
   const [autoTruncateEnabled, setAutoTruncateEnabled] = useState(false);
   const [autoThreshold, setAutoThreshold] =
     useState<number>(defaultAutoThreshold);
+  const [autoLeadChars, setAutoLeadChars] = useState<number>(
+    DEFAULT_OPTS.leadChars,
+  );
+  const [autoTailChars, setAutoTailChars] = useState<number>(
+    DEFAULT_OPTS.tailChars,
+  );
   const [autoArrayEnabled, setAutoArrayEnabled] = useState(false);
   const [autoArrayKeepN, setAutoArrayKeepN] =
     useState<number>(defaultArrayKeep);
@@ -1792,6 +1872,16 @@ export function JsonTruncator({
       if (!isNaN(v) && v > 0) setAutoThreshold(v);
     } else {
       setAutoThreshold(defaultAutoThreshold);
+    }
+    const lead = localStorage.getItem(AUTO_LEAD_CHARS_LS_KEY);
+    if (lead) {
+      const v = parseInt(lead);
+      if (!isNaN(v) && v >= 0) setAutoLeadChars(v);
+    }
+    const tail = localStorage.getItem(AUTO_TAIL_CHARS_LS_KEY);
+    if (tail) {
+      const v = parseInt(tail);
+      if (!isNaN(v) && v >= 0) setAutoTailChars(v);
     }
     const a = localStorage.getItem(AUTO_ARRAY_LS_KEY);
     if (a) {
@@ -1814,6 +1904,12 @@ export function JsonTruncator({
     localStorage.setItem(AUTO_TRUNCATE_LS_KEY, String(autoThreshold));
   }, [autoThreshold]);
   useEffect(() => {
+    localStorage.setItem(AUTO_LEAD_CHARS_LS_KEY, String(autoLeadChars));
+  }, [autoLeadChars]);
+  useEffect(() => {
+    localStorage.setItem(AUTO_TAIL_CHARS_LS_KEY, String(autoTailChars));
+  }, [autoTailChars]);
+  useEffect(() => {
     localStorage.setItem(AUTO_ARRAY_LS_KEY, String(autoArrayKeepN));
   }, [autoArrayKeepN]);
   useEffect(() => {
@@ -1835,12 +1931,23 @@ export function JsonTruncator({
   const autoTruncations = useMemo<Map<string, TruncateOpts>>(() => {
     if (!autoTruncateEnabled) return new Map();
     const map = new Map<string, TruncateOpts>();
+    const opts: TruncateOpts = {
+      leadChars: autoLeadChars,
+      tailChars: autoTailChars,
+      replacement: DEFAULT_OPTS.replacement,
+    };
     for (const f of fields) {
       if (f.type === "string" && f.charCount >= autoThreshold)
-        map.set(f.pathStr, DEFAULT_OPTS);
+        map.set(f.pathStr, opts);
     }
     return map;
-  }, [autoTruncateEnabled, autoThreshold, fields]);
+  }, [
+    autoTruncateEnabled,
+    autoThreshold,
+    autoLeadChars,
+    autoTailChars,
+    fields,
+  ]);
 
   const autoArraySlices = useMemo<Map<string, ArraySliceOpts>>(() => {
     if (!autoArrayEnabled) return new Map();
@@ -2096,8 +2203,12 @@ export function JsonTruncator({
     fieldCount: fields.length,
     autoTruncateEnabled,
     autoThreshold,
+    autoLeadChars,
+    autoTailChars,
     setAutoTruncateEnabled,
     setAutoThreshold,
+    setAutoLeadChars,
+    setAutoTailChars,
     setOutputEdited,
     autoMatchCount,
     autoArrayEnabled,
@@ -2114,12 +2225,22 @@ export function JsonTruncator({
   const controlsProps: ControlsProps = {
     autoTruncateEnabled,
     autoThreshold,
+    autoLeadChars,
+    autoTailChars,
     onAutoTruncateToggle: () => {
       setAutoTruncateEnabled((e) => !e);
       setOutputEdited(false);
     },
     onAutoThresholdChange: (v) => {
       setAutoThreshold(v);
+      setOutputEdited(false);
+    },
+    onAutoLeadCharsChange: (v) => {
+      setAutoLeadChars(v);
+      setOutputEdited(false);
+    },
+    onAutoTailCharsChange: (v) => {
+      setAutoTailChars(v);
       setOutputEdited(false);
     },
     autoMatchCount,

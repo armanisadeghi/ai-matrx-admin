@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { Settings2 } from "lucide-react";
 import { useAppDispatch } from "@/lib/redux/hooks";
@@ -51,6 +51,17 @@ export const ChatPanelSlot: React.FC<ChatPanelSlotProps> = ({
     );
   }, [dispatch]);
 
+  // Code workspace lives at `/code?agentId=X` — no nested `/run` segment.
+  // Override the runner's default URL builder so fork / retry navigation
+  // stays inside the workspace and doesn't 404.
+  const buildConversationUrl = useMemo(() => {
+    if (!agentId) return undefined;
+    return (conversationId: string) =>
+      `/code?agentId=${encodeURIComponent(agentId)}&conversationId=${encodeURIComponent(
+        conversationId,
+      )}`;
+  }, [agentId]);
+
   return (
     <div className={`flex h-full min-h-0 flex-col ${className ?? ""}`}>
       <SidePanelHeader
@@ -77,6 +88,7 @@ export const ChatPanelSlot: React.FC<ChatPanelSlotProps> = ({
             agentId={agentId}
             basePath={basePath}
             backHref={basePath}
+            buildConversationUrl={buildConversationUrl}
           />
         ) : (
           <AgentPicker

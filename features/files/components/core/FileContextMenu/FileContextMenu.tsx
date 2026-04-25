@@ -18,6 +18,8 @@ import {
   Edit2,
   FolderInput,
   Globe,
+  History,
+  Info,
   Lock,
   Share2,
   Trash2,
@@ -34,8 +36,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { useAppDispatch } from "@/lib/redux/hooks";
 import type { Visibility } from "../../../types";
+import { setActiveFileId } from "../../../redux/slice";
 import { useFileActions } from "../FileActions";
+import { FileInfoDialog } from "../FileInfo";
 
 export interface FileContextMenuProps {
   fileId: string;
@@ -54,8 +59,10 @@ export function FileContextMenu({
   onMove,
   disabled,
 }: FileContextMenuProps) {
+  const dispatch = useAppDispatch();
   const actions = useFileActions(fileId);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [infoOpen, setInfoOpen] = useState(false);
 
   const handleVisibility = useCallback(
     async (visibility: Visibility) => {
@@ -63,6 +70,23 @@ export function FileContextMenu({
     },
     [actions],
   );
+
+  // "Show versions" routes through the preview pane: setting the active
+  // file makes PreviewPane mount and the Versions tab is reachable from
+  // there. This avoids forking yet another dialog flow.
+  const handleShowVersions = useCallback(() => {
+    dispatch(setActiveFileId(fileId));
+    // The PreviewPane subscribes to a small bus to know which tab to
+    // open; emit a request via window CustomEvent so we don't have to
+    // thread Redux state for a transient hint.
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("cloud-files:open-preview-tab", {
+          detail: { fileId, tab: "versions" },
+        }),
+      );
+    }
+  }, [dispatch, fileId]);
 
   return (
     <>
@@ -104,6 +128,14 @@ export function FileContextMenu({
               Move…
             </DropdownMenuItem>
           ) : null}
+          <DropdownMenuItem onClick={() => setInfoOpen(true)}>
+            <Info className="mr-2 h-4 w-4" />
+            File info
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={handleShowVersions}>
+            <History className="mr-2 h-4 w-4" />
+            Show versions
+          </DropdownMenuItem>
 
           <DropdownMenuSub>
             <DropdownMenuSubTrigger>
@@ -160,6 +192,12 @@ export function FileContextMenu({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <FileInfoDialog
+        fileId={fileId}
+        open={infoOpen}
+        onOpenChange={setInfoOpen}
+      />
     </>
   );
 }

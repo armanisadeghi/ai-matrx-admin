@@ -22,7 +22,9 @@ import {
   Copy,
   Download,
   ExternalLink,
+  History,
   Loader2,
+  Sparkles,
   X,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -32,7 +34,10 @@ import { setActiveFileId } from "../../redux/slice";
 import { useFileActions } from "../core/FileActions";
 import { FilePreview } from "../core/FilePreview";
 import { FileIcon } from "../core/FileIcon";
+import { FileVersionsList } from "../core/FileVersions";
 import { PreviewErrorBoundary } from "./PreviewErrorBoundary";
+
+type PreviewTab = "preview" | "versions";
 
 export interface PreviewPaneProps {
   fileId: string;
@@ -65,6 +70,32 @@ export function PreviewPane({
   const [downloading, setDownloading] = useState(false);
   const [copying, setCopying] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [activeTab, setActiveTab] = useState<PreviewTab>("preview");
+
+  // Reset to the Preview tab whenever the user picks a different file —
+  // each file id gets its own remount of <PreviewPane/> via the parent's
+  // conditional render, so this state is naturally scoped.
+  useEffect(() => {
+    setActiveTab("preview");
+  }, [fileId]);
+
+  // Listen for "open versions tab" hints from the FileContextMenu so the
+  // "Show versions" item can pop the user straight to the right tab. We
+  // use a CustomEvent instead of a Redux state so the hint is transient
+  // — once handled it's gone, no need to clear a flag.
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<{ fileId?: string; tab?: PreviewTab }>)
+        .detail;
+      if (!detail || detail.fileId !== fileId) return;
+      if (detail.tab === "versions" || detail.tab === "preview") {
+        setActiveTab(detail.tab);
+      }
+    };
+    window.addEventListener("cloud-files:open-preview-tab", handler);
+    return () =>
+      window.removeEventListener("cloud-files:open-preview-tab", handler);
+  }, [fileId]);
 
   const handleClose = useCallback(() => {
     if (onClose) {
@@ -208,15 +239,70 @@ export function PreviewPane({
         </div>
       </div>
 
+      {/* Tabs — Preview / Versions. Hidden when there's only one tab worth
+       * showing (always two for files; future: maybe Activity, Permissions). */}
+      <div
+        className="flex items-center gap-0 border-b border-border bg-card shrink-0"
+        role="tablist"
+        aria-label="Preview tabs"
+      >
+        <PreviewTabButton
+          icon={<Sparkles className="h-3.5 w-3.5" />}
+          label="Preview"
+          active={activeTab === "preview"}
+          onClick={() => setActiveTab("preview")}
+        />
+        <PreviewTabButton
+          icon={<History className="h-3.5 w-3.5" />}
+          label="Versions"
+          active={activeTab === "versions"}
+          onClick={() => setActiveTab("versions")}
+        />
+      </div>
+
       {/* Body — wrapped in an error boundary so a previewer crash (e.g. PDF
        * worker fetch failure) shows a recoverable fallback inside the pane
        * instead of taking down the whole app. */}
       <div className="flex-1 min-h-0 overflow-hidden">
-        <PreviewErrorBoundary fileId={fileId}>
-          <FilePreview fileId={fileId} className="h-full w-full" />
-        </PreviewErrorBoundary>
+        {activeTab === "preview" ? (
+          <PreviewErrorBoundary fileId={fileId}>
+            <FilePreview fileId={fileId} className="h-full w-full" />
+          </PreviewErrorBoundary>
+        ) : (
+          <FileVersionsList fileId={fileId} className="h-full w-full" />
+        )}
       </div>
     </div>
+  );
+}
+
+function PreviewTabButton({
+  icon,
+  label,
+  active,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={active}
+      onClick={onClick}
+      className={cn(
+        "flex items-center gap-1.5 border-b-2 px-3 py-1.5 text-xs font-medium transition-colors",
+        active
+          ? "border-primary text-foreground"
+          : "border-transparent text-muted-foreground hover:text-foreground",
+      )}
+    >
+      {icon}
+      {label}
+    </button>
   );
 }
 

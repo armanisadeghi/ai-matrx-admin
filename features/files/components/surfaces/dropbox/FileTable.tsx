@@ -11,11 +11,20 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import { ArrowDown, ArrowUp } from "lucide-react";
+import {
+  DndContext,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import { ArrowDown, ArrowUp, Search as SearchIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
+  selectAllFoldersMap,
   selectSelection,
   selectSort,
 } from "../../../redux/selectors";
@@ -27,6 +36,7 @@ import {
   setSort,
   toggleSelection,
 } from "../../../redux/slice";
+import { moveFile } from "../../../redux/thunks";
 import type {
   CloudFilePermission,
   CloudFileRecord,
@@ -46,6 +56,10 @@ export interface FileTableProps {
   section: CloudFilesSection;
   searchQuery: string;
   filter: FilterChipKey | null;
+  /** True when `folders` + `files` represent the entire tree (search mode),
+   * not just the active folder. Drives the "Showing results from all folders"
+   * banner and the per-row breadcrumb that disambiguates results. */
+  treeWideSearch?: boolean;
   onActivateFolder: (folderId: string) => void;
   onActivateFile: (fileId: string) => void;
   emptyState?: React.ReactNode;
@@ -64,6 +78,7 @@ export function FileTable({
   section,
   searchQuery,
   filter,
+  treeWideSearch = false,
   onActivateFolder,
   onActivateFile,
   emptyState,
@@ -72,6 +87,9 @@ export function FileTable({
   const dispatch = useAppDispatch();
   const selection = useAppSelector(selectSelection);
   const { sortBy, sortDir } = useAppSelector(selectSort);
+  // Used to render parent-folder breadcrumbs on each row in search mode so
+  // identically-named files in different folders are unambiguous.
+  const foldersById = useAppSelector(selectAllFoldersMap);
 
   const rows = useMemo(
     () =>
@@ -84,6 +102,29 @@ export function FileTable({
         permissionsByResourceId,
       }),
     [folders, files, section, searchQuery, filter, permissionsByResourceId],
+  );
+
+  // Resolve "Parent/Child" path for a given folder id. Cached per-render via
+  // `useCallback` + `Map`; folder hierarchies are typically <5 levels deep so
+  // the recursion cost is negligible.
+  const resolveFolderPath = useCallback(
+    (folderId: string | null): string => {
+      if (!folderId) return "/";
+      const segments: string[] = [];
+      let cursor: string | null = folderId;
+      // Defensive cycle guard — depth cap prevents infinite loops if the tree
+      // is corrupted.
+      let depth = 0;
+      while (cursor && depth < 32) {
+        const folder = foldersById[cursor];
+        if (!folder) break;
+        segments.unshift(folder.folderName);
+        cursor = folder.parentId;
+        depth += 1;
+      }
+      return segments.length ? segments.join(" / ") : "/";
+    },
+    [foldersById],
   );
 
   const [shareTarget, setShareTarget] = useState<ShareDialogState | null>(null);
@@ -119,7 +160,51 @@ export function FileTable({
     [dispatch, onActivateFolder, onActivateFile],
   );
 
+  // Drag-and-drop: files can be dropped onto folder rows to move them.
+  // PointerSensor `distance: 6` keeps single-clicks (selection) clean —
+  // the drag only kicks in once the pointer travels ≥6px while held.
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+  );
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const active = event.active.data.current as
+        | { type?: string; id?: string }
+        | undefined;
+      const over = event.over?.data.current as
+        | { type?: string; id?: string }
+        | undefined;
+      if (!active?.id || !over?.id) return;
+      // Only file → folder moves are supported. Folder→folder is a Phase 12
+      // ask (no `moveFolder` thunk yet).
+      if (active.type !== "file" || over.type !== "folder") return;
+      if (active.id === over.id) return;
+      void dispatch(
+        moveFile({ fileId: active.id, newParentFolderId: over.id }),
+      );
+    },
+    [dispatch],
+  );
+
   if (rows.length === 0) {
+    if (treeWideSearch) {
+      return (
+        <div
+          className={cn(
+            "flex h-full w-full flex-col items-center justify-center gap-2 p-8 text-center",
+            className,
+          )}
+        >
+          <SearchIcon className="h-6 w-6 text-muted-foreground" />
+          <p className="text-sm font-medium">
+            No matches for &ldquo;{searchQuery}&rdquo;
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Tried searching across all folders.
+          </p>
+        </div>
+      );
+    }
     if (emptyState) {
       return <div className={cn("h-full w-full", className)}>{emptyState}</div>;
     }
@@ -138,8 +223,25 @@ export function FileTable({
   }
 
   return (
-    <div className={cn("h-full w-full overflow-auto", className)}>
-      <table className="w-full border-collapse">
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragEnd={handleDragEnd}
+    >
+    <div className={cn("flex h-full w-full flex-col overflow-hidden", className)}>
+      {treeWideSearch ? (
+        <div className="flex items-center gap-2 border-b bg-muted/30 px-4 py-1.5 text-xs text-muted-foreground shrink-0">
+          <SearchIcon className="h-3.5 w-3.5" />
+          <span>
+            Showing {rows.length} {rows.length === 1 ? "result" : "results"} from
+            all folders for &ldquo;
+            <span className="font-medium text-foreground">{searchQuery}</span>
+            &rdquo;
+          </span>
+        </div>
+      ) : null}
+      <div className="flex-1 min-h-0 overflow-auto">
+        <table className="w-full border-collapse">
         <thead className="sticky top-0 z-10 bg-background">
           <tr className="border-b text-xs uppercase tracking-wide text-muted-foreground">
             <th className="w-8 px-3 py-2">
@@ -194,6 +296,15 @@ export function FileTable({
               permissionsByResourceId,
             );
             const selected = selection.selectedIds.includes(id);
+            // In search mode, surface where each match lives so identically
+            // named files in different folders aren't ambiguous.
+            const parentFolderId =
+              row.kind === "file"
+                ? row.file.parentFolderId
+                : row.folder.parentId;
+            const parentPath = treeWideSearch
+              ? resolveFolderPath(parentFolderId ?? null)
+              : null;
             return (
               <FileTableRow
                 key={id}
@@ -214,11 +325,13 @@ export function FileTable({
                 isShared={isShared}
                 memberCount={memberCount}
                 granteeIds={granteeIds}
+                parentPath={parentPath}
               />
             );
           })}
         </tbody>
       </table>
+      </div>
 
       {shareTarget ? (
         <ShareLinkDialog
@@ -231,6 +344,7 @@ export function FileTable({
         />
       ) : null}
     </div>
+    </DndContext>
   );
 }
 

@@ -54,6 +54,12 @@ interface DisplayMessage {
 
 interface AssistantCardStackProps {
   conversationId: string;
+  /**
+   * Optional surface key — threaded into per-message action bars so
+   * fork / delete / retry outcomes route through the surfaces registry.
+   * Provided by `AgentChatAssistant` (the widget root).
+   */
+  surfaceKey?: string;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -62,6 +68,7 @@ interface AssistantCardStackProps {
 
 export function AssistantCardStack({
   conversationId,
+  surfaceKey,
 }: AssistantCardStackProps) {
   const dispatch = useAppDispatch();
   const messages = useAppSelector(selectConversationMessages(conversationId));
@@ -154,6 +161,7 @@ export function AssistantCardStack({
                   key={msg.key}
                   conversationId={conversationId}
                   messageId={msg.messageId}
+                  surfaceKey={surfaceKey}
                   compact
                 />
               );
@@ -175,6 +183,7 @@ export function AssistantCardStack({
                   requestId={msg.requestId ?? undefined}
                   messageId={msg.messageId ?? undefined}
                   isStreamActive={msg.isStreamActive}
+                  surfaceKey={surfaceKey}
                   compact
                 />
               );

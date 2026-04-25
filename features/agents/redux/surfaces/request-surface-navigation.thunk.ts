@@ -6,12 +6,17 @@
  * succeeds. The thunk reads the surface registration to decide HOW to
  * route:
  *
- *   - `page`    → write pendingNavigation; the page's effect resolves the
- *                 basePath against its current params and calls
- *                 router.replace, then clears the slot.
+ *   - `page` (or any kind with `customNavigation: true`)
+ *               → write pendingNavigation; the consumer's effect reads
+ *                 the slot and decides how to navigate. Pages typically
+ *                 call router.replace; widgets can re-key themselves or
+ *                 spawn a sibling overlay.
  *   - `window`  → dispatch conversation-focus `setFocus` directly. The
  *                 floating window already re-renders on focus changes.
- *   - `widget`  → same as window — focus update only, no URL change.
+ *   - `widget`  → same as window unless `customNavigation` is set —
+ *                 because most widgets are bound to one conversationId
+ *                 from their parent, plain setFocus alone doesn't
+ *                 actually move them.
  *
  * If the surface isn't registered (race during mount, or caller passed an
  * unknown key), this no-ops silently. The caller has already done the DB
@@ -54,7 +59,10 @@ export const requestSurfaceNavigation = createAsyncThunk<
       return;
     }
 
-    if (registration.kind === "page") {
+    // Pages always write pendingNavigation. Window/widget consumers can
+    // opt-in via `customNavigation: true` when they need to react with
+    // something more than a focus change (e.g. open a sibling overlay).
+    if (registration.kind === "page" || registration.customNavigation) {
       dispatch(
         setPendingNavigation({ surfaceKey, conversationId, reason }),
       );

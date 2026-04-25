@@ -41,12 +41,21 @@ interface AgentRunnerPageProps {
   /** Base path used by the mode switcher inside the header. Defaults to
    *  `/agents`. Admin passes `/administration/system-agents/agents`. */
   basePath?: string;
+  /**
+   * Optional URL builder for fork / retry navigation. When the embedding
+   * route's URL pattern doesn't match `${basePath}/${agentId}/run`
+   * (e.g. the code workspace lives at `/code?agentId=X` with no nested
+   * `/run` segment), pass a builder so router.replace targets the right
+   * URL. Default: `${basePath}/${agentId}/run?conversationId={cid}`.
+   */
+  buildConversationUrl?: (conversationId: string) => string;
 }
 
 export function AgentRunnerPage({
   agentId,
   backHref = "/agents",
   basePath = "/agents",
+  buildConversationUrl,
 }: AgentRunnerPageProps) {
   const dispatch = useAppDispatch();
   const store = useAppStore();
@@ -117,10 +126,20 @@ export function AgentRunnerPage({
   const pendingNavigation = useAppSelector(selectPendingNavigation(surfaceKey));
   useEffect(() => {
     if (!pendingNavigation) return;
-    const target = `${basePath}/${agentId}/run?conversationId=${pendingNavigation.conversationId}`;
+    const target = buildConversationUrl
+      ? buildConversationUrl(pendingNavigation.conversationId)
+      : `${basePath}/${agentId}/run?conversationId=${pendingNavigation.conversationId}`;
     router.replace(target);
     dispatch(clearPendingNavigation({ surfaceKey }));
-  }, [pendingNavigation, router, dispatch, surfaceKey, basePath, agentId]);
+  }, [
+    pendingNavigation,
+    router,
+    dispatch,
+    surfaceKey,
+    basePath,
+    agentId,
+    buildConversationUrl,
+  ]);
 
   const { conversationId } = useAgentLauncher(agentId, {
     surfaceKey,

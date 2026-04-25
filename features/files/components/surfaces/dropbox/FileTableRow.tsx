@@ -9,6 +9,7 @@
 "use client";
 
 import { forwardRef, useCallback, useState } from "react";
+import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { Copy, MoreHorizontal, Share2, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -35,6 +36,9 @@ export interface FileTableRowProps {
   isShared: boolean;
   memberCount: number;
   granteeIds: string[];
+  /** When set (search mode only), shown as a small breadcrumb under the
+   * file/folder name so the user knows which folder this result lives in. */
+  parentPath?: string | null;
 }
 
 export function FileTableRow(props: FileTableRowProps) {
@@ -60,6 +64,7 @@ function FileRow({
   isShared,
   memberCount,
   granteeIds,
+  parentPath,
 }: FileRowProps) {
   const [hovered, setHovered] = useState(false);
   const actions = useFileActions(file.id);
@@ -68,15 +73,29 @@ function FileRow({
     void actions.copyShareUrl();
   }, [actions]);
 
+  // Files are draggable — they can be dropped onto folder rows to move.
+  // The drag handle covers the whole row, but the activation distance on
+  // the parent DndContext PointerSensor (6px) preserves single-click
+  // selection. Drag-listener `data` is what `FileTable.handleDragEnd`
+  // reads to know which file was moved where.
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: `file-${file.id}`,
+    data: { type: "file", id: file.id },
+  });
+
   return (
     <tr
+      ref={setNodeRef}
       className={cn(
         "group border-b text-sm transition-colors",
         selected ? "bg-accent/70" : "hover:bg-accent/40",
+        isDragging && "opacity-50",
       )}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onDoubleClick={onActivate}
+      {...attributes}
+      {...listeners}
     >
       <td className="w-8 px-3 py-2">
         <Checkbox
@@ -88,13 +107,23 @@ function FileRow({
       <td className="px-2 py-2">
         <div className="flex items-center gap-2 min-w-0">
           <FileIcon fileName={file.fileName} size={20} />
-          <button
-            type="button"
-            onClick={onActivate}
-            className="truncate text-left font-medium text-foreground hover:underline"
-          >
-            {file.fileName}
-          </button>
+          <div className="flex min-w-0 flex-col">
+            <button
+              type="button"
+              onClick={onActivate}
+              className="truncate text-left font-medium text-foreground hover:underline"
+            >
+              {file.fileName}
+            </button>
+            {parentPath ? (
+              <span
+                className="truncate text-[11px] text-muted-foreground leading-tight"
+                title={`In ${parentPath}`}
+              >
+                in {parentPath}
+              </span>
+            ) : null}
+          </div>
           <RowActions
             visible={hovered}
             onShare={onOpenShare}
@@ -141,13 +170,26 @@ function FolderRow({
   memberCount,
   granteeIds,
   onOpenShare,
+  parentPath,
 }: FolderRowProps) {
   const [hovered, setHovered] = useState(false);
+
+  // Folders are drop targets — files can be dragged here to be moved into
+  // them. `isOver` flips while a draggable is hovering, used for the
+  // visual highlight (ring). Folder→folder moves are not yet supported by
+  // the backend, so folders are NOT draggable in this iteration.
+  const { isOver, setNodeRef } = useDroppable({
+    id: `folder-${folder.id}`,
+    data: { type: "folder", id: folder.id },
+  });
+
   return (
     <tr
+      ref={setNodeRef}
       className={cn(
         "group border-b text-sm transition-colors",
         selected ? "bg-accent/70" : "hover:bg-accent/40",
+        isOver && "bg-primary/10 ring-1 ring-inset ring-primary",
       )}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -163,13 +205,23 @@ function FolderRow({
       <td className="px-2 py-2">
         <div className="flex items-center gap-2 min-w-0">
           <FolderIconWithMembers isShared={isShared} size={22} />
-          <button
-            type="button"
-            onClick={onActivate}
-            className="truncate text-left font-medium text-foreground hover:underline"
-          >
-            {folder.folderName}
-          </button>
+          <div className="flex min-w-0 flex-col">
+            <button
+              type="button"
+              onClick={onActivate}
+              className="truncate text-left font-medium text-foreground hover:underline"
+            >
+              {folder.folderName}
+            </button>
+            {parentPath ? (
+              <span
+                className="truncate text-[11px] text-muted-foreground leading-tight"
+                title={`In ${parentPath}`}
+              >
+                in {parentPath}
+              </span>
+            ) : null}
+          </div>
           <FolderRowActions
             visible={hovered}
             onShare={onOpenShare}

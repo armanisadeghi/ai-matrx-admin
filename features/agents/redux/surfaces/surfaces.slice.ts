@@ -51,6 +51,15 @@ export interface SurfaceRegistration {
    * params and calls `router.replace(...)`. Optional for window/widget.
    */
   basePath?: string;
+  /**
+   * When `true`, the routing thunk writes `pendingNavigation` for this
+   * surface regardless of `kind` instead of dispatching `setFocus`. Use
+   * for `window` / `widget` consumers that need to react to navigation
+   * intents with something more involved than a focus change — e.g. the
+   * chat-assistant widget spawns a sibling overlay for the target
+   * conversation rather than re-keying itself.
+   */
+  customNavigation?: boolean;
 }
 
 export interface PendingNavigation {
