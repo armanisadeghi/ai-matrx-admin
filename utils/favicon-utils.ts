@@ -34,7 +34,10 @@ function pathnameIsUnderDemoHosts(pathname: string): boolean {
     pathname === "/component-demo" ||
     pathname.startsWith("/component-demo/") ||
     pathname === "/p/demo" ||
-    pathname.startsWith("/p/demo/")
+    pathname.startsWith("/p/demo/") ||
+    // Entity-isolation migration: demo moved to (legacy)/legacy/demo, URL /legacy/demo.
+    pathname === "/legacy/demo" ||
+    pathname.startsWith("/legacy/demo/")
   );
 }
 
@@ -45,7 +48,10 @@ function pathnameIsUnderTestHosts(pathname: string): boolean {
     pathname === "/beta" ||
     pathname.startsWith("/beta/") ||
     pathname === "/experimental" ||
-    pathname.startsWith("/experimental/")
+    pathname.startsWith("/experimental/") ||
+    // Entity-isolation migration: tests moves to /legacy/tests in Phase 3.
+    pathname === "/legacy/tests" ||
+    pathname.startsWith("/legacy/tests/")
   );
 }
 
@@ -54,7 +60,10 @@ function pathnameIsUnderAdminHosts(pathname: string): boolean {
     pathname === "/administration" ||
     pathname.startsWith("/administration/") ||
     pathname === "/admin" ||
-    pathname.startsWith("/admin/")
+    pathname.startsWith("/admin/") ||
+    // Entity-isolation migration: admin moves to /legacy/admin in Phase 3.
+    pathname === "/legacy/admin" ||
+    pathname.startsWith("/legacy/admin/")
   );
 }
 

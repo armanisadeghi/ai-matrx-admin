@@ -360,7 +360,7 @@ export const allNavigationLinks: NavigationLink[] = [
   },
   {
     label: "Workflows",
-    href: "/workflows",
+    href: "/legacy/workflows",
     icon: (
       <Workflow className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
     ),
@@ -397,7 +397,7 @@ export const allNavigationLinks: NavigationLink[] = [
   },
   {
     label: "Entity admin",
-    href: "/entities",
+    href: "/legacy/entity-admin",
     icon: (
       <Grid2x2Plus className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
     ),
@@ -434,7 +434,7 @@ export const allNavigationLinks: NavigationLink[] = [
   },
   {
     label: "Old Dashboard",
-    href: "/admin",
+    href: "/legacy/admin",
     icon: (
       <ShieldEllipsis className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
     ),
@@ -626,7 +626,7 @@ export const allNavigationLinks: NavigationLink[] = [
   },
   {
     label: "Entities",
-    href: "/entity-crud",
+    href: "/legacy/entity-crud",
     icon: (
       <Grid2x2Plus className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
     ),

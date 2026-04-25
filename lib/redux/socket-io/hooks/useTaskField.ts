@@ -2,13 +2,15 @@
 
 import { useCallback, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { RootState, AppDispatch } from "../../store";
+import type { AppDispatch, RootState } from "../../store";
 import { getFieldDefinition } from "@/constants/socket-schema";
-import { updateTaskFieldByPath, arrayOperation } from "../thunks/taskFieldThunks";
+import {
+  updateTaskFieldByPath,
+  arrayOperation,
+} from "../thunks/taskFieldThunks";
 import { selectFieldValue } from "../selectors";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectTaskNameById } from "../selectors";
-
 
 export const useTaskField = (taskId: string, fieldPath: string) => {
   const dispatch = useDispatch<AppDispatch>();
@@ -16,10 +18,13 @@ export const useTaskField = (taskId: string, fieldPath: string) => {
 
   const fieldDefinition = useMemo(
     () => getFieldDefinition(taskName, fieldPath),
-    [taskName, fieldPath]
+    [taskName, fieldPath],
   );
 
-  const value = useSelector((state: RootState) => selectFieldValue(taskId, fieldPath)(state)) ?? fieldDefinition?.DEFAULT;
+  const value =
+    useSelector((state: RootState) =>
+      selectFieldValue(taskId, fieldPath)(state),
+    ) ?? fieldDefinition?.DEFAULT;
 
   // Select validation errors for this field
   const validationState = useSelector((state: RootState) => {
@@ -41,7 +46,7 @@ export const useTaskField = (taskId: string, fieldPath: string) => {
     (newValue: any) => {
       dispatch(updateTaskFieldByPath({ taskId, fieldPath, value: newValue }));
     },
-    [dispatch, taskId, fieldPath]
+    [dispatch, taskId, fieldPath],
   );
 
   // Array-specific functions
@@ -52,16 +57,30 @@ export const useTaskField = (taskId: string, fieldPath: string) => {
 
     return {
       addItem: (item: any) => {
-        dispatch(arrayOperation({ taskId, fieldPath, operation: "add", value: item }));
+        dispatch(
+          arrayOperation({ taskId, fieldPath, operation: "add", value: item }),
+        );
       },
       setItems: (items: any[]) => {
-        dispatch(arrayOperation({ taskId, fieldPath, operation: "set", value: items }));
+        dispatch(
+          arrayOperation({ taskId, fieldPath, operation: "set", value: items }),
+        );
       },
       updateItem: (index: number, item: any) => {
-        dispatch(arrayOperation({ taskId, fieldPath, operation: "update", index, value: item }));
+        dispatch(
+          arrayOperation({
+            taskId,
+            fieldPath,
+            operation: "update",
+            index,
+            value: item,
+          }),
+        );
       },
       removeItem: (index: number) => {
-        dispatch(arrayOperation({ taskId, fieldPath, operation: "remove", index }));
+        dispatch(
+          arrayOperation({ taskId, fieldPath, operation: "remove", index }),
+        );
       },
     };
   }, [dispatch, taskId, fieldPath, fieldDefinition]);

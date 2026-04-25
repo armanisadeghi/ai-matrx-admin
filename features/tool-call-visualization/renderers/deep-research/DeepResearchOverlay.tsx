@@ -213,13 +213,6 @@ function parseResearchOutput(raw: string): ParsedResearch {
     }
   }
 
-  console.log("[DEEP RESEARCH OVERLAY] parsed:", {
-    queries,
-    readResultCount: readResults.length,
-    hasCuratedReport: curatedReport.length > 0,
-    metrics,
-  });
-
   return {
     introSummary,
     queries,
@@ -235,6 +228,15 @@ function getDomain(url: string): string {
     return new URL(url).hostname.replace("www.", "");
   } catch {
     return url;
+  }
+}
+
+function getFaviconUrl(url: string): string {
+  try {
+    const hostname = new URL(url).hostname;
+    return `https://www.google.com/s2/favicons?domain=${hostname}&sz=32`;
+  } catch {
+    return "";
   }
 }
 
@@ -453,7 +455,7 @@ export const DeepResearchOverlay: React.FC<ToolRendererProps> = ({ entry }) => {
       {viewMode === "report" && parsed.curatedReport && (
         <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 overflow-hidden">
           {parsed.queries.length > 0 && (
-            <div className="px-5 py-3 bg-violet-50/80 dark:bg-violet-950/20 border-b border-slate-200 dark:border-slate-700">
+            <div className="px-5 py-3 bg-slate-50 dark:bg-slate-800/30 border-b border-slate-200 dark:border-slate-700">
               <p className="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wide mb-1">
                 Queries
               </p>
@@ -474,20 +476,34 @@ export const DeepResearchOverlay: React.FC<ToolRendererProps> = ({ entry }) => {
 
       {/* ── Card View ─────────────────────────────────────────────────── */}
       {viewMode === "cards" && (
-        <div className="space-y-5">
+        <div className="space-y-3 px-4">
           {readResults.map((result, index) => (
             <div
               key={index}
-              className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 hover:border-violet-300 dark:hover:border-violet-700 transition-colors overflow-hidden"
+              className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 hover:border-slate-300 dark:hover:border-slate-600 transition-colors overflow-hidden"
             >
-              {/* Card Header */}
-              <div className="flex items-center gap-3 px-5 py-3 bg-gradient-to-r from-violet-50/80 to-purple-50/60 dark:from-violet-950/20 dark:to-purple-950/15 border-b border-slate-200 dark:border-slate-700">
-                <Globe className="w-4 h-4 text-violet-500 dark:text-violet-400 flex-shrink-0" />
+              {/* Card Header — neutral background, favicon, subtle accents */}
+              <div className="flex items-center gap-2.5 px-4 py-2.5 bg-slate-50 dark:bg-slate-800/30 border-b border-slate-200 dark:border-slate-700">
+                <div className="flex-shrink-0 w-4 h-4 relative">
+                  <img
+                    src={getFaviconUrl(result.url)}
+                    alt=""
+                    className="w-4 h-4 rounded"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = "none";
+                      const sibling = (e.target as HTMLImageElement)
+                        .nextElementSibling;
+                      if (sibling) sibling.classList.remove("hidden");
+                    }}
+                  />
+                  <Globe className="w-4 h-4 text-slate-400 dark:text-slate-500 hidden" />
+                </div>
                 <a
                   href={result.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs text-violet-600 dark:text-violet-400 hover:underline truncate"
+                  className="text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-violet-600 dark:hover:text-violet-400 truncate"
+                  title={result.url}
                 >
                   {getDomain(result.url)}
                 </a>
@@ -499,13 +515,13 @@ export const DeepResearchOverlay: React.FC<ToolRendererProps> = ({ entry }) => {
                 )}
                 <button
                   onClick={() => handleCopyCard(result, index)}
-                  className="flex-shrink-0 p-1.5 rounded hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-colors"
+                  className="flex-shrink-0 p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                   title="Copy this source"
                 >
                   {copiedIndex === index ? (
                     <Check className="w-4 h-4 text-green-600 dark:text-green-400" />
                   ) : (
-                    <Copy className="w-4 h-4 text-slate-400 hover:text-violet-600 dark:hover:text-violet-400" />
+                    <Copy className="w-4 h-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300" />
                   )}
                 </button>
               </div>
@@ -513,9 +529,14 @@ export const DeepResearchOverlay: React.FC<ToolRendererProps> = ({ entry }) => {
               {/* Card Body */}
               <div className="p-5 space-y-3">
                 {/* Title */}
-                <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">
+                <a
+                  href={result.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block text-base font-semibold text-slate-900 dark:text-slate-100 hover:text-violet-700 dark:hover:text-violet-300 transition-colors"
+                >
                   {result.title || getDomain(result.url)}
-                </h3>
+                </a>
 
                 {/* Collapsible Content */}
                 {result.text && <CollapsibleText text={result.text} />}
@@ -526,7 +547,7 @@ export const DeepResearchOverlay: React.FC<ToolRendererProps> = ({ entry }) => {
                     href={result.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-xs font-medium text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300"
+                    className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors"
                   >
                     Read original article
                     <ExternalLink className="w-3 h-3" />
@@ -550,18 +571,29 @@ export const DeepResearchOverlay: React.FC<ToolRendererProps> = ({ entry }) => {
                     href={result.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block p-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/30 hover:border-blue-300 dark:hover:border-blue-700 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors group"
+                    className="block p-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/30 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors group"
                   >
                     <div className="flex items-start gap-3">
-                      <span className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-slate-200 dark:bg-slate-700 text-xs font-medium text-slate-600 dark:text-slate-400">
-                        {index + 1}
-                      </span>
+                      <div className="flex-shrink-0 w-5 h-5 relative mt-0.5">
+                        <img
+                          src={getFaviconUrl(result.url)}
+                          alt=""
+                          className="w-5 h-5 rounded"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display =
+                              "none";
+                            const sibling = (e.target as HTMLImageElement)
+                              .nextElementSibling;
+                            if (sibling) sibling.classList.remove("hidden");
+                          }}
+                        />
+                        <Globe className="w-5 h-5 text-slate-400 dark:text-slate-500 hidden" />
+                      </div>
                       <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium text-slate-800 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 line-clamp-1">
+                        <div className="text-sm font-medium text-slate-800 dark:text-slate-200 group-hover:text-violet-700 dark:group-hover:text-violet-300 line-clamp-1 transition-colors">
                           {result.title}
                         </div>
-                        <div className="flex items-center gap-1.5 text-xs text-green-600 dark:text-green-400 mt-0.5">
-                          <Globe className="w-3 h-3" />
+                        <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                           <span className="truncate">
                             {getDomain(result.url)}
                           </span>

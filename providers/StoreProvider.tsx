@@ -22,8 +22,8 @@
 "use client";
 
 import {
-  AppStore as SlimAppStore,
   makeStore as makeSlimStore,
+  type AppStore as SlimAppStore,
 } from "@/lib/redux/store";
 import { useRef } from "react";
 import { Provider } from "react-redux";

@@ -1,9 +1,9 @@
 // lib/redux/utils.ts
-import { createAsyncThunk } from '@reduxjs/toolkit';
-import { AppDispatch, RootState } from './store';
-import { getEntitySlice } from '@/lib/redux/entity/entitySlice';
-import { createEntitySelectors } from '@/lib/redux/entity/selectors';
-import { EntityKeys } from '@/types/entityTypes';
+import { createAsyncThunk } from "@reduxjs/toolkit";
+import type { AppDispatch, RootState } from "./store";
+import { getEntitySlice } from "@/lib/redux/entity/entitySlice";
+import { createEntitySelectors } from "@/lib/redux/entity/selectors";
+import { EntityKeys } from "@/types/entityTypes";
 
 // Typed thunk creator
 export const createAppThunk = createAsyncThunk.withTypes<{
@@ -13,7 +13,9 @@ export const createAppThunk = createAsyncThunk.withTypes<{
 }>();
 
 // Utility to get typed entity actions and selectors
-export const getTypedEntityTools = <TEntity extends EntityKeys>(entityKey: TEntity) => {
+export const getTypedEntityTools = <TEntity extends EntityKeys>(
+  entityKey: TEntity,
+) => {
   const entitySlice = getEntitySlice(entityKey);
   const entitySelectors = createEntitySelectors(entityKey);
 
@@ -23,12 +25,16 @@ export const getTypedEntityTools = <TEntity extends EntityKeys>(entityKey: TEnti
   };
 };
 
-export const getTypedEntityActions = <TEntity extends EntityKeys>(entityKey: TEntity) => {
+export const getTypedEntityActions = <TEntity extends EntityKeys>(
+  entityKey: TEntity,
+) => {
   const entitySlice = getEntitySlice(entityKey);
   return entitySlice.actions;
 };
 
-export const getTypedEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEntity) => {
+export const getTypedEntitySelectors = <TEntity extends EntityKeys>(
+  entityKey: TEntity,
+) => {
   const entitySelectors = createEntitySelectors(entityKey);
   return entitySelectors;
 };

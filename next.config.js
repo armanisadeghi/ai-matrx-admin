@@ -68,6 +68,32 @@ const nextConfig = {
                 destination: '/ssr/dashboard',
                 permanent: false,
             },
+            // Entity-isolation migration (Phase 2+): legacy entity-bound routes
+            // moved under /legacy/* so they can boot through the entity-aware
+            // store/providers without bloating slim chunks. Old URLs are 307'd
+            // to keep bookmarks + external links working until internal links
+            // are fully audited; promote to permanent in a follow-up.
+            // See ~/.claude/plans/the-entity-system-which-bubbly-wind.md
+            { source: '/demo/:path*', destination: '/legacy/demo/:path*', permanent: false },
+            { source: '/demo', destination: '/legacy/demo', permanent: false },
+            { source: '/entity-crud/:path*', destination: '/legacy/entity-crud/:path*', permanent: false },
+            { source: '/entity-crud', destination: '/legacy/entity-crud', permanent: false },
+            // /entities was renamed to /entity-admin under /legacy
+            { source: '/entities/:path*', destination: '/legacy/entity-admin/:path*', permanent: false },
+            { source: '/entities', destination: '/legacy/entity-admin', permanent: false },
+            { source: '/workflow-entity/:path*', destination: '/legacy/workflow-entity/:path*', permanent: false },
+            { source: '/workflow-entity', destination: '/legacy/workflow-entity', permanent: false },
+            { source: '/tests/:path*', destination: '/legacy/tests/:path*', permanent: false },
+            { source: '/tests', destination: '/legacy/tests', permanent: false },
+            { source: '/workflows-new/:path*', destination: '/legacy/workflows-new/:path*', permanent: false },
+            { source: '/workflows-new', destination: '/legacy/workflows-new', permanent: false },
+            { source: '/workflows/:path*', destination: '/legacy/workflows/:path*', permanent: false },
+            { source: '/workflows', destination: '/legacy/workflows', permanent: false },
+            // /deprecated/chat moved to /legacy/chat (the "deprecated" prefix dropped)
+            { source: '/deprecated/chat/:path*', destination: '/legacy/chat/:path*', permanent: false },
+            { source: '/deprecated/chat', destination: '/legacy/chat', permanent: false },
+            { source: '/admin/:path*', destination: '/legacy/admin/:path*', permanent: false },
+            { source: '/admin', destination: '/legacy/admin', permanent: false },
         ];
     },
     async rewrites() {

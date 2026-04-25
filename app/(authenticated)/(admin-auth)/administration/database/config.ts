@@ -12,6 +12,13 @@ export const databasePages: ModulePage[] = [
     description: "Execute SQL queries against the database",
   },
   {
+    title: "Workbench",
+    path: "/administration/database/workbench",
+    relative: false,
+    description:
+      "Multi-query notebook with shared variables and result merging",
+  },
+  {
     title: "SQL Functions",
     path: "/administration/database/sql-functions",
     relative: false,
@@ -30,9 +37,10 @@ export const databasePages: ModulePage[] = [
 export function isActivePath(currentPath: string, pagePath: string): boolean {
   // For exact matches
   if (currentPath === pagePath) return true;
-  
+
   // For nested routes (e.g. /administration/database/sql-functions/123)
-  if (pagePath !== DATABASE_MODULE_HOME && currentPath.startsWith(pagePath)) return true;
+  if (pagePath !== DATABASE_MODULE_HOME && currentPath.startsWith(pagePath))
+    return true;
 
   return false;
-} 
+}

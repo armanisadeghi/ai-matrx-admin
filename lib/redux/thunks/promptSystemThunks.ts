@@ -1,13 +1,13 @@
 /**
  * Prompt System Thunks
- * 
+ *
  * Centralized, organized system for managing prompts from both 'prompts' and 'prompt_builtins' tables.
- * 
+ *
  * Architecture:
  * 1. Fetch & Cache Layer - Handles database fetching and cache updates
  * 2. Get Prompt Layer - Cache-first retrieval with automatic fetching
  * 3. Execute Layer - Core execution logic (messages, variables, no fetching/caching)
- * 
+ *
  * Benefits:
  * - Single source of truth for each operation
  * - Clear separation of concerns
@@ -16,23 +16,23 @@
  * - Application layer never deals with fetching directly
  */
 
-import { createAsyncThunk } from '@reduxjs/toolkit';
-import { RootState, AppDispatch } from '../store';
-import { supabase } from '@/utils/supabase/client';
+import { createAsyncThunk } from "@reduxjs/toolkit";
+import type { AppDispatch, RootState } from "../store";
+import { supabase } from "@/utils/supabase/client";
 import {
   cachePrompt,
   setFetchStatus,
   selectCachedPrompt,
   selectPromptFetchStatus,
   CachedPrompt,
-} from '../slices/promptCacheSlice';
-import { submitChatFastAPI as createAndSubmitTask } from '../socket-io/thunks/submitChatFastAPI';
+} from "../slices/promptCacheSlice";
+import { submitChatFastAPI as createAndSubmitTask } from "../socket-io/thunks/submitChatFastAPI";
 import {
   selectPrimaryResponseTextByTaskId,
   selectPrimaryResponseEndedByTaskId,
-} from '../socket-io/selectors/socket-response-selectors';
-import { replaceVariablesInText } from '@/features/prompts/utils/variable-resolver';
-import type { PromptData } from '@/features/prompts/types/core';
+} from "../socket-io/selectors/socket-response-selectors";
+import { replaceVariablesInText } from "@/features/prompts/utils/variable-resolver";
+import type { PromptData } from "@/features/prompts/types/core";
 
 // ============================================================================
 // TYPES & INTERFACES
@@ -41,7 +41,7 @@ import type { PromptData } from '@/features/prompts/types/core';
 /**
  * Source table for prompts
  */
-export type PromptSource = 'prompts' | 'prompt_builtins';
+export type PromptSource = "prompts" | "prompt_builtins";
 
 /**
  * Payload for fetching a single prompt
@@ -103,12 +103,12 @@ export interface ExecutePromptResult {
 
 /**
  * Fetch a prompt from the 'prompts' table and cache it
- * 
+ *
  * @example
  * ```typescript
- * await dispatch(fetchPrompt({ 
- *   promptId: 'text-analyzer', 
- *   source: 'prompts' 
+ * await dispatch(fetchPrompt({
+ *   promptId: 'text-analyzer',
+ *   source: 'prompts'
  * })).unwrap();
  * ```
  */
@@ -117,7 +117,7 @@ export const fetchPromptFromTable = createAsyncThunk<
   FetchPromptPayload,
   { dispatch: AppDispatch; state: RootState }
 >(
-  'promptSystem/fetchFromTable',
+  "promptSystem/fetchFromTable",
   async ({ promptId, source, forceFetch = false }, { dispatch, getState }) => {
     try {
       const state = getState();
@@ -141,47 +141,56 @@ export const fetchPromptFromTable = createAsyncThunk<
       }
 
       // Prevent duplicate fetches
-      if (fetchStatus === 'loading' && !forceFetch) {
+      if (fetchStatus === "loading" && !forceFetch) {
         throw new Error(`Prompt ${promptId} is already being fetched`);
       }
 
       // Set loading status
-      dispatch(setFetchStatus({ promptId, status: 'loading' }));
+      dispatch(setFetchStatus({ promptId, status: "loading" }));
 
       // Fetch from appropriate table
       const { data: prompt, error } = await supabase
         .from(source)
-        .select('*')
-        .eq('id', promptId)
+        .select("*")
+        .eq("id", promptId)
         .single();
 
       if (error || !prompt) {
-        dispatch(setFetchStatus({ promptId, status: 'error' }));
-        throw new Error(`Failed to fetch prompt ${promptId} from ${source}: ${error?.message || 'Not found'}`);
+        dispatch(setFetchStatus({ promptId, status: "error" }));
+        throw new Error(
+          `Failed to fetch prompt ${promptId} from ${source}: ${error?.message || "Not found"}`,
+        );
       }
 
       // Owner column differs per table: `prompts` uses `user_id`, while
       // `prompt_builtins` uses `created_by_user_id`. Read the right one by
       // source so the cache always holds the actual owner.
       const userId =
-        source === 'prompts'
+        source === "prompts"
           ? (prompt as { user_id: string | null }).user_id
-          : (prompt as { created_by_user_id: string | null }).created_by_user_id;
+          : (prompt as { created_by_user_id: string | null })
+              .created_by_user_id;
 
       // Build cached prompt object
       const cachedPromptData: CachedPrompt = {
         id: prompt.id,
         name: prompt.name,
         description: prompt.description,
-        messages: (Array.isArray(prompt.messages) ? prompt.messages : []) as CachedPrompt['messages'],
-        variableDefaults: (Array.isArray(prompt.variable_defaults) ? prompt.variable_defaults : []) as CachedPrompt['variableDefaults'],
-        settings: (prompt.settings && typeof prompt.settings === 'object' && !Array.isArray(prompt.settings)
+        messages: (Array.isArray(prompt.messages)
+          ? prompt.messages
+          : []) as CachedPrompt["messages"],
+        variableDefaults: (Array.isArray(prompt.variable_defaults)
+          ? prompt.variable_defaults
+          : []) as CachedPrompt["variableDefaults"],
+        settings: (prompt.settings &&
+        typeof prompt.settings === "object" &&
+        !Array.isArray(prompt.settings)
           ? prompt.settings
-          : {}) as CachedPrompt['settings'],
-        userId: userId ?? '',
+          : {}) as CachedPrompt["settings"],
+        userId: userId ?? "",
         source,
         fetchedAt: Date.now(),
-        status: 'cached',
+        status: "cached",
       };
 
       // Cache the prompt
@@ -202,15 +211,18 @@ export const fetchPromptFromTable = createAsyncThunk<
         fromCache: false,
       };
     } catch (error) {
-      console.error(`[fetchPromptFromTable] Error fetching ${promptId} from ${source}:`, error);
+      console.error(
+        `[fetchPromptFromTable] Error fetching ${promptId} from ${source}:`,
+        error,
+      );
       throw error;
     }
-  }
+  },
 );
 
 /**
  * Fetch a prompt from 'prompts' table (convenience wrapper)
- * 
+ *
  * @example
  * ```typescript
  * await dispatch(fetchPrompt({ promptId: 'text-analyzer' })).unwrap();
@@ -218,18 +230,17 @@ export const fetchPromptFromTable = createAsyncThunk<
  */
 export const fetchPrompt = createAsyncThunk<
   FetchPromptResult,
-  Omit<FetchPromptPayload, 'source'>,
+  Omit<FetchPromptPayload, "source">,
   { dispatch: AppDispatch; state: RootState }
->(
-  'promptSystem/fetchPrompt',
-  async (payload, { dispatch }) => {
-    return dispatch(fetchPromptFromTable({ ...payload, source: 'prompts' })).unwrap();
-  }
-);
+>("promptSystem/fetchPrompt", async (payload, { dispatch }) => {
+  return dispatch(
+    fetchPromptFromTable({ ...payload, source: "prompts" }),
+  ).unwrap();
+});
 
 /**
  * Fetch a prompt from 'prompt_builtins' table (convenience wrapper)
- * 
+ *
  * @example
  * ```typescript
  * await dispatch(fetchBuiltinPrompt({ promptId: 'code-reviewer' })).unwrap();
@@ -237,14 +248,13 @@ export const fetchPrompt = createAsyncThunk<
  */
 export const fetchBuiltinPrompt = createAsyncThunk<
   FetchPromptResult,
-  Omit<FetchPromptPayload, 'source'>,
+  Omit<FetchPromptPayload, "source">,
   { dispatch: AppDispatch; state: RootState }
->(
-  'promptSystem/fetchBuiltinPrompt',
-  async (payload, { dispatch }) => {
-    return dispatch(fetchPromptFromTable({ ...payload, source: 'prompt_builtins' })).unwrap();
-  }
-);
+>("promptSystem/fetchBuiltinPrompt", async (payload, { dispatch }) => {
+  return dispatch(
+    fetchPromptFromTable({ ...payload, source: "prompt_builtins" }),
+  ).unwrap();
+});
 
 // ============================================================================
 // 2. GET PROMPT LAYER (Cache-First Retrieval)
@@ -252,20 +262,20 @@ export const fetchBuiltinPrompt = createAsyncThunk<
 
 /**
  * Get a prompt with cache-first logic
- * 
+ *
  * This is the main interface for the application layer.
  * - Checks cache first
  * - Fetches if not cached
  * - Handles stale prompts (refetches if stale unless allowStale is true)
  * - Application never needs to worry about fetching directly
- * 
+ *
  * @example
  * ```typescript
- * const result = await dispatch(getPrompt({ 
- *   promptId: 'text-analyzer', 
- *   source: 'prompts' 
+ * const result = await dispatch(getPrompt({
+ *   promptId: 'text-analyzer',
+ *   source: 'prompts'
  * })).unwrap();
- * 
+ *
  * // Use result.promptData for execution
  * ```
  */
@@ -274,7 +284,7 @@ export const getPrompt = createAsyncThunk<
   GetPromptPayload,
   { dispatch: AppDispatch; state: RootState }
 >(
-  'promptSystem/getPrompt',
+  "promptSystem/getPrompt",
   async ({ promptId, source, allowStale = false }, { dispatch, getState }) => {
     try {
       const state = getState();
@@ -282,7 +292,7 @@ export const getPrompt = createAsyncThunk<
 
       // If cached and not stale (or stale is allowed), return from cache
       if (cachedPrompt) {
-        const isStale = cachedPrompt.status === 'stale';
+        const isStale = cachedPrompt.status === "stale";
 
         // Return cache if not stale or if stale is allowed
         if (!isStale || allowStale) {
@@ -307,12 +317,14 @@ export const getPrompt = createAsyncThunk<
 
       // Not cached or stale - fetch from database
       console.log(`🔄 Fetching prompt from database:`, promptId);
-      return dispatch(fetchPromptFromTable({ promptId, source, forceFetch: true })).unwrap();
+      return dispatch(
+        fetchPromptFromTable({ promptId, source, forceFetch: true }),
+      ).unwrap();
     } catch (error) {
       console.error(`[getPrompt] Error getting prompt ${promptId}:`, error);
       throw error;
     }
-  }
+  },
 );
 
 /**
@@ -320,28 +332,24 @@ export const getPrompt = createAsyncThunk<
  */
 export const getUserPrompt = createAsyncThunk<
   FetchPromptResult,
-  Omit<GetPromptPayload, 'source'>,
+  Omit<GetPromptPayload, "source">,
   { dispatch: AppDispatch; state: RootState }
->(
-  'promptSystem/getUserPrompt',
-  async (payload, { dispatch }) => {
-    return dispatch(getPrompt({ ...payload, source: 'prompts' })).unwrap();
-  }
-);
+>("promptSystem/getUserPrompt", async (payload, { dispatch }) => {
+  return dispatch(getPrompt({ ...payload, source: "prompts" })).unwrap();
+});
 
 /**
  * Get a prompt from 'prompt_builtins' table (convenience wrapper)
  */
 export const getBuiltinPrompt = createAsyncThunk<
   FetchPromptResult,
-  Omit<GetPromptPayload, 'source'>,
+  Omit<GetPromptPayload, "source">,
   { dispatch: AppDispatch; state: RootState }
->(
-  'promptSystem/getBuiltinPrompt',
-  async (payload, { dispatch }) => {
-    return dispatch(getPrompt({ ...payload, source: 'prompt_builtins' })).unwrap();
-  }
-);
+>("promptSystem/getBuiltinPrompt", async (payload, { dispatch }) => {
+  return dispatch(
+    getPrompt({ ...payload, source: "prompt_builtins" }),
+  ).unwrap();
+});
 
 // ============================================================================
 // 3. EXECUTE LAYER (Core Execution Logic)
@@ -349,18 +357,18 @@ export const getBuiltinPrompt = createAsyncThunk<
 
 /**
  * Execute a prompt by ID and source
- * 
+ *
  * This handles the core execution logic:
  * - Fetches prompt if not cached (via getPrompt)
  * - Processes messages with variables
  * - Adds context and initial messages
  * - Submits to chat service
  * - Returns response
- * 
+ *
  * Does NOT handle:
  * - UI rendering (that's for display layer)
  * - Modal opening (that's for UI layer)
- * 
+ *
  * @example
  * ```typescript
  * const result = await dispatch(executePromptById({
@@ -370,7 +378,7 @@ export const getBuiltinPrompt = createAsyncThunk<
  *   contextMessage: 'User is analyzing marketing copy',
  *   initialMessage: 'Please analyze this text'
  * })).unwrap();
- * 
+ *
  * console.log(result.response); // AI response
  * ```
  */
@@ -379,21 +387,28 @@ export const executePromptById = createAsyncThunk<
   ExecutePromptPayload,
   { dispatch: AppDispatch; state: RootState }
 >(
-  'promptSystem/executeById',
+  "promptSystem/executeById",
   async (
-    { promptId, source, variables = {}, contextMessage, initialMessage, modelOverrides },
-    { dispatch, getState }
+    {
+      promptId,
+      source,
+      variables = {},
+      contextMessage,
+      initialMessage,
+      modelOverrides,
+    },
+    { dispatch, getState },
   ) => {
     const startTime = performance.now();
 
     try {
       // Step 1: Get prompt data (cache-first)
       const { promptData } = await dispatch(
-        getPrompt({ promptId, source, allowStale: false })
+        getPrompt({ promptId, source, allowStale: false }),
       ).unwrap();
 
       // Step 2: Replace variables in base messages
-      const messagesWithVariables = (promptData.messages || []).map(msg => ({
+      const messagesWithVariables = (promptData.messages || []).map((msg) => ({
         ...msg,
         content: replaceVariablesInText(msg.content, variables),
       }));
@@ -405,7 +420,7 @@ export const executePromptById = createAsyncThunk<
       if (contextMessage) {
         finalMessages = [
           ...finalMessages,
-          { role: 'user' as const, content: contextMessage },
+          { role: "user" as const, content: contextMessage },
         ];
       }
 
@@ -413,7 +428,7 @@ export const executePromptById = createAsyncThunk<
       if (initialMessage) {
         finalMessages = [
           ...finalMessages,
-          { role: 'user' as const, content: initialMessage },
+          { role: "user" as const, content: initialMessage },
         ];
       }
 
@@ -430,7 +445,7 @@ export const executePromptById = createAsyncThunk<
       if (chatConfig.output_format !== undefined) {
         const fmt = chatConfig.output_format;
         delete chatConfig.output_format;
-        if (typeof fmt === 'string' && fmt !== 'text' && fmt !== '') {
+        if (typeof fmt === "string" && fmt !== "text" && fmt !== "") {
           chatConfig.response_format = { type: fmt };
         }
       }
@@ -438,12 +453,12 @@ export const executePromptById = createAsyncThunk<
       // Step 5: Submit task via Socket.IO
       const result = await dispatch(
         createAndSubmitTask({
-          service: 'chat_service',
-          taskName: 'prompt_execution',
+          service: "chat_service",
+          taskName: "prompt_execution",
           taskData: {
             chat_config: chatConfig,
           },
-        })
+        }),
       ).unwrap();
 
       const taskId = result.taskId;
@@ -454,11 +469,16 @@ export const executePromptById = createAsyncThunk<
       return new Promise<ExecutePromptResult>((resolve, reject) => {
         const checkInterval = setInterval(() => {
           const state = getState() as RootState;
-          const streamingText = selectPrimaryResponseTextByTaskId(taskId)(state);
+          const streamingText =
+            selectPrimaryResponseTextByTaskId(taskId)(state);
           const isEnded = selectPrimaryResponseEndedByTaskId(taskId)(state);
 
           // Track time to first token
-          if (!firstTokenReceived && streamingText && streamingText.length > 0) {
+          if (
+            !firstTokenReceived &&
+            streamingText &&
+            streamingText.length > 0
+          ) {
             firstTokenReceived = true;
             timeToFirstToken = Math.round(performance.now() - startTime);
           }
@@ -485,21 +505,27 @@ export const executePromptById = createAsyncThunk<
         }, 100); // Check every 100ms
 
         // Timeout after 5 minutes
-        setTimeout(() => {
-          clearInterval(checkInterval);
-          reject(new Error('Prompt execution timed out after 5 minutes'));
-        }, 5 * 60 * 1000);
+        setTimeout(
+          () => {
+            clearInterval(checkInterval);
+            reject(new Error("Prompt execution timed out after 5 minutes"));
+          },
+          5 * 60 * 1000,
+        );
       });
     } catch (error) {
-      console.error(`[executePromptById] Error executing ${promptId} from ${source}:`, error);
+      console.error(
+        `[executePromptById] Error executing ${promptId} from ${source}:`,
+        error,
+      );
       throw error;
     }
-  }
+  },
 );
 
 /**
  * Execute a user prompt (convenience wrapper)
- * 
+ *
  * @example
  * ```typescript
  * const result = await dispatch(executeUserPrompt({
@@ -511,18 +537,17 @@ export const executePromptById = createAsyncThunk<
  */
 export const executeUserPrompt = createAsyncThunk<
   ExecutePromptResult,
-  Omit<ExecutePromptPayload, 'source'>,
+  Omit<ExecutePromptPayload, "source">,
   { dispatch: AppDispatch; state: RootState }
->(
-  'promptSystem/executeUserPrompt',
-  async (payload, { dispatch }) => {
-    return dispatch(executePromptById({ ...payload, source: 'prompts' })).unwrap();
-  }
-);
+>("promptSystem/executeUserPrompt", async (payload, { dispatch }) => {
+  return dispatch(
+    executePromptById({ ...payload, source: "prompts" }),
+  ).unwrap();
+});
 
 /**
  * Execute a builtin prompt (convenience wrapper)
- * 
+ *
  * @example
  * ```typescript
  * const result = await dispatch(executeBuiltinPrompt({
@@ -533,14 +558,13 @@ export const executeUserPrompt = createAsyncThunk<
  */
 export const executeBuiltinPrompt = createAsyncThunk<
   ExecutePromptResult,
-  Omit<ExecutePromptPayload, 'source'>,
+  Omit<ExecutePromptPayload, "source">,
   { dispatch: AppDispatch; state: RootState }
->(
-  'promptSystem/executeBuiltinPrompt',
-  async (payload, { dispatch }) => {
-    return dispatch(executePromptById({ ...payload, source: 'prompt_builtins' })).unwrap();
-  }
-);
+>("promptSystem/executeBuiltinPrompt", async (payload, { dispatch }) => {
+  return dispatch(
+    executePromptById({ ...payload, source: "prompt_builtins" }),
+  ).unwrap();
+});
 
 // ============================================================================
 // EXPORTS
@@ -562,4 +586,3 @@ export default {
   executeUserPrompt,
   executeBuiltinPrompt,
 };
-

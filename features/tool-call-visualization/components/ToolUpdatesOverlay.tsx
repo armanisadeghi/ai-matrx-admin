@@ -3,14 +3,20 @@
 /**
  * ToolUpdatesOverlay (canonical, v2 contract)
  *
- * Fullscreen tabbed overlay — one tab per tool call. Consumes
- * ToolLifecycleEntry[] directly, no ToolCallObject reshaping.
+ * Fullscreen overlay with the THREE standard top-level tabs:
  *
- * Each tab has three views: Results (custom renderer or a default output
- * view), Input (arguments inspector), and Raw (full events + entry JSON).
+ *   1. Results — custom renderer (per registry) or default OutputView
+ *   2. Input   — argument inspector
+ *   3. Raw     — full lifecycle entry + events JSON
+ *
+ * For tool groups with multiple entries (rare), an inline entry selector
+ * strip lets the user pick which tool's data to inspect within each tab.
+ *
+ * This shell deliberately renders no heavy header / gradient / per-tool
+ * outer tab — the FullScreenOverlay's own tab bar is the only outer chrome.
  */
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   AlertCircle,
   Check,
@@ -18,7 +24,6 @@ import {
   FileCode2,
   MessageSquare,
   Settings2,
-  Wrench,
   WrapText,
 } from "lucide-react";
 
@@ -33,7 +38,6 @@ import type { ToolLifecycleEntry } from "@/features/agents/types/request.types";
 
 import {
   getOverlayRenderer,
-  getResultsLabel,
   getToolDisplayName,
   hasCustomRenderer,
 } from "../registry/registry";
@@ -86,7 +90,7 @@ const CopyButton: React.FC<{ text: string; className?: string }> = ({
   );
 };
 
-// ─── Default views used when a tool has no custom overlay ─────────────────────
+// ─── Per-entry view components ────────────────────────────────────────────────
 
 const InputView: React.FC<{ entry: ToolLifecycleEntry }> = ({ entry }) => {
   const [wordWrap, setWordWrap] = useState(false);
@@ -346,69 +350,74 @@ const RawDataView: React.FC<{ entry: ToolLifecycleEntry }> = ({ entry }) => {
   );
 };
 
-// ─── Per-tab content (tool group) ─────────────────────────────────────────────
+// ─── Multi-tool entry selector (only rendered when entries.length > 1) ────────
 
-type ToolGroupView = "results" | "input" | "raw";
-
-const ToolGroupTab: React.FC<{
-  entry: ToolLifecycleEntry;
-  toolLabel: string;
-  toolDisplayName: string;
-}> = ({ entry, toolLabel, toolDisplayName }) => {
-  console.log(
-    "[DIAG-3b ToolGroupTab] callId=%s toolName=%s result type=%s result=%o",
-    entry.callId,
-    entry.toolName,
-    typeof entry.result,
-    entry.result,
+const EntrySelector: React.FC<{
+  entries: ToolLifecycleEntry[];
+  selectedCallId: string;
+  onSelect: (callId: string) => void;
+}> = ({ entries, selectedCallId, onSelect }) => {
+  if (entries.length <= 1) return null;
+  return (
+    <div className="flex items-center gap-1.5 px-4 py-2 border-b border-border bg-muted/40 overflow-x-auto scrollbar-none flex-shrink-0">
+      <span className="text-xs text-muted-foreground mr-1 flex-shrink-0">
+        Tool
+      </span>
+      {entries.map((entry, idx) => {
+        const label = getToolDisplayName(entry.toolName);
+        const isActive = entry.callId === selectedCallId;
+        return (
+          <button
+            key={entry.callId}
+            onClick={() => onSelect(entry.callId)}
+            className={cn(
+              "flex-shrink-0 px-2.5 py-1 rounded-md text-xs font-medium transition-colors border border-border",
+              isActive
+                ? "bg-primary text-primary-foreground border-primary"
+                : "bg-background text-muted-foreground hover:bg-muted hover:text-foreground",
+            )}
+          >
+            <span className="opacity-60 mr-1">{idx + 1}.</span>
+            {label}
+          </button>
+        );
+      })}
+    </div>
   );
-  const [activeView, setActiveView] = useState<ToolGroupView>("results");
+};
 
-  const hasCustom = hasCustomRenderer(entry.toolName);
+// ─── Tab content shells (render selected entry inside the active top tab) ─────
 
-  const subtitle = useMemo(() => {
-    const args = entry.arguments ?? {};
-    const val =
-      (args as Record<string, unknown>).query ??
-      (args as Record<string, unknown>).q ??
-      (args as Record<string, unknown>).search ??
-      (args as Record<string, unknown>).url ??
-      (args as Record<string, unknown>).urls;
-    if (typeof val === "string") return val;
-    if (Array.isArray(val)) return val.slice(0, 3).join(", ");
-    return null;
-  }, [entry.arguments]);
+const ResultsTabContent: React.FC<{
+  entries: ToolLifecycleEntry[];
+  selectedCallId: string;
+  onSelect: (callId: string) => void;
+}> = ({ entries, selectedCallId, onSelect }) => {
+  const entry =
+    entries.find((e) => e.callId === selectedCallId) ?? entries[0] ?? null;
 
-  const resultCount = useMemo(() => {
-    const r = entry.result;
-    if (!r || typeof r !== "object") return null;
-    const obj = r as Record<string, unknown>;
-    if (Array.isArray(obj.articles)) return `${obj.articles.length} articles`;
-    if (typeof obj.totalResults === "number")
-      return `${obj.totalResults} results`;
-    if (typeof obj.total_results === "number")
-      return `${obj.total_results} results`;
-    if (typeof obj.count === "number") return `${obj.count} results`;
-    return null;
-  }, [entry.result]);
+  if (entry) {
+    console.log(
+      "[DIAG-3b ToolGroupTab] callId=%s toolName=%s result type=%s result=%o",
+      entry.callId,
+      entry.toolName,
+      typeof entry.result,
+      entry.result,
+    );
+  }
 
-  const headerTitle =
-    activeView === "input"
-      ? `${toolDisplayName} — Input`
-      : activeView === "raw"
-        ? `${toolDisplayName} — Raw`
-        : toolLabel;
-
-  const headerSubtitle =
-    activeView === "input" || activeView === "raw"
-      ? entry.toolName || toolDisplayName
-      : subtitle || resultCount || toolDisplayName;
-
-  const renderResults = () => {
-    if (entry.status === "error") {
-      return <ErrorView entry={entry} />;
+  const renderBody = () => {
+    if (!entry) {
+      return (
+        <div className="p-8 text-center text-muted-foreground">
+          <p className="text-sm">No tool data available</p>
+        </div>
+      );
     }
-    if (hasCustom) {
+
+    if (entry.status === "error") return <ErrorView entry={entry} />;
+
+    if (hasCustomRenderer(entry.toolName)) {
       const OverlayRenderer = getOverlayRenderer(entry.toolName);
       return (
         <OverlayRenderer
@@ -419,7 +428,9 @@ const ToolGroupTab: React.FC<{
         />
       );
     }
+
     if (entry.result != null) return <OutputView entry={entry} />;
+
     return (
       <div className="p-8 text-center text-muted-foreground">
         <p className="text-sm">Results not yet available</p>
@@ -427,74 +438,70 @@ const ToolGroupTab: React.FC<{
     );
   };
 
-  const renderContent = () => {
-    switch (activeView) {
-      case "input":
-        return <InputView entry={entry} />;
-      case "raw":
-        return <RawDataView entry={entry} />;
-      case "results":
-      default:
-        return renderResults();
-    }
-  };
+  return (
+    <div className="flex flex-col h-full">
+      <EntrySelector
+        entries={entries}
+        selectedCallId={entry?.callId ?? ""}
+        onSelect={onSelect}
+      />
+      <div className="flex-1 overflow-auto">{renderBody()}</div>
+    </div>
+  );
+};
 
-  const viewButtons: {
-    view: ToolGroupView;
-    icon: React.ReactNode;
-    label: string;
-  }[] = [
-    {
-      view: "results",
-      icon: <Wrench className="w-3.5 h-3.5" />,
-      label: "Results",
-    },
-    {
-      view: "input",
-      icon: <Settings2 className="w-3.5 h-3.5" />,
-      label: "Input",
-    },
-    {
-      view: "raw",
-      icon: <FileCode2 className="w-3.5 h-3.5" />,
-      label: "Raw",
-    },
-  ];
+const InputTabContent: React.FC<{
+  entries: ToolLifecycleEntry[];
+  selectedCallId: string;
+  onSelect: (callId: string) => void;
+}> = ({ entries, selectedCallId, onSelect }) => {
+  const entry =
+    entries.find((e) => e.callId === selectedCallId) ?? entries[0] ?? null;
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex-shrink-0 bg-gradient-to-r from-blue-600 to-indigo-700 px-5 py-2">
-        <div className="flex items-center justify-between h-full">
-          <div className="flex items-center gap-3 min-w-0">
-            <Wrench className="w-5 h-5 text-white/80 flex-shrink-0" />
-            <div className="min-w-0">
-              <h2 className="text-base font-bold text-white truncate">
-                {headerTitle}
-              </h2>
-            </div>
+      <EntrySelector
+        entries={entries}
+        selectedCallId={entry?.callId ?? ""}
+        onSelect={onSelect}
+      />
+      <div className="flex-1 overflow-hidden">
+        {entry ? (
+          <InputView entry={entry} />
+        ) : (
+          <div className="p-8 text-center text-muted-foreground">
+            <p className="text-sm">No tool data available</p>
           </div>
-          <div className="flex items-center gap-1 flex-shrink-0">
-            {viewButtons.map(({ view, icon, label }) => (
-              <button
-                key={view}
-                onClick={() => setActiveView(view)}
-                className={cn(
-                  "flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all border border-border",
-                  activeView === view
-                    ? "bg-white/25 text-white"
-                    : "bg-white/10 text-white/60 hover:bg-white/20 hover:text-white",
-                )}
-                title={label}
-              >
-                {icon}
-                <span className="hidden sm:inline">{label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
+        )}
       </div>
+    </div>
+  );
+};
 
-      <div className="flex-1 overflow-auto">{renderContent()}</div>
+const RawTabContent: React.FC<{
+  entries: ToolLifecycleEntry[];
+  selectedCallId: string;
+  onSelect: (callId: string) => void;
+}> = ({ entries, selectedCallId, onSelect }) => {
+  const entry =
+    entries.find((e) => e.callId === selectedCallId) ?? entries[0] ?? null;
+
+  return (
+    <div className="flex flex-col h-full">
+      <EntrySelector
+        entries={entries}
+        selectedCallId={entry?.callId ?? ""}
+        onSelect={onSelect}
+      />
+      <div className="flex-1 overflow-hidden">
+        {entry ? (
+          <RawDataView entry={entry} />
+        ) : (
+          <div className="p-8 text-center text-muted-foreground">
+            <p className="text-sm">No tool data available</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
@@ -505,7 +512,25 @@ export interface ToolUpdatesOverlayProps {
   isOpen: boolean;
   onClose: () => void;
   entries: ToolLifecycleEntry[];
+  /**
+   * Optional initial focus. Accepts:
+   *   - "results" | "input" | "raw" → top-level tab to open
+   *   - "tool-group-{callId}"       → legacy contract; selects that entry
+   *                                    and opens the Results tab.
+   */
   initialTab?: string;
+}
+
+const TOP_TABS: ReadonlyArray<"results" | "input" | "raw"> = [
+  "results",
+  "input",
+  "raw",
+] as const;
+
+type TopTabId = (typeof TOP_TABS)[number];
+
+function isTopTabId(value: string | undefined): value is TopTabId {
+  return value === "results" || value === "input" || value === "raw";
 }
 
 export const ToolUpdatesOverlay: React.FC<ToolUpdatesOverlayProps> = ({
@@ -514,43 +539,83 @@ export const ToolUpdatesOverlay: React.FC<ToolUpdatesOverlayProps> = ({
   entries,
   initialTab,
 }) => {
-  const { tabs, resolvedInitialTab } = useMemo(() => {
-    const generated: TabDefinition[] = entries.map((entry) => {
-      const label = getResultsLabel(entry.toolName);
-      const displayName = getToolDisplayName(entry.toolName);
-      return {
-        id: `tool-group-${entry.callId}`,
-        label,
+  // Resolve initial entry callId from the legacy "tool-group-{callId}" form.
+  const requestedCallId = useMemo(() => {
+    if (!initialTab) return null;
+    const m = initialTab.match(/^tool-group-(.+)$/);
+    if (m && entries.some((e) => e.callId === m[1])) return m[1];
+    return null;
+  }, [initialTab, entries]);
+
+  const initialCallId =
+    requestedCallId ?? entries[entries.length - 1]?.callId ?? "";
+
+  const [selectedCallId, setSelectedCallId] = useState<string>(initialCallId);
+
+  // Sync the selected entry whenever the overlay reopens with a different
+  // initial tab / entry list.
+  useEffect(() => {
+    if (isOpen && initialCallId) setSelectedCallId(initialCallId);
+  }, [isOpen, initialCallId]);
+
+  const resolvedTopTab: TopTabId = isTopTabId(initialTab)
+    ? initialTab
+    : "results";
+
+  const tabs: TabDefinition[] = useMemo(
+    () => [
+      {
+        id: "results",
+        label: "Results",
         content: (
-          <ToolGroupTab
-            entry={entry}
-            toolLabel={label}
-            toolDisplayName={displayName}
+          <ResultsTabContent
+            entries={entries}
+            selectedCallId={selectedCallId}
+            onSelect={setSelectedCallId}
           />
         ),
-      };
-    });
+      },
+      {
+        id: "input",
+        label: "Input",
+        content: (
+          <InputTabContent
+            entries={entries}
+            selectedCallId={selectedCallId}
+            onSelect={setSelectedCallId}
+          />
+        ),
+      },
+      {
+        id: "raw",
+        label: "Raw",
+        content: (
+          <RawTabContent
+            entries={entries}
+            selectedCallId={selectedCallId}
+            onSelect={setSelectedCallId}
+          />
+        ),
+      },
+    ],
+    [entries, selectedCallId],
+  );
 
-    let resolved: string | undefined;
-    if (initialTab && generated.some((t) => t.id === initialTab)) {
-      resolved = initialTab;
-    } else if (generated.length > 0) {
-      resolved = generated[generated.length - 1].id;
-    }
-
-    return { tabs: generated, resolvedInitialTab: resolved };
-  }, [entries, initialTab]);
-
-  const toolCount = tabs.length;
+  // Compute a meaningful title for the overlay header.
+  const title = useMemo(() => {
+    if (entries.length === 0) return "Tool";
+    if (entries.length > 1) return `${entries.length} Tools`;
+    return getToolDisplayName(entries[0].toolName);
+  }, [entries]);
 
   return (
     <FullScreenOverlay
       isOpen={isOpen}
       onClose={onClose}
-      title=""
-      description="View tool results and inputs"
+      title={title}
+      description="Tool results, input, and raw data"
       tabs={tabs}
-      initialTab={resolvedInitialTab}
+      initialTab={resolvedTopTab}
       width="95vw"
       height="95vh"
     />

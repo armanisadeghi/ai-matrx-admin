@@ -1,0 +1,62 @@
+// lib/auth/authedLayoutData.ts
+//
+// Shared server-side helper used by every authed layout to perform the
+// auth + admin-check + viewport sniff in one place. Created during the
+// entity-isolation migration so that both `app/(authenticated)/layout.tsx`
+// and the new `app/(legacy)/layout.tsx` can stay thin.
+//
+// `loadAuthedLayoutData()` redirects to /login if there is no session, so
+// callers can treat the return value as guaranteed-authenticated. The
+// `accessToken` may still be undefined if `getSession()` returns no session
+// for some edge case — preserved as the original layouts treated it.
+
+import "server-only";
+
+import { redirect } from "next/navigation";
+import { headers } from "next/headers";
+import { createClient } from "@/utils/supabase/server";
+import { mapUserData, type UserData } from "@/utils/userDataMapper";
+import { checkIsUserAdmin } from "@/utils/supabase/userSessionData";
+import { setGlobalUserIdAndToken } from "@/lib/globalState";
+
+export interface AuthedLayoutData {
+  userData: UserData;
+  accessToken: string | undefined;
+  isAdmin: boolean;
+  isMobile: boolean;
+}
+
+export async function loadAuthedLayoutData(): Promise<AuthedLayoutData> {
+  const supabase = await createClient();
+  const headersList = await headers();
+  const viewport = headersList.get("viewport-width") || "0";
+  const isMobile = Number(viewport) < 768;
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  const [
+    {
+      data: { session },
+    },
+    isAdmin,
+  ] = await Promise.all([
+    supabase.auth.getSession(),
+    checkIsUserAdmin(supabase, user.id).catch((err) => {
+      console.error("checkIsUserAdmin failed, defaulting to false:", err);
+      return false;
+    }),
+  ]);
+
+  const accessToken = session?.access_token;
+  const userData = mapUserData(user, accessToken, isAdmin);
+
+  setGlobalUserIdAndToken(userData.id, accessToken ?? "", isAdmin);
+
+  return { userData, accessToken, isAdmin, isMobile };
+}

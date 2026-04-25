@@ -36,10 +36,8 @@ import {
   UserPreferences,
   UserPreferencesState,
 } from "@/lib/redux/slices/userPreferencesSlice";
+import { setStoreSingleton } from "./store-singleton";
 const sagaMiddleware = createSagaMiddleware();
-
-// Store reference for utility access
-let storeInstance: AppStore | null = null;
 
 /**
  * Starts an additional saga on the running store's saga middleware.
@@ -208,8 +206,8 @@ export const makeStore = (
   );
   sagaMiddleware.run(rootSagaInstance);
 
-  // Keep reference for utility access
-  storeInstance = storeWithSync;
+  // Keep reference for utility access via the leaf-module singleton.
+  setStoreSingleton(storeWithSync);
 
   return storeWithSync;
 };
@@ -224,7 +222,11 @@ export type AppThunk<ReturnType = void> = ThunkAction<
   Action
 >;
 
-// Getter for utilities to access store
-export const getStore = (): AppStore | null => storeInstance;
+// Re-export `getStore` from the leaf singleton module so existing callers
+// (`features/**/*`, `utils/auth/getUserId`, `lib/redux/entity/injectEntityReducers`)
+// don't break during the entity-isolation migration. New code should import
+// from `./store-singleton` directly to avoid pulling in this file's
+// reducer/middleware graph.
+export { getStoreSingleton as getStore } from "./store-singleton";
 
 enableMapSet();

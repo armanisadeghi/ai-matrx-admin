@@ -10,51 +10,54 @@
 // - All thunks return the resulting PromptData so callers can await + unwrap()
 //   and get the value back directly, just like a plain async function would
 
-import { createAsyncThunk } from '@reduxjs/toolkit';
-import { supabase } from '@/utils/supabase/client';
-import { RootState, AppDispatch } from '../store';
-import type { DbRpcRow } from '@/types/supabase-rpc';
+import { createAsyncThunk } from "@reduxjs/toolkit";
+import { supabase } from "@/utils/supabase/client";
+import type { AppDispatch, RootState } from "../store";
+import type { DbRpcRow } from "@/types/supabase-rpc";
 import {
-    cachePrompt,
-    removePrompt,
-    markPromptStale,
-    setPromptList,
-    setListStatus,
-    upsertPromptInList,
-    removePromptFromList,
-    setSharedPromptList,
-    setSharedListStatus,
-    upsertSharedPromptInList,
-    removeSharedPromptFromList,
-    CachedPrompt,
-    SharedPromptRecord,
-} from '../slices/promptCacheSlice';
-import type { PromptData, PromptDb } from '@/features/prompts/types/core';
+  cachePrompt,
+  removePrompt,
+  markPromptStale,
+  setPromptList,
+  setListStatus,
+  upsertPromptInList,
+  removePromptFromList,
+  setSharedPromptList,
+  setSharedListStatus,
+  upsertSharedPromptInList,
+  removeSharedPromptFromList,
+  CachedPrompt,
+  SharedPromptRecord,
+} from "../slices/promptCacheSlice";
+import type { PromptData, PromptDb } from "@/features/prompts/types/core";
 import {
-    toFrontend,
-    toDbInsert,
-    toDbUpdate,
-} from '@/features/prompts/utils/dbTransforms';
-import { satisfiesPermissionLevel } from '@/utils/permissions/types';
+  toFrontend,
+  toDbInsert,
+  toDbUpdate,
+} from "@/features/prompts/utils/dbTransforms";
+import { satisfiesPermissionLevel } from "@/utils/permissions/types";
 
 // ---------------------------------------------------------------------------
 // DB row types
 // ---------------------------------------------------------------------------
 
 interface SharedPromptDbRow {
-    created_at: string;
-    description: string;
-    id: string;
-    messages: unknown;
-    name: string;
-    owner_email: string;
-    permission_level: string;
-    settings: unknown;
-    updated_at: string;
-    user_id: string;
-    variable_defaults: unknown;
+  created_at: string;
+  description: string;
+  id: string;
+  messages: unknown;
+  name: string;
+  owner_email: string;
+  permission_level: string;
+  settings: unknown;
+  updated_at: string;
+  user_id: string;
+  variable_defaults: unknown;
 }
-type _CheckSharedPromptDbRow = SharedPromptDbRow extends DbRpcRow<"get_prompts_shared_with_me"> ? true : false;
+type _CheckSharedPromptDbRow =
+  SharedPromptDbRow extends DbRpcRow<"get_prompts_shared_with_me">
+    ? true
+    : false;
 declare const _sharedPromptDbRow: _CheckSharedPromptDbRow;
 true satisfies typeof _sharedPromptDbRow;
 
@@ -64,35 +67,32 @@ true satisfies typeof _sharedPromptDbRow;
 
 /** Map a frontend record to what promptCacheSlice.CachedPrompt expects. */
 function toCachedPrompt(data: PromptData): CachedPrompt {
-    return {
-        id:               data.id!,
-        name:             data.name ?? '',
-        description:      data.description,
-        messages:         data.messages ?? [],
-        variableDefaults: data.variableDefaults ?? [],
-        settings:         data.settings ?? {},
-        userId:           data.userId ?? '',
-        source:           'prompts',
-        fetchedAt:        Date.now(),
-        status:           'cached',
-        tags:             data.tags,
-        category:         data.category,
-        isArchived:       data.isArchived,
-        isFavorite:       data.isFavorite,
-        modelId:          data.modelId,
-        outputFormat:     data.outputFormat,
-        outputSchema:     data.outputSchema,
-        tools:            data.tools,
-    };
+  return {
+    id: data.id!,
+    name: data.name ?? "",
+    description: data.description,
+    messages: data.messages ?? [],
+    variableDefaults: data.variableDefaults ?? [],
+    settings: data.settings ?? {},
+    userId: data.userId ?? "",
+    source: "prompts",
+    fetchedAt: Date.now(),
+    status: "cached",
+    tags: data.tags,
+    category: data.category,
+    isArchived: data.isArchived,
+    isFavorite: data.isFavorite,
+    modelId: data.modelId,
+    outputFormat: data.outputFormat,
+    outputSchema: data.outputSchema,
+    tools: data.tools,
+  };
 }
 
 /** Push a freshly mutated record into both caches in one call. */
-function syncBothCaches(
-    dispatch: AppDispatch,
-    data: PromptData
-) {
-    dispatch(cachePrompt(toCachedPrompt(data)));   // execution pipeline cache
-    dispatch(upsertPromptInList(data));             // CRUD / management list
+function syncBothCaches(dispatch: AppDispatch, data: PromptData) {
+  dispatch(cachePrompt(toCachedPrompt(data))); // execution pipeline cache
+  dispatch(upsertPromptInList(data)); // CRUD / management list
 }
 
 // ---------------------------------------------------------------------------
@@ -109,42 +109,39 @@ function syncBothCaches(
  * dispatch(fetchAllUserPrompts()).unwrap();
  */
 export const fetchAllUserPrompts = createAsyncThunk<
-    PromptData[],
-    void,
-    { dispatch: AppDispatch; state: RootState }
->(
-    'promptCrud/fetchAll',
-    async (_, { dispatch, getState }) => {
-        dispatch(setListStatus({ status: 'loading' }));
+  PromptData[],
+  void,
+  { dispatch: AppDispatch; state: RootState }
+>("promptCrud/fetchAll", async (_, { dispatch, getState }) => {
+  dispatch(setListStatus({ status: "loading" }));
 
-        const userId = (getState() as RootState).user.id;
-        if (!userId) {
-            dispatch(setListStatus({ status: 'error', error: 'Not authenticated' }));
-            throw new Error('Not authenticated');
-        }
+  const userId = (getState() as RootState).user.id;
+  if (!userId) {
+    dispatch(setListStatus({ status: "error", error: "Not authenticated" }));
+    throw new Error("Not authenticated");
+  }
 
-        const { data: rows, error } = await supabase
-            .from('prompts')
-            .select<'*', PromptDb>('*')
-            .eq('user_id', userId)
-            .order('updated_at', { ascending: false });
+  const { data: rows, error } = await supabase
+    .from("prompts")
+    .select<"*", PromptDb>("*")
+    .eq("user_id", userId)
+    .order("updated_at", { ascending: false });
 
-        if (error) {
-            dispatch(setListStatus({ status: 'error', error: error.message }));
-            throw new Error(error.message ?? JSON.stringify(error));
-        }
+  if (error) {
+    dispatch(setListStatus({ status: "error", error: error.message }));
+    throw new Error(error.message ?? JSON.stringify(error));
+  }
 
-        const prompts = (rows ?? []).map(toFrontend);
+  const prompts = (rows ?? []).map(toFrontend);
 
-        // Populate list state
-        dispatch(setPromptList(prompts));
+  // Populate list state
+  dispatch(setPromptList(prompts));
 
-        // Pre-warm per-ID execution cache (skips any that are already fresh)
-        prompts.forEach((p) => dispatch(cachePrompt(toCachedPrompt(p))));
+  // Pre-warm per-ID execution cache (skips any that are already fresh)
+  prompts.forEach((p) => dispatch(cachePrompt(toCachedPrompt(p))));
 
-        return prompts;
-    }
-);
+  return prompts;
+});
 
 // ── FETCH ONE ────────────────────────────────────────────────────────────────
 /**
@@ -155,25 +152,22 @@ export const fetchAllUserPrompts = createAsyncThunk<
  * const prompt = await dispatch(fetchUserPrompt(id)).unwrap();
  */
 export const fetchUserPrompt = createAsyncThunk<
-    PromptData,
-    string,          // promptId
-    { dispatch: AppDispatch; state: RootState }
->(
-    'promptCrud/fetchOne',
-    async (promptId, { dispatch }) => {
-        const { data: row, error } = await supabase
-            .from('prompts')
-            .select('*')
-            .eq('id', promptId)
-            .single<PromptDb>();
+  PromptData,
+  string, // promptId
+  { dispatch: AppDispatch; state: RootState }
+>("promptCrud/fetchOne", async (promptId, { dispatch }) => {
+  const { data: row, error } = await supabase
+    .from("prompts")
+    .select("*")
+    .eq("id", promptId)
+    .single<PromptDb>();
 
-        if (error) throw new Error(error.message ?? JSON.stringify(error));
+  if (error) throw new Error(error.message ?? JSON.stringify(error));
 
-        const prompt = toFrontend(row!);
-        syncBothCaches(dispatch, prompt);
-        return prompt;
-    }
-);
+  const prompt = toFrontend(row!);
+  syncBothCaches(dispatch, prompt);
+  return prompt;
+});
 
 // ── CREATE ────────────────────────────────────────────────────────────────────
 /**
@@ -185,28 +179,25 @@ export const fetchUserPrompt = createAsyncThunk<
  * const newPrompt = await dispatch(createUserPrompt({ name: 'My Prompt', messages: [...] })).unwrap();
  */
 export const createUserPrompt = createAsyncThunk<
-    PromptData,
-    Omit<PromptData, 'id' | 'createdAt' | 'updatedAt' | 'userId'>,
-    { dispatch: AppDispatch; state: RootState }
->(
-    'promptCrud/create',
-    async (data, { dispatch, getState }) => {
-        const userId = (getState() as RootState).user.id;
-        if (!userId) throw new Error('Not authenticated');
+  PromptData,
+  Omit<PromptData, "id" | "createdAt" | "updatedAt" | "userId">,
+  { dispatch: AppDispatch; state: RootState }
+>("promptCrud/create", async (data, { dispatch, getState }) => {
+  const userId = (getState() as RootState).user.id;
+  if (!userId) throw new Error("Not authenticated");
 
-        const { data: row, error } = await supabase
-            .from('prompts')
-            .insert({ ...toDbInsert(data), user_id: userId })
-            .select()
-            .single<PromptDb>();
+  const { data: row, error } = await supabase
+    .from("prompts")
+    .insert({ ...toDbInsert(data), user_id: userId })
+    .select()
+    .single<PromptDb>();
 
-        if (error) throw new Error(error.message ?? JSON.stringify(error));
+  if (error) throw new Error(error.message ?? JSON.stringify(error));
 
-        const prompt = toFrontend(row!);
-        syncBothCaches(dispatch, prompt);
-        return prompt;
-    }
-);
+  const prompt = toFrontend(row!);
+  syncBothCaches(dispatch, prompt);
+  return prompt;
+});
 
 // ── UPDATE ────────────────────────────────────────────────────────────────────
 /**
@@ -218,40 +209,39 @@ export const createUserPrompt = createAsyncThunk<
  * const updated = await dispatch(updateUserPrompt({ id, data: { name: 'New name' } })).unwrap();
  */
 export const updateUserPrompt = createAsyncThunk<
-    PromptData,
-    {
-        id: string;
-        data: Partial<Omit<PromptData, 'id' | 'createdAt' | 'updatedAt' | 'userId'>>;
-    },
-    { dispatch: AppDispatch; state: RootState }
->(
-    'promptCrud/update',
-    async ({ id, data }, { dispatch }) => {
-        const patch = toDbUpdate(data);
+  PromptData,
+  {
+    id: string;
+    data: Partial<
+      Omit<PromptData, "id" | "createdAt" | "updatedAt" | "userId">
+    >;
+  },
+  { dispatch: AppDispatch; state: RootState }
+>("promptCrud/update", async ({ id, data }, { dispatch }) => {
+  const patch = toDbUpdate(data);
 
-        if (Object.keys(patch).length === 0) {
-            // Nothing to send — fetch current state and return it instead
-            return dispatch(fetchUserPrompt(id)).unwrap();
-        }
+  if (Object.keys(patch).length === 0) {
+    // Nothing to send — fetch current state and return it instead
+    return dispatch(fetchUserPrompt(id)).unwrap();
+  }
 
-        // Mark stale immediately so the runner re-fetches if it opens this
-        // prompt before the update resolves (race condition guard)
-        dispatch(markPromptStale(id));
+  // Mark stale immediately so the runner re-fetches if it opens this
+  // prompt before the update resolves (race condition guard)
+  dispatch(markPromptStale(id));
 
-        const { data: row, error } = await supabase
-            .from('prompts')
-            .update(patch)
-            .eq('id', id)
-            .select()
-            .single<PromptDb>();
+  const { data: row, error } = await supabase
+    .from("prompts")
+    .update(patch)
+    .eq("id", id)
+    .select()
+    .single<PromptDb>();
 
-        if (error) throw new Error(error.message ?? JSON.stringify(error));
+  if (error) throw new Error(error.message ?? JSON.stringify(error));
 
-        const prompt = toFrontend(row!);
-        syncBothCaches(dispatch, prompt);  // overwrites the stale entry
-        return prompt;
-    }
-);
+  const prompt = toFrontend(row!);
+  syncBothCaches(dispatch, prompt); // overwrites the stale entry
+  return prompt;
+});
 
 // ── UPSERT ────────────────────────────────────────────────────────────────────
 /**
@@ -262,36 +252,33 @@ export const updateUserPrompt = createAsyncThunk<
  * const result = await dispatch(upsertUserPrompt(promptData)).unwrap();
  */
 export const upsertUserPrompt = createAsyncThunk<
-    PromptData,
-    PromptData,
-    { dispatch: AppDispatch; state: RootState }
->(
-    'promptCrud/upsert',
-    async (data, { dispatch, getState }) => {
-        const userId = (getState() as RootState).user.id;
-        if (!userId) throw new Error('Not authenticated');
+  PromptData,
+  PromptData,
+  { dispatch: AppDispatch; state: RootState }
+>("promptCrud/upsert", async (data, { dispatch, getState }) => {
+  const userId = (getState() as RootState).user.id;
+  if (!userId) throw new Error("Not authenticated");
 
-        const payload: Partial<PromptDb> = {
-            ...(data.id ? { id: data.id } : {}),
-            ...toDbInsert(data),
-            user_id: userId,
-        };
+  const payload: Partial<PromptDb> = {
+    ...(data.id ? { id: data.id } : {}),
+    ...toDbInsert(data),
+    user_id: userId,
+  };
 
-        if (data.id) dispatch(markPromptStale(data.id));
+  if (data.id) dispatch(markPromptStale(data.id));
 
-        const { data: row, error } = await supabase
-            .from('prompts')
-            .upsert(payload, { onConflict: 'id' })
-            .select()
-            .single<PromptDb>();
+  const { data: row, error } = await supabase
+    .from("prompts")
+    .upsert(payload, { onConflict: "id" })
+    .select()
+    .single<PromptDb>();
 
-        if (error) throw new Error(error.message ?? JSON.stringify(error));
+  if (error) throw new Error(error.message ?? JSON.stringify(error));
 
-        const prompt = toFrontend(row!);
-        syncBothCaches(dispatch, prompt);
-        return prompt;
-    }
-);
+  const prompt = toFrontend(row!);
+  syncBothCaches(dispatch, prompt);
+  return prompt;
+});
 
 // ── DELETE ────────────────────────────────────────────────────────────────────
 /**
@@ -302,24 +289,18 @@ export const upsertUserPrompt = createAsyncThunk<
  * await dispatch(deleteUserPrompt(id)).unwrap();
  */
 export const deleteUserPrompt = createAsyncThunk<
-    string,          // returns the deleted id
-    string,          // promptId
-    { dispatch: AppDispatch; state: RootState }
->(
-    'promptCrud/delete',
-    async (id, { dispatch }) => {
-        const { error } = await supabase
-            .from('prompts')
-            .delete()
-            .eq('id', id);
+  string, // returns the deleted id
+  string, // promptId
+  { dispatch: AppDispatch; state: RootState }
+>("promptCrud/delete", async (id, { dispatch }) => {
+  const { error } = await supabase.from("prompts").delete().eq("id", id);
 
-        if (error) throw new Error(error.message ?? JSON.stringify(error));
+  if (error) throw new Error(error.message ?? JSON.stringify(error));
 
-        dispatch(removePrompt(id));          // evict from execution cache
-        dispatch(removePromptFromList(id));  // evict from list
-        return id;
-    }
-);
+  dispatch(removePrompt(id)); // evict from execution cache
+  dispatch(removePromptFromList(id)); // evict from list
+  return id;
+});
 
 // ── DUPLICATE ─────────────────────────────────────────────────────────────────
 /**
@@ -330,33 +311,30 @@ export const deleteUserPrompt = createAsyncThunk<
  * const copy = await dispatch(duplicateUserPrompt(id)).unwrap();
  */
 export const duplicateUserPrompt = createAsyncThunk<
-    PromptData,
-    string,          // source promptId
-    { dispatch: AppDispatch; state: RootState }
->(
-    'promptCrud/duplicate',
-    async (sourceId, { dispatch }) => {
-        const source = await dispatch(fetchUserPrompt(sourceId)).unwrap();
+  PromptData,
+  string, // source promptId
+  { dispatch: AppDispatch; state: RootState }
+>("promptCrud/duplicate", async (sourceId, { dispatch }) => {
+  const source = await dispatch(fetchUserPrompt(sourceId)).unwrap();
 
-        return dispatch(
-            createUserPrompt({
-                name:             source.name ? `${source.name} (copy)` : 'Untitled (copy)',
-                description:      source.description,
-                messages:         source.messages,
-                variableDefaults: source.variableDefaults,
-                settings:         source.settings,
-                tags:             source.tags,
-                category:         source.category,
-                isArchived:       false,
-                isFavorite:       false,
-                modelId:          source.modelId,
-                outputFormat:     source.outputFormat,
-                outputSchema:     source.outputSchema,
-                tools:            source.tools,
-            })
-        ).unwrap();
-    }
-);
+  return dispatch(
+    createUserPrompt({
+      name: source.name ? `${source.name} (copy)` : "Untitled (copy)",
+      description: source.description,
+      messages: source.messages,
+      variableDefaults: source.variableDefaults,
+      settings: source.settings,
+      tags: source.tags,
+      category: source.category,
+      isArchived: false,
+      isFavorite: false,
+      modelId: source.modelId,
+      outputFormat: source.outputFormat,
+      outputSchema: source.outputSchema,
+      tools: source.tools,
+    }),
+  ).unwrap();
+});
 
 // ── SHARED: FETCH ─────────────────────────────────────────────────────────────
 /**
@@ -374,35 +352,38 @@ export const duplicateUserPrompt = createAsyncThunk<
  * await dispatch(fetchSharedPrompts()).unwrap();
  */
 export const fetchSharedPrompts = createAsyncThunk<
-    SharedPromptRecord[],
-    void,
-    { dispatch: AppDispatch; state: RootState }
->(
-    'promptCrud/fetchShared',
-    async (_, { dispatch }) => {
-        dispatch(setSharedListStatus({ status: 'loading' }));
+  SharedPromptRecord[],
+  void,
+  { dispatch: AppDispatch; state: RootState }
+>("promptCrud/fetchShared", async (_, { dispatch }) => {
+  dispatch(setSharedListStatus({ status: "loading" }));
 
-        const { data, error } = await supabase.rpc('get_prompts_shared_with_me');
+  const { data, error } = await supabase.rpc("get_prompts_shared_with_me");
 
-        if (error) {
-            dispatch(setSharedListStatus({ status: 'error', error: error.message }));
-            throw error;
-        }
+  if (error) {
+    dispatch(setSharedListStatus({ status: "error", error: error.message }));
+    throw error;
+  }
 
-        const records: SharedPromptRecord[] = ((data ?? []) as unknown as SharedPromptDbRow[]).map((row) => ({
-            id:              row.id,
-            name:            row.name,
-            description:     row.description ?? null,
-            permissionLevel: row.permission_level as SharedPromptRecord['permissionLevel'],
-            ownerEmail:      row.owner_email,
-            canEdit:         satisfiesPermissionLevel(row.permission_level as SharedPromptRecord['permissionLevel'], 'editor'),
-            canDelete:       row.permission_level === 'admin',
-        }));
+  const records: SharedPromptRecord[] = (
+    (data ?? []) as unknown as SharedPromptDbRow[]
+  ).map((row) => ({
+    id: row.id,
+    name: row.name,
+    description: row.description ?? null,
+    permissionLevel:
+      row.permission_level as SharedPromptRecord["permissionLevel"],
+    ownerEmail: row.owner_email,
+    canEdit: satisfiesPermissionLevel(
+      row.permission_level as SharedPromptRecord["permissionLevel"],
+      "editor",
+    ),
+    canDelete: row.permission_level === "admin",
+  }));
 
-        dispatch(setSharedPromptList(records));
-        return records;
-    }
-);
+  dispatch(setSharedPromptList(records));
+  return records;
+});
 
 // ── SHARED: UPDATE ────────────────────────────────────────────────────────────
 /**
@@ -413,61 +394,60 @@ export const fetchSharedPrompts = createAsyncThunk<
  * const updated = await dispatch(updateSharedPrompt({ id, data: { name: 'New name' } })).unwrap();
  */
 export const updateSharedPrompt = createAsyncThunk<
-    SharedPromptRecord,
-    {
-        id: string;
-        data: Partial<Omit<PromptData, 'id' | 'createdAt' | 'updatedAt' | 'userId'>>;
-    },
-    { dispatch: AppDispatch; state: RootState }
->(
-    'promptCrud/updateShared',
-    async ({ id, data }, { dispatch, getState }) => {
-        // ── Permission guard ──────────────────────────────────────────────────
-        const state = getState();
-        const record = state.promptCache?.sharedPrompts.find((p) => p.id === id);
+  SharedPromptRecord,
+  {
+    id: string;
+    data: Partial<
+      Omit<PromptData, "id" | "createdAt" | "updatedAt" | "userId">
+    >;
+  },
+  { dispatch: AppDispatch; state: RootState }
+>("promptCrud/updateShared", async ({ id, data }, { dispatch, getState }) => {
+  // ── Permission guard ──────────────────────────────────────────────────
+  const state = getState();
+  const record = state.promptCache?.sharedPrompts.find((p) => p.id === id);
 
-        if (!record) {
-            throw new Error(`Shared prompt ${id} not found in state. Fetch it first.`);
-        }
-        if (!record.canEdit) {
-            throw new Error(
-                `Permission denied: you need editor access to update prompt ${id}. ` +
-                `Current level: ${record.permissionLevel}.`
-            );
-        }
+  if (!record) {
+    throw new Error(`Shared prompt ${id} not found in state. Fetch it first.`);
+  }
+  if (!record.canEdit) {
+    throw new Error(
+      `Permission denied: you need editor access to update prompt ${id}. ` +
+        `Current level: ${record.permissionLevel}.`,
+    );
+  }
 
-        // ── DB update ────────────────────────────────────────────────────────
-        const patch = toDbUpdate(data);
-        if (Object.keys(patch).length === 0) {
-            return record; // nothing to do
-        }
+  // ── DB update ────────────────────────────────────────────────────────
+  const patch = toDbUpdate(data);
+  if (Object.keys(patch).length === 0) {
+    return record; // nothing to do
+  }
 
-        dispatch(markPromptStale(id));
+  dispatch(markPromptStale(id));
 
-        const { data: row, error } = await supabase
-            .from('prompts')
-            .update(patch)
-            .eq('id', id)
-            .select()
-            .single<PromptDb>();
+  const { data: row, error } = await supabase
+    .from("prompts")
+    .update(patch)
+    .eq("id", id)
+    .select()
+    .single<PromptDb>();
 
-        if (error) throw new Error(error.message ?? JSON.stringify(error));
+  if (error) throw new Error(error.message ?? JSON.stringify(error));
 
-        // ── Sync caches ───────────────────────────────────────────────────────
-        const updatedPrompt = toFrontend(row!);
-        // Also pre-warm the execution cache with fresh data
-        dispatch(cachePrompt(toCachedPrompt(updatedPrompt)));
+  // ── Sync caches ───────────────────────────────────────────────────────
+  const updatedPrompt = toFrontend(row!);
+  // Also pre-warm the execution cache with fresh data
+  dispatch(cachePrompt(toCachedPrompt(updatedPrompt)));
 
-        // Build updated shared record, preserving permission fields from Redux
-        const updatedRecord: SharedPromptRecord = {
-            ...record,
-            name:        updatedPrompt.name        ?? record.name,
-            description: updatedPrompt.description ?? record.description,
-        };
-        dispatch(upsertSharedPromptInList(updatedRecord));
-        return updatedRecord;
-    }
-);
+  // Build updated shared record, preserving permission fields from Redux
+  const updatedRecord: SharedPromptRecord = {
+    ...record,
+    name: updatedPrompt.name ?? record.name,
+    description: updatedPrompt.description ?? record.description,
+  };
+  dispatch(upsertSharedPromptInList(updatedRecord));
+  return updatedRecord;
+});
 
 // ── SHARED: DELETE ────────────────────────────────────────────────────────────
 /**
@@ -478,39 +458,33 @@ export const updateSharedPrompt = createAsyncThunk<
  * await dispatch(deleteSharedPrompt(id)).unwrap();
  */
 export const deleteSharedPrompt = createAsyncThunk<
-    string,          // returns the deleted id
-    string,          // promptId
-    { dispatch: AppDispatch; state: RootState }
->(
-    'promptCrud/deleteShared',
-    async (id, { dispatch, getState }) => {
-        // ── Permission guard ──────────────────────────────────────────────────
-        const state = getState();
-        const record = state.promptCache?.sharedPrompts.find((p) => p.id === id);
+  string, // returns the deleted id
+  string, // promptId
+  { dispatch: AppDispatch; state: RootState }
+>("promptCrud/deleteShared", async (id, { dispatch, getState }) => {
+  // ── Permission guard ──────────────────────────────────────────────────
+  const state = getState();
+  const record = state.promptCache?.sharedPrompts.find((p) => p.id === id);
 
-        if (!record) {
-            throw new Error(`Shared prompt ${id} not found in state. Fetch it first.`);
-        }
-        if (!record.canDelete) {
-            throw new Error(
-                `Permission denied: you need admin access to delete prompt ${id}. ` +
-                `Current level: ${record.permissionLevel}.`
-            );
-        }
+  if (!record) {
+    throw new Error(`Shared prompt ${id} not found in state. Fetch it first.`);
+  }
+  if (!record.canDelete) {
+    throw new Error(
+      `Permission denied: you need admin access to delete prompt ${id}. ` +
+        `Current level: ${record.permissionLevel}.`,
+    );
+  }
 
-        // ── DB delete ────────────────────────────────────────────────────────
-        const { error } = await supabase
-            .from('prompts')
-            .delete()
-            .eq('id', id);
+  // ── DB delete ────────────────────────────────────────────────────────
+  const { error } = await supabase.from("prompts").delete().eq("id", id);
 
-        if (error) throw new Error(error.message ?? JSON.stringify(error));
+  if (error) throw new Error(error.message ?? JSON.stringify(error));
 
-        // removeSharedPromptFromList also evicts from the execution cache
-        dispatch(removeSharedPromptFromList(id));
-        return id;
-    }
-);
+  // removeSharedPromptFromList also evicts from the execution cache
+  dispatch(removeSharedPromptFromList(id));
+  return id;
+});
 
 // ── INITIALIZE (idempotent bootstrap) ─────────────────────────────────────────
 
@@ -521,12 +495,12 @@ const PROMPT_LIST_TTL_MS = 15 * 60 * 1000; // 15 minutes
  * "Fresh" means status is success/loading AND the last fetch was within the TTL.
  */
 function isOwnedListFresh(state: RootState): boolean {
-    const status        = state.promptCache?.listStatus ?? 'idle';
-    const lastFetchedAt = state.promptCache?.lastFetchedAt ?? null;
-    if (status === 'loading') return true; // already in-flight
-    if (status !== 'success') return false;
-    if (lastFetchedAt === null) return false;
-    return Date.now() - lastFetchedAt < PROMPT_LIST_TTL_MS;
+  const status = state.promptCache?.listStatus ?? "idle";
+  const lastFetchedAt = state.promptCache?.lastFetchedAt ?? null;
+  if (status === "loading") return true; // already in-flight
+  if (status !== "success") return false;
+  if (lastFetchedAt === null) return false;
+  return Date.now() - lastFetchedAt < PROMPT_LIST_TTL_MS;
 }
 
 /**
@@ -545,27 +519,24 @@ function isOwnedListFresh(state: RootState): boolean {
  * useEffect(() => { dispatch(initializeUserPrompts()); }, [dispatch]);
  */
 export const initializeUserPrompts = createAsyncThunk<
-    void,
-    void,
-    { dispatch: AppDispatch; state: RootState }
->(
-    'promptCrud/initialize',
-    async (_, { dispatch, getState }) => {
-        const state        = getState();
-        const sharedStatus = state.promptCache?.sharedListStatus ?? 'idle';
+  void,
+  void,
+  { dispatch: AppDispatch; state: RootState }
+>("promptCrud/initialize", async (_, { dispatch, getState }) => {
+  const state = getState();
+  const sharedStatus = state.promptCache?.sharedListStatus ?? "idle";
 
-        const ownedDone  = isOwnedListFresh(state);
-        const sharedDone = sharedStatus === 'success' || sharedStatus === 'loading';
+  const ownedDone = isOwnedListFresh(state);
+  const sharedDone = sharedStatus === "success" || sharedStatus === "loading";
 
-        if (ownedDone && sharedDone) return;
+  if (ownedDone && sharedDone) return;
 
-        const tasks: Promise<unknown>[] = [];
-        if (!ownedDone)  tasks.push(dispatch(fetchAllUserPrompts()).unwrap());
-        if (!sharedDone) tasks.push(dispatch(fetchSharedPrompts()).unwrap());
+  const tasks: Promise<unknown>[] = [];
+  if (!ownedDone) tasks.push(dispatch(fetchAllUserPrompts()).unwrap());
+  if (!sharedDone) tasks.push(dispatch(fetchSharedPrompts()).unwrap());
 
-        await Promise.all(tasks);
-    }
-);
+  await Promise.all(tasks);
+});
 
 /**
  * Force a full refetch of owned and shared prompts, bypassing the TTL.
@@ -575,37 +546,34 @@ export const initializeUserPrompts = createAsyncThunk<
  * dispatch(refreshUserPrompts());
  */
 export const refreshUserPrompts = createAsyncThunk<
-    void,
-    void,
-    { dispatch: AppDispatch; state: RootState }
->(
-    'promptCrud/refresh',
-    async (_, { dispatch }) => {
-        await Promise.all([
-            dispatch(fetchAllUserPrompts()).unwrap(),
-            dispatch(fetchSharedPrompts()).unwrap(),
-        ]);
-    }
-);
+  void,
+  void,
+  { dispatch: AppDispatch; state: RootState }
+>("promptCrud/refresh", async (_, { dispatch }) => {
+  await Promise.all([
+    dispatch(fetchAllUserPrompts()).unwrap(),
+    dispatch(fetchSharedPrompts()).unwrap(),
+  ]);
+});
 
 // ---------------------------------------------------------------------------
 // Exports
 // ---------------------------------------------------------------------------
 
 export default {
-    // Bootstrap
-    initializeUserPrompts,
-    refreshUserPrompts,
-    // Owned prompts
-    fetchAllUserPrompts,
-    fetchUserPrompt,
-    createUserPrompt,
-    updateUserPrompt,
-    upsertUserPrompt,
-    deleteUserPrompt,
-    duplicateUserPrompt,
-    // Shared prompts
-    fetchSharedPrompts,
-    updateSharedPrompt,
-    deleteSharedPrompt,
+  // Bootstrap
+  initializeUserPrompts,
+  refreshUserPrompts,
+  // Owned prompts
+  fetchAllUserPrompts,
+  fetchUserPrompt,
+  createUserPrompt,
+  updateUserPrompt,
+  upsertUserPrompt,
+  deleteUserPrompt,
+  duplicateUserPrompt,
+  // Shared prompts
+  fetchSharedPrompts,
+  updateSharedPrompt,
+  deleteSharedPrompt,
 };

@@ -7,7 +7,12 @@
  * For client components and hooks, prefer reading directly from the store via
  * `useAppSelector(selectUser)` instead.
  */
-import { getStore } from '@/lib/redux/store';
+// Imports from the leaf singleton module — NOT `@/lib/redux/store` — to
+// avoid a circular import. tasksSlice (and many other slices) import this
+// file at module level, so loading store.ts here would create a cycle:
+//   tasksSlice.ts → getUserId.ts → store.ts → entity-rootReducer.ts →
+//   rootReducer.ts → tasksSlice.ts (TDZ on tasksReducer).
+import { getStoreSingleton as getStore } from '@/lib/redux/store-singleton';
 
 interface StoreUser {
     id: string | null;

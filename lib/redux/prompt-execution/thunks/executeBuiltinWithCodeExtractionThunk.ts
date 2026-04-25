@@ -1,28 +1,28 @@
 /**
  * Execute Builtin with Code Extraction Thunk
- * 
+ *
  * Generic thunk for executing any builtin and extracting code from the response.
  * Use this when you need to run a builtin that generates code in a markdown codeblock.
  */
 
-import { createAsyncThunk } from '@reduxjs/toolkit';
-import { AppDispatch, RootState } from '../../store';
-import { startPromptInstance } from './startInstanceThunk';
-import { executeMessage } from './executeMessageThunk';
-import { removeInstance } from '../slice';
-import { 
-  selectStreamingTextForInstance, 
-  selectIsResponseEndedForInstance 
-} from '../selectors';
-import { getBuiltinId } from '../builtins';
+import { createAsyncThunk } from "@reduxjs/toolkit";
+import type { AppDispatch, RootState } from "../../store";
+import { startPromptInstance } from "./startInstanceThunk";
+import { executeMessage } from "./executeMessageThunk";
+import { removeInstance } from "../slice";
+import {
+  selectStreamingTextForInstance,
+  selectIsResponseEndedForInstance,
+} from "../selectors";
+import { getBuiltinId } from "../builtins";
 
 interface ExecuteBuiltinWithCodeExtractionPayload {
   /** Builtin key (e.g., 'prompt-app-auto-create') or UUID */
   builtinKey: string;
-  
+
   /** Variables to pass to the builtin */
   variables: Record<string, string>;
-  
+
   /** Optional: Override execution config */
   executionConfig?: {
     auto_run?: boolean;
@@ -32,7 +32,7 @@ interface ExecuteBuiltinWithCodeExtractionPayload {
     track_in_runs?: boolean;
     use_pre_execution_input?: boolean;
   };
-  
+
   /** Optional: Timeout in milliseconds (default: 120000 = 2 minutes) */
   timeoutMs?: number;
 
@@ -64,7 +64,7 @@ interface ExecuteBuiltinWithCodeExtractionResult {
  */
 function extractCodeFromResponse(response: string): string | null {
   // Normalize Windows line endings so \n always works as delimiter
-  const normalized = response.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  const normalized = response.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
 
   // Allow optional language tag followed by optional whitespace before the newline
   const codeBlockRegex = /```(?:\w+)?[^\S\n]*\n([\s\S]*?)```/;
@@ -88,7 +88,7 @@ function extractCodeFromResponse(response: string): string | null {
 async function waitForCompletion(
   runId: string,
   getState: () => RootState,
-  timeoutMs: number = 120000
+  timeoutMs: number = 120000,
 ): Promise<string> {
   const startTime = Date.now();
 
@@ -99,7 +99,7 @@ async function waitForCompletion(
 
       if (isEnded) {
         clearInterval(checkInterval);
-        const fullResponse = selectStreamingTextForInstance(state, runId) || '';
+        const fullResponse = selectStreamingTextForInstance(state, runId) || "";
         resolve(fullResponse);
         return;
       }
@@ -107,11 +107,13 @@ async function waitForCompletion(
       if (Date.now() - startTime > timeoutMs) {
         clearInterval(checkInterval);
         const elapsed = Math.round((Date.now() - startTime) / 1000);
-        reject(new Error(
-          `Timed out after ${elapsed} seconds waiting for AI response. ` +
-          'If you switched browser tabs during this process, that may have caused the connection to be suspended. ' +
-          'Please keep this tab active and try again.'
-        ));
+        reject(
+          new Error(
+            `Timed out after ${elapsed} seconds waiting for AI response. ` +
+              "If you switched browser tabs during this process, that may have caused the connection to be suspended. " +
+              "Please keep this tab active and try again.",
+          ),
+        );
       }
     }, 500);
   });
@@ -119,14 +121,14 @@ async function waitForCompletion(
 
 /**
  * Execute a builtin and extract code from its response
- * 
+ *
  * @example
  * ```typescript
  * const result = await dispatch(executeBuiltinWithCodeExtraction({
  *   builtinKey: 'prompt-app-auto-create',
  *   variables: { prompt_object: '...', ... }
  * })).unwrap();
- * 
+ *
  * if (result.success) {
  *   console.log('Generated code:', result.code);
  * }
@@ -140,7 +142,7 @@ export const executeBuiltinWithCodeExtraction = createAsyncThunk<
     state: RootState;
   }
 >(
-  'promptExecution/executeBuiltinWithCodeExtraction',
+  "promptExecution/executeBuiltinWithCodeExtraction",
   async (payload, { dispatch, getState }) => {
     const {
       builtinKey,
@@ -155,22 +157,24 @@ export const executeBuiltinWithCodeExtraction = createAsyncThunk<
     try {
       // Resolve builtin ID (accepts key or UUID)
       const builtinId = getBuiltinId(builtinKey);
-      
+
       // Start the prompt instance
-      runId = await dispatch(startPromptInstance({
-        promptId: builtinId,
-        promptSource: 'prompt_builtins',
-        variables,
-        executionConfig: {
-          auto_run: false,
-          allow_chat: false,
-          show_variables: false,
-          apply_variables: true,
-          track_in_runs: true,
-          use_pre_execution_input: false,
-          ...executionConfig
-        },
-      })).unwrap();
+      runId = await dispatch(
+        startPromptInstance({
+          promptId: builtinId,
+          promptSource: "prompt_builtins",
+          variables,
+          executionConfig: {
+            auto_run: false,
+            allow_chat: false,
+            show_variables: false,
+            apply_variables: true,
+            track_in_runs: true,
+            use_pre_execution_input: false,
+            ...executionConfig,
+          },
+        }),
+      ).unwrap();
 
       // Execute the message
       const taskId = await dispatch(executeMessage({ runId })).unwrap();
@@ -183,18 +187,18 @@ export const executeBuiltinWithCodeExtraction = createAsyncThunk<
 
       // Extract code from response
       const code = extractCodeFromResponse(fullResponse);
-      
+
       if (!code) {
         console.error(
-          '[executeBuiltinWithCodeExtraction] No code block found in response. Full response:\n',
-          fullResponse
+          "[executeBuiltinWithCodeExtraction] No code block found in response. Full response:\n",
+          fullResponse,
         );
         return {
           success: false,
           fullResponse,
-          error: 'No code block found in response',
+          error: "No code block found in response",
           runId,
-          taskId
+          taskId,
         };
       }
 
@@ -203,14 +207,13 @@ export const executeBuiltinWithCodeExtraction = createAsyncThunk<
         code,
         fullResponse,
         runId,
-        taskId
+        taskId,
       };
-
     } catch (error: any) {
       return {
         success: false,
-        error: error.message || 'Unknown error occurred',
-        runId: runId || undefined
+        error: error.message || "Unknown error occurred",
+        runId: runId || undefined,
       };
     } finally {
       // Clean up the instance
@@ -218,6 +221,5 @@ export const executeBuiltinWithCodeExtraction = createAsyncThunk<
         dispatch(removeInstance({ runId }));
       }
     }
-  }
+  },
 );
-

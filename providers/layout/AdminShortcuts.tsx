@@ -27,9 +27,9 @@ export default function AdminShortcuts() {
     };
 
     const adminShortcuts = [
-        {path: '/admin', icon: Settings, label: 'Admin'},
-        {path: '/tests', icon: TestTube2, label: 'Tests'},
-        {path: '/demo', icon: Boxes, label: 'Demo'},
+        {path: '/legacy/admin', icon: Settings, label: 'Admin'},
+        {path: '/legacy/tests', icon: TestTube2, label: 'Tests'},
+        {path: '/legacy/demo', icon: Boxes, label: 'Demo'},
         {path: '/applets', icon: IconApps, label: 'Applets'},
     ];
 

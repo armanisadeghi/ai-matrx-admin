@@ -18,7 +18,6 @@
 // See `~/.claude/plans/the-entity-system-which-bubbly-wind.md`.
 
 import React from "react";
-import { Toaster } from "@/components/ui/toaster";
 import StoreProvider from "@/providers/StoreProvider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import type { EntityReduxState } from "@/types/reduxTypes";
@@ -95,7 +94,6 @@ export function EntityProviders({
                       </SelectedImagesProvider>
                     </UniformHeightProvider>
                   </ModuleHeaderProvider>
-                  <Toaster />
                 </TooltipProvider>
               </RefProvider>
             </ToastProvider>
