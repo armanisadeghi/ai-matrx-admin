@@ -34,6 +34,14 @@ const sagaMiddleware = createSagaMiddleware();
 let storeInstance: AppStore | null = null;
 
 /**
+ * Starts an additional saga on the running store's saga middleware.
+ * Used by injectEntityReducers to start entity sagas after on-demand injection.
+ */
+export function runSaga<T>(saga: () => Generator): void {
+  sagaMiddleware.run(saga as () => any);
+}
+
+/**
  * Sync engine context attached to the store as `_sync`. Consumed by
  * `StoreProvider` to drive `bootSync` without double-opening the channel.
  *

@@ -27,23 +27,27 @@ anthropic-vertex-ai          # Vertex AI wrapper — project uses AI Gateway
 @ricky0123/vad-web           # Voice activity detection, no VAD usage found
 tui-color-picker             # Legacy color picker, replaced
 react-nowplaying             # Audio now-playing UI — not in use
+
 react-json-view              # JSON viewer — superseded by custom components
 react-audio-player           # Audio player — superseded
 react-webcam                 # Webcam — no webcam features active
 react-player                 # Video player — not wired
 open-graph-scraper           # OG scraper — only used in dead code
+
 onnxruntime-web              # ONNX ML runtime — no active ML inference
 wavesurfer.js                # Audio waveform — no waveform UI active
 ag-grid-community            # AG Grid — replaced by custom DataTable
 ag-grid-react                # AG Grid React — same as above
 @reactflow/node-resizer      # Reactflow plugin — check if reactflow itself used
 @remirror/extension-markdown # Remirror extension — check if remirror is used
+
 @radix-ui/react-accessible-icon # Rarely used Radix primitive
 @react-pdf/renderer          # PDF rendering — check for active PDF features
 google-fonts                 # CSS font import, redundant with next/font
 next-redux-wrapper           # Server-side Redux hydration wrapper — project uses client Redux
 liquid-glass-react           # iOS Liquid Glass — Expo only, not web admin
 next-themes                  # Theme provider — project uses CSS var theming, not next-themes
+
 array-move                   # Array reorder utility — check for DnD usage
 qss                          # Query string — replaced by native URLSearchParams
 cors                         # CORS middleware — handled at Next.js level
@@ -59,11 +63,13 @@ js-tiktoken                  # Token counting — check if used for context wind
 @types/mdast                 # AST types for remark/rehype pipeline
 @types/unist                 # Same
 @types/uuid                  # uuid used via import — check if @types/uuid needed
+
 @types/vscode-webview        # VS Code webview types — for code editor feature
 react-use                    # Huge utility collection, may be used via dynamic import
 react-use-websocket          # WebSocket hook — check socket features
 react-fast-marquee           # Marquee — check UI components
 react-rough-notation         # Annotation effects — check for usage
+
 react-wrap-balancer          # Text balance — check landing pages
 react-remove-scroll          # Used by Radix UI internally, may be peer dep
 react-device-detect          # Device detection — check for explicit usage

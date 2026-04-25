@@ -2,10 +2,10 @@ import React from 'react';
 import { EntityKeys } from '@/types/entityTypes';
 import { UnifiedLayoutProps } from '@/components/matrx/Entity/prewired-components/layouts/types';
 import { EntityQuickReferenceAccordionEnhanced } from "./EntityQuickReferenceAccordionEnhanced";
-import { EntityQuickReferenceCardsEnhanced } from "./EntityQuickReferenceCardsEnhanced";
-import { EntityQuickReferenceList } from "./EntityQuickReferenceList";
-import { EntityQuickReferenceSelect } from "./EntityQuickReferenceSelect";
-import { EntityQuickReferenceListWithRelated } from "./EntityQuickReferenceListWithRelated";
+import EntityQuickReferenceCardsEnhanced from "./EntityQuickReferenceCardsEnhanced";
+import EntityQuickReferenceList from "./EntityQuickReferenceList";
+import EntityQuickReferenceSelect from "./EntityQuickReferenceSelect";
+import EntityQuickReferenceListWithRelated from "./EntityQuickReferenceListWithRelated";
 import DynamicQuickReference from '@/app/entities/quick-reference/dynamic-quick-ref/DynamicQuickReference';
 
 interface UnifiedQuickReferenceProps {
