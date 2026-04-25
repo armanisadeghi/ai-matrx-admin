@@ -48,8 +48,8 @@ importers:
         specifier: ^2.48.0
         version: 2.48.0(@babel/core@7.29.0)(@types/mdast@4.0.4)(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(antd@5.28.0(date-fns@4.1.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(framer-motion@12.38.0(@emotion/is-prop-valid@1.4.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(micromark-util-types@2.0.2)(micromark@4.0.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@modelcontextprotocol/sdk':
-        specifier: 1.27.1
-        version: 1.27.1(zod@4.3.6)
+        specifier: 1.29.0
+        version: 1.29.0(zod@4.3.6)
       '@monaco-editor/react':
         specifier: ^4.7.0
         version: 4.7.0(monaco-editor@0.52.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -327,8 +327,8 @@ importers:
         specifier: latest
         version: 0.577.0(react@19.2.4)
       mcp-handler:
-        specifier: ^1.0.7
-        version: 1.0.7(@modelcontextprotocol/sdk@1.27.1(zod@4.3.6))(next@16.2.0(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(babel-plugin-macros@3.1.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))
+        specifier: ^1.1.0
+        version: 1.1.0(@modelcontextprotocol/sdk@1.29.0(zod@4.3.6))(next@16.2.0(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(babel-plugin-macros@3.1.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))
       motion:
         specifier: ^12.38.0
         version: 12.38.0(@emotion/is-prop-valid@1.4.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -1982,8 +1982,8 @@ packages:
   '@mixmark-io/domino@2.2.0':
     resolution: {integrity: sha512-Y28PR25bHXUg88kCV7nivXrP2Nj2RueZ3/l/jdx6J9f8J4nsEGcgX0Qe6lt7Pa+J79+kPiJU3LguR6O/6zrLOw==}
 
-  '@modelcontextprotocol/sdk@1.27.1':
-    resolution: {integrity: sha512-sr6GbP+4edBwFndLbM60gf07z0FQ79gaExpnsjMGePXqFcSSb7t6iscpjk9DhFhwd+mTEQrzNafGP8/iGGFYaA==}
+  '@modelcontextprotocol/sdk@1.29.0':
+    resolution: {integrity: sha512-zo37mZA9hJWpULgkRpowewez1y6ML5GsXJPY8FI0tBBCd77HEvza4jDqRKOXgHNn867PVGCyTdzqpz0izu5ZjQ==}
     engines: {node: '>=18'}
     peerDependencies:
       '@cfworker/json-schema': ^4.1.1
@@ -8024,11 +8024,11 @@ packages:
     resolution: {integrity: sha512-/IXtbwEk5HTPyEwyKX6hGkYXxM9nbj64B+ilVJnC/R6B0pH5G4V3b0pVbL7DBj4tkhBAppbQUlf6F6Xl9LHu1g==}
     engines: {node: '>= 0.4'}
 
-  mcp-handler@1.0.7:
-    resolution: {integrity: sha512-w2wHb6IVmbiS+pnBNb5BXaSd+ynSgExNauB55gUwoHDw8Q8Ew9TVMsSX89yItmex61zQTl+/NuSYmlOgSpj8SQ==}
+  mcp-handler@1.1.0:
+    resolution: {integrity: sha512-MVCES7g18gcoZy+R/3v5nadkUMzMAWdos8jRl6DyljOKvd2/ZKDmwlCjL6zp4vo+7FeCXOYL1uWinHWlkKAAUg==}
     hasBin: true
     peerDependencies:
-      '@modelcontextprotocol/sdk': 1.25.2
+      '@modelcontextprotocol/sdk': 1.26.0
       next: '>=13.0.0'
     peerDependenciesMeta:
       next:
@@ -12895,7 +12895,7 @@ snapshots:
 
   '@mixmark-io/domino@2.2.0': {}
 
-  '@modelcontextprotocol/sdk@1.27.1(zod@4.3.6)':
+  '@modelcontextprotocol/sdk@1.29.0(zod@4.3.6)':
     dependencies:
       '@hono/node-server': 1.19.11(hono@4.11.8)
       ajv: 8.18.0
@@ -20391,9 +20391,9 @@ snapshots:
 
   math-intrinsics@1.1.0: {}
 
-  mcp-handler@1.0.7(@modelcontextprotocol/sdk@1.27.1(zod@4.3.6))(next@16.2.0(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(babel-plugin-macros@3.1.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)):
+  mcp-handler@1.1.0(@modelcontextprotocol/sdk@1.29.0(zod@4.3.6))(next@16.2.0(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(babel-plugin-macros@3.1.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)):
     dependencies:
-      '@modelcontextprotocol/sdk': 1.27.1(zod@4.3.6)
+      '@modelcontextprotocol/sdk': 1.29.0(zod@4.3.6)
       chalk: 5.6.2
       commander: 11.1.0
       redis: 4.7.1

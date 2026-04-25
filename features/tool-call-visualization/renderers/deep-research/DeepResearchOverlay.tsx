@@ -112,7 +112,7 @@ export const DeepResearchReportTab: React.FC<ToolRendererProps> = ({
   }
 
   return (
-    <div className="py-2 px-4 space-y-4">
+    <div className="space-y-4">
       <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 overflow-hidden">
         {parsed.queries.length > 0 && (
           <div className="px-5 py-3 bg-slate-50 dark:bg-slate-800/30 border-b border-slate-200 dark:border-slate-700">
@@ -297,7 +297,7 @@ export const DeepResearchSourcesTab: React.FC<ToolRendererProps> = ({
   }
 
   return (
-    <div className="py-2 px-4 space-y-3">
+    <div className="space-y-3">
       {readResults.map((result, index) => (
         <SourceCard
           key={index}
@@ -377,37 +377,26 @@ export const DeepResearchFullTextTab: React.FC<ToolRendererProps> = ({
   }
 
   return (
-    <div className="py-2 px-4 space-y-4">
-      <div className="flex items-center justify-end">
-        <button
-          onClick={handleCopyAll}
-          className={`flex items-center gap-2 px-4 py-1.5 text-sm font-medium transition-all border border-border rounded-md ${
-            copyAllSuccess
-              ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300"
-              : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
-          }`}
-        >
-          {copyAllSuccess ? (
-            <>
-              <Check className="w-4 h-4" />
-              <span>Copied!</span>
-            </>
-          ) : (
-            <>
-              <Copy className="w-4 h-4" />
-              <span>Copy All</span>
-            </>
-          )}
-        </button>
-      </div>
-      <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 overflow-hidden">
-        <div className="p-5">
-          <MarkdownStream
-            content={fullText}
-            hideCopyButton
-            className="text-sm"
-          />
-        </div>
+    <div className="relative rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 overflow-hidden">
+      <button
+        type="button"
+        onClick={handleCopyAll}
+        aria-label={copyAllSuccess ? "Copied" : "Copy all"}
+        title={copyAllSuccess ? "Copied" : "Copy all"}
+        className={`absolute top-2 right-2 z-10 inline-flex items-center justify-center w-7 h-7 rounded-md border border-slate-200 dark:border-slate-700 backdrop-blur-sm shadow-sm transition-colors ${
+          copyAllSuccess
+            ? "bg-green-100/90 dark:bg-green-900/40 text-green-700 dark:text-green-300"
+            : "bg-white/80 dark:bg-slate-900/70 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+        }`}
+      >
+        {copyAllSuccess ? (
+          <Check className="w-3.5 h-3.5" />
+        ) : (
+          <Copy className="w-3.5 h-3.5" />
+        )}
+      </button>
+      <div className="p-5">
+        <MarkdownStream content={fullText} hideCopyButton className="text-sm" />
       </div>
     </div>
   );
