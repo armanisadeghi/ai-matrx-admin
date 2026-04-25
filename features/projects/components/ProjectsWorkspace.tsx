@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
+import { HierarchyCascade } from "@/features/agent-context/components/hierarchy-selection/HierarchyCascade";
 import {
-  HierarchyCascade,
   EMPTY_SELECTION,
-} from "@/features/agent-context/components/hierarchy-selection";
-import type { HierarchySelection } from "@/features/agent-context/components/hierarchy-selection";
+  type HierarchySelection,
+} from "@/features/agent-context/components/hierarchy-selection/types";
 import { useNavTree } from "@/features/agent-context/hooks/useNavTree";
 import { FolderKanban, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";

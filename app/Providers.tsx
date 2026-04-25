@@ -19,10 +19,8 @@ import { RequestRecoveryProvider } from "@/features/request-recovery/providers/R
 import { RecoveryWindow } from "@/features/request-recovery/components/RecoveryWindow";
 import { RecoveryNudge } from "@/features/request-recovery/components/RecoveryNudge";
 import DeferredSingletons from "./DeferredSingletons";
-import {
-  GlobalTaskShortcut,
-  CreateTaskFromSourceDialog,
-} from "@/features/tasks/widgets";
+import GlobalTaskShortcut from "@/features/tasks/widgets/GlobalTaskShortcut";
+import CreateTaskFromSourceDialog from "@/features/tasks/widgets/CreateTaskFromSourceDialog";
 import { CloudFilesPickerHost } from "@/features/files/components/pickers/CloudFilesPickerHost";
 
 // Phase 11 — legacy file system providers removed:

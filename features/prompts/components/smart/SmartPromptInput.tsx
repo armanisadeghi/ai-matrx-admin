@@ -25,13 +25,11 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { formatText } from "@/utils/text/text-case-converter";
-import { VariableInputComponent } from "../variable-inputs";
+import { VariableInputComponent } from "../variable-inputs/VariableInputComponent";
 import { PromptInputButton } from "../PromptInputButton";
-import {
-  ResourceChips,
-  type Resource,
-  ResourcePreviewSheet,
-} from "../resource-display";
+import { ResourceChips } from "../resource-display/ResourceChips";
+import type { Resource } from "../../types/resources";
+import ResourcePreviewSheet from "../resource-display/ResourcePreviewSheet";
 import { useClipboardPaste } from "@/components/ui/file-upload/useClipboardPaste";
 import { useFileUploadWithStorage } from "@/components/ui/file-upload/useFileUploadWithStorage";
 import {

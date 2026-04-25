@@ -13,7 +13,7 @@ import {
   type RequestOptions,
   type ResponseMeta,
 } from "./client";
-import type { CloudFileVersionRow, FileRecordApi } from "../types";
+import type { CloudFileVersionRow, FileRecordApi } from "@/features/files/types";
 
 export async function listVersions(
   fileId: string,

@@ -1,7 +1,8 @@
 "use client";
 
 import { Sparkles } from "lucide-react";
-import { SettingsCallout, SettingsSubHeader } from "@/components/official/settings";
+import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
+import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
 
 /**
  * Placeholder tab used for every registry entry in Phase 3.

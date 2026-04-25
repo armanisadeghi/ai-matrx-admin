@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAllTools } from "@/features/agents/redux/tools/tools.selectors";
 import { selectMcpCatalog } from "@/features/agents/redux/mcp/mcp.slice";
-import type { EnrichmentContext } from "@/components/diff";
+import type { EnrichmentContext } from "@/components/diff/adapters/types";
 import type { RootState } from "@/lib/redux/store";
 
 export function useDiffEnrichment(): EnrichmentContext {

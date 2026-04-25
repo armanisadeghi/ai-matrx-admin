@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { brokerActions, brokerSelectors, useServerBrokerSync, BrokerIdentifier } from '@/lib/redux/brokerSlice';
-import { SlackChannel } from '../../../slack/slackClientUtils';
+import { SlackChannel } from "@/app/(authenticated)/tests/slack/slackClientUtils";
 
 // Define broker identifiers
 export const SLACK_BROKER_IDS = {

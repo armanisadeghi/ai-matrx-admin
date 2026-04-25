@@ -21,7 +21,7 @@ import {
     ContextMenuSub,
     ContextMenuSubContent,
     ContextMenuSubTrigger,
-} from "@/components/ui/context-menu";
+} from "@/components/ui/context-menu/context-menu";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
     Search,

@@ -7,7 +7,7 @@ import { UnifiedContextMenu } from "@/features/context-menu";
 import { HighlightedText } from "../HighlightedText";
 import { PromptMessage, PromptVariable, PromptSettings } from "@/features/prompts/types/core";
 import { SystemPromptOptimizer } from "@/features/prompts/components/actions/prompt-optimizers/SystemPromptOptimizer";
-import { TemplateSelector } from "../../../content-templates/components/TemplateSelector";
+import { TemplateSelector } from "@/features/content-templates/components/TemplateSelector";
 import { ResponsiveIconButtonGroup, IconButtonConfig } from "@/components/official/ResponsiveIconButtonGroup";
 
 interface SystemMessageProps {

@@ -24,10 +24,8 @@ import {
   Layers,
 } from "lucide-react";
 import { VoiceTextarea } from "@/components/official/VoiceTextarea";
-import {
-  HierarchyCascade,
-  EMPTY_SELECTION,
-} from "@/features/agent-context/components/hierarchy-selection";
+import { HierarchyCascade } from "@/features/agent-context/components/hierarchy-selection/HierarchyCascade";
+import { EMPTY_SELECTION } from "@/features/agent-context/components/hierarchy-selection/types";
 import { useState, useEffect, useMemo } from "react";
 import type { AgentDefinition } from "@/features/agents/types/agent-definition.types";
 import { selectModelNameById } from "@/features/ai-models/redux/modelRegistrySlice";

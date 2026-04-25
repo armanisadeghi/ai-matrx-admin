@@ -20,7 +20,7 @@ import {
   selectShareLinksForResource,
   EMPTY_CLOUD_FILE_PERMISSIONS,
   EMPTY_CLOUD_SHARE_LINKS,
-} from "../redux/selectors";
+} from "@/features/files/redux/selectors";
 import {
   createShareLink as createShareLinkThunk,
   deactivateShareLink as deactivateShareLinkThunk,
@@ -28,7 +28,7 @@ import {
   loadPermissions,
   loadShareLinks,
   revokePermission as revokePermissionThunk,
-} from "../redux/thunks";
+} from "@/features/files/redux/thunks";
 import type {
   CloudFilePermission,
   CloudShareLink,
@@ -37,7 +37,7 @@ import type {
   PermissionLevel,
   ResourceType,
   RevokePermissionArg,
-} from "../types";
+} from "@/features/files/types";
 
 export interface UseSharingOptions {
   /** Default false — pass true to skip the auto-load effect. */

@@ -13,11 +13,11 @@ import { TemplatePicker } from "./TemplatePicker";
 import { AutonomySelector } from "./AutonomySelector";
 import type { AutonomyLevel, ResearchTemplate } from "../../types";
 import { keywordTemplatesFromJson } from "../../types";
+import { HierarchyCascade } from "@/features/agent-context/components/hierarchy-selection/HierarchyCascade";
 import {
-  HierarchyCascade,
   EMPTY_SELECTION,
-} from "@/features/agent-context/components/hierarchy-selection";
-import type { HierarchySelection } from "@/features/agent-context/components/hierarchy-selection";
+  type HierarchySelection,
+} from "@/features/agent-context/components/hierarchy-selection/types";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { invalidateNavTree } from "@/features/agent-context/redux/hierarchySlice";
 

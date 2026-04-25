@@ -1,4 +1,4 @@
-import type { DiffOptions } from "@/components/diff";
+import type { DiffOptions } from "@/components/diff/engine/types";
 
 export const NOTE_EXCLUDE_PATHS = new Set([
   "id",

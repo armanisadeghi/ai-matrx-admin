@@ -9,7 +9,7 @@ import type {
   AiRunsListFilters,
   AiRunsListResponse,
   RunMessage,
-} from "@/features/ai-runs/types";
+} from "@/features/ai-runs/types/aiRunTypes";
 import {
   mapAiRunRow,
   mapAiTaskRow,

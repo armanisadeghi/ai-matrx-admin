@@ -6,10 +6,10 @@ import * as icons from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   fetchScopeTypes,
-  fetchScopes,
-  selectScopePickerOptions,
   selectScopeTypesLoading,
-} from "../redux/scope";
+} from "../redux/scope/scopeTypesSlice";
+import { fetchScopes } from "../redux/scope/scopesSlice";
+import { selectScopePickerOptions } from "../redux/scope/selectors";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";

@@ -39,13 +39,14 @@ import {
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import {
   fetchScopeTypes,
-  fetchScopes,
+  selectScopeTypesByOrg,
+  selectScopeTypesLoading,
+} from "../redux/scope/scopeTypesSlice";
+import { fetchScopes, selectScopesByType } from "../redux/scope/scopesSlice";
+import {
   EMPTY_SCOPES_LIST,
   EMPTY_SCOPE_TYPES_LIST,
-  selectScopeTypesByOrg,
-  selectScopesByType,
-  selectScopeTypesLoading,
-} from "../redux/scope";
+} from "../redux/scope/selectors";
 import { selectOrganizationId } from "../redux/appContextSlice";
 import {
   useContextTemplates,

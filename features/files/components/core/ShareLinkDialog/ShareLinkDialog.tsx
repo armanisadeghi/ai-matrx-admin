@@ -24,14 +24,14 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { selectActiveShareLinksForResource } from "../../../redux/selectors";
+import { selectActiveShareLinksForResource } from "@/features/files/redux/selectors";
 import {
   createShareLink,
   deactivateShareLink,
   loadShareLinks,
-} from "../../../redux/thunks";
-import { formatAbsoluteDate } from "../../../utils/format";
-import type { ResourceType } from "../../../types";
+} from "@/features/files/redux/thunks";
+import { formatAbsoluteDate } from "@/features/files/utils/format";
+import type { ResourceType } from "@/features/files/types";
 
 export interface ShareLinkDialogProps {
   open: boolean;

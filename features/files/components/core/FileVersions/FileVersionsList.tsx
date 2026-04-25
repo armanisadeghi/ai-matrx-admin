@@ -35,12 +35,12 @@ import { cn } from "@/lib/utils";
 import {
   selectFileById,
   selectVersionsForFile,
-} from "../../../redux/selectors";
+} from "@/features/files/redux/selectors";
 import {
   loadFileVersions,
   restoreVersion as restoreVersionThunk,
-} from "../../../redux/thunks";
-import { formatFileSize } from "../../../utils/format";
+} from "@/features/files/redux/thunks";
+import { formatFileSize } from "@/features/files/utils/format";
 
 export interface FileVersionsListProps {
   fileId: string;

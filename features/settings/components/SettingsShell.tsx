@@ -6,11 +6,9 @@ import { useSelector } from "react-redux";
 import type { RootState } from "@/lib/redux/store";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { useIsMobile } from "@/hooks/use-mobile";
-import {
-  SettingsTree,
-  SettingsDrawerNav,
-  type SettingsTreeNode,
-} from "@/components/official/settings";
+import { SettingsTree } from "@/components/official/settings/tree/SettingsTree";
+import { SettingsDrawerNav } from "@/components/official/settings/tree/SettingsDrawerNav";
+import type { SettingsTreeNode } from "@/components/official/settings/tree/types";
 import { getTabTreeNodes, findTab } from "../registry";
 import { SettingsTabHost } from "./SettingsTabHost";
 

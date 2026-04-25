@@ -6,12 +6,12 @@ import {
 } from "./EnhancedChatMarkdown";
 import { TypedStreamEvent } from "./types";
 
-import { buildCanonicalBlocks } from "@/lib/chat-protocol";
+import { buildCanonicalBlocks } from "@/lib/chat-protocol/from-stream";
 import type {
   ToolCallBlock,
   CanonicalBlock,
   TextBlock,
-} from "@/lib/chat-protocol";
+} from "@/lib/chat-protocol/types";
 import { MarkdownErrorBoundary } from "./internal-handlers/MarkdownErrorBoundary";
 import { LiveToolCallCard } from "@/features/tool-call-visualization/components/LiveToolCallCard";
 

@@ -1,5 +1,5 @@
 // ProfileSection.jsx
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger, ContextMenuSeparator } from "@/components/ui/context-menu";
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger, ContextMenuSeparator } from "@/components/ui/context-menu/context-menu";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Briefcase, MapPin, DollarSign, Calendar, MoreHorizontal, Edit, Trash, Plus, Trophy, ChevronUp, ChevronDown } from "lucide-react";

@@ -20,18 +20,18 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { selectPermissionsForResource } from "../../../redux/selectors";
+import { selectPermissionsForResource } from "@/features/files/redux/selectors";
 import {
   grantPermission,
   loadPermissions,
   revokePermission,
-} from "../../../redux/thunks";
-import { formatAbsoluteDate } from "../../../utils/format";
+} from "@/features/files/redux/thunks";
+import { formatAbsoluteDate } from "@/features/files/utils/format";
 import type {
   GranteeType,
   PermissionLevel,
   ResourceType,
-} from "../../../types";
+} from "@/features/files/types";
 
 export interface PermissionsDialogProps {
   open: boolean;

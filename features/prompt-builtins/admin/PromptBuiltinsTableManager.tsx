@@ -70,7 +70,7 @@ import { SelectPromptForBuiltinModal } from "./SelectPromptForBuiltinModal";
 import { LinkBuiltinToShortcutModal } from "../components/LinkBuiltinToShortcutModal";
 import { ScopeMappingEditor } from "../components/ScopeMappingEditor";
 import { getUserFriendlyError } from "../utils/error-handler";
-import { BuiltinEditor } from "@/features/prompts/components/universal-editor";
+import { BuiltinEditor } from "@/features/prompts/components/universal-editor/editors/BuiltinEditor";
 import { updatePromptShortcut } from "../services/admin-service";
 import type { ScopeMapping } from "../types/core";
 import { useModels } from "@/features/ai-models/hooks/useModels";

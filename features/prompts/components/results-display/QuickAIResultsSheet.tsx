@@ -1,24 +1,24 @@
 "use client";
 
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
-import { selectAllInstances } from '@/lib/redux/prompt-execution/slice';
-import { startPromptInstance } from '@/lib/redux/prompt-execution/thunks/startInstanceThunk';
-import { loadRun } from '@/lib/redux/prompt-execution/thunks/loadRunThunk';
-import { aiRunsService } from '@/features/ai-runs/services/ai-runs-service';
-import { getBuiltinId } from '@/lib/redux/prompt-execution/builtins';
-import { PromptRunner } from './PromptRunner';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import React, { useState, useMemo, useCallback, useEffect } from "react";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
+import { selectAllInstances } from "@/lib/redux/prompt-execution/slice";
+import { startPromptInstance } from "@/lib/redux/prompt-execution/thunks/startInstanceThunk";
+import { loadRun } from "@/lib/redux/prompt-execution/thunks/loadRunThunk";
+import { aiRunsService } from "@/features/ai-runs/services/ai-runs-service";
+import { getBuiltinId } from "@/lib/redux/prompt-execution/builtins";
+import { PromptRunner } from "./PromptRunner";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { 
-  Clock, 
+} from "@/components/ui/select";
+import {
+  Clock,
   MessageSquarePlus,
   Star,
   MessageSquare,
@@ -26,18 +26,18 @@ import {
   Inbox,
   ChevronLeft,
   ArrowDownToLine,
-} from 'lucide-react';
-import { v4 as uuidv4 } from 'uuid';
-import type { AiRun, SourceType } from '@/features/ai-runs/types';
-import type { ExecutionInstance } from '@/lib/redux/prompt-execution/types';
-import { cn } from '@/lib/utils';
+} from "lucide-react";
+import { v4 as uuidv4 } from "uuid";
+import type { AiRun, SourceType } from "@/features/ai-runs/types/aiRunTypes";
+import type { ExecutionInstance } from "@/lib/redux/prompt-execution/types";
+import { cn } from "@/lib/utils";
 
 // Source type filter options
 const SOURCE_FILTERS: Array<{ value: string; label: string }> = [
-  { value: 'all', label: 'All' },
-  { value: 'prompts', label: 'Prompts' },
-  { value: 'prompt_builtins', label: 'Built-ins' },
-  { value: 'chat', label: 'Chat' },
+  { value: "all", label: "All" },
+  { value: "prompts", label: "Prompts" },
+  { value: "prompt_builtins", label: "Built-ins" },
+  { value: "chat", label: "Chat" },
 ];
 
 // Unified type for display
@@ -54,7 +54,7 @@ interface RunListItem {
 
 /**
  * QuickAIResultsSheet - Chat-style interface for AI runs
- * 
+ *
  * Features:
  * - List view of recent runs
  * - Click to view conversation in-place
@@ -63,31 +63,31 @@ interface RunListItem {
  */
 export function QuickAIResultsSheet() {
   const dispatch = useAppDispatch();
-  
+
   // Redux state
   const reduxInstances = useAppSelector(selectAllInstances);
-  
+
   // Local state
-  const [sourceFilter, setSourceFilter] = useState<string>('all');
+  const [sourceFilter, setSourceFilter] = useState<string>("all");
   const [dbRuns, setDbRuns] = useState<AiRun[]>([]);
   const [isLoadingDb, setIsLoadingDb] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [offset, setOffset] = useState(0);
-  
+
   // Selected run state
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
   const [isInitializing, setIsInitializing] = useState(false);
-  
+
   // Check if selected run exists in Redux
-  const selectedInstance = useAppSelector(state => 
-    selectedRunId ? state.promptExecution.instances[selectedRunId] : null
+  const selectedInstance = useAppSelector((state) =>
+    selectedRunId ? state.promptExecution.instances[selectedRunId] : null,
   );
 
   // Convert Redux instances to list items
   const reduxItems: RunListItem[] = useMemo(() => {
     return Object.values(reduxInstances).map((instance: ExecutionInstance) => ({
       id: instance.runId,
-      name: instance.runTracking.runName || 'New Chat',
+      name: instance.runTracking.runName || "New Chat",
       source_type: instance.runTracking.sourceType,
       source_id: instance.runTracking.sourceId,
       message_count: instance.messages.length,
@@ -101,7 +101,7 @@ export function QuickAIResultsSheet() {
   const dbItems: RunListItem[] = useMemo(() => {
     return dbRuns.map((run) => ({
       id: run.id,
-      name: run.name || 'Untitled',
+      name: run.name || "Untitled",
       source_type: run.source_type,
       source_id: run.source_id || null,
       message_count: run.message_count,
@@ -113,20 +113,23 @@ export function QuickAIResultsSheet() {
 
   // Combine and filter runs
   const allRuns: RunListItem[] = useMemo(() => {
-    const reduxIds = new Set(reduxItems.map(r => r.id));
-    const uniqueDbRuns = dbItems.filter(r => !reduxIds.has(r.id));
-    
+    const reduxIds = new Set(reduxItems.map((r) => r.id));
+    const uniqueDbRuns = dbItems.filter((r) => !reduxIds.has(r.id));
+
     let combined = [...reduxItems, ...uniqueDbRuns];
-    
-    if (sourceFilter !== 'all') {
-      combined = combined.filter(r => r.source_type === sourceFilter);
+
+    if (sourceFilter !== "all") {
+      combined = combined.filter((r) => r.source_type === sourceFilter);
     }
-    
+
     // Sort by last activity
     combined.sort((a, b) => {
-      return new Date(b.last_activity).getTime() - new Date(a.last_activity).getTime();
+      return (
+        new Date(b.last_activity).getTime() -
+        new Date(a.last_activity).getTime()
+      );
     });
-    
+
     return combined;
   }, [reduxItems, dbItems, sourceFilter]);
 
@@ -135,69 +138,76 @@ export function QuickAIResultsSheet() {
     setIsInitializing(true);
     try {
       const newRunId = uuidv4();
-      await dispatch(startPromptInstance({
-        runId: newRunId,
-        promptId: getBuiltinId('matrix-custom-chat'),
-        promptSource: 'prompt_builtins',
-        executionConfig: {
-          auto_run: false,
-          allow_chat: true,
-          show_variables: true,
-          apply_variables: true,
-          track_in_runs: true,
-          use_pre_execution_input: false,
-        },
-      })).unwrap();
-      
+      await dispatch(
+        startPromptInstance({
+          runId: newRunId,
+          promptId: getBuiltinId("matrix-custom-chat"),
+          promptSource: "prompt_builtins",
+          executionConfig: {
+            auto_run: false,
+            allow_chat: true,
+            show_variables: true,
+            apply_variables: true,
+            track_in_runs: true,
+            use_pre_execution_input: false,
+          },
+        }),
+      ).unwrap();
+
       setSelectedRunId(newRunId);
     } catch (error) {
-      console.error('Failed to start new chat:', error);
+      console.error("Failed to start new chat:", error);
     } finally {
       setIsInitializing(false);
     }
   }, [dispatch]);
 
   // Select a run
-  const handleSelectRun = useCallback(async (run: RunListItem) => {
-    // If it's already in Redux, just select it
-    if (run.isInRedux) {
-      setSelectedRunId(run.id);
-      return;
-    }
-    
-    // Load from DB into Redux
-    setIsInitializing(true);
-    try {
-      await dispatch(loadRun({ runId: run.id })).unwrap();
-      setSelectedRunId(run.id);
-    } catch (error) {
-      console.error('Failed to load run:', error);
-    } finally {
-      setIsInitializing(false);
-    }
-  }, [dispatch]);
+  const handleSelectRun = useCallback(
+    async (run: RunListItem) => {
+      // If it's already in Redux, just select it
+      if (run.isInRedux) {
+        setSelectedRunId(run.id);
+        return;
+      }
+
+      // Load from DB into Redux
+      setIsInitializing(true);
+      try {
+        await dispatch(loadRun({ runId: run.id })).unwrap();
+        setSelectedRunId(run.id);
+      } catch (error) {
+        console.error("Failed to load run:", error);
+      } finally {
+        setIsInitializing(false);
+      }
+    },
+    [dispatch],
+  );
 
   // Load more from database
   const loadMoreFromDb = useCallback(async () => {
     if (isLoadingDb) return;
-    
+
     setIsLoadingDb(true);
     try {
       const filters = {
-        ...(sourceFilter !== 'all' && { source_type: sourceFilter as SourceType }),
+        ...(sourceFilter !== "all" && {
+          source_type: sourceFilter as SourceType,
+        }),
         limit: 20,
         offset,
-        status: 'active' as const,
-        order_by: 'last_message_at' as const,
-        order_direction: 'desc' as const,
+        status: "active" as const,
+        order_by: "last_message_at" as const,
+        order_direction: "desc" as const,
       };
-      
+
       const response = await aiRunsService.list(filters);
-      setDbRuns(prev => [...prev, ...response.runs]);
+      setDbRuns((prev) => [...prev, ...response.runs]);
       setHasMore(response.hasMore);
-      setOffset(prev => prev + 20);
+      setOffset((prev) => prev + 20);
     } catch (error) {
-      console.error('Failed to load runs:', error);
+      console.error("Failed to load runs:", error);
     } finally {
       setIsLoadingDb(false);
     }
@@ -224,19 +234,26 @@ export function QuickAIResultsSheet() {
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
 
-    if (minutes < 1) return 'Now';
+    if (minutes < 1) return "Now";
     if (minutes < 60) return `${minutes}m`;
     if (hours < 24) return `${hours}h`;
     if (days < 7) return `${days}d`;
-    return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    return date.toLocaleDateString(undefined, {
+      month: "short",
+      day: "numeric",
+    });
   };
 
   const getSourceColor = (sourceType: string) => {
     switch (sourceType) {
-      case 'prompts': return 'bg-purple-500/10 text-purple-600 dark:text-purple-400';
-      case 'prompt_builtins': return 'bg-blue-500/10 text-blue-600 dark:text-blue-400';
-      case 'chat': return 'bg-green-500/10 text-green-600 dark:text-green-400';
-      default: return 'bg-gray-500/10 text-gray-600 dark:text-gray-400';
+      case "prompts":
+        return "bg-purple-500/10 text-purple-600 dark:text-purple-400";
+      case "prompt_builtins":
+        return "bg-blue-500/10 text-blue-600 dark:text-blue-400";
+      case "chat":
+        return "bg-green-500/10 text-green-600 dark:text-green-400";
+      default:
+        return "bg-gray-500/10 text-gray-600 dark:text-gray-400";
     }
   };
 
@@ -256,7 +273,7 @@ export function QuickAIResultsSheet() {
           </Button>
           <div className="flex-1 min-w-0">
             <h2 className="text-sm font-medium truncate">
-              {selectedInstance.runTracking.runName || 'Chat'}
+              {selectedInstance.runTracking.runName || "Chat"}
             </h2>
             <p className="text-xs text-muted-foreground">
               {selectedInstance.messages.length} messages
@@ -272,7 +289,7 @@ export function QuickAIResultsSheet() {
             <MessageSquarePlus className="w-4 h-4" />
           </Button>
         </div>
-        
+
         {/* Chat Interface */}
         <div className="flex-1 overflow-hidden">
           <PromptRunner
@@ -308,7 +325,7 @@ export function QuickAIResultsSheet() {
             New Chat
           </Button>
         </div>
-        
+
         {/* Filter */}
         <Select value={sourceFilter} onValueChange={handleFilterChange}>
           <SelectTrigger className="h-8 text-xs">
@@ -316,14 +333,18 @@ export function QuickAIResultsSheet() {
           </SelectTrigger>
           <SelectContent>
             {SOURCE_FILTERS.map((filter) => (
-              <SelectItem key={filter.value} value={filter.value} className="text-xs">
+              <SelectItem
+                key={filter.value}
+                value={filter.value}
+                className="text-xs"
+              >
                 {filter.label}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
       </div>
-      
+
       {/* Runs List */}
       <div className="flex-1 overflow-y-auto">
         {isInitializing && !selectedRunId ? (
@@ -371,12 +392,12 @@ export function QuickAIResultsSheet() {
                 <div className="flex-shrink-0 mt-0.5">
                   <MessageSquare className="w-4 h-4 text-muted-foreground" />
                 </div>
-                
+
                 {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium truncate flex-1">
-                      {run.name || 'Untitled Chat'}
+                      {run.name || "Untitled Chat"}
                     </span>
                     {run.is_starred && (
                       <Star className="w-3 h-3 text-yellow-500 fill-yellow-500 flex-shrink-0" />
@@ -385,24 +406,30 @@ export function QuickAIResultsSheet() {
                       {formatTimestamp(run.last_activity)}
                     </span>
                   </div>
-                  
+
                   <div className="flex items-center gap-2 mt-1">
-                    <Badge 
-                      variant="secondary" 
-                      className={cn("text-[10px] px-1.5 py-0 h-4", getSourceColor(run.source_type))}
+                    <Badge
+                      variant="secondary"
+                      className={cn(
+                        "text-[10px] px-1.5 py-0 h-4",
+                        getSourceColor(run.source_type),
+                      )}
                     >
-                      {run.source_type === 'prompt_builtins' ? 'Built-in' : 
-                       run.source_type === 'prompts' ? 'Prompt' : 
-                       run.source_type}
+                      {run.source_type === "prompt_builtins"
+                        ? "Built-in"
+                        : run.source_type === "prompts"
+                          ? "Prompt"
+                          : run.source_type}
                     </Badge>
                     <span className="text-xs text-muted-foreground">
-                      {run.message_count} msg{run.message_count !== 1 ? 's' : ''}
+                      {run.message_count} msg
+                      {run.message_count !== 1 ? "s" : ""}
                     </span>
                   </div>
                 </div>
               </button>
             ))}
-            
+
             {/* Load More */}
             {hasMore && (
               <div className="p-3">

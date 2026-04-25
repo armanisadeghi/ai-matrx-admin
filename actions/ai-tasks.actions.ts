@@ -6,7 +6,7 @@ import type {
   CreateAiTaskInput,
   UpdateAiTaskInput,
   CompleteAiTaskInput,
-} from "@/features/ai-runs/types";
+} from "@/features/ai-runs/types/aiRunTypes";
 import { mapAiTaskRow } from "@/features/ai-runs/utils/db-row-mappers";
 
 /**

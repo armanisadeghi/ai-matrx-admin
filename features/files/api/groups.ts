@@ -21,7 +21,7 @@ import type {
   CloudUserGroupMemberRow,
   CloudUserGroupRow,
   CreateGroupRequest,
-} from "../types";
+} from "@/features/files/types";
 
 // ---------------------------------------------------------------------------
 // Groups

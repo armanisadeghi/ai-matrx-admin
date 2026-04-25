@@ -15,7 +15,7 @@ import {
     DropdownMenuTrigger,
     DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger, ContextMenuSeparator } from "@/components/ui/context-menu";
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger, ContextMenuSeparator } from "@/components/ui/context-menu/context-menu";
 import { MoreHorizontal, Edit, Trash, Plus, Check, Save, RotateCcw, Upload } from "lucide-react";
 import { parseMarkdownChecklist } from "./tasklist-parser";
 import ImportTasksModal from "@/features/tasks/components/ImportTasksModal";

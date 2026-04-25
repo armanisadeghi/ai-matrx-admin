@@ -10,9 +10,9 @@ import {
 import {
   HierarchyCommand,
   HierarchyCommandContent,
-  useHierarchyReduxBridge,
-  FULL_HIERARCHY_LEVELS,
-} from "@/features/agent-context/components/hierarchy-selection";
+} from "@/features/agent-context/components/hierarchy-selection/HierarchyCommand";
+import { useHierarchyReduxBridge } from "@/features/agent-context/components/hierarchy-selection/useReduxBridge";
+import { FULL_HIERARCHY_LEVELS } from "@/features/agent-context/components/hierarchy-selection/useHierarchySelection";
 import { useSidebarExpanded } from "../../hooks/useSidebarExpanded";
 
 export default function SidebarContextSelector() {

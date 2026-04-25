@@ -5,12 +5,12 @@ import { PromptCard } from "./PromptCard";
 import { SharedPromptCard } from "./SharedPromptCard";
 import { PromptListItem } from "./PromptListItem";
 import { SharedPromptListItem } from "./SharedPromptListItem";
-import { MobileActionBar } from "@/components/official/mobile-action-bar";
+import { MobileActionBar } from "@/components/official/mobile-action-bar/MobileActionBar";
 import {
   BottomSheet,
   BottomSheetHeader,
   BottomSheetBody,
-} from "@/components/official/bottom-sheet";
+} from "@/components/official/bottom-sheet/BottomSheet";
 import { Check, ChevronRight, RotateCcw, X, Search } from "lucide-react";
 import { DesktopSearchBar } from "./DesktopSearchBar";
 import { DesktopFilterPanel } from "./DesktopFilterPanel";

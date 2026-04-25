@@ -24,11 +24,11 @@ import {
   updateSettings,
 } from "@/lib/redux/slices/promptEditorSlice";
 import {
-  loadAgentSettingsDirect,
   selectEffectiveSettings,
   selectEntry,
-} from "@/lib/redux/slices/agent-settings";
-import type { AgentSettings } from "@/lib/redux/slices/agent-settings";
+} from "@/lib/redux/slices/agent-settings/selectors";
+import { loadAgentSettingsDirect } from "@/lib/redux/slices/agent-settings/agentSettingsSlice";
+import type { AgentSettings } from "@/lib/redux/slices/agent-settings/types";
 import type { PromptSettings } from "@/features/prompts/types/core";
 
 // Stable ID used for this builder session inside agentSettingsSlice.
@@ -74,10 +74,14 @@ export function AgentSettingsBridge({ agentId }: AgentSettingsBridgeProps) {
           settings: promptSettings as unknown as AgentSettings,
           variable_defaults: promptVariables.map((v) => ({
             name: v.name,
-            defaultValue: (v as { defaultValue?: string; default_value?: string }).defaultValue ??
-              (v as { defaultValue?: string; default_value?: string }).default_value ??
+            defaultValue:
+              (v as { defaultValue?: string; default_value?: string })
+                .defaultValue ??
+              (v as { defaultValue?: string; default_value?: string })
+                .default_value ??
               "",
-            helpText: (v as { helpText?: string; help_text?: string }).helpText ??
+            helpText:
+              (v as { helpText?: string; help_text?: string }).helpText ??
               (v as { helpText?: string; help_text?: string }).help_text,
             required: (v as { required?: boolean }).required,
           })),
@@ -104,7 +108,9 @@ export function AgentSettingsBridge({ agentId }: AgentSettingsBridgeProps) {
     }
 
     // Push into promptEditorSlice so savePrompt still works
-    dispatch(updateSettings(effectiveSettings as unknown as Partial<PromptSettings>));
+    dispatch(
+      updateSettings(effectiveSettings as unknown as Partial<PromptSettings>),
+    );
   }, [dispatch, effectiveSettings, entry]);
 
   return null;

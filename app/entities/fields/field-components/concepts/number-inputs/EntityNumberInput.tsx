@@ -7,7 +7,7 @@ import { MinusCircle, PlusCircle } from 'lucide-react';
 
 import { MatrxVariant } from '@/components/ui/types';
 import { useDecimalHandler } from './useDecimalHandler';
-import { FieldComponentProps } from '../../../types';
+import { FieldComponentProps } from "@/app/entities/fields/types";
 import { StandardFieldLabel } from '../../add-ons/FloatingFieldLabel';
 import { useIntegerHandler } from './useIntegerHandler';
 import { useBigIntHandler } from './useBigIntHandler';

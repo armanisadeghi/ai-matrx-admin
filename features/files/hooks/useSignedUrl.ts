@@ -11,7 +11,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import * as Files from "../api/files";
+import * as Files from "@/features/files/api/files";
 
 const SAFETY_MARGIN_MS = 30 * 1000; // refresh 30s before expiry
 

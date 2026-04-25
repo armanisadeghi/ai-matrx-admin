@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { QuickReferenceWrapper } from './QuickReferenceWrapper';
 import { densityConfig } from "@/config/ui/entity-layout-config";
-import { ErrorDisplay } from '../../../field-actions/components/StateComponents';
+import { ErrorDisplay } from "@/components/matrx/Entity/field-actions/components/StateComponents";
 import { EntityKeys, EntityData } from '@/types/entityTypes';
 import { EntityError } from '@/lib/redux/entity/types/stateTypes';
 import { SMART_LAYOUT_COMPONENTS } from "./";

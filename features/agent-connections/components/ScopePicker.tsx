@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { selectViewScope, setViewScope } from "../redux/ui";
+import { selectViewScope, setViewScope } from "../redux/ui/slice";
 import type { Scope } from "../types";
 
 const SCOPE_META: Record<Scope, { label: string; icon: typeof User }> = {

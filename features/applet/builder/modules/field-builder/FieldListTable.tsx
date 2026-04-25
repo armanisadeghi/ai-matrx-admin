@@ -8,7 +8,12 @@ import { deleteFieldThunk, fetchFieldsThunk } from "@/lib/redux/app-builder/thun
 import { Eye, Pencil, TextCursorInput, Trash2, Check } from "lucide-react";
 import { FieldBuilder } from "@/lib/redux/app-builder/types";
 import { getComponentIcon, getComponentTypeName } from "@/features/applet/constants/field-constants";
-import GenericDataTable, { GenericTableHeader, ColumnConfig, ActionConfig, CustomTableSettings } from "@/components/generic-table";
+import GenericDataTable, {
+  type ColumnConfig,
+  type ActionConfig,
+  type CustomTableSettings,
+} from "@/components/generic-table/GenericDataTable";
+import { GenericTableHeader } from "@/components/generic-table/GenericTableHeader";
 
 interface FieldListTableProps {
     // Core functionality props

@@ -41,7 +41,7 @@ import {
   selectAgentVariableDefinitions,
 } from "@/features/agents/redux/agent-definition/selectors";
 import { selectAgentSystemMessage } from "@/features/agents/redux/agent-definition/selectors";
-import { setAgentMessages } from "../../../../redux/agent-definition/slice";
+import { setAgentMessages } from "@/features/agents/redux/agent-definition/slice";
 import { useAgentUndoRedo } from "@/features/agents/hooks/useAgentUndoRedo";
 import { openUndoHistory } from "@/lib/redux/slices/overlaySlice";
 import { Terminal } from "lucide-react";

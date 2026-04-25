@@ -8,10 +8,8 @@ import { useUserProjects } from "@/features/projects/hooks";
 import { ProjectList } from "@/features/projects/components/ProjectList";
 import { ProjectCard } from "@/features/projects/components/ProjectCard";
 import { ProjectFormSheet } from "@/features/projects/components/ProjectFormSheet";
-import {
-  HierarchyCascade,
-  useHierarchyReduxBridge,
-} from "@/features/agent-context/components/hierarchy-selection";
+import { HierarchyCascade } from "@/features/agent-context/components/hierarchy-selection/HierarchyCascade";
+import { useHierarchyReduxBridge } from "@/features/agent-context/components/hierarchy-selection/useReduxBridge";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectOrganizationId } from "@/features/agent-context/redux/appContextSlice";
 import { useUserOrganizations } from "@/features/organizations/hooks";

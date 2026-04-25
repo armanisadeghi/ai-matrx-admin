@@ -1,12 +1,10 @@
 "use client";
 
 import { Type } from "lucide-react";
-import {
-  SettingsSwitch,
-  SettingsSelect,
-  SettingsSection,
-  SettingsSubHeader,
-} from "@/components/official/settings";
+import { SettingsSwitch } from "@/components/official/settings/primitives/SettingsSwitch";
+import { SettingsSelect } from "@/components/official/settings/primitives/SettingsSelect";
+import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
+import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
 import { useSetting } from "../hooks/useSetting";
 
 export default function TextGenerationTab() {

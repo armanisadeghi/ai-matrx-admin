@@ -17,7 +17,7 @@
 "use client";
 
 import { useCallback, useMemo, useRef, useState } from "react";
-import { PickerShell } from "../surfaces/PickerShell";
+import { PickerShell } from "@/features/files/components/surfaces/PickerShell";
 
 // ---------------------------------------------------------------------------
 // Declarative component

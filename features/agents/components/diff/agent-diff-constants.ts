@@ -1,4 +1,4 @@
-import type { DiffOptions } from "@/components/diff";
+import type { DiffOptions } from "@/components/diff/engine/types";
 
 /** Internal/runtime fields that should never appear in diffs */
 export const AGENT_EXCLUDE_PATHS = new Set([

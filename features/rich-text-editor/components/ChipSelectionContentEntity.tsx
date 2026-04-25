@@ -8,7 +8,7 @@ import {
   getUnifiedLayoutProps,
   getUpdatedUnifiedLayoutProps,
 } from "@/app/entities/layout/configs";
-import { SmartCrudButtons } from "@/components/matrx/Entity/prewired-components/layouts/smart-layouts/smart-actions";
+import { SmartCrudButtons } from "@/components/matrx/Entity/prewired-components/layouts/smart-layouts/smart-actions/SmartCrudButtons";
 
 interface ChipSelectionContentProps {
   onSave: (selectedRecords: any[]) => void;

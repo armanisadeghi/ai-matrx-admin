@@ -12,10 +12,10 @@ import dynamic from "next/dynamic";
 import { useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectFileById } from "../../../redux/selectors";
-import { useSignedUrl } from "../../../hooks/useSignedUrl";
-import { useFileActions } from "../FileActions";
-import { getPreviewCapability } from "../../../utils/preview-capabilities";
+import { selectFileById } from "@/features/files/redux/selectors";
+import { useSignedUrl } from "@/features/files/hooks/useSignedUrl";
+import { useFileActions } from "@/features/files/components/core/FileActions/useFileActions";
+import { getPreviewCapability } from "@/features/files/utils/preview-capabilities";
 import { ImagePreview } from "./previewers/ImagePreview";
 import { VideoPreview } from "./previewers/VideoPreview";
 import { AudioPreview } from "./previewers/AudioPreview";
@@ -33,17 +33,14 @@ const PdfPreview = dynamic(() => import("./previewers/PdfPreview"), {
   ),
 });
 // react-markdown + remark + rehype-prism + KaTeX is ~250KB combined.
-const MarkdownPreview = dynamic(
-  () => import("./previewers/MarkdownPreview"),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="flex h-full w-full items-center justify-center">
-        <div className="h-6 w-40 animate-pulse rounded bg-muted" />
-      </div>
-    ),
-  },
-);
+const MarkdownPreview = dynamic(() => import("./previewers/MarkdownPreview"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-full w-full items-center justify-center">
+      <div className="h-6 w-40 animate-pulse rounded bg-muted" />
+    </div>
+  ),
+});
 // SheetJS (XLSX parser) is ~600KB; PapaParse alone is small but lives in
 // the same chunk so the import path is uniform.
 const DataPreview = dynamic(() => import("./previewers/DataPreview"), {
@@ -73,11 +70,7 @@ export function FilePreview({
 
   const capability = useMemo(() => {
     if (!file) return null;
-    return getPreviewCapability(
-      file.fileName,
-      file.mimeType,
-      file.fileSize,
-    );
+    return getPreviewCapability(file.fileName, file.mimeType, file.fileSize);
   }, [file]);
 
   if (!file) {
@@ -128,7 +121,11 @@ export function FilePreview({
   switch (capability.previewKind) {
     case "image":
       return (
-        <ImagePreview url={url} fileName={file.fileName} className={className} />
+        <ImagePreview
+          url={url}
+          fileName={file.fileName}
+          className={className}
+        />
       );
     case "video":
       return (
@@ -154,11 +151,7 @@ export function FilePreview({
     case "data":
     case "spreadsheet":
       return (
-        <DataPreview
-          url={url}
-          fileName={file.fileName}
-          className={className}
-        />
+        <DataPreview url={url} fileName={file.fileName} className={className} />
       );
     case "code":
     case "text":

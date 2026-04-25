@@ -9,7 +9,7 @@
  */
 
 import { getJson, type RequestOptions, type ResponseMeta } from "./client";
-import type { CloudFolderRow } from "../types";
+import type { CloudFolderRow } from "@/features/files/types";
 
 export async function listFolders(
   params: { parentPath?: string } = {},

@@ -8,7 +8,7 @@ import { GroupSection } from "../GroupSection";
 import { ListRow } from "../ListRow";
 import { SectionFooter } from "../SectionFooter";
 import { useMcpCatalog } from "../../hooks/useMcpCatalog";
-import { selectSelectedItemId, setSelectedItemId } from "../../redux/ui";
+import { selectSelectedItemId, setSelectedItemId } from "../../redux/ui/slice";
 import type { McpCatalogEntry } from "@/features/agents/types/mcp.types";
 
 type McpStatusTone = "stopped" | "running" | "error";

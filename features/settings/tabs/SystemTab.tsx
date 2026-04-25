@@ -3,21 +3,17 @@
 import { Activity, Megaphone } from "lucide-react";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/lib/redux/store";
-import {
-  SettingsSection,
-  SettingsSubHeader,
-  SettingsReadOnlyValue,
-  SettingsCallout,
-} from "@/components/official/settings";
+import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
+import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
+import { SettingsReadOnlyValue } from "@/components/official/settings/layout/SettingsReadOnlyValue";
+import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
 
 export default function SystemTab() {
   const viewedAnnouncements = useSelector(
-    (s: RootState) =>
-      s.userPreferences.system?.viewedAnnouncements ?? [],
+    (s: RootState) => s.userPreferences.system?.viewedAnnouncements ?? [],
   );
   const feedbackViews = useSelector(
-    (s: RootState) =>
-      s.userPreferences.system?.feedbackFeatureViewCount ?? 0,
+    (s: RootState) => s.userPreferences.system?.feedbackFeatureViewCount ?? 0,
   );
 
   return (

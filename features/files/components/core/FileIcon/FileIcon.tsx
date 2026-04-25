@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import {
   getFileTypeDetails,
   getFolderTypeDetails,
-} from "../../../utils/icon-map";
+} from "@/features/files/utils/icon-map";
 
 export interface FileIconProps {
   /** Either the filename (for files) or omitted for folders. */

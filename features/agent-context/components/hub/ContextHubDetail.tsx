@@ -16,14 +16,15 @@ import {
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   fetchScopeTypes,
-  fetchScopes,
+  selectScopeTypesByOrg,
+  selectScopeTypesLoading,
+} from "../../redux/scope/scopeTypesSlice";
+import { fetchScopes, selectScopesByOrg } from "../../redux/scope/scopesSlice";
+import {
   EMPTY_SCOPES_LIST,
   EMPTY_SCOPE_TYPES_LIST,
-  selectScopeTypesByOrg,
-  selectScopesByOrg,
-  selectScopeTypesLoading,
-} from "../../redux/scope";
-import type { ScopeType } from "../../redux/scope";
+} from "../../redux/scope/selectors";
+import type { ScopeType } from "../../redux/scope/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";

@@ -5,12 +5,12 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { AgentCard } from "./AgentCard";
 import { AgentListItem } from "./AgentListItem";
-import { MobileActionBar } from "@/components/official/mobile-action-bar";
+import { MobileActionBar } from "@/components/official/mobile-action-bar/MobileActionBar";
 import {
   BottomSheet,
   BottomSheetHeader,
   BottomSheetBody,
-} from "@/components/official/bottom-sheet";
+} from "@/components/official/bottom-sheet/BottomSheet";
 import {
   Check,
   ChevronRight,

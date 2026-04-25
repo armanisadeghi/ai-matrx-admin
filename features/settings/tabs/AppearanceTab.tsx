@@ -1,14 +1,12 @@
 "use client";
 
 import { Palette, Sun } from "lucide-react";
-import {
-  SettingsSwitch,
-  SettingsSelect,
-  SettingsSegmented,
-  SettingsSection,
-  SettingsSubHeader,
-  SettingsCallout,
-} from "@/components/official/settings";
+import { SettingsSwitch } from "@/components/official/settings/primitives/SettingsSwitch";
+import { SettingsSelect } from "@/components/official/settings/primitives/SettingsSelect";
+import { SettingsSegmented } from "@/components/official/settings/primitives/SettingsSegmented";
+import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
+import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
+import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
 import { useSetting } from "../hooks/useSetting";
 
 /**

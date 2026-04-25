@@ -29,12 +29,12 @@ import {
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { cn } from "@/lib/utils";
-import { selectFileById } from "../../redux/selectors";
-import { setActiveFileId } from "../../redux/slice";
-import { useFileActions } from "../core/FileActions";
-import { FilePreview } from "../core/FilePreview";
-import { FileIcon } from "../core/FileIcon";
-import { FileVersionsList } from "../core/FileVersions";
+import { selectFileById } from "@/features/files/redux/selectors";
+import { setActiveFileId } from "@/features/files/redux/slice";
+import { useFileActions } from "@/features/files/components/core/FileActions/useFileActions";
+import { FilePreview } from "@/features/files/components/core/FilePreview/FilePreview";
+import { FileIcon } from "@/features/files/components/core/FileIcon/FileIcon";
+import { FileVersionsList } from "@/features/files/components/core/FileVersions/FileVersionsList";
 import { PreviewErrorBoundary } from "./PreviewErrorBoundary";
 
 type PreviewTab = "preview" | "versions";
@@ -175,11 +175,7 @@ export function PreviewPane({
       <div className="flex items-center gap-2 border-b border-border bg-muted/30 px-3 py-2 shrink-0">
         <div className="flex min-w-0 flex-1 items-center gap-2">
           {file ? (
-            <FileIcon
-              fileName={file.fileName}
-              size={16}
-              className="shrink-0"
-            />
+            <FileIcon fileName={file.fileName} size={16} className="shrink-0" />
           ) : null}
           <p
             className="truncate text-sm font-medium"

@@ -6,15 +6,17 @@ import { ComponentDisplayWrapper } from "../component-usage";
 import SmartAppListsDemo from "@/features/applet/demo/SmartAppListsDemo";
 
 interface ComponentDisplayProps {
-    component?: ComponentEntry;
+  component?: ComponentEntry;
 }
 
-export default function MultiAppletSelectorDemo({ component }: ComponentDisplayProps) {
-    if (!component) return null;
+export default function MultiAppletSelectorDemo({
+  component,
+}: ComponentDisplayProps) {
+  if (!component) return null;
 
-    // Example code to show how to use the various components
-    const usageCode = `// 1. SmartAppList - For displaying and selecting a single app
-import { SmartAppList } from '@/features/applet/builder/components/smart-parts';
+  // Example code to show how to use the various components
+  const usageCode = `// 1. SmartAppList - For displaying and selecting a single app
+import SmartAppList from '@/features/applet/builder/modules/smart-parts/apps/SmartAppList';
 import { CustomAppConfig } from "@/features/applet/builder/builder.types";
 
 <SmartAppList 
@@ -25,7 +27,7 @@ import { CustomAppConfig } from "@/features/applet/builder/builder.types";
 />
 
 // 2. SmartAppletList - For displaying and selecting a single applet
-import { SmartAppletList } from '@/features/applet/builder/components/smart-parts';
+import SmartAppletList from '@/features/applet/builder/modules/smart-parts/applets/SmartAppletList';
 import { CustomAppletConfig } from '@/features/applet/builder/builder.types';
 
 <SmartAppletList
@@ -36,7 +38,7 @@ import { CustomAppletConfig } from '@/features/applet/builder/builder.types';
 />
 
 // 3. MultiAppletSelector - For selecting multiple applets
-import { MultiAppletSelector } from '@/features/applet/builder/components/smart-parts';
+import MultiAppletSelector from '@/features/applet/builder/modules/smart-parts/applets/MultiAppletSelector';
 
 <MultiAppletSelector
   selectedApplets={selectedApplets}
@@ -49,7 +51,7 @@ import { MultiAppletSelector } from '@/features/applet/builder/components/smart-
 />
 
 // 4. SmartGroupList - For displaying and selecting a single component group
-import { SmartGroupList } from '@/features/applet/builder/components/smart-parts';
+import SmartGroupList from '@/features/applet/builder/modules/smart-parts/containers/SmartContainerList';
 import { ComponentGroup } from '@/features/applet/builder/builder.types';
 
 <SmartGroupList
@@ -63,7 +65,7 @@ import { ComponentGroup } from '@/features/applet/builder/builder.types';
 />
 
 // 5. MultiGroupSelector - For selecting multiple component groups
-import { MultiGroupSelector } from '@/features/applet/builder/components/smart-parts';
+import MultiGroupSelector from '@/features/applet/builder/modules/smart-parts/containers/MultiGroupSelector';
 
 <MultiGroupSelector
   selectedGroups={selectedGroups}
@@ -75,7 +77,7 @@ import { MultiGroupSelector } from '@/features/applet/builder/components/smart-p
 />
 
 // 6. MultiFieldSelector - For selecting multiple fields
-import { MultiFieldSelector } from '@/features/applet/builder/components/smart-parts';
+import MultiFieldSelector from '@/features/applet/builder/modules/smart-parts/fields/MultiFieldSelector';
 import { FieldDefinition } from '@/features/applet/builder/builder.types';
 
 <MultiFieldSelector
@@ -87,15 +89,15 @@ import { FieldDefinition } from '@/features/applet/builder/builder.types';
   emptySelectionText="No fields selected"
 />`;
 
-    return (
-        <ComponentDisplayWrapper
-            component={component}
-            code={usageCode}
-            description="A suite of components for handling app, applet, group, and field selection and management. Includes single-selection lists, multi-selection interfaces, and wrappers with refresh and create capabilities."
-        >
-            <div className="w-full">
-                <SmartAppListsDemo />
-            </div>
-        </ComponentDisplayWrapper>
-    );
+  return (
+    <ComponentDisplayWrapper
+      component={component}
+      code={usageCode}
+      description="A suite of components for handling app, applet, group, and field selection and management. Includes single-selection lists, multi-selection interfaces, and wrappers with refresh and create capabilities."
+    >
+      <div className="w-full">
+        <SmartAppListsDemo />
+      </div>
+    </ComponentDisplayWrapper>
+  );
 }

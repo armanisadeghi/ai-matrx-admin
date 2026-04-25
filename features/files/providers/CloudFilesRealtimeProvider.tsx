@@ -14,8 +14,8 @@ import { useAppDispatch } from "@/lib/redux/hooks";
 import {
   attachCloudFilesRealtime,
   detachCloudFilesRealtime,
-} from "../redux/realtime-middleware";
-import { loadUserFileTree } from "../redux/thunks";
+} from "@/features/files/redux/realtime-middleware";
+import { loadUserFileTree } from "@/features/files/redux/thunks";
 
 export interface CloudFilesRealtimeProviderProps {
   /**

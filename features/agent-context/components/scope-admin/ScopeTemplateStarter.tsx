@@ -23,9 +23,9 @@ import {
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   createScopeType,
-  createScope,
   selectScopeTypesByOrg,
-} from "../../redux/scope";
+} from "../../redux/scope/scopeTypesSlice";
+import { createScope } from "../../redux/scope/scopesSlice";
 import { INDUSTRY_CATEGORIES } from "../../constants";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

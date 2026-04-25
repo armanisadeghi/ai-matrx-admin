@@ -14,8 +14,8 @@ import {
   formatFileSize,
   formatRelativeTime,
   formatAbsoluteDate,
-} from "../../../utils/format";
-import type { CloudFile, Visibility } from "../../../types";
+} from "@/features/files/utils/format";
+import type { CloudFile, Visibility } from "@/features/files/types";
 
 export interface FileMetaProps {
   file: Pick<CloudFile, "fileSize" | "updatedAt" | "visibility">;

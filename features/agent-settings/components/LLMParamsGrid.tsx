@@ -29,12 +29,12 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   selectEffectiveSettings,
   selectNormalizedControls,
-  applySettingsFromDialog,
-} from "@/lib/redux/slices/agent-settings";
+} from "@/lib/redux/slices/agent-settings/selectors";
+import { applySettingsFromDialog } from "@/lib/redux/slices/agent-settings/agentSettingsSlice";
 import type {
   AgentSettings,
   ControlDefinition,
-} from "@/lib/redux/slices/agent-settings";
+} from "@/lib/redux/slices/agent-settings/types";
 
 // ── NumberInput ───────────────────────────────────────────────────────────────
 // Mirrors the existing ModelSettings NumberInput exactly:

@@ -1,4 +1,4 @@
-import EnhancedDynamicLayout from "../../../components/EnhancedDynamicLayout";
+import EnhancedDynamicLayout from "@/app/(authenticated)/tests/app-shell-test/components/EnhancedDynamicLayout";
 
 export default function Page() {
 

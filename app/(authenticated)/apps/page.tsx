@@ -5,25 +5,28 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Plus, ExternalLink, Calendar, BarChart3, Edit } from "lucide-react";
-import type { PromptApp } from "@/features/prompt-apps/types";
+import type { PromptApp } from "@/features/prompt-apps/types/promptAppTypes";
 
 export default async function AppsListPage() {
   const supabase = await createClient();
-  
+
   // Check authentication
-  const { data: { user }, error } = await supabase.auth.getUser();
-  
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+
   if (error || !user) {
-    redirect('/login');
+    redirect("/login");
   }
-  
+
   // Fetch user's apps
   const { data: apps } = await supabase
-    .from('prompt_apps')
-    .select('*')
-    .eq('user_id', user.id)
-    .order('updated_at', { ascending: false });
-  
+    .from("prompt_apps")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("updated_at", { ascending: false });
+
   return (
     <div className="h-page flex flex-col overflow-hidden bg-textured">
       <div className="flex-1 overflow-y-auto">
@@ -31,7 +34,9 @@ export default async function AppsListPage() {
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-foreground">My Prompt Apps</h1>
+              <h1 className="text-3xl font-bold text-foreground">
+                My Prompt Apps
+              </h1>
               <p className="text-muted-foreground mt-1">
                 Manage your public shareable AI apps
               </p>
@@ -43,7 +48,7 @@ export default async function AppsListPage() {
               </Button>
             </Link>
           </div>
-          
+
           {/* Apps Grid */}
           {!apps || apps.length === 0 ? (
             <Card className="border-2 border-dashed">
@@ -69,16 +74,23 @@ export default async function AppsListPage() {
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {(apps as PromptApp[]).map(app => (
-                <Card key={app.id} className="hover:shadow-lg transition-shadow">
+              {(apps as PromptApp[]).map((app) => (
+                <Card
+                  key={app.id}
+                  className="hover:shadow-lg transition-shadow"
+                >
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <CardTitle className="text-lg">{app.name}</CardTitle>
-                      <Badge variant={
-                        app.status === 'published' ? 'default' :
-                        app.status === 'draft' ? 'secondary' :
-                        'outline'
-                      }>
+                      <Badge
+                        variant={
+                          app.status === "published"
+                            ? "default"
+                            : app.status === "draft"
+                              ? "secondary"
+                              : "outline"
+                        }
+                      >
                         {app.status}
                       </Badge>
                     </div>
@@ -97,15 +109,21 @@ export default async function AppsListPage() {
                       </div>
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <Calendar className="w-4 h-4" />
-                        <span>{new Date(app.updated_at).toLocaleDateString()}</span>
+                        <span>
+                          {new Date(app.updated_at).toLocaleDateString()}
+                        </span>
                       </div>
                     </div>
-                    
+
                     {/* Tags */}
                     {app.tags && app.tags.length > 0 && (
                       <div className="flex flex-wrap gap-1">
-                        {app.tags.slice(0, 3).map(tag => (
-                          <Badge key={tag} variant="outline" className="text-xs">
+                        {app.tags.slice(0, 3).map((tag) => (
+                          <Badge
+                            key={tag}
+                            variant="outline"
+                            className="text-xs"
+                          >
                             {tag}
                           </Badge>
                         ))}
@@ -116,7 +134,7 @@ export default async function AppsListPage() {
                         )}
                       </div>
                     )}
-                    
+
                     {/* Actions */}
                     <div className="flex gap-2 pt-2">
                       <Link href={`/prompt-apps/${app.id}`} className="flex-1">
@@ -125,10 +143,18 @@ export default async function AppsListPage() {
                           Edit
                         </Button>
                       </Link>
-                      <Link href={app.status === 'published' ? `/p/${app.slug}` : `/preview/${app.id}`} target="_blank" className="flex-1">
+                      <Link
+                        href={
+                          app.status === "published"
+                            ? `/p/${app.slug}`
+                            : `/preview/${app.id}`
+                        }
+                        target="_blank"
+                        className="flex-1"
+                      >
                         <Button className="w-full">
                           <ExternalLink className="w-4 h-4 mr-2" />
-                          {app.status === 'published' ? 'Run' : 'Test'}
+                          {app.status === "published" ? "Run" : "Test"}
                         </Button>
                       </Link>
                     </div>

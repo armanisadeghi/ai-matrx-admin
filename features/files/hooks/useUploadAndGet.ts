@@ -16,11 +16,11 @@
 
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { ensureFolderPath, uploadFiles } from "../redux/thunks";
+import { ensureFolderPath, uploadFiles } from "@/features/files/redux/thunks";
 import type {
   PermissionLevel,
   Visibility,
-} from "../types";
+} from "@/features/files/types";
 
 export interface UploadAndGetArgs {
   file: File;

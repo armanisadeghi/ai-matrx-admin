@@ -1,11 +1,9 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import {
-  OverviewTab,
-  ArgumentsTab,
-  BrokersTab,
-} from "@/features/workflows/react-flow/node-editor/workflow-node-editor/custom-workflow-nodes/tabs";
+import OverviewTab from "@/features/workflows/react-flow/node-editor/workflow-node-editor/custom-workflow-nodes/tabs/OverviewTab";
+import ArgumentsTab from "@/features/workflows/react-flow/node-editor/workflow-node-editor/custom-workflow-nodes/tabs/ArgumentsTab";
+import BrokersTab from "@/features/workflows/react-flow/node-editor/workflow-node-editor/custom-workflow-nodes/tabs/BrokersTab";
 import {
   RecipeDetailsTab,
   RecipeMessagesTab,

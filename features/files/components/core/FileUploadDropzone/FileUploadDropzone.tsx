@@ -17,10 +17,10 @@ import { useDropzone } from "react-dropzone";
 import { Upload } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectActiveUploads } from "../../../redux/selectors";
-import { useFileUpload } from "../../../hooks/useFileUpload";
+import { selectActiveUploads } from "@/features/files/redux/selectors";
+import { useFileUpload } from "@/features/files/hooks/useFileUpload";
 import { UploadProgressList } from "./UploadProgressList";
-import type { UploadFilesArg } from "../../../types";
+import type { UploadFilesArg } from "@/features/files/types";
 
 export interface FileUploadDropzoneProps {
   /** Parent folder for uploads. null = root. */

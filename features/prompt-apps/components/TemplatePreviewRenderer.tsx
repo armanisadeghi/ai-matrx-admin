@@ -1,21 +1,25 @@
-'use client';
+"use client";
 
-import React, { useState, useMemo, useCallback, useRef } from 'react';
-import { transform } from '@babel/standalone';
-import { AlertCircle } from 'lucide-react';
-import { buildComponentScope, getScopeFunctionParameters, patchScopeForMissingIdentifiers } from '../utils/allowed-imports';
-import { PromptAppErrorBoundary } from './PromptAppErrorBoundary';
-import type { AppDisplayMode } from '../types';
+import React, { useState, useMemo, useCallback, useRef } from "react";
+import { transform } from "@babel/standalone";
+import { AlertCircle } from "lucide-react";
+import {
+  buildComponentScope,
+  getScopeFunctionParameters,
+  patchScopeForMissingIdentifiers,
+} from "../utils/allowed-imports";
+import { PromptAppErrorBoundary } from "./PromptAppErrorBoundary";
+import type { AppDisplayMode } from "../types/promptAppTypes";
 
 interface TemplatePreviewRendererProps {
-    templateCode: string;
-    displayMode: AppDisplayMode;
-    appName: string;
-    appTagline: string;
+  templateCode: string;
+  displayMode: AppDisplayMode;
+  appName: string;
+  appTagline: string;
 }
 
 const MOCK_RESPONSES = [
-    `## Here's a thoughtful response
+  `## Here's a thoughtful response
 
 This is a **simulated AI response** rendered in the template preview. In production, this would be a real streamed response from the AI backend.
 
@@ -35,7 +39,7 @@ The response demonstrates how markdown rendering works within each template layo
 
 Feel free to send follow-up messages to see how the chat continuation works!`,
 
-    `Great follow-up question! Here's another simulated response.
+  `Great follow-up question! Here's another simulated response.
 
 This demonstrates the **conversation continuation** flow. In production:
 - The renderer detects an existing \`conversationId\`
@@ -44,7 +48,7 @@ This demonstrates the **conversation continuation** flow. In production:
 
 The template tracks message history locally while the backend handles the actual conversation state.`,
 
-    `Here's a third response to show multiple turns working correctly.
+  `Here's a third response to show multiple turns working correctly.
 
 Each message gets its own entry in the local messages array, and the template handles:
 - Scroll-to-bottom on new messages
@@ -54,122 +58,130 @@ Each message gets its own entry in the local messages array, and the template ha
 ];
 
 export function TemplatePreviewRenderer({
-    templateCode,
-    displayMode,
-    appName,
-    appTagline,
+  templateCode,
+  displayMode,
+  appName,
+  appTagline,
 }: TemplatePreviewRendererProps) {
-    const [response, setResponse] = useState('');
-    const [isStreaming, setIsStreaming] = useState(false);
-    const [isExecuting, setIsExecuting] = useState(false);
-    const [error, setError] = useState<any>(null);
-    const [conversationId, setConversationId] = useState<string | null>(null);
-    const responseIndexRef = useRef(0);
+  const [response, setResponse] = useState("");
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [isExecuting, setIsExecuting] = useState(false);
+  const [error, setError] = useState<any>(null);
+  const [conversationId, setConversationId] = useState<string | null>(null);
+  const responseIndexRef = useRef(0);
 
-    const resetConversation = useCallback(() => {
-        setConversationId(null);
-        setResponse('');
-        setIsStreaming(false);
-        setIsExecuting(false);
-        setError(null);
-        responseIndexRef.current = 0;
-    }, []);
+  const resetConversation = useCallback(() => {
+    setConversationId(null);
+    setResponse("");
+    setIsStreaming(false);
+    setIsExecuting(false);
+    setError(null);
+    responseIndexRef.current = 0;
+  }, []);
 
-    // Simulate execution with streaming-like behavior
-    const handleExecute = useCallback(async (_variables: Record<string, any>, _userInput?: string) => {
-        setIsExecuting(true);
-        setIsStreaming(true);
-        setError(null);
-        setResponse('');
+  // Simulate execution with streaming-like behavior
+  const handleExecute = useCallback(
+    async (_variables: Record<string, any>, _userInput?: string) => {
+      setIsExecuting(true);
+      setIsStreaming(true);
+      setError(null);
+      setResponse("");
 
-        const mockResponse = MOCK_RESPONSES[responseIndexRef.current % MOCK_RESPONSES.length];
-        responseIndexRef.current++;
+      const mockResponse =
+        MOCK_RESPONSES[responseIndexRef.current % MOCK_RESPONSES.length];
+      responseIndexRef.current++;
 
-        // Simulate streaming by revealing characters over time
-        const words = mockResponse.split(' ');
-        let accumulated = '';
+      // Simulate streaming by revealing characters over time
+      const words = mockResponse.split(" ");
+      let accumulated = "";
 
-        for (let i = 0; i < words.length; i++) {
-            accumulated += (i === 0 ? '' : ' ') + words[i];
-            setResponse(accumulated);
-            // Simulate streaming delay
-            await new Promise(r => setTimeout(r, 15 + Math.random() * 25));
-        }
+      for (let i = 0; i < words.length; i++) {
+        accumulated += (i === 0 ? "" : " ") + words[i];
+        setResponse(accumulated);
+        // Simulate streaming delay
+        await new Promise((r) => setTimeout(r, 15 + Math.random() * 25));
+      }
 
-        // Set conversation ID after first response (simulating server behavior)
-        if (!conversationId) {
-            setConversationId('mock-conversation-' + Date.now());
-        }
+      // Set conversation ID after first response (simulating server behavior)
+      if (!conversationId) {
+        setConversationId("mock-conversation-" + Date.now());
+      }
 
-        setIsStreaming(false);
-        setIsExecuting(false);
-    }, [conversationId]);
+      setIsStreaming(false);
+      setIsExecuting(false);
+    },
+    [conversationId],
+  );
 
-    // Build the component from the template code string
-    const CustomComponent = useMemo(() => {
-        if (!templateCode) return null;
+  // Build the component from the template code string
+  const CustomComponent = useMemo(() => {
+    if (!templateCode) return null;
 
-        try {
-            // Remove imports (they're provided via scope)
-            let processedCode = templateCode.replace(/import\s+.*?from\s+['"].*?['"];?\s*/g, '');
+    try {
+      // Remove imports (they're provided via scope)
+      let processedCode = templateCode.replace(
+        /import\s+.*?from\s+['"].*?['"];?\s*/g,
+        "",
+      );
 
-            // Transform JSX/TSX to JS
-            const babelResult = transform(processedCode, {
-                presets: ['react', 'typescript'],
-                filename: 'component.tsx',
-            });
+      // Transform JSX/TSX to JS
+      const babelResult = transform(processedCode, {
+        presets: ["react", "typescript"],
+        filename: "component.tsx",
+      });
 
-            let transformed = babelResult.code || '';
-            transformed = transformed.replace(/export\s+default\s+/g, 'return ');
+      let transformed = babelResult.code || "";
+      transformed = transformed.replace(/export\s+default\s+/g, "return ");
 
-            // Build scope with allowed imports
-            const scope = buildComponentScope([]);
-            if (transformed) {
-                patchScopeForMissingIdentifiers(transformed, scope);
-            }
+      // Build scope with allowed imports
+      const scope = buildComponentScope([]);
+      if (transformed) {
+        patchScopeForMissingIdentifiers(transformed, scope);
+      }
 
-            const { paramNames, paramValues } = getScopeFunctionParameters(scope);
-            const componentFactory = new Function(...paramNames, transformed);
-            return componentFactory(...paramValues);
-        } catch (err) {
-            console.error('Failed to transform template:', err);
-            return null;
-        }
-    }, [templateCode]);
-
-    if (!CustomComponent) {
-        return (
-            <div className="flex items-center justify-center h-full">
-                <div className="p-6 bg-destructive/10 border border-destructive/20 rounded-lg max-w-md">
-                    <div className="flex items-start gap-3">
-                        <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
-                        <div>
-                            <p className="font-semibold text-destructive">Template Error</p>
-                            <p className="text-sm text-destructive/80 mt-1">
-                                Failed to compile the {displayMode} template. Check the console for details.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
+      const { paramNames, paramValues } = getScopeFunctionParameters(scope);
+      const componentFactory = new Function(...paramNames, transformed);
+      return componentFactory(...paramValues);
+    } catch (err) {
+      console.error("Failed to transform template:", err);
+      return null;
     }
+  }, [templateCode]);
 
+  if (!CustomComponent) {
     return (
-        <PromptAppErrorBoundary appName={appName}>
-            <CustomComponent
-                onExecute={handleExecute}
-                response={response}
-                streamEvents={[]}
-                isStreaming={isStreaming}
-                isExecuting={isExecuting}
-                error={error}
-                rateLimitInfo={null}
-                appName={appName}
-                appTagline={appTagline}
-                conversationId={conversationId}
-                onResetConversation={resetConversation}
-            />
-        </PromptAppErrorBoundary>
+      <div className="flex items-center justify-center h-full">
+        <div className="p-6 bg-destructive/10 border border-destructive/20 rounded-lg max-w-md">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-semibold text-destructive">Template Error</p>
+              <p className="text-sm text-destructive/80 mt-1">
+                Failed to compile the {displayMode} template. Check the console
+                for details.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
     );
+  }
+
+  return (
+    <PromptAppErrorBoundary appName={appName}>
+      <CustomComponent
+        onExecute={handleExecute}
+        response={response}
+        streamEvents={[]}
+        isStreaming={isStreaming}
+        isExecuting={isExecuting}
+        error={error}
+        rateLimitInfo={null}
+        appName={appName}
+        appTagline={appTagline}
+        conversationId={conversationId}
+        onResetConversation={resetConversation}
+      />
+    </PromptAppErrorBoundary>
+  );
 }

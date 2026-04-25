@@ -7,7 +7,7 @@
  * Usage:
  * ```ts
  * import { renderTemplate } from "@/lib/email/render";
- * import { WelcomeEmail } from "@/lib/email/templates";
+ * import { WelcomeEmail } from "@/lib/email/templates/WelcomeEmail";
  *
  * const html = await renderTemplate(<WelcomeEmail name="Arman" />);
  * await sendEmail({ to, subject: "Welcome!", html });
@@ -21,6 +21,8 @@ export async function renderTemplate(element: ReactElement): Promise<string> {
   return render(element);
 }
 
-export async function renderTemplateText(element: ReactElement): Promise<string> {
+export async function renderTemplateText(
+  element: ReactElement,
+): Promise<string> {
   return render(element, { plainText: true });
 }

@@ -12,10 +12,10 @@ import { memo } from "react";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { FileIcon } from "../FileIcon";
-import { FileContextMenu } from "../FileContextMenu";
-import { formatFileSize, formatRelativeTime } from "../../../utils/format";
-import type { CloudFileRecord, CloudFolderRecord } from "../../../types";
+import { FileIcon } from "@/features/files/components/core/FileIcon/FileIcon";
+import { FileContextMenu } from "@/features/files/components/core/FileContextMenu/FileContextMenu";
+import { formatFileSize, formatRelativeTime } from "@/features/files/utils/format";
+import type { CloudFileRecord, CloudFolderRecord } from "@/features/files/types";
 
 export interface FileListRowProps {
   record: CloudFileRecord | CloudFolderRecord;
@@ -48,7 +48,11 @@ function FileListRowImpl({
   const size = isFolder ? null : (record as CloudFileRecord).fileSize;
   const updated = record.updatedAt;
 
-  const { attributes, listeners, setNodeRef: setDragRef } = useDraggable({
+  const {
+    attributes,
+    listeners,
+    setNodeRef: setDragRef,
+  } = useDraggable({
     id: `list-${record.id}`,
     data: { type: kind, id: record.id },
     disabled: dragDisabled,

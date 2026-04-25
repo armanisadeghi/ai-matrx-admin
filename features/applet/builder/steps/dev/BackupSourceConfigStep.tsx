@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { PanelRight, PlusCircle, BrainCircuit, Variable } from "lucide-react";
 import SectionCard from "@/components/official/cards/SectionCard";
 import AppletSourceSelection from "@/features/applet/builder/modules/broker-mapping/SourceSelector";
-import { RecipeSelector } from "@/features/applet/builder/modules/smart-parts/applets";
+import RecipeSelector from "@/features/applet/builder/modules/broker-mapping/RecipeSelector";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import type { RootState } from "@/lib/redux/store";

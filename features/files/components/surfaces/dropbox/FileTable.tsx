@@ -27,7 +27,7 @@ import {
   selectAllFoldersMap,
   selectSelection,
   selectSort,
-} from "../../../redux/selectors";
+} from "@/features/files/redux/selectors";
 import {
   clearSelection,
   setActiveFileId,
@@ -35,17 +35,21 @@ import {
   setSelection,
   setSort,
   toggleSelection,
-} from "../../../redux/slice";
-import { moveFile } from "../../../redux/thunks";
+} from "@/features/files/redux/slice";
+import { moveFile } from "@/features/files/redux/thunks";
 import type {
   CloudFilePermission,
   CloudFileRecord,
   CloudFolderRecord,
   SortBy,
-} from "../../../types";
-import { ShareLinkDialog } from "../../core/ShareLinkDialog";
+} from "@/features/files/types";
+import { ShareLinkDialog } from "@/features/files/components/core/ShareLinkDialog/ShareLinkDialog";
 import type { CloudFilesSection } from "./section";
-import { buildRows, isSharedResource, memberCountForResource } from "./row-data";
+import {
+  buildRows,
+  isSharedResource,
+  memberCountForResource,
+} from "./row-data";
 import type { FilterChipKey } from "./FilterChips";
 import { FileTableRow } from "./FileTableRow";
 
@@ -130,8 +134,7 @@ export function FileTable({
   const [shareTarget, setShareTarget] = useState<ShareDialogState | null>(null);
 
   const allIds = useMemo(
-    () =>
-      rows.map((r) => (r.kind === "file" ? r.file.id : r.folder.id)),
+    () => rows.map((r) => (r.kind === "file" ? r.file.id : r.folder.id)),
     [rows],
   );
   const allSelected =
@@ -228,122 +231,122 @@ export function FileTable({
       collisionDetection={closestCenter}
       onDragEnd={handleDragEnd}
     >
-    <div className={cn("flex h-full w-full flex-col overflow-hidden", className)}>
-      {treeWideSearch ? (
-        <div className="flex items-center gap-2 border-b bg-muted/30 px-4 py-1.5 text-xs text-muted-foreground shrink-0">
-          <SearchIcon className="h-3.5 w-3.5" />
-          <span>
-            Showing {rows.length} {rows.length === 1 ? "result" : "results"} from
-            all folders for &ldquo;
-            <span className="font-medium text-foreground">{searchQuery}</span>
-            &rdquo;
-          </span>
+      <div
+        className={cn("flex h-full w-full flex-col overflow-hidden", className)}
+      >
+        {treeWideSearch ? (
+          <div className="flex items-center gap-2 border-b bg-muted/30 px-4 py-1.5 text-xs text-muted-foreground shrink-0">
+            <SearchIcon className="h-3.5 w-3.5" />
+            <span>
+              Showing {rows.length} {rows.length === 1 ? "result" : "results"}{" "}
+              from all folders for &ldquo;
+              <span className="font-medium text-foreground">{searchQuery}</span>
+              &rdquo;
+            </span>
+          </div>
+        ) : null}
+        <div className="flex-1 min-h-0 overflow-auto">
+          <table className="w-full border-collapse">
+            <thead className="sticky top-0 z-10 bg-background">
+              <tr className="border-b text-xs uppercase tracking-wide text-muted-foreground">
+                <th className="w-8 px-3 py-2">
+                  <Checkbox
+                    checked={allSelected}
+                    onCheckedChange={toggleAll}
+                    aria-label="Select all"
+                  />
+                </th>
+                <SortableHeader
+                  label="Name"
+                  sortKey="name"
+                  activeSortBy={sortBy}
+                  activeSortDir={sortDir}
+                  onChange={(next) => dispatch(setSort(next))}
+                />
+                <SortableHeader
+                  label="Last modified"
+                  sortKey="updated_at"
+                  activeSortBy={sortBy}
+                  activeSortDir={sortDir}
+                  onChange={(next) => dispatch(setSort(next))}
+                  align="left"
+                />
+                <SortableHeader
+                  label="Size"
+                  sortKey="size"
+                  activeSortBy={sortBy}
+                  activeSortDir={sortDir}
+                  onChange={(next) => dispatch(setSort(next))}
+                  align="left"
+                />
+                <th className="px-4 py-2 text-left font-medium">Access</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row) => {
+                const id = row.kind === "file" ? row.file.id : row.folder.id;
+                const visibility =
+                  row.kind === "file"
+                    ? row.file.visibility
+                    : row.folder.visibility;
+                const perms = permissionsByResourceId[id] ?? [];
+                const granteeIds = perms.map((p) => p.granteeId);
+                const memberCount = memberCountForResource(
+                  id,
+                  permissionsByResourceId,
+                );
+                const isShared = isSharedResource(
+                  id,
+                  visibility,
+                  permissionsByResourceId,
+                );
+                const selected = selection.selectedIds.includes(id);
+                // In search mode, surface where each match lives so identically
+                // named files in different folders aren't ambiguous.
+                const parentFolderId =
+                  row.kind === "file"
+                    ? row.file.parentFolderId
+                    : row.folder.parentId;
+                const parentPath = treeWideSearch
+                  ? resolveFolderPath(parentFolderId ?? null)
+                  : null;
+                return (
+                  <FileTableRow
+                    key={id}
+                    kind={row.kind}
+                    file={row.kind === "file" ? row.file : undefined}
+                    folder={row.kind === "folder" ? row.folder : undefined}
+                    selected={selected}
+                    onToggleSelected={() => dispatch(toggleSelection({ id }))}
+                    onActivate={() => handleRowActivate(row)}
+                    onOpenShare={() =>
+                      setShareTarget({
+                        resourceId: id,
+                        resourceType: row.kind,
+                      })
+                    }
+                    isShared={isShared}
+                    memberCount={memberCount}
+                    granteeIds={granteeIds}
+                    parentPath={parentPath}
+                  />
+                );
+              })}
+            </tbody>
+          </table>
         </div>
-      ) : null}
-      <div className="flex-1 min-h-0 overflow-auto">
-        <table className="w-full border-collapse">
-        <thead className="sticky top-0 z-10 bg-background">
-          <tr className="border-b text-xs uppercase tracking-wide text-muted-foreground">
-            <th className="w-8 px-3 py-2">
-              <Checkbox
-                checked={allSelected}
-                onCheckedChange={toggleAll}
-                aria-label="Select all"
-              />
-            </th>
-            <SortableHeader
-              label="Name"
-              sortKey="name"
-              activeSortBy={sortBy}
-              activeSortDir={sortDir}
-              onChange={(next) => dispatch(setSort(next))}
-            />
-            <SortableHeader
-              label="Last modified"
-              sortKey="updated_at"
-              activeSortBy={sortBy}
-              activeSortDir={sortDir}
-              onChange={(next) => dispatch(setSort(next))}
-              align="left"
-            />
-            <SortableHeader
-              label="Size"
-              sortKey="size"
-              activeSortBy={sortBy}
-              activeSortDir={sortDir}
-              onChange={(next) => dispatch(setSort(next))}
-              align="left"
-            />
-            <th className="px-4 py-2 text-left font-medium">Access</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row) => {
-            const id = row.kind === "file" ? row.file.id : row.folder.id;
-            const visibility =
-              row.kind === "file"
-                ? row.file.visibility
-                : row.folder.visibility;
-            const perms = permissionsByResourceId[id] ?? [];
-            const granteeIds = perms.map((p) => p.granteeId);
-            const memberCount = memberCountForResource(
-              id,
-              permissionsByResourceId,
-            );
-            const isShared = isSharedResource(
-              id,
-              visibility,
-              permissionsByResourceId,
-            );
-            const selected = selection.selectedIds.includes(id);
-            // In search mode, surface where each match lives so identically
-            // named files in different folders aren't ambiguous.
-            const parentFolderId =
-              row.kind === "file"
-                ? row.file.parentFolderId
-                : row.folder.parentId;
-            const parentPath = treeWideSearch
-              ? resolveFolderPath(parentFolderId ?? null)
-              : null;
-            return (
-              <FileTableRow
-                key={id}
-                kind={row.kind}
-                file={row.kind === "file" ? row.file : undefined}
-                folder={row.kind === "folder" ? row.folder : undefined}
-                selected={selected}
-                onToggleSelected={() =>
-                  dispatch(toggleSelection({ id }))
-                }
-                onActivate={() => handleRowActivate(row)}
-                onOpenShare={() =>
-                  setShareTarget({
-                    resourceId: id,
-                    resourceType: row.kind,
-                  })
-                }
-                isShared={isShared}
-                memberCount={memberCount}
-                granteeIds={granteeIds}
-                parentPath={parentPath}
-              />
-            );
-          })}
-        </tbody>
-      </table>
-      </div>
 
-      {shareTarget ? (
-        <ShareLinkDialog
-          open={!!shareTarget}
-          onOpenChange={(open) => {
-            if (!open) setShareTarget(null);
-          }}
-          resourceId={shareTarget.resourceId}
-          resourceType={shareTarget.resourceType}
-        />
-      ) : null}
-    </div>
+        {shareTarget ? (
+          <ShareLinkDialog
+            open={!!shareTarget}
+            onOpenChange={(open) => {
+              if (!open) setShareTarget(null);
+            }}
+            resourceId={shareTarget.resourceId}
+            resourceType={shareTarget.resourceType}
+          />
+        ) : null}
+      </div>
     </DndContext>
   );
 }

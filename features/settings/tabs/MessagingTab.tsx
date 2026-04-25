@@ -2,15 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { Bell, BellOff, Monitor, Volume2 } from "lucide-react";
-import {
-  SettingsSwitch,
-  SettingsSlider,
-  SettingsButton,
-  SettingsSection,
-  SettingsSubHeader,
-  SettingsCallout,
-  SettingsReadOnlyValue,
-} from "@/components/official/settings";
+import { SettingsSwitch } from "@/components/official/settings/primitives/SettingsSwitch";
+import { SettingsSlider } from "@/components/official/settings/primitives/SettingsSlider";
+import { SettingsButton } from "@/components/official/settings/primitives/SettingsButton";
+import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
+import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
+import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
+import { SettingsReadOnlyValue } from "@/components/official/settings/layout/SettingsReadOnlyValue";
 import { useSetting } from "../hooks/useSetting";
 import {
   playNotificationSound,
@@ -40,8 +38,7 @@ export default function MessagingTab() {
 
   // Permission state is a browser concern, not a Redux concern — it lives in
   // local state. Re-check on mount and after any permission mutation.
-  const [permission, setPermission] =
-    useState<PermissionStatus>("default");
+  const [permission, setPermission] = useState<PermissionStatus>("default");
   useEffect(() => {
     setPermission(getNotificationPermission());
   }, []);

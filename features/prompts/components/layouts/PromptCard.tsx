@@ -26,7 +26,7 @@ import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 import { ShareModal } from "@/features/sharing";
 import { PromptActionModal } from "./PromptActionModal";
 import { PromptMetadataModal } from "./PromptMetadataModal";
-import { CreatePromptAppModal } from "@/features/prompt-apps/components";
+import { CreatePromptAppModal } from "@/features/prompt-apps/components/CreatePromptAppModal";
 import { ConvertToBuiltinModal } from "@/features/prompts/components/layouts/ConvertToBuiltinModal";
 import { FavoriteButton } from "./FavoriteButton";
 import { useState } from "react";
@@ -263,11 +263,7 @@ export function PromptCard({
       </div>
 
       {/* Favorite toggle — always visible, interactive */}
-      <FavoriteButton
-        id={id}
-        promptData={promptData}
-        disabled={isDisabled}
-      />
+      <FavoriteButton id={id} promptData={promptData} disabled={isDisabled} />
 
       {/* Archived badge — only when archived, offset left to avoid star overlap */}
       {promptData?.isArchived && (
@@ -315,7 +311,14 @@ export function PromptCard({
           className="flex gap-2 justify-center items-center"
           onClick={(e) => e.stopPropagation()}
         >
-          <Link href={`${basePath}/run/${id}`} tabIndex={-1} onClick={(e) => { e.stopPropagation(); handleRun(e); }}>
+          <Link
+            href={`${basePath}/run/${id}`}
+            tabIndex={-1}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleRun(e);
+            }}
+          >
             <IconButton
               icon={Play}
               tooltip={isDisabled ? "Please wait..." : "Run"}
@@ -326,7 +329,14 @@ export function PromptCard({
               disabled={isDisabled}
             />
           </Link>
-          <Link href={`${basePath}/edit/${id}`} tabIndex={-1} onClick={(e) => { e.stopPropagation(); handleEdit(e); }}>
+          <Link
+            href={`${basePath}/edit/${id}`}
+            tabIndex={-1}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleEdit(e);
+            }}
+          >
             <IconButton
               icon={Pencil}
               tooltip={isDisabled ? "Please wait..." : "Edit"}
@@ -337,7 +347,14 @@ export function PromptCard({
               disabled={isDisabled}
             />
           </Link>
-          <Link href={`${basePath}/view/${id}`} tabIndex={-1} onClick={(e) => { e.stopPropagation(); handleView(e); }}>
+          <Link
+            href={`${basePath}/view/${id}`}
+            tabIndex={-1}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleView(e);
+            }}
+          >
             <IconButton
               icon={Eye}
               tooltip={isDisabled ? "Please wait..." : "View"}

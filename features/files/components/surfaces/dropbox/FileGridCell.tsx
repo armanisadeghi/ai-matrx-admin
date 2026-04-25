@@ -13,14 +13,12 @@ import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { Copy, MoreHorizontal, Share2, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useSignedUrl } from "../../../hooks/useSignedUrl";
-import {
-  formatFileSize,
-} from "../../../utils/format";
-import { FileIcon } from "../../core/FileIcon";
-import { FileContextMenu } from "../../core/FileContextMenu";
-import { useFileActions } from "../../core/FileActions";
-import type { CloudFileRecord, CloudFolderRecord } from "../../../types";
+import { useSignedUrl } from "@/features/files/hooks/useSignedUrl";
+import { formatFileSize } from "@/features/files/utils/format";
+import { FileIcon } from "@/features/files/components/core/FileIcon/FileIcon";
+import { FileContextMenu } from "@/features/files/components/core/FileContextMenu/FileContextMenu";
+import { useFileActions } from "@/features/files/components/core/FileActions/useFileActions";
+import type { CloudFileRecord, CloudFolderRecord } from "@/features/files/types";
 import { FolderIconWithMembers } from "./FolderIconWithMembers";
 
 export interface FileGridCellProps {

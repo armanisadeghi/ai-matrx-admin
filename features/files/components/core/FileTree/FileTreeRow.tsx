@@ -11,8 +11,8 @@ import { forwardRef, memo } from "react";
 import { ChevronDown, ChevronRight, MoreHorizontal } from "lucide-react";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { cn } from "@/lib/utils";
-import { FileIcon } from "../FileIcon";
-import { FileContextMenu } from "../FileContextMenu";
+import { FileIcon } from "@/features/files/components/core/FileIcon/FileIcon";
+import { FileContextMenu } from "@/features/files/components/core/FileContextMenu/FileContextMenu";
 import type { TreeRow } from "./useTreeExpansion";
 
 const INDENT_PX = 14;
@@ -58,7 +58,11 @@ function FileTreeRowImpl(
       ? (row.record as { folderName: string }).folderName
       : (row.record as { fileName: string }).fileName;
 
-  const { attributes, listeners, setNodeRef: setDragRef } = useDraggable({
+  const {
+    attributes,
+    listeners,
+    setNodeRef: setDragRef,
+  } = useDraggable({
     id: `tree-${row.id}`,
     data: { type: row.kind, id: row.id },
     disabled: dragDisabled,
@@ -74,7 +78,8 @@ function FileTreeRowImpl(
     setDragRef(node);
     if (isFolder) setDropRef(node);
     if (typeof ref === "function") ref(node);
-    else if (ref) (ref as React.MutableRefObject<HTMLDivElement | null>).current = node;
+    else if (ref)
+      (ref as React.MutableRefObject<HTMLDivElement | null>).current = node;
   };
 
   return (

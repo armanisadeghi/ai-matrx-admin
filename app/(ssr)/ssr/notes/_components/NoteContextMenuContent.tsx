@@ -18,7 +18,7 @@ import {
   ContextMenuSubContent,
   ContextMenuSubTrigger,
   ContextMenuLabel,
-} from "@/components/ui/context-menu";
+} from "@/components/ui/context-menu/context-menu";
 import {
   DropdownMenu,
   DropdownMenuContent,

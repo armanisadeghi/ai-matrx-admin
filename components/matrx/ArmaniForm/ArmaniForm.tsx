@@ -3,7 +3,8 @@
 import React, { useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/styles/themes/utils";
-import { EntityButton, EntitySearchInput } from "./field-components";
+import EntityButton from "./field-components/EntityButton";
+import EntitySearchInput from "./field-components/EntitySearchInput";
 import {
   cardVariants,
   containerVariants,

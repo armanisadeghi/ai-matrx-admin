@@ -35,7 +35,7 @@ import {
 } from "lucide-react";
 import Papa from "papaparse";
 import { cn } from "@/lib/utils";
-import { extname } from "../../../../utils/path";
+import { extname } from "@/features/files/utils/path";
 
 const ROWS_PER_PAGE = 25;
 

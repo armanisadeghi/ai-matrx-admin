@@ -13,13 +13,13 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { selectVariableDefaults } from "@/lib/redux/slices/agent-settings/selectors";
 import {
-  selectVariableDefaults,
   addVariable,
   updateVariable,
   removeVariable,
-} from "@/lib/redux/slices/agent-settings";
-import type { AgentVariable } from "@/lib/redux/slices/agent-settings";
+} from "@/lib/redux/slices/agent-settings/agentSettingsSlice";
+import type { AgentVariable } from "@/lib/redux/slices/agent-settings/types";
 
 interface VariableFormState {
   name: string;

@@ -6,11 +6,11 @@ import Link from "next/link";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   fetchScopeTypes,
-  fetchScopes,
   selectScopeTypesByOrg,
   selectScopeTypesLoading,
-} from "../../redux/scope";
-import type { ScopeType } from "../../redux/scope";
+} from "../../redux/scope/scopeTypesSlice";
+import { fetchScopes } from "../../redux/scope/scopesSlice";
+import type { ScopeType } from "../../redux/scope/types";
 import { ScopeTypeList } from "./ScopeTypeList";
 import { ScopeInstancePanel } from "./ScopeInstancePanel";
 import { ScopeTemplateStarter } from "./ScopeTemplateStarter";

@@ -18,10 +18,8 @@ import { AutonomySelector } from "../init/AutonomySelector";
 import { StatusBadge } from "../shared/StatusBadge";
 import { updateTopic } from "../../service";
 import { ProjectFormSheet } from "@/features/projects/components/ProjectFormSheet";
-import {
-  HierarchyCascade,
-  EMPTY_SELECTION,
-} from "@/features/agent-context/components/hierarchy-selection";
+import { HierarchyCascade } from "@/features/agent-context/components/hierarchy-selection/HierarchyCascade";
+import { EMPTY_SELECTION } from "@/features/agent-context/components/hierarchy-selection/types";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { invalidateNavTree } from "@/features/agent-context/redux/hierarchySlice";
 import { useTopicContext } from "../../context/ResearchContext";

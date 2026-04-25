@@ -25,16 +25,13 @@ import {
   selectAllFoldersMap,
   selectSortedChildrenOfFolder,
   selectSortedRootChildren,
-} from "../../redux/selectors";
-import {
-  setActiveFileId,
-  setActiveFolderId,
-} from "../../redux/slice";
-import { loadFolderContents } from "../../redux/thunks";
-import { FileIcon } from "../core/FileIcon";
-import { FileMeta } from "../core/FileMeta";
-import { FilePreview } from "../core/FilePreview";
-import { FileUploadDropzone } from "../core/FileUploadDropzone";
+} from "@/features/files/redux/selectors";
+import { setActiveFileId, setActiveFolderId } from "@/features/files/redux/slice";
+import { loadFolderContents } from "@/features/files/redux/thunks";
+import { FileIcon } from "@/features/files/components/core/FileIcon/FileIcon";
+import { FileMeta } from "@/features/files/components/core/FileMeta/FileMeta";
+import { FilePreview } from "@/features/files/components/core/FilePreview/FilePreview";
+import { FileUploadDropzone } from "@/features/files/components/core/FileUploadDropzone/FileUploadDropzone";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -149,14 +146,7 @@ interface FrameProps {
   titleSlot?: React.ReactNode;
 }
 
-function Frame({
-  frame,
-  isTop,
-  depth,
-  onBack,
-  onPush,
-  titleSlot,
-}: FrameProps) {
+function Frame({ frame, isTop, depth, onBack, onPush, titleSlot }: FrameProps) {
   return (
     <div
       className={cn(
@@ -239,7 +229,13 @@ function FolderFrameBody({
     <>
       <MobileHeader
         title={titleSlot ?? title}
-        leftIcon={onBack ? <ChevronLeft className="h-6 w-6" /> : <Home className="h-5 w-5" />}
+        leftIcon={
+          onBack ? (
+            <ChevronLeft className="h-6 w-6" />
+          ) : (
+            <Home className="h-5 w-5" />
+          )
+        }
         leftLabel={onBack ? "Back" : "Home"}
         onLeftPress={onBack}
       />
@@ -258,15 +254,11 @@ function FolderFrameBody({
                 <li key={row.id}>
                   <button
                     type="button"
-                    onClick={() =>
-                      onPush({ kind: "folder", folderId: row.id })
-                    }
+                    onClick={() => onPush({ kind: "folder", folderId: row.id })}
                     className="flex h-12 w-full items-center gap-3 px-4 text-left active:bg-accent/60"
                   >
                     <FileIcon isFolder size={22} />
-                    <span className="flex-1 truncate text-sm">
-                      {row.name}
-                    </span>
+                    <span className="flex-1 truncate text-sm">{row.name}</span>
                     <ChevronLeft
                       className="h-4 w-4 rotate-180 text-muted-foreground"
                       aria-hidden="true"
@@ -411,9 +403,7 @@ interface FloatingUploadActionProps {
   parentFolderId: string | null;
 }
 
-function FloatingUploadAction({
-  parentFolderId,
-}: FloatingUploadActionProps) {
+function FloatingUploadAction({ parentFolderId }: FloatingUploadActionProps) {
   const inputId = useMemo(
     () => `mobile-upload-${Math.random().toString(36).slice(2, 8)}`,
     [],
@@ -446,13 +436,11 @@ function FloatingUploadAction({
           input.addEventListener("change", async () => {
             if (!input.files?.length) return;
             const files = Array.from(input.files);
-            const { store } = await import("@/lib/redux/store").then(
-              (mod) => {
-                const storeInstance = mod.getStore();
-                if (!storeInstance) throw new Error("Store not ready");
-                return { store: storeInstance };
-              },
-            );
+            const { store } = await import("@/lib/redux/store").then((mod) => {
+              const storeInstance = mod.getStore();
+              if (!storeInstance) throw new Error("Store not ready");
+              return { store: storeInstance };
+            });
             const { uploadFiles } = await import("../../redux/thunks");
             void store.dispatch(
               uploadFiles({

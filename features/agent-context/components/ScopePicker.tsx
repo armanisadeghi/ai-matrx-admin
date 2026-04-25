@@ -6,15 +6,16 @@ import * as icons from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   fetchScopeTypes,
-  fetchScopes,
+  selectScopeTypesLoading,
+} from "../redux/scope/scopeTypesSlice";
+import { fetchScopes, selectScopesLoading } from "../redux/scope/scopesSlice";
+import {
   fetchEntityScopes,
   setEntityScopes,
-  selectScopePickerOptions,
   selectScopeIdsForEntity,
-  selectScopesLoading,
-  selectScopeTypesLoading,
-} from "../redux/scope";
-import type { ScopePickerOption } from "../redux/scope";
+} from "../redux/scope/scopeAssignmentsSlice";
+import { selectScopePickerOptions } from "../redux/scope/selectors";
+import type { ScopePickerOption } from "../redux/scope/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {

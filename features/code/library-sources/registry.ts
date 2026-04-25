@@ -4,7 +4,7 @@ import type { LibrarySourceAdapter } from "./types";
 
 /**
  * In-memory adapter registry. Builtin adapters register themselves at
- * import time via `library-sources/index.ts`; callers only ever read.
+ * import time via `library-sources/registerBuiltinLibrarySources.ts`; callers only ever read.
  */
 const adapters = new Map<string, LibrarySourceAdapter>();
 const prefixes: LibrarySourceAdapter[] = [];

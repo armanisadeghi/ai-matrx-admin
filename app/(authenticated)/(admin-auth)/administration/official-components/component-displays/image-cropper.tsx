@@ -3,7 +3,8 @@
 import React from 'react';
 import { ComponentEntry } from '../parts/component-list';
 import { ComponentDisplayWrapper } from '../component-usage';
-import { ImageCropperWithSelect, EasyImageCropper } from '@/components/official/image-cropper';
+import { ImageCropperWithSelect } from "@/components/official/image-cropper/ImageCropperWithSelect";
+import { EasyImageCropper } from "@/components/official/image-cropper/EasyImageCropper";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface ComponentDisplayProps {
@@ -14,7 +15,7 @@ export default function ImageCropperDemo({ component }: ComponentDisplayProps) {
   if (!component) return null;
   
   // Example code for standard mode with all aspect ratios
-  const standardCode = `import { ImageCropperWithSelect } from '@/components/official/image-cropper';
+  const standardCode = `import { ImageCropperWithSelect } from '@/components/official/image-cropper/ImageCropperWithSelect';
 
 // Standard image cropper with all default aspect ratios
 <ImageCropperWithSelect 
@@ -25,7 +26,7 @@ export default function ImageCropperDemo({ component }: ComponentDisplayProps) {
 />`;
 
   // Example code for square only
-  const squareCode = `import { ImageCropperWithSelect } from '@/components/official/image-cropper';
+  const squareCode = `import { ImageCropperWithSelect } from '@/components/official/image-cropper/ImageCropperWithSelect';
 
 // Square aspect ratio only
 const squareOnly = [
@@ -40,7 +41,7 @@ const squareOnly = [
 />`;
 
   // Example code for landscape only
-  const landscapeCode = `import { ImageCropperWithSelect } from '@/components/official/image-cropper';
+  const landscapeCode = `import { ImageCropperWithSelect } from '@/components/official/image-cropper/ImageCropperWithSelect';
 
 // Landscape aspect ratios only
 const landscapeOptions = [
@@ -57,7 +58,7 @@ const landscapeOptions = [
 />`;
 
   // Example code for EasyImageCropper
-  const easyCode = `import { EasyImageCropper } from '@/components/official/image-cropper';
+  const easyCode = `import { EasyImageCropper } from '@/components/official/image-cropper/EasyImageCropper';
 
 // Simple image cropper with fixed aspect ratio
 const sixteenNine = [

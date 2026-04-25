@@ -19,10 +19,10 @@ import { useCallback } from "react";
 import { ExternalLink, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectFileById } from "../../../redux/selectors";
-import { truncateFilename, formatFileSize } from "../../../utils/format";
-import { useFileActions } from "../FileActions";
-import { FileIcon } from "../FileIcon";
+import { selectFileById } from "@/features/files/redux/selectors";
+import { truncateFilename, formatFileSize } from "@/features/files/utils/format";
+import { useFileActions } from "@/features/files/components/core/FileActions/useFileActions";
+import { FileIcon } from "@/features/files/components/core/FileIcon/FileIcon";
 
 export interface FileChipProps {
   fileId: string;
@@ -106,7 +106,10 @@ export function FileChip({
       )}
       title={name}
     >
-      <FileIcon fileName={file?.fileName ?? "file"} size={density === "sm" ? 12 : 14} />
+      <FileIcon
+        fileName={file?.fileName ?? "file"}
+        size={density === "sm" ? 12 : 14}
+      />
       <span className="truncate font-medium">
         {truncateFilename(name, maxNameLength)}
       </span>

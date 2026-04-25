@@ -10,8 +10,8 @@ import { ListRow } from "../ListRow";
 import { SectionFooter } from "../SectionFooter";
 import { useSkills } from "../../hooks/useSkills";
 import { SKILL_TYPE_LABELS, SKILL_TYPES } from "../../constants";
-import { selectSelectedItemId, setSelectedItemId } from "../../redux/ui";
-import type { SklDefinition } from "../../redux/skl";
+import { selectSelectedItemId, setSelectedItemId } from "../../redux/ui/slice";
+import type { SklDefinition } from "../../redux/skl/types";
 
 export function SkillsSection() {
   const dispatch = useAppDispatch();

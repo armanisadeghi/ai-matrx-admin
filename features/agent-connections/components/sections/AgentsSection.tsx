@@ -7,10 +7,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { SectionToolbar } from "../SectionToolbar";
 import { ListRow } from "../ListRow";
 import { useAgents } from "../../hooks/useAgents";
-import {
-  selectSelectedItemId,
-  setSelectedItemId,
-} from "../../redux/ui";
+import { selectSelectedItemId, setSelectedItemId } from "../../redux/ui/slice";
 import type { AgentDefinitionRecord } from "@/features/agents/types/agent-definition.types";
 
 export function AgentsSection() {
@@ -108,27 +105,20 @@ function AgentDetail({
       <div className="flex-1 overflow-auto scrollbar-thin p-4 space-y-3 text-sm">
         <DetailField label="ID" value={agent.id} mono />
         <DetailField label="Name" value={agent.name} />
-        <DetailField
-          label="Description"
-          value={agent.description ?? "—"}
-        />
+        <DetailField label="Description" value={agent.description ?? "—"} />
         <DetailField label="Model" value={agent.modelId ?? "—"} />
         <DetailField label="Agent type" value={agent.agentType} />
         <DetailField
           label="MCP servers"
           value={
-            agent.mcpServers.length === 0
-              ? "—"
-              : agent.mcpServers.join(", ")
+            agent.mcpServers.length === 0 ? "—" : agent.mcpServers.join(", ")
           }
           mono
         />
         <DetailField
           label="Tools"
           value={
-            agent.tools.length === 0
-              ? "—"
-              : `${agent.tools.length} configured`
+            agent.tools.length === 0 ? "—" : `${agent.tools.length} configured`
           }
         />
         <DetailField

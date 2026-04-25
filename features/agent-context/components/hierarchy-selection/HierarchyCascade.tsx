@@ -36,7 +36,7 @@ import {
   FULL_HIERARCHY_LEVELS,
 } from "./useHierarchySelection";
 import { useCreateProject, useCreateTask } from "../../hooks/useHierarchy";
-import { createScope } from "../../redux/scope";
+import { createScope } from "../../redux/scope/scopesSlice";
 import type { HierarchySelectionProps, HierarchyOption } from "./types";
 
 type LucideIcon = React.ComponentType<{

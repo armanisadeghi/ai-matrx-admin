@@ -5,9 +5,20 @@ import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { CxFiltersBar } from "@/features/cx-dashboard/components/CxFiltersBar";
 import { CxEmptyState } from "@/features/cx-dashboard/components/CxEmptyState";
-import { formatDate, formatRelativeTime, statusBadgeVariant, truncateId } from "@/features/cx-dashboard/utils/format";
-import { exportToCSV, exportToJSON } from "@/features/cx-dashboard/utils/export";
-import type { CxConversation, CxPaginatedResponse } from "@/features/cx-dashboard/types";
+import {
+  formatDate,
+  formatRelativeTime,
+  statusBadgeVariant,
+  truncateId,
+} from "@/features/cx-dashboard/utils/format";
+import {
+  exportToCSV,
+  exportToJSON,
+} from "@/features/cx-dashboard/utils/export";
+import type {
+  CxConversation,
+  CxPaginatedResponse,
+} from "@/features/cx-dashboard/types/cxDashboardTypes";
 import { ChevronRight, GitBranch, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -35,7 +46,9 @@ export function ConversationsContent({ result }: Props) {
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold">
           Conversations
-          <span className="text-muted-foreground ml-2 font-normal">{result.total} total</span>
+          <span className="text-muted-foreground ml-2 font-normal">
+            {result.total} total
+          </span>
         </h2>
       </div>
 
@@ -55,7 +68,9 @@ export function ConversationsContent({ result }: Props) {
           <table className="w-full text-xs">
             <thead>
               <tr className="bg-muted/30 border-b border-border text-muted-foreground">
-                <th className="text-left py-2 px-3 font-medium">Conversation</th>
+                <th className="text-left py-2 px-3 font-medium">
+                  Conversation
+                </th>
                 <th className="text-left py-2 px-3 font-medium">Model</th>
                 <th className="text-center py-2 px-3 font-medium">Msgs</th>
                 <th className="text-center py-2 px-3 font-medium">Status</th>
@@ -69,7 +84,11 @@ export function ConversationsContent({ result }: Props) {
                 <tr
                   key={conv.id}
                   className="border-b border-border/50 hover:bg-muted/20 cursor-pointer transition-colors"
-                  onClick={() => router.push(`/administration/cx-dashboard/conversations/${conv.id}`)}
+                  onClick={() =>
+                    router.push(
+                      `/administration/cx-dashboard/conversations/${conv.id}`,
+                    )
+                  }
                 >
                   <td className="py-2 px-3">
                     <div className="flex items-center gap-2">
@@ -78,16 +97,24 @@ export function ConversationsContent({ result }: Props) {
                       )}
                       <div className="min-w-0">
                         <p className="font-medium truncate max-w-[300px]">
-                          {conv.title || <span className="text-muted-foreground italic">Untitled</span>}
+                          {conv.title || (
+                            <span className="text-muted-foreground italic">
+                              Untitled
+                            </span>
+                          )}
                         </p>
-                        <p className="text-muted-foreground font-mono">{truncateId(conv.id)}</p>
+                        <p className="text-muted-foreground font-mono">
+                          {truncateId(conv.id)}
+                        </p>
                       </div>
                     </div>
                   </td>
                   <td className="py-2 px-3">
                     {conv.model_name ? (
                       <div>
-                        <p className="truncate max-w-[140px]">{conv.model_name}</p>
+                        <p className="truncate max-w-[140px]">
+                          {conv.model_name}
+                        </p>
                         <p className="text-muted-foreground">{conv.provider}</p>
                       </div>
                     ) : (
@@ -101,12 +128,17 @@ export function ConversationsContent({ result }: Props) {
                     </div>
                   </td>
                   <td className="text-center py-2 px-3">
-                    <Badge variant={statusBadgeVariant(conv.status)} className="text-[10px]">
+                    <Badge
+                      variant={statusBadgeVariant(conv.status)}
+                      className="text-[10px]"
+                    >
                       {conv.status}
                     </Badge>
                   </td>
                   <td className="py-2 px-3 font-mono text-muted-foreground">
-                    {conv.parent_conversation_id ? truncateId(conv.parent_conversation_id) : "-"}
+                    {conv.parent_conversation_id
+                      ? truncateId(conv.parent_conversation_id)
+                      : "-"}
                   </td>
                   <td className="text-right py-2 px-3 text-muted-foreground whitespace-nowrap">
                     {formatRelativeTime(conv.created_at)}
@@ -124,7 +156,9 @@ export function ConversationsContent({ result }: Props) {
       {/* Pagination */}
       {result.total_pages > 1 && (
         <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <span>Page {result.page} of {result.total_pages}</span>
+          <span>
+            Page {result.page} of {result.total_pages}
+          </span>
           <div className="flex gap-1">
             <Button
               variant="outline"

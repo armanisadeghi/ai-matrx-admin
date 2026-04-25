@@ -44,7 +44,7 @@ import type {
   PermissionLevel,
   CreateShareLinkRequest,
   CloudShareLinkRow,
-} from "../types";
+} from "@/features/files/types";
 
 // ---------------------------------------------------------------------------
 // Context

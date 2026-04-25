@@ -21,7 +21,7 @@ import { fetchAgentsListFull } from "@/features/agents/redux/agent-definition/th
 import {
   describeFilter,
   makeSelectAgentsForFilter,
-} from "@/features/agents/redux/agent-filter";
+} from "@/features/agents/redux/agent-filter/selectors";
 import type { AgentDefinitionRecord } from "@/features/agents/types/agent-definition.types";
 import type { CodeAgentFilter } from "@/lib/redux/slices/userPreferencesSlice";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";

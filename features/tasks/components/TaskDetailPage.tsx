@@ -61,11 +61,11 @@ import { ShareModal } from "@/features/sharing/components/ShareModal";
 import { useToastManager } from "@/hooks/useToastManager";
 import type { TaskWithProject } from "@/features/tasks/types";
 import Link from "next/link";
+import { HierarchyCascade } from "@/features/agent-context/components/hierarchy-selection/HierarchyCascade";
 import {
-  HierarchyCascade,
   EMPTY_SELECTION,
-} from "@/features/agent-context/components/hierarchy-selection";
-import type { HierarchySelection } from "@/features/agent-context/components/hierarchy-selection";
+  type HierarchySelection,
+} from "@/features/agent-context/components/hierarchy-selection/types";
 import { ScopePicker } from "@/features/agent-context/components/ScopePicker";
 import { selectOrganizationId } from "@/features/agent-context/redux/appContextSlice";
 
@@ -93,7 +93,8 @@ export default function TaskDetailPage({ task }: TaskDetailPageProps) {
   const dispatch = useAppDispatch();
   const projects = useAppSelector(selectProjects);
   const refresh = () => dispatch(invalidateAndRefetchFullContext());
-  const getTaskComments = (taskId: string) => taskService.getTaskComments(taskId);
+  const getTaskComments = (taskId: string) =>
+    taskService.getTaskComments(taskId);
   const createTaskComment = async (taskId: string, content: string) => {
     await taskService.createTaskComment(taskId, content);
   };
@@ -176,7 +177,9 @@ export default function TaskDetailPage({ task }: TaskDetailPageProps) {
     setIsSaving(true);
     try {
       if (title !== task.title)
-        await dispatch(updateTaskFieldThunk({ taskId: task.id, patch: { title } }));
+        await dispatch(
+          updateTaskFieldThunk({ taskId: task.id, patch: { title } }),
+        );
       if (description !== task.description)
         await dispatch(
           updateTaskFieldThunk({ taskId: task.id, patch: { description } }),
@@ -799,11 +802,7 @@ export default function TaskDetailPage({ task }: TaskDetailPageProps) {
               <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
                 Scopes
               </label>
-              <ScopePicker
-                entityType="task"
-                entityId={task.id}
-                orgId={orgId}
-              />
+              <ScopePicker entityType="task" entityId={task.id} orgId={orgId} />
             </div>
           )}
 

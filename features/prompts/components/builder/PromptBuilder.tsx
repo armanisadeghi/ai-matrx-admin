@@ -35,7 +35,7 @@ import {
   PromptVariable,
   VariableCustomComponent,
 } from "@/features/prompts/types/core";
-import type { Resource } from "../resource-display";
+import type { Resource } from "../../types/resources";
 import { useResourceMessageFormatter } from "@/features/prompts/hooks/useResourceMessageFormatter";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { selectPromptsPreferences } from "@/lib/redux/selectors/userPreferenceSelectors";

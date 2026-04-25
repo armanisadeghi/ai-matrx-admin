@@ -28,7 +28,7 @@ import type {
   PermissionLevel,
   ResourceType,
   Visibility,
-} from "../types";
+} from "@/features/files/types";
 
 // ---------------------------------------------------------------------------
 // Narrowing helpers

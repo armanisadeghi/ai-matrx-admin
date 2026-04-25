@@ -1,16 +1,20 @@
-'use client';
+"use client";
 
-import { PromptExecutionCard, PromptExecutionCardsGrid, createPromptCard } from '@/features/prompts';
-import { Card } from '@/components/ui/card';
-import { Book } from 'lucide-react';
-import { fullPageContent, vocabularyTerms, historicalSignificance } from './constants';
-
+import {
+  PromptExecutionCard,
+  PromptExecutionCardsGrid,
+  createPromptCard,
+} from "@/features/prompts/components/dynamic/PromptExecutionCard";
+import { Card } from "@/components/ui/card";
+import { Book } from "lucide-react";
+import {
+  fullPageContent,
+  vocabularyTerms,
+  historicalSignificance,
+} from "./constants";
 
 // IMPORTANT: Replace this with your actual prompt ID after you create the "Content Card Expander" prompt
 const CONTENT_EXPANDER_PROMPT_ID = "e95d37f4-e983-4f20-a5fd-0fccfe5253a9";
-
-
-
 
 export default function CardDemoPage() {
   // Create a pre-configured card component (Method 1: Factory Pattern)
@@ -48,7 +52,6 @@ export default function CardDemoPage() {
       {/* Content */}
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-7xl mx-auto p-6 space-y-6">
-
           {/* Essential Vocabulary Section */}
           <div className="space-y-4">
             <Card className="p-4 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 border-emerald-200 dark:border-emerald-800">
@@ -56,7 +59,8 @@ export default function CardDemoPage() {
                 Essential Vocabulary
               </h2>
               <p className="text-sm text-emerald-700 dark:text-emerald-300 mt-1">
-                Click any term to learn more about it in the context of the Persian Empire
+                Click any term to learn more about it in the context of the
+                Persian Empire
               </p>
             </Card>
 
@@ -67,7 +71,7 @@ export default function CardDemoPage() {
                   title={term.title}
                   description={term.description}
                   context={fullPageContent}
-                  className="border-emerald-200 hover:border-emerald-400 dark:border-emerald-700 dark:hover:border-emerald-600" 
+                  className="border-emerald-200 hover:border-emerald-400 dark:border-emerald-700 dark:hover:border-emerald-600"
                 />
               ))}
             </PromptExecutionCardsGrid>
@@ -98,7 +102,7 @@ export default function CardDemoPage() {
                   apply_variables={true}
                   track_in_runs={true}
                   use_pre_execution_input={false}
-                  className="border-purple-200 hover:border-purple-400 dark:border-purple-700 dark:hover:border-purple-600" 
+                  className="border-purple-200 hover:border-purple-400 dark:border-purple-700 dark:hover:border-purple-600"
                 />
               ))}
             </PromptExecutionCardsGrid>
@@ -108,4 +112,3 @@ export default function CardDemoPage() {
     </div>
   );
 }
-

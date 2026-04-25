@@ -11,9 +11,9 @@ import { Columns3, Grid3x3, List } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { selectViewMode } from "../../../redux/selectors";
-import { setViewMode } from "../../../redux/slice";
-import type { ViewMode } from "../../../types";
+import { selectViewMode } from "@/features/files/redux/selectors";
+import { setViewMode } from "@/features/files/redux/slice";
+import type { ViewMode } from "@/features/files/types";
 
 const OPTIONS: { mode: ViewMode; icon: LucideIcon; label: string }[] = [
   { mode: "list", icon: List, label: "List" },

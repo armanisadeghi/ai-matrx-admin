@@ -81,7 +81,7 @@ import type {
   TypedStreamEvent,
   RenderBlockEvent,
 } from "@/types/python-generated/stream-events";
-import { useApiTestConfig } from "@/components/api-test-config";
+import { useApiTestConfig } from "@/components/api-test-config/useApiTestConfig";
 
 interface ContentBlocksManagerProps {
   className?: string;

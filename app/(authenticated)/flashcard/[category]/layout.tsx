@@ -1,6 +1,6 @@
 import React from "react";
 import type { Metadata } from "next";
-import { OptionCardHeader } from "@/components/ssr";
+import { OptionCardHeader } from "@/components/ssr/options-card-header";
 import { getCategories } from "../constants";
 import { notFound } from "next/navigation";
 import { createFlashcardRouteMetadata } from "@/utils/flashcard-metadata";

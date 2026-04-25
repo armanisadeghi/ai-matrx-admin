@@ -1,17 +1,25 @@
 "use client";
 
-import { useState, useRef } from 'react';
+import { useState, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { UnifiedContextMenu } from "@/features/context-menu";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { useUnifiedContextMenu } from "@/features/prompt-builtins/hooks";
+import { useUnifiedContextMenu } from "@/features/prompt-builtins/hooks/useUnifiedContextMenu";
 import { PLACEMENT_TYPES } from "@/features/prompt-builtins/constants";
 
 // JSON Display Component
-function JsonDisplay({ title, data, defaultExpanded = false }: { title: string; data: any; defaultExpanded?: boolean }) {
+function JsonDisplay({
+  title,
+  data,
+  defaultExpanded = false,
+}: {
+  title: string;
+  data: any;
+  defaultExpanded?: boolean;
+}) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
-  
+
   return (
     <div className="border border-border rounded-lg overflow-hidden bg-card">
       <button
@@ -19,7 +27,11 @@ function JsonDisplay({ title, data, defaultExpanded = false }: { title: string; 
         className="w-full px-3 py-2 flex items-center justify-between hover:bg-muted/50 transition-colors text-sm font-medium"
       >
         <span>{title}</span>
-        {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+        {isExpanded ? (
+          <ChevronUp className="h-4 w-4" />
+        ) : (
+          <ChevronDown className="h-4 w-4" />
+        )}
       </button>
       {isExpanded && (
         <div className="border-t border-border">
@@ -54,20 +66,26 @@ function TestScenario({
           <p className="text-xs text-muted-foreground mt-1">{description}</p>
         </div>
       </div>
-      
+
       <div className="grid grid-cols-2 gap-3">
         {/* Left: Test Area */}
         <div className="space-y-2">
-          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Test Area</div>
+          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+            Test Area
+          </div>
           {children}
         </div>
-        
+
         {/* Right: Data Display */}
         <div className="space-y-2">
-          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Live Data</div>
+          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+            Live Data
+          </div>
           <div className="space-y-2">
             {config && <JsonDisplay title="Configuration" data={config} />}
-            {fetchedData && <JsonDisplay title="Fetched Data" data={fetchedData} />}
+            {fetchedData && (
+              <JsonDisplay title="Fetched Data" data={fetchedData} />
+            )}
           </div>
         </div>
       </div>
@@ -77,12 +95,22 @@ function TestScenario({
 
 export default function UnifiedContextMenuTestPage() {
   // Test content
-  const [textarea1, setTextarea1] = useState("Select this text and right-click to test AI Actions.");
-  const [textarea2, setTextarea2] = useState("This textarea tests Content Block insertion. Right-click to insert templates.");
-  const [textarea3, setTextarea3] = useState("This tests ALL placement types together.");
-  const [textarea4, setTextarea4] = useState("This tests ONLY AI Actions (filtered).");
-  const [textarea5, setTextarea5] = useState("Multi-line text editor:\n\nParagraph 1 with some content.\n\nParagraph 2 with more text.\n\nSelect any part and test inline replacement.");
-  
+  const [textarea1, setTextarea1] = useState(
+    "Select this text and right-click to test AI Actions.",
+  );
+  const [textarea2, setTextarea2] = useState(
+    "This textarea tests Content Block insertion. Right-click to insert templates.",
+  );
+  const [textarea3, setTextarea3] = useState(
+    "This tests ALL placement types together.",
+  );
+  const [textarea4, setTextarea4] = useState(
+    "This tests ONLY AI Actions (filtered).",
+  );
+  const [textarea5, setTextarea5] = useState(
+    "Multi-line text editor:\n\nParagraph 1 with some content.\n\nParagraph 2 with more text.\n\nSelect any part and test inline replacement.",
+  );
+
   const textarea1Ref = useRef<HTMLTextAreaElement>(null);
   const textarea2Ref = useRef<HTMLTextAreaElement>(null);
   const textarea3Ref = useRef<HTMLTextAreaElement>(null);
@@ -90,8 +118,16 @@ export default function UnifiedContextMenuTestPage() {
   const textarea5Ref = useRef<HTMLTextAreaElement>(null);
 
   // Fetch data for each test scenario to display
-  const aiActionsData = useUnifiedContextMenu([PLACEMENT_TYPES.AI_ACTION], undefined, true);
-  const contentBlocksData = useUnifiedContextMenu([PLACEMENT_TYPES.CONTENT_BLOCK], undefined, true);
+  const aiActionsData = useUnifiedContextMenu(
+    [PLACEMENT_TYPES.AI_ACTION],
+    undefined,
+    true,
+  );
+  const contentBlocksData = useUnifiedContextMenu(
+    [PLACEMENT_TYPES.CONTENT_BLOCK],
+    undefined,
+    true,
+  );
   const allTypesData = useUnifiedContextMenu(
     [
       PLACEMENT_TYPES.AI_ACTION,
@@ -100,17 +136,25 @@ export default function UnifiedContextMenuTestPage() {
       PLACEMENT_TYPES.USER_TOOL,
     ],
     undefined,
-    true
+    true,
   );
-  const orgToolsData = useUnifiedContextMenu([PLACEMENT_TYPES.ORGANIZATION_TOOL], undefined, true);
-  const userToolsData = useUnifiedContextMenu([PLACEMENT_TYPES.USER_TOOL], undefined, true);
+  const orgToolsData = useUnifiedContextMenu(
+    [PLACEMENT_TYPES.ORGANIZATION_TOOL],
+    undefined,
+    true,
+  );
+  const userToolsData = useUnifiedContextMenu(
+    [PLACEMENT_TYPES.USER_TOOL],
+    undefined,
+    true,
+  );
 
   // Helper to replace text in textarea
   const replaceTextInTextarea = (
     textareaRef: React.RefObject<HTMLTextAreaElement>,
     content: string,
     setContent: (val: string) => void,
-    newText: string
+    newText: string,
   ) => {
     const textarea = textareaRef.current;
     if (textarea) {
@@ -120,7 +164,7 @@ export default function UnifiedContextMenuTestPage() {
       const after = content.substring(end);
       const updated = before + newText + after;
       setContent(updated);
-      
+
       setTimeout(() => {
         textarea.focus();
         textarea.setSelectionRange(start, start + newText.length);
@@ -133,13 +177,14 @@ export default function UnifiedContextMenuTestPage() {
       {/* Compact Header */}
       <div className="flex-none border-b border-border bg-card px-4 py-3">
         <h1 className="text-lg font-bold">UnifiedContextMenu Test Lab</h1>
-        <p className="text-xs text-muted-foreground">Full-screen testing with live data visibility</p>
+        <p className="text-xs text-muted-foreground">
+          Full-screen testing with live data visibility
+        </p>
       </div>
 
       {/* Main Content - Scrollable */}
       <div className="flex-1 overflow-y-auto p-4">
         <div className="max-w-[1800px] mx-auto space-y-6">
-          
           {/* Test 1: AI Actions Only */}
           <TestScenario
             title="Test 1: AI Actions Only"
@@ -216,7 +261,8 @@ export default function UnifiedContextMenuTestPage() {
             config={{
               contextData: {
                 content: textarea3,
-                context: "All available information: User profile, recent activity, preferences",
+                context:
+                  "All available information: User profile, recent activity, preferences",
                 custom_field_1: "TypeScript errors from compiler",
                 custom_field_2: "Recent terminal output",
               },
@@ -228,11 +274,12 @@ export default function UnifiedContextMenuTestPage() {
                 PLACEMENT_TYPES.CONTENT_BLOCK,
                 PLACEMENT_TYPES.ORGANIZATION_TOOL,
                 PLACEMENT_TYPES.USER_TOOL,
-                'quick-action',
+                "quick-action",
               ]}
               contextData={{
                 content: textarea3, // Primary content
-                context: "Broader context: User is working on a React component", // Surrounding info
+                context:
+                  "Broader context: User is working on a React component", // Surrounding info
                 // Custom variables for special shortcuts
                 ts_errors: "Type 'string' is not assignable to type 'number'",
                 terminal_output: "Build successful in 2.3s",
@@ -243,7 +290,9 @@ export default function UnifiedContextMenuTestPage() {
             >
               <Card className="p-4">
                 <div className="mb-2 text-xs text-muted-foreground">
-                  <strong>Scope Demo:</strong> selection (auto), content (full text), context (user info), custom (ts_errors, terminal_output, file_path)
+                  <strong>Scope Demo:</strong> selection (auto), content (full
+                  text), context (user info), custom (ts_errors,
+                  terminal_output, file_path)
                 </div>
                 <textarea
                   ref={textarea3Ref}
@@ -267,12 +316,12 @@ export default function UnifiedContextMenuTestPage() {
             }}
             config={{
               enabledPlacements: [PLACEMENT_TYPES.AI_ACTION],
-              contextData: { contextFilter: 'code-editor', content: textarea4 },
+              contextData: { contextFilter: "code-editor", content: textarea4 },
             }}
           >
             <UnifiedContextMenu
               enabledPlacements={[PLACEMENT_TYPES.AI_ACTION]}
-              contextData={{ contextFilter: 'code-editor', content: textarea4 }}
+              contextData={{ contextFilter: "code-editor", content: textarea4 }}
               isEditable={false}
             >
               <Card className="p-4">
@@ -305,7 +354,14 @@ export default function UnifiedContextMenuTestPage() {
             <UnifiedContextMenu
               enabledPlacements={[PLACEMENT_TYPES.AI_ACTION]}
               isEditable={true}
-              onTextReplace={(newText) => replaceTextInTextarea(textarea5Ref, textarea5, setTextarea5, newText)}
+              onTextReplace={(newText) =>
+                replaceTextInTextarea(
+                  textarea5Ref,
+                  textarea5,
+                  setTextarea5,
+                  newText,
+                )
+              }
               contextData={{ content: textarea5 }}
             >
               <Card className="p-4">
@@ -354,9 +410,7 @@ export default function UnifiedContextMenuTestPage() {
               enabledPlacements: [PLACEMENT_TYPES.USER_TOOL],
             }}
           >
-            <UnifiedContextMenu
-              enabledPlacements={[PLACEMENT_TYPES.USER_TOOL]}
-            >
+            <UnifiedContextMenu enabledPlacements={[PLACEMENT_TYPES.USER_TOOL]}>
               <Card className="p-4 min-h-[100px] flex items-center justify-center text-sm text-muted-foreground">
                 Right-click anywhere in this card
               </Card>
@@ -384,16 +438,18 @@ export default function UnifiedContextMenuTestPage() {
               enabledPlacements={[PLACEMENT_TYPES.AI_ACTION]}
               isEditable={false}
               contextData={{
-                content: "The Persian Empire was one of the largest empires in the ancient world, demonstrating early examples of imperial governance over diverse peoples.",
+                content:
+                  "The Persian Empire was one of the largest empires in the ancient world, demonstrating early examples of imperial governance over diverse peoples.",
                 context: "Historical text about ancient civilizations",
               }}
             >
               <Card className="p-4 select-text cursor-text">
                 <div className="text-sm leading-relaxed">
-                  The Persian Empire was one of the largest empires in the ancient world, 
-                  demonstrating early examples of imperial governance over diverse peoples. 
-                  Founded by Cyrus the Great, it became known for its sophisticated 
-                  administration and cultural tolerance.
+                  The Persian Empire was one of the largest empires in the
+                  ancient world, demonstrating early examples of imperial
+                  governance over diverse peoples. Founded by Cyrus the Great,
+                  it became known for its sophisticated administration and
+                  cultural tolerance.
                 </div>
               </Card>
             </UnifiedContextMenu>
@@ -403,14 +459,14 @@ export default function UnifiedContextMenuTestPage() {
           <TestScenario
             title="Test 9: Quick Actions Only"
             description="Right-click to see only the hard-coded Quick Actions (Notes, Tasks, Chat, Data, Files)."
-            fetchedData={{ note: "Quick Actions are hard-coded, not fetched from DB" }}
+            fetchedData={{
+              note: "Quick Actions are hard-coded, not fetched from DB",
+            }}
             config={{
-              enabledPlacements: ['quick-action'],
+              enabledPlacements: ["quick-action"],
             }}
           >
-            <UnifiedContextMenu
-              enabledPlacements={['quick-action']}
-            >
+            <UnifiedContextMenu enabledPlacements={["quick-action"]}>
               <Card className="p-4 min-h-[100px] flex items-center justify-center text-sm text-muted-foreground">
                 Right-click to open Quick Actions
               </Card>
@@ -436,12 +492,16 @@ export default function UnifiedContextMenuTestPage() {
             }}
           >
             <UnifiedContextMenu
-              enabledPlacements={[PLACEMENT_TYPES.AI_ACTION, PLACEMENT_TYPES.CONTENT_BLOCK]}
+              enabledPlacements={[
+                PLACEMENT_TYPES.AI_ACTION,
+                PLACEMENT_TYPES.CONTENT_BLOCK,
+              ]}
               contextData={{
                 content: `import React from 'react';\nimport { Button } from './ui/button';\n\nfunction App() {\n  return <Button>Click me</Button>;\n}`,
                 context: `Open files: [App.tsx, button.tsx, index.tsx]\nImports: react, lucide-react`,
                 contextFilter: "code-editor", // Filter for code-editor context
-                ts_errors: "Line 5: Type 'string' is not assignable to type 'ReactNode'",
+                ts_errors:
+                  "Line 5: Type 'string' is not assignable to type 'ReactNode'",
                 terminal_output: "✓ Compiled successfully in 450ms",
                 file_path: "/src/App.tsx",
                 language: "typescript",
@@ -450,10 +510,11 @@ export default function UnifiedContextMenuTestPage() {
             >
               <Card className="p-4">
                 <div className="text-xs text-muted-foreground mb-2">
-                  <strong>Realistic Code Editor:</strong> Select code and right-click
+                  <strong>Realistic Code Editor:</strong> Select code and
+                  right-click
                 </div>
                 <pre className="p-3 bg-muted rounded text-xs font-mono">
-{`import React from 'react';
+                  {`import React from 'react';
 import { Button } from './ui/button';
 
 function App() {
@@ -470,7 +531,9 @@ export default App;`}
           <TestScenario
             title="Test 11: Browser Actions (Cut/Copy/Paste/Find)"
             description="Right-click to see native browser actions (copy, cut, paste, select all, find)"
-            fetchedData={{ note: "Browser actions automatically added when text is selected or editable" }}
+            fetchedData={{
+              note: "Browser actions automatically added when text is selected or editable",
+            }}
             config={{
               isEditable: true,
               enabledPlacements: [PLACEMENT_TYPES.AI_ACTION],
@@ -482,7 +545,8 @@ export default App;`}
             >
               <Card className="p-4">
                 <div className="text-xs text-muted-foreground mb-2">
-                  Select text to see Copy/Cut, or right-click anywhere for all browser actions
+                  Select text to see Copy/Cut, or right-click anywhere for all
+                  browser actions
                 </div>
                 <input
                   type="text"
@@ -492,7 +556,6 @@ export default App;`}
               </Card>
             </UnifiedContextMenu>
           </TestScenario>
-
         </div>
       </div>
     </div>

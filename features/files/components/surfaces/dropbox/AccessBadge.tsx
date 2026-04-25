@@ -9,7 +9,7 @@
 
 import { Globe, Lock, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { Visibility } from "../../../types";
+import type { Visibility } from "@/features/files/types";
 
 export interface AccessBadgeProps {
   visibility: Visibility;

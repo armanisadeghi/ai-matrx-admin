@@ -11,8 +11,9 @@ import {
   Trash2,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { deleteScopeType, selectScopesByType } from "../../redux/scope";
-import type { ScopeType } from "../../redux/scope";
+import { deleteScopeType } from "../../redux/scope/scopeTypesSlice";
+import { selectScopesByType } from "../../redux/scope/scopesSlice";
+import type { ScopeType } from "../../redux/scope/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/utils/cn";

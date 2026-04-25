@@ -24,7 +24,7 @@ import {
   ContextMenuItem,
   ContextMenuSeparator,
   ContextMenuTrigger,
-} from "@/components/ui/context-menu/index";
+} from "@/components/ui/context-menu/context-menu";
 import {
   DropdownMenu,
   DropdownMenuContent,

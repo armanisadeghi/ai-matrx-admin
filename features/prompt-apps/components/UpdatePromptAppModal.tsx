@@ -38,7 +38,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/utils/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { Json } from "@/types/database.types";
-import type { PromptApp, VariableSchemaItem } from "../types";
+import type { PromptApp, VariableSchemaItem } from "../types/promptAppTypes";
 import { requireUserId } from "@/utils/auth/getUserId";
 
 interface PromptVariable {

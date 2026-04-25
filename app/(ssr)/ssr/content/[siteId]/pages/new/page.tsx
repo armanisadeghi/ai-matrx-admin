@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { CmsPageService } from "@/features/content-manager/services/cmsService";
-import PageEditor from "../../../components/PageEditor";
+import PageEditor from "@/app/(ssr)/ssr/content/components/PageEditor";
 
 export default function NewPageRoute() {
   const { siteId } = useParams() as { siteId: string };

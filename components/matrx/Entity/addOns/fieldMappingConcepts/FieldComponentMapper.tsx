@@ -1,4 +1,4 @@
-import { FlexFormField, FormFieldType } from "../../../AnimatedForm/FlexAnimatedForm";
+import { FlexFormField, FormFieldType } from "@/components/matrx/AnimatedForm/FlexAnimatedForm";
 
 // Basic component configuration types
 interface ComponentConfig {

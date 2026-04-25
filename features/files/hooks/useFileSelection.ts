@@ -13,8 +13,8 @@ import {
   selectIsSelected,
   selectSelectedCount,
   selectSelection,
-} from "../redux/selectors";
-import { clearSelection, setSelection, toggleSelection } from "../redux/slice";
+} from "@/features/files/redux/selectors";
+import { clearSelection, setSelection, toggleSelection } from "@/features/files/redux/slice";
 
 export interface UseFileSelectionResult {
   selectedIds: string[];

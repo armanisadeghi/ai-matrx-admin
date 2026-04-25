@@ -52,10 +52,10 @@ import {
   selectAllFoldersArray,
   selectTreeStatus,
   selectViewMode,
-} from "../../redux/selectors";
-import { setActiveFileId, setActiveFolderId } from "../../redux/slice";
-import { FileTree } from "../core/FileTree";
-import { FileUploadDropzone } from "../core/FileUploadDropzone";
+} from "@/features/files/redux/selectors";
+import { setActiveFileId, setActiveFolderId } from "@/features/files/redux/slice";
+import { FileTree } from "@/features/files/components/core/FileTree/FileTree";
+import { FileUploadDropzone } from "@/features/files/components/core/FileUploadDropzone/FileUploadDropzone";
 import { OnboardingEmptyState } from "./OnboardingEmptyState";
 import { MobileStack } from "./MobileStack";
 import { PreviewPane } from "./PreviewPane";

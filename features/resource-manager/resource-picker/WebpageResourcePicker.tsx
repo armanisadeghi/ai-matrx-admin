@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrapedContentPretty } from "@/features/scraper/parts/ScrapedContentPretty";
-import { useScraperApi } from "@/features/scraper/hooks";
+import { useScraperApi } from "@/features/scraper/hooks/useScraperApi";
 import { ScraperHookErrorDetails } from "@/features/scraper/parts/ScraperHookErrorDetails";
 
 interface WebpageContent {

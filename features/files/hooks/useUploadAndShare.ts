@@ -28,11 +28,11 @@
 
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { createShareLink, ensureFolderPath, uploadFiles } from "../redux/thunks";
+import { createShareLink, ensureFolderPath, uploadFiles } from "@/features/files/redux/thunks";
 import type {
   PermissionLevel,
   Visibility,
-} from "../types";
+} from "@/features/files/types";
 
 export interface UploadAndShareArgs {
   file: File;

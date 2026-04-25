@@ -1,7 +1,7 @@
 // app/(authenticated)/tests/ssr-test/page.tsx
-import React from 'react';
-import { OptionCardGrid } from '@/components/ssr';
-import { getCategoriesArray, base_app_path } from './constants';
+import React from "react";
+import { OptionCardGrid } from "@/components/ssr/option-card-grid";
+import { getCategoriesArray, base_app_path } from "./constants";
 
 // New header component
 const FlashcardHeader = () => {
@@ -17,20 +17,20 @@ const FlashcardHeader = () => {
 };
 
 export default async function SSRTestPage() {
-    const categories = await getCategoriesArray();
+  const categories = await getCategoriesArray();
 
-    const items = categories.map(category => ({
-        id: category.id,
-        displayName: category.label,
-        description: category.description,
-        icon: category.icon,
-        customStyles: category.customStyles
-    }));
+  const items = categories.map((category) => ({
+    id: category.id,
+    displayName: category.label,
+    description: category.description,
+    icon: category.icon,
+    customStyles: category.customStyles,
+  }));
 
-    return (
-        <div className="mt-6 mx-3">
-            <FlashcardHeader />
-            <OptionCardGrid items={items} basePath={base_app_path} />
-        </div>
-    );
+  return (
+    <div className="mt-6 mx-3">
+      <FlashcardHeader />
+      <OptionCardGrid items={items} basePath={base_app_path} />
+    </div>
+  );
 }

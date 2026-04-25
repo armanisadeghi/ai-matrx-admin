@@ -18,9 +18,9 @@ import {
   selectRootFolderIds,
   selectTreeError,
   selectTreeStatus,
-} from "../redux/selectors";
-import { loadUserFileTree } from "../redux/thunks";
-import type { CloudFileRecord, CloudFolderRecord } from "../types";
+} from "@/features/files/redux/selectors";
+import { loadUserFileTree } from "@/features/files/redux/thunks";
+import type { CloudFileRecord, CloudFolderRecord } from "@/features/files/types";
 
 export interface UseCloudTreeResult {
   status: "idle" | "loading" | "loaded" | "error";

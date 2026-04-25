@@ -9,7 +9,7 @@ import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuTrigger,
-} from "@/components/ui/context-menu";
+} from "@/components/ui/context-menu/context-menu";
 import {
   NoteContextMenuBridgeContext,
   type NoteContextMenuBridgeHandlers,

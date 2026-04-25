@@ -14,13 +14,7 @@
 
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, Check, Loader2, X } from "lucide-react";
 import {
   Dialog,
@@ -40,10 +34,10 @@ import {
 } from "@/components/ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectAllFoldersMap } from "../../redux/selectors";
-import { useFolderContents } from "../../hooks/useFolderContents";
-import { FileBreadcrumbs } from "../core/FileBreadcrumbs";
-import { FileIcon } from "../core/FileIcon";
+import { selectAllFoldersMap } from "@/features/files/redux/selectors";
+import { useFolderContents } from "@/features/files/hooks/useFolderContents";
+import { FileBreadcrumbs } from "@/features/files/components/core/FileBreadcrumbs/FileBreadcrumbs";
+import { FileIcon } from "@/features/files/components/core/FileIcon/FileIcon";
 
 // ---------------------------------------------------------------------------
 // Declarative component
@@ -197,9 +191,7 @@ function SaveAsBody({
         {currentFolderId ? (
           <button
             type="button"
-            onClick={() =>
-              setCurrentFolderId(currentFolder?.parentId ?? null)
-            }
+            onClick={() => setCurrentFolderId(currentFolder?.parentId ?? null)}
             aria-label="Up one level"
             className="flex h-8 w-8 items-center justify-center rounded hover:bg-accent"
           >
@@ -258,9 +250,7 @@ function SaveAsBody({
         <p className="text-[11px] text-muted-foreground truncate">
           Saving to <span className="font-mono">{targetPath}</span>
         </p>
-        {error ? (
-          <p className="text-xs text-destructive">{error}</p>
-        ) : null}
+        {error ? <p className="text-xs text-destructive">{error}</p> : null}
       </div>
 
       <Footer>

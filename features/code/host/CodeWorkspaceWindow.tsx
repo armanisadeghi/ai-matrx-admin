@@ -3,8 +3,10 @@
 import React, { useCallback } from "react";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { CodeWorkspace } from "../CodeWorkspace";
-import type { FilesystemAdapter, ProcessAdapter } from "../adapters";
-import { ChatHistorySlot, ChatPanelSlot } from "../chat";
+import type { FilesystemAdapter } from "../adapters/FilesystemAdapter";
+import type { ProcessAdapter } from "../adapters/ProcessAdapter";
+import { ChatPanelSlot } from "../chat/ChatPanelSlot";
+import { ChatHistorySlot } from "../chat/ChatHistorySlot";
 
 export interface CodeWorkspaceWindowProps {
   windowInstanceId: string;

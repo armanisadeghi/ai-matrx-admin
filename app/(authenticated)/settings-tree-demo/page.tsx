@@ -29,12 +29,10 @@ import {
   Sun,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  SettingsTree,
-  SettingsDrawerNav,
-  SettingsBreadcrumb,
-  type SettingsTreeNode,
-} from "@/components/official/settings";
+import { SettingsTree } from "@/components/official/settings/tree/SettingsTree";
+import { SettingsDrawerNav } from "@/components/official/settings/tree/SettingsDrawerNav";
+import { SettingsBreadcrumb } from "@/components/official/settings/tree/SettingsBreadcrumb";
+import type { SettingsTreeNode } from "@/components/official/settings/tree/types";
 
 const nodes: SettingsTreeNode[] = [
   {
@@ -69,8 +67,18 @@ const nodes: SettingsTreeNode[] = [
     label: "Appearance",
     icon: Palette,
     children: [
-      { id: "appearance.theme", label: "Theme", icon: Sun, description: "Light, dark, system" },
-      { id: "appearance.density", label: "Density", icon: Layers, description: "Spacing preset" },
+      {
+        id: "appearance.theme",
+        label: "Theme",
+        icon: Sun,
+        description: "Light, dark, system",
+      },
+      {
+        id: "appearance.density",
+        label: "Density",
+        icon: Layers,
+        description: "Spacing preset",
+      },
       { id: "appearance.accent", label: "Accent color", icon: Eye },
     ],
   },
@@ -107,7 +115,12 @@ const nodes: SettingsTreeNode[] = [
     children: [
       { id: "editor.keybindings", label: "Keybindings", icon: Keyboard },
       { id: "editor.formatting", label: "Formatting", icon: Type },
-      { id: "editor.autocomplete", label: "Autocomplete", icon: CircuitBoard, badge: { label: "Beta", variant: "beta" } },
+      {
+        id: "editor.autocomplete",
+        label: "Autocomplete",
+        icon: CircuitBoard,
+        badge: { label: "Beta", variant: "beta" },
+      },
     ],
   },
   {
@@ -154,17 +167,30 @@ const nodes: SettingsTreeNode[] = [
     label: "Advanced",
     icon: Database,
     children: [
-      { id: "advanced.database", label: "Database", icon: Database, description: "Connection overrides" },
-      { id: "advanced.flashcards", label: "Flashcards", icon: BookOpen, badge: { label: "Experimental", variant: "experimental" } },
-      { id: "advanced.experimental", label: "Experimental flags", icon: Sparkles, disabled: true },
+      {
+        id: "advanced.database",
+        label: "Database",
+        icon: Database,
+        description: "Connection overrides",
+      },
+      {
+        id: "advanced.flashcards",
+        label: "Flashcards",
+        icon: BookOpen,
+        badge: { label: "Experimental", variant: "experimental" },
+      },
+      {
+        id: "advanced.experimental",
+        label: "Experimental flags",
+        icon: Sparkles,
+        disabled: true,
+      },
     ],
   },
 ];
 
 export default function SettingsTreeDemoPage() {
-  const [activeId, setActiveId] = useState<string | null>(
-    "appearance.theme",
-  );
+  const [activeId, setActiveId] = useState<string | null>("appearance.theme");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [log, setLog] = useState<string[]>([]);
   const unsavedIds = new Set(["general.privacy", "ai.generation"]);
@@ -181,9 +207,7 @@ export default function SettingsTreeDemoPage() {
     <div className="p-4">
       <h2 className="text-lg font-semibold text-foreground">{node.label}</h2>
       {node.description && (
-        <p className="mt-1 text-sm text-muted-foreground">
-          {node.description}
-        </p>
+        <p className="mt-1 text-sm text-muted-foreground">{node.description}</p>
       )}
       <div className="mt-4 rounded-lg border border-border/40 bg-card/30 p-6 text-center">
         <div className="text-xs uppercase tracking-wide text-muted-foreground">
@@ -243,10 +267,9 @@ export default function SettingsTreeDemoPage() {
                   nodes
                     .flatMap((n) => (n.children ? [n, ...n.children] : [n]))
                     .find((n) => n.id === activeId)?.label ?? activeId,
-                description:
-                  nodes
-                    .flatMap((n) => (n.children ? n.children : [n]))
-                    .find((n) => n.id === activeId)?.description,
+                description: nodes
+                  .flatMap((n) => (n.children ? n.children : [n]))
+                  .find((n) => n.id === activeId)?.description,
               })
             ) : (
               <div className="p-8 text-sm text-muted-foreground">

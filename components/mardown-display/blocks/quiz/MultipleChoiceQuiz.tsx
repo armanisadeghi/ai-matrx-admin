@@ -1,12 +1,41 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Check, X, Trophy, AlertTriangle, CheckCircle2, XCircle, Maximize2, Minimize2, ChevronDown, ChevronUp, Download, Upload, RotateCcw, RefreshCw, Award, Star, ThumbsUp, Flame, Target, BookOpen, Save, Cloud, CloudOff, ExternalLink, Printer } from 'lucide-react';
-import { quizPrinter } from './quiz-printer';
-import { PrintOptionsDialog, usePrintOptions } from '@/features/chat/components/print/PrintOptionsDialog';
-import { useCanvas } from '@/features/canvas/hooks/useCanvas';
-import IconButton from '@/components/official/IconButton';
-import ChatCollapsibleWrapper from '@/components/mardown-display/blocks/ChatCollapsibleWrapper';
-import { Button } from '@/components/ui/button';
-import type { OriginalQuestion, QuizState } from './quiz-types';
+import React, { useState, useEffect, useMemo, useRef } from "react";
+import {
+  Check,
+  X,
+  Trophy,
+  AlertTriangle,
+  CheckCircle2,
+  XCircle,
+  Maximize2,
+  Minimize2,
+  ChevronDown,
+  ChevronUp,
+  Download,
+  Upload,
+  RotateCcw,
+  RefreshCw,
+  Award,
+  Star,
+  ThumbsUp,
+  Flame,
+  Target,
+  BookOpen,
+  Save,
+  Cloud,
+  CloudOff,
+  ExternalLink,
+  Printer,
+} from "lucide-react";
+import { quizPrinter } from "./quiz-printer";
+import {
+  PrintOptionsDialog,
+  usePrintOptions,
+} from "@/features/chat/components/print/PrintOptionsDialog";
+import { useCanvas } from "@/features/canvas/hooks/useCanvas";
+import IconButton from "@/components/official/IconButton";
+import ChatCollapsibleWrapper from "@/components/mardown-display/blocks/ChatCollapsibleWrapper";
+import { Button } from "@/components/ui/button";
+import type { OriginalQuestion, QuizState } from "./quiz-types";
 import {
   initializeQuizState,
   updateProgress,
@@ -16,12 +45,12 @@ import {
   uploadQuizState,
   createRetakeQuizState,
   formatTime,
-  getPerformanceData
-} from './quiz-utils';
-import { useQuizPersistence } from '@/hooks/useQuizPersistence';
-import { parseQuizJSON, type RawQuizJSON } from './quiz-parser';
-import { InlineLatexRenderer } from '@/features/math/components';
-import { useMessageBlockPersistence } from '@/features/agents/hooks/message-crud/useMessageBlockPersistence';
+  getPerformanceData,
+} from "./quiz-utils";
+import { useQuizPersistence } from "@/hooks/useQuizPersistence";
+import { parseQuizJSON, type RawQuizJSON } from "./quiz-parser";
+import { InlineLatexRenderer } from "@/features/math/components/InlineLatexRenderer";
+import { useMessageBlockPersistence } from "@/features/agents/hooks/message-crud/useMessageBlockPersistence";
 
 // Legacy type for backwards compatibility
 export type Question = OriginalQuestion;
@@ -49,7 +78,10 @@ interface MultipleChoiceQuizProps {
 }
 
 // Component for expandable question text
-const QuestionText: React.FC<{ question: string, isFullScreen: boolean }> = ({ question, isFullScreen }) => {
+const QuestionText: React.FC<{ question: string; isFullScreen: boolean }> = ({
+  question,
+  isFullScreen,
+}) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isOverflowing, setIsOverflowing] = useState(false);
   const textRef = useRef<HTMLHeadingElement>(null);
@@ -67,8 +99,8 @@ const QuestionText: React.FC<{ question: string, isFullScreen: boolean }> = ({ q
 
     checkOverflow();
     // Recheck on window resize
-    window.addEventListener('resize', checkOverflow);
-    return () => window.removeEventListener('resize', checkOverflow);
+    window.addEventListener("resize", checkOverflow);
+    return () => window.removeEventListener("resize", checkOverflow);
   }, [question, isExpanded, isFullScreen]);
 
   if (isFullScreen) {
@@ -83,8 +115,9 @@ const QuestionText: React.FC<{ question: string, isFullScreen: boolean }> = ({ q
     <div className="mb-3">
       <h2
         ref={textRef}
-        className={`text-base font-bold leading-tight transition-all duration-200 ${isExpanded ? '' : 'line-clamp-2'
-          }`}
+        className={`text-base font-bold leading-tight transition-all duration-200 ${
+          isExpanded ? "" : "line-clamp-2"
+        }`}
       >
         <InlineLatexRenderer content={question} />
       </h2>
@@ -106,7 +139,11 @@ const QuestionText: React.FC<{ question: string, isFullScreen: boolean }> = ({ q
 };
 
 // Component for expandable explanation text
-const ExplanationText: React.FC<{ explanation: string, isCorrect: boolean, isFullScreen: boolean }> = ({ explanation, isCorrect, isFullScreen }) => {
+const ExplanationText: React.FC<{
+  explanation: string;
+  isCorrect: boolean;
+  isFullScreen: boolean;
+}> = ({ explanation, isCorrect, isFullScreen }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isOverflowing, setIsOverflowing] = useState(false);
   const textRef = useRef<HTMLParagraphElement>(null);
@@ -124,25 +161,30 @@ const ExplanationText: React.FC<{ explanation: string, isCorrect: boolean, isFul
 
     checkOverflow();
     // Recheck on window resize
-    window.addEventListener('resize', checkOverflow);
-    return () => window.removeEventListener('resize', checkOverflow);
+    window.addEventListener("resize", checkOverflow);
+    return () => window.removeEventListener("resize", checkOverflow);
   }, [explanation, isExpanded, isFullScreen]);
 
   return (
     <div>
       <p
         ref={textRef}
-        className={`leading-relaxed transition-all duration-200 ${isFullScreen ? 'text-base' : 'text-sm'
-          } ${isExpanded ? '' : 'line-clamp-3'
-          } ${isCorrect ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}`}
+        className={`leading-relaxed transition-all duration-200 ${
+          isFullScreen ? "text-base" : "text-sm"
+        } ${
+          isExpanded ? "" : "line-clamp-3"
+        } ${isCorrect ? "text-green-700 dark:text-green-400" : "text-red-700 dark:text-red-400"}`}
       >
         <InlineLatexRenderer content={explanation} />
       </p>
       {isOverflowing && (
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className={`mt-1 flex items-center gap-1 text-xs hover:underline transition-colors ${isCorrect ? 'text-green-600 dark:text-green-500' : 'text-red-600 dark:text-red-500'
-            }`}
+          className={`mt-1 flex items-center gap-1 text-xs hover:underline transition-colors ${
+            isCorrect
+              ? "text-green-600 dark:text-green-500"
+              : "text-red-600 dark:text-red-500"
+          }`}
           title={isExpanded ? "Show less" : "Read more"}
         >
           {isExpanded ? (
@@ -172,7 +214,11 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
   const { open: openCanvas } = useCanvas();
 
   // Print integration
-  const { open: printOpen, setOpen: setPrintOpen, triggerPrint } = usePrintOptions(quizPrinter, quizData);
+  const {
+    open: printOpen,
+    setOpen: setPrintOpen,
+    triggerPrint,
+  } = usePrintOptions(quizPrinter, quizData);
 
   // Parse quiz data and extract metadata
   const [parsedQuiz, setParsedQuiz] = useState<{
@@ -189,7 +235,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
         questions: parsed.questions,
         title: parsed.title,
         category: parsed.category,
-        contentHash: parsed.contentHash
+        contentHash: parsed.contentHash,
       });
     };
 
@@ -200,7 +246,9 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
   const [quizState, setQuizState] = useState<QuizState | null>(null);
   const [showResults, setShowResults] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
-  const [questionStartTime, setQuestionStartTime] = useState<number>(Date.now());
+  const [questionStartTime, setQuestionStartTime] = useState<number>(
+    Date.now(),
+  );
   const [uploadError, setUploadError] = useState<string | null>(null);
 
   // Initialize state when quiz is parsed
@@ -218,15 +266,15 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
     saveError,
     isLoading: isLoadingSession,
     loadedSession,
-    saveNow
+    saveNow,
   } = useQuizPersistence(quizState || initializeQuizState([]), {
     autoSave: enableAutoSave && !!quizState,
     autoSaveInterval,
     sessionId,
-    title: parsedQuiz?.title || '',
+    title: parsedQuiz?.title || "",
     category: parsedQuiz?.category,
     contentHash: parsedQuiz?.contentHash,
-    metadata: {} // Empty for now - reserved for future custom metadata
+    metadata: {}, // Empty for now - reserved for future custom metadata
   });
 
   // Load session data if available
@@ -259,7 +307,10 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
   // quizData remains the source of truth for the question set.
   useEffect(() => {
     if (!blockState?._matrxState) return;
-    const saved = blockState._matrxState as { quizState?: QuizState; showResults?: boolean };
+    const saved = blockState._matrxState as {
+      quizState?: QuizState;
+      showResults?: boolean;
+    };
     if (saved.quizState && !quizState) {
       setQuizState(saved.quizState);
       if (saved.showResults) setShowResults(true);
@@ -289,20 +340,23 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
   // ESC key handler to exit fullscreen
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isFullScreen) {
+      if (e.key === "Escape" && isFullScreen) {
         setIsFullScreen(false);
       }
     };
 
-    window.addEventListener('keydown', handleEscape);
-    return () => window.removeEventListener('keydown', handleEscape);
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
   }, [isFullScreen]);
 
   // Calculate results (always call this hook)
   const results = useMemo(() => {
     if (!quizState) return null;
     if (showResults && !quizState.results) {
-      return calculateResults(quizState.randomizedQuestions, quizState.progress);
+      return calculateResults(
+        quizState.randomizedQuestions,
+        quizState.progress,
+      );
     }
     return quizState.results;
   }, [showResults, quizState]);
@@ -313,7 +367,9 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
       <div className="flex items-center justify-center p-8">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
-          <p className="text-sm text-gray-600 dark:text-gray-400">Loading quiz...</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Loading quiz...
+          </p>
         </div>
       </div>
     );
@@ -341,12 +397,12 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
         currentQuestion.id,
         optionIndex,
         isCorrect,
-        timeSpent
+        timeSpent,
       );
 
       setQuizState({
         ...quizState,
-        progress: updatedProgress
+        progress: updatedProgress,
       });
     }
   };
@@ -357,15 +413,18 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
         ...quizState,
         progress: {
           ...quizState.progress,
-          currentQuestionIndex: currentQuestionIndex + 1
-        }
+          currentQuestionIndex: currentQuestionIndex + 1,
+        },
       });
       setQuestionStartTime(Date.now());
     } else {
-      const finalResults = calculateResults(quizState.randomizedQuestions, quizState.progress);
+      const finalResults = calculateResults(
+        quizState.randomizedQuestions,
+        quizState.progress,
+      );
       setQuizState({
         ...quizState,
-        results: finalResults
+        results: finalResults,
       });
       setShowResults(true);
     }
@@ -377,8 +436,8 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
         ...quizState,
         progress: {
           ...quizState.progress,
-          currentQuestionIndex: currentQuestionIndex - 1
-        }
+          currentQuestionIndex: currentQuestionIndex - 1,
+        },
       });
       setQuestionStartTime(Date.now());
     }
@@ -397,8 +456,8 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
       ...quizState,
       progress: {
         ...quizState.progress,
-        currentQuestionIndex: 0
-      }
+        currentQuestionIndex: 0,
+      },
     });
   };
 
@@ -415,14 +474,14 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
     // Get IDs of skipped questions (questions with no answer)
     const skippedQuestionIds = quizState.originalQuestions
       .filter((q, index) => !quizState.progress.answers[index])
-      .map(q => q.id);
+      .map((q) => q.id);
 
     if (skippedQuestionIds.length === 0) return;
 
     const skippedState = initializeQuizState(
       quizState.originalQuestions,
-      'retake',
-      skippedQuestionIds
+      "retake",
+      skippedQuestionIds,
     );
 
     setQuizState(skippedState);
@@ -448,15 +507,18 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
       setShowResults(!!importedState.results);
       setQuestionStartTime(Date.now());
     } catch (error) {
-      console.error('Failed to import quiz:', error);
-      setUploadError('Failed to import quiz state. Please check the file format.');
+      console.error("Failed to import quiz:", error);
+      setUploadError(
+        "Failed to import quiz state. Please check the file format.",
+      );
       setTimeout(() => setUploadError(null), 5000);
     }
   };
 
   const getOptionStyle = (optionIndex: number) => {
-    const baseStyle = `rounded-lg border cursor-pointer transition-all duration-200 text-left ${isFullScreen ? 'p-4 text-base' : 'p-3 text-base'
-      }`;
+    const baseStyle = `rounded-lg border cursor-pointer transition-all duration-200 text-left ${
+      isFullScreen ? "p-4 text-base" : "p-3 text-base"
+    }`;
 
     if (!isAnswered) {
       return `${baseStyle} bg-textured border-gray-200 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/30`;
@@ -476,22 +538,29 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
   const getPerformanceIcon = (iconName: string) => {
     const iconProps = { className: "h-5 w-5" };
     switch (iconName) {
-      case 'target': return <Target {...iconProps} />;
-      case 'star': return <Star {...iconProps} />;
-      case 'award': return <Award {...iconProps} />;
-      case 'thumbs-up': return <ThumbsUp {...iconProps} />;
-      case 'flame': return <Flame {...iconProps} />;
-      case 'book-open': return <BookOpen {...iconProps} />;
-      default: return <Trophy {...iconProps} />;
+      case "target":
+        return <Target {...iconProps} />;
+      case "star":
+        return <Star {...iconProps} />;
+      case "award":
+        return <Award {...iconProps} />;
+      case "thumbs-up":
+        return <ThumbsUp {...iconProps} />;
+      case "flame":
+        return <Flame {...iconProps} />;
+      case "book-open":
+        return <BookOpen {...iconProps} />;
+      default:
+        return <Trophy {...iconProps} />;
     }
   };
 
   const handleOpenCanvas = () => {
     openCanvas({
-      type: 'quiz',
+      type: "quiz",
       data: quizData,
       metadata: {
-        title: parsedQuiz?.title || 'Quiz',
+        title: parsedQuiz?.title || "Quiz",
         sourceMessageId: sessionId,
         sourceTaskId: taskId,
       },
@@ -503,7 +572,9 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
     <>
       {/* Quiz Title */}
       <div className="mb-3">
-        <h1 className={`font-bold text-center text-gray-800 dark:text-gray-100 ${isFullScreen ? 'text-xl' : 'text-lg'}`}>
+        <h1
+          className={`font-bold text-center text-gray-800 dark:text-gray-100 ${isFullScreen ? "text-xl" : "text-lg"}`}
+        >
           {parsedQuiz.title}
         </h1>
         {parsedQuiz.category && (
@@ -526,7 +597,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
       )}
 
       {/* Quiz Mode Indicator */}
-      {quizState.mode === 'retake' && (
+      {quizState.mode === "retake" && (
         <div className="bg-orange-50 dark:bg-orange-950/30 border border-orange-300 dark:border-orange-700 rounded-lg p-2 mb-3">
           <p className="text-xs text-orange-800 dark:text-orange-300 text-center flex items-center justify-center gap-1.5">
             <RefreshCw className="h-3 w-3" />
@@ -536,21 +607,31 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
       )}
 
       {/* Question Card */}
-      <div className={`bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-900 border border-blue-200 dark:border-gray-700 rounded-xl shadow-md mb-4 ${isFullScreen ? 'p-6' : 'p-4'}`}>
+      <div
+        className={`bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-900 border border-blue-200 dark:border-gray-700 rounded-xl shadow-md mb-4 ${isFullScreen ? "p-6" : "p-4"}`}
+      >
         <div className="text-gray-800 dark:text-gray-100">
           <div className="flex justify-between items-center mb-4 gap-3">
-            <div className={`flex items-center gap-2 ${isFullScreen ? 'text-base' : 'text-sm'}`}>
+            <div
+              className={`flex items-center gap-2 ${isFullScreen ? "text-base" : "text-sm"}`}
+            >
               <div className="flex items-center gap-2">
                 <span className="font-semibold text-blue-600 dark:text-blue-400">
-                  {currentQuestionIndex + 1} / {quizState.randomizedQuestions.length}
+                  {currentQuestionIndex + 1} /{" "}
+                  {quizState.randomizedQuestions.length}
                 </span>
                 {isAnswered && (
-                  <CheckCircle2 className={`text-green-600 dark:text-green-400 ${isFullScreen ? 'h-5 w-5' : 'h-4 w-4'}`} />
+                  <CheckCircle2
+                    className={`text-green-600 dark:text-green-400 ${isFullScreen ? "h-5 w-5" : "h-4 w-4"}`}
+                  />
                 )}
               </div>
               <div className="h-4 w-px bg-gray-300 dark:bg-gray-600" />
               <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                Answered: <span className="text-green-600 dark:text-green-400 font-semibold">{answeredCount}</span>
+                Answered:{" "}
+                <span className="text-green-600 dark:text-green-400 font-semibold">
+                  {answeredCount}
+                </span>
               </span>
             </div>
             <div className="flex items-center gap-1">
@@ -558,17 +639,26 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
               {enableAutoSave && (
                 <div className="flex items-center gap-1 mr-2">
                   {isSaving && (
-                    <div className="flex items-center gap-1 text-blue-600 dark:text-blue-400 text-xs" title="Saving...">
+                    <div
+                      className="flex items-center gap-1 text-blue-600 dark:text-blue-400 text-xs"
+                      title="Saving..."
+                    >
                       <Cloud className="h-4 w-4 animate-pulse" />
                     </div>
                   )}
                   {!isSaving && lastSaved && (
-                    <div className="flex items-center gap-1 text-green-600 dark:text-green-400 text-xs" title={`Last saved: ${lastSaved.toLocaleTimeString()}`}>
+                    <div
+                      className="flex items-center gap-1 text-green-600 dark:text-green-400 text-xs"
+                      title={`Last saved: ${lastSaved.toLocaleTimeString()}`}
+                    >
                       <Cloud className="h-4 w-4" />
                     </div>
                   )}
                   {saveError && (
-                    <div className="flex items-center gap-1 text-red-600 dark:text-red-400 text-xs" title={saveError}>
+                    <div
+                      className="flex items-center gap-1 text-red-600 dark:text-red-400 text-xs"
+                      title={saveError}
+                    >
                       <CloudOff className="h-4 w-4" />
                     </div>
                   )}
@@ -654,11 +744,17 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
                 <InlineLatexRenderer content={option} />
               </span>
               {isAnswered && index === currentQuestion.correctAnswerIndex && (
-                <Check className={`text-green-600 dark:text-green-400 flex-shrink-0 ${isFullScreen ? 'h-6 w-6' : 'h-5 w-5'}`} />
+                <Check
+                  className={`text-green-600 dark:text-green-400 flex-shrink-0 ${isFullScreen ? "h-6 w-6" : "h-5 w-5"}`}
+                />
               )}
-              {isAnswered && selectedAnswer?.selectedOptionIndex === index && !isCorrect && (
-                <X className={`text-red-600 dark:text-red-400 flex-shrink-0 ${isFullScreen ? 'h-6 w-6' : 'h-5 w-5'}`} />
-              )}
+              {isAnswered &&
+                selectedAnswer?.selectedOptionIndex === index &&
+                !isCorrect && (
+                  <X
+                    className={`text-red-600 dark:text-red-400 flex-shrink-0 ${isFullScreen ? "h-6 w-6" : "h-5 w-5"}`}
+                  />
+                )}
             </div>
           </div>
         ))}
@@ -666,19 +762,26 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
 
       {/* Explanation */}
       {isAnswered && (
-        <div className={`mb-4 rounded-lg border transition-all duration-300 ${isFullScreen ? 'p-4' : 'p-3'} ${isCorrect
-          ? 'bg-green-50 dark:bg-green-950/30 border-green-400 dark:border-green-600'
-          : 'bg-red-50 dark:bg-red-950/30 border-red-400 dark:border-red-600'
-          }`}>
-          <div className={`font-semibold mb-2 flex items-center gap-2 text-base ${isCorrect ? 'text-green-800 dark:text-green-300' : 'text-red-800 dark:text-red-300'}`}>
+        <div
+          className={`mb-4 rounded-lg border transition-all duration-300 ${isFullScreen ? "p-4" : "p-3"} ${
+            isCorrect
+              ? "bg-green-50 dark:bg-green-950/30 border-green-400 dark:border-green-600"
+              : "bg-red-50 dark:bg-red-950/30 border-red-400 dark:border-red-600"
+          }`}
+        >
+          <div
+            className={`font-semibold mb-2 flex items-center gap-2 text-base ${isCorrect ? "text-green-800 dark:text-green-300" : "text-red-800 dark:text-red-300"}`}
+          >
             {isCorrect ? (
               <>
-                <CheckCircle2 className={isFullScreen ? 'h-6 w-6' : 'h-5 w-5'} />
+                <CheckCircle2
+                  className={isFullScreen ? "h-6 w-6" : "h-5 w-5"}
+                />
                 <span>Correct!</span>
               </>
             ) : (
               <>
-                <XCircle className={isFullScreen ? 'h-6 w-6' : 'h-5 w-5'} />
+                <XCircle className={isFullScreen ? "h-6 w-6" : "h-5 w-5"} />
                 <span>Incorrect</span>
               </>
             )}
@@ -699,10 +802,11 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
       <button
         onClick={handlePrevious}
         disabled={currentQuestionIndex === 0}
-        className={`rounded-lg font-semibold transition-all duration-200 flex-1 ${isFullScreen ? 'px-4 py-3 text-base' : 'px-3 py-2 text-sm'} ${currentQuestionIndex === 0
-          ? 'bg-gray-400 dark:bg-gray-700 cursor-not-allowed text-gray-200 dark:text-gray-500'
-          : 'bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 text-white shadow-sm hover:shadow-md transform hover:scale-105'
-          }`}
+        className={`rounded-lg font-semibold transition-all duration-200 flex-1 ${isFullScreen ? "px-4 py-3 text-base" : "px-3 py-2 text-sm"} ${
+          currentQuestionIndex === 0
+            ? "bg-gray-400 dark:bg-gray-700 cursor-not-allowed text-gray-200 dark:text-gray-500"
+            : "bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 text-white shadow-sm hover:shadow-md transform hover:scale-105"
+        }`}
       >
         ← Previous
       </button>
@@ -710,14 +814,14 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
       {currentQuestionIndex === quizState.randomizedQuestions.length - 1 ? (
         <button
           onClick={handleNext}
-          className={`rounded-lg font-semibold bg-green-500 dark:bg-green-600 hover:bg-green-600 dark:hover:bg-green-700 text-white shadow-sm hover:shadow-md transform hover:scale-105 transition-all duration-200 flex-1 ${isFullScreen ? 'px-4 py-3 text-base' : 'px-3 py-2 text-sm'}`}
+          className={`rounded-lg font-semibold bg-green-500 dark:bg-green-600 hover:bg-green-600 dark:hover:bg-green-700 text-white shadow-sm hover:shadow-md transform hover:scale-105 transition-all duration-200 flex-1 ${isFullScreen ? "px-4 py-3 text-base" : "px-3 py-2 text-sm"}`}
         >
           View Results →
         </button>
       ) : (
         <button
           onClick={handleNext}
-          className={`rounded-lg font-semibold bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 text-white shadow-sm hover:shadow-md transform hover:scale-105 transition-all duration-200 flex-1 ${isFullScreen ? 'px-4 py-3 text-base' : 'px-3 py-2 text-sm'}`}
+          className={`rounded-lg font-semibold bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 text-white shadow-sm hover:shadow-md transform hover:scale-105 transition-all duration-200 flex-1 ${isFullScreen ? "px-4 py-3 text-base" : "px-3 py-2 text-sm"}`}
         >
           Next →
         </button>
@@ -740,7 +844,9 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
               <div className="flex items-center justify-center gap-2 mb-3">
                 <Trophy className="h-6 w-6 text-yellow-500 dark:text-yellow-400" />
                 <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100">
-                  {quizState.mode === 'retake' ? 'Retake Complete!' : 'Quiz Complete!'}
+                  {quizState.mode === "retake"
+                    ? "Retake Complete!"
+                    : "Quiz Complete!"}
                 </h2>
               </div>
               <div className="flex items-center justify-center gap-2 mb-2">
@@ -758,8 +864,12 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
               <div className="relative">
                 <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-md">
                   <div className="w-16 h-16 rounded-full bg-textured flex flex-col items-center justify-center">
-                    <span className="text-base font-bold text-gray-800 dark:text-gray-100">{scorePercentage}%</span>
-                    <span className="text-xs text-gray-600 dark:text-gray-400">Score</span>
+                    <span className="text-base font-bold text-gray-800 dark:text-gray-100">
+                      {scorePercentage}%
+                    </span>
+                    <span className="text-xs text-gray-600 dark:text-gray-400">
+                      Score
+                    </span>
                   </div>
                 </div>
               </div>
@@ -767,16 +877,28 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
 
             <div className="grid grid-cols-3 gap-2 mb-4">
               <div className="bg-blue-50 dark:bg-blue-950/30 rounded-lg p-2 text-center border border-blue-200 dark:border-blue-800">
-                <div className="text-base font-bold text-blue-600 dark:text-blue-400">{results.totalQuestions}</div>
-                <div className="text-xs text-gray-600 dark:text-gray-400">Total</div>
+                <div className="text-base font-bold text-blue-600 dark:text-blue-400">
+                  {results.totalQuestions}
+                </div>
+                <div className="text-xs text-gray-600 dark:text-gray-400">
+                  Total
+                </div>
               </div>
               <div className="bg-green-50 dark:bg-green-950/30 rounded-lg p-2 text-center border border-green-200 dark:border-green-800">
-                <div className="text-base font-bold text-green-600 dark:text-green-400">{correctCount}</div>
-                <div className="text-xs text-gray-600 dark:text-gray-400">Correct</div>
+                <div className="text-base font-bold text-green-600 dark:text-green-400">
+                  {correctCount}
+                </div>
+                <div className="text-xs text-gray-600 dark:text-gray-400">
+                  Correct
+                </div>
               </div>
               <div className="bg-red-50 dark:bg-red-950/30 rounded-lg p-2 text-center border border-red-200 dark:border-red-800">
-                <div className="text-base font-bold text-red-600 dark:text-red-400">{incorrectCount}</div>
-                <div className="text-xs text-gray-600 dark:text-gray-400">Incorrect</div>
+                <div className="text-base font-bold text-red-600 dark:text-red-400">
+                  {incorrectCount}
+                </div>
+                <div className="text-xs text-gray-600 dark:text-gray-400">
+                  Incorrect
+                </div>
               </div>
             </div>
 
@@ -784,7 +906,10 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
               <div className="bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-300 dark:border-yellow-800 rounded-lg p-2 mb-3">
                 <p className="text-xs text-yellow-800 dark:text-yellow-300 text-center flex items-center justify-center gap-1.5">
                   <AlertTriangle className="h-3 w-3" />
-                  <span>You skipped {results.skippedCount} question{results.skippedCount !== 1 ? 's' : ''}</span>
+                  <span>
+                    You skipped {results.skippedCount} question
+                    {results.skippedCount !== 1 ? "s" : ""}
+                  </span>
                 </p>
               </div>
             )}
@@ -806,28 +931,29 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
                 </button>
               </div>
 
-              {quizState.mode !== 'retake' && (hasIncorrectAnswers || hasSkippedQuestions) && (
-                <div className="flex flex-col sm:flex-row gap-2">
-                  {hasIncorrectAnswers && (
-                    <button
-                      onClick={handleRetakeMissed}
-                      className="flex-1 px-3 py-2 rounded-lg font-semibold text-sm bg-orange-500 dark:bg-orange-600 hover:bg-orange-600 dark:hover:bg-orange-700 text-white shadow-sm hover:shadow-md transform hover:scale-105 transition-all duration-200 flex items-center justify-center gap-1"
-                    >
-                      <RefreshCw className="h-4 w-4" />
-                      Retake Missed ({incorrectCount})
-                    </button>
-                  )}
-                  {hasSkippedQuestions && (
-                    <button
-                      onClick={handleRetakeSkipped}
-                      className="flex-1 px-3 py-2 rounded-lg font-semibold text-sm bg-yellow-500 dark:bg-yellow-600 hover:bg-yellow-600 dark:hover:bg-yellow-700 text-white shadow-sm hover:shadow-md transform hover:scale-105 transition-all duration-200 flex items-center justify-center gap-1"
-                    >
-                      <RefreshCw className="h-4 w-4" />
-                      Retake Skipped ({results.skippedCount})
-                    </button>
-                  )}
-                </div>
-              )}
+              {quizState.mode !== "retake" &&
+                (hasIncorrectAnswers || hasSkippedQuestions) && (
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    {hasIncorrectAnswers && (
+                      <button
+                        onClick={handleRetakeMissed}
+                        className="flex-1 px-3 py-2 rounded-lg font-semibold text-sm bg-orange-500 dark:bg-orange-600 hover:bg-orange-600 dark:hover:bg-orange-700 text-white shadow-sm hover:shadow-md transform hover:scale-105 transition-all duration-200 flex items-center justify-center gap-1"
+                      >
+                        <RefreshCw className="h-4 w-4" />
+                        Retake Missed ({incorrectCount})
+                      </button>
+                    )}
+                    {hasSkippedQuestions && (
+                      <button
+                        onClick={handleRetakeSkipped}
+                        className="flex-1 px-3 py-2 rounded-lg font-semibold text-sm bg-yellow-500 dark:bg-yellow-600 hover:bg-yellow-600 dark:hover:bg-yellow-700 text-white shadow-sm hover:shadow-md transform hover:scale-105 transition-all duration-200 flex items-center justify-center gap-1"
+                      >
+                        <RefreshCw className="h-4 w-4" />
+                        Retake Skipped ({results.skippedCount})
+                      </button>
+                    )}
+                  </div>
+                )}
 
               <div className="flex flex-col sm:flex-row gap-2 pt-2 border-t border-border">
                 <button
@@ -863,7 +989,10 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
             </div>
           )}
           {!isSaving && lastSaved && (
-            <div title={`Last saved: ${lastSaved.toLocaleTimeString()}`} className="text-green-600 dark:text-green-400">
+            <div
+              title={`Last saved: ${lastSaved.toLocaleTimeString()}`}
+              className="text-green-600 dark:text-green-400"
+            >
               <Cloud className="h-3.5 w-3.5" />
             </div>
           )}
@@ -878,7 +1007,10 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
         variant="ghost"
         size="sm"
         className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
-        onClick={(e) => { e.stopPropagation(); triggerPrint(); }}
+        onClick={(e) => {
+          e.stopPropagation();
+          triggerPrint();
+        }}
         title="Print quiz"
       >
         <Printer className="h-3.5 w-3.5" />
@@ -888,7 +1020,10 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
           variant="ghost"
           size="sm"
           className="h-7 w-7 p-0 bg-purple-500 dark:bg-purple-600 hover:bg-purple-600 dark:hover:bg-purple-700 text-white"
-          onClick={(e) => { e.stopPropagation(); handleOpenCanvas(); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleOpenCanvas();
+          }}
           title="Open in Canvas"
         >
           <ExternalLink className="h-3.5 w-3.5" />
@@ -898,7 +1033,10 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
         variant="ghost"
         size="sm"
         className="h-7 w-7 p-0"
-        onClick={(e) => { e.stopPropagation(); setIsFullScreen(true); }}
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsFullScreen(true);
+        }}
         title="Focus mode"
       >
         <Maximize2 className="h-3.5 w-3.5" />
@@ -945,7 +1083,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
           <span className="text-sm font-medium">
             {parsedQuiz.title}
             <span className="ml-2 text-xs text-muted-foreground">
-              ({questionCount} {questionCount === 1 ? 'question' : 'questions'})
+              ({questionCount} {questionCount === 1 ? "question" : "questions"})
             </span>
           </span>
         }
@@ -958,9 +1096,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
           ) : (
             <>
               {renderQuizBody()}
-              <div className="mt-2">
-                {renderNavButtons()}
-              </div>
+              <div className="mt-2">{renderNavButtons()}</div>
               {/* Bottom action bar */}
               <div className="flex justify-center items-center gap-3 pb-2 pt-3">
                 <Button

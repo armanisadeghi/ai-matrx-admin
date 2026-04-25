@@ -20,7 +20,7 @@ import type {
   CloudShareLinkRow,
   CreateShareLinkRequest,
   ShareLinkResolveResponse,
-} from "../types";
+} from "@/features/files/types";
 
 // ---------------------------------------------------------------------------
 // Authed — file share links

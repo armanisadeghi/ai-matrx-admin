@@ -16,12 +16,12 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import {
   selectAllFilesMap,
   selectAllFoldersMap,
-} from "../redux/selectors";
+} from "@/features/files/redux/selectors";
 import {
   searchFiles as searchFilesUtil,
   searchFolders as searchFoldersUtil,
-} from "../redux/tree-utils";
-import type { CloudFileRecord, CloudFolderRecord } from "../types";
+} from "@/features/files/redux/tree-utils";
+import type { CloudFileRecord, CloudFolderRecord } from "@/features/files/types";
 
 export interface UseFileSearchOptions {
   /** Debounce in ms. Default 120. */

@@ -23,14 +23,14 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   selectSort,
   selectViewMode,
-} from "../../../redux/selectors";
-import { moveFile } from "../../../redux/thunks";
-import { setSort } from "../../../redux/slice";
-import { useFolderContents } from "../../../hooks/useFolderContents";
-import { useFileSelection } from "../../../hooks/useFileSelection";
+} from "@/features/files/redux/selectors";
+import { moveFile } from "@/features/files/redux/thunks";
+import { setSort } from "@/features/files/redux/slice";
+import { useFolderContents } from "@/features/files/hooks/useFolderContents";
+import { useFileSelection } from "@/features/files/hooks/useFileSelection";
 import { FileListRow } from "./FileListRow";
 import { FileListGridCell } from "./FileListGridCell";
-import type { SortBy } from "../../../types";
+import type { SortBy } from "@/features/files/types";
 
 export interface FileListProps {
   /** The folder whose contents to list. null = root. */

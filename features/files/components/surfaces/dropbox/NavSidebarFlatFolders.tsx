@@ -19,11 +19,11 @@ import {
   selectAllFoldersArray,
   selectChildrenByFolderId,
   selectActiveFolderId,
-} from "../../../redux/selectors";
+} from "@/features/files/redux/selectors";
 import {
   setActiveFileId,
   setActiveFolderId,
-} from "../../../redux/slice";
+} from "@/features/files/redux/slice";
 import { FolderIconWithMembers } from "./FolderIconWithMembers";
 
 export function NavSidebarFlatFolders() {

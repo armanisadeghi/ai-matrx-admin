@@ -94,12 +94,10 @@ import appContextReducer from "../../features/agent-context/redux/appContextSlic
 import hierarchyReducer from "../../features/agent-context/redux/hierarchySlice";
 
 // Scope system — ctx_scope_types, ctx_scopes, ctx_scope_assignments, resolved context
-import {
-  scopeTypesReducer,
-  scopesReducer,
-  scopeAssignmentsReducer,
-  scopeContextReducer,
-} from "../../features/agent-context/redux/scope";
+import scopeTypesReducer from "@/features/agent-context/redux/scope/scopeTypesSlice";
+import scopesReducer from "@/features/agent-context/redux/scope/scopesSlice";
+import scopeAssignmentsReducer from "@/features/agent-context/redux/scope/scopeAssignmentsSlice";
+import scopeContextReducer from "@/features/agent-context/redux/scope/scopeContextSlice";
 
 // ============================================================================
 // LITE ROOT REDUCER — SSR Shell + Public Routes

@@ -32,15 +32,17 @@ import {
   selectConflictActions,
   selectConflictSummary,
   selectPreviewedResolution,
+} from "@/lib/redux/slices/agent-settings/selectors";
+import {
   setResolutionMode,
   setCustomConflictAction,
   confirmModelSwitch,
   cancelModelSwitch,
-} from "@/lib/redux/slices/agent-settings";
+} from "@/lib/redux/slices/agent-settings/agentSettingsSlice";
 import type {
   ConflictItem,
   ResolutionMode,
-} from "@/lib/redux/slices/agent-settings";
+} from "@/lib/redux/slices/agent-settings/types";
 
 // ── Resolution mode tabs ───────────────────────────────────────────────────────
 

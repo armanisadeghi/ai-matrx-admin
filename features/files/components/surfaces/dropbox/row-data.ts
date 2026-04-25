@@ -12,7 +12,7 @@ import type {
   CloudFileRecord,
   CloudFolderRecord,
   CloudFilePermission,
-} from "../../../types";
+} from "@/features/files/types";
 import type { CloudFilesSection } from "./section";
 import type { FilterChipKey } from "./FilterChips";
 

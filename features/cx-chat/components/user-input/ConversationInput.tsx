@@ -67,7 +67,7 @@ import {
 } from "@/features/ai-models/redux/modelRegistrySlice";
 import { selectIsDebugMode } from "@/lib/redux/slices/adminDebugSlice";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
-import { ResourceChips } from "@/features/prompts/components/resource-display";
+import { ResourceChips } from "@/features/prompts/components/resource-display/ResourceChips";
 import { ResourcePickerMenu } from "@/features/resource-manager/resource-picker/ResourcePickerMenu";
 import { useClipboardPaste } from "@/components/ui/file-upload/useClipboardPaste";
 import { useFileUploadWithStorage } from "@/components/ui/file-upload/useFileUploadWithStorage";

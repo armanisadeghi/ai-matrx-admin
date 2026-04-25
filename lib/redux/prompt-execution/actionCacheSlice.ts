@@ -1,19 +1,19 @@
 /**
  * Action Cache Redux Slice
- * 
+ *
  * Caches prompt actions to avoid repeated database fetches
  */
 
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import type { RootState } from '../store';
-import type { PromptAction } from '@/features/prompt-actions/types';
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import type { RootState } from "../store";
+import type { PromptAction } from "@/features/prompt-actions/types/promptActionTypes";
 
 /**
  * Cached action with fetch metadata
  */
 interface CachedAction extends PromptAction {
   fetchedAt: number;
-  status: 'cached' | 'stale';
+  status: "cached" | "stale";
 }
 
 /**
@@ -27,7 +27,7 @@ interface ActionCacheState {
 
   /** Fetch status for each action */
   fetchStatus: {
-    [actionId: string]: 'idle' | 'loading' | 'success' | 'error';
+    [actionId: string]: "idle" | "loading" | "success" | "error";
   };
 
   /** Error messages for failed fetches */
@@ -46,7 +46,7 @@ const initialState: ActionCacheState = {
  * Action Cache Slice
  */
 const actionCacheSlice = createSlice({
-  name: 'actionCache',
+  name: "actionCache",
   initialState,
   reducers: {
     /**
@@ -57,9 +57,9 @@ const actionCacheSlice = createSlice({
       state.actions[actionData.id] = {
         ...actionData,
         fetchedAt: Date.now(),
-        status: 'cached',
+        status: "cached",
       };
-      state.fetchStatus[actionData.id] = 'success';
+      state.fetchStatus[actionData.id] = "success";
       delete state.errors[actionData.id];
     },
 
@@ -74,9 +74,9 @@ const actionCacheSlice = createSlice({
         state.actions[actionData.id] = {
           ...actionData,
           fetchedAt: now,
-          status: 'cached',
+          status: "cached",
         };
-        state.fetchStatus[actionData.id] = 'success';
+        state.fetchStatus[actionData.id] = "success";
         delete state.errors[actionData.id];
       });
     },
@@ -88,13 +88,13 @@ const actionCacheSlice = createSlice({
       state,
       action: PayloadAction<{
         actionId: string;
-        status: 'idle' | 'loading' | 'success' | 'error';
-      }>
+        status: "idle" | "loading" | "success" | "error";
+      }>,
     ) => {
       const { actionId, status } = action.payload;
       state.fetchStatus[actionId] = status;
 
-      if (status === 'loading') {
+      if (status === "loading") {
         delete state.errors[actionId];
       }
     },
@@ -104,10 +104,10 @@ const actionCacheSlice = createSlice({
      */
     setFetchError: (
       state,
-      action: PayloadAction<{ actionId: string; error: string }>
+      action: PayloadAction<{ actionId: string; error: string }>,
     ) => {
       const { actionId, error } = action.payload;
-      state.fetchStatus[actionId] = 'error';
+      state.fetchStatus[actionId] = "error";
       state.errors[actionId] = error;
     },
 
@@ -117,7 +117,7 @@ const actionCacheSlice = createSlice({
     markActionStale: (state, action: PayloadAction<string>) => {
       const actionId = action.payload;
       if (state.actions[actionId]) {
-        state.actions[actionId].status = 'stale';
+        state.actions[actionId].status = "stale";
       }
     },
 
@@ -128,7 +128,7 @@ const actionCacheSlice = createSlice({
       const actionIds = action.payload;
       actionIds.forEach((actionId) => {
         if (state.actions[actionId]) {
-          state.actions[actionId].status = 'stale';
+          state.actions[actionId].status = "stale";
         }
       });
     },
@@ -169,7 +169,7 @@ const actionCacheSlice = createSlice({
      */
     clearStaleActions: (state) => {
       Object.keys(state.actions).forEach((actionId) => {
-        if (state.actions[actionId].status === 'stale') {
+        if (state.actions[actionId].status === "stale") {
           delete state.actions[actionId];
           delete state.fetchStatus[actionId];
           delete state.errors[actionId];
@@ -182,7 +182,10 @@ const actionCacheSlice = createSlice({
      */
     updateCachedAction: (
       state,
-      action: PayloadAction<{ actionId: string; updates: Partial<PromptAction> }>
+      action: PayloadAction<{
+        actionId: string;
+        updates: Partial<PromptAction>;
+      }>,
     ) => {
       const { actionId, updates } = action.payload;
       if (state.actions[actionId]) {
@@ -203,35 +206,43 @@ const actionCacheSlice = createSlice({
 /**
  * Get a cached action by ID
  */
-export const selectCachedAction = (state: RootState, actionId: string): CachedAction | null =>
-  state.actionCache?.actions?.[actionId] || null;
+export const selectCachedAction = (
+  state: RootState,
+  actionId: string,
+): CachedAction | null => state.actionCache?.actions?.[actionId] || null;
 
 /**
  * Check if an action is cached
  */
-export const selectIsActionCached = (state: RootState, actionId: string): boolean =>
-  !!state.actionCache?.actions?.[actionId];
+export const selectIsActionCached = (
+  state: RootState,
+  actionId: string,
+): boolean => !!state.actionCache?.actions?.[actionId];
 
 /**
  * Get fetch status for an action
  */
 export const selectActionFetchStatus = (
   state: RootState,
-  actionId: string
-): 'idle' | 'loading' | 'success' | 'error' =>
-  state.actionCache?.fetchStatus?.[actionId] || 'idle';
+  actionId: string,
+): "idle" | "loading" | "success" | "error" =>
+  state.actionCache?.fetchStatus?.[actionId] || "idle";
 
 /**
  * Get fetch error for an action
  */
-export const selectActionFetchError = (state: RootState, actionId: string): string | null =>
-  state.actionCache?.errors?.[actionId] || null;
+export const selectActionFetchError = (
+  state: RootState,
+  actionId: string,
+): string | null => state.actionCache?.errors?.[actionId] || null;
 
 /**
  * Check if an action is stale
  */
-export const selectIsActionStale = (state: RootState, actionId: string): boolean =>
-  state.actionCache?.actions?.[actionId]?.status === 'stale';
+export const selectIsActionStale = (
+  state: RootState,
+  actionId: string,
+): boolean => state.actionCache?.actions?.[actionId]?.status === "stale";
 
 /**
  * Get all cached actions
@@ -243,7 +254,9 @@ export const selectAllCachedActions = (state: RootState): CachedAction[] =>
  * Get all cached actions with status 'cached' (not stale)
  */
 export const selectFreshCachedActions = (state: RootState): CachedAction[] =>
-  Object.values(state.actionCache?.actions || {}).filter((action) => action.status === 'cached');
+  Object.values(state.actionCache?.actions || {}).filter(
+    (action) => action.status === "cached",
+  );
 
 /**
  * Get count of cached actions
@@ -254,15 +267,20 @@ export const selectCachedActionCount = (state: RootState): number =>
 /**
  * Check if action is currently loading
  */
-export const selectIsActionLoading = (state: RootState, actionId: string): boolean =>
-  state.actionCache?.fetchStatus?.[actionId] === 'loading';
+export const selectIsActionLoading = (
+  state: RootState,
+  actionId: string,
+): boolean => state.actionCache?.fetchStatus?.[actionId] === "loading";
 
 /**
  * Get actions by tags (from cache only)
  */
-export const selectCachedActionsByTag = (state: RootState, tag: string): CachedAction[] =>
+export const selectCachedActionsByTag = (
+  state: RootState,
+  tag: string,
+): CachedAction[] =>
   Object.values(state.actionCache?.actions || {}).filter((action) =>
-    action.tags.includes(tag)
+    action.tags.includes(tag),
   );
 
 /**
@@ -270,10 +288,11 @@ export const selectCachedActionsByTag = (state: RootState, tag: string): CachedA
  */
 export const selectCachedActionsByPrompt = (
   state: RootState,
-  promptId: string
+  promptId: string,
 ): CachedAction[] =>
   Object.values(state.actionCache?.actions || {}).filter(
-    (action) => action.prompt_id === promptId || action.prompt_builtin_id === promptId
+    (action) =>
+      action.prompt_id === promptId || action.prompt_builtin_id === promptId,
   );
 
 // ============================================================================
@@ -295,4 +314,3 @@ export const {
 } = actionCacheSlice.actions;
 
 export default actionCacheSlice.reducer;
-

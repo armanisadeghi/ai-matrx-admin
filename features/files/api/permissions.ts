@@ -13,7 +13,7 @@ import {
   type RequestOptions,
   type ResponseMeta,
 } from "./client";
-import type { CloudFilePermissionRow, GrantPermissionRequest } from "../types";
+import type { CloudFilePermissionRow, GrantPermissionRequest } from "@/features/files/types";
 
 // ---------------------------------------------------------------------------
 // File permissions

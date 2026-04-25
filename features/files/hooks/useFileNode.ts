@@ -14,8 +14,8 @@ import {
   selectFileIsLoading,
   selectFileError,
   selectFilePendingRequestIds,
-} from "../redux/selectors";
-import type { CloudFileRecord } from "../types";
+} from "@/features/files/redux/selectors";
+import type { CloudFileRecord } from "@/features/files/types";
 
 export interface UseFileNodeResult {
   file: CloudFileRecord | undefined;

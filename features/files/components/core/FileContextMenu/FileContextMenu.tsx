@@ -35,12 +35,21 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import type { Visibility } from "../../../types";
-import { setActiveFileId } from "../../../redux/slice";
-import { useFileActions } from "../FileActions";
-import { FileInfoDialog } from "../FileInfo";
+import type { Visibility } from "@/features/files/types";
+import { setActiveFileId } from "@/features/files/redux/slice";
+import { useFileActions } from "@/features/files/components/core/FileActions/useFileActions";
+import { FileInfoDialog } from "@/features/files/components/core/FileInfo/FileInfoDialog";
 
 export interface FileContextMenuProps {
   fileId: string;
@@ -143,7 +152,9 @@ export function FileContextMenu({
               Visibility
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent>
-              <DropdownMenuItem onClick={() => void handleVisibility("private")}>
+              <DropdownMenuItem
+                onClick={() => void handleVisibility("private")}
+              >
                 <Lock className="mr-2 h-4 w-4" />
                 Private
               </DropdownMenuItem>
@@ -175,8 +186,8 @@ export function FileContextMenu({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete file?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will move the file to trash. You can restore it from
-              versions for 30 days before bytes are removed.
+              This will move the file to trash. You can restore it from versions
+              for 30 days before bytes are removed.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -2,11 +2,9 @@
 
 import { Suspense, Component, type ReactNode } from "react";
 import { Loader2, AlertTriangle, Settings as SettingsIcon } from "lucide-react";
-import {
-  SettingsCallout,
-  SettingsBreadcrumb,
-  type SettingsTreeNode,
-} from "@/components/official/settings";
+import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
+import { SettingsBreadcrumb } from "@/components/official/settings/tree/SettingsBreadcrumb";
+import type { SettingsTreeNode } from "@/components/official/settings/tree/types";
 import type { SettingsTabDef } from "../types";
 
 type SettingsTabHostProps = {

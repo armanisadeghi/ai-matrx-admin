@@ -6,7 +6,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ZipCodeMap, FileUpload, ColorLegend, ColorScaleSelector, ViewModeSelector, TableDataSource, SaveToTableModal, SaveHeatmapModal } from "./components";
+import ZipCodeMap from "./components/ZipCodeMap";
+import FileUpload from "./components/FileUpload";
+import ColorLegend from "./components/ColorLegend";
+import ColorScaleSelector from "./components/ColorScaleSelector";
+import ViewModeSelector from "./components/ViewModeSelector";
+import TableDataSource from "./components/TableDataSource";
+import SaveToTableModal from "./components/SaveToTableModal";
+import SaveHeatmapModal from "./components/SaveHeatmapModal";
 import type { ColorScaleOptions } from "./components/ColorScaleSelector";
 import type { ViewMode } from "./components/ViewModeSelector";
 import { aggregateByZip3 } from "./utils/dataAggregation";

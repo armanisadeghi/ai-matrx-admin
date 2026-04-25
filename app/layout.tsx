@@ -8,7 +8,8 @@ import { cookies } from "next/headers";
 import { metadata } from "./config/metadata";
 import { viewport } from "./config/viewport";
 import { inter, montserrat, openSans, roboto } from "@/styles/themes/fonts";
-import { SyncBootScript, syncPolicies } from "@/lib/sync";
+import { SyncBootScript } from "@/lib/sync/components/SyncBootScript";
+import { syncPolicies } from "@/lib/sync/registry";
 
 export { metadata, viewport };
 

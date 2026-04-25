@@ -1,14 +1,12 @@
 "use client";
 
 import { Bot, User } from "lucide-react";
-import {
-  SettingsSwitch,
-  SettingsSelect,
-  SettingsSlider,
-  SettingsTextInput,
-  SettingsSection,
-  SettingsSubHeader,
-} from "@/components/official/settings";
+import { SettingsSwitch } from "@/components/official/settings/primitives/SettingsSwitch";
+import { SettingsSelect } from "@/components/official/settings/primitives/SettingsSelect";
+import { SettingsSlider } from "@/components/official/settings/primitives/SettingsSlider";
+import { SettingsTextInput } from "@/components/official/settings/primitives/SettingsTextInput";
+import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
+import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
 import { useSetting } from "../hooks/useSetting";
 import type { AIProvider } from "@/lib/ai/aiChat.types";
 
@@ -36,9 +34,7 @@ export default function AssistantTab() {
   const [isPersonal, setIsPersonal] = useSetting<boolean>(
     "userPreferences.assistant.isPersonal",
   );
-  const [name, setName] = useSetting<string>(
-    "userPreferences.assistant.name",
-  );
+  const [name, setName] = useSetting<string>("userPreferences.assistant.name");
   const [memoryLevel, setMemoryLevel] = useSetting<number>(
     "userPreferences.assistant.memoryLevel",
   );

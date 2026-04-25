@@ -9,7 +9,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { formatText } from "@/utils/text/text-case-converter";
-import { VariableInputComponent } from "@/features/prompts/components/variable-inputs";
+import { VariableInputComponent } from "@/features/prompts/components/variable-inputs/VariableInputComponent";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import {
   selectInstanceVariableDefinitions,
@@ -52,7 +52,9 @@ export function StackedVariableInputs({
 
   const handleVariableChange = useCallback(
     (variableName: string, value: string) => {
-      dispatch(setUserVariableValue({ conversationId, name: variableName, value }));
+      dispatch(
+        setUserVariableValue({ conversationId, name: variableName, value }),
+      );
     },
     [dispatch, conversationId],
   );
@@ -143,7 +145,9 @@ export function StackedVariableInputs({
                       handleVariableChange(variable.name, newValue)
                     }
                     variableName={variable.name}
-                    customComponent={variable.customComponent as unknown as never}
+                    customComponent={
+                      variable.customComponent as unknown as never
+                    }
                     onRequestClose={() => handleExpandedVariableChange(null)}
                     helpText={variable.helpText}
                     compact={compact}

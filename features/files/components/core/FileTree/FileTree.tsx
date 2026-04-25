@@ -31,8 +31,8 @@ import {
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { cn } from "@/lib/utils";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { moveFile } from "../../../redux/thunks";
-import { useFileSelection } from "../../../hooks/useFileSelection";
+import { moveFile } from "@/features/files/redux/thunks";
+import { useFileSelection } from "@/features/files/hooks/useFileSelection";
 import {
   FILE_TREE_ROW_HEIGHT,
   FileTreeRow,

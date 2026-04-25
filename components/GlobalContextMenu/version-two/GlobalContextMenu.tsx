@@ -8,7 +8,7 @@ import {
     ContextMenuSubContent,
     ContextMenuSubTrigger,
     ContextMenuTrigger,
-} from "@/components/ui/context-menu";
+} from "@/components/ui/context-menu/context-menu";
 import {ModuleType} from './types';
 import {useContextMenu} from './hooks/useContextMenu';
 

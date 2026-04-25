@@ -1,7 +1,9 @@
-'use client';
+"use client";
 
-import React from 'react';
-import getAppletCardComponent, { AppletCardVariant } from './applet-card';
+import React from "react";
+import getAppletCardComponent, {
+  type AppletCardVariant,
+} from "./applet-card/appletCardVariants";
 
 interface AppletCardAdapterProps {
   variant?: AppletCardVariant;
@@ -13,7 +15,7 @@ interface AppletCardAdapterProps {
 }
 
 const AppletCardAdapter: React.FC<AppletCardAdapterProps> = ({
-  variant = 'default',
+  variant = "default",
   isMobile,
   ...props
 }) => {
@@ -21,4 +23,4 @@ const AppletCardAdapter: React.FC<AppletCardAdapterProps> = ({
   return <AppletCardComponent {...props} isMobile={isMobile} />;
 };
 
-export default AppletCardAdapter; 
+export default AppletCardAdapter;

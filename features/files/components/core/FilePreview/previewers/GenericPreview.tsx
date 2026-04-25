@@ -9,8 +9,8 @@
 
 import { Download } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { FileIcon } from "../../FileIcon";
-import { formatFileSize } from "../../../../utils/format";
+import { FileIcon } from "@/features/files/components/core/FileIcon/FileIcon";
+import { formatFileSize } from "@/features/files/utils/format";
 
 export interface GenericPreviewProps {
   fileName: string;

@@ -15,23 +15,16 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { SectionToolbar } from "../SectionToolbar";
 import { useRenderBlocks } from "../../hooks/useRenderBlocks";
-import { selectSelectedItemId, setSelectedItemId } from "../../redux/ui";
-import type {
-  CategoryTreeNode,
-  SklRenderDefinition,
-} from "../../redux/skl";
+import { selectSelectedItemId, setSelectedItemId } from "../../redux/ui/slice";
+import type { CategoryTreeNode } from "../../redux/skl/selectors";
+import type { SklRenderDefinition } from "../../redux/skl/types";
 
 export function RenderBlocksSection() {
   const dispatch = useAppDispatch();
   const selectedItemId = useAppSelector(selectSelectedItemId);
   const [search, setSearch] = useState("");
-  const {
-    definitions,
-    byCategoryId,
-    categoryTree,
-    loading,
-    error,
-  } = useRenderBlocks();
+  const { definitions, byCategoryId, categoryTree, loading, error } =
+    useRenderBlocks();
 
   const lowerSearch = search.trim().toLowerCase();
   const matchesSearch = (d: SklRenderDefinition) =>

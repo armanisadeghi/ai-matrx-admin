@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
 import React from "react";
-import { EntitySearchInput } from "../field-components";
+import EntitySearchInput from "../field-components/EntitySearchInput";
 import { spacingConfig } from "@/config/ui/entity-layout-config";
 import SmartCrudButtons from "../../Entity/prewired-components/layouts/smart-layouts/smart-actions/SmartCrudButtons";
 import { UnifiedLayoutProps } from "@/components/matrx/Entity/prewired-components/layouts/types";
@@ -10,140 +10,141 @@ import { useFieldVisibility } from "@/app/entities/hooks/form-related/useFieldVi
 import { useFieldRenderer } from "@/app/entities/hooks/form-related/useFieldRenderer";
 import { useFieldConfiguration } from "@/app/entities/hooks/form-related/useFieldConfiguration";
 import { MatrxRecordId } from "@/types/entityTypes";
-import MultiSelect from '@/components/ui/loaders/multi-select';
+import MultiSelect from "@/components/ui/loaders/multi-select";
 
 interface ArmaniFormSmartProps extends UnifiedLayoutProps {
-    recordId?: MatrxRecordId;
+  recordId?: MatrxRecordId;
 }
 
 const ArmaniFormSmart: React.FC<ArmaniFormSmartProps> = (props) => {
-    const { recordId: propRecordId, ...unifiedLayoutProps } = props;
-    const entityKey = unifiedLayoutProps.layoutState.selectedEntity || null;
-    const { activeRecordCrud, getEffectiveRecordOrDefaults } = useEntityCrud(entityKey);
-    
-    // Use provided recordId or fall back to active record
-    const effectiveRecordId = propRecordId || activeRecordCrud.recordId;
-    
-    const {
-        visibleFields,
-        visibleNativeFields,
-        visibleRelationshipFields,
-        searchTerm,
-        setSearchTerm,
-        toggleField,
-        selectOptions,
-        isSearchEnabled
-    } = useFieldVisibility(entityKey, unifiedLayoutProps);
+  const { recordId: propRecordId, ...unifiedLayoutProps } = props;
+  const entityKey = unifiedLayoutProps.layoutState.selectedEntity || null;
+  const { activeRecordCrud, getEffectiveRecordOrDefaults } =
+    useEntityCrud(entityKey);
 
-    // Get field configuration for search placeholders
-    const { allowedFields, fieldDisplayNames } = useFieldConfiguration(entityKey, unifiedLayoutProps);
+  // Use provided recordId or fall back to active record
+  const effectiveRecordId = propRecordId || activeRecordCrud.recordId;
 
-    const { getNativeFieldComponent, getRelationshipFieldComponent } = useFieldRenderer(
-        entityKey, 
-        effectiveRecordId, 
-        unifiedLayoutProps
-    );
+  const {
+    visibleFields,
+    visibleNativeFields,
+    visibleRelationshipFields,
+    searchTerm,
+    setSearchTerm,
+    toggleField,
+    selectOptions,
+    isSearchEnabled,
+  } = useFieldVisibility(entityKey, unifiedLayoutProps);
 
-    const currentRecordData = effectiveRecordId ?
-                              getEffectiveRecordOrDefaults(effectiveRecordId) :
-        {};
+  // Get field configuration for search placeholders
+  const { allowedFields, fieldDisplayNames } = useFieldConfiguration(
+    entityKey,
+    unifiedLayoutProps,
+  );
 
-    const dynamicLayoutOptions = unifiedLayoutProps.dynamicLayoutOptions;
-    const formStyleOptions = dynamicLayoutOptions.formStyleOptions || {};
-    const floatingLabel = formStyleOptions.floatingLabel ?? true;
+  const { getNativeFieldComponent, getRelationshipFieldComponent } =
+    useFieldRenderer(entityKey, effectiveRecordId, unifiedLayoutProps);
 
-    const dynamicStyleOptions = unifiedLayoutProps.dynamicStyleOptions;
-    const density = dynamicStyleOptions.density || 'normal';
-    const animationPreset = dynamicStyleOptions.animationPreset || 'smooth';
-    const variant = dynamicStyleOptions.variant || 'default';
-    const size = dynamicStyleOptions.size || 'default';
-    const unifiedCrudHandlers = unifiedLayoutProps.unifiedCrudHandlers;
-    const onUpdateField = unifiedCrudHandlers?.handleFieldUpdate;
-    const densityStyles = spacingConfig[density];
+  const currentRecordData = effectiveRecordId
+    ? getEffectiveRecordOrDefaults(effectiveRecordId)
+    : {};
 
-    const selectedValues = Array.from(visibleFields);
+  const dynamicLayoutOptions = unifiedLayoutProps.dynamicLayoutOptions;
+  const formStyleOptions = dynamicLayoutOptions.formStyleOptions || {};
+  const floatingLabel = formStyleOptions.floatingLabel ?? true;
 
-    const handleFieldSelection = (values: string[]) => {
-        // Clear all fields first, then toggle selected ones
-        values.forEach(fieldName => {
-            if (!visibleFields.includes(fieldName as any)) {
-                toggleField(fieldName as any);
-            }
-        });
-        selectedValues.forEach(fieldName => {
-            if (!values.includes(fieldName)) {
-                toggleField(fieldName as any);
-            }
-        });
-    };
+  const dynamicStyleOptions = unifiedLayoutProps.dynamicStyleOptions;
+  const density = dynamicStyleOptions.density || "normal";
+  const animationPreset = dynamicStyleOptions.animationPreset || "smooth";
+  const variant = dynamicStyleOptions.variant || "default";
+  const size = dynamicStyleOptions.size || "default";
+  const unifiedCrudHandlers = unifiedLayoutProps.unifiedCrudHandlers;
+  const onUpdateField = unifiedCrudHandlers?.handleFieldUpdate;
+  const densityStyles = spacingConfig[density];
 
-    // Get pre-rendered field components
-    const baseFieldComponents = visibleNativeFields.map(getNativeFieldComponent);
-    const relationshipFieldComponents = visibleRelationshipFields.map(getRelationshipFieldComponent);
+  const selectedValues = Array.from(visibleFields);
 
-    return (
-        <div className="w-full">
-            <div className="inline-flex items-center flex-wrap gap-4 p-2">
-                <SmartCrudButtons
-                    entityKey={entityKey}
-                    options={{
-                        allowCreate: true,
-                        allowEdit: true,
-                        allowDelete: true
-                    }}
-                    layout={{
-                        buttonLayout: 'row',
-                        buttonSize: 'sm'
-                    }}
-                />
-                <MultiSelect
-                    options={selectOptions}
-                    value={selectedValues}
-                    onChange={handleFieldSelection}
-                    placeholder="Select fields"
-                    showSelectedInDropdown={true}
-                />
-                {isSearchEnabled && (
-                    <div className="flex-grow">
-                        <EntitySearchInput
-                            entityKey={entityKey}
-                            fieldDisplayNames={fieldDisplayNames}
-                            allowedFields={allowedFields}
-                            searchTerm={searchTerm}
-                            onSearchChange={setSearchTerm}
-                            density={density}
-                            animationPreset={animationPreset}
-                            size={size}
-                            variant={variant}
-                            className={densityStyles.inputSize}
-                        />
-                    </div>
-                )}
-            </div>
+  const handleFieldSelection = (values: string[]) => {
+    // Clear all fields first, then toggle selected ones
+    values.forEach((fieldName) => {
+      if (!visibleFields.includes(fieldName as any)) {
+        toggleField(fieldName as any);
+      }
+    });
+    selectedValues.forEach((fieldName) => {
+      if (!values.includes(fieldName)) {
+        toggleField(fieldName as any);
+      }
+    });
+  };
 
-            <div className="space-y-4 mt-4">
-                {baseFieldComponents.length > 0 && (
-                    <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-2">
-                        {baseFieldComponents.map((fieldComponent, index) => (
-                            <div key={`base-field-${index}`}>
-                                {fieldComponent}
-                            </div>
-                        ))}
-                    </div>
-                )}
+  // Get pre-rendered field components
+  const baseFieldComponents = visibleNativeFields.map(getNativeFieldComponent);
+  const relationshipFieldComponents = visibleRelationshipFields.map(
+    getRelationshipFieldComponent,
+  );
 
-                {relationshipFieldComponents.length > 0 && (
-                    <div className="space-y-2">
-                        {relationshipFieldComponents.map((fieldComponent, index) => (
-                            <div key={`relationship-field-${index}`} className="w-full">
-                                {fieldComponent}
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </div>
-        </div>
-    );
-}
+  return (
+    <div className="w-full">
+      <div className="inline-flex items-center flex-wrap gap-4 p-2">
+        <SmartCrudButtons
+          entityKey={entityKey}
+          options={{
+            allowCreate: true,
+            allowEdit: true,
+            allowDelete: true,
+          }}
+          layout={{
+            buttonLayout: "row",
+            buttonSize: "sm",
+          }}
+        />
+        <MultiSelect
+          options={selectOptions}
+          value={selectedValues}
+          onChange={handleFieldSelection}
+          placeholder="Select fields"
+          showSelectedInDropdown={true}
+        />
+        {isSearchEnabled && (
+          <div className="flex-grow">
+            <EntitySearchInput
+              entityKey={entityKey}
+              fieldDisplayNames={fieldDisplayNames}
+              allowedFields={allowedFields}
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              density={density}
+              animationPreset={animationPreset}
+              size={size}
+              variant={variant}
+              className={densityStyles.inputSize}
+            />
+          </div>
+        )}
+      </div>
+
+      <div className="space-y-4 mt-4">
+        {baseFieldComponents.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-2">
+            {baseFieldComponents.map((fieldComponent, index) => (
+              <div key={`base-field-${index}`}>{fieldComponent}</div>
+            ))}
+          </div>
+        )}
+
+        {relationshipFieldComponents.length > 0 && (
+          <div className="space-y-2">
+            {relationshipFieldComponents.map((fieldComponent, index) => (
+              <div key={`relationship-field-${index}`} className="w-full">
+                {fieldComponent}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 export default ArmaniFormSmart;

@@ -3,11 +3,9 @@
 import React from "react";
 import { EntityKeys } from "@/types/entityTypes";
 import { useEntityAnalyzer } from "@/lib/redux/entity/hooks/useEntityAnalyzer";
-import { ArmaniCollapsibleGroup } from "@/components/matrx/matrx-collapsible";
-import {
-  MatrxMetricRow,
-  MatrxRecordList,
-} from "@/components/matrx/matrx-record-list";
+import { ArmaniCollapsibleGroup } from "@/components/matrx/matrx-collapsible/collapsible-group";
+import MatrxMetricRow from "@/components/matrx/matrx-record-list/metric-row";
+import MatrxRecordList from "@/components/matrx/matrx-record-list/basic-record-list";
 
 const EntityAnalyzerView = ({ entityKey }: { entityKey: EntityKeys }) => {
   const { rawEntityState: state, getEntityLabel } =

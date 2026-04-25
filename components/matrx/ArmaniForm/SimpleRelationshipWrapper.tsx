@@ -6,7 +6,7 @@ import {
   ENTITY_IFK_COMPONENTS,
   ENTITY_M2M_COMPONENTS,
   ENTITY_SMART_COMPONENTS,
-} from "./field-components";
+} from "./field-components/field-component-registries";
 import {
   EntityStateField,
   MatrxRecordId,

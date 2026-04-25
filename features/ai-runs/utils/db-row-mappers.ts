@@ -7,7 +7,7 @@ import type {
   RunStatus,
   SourceType,
   TaskStatus,
-} from "@/features/ai-runs/types";
+} from "@/features/ai-runs/types/aiRunTypes";
 
 type AiRunRow = Database["public"]["Tables"]["ai_runs"]["Row"];
 type AiTaskRow = Database["public"]["Tables"]["ai_tasks"]["Row"];

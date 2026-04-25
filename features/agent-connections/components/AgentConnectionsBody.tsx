@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectActiveSection } from "../redux/ui";
+import { selectActiveSection } from "../redux/ui/slice";
 import { OverviewSection } from "./sections/OverviewSection";
 import { AgentsSection } from "./sections/AgentsSection";
 import { SubAgentsSection } from "./sections/SubAgentsSection";

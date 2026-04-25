@@ -14,11 +14,11 @@ import {
   CredenzaClose,
 } from "@/components/ui/credenza-modal/credenza";
 import { Settings2, X } from "lucide-react";
+import { HierarchyCascade } from "@/features/agent-context/components/hierarchy-selection/HierarchyCascade";
 import {
-  HierarchyCascade,
   EMPTY_SELECTION,
-} from "@/features/agent-context/components/hierarchy-selection";
-import type { HierarchySelection } from "@/features/agent-context/components/hierarchy-selection";
+  type HierarchySelection,
+} from "@/features/agent-context/components/hierarchy-selection/types";
 
 interface ScopeOverride {
   organization_id?: string;

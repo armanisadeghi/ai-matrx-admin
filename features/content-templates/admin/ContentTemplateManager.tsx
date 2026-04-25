@@ -68,7 +68,7 @@ import {
 } from "@/features/content-templates/services/content-templates-service";
 import MarkdownStream from "@/components/MarkdownStream";
 import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
-import { useApiTestConfig } from "@/components/api-test-config";
+import { useApiTestConfig } from "@/components/api-test-config/useApiTestConfig";
 import { ENDPOINTS } from "@/lib/api/endpoints";
 import { parseNdjsonStream } from "@/lib/api/stream-parser";
 import type {

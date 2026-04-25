@@ -43,7 +43,7 @@ import { toast } from "sonner";
 import MarkdownStream from "@/components/MarkdownStream";
 import { extractJsonFromText } from "@/features/prompts/utils/json-extraction";
 import { useRouter } from "next/navigation";
-import { usePromptsBasePath } from "../../../hooks/usePromptsBasePath";
+import { usePromptsBasePath } from "@/features/prompts/hooks/usePromptsBasePath";
 import { VoiceTextarea } from "@/components/official/VoiceTextarea";
 import { PromptJsonDisplay } from "./PromptJsonDisplay";
 import { extractNonJsonContent } from "./progressive-json-parser";

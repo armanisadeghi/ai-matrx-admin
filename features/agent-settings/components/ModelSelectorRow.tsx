@@ -9,9 +9,9 @@ import {
   selectEffectiveModelId,
   selectEffectiveSettings,
   selectHasPendingSwitch,
-  requestModelSwitch,
-} from "@/lib/redux/slices/agent-settings";
-import type { AgentSettings } from "@/lib/redux/slices/agent-settings";
+} from "@/lib/redux/slices/agent-settings/selectors";
+import { requestModelSwitch } from "@/lib/redux/slices/agent-settings/agentSettingsSlice";
+import type { AgentSettings } from "@/lib/redux/slices/agent-settings/types";
 
 // Fields shown as active-setting badges in the compact summary row
 const BADGE_FIELDS: Array<{ key: keyof AgentSettings; label: string }> = [

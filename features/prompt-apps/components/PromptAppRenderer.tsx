@@ -15,7 +15,7 @@ import type {
   RateLimitInfo,
   ExecutionErrorType,
   LayoutConfig,
-} from "../types";
+} from "../types/promptAppTypes";
 
 function layoutConfigFromDb(raw: PromptApp["layout_config"]): LayoutConfig {
   if (raw && typeof raw === "object" && !Array.isArray(raw)) {

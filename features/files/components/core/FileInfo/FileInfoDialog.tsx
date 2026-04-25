@@ -24,13 +24,10 @@ import {
 } from "@/components/ui/dialog";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { cn } from "@/lib/utils";
-import {
-  selectAllFoldersMap,
-  selectFileById,
-} from "../../../redux/selectors";
-import { formatFileSize } from "../../../utils/format";
-import { FileIcon } from "../FileIcon";
-import type { Visibility } from "../../../types";
+import { selectAllFoldersMap, selectFileById } from "@/features/files/redux/selectors";
+import { formatFileSize } from "@/features/files/utils/format";
+import { FileIcon } from "@/features/files/components/core/FileIcon/FileIcon";
+import type { Visibility } from "@/features/files/types";
 
 export interface FileInfoDialogProps {
   fileId: string | null;
@@ -93,7 +90,10 @@ export function FileInfoDialog({
               <VisibilityChip visibility={file.visibility} />
             </Field>
             <Field label="Folder">
-              <span className="truncate text-muted-foreground" title={parentPath}>
+              <span
+                className="truncate text-muted-foreground"
+                title={parentPath}
+              >
                 {parentPath}
               </span>
             </Field>
@@ -134,10 +134,25 @@ function Field({
 }
 
 function VisibilityChip({ visibility }: { visibility: Visibility }) {
-  const map: Record<Visibility, { Icon: typeof Lock; label: string; tone: string }> = {
-    private: { Icon: Lock, label: "Private", tone: "bg-muted text-muted-foreground" },
-    shared: { Icon: Users, label: "Shared", tone: "bg-blue-500/10 text-blue-600 dark:text-blue-400" },
-    public: { Icon: Globe, label: "Public", tone: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" },
+  const map: Record<
+    Visibility,
+    { Icon: typeof Lock; label: string; tone: string }
+  > = {
+    private: {
+      Icon: Lock,
+      label: "Private",
+      tone: "bg-muted text-muted-foreground",
+    },
+    shared: {
+      Icon: Users,
+      label: "Shared",
+      tone: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+    },
+    public: {
+      Icon: Globe,
+      label: "Public",
+      tone: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+    },
   };
   const { Icon, label, tone } = map[visibility];
   return (

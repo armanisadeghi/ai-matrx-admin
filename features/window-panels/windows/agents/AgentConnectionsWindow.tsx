@@ -13,7 +13,7 @@ import {
   selectViewScope,
   selectSelectedItemId,
   setActiveSection,
-} from "@/features/agent-connections/redux/ui";
+} from "@/features/agent-connections/redux/ui/slice";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import type { Scope } from "@/features/agent-connections/types";
 

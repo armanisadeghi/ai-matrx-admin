@@ -2,13 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { Loader2, Mail } from "lucide-react";
-import {
-  SettingsSwitch,
-  SettingsButton,
-  SettingsSection,
-  SettingsSubHeader,
-  SettingsCallout,
-} from "@/components/official/settings";
+import { SettingsSwitch } from "@/components/official/settings/primitives/SettingsSwitch";
+import { SettingsButton } from "@/components/official/settings/primitives/SettingsButton";
+import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
+import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
+import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
 
 /**
  * Email notification preferences.
@@ -182,9 +180,7 @@ export default function EmailTab() {
         <SettingsButton
           label="Apply email preferences"
           description={
-            dirty
-              ? "You have unsaved changes."
-              : "Everything is up to date."
+            dirty ? "You have unsaved changes." : "Everything is up to date."
           }
           actionLabel={saving ? "Saving…" : dirty ? "Save" : "Saved"}
           kind={dirty ? "default" : "outline"}

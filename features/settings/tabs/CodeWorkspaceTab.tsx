@@ -2,14 +2,12 @@
 
 import { useMemo } from "react";
 import { Code, Filter, History } from "lucide-react";
-import {
-  SettingsCallout,
-  SettingsMultiSelect,
-  SettingsNumberInput,
-  SettingsSection,
-  SettingsSegmented,
-  SettingsSubHeader,
-} from "@/components/official/settings";
+import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
+import { SettingsMultiSelect } from "@/components/official/settings/primitives/SettingsMultiSelect";
+import { SettingsNumberInput } from "@/components/official/settings/primitives/SettingsNumberInput";
+import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
+import { SettingsSegmented } from "@/components/official/settings/primitives/SettingsSegmented";
+import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
 import { useSetting } from "../hooks/useSetting";
 import { useAppSelector } from "@/lib/redux/hooks";
 import {

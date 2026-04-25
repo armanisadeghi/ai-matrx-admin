@@ -31,7 +31,7 @@ import { useResearchApi } from "../../hooks/useResearchApi";
 import { useResearchStream } from "../../hooks/useResearchStream";
 import { useStreamDebug } from "../../context/ResearchContext";
 import { ResearchFilterBar, type FilterDef } from "../shared/ResearchFilterBar";
-import type { FilterOption } from "@/components/hierarchy-filter";
+import type { FilterOption } from "@/components/hierarchy-filter/HierarchyFilterPill";
 import {
   type ResearchAnalysis,
   type ResearchDataEvent,
@@ -431,7 +431,10 @@ export default function AnalysisList() {
     if (search) {
       items = filterAndSortBySearch(items, search, [
         { get: (a) => sourceMap.get(a.source_id)?.title, weight: "title" },
-        { get: (a) => sourceMap.get(a.source_id)?.hostname, weight: "subtitle" },
+        {
+          get: (a) => sourceMap.get(a.source_id)?.hostname,
+          weight: "subtitle",
+        },
         { get: (a) => sourceMap.get(a.source_id)?.url, weight: "subtitle" },
         { get: (a) => sourceMap.get(a.source_id)?.description, weight: "body" },
         { get: (a) => a.result, weight: "body" },

@@ -1,13 +1,11 @@
 "use client";
 
 import { Database, ShieldCheck } from "lucide-react";
-import {
-  SettingsSelect,
-  SettingsTextInput,
-  SettingsSection,
-  SettingsSubHeader,
-  SettingsCallout,
-} from "@/components/official/settings";
+import { SettingsSelect } from "@/components/official/settings/primitives/SettingsSelect";
+import { SettingsTextInput } from "@/components/official/settings/primitives/SettingsTextInput";
+import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
+import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
+import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
 import { useSetting } from "../hooks/useSetting";
 import type { ServerEnvironment } from "@/lib/redux/slices/adminPreferencesSlice";
 

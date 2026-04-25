@@ -10,7 +10,7 @@
 
 import { Users } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { FileIcon } from "../../core/FileIcon";
+import { FileIcon } from "@/features/files/components/core/FileIcon/FileIcon";
 
 export interface FolderIconWithMembersProps {
   isShared: boolean;
@@ -32,9 +32,7 @@ export function FolderIconWithMembers({
         open={open}
         size={size}
         colorClass={
-          isShared
-            ? "text-indigo-500 dark:text-indigo-400"
-            : "text-primary"
+          isShared ? "text-indigo-500 dark:text-indigo-400" : "text-primary"
         }
       />
       {isShared ? (

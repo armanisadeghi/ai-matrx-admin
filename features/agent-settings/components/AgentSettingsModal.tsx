@@ -30,7 +30,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AgentSettingsContent } from "./AgentSettingsContent";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectHasPendingSwitch } from "@/lib/redux/slices/agent-settings";
+import { selectHasPendingSwitch } from "@/lib/redux/slices/agent-settings/selectors";
 
 const DEFAULT_CONFIRMATION_MESSAGE =
   "Changing fine-tuned settings may degrade results and cause application errors. " +

@@ -3,20 +3,26 @@
 import React, { useState } from "react";
 import { ComponentEntry } from "../parts/component-list";
 import { ComponentDisplayWrapper } from "../component-usage";
+import { ContentEditor } from "@/components/official/content-editor/ContentEditor";
+import { ContentEditorStack } from "@/components/official/content-editor/ContentEditorStack";
 import {
-  ContentEditor,
-  ContentEditorStack,
   ContentEditorTabs,
-  ContentEditorList,
-  ContentEditorTree,
-  ContentEditorBrowser,
-  ContentEditorTabsWithList,
   type ContentEditorTab,
-  type ContentEditorDocument,
+} from "@/components/official/content-editor/ContentEditorTabs";
+import { ContentEditorList } from "@/components/official/content-editor/ContentEditorList";
+import {
+  ContentEditorTree,
   type ContentEditorTreeNode,
+} from "@/components/official/content-editor/ContentEditorTree";
+import {
+  ContentEditorBrowser,
   type ContentEditorFilter,
-  type HeaderAction,
-} from "@/components/official/content-editor";
+} from "@/components/official/content-editor/ContentEditorBrowser";
+import {
+  ContentEditorTabsWithList,
+  type ContentEditorDocument,
+} from "@/components/official/content-editor/ContentEditorTabsWithList";
+import type { HeaderAction } from "@/components/official/content-editor/types";
 import {
   Download,
   FileText,

@@ -16,9 +16,9 @@ import {
   selectIsFolderFullyLoaded,
   selectSortedChildrenOfFolder,
   selectSortedRootChildren,
-} from "../redux/selectors";
-import { loadFolderContents } from "../redux/thunks";
-import type { CloudFileRecord, CloudFolderRecord } from "../types";
+} from "@/features/files/redux/selectors";
+import { loadFolderContents } from "@/features/files/redux/thunks";
+import type { CloudFileRecord, CloudFolderRecord } from "@/features/files/types";
 
 export interface UseFolderContentsResult {
   files: CloudFileRecord[];

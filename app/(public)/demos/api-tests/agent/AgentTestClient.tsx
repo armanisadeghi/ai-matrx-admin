@@ -25,10 +25,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import {
-  useApiTestConfig,
-  ApiTestConfigPanel,
-} from "@/components/api-test-config";
+import { ApiTestConfigPanel } from "@/components/api-test-config/ApiTestConfigPanel";
+import { useApiTestConfig } from "@/components/api-test-config/useApiTestConfig";
 import { cn } from "@/lib/utils";
 import { useAppDispatch } from "@/lib/redux/hooks";
 // Legacy agent demo — stubbed during Redux unification. Demo still renders

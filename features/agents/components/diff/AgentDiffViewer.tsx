@@ -1,17 +1,17 @@
 "use client";
 
 import { useMemo } from "react";
+import { computeDiff } from "@/components/diff/engine/compute-diff";
+import { createAdapterRegistry } from "@/components/diff/adapters/registry";
+import { DiffViewerShell } from "@/components/diff/views/DiffViewerShell";
 import {
-  computeDiff,
-  createAdapterRegistry,
-  DiffViewerShell,
   TextFieldAdapter,
   BooleanFieldAdapter,
   TagsFieldAdapter,
   JsonObjectAdapter,
   KeyValueAdapter,
-} from "@/components/diff";
-import type { ViewMode } from "@/components/diff";
+} from "@/components/diff/adapters/defaults";
+import type { ViewMode } from "@/components/diff/engine/types";
 import type { AgentDefinition } from "@/features/agents/types/agent-definition.types";
 import { useDiffEnrichment } from "@/features/agents/hooks/useDiffEnrichment";
 import { AGENT_DIFF_OPTIONS } from "./agent-diff-constants";

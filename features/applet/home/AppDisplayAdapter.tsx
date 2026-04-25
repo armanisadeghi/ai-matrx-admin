@@ -1,7 +1,9 @@
-'use client';
+"use client";
 
-import React from 'react';
-import getAppDisplayComponent, { AppDisplayVariant } from './app-display';
+import React from "react";
+import getAppDisplayComponent, {
+  type AppDisplayVariant,
+} from "./app-display/appDisplayVariants";
 
 interface AppDisplayAdapterProps {
   variant?: AppDisplayVariant;
@@ -16,7 +18,7 @@ interface AppDisplayAdapterProps {
 }
 
 const AppDisplayAdapter: React.FC<AppDisplayAdapterProps> = ({
-  variant = 'default',
+  variant = "default",
   appName,
   appDescription,
   appIcon,
@@ -27,16 +29,18 @@ const AppDisplayAdapter: React.FC<AppDisplayAdapterProps> = ({
   isMobile,
 }) => {
   const AppDisplayComponent = getAppDisplayComponent(variant, isMobile);
-  return <AppDisplayComponent 
-    appName={appName}
-    appDescription={appDescription}
-    appIcon={appIcon}
-    appImageUrl={appImageUrl}
-    creator={creator}
-    accentColor={accentColor}
-    primaryColor={primaryColor}
-    isMobile={isMobile}
-  />;
+  return (
+    <AppDisplayComponent
+      appName={appName}
+      appDescription={appDescription}
+      appIcon={appIcon}
+      appImageUrl={appImageUrl}
+      creator={creator}
+      accentColor={accentColor}
+      primaryColor={primaryColor}
+      isMobile={isMobile}
+    />
+  );
 };
 
-export default AppDisplayAdapter; 
+export default AppDisplayAdapter;

@@ -26,12 +26,12 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
-import { useHierarchyFilter } from "@/components/hierarchy-filter";
+import { useHierarchyFilter } from "@/components/hierarchy-filter/useHierarchyFilter";
+import { HierarchyPills } from "@/features/agent-context/components/hierarchy-selection/HierarchyPills";
 import {
-  HierarchyPills,
   EMPTY_SELECTION,
-} from "@/features/agent-context/components/hierarchy-selection";
-import type { HierarchySelection } from "@/features/agent-context/components/hierarchy-selection";
+  type HierarchySelection,
+} from "@/features/agent-context/components/hierarchy-selection/types";
 import {
   useTopicsForProject,
   useTopicsForProjects,

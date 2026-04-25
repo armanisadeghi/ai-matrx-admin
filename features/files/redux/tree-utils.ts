@@ -12,7 +12,7 @@ import type {
   SortDirection,
   TreeChildren,
   TreeState,
-} from "../types";
+} from "@/features/files/types";
 
 // ---------------------------------------------------------------------------
 // Ancestry

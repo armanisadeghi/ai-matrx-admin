@@ -12,9 +12,9 @@ import { memo } from "react";
 import { AlertCircle, CheckCircle, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { clearUpload } from "../../../redux/slice";
-import { formatFileSize } from "../../../utils/format";
-import type { UploadState } from "../../../types";
+import { clearUpload } from "@/features/files/redux/slice";
+import { formatFileSize } from "@/features/files/utils/format";
+import type { UploadState } from "@/features/files/types";
 
 export interface UploadProgressListProps {
   uploads: UploadState[];

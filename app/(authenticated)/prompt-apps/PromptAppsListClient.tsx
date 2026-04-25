@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
 import { PromptAppsGrid } from "@/features/prompt-apps/components/layouts/PromptAppsGrid";
 import { PageSpecificHeader } from "@/components/layout/new-layout/PageSpecificHeader";
 import { AppWindow } from "lucide-react";
-import type { PromptApp } from "@/features/prompt-apps/types";
+import type { PromptApp } from "@/features/prompt-apps/types/promptAppTypes";
 
 interface PromptAppsListClientProps {
   apps: PromptApp[];

@@ -8,12 +8,10 @@ import {
   selectRenderDefinitionsStatus,
   selectAllRenderBlockCategories,
   selectRenderBlockCategoryTree,
-  fetchRenderDefinitions,
-  fetchRenderBlockCategories,
   type CategoryTreeNode,
-  type SklRenderDefinition,
-  type ShortcutCategoryRow,
-} from "../redux/skl";
+} from "../redux/skl/selectors";
+import { fetchRenderDefinitions, fetchRenderBlockCategories } from "../redux/skl/thunks";
+import type { SklRenderDefinition, ShortcutCategoryRow } from "../redux/skl/types";
 import { useViewScope } from "./useViewScope";
 
 export interface UseRenderBlocksResult {

@@ -28,7 +28,7 @@ import {
   Activity,
 } from "lucide-react";
 import type { SettingsTabDef, ResolvedSettingsTab } from "./types";
-import type { SettingsTreeNode } from "@/components/official/settings";
+import type { SettingsTreeNode } from "@/components/official/settings/tree/types";
 
 /**
  * Single source of truth for every settings tab.

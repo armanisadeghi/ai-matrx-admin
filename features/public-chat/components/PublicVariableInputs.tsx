@@ -9,7 +9,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { formatText } from "@/utils/text/text-case-converter";
-import { VariableInputComponent } from "@/features/prompts/components/variable-inputs";
+import { VariableInputComponent } from "@/features/prompts/components/variable-inputs/VariableInputComponent";
 import type { PromptVariable } from "@/features/prompts/types/core";
 
 // ============================================================================

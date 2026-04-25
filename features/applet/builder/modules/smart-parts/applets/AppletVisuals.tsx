@@ -24,7 +24,7 @@ import {
     selectAppletName,
 } from "@/lib/redux/app-builder/selectors/appletSelectors";
 import { AppletLayoutSelection } from "@/features/applet/builder/parts/AppletLayoutSelection";
-import { EasyImageCropper } from "@/components/official/image-cropper";
+import { EasyImageCropper } from "@/components/official/image-cropper/EasyImageCropper";
 import { DEFAULT_APPLET_CONFIG } from "@/features/applet/builder/modules/smart-parts/applets/AppletFormComponent";
 
 export interface AppletVisualsProps {

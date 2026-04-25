@@ -16,7 +16,7 @@ import { selectAllApps, selectAppLoading, selectAppError, selectAppsByIds } from
 import { IconPicker } from "@/components/ui/IconPicker";
 import { COLOR_VARIANTS } from "@/features/applet/styles/StyledComponents";
 import { CustomAppConfig } from "@/types/customAppTypes";
-import { getAppColorClasses } from "../../../../styles/styles";
+import { getAppColorClasses } from "@/features/applet/styles/styles";
 import { matchesSearch } from "@/utils/search-scoring";
 
 export type SmartAppListRefType = {

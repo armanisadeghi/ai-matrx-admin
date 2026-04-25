@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { FieldComponentProps } from '../../../types';
+import { FieldComponentProps } from "@/app/entities/fields/types";
 import { MatrxRecordId } from '@/types/entityTypes';
 import { useFetchQuickRef } from '@/app/entities/hooks/useFetchQuickRef';
 import { useSelectQuickRef } from '@/app/entities/hooks/useSelectQuickRef';

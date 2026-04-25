@@ -13,14 +13,11 @@ import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { Copy, MoreHorizontal, Share2, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
-import type { CloudFileRecord, CloudFolderRecord } from "../../../types";
-import {
-  formatFileSize,
-  formatRelativeTime,
-} from "../../../utils/format";
-import { FileIcon } from "../../core/FileIcon";
-import { FileContextMenu } from "../../core/FileContextMenu";
-import { useFileActions } from "../../core/FileActions";
+import type { CloudFileRecord, CloudFolderRecord } from "@/features/files/types";
+import { formatFileSize, formatRelativeTime } from "@/features/files/utils/format";
+import { FileIcon } from "@/features/files/components/core/FileIcon/FileIcon";
+import { FileContextMenu } from "@/features/files/components/core/FileContextMenu/FileContextMenu";
+import { useFileActions } from "@/features/files/components/core/FileActions/useFileActions";
 import { FolderIconWithMembers } from "./FolderIconWithMembers";
 import { AccessBadge } from "./AccessBadge";
 import { SharedAvatarStack } from "./SharedAvatarStack";
@@ -141,16 +138,9 @@ function FileRow({
       <td className="px-4 py-2 whitespace-nowrap">
         <div className="flex items-center gap-2">
           {isShared && granteeIds.length > 0 ? (
-            <SharedAvatarStack
-              granteeIds={granteeIds}
-              max={2}
-              size="sm"
-            />
+            <SharedAvatarStack granteeIds={granteeIds} max={2} size="sm" />
           ) : null}
-          <AccessBadge
-            visibility={file.visibility}
-            memberCount={memberCount}
-          />
+          <AccessBadge visibility={file.visibility} memberCount={memberCount} />
         </div>
       </td>
     </tr>
@@ -222,26 +212,15 @@ function FolderRow({
               </span>
             ) : null}
           </div>
-          <FolderRowActions
-            visible={hovered}
-            onShare={onOpenShare}
-          />
+          <FolderRowActions visible={hovered} onShare={onOpenShare} />
         </div>
       </td>
-      <td className="px-4 py-2 text-muted-foreground whitespace-nowrap">
-        —
-      </td>
-      <td className="px-4 py-2 text-muted-foreground whitespace-nowrap">
-        —
-      </td>
+      <td className="px-4 py-2 text-muted-foreground whitespace-nowrap">—</td>
+      <td className="px-4 py-2 text-muted-foreground whitespace-nowrap">—</td>
       <td className="px-4 py-2 whitespace-nowrap">
         <div className="flex items-center gap-2">
           {isShared && granteeIds.length > 0 ? (
-            <SharedAvatarStack
-              granteeIds={granteeIds}
-              max={2}
-              size="sm"
-            />
+            <SharedAvatarStack granteeIds={granteeIds} max={2} size="sm" />
           ) : null}
           <AccessBadge
             visibility={folder.visibility}
@@ -335,8 +314,7 @@ function FolderRowActions({ visible, onShare }: FolderRowActionsProps) {
   );
 }
 
-interface IconButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   label: string;
   children: React.ReactNode;
 }
@@ -349,7 +327,10 @@ interface IconButtonProps
  * Both bugs caused the "..." menu to "not always work".
  */
 const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
-  function IconButton({ label, title, disabled, className, children, ...rest }, ref) {
+  function IconButton(
+    { label, title, disabled, className, children, ...rest },
+    ref,
+  ) {
     return (
       <button
         ref={ref}

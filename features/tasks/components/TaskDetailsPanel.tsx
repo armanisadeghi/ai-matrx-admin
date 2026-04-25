@@ -57,11 +57,11 @@ import { ShareModal } from "@/features/sharing/components/ShareModal";
 import TaskAttachments from "./TaskAttachments";
 import TaskLabels from "./TaskLabels";
 import type { TaskLabel } from "@/features/tasks/services/taskService";
+import { HierarchyCascade } from "@/features/agent-context/components/hierarchy-selection/HierarchyCascade";
 import {
-  HierarchyCascade,
   EMPTY_SELECTION,
-} from "@/features/agent-context/components/hierarchy-selection";
-import type { HierarchySelection } from "@/features/agent-context/components/hierarchy-selection";
+  type HierarchySelection,
+} from "@/features/agent-context/components/hierarchy-selection/types";
 import { ScopePicker } from "@/features/agent-context/components/ScopePicker";
 import { selectOrganizationId } from "@/features/agent-context/redux/appContextSlice";
 
@@ -77,7 +77,8 @@ export default function TaskDetailsPanel({
   const dispatch = useAppDispatch();
   const projects = useAppSelector(selectProjects);
   const refresh = () => dispatch(invalidateAndRefetchFullContext());
-  const getTaskComments = (taskId: string) => taskService.getTaskComments(taskId);
+  const getTaskComments = (taskId: string) =>
+    taskService.getTaskComments(taskId);
   const createTaskComment = async (taskId: string, content: string) => {
     await taskService.createTaskComment(taskId, content);
   };
@@ -537,11 +538,7 @@ export default function TaskDetailsPanel({
             <label className="text-xs font-semibold text-gray-600 dark:text-gray-400">
               Scopes
             </label>
-            <ScopePicker
-              entityType="task"
-              entityId={task.id}
-              orgId={orgId}
-            />
+            <ScopePicker entityType="task" entityId={task.id} orgId={orgId} />
           </div>
         )}
 

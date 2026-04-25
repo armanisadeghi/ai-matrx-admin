@@ -1,6 +1,6 @@
 /**
  * Example: Content Generator with Hardcoded Variables
- * 
+ *
  * Demonstrates:
  * - Using PromptExecutionButton
  * - Hardcoded variable values
@@ -9,9 +9,16 @@
 
 "use client";
 
-import { PromptExecutionButton, createHardcodedMap } from '@/features/prompts';
-import { Sparkles, FileText, Newspaper } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { PromptExecutionButton } from "@/features/prompts/components/actions/PromptExecutionButton";
+import { createHardcodedMap } from "@/features/prompts/utils/variable-resolver";
+import { Sparkles, FileText, Newspaper } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 export function ContentGeneratorExample() {
   return (
@@ -26,16 +33,16 @@ export function ContentGeneratorExample() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <PromptExecutionButton
             config={{
-              promptId: 'blog-post-generator',
+              promptId: "blog-post-generator",
               variables: createHardcodedMap({
-                topic: 'Web Development Best Practices',
-                tone: 'professional',
-                length: 'medium'
+                topic: "Web Development Best Practices",
+                tone: "professional",
+                length: "medium",
               }),
               output: {
-                type: 'canvas',
-                options: { title: 'Generated Blog Post' }
-              }
+                type: "canvas",
+                options: { title: "Generated Blog Post" },
+              },
             }}
             label="Generate Blog Post"
             icon={FileText}
@@ -45,16 +52,16 @@ export function ContentGeneratorExample() {
 
           <PromptExecutionButton
             config={{
-              promptId: 'social-media-generator',
+              promptId: "social-media-generator",
               variables: createHardcodedMap({
-                product: 'AI Development Platform',
-                platform: 'LinkedIn',
-                style: 'engaging'
+                product: "AI Development Platform",
+                platform: "LinkedIn",
+                style: "engaging",
               }),
               output: {
-                type: 'toast',
-                successMessage: 'Social media post generated!'
-              }
+                type: "toast",
+                successMessage: "Social media post generated!",
+              },
             }}
             label="Generate Social Post"
             icon={Newspaper}
@@ -64,15 +71,15 @@ export function ContentGeneratorExample() {
 
           <PromptExecutionButton
             config={{
-              promptId: 'email-template-generator',
+              promptId: "email-template-generator",
               variables: createHardcodedMap({
-                purpose: 'product launch',
-                audience: 'existing customers',
-                tone: 'friendly'
+                purpose: "product launch",
+                audience: "existing customers",
+                tone: "friendly",
               }),
               output: {
-                type: 'canvas'
-              }
+                type: "canvas",
+              },
             }}
             label="Generate Email"
             icon={Sparkles}
@@ -84,4 +91,3 @@ export function ContentGeneratorExample() {
     </Card>
   );
 }
-

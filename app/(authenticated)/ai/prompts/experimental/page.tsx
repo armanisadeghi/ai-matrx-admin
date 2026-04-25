@@ -1,13 +1,14 @@
-'use client';
+"use client";
 
-import { NextNavCardFull, buildModuleNavItems } from '@/components/matrx/navigation';
-import { filteredPages } from './config';
-import { Box, TestTube } from 'lucide-react';
+import NextNavCardFull from "@/components/matrx/navigation/NextNavCardFull";
+import { buildModuleNavItems } from "@/components/matrx/navigation/buildModuleNavItems";
+import { filteredPages } from "./config";
+import { Box, TestTube } from "lucide-react";
 
 export default function ExperimentalPromptsPage() {
   const items = buildModuleNavItems(filteredPages, {
     defaultIcon: Box,
-    iconClassName: 'w-5 h-5 sm:w-6 sm:h-6 text-primary',
+    iconClassName: "w-5 h-5 sm:w-6 sm:h-6 text-primary",
   });
 
   return (
@@ -17,7 +18,9 @@ export default function ExperimentalPromptsPage() {
           <div className="mb-6 sm:mb-8">
             <div className="flex items-center gap-2 mb-2">
               <TestTube className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-              <h1 className="text-2xl sm:text-3xl font-bold">Experimental Features</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold">
+                Experimental Features
+              </h1>
             </div>
             <p className="text-sm sm:text-base text-muted-foreground">
               Explore and test cutting-edge prompt engineering tools

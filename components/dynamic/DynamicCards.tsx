@@ -1,34 +1,34 @@
 /**
  * DynamicCards
- * 
+ *
  * Database-driven card grid that loads system prompts configured as cards.
  * Shows "Coming Soon" for placeholders.
  */
 
-'use client';
+"use client";
 
-import React from 'react';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { useCardPrompts } from '@/hooks/useSystemPrompts';
-import { PromptExecutionCard } from '@/features/prompts';
-import { Loader2, Lock } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import React from "react";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { useCardPrompts } from "@/hooks/useSystemPrompts";
+import { PromptExecutionCard } from "@/features/prompts/components/dynamic/PromptExecutionCard";
+import { Loader2, Lock } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface DynamicCardsProps {
   category?: string;
   context?: string;
-  renderAs?: 'grid' | 'list';
+  renderAs?: "grid" | "list";
   className?: string;
   emptyMessage?: string;
 }
 
 export function DynamicCards({
   category,
-  context = '',
-  renderAs = 'grid',
+  context = "",
+  renderAs = "grid",
   className,
-  emptyMessage = 'No cards available',
+  emptyMessage = "No cards available",
 }: DynamicCardsProps) {
   const { systemPrompts, loading } = useCardPrompts(category);
 
@@ -36,10 +36,10 @@ export function DynamicCards({
     return (
       <div
         className={cn(
-          renderAs === 'grid'
-            ? 'grid gap-4 md:grid-cols-2 lg:grid-cols-3'
-            : 'flex flex-col gap-4',
-          className
+          renderAs === "grid"
+            ? "grid gap-4 md:grid-cols-2 lg:grid-cols-3"
+            : "flex flex-col gap-4",
+          className,
         )}
       >
         {[1, 2, 3].map((i) => (
@@ -60,16 +60,17 @@ export function DynamicCards({
   return (
     <div
       className={cn(
-        renderAs === 'grid'
-          ? 'grid gap-4 md:grid-cols-2 lg:grid-cols-3'
-          : 'flex flex-col gap-4',
-        className
+        renderAs === "grid"
+          ? "grid gap-4 md:grid-cols-2 lg:grid-cols-3"
+          : "flex flex-col gap-4",
+        className,
       )}
     >
       {systemPrompts.map((systemPrompt) => {
         const isPlaceholder = systemPrompt.prompt_snapshot?.placeholder;
         const allowChat = systemPrompt.placement_settings?.allowChat ?? true;
-        const allowInitialMessage = systemPrompt.placement_settings?.allowInitialMessage ?? false;
+        const allowInitialMessage =
+          systemPrompt.placement_settings?.allowInitialMessage ?? false;
 
         // If placeholder, show locked card
         if (isPlaceholder) {
@@ -106,7 +107,7 @@ export function DynamicCards({
             systemPromptId={systemPrompt.source_prompt_id || systemPrompt.id}
             systemPrompt={systemPrompt}
             title={systemPrompt.display_config?.label || systemPrompt.name}
-            description={systemPrompt.description || ''}
+            description={systemPrompt.description || ""}
             context={context}
             allow_chat={allowChat}
           />
@@ -115,4 +116,3 @@ export function DynamicCards({
     </div>
   );
 }
-

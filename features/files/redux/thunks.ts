@@ -18,12 +18,12 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import type { AppDispatch, RootState } from "@/lib/redux/store";
 import { supabase } from "@/utils/supabase/client";
 
-import * as Files from "../api/files";
-import * as Folders from "../api/folders";
-import * as Permissions from "../api/permissions";
-import * as ShareLinks from "../api/share-links";
-import * as Versions from "../api/versions";
-import { newRequestId } from "../api/client";
+import * as Files from "@/features/files/api/files";
+import * as Folders from "@/features/files/api/folders";
+import * as Permissions from "@/features/files/api/permissions";
+import * as ShareLinks from "@/features/files/api/share-links";
+import * as Versions from "@/features/files/api/versions";
+import { newRequestId } from "@/features/files/api/client";
 import {
   apiFileRecordToCloudFile,
   dbRowToCloudFile,
@@ -84,7 +84,7 @@ import type {
   UpdateFileMetadataArg,
   UploadFilesArg,
   Visibility,
-} from "../types";
+} from "@/features/files/types";
 
 type ThunkApi = { dispatch: AppDispatch; state: RootState };
 

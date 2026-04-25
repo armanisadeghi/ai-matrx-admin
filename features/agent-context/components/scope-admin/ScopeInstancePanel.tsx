@@ -16,9 +16,9 @@ import {
   selectScopeTreeByType,
   selectScopesLoading,
   deleteScope,
-  selectAssignmentCountByScope,
-} from "../../redux/scope";
-import type { ScopeType, Scope } from "../../redux/scope";
+} from "../../redux/scope/scopesSlice";
+import { selectAssignmentCountByScope } from "../../redux/scope/scopeAssignmentsSlice";
+import type { ScopeType, Scope } from "../../redux/scope/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/utils/cn";

@@ -23,7 +23,7 @@ import type { RootState } from "@/lib/redux/store";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 import { ShareModal } from "@/features/sharing";
-import { CreatePromptAppModal } from "@/features/prompt-apps/components";
+import { CreatePromptAppModal } from "@/features/prompt-apps/components/CreatePromptAppModal";
 import { ConvertToBuiltinModal } from "@/features/prompts/components/layouts/ConvertToBuiltinModal";
 import { FavoriteButton } from "./FavoriteButton";
 import { PromptActionModal } from "./PromptActionModal";
@@ -290,19 +290,31 @@ export function PromptListItem({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
-              <Link href={`${basePath}/run/${id}`} tabIndex={-1} onClick={(e) => handleRun(e)}>
+              <Link
+                href={`${basePath}/run/${id}`}
+                tabIndex={-1}
+                onClick={(e) => handleRun(e)}
+              >
                 <DropdownMenuItem disabled={isDisabled}>
                   <Play className="mr-2 h-4 w-4" />
                   Run
                 </DropdownMenuItem>
               </Link>
-              <Link href={`${basePath}/edit/${id}`} tabIndex={-1} onClick={(e) => handleEdit(e)}>
+              <Link
+                href={`${basePath}/edit/${id}`}
+                tabIndex={-1}
+                onClick={(e) => handleEdit(e)}
+              >
                 <DropdownMenuItem disabled={isDisabled}>
                   <Pencil className="mr-2 h-4 w-4" />
                   Edit
                 </DropdownMenuItem>
               </Link>
-              <Link href={`${basePath}/view/${id}`} tabIndex={-1} onClick={(e) => handleView(e)}>
+              <Link
+                href={`${basePath}/view/${id}`}
+                tabIndex={-1}
+                onClick={(e) => handleView(e)}
+              >
                 <DropdownMenuItem disabled={isDisabled}>
                   <Eye className="mr-2 h-4 w-4" />
                   View

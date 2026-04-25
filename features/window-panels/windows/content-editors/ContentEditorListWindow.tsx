@@ -11,11 +11,11 @@
 
 import React, { useCallback, useMemo, useState } from "react";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { ContentEditor } from "@/components/official/content-editor/ContentEditor";
 import {
-  ContentEditor,
   ContentEditorList,
   type ContentEditorListItem,
-} from "@/components/official/content-editor";
+} from "@/components/official/content-editor/ContentEditorList";
 import { useContentEditorEmitter } from "./useContentEditorEmitter";
 import type { ContentEditorSeedDocument } from "./useOpenContentEditorWindow";
 

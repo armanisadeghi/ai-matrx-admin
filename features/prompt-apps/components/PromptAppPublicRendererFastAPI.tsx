@@ -28,7 +28,7 @@ import type {
   ChunkPayload,
   ErrorPayload,
 } from "@/types/python-generated/stream-events";
-import type { PromptApp } from "../types";
+import type { PromptApp } from "../types/promptAppTypes";
 import { parseNdjsonStream } from "@/lib/api/stream-parser";
 import { ENDPOINTS, BACKEND_URLS } from "@/lib/api/endpoints";
 import { useSelector } from "react-redux";

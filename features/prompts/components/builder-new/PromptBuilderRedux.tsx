@@ -21,7 +21,7 @@ import {
 } from "./AgentSettingsBridge";
 import { AgentSettingsPanelInline } from "./AgentSettingsPanelWrapper";
 import { AgentSettingsModalButton } from "@/features/agent-settings/components/AgentSettingsModal";
-import { fetchAvailableTools } from "@/lib/redux/slices/agent-settings";
+import { fetchAvailableTools } from "@/lib/redux/slices/agent-settings/agentSettingsSlice";
 import {
   ResizableHandle,
   ResizablePanel,

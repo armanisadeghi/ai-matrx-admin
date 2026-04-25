@@ -1,14 +1,14 @@
 /**
  * DynamicContextMenu
- * 
+ *
  * Fully database-driven context menu that loads system prompts.
  * Shows "Coming Soon" for placeholders without actual prompts.
  * Replaces all hardcoded menu items.
  */
 
-'use client';
+"use client";
 
-import React, { useMemo, useState, useEffect, useCallback } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from "react";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -18,18 +18,24 @@ import {
   ContextMenuSubContent,
   ContextMenuSubTrigger,
   ContextMenuTrigger,
-} from '@/components/ui/context-menu';
-import { useContextMenuPrompts } from '@/hooks/useSystemPrompts';
-import { PromptContextResolver, type UIContext } from '@/lib/services/prompt-context-resolver';
-import { PromptRunnerModal } from '@/features/prompts/components/results-display/PromptRunnerModal';
-import { TextActionResultModal } from '@/components/modals/TextActionResultModal';
-import { usePromptExecution } from '@/features/prompts/hooks/usePromptExecution';
+} from "@/components/ui/context-menu/context-menu";
+import { useContextMenuPrompts } from "@/hooks/useSystemPrompts";
+import {
+  PromptContextResolver,
+  type UIContext,
+} from "@/lib/services/prompt-context-resolver";
+import { PromptRunnerModal } from "@/features/prompts/components/results-display/PromptRunnerModal";
+import { TextActionResultModal } from "@/components/modals/TextActionResultModal";
+import { usePromptExecution } from "@/features/prompts/hooks/usePromptExecution";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
-import { selectIsDebugMode, showPromptDebugIndicator } from '@/lib/redux/slices/adminDebugSlice';
-import { startPromptInstance } from '@/lib/redux/prompt-execution/thunks/startInstanceThunk';
-import { Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { v4 as uuidv4 } from 'uuid';
+import {
+  selectIsDebugMode,
+  showPromptDebugIndicator,
+} from "@/lib/redux/slices/adminDebugSlice";
+import { startPromptInstance } from "@/lib/redux/prompt-execution/thunks/startInstanceThunk";
+import { Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { v4 as uuidv4 } from "uuid";
 
 interface DynamicContextMenuProps {
   children: React.ReactNode;
@@ -69,16 +75,27 @@ export function DynamicContextMenu({
   onTextInsertAfter,
   isEditable = false,
 }: DynamicContextMenuProps) {
-  const { systemPrompts, loading } = useContextMenuPrompts(category, subcategory);
+  const { systemPrompts, loading } = useContextMenuPrompts(
+    category,
+    subcategory,
+  );
   const dispatch = useAppDispatch();
   const [executingId, setExecutingId] = useState<string | null>(null);
-  const [selectedText, setSelectedText] = useState<string>('');
-  const [selectionRange, setSelectionRange] = useState<{ start: number; end: number; element: HTMLElement | null } | null>(null);
+  const [selectedText, setSelectedText] = useState<string>("");
+  const [selectionRange, setSelectionRange] = useState<{
+    start: number;
+    end: number;
+    element: HTMLElement | null;
+  } | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalRunId, setModalRunId] = useState<string | null>(null);
-  const [modalTitle, setModalTitle] = useState<string>('');
+  const [modalTitle, setModalTitle] = useState<string>("");
   const [textResultModalOpen, setTextResultModalOpen] = useState(false);
-  const [textResultData, setTextResultData] = useState<{ original: string; result: string; promptName: string } | null>(null);
+  const [textResultData, setTextResultData] = useState<{
+    original: string;
+    result: string;
+    promptName: string;
+  } | null>(null);
   const isDebugMode = useAppSelector(selectIsDebugMode);
   const { execute, streamingText, isExecuting } = usePromptExecution();
 
@@ -86,26 +103,30 @@ export function DynamicContextMenu({
   useEffect(() => {
     const handleSelection = () => {
       const selection = window.getSelection();
-      const text = selection?.toString().trim() || '';
+      const text = selection?.toString().trim() || "";
       setSelectedText(text);
     };
 
-    document.addEventListener('selectionchange', handleSelection);
-    return () => document.removeEventListener('selectionchange', handleSelection);
+    document.addEventListener("selectionchange", handleSelection);
+    return () =>
+      document.removeEventListener("selectionchange", handleSelection);
   }, []);
 
   const handleContextMenu = (e: React.MouseEvent) => {
     // CRITICAL: Capture text AND selection range IMMEDIATELY before menu opens
     const selection = window.getSelection();
-    const text = selection?.toString().trim() || '';
-    
+    const text = selection?.toString().trim() || "";
+
     // Store the target element and its selection range for later use
     const target = e.target as HTMLElement;
     let start = 0;
     let end = 0;
     let element: HTMLElement | null = null;
 
-    if (target instanceof HTMLTextAreaElement || target instanceof HTMLInputElement) {
+    if (
+      target instanceof HTMLTextAreaElement ||
+      target instanceof HTMLInputElement
+    ) {
       start = target.selectionStart || 0;
       end = target.selectionEnd || 0;
       element = target;
@@ -118,11 +139,10 @@ export function DynamicContextMenu({
         element = target;
       }
     }
-    
+
     // Store both text and range (for later reference in Replace/Insert operations)
     setSelectedText(text);
     setSelectionRange({ start, end, element });
-    
   };
 
   // Group prompts by category and subcategory
@@ -130,7 +150,7 @@ export function DynamicContextMenu({
     const groups: GroupedPrompts = {};
 
     systemPrompts.forEach((prompt) => {
-      const cat = prompt.category || 'other';
+      const cat = prompt.category || "other";
       const subcat = prompt.subcategory;
 
       // Initialize category if needed
@@ -161,11 +181,14 @@ export function DynamicContextMenu({
   }, [systemPrompts]);
 
   const handleActionTrigger = async (systemPrompt: any) => {
-    console.log('[DynamicContextMenu] Action triggered:', systemPrompt.name);
-    
+    console.log("[DynamicContextMenu] Action triggered:", systemPrompt.name);
+
     // Check if placeholder
     if (systemPrompt.prompt_snapshot?.placeholder) {
-      console.log('[DynamicContextMenu] Skipping placeholder:', systemPrompt.name);
+      console.log(
+        "[DynamicContextMenu] Skipping placeholder:",
+        systemPrompt.name,
+      );
       return; // Disabled
     }
 
@@ -185,39 +208,44 @@ export function DynamicContextMenu({
       const variables = PromptContextResolver.resolve(
         systemPrompt.prompt_snapshot,
         systemPrompt.functionality_id,
-        'context-menu',
-        contextWithSelection
+        "context-menu",
+        contextWithSelection,
       );
-
 
       // Check if can resolve
       const canResolve = PromptContextResolver.canResolve(
         systemPrompt.prompt_snapshot,
         systemPrompt.functionality_id,
-        'context-menu',
-        contextWithSelection
+        "context-menu",
+        contextWithSelection,
       );
-
 
       // Show debug modal if debug mode is enabled
       if (isDebugMode) {
-        dispatch(showPromptDebugIndicator({
-          promptName: systemPrompt.name,
-          placementType: 'context-menu',
-          selectedText,
-          availableContext: contextWithSelection,
-          resolvedVariables: variables,
-          canResolve,
-          metadata: {
-            functionalityId: systemPrompt.functionality_id,
-            promptSnapshot: systemPrompt.prompt_snapshot,
-          },
-        }));
+        dispatch(
+          showPromptDebugIndicator({
+            promptName: systemPrompt.name,
+            placementType: "context-menu",
+            selectedText,
+            availableContext: contextWithSelection,
+            resolvedVariables: variables,
+            canResolve,
+            metadata: {
+              functionalityId: systemPrompt.functionality_id,
+              promptSnapshot: systemPrompt.prompt_snapshot,
+            },
+          }),
+        );
       }
 
       if (!canResolve.canResolve) {
-        console.warn(`[DynamicContextMenu] Cannot resolve variables for ${systemPrompt.name}:`, canResolve.missingVariables);
-        alert(`Cannot execute: Missing variables - ${canResolve.missingVariables.join(', ')}`);
+        console.warn(
+          `[DynamicContextMenu] Cannot resolve variables for ${systemPrompt.name}:`,
+          canResolve.missingVariables,
+        );
+        alert(
+          `Cannot execute: Missing variables - ${canResolve.missingVariables.join(", ")}`,
+        );
         return;
       }
 
@@ -226,16 +254,23 @@ export function DynamicContextMenu({
       const allowChat = settings.allowChat ?? true;
       const allowInitialMessage = settings.allowInitialMessage ?? false;
 
-
       // If this is an editable context (textarea) and has text replace callbacks
       // Execute directly and show replace modal instead of chat modal
-      if (isEditable && (onTextReplace || onTextInsertBefore || onTextInsertAfter) && selectedText) {
-        console.log('[DynamicContextMenu] Editable context detected - executing for text replacement');
-        
+      if (
+        isEditable &&
+        (onTextReplace || onTextInsertBefore || onTextInsertAfter) &&
+        selectedText
+      ) {
+        console.log(
+          "[DynamicContextMenu] Editable context detected - executing for text replacement",
+        );
+
         // Execute the prompt
         const result = await execute({
           promptId: systemPrompt.source_prompt_id,
-          promptData: !systemPrompt.source_prompt_id ? systemPrompt.prompt_snapshot : undefined,
+          promptData: !systemPrompt.source_prompt_id
+            ? systemPrompt.prompt_snapshot
+            : undefined,
           variables,
         });
 
@@ -245,38 +280,46 @@ export function DynamicContextMenu({
         // TODO: Integrate with actual streaming result
         setTextResultData({
           original: selectedText,
-          result: 'Processing...', // Will be updated by streaming
+          result: "Processing...", // Will be updated by streaming
           promptName: systemPrompt.name,
         });
         setTextResultModalOpen(true);
       } else {
         // Regular modal with chat - initialize via Redux
         const newRunId = uuidv4();
-        const promptId = systemPrompt.source_prompt_id || systemPrompt.prompt_snapshot?.id || 'unknown';
-        
-        await dispatch(startPromptInstance({
-          runId: newRunId,
-          promptId,
-          promptSource: 'prompts',
-          executionConfig: {
-            auto_run: true,
-            allow_chat: allowChat,
-            show_variables: false,
-            apply_variables: true,
-            track_in_runs: true,
-            use_pre_execution_input: false,
-          },
-          variables,
-        })).unwrap();
-        
+        const promptId =
+          systemPrompt.source_prompt_id ||
+          systemPrompt.prompt_snapshot?.id ||
+          "unknown";
+
+        await dispatch(
+          startPromptInstance({
+            runId: newRunId,
+            promptId,
+            promptSource: "prompts",
+            executionConfig: {
+              auto_run: true,
+              allow_chat: allowChat,
+              show_variables: false,
+              apply_variables: true,
+              track_in_runs: true,
+              use_pre_execution_input: false,
+            },
+            variables,
+          }),
+        ).unwrap();
+
         setModalRunId(newRunId);
         setModalTitle(systemPrompt.name);
         setModalOpen(true);
       }
-      
-      console.log('[DynamicContextMenu] Modal state set');
+
+      console.log("[DynamicContextMenu] Modal state set");
     } catch (error) {
-      console.error('[DynamicContextMenu] Error executing system prompt:', error);
+      console.error(
+        "[DynamicContextMenu] Error executing system prompt:",
+        error,
+      );
       alert(`Error: ${error.message}`);
     }
   };
@@ -316,13 +359,15 @@ export function DynamicContextMenu({
         onClick={() => handleActionTrigger(item)}
         disabled={isDisabled || isExecuting}
         className={cn(
-          'flex items-center gap-2',
-          isPlaceholder && 'text-muted-foreground italic'
+          "flex items-center gap-2",
+          isPlaceholder && "text-muted-foreground italic",
         )}
       >
         {isExecuting && <Loader2 className="h-3 w-3 animate-spin" />}
         {item.display_config?.icon && !isExecuting && (
-          <span className="text-muted-foreground">{/* Icon placeholder */}</span>
+          <span className="text-muted-foreground">
+            {/* Icon placeholder */}
+          </span>
         )}
         <span>{item.name}</span>
         {isPlaceholder && <span className="text-xs">(Coming Soon)</span>}
@@ -333,7 +378,10 @@ export function DynamicContextMenu({
   if (loading) {
     return (
       <ContextMenu>
-        <ContextMenuTrigger className={className} onContextMenu={handleContextMenu}>
+        <ContextMenuTrigger
+          className={className}
+          onContextMenu={handleContextMenu}
+        >
           {children}
         </ContextMenuTrigger>
         <ContextMenuContent>
@@ -349,7 +397,10 @@ export function DynamicContextMenu({
   if (systemPrompts.length === 0) {
     return (
       <ContextMenu>
-        <ContextMenuTrigger className={className} onContextMenu={handleContextMenu}>
+        <ContextMenuTrigger
+          className={className}
+          onContextMenu={handleContextMenu}
+        >
           {children}
         </ContextMenuTrigger>
         <ContextMenuContent>
@@ -362,153 +413,174 @@ export function DynamicContextMenu({
   return (
     <>
       <ContextMenu>
-        <ContextMenuTrigger className={className} onContextMenu={handleContextMenu}>
+        <ContextMenuTrigger
+          className={className}
+          onContextMenu={handleContextMenu}
+        >
           {children}
         </ContextMenuTrigger>
         <ContextMenuContent className="w-64">
-        {Object.entries(groupedPrompts).map(([categoryKey, categoryData], index) => {
-          const hasSubcategories =
-            categoryData.subcategories && Object.keys(categoryData.subcategories).length > 0;
+          {Object.entries(groupedPrompts).map(
+            ([categoryKey, categoryData], index) => {
+              const hasSubcategories =
+                categoryData.subcategories &&
+                Object.keys(categoryData.subcategories).length > 0;
 
-          // If category has both direct items and subcategories, render both
-          if (hasSubcategories && categoryData.items.length > 0) {
-            return (
-              <React.Fragment key={categoryKey}>
-                {index > 0 && <ContextMenuSeparator />}
-                <ContextMenuSub>
-                  <ContextMenuSubTrigger>{categoryData.label}</ContextMenuSubTrigger>
-                  <ContextMenuSubContent>
-                    {/* Direct items */}
+              // If category has both direct items and subcategories, render both
+              if (hasSubcategories && categoryData.items.length > 0) {
+                return (
+                  <React.Fragment key={categoryKey}>
+                    {index > 0 && <ContextMenuSeparator />}
+                    <ContextMenuSub>
+                      <ContextMenuSubTrigger>
+                        {categoryData.label}
+                      </ContextMenuSubTrigger>
+                      <ContextMenuSubContent>
+                        {/* Direct items */}
+                        {categoryData.items.map(renderMenuItem)}
+
+                        {/* Subcategories */}
+                        {categoryData.items.length > 0 && (
+                          <ContextMenuSeparator />
+                        )}
+                        {Object.entries(categoryData.subcategories!).map(
+                          ([subKey, subData]) => (
+                            <ContextMenuSub key={subKey}>
+                              <ContextMenuSubTrigger>
+                                {subData.label}
+                              </ContextMenuSubTrigger>
+                              <ContextMenuSubContent>
+                                {subData.items.map(renderMenuItem)}
+                              </ContextMenuSubContent>
+                            </ContextMenuSub>
+                          ),
+                        )}
+                      </ContextMenuSubContent>
+                    </ContextMenuSub>
+                  </React.Fragment>
+                );
+              }
+
+              // Category with only subcategories
+              if (hasSubcategories) {
+                return (
+                  <React.Fragment key={categoryKey}>
+                    {index > 0 && <ContextMenuSeparator />}
+                    <ContextMenuSub>
+                      <ContextMenuSubTrigger>
+                        {categoryData.label}
+                      </ContextMenuSubTrigger>
+                      <ContextMenuSubContent>
+                        {Object.entries(categoryData.subcategories!).map(
+                          ([subKey, subData]) => (
+                            <ContextMenuSub key={subKey}>
+                              <ContextMenuSubTrigger>
+                                {subData.label}
+                              </ContextMenuSubTrigger>
+                              <ContextMenuSubContent>
+                                {subData.items.map(renderMenuItem)}
+                              </ContextMenuSubContent>
+                            </ContextMenuSub>
+                          ),
+                        )}
+                      </ContextMenuSubContent>
+                    </ContextMenuSub>
+                  </React.Fragment>
+                );
+              }
+
+              // Category with only direct items (standalone)
+              if (categoryKey === "standalone") {
+                // Render standalone items at top level
+                return (
+                  <React.Fragment key={categoryKey}>
+                    {index > 0 && <ContextMenuSeparator />}
                     {categoryData.items.map(renderMenuItem)}
+                  </React.Fragment>
+                );
+              }
 
-                    {/* Subcategories */}
-                    {categoryData.items.length > 0 && <ContextMenuSeparator />}
-                    {Object.entries(categoryData.subcategories!).map(([subKey, subData]) => (
-                      <ContextMenuSub key={subKey}>
-                        <ContextMenuSubTrigger>{subData.label}</ContextMenuSubTrigger>
-                        <ContextMenuSubContent>
-                          {subData.items.map(renderMenuItem)}
-                        </ContextMenuSubContent>
-                      </ContextMenuSub>
-                    ))}
-                  </ContextMenuSubContent>
-                </ContextMenuSub>
-              </React.Fragment>
-            );
-          }
+              // Regular category with direct items
+              return (
+                <React.Fragment key={categoryKey}>
+                  {index > 0 && <ContextMenuSeparator />}
+                  <ContextMenuSub>
+                    <ContextMenuSubTrigger>
+                      {categoryData.label}
+                    </ContextMenuSubTrigger>
+                    <ContextMenuSubContent>
+                      {categoryData.items.map(renderMenuItem)}
+                    </ContextMenuSubContent>
+                  </ContextMenuSub>
+                </React.Fragment>
+              );
+            },
+          )}
+        </ContextMenuContent>
+      </ContextMenu>
 
-          // Category with only subcategories
-          if (hasSubcategories) {
-            return (
-              <React.Fragment key={categoryKey}>
-                {index > 0 && <ContextMenuSeparator />}
-                <ContextMenuSub>
-                  <ContextMenuSubTrigger>{categoryData.label}</ContextMenuSubTrigger>
-                  <ContextMenuSubContent>
-                    {Object.entries(categoryData.subcategories!).map(([subKey, subData]) => (
-                      <ContextMenuSub key={subKey}>
-                        <ContextMenuSubTrigger>{subData.label}</ContextMenuSubTrigger>
-                        <ContextMenuSubContent>
-                          {subData.items.map(renderMenuItem)}
-                        </ContextMenuSubContent>
-                      </ContextMenuSub>
-                    ))}
-                  </ContextMenuSubContent>
-                </ContextMenuSub>
-              </React.Fragment>
-            );
-          }
+      {/* Modal for execution - runId must be initialized in Redux */}
+      {modalOpen && modalRunId ? (
+        <PromptRunnerModal
+          isOpen={modalOpen}
+          onClose={() => {
+            console.log("[DynamicContextMenu] Closing modal");
+            setModalOpen(false);
+            setModalRunId(null);
+            // Clear selection range when modal closes
+            setSelectionRange(null);
+            setSelectedText("");
+          }}
+          runId={modalRunId}
+          title={modalTitle}
+        />
+      ) : null}
 
-          // Category with only direct items (standalone)
-          if (categoryKey === 'standalone') {
-            // Render standalone items at top level
-            return (
-              <React.Fragment key={categoryKey}>
-                {index > 0 && <ContextMenuSeparator />}
-                {categoryData.items.map(renderMenuItem)}
-              </React.Fragment>
-            );
-          }
-
-          // Regular category with direct items
-          return (
-            <React.Fragment key={categoryKey}>
-              {index > 0 && <ContextMenuSeparator />}
-              <ContextMenuSub>
-                <ContextMenuSubTrigger>{categoryData.label}</ContextMenuSubTrigger>
-                <ContextMenuSubContent>
-                  {categoryData.items.map(renderMenuItem)}
-                </ContextMenuSubContent>
-              </ContextMenuSub>
-            </React.Fragment>
-          );
-        })}
-      </ContextMenuContent>
-    </ContextMenu>
-
-    {/* Modal for execution - runId must be initialized in Redux */}
-    {modalOpen && modalRunId ? (
-      <PromptRunnerModal
-        isOpen={modalOpen}
-        onClose={() => {
-          console.log('[DynamicContextMenu] Closing modal');
-          setModalOpen(false);
-          setModalRunId(null);
-          // Clear selection range when modal closes
-          setSelectionRange(null);
-          setSelectedText('');
-        }}
-        runId={modalRunId}
-        title={modalTitle}
-      />
-    ) : null}
-
-    {/* Text Action Result Modal (for text editors with replace/insert) */}
-    {textResultModalOpen && textResultData && (
-      <TextActionResultModal
-        isOpen={textResultModalOpen}
-        onClose={() => {
-          setTextResultModalOpen(false);
-          setTextResultData(null);
-          // Clear selection range when operation completes or is cancelled
-          setSelectionRange(null);
-          setSelectedText('');
-        }}
-        originalText={textResultData.original}
-        aiResponse={streamingText || textResultData.result}
-        promptName={textResultData.promptName}
-        onReplace={(newText) => {
-          onTextReplace?.(newText);
-          // Clear selection after replacement
-          setSelectionRange(null);
-          setSelectedText('');
-          setTextResultModalOpen(false);
-        }}
-        onInsertBefore={(text) => {
-          onTextInsertBefore?.(text);
-          // Clear selection after insertion
-          setSelectionRange(null);
-          setSelectedText('');
-          setTextResultModalOpen(false);
-        }}
-        onInsertAfter={(text) => {
-          onTextInsertAfter?.(text);
-          // Clear selection after insertion
-          setSelectionRange(null);
-          setSelectedText('');
-          setTextResultModalOpen(false);
-        }}
-      />
-    )}
-  </>
+      {/* Text Action Result Modal (for text editors with replace/insert) */}
+      {textResultModalOpen && textResultData && (
+        <TextActionResultModal
+          isOpen={textResultModalOpen}
+          onClose={() => {
+            setTextResultModalOpen(false);
+            setTextResultData(null);
+            // Clear selection range when operation completes or is cancelled
+            setSelectionRange(null);
+            setSelectedText("");
+          }}
+          originalText={textResultData.original}
+          aiResponse={streamingText || textResultData.result}
+          promptName={textResultData.promptName}
+          onReplace={(newText) => {
+            onTextReplace?.(newText);
+            // Clear selection after replacement
+            setSelectionRange(null);
+            setSelectedText("");
+            setTextResultModalOpen(false);
+          }}
+          onInsertBefore={(text) => {
+            onTextInsertBefore?.(text);
+            // Clear selection after insertion
+            setSelectionRange(null);
+            setSelectedText("");
+            setTextResultModalOpen(false);
+          }}
+          onInsertAfter={(text) => {
+            onTextInsertAfter?.(text);
+            // Clear selection after insertion
+            setSelectionRange(null);
+            setSelectedText("");
+            setTextResultModalOpen(false);
+          }}
+        />
+      )}
+    </>
   );
 }
 
 // Helper function to format category names
 function formatCategoryName(name: string): string {
   return name
-    .split('-')
+    .split("-")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+    .join(" ");
 }
-

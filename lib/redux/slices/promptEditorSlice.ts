@@ -13,8 +13,8 @@ import {
 } from "@/features/prompts/types/core";
 import { getModelDefaults } from "@/features/prompts/hooks/useModelControls";
 import type { RootState } from "@/lib/redux/store";
-import { selectModelById } from "../../../features/ai-models/redux/modelRegistrySlice";
-import { AIModel } from "../../../features/ai-models/redux/modelRegistrySlice";
+import { selectModelById } from "@/features/ai-models/redux/modelRegistrySlice";
+import { AIModel } from "@/features/ai-models/redux/modelRegistrySlice";
 
 interface PromptEditorState {
   // Identity & Metadata (Root level)

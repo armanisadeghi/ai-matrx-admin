@@ -35,7 +35,7 @@ import type {
   UploadStatus,
   ViewMode,
   Visibility,
-} from "../types";
+} from "@/features/files/types";
 
 // ---------------------------------------------------------------------------
 // Record factories

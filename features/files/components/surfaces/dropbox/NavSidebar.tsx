@@ -17,11 +17,8 @@ import Link from "next/link";
 import { ChevronDown, Plus, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import {
-  setActiveFileId,
-  setActiveFolderId,
-} from "../../../redux/slice";
-import { FileTree } from "../../core/FileTree";
+import { setActiveFileId, setActiveFolderId } from "@/features/files/redux/slice";
+import { FileTree } from "@/features/files/components/core/FileTree/FileTree";
 import { NavSidebarFlatFolders } from "./NavSidebarFlatFolders";
 import { SidebarModeToggle, useSidebarMode } from "./SidebarModeToggle";
 import { PRIMARY_SECTIONS } from "./section";

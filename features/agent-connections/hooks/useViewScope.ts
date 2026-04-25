@@ -7,7 +7,7 @@ import {
   selectProjectId,
   selectTaskId,
 } from "@/features/agent-context/redux/appContextSlice";
-import { selectViewScope } from "../redux/ui";
+import { selectViewScope } from "../redux/ui/slice";
 import type { Scope } from "../types";
 
 export interface ViewScopeResult {

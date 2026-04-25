@@ -11,7 +11,7 @@ import { PromptEditorContextMenu } from "@/features/prompts/components/PromptEdi
 import MarkdownStream from "@/components/MarkdownStream";
 import { parseMarkdownToText } from "@/utils/markdown-processors/parse-markdown-for-speech";
 import { AudioTestModal } from "@/components/admin/AudioTestModal";
-import { useApiTestConfig } from "@/components/api-test-config";
+import { useApiTestConfig } from "@/components/api-test-config/useApiTestConfig";
 import { ENDPOINTS } from "@/lib/api/endpoints";
 import { parseNdjsonStream } from "@/lib/api/stream-parser";
 import type {

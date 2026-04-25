@@ -25,7 +25,7 @@ import {
 } from "../services/slug-service";
 import { getDefaultImportsForNewApps } from "../utils/allowed-imports";
 import { SocketConnectionManager } from "@/lib/redux/socket-io/connection/socketConnectionManager";
-import type { AppMetadata } from "../types";
+import type { AppMetadata } from "../types/promptAppTypes";
 
 export type AutoCreateMode = "standard" | "lightning";
 

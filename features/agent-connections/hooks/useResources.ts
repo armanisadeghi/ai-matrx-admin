@@ -6,10 +6,9 @@ import {
   selectAllResources,
   selectResourcesForSkill,
   selectResourcesStatus,
-  fetchResources,
-  deleteResource,
-  type SklResource,
-} from "../redux/skl";
+} from "../redux/skl/selectors";
+import { fetchResources, deleteResource } from "../redux/skl/thunks";
+import type { SklResource } from "../redux/skl/types";
 
 export interface UseResourcesArgs {
   skillId?: string;

@@ -2,7 +2,8 @@
 
 import React from "react";
 import { CodeWorkspace, type CodeWorkspaceProps } from "../CodeWorkspace";
-import { ChatHistorySlot, ChatPanelSlot } from "../chat";
+import { ChatPanelSlot } from "../chat/ChatPanelSlot";
+import { ChatHistorySlot } from "../chat/ChatHistorySlot";
 
 export interface CodeWorkspaceRouteProps extends CodeWorkspaceProps {
   /** Disable the chat column (default: enabled). */

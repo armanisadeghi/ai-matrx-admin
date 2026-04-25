@@ -9,8 +9,8 @@
 
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { uploadFiles as uploadFilesThunk } from "../redux/thunks";
-import type { UploadFilesArg } from "../types";
+import { uploadFiles as uploadFilesThunk } from "@/features/files/redux/thunks";
+import type { UploadFilesArg } from "@/features/files/types";
 
 export interface UseFileUploadResult {
   upload: (

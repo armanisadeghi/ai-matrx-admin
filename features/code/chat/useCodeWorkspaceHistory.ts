@@ -15,7 +15,7 @@ import {
   type ConversationHistoryGrouping,
 } from "@/lib/redux/slices/userPreferencesSlice";
 import { selectCodingPreferences } from "@/lib/redux/selectors/userPreferenceSelectors";
-import { makeSelectAgentIdsForFilter } from "@/features/agents/redux/agent-filter";
+import { makeSelectAgentIdsForFilter } from "@/features/agents/redux/agent-filter/selectors";
 import type { ConversationListItem } from "@/features/agents/redux/conversation-list/conversation-list.types";
 
 export interface UseCodeWorkspaceHistoryResult {

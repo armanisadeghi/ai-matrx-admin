@@ -17,7 +17,10 @@ import {
   selectOrganizationId,
   selectScopeSelectionsContext,
 } from "@/features/agent-context/redux/appContextSlice";
-import { selectProjects, selectFilteredTasks } from "@/features/tasks/redux/selectors";
+import {
+  selectProjects,
+  selectFilteredTasks,
+} from "@/features/tasks/redux/selectors";
 import {
   selectActiveProject,
   selectShowAllProjects,
@@ -38,11 +41,9 @@ import {
   createProjectThunk,
   toggleTaskCompleteThunk,
 } from "@/features/tasks/redux/thunks";
-import {
-  HierarchyCascade,
-  useHierarchyReduxBridge,
-  EMPTY_SELECTION,
-} from "@/features/agent-context/components/hierarchy-selection";
+import { HierarchyCascade } from "@/features/agent-context/components/hierarchy-selection/HierarchyCascade";
+import { useHierarchyReduxBridge } from "@/features/agent-context/components/hierarchy-selection/useReduxBridge";
+import { EMPTY_SELECTION } from "@/features/agent-context/components/hierarchy-selection/types";
 import CompactTaskItem from "./CompactTaskItem";
 import TaskDetailsPanel from "./TaskDetailsPanel";
 import AllTasksView from "./AllTasksView";
@@ -295,7 +296,9 @@ export default function TaskContentNew() {
                       <Input
                         type="text"
                         value={searchQuery}
-                        onChange={(e) => dispatch(setSearchQuery(e.target.value))}
+                        onChange={(e) =>
+                          dispatch(setSearchQuery(e.target.value))
+                        }
                         placeholder="Search tasks by name, description, or project..."
                         className="pl-9 pr-9 h-9 text-sm bg-card"
                       />

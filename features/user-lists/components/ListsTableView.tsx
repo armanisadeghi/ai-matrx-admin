@@ -8,7 +8,7 @@ import GenericDataTable, {
   type ColumnConfig,
   type ActionConfig,
 } from "@/components/generic-table/GenericDataTable";
-import { GenericTableHeader } from "@/components/generic-table";
+import { GenericTableHeader } from "@/components/generic-table/GenericTableHeader";
 import { useListsTableState } from "../hooks/useListsTableState";
 import { CreateListDialog } from "./CreateListDialog";
 import { EditListDialog } from "./EditListDialog";

@@ -2,10 +2,8 @@
 
 import { lazy, Suspense } from "react";
 import { Cpu, Loader2 } from "lucide-react";
-import {
-  SettingsSubHeader,
-  SettingsCallout,
-} from "@/components/official/settings";
+import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
+import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
 
 /**
  * AI Models tab.
@@ -32,9 +30,9 @@ export default function AiModelsTab() {
         icon={Cpu}
       />
       <SettingsCallout tone="info">
-        This tab still uses the legacy dashboard UI. It writes to the same
-        Redux slice as every other tab and is slated for a primitive-based
-        rewrite in a later phase.
+        This tab still uses the legacy dashboard UI. It writes to the same Redux
+        slice as every other tab and is slated for a primitive-based rewrite in
+        a later phase.
       </SettingsCallout>
       <div className="px-4 pb-6">
         <div className="rounded-lg border border-border/40 bg-card/30 overflow-hidden">

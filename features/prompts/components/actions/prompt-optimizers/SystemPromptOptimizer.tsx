@@ -33,7 +33,7 @@ import { Label } from "@/components/ui/label";
 import { Wand2, Check, X, Loader2, Copy, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { usePromptsBasePath } from "../../../hooks/usePromptsBasePath";
+import { usePromptsBasePath } from "@/features/prompts/hooks/usePromptsBasePath";
 import { createUserPrompt } from "@/lib/redux/thunks/promptCrudThunks";
 import { FullPromptOptimizer } from "./FullPromptOptimizer";
 import MarkdownStream from "@/components/MarkdownStream";

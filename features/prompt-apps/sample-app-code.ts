@@ -212,8 +212,8 @@ export default function PromptAppComponent({
   );
 }`;
 
-import { getTemplateForDisplayMode } from './sample-code/templates';
-import type { AppDisplayMode } from './types';
+import { getTemplateForDisplayMode } from "./sample-code/templateRegistry";
+import type { AppDisplayMode } from "./types/promptAppTypes";
 
 /**
  * Get sample prompt app code by style or display mode.
@@ -223,14 +223,20 @@ import type { AppDisplayMode } from './types';
  */
 const getSamplePromptAppCode = (appStyle: string) => {
   // Support new display modes
-  const displayModes = ['form', 'form-to-chat', 'chat', 'centered-input', 'chat-with-history'] as const;
+  const displayModes = [
+    "form",
+    "form-to-chat",
+    "chat",
+    "centered-input",
+    "chat-with-history",
+  ] as const;
   if (displayModes.indexOf(appStyle as AppDisplayMode) !== -1) {
     return getTemplateForDisplayMode(appStyle as AppDisplayMode);
   }
 
   // Legacy style mappings
   switch (appStyle) {
-    case 'simple':
+    case "simple":
       return sampleSimplePromptAppCode;
     default:
       return sampleSimplePromptAppCode;

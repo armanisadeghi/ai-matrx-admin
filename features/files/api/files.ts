@@ -25,7 +25,7 @@ import type {
   PermissionLevel,
   SignedUrlResponse,
   Visibility,
-} from "../types";
+} from "@/features/files/types";
 
 // ---------------------------------------------------------------------------
 // Upload

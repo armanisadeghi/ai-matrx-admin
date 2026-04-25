@@ -25,7 +25,7 @@
  * own write to the same resource_id.
  */
 
-import type { LedgerEntry, RequestKind, ResourceType } from "../types";
+import type { LedgerEntry, RequestKind, ResourceType } from "@/features/files/types";
 
 const ENTRY_TTL_MS = 30_000;
 const FUZZY_WINDOW_MS = 2_000;

@@ -12,8 +12,8 @@ import { useMemo } from "react";
 import { ChevronRight, Home } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectAllFoldersMap } from "../../../redux/selectors";
-import { getFolderAncestors } from "../../../redux/tree-utils";
+import { selectAllFoldersMap } from "@/features/files/redux/selectors";
+import { getFolderAncestors } from "@/features/files/redux/tree-utils";
 
 export interface FileBreadcrumbsProps {
   /** The current folder. Pass null for "Home". */

@@ -12,7 +12,10 @@ import {
   Folder,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { selectFilteredTasks, selectProjects } from "@/features/tasks/redux/selectors";
+import {
+  selectFilteredTasks,
+  selectProjects,
+} from "@/features/tasks/redux/selectors";
 import {
   selectActiveProject,
   selectShowAllProjects,
@@ -39,10 +42,8 @@ import AllTasksView from "./AllTasksView";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import {
-  HierarchyCascade,
-  EMPTY_SELECTION,
-} from "@/features/agent-context/components/hierarchy-selection";
+import { HierarchyCascade } from "@/features/agent-context/components/hierarchy-selection/HierarchyCascade";
+import { EMPTY_SELECTION } from "@/features/agent-context/components/hierarchy-selection/types";
 
 export default function TaskContent(): JSX.Element {
   const dispatch = useAppDispatch();
@@ -303,7 +304,9 @@ export default function TaskContent(): JSX.Element {
                 onSubmit={async (e) => {
                   e.preventDefault();
                   if (newProjectName.trim()) {
-                    await dispatch(createProjectThunk({ name: newProjectName }));
+                    await dispatch(
+                      createProjectThunk({ name: newProjectName }),
+                    );
                   }
                 }}
                 className="space-y-3"

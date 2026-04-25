@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { ScrollArea } from '@/components/ui';
 import { UnifiedLayoutProps } from "@/components/matrx/Entity/prewired-components/layouts/types";
 import { EntityKeys } from '@/types/entityTypes';
-import { getEntityFormComponent } from '@/app/entities/forms';
+import { getEntityFormComponent } from "@/app/entities/forms/entityFormRegistry";
 
 interface UnifiedEntityFormProps {
     selectedEntity: EntityKeys | null;

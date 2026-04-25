@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Upload } from 'lucide-react';
-import { PromptImporter } from '@/features/prompts';
-import { useRouter } from 'next/navigation';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Upload } from "lucide-react";
+import { PromptImporter } from "@/features/prompts/components/common/PromptImporter";
+import { useRouter } from "next/navigation";
 
 export function ImportPromptButton() {
   const [isOpen, setIsOpen] = useState(false);
@@ -33,4 +33,3 @@ export function ImportPromptButton() {
     </>
   );
 }
-

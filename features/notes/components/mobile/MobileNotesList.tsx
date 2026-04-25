@@ -6,7 +6,7 @@ import { useNotesRedux } from '../../hooks/useNotesRedux';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { selectOrganizationId, selectProjectId, selectTaskId, selectScopeSelectionsContext } from '@/features/agent-context/redux/appContextSlice';
 import { fetchEntitiesByScopes } from '@/features/agent-context/redux/scope/scopeAssignmentsSlice';
-import { MobileActionBar } from '@/components/official/mobile-action-bar';
+import { MobileActionBar } from "@/components/official/mobile-action-bar/MobileActionBar";
 import NotesFilterSheet, { NotesFilterState } from './NotesFilterSheet';
 import type { Note } from '@/features/notes/types';
 

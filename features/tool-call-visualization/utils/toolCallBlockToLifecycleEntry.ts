@@ -1,4 +1,4 @@
-import type { ToolCallBlock } from "@/lib/chat-protocol";
+import type { ToolCallBlock } from "@/lib/chat-protocol/types";
 import type { ToolLifecycleEntry } from "@/features/agents/types/request.types";
 
 /**
@@ -56,7 +56,7 @@ export function toolCallBlockToLifecycleEntry(
     latestData: null,
     result:
       block.output !== undefined
-        ? (block.output as { result?: unknown }).result ?? block.output
+        ? ((block.output as { result?: unknown }).result ?? block.output)
         : null,
     resultPreview: null,
     errorType: null,

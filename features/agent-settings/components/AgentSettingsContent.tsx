@@ -11,8 +11,8 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   selectAvailableTools,
   selectIsLoadingTools,
-  fetchAvailableTools,
-} from "@/lib/redux/slices/agent-settings";
+} from "@/lib/redux/slices/agent-settings/selectors";
+import { fetchAvailableTools } from "@/lib/redux/slices/agent-settings/agentSettingsSlice";
 
 function CollapsibleSection({
   label,

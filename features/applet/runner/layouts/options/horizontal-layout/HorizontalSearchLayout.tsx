@@ -3,7 +3,7 @@
 
 import React from "react";
 import { AppletInputProps } from "@/features/applet/runner/layouts/AppletLayoutManager";
-import { SearchGroupField } from "@/features/applet/runner/layouts/core";
+import SearchGroupField from "@/features/applet/runner/layouts/core/SearchGroupField";
 import AppletBrokerContainer from "@/features/applet/runner/layouts/options/horizontal-layout/AppletBrokerContainer";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
@@ -17,11 +17,12 @@ const HorizontalSearchLayout: React.FC<AppletInputProps> = ({
   isMobile = false,
   source = "applet",
 }) => {
-  const appletContainers = useAppSelector(state => selectAppletRuntimeContainers(state, appletId))
+  const appletContainers = useAppSelector((state) =>
+    selectAppletRuntimeContainers(state, appletId),
+  );
 
   const groupsCount = appletContainers.length;
   const hideContainerPlaceholder = groupsCount > 4;
-
 
   return (
     <div className="w-full p-4">

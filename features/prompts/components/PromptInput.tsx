@@ -18,14 +18,12 @@ import {
 } from "@/components/ui/popover";
 import { PromptVariable } from "@/features/prompts/types/core";
 import { formatText } from "@/utils/text/text-case-converter";
-import { VariableInputComponent } from "./variable-inputs";
+import { VariableInputComponent } from "./variable-inputs/VariableInputComponent";
 import { PromptInputButton } from "./PromptInputButton";
-import { ResourcePickerButton } from "../../resource-manager/resource-picker";
-import {
-  ResourceChips,
-  type Resource,
-  ResourcePreviewSheet,
-} from "./resource-display";
+import { ResourcePickerButton } from "../../resource-manager/resource-picker/ResourcePickerButton";
+import { ResourceChips } from "./resource-display/ResourceChips";
+import type { Resource } from "../types/resources";
+import ResourcePreviewSheet from "./resource-display/ResourcePreviewSheet";
 import { useClipboardPaste } from "@/components/ui/file-upload/useClipboardPaste";
 import { useFileUploadWithStorage } from "@/components/ui/file-upload/useFileUploadWithStorage";
 import { useRecordAndTranscribe } from "@/features/audio/hooks/useRecordAndTranscribe";

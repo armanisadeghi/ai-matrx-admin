@@ -1,10 +1,8 @@
 "use client";
 
 import React from "react";
-import {
-  HierarchyCascade,
-  EMPTY_SELECTION,
-} from "@/features/agent-context/components/hierarchy-selection";
+import { HierarchyCascade } from "@/features/agent-context/components/hierarchy-selection/HierarchyCascade";
+import { EMPTY_SELECTION } from "@/features/agent-context/components/hierarchy-selection/types";
 
 interface MobileProjectSelectorProps {
   selectedProjectId: string | null;

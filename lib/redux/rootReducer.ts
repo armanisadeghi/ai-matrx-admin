@@ -74,8 +74,8 @@ import { conversationHistoryReducer } from "@/features/agents/redux/conversation
 import agentShortcutReducer from "@/features/agents/redux/agent-shortcuts/slice";
 import agentShortcutCategoryReducer from "@/features/agents/redux/agent-shortcut-categories/slice";
 import agentContentBlockReducer from "@/features/agents/redux/agent-content-blocks/slice";
-import { sklReducer } from "@/features/agent-connections/redux/skl";
-import { agentConnectionsUiReducer } from "@/features/agent-connections/redux/ui";
+import { sklReducer } from "@/features/agent-connections/redux/skl/slice";
+import { agentConnectionsUiReducer } from "@/features/agent-connections/redux/ui/slice";
 import { agentAppReducer } from "@/features/agents/redux/agent-apps/slice";
 import agentConsumersReducer from "@/features/agents/redux/agent-consumers/slice";
 import toolsReducer from "@/features/agents/redux/tools/tools.slice";
@@ -97,7 +97,7 @@ import promptEditorReducer from "./slices/promptEditorSlice";
 import modelRegistryReducer from "../../features/ai-models/redux/modelRegistrySlice";
 // chatConversations — unmounted (Redux unification). File remains on disk.
 import { messageActionsReducer } from "@/features/agents/redux/execution-system/message-actions/message-actions.slice";
-import { agentSettingsReducer } from "./slices/agent-settings";
+import agentSettingsReducer from "./slices/agent-settings/agentSettingsSlice";
 
 // cxConversations — superseded by conversationList. File remains on disk.
 import artifactsReducer from "./slices/artifactsSlice";

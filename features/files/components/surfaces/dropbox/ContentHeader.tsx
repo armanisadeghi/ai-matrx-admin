@@ -26,9 +26,9 @@ import {
   setActiveFileId,
   setActiveFolderId,
 } from "@/features/files/redux/slice";
-import { FileBreadcrumbs } from "@/features/files/components/core/FileBreadcrumbs";
-import { PermissionsDialog } from "@/features/files/components/core/PermissionsDialog";
-import { ShareLinkDialog } from "@/features/files/components/core/ShareLinkDialog";
+import { FileBreadcrumbs } from "@/features/files/components/core/FileBreadcrumbs/FileBreadcrumbs";
+import { PermissionsDialog } from "@/features/files/components/core/PermissionsDialog/PermissionsDialog";
+import { ShareLinkDialog } from "@/features/files/components/core/ShareLinkDialog/ShareLinkDialog";
 import type { Visibility } from "@/features/files/types";
 import { AccessBadge } from "./AccessBadge";
 import { SharedAvatarStack } from "./SharedAvatarStack";

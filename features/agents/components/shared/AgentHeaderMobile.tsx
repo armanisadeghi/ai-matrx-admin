@@ -24,7 +24,7 @@ import {
   BottomSheet,
   BottomSheetHeader,
   BottomSheetBody,
-} from "@/components/official/bottom-sheet";
+} from "@/components/official/bottom-sheet/BottomSheet";
 import { cn } from "@/lib/utils";
 import { AgentOptionsMenu } from "./AgentOptionsMenu";
 import {

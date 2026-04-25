@@ -31,8 +31,8 @@ import MarkdownStream from "@/components/MarkdownStream";
 import type { ChatMessage } from "../context/DEPRECATED-ChatContext";
 import type { PublicResource, PublicResourceType } from "../types/content";
 import type { TypedStreamEvent } from "@/types/python-generated/stream-events";
-import { buildCanonicalBlocks } from "@/lib/chat-protocol";
-import type { ToolCallBlock } from "@/lib/chat-protocol";
+import { buildCanonicalBlocks } from "@/lib/chat-protocol/from-stream";
+import type { ToolCallBlock } from "@/lib/chat-protocol/types";
 import { ToolCallVisualization as CanonicalToolCallVisualization } from "@/features/tool-call-visualization/components/ToolCallVisualization";
 import { toolCallBlockToLifecycleEntry } from "@/features/tool-call-visualization/utils/toolCallBlockToLifecycleEntry";
 import {

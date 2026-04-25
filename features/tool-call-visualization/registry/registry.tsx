@@ -42,9 +42,8 @@ import {
 import {
   DynamicInlineRenderer,
   DynamicOverlayRenderer,
-  getCachedRenderer,
-  isKnownNoDynamic,
-} from "../dynamic";
+} from "../dynamic/DynamicToolRenderer";
+import { getCachedRenderer, isKnownNoDynamic } from "../dynamic/cache";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEO header extras helpers

@@ -28,10 +28,8 @@ import {
 } from "lucide-react";
 import { TEST_ADMIN_TOKEN } from "../sample-prompt";
 import MarkdownStream from "@/components/MarkdownStream";
-import {
-  useApiTestConfig,
-  ApiTestConfigPanel,
-} from "@/components/api-test-config";
+import { ApiTestConfigPanel } from "@/components/api-test-config/ApiTestConfigPanel";
+import { useApiTestConfig } from "@/components/api-test-config/useApiTestConfig";
 import { supabase } from "@/utils/supabase/client";
 import { useModels } from "@/features/ai-models/hooks/useModels";
 import {

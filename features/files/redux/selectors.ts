@@ -24,7 +24,7 @@ import type {
   PermissionLevel,
   TreeChildren,
   UploadState,
-} from "../types";
+} from "@/features/files/types";
 
 /** Stable empties — never use `?? []` in selector outputs (new ref every run → Reselect stability warnings). */
 export const EMPTY_CLOUD_FILE_PERMISSIONS: CloudFilePermission[] = [];

@@ -35,10 +35,8 @@ import {
 } from "lucide-react";
 // Removed hardcoded TEST_ADMIN_TOKEN - now using cookie-based storage
 import MarkdownStream from "@/components/MarkdownStream";
-import {
-  useApiTestConfig,
-  ApiTestConfigPanel,
-} from "@/components/api-test-config";
+import { ApiTestConfigPanel } from "@/components/api-test-config/ApiTestConfigPanel";
+import { useApiTestConfig } from "@/components/api-test-config/useApiTestConfig";
 import type {
   TypedStreamEvent,
   ChunkPayload,

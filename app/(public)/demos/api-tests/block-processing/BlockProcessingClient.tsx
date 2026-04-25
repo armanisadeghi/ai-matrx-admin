@@ -3,10 +3,8 @@
 import React, { useState, useCallback, useRef } from "react";
 import { parseNdjsonStream } from "@/lib/api/stream-parser";
 import { ENDPOINTS } from "@/lib/api/endpoints";
-import {
-  useApiTestConfig,
-  ApiTestConfigPanel,
-} from "@/components/api-test-config";
+import { ApiTestConfigPanel } from "@/components/api-test-config/ApiTestConfigPanel";
+import { useApiTestConfig } from "@/components/api-test-config/useApiTestConfig";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";

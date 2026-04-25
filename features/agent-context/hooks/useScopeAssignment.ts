@@ -2,13 +2,13 @@
 
 import { useState, useCallback } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { fetchScopeTypes } from "../redux/scope/scopeTypesSlice";
+import { fetchScopes } from "../redux/scope/scopesSlice";
 import {
-  fetchScopeTypes,
-  fetchScopes,
   setEntityScopes,
   fetchEntityScopes,
-  selectScopePickerOptions,
-} from "../redux/scope";
+} from "../redux/scope/scopeAssignmentsSlice";
+import { selectScopePickerOptions } from "../redux/scope/selectors";
 import { selectOrganizationId } from "../redux/appContextSlice";
 
 /**

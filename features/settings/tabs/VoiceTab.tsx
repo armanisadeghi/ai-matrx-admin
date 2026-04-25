@@ -1,15 +1,13 @@
 "use client";
 
 import { Mic, ExternalLink } from "lucide-react";
-import {
-  SettingsSwitch,
-  SettingsSelect,
-  SettingsSlider,
-  SettingsTextInput,
-  SettingsSection,
-  SettingsSubHeader,
-  SettingsLink,
-} from "@/components/official/settings";
+import { SettingsSwitch } from "@/components/official/settings/primitives/SettingsSwitch";
+import { SettingsSelect } from "@/components/official/settings/primitives/SettingsSelect";
+import { SettingsSlider } from "@/components/official/settings/primitives/SettingsSlider";
+import { SettingsTextInput } from "@/components/official/settings/primitives/SettingsTextInput";
+import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
+import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
+import { SettingsLink } from "@/components/official/settings/primitives/SettingsLink";
 import { useSetting } from "../hooks/useSetting";
 import { availableVoices } from "@/lib/cartesia/voices";
 

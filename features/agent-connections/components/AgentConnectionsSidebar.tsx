@@ -10,7 +10,7 @@ import {
   selectSkillDefinitionsCount,
   selectRenderDefinitionsCount,
   selectResourcesCount,
-} from "../redux/skl";
+} from "../redux/skl/selectors";
 import { SIDEBAR_SECTIONS } from "../constants";
 import type { AgentConnectionsSection } from "../types";
 

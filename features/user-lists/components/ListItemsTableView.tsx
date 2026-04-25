@@ -17,7 +17,7 @@ import GenericDataTable, {
   type ColumnConfig,
   type ActionConfig,
 } from "@/components/generic-table/GenericDataTable";
-import { GenericTableHeader } from "@/components/generic-table";
+import { GenericTableHeader } from "@/components/generic-table/GenericTableHeader";
 import { useItemsTableState } from "../hooks/useItemsTableState";
 import { AddItemDialog } from "./AddItemDialog";
 import { DeleteConfirmDialog } from "./DeleteConfirmDialog";

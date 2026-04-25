@@ -22,7 +22,8 @@
 import { AppStore, makeStore } from "@/lib/redux/store";
 import { useRef } from "react";
 import { Provider } from "react-redux";
-import { bootSync, syncPolicies } from "@/lib/sync";
+import { bootSync } from "@/lib/sync/engine/boot";
+import { syncPolicies } from "@/lib/sync/registry";
 import { InitialReduxState, LiteInitialReduxState } from "@/types/reduxTypes";
 import { writeThemeCookie, type ThemeMode } from "@/styles/themes/themeSlice";
 

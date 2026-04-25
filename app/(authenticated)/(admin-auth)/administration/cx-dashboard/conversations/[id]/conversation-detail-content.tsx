@@ -25,7 +25,7 @@ import type {
   CxConversation,
   CxMessage,
   CxUserRequest,
-} from "@/features/cx-dashboard/types";
+} from "@/features/cx-dashboard/types/cxDashboardTypes";
 import {
   ArrowLeft,
   GitBranch,

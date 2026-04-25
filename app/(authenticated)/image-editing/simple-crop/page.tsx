@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
-import { ImageCropperWithSelect, EasyImageCropper } from "@/components/official/image-cropper";
+import { ImageCropperWithSelect } from "@/components/official/image-cropper/ImageCropperWithSelect";
+import { EasyImageCropper } from "@/components/official/image-cropper/EasyImageCropper";
 
 
 const squareOnly = [

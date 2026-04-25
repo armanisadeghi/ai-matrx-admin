@@ -1,24 +1,19 @@
 "use client";
 
 import { Layers } from "lucide-react";
-import {
-  SettingsSwitch,
-  SettingsSegmented,
-  SettingsSection,
-  SettingsSubHeader,
-  SettingsCallout,
-} from "@/components/official/settings";
+import { SettingsSwitch } from "@/components/official/settings/primitives/SettingsSwitch";
+import { SettingsSegmented } from "@/components/official/settings/primitives/SettingsSegmented";
+import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
+import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
+import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
 import { useSetting } from "../hooks/useSetting";
 
 type LayoutStyle = "normal" | "extendedBottom" | "window";
 
 export default function LayoutTab() {
-  const [isInWindow, setIsInWindow] = useSetting<boolean>(
-    "layout.isInWindow",
-  );
-  const [layoutStyle, setLayoutStyle] = useSetting<LayoutStyle>(
-    "layout.layoutStyle",
-  );
+  const [isInWindow, setIsInWindow] = useSetting<boolean>("layout.isInWindow");
+  const [layoutStyle, setLayoutStyle] =
+    useSetting<LayoutStyle>("layout.layoutStyle");
 
   return (
     <>
@@ -29,8 +24,8 @@ export default function LayoutTab() {
       />
 
       <SettingsCallout tone="warning">
-        These settings live in an unsynced Redux slice — they reset when the
-        app reloads. They're flagged for migration to the sync engine.
+        These settings live in an unsynced Redux slice — they reset when the app
+        reloads. They're flagged for migration to the sync engine.
       </SettingsCallout>
 
       <SettingsSection title="Presentation">

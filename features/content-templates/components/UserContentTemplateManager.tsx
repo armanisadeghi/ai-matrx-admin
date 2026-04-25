@@ -15,7 +15,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { BottomSheet, BottomSheetHeader, BottomSheetBody } from "@/components/official/bottom-sheet";
+import { BottomSheet, BottomSheetHeader, BottomSheetBody } from "@/components/official/bottom-sheet/BottomSheet";
 import { cn } from "@/lib/utils";
 import { ContentTemplateDB, MessageRole } from "@/features/content-templates/types/content-templates-db";
 import {

@@ -40,14 +40,14 @@ import {
   selectAllFilesMap,
   selectAllFoldersMap,
   selectSelection,
-} from "../../../redux/selectors";
-import { clearSelection } from "../../../redux/slice";
+} from "@/features/files/redux/selectors";
+import { clearSelection } from "@/features/files/redux/slice";
 import {
   deleteFile as deleteFileThunk,
   getSignedUrl as getSignedUrlThunk,
   moveFile as moveFileThunk,
-} from "../../../redux/thunks";
-import { openFolderPicker } from "../../pickers/CloudFilesPickerHost";
+} from "@/features/files/redux/thunks";
+import { openFolderPicker } from "@/features/files/components/pickers/CloudFilesPickerHost";
 
 const MAX_PARALLEL = 4;
 

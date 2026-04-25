@@ -1,6 +1,6 @@
 /**
  * Example: Text Analyzer with User Input
- * 
+ *
  * Demonstrates:
  * - Using usePromptExecution hook
  * - Dynamic variables from component state
@@ -10,25 +10,32 @@
 
 "use client";
 
-import { useState } from 'react';
-import { usePromptExecution, createHardcodedMap } from '@/features/prompts';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import { Sparkles, Loader2 } from 'lucide-react';
+import { useState } from "react";
+import { usePromptExecution } from "@/features/prompts/hooks/usePromptExecution";
+import { createHardcodedMap } from "@/features/prompts/utils/variable-resolver";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Sparkles, Loader2 } from "lucide-react";
 
 export function TextAnalyzerExample() {
-  const [text, setText] = useState('');
-  const [analysis, setAnalysis] = useState('');
+  const [text, setText] = useState("");
+  const [analysis, setAnalysis] = useState("");
   const { execute, isExecuting, streamingText } = usePromptExecution();
 
   const handleAnalyze = async () => {
-    setAnalysis('');
+    setAnalysis("");
     await execute({
-      promptId: '176d3595-0d30-4e98-a73e-13de7654a408', // User's text analyzer prompt
+      promptId: "176d3595-0d30-4e98-a73e-13de7654a408", // User's text analyzer prompt
       variables: {
-        text: { type: 'hardcoded', value: text }
-      }
+        text: { type: "hardcoded", value: text },
+      },
     });
   };
 
@@ -72,7 +79,9 @@ export function TextAnalyzerExample() {
 
         {streamingText && (
           <div className="space-y-2">
-            <label className="text-sm font-medium">Analysis Result (Streaming)</label>
+            <label className="text-sm font-medium">
+              Analysis Result (Streaming)
+            </label>
             <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border">
               <p className="text-sm whitespace-pre-wrap">{streamingText}</p>
             </div>
@@ -91,4 +100,3 @@ export function TextAnalyzerExample() {
     </Card>
   );
 }
-

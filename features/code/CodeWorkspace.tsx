@@ -3,7 +3,7 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 // Side effect: register builtin library-source adapters (prompt_apps, aga_apps, tool_ui).
-import "./library-sources";
+import "./library-sources/registerBuiltinLibrarySources";
 import type { FilesystemAdapter } from "./adapters/FilesystemAdapter";
 import type { ProcessAdapter } from "./adapters/ProcessAdapter";
 import { CodeWorkspaceProvider } from "./CodeWorkspaceProvider";

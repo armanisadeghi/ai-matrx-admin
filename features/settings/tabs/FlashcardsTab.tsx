@@ -1,12 +1,10 @@
 "use client";
 
 import { BookOpen } from "lucide-react";
-import {
-  SettingsSelect,
-  SettingsSlider,
-  SettingsSection,
-  SettingsSubHeader,
-} from "@/components/official/settings";
+import { SettingsSelect } from "@/components/official/settings/primitives/SettingsSelect";
+import { SettingsSlider } from "@/components/official/settings/primitives/SettingsSlider";
+import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
+import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
 import { useSetting } from "../hooks/useSetting";
 
 export default function FlashcardsTab() {

@@ -40,15 +40,15 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { fetchScopeTypes } from "../redux/scope/scopeTypesSlice";
+import { fetchScopes } from "../redux/scope/scopesSlice";
 import {
-  fetchScopeTypes,
-  fetchScopes,
   EMPTY_SCOPES_LIST,
   EMPTY_SCOPE_TYPES_LIST,
   selectScopeTypesByOrgIds,
   selectScopesByOrgIds,
-} from "../redux/scope";
-import type { ScopeType, Scope } from "../redux/scope";
+} from "../redux/scope/selectors";
+import type { ScopeType, Scope } from "../redux/scope/types";
 import { useHierarchyTree, useDeleteEntity } from "../hooks/useHierarchy";
 import { HierarchyEntityModal } from "./HierarchyEntityModal";
 import { ContextHubDetail } from "./hub/ContextHubDetail";

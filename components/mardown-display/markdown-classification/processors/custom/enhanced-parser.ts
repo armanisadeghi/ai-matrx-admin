@@ -1,7 +1,7 @@
 // parser.ts
 
 import { parseMarkdownTable } from "../bock-processors/parse-markdown-table";
-import { ParsedContent, Section } from "../../../types";
+import { ParsedContent, Section } from "@/components/mardown-display/types";
 
 export function enhancedMarkdownParser(markdown: string): ParsedContent {
     // Split into lines (preserve full lines for table parsing)

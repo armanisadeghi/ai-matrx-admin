@@ -6,16 +6,16 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import PageHeader from "@/features/shell/components/header/PageHeader";
-import {
-  HeaderStructured,
-  HeaderToggle,
-  HeaderIconTitle,
-  HeaderPills,
-  HeaderTabs,
-  type HeaderAction,
-  type HeaderOption,
-  type HeaderDropdownOption,
-} from "@/features/shell/components/header/variants";
+import HeaderStructured from "@/features/shell/components/header/variants/variants/HeaderStructured";
+import HeaderToggle from "@/features/shell/components/header/variants/variants/HeaderToggle";
+import HeaderIconTitle from "@/features/shell/components/header/variants/variants/HeaderIconTitle";
+import HeaderPills from "@/features/shell/components/header/variants/variants/HeaderPills";
+import HeaderTabs from "@/features/shell/components/header/variants/variants/HeaderTabs";
+import type {
+  HeaderAction,
+  HeaderOption,
+  HeaderDropdownOption,
+} from "@/features/shell/components/header/variants/types";
 
 // ─── Typed demo data ─────────────────────────────────────────────────────────
 
@@ -305,7 +305,12 @@ export default function HeaderDemoClient() {
             Components
           </p>
           <code className="block text-[0.6875rem] text-foreground font-mono leading-relaxed whitespace-pre-wrap break-all">
-            {`import { HeaderStructured, HeaderToggle,\n  HeaderIconTitle, HeaderPills, HeaderTabs }\nfrom "@/features/shell/components/header/variants";`}
+            {`import HeaderStructured from "@/features/shell/components/header/variants/variants/HeaderStructured";
+import HeaderToggle from "@/features/shell/components/header/variants/variants/HeaderToggle";
+import HeaderIconTitle from "@/features/shell/components/header/variants/variants/HeaderIconTitle";
+import HeaderPills from "@/features/shell/components/header/variants/variants/HeaderPills";
+import HeaderTabs from "@/features/shell/components/header/variants/variants/HeaderTabs";
+import type { HeaderAction, HeaderOption, HeaderDropdownOption } from "@/features/shell/components/header/variants/types";`}
           </code>
 
           <p className="text-[0.625rem] font-semibold text-muted-foreground uppercase tracking-wider mt-3 mb-1.5">

@@ -25,7 +25,7 @@ import {
   ContextMenuSubTrigger,
   ContextMenuTrigger,
   ContextMenuLabel,
-} from "@/components/ui/context-menu";
+} from "@/components/ui/context-menu/context-menu";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -65,7 +65,7 @@ import {
   Redo2,
   History,
 } from "lucide-react";
-import { useUnifiedContextMenu } from "@/features/prompt-builtins/hooks";
+import { useUnifiedContextMenu } from "@/features/prompt-builtins/hooks/useUnifiedContextMenu";
 import {
   PLACEMENT_TYPES,
   PLACEMENT_TYPE_META,

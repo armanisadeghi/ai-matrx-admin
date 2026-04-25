@@ -18,12 +18,12 @@ import {
   selectRootFileIds,
   selectRootFolderIds,
   selectSort,
-} from "../../../redux/selectors";
-import { sortChildren } from "../../../redux/tree-utils";
+} from "@/features/files/redux/selectors";
+import { sortChildren } from "@/features/files/redux/tree-utils";
 import type {
   CloudFileRecord,
   CloudFolderRecord,
-} from "../../../types";
+} from "@/features/files/types";
 
 export interface TreeRow {
   kind: "file" | "folder";

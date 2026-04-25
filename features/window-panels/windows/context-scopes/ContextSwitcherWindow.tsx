@@ -1,10 +1,8 @@
 "use client";
 
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
-import {
-  HierarchyTree,
-  useHierarchyReduxBridge,
-} from "@/features/agent-context/components/hierarchy-selection";
+import { HierarchyTree } from "@/features/agent-context/components/hierarchy-selection/HierarchyTree";
+import { useHierarchyReduxBridge } from "@/features/agent-context/components/hierarchy-selection/useReduxBridge";
 
 export interface ContextSwitcherWindowProps {
   isOpen: boolean;

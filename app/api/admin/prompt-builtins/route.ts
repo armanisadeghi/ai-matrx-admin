@@ -1,12 +1,12 @@
 // app/api/admin/prompt-builtins/route.ts
 
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/utils/supabase/server";
 import {
   fetchPromptBuiltins,
   createPromptBuiltin,
-} from '@/features/prompt-builtins/services/admin-service';
-import { CreatePromptBuiltinInput } from '@/features/prompt-builtins';
+} from "@/features/prompt-builtins/services/admin-service";
+import { CreatePromptBuiltinInput } from "@/features/prompt-builtins/types/core";
 
 /**
  * GET /api/admin/prompt-builtins
@@ -15,19 +15,22 @@ import { CreatePromptBuiltinInput } from '@/features/prompt-builtins';
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
-    const isActive = searchParams.get('is_active');
-    const search = searchParams.get('search');
-    const limit = searchParams.get('limit');
+    const isActive = searchParams.get("is_active");
+    const search = searchParams.get("search");
+    const limit = searchParams.get("limit");
 
     const filters: any = {};
-    if (isActive !== null) filters.is_active = isActive === 'true';
+    if (isActive !== null) filters.is_active = isActive === "true";
     if (search) filters.search = search;
     if (limit) filters.limit = parseInt(limit, 10);
 
@@ -38,13 +41,13 @@ export async function GET(request: NextRequest) {
       count: data.length,
     });
   } catch (error) {
-    console.error('API error:', error);
+    console.error("API error:", error);
     return NextResponse.json(
       {
-        error: 'Internal server error',
-        details: error instanceof Error ? error.message : 'Unknown error',
+        error: "Internal server error",
+        details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -56,19 +59,27 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await request.json();
 
     // Validate required fields
-    if (!body.name || !body.messages || !Array.isArray(body.messages) || body.messages.length === 0) {
+    if (
+      !body.name ||
+      !body.messages ||
+      !Array.isArray(body.messages) ||
+      body.messages.length === 0
+    ) {
       return NextResponse.json(
-        { error: 'Missing required fields: name, messages (non-empty array)' },
-        { status: 400 }
+        { error: "Missing required fields: name, messages (non-empty array)" },
+        { status: 400 },
       );
     }
 
@@ -87,20 +98,19 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       {
-        message: 'Prompt builtin created successfully',
+        message: "Prompt builtin created successfully",
         builtin: data,
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
-    console.error('API error:', error);
+    console.error("API error:", error);
     return NextResponse.json(
       {
-        error: 'Internal server error',
-        details: error instanceof Error ? error.message : 'Unknown error',
+        error: "Internal server error",
+        details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
-

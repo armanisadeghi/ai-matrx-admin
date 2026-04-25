@@ -7,10 +7,9 @@ import {
   selectSkillDefinitionsByType,
   selectSkillDefinitionsStatus,
   selectSkillDefinitionsGrouped,
-  fetchSkillDefinitions,
-  type SklSkillType,
-  type SklDefinition,
-} from "../redux/skl";
+} from "../redux/skl/selectors";
+import { fetchSkillDefinitions } from "../redux/skl/thunks";
+import type { SklSkillType, SklDefinition } from "../redux/skl/types";
 import { useViewScope } from "./useViewScope";
 
 export interface UseSkillsArgs {

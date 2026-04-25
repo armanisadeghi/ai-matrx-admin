@@ -8,10 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Search, Inbox, Plus, Folder, FolderKanban } from "lucide-react";
 import CompactTaskItem from "@/features/tasks/components/CompactTaskItem";
 import TaskDetailsPanel from "@/features/tasks/components/TaskDetailsPanel";
-import {
-  HierarchyCascade,
-  EMPTY_SELECTION,
-} from "@/features/agent-context/components/hierarchy-selection";
+import { HierarchyCascade } from "@/features/agent-context/components/hierarchy-selection/HierarchyCascade";
+import { EMPTY_SELECTION } from "@/features/agent-context/components/hierarchy-selection/types";
 import { selectFilteredTasks } from "@/features/tasks/redux/selectors";
 import {
   selectActiveProject,
@@ -21,7 +19,10 @@ import {
   setShowAllProjects,
   setNewTaskTitle,
 } from "@/features/tasks/redux/taskUiSlice";
-import { createTaskThunk, toggleTaskCompleteThunk } from "@/features/tasks/redux/thunks";
+import {
+  createTaskThunk,
+  toggleTaskCompleteThunk,
+} from "@/features/tasks/redux/thunks";
 import {
   selectQuickTasksSelectedOrgId,
   selectQuickTasksSelectedTaskId,

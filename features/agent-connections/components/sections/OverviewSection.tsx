@@ -12,8 +12,8 @@ import {
   selectSkillDefinitionsCount,
   selectRenderDefinitionsCount,
   selectResourcesCount,
-} from "../../redux/skl";
-import { setActiveSection } from "../../redux/ui";
+} from "../../redux/skl/selectors";
+import { setActiveSection } from "../../redux/ui/slice";
 
 export function OverviewSection() {
   const dispatch = useAppDispatch();

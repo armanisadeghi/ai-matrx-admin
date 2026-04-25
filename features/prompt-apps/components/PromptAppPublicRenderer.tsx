@@ -19,7 +19,7 @@ import {
   patchScopeForMissingIdentifiers,
 } from "../utils/allowed-imports";
 import { PromptAppErrorBoundary } from "./PromptAppErrorBoundary";
-import type { PromptApp } from "../types";
+import type { PromptApp } from "../types/promptAppTypes";
 import { BACKEND_URLS } from "@/lib/api/endpoints";
 
 interface ExecuteAppResponse {

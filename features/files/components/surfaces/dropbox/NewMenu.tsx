@@ -33,8 +33,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { createFolder } from "../../../redux/thunks";
-import { useFileUpload } from "../../../hooks/useFileUpload";
+import { createFolder } from "@/features/files/redux/thunks";
+import { useFileUpload } from "@/features/files/hooks/useFileUpload";
 
 export interface NewMenuProps {
   parentFolderId: string | null;

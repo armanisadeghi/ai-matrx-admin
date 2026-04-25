@@ -25,10 +25,8 @@ import { CheckSquare, FolderPlus, Loader2 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectProjects } from "@/features/tasks/redux/selectors";
 import { invalidateAndRefetchFullContext } from "@/features/agent-context/redux/hierarchyThunks";
-import {
-  HierarchyCascade,
-  EMPTY_SELECTION,
-} from "@/features/agent-context/components/hierarchy-selection";
+import { HierarchyCascade } from "@/features/agent-context/components/hierarchy-selection/HierarchyCascade";
+import { EMPTY_SELECTION } from "@/features/agent-context/components/hierarchy-selection/types";
 import { toast } from "sonner";
 import type { TaskItemType } from "@/components/mardown-display/blocks/tasks/TaskChecklist";
 

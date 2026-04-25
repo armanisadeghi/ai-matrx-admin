@@ -1,8 +1,10 @@
-'use client';
+"use client";
 
-import React from 'react';
-import getMainLayoutComponent, { MainLayoutVariant } from './main-layout';
-import { LoadingSpinner } from '@/components/ui/spinner';
+import React from "react";
+import getMainLayoutComponent, {
+  type MainLayoutVariant,
+} from "./main-layout/mainLayoutVariants";
+import { LoadingSpinner } from "@/components/ui/spinner";
 
 interface MainLayoutAdapterProps {
   variant?: MainLayoutVariant;
@@ -24,7 +26,7 @@ interface MainLayoutAdapterProps {
 }
 
 const MainLayoutAdapter: React.FC<MainLayoutAdapterProps> = ({
-  variant = 'default',
+  variant = "default",
   appDisplayComponent,
   renderAppletCard,
   isInitialized,
@@ -34,7 +36,7 @@ const MainLayoutAdapter: React.FC<MainLayoutAdapterProps> = ({
 }) => {
   // Get the base MainLayout component
   const MainLayoutComponent = getMainLayoutComponent(variant, isMobile);
-  
+
   if (!isInitialized) {
     return (
       <div className="h-page w-full flex items-center justify-center">
@@ -42,24 +44,24 @@ const MainLayoutAdapter: React.FC<MainLayoutAdapterProps> = ({
       </div>
     );
   }
-  
+
   // Create our own custom layout that uses the appDisplay and appletCard components
   return (
     <div className="h-page w-full overflow-auto p-4 md:p-8">
       {/* App Header - Using provided app display component */}
       {appDisplayComponent}
-      
+
       {/* App Cards */}
       <div className="max-w-7xl mx-auto">
         <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-6">
           Available Applets
         </h2>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {appletList.map((item) => {
             const applet = appletsMap[item.appletId];
             if (!applet) return null;
-            
+
             return (
               <div key={applet.id}>
                 {renderAppletCard ? renderAppletCard(applet) : null}
@@ -67,11 +69,15 @@ const MainLayoutAdapter: React.FC<MainLayoutAdapterProps> = ({
             );
           })}
         </div>
-        
+
         {appletList.length === 0 && (
           <div className="text-center p-12 bg-gray-50 dark:bg-gray-800 rounded-xl border-border">
-            <h3 className="text-xl text-gray-800 dark:text-gray-200 mb-2">No applets available</h3>
-            <p className="text-gray-600 dark:text-gray-400">This app doesn't have any applets configured yet.</p>
+            <h3 className="text-xl text-gray-800 dark:text-gray-200 mb-2">
+              No applets available
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400">
+              This app doesn't have any applets configured yet.
+            </p>
           </div>
         )}
       </div>
@@ -79,4 +85,4 @@ const MainLayoutAdapter: React.FC<MainLayoutAdapterProps> = ({
   );
 };
 
-export default MainLayoutAdapter; 
+export default MainLayoutAdapter;

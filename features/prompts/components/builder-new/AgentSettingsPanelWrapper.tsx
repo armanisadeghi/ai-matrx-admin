@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AgentSettingsContent } from "@/features/agent-settings/components/AgentSettingsContent";
-import { selectHasPendingSwitch } from "@/lib/redux/slices/agent-settings";
+import { selectHasPendingSwitch } from "@/lib/redux/slices/agent-settings/selectors";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { Badge } from "@/components/ui/badge";
 

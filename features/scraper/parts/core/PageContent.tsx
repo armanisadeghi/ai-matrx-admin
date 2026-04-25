@@ -23,7 +23,7 @@ import FactChecker from "../recipes/FactChecker";
 import KeywordAnalysis from "../recipes/KeywordAnalysis";
 import FeatureDisabledPlaceholder from "../reusable/FeatureDisabledPlaceholder";
 import ImageGallery from "../tabs/images/ImageGallery";
-import SerpResultsPage from "../../../workflows/results/registered-components/SerpResultsPage";
+import SerpResultsPage from "@/features/workflows/results/registered-components/SerpResultsPage";
 import { ScrapedContentPretty } from "../ScrapedContentPretty";
 
 interface PageContentProps {

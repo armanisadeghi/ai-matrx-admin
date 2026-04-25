@@ -6,11 +6,22 @@ import { Button } from "@/components/ui/button";
 import { CxFiltersBar } from "@/features/cx-dashboard/components/CxFiltersBar";
 import { CxEmptyState } from "@/features/cx-dashboard/components/CxEmptyState";
 import {
-  formatDate, formatCost, formatTokens, formatDuration,
-  statusBadgeVariant, truncateId, computeDuration,
+  formatDate,
+  formatCost,
+  formatTokens,
+  formatDuration,
+  statusBadgeVariant,
+  truncateId,
+  computeDuration,
 } from "@/features/cx-dashboard/utils/format";
-import { exportToCSV, exportToJSON } from "@/features/cx-dashboard/utils/export";
-import type { CxUserRequest, CxPaginatedResponse } from "@/features/cx-dashboard/types";
+import {
+  exportToCSV,
+  exportToJSON,
+} from "@/features/cx-dashboard/utils/export";
+import type {
+  CxUserRequest,
+  CxPaginatedResponse,
+} from "@/features/cx-dashboard/types/cxDashboardTypes";
 import { ChevronRight, AlertTriangle, Wrench } from "lucide-react";
 
 type Props = {
@@ -46,7 +57,9 @@ export function RequestsContent({ result }: Props) {
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold">
           User Requests
-          <span className="text-muted-foreground ml-2 font-normal">{result.total} total</span>
+          <span className="text-muted-foreground ml-2 font-normal">
+            {result.total} total
+          </span>
         </h2>
       </div>
 
@@ -79,30 +92,49 @@ export function RequestsContent({ result }: Props) {
             </thead>
             <tbody>
               {result.data.map((req) => {
-                const dur = computeDuration(req.created_at, req.completed_at, req.total_duration_ms);
+                const dur = computeDuration(
+                  req.created_at,
+                  req.completed_at,
+                  req.total_duration_ms,
+                );
                 return (
                   <tr
                     key={req.id}
                     className="border-b border-border/50 hover:bg-muted/20 cursor-pointer transition-colors"
-                    onClick={() => router.push(`/administration/cx-dashboard/requests/${req.id}`)}
+                    onClick={() =>
+                      router.push(
+                        `/administration/cx-dashboard/requests/${req.id}`,
+                      )
+                    }
                   >
                     <td className="py-2 px-3">
                       <div className="min-w-0">
                         <p className="truncate max-w-[250px]">
-                          {req.conversation_title || <span className="text-muted-foreground italic">Untitled</span>}
+                          {req.conversation_title || (
+                            <span className="text-muted-foreground italic">
+                              Untitled
+                            </span>
+                          )}
                         </p>
                         <div className="flex items-center gap-2 text-muted-foreground">
-                          <span className="font-mono">{truncateId(req.id)}</span>
+                          <span className="font-mono">
+                            {truncateId(req.id)}
+                          </span>
                           {req.model_name && <span>· {req.model_name}</span>}
                         </div>
                       </div>
                     </td>
                     <td className="text-center py-2 px-3">
-                      <Badge variant={statusBadgeVariant(req.status)} className="text-[10px]">
+                      <Badge
+                        variant={statusBadgeVariant(req.status)}
+                        className="text-[10px]"
+                      >
                         {req.status}
                       </Badge>
                       {req.finish_reason && req.finish_reason !== "stop" && (
-                        <div className="text-[10px] text-amber-500 mt-0.5">{req.finish_reason}</div>
+                        <div className="text-[10px] text-amber-500 mt-0.5">
+                          {req.finish_reason}
+                        </div>
                       )}
                     </td>
                     <td className="text-center py-2 px-3">{req.iterations}</td>
@@ -119,16 +151,23 @@ export function RequestsContent({ result }: Props) {
                     <td className="text-right py-2 px-3 font-mono">
                       <div>{formatTokens(req.total_tokens)}</div>
                       <div className="text-muted-foreground text-[10px]">
-                        {formatTokens(req.total_input_tokens)} in / {formatTokens(req.total_output_tokens)} out
+                        {formatTokens(req.total_input_tokens)} in /{" "}
+                        {formatTokens(req.total_output_tokens)} out
                       </div>
                     </td>
-                    <td className="text-right py-2 px-3 font-mono">{formatCost(Number(req.total_cost))}</td>
-                    <td className="text-right py-2 px-3 text-muted-foreground">{formatDuration(dur)}</td>
+                    <td className="text-right py-2 px-3 font-mono">
+                      {formatCost(Number(req.total_cost))}
+                    </td>
+                    <td className="text-right py-2 px-3 text-muted-foreground">
+                      {formatDuration(dur)}
+                    </td>
                     <td className="text-right py-2 px-3 text-muted-foreground whitespace-nowrap">
                       {formatDate(req.created_at)}
                     </td>
                     <td className="px-1">
-                      {req.error && <AlertTriangle className="w-3 h-3 text-red-500" />}
+                      {req.error && (
+                        <AlertTriangle className="w-3 h-3 text-red-500" />
+                      )}
                       <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
                     </td>
                   </tr>
@@ -141,7 +180,9 @@ export function RequestsContent({ result }: Props) {
 
       {result.total_pages > 1 && (
         <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <span>Page {result.page} of {result.total_pages}</span>
+          <span>
+            Page {result.page} of {result.total_pages}
+          </span>
           <div className="flex gap-1">
             <Button
               variant="outline"

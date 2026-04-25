@@ -3,17 +3,15 @@
 import { useSelector } from "react-redux";
 import { Sparkles, ShieldCheck, Palette, Brain, Search } from "lucide-react";
 import type { RootState } from "@/lib/redux/store";
-import {
-  SettingsSwitch,
-  SettingsSelect,
-  SettingsSlider,
-  SettingsTextInput,
-  SettingsSegmented,
-  SettingsSection,
-  SettingsSubHeader,
-  SettingsCallout,
-  SettingsReadOnlyValue,
-} from "@/components/official/settings";
+import { SettingsSwitch } from "@/components/official/settings/primitives/SettingsSwitch";
+import { SettingsSelect } from "@/components/official/settings/primitives/SettingsSelect";
+import { SettingsSlider } from "@/components/official/settings/primitives/SettingsSlider";
+import { SettingsTextInput } from "@/components/official/settings/primitives/SettingsTextInput";
+import { SettingsSegmented } from "@/components/official/settings/primitives/SettingsSegmented";
+import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
+import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
+import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
+import { SettingsReadOnlyValue } from "@/components/official/settings/layout/SettingsReadOnlyValue";
 import {
   useSetting,
   useSettingPersistence,
@@ -68,9 +66,8 @@ export default function SettingsHooksDemoPage() {
   );
 
   // Admin preferences (local-only — demonstrates the non-persisted tier)
-  const [serverOverride, setServerOverride] = useSetting<
-    ServerEnvironment | null
-  >("adminPreferences.serverOverride");
+  const [serverOverride, setServerOverride] =
+    useSetting<ServerEnvironment | null>("adminPreferences.serverOverride");
   const [customUrl, setCustomUrl] = useSetting<string | null>(
     "adminPreferences.customServerUrl",
   );
@@ -129,10 +126,7 @@ export default function SettingsHooksDemoPage() {
           />
         </SettingsSection>
         <div className="px-4 mb-6">
-          <ReduxInspector
-            label="state.theme.mode"
-            value={String(reduxTheme)}
-          />
+          <ReduxInspector label="state.theme.mode" value={String(reduxTheme)} />
         </div>
 
         {/* User Preferences — Prompts */}
@@ -212,7 +206,9 @@ export default function SettingsHooksDemoPage() {
             description="Path: adminPreferences.serverOverride"
             value={serverOverride ?? "default"}
             onValueChange={(v) =>
-              setServerOverride(v === "default" ? null : (v as ServerEnvironment))
+              setServerOverride(
+                v === "default" ? null : (v as ServerEnvironment),
+              )
             }
             options={[
               { value: "default", label: "Default (production)" },

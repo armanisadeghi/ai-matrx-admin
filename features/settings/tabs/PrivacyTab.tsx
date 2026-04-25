@@ -1,12 +1,10 @@
 "use client";
 
 import { ShieldCheck, Eye } from "lucide-react";
-import {
-  SettingsSwitch,
-  SettingsSection,
-  SettingsSubHeader,
-  SettingsCallout,
-} from "@/components/official/settings";
+import { SettingsSwitch } from "@/components/official/settings/primitives/SettingsSwitch";
+import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
+import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
+import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
 import { useSetting } from "../hooks/useSetting";
 
 /**
@@ -18,9 +16,7 @@ export default function PrivacyTab() {
     "userPreferences.assistant.alwaysWatching",
   );
   const [showDesktopNotifications, setShowDesktopNotifications] =
-    useSetting<boolean>(
-      "userPreferences.messaging.showDesktopNotifications",
-    );
+    useSetting<boolean>("userPreferences.messaging.showDesktopNotifications");
 
   return (
     <>
@@ -31,8 +27,8 @@ export default function PrivacyTab() {
       />
 
       <SettingsCallout tone="info">
-        Granular telemetry and export settings aren't implemented yet. This
-        tab surfaces the two capture-related preferences that exist today.
+        Granular telemetry and export settings aren't implemented yet. This tab
+        surfaces the two capture-related preferences that exist today.
       </SettingsCallout>
 
       <SettingsSection title="Assistant" icon={Eye}>

@@ -14,7 +14,7 @@ import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import {
   ContentEditorTabsWithList,
   type ContentEditorDocument,
-} from "@/components/official/content-editor";
+} from "@/components/official/content-editor/ContentEditorTabsWithList";
 import { useContentEditorEmitter } from "./useContentEditorEmitter";
 import type { ContentEditorSeedDocument } from "./useOpenContentEditorWindow";
 

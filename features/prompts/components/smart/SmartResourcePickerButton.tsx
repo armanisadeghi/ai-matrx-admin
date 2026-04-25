@@ -9,7 +9,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useDialogContainer } from "@/components/ui/dialog";
-import { ResourcePickerMenu } from "../../../resource-manager/resource-picker/ResourcePickerMenu";
+import { ResourcePickerMenu } from "@/features/resource-manager/resource-picker/ResourcePickerMenu";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { selectAttachmentCapabilities } from "@/lib/redux/prompt-execution/selectors";
 import { addValidatedResource } from "@/lib/redux/prompt-execution/thunks/resourceThunks";

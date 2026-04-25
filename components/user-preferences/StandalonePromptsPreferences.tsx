@@ -1,18 +1,16 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { MessageSquare } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import {
-  SettingsModelPicker,
-  SettingsSection,
-  SettingsSelect,
-  SettingsSlider,
-  SettingsSubHeader,
-  SettingsSwitch,
-} from '@/components/official/settings';
-import { useSetting } from '@/features/settings/hooks/useSetting';
-import type { ThinkingMode } from '@/lib/redux/slices/userPreferencesSlice';
+import React from "react";
+import { MessageSquare } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { SettingsModelPicker } from "@/components/official/settings/primitives/SettingsModelPicker";
+import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
+import { SettingsSelect } from "@/components/official/settings/primitives/SettingsSelect";
+import { SettingsSlider } from "@/components/official/settings/primitives/SettingsSlider";
+import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
+import { SettingsSwitch } from "@/components/official/settings/primitives/SettingsSwitch";
+import { useSetting } from "@/features/settings/hooks/useSetting";
+import type { ThinkingMode } from "@/lib/redux/slices/userPreferencesSlice";
 
 interface StandalonePromptsPreferencesProps {
   onSaveSuccess?: () => void;
@@ -21,37 +19,38 @@ interface StandalonePromptsPreferencesProps {
 }
 
 const thinkingOptions: { value: ThinkingMode; label: string }[] = [
-  { value: 'none', label: 'None' },
-  { value: 'simple', label: 'Simple' },
-  { value: 'deep', label: 'Deep' },
+  { value: "none", label: "None" },
+  { value: "simple", label: "Simple" },
+  { value: "deep", label: "Deep" },
 ];
 
 /**
  * Prompts module preferences using the unified settings bindings (synced like other settings).
  */
-const StandalonePromptsPreferences: React.FC<StandalonePromptsPreferencesProps> = ({
-  onSaveSuccess,
-  onCancel,
-  showFooter = true,
-}) => {
-  const [showSettingsOnMainPage, setShowSettingsOnMainPage] = useSetting<boolean>(
-    'userPreferences.prompts.showSettingsOnMainPage',
-  );
+const StandalonePromptsPreferences: React.FC<
+  StandalonePromptsPreferencesProps
+> = ({ onSaveSuccess, onCancel, showFooter = true }) => {
+  const [showSettingsOnMainPage, setShowSettingsOnMainPage] =
+    useSetting<boolean>("userPreferences.prompts.showSettingsOnMainPage");
   const [defaultModel, setDefaultModel] = useSetting<string>(
-    'userPreferences.prompts.defaultModel',
+    "userPreferences.prompts.defaultModel",
   );
   const [defaultTemperature, setDefaultTemperature] = useSetting<number>(
-    'userPreferences.prompts.defaultTemperature',
+    "userPreferences.prompts.defaultTemperature",
   );
   const [alwaysIncludeInternalWebSearch, setAlwaysIncludeInternalWebSearch] =
-    useSetting<boolean>('userPreferences.prompts.alwaysIncludeInternalWebSearch');
+    useSetting<boolean>(
+      "userPreferences.prompts.alwaysIncludeInternalWebSearch",
+    );
   const [includeThinkingInAutoPrompts, setIncludeThinkingInAutoPrompts] =
-    useSetting<ThinkingMode>('userPreferences.prompts.includeThinkingInAutoPrompts');
+    useSetting<ThinkingMode>(
+      "userPreferences.prompts.includeThinkingInAutoPrompts",
+    );
   const [submitOnEnter, setSubmitOnEnter] = useSetting<boolean>(
-    'userPreferences.prompts.submitOnEnter',
+    "userPreferences.prompts.submitOnEnter",
   );
   const [autoClearResponsesInEditMode, setAutoClearResponsesInEditMode] =
-    useSetting<boolean>('userPreferences.prompts.autoClearResponsesInEditMode');
+    useSetting<boolean>("userPreferences.prompts.autoClearResponsesInEditMode");
 
   return (
     <div className="flex flex-col gap-4 min-h-0">
@@ -113,14 +112,15 @@ const StandalonePromptsPreferences: React.FC<StandalonePromptsPreferencesProps> 
 
       {showFooter ? (
         <div className="flex justify-end gap-2 pt-3 border-t border-border shrink-0">
-          <Button type="button" variant="outline" size="sm" onClick={() => onCancel?.()}>
-            Cancel
-          </Button>
           <Button
             type="button"
+            variant="outline"
             size="sm"
-            onClick={() => onSaveSuccess?.()}
+            onClick={() => onCancel?.()}
           >
+            Cancel
+          </Button>
+          <Button type="button" size="sm" onClick={() => onSaveSuccess?.()}>
             Done
           </Button>
         </div>

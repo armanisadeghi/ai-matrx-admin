@@ -7,8 +7,8 @@ import {
   createScope,
   updateScope,
   selectScopesByType,
-} from "../../redux/scope";
-import type { ScopeType, Scope } from "../../redux/scope";
+} from "../../redux/scope/scopesSlice";
+import type { ScopeType, Scope } from "../../redux/scope/types";
 import {
   Sheet,
   SheetContent,

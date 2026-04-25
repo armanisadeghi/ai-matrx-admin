@@ -6,7 +6,7 @@ import { CmsPageService } from "@/features/content-manager/services/cmsService";
 import type { ClientPage } from "@/features/content-manager/types";
 import { Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import PageEditor from "../../../components/PageEditor";
+import PageEditor from "@/app/(ssr)/ssr/content/components/PageEditor";
 
 export default function EditPageRoute() {
   const { siteId, pageId } = useParams() as { siteId: string; pageId: string };

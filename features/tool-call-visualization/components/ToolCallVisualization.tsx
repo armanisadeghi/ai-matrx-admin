@@ -40,7 +40,7 @@ import {
   getToolDisplayName,
   shouldKeepExpandedOnStream,
 } from "../registry/registry";
-import { prefetchRenderer } from "../dynamic";
+import { prefetchRenderer } from "../dynamic/fetcher";
 import { useOrderedToolLifecycles } from "../redux/hooks";
 import { ToolUpdatesOverlay } from "./ToolUpdatesOverlay";
 

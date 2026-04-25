@@ -25,18 +25,15 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import {
   selectAllFilesArray,
   selectActiveFolderId,
-} from "../../redux/selectors";
-import { FileTree } from "../core/FileTree";
-import { FileList } from "../core/FileList";
-import { FilePreview } from "../core/FilePreview";
-import { FileBreadcrumbs } from "../core/FileBreadcrumbs";
-import { FileIcon } from "../core/FileIcon";
-import { FileMeta } from "../core/FileMeta";
+} from "@/features/files/redux/selectors";
+import { FileTree } from "@/features/files/components/core/FileTree/FileTree";
+import { FileList } from "@/features/files/components/core/FileList/FileList";
+import { FilePreview } from "@/features/files/components/core/FilePreview/FilePreview";
+import { FileBreadcrumbs } from "@/features/files/components/core/FileBreadcrumbs/FileBreadcrumbs";
+import { FileIcon } from "@/features/files/components/core/FileIcon/FileIcon";
+import { FileMeta } from "@/features/files/components/core/FileMeta/FileMeta";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import {
-  setActiveFileId,
-  setActiveFolderId,
-} from "../../redux/slice";
+import { setActiveFileId, setActiveFolderId } from "@/features/files/redux/slice";
 
 export type CloudFilesWindowTab = "browse" | "recent" | "shared" | "trash";
 
@@ -52,8 +49,7 @@ export function WindowPanelShell({
   onTabChange,
   className,
 }: WindowPanelShellProps) {
-  const [internalTab, setInternalTab] =
-    useState<CloudFilesWindowTab>("browse");
+  const [internalTab, setInternalTab] = useState<CloudFilesWindowTab>("browse");
   const activeTab = activeTabProp ?? internalTab;
 
   const setTab = (tab: CloudFilesWindowTab) => {
@@ -62,7 +58,9 @@ export function WindowPanelShell({
   };
 
   return (
-    <div className={cn("flex h-full w-full flex-col overflow-hidden", className)}>
+    <div
+      className={cn("flex h-full w-full flex-col overflow-hidden", className)}
+    >
       <Tabs
         value={activeTab}
         onValueChange={(value) => setTab(value as CloudFilesWindowTab)}

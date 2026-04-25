@@ -10,7 +10,7 @@
 
 import React, { useCallback, useState } from "react";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
-import { ContentEditor } from "@/components/official/content-editor";
+import { ContentEditor } from "@/components/official/content-editor/ContentEditor";
 import { useContentEditorEmitter } from "./useContentEditorEmitter";
 
 export interface ContentEditorWindowProps {

@@ -18,11 +18,11 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import {
   selectAllFilesArray,
   selectAllFoldersMap,
-} from "../../redux/selectors";
-import { FileList } from "../core/FileList";
-import { FileUploadDropzone } from "../core/FileUploadDropzone";
-import { FileIcon } from "../core/FileIcon";
-import { FileMeta } from "../core/FileMeta";
+} from "@/features/files/redux/selectors";
+import { FileList } from "@/features/files/components/core/FileList/FileList";
+import { FileUploadDropzone } from "@/features/files/components/core/FileUploadDropzone/FileUploadDropzone";
+import { FileIcon } from "@/features/files/components/core/FileIcon/FileIcon";
+import { FileMeta } from "@/features/files/components/core/FileMeta/FileMeta";
 
 export interface EmbeddedShellProps {
   /**
@@ -34,7 +34,10 @@ export interface EmbeddedShellProps {
   scope:
     | { kind: "folder"; folderId: string | null }
     | { kind: "owner"; userId: string }
-    | { kind: "custom"; filter: (file: ReturnType<typeof useAllFiles>[number]) => boolean };
+    | {
+        kind: "custom";
+        filter: (file: ReturnType<typeof useAllFiles>[number]) => boolean;
+      };
   onSelectFile?: (fileId: string) => void;
   onActivateFile?: (fileId: string) => void;
   /** Show a dropzone above the list. Default false. */
@@ -107,7 +110,10 @@ export function EmbeddedShell({
 interface FlatEmbeddedListProps {
   scope:
     | { kind: "owner"; userId: string }
-    | { kind: "custom"; filter: (f: ReturnType<typeof useAllFiles>[number]) => boolean };
+    | {
+        kind: "custom";
+        filter: (f: ReturnType<typeof useAllFiles>[number]) => boolean;
+      };
   onSelectFile?: (fileId: string) => void;
   onActivateFile?: (fileId: string) => void;
   maxHeight?: string;
@@ -157,10 +163,7 @@ function FlatEmbeddedList({
 
   return (
     <ul
-      className={cn(
-        "divide-y overflow-auto overscroll-contain",
-        className,
-      )}
+      className={cn("divide-y overflow-auto overscroll-contain", className)}
       style={maxHeight ? { maxHeight } : undefined}
     >
       {filtered.map((file) => {

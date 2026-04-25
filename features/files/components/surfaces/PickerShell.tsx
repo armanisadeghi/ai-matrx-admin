@@ -38,11 +38,11 @@ import {
   selectAllFoldersMap,
   selectSortedChildrenOfFolder,
   selectSortedRootChildren,
-} from "../../redux/selectors";
-import { useFolderContents } from "../../hooks/useFolderContents";
-import { FileIcon } from "../core/FileIcon";
-import { FileMeta } from "../core/FileMeta";
-import { FileBreadcrumbs } from "../core/FileBreadcrumbs";
+} from "@/features/files/redux/selectors";
+import { useFolderContents } from "@/features/files/hooks/useFolderContents";
+import { FileIcon } from "@/features/files/components/core/FileIcon/FileIcon";
+import { FileMeta } from "@/features/files/components/core/FileMeta/FileMeta";
+import { FileBreadcrumbs } from "@/features/files/components/core/FileBreadcrumbs/FileBreadcrumbs";
 
 // ---------------------------------------------------------------------------
 // Shared types
@@ -75,12 +75,7 @@ export function PickerShell(props: PickerShellProps) {
 }
 
 export function DialogShell(props: PickerShellProps) {
-  const {
-    open,
-    onOpenChange,
-    title = "Choose file",
-    description,
-  } = props;
+  const { open, onOpenChange, title = "Choose file", description } = props;
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[640px] max-h-[90dvh] overflow-hidden flex flex-col">
@@ -97,12 +92,7 @@ export function DialogShell(props: PickerShellProps) {
 }
 
 export function DrawerShell(props: PickerShellProps) {
-  const {
-    open,
-    onOpenChange,
-    title = "Choose file",
-    description,
-  } = props;
+  const { open, onOpenChange, title = "Choose file", description } = props;
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent className="max-h-[85dvh]">
@@ -178,13 +168,22 @@ function PickerBody({
   const handleConfirm = useCallback(() => {
     onConfirm({
       fileIds: mode === "file" ? selectedFileIds : [],
-      folderId: mode === "folder" ? currentFolderId : currentFolder?.id ?? currentFolderId,
+      folderId:
+        mode === "folder"
+          ? currentFolderId
+          : (currentFolder?.id ?? currentFolderId),
     });
     onOpenChange(false);
-  }, [mode, selectedFileIds, currentFolderId, currentFolder, onConfirm, onOpenChange]);
+  }, [
+    mode,
+    selectedFileIds,
+    currentFolderId,
+    currentFolder,
+    onConfirm,
+    onOpenChange,
+  ]);
 
-  const canConfirm =
-    mode === "file" ? selectedFileIds.length > 0 : true;
+  const canConfirm = mode === "file" ? selectedFileIds.length > 0 : true;
 
   return (
     <div className="flex min-h-0 flex-col">
@@ -192,9 +191,7 @@ function PickerBody({
         {currentFolderId ? (
           <button
             type="button"
-            onClick={() =>
-              setCurrentFolderId(currentFolder?.parentId ?? null)
-            }
+            onClick={() => setCurrentFolderId(currentFolder?.parentId ?? null)}
             aria-label="Up one level"
             className="flex h-8 w-8 items-center justify-center rounded hover:bg-accent"
           >
@@ -208,8 +205,7 @@ function PickerBody({
       </div>
 
       <ul className="flex-1 overflow-auto overscroll-contain divide-y max-h-[52dvh]">
-        {children.folderIds.length === 0 &&
-        children.fileIds.length === 0 ? (
+        {children.folderIds.length === 0 && children.fileIds.length === 0 ? (
           <li className="flex items-center justify-center p-6 text-sm text-muted-foreground">
             This folder is empty.
           </li>

@@ -3,8 +3,11 @@
 import { useState, useEffect } from "react";
 import { Loader2, X } from "lucide-react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { createScopeType, updateScopeType } from "../../redux/scope";
-import type { ScopeType } from "../../redux/scope";
+import {
+  createScopeType,
+  updateScopeType,
+} from "../../redux/scope/scopeTypesSlice";
+import type { ScopeType } from "../../redux/scope/types";
 import {
   Sheet,
   SheetContent,

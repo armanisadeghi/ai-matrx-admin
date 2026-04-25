@@ -63,7 +63,7 @@ import type {
   CloudFilePermissionRow,
   CloudFileVersionRow,
   CloudShareLinkRow,
-} from "../types";
+} from "@/features/files/types";
 
 // ---------------------------------------------------------------------------
 // Action creators — not reducers, just signals consumed by this middleware.

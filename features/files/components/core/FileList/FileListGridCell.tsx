@@ -10,10 +10,10 @@ import { memo } from "react";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { FileIcon } from "../FileIcon";
-import { FileContextMenu } from "../FileContextMenu";
-import { formatFileSize, truncateFilename } from "../../../utils/format";
-import type { CloudFileRecord, CloudFolderRecord } from "../../../types";
+import { FileIcon } from "@/features/files/components/core/FileIcon/FileIcon";
+import { FileContextMenu } from "@/features/files/components/core/FileContextMenu/FileContextMenu";
+import { formatFileSize, truncateFilename } from "@/features/files/utils/format";
+import type { CloudFileRecord, CloudFolderRecord } from "@/features/files/types";
 
 export interface FileListGridCellProps {
   record: CloudFileRecord | CloudFolderRecord;
@@ -44,7 +44,11 @@ function FileListGridCellImpl({
     : (record as CloudFileRecord).fileName;
   const size = isFolder ? null : (record as CloudFileRecord).fileSize;
 
-  const { attributes, listeners, setNodeRef: setDragRef } = useDraggable({
+  const {
+    attributes,
+    listeners,
+    setNodeRef: setDragRef,
+  } = useDraggable({
     id: `grid-${record.id}`,
     data: { type: kind, id: record.id },
     disabled: dragDisabled,
@@ -87,10 +91,7 @@ function FileListGridCellImpl({
       </div>
 
       <div className="w-full text-center">
-        <div
-          className="text-xs font-medium truncate"
-          title={name}
-        >
+        <div className="text-xs font-medium truncate" title={name}>
           {truncateFilename(name, 18)}
         </div>
         <div className="text-[10px] text-muted-foreground tabular-nums">

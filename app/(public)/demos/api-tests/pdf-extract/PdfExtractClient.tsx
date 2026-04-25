@@ -12,10 +12,8 @@ import {
   Hash,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  useApiTestConfig,
-  ApiTestConfigPanel,
-} from "@/components/api-test-config";
+import { ApiTestConfigPanel } from "@/components/api-test-config/ApiTestConfigPanel";
+import { useApiTestConfig } from "@/components/api-test-config/useApiTestConfig";
 import { TEST_ADMIN_TOKEN } from "../sample-prompt";
 
 interface PdfExtractResponse {

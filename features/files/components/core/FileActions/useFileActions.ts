@@ -17,9 +17,9 @@ import {
   renameFile as renameFileThunk,
   restoreVersion as restoreVersionThunk,
   updateFileMetadata,
-} from "../../../redux/thunks";
-import * as Files from "../../../api/files";
-import type { Visibility } from "../../../types";
+} from "@/features/files/redux/thunks";
+import * as Files from "@/features/files/api/files";
+import type { Visibility } from "@/features/files/types";
 
 export interface FileActionHandlers {
   rename: (newName: string) => Promise<void>;

@@ -1,11 +1,9 @@
 "use client";
 
 import { Video } from "lucide-react";
-import {
-  SettingsSelect,
-  SettingsSection,
-  SettingsSubHeader,
-} from "@/components/official/settings";
+import { SettingsSelect } from "@/components/official/settings/primitives/SettingsSelect";
+import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
+import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
 import { useSetting } from "../hooks/useSetting";
 
 export default function VideoConferenceTab() {
