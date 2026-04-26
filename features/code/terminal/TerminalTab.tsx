@@ -152,6 +152,19 @@ export const TerminalTab: React.FC<TerminalTabProps> = ({
         let exitCode = 0;
         let cwd: string | undefined;
 
+        // Tools like `clear`, `less`, `git push` (with prompts), `vim`,
+        // `top`, etc. read TERM and tput-style capabilities from the
+        // environment. Without a TERM value we get "TERM environment
+        // variable not set" / "Inappropriate ioctl for device". Setting
+        // a sane default at the streaming-exec layer gives most CLIs
+        // what they need without paying the cost of a real PTY.
+        // COLUMNS/LINES help wrapping on tools like `git log --graph`.
+        const baseEnv: Record<string, string> = {
+          TERM: "xterm-256color",
+          COLUMNS: String(state.term.cols ?? 100),
+          LINES: String(state.term.rows ?? 30),
+        };
+
         if (adapter.stream) {
           // Streaming path — write each chunk to xterm as it arrives so
           // the user sees output live (git clone progress, npm install
@@ -168,14 +181,14 @@ export const TerminalTab: React.FC<TerminalTabProps> = ({
               // `info` and `exit` events are summarised after the await
               // resolves so we render a single trailing exit line.
             },
-            { signal: ac.signal },
+            { signal: ac.signal, env: baseEnv },
           );
           exitCode = result.exitCode;
           cwd = result.cwd;
         } else {
           // Buffered fallback (Mock adapter, or any adapter without
           // streaming support).
-          const result = await adapter.exec(command);
+          const result = await adapter.exec(command, { env: baseEnv });
           if (result.stdout) {
             state.term.write(ansiNormalize(result.stdout));
           }

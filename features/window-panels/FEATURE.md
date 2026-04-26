@@ -391,7 +391,125 @@ Enforced by:
 
 ---
 
+## Pop-out windows
+
+**Status**: shipped 2026-04-26. Any `kind: "window"` registry entry pops out automatically — no per-window opt-in.
+
+### What it does
+
+The user can detach any window from the parent viewport into a separate browser window. Two ways to trigger:
+
+1. **Menu**: hover the green traffic light → click "Pop out" in the dropdown.
+2. **Drag-out**: drag the window header outside the viewport edge by ≥80 px and hold for ≥250 ms. Release fires the popout.
+
+The popout renders the same window content via React `createPortal` into the popout document's body. Because the children's React tree stays attached to the parent, the popout shares:
+
+- Redux store (no state hydration, no sync layer)
+- `callbackManager` (widget handles, agent callback groups)
+- Theme + dark-mode (mirrored via MutationObserver on `<html>`)
+- Stylesheets (cloned from parent `<head>`, kept in sync via MutationObserver)
+- Provider context (Tooltip, Toast, RouterContext, WindowPersistenceContext)
+
+A "Dock" button in the popout's `PopoutTopBar` returns the window to the parent viewport at its original `prePopoutRect`. Closing the popout via the OS X button does the same.
+
+### Browser support
+
+| Browser | Mode | Notes |
+|---|---|---|
+| Chrome 116+, Edge 116+, Opera | **Document Picture-in-Picture** | Frameless, always-on-top floating window. Single-PiP-per-origin enforced. |
+| Safari, Firefox, others | **`window.open` popup** | Universal fallback. Browser chrome visible (URL bar, tabs). |
+| Embedded WebView, no `window.open` | (none) | "Pop out" UI hidden entirely. |
+
+### Single-PiP enforcement
+
+Chromium allows only one Document PiP window per origin at a time. Attempting to pop out a second window while one is already in PiP produces a toast "Floating window already open" with a **Dock & pop out this one** action button — clicking it docks the existing PiP and opens the new one.
+
+### Files
+
+```
+features/window-panels/popout/
+├── featureDetection.ts            — pip vs popup vs none
+├── popoutDragDetector.ts          — pure threshold/dwell logic
+├── popoutWindowMap.ts             — module-level Window registry + useSyncExternalStore hook
+├── popoutPendingStorage.ts        — sessionStorage flag for reload-recovery toast
+├── PopoutContext.tsx              — context exposing popout doc/window/container
+├── PopoutShell.tsx                — provider wrapper mounted inside the portal
+├── PopoutPortal.tsx               — createPortal wrapper component
+├── usePopoutContainer.ts          — Radix container override hook
+├── usePopoutWindow.ts             — lifecycle hook (open/close/cleanup)
+├── usePopoutControl.ts            — imperative API + opener registry
+└── cloneStyles.ts                 — CSS env clone + MutationObservers (theme + HMR)
+
+features/window-panels/WindowPanel/
+└── PopoutTopBar.tsx               — slim chrome strip rendered inside popouts
+```
+
+### Redux state
+
+`WindowEntry` gains:
+- `popoutMode: "pip" | "popup" | null` — orthogonal to `state` enum
+- `prePopoutRect: WindowRect | null` — saved rect for dock-back
+
+`WindowManagerState` gains:
+- `activePipWindowId: string | null` — single-PiP slot tracker
+- `popoutCandidateId: string | null` — drag-out visual feedback
+
+Actions: `popOutWindow({ id, mode })`, `dockWindow(id)`, `setPopoutCandidate({ id })`.
+
+Selectors: `selectPopoutMode(id)`, `selectIsPoppedOut(id)`, `selectActivePipWindowId`, `selectPopoutCandidateId`, `selectDockedWindows`.
+
+`arrangeActiveWindows`, `minimizeWindow`, `minimizeAll` skip popped-out windows. `unregisterWindow` releases the PiP slot if held. `restoreWindowState` (DB hydration) coerces `popoutMode = null` because programmatic re-popout requires a user gesture.
+
+### Programmatic API
+
+```ts
+import { usePopoutControl } from "@/features/window-panels/popout/usePopoutControl";
+
+const { popOut, dock } = usePopoutControl();
+
+// Inside a click handler (user gesture required for popout):
+popOut("notesWindow", { width: 480, height: 320, title: "Notes" });
+// Returns { ok: true, mode: "pip" | "popup" } | { ok: false, reason: ... }
+
+// Anywhere:
+dock("notesWindow");
+```
+
+### Reload behavior
+
+If a window was popped out at the time of parent reload, `WindowPersistenceManager` shows a toast with a **Restore** action. Clicking the action triggers a fresh popout via `usePopoutControl` — the click satisfies the user-gesture requirement that programmatic restore can't.
+
+The window otherwise restores docked at its `prePopoutRect` from the persistence layer (popout state itself is never written to DB).
+
+### Mobile
+
+Hard-disabled. Mobile uses a fully separate render path (drawer/card/fullscreen takeover), so popout cannot be triggered:
+- "Pop out" menu entry hidden via `!isMobile` gate
+- Drag-out detection skipped (`onTriggerPopout` is `undefined` on mobile)
+
+### Radix portal retargeting
+
+Tooltips, popovers, dropdowns, dialogs, alert dialogs, and selects (the 6 wrappers under `components/ui/`) read `usePopoutContainer()` from `PopoutContext`. Inside a popout, Radix portals render into the popout's `<body>` instead of the parent's. Outside a popout, the hook returns `undefined` and Radix uses its default (`document.body`) — zero behavior change for the thousands of existing usages elsewhere in the app.
+
+`Sonner`/`Toaster` are mounted globally in `app/layout.tsx`; toasts triggered from popout content render in the parent window. This is intentional — toasts are global UX, the parent is the right surface.
+
+### Threshold tuning
+
+Defaults in `popoutDragDetector.DEFAULT_DRAG_OUT_CONFIG`:
+- `outsideThreshold: 80` px past viewport edge
+- `dwellMs: 250` ms held outside before triggering
+
+A re-entry into the viewport resets the dwell timer — a glance outside doesn't latch the candidate state. The "Release to pop out" outline + ghost label appear immediately when the dwell threshold is met.
+
+### Test coverage
+
+- `__tests__/popoutReducer.test.ts` — 24 tests on Redux state machine (popOut/dock round-trip, single-PiP enforcement, tray-slot freeing, hydration coercion, etc.)
+- `__tests__/popoutDragDetector.test.ts` — 15 tests on threshold/dwell logic across all viewport edges, custom configs, interrupted dwells
+
+---
+
 ## Change log
 
+- **2026-04-26** — **Pop-out windows (Document Picture-in-Picture) shipped.** See `## Pop-out windows` section above. Any `kind: "window"` entry can now be popped out into a frameless always-on-top floating window via menu click or drag-out gesture. 39 new unit tests; zero TypeScript errors; zero per-window opt-in required.
 - **2026-04-23** — Phases 0–5, 8, 9 shipped. This `FEATURE.md` created; the long-form content previously in `INVENTORY.md` is absorbed above. `usePanelPersistence.ts` / `FloatingPanel.tsx` / `withGlobalState.tsx` / `TODO-persistence-spec.md` deleted. `UnifiedOverlayController` + `OverlaySurface` introduced behind `NEXT_PUBLIC_OVERLAYS_V2` flag. 6 missing URL-sync hydrators filled; dev-time integrity check added. Mobile drawer + card surfaces introduced; `WindowPanel` routes by `registry.mobilePresentation`.
 - **2026-04-11** — `INVENTORY.md` last reviewed.

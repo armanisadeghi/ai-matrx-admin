@@ -83,13 +83,18 @@ export function buildRows({
 
   let rows: RowItem[] = [...folderRows, ...fileRows];
 
-  // Filter chip: Recents → sort by updatedAt desc; Starred → empty (placeholder).
+  // Filter chip: Recents → sort by updatedAt desc, cap at the most-recent
+  // 100 so a user with thousands of files doesn't render the whole tree on
+  // one page. 100 covers ~6 weeks of active use; to see older history,
+  // navigate by folder. Starred → empty (placeholder).
   if (filter === "recents") {
-    rows = [...rows].sort((a, b) => {
-      const aDate = a.kind === "file" ? a.file.updatedAt : a.folder.updatedAt;
-      const bDate = b.kind === "file" ? b.file.updatedAt : b.folder.updatedAt;
-      return new Date(bDate).getTime() - new Date(aDate).getTime();
-    });
+    rows = [...rows]
+      .sort((a, b) => {
+        const aDate = a.kind === "file" ? a.file.updatedAt : a.folder.updatedAt;
+        const bDate = b.kind === "file" ? b.file.updatedAt : b.folder.updatedAt;
+        return new Date(bDate).getTime() - new Date(aDate).getTime();
+      })
+      .slice(0, 100);
   } else if (filter === "starred") {
     rows = [];
   }

@@ -15,7 +15,7 @@
  *  - Title is stored in Redux so WindowTray displays it correctly.
  */
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { PanelImperativeHandle } from "react-resizable-panels";
 import {
@@ -59,7 +59,6 @@ import { selectIsDebugMode } from "@/lib/redux/slices/adminDebugSlice";
 import { useUrlSync } from "./url-sync/useUrlSync";
 import { useWindowPersistence } from "./WindowPersistenceManager";
 import { Save } from "lucide-react";
-import { toast } from "sonner";
 import { DebugStrip } from "./WindowPanel/DebugStrip";
 import { MobileWindowHeader } from "./WindowPanel/MobileHeader";
 import { SnapButton } from "./WindowPanel/SnapButton";
@@ -69,7 +68,15 @@ import {
 } from "./popout/featureDetection";
 import {
   selectActivePipWindowId,
+  selectPopoutMode,
+  selectPopoutCandidateId,
+  dockWindow,
+  type WindowRect,
 } from "@/lib/redux/slices/windowManagerSlice";
+import { usePopoutWindow } from "./popout/usePopoutWindow";
+import { registerPopoutOpener } from "./popout/usePopoutControl";
+import { PopoutPortal } from "./popout/PopoutPortal";
+import { PopoutTopBar } from "./WindowPanel/PopoutTopBar";
 
 // ─── Resize handle descriptors ───────────────────────────────────────────────
 
@@ -224,9 +231,57 @@ export function WindowPanel({
   onHeavySnapshot,
   ...hookOpts
 }: WindowPanelProps) {
-  // Pass title into hook so it reaches Redux
+  // ── Pre-compute id and popout capabilities BEFORE useWindowPanel so we
+  //    can pass `onTriggerPopout` to the drag-detection logic. The id is
+  //    derived the same way useWindowPanel does internally (`opts.id ?? useId()`).
+  const reactId = useId();
+  const id = hookOpts.id ?? reactId;
+  const isMobile = useIsMobile();
+
+  const popoutCapabilityRef = useRef<PopoutCapability | null>(null);
+  if (popoutCapabilityRef.current === null) {
+    popoutCapabilityRef.current = detectPopoutCapability();
+  }
+  const popoutCapability = popoutCapabilityRef.current;
+
+  // popout lifecycle hook — owns the actual browser popout window and its
+  // open/close lifecycle. Always called (id is stable) but its `openPopout`
+  // is only invoked when the user actually triggers a popout.
+  const popout = usePopoutWindow(id);
+
+  // Register the live openPopout in the module-level opener map so external
+  // callers (`usePopoutControl`) can trigger popout for this window. Cleanup
+  // on unmount is handled by the returned unregister function.
+  useEffect(() => {
+    return registerPopoutOpener(id, popout.openPopout);
+  }, [id, popout.openPopout]);
+
+  // Drag-out callback fired by useWindowPanel when the user drags this
+  // window outside the viewport beyond the dwell threshold. Receives the
+  // dragged rect at release time so popout sizing matches user intent.
+  // The popout opener internally enforces single-PiP slot and surfaces
+  // toasts on failure, so we don't double-check here.
+  const handleDragOutPopout = useCallback(
+    (draggedRect: WindowRect) => {
+      void popout.openPopout({
+        width: draggedRect.width,
+        height: draggedRect.height,
+        title: typeof title === "string" ? title : "Window",
+      });
+    },
+    [popout, title],
+  );
+
+  // Hand drag-out detection a callback ONLY when popout is meaningful here:
+  //  - desktop only (mobile path is fully separate)
+  //  - browser must support some form of popout
+  const onTriggerPopout =
+    !isMobile && popoutCapability !== "none"
+      ? handleDragOutPopout
+      : undefined;
+
+  // Pass title and our pre-computed id+trigger into the hook
   const {
-    id,
     windowState,
     rect,
     zIndex,
@@ -237,12 +292,11 @@ export function WindowPanel({
     onMaximize,
     onMinimize,
     onToggleMaximize,
-  } = useWindowPanel({ ...hookOpts, title });
+  } = useWindowPanel({ ...hookOpts, id, title, onTriggerPopout });
 
   const dispatch = useAppDispatch();
   const windowsHidden = useAppSelector(selectWindowsHidden);
   const isDebugMode = useAppSelector(selectIsDebugMode);
-  const isMobile = useIsMobile();
 
   // On mobile, only the topmost non-minimized window is rendered visible.
   const allWindows = useAppSelector(selectAllWindows);
@@ -557,44 +611,49 @@ export function WindowPanel({
     [dispatch],
   );
 
-  // ── Pop-out stub (Phase 1) ────────────────────────────────────────────────
-  // Detect once on mount — capability is stable for the page lifetime.
-  // Phase 2 will replace this stub with the real `usePopoutWindow` hook.
-  const popoutCapabilityRef = useRef<PopoutCapability | null>(null);
-  if (popoutCapabilityRef.current === null) {
-    popoutCapabilityRef.current = detectPopoutCapability();
-  }
-  const popoutCapability = popoutCapabilityRef.current;
+  // ── Pop-out menu-click wiring ─────────────────────────────────────────────
+  // (popout, popoutCapability, isMobile already set up at top of component)
   const activePipWindowId = useAppSelector(selectActivePipWindowId);
+  const popoutMode = useAppSelector(selectPopoutMode(id));
+  const popoutCandidateId = useAppSelector(selectPopoutCandidateId);
   const pipSlotTakenByOther =
     popoutCapability === "pip" &&
     activePipWindowId !== null &&
     activePipWindowId !== id;
 
-  // Affordance is shown only when:
-  //   - we're on desktop (mobile path is fully separate)
-  //   - the browser supports some form of popout
+  // Menu affordance is shown only when:
+  //   - desktop (mobile path is fully separate)
+  //   - browser supports popout
   //   - the window isn't minimized (popout from the tray is awkward UX)
+  //   - the window isn't already popped out
   const canShowPopOut =
-    !isMobile && popoutCapability !== "none" && windowState !== "minimized";
+    !isMobile &&
+    popoutCapability !== "none" &&
+    windowState !== "minimized" &&
+    popoutMode === null;
 
   const popOutDisabled = pipSlotTakenByOther;
   const popOutDisabledReason = pipSlotTakenByOther
     ? "Another window is already in floating mode. Dock it first."
     : undefined;
 
-  const handlePopOutStub = useCallback(() => {
-    // Phase 1 stub — Phase 2 wires this to usePopoutWindow.openPip()
-    toast.info("Pop-out coming soon", {
-      description:
-        popoutCapability === "pip"
-          ? "Phase 2 will wire this to the Document Picture-in-Picture API."
-          : "Phase 2 will wire this to a popup window for your browser.",
+  // Menu-click handler — uses the live windowed rect (different from the
+  // drag-out path which gets the rect from the gesture).
+  const handlePopOut = useCallback(() => {
+    void popout.openPopout({
+      width: rect.width,
+      height: rect.height,
+      title: typeof title === "string" ? title : "Window",
     });
-  }, [popoutCapability]);
+  }, [popout, rect.width, rect.height, title]);
+
+  const handleDockBack = useCallback(() => {
+    dispatch(dockWindow(id));
+  }, [dispatch, id]);
 
   const isMinimized = windowState === "minimized";
   const isMaximized = windowState === "maximized";
+  const isPopoutCandidate = popoutCandidateId === id;
 
   // ── Header (shared across all states) ───────────────────────────────────
   const header = (
@@ -619,7 +678,7 @@ export function WindowPanel({
       sidebarOpen={sidebarOpen}
       onToggleSidebar={toggleSidebar}
       onSaveWindowState={overlayId ? handleSaveWindowState : undefined}
-      onPopOut={canShowPopOut ? handlePopOutStub : undefined}
+      onPopOut={canShowPopOut ? handlePopOut : undefined}
       popOutDisabled={popOutDisabled}
       popOutDisabledReason={popOutDisabledReason}
     />
@@ -778,6 +837,43 @@ export function WindowPanel({
     return portalTarget ? createPortal(mobileEl, portalTarget) : null;
   }
 
+  // ────────────────────────────────────────────────────────────────────────
+  // POPPED OUT — content is rendered into a separate browser window via
+  // PopoutPortal. The same WindowPanel component instance covers both
+  // docked and popped-out states, so React state, refs, effects, Redux
+  // subscriptions, and Supabase realtime channels all survive the transition
+  // with no remount.
+  //
+  // The OS / browser frame provides close + minimize at the window-manager
+  // level, so we render `PopoutTopBar` (no traffic lights) instead of the
+  // standard `header`. The "Dock" button in PopoutTopBar dispatches
+  // `dockWindow`, which clears the popout state and triggers the
+  // `usePopoutWindow` lifecycle to close the actual browser window.
+  // ────────────────────────────────────────────────────────────────────────
+  if (popoutMode !== null) {
+    return (
+      <PopoutPortal windowId={id}>
+        <div className="h-full w-full flex flex-col bg-card text-foreground">
+          <PopoutTopBar
+            title={titleNode ?? title}
+            actionsRight={resolvedActionsRight}
+            onDock={handleDockBack}
+          />
+          {isDebugMode && <DebugStrip rect={rect} zIndex={zIndex} />}
+          <div
+            className={cn(
+              "flex-1 overflow-auto min-h-0",
+              bodyClassName,
+            )}
+          >
+            {bodyContent}
+          </div>
+          {footerBar}
+        </div>
+      </PopoutPortal>
+    );
+  }
+
   if (isMaximized) {
     const el = (
       <div
@@ -812,6 +908,10 @@ export function WindowPanel({
         "fixed flex flex-col",
         "rounded-xl bg-card/95 backdrop-blur-md border border-border shadow-xl",
         "overflow-hidden",
+        // Drag-out candidate: ring-2 highlight signals "release here to pop out".
+        // Uses primary color from the design tokens so it adapts to theme.
+        isPopoutCandidate &&
+          "ring-2 ring-primary ring-offset-2 ring-offset-background transition-shadow",
         className,
       )}
       style={{
@@ -855,6 +955,18 @@ export function WindowPanel({
         </div>
       )}
       {!isMinimized && footerBar}
+
+      {/* Drag-out ghost label — overlays the body during the candidate dwell.
+          Pointer-events:none so it doesn't interfere with the in-progress drag. */}
+      {isPopoutCandidate && (
+        <div
+          className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none"
+        >
+          <div className="px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-xs font-medium shadow-lg">
+            Release to pop out
+          </div>
+        </div>
+      )}
     </div>
   );
 

@@ -40,15 +40,54 @@ import {
 } from "@tabler/icons-react";
 import AdminComponentOne from "@/app/(authenticated)/admin/components/AdminComponetOne";
 import { CiFloppyDisk } from "react-icons/ci";
-import EntityTestingLab from "@/app/(authenticated)/admin/components/entities/EntityTestingLab";
-import EntityTester from "@/app/(authenticated)/admin/components/entities/EntityTester";
-import EntityMetrics from "../components/entities/EntityMetrics";
-import EntityBrowser from "../components/entities/EntityBrowser";
-import EntityLab from "../components/entities/EntityLab";
 import { Database, DatabaseBackup, DatabaseZap } from "lucide-react";
-import SchemaVisualizer from "@/features/administration/schema-visualizer";
-import { SchemaVisualizerLayout } from "@/features/administration/schema-visualizer/SchemaVisualizerLayout";
-import DatabaseAdminDashboard from "@/features/administration/database-admin/DatabaseAdminDashboard";
+import dynamic from "next/dynamic";
+
+// Entity-system tools — DYNAMICALLY imported so they don't bleed into the
+// slim /admin chunk. These tools call entity hooks (`useEntity*`,
+// `useDirectFetch`, etc.) that only resolve under the entity store
+// (`makeEntityStore`). /admin itself runs under the slim store, so the
+// underlying tools won't fully function from here without the entity
+// providers — but at least their code isn't shipped in the slim bundle.
+//
+// SSR is disabled because the parent (admin/page.tsx) is "use client" and
+// these tools depend on browser-only APIs anyway.
+//
+// See `~/.claude/plans/the-entity-system-which-bubbly-wind.md`.
+const EntityTestingLab = dynamic(
+  () =>
+    import("@/app/(authenticated)/admin/components/entities/EntityTestingLab"),
+  { ssr: false },
+);
+const EntityTester = dynamic(
+  () => import("@/app/(authenticated)/admin/components/entities/EntityTester"),
+  { ssr: false },
+);
+const EntityMetrics = dynamic(() => import("../components/entities/EntityMetrics"), {
+  ssr: false,
+});
+const EntityBrowser = dynamic(() => import("../components/entities/EntityBrowser"), {
+  ssr: false,
+});
+const EntityLab = dynamic(() => import("../components/entities/EntityLab"), {
+  ssr: false,
+});
+const SchemaVisualizer = dynamic(
+  () => import("@/features/administration/schema-visualizer"),
+  { ssr: false },
+);
+const SchemaVisualizerLayout = dynamic(
+  () =>
+    import(
+      "@/features/administration/schema-visualizer/SchemaVisualizerLayout"
+    ).then((m) => m.SchemaVisualizerLayout),
+  { ssr: false },
+);
+const DatabaseAdminDashboard = dynamic(
+  () =>
+    import("@/features/administration/database-admin/DatabaseAdminDashboard"),
+  { ssr: false },
+);
 
 export const adminCategories = [
   {

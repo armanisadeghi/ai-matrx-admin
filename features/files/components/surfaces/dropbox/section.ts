@@ -11,6 +11,7 @@ export type CloudFilesSection =
   | "folders"
   | "folders-root"
   | "photos"
+  | "recents"
   | "shared"
   | "requests"
   | "trash"
@@ -25,6 +26,7 @@ export interface SectionNavEntry {
 
 export const PRIMARY_SECTIONS: SectionNavEntry[] = [
   { key: "all", href: "/cloud-files", label: "All files" },
+  { key: "recents", href: "/cloud-files/recents", label: "Recents" },
   { key: "photos", href: "/cloud-files/photos", label: "Photos" },
   { key: "shared", href: "/cloud-files/shared", label: "Shared" },
   {

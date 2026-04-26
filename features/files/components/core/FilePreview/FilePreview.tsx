@@ -51,6 +51,15 @@ const DataPreview = dynamic(() => import("./previewers/DataPreview"), {
     </div>
   ),
 });
+// react-syntax-highlighter (Prism build) is ~150KB plus per-language defs.
+const CodePreview = dynamic(() => import("./previewers/CodePreview"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-full w-full items-center justify-center">
+      <div className="h-6 w-40 animate-pulse rounded bg-muted" />
+    </div>
+  ),
+});
 
 export interface FilePreviewProps {
   fileId: string;
@@ -154,6 +163,13 @@ export function FilePreview({
         <DataPreview url={url} fileName={file.fileName} className={className} />
       );
     case "code":
+      return (
+        <CodePreview
+          url={url}
+          fileName={file.fileName}
+          className={className}
+        />
+      );
     case "text":
       return <TextPreview url={url} className={className} />;
     case "generic":

@@ -43,6 +43,65 @@ import {
 } from "./registry/windowRegistry";
 import type { WindowEntry } from "@/lib/redux/slices/windowManagerSlice";
 import { clampRectToCurrentViewport } from "./utils/rectClamp";
+import {
+  getPendingPopoutWindowIds,
+  clearAllPopoutPending,
+} from "./popout/popoutPendingStorage";
+import { getPopoutOpener } from "./popout/usePopoutControl";
+import { toast } from "sonner";
+
+// ─── Popout recovery toast ────────────────────────────────────────────────────
+
+/**
+ * Surface a toast for any windows that were popped out at the time of the
+ * last parent-page unload. Clicking the toast action triggers a fresh
+ * popout via `usePopoutControl` — the click counts as a user gesture so
+ * `documentPictureInPicture.requestWindow()` will be accepted.
+ *
+ * The window must be mounted by the time the user clicks. We delay reading
+ * the opener until click time so the registration ordering is forgiving.
+ */
+function surfacePopoutRecoveryToast(): void {
+  const pendingIds = getPendingPopoutWindowIds();
+  if (pendingIds.length === 0) return;
+
+  // Clear immediately so a fast reload doesn't double-show the toast.
+  // If the user dismisses without action, that's fine — the windows
+  // restored docked, with their original geometry preserved.
+  clearAllPopoutPending();
+
+  const label =
+    pendingIds.length === 1
+      ? "A floating window was open before reload"
+      : `${pendingIds.length} floating windows were open before reload`;
+
+  toast(label, {
+    description: "Click to restore.",
+    duration: 10_000,
+    action: {
+      label: "Restore",
+      onClick: () => {
+        for (const id of pendingIds) {
+          const opener = getPopoutOpener(id);
+          if (!opener) {
+            // Window not mounted — silently skip. The persistence layer
+            // already restored its docked geometry; the user can manually
+            // pop it out from the menu.
+            continue;
+          }
+          // We don't have the saved width/height here — use defaults.
+          // The opener honors the user-gesture chain because `onClick` is
+          // a real click handler.
+          void opener({
+            width: 480,
+            height: 320,
+            title: "Window",
+          });
+        }
+      },
+    },
+  });
+}
 
 // ─── Context ──────────────────────────────────────────────────────────────────
 
@@ -204,6 +263,14 @@ export function WindowPersistenceManager({
 
         if (Object.keys(windowEntries).length > 0) {
           dispatch(restoreWindowState(windowEntries));
+        }
+
+        // ── Popout recovery on reload ────────────────────────────────────
+        // If any windows were popped out at the time of the last unload,
+        // surface a toast offering to restore them. The user must click
+        // (fresh user gesture) — we can't programmatically reopen.
+        if (!cancelled) {
+          surfacePopoutRecoveryToast();
         }
       } catch (err) {
         console.warn("WindowPersistenceManager: hydration failed", err);

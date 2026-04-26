@@ -200,6 +200,11 @@ function PageShellDesktop({
     if (section === "trash") {
       return allFolders.filter((f) => f.deletedAt);
     }
+    // Recents view is files-only — folders mixed in would be confusing
+    // ("recently changed folder" rarely matches user intent).
+    if (section === "recents") {
+      return [];
+    }
     return allFolders.filter((f) => !f.deletedAt);
   }, [section, rootFolders, allFolders]);
   const scopedFiles = useMemo(() => {
@@ -222,6 +227,10 @@ function PageShellDesktop({
   // folder B (a regression flagged in the verification audit). The matching
   // happens in `row-data.ts:matchesQuery`; we just hand it the full set when
   // searching, otherwise we keep the folder-scoped behavior.
+  // Recents section implicitly applies the "recents" filter chip so the user
+  // sees the most recently updated files without having to click anything.
+  // Any explicit chip (e.g. "starred") still wins.
+  const effectiveFilter = filter ?? (section === "recents" ? "recents" : null);
   const isSearching = searchQuery.trim().length > 0;
   const searchScopedFiles = useMemo(() => {
     if (!isSearching) return scopedFiles;
@@ -339,7 +348,7 @@ function PageShellDesktop({
                           permissionsByResourceId={permissionsByResourceId}
                           section={section}
                           searchQuery={searchQuery}
-                          filter={filter}
+                          filter={effectiveFilter}
                           treeWideSearch={isSearching}
                           onActivateFolder={handleSelectFolder}
                           onActivateFile={handleSelectFile}
@@ -358,7 +367,7 @@ function PageShellDesktop({
                           permissionsByResourceId={permissionsByResourceId}
                           section={section}
                           searchQuery={searchQuery}
-                          filter={filter}
+                          filter={effectiveFilter}
                           treeWideSearch={isSearching}
                           onActivateFolder={handleSelectFolder}
                           onActivateFile={handleSelectFile}

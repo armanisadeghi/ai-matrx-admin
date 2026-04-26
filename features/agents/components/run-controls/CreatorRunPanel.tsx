@@ -40,6 +40,7 @@ import { setBuilderAdvancedSettings } from "@/features/agents/redux/execution-sy
 import { selectUseStructuredSystemInstruction } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { RunSettingsEditor } from "./RunSettingsEditor";
 import { ContextSlotsTab } from "./ContextSlotsTab";
+import { PayloadTab } from "./PayloadTab";
 import { selectConversationTitle } from "@/features/agents/redux/execution-system/messages/messages.selectors";
 import { SystemInstructionEditor } from "../builder/message-builders/system-instructions/SystemInstructionEditor";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
@@ -57,6 +58,7 @@ import { cn } from "@/lib/utils";
 type TabId =
   | "actions"
   | "context"
+  | "payload"
   | "widget_invoker"
   | "settings"
   | "sysprompt"
@@ -273,6 +275,7 @@ function SystemPromptTab({ conversationId }: { conversationId: string }) {
 const ALL_TABS: TabId[] = [
   "actions",
   "context",
+  "payload",
   "widget_invoker",
   "settings",
   "sysprompt",
@@ -412,6 +415,7 @@ export function CreatorRunPanel({
   const allTabDefs: Array<{ id: TabId; label: string }> = [
     { id: "actions", label: "Actions" },
     { id: "context", label: "Context" },
+    { id: "payload", label: "Payload" },
     { id: "widget_invoker", label: "Widgets" },
     { id: "settings", label: "Run" },
     { id: "sysprompt", label: "System" },
@@ -470,6 +474,9 @@ export function CreatorRunPanel({
           )}
           {activeTab === "context" && (
             <ContextSlotsTab conversationId={conversationId} />
+          )}
+          {activeTab === "payload" && (
+            <PayloadTab conversationId={conversationId} />
           )}
           {activeTab === "settings" && (
             <RunSettingsTab conversationId={conversationId} />

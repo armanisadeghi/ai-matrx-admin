@@ -3,7 +3,8 @@
 import ChatHeaderControls from "@/features/cx-chat/components/ChatHeaderControls";
 import ChatWelcomeServer from "@/features/cx-chat/components/ChatWelcomeServer";
 import { resolveAgentForSSR } from "@/features/cx-chat/components/agent/agents";
-import { BACKEND_URLS, ENDPOINTS } from "@/lib/api/endpoints";
+import { BACKEND_URLS } from "@/lib/api/endpoints";
+import { warmAgent } from "@/lib/api/warm-helpers";
 
 export default async function AgentPage({
   params,
@@ -13,9 +14,7 @@ export default async function AgentPage({
   const { agentId } = await params;
   const agent = resolveAgentForSSR(agentId);
 
-  fetch(`${BACKEND_URLS.production}${ENDPOINTS.ai.agentWarm(agentId)}`, {
-    method: "POST",
-  }).catch(() => {});
+  warmAgent(agentId, { baseUrl: BACKEND_URLS.production ?? "" });
 
   return (
     <>

@@ -3,14 +3,13 @@
 import ChatHeaderControls from "@/features/cx-chat/components/ChatHeaderControls";
 import ChatWelcomeServer from "@/features/cx-chat/components/ChatWelcomeServer";
 import { getDefaultAgent } from "@/features/cx-chat/components/agent/agents";
-import { BACKEND_URLS, ENDPOINTS } from "@/lib/api/endpoints";
+import { BACKEND_URLS } from "@/lib/api/endpoints";
+import { warmAgent } from "@/lib/api/warm-helpers";
 
 export default async function ChatPage() {
   const agent = getDefaultAgent();
 
-  fetch(`${BACKEND_URLS.production}${ENDPOINTS.ai.agentWarm(agent.promptId)}`, {
-    method: "POST",
-  }).catch(() => {});
+  warmAgent(agent.promptId, { baseUrl: BACKEND_URLS.production ?? "" });
 
   return (
     <>

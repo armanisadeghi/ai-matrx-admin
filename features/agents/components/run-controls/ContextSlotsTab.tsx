@@ -75,7 +75,7 @@ const TYPE_OPTIONS: ContextObjectType[] = [
   "task",
 ];
 
-const TYPE_COLORS: Record<ContextObjectType, string> = {
+export const TYPE_COLORS: Record<ContextObjectType, string> = {
   text: "bg-blue-500/10 text-blue-500 border-blue-500/20",
   json: "bg-purple-500/10 text-purple-500 border-purple-500/20",
   file_url: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",

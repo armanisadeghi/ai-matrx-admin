@@ -28,9 +28,16 @@ import {
   minimizeWindow,
   updateWindowRect,
   updateWindowTitle,
+  setPopoutCandidate,
   selectWindow,
   type WindowRect,
 } from "@/lib/redux/slices/windowManagerSlice";
+import {
+  evaluateDragOut,
+  DEFAULT_DRAG_OUT_CONFIG,
+  INITIAL_DRAG_OUT_STATE,
+  type DragOutState,
+} from "../popout/popoutDragDetector";
 
 // ─── Config ────────────────────────────────────────────────────────────────────
 
@@ -130,6 +137,20 @@ export interface UseWindowPanelOptions {
   maxWidth?: number;
   /** Maximum height the user can resize to. */
   maxHeight?: number;
+  /**
+   * Optional callback fired when the user drags the window outside the
+   * viewport long enough to count as a pop-out gesture. Caller is expected
+   * to open the popout window synchronously inside the user-gesture stack
+   * (i.e. without `await` before the open call).
+   *
+   * Pass the current rect at the time of release — the popout uses it for
+   * sizing.
+   *
+   * `undefined` disables drag-out detection entirely. Use `undefined` for
+   * popouts that aren't supported (mobile, no-capability browsers, etc.)
+   * so we don't waste cycles on the per-move evaluation.
+   */
+  onTriggerPopout?: (rect: WindowRect) => void;
 }
 
 /** Shared subset of MouseEvent / PointerEvent / TouchEvent we need. */
@@ -213,6 +234,10 @@ export function useWindowPanel(
     wy: number;
   } | null>(null);
 
+  const onTriggerPopout = opts.onTriggerPopout;
+  const onTriggerPopoutRef = useRef(onTriggerPopout);
+  onTriggerPopoutRef.current = onTriggerPopout;
+
   const onDragStart = useCallback(
     (e: React.PointerEvent) => {
       e.preventDefault();
@@ -226,17 +251,75 @@ export function useWindowPanel(
         wy: entry.windowed.y,
       };
 
+      // Per-drag local state for drag-out detection. Only allocated/used
+      // when popout is enabled for this window.
+      let dragOutState: DragOutState = INITIAL_DRAG_OUT_STATE;
+      // Snapshot rect at release for the popout sizing — drag updates rect
+      // continuously, so we capture x/y/w/h at gesture-end.
+      let lastClientX = e.clientX;
+      let lastClientY = e.clientY;
+      const popoutEnabled = onTriggerPopoutRef.current !== undefined;
+
       const onMove = (ev: PointerEvent) => {
         if (!dragStart.current) return;
         const nx = dragStart.current.wx + (ev.clientX - dragStart.current.mx);
         const ny = dragStart.current.wy + (ev.clientY - dragStart.current.my);
         dispatch(updateWindowRect({ id, rect: { x: nx, y: ny } }));
+        lastClientX = ev.clientX;
+        lastClientY = ev.clientY;
+
+        // Drag-out detection — only run the evaluator when popout is wired.
+        if (!popoutEnabled) return;
+        const result = evaluateDragOut(
+          { clientX: ev.clientX, clientY: ev.clientY },
+          dragOutState,
+          DEFAULT_DRAG_OUT_CONFIG,
+          window.innerWidth,
+          window.innerHeight,
+          performance.now(),
+        );
+        // Only dispatch on candidate-state changes to avoid spamming Redux
+        // with identical actions every pointermove.
+        if (result.state.isCandidate !== dragOutState.isCandidate) {
+          dispatch(
+            setPopoutCandidate({ id: result.state.isCandidate ? id : null }),
+          );
+        }
+        dragOutState = result.state;
       };
+
       const onUp = () => {
+        const wasCandidate = dragOutState.isCandidate;
         dragStart.current = null;
         document.removeEventListener("pointermove", onMove);
         document.removeEventListener("pointerup", onUp);
         document.removeEventListener("pointercancel", onUp);
+
+        // Always clear candidate flag on release — even if popout fires,
+        // the visual feedback should disappear immediately.
+        if (popoutEnabled && dragOutState.isCandidate) {
+          dispatch(setPopoutCandidate({ id: null }));
+        }
+
+        // Trigger popout if release happened in candidate state.
+        // Run synchronously inside the pointerup user-gesture stack so the
+        // browser accepts the requestWindow / window.open call.
+        if (wasCandidate && onTriggerPopoutRef.current && entry) {
+          // Use the LAST rect we computed during the drag — the user has
+          // visually placed the window at that position, even though the
+          // popout will appear at OS-controlled coordinates.
+          const lastRect: WindowRect = {
+            x: dragStart.current?.wx ?? entry.windowed.x,
+            y: dragStart.current?.wy ?? entry.windowed.y,
+            width: entry.windowed.width,
+            height: entry.windowed.height,
+          };
+          onTriggerPopoutRef.current(lastRect);
+        }
+        // Suppress unused-var lint on lastClientX/Y — they're tracked for
+        // potential future telemetry (drag distance, exit edge, etc.)
+        void lastClientX;
+        void lastClientY;
       };
       document.addEventListener("pointermove", onMove);
       document.addEventListener("pointerup", onUp);

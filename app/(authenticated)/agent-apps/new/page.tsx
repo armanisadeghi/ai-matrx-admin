@@ -1,6 +1,5 @@
 import { createClient } from "@/utils/supabase/server";
-import { NewAgentAppClient } from "./NewAgentAppClient";
-import type { AgentOption } from "@/features/agent-apps/components/SearchableAgentSelect";
+import { CreateAgentAppFormWrapper } from "@/features/agent-apps/components/CreateAgentAppFormWrapper";
 
 interface NewAgentAppPageProps {
   searchParams: Promise<{ agent_id?: string }>;
@@ -21,45 +20,43 @@ export default async function NewAgentAppPage({
     };
   };
 
-  const { data: { user } } = await supabase.auth.getUser();
   const params = await searchParams;
   const preselectedAgentId = params.agent_id ?? null;
 
-  // RLS scopes the agent list to what the user can see (own + public + org).
+  const { data: { user } } = await supabase.auth.getUser();
+
+  // Full agent rows so AutoCreate can feed `variable_definitions` to the
+  // generator. RLS scopes to user-visible agents.
   const { data: rawAgents } = await supabase
     .from("agx_agent")
-    .select("id, name, description, category, is_public, is_archived")
+    .select("*")
     .order("updated_at", { ascending: false });
 
-  const agents: AgentOption[] = (
-    (rawAgents as
-      | Array<{
-          id: string;
-          name: string;
-          description: string | null;
-          category: string | null;
-          is_public: boolean;
-          is_archived: boolean;
-        }>
-      | null) ?? []
-  )
-    .filter((a) => !a.is_archived)
-    .map((a) => ({
-      id: a.id,
-      name: a.name,
-      description: a.description,
-      category: a.category,
-      isPublic: a.is_public,
-    }));
+  const agents = ((rawAgents as Array<Record<string, unknown>> | null) ?? [])
+    .filter((a) => !a.is_archived);
+
+  const { data: categories } = await supabase
+    .from("aga_categories")
+    .select("*")
+    .order("sort_order", { ascending: true });
+
+  const preselectedAgent = preselectedAgentId
+    ? agents.find((a) => a.id === preselectedAgentId)
+    : undefined;
+
+  // The auth call above guards against an unauthenticated session (RLS would
+  // also short-circuit, but reading user.id surfaces it earlier).
+  void user;
 
   return (
     <div className="h-full flex flex-col overflow-hidden bg-textured">
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-7xl mx-auto px-6 py-8">
-          <NewAgentAppClient
+          <CreateAgentAppFormWrapper
             agents={agents}
+            categories={(categories as unknown[]) ?? []}
             preselectedAgentId={preselectedAgentId}
-            currentUserId={user?.id ?? null}
+            preselectedAgent={preselectedAgent}
           />
         </div>
       </div>

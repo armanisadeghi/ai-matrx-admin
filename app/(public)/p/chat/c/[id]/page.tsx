@@ -2,7 +2,8 @@ import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import ChatContainer from '@/features/public-chat/components/ChatContainer';
 import ChatLoading from '../../loading';
-import { BACKEND_URLS, ENDPOINTS } from '@/lib/api/endpoints';
+import { BACKEND_URLS } from '@/lib/api/endpoints';
+import { warmConversation } from '@/lib/api/warm-helpers';
 
 export async function generateMetadata({
     params,
@@ -32,9 +33,8 @@ export default async function ConversationPage({
 }) {
     const { id } = await params;
 
-    // Fire-and-forget: warm the conversation on the Python backend (server → server)
-    const warmUrl = `${BACKEND_URLS.production}${ENDPOINTS.ai.conversationWarm(id)}`;
-    fetch(warmUrl, { method: 'POST' }).catch(() => {});
+    // Fire-and-forget: warm the conversation on the Python backend.
+    warmConversation(id, { baseUrl: BACKEND_URLS.production ?? '' });
     console.log('[ConversationPage] warmed conversation:', id);
 
     return (

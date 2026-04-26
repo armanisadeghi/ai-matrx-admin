@@ -11,15 +11,17 @@
 
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   Copy,
+  CopyPlus,
   Download,
   Edit2,
   FolderInput,
   Globe,
   History,
   Info,
+  Layers,
   Lock,
   Share2,
   Trash2,
@@ -30,6 +32,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuShortcut,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
@@ -45,9 +48,23 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useAppDispatch } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import type { Visibility } from "@/features/files/types";
-import { setActiveFileId } from "@/features/files/redux/slice";
+import {
+  clearSelection,
+  setActiveFileId,
+} from "@/features/files/redux/slice";
+import {
+  selectAllFilesMap,
+  selectSelection,
+} from "@/features/files/redux/selectors";
+import {
+  deleteFile as deleteFileThunk,
+  getSignedUrl as getSignedUrlThunk,
+  moveFile as moveFileThunk,
+  uploadFiles as uploadFilesThunk,
+} from "@/features/files/redux/thunks";
+import { openFolderPicker } from "@/features/files/components/pickers/CloudFilesPickerHost";
 import { useFileActions } from "@/features/files/components/core/FileActions/useFileActions";
 import { FileInfoDialog } from "@/features/files/components/core/FileInfo/FileInfoDialog";
 
@@ -70,8 +87,29 @@ export function FileContextMenu({
 }: FileContextMenuProps) {
   const dispatch = useAppDispatch();
   const actions = useFileActions(fileId);
+  const selection = useAppSelector(selectSelection);
+  const filesById = useAppSelector(selectAllFilesMap);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
+  const [batchConfirmOpen, setBatchConfirmOpen] = useState(false);
+  const [busy, setBusy] = useState<"download" | "move" | "delete" | null>(null);
+
+  // When the right-clicked file is part of a multi-selection AND selection
+  // has more than one item, the menu pivots to "batch actions" mode and
+  // operates on the entire selection. Otherwise it's a normal single-file
+  // menu (the legacy menu behaved the same way).
+  const isInMulti =
+    selection.selectedIds.length > 1 &&
+    selection.selectedIds.includes(fileId);
+  const batchFileIds = isInMulti
+    ? selection.selectedIds.filter((id) => filesById[id])
+    : [];
+
+  // Mac → ⌘, Windows / Linux → Ctrl. Used in the visual shortcut hints.
+  const cmd = useMemo(() => {
+    if (typeof navigator === "undefined") return "Ctrl";
+    return /Mac|iPhone|iPad/i.test(navigator.platform) ? "⌘" : "Ctrl";
+  }, []);
 
   const handleVisibility = useCallback(
     async (visibility: Visibility) => {
@@ -79,6 +117,134 @@ export function FileContextMenu({
     },
     [actions],
   );
+
+  // ── Batch operations (concurrent, bounded) ────────────────────────────
+
+  const runBatch = useCallback(
+    async (worker: (id: string) => Promise<void>) => {
+      const limit = 4;
+      let cursor = 0;
+      const ids = batchFileIds;
+      const runners = Array.from(
+        { length: Math.min(limit, ids.length) },
+        async () => {
+          while (cursor < ids.length) {
+            const i = cursor++;
+            try {
+              await worker(ids[i]);
+            } catch (err) {
+              // eslint-disable-next-line no-console
+              console.warn("[FileContextMenu] batch item failed:", err);
+            }
+          }
+        },
+      );
+      await Promise.all(runners);
+    },
+    [batchFileIds],
+  );
+
+  const handleBatchDownload = useCallback(async () => {
+    setBusy("download");
+    try {
+      await runBatch(async (id) => {
+        const res = await dispatch(
+          getSignedUrlThunk({ fileId: id, expiresIn: 3600 }),
+        );
+        const url =
+          (res as { payload?: { url?: string } } | undefined)?.payload?.url;
+        if (!url) return;
+        const a = document.createElement("a");
+        a.href = url;
+        a.rel = "noopener noreferrer";
+        a.download = filesById[id]?.fileName ?? "";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      });
+    } finally {
+      setBusy(null);
+    }
+  }, [dispatch, filesById, runBatch]);
+
+  const handleBatchMove = useCallback(async () => {
+    const target = await openFolderPicker({
+      title: `Move ${batchFileIds.length} ${
+        batchFileIds.length === 1 ? "file" : "files"
+      } to folder`,
+      description: "Choose a destination folder.",
+    });
+    if (target === undefined) return;
+    setBusy("move");
+    try {
+      await runBatch(async (id) => {
+        await dispatch(
+          moveFileThunk({ fileId: id, newParentFolderId: target }),
+        ).unwrap();
+      });
+      dispatch(clearSelection());
+    } finally {
+      setBusy(null);
+    }
+  }, [batchFileIds.length, dispatch, runBatch]);
+
+  const handleBatchDelete = useCallback(async () => {
+    setBatchConfirmOpen(false);
+    setBusy("delete");
+    try {
+      await runBatch(async (id) => {
+        await dispatch(deleteFileThunk({ fileId: id })).unwrap();
+      });
+      dispatch(clearSelection());
+    } finally {
+      setBusy(null);
+    }
+  }, [dispatch, runBatch]);
+
+  // ── Duplicate (client-side) ──────────────────────────────────────────
+  // The backend doesn't expose a copyFile endpoint yet (logged in
+  // PYTHON_TEAM_COMMS as a Phase 12 ask). For now we synthesize the
+  // operation client-side: fetch via signed URL → re-upload as " (copy)".
+  const handleDuplicate = useCallback(async () => {
+    const file = filesById[fileId];
+    if (!file) return;
+    setBusy("download"); // reuse busy state — same UX (spinner on item)
+    try {
+      const res = await dispatch(
+        getSignedUrlThunk({ fileId, expiresIn: 600 }),
+      );
+      const url =
+        (res as { payload?: { url?: string } } | undefined)?.payload?.url;
+      if (!url) throw new Error("Couldn't fetch a signed URL.");
+      const blob = await fetch(url).then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.blob();
+      });
+      // Insert " (copy)" before the extension so it sorts adjacent to the
+      // original — `report.pdf` → `report (copy).pdf`.
+      const base = file.fileName;
+      const dot = base.lastIndexOf(".");
+      const newName =
+        dot > 0
+          ? `${base.slice(0, dot)} (copy)${base.slice(dot)}`
+          : `${base} (copy)`;
+      const dupFile = new File([blob], newName, {
+        type: file.mimeType ?? blob.type,
+      });
+      await dispatch(
+        uploadFilesThunk({
+          files: [dupFile],
+          parentFolderId: file.parentFolderId,
+          visibility: file.visibility,
+        }),
+      ).unwrap();
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.warn("[FileContextMenu] duplicate failed:", err);
+    } finally {
+      setBusy(null);
+    }
+  }, [dispatch, fileId, filesById]);
 
   // "Show versions" routes through the preview pane: setting the active
   // file makes PreviewPane mount and the Versions tab is reachable from
@@ -104,6 +270,42 @@ export function FileContextMenu({
           {children}
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
+          {isInMulti ? (
+            // Batch mode — operates on the whole selection. The single-file
+            // items (Rename, Show versions, File info, Visibility) don't
+            // make sense across N files, so we hide them.
+            <>
+              <div className="flex items-center gap-1.5 px-2 py-1 text-[11px] uppercase tracking-wide text-muted-foreground">
+                <Layers className="h-3 w-3" />
+                {batchFileIds.length} {batchFileIds.length === 1 ? "file" : "files"} selected
+              </div>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => void handleBatchDownload()}
+                disabled={busy !== null}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Download {batchFileIds.length}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => void handleBatchMove()}
+                disabled={busy !== null}
+              >
+                <FolderInput className="mr-2 h-4 w-4" />
+                Move {batchFileIds.length}…
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="text-destructive focus:text-destructive"
+                onClick={() => setBatchConfirmOpen(true)}
+                disabled={busy !== null}
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete {batchFileIds.length}
+              </DropdownMenuItem>
+            </>
+          ) : (
+            <>
           <DropdownMenuItem onClick={() => void actions.download()}>
             <Download className="mr-2 h-4 w-4" />
             Download
@@ -115,6 +317,7 @@ export function FileContextMenu({
           >
             <Copy className="mr-2 h-4 w-4" />
             Copy link
+            <DropdownMenuShortcut>{cmd}L</DropdownMenuShortcut>
           </DropdownMenuItem>
           {onShare ? (
             <DropdownMenuItem onClick={onShare}>
@@ -129,6 +332,7 @@ export function FileContextMenu({
             <DropdownMenuItem onClick={onRename}>
               <Edit2 className="mr-2 h-4 w-4" />
               Rename
+              <DropdownMenuShortcut>F2</DropdownMenuShortcut>
             </DropdownMenuItem>
           ) : null}
           {onMove ? (
@@ -137,9 +341,18 @@ export function FileContextMenu({
               Move…
             </DropdownMenuItem>
           ) : null}
+          <DropdownMenuItem
+            onClick={() => void handleDuplicate()}
+            disabled={busy !== null}
+          >
+            <CopyPlus className="mr-2 h-4 w-4" />
+            Duplicate
+            <DropdownMenuShortcut>{cmd}D</DropdownMenuShortcut>
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setInfoOpen(true)}>
             <Info className="mr-2 h-4 w-4" />
             File info
+            <DropdownMenuShortcut>{cmd}I</DropdownMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuItem onClick={handleShowVersions}>
             <History className="mr-2 h-4 w-4" />
@@ -177,7 +390,10 @@ export function FileContextMenu({
           >
             <Trash2 className="mr-2 h-4 w-4" />
             Delete
+            <DropdownMenuShortcut>⌫</DropdownMenuShortcut>
           </DropdownMenuItem>
+            </>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -198,6 +414,27 @@ export function FileContextMenu({
                 setConfirmOpen(false);
               }}
             >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={batchConfirmOpen} onOpenChange={setBatchConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Delete {batchFileIds.length}{" "}
+              {batchFileIds.length === 1 ? "file" : "files"}?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              These files will move to trash. You can restore them for 30 days
+              before bytes are removed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => void handleBatchDelete()}>
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

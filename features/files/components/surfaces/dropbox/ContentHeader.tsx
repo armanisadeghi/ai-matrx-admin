@@ -43,6 +43,7 @@ const SECTION_TITLES: Record<CloudFilesSection, string> = {
   folders: "Folders",
   "folders-root": "Folders",
   photos: "Photos",
+  recents: "Recents",
   shared: "Shared",
   requests: "File requests",
   trash: "Deleted files",

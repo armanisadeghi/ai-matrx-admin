@@ -3,7 +3,8 @@
 import ChatHeaderControls from "@/features/cx-chat/components/ChatHeaderControls";
 import { ChatInstanceManager } from "@/features/cx-chat/components/ChatInstanceManager";
 import { DEFAULT_AGENT_ID } from "@/features/cx-chat/components/agent/local-agents";
-import { BACKEND_URLS, ENDPOINTS } from "@/lib/api/endpoints";
+import { BACKEND_URLS } from "@/lib/api/endpoints";
+import { warmConversation } from "@/lib/api/warm-helpers";
 
 export default async function ConversationPage({
   params,
@@ -19,10 +20,9 @@ export default async function ConversationPage({
 
   const agentId = resolvedSearchParams.agent ?? DEFAULT_AGENT_ID;
 
-  fetch(
-    `${BACKEND_URLS.production}${ENDPOINTS.ai.conversationWarm(conversationId)}`,
-    { method: "POST" },
-  ).catch(() => {});
+  warmConversation(conversationId, {
+    baseUrl: BACKEND_URLS.production ?? "",
+  });
 
   return (
     <>

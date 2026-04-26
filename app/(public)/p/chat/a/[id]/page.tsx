@@ -1,7 +1,8 @@
 import { Suspense } from "react";
 import ChatContainer from "@/features/public-chat/components/ChatContainer";
 import ChatLoading from "../../loading";
-import { BACKEND_URLS, ENDPOINTS } from "@/lib/api/endpoints";
+import { BACKEND_URLS } from "@/lib/api/endpoints";
+import { warmAgent } from "@/lib/api/warm-helpers";
 
 /**
  * Agent-Direct Route — /p/chat/a/[id]
@@ -18,9 +19,8 @@ export default async function AgentPage({
 }) {
   const { id } = await params;
 
-  // Fire-and-forget: warm the agent on the Python backend (server → server)
-  const warmUrl = `${BACKEND_URLS.production}${ENDPOINTS.ai.agentWarm(id)}`;
-  fetch(warmUrl, { method: "POST" }).catch(() => {});
+  // Fire-and-forget: warm the agent on the Python backend.
+  warmAgent(id, { baseUrl: BACKEND_URLS.production ?? "" });
 
   return (
     <div className="h-full w-full bg-textured">

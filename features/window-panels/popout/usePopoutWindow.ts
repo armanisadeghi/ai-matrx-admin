@@ -46,6 +46,10 @@ import {
   getPopoutWindow,
 } from "./popoutWindowMap";
 import { cloneStylesIntoDocument } from "./cloneStyles";
+import {
+  markPopoutPending,
+  clearPopoutPending,
+} from "./popoutPendingStorage";
 
 export interface OpenPopoutOptions {
   width: number;
@@ -80,6 +84,13 @@ export function usePopoutWindow(windowId: string): UsePopoutWindowReturn {
   // Hold style-cleanup for this window's popout. Disposed on close.
   const stylesDisposeRef = useRef<(() => void) | null>(null);
 
+  // Self-ref so the toast action can re-invoke the latest openPopout without
+  // stale-closure issues across renders.
+  const openPopoutRef = useRef<
+    | ((opts: OpenPopoutOptions) => Promise<OpenPopoutResult>)
+    | null
+  >(null);
+
   /**
    * Idempotent close handler. Called from:
    *  - `pagehide` (browser X click, programmatic close, parent navigation)
@@ -88,9 +99,15 @@ export function usePopoutWindow(windowId: string): UsePopoutWindowReturn {
    */
   const handleClose = useCallback(() => {
     const win = getPopoutWindow(windowId);
+    if (!win && process.env.NODE_ENV !== "production") {
+      // No window registered — handleClose was triggered after we already
+      // cleaned up. Idempotent: just ensure Redux is consistent.
+    }
     stylesDisposeRef.current?.();
     stylesDisposeRef.current = null;
     deletePopoutWindow(windowId);
+    // Clear the recovery flag — we're docked now, no recovery needed.
+    clearPopoutPending(windowId);
     // Dispatch dockWindow if Redux still considers us popped out. The
     // reducer is itself idempotent, so a redundant dispatch is harmless.
     dispatch(dockWindow(windowId));
@@ -100,6 +117,10 @@ export function usePopoutWindow(windowId: string): UsePopoutWindowReturn {
       win?.close();
     } catch {
       /* ignore */
+    }
+    if (process.env.NODE_ENV !== "production" && win) {
+      // eslint-disable-next-line no-console
+      console.info(`[popout] closed window for "${windowId}"`);
     }
   }, [dispatch, windowId]);
 
@@ -116,8 +137,27 @@ export function usePopoutWindow(windowId: string): UsePopoutWindowReturn {
         activePipWindowId !== null &&
         activePipWindowId !== windowId
       ) {
+        // Capture the in-flight slot-holder id so the action button can
+        // dock-and-retry without racing against subsequent renders.
+        const blockingId = activePipWindowId;
         toast.error("Floating window already open", {
-          description: "Dock the existing floating window before opening another.",
+          description:
+            "Only one floating Picture-in-Picture window is allowed at a time.",
+          action: {
+            label: "Dock & pop out this one",
+            onClick: () => {
+              // Dock the blocking window, then retry. The retry click is
+              // itself a user gesture, satisfying requestWindow's policy.
+              dispatch(dockWindow(blockingId));
+              // queueMicrotask preserves the user-gesture stack while
+              // letting the dispatch settle. The ref guarantees we invoke
+              // the LATEST openPopout closure (not a stale one captured
+              // when the toast was first shown).
+              queueMicrotask(() => {
+                void openPopoutRef.current?.(opts);
+              });
+            },
+          },
         });
         return { ok: false, reason: "pip-slot-taken" };
       }
@@ -196,6 +236,10 @@ export function usePopoutWindow(windowId: string): UsePopoutWindowReturn {
       // Register the window FIRST so PopoutPortal can find it on the next render
       setPopoutWindow(windowId, pipWin);
 
+      // Persist a recovery hint so a parent reload can surface "click to
+      // restore" UX. Cleared on dock-back / close in handleClose.
+      markPopoutPending(windowId);
+
       // Dispatch Redux state — this triggers WindowPanel re-render which
       // mounts the PopoutPortal that finally renders content into pipWin.
       dispatch(popOutWindow({ id: windowId, mode }));
@@ -210,6 +254,12 @@ export function usePopoutWindow(windowId: string): UsePopoutWindowReturn {
     },
     [activePipWindowId, dispatch, handleClose, windowId],
   );
+
+  // Keep the ref pointing at the latest openPopout so the slot-taken toast
+  // action always invokes the most up-to-date closure (with current
+  // activePipWindowId, etc.). Run synchronously during render so the ref
+  // is correct before any user interaction.
+  openPopoutRef.current = openPopout;
 
   /** Programmatic close — triggers the same lifecycle as user-clicked-X. */
   const close = useCallback(() => {

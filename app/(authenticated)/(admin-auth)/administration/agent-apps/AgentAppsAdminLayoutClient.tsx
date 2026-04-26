@@ -6,9 +6,11 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   Activity,
   ArrowLeft,
+  BarChart3,
   Boxes,
   LayoutDashboard,
   Loader2,
+  ShieldAlert,
   Tag,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -34,6 +36,16 @@ const NAV_ITEMS = [
     label: "Executions",
     href: "/administration/agent-apps/executions",
     icon: Activity,
+  },
+  {
+    label: "Analytics",
+    href: "/administration/agent-apps/analytics",
+    icon: BarChart3,
+  },
+  {
+    label: "Rate Limits",
+    href: "/administration/agent-apps/rate-limits",
+    icon: ShieldAlert,
   },
 ];
 

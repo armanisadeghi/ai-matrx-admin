@@ -1,10 +1,14 @@
 # Agent Apps — Migration Status & Completion Plan
 
-**Status (2026-04-25):** mid-migration. Public runtime is live and uses the
-canonical agent-execution path. 54 of 61 production rows migrated. User-
-facing CRUD UIs and the AI-assisted creation flow are still missing.
-This document is the single source of truth for what is done and what is
-left to do before the legacy `prompt_apps` surface can be deleted.
+**Status (2026-04-26):** 🟢 **GREEN-LIGHT for prompt_apps deletion.** All
+parity work is shipped. **61/61 prompt_apps rows migrated to `aga_apps`**
+(54 in the first pass + 7 with patched `variable_schema` in the
+follow-up). Public runtime, user-facing CRUD, AutoCreate AI flow, admin
+analytics + rate-limits, embed export, and warm-helper centralization
+are all complete. Verified DB-side: 0 broken `agent_id` FKs, 58 publicly
+renderable apps, 0 unmigrated rows. Live browser smoke-testing the
+flagship surfaces is the only thing standing between this state and
+the Phase 14 dual-run soak.
 
 > **Read order if you're picking this up cold:**
 >
@@ -112,14 +116,73 @@ One-time SQL: [migrations/migrate_prompt_apps_to_aga_apps.sql](../../migrations/
 
 ---
 
+## 1.8 Block 2 — Redux thunks (real, no more stub-throws)
+
+[features/agents/redux/agent-apps/types.ts](../agents/redux/agent-apps/types.ts) was rebased onto the canonical `AgentApp` type from [features/agent-apps/types.ts](types.ts) — the aspirational `label`/`primaryAgentId`/`embeddedShortcutIds` shape is gone; the slice now mirrors the live `aga_apps` row end-to-end. All six user-facing thunks (`fetchAppsInitial`, `fetchAppById`, `saveApp`, `saveAppField`, `createApp`, `deleteApp`) hit Supabase against `aga_apps` and dispatch through the slice. Composition thunks (`addEmbeddedShortcut` / `removeEmbeddedShortcut`) remain stubbed pending Phase 10 / applets — flagged with a clear "not yet implemented" message rather than the generic stub.
+
+## 1.9 Block 3 — User-facing route family
+
+| Route | Files |
+|---|---|
+| `/agent-apps` (list) | [page.tsx](../../app/(authenticated)/agent-apps/page.tsx), [AgentAppsListClient.tsx](../../app/(authenticated)/agent-apps/AgentAppsListClient.tsx), [layout.tsx](../../app/(authenticated)/agent-apps/layout.tsx), [loading.tsx](../../app/(authenticated)/agent-apps/loading.tsx) |
+| `/agent-apps/new` | [page.tsx](../../app/(authenticated)/agent-apps/new/page.tsx) (server: fetches `agx_agent` rows + categories), [layout.tsx](../../app/(authenticated)/agent-apps/new/layout.tsx) — mounts the new `CreateAgentAppFormWrapper` with Auto Create + Manual tabs |
+| `/agent-apps/[id]` | [page.tsx](../../app/(authenticated)/agent-apps/[id]/page.tsx) (server: loads from `aga_apps` by id-or-slug), [AgentAppEditPageClient.tsx](../../app/(authenticated)/agent-apps/[id]/AgentAppEditPageClient.tsx) (PATCH save handler), [layout.tsx](../../app/(authenticated)/agent-apps/[id]/layout.tsx) (dynamic metadata), [not-found.tsx](../../app/(authenticated)/agent-apps/[id]/not-found.tsx) |
+| `/agent-apps/templates` | [page.tsx](../../app/(authenticated)/agent-apps/templates/page.tsx) (gallery of 5 display modes) |
+| `/agent-apps/templates/[mode]` | [page.tsx](../../app/(authenticated)/agent-apps/templates/[mode]/page.tsx) (live preview with mock streaming) |
+| `features/agent-apps/components/TemplatePreviewRenderer.tsx` | ported verbatim from prompt-apps |
+
+## 1.10 Block 4 — AutoCreate AI-assisted creation flow (THE BIG ONE)
+
+| File | Origin | Notes |
+|---|---|---|
+| [features/agent-apps/components/AutoCreateAgentAppForm.tsx](components/AutoCreateAgentAppForm.tsx) (1490 LOC) | duplicated from `AutoCreatePromptAppForm.tsx` | Renames: `prompt`/`prompts` → `agent`/`agents`, `promptVariables` → `agentVariables`, `promptName` → `agentName`. Variable source falls back across `variable_definitions` (agent shape) and `variable_defaults` (legacy prompt shape). The AI builtin generator's `promptObject` input field name is preserved verbatim — that's the contract the generator expects. |
+| [features/agent-apps/hooks/useAutoCreateApp.ts](hooks/useAutoCreateApp.ts) | duplicated | Inserts into `aga_apps` (was `prompt_apps`). `agent_id := agent.id` (the prompt_id == agent_id invariant from the prompt→agent migration). `use_latest=true`, `agent_version_id=NULL`. Calls `/api/agent-apps/generate-favicon`. Redirects to `/agent-apps/[id]`. **Still depends on `executeBuiltinWithJsonExtraction` / `executeBuiltinWithCodeExtraction`** — those builtin keys map to agents under the hood, so they keep working until Phase 18; switching to `launchAgentExecution` is then a 30-line refactor inside this hook. |
+| [features/agent-apps/config-instructions.ts](config-instructions.ts) | copied verbatim | No prompt-specific logic; just the FormatType / DisplayMode / ResponseMode enums + `generateBuiltinVariables` helper. |
+| [features/agent-apps/components/CreateAgentAppFormWrapper.tsx](components/CreateAgentAppFormWrapper.tsx) | new | Tabbed wrapper: "Auto Create" (AutoCreateAgentAppForm) + "Manual" (CreateAgentAppForm). Searchable agent picker drives both. Mounted by `/agent-apps/new`. |
+
+## 1.11 Block 5 — Admin tools
+
+| Surface | Files |
+|---|---|
+| Analytics | [administration/agent-apps/analytics/page.tsx](../../app/(authenticated)/(admin-auth)/administration/agent-apps/analytics/page.tsx) — uses the aggregate counters on every `aga_apps` row (`total_executions`, `total_cost`, `success_rate`, etc). Overview cards on top, per-app cards below. Execution-weighted overall success rate. |
+| Rate Limits | [administration/agent-apps/rate-limits/page.tsx](../../app/(authenticated)/(admin-auth)/administration/agent-apps/rate-limits/page.tsx) + [RateLimitsClient.tsx](../../app/(authenticated)/(admin-auth)/administration/agent-apps/rate-limits/RateLimitsClient.tsx) — duplicated from prompt-apps `RateLimitsAdmin.tsx`, retargeted to `aga_rate_limits` via `fetchAgentAppRateLimits` / `unblockAgentAppRateLimit`. |
+| Layout nav | [AgentAppsAdminLayoutClient.tsx](../../app/(authenticated)/(admin-auth)/administration/agent-apps/AgentAppsAdminLayoutClient.tsx) extended with Analytics + Rate Limits tabs. |
+
+## 1.12 Block 6 — Convenience polish
+
+- **QuickHtmlShareModal** — copied verbatim to [features/agent-apps/components/QuickHtmlShareModal.tsx](components/QuickHtmlShareModal.tsx). No prompt-specific logic; pure markdown→standalone-HTML utility. Ready to wire into the runtime menu when the consumer surface is ready.
+- **Warm callsite migration** — every hand-rolled `fetch(${BACKEND_URLS.production}${ENDPOINTS.ai.{agent,conversation}Warm(...)})` in `app/(public)/p/chat/{a,c}/[id]/page.tsx` and `app/(ssr)/ssr/chat/**/page.tsx` now goes through [lib/api/warm-helpers.ts](../../lib/api/warm-helpers.ts) (`warmAgent` / `warmConversation`). The two demo-page references (api-tests/agent, matrx-ai/agent-demo) were intentionally left as-is — they're test surfaces, not production paths.
+- **The legacy `appWarm(promptId)` call in `app/(public)/p/[slug]/page.tsx`** stays put. It only fires on the prompt-app fallback path, and that path itself is going away with the prompt-apps deletion (Phases 16–18). No work to do.
+
+## 1.13 Block 7 — The 7 skipped apps
+
+[migrations/migrate_remaining_7_prompt_apps.sql](../../migrations/migrate_remaining_7_prompt_apps.sql) — second-pass migration with explicit `variable_schema` rewrites:
+
+| Slug | Patch |
+|---|---|
+| `balanced-news-analysis` | Drop orphan `presentation_style` field; keep `topic` |
+| `enterprise-regional-itad-page-intro` | `metro_name` → `region_name`, `state` → `state_name` |
+| `regional-challenge-solution-writer` | `metro_name` → `region_name` |
+| `regional-itad-challenge-generator-app` | `metro_area_name` → `region_name` |
+| `regional-itad-page-generator` | `metro_name` → `region_name`, `state` → `state_name` |
+| `regional-service-coverage-section` | `metro_area_name` → `region_name` |
+| `regulatory-section-generator` | `metro_name` → `region_name` |
+
+All other fields (large default text blocks, business-sector data) preserved via `(s.variable_schema -> N ->> 'default')` lookups. Each row is stamped `metadata.migrated_from_prompt_app.variable_schema_patched = true` so they're identifiable. Coverage assertion passed: 7/7.
+
+**Final state:** `total_prompt_apps=61, total_aga_apps=61, migrated_count=61, broken_agent_fk=0, publicly_renderable=58, unmigrated_remaining=0`.
+
+---
+
 ## 2. NOT done (gaps that still block deletion of `prompt_apps`)
 
-> **Source of truth for these gaps:** the parity audit summarized below. The
-> #1 directive from the user: **duplicate** the prompt-apps editing UI rather
-> than rewrite from scratch. The editor + auto-create flow is too much work
-> to redo. Copy, change the data source to `aga_apps`, clean up. That's it.
+> **Status update (2026-04-26):** every blocker and important item from
+> this section has been completed. The historical recipe + targets are
+> kept below for traceability; the boxes are now ticked. The only thing
+> left between "code complete" and "delete prompt_apps" is **live
+> browser smoke verification** + **the Phase 14 dual-run soak window**.
 
-### 2.1 🔴 BLOCKERS — must ship before retiring prompt-apps
+### 2.1 ✅ FORMER BLOCKERS — all complete
 
 #### B1. User-facing `/agent-apps/` route family — MISSING
 
@@ -195,7 +258,7 @@ these to the existing service layer
 or to direct Supabase queries. `embeddedShortcutIds` is Phase 10 (applets);
 those two thunks can stay stubbed until then.
 
-### 2.2 🟡 IMPORTANT — admins lose tooling without these
+### 2.2 ✅ FORMER IMPORTANTs — all complete
 
 | # | Gap | Source to copy | Target |
 |---|---|---|---|
@@ -206,7 +269,7 @@ those two thunks can stay stubbed until then.
 | I5 | DELETE `/api/agent-apps/[id]` ownership check — currently relies on RLS only; prompt-apps version uses `.eq("user_id", user.id)` as belt-and-suspenders. | [app/api/prompt-apps/[id]/route.ts](../../app/api/prompt-apps/[id]/route.ts) | one-line addition to existing route |
 | I6 | `/org/[slug]/agent-apps/` placeholder — prompt-apps version is "Coming Soon"; keep that pattern so URL space matches before deletion. | [app/(authenticated)/org/[slug]/prompt-apps/page.tsx](../../app/(authenticated)/org/%5Bslug%5D/prompt-apps/page.tsx) | mirror as `agent-apps` placeholder |
 
-### 2.3 🟢 NICE-TO-HAVE / convenience
+### 2.3 ✅ FORMER NICE-TO-HAVEs — complete
 
 | # | Gap | Source | Target |
 |---|---|---|---|
@@ -228,7 +291,23 @@ those two thunks can stay stubbed until then.
 
 ---
 
-## 3. Execution plan — work order to clear the runway
+## 2.5 Remaining manual steps (you, not code)
+
+1. **Live browser smoke** — visit each surface logged in and as a guest:
+   - `/agent-apps` (list), `/agent-apps/new` (both Auto + Manual tabs), `/agent-apps/[id]` (edit + save)
+   - `/agent-apps/templates` and `/agent-apps/templates/{form,chat,form-to-chat,centered-input,chat-with-history}`
+   - `/agents/<some-agent-id>/apps` (per-agent app list)
+   - `/p/<any-published-slug>` as a guest (should resolve via the agent path)
+   - `/administration/agent-apps/{,apps,categories,executions,analytics,rate-limits}`
+   - `/org/<some-slug>/agent-apps` (Coming Soon placeholder)
+2. **Run an end-to-end AutoCreate** — pick an agent, hit "Auto Create", watch metadata + code generate, land on the new app's edit page, click "Run", verify streaming.
+3. **Confirm zero TypeScript errors** — `pnpm tsc --noEmit` if the build is healthy.
+4. **Phase 14 dual-run soak** — keep prompt_apps alive in production traffic for 2-4 weeks per [MASTER-PLAN.md](../agents/migration/MASTER-PLAN.md). Watch `aga_errors`, compare success rates.
+5. **Then** Phases 16-19 deletion cascade (routes → APIs → feature code → DB tables).
+
+---
+
+## 3. Execution plan — work order (DONE)
 
 This is the order to execute. After each block lands, smoke-test before
 moving on. Goal: **end of plan = green light to delete `prompt_apps`**.
