@@ -3,9 +3,10 @@
 import React, { useCallback, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { Settings2 } from "lucide-react";
-import { useAppDispatch } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { AgentRunnerPage } from "@/features/agents/components/run/AgentRunnerPage";
+import { selectFocusedConversation } from "@/features/agents/redux/execution-system/conversation-focus/conversation-focus.selectors";
 import { SidePanelHeader, SidePanelAction } from "../views/SidePanelChrome";
 import { AVATAR_RESERVE } from "../styles/tokens";
 import { AgentPicker } from "./AgentPicker";
@@ -42,8 +43,19 @@ export const ChatPanelSlot: React.FC<ChatPanelSlotProps> = ({
   const dispatch = useAppDispatch();
   const searchParams = useSearchParams();
   const agentId = searchParams.get("agentId");
-  const conversationId = searchParams.get("conversationId");
+  const conversationIdFromUrl = searchParams.get("conversationId");
   const { filter } = useCodeWorkspaceHistory();
+
+  // The runner registers itself with surfaceKey `agent-runner:${agentId}` —
+  // mirror that string here so we can read the focused conversation directly
+  // from Redux. The URL only catches up after the runner finishes its
+  // pendingNavigation → router.replace handshake, which is too late for
+  // the bridge to seed context for the FIRST message of a fresh chat.
+  const focusSurfaceKey = agentId ? `agent-runner:${agentId}` : "";
+  const focusedConversationId = useAppSelector(
+    focusSurfaceKey ? selectFocusedConversation(focusSurfaceKey) : () => null,
+  );
+  const conversationId = focusedConversationId ?? conversationIdFromUrl;
 
   // Auto-mount the editor → agent context bridge whenever both a workspace
   // tab set and a chat instance are live. The hook is a no-op when

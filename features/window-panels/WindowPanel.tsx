@@ -26,6 +26,7 @@ import {
   RectangleVertical,
   PanelLeftClose,
   PanelLeft,
+  ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -58,9 +59,17 @@ import { selectIsDebugMode } from "@/lib/redux/slices/adminDebugSlice";
 import { useUrlSync } from "./url-sync/useUrlSync";
 import { useWindowPersistence } from "./WindowPersistenceManager";
 import { Save } from "lucide-react";
+import { toast } from "sonner";
 import { DebugStrip } from "./WindowPanel/DebugStrip";
 import { MobileWindowHeader } from "./WindowPanel/MobileHeader";
 import { SnapButton } from "./WindowPanel/SnapButton";
+import {
+  detectPopoutCapability,
+  type PopoutCapability,
+} from "./popout/featureDetection";
+import {
+  selectActivePipWindowId,
+} from "@/lib/redux/slices/windowManagerSlice";
 
 // ─── Resize handle descriptors ───────────────────────────────────────────────
 
@@ -548,6 +557,42 @@ export function WindowPanel({
     [dispatch],
   );
 
+  // ── Pop-out stub (Phase 1) ────────────────────────────────────────────────
+  // Detect once on mount — capability is stable for the page lifetime.
+  // Phase 2 will replace this stub with the real `usePopoutWindow` hook.
+  const popoutCapabilityRef = useRef<PopoutCapability | null>(null);
+  if (popoutCapabilityRef.current === null) {
+    popoutCapabilityRef.current = detectPopoutCapability();
+  }
+  const popoutCapability = popoutCapabilityRef.current;
+  const activePipWindowId = useAppSelector(selectActivePipWindowId);
+  const pipSlotTakenByOther =
+    popoutCapability === "pip" &&
+    activePipWindowId !== null &&
+    activePipWindowId !== id;
+
+  // Affordance is shown only when:
+  //   - we're on desktop (mobile path is fully separate)
+  //   - the browser supports some form of popout
+  //   - the window isn't minimized (popout from the tray is awkward UX)
+  const canShowPopOut =
+    !isMobile && popoutCapability !== "none" && windowState !== "minimized";
+
+  const popOutDisabled = pipSlotTakenByOther;
+  const popOutDisabledReason = pipSlotTakenByOther
+    ? "Another window is already in floating mode. Dock it first."
+    : undefined;
+
+  const handlePopOutStub = useCallback(() => {
+    // Phase 1 stub — Phase 2 wires this to usePopoutWindow.openPip()
+    toast.info("Pop-out coming soon", {
+      description:
+        popoutCapability === "pip"
+          ? "Phase 2 will wire this to the Document Picture-in-Picture API."
+          : "Phase 2 will wire this to a popup window for your browser.",
+    });
+  }, [popoutCapability]);
+
   const isMinimized = windowState === "minimized";
   const isMaximized = windowState === "maximized";
 
@@ -574,6 +619,9 @@ export function WindowPanel({
       sidebarOpen={sidebarOpen}
       onToggleSidebar={toggleSidebar}
       onSaveWindowState={overlayId ? handleSaveWindowState : undefined}
+      onPopOut={canShowPopOut ? handlePopOutStub : undefined}
+      popOutDisabled={popOutDisabled}
+      popOutDisabledReason={popOutDisabledReason}
     />
   );
 
@@ -839,6 +887,18 @@ interface WindowHeaderProps {
   onToggleSidebar: () => void;
   /** When set, a "Save Window State" button appears in the green traffic-light dropdown. */
   onSaveWindowState?: () => void;
+  /**
+   * When set, a "Pop out" entry appears in the green traffic-light dropdown.
+   * Clicking it should open the window in a separate browser window
+   * (Document Picture-in-Picture or `window.open` fallback). The actual
+   * lifecycle is owned by `usePopoutWindow`; this prop is the click hook.
+   * Hidden entirely on mobile and when no popout capability is available.
+   */
+  onPopOut?: () => void;
+  /** Whether the "Pop out" button should be shown as disabled (PiP slot taken, etc.). */
+  popOutDisabled?: boolean;
+  /** Tooltip / disabled-reason text for the "Pop out" button. */
+  popOutDisabledReason?: string;
 }
 
 function WindowHeader({
@@ -862,6 +922,9 @@ function WindowHeader({
   sidebarOpen,
   onToggleSidebar,
   onSaveWindowState,
+  onPopOut,
+  popOutDisabled,
+  popOutDisabledReason,
 }: WindowHeaderProps) {
   return (
     <div
@@ -903,6 +966,9 @@ function WindowHeader({
             sidebarOpen={sidebarOpen}
             onToggleSidebar={onToggleSidebar}
             onSaveWindowState={onSaveWindowState}
+            onPopOut={onPopOut}
+            popOutDisabled={popOutDisabled}
+            popOutDisabledReason={popOutDisabledReason}
           />
         </div>
       </div>
@@ -977,6 +1043,9 @@ interface TrafficLightGroupProps {
   sidebarOpen: boolean;
   onToggleSidebar: () => void;
   onSaveWindowState?: () => void;
+  onPopOut?: () => void;
+  popOutDisabled?: boolean;
+  popOutDisabledReason?: string;
 }
 
 function TrafficLightGroup({
@@ -996,6 +1065,9 @@ function TrafficLightGroup({
   sidebarOpen,
   onToggleSidebar,
   onSaveWindowState,
+  onPopOut,
+  popOutDisabled,
+  popOutDisabledReason,
 }: TrafficLightGroupProps) {
   return (
     <div className="flex items-center gap-1.5 shrink-0 cursor-default">
@@ -1042,6 +1114,9 @@ function TrafficLightGroup({
         snapCentre={snapCentre}
         arrangeAll={arrangeAll}
         onSaveWindowState={onSaveWindowState}
+        onPopOut={onPopOut}
+        popOutDisabled={popOutDisabled}
+        popOutDisabledReason={popOutDisabledReason}
       />
 
       {/* Sidebar toggle — sits tight next to the traffic lights */}
@@ -1124,6 +1199,12 @@ interface GreenTrafficLightProps {
   snapCentre: () => void;
   arrangeAll: (layout: any) => void;
   onSaveWindowState?: () => void;
+  /** When set, renders a "Pop out" entry that opens the window in a separate browser window. */
+  onPopOut?: () => void;
+  /** When true, "Pop out" is rendered as disabled with the reason as tooltip. */
+  popOutDisabled?: boolean;
+  /** Human-readable disabled reason (e.g. "Another window is already popped out"). */
+  popOutDisabledReason?: string;
 }
 
 function GreenTrafficLight({
@@ -1137,6 +1218,9 @@ function GreenTrafficLight({
   snapCentre,
   arrangeAll,
   onSaveWindowState,
+  onPopOut,
+  popOutDisabled,
+  popOutDisabledReason,
 }: GreenTrafficLightProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -1366,6 +1450,33 @@ function GreenTrafficLight({
               <Maximize2 className="w-3.5 h-3.5 shrink-0" />
               Restore window
             </button>
+          )}
+
+          {/* Pop out — opens the window in a separate browser window
+              (Document Picture-in-Picture or window.open fallback).
+              Hidden entirely when popout is unavailable (mobile / unsupported). */}
+          {onPopOut && (
+            <>
+              <div className="border-t border-border/50 my-1" />
+              <button
+                type="button"
+                className={cn(
+                  "flex items-center gap-2.5 w-full px-3 py-1.5 transition-colors",
+                  popOutDisabled
+                    ? "text-foreground/40 cursor-not-allowed"
+                    : "text-foreground/80 hover:bg-accent",
+                )}
+                onClick={() => {
+                  if (!popOutDisabled) handleAction(onPopOut);
+                }}
+                onPointerDown={(e) => e.stopPropagation()}
+                disabled={popOutDisabled}
+                title={popOutDisabled ? popOutDisabledReason : "Pop out into a floating window"}
+              >
+                <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+                <span className="flex-1 text-left">Pop out</span>
+              </button>
+            </>
           )}
 
           {/* Save Window State — only shown when the window is persistable */}

@@ -67,19 +67,24 @@ export const selectAppDefinition = createSelector(
   },
 );
 
-export const selectAppLabel = createSelector(
+export const selectAppName = createSelector(
   [selectAppById],
-  (record): string | null => record?.label ?? null,
+  (record): string | null => record?.name ?? null,
 );
 
-export const selectAppPrimaryAgentId = createSelector(
+export const selectAppAgentId = createSelector(
   [selectAppById],
-  (record): string | null => record?.primaryAgentId ?? null,
+  (record): string | null => record?.agent_id ?? null,
 );
 
-export const selectAppEmbeddedShortcutIds = createSelector(
+export const selectAppSlug = createSelector(
   [selectAppById],
-  (record): string[] => record?.embeddedShortcutIds ?? [],
+  (record): string | null => record?.slug ?? null,
+);
+
+export const selectAppStatus = createSelector(
+  [selectAppById],
+  (record): AgentApp["status"] | null => record?.status ?? null,
 );
 
 export const selectAppIsDirty = createSelector(
@@ -116,9 +121,14 @@ export const selectAppError = createSelector(
   (record): string | null => record?._error ?? null,
 );
 
-export const selectAppIsActive = createSelector(
+export const selectAppIsPublished = createSelector(
   [selectAppById],
-  (record): boolean => record?.isActive ?? false,
+  (record): boolean => record?.status === "published",
+);
+
+export const selectAppIsPublic = createSelector(
+  [selectAppById],
+  (record): boolean => record?.is_public ?? false,
 );
 
 // ---------------------------------------------------------------------------

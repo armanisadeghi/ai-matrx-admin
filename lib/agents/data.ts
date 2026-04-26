@@ -81,3 +81,40 @@ export const getAgentSnapshot = cache(
     );
   },
 );
+
+/**
+ * Apps that run a specific agent — backs `/agents/[id]/apps`.
+ *
+ * `aga_apps.agent_id` is a real FK to `agx_agent.id`, so the relationship
+ * is direct (no compiled-recipe indirection). RLS gates the query: the
+ * caller sees their own apps + public published apps + org/admin apps
+ * per the standard agent-apps policy.
+ */
+export const getAppsForAgent = cache(async (agentId: string) => {
+  const supabase = await createClient();
+  const { data, error } = await (
+    supabase as unknown as {
+      from: (table: string) => {
+        select: (columns: string) => {
+          eq: (
+            column: string,
+            value: string,
+          ) => {
+            order: (
+              column: string,
+              opts: { ascending: boolean },
+            ) => Promise<{ data: unknown; error: unknown }>;
+          };
+        };
+      };
+    }
+  )
+    .from("aga_apps")
+    .select(
+      "id, slug, name, tagline, description, category, tags, preview_image_url, favicon_url, status, is_public, is_featured, total_executions, last_execution_at, agent_id, agent_version_id, use_latest, created_at, updated_at",
+    )
+    .eq("agent_id", agentId)
+    .order("updated_at", { ascending: false });
+  if (error) throw error;
+  return (data as Record<string, unknown>[] | null) ?? [];
+});

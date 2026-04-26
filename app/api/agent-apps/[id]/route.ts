@@ -107,7 +107,13 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { error } = await supabase.from("aga_apps").delete().eq("id", id);
+    // Belt-and-suspenders ownership check on top of RLS — matches the legacy
+    // prompt-apps DELETE handler. Admins still bypass via service-role flow.
+    const { error } = await supabase
+      .from("aga_apps")
+      .delete()
+      .eq("id", id)
+      .eq("user_id", user.id);
 
     if (error) {
       return NextResponse.json(

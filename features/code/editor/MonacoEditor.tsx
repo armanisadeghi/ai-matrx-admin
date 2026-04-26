@@ -22,6 +22,21 @@ type StandaloneCodeEditor = {
     dispose: () => void;
   };
   addCommand: (keybinding: number, handler: () => void) => void;
+  /**
+   * Register an item that shows in Monaco's right-click menu (and command
+   * palette). Returns a Disposable so the host can clean up on unmount.
+   * `precondition` accepts Monaco context-key expressions like
+   * "editorHasSelection".
+   */
+  addAction: (descriptor: {
+    id: string;
+    label: string;
+    contextMenuGroupId?: string;
+    contextMenuOrder?: number;
+    keybindings?: number[];
+    precondition?: string | null;
+    run: (editor: StandaloneCodeEditor) => void | Promise<void>;
+  }) => { dispose: () => void };
   getSelection: () => MonacoSelection | null;
   getModel: () => MonacoModel | null;
 };

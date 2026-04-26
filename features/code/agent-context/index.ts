@@ -19,3 +19,4 @@ export type {
   UseSendSelectionAsContextOptions,
 } from "./useSendSelectionAsContext";
 export { ContextChip } from "./ContextChip";
+export { useEditorContextMenuActions } from "./useEditorContextMenuActions";

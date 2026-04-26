@@ -54,6 +54,12 @@ const instanceContextSlice = createSlice({
 
     /**
      * Set a context entry. If the key matches a slot, mark it as slot-matched.
+     *
+     * Auto-initialises the per-conversation map if it doesn't exist yet —
+     * legitimate writers (editor → agent context bridge, scope-map fallbacks)
+     * may publish entries before any thunk has explicitly called
+     * `initInstanceContext`. Dropping those writes on the floor was the cause
+     * of the "AI context isn't working" report.
      */
     setContextEntry(
       state,
@@ -75,21 +81,24 @@ const instanceContextSlice = createSlice({
         label,
       } = action.payload;
 
-      const context = state.byConversationId[conversationId];
-      if (context) {
-        context[key] = {
-          key,
-          value,
-          slotMatched,
-          type: type ?? inferType(value),
-          label: label ?? key,
-        };
+      if (!state.byConversationId[conversationId]) {
+        state.byConversationId[conversationId] = {};
       }
+      const context = state.byConversationId[conversationId];
+      context[key] = {
+        key,
+        value,
+        slotMatched,
+        type: type ?? inferType(value),
+        label: label ?? key,
+      };
     },
 
     /**
      * Set multiple context entries at once.
-     * Used by shortcut scope mapping.
+     * Used by shortcut scope mapping and the editor → agent bridge.
+     *
+     * See `setContextEntry` for why this auto-initialises the slot.
      */
     setContextEntries(
       state,
@@ -105,17 +114,18 @@ const instanceContextSlice = createSlice({
       }>,
     ) {
       const { conversationId, entries } = action.payload;
+      if (!state.byConversationId[conversationId]) {
+        state.byConversationId[conversationId] = {};
+      }
       const context = state.byConversationId[conversationId];
-      if (context) {
-        for (const entry of entries) {
-          context[entry.key] = {
-            key: entry.key,
-            value: entry.value,
-            slotMatched: entry.slotMatched ?? false,
-            type: entry.type ?? inferType(entry.value),
-            label: entry.label ?? entry.key,
-          };
-        }
+      for (const entry of entries) {
+        context[entry.key] = {
+          key: entry.key,
+          value: entry.value,
+          slotMatched: entry.slotMatched ?? false,
+          type: entry.type ?? inferType(entry.value),
+          label: entry.label ?? entry.key,
+        };
       }
     },
 

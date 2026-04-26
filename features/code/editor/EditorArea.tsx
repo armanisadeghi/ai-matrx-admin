@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { FileCode } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -16,6 +16,8 @@ import {
 import { useSaveActiveTab } from "../hooks/useSaveActiveTab";
 import { useReloadTab } from "../hooks/useReloadTab";
 import { useSendSelectionAsContext } from "../agent-context/useSendSelectionAsContext";
+import { useEditorContextMenuActions } from "../agent-context/useEditorContextMenuActions";
+import { selectFocusedConversation } from "@/features/agents/redux/execution-system/conversation-focus/conversation-focus.selectors";
 import type { RootState } from "@/lib/redux/store";
 import { useEnvironmentForActiveTab } from "./monaco-environments";
 import { EditorTabs } from "./EditorTabs";
@@ -42,8 +44,21 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
   const saveActiveTab = useSaveActiveTab();
   const reloadTab = useReloadTab();
   const searchParams = useSearchParams();
-  const conversationId = searchParams.get("conversationId");
+  const agentId = searchParams.get("agentId");
+  const conversationIdFromUrl = searchParams.get("conversationId");
+  // Mirror ChatPanelSlot: prefer the live focused conversationId so the
+  // editor sends context to the right chat even before the URL catches up
+  // after `useAgentLauncher` creates a fresh instance.
+  const focusedConversationId = useAppSelector(
+    agentId ? selectFocusedConversation(`agent-runner:${agentId}`) : () => null,
+  );
+  const conversationId = focusedConversationId ?? conversationIdFromUrl;
   const editorRef = useRef<StandaloneCodeEditor | null>(null);
+  // State copy of the editor instance so effects (e.g. context-menu action
+  // registration) can run *after* Monaco mounts. The ref alone doesn't
+  // trigger a re-render, so an effect that depends only on `editorRef`
+  // would never re-run when the editor finally arrives.
+  const [editorReadyTick, setEditorReadyTick] = useState(0);
 
   const { sendSelection, canSend: canSendSelection } =
     useSendSelectionAsContext({
@@ -56,7 +71,24 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
 
   const handleEditorMount = useCallback((editor: StandaloneCodeEditor) => {
     editorRef.current = editor;
+    setEditorReadyTick((t) => t + 1);
   }, []);
+
+  // Right-click → "Send selection / file to chat" / "Ask AI in window".
+  // Re-registers when the active tab, chat focus, or editor instance
+  // changes so each menu item references the right buffer + conversation.
+  useEditorContextMenuActions({
+    editorRef,
+    editorReadyTick,
+    activeTab,
+    conversationId,
+    defaultAgentId: agentId,
+    notify: ({ type, text }) => {
+      if (type === "success") toast.success(text);
+      else if (type === "error") toast.error(text);
+      else toast.info(text);
+    },
+  });
 
   const monacoEnvironmentsEnabled = useAppSelector(
     (state: RootState) =>

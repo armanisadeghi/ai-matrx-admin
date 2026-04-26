@@ -126,10 +126,15 @@ export interface SandboxTemplateListResponse {
 }
 
 export interface SandboxAccessResponse {
+    /** Orchestrator-level sandbox ID (e.g. "sbx-7712966b8cb5") — used for key filename. */
+    sandbox_id: string
     private_key: string
     username: string
+    /** Host to SSH into. "localhost" means the sandbox is on internal EC2 infrastructure
+     *  and is NOT directly reachable from outside the server. */
     host: string
     port: number
+    /** Raw SSH command from the orchestrator. Uses server-side paths — do not show verbatim. */
     ssh_command: string
 }
 

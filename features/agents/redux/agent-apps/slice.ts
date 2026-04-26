@@ -29,31 +29,58 @@ import {
 function makeEmptyRecord(id: string): AgentAppRecord {
   return {
     id,
-    label: "",
+    slug: "",
+    name: "",
+    tagline: null,
     description: null,
-    iconName: null,
+    category: null,
+    tags: [],
 
-    origin: "custom",
-    templateId: null,
-    sourceCode: null,
+    agent_id: "",
+    agent_version_id: null,
+    use_latest: true,
 
-    primaryAgentId: null,
-    primaryAgentVersionId: null,
-    useLatest: false,
+    component_code: "",
+    component_language: "tsx",
+    allowed_imports: [],
 
-    embeddedShortcutIds: [],
-    scopeMappings: null,
+    variable_schema: [],
+    layout_config: {},
+    styling_config: {},
 
-    isActive: true,
-    isPublic: false,
+    preview_image_url: null,
+    favicon_url: null,
 
-    userId: null,
-    organizationId: null,
-    projectId: null,
-    taskId: null,
+    status: "draft",
+    is_public: true,
+    is_featured: false,
+    is_verified: false,
 
-    createdAt: "",
-    updatedAt: "",
+    rate_limit_per_ip: null,
+    rate_limit_window_hours: null,
+    rate_limit_authenticated: null,
+
+    version: 1,
+    pinned_version: null,
+
+    total_executions: 0,
+    total_tokens_used: 0,
+    total_cost: 0,
+    unique_users_count: 0,
+    success_rate: null,
+    avg_execution_time_ms: null,
+    last_execution_at: null,
+
+    metadata: null,
+
+    user_id: null,
+    organization_id: null,
+    project_id: null,
+    task_id: null,
+
+    created_at: "",
+    updated_at: "",
+    published_at: null,
 
     _dirty: false,
     _dirtyFields: createFieldFlags<keyof AgentApp>(),

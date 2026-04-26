@@ -202,6 +202,33 @@ export class SandboxGitAdapter {
     return this.postCredentials({ kind: "github", token, scope });
   }
 
+  /**
+   * Bootstrap git credentials using the server-side workspace token
+   * (`MATRX_SANDBOX_GH_TOKEN`). The token never crosses the wire to the
+   * browser — the route reads it from process.env and forwards to the
+   * orchestrator directly.
+   */
+  async useWorkspaceToken(
+    scope: "read" | "write" = "write",
+  ): Promise<{ ok: boolean }> {
+    const resp = await fetch(
+      `/api/sandbox/${this.opts.instanceId}/credentials/workspace`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scope }),
+      },
+    );
+    if (!resp.ok) {
+      const txt = await resp.text().catch(() => resp.statusText);
+      // 412 = workspace token not configured server-side. Surface the
+      // upstream `details` so the UI can prompt the user to set the env var
+      // rather than silently dropping back to the manual modal.
+      throw new Error(`workspace credentials failed (${resp.status}): ${txt}`);
+    }
+    return resp.json();
+  }
+
   setSshKey(privateKey: string, knownHosts?: string): Promise<{ ok: boolean }> {
     return this.postCredentials({
       kind: "ssh",

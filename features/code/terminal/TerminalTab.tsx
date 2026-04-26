@@ -47,6 +47,14 @@ interface SessionState {
   /** Disposable for the term.onData listener so we can swap it when the
    *  PTY connects/disconnects without leaking handlers. */
   onDataDisposer: (() => void) | null;
+  /** When a streaming `runCommand` is in flight, this aborts the SSE
+   *  request and tells the orchestrator to SIGTERM the underlying
+   *  process. Cleared back to null when the command finishes. */
+  runAbort: AbortController | null;
+  /** Pending lines from a multi-line paste that are queued to run after
+   *  the current command finishes. Each entry is the trimmed line content
+   *  (no trailing newline). */
+  pasteQueue: string[];
 }
 
 // ANSI color escape codes
@@ -97,11 +105,26 @@ export const TerminalTab: React.FC<TerminalTabProps> = ({
     [writePromptFor],
   );
 
+  /** Pop the next queued paste line (if any) and run it. Lets a multi-line
+   *  paste behave the way the user expects — one command after the next.
+   *  Defined as a ref-mutating closure so `runCommand` can call it without
+   *  taking a circular dep on itself. */
+  const runCommandRef = useRef<
+    ((state: SessionState, command: string) => Promise<void>) | null
+  >(null);
+
   const runCommand = useCallback(
     async (state: SessionState, command: string) => {
       if (!command.trim()) {
         state.term.write("\r\n");
         writePromptFor(state);
+        const next = state.pasteQueue.shift();
+        if (next !== undefined && runCommandRef.current) {
+          state.buffer = "";
+          state.cursor = 0;
+          state.historyIdx = null;
+          void runCommandRef.current(state, next);
+        }
         return;
       }
 
@@ -121,53 +144,113 @@ export const TerminalTab: React.FC<TerminalTabProps> = ({
 
       state.term.write("\r\n");
 
+      const adapter = processRef.current;
+      const ac = new AbortController();
+      state.runAbort = ac;
+
       try {
-        const result = await processRef.current.exec(command);
-        if (result.stdout) {
-          state.term.write(ansiNormalize(result.stdout));
+        let exitCode = 0;
+        let cwd: string | undefined;
+
+        if (adapter.stream) {
+          // Streaming path — write each chunk to xterm as it arrives so
+          // the user sees output live (git clone progress, npm install
+          // logs, test output, …) instead of waiting for the buffered
+          // result at end-of-command.
+          const result = await adapter.stream(
+            command,
+            (event) => {
+              if (event.type === "stdout" && event.text) {
+                state.term.write(ansiNormalize(event.text));
+              } else if (event.type === "stderr" && event.text) {
+                state.term.write(`${RED}${ansiNormalize(event.text)}${RESET}`);
+              }
+              // `info` and `exit` events are summarised after the await
+              // resolves so we render a single trailing exit line.
+            },
+            { signal: ac.signal },
+          );
+          exitCode = result.exitCode;
+          cwd = result.cwd;
+        } else {
+          // Buffered fallback (Mock adapter, or any adapter without
+          // streaming support).
+          const result = await adapter.exec(command);
+          if (result.stdout) {
+            state.term.write(ansiNormalize(result.stdout));
+          }
+          if (result.stderr) {
+            state.term.write(`${RED}${ansiNormalize(result.stderr)}${RESET}`);
+          }
+          exitCode = result.exitCode;
+          cwd = result.cwd;
         }
-        if (result.stderr) {
-          state.term.write(`${RED}${ansiNormalize(result.stderr)}${RESET}`);
-        }
-        state.term.write(`${DIM}exit ${result.exitCode}${RESET}\r\n`);
+
+        state.term.write(`${DIM}exit ${exitCode}${RESET}\r\n`);
 
         dispatch(
           appendLine({
             type: "info",
-            text: `Exit ${result.exitCode}`,
-            exitCode: result.exitCode,
-            cwd: result.cwd,
+            text: `Exit ${exitCode}`,
+            exitCode,
+            cwd,
             tab: "terminal",
             source: "user",
           }),
         );
       } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        state.term.write(`${RED}${message}${RESET}\r\n`);
-        dispatch(
-          appendLine({
-            type: "stderr",
-            text: message,
-            tab: "terminal",
-            source: "user",
-          }),
-        );
+        // AbortError is the user's own Ctrl-C — surface it cleanly
+        // instead of dumping a stack trace into the terminal.
+        const aborted =
+          (err instanceof DOMException && err.name === "AbortError") ||
+          ac.signal.aborted;
+        if (aborted) {
+          state.term.write(`${DIM}^C cancelled${RESET}\r\n`);
+        } else {
+          const message = err instanceof Error ? err.message : String(err);
+          state.term.write(`${RED}${message}${RESET}\r\n`);
+          dispatch(
+            appendLine({
+              type: "stderr",
+              text: message,
+              tab: "terminal",
+              source: "user",
+            }),
+          );
+        }
       } finally {
         state.running = false;
+        state.runAbort = null;
         state.buffer = "";
         state.cursor = 0;
         state.historyIdx = null;
         dispatch(setExecuting(false));
         writePromptFor(state);
+        const next = state.pasteQueue.shift();
+        if (next !== undefined && runCommandRef.current) {
+          void runCommandRef.current(state, next);
+        }
       }
     },
     [dispatch, writePromptFor],
   );
 
+  // Keep the ref in sync so the queue-drain hop above always calls the
+  // current `runCommand`.
+  runCommandRef.current = runCommand;
+
   // ── Input handler (read-line emulation, used when no PTY is available) ─
   const handleData = useCallback(
     (state: SessionState, data: string) => {
-      if (state.running) return;
+      // Ctrl-C while a streamed command is running: abort the SSE so the
+      // orchestrator SIGTERMs the process. The `runCommand` finally block
+      // takes care of redrawing the prompt.
+      if (state.running) {
+        if (data === "\x03" && state.runAbort) {
+          state.runAbort.abort();
+        }
+        return;
+      }
 
       // Paste-in: multi-char chunk without escape prefix.
       if (data.length > 1 && !data.startsWith("\x1b")) {
@@ -183,11 +266,19 @@ export const TerminalTab: React.FC<TerminalTabProps> = ({
             state.term.write(chunk);
           }
           if (i < lines.length - 1) {
+            // Newline boundary inside the paste — run the first line now,
+            // and queue the remaining lines so they execute one-by-one
+            // after each command completes (see `runCommand`'s finally
+            // block). Empty lines are kept so the visual rhythm matches
+            // what the user pasted.
             const toRun = state.buffer;
             state.buffer = "";
             state.cursor = 0;
+            for (let j = i + 1; j < lines.length; j++) {
+              state.pasteQueue.push(lines[j] ?? "");
+            }
             void runCommand(state, toRun);
-            return; // further lines handled after command completes
+            return;
           }
         }
         return;
@@ -362,6 +453,8 @@ export const TerminalTab: React.FC<TerminalTabProps> = ({
         lastSeenLineId: parseLineId(reduxLines[reduxLines.length - 1]?.id),
         pty: null,
         onDataDisposer: null,
+        runAbort: null,
+        pasteQueue: [],
       };
       sessionRef.current = session;
 
@@ -453,6 +546,9 @@ export const TerminalTab: React.FC<TerminalTabProps> = ({
       cancelled = true;
       const s = sessionRef.current;
       if (s) {
+        // Abort any in-flight stream so the orchestrator stops the
+        // process and doesn't leak compute when the user navigates away.
+        s.runAbort?.abort();
         s.pty?.close();
         s.onDataDisposer?.();
         s.term.dispose();

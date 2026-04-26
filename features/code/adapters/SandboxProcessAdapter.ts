@@ -96,7 +96,10 @@ export class SandboxProcessAdapter implements ProcessAdapter {
 
     const resp = await fetch(`/api/sandbox/${this.instanceId}/exec/stream`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "text/event-stream" },
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "text/event-stream",
+      },
       body: JSON.stringify(body),
       signal: opts?.signal,
     });
@@ -132,7 +135,8 @@ export class SandboxProcessAdapter implements ProcessAdapter {
         const dataLines: string[] = [];
         for (const line of rawEvent.split("\n")) {
           if (line.startsWith("event:")) eventName = line.slice(6).trim();
-          else if (line.startsWith("data:")) dataLines.push(line.slice(5).replace(/^ /, ""));
+          else if (line.startsWith("data:"))
+            dataLines.push(line.slice(5).replace(/^ /, ""));
         }
         if (!dataLines.length) continue;
 
@@ -273,23 +277,58 @@ export class SandboxProcessAdapter implements ProcessAdapter {
         // breaking older clients.
       }
     };
-    socket.onopen = () => {
-      isOpen = true;
-      // Some daemons don't emit an explicit ready frame — synthesise one.
-      opts.onReady?.();
-    };
-    socket.onerror = () => {
-      opts.onError?.(new Error("PTY transport error"));
-    };
-    socket.onclose = () => {
-      isOpen = false;
-      if (!closed) {
-        closed = true;
-        opts.onExit?.(null, null);
-      }
-    };
 
-    return handle;
+    // The Promise resolves only once the socket is actually OPEN — that
+    // way callers can safely swap their input listener over to the PTY
+    // without losing keystrokes during the connect window. If the
+    // connection fails (Vercel returns 426 because route handlers can't
+    // perform the upgrade, host unreachable, auth failure, …) the Promise
+    // rejects and the caller can stay on the buffered fallback.
+    return await new Promise<PtyHandle>((resolve, reject) => {
+      const CONNECT_TIMEOUT_MS = 4000;
+      let settled = false;
+      const settle = (fn: () => void) => {
+        if (settled) return;
+        settled = true;
+        fn();
+      };
+
+      const timer = setTimeout(() => {
+        settle(() => {
+          try {
+            socket.close(4000, "connect timeout");
+          } catch {
+            /* ignore */
+          }
+          reject(new Error("PTY connect timeout"));
+        });
+      }, CONNECT_TIMEOUT_MS);
+
+      socket.onopen = () => {
+        clearTimeout(timer);
+        isOpen = true;
+        // Some daemons don't emit an explicit ready frame — synthesise one
+        // so the consumer's `onReady` always fires once.
+        opts.onReady?.();
+        settle(() => resolve(handle));
+      };
+      socket.onerror = () => {
+        opts.onError?.(new Error("PTY transport error"));
+        // If we hadn't opened yet, surface the failure to the caller so
+        // they don't dispose their fallback listener.
+        clearTimeout(timer);
+        settle(() => reject(new Error("PTY transport error")));
+      };
+      socket.onclose = () => {
+        isOpen = false;
+        if (!closed) {
+          closed = true;
+          opts.onExit?.(null, null);
+        }
+        clearTimeout(timer);
+        settle(() => reject(new Error("PTY connection closed before open")));
+      };
+    });
   }
 }
 

@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 import { useIsMounted } from "@/hooks/use-is-mounted";
 import { treeContainsComponent } from "@/lib/react/treeContainsComponent";
+import { usePopoutContainer } from "@/features/window-panels/popout/usePopoutContainer";
 
 /**
  * Hydration-safe AlertDialog wrapper.
@@ -32,7 +33,25 @@ AlertDialog.displayName = "AlertDialog";
 
 const AlertDialogTrigger = AlertDialogPrimitive.Trigger;
 
-const AlertDialogPortal = AlertDialogPrimitive.Portal;
+/**
+ * Popout-aware AlertDialogPortal — see `DialogPortal` in `dialog.tsx` for
+ * the rationale. Inside a popped-out window-panel, the portal retargets to
+ * the popout's `<body>`. Outside a popout, falls through to default.
+ */
+const AlertDialogPortal = ({
+  container,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Portal>) => {
+  const popoutContainer = usePopoutContainer();
+  const resolvedContainer =
+    container !== undefined ? container : popoutContainer;
+  return (
+    <AlertDialogPrimitive.Portal
+      container={resolvedContainer}
+      {...props}
+    />
+  );
+};
 
 const AlertDialogOverlay = React.forwardRef<
   React.ComponentRef<typeof AlertDialogPrimitive.Overlay>,

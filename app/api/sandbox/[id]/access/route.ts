@@ -57,7 +57,9 @@ export async function POST(
       }
 
       const result = await resp.json();
-      return NextResponse.json(result);
+      // Augment the orchestrator response with the orchestrator-level sandbox_id
+      // so the frontend can build a correct key filename and SSH command.
+      return NextResponse.json({ ...result, sandbox_id: lookup.sandboxId });
     } catch (fetchError) {
       console.error("Orchestrator connection failed:", fetchError);
       return NextResponse.json(

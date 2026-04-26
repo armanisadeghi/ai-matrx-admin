@@ -195,6 +195,9 @@ export function WindowPersistenceManager({
               preMinimizedRect: null,
               zIndex: ps.zIndex ?? 1000,
               traySlot: null,
+              // Popout state never restores from DB — see restoreWindowState reducer.
+              popoutMode: null,
+              prePopoutRect: null,
             };
           }
         }

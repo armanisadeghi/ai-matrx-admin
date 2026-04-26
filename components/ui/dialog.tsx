@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { Cross2Icon } from "@radix-ui/react-icons";
 import { useIsMounted } from "@/hooks/use-is-mounted";
 import { treeContainsComponent } from "@/lib/react/treeContainsComponent";
+import { usePopoutContainer } from "@/features/window-panels/popout/usePopoutContainer";
 
 /**
  * Context that provides the Dialog content DOM element so that nested portaled
@@ -40,7 +41,24 @@ Dialog.displayName = "Dialog";
 
 const DialogTrigger = DialogPrimitive.Trigger;
 
-const DialogPortal = DialogPrimitive.Portal;
+/**
+ * Popout-aware DialogPortal. When this dialog renders inside a popped-out
+ * window-panel, the Radix portal target is retargeted to the popout's
+ * `<body>`. Outside a popout, falls through to the default (`document.body`).
+ *
+ * An explicit `container` prop always wins.
+ */
+const DialogPortal = ({
+  container,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof DialogPrimitive.Portal>) => {
+  const popoutContainer = usePopoutContainer();
+  const resolvedContainer =
+    container !== undefined ? container : popoutContainer;
+  return (
+    <DialogPrimitive.Portal container={resolvedContainer} {...props} />
+  );
+};
 
 const DialogClose = DialogPrimitive.Close;
 

@@ -33,7 +33,18 @@ function toPublicSubset(app: AgentApp): PublicAgentApp {
     styling_config: app.styling_config,
     total_executions: app.total_executions,
     success_rate: app.success_rate,
-  };
+    agent_id: app.agent_id,
+    agent_version_id: app.agent_version_id,
+    use_latest: app.use_latest,
+    app_kind: app.app_kind ?? "single",
+    shared_context_slots: app.shared_context_slots ?? [],
+    status: app.status,
+    is_public: app.is_public,
+    is_featured: app.is_featured,
+    is_verified: app.is_verified,
+    last_execution_at: app.last_execution_at,
+    search_tsv: app.search_tsv ?? null,
+  } as unknown as PublicAgentApp;
 }
 
 export function AgentAppEditor({ app, onSave }: AgentAppEditorProps) {
