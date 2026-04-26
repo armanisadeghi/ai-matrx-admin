@@ -1,22 +1,38 @@
 /**
  * features/files/utils/preview-capabilities.ts
  *
- * Decides which previewer (if any) should render a given file.
+ * Preview-capability helper. **The data + decision logic lives in
+ * [./file-types.ts](./file-types.ts)** — this module is now a thin re-export
+ * so legacy callers keep working without encoding a parallel mime / preview
+ * table.
+ *
+ * Prefer the richer `getFilePreviewProfile` for new code: it returns the
+ * preview kind, the canPreview / sizeOk flags, AND the thumbnail strategy
+ * in a single call, removing the need to combine separate `mime.ts` +
+ * `icon-map.ts` lookups at the call site.
  */
 
+export {
+  getFilePreviewProfile,
+  MAX_INLINE_PREVIEW_BYTES,
+} from "./file-types";
+
+export type {
+  FilePreviewProfile,
+  PreviewKind,
+  ThumbnailStrategy,
+} from "./file-types";
+
 import {
-  isAudioMime,
-  isImageMime,
-  isPdfMime,
-  isTextMime,
-  isVideoMime,
-  resolveMime,
-} from "./mime";
-import { getFileTypeDetails, type PreviewKind } from "./icon-map";
+  getFilePreviewProfile,
+  type PreviewKind,
+} from "./file-types";
 
-/** Max bytes we'll try to render inline. Bigger files go to a download path. */
-export const MAX_INLINE_PREVIEW_BYTES = 10 * 1024 * 1024; // 10MB
-
+/**
+ * Backwards-compat wrapper. New callers should use
+ * `getFilePreviewProfile(...)` directly so they also see the
+ * thumbnail strategy and resolved MIME.
+ */
 export interface PreviewCapability {
   previewKind: PreviewKind;
   canPreview: boolean;
@@ -29,36 +45,13 @@ export function getPreviewCapability(
   mimeType: string | null,
   fileSize: number | null,
 ): PreviewCapability {
-  const mime = resolveMime(mimeType, fileName);
-  const details = getFileTypeDetails(fileName);
-
-  // Mime-first detection — authoritative for browser-playable content.
-  let kind: PreviewKind = details.previewKind;
-  if (isImageMime(mime)) kind = "image";
-  else if (isVideoMime(mime)) kind = "video";
-  else if (isAudioMime(mime)) kind = "audio";
-  else if (isPdfMime(mime)) kind = "pdf";
-  else if (isTextMime(mime) && kind === "generic") kind = "text";
-
-  const canPreview =
-    kind === "image" ||
-    kind === "video" ||
-    kind === "audio" ||
-    kind === "pdf" ||
-    kind === "code" ||
-    kind === "text" ||
-    kind === "markdown" ||
-    kind === "data" ||
-    kind === "spreadsheet";
-
-  const sizeOk =
-    kind === "image" ||
-    kind === "video" ||
-    kind === "audio" ||
-    kind === "pdf" ||
-    kind === "spreadsheet" ||
-    fileSize == null ||
-    fileSize <= MAX_INLINE_PREVIEW_BYTES;
-
-  return { previewKind: kind, canPreview, sizeOk };
+  const profile = getFilePreviewProfile(fileName, mimeType, fileSize);
+  // Match the legacy shape: canPreview ignored size-ok, sizeOk was reported
+  // separately. We restore that split so callers that gate on `canPreview`
+  // alone (without checking `sizeOk`) keep their original behavior.
+  return {
+    previewKind: profile.previewKind,
+    canPreview: profile.previewKind !== "generic",
+    sizeOk: profile.sizeOk,
+  };
 }

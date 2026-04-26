@@ -133,6 +133,48 @@ Live ledger of questions, feature requests, and backend-side asks. Every interac
 
 ---
 
+### 2026-04-26 — Req: Server-side thumbnail / poster generation on upload
+
+**Status:** 🟡 awaiting.
+**Priority:** Medium (significant UX win; no user-facing breakage today).
+**Context:** The cloud-files grid view falls back to a category icon
+for every file type that isn't an image. This round added a
+client-side first-frame poster for videos — but PDFs, presentations,
+documents, audio cover art, and any future format with a meaningful
+visual still render as colored squares with a small icon. That's the
+single biggest reason the grid view feels less polished than
+Dropbox / Drive / Box.
+**Ask:** On every successful upload, generate a small thumbnail
+(target 256×256 longest side, JPEG or WebP, ~10–30KB) and expose it
+via either:
+1. `metadata.thumbnail_url` on the FileRecord (FE already plumbed —
+   just populate the field), OR
+2. A new `cld_files.thumbnail_storage_uri` column + a
+   `GET /files/{id}/thumbnail` endpoint, OR
+3. Convention: `s3://bucket/<owner>/<file_id>/thumb.webp`
+
+Per file kind:
+- **Image** → resize the source (Pillow, sharp)
+- **Video** → first-frame at t=0 (ffmpeg)
+- **PDF** → first page rasterized (pdf2image / Poppler)
+- **Audio** → embedded album art if any (mutagen / eyed3)
+- **DOCX / PPTX** → first slide / page render (LibreOffice unoconv)
+  — nice-to-have
+
+The FE has a `backend-thumb` thumbnail strategy already wired in the
+file-type registry that reads `metadata.thumbnail_url` and falls back
+to the category icon when missing. As soon as the field is populated
+on a given record, that record will render the backend thumbnail. No
+FE work beyond switching a few entries' `thumbnailStrategy` value
+from `icon` to `backend-thumb` in
+[features/files/utils/file-types.ts](utils/file-types.ts).
+**Blocker?** No — degraded grid UX only.
+**Workaround:** Client-side video first-frame thumbnails are
+shipped. No client-side path for PDF / cover art (would require
+loading a 400KB pdfjs bundle in the folder listing — not worth it).
+
+---
+
 ### 2026-04-26 — Req: S3 bucket CORS for browser `fetch()` of signed URLs
 
 **Status:** 🟠 deferred — frontend has a clean workaround.

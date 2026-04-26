@@ -245,12 +245,24 @@ function PageShellDesktop({
   );
   // For filter / photos / shared sections, we want tree-wide matches; for
   // trash, we include every deleted file.
+  //
+  // "Home" (section === "all") behavior:
+  //   - At the root (`activeFolderId === null`): we render ALL files in the
+  //     tree, plus root-level folders. Users uniformly expect "Home" to
+  //     show everything they own; before this fix we only showed root-level
+  //     files, which made files inside subfolders invisible at Home and
+  //     made the section feel broken.
+  //   - Drilled into a folder (`activeFolderId !== null`): we render that
+  //     folder's contents, same as the rest of the app.
+  // "folders" / "folders-root" stay strictly scoped to the active folder
+  // because that section's whole purpose is folder-scoped browsing.
   const scopedFolders = useMemo(() => {
-    if (
-      section === "all" ||
-      section === "folders" ||
-      section === "folders-root"
-    ) {
+    if (section === "folders" || section === "folders-root") {
+      return rootFolders;
+    }
+    if (section === "all") {
+      // At Home, show root folders so users see top-level organization at
+      // a glance. Drilled-in views get the active folder's children.
       return rootFolders;
     }
     if (section === "trash") {
@@ -264,18 +276,23 @@ function PageShellDesktop({
     return allFolders.filter((f) => !f.deletedAt);
   }, [section, rootFolders, allFolders]);
   const scopedFiles = useMemo(() => {
-    if (
-      section === "all" ||
-      section === "folders" ||
-      section === "folders-root"
-    ) {
+    if (section === "folders" || section === "folders-root") {
+      return rootFiles;
+    }
+    if (section === "all") {
+      // At Home with no active folder, show every file the user owns —
+      // this is the user-expected "everything" view. Once they drill into
+      // a folder, scope down to that folder's files.
+      if (activeFolderId === null) {
+        return allFiles.filter((f) => !f.deletedAt);
+      }
       return rootFiles;
     }
     if (section === "trash") {
       return allFiles.filter((f) => f.deletedAt);
     }
     return allFiles.filter((f) => !f.deletedAt);
-  }, [section, rootFiles, allFiles]);
+  }, [section, rootFiles, allFiles, activeFolderId]);
 
   // Tree-wide search: when the user types in the TopBar search box, the table
   // should match across the ENTIRE tree, not just the current folder. Without

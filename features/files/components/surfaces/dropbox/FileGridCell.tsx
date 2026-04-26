@@ -13,9 +13,8 @@ import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { Copy, MoreHorizontal, Share2, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useSignedUrl } from "@/features/files/hooks/useSignedUrl";
 import { formatFileSize } from "@/features/files/utils/format";
-import { FileIcon } from "@/features/files/components/core/FileIcon/FileIcon";
+import { MediaThumbnail } from "@/features/files/components/core/MediaThumbnail/MediaThumbnail";
 import { FileContextMenu } from "@/features/files/components/core/FileContextMenu/FileContextMenu";
 import { useFileActions } from "@/features/files/components/core/FileActions/useFileActions";
 import type {
@@ -66,8 +65,6 @@ function GridFile({
 }: GridFileProps) {
   const [hovered, setHovered] = useState(false);
   const actions = useFileActions(file.id);
-  const isImage = (file.mimeType ?? "").toLowerCase().startsWith("image/");
-  const { url } = useSignedUrl(isImage ? file.id : null, { expiresIn: 3600 });
   const ext = file.fileName.split(".").pop()?.toUpperCase() ?? "FILE";
 
   // File cells are draggable. The activation distance on the parent
@@ -97,23 +94,15 @@ function GridFile({
       {...listeners}
     >
       <div className="relative aspect-[4/3] bg-muted/50">
-        {isImage && url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={url}
-            alt={file.fileName}
-            loading="lazy"
-            className="h-full w-full object-cover"
-            onClick={onActivate}
-          />
-        ) : (
-          <div
-            className="flex h-full w-full items-center justify-center"
-            onClick={onActivate}
-          >
-            <FileIcon fileName={file.fileName} size={48} />
-          </div>
-        )}
+        {/*
+          Thumbnail strategy is sourced from the file-type registry —
+          adding a new visual treatment for a file kind (e.g. PDF first
+          page, audio waveform) is a single registry edit, never an edit
+          to this component. See features/files/utils/file-types.ts.
+        */}
+        <div className="absolute inset-0" onClick={onActivate}>
+          <MediaThumbnail file={file} iconSize={48} className="h-full w-full" />
+        </div>
 
         <div className="absolute left-2 top-2">
           <Checkbox

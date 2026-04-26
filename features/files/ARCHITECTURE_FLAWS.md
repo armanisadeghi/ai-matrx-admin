@@ -268,6 +268,50 @@ snapshots.
 
 ---
 
+### 🟡 P-9. Server-side thumbnail / poster generation on upload
+
+**The problem:** the cloud-files grid view falls back to a category icon
+for every file type that isn't an image (or a video, where the FE now
+renders a first-frame poster client-side). PDFs, presentations,
+documents, audio cover art, and any future format with a meaningful
+visual all show as colored squares with a tiny icon. That's the
+single biggest reason the grid view feels less polished than
+Dropbox / Drive / Box.
+
+**What we want from Python (on every upload):**
+
+1. Generate a small thumbnail / poster:
+   - **Image** → resize to 256×256 (longest side), JPEG / WebP
+   - **Video** → first-frame at t=0, 256×256, JPEG / WebP
+   - **PDF** → first page rasterized to 256×256, JPEG / WebP
+   - **Audio** → embedded album art if present (ID3 / MP4 tags)
+   - **DOCX / PPTX** → first slide / first page render (LibreOffice
+     unoconv works) — nice-to-have
+
+2. Store either:
+   - In S3 alongside the file: `s3://bucket/<owner>/<file_id>/thumb.webp`
+   - In a new `cld_files.thumbnail_storage_uri` column, OR
+   - In the existing `metadata` jsonb under `metadata.thumbnail_url`
+     (already plumbed FE-side in the registry's `backend-thumb`
+     strategy — flipping a few entries' `thumbnailStrategy` value
+     lights it up)
+
+3. Expose via:
+   - `GET /files/{id}/thumbnail` returning the small image directly, OR
+   - The existing `metadata.thumbnail_url` field on `FileRecord`
+
+The FE already has a `backend-thumb` thumbnail strategy in the
+file-type registry that reads `metadata.thumbnail_url` and falls back
+to the icon when missing. As soon as the field is populated the
+strategy lights up — no FE work beyond mapping the kinds we want
+backed thumbs for in `features/files/utils/file-types.ts`.
+
+**Side benefit:** removes the need for the FE to ever fetch full
+video/image bytes just to render a 64×64 grid cell, which is a
+significant bandwidth / latency win on slow connections.
+
+---
+
 ### 🔴 P-8. S3 bucket CORS still rejects browser `fetch()` of signed URLs
 
 **Symptom:** Opening a CSV / PDF / TXT file used to fail with
@@ -478,3 +522,138 @@ After both teams ship their pieces:
 Each item has a clear owner (Python or React) and is independently
 shippable. Don't batch them; ship as small PRs that each move us
 closer to the target state.
+
+---
+
+## Preview & thumbnail capabilities
+
+> Generated from [features/files/utils/file-types.ts](utils/file-types.ts).
+> If this table drifts from the registry, the registry wins — the
+> registry is the single source of truth.
+>
+> The registry exports `listSupportedTypes()` so dashboards / admin
+> pages can render this same table at runtime without hard-coding it.
+
+### Preview kinds → renderer
+
+| `previewKind` | Renderer | Notes |
+|---|---|---|
+| `image` | [ImagePreview](components/core/FilePreview/previewers/ImagePreview.tsx) | Native `<img>` with error fallback |
+| `video` | [VideoPreview](components/core/FilePreview/previewers/VideoPreview.tsx) | Native `<video controls preload="metadata">` |
+| `audio` | [AudioPreview](components/core/FilePreview/previewers/AudioPreview.tsx) | Custom scrubber, volume, rate, loop |
+| `pdf` | [PdfPreview](components/core/FilePreview/previewers/PdfPreview.tsx) | react-pdf, page nav. Dynamic-imported |
+| `markdown` | [MarkdownPreview](components/core/FilePreview/previewers/MarkdownPreview.tsx) | GFM tables + KaTeX + Prism. Dynamic-imported |
+| `code` | [CodePreview](components/core/FilePreview/previewers/CodePreview.tsx) | Prism via react-syntax-highlighter. Dynamic-imported |
+| `text` | [TextPreview](components/core/FilePreview/previewers/TextPreview.tsx) | Plain `<pre>` with monospace |
+| `data` | [DataPreview](components/core/FilePreview/previewers/DataPreview.tsx) | CSV / TSV / JSON / XML / TOML / YAML / `.ipynb` — search, sort, paginate. Dynamic-imported |
+| `spreadsheet` | DataPreview (XLSX path) | SheetJS multi-sheet selector. Dynamic-imported |
+| `generic` | [GenericPreview](components/core/FilePreview/previewers/GenericPreview.tsx) | Icon + filename + size + Download button |
+
+### Thumbnail strategies (grid view)
+
+| `thumbnailStrategy` | Renderer | Today |
+|---|---|---|
+| `image` | `<img src={signedUrl}>` | All image types render real thumbs |
+| `video-poster` | Muted `<video preload="metadata">` first frame | All video types — new this round |
+| `pdf-firstpage` | Reserved (pdfjs first-page render to canvas) | Not active — falls through to `icon` |
+| `backend-thumb` | `<img src={metadata.thumbnail_url}>` | Reserved — Python team to ship (P-9 above) |
+| `icon` | Lucide category icon | Default fallback |
+
+### Supported file types (full matrix)
+
+#### Images (preview ✅, thumbnail = real image)
+- **JPEG** (`.jpg`, `.jpeg`)
+- **PNG** (`.png`)
+- **GIF** (`.gif`)
+- **WebP** (`.webp`)
+- **AVIF** (`.avif`) — added this round
+- **SVG** (`.svg`)
+- **HEIC** (`.heic`) — Safari only (logged as future P-9 conversion ask)
+- **HEIF** (`.heif`)
+- **BMP** (`.bmp`)
+- **TIFF** (`.tif`, `.tiff`) — Safari only natively
+- **ICO** (`.ico`)
+
+#### Video (preview ✅, thumbnail = first-frame poster)
+- **MP4** (`.mp4`, `.m4v`)
+- **QuickTime** (`.mov`)
+- **WebM** (`.webm`)
+- **Matroska** (`.mkv`)
+- **AVI** (`.avi`)
+
+#### Audio (preview ✅, thumbnail = icon)
+- **MP3** (`.mp3`)
+- **WAV** (`.wav`)
+- **Ogg** (`.ogg`)
+- **AAC** (`.aac`, `.m4a`)
+- **FLAC** (`.flac`)
+- **Opus** (`.opus`)
+
+#### Documents
+| Format | Extension(s) | Preview | Notes |
+|---|---|---|---|
+| PDF | `.pdf` | ✅ | react-pdf, paginated |
+| Markdown | `.md`, `.markdown`, `.mdx` | ✅ | GFM + KaTeX + Prism |
+| Plain text | `.txt`, `.log` | ✅ | `<pre>` |
+| Subtitles (SubRip) | `.srt` | ✅ | Renders as text |
+| Subtitles (WebVTT) | `.vtt` | ✅ | Renders as text |
+| Email | `.eml` | ✅ | Renders as text (rich parsing is a future ask) |
+| Word | `.doc`, `.docx` | ❌ | Icon only — needs `mammoth.js` (~50KB) |
+| PowerPoint | `.ppt`, `.pptx` | ❌ | Icon only |
+| EPUB | `.epub` | ❌ | Icon only |
+
+#### Spreadsheets / data
+| Format | Extension(s) | Preview |
+|---|---|---|
+| Excel | `.xlsx`, `.xls` | ✅ — SheetJS multi-sheet table |
+| CSV | `.csv` | ✅ |
+| TSV | `.tsv` | ✅ |
+| JSON | `.json` | ✅ |
+| YAML | `.yaml`, `.yml` | ✅ — code-highlight |
+| TOML | `.toml` | ✅ — code-highlight |
+| XML | `.xml` | ✅ |
+| Jupyter | `.ipynb` | ✅ — JSON path (cell renderer is a future ask) |
+| SQLite | `.sqlite`, `.sqlite3`, `.db` | ❌ Icon only |
+
+#### Code
+JavaScript / TypeScript (`.js`, `.jsx`, `.mjs`, `.cjs`, `.ts`, `.tsx`),
+Python (`.py`), Ruby (`.rb`), Go (`.go`), Rust (`.rs`), Java (`.java`),
+Swift (`.swift`), C / C++ / C# (`.c`, `.h`, `.cpp`, `.cc`, `.cxx`,
+`.hpp`, `.cs`), HTML (`.html`, `.htm`), CSS (`.css`), SCSS (`.scss`),
+Shell (`.sh`, `.bash`, `.zsh`), SQL (`.sql`).
+
+All ✅ via Prism syntax highlighting.
+
+#### 3D models — icon only
+`.glb`, `.gltf`, `.stl`, `.obj`, `.fbx`. Future Three.js previewer.
+
+#### Archives — icon only
+`.zip`, `.rar`, `.7z`, `.tar`, `.gz`, `.tgz`. A "list contents"
+preview (using JSZip / pako) is a future ask.
+
+#### Unknown extensions
+Render the generic icon and a Download button. Behavior is intentional
+— users always have a path to retrieve the bytes.
+
+### Adding support for a new file type
+
+> **The single source of truth is [features/files/utils/file-types.ts](utils/file-types.ts).**
+> Adding a new file type is one entry in the `FILE_TYPES` table.
+
+1. Append a new `FileTypeEntry` to `FILE_TYPES` with:
+   - extensions, MIME, category, subCategory, displayName
+   - existing `previewKind` if a previewer already handles it,
+     otherwise add a new `previewKind` to the union and register a
+     previewer in `components/core/FilePreview/FilePreview.tsx`
+   - a `thumbnailStrategy` (`image` / `video-poster` / `icon` /
+     `backend-thumb` / `pdf-firstpage`)
+   - icon + color tokens
+2. If a brand-new previewer is needed, drop it under
+   `components/core/FilePreview/previewers/` and dynamic-import it
+   from `FilePreview.tsx`. Use `useFileBlob(fileId)` for fetch-based
+   readers (S3-CORS bypass is built in).
+3. Run `pnpm tsc --noEmit` to confirm.
+
+You should not need to edit `mime.ts`, `icon-map.ts`, or
+`preview-capabilities.ts` — they are now thin re-export shims over
+`file-types.ts`.
