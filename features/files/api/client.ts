@@ -130,6 +130,22 @@ export interface RequestOptions {
    * the migrate-guest-to-user endpoint, which needs the OLD fingerprint).
    */
   guestFingerprint?: string;
+  /**
+   * Idempotency key, sent as `X-Idempotency-Key`. When present on an
+   * upload, the backend stores it in `metadata._idempotency_key` so a
+   * retry of the same intended upload doesn't create a duplicate
+   * version row. Generate one per intended upload (e.g. `crypto.randomUUID()`),
+   * NOT per network retry — retries should reuse the same key.
+   */
+  idempotencyKey?: string;
+  /**
+   * Sent as `X-Cloud-Files-Bypass`. Must equal the backend's
+   * `CLOUD_FILES_BYPASS_SECRET`. Use ONLY for trusted internal callers
+   * (importers, bulk-loaders) that legitimately need to write past the
+   * tier quota. Bypass does NOT disable the absolute 5GB ceiling. Never
+   * thread this through user input.
+   */
+  cloudFilesBypass?: string;
 }
 
 export interface ResponseMeta {
@@ -165,6 +181,9 @@ async function buildHeaders(
   };
   if (token) headers.Authorization = `Bearer ${token}`;
   if (fingerprint) headers["X-Guest-Fingerprint"] = fingerprint;
+  if (opts.idempotencyKey) headers["X-Idempotency-Key"] = opts.idempotencyKey;
+  if (opts.cloudFilesBypass)
+    headers["X-Cloud-Files-Bypass"] = opts.cloudFilesBypass;
   if (includeContentType) headers["Content-Type"] = "application/json";
 
   return { headers, requestId };
@@ -333,6 +352,10 @@ export async function uploadWithProgress<T>(
     xhr.open("POST", url, true);
     if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`);
     if (fingerprint) xhr.setRequestHeader("X-Guest-Fingerprint", fingerprint);
+    if (opts.idempotencyKey)
+      xhr.setRequestHeader("X-Idempotency-Key", opts.idempotencyKey);
+    if (opts.cloudFilesBypass)
+      xhr.setRequestHeader("X-Cloud-Files-Bypass", opts.cloudFilesBypass);
     xhr.setRequestHeader("X-Request-Id", requestId);
     xhr.setRequestHeader("Accept", "application/json");
 
@@ -475,8 +498,15 @@ function statusToCloudFilesCode(status: number): string {
       return "permission_denied";
     case 404:
       return "not_found";
+    case 409:
+      return "conflict";
     case 413:
+      // Could be `file_too_large`, `storage_quota_exceeded`,
+      // `daily_uploads_exceeded`, etc. The body's `error` field carries
+      // the precise code; this is just the fallback when there isn't one.
       return "file_too_large";
+    case 429:
+      return "rate_limited";
     case 503:
       return "cloud_sync_unavailable";
     default:

@@ -23,14 +23,20 @@ import {
 import type {
   BulkDeleteFilesRequest,
   BulkMoveFilesRequest,
-  BulkOperationResponse,
+  BulkResponse,
+  CopyFileRequest,
   FilePatchRequest,
   FileRecordApi,
   FileUploadResponse,
   MigrateGuestToUserRequest,
   MigrateGuestToUserResponse,
   PermissionLevel,
+  RenameFileRequest,
+  SearchFilesParams,
+  SearchFilesResponse,
   SignedUrlResponse,
+  StorageUsageResponse,
+  TrashListResponse,
   Visibility,
 } from "@/features/files/types";
 
@@ -97,14 +103,19 @@ export async function uploadFileWithProgress(
 /**
  * List files. Reading via supabase-js is preferred (RLS-filtered, no roundtrip
  * through the backend). Exposed here for parity with the REST contract.
+ *
+ * Pagination is supported on the backend side (1–1000, default 100).
  */
 export async function listFiles(
-  params: { folderPath?: string } = {},
+  params: { folderPath?: string; limit?: number; offset?: number } = {},
   opts: RequestOptions = {},
 ): Promise<{ data: FileRecordApi[]; meta: ResponseMeta }> {
-  const q = params.folderPath
-    ? `?folder_path=${encodeURIComponent(params.folderPath)}`
-    : "";
+  const qs: string[] = [];
+  if (params.folderPath)
+    qs.push(`folder_path=${encodeURIComponent(params.folderPath)}`);
+  if (params.limit !== undefined) qs.push(`limit=${params.limit}`);
+  if (params.offset !== undefined) qs.push(`offset=${params.offset}`);
+  const q = qs.length ? `?${qs.join("&")}` : "";
   return getJson<FileRecordApi[]>(`/files${q}`, opts);
 }
 
@@ -140,6 +151,14 @@ export async function getFileTree(
 // Mutate
 // ---------------------------------------------------------------------------
 
+/**
+ * Patch a file's metadata / visibility.
+ *
+ * **Metadata is MERGED by default** — only the keys you send are touched
+ * on the server-side jsonb blob. This matches what the FE has always
+ * assumed (every thunk patches a small slice). For the rare "rewrite the
+ * whole metadata blob" tool, use `patchFileReplaceMetadata` below.
+ */
 export async function patchFile(
   fileId: string,
   body: FilePatchRequest,
@@ -147,6 +166,23 @@ export async function patchFile(
 ): Promise<{ data: FileRecordApi; meta: ResponseMeta }> {
   return patchJson<FileRecordApi, FilePatchRequest>(
     `/files/${fileId}`,
+    body,
+    opts,
+  );
+}
+
+/**
+ * Same as `patchFile` but uses the legacy "replace whole metadata jsonb"
+ * semantics. Use ONLY for explicit overwrite-the-whole-blob tools — never
+ * for incremental edits where you'd lose every key the user didn't send.
+ */
+export async function patchFileReplaceMetadata(
+  fileId: string,
+  body: FilePatchRequest,
+  opts: RequestOptions = {},
+): Promise<{ data: FileRecordApi; meta: ResponseMeta }> {
+  return patchJson<FileRecordApi, FilePatchRequest>(
+    `/files/${fileId}?metadata_merge=false`,
     body,
     opts,
   );
@@ -167,10 +203,16 @@ export async function deleteFile(
 
 export async function downloadFile(
   fileId: string,
-  params: { version?: number } = {},
+  params: { version?: number; inline?: boolean } = {},
   opts: RequestOptions = {},
 ): Promise<{ blob: Blob; filename: string | null; meta: ResponseMeta }> {
-  const q = params.version !== undefined ? `?version=${params.version}` : "";
+  const qs: string[] = [];
+  if (params.version !== undefined) qs.push(`version=${params.version}`);
+  // `?inline=true` only honoured for image/video/audio/PDF — other types
+  // are served as `attachment` regardless. Useful for `<a href>` previews
+  // where we want the browser tab to render rather than auto-download.
+  if (params.inline) qs.push("inline=true");
+  const q = qs.length ? `?${qs.join("&")}` : "";
   return downloadBlob(`/files/${fileId}/download${q}`, opts);
 }
 
@@ -187,19 +229,23 @@ export async function getSignedUrl(
 }
 
 // ---------------------------------------------------------------------------
-// Bulk operations (Python P-7)
+// Bulk operations
 // ---------------------------------------------------------------------------
 
 /**
  * Soft-delete (or hard-delete with `hard_delete: true`) many files in one
- * call. Returns a per-item succeeded/failed envelope so the UI can show
- * partial-failure feedback without aborting the whole batch.
+ * call. Returns the standard `BulkResponse` envelope:
+ *
+ *   { results: [{ id, ok, error }], succeeded: N, failed: M }
+ *
+ * Per-request size capped at the user's tier `max_bulk_items` (free=200,
+ * pro=500). Concurrency is capped server-side at 10 in-flight.
  */
 export async function bulkDeleteFiles(
   body: BulkDeleteFilesRequest,
   opts: RequestOptions = {},
-): Promise<{ data: BulkOperationResponse | null; meta: ResponseMeta }> {
-  return delJson<BulkOperationResponse, BulkDeleteFilesRequest>(
+): Promise<{ data: BulkResponse | null; meta: ResponseMeta }> {
+  return delJson<BulkResponse, BulkDeleteFilesRequest>(
     "/files/bulk",
     body,
     opts,
@@ -207,14 +253,17 @@ export async function bulkDeleteFiles(
 }
 
 /**
- * Move many files to a new parent folder in one call. `new_parent_folder_id`
- * = null moves to root. Returns per-item outcomes.
+ * Move many files to a new parent folder in one call.
+ *
+ * The backend verifies every target file belongs to the same owner as the
+ * destination folder; cross-owner moves are refused with `403`. Returns
+ * the standard `BulkResponse` envelope.
  */
 export async function bulkMoveFiles(
   body: BulkMoveFilesRequest,
   opts: RequestOptions = {},
-): Promise<{ data: BulkOperationResponse; meta: ResponseMeta }> {
-  return postJson<BulkOperationResponse, BulkMoveFilesRequest>(
+): Promise<{ data: BulkResponse; meta: ResponseMeta }> {
+  return postJson<BulkResponse, BulkMoveFilesRequest>(
     "/files/bulk/move",
     body,
     opts,
@@ -226,27 +275,143 @@ export async function bulkMoveFiles(
 // ---------------------------------------------------------------------------
 
 /**
- * Claim every file/folder owned by a guest fingerprint for the currently
- * authenticated user. Call this once on first sign-in/sign-up after a guest
- * session — the request is authed as the new user and carries the OLD
- * fingerprint in the body.
+ * Claim every file/folder/group/permission/share owned by a guest
+ * fingerprint for the currently authenticated user.
  *
- * Pass `guestFingerprint` via `RequestOptions` so it also flows through the
- * `X-Guest-Fingerprint` header — some backend builds key off the header
- * rather than the body for parity with other guest-aware endpoints.
+ * Contract:
+ *   - Body: `{ new_user_id, guest_id? }` — `new_user_id` MUST equal the
+ *     authed user_id (server enforces). `guest_id` is optional; when
+ *     provided, the backend cross-checks against the resolved fingerprint.
+ *   - Header: `X-Guest-Fingerprint` (passed via `opts.guestFingerprint`)
+ *     is REQUIRED — it's the server-bound proof of guest identity.
+ *   - Idempotent on `(authed_user_id, fingerprint)`. Re-calls with the
+ *     same `new_user_id` return the original payload. Re-calls with a
+ *     DIFFERENT `new_user_id` return `409 guest_locked`.
  */
 export async function migrateGuestToUser(
   body: MigrateGuestToUserRequest,
   opts: RequestOptions = {},
 ): Promise<{ data: MigrateGuestToUserResponse; meta: ResponseMeta }> {
+  if (!opts.guestFingerprint) {
+    throw new Error(
+      "migrateGuestToUser: opts.guestFingerprint is required (sent as X-Guest-Fingerprint).",
+    );
+  }
   return postJson<MigrateGuestToUserResponse, MigrateGuestToUserRequest>(
     "/files/migrate-guest-to-user",
     body,
-    {
-      ...opts,
-      // Always carry the source fingerprint in the header too, so the
-      // backend can pick whichever input it prefers.
-      guestFingerprint: opts.guestFingerprint ?? body.guest_fingerprint,
-    },
+    opts,
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Tier / quotas / usage
+// ---------------------------------------------------------------------------
+
+/**
+ * Read the authenticated user's account tier + current storage usage.
+ * Drives the storage indicator + tier badge + feature gating in the UI.
+ */
+export async function getStorageUsage(
+  opts: RequestOptions = {},
+): Promise<{ data: StorageUsageResponse; meta: ResponseMeta }> {
+  return getJson<StorageUsageResponse>("/files/usage", opts);
+}
+
+// ---------------------------------------------------------------------------
+// Trash + restore
+// ---------------------------------------------------------------------------
+
+/**
+ * List soft-deleted files + folders for the authenticated user.
+ * Renders the trash view; pair with `restoreFile` to undo.
+ */
+export async function listTrash(
+  opts: RequestOptions = {},
+): Promise<{ data: TrashListResponse; meta: ResponseMeta }> {
+  return getJson<TrashListResponse>("/files/trash", opts);
+}
+
+/**
+ * Restore a soft-deleted file. Owner or admin grantee only — others
+ * get `403 permission_denied`.
+ */
+export async function restoreFile(
+  fileId: string,
+  opts: RequestOptions = {},
+): Promise<{ data: FileRecordApi; meta: ResponseMeta }> {
+  return postJson<FileRecordApi, Record<string, never>>(
+    `/files/${fileId}/restore`,
+    {},
+    opts,
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Search
+// ---------------------------------------------------------------------------
+
+/**
+ * Filename / path substring search across the authenticated user's
+ * non-deleted files. `mimePrefix` filters by `mime_type LIKE 'prefix%'`
+ * (e.g. `image/`, `video/mp4`).
+ */
+export async function searchFiles(
+  params: SearchFilesParams,
+  opts: RequestOptions = {},
+): Promise<{ data: SearchFilesResponse; meta: ResponseMeta }> {
+  const qs: string[] = [`q=${encodeURIComponent(params.q)}`];
+  if (params.mimePrefix)
+    qs.push(`mime_prefix=${encodeURIComponent(params.mimePrefix)}`);
+  if (params.limit !== undefined) qs.push(`limit=${params.limit}`);
+  if (params.offset !== undefined) qs.push(`offset=${params.offset}`);
+  return getJson<SearchFilesResponse>(
+    `/files/search?${qs.join("&")}`,
+    opts,
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Rename + copy (path-changing operations)
+// ---------------------------------------------------------------------------
+
+/**
+ * Rename / move a file by changing its full logical path. The backend
+ * auto-creates any missing parent folders. Replaces the FE's earlier
+ * "metadata hack" approach.
+ *
+ * The new path is the FULL path including the filename — e.g.
+ * `Reports/2026/Q1/forecast.pdf`. Just changing the leaf renames in
+ * place; changing intermediate segments moves into a different folder.
+ */
+export async function renameFile(
+  fileId: string,
+  body: RenameFileRequest,
+  opts: RequestOptions = {},
+): Promise<{ data: FileRecordApi; meta: ResponseMeta }> {
+  return postJson<FileRecordApi, RenameFileRequest>(
+    `/files/${fileId}/rename`,
+    body,
+    opts,
+  );
+}
+
+/**
+ * Copy a file to a new logical path. Backend auto-creates parent folders.
+ * The copy counts against the caller's storage + file-count quota; refused
+ * uploads come back as 413 with the relevant quota code.
+ *
+ * `overwrite: true` replaces an existing file at `target_path`; the
+ * default (false) returns `409 file_already_exists` on conflict.
+ */
+export async function copyFile(
+  fileId: string,
+  body: CopyFileRequest,
+  opts: RequestOptions = {},
+): Promise<{ data: FileRecordApi; meta: ResponseMeta }> {
+  return postJson<FileRecordApi, CopyFileRequest>(
+    `/files/${fileId}/copy`,
+    body,
+    opts,
   );
 }

@@ -7,6 +7,7 @@ import {
   computeGlobalArrangement,
   GlobalLayoutType,
 } from "@/features/window-panels/utils/windowArrangements";
+import { clampRectToViewport } from "@/features/window-panels/utils/rectClamp";
 // WindowRect lives in the shared types file so that windowArrangements.ts
 // (a feature utility) can import it without pulling in this Redux slice,
 // which would create a cycle. Re-exported here for backward compatibility.
@@ -326,6 +327,66 @@ const windowManagerSlice = createSlice({
       win.windowed = { ...win.windowed, ...action.payload.rect };
     },
 
+    /**
+     * Clamp a window's `windowed` rect into the current viewport so at least
+     * the standard MIN_VISIBLE_PX strip of the header stays grabbable.
+     *
+     * **Why this exists:** drag-and-release outside the viewport (without a
+     * popout firing), restore-from-minimize where `preMinimizedRect` was
+     * captured at a larger viewport, and dock-from-popout where the docked
+     * rect was off-screen all leave the window in a position the user can't
+     * reach. We clamp at the boundary where the user expects to "see" the
+     * window again.
+     *
+     * **Skips popped-out windows** — their rect is OS-managed, not our
+     * concern. Skips minimized + maximized windows — those have their own
+     * rect logic that owners shouldn't fight.
+     *
+     * Caller passes viewport dimensions because reducers can't read
+     * `window.innerWidth` (consistent with `minimizeWindow` /
+     * `arrangeActiveWindows` patterns).
+     */
+    clampWindowRect(
+      state,
+      action: PayloadAction<{
+        id: string;
+        viewportWidth: number;
+        viewportHeight: number;
+      }>,
+    ) {
+      const { id, viewportWidth, viewportHeight } = action.payload;
+      const win = state.windows[id];
+      if (!win) return;
+      if (win.state !== "windowed") return; // skip min/max
+      if (win.popoutMode !== null) return; // skip popped-out
+      win.windowed = clampRectToViewport(win.windowed, {
+        width: viewportWidth,
+        height: viewportHeight,
+      });
+    },
+
+    /**
+     * Clamp every docked windowed window into the viewport. Dispatched by
+     * a global resize listener so windows that were positioned for a larger
+     * viewport get nudged back into reach.
+     *
+     * Mirrors `recomputeTrayPositions`'s coverage for minimized chips.
+     */
+    clampAllWindowRects(
+      state,
+      action: PayloadAction<{ viewportWidth: number; viewportHeight: number }>,
+    ) {
+      const { viewportWidth, viewportHeight } = action.payload;
+      Object.values(state.windows).forEach((win) => {
+        if (win.state !== "windowed") return;
+        if (win.popoutMode !== null) return;
+        win.windowed = clampRectToViewport(win.windowed, {
+          width: viewportWidth,
+          height: viewportHeight,
+        });
+      });
+    },
+
     /** Arranges all non-minimized windows globally */
     arrangeActiveWindows(
       state,
@@ -602,6 +663,8 @@ export const {
   popOutWindow,
   dockWindow,
   setPopoutCandidate,
+  clampWindowRect,
+  clampAllWindowRects,
   restoreWindowState,
 } = windowManagerSlice.actions;
 

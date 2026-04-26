@@ -67,16 +67,21 @@ import {
   type PopoutCapability,
 } from "./popout/featureDetection";
 import {
-  selectActivePipWindowId,
   selectPopoutMode,
   selectPopoutCandidateId,
   dockWindow,
+  clampWindowRect,
   type WindowRect,
 } from "@/lib/redux/slices/windowManagerSlice";
 import { usePopoutWindow } from "./popout/usePopoutWindow";
 import { registerPopoutOpener } from "./popout/usePopoutControl";
 import { PopoutPortal } from "./popout/PopoutPortal";
 import { PopoutTopBar } from "./WindowPanel/PopoutTopBar";
+import {
+  setTraySnapshot,
+  clearTraySnapshot,
+} from "./WindowTray/traySnapshotMap";
+// (getRegistryEntryByOverlayId already imported above)
 
 // ─── Resize handle descriptors ───────────────────────────────────────────────
 
@@ -613,29 +618,23 @@ export function WindowPanel({
 
   // ── Pop-out menu-click wiring ─────────────────────────────────────────────
   // (popout, popoutCapability, isMobile already set up at top of component)
-  const activePipWindowId = useAppSelector(selectActivePipWindowId);
   const popoutMode = useAppSelector(selectPopoutMode(id));
   const popoutCandidateId = useAppSelector(selectPopoutCandidateId);
-  const pipSlotTakenByOther =
-    popoutCapability === "pip" &&
-    activePipWindowId !== null &&
-    activePipWindowId !== id;
 
   // Menu affordance is shown only when:
   //   - desktop (mobile path is fully separate)
-  //   - browser supports popout
+  //   - browser supports popout (DPiP or window.open)
   //   - the window isn't minimized (popout from the tray is awkward UX)
   //   - the window isn't already popped out
+  //
+  // The menu is NEVER disabled on PiP-slot-taken grounds: the popout hook
+  // transparently falls back to `window.open()` for second+ popouts so the
+  // user gets a working window without us blocking the action.
   const canShowPopOut =
     !isMobile &&
     popoutCapability !== "none" &&
     windowState !== "minimized" &&
     popoutMode === null;
-
-  const popOutDisabled = pipSlotTakenByOther;
-  const popOutDisabledReason = pipSlotTakenByOther
-    ? "Another window is already in floating mode. Dock it first."
-    : undefined;
 
   // Menu-click handler — uses the live windowed rect (different from the
   // drag-out path which gets the rect from the gesture).
@@ -651,6 +650,79 @@ export function WindowPanel({
     dispatch(dockWindow(id));
   }, [dispatch, id]);
 
+  // ── Tray snapshot capture (Pass 3 / Mode D) ──────────────────────────────
+  // When a window is about to be minimized, capture a thumbnail of the body
+  // via the registry's `captureTraySnapshot` callback (if provided). The
+  // capture must happen BEFORE the minimize dispatch, while the body is
+  // still rendered at full size.
+  //
+  // Snapshot is stored in a module-level map (`traySnapshotMap`) which the
+  // tray chip subscribes to. Cleared on restore + on unmount so a future
+  // minimize captures fresh state.
+  const bodyRef = useRef<HTMLDivElement | null>(null);
+  const trayRegistryEntry = getRegistryEntryByOverlayId(id);
+
+  const handleMinimize = useCallback(() => {
+    // Fire-and-forget the snapshot capture — don't block the minimize. The
+    // chip shows a fallback (italic title) while waiting for the data URL.
+    const captureFn = trayRegistryEntry?.captureTraySnapshot;
+    const bodyEl = bodyRef.current;
+    if (captureFn && bodyEl) {
+      void captureFn(bodyEl)
+        .then((dataUrl) => {
+          if (dataUrl) setTraySnapshot(id, dataUrl);
+        })
+        .catch((err) => {
+          if (process.env.NODE_ENV !== "production") {
+            // eslint-disable-next-line no-console
+            console.warn(
+              `[WindowPanel] captureTraySnapshot threw for "${id}":`,
+              err,
+            );
+          }
+        });
+    }
+    onMinimize();
+  }, [id, trayRegistryEntry, onMinimize]);
+
+  const handleRestoreClearingSnapshot = useCallback(() => {
+    // Clear snapshot so the next minimize captures fresh state.
+    clearTraySnapshot(id);
+    onRestore();
+  }, [id, onRestore]);
+
+  // Clear any lingering snapshot on unmount.
+  useEffect(() => {
+    return () => {
+      clearTraySnapshot(id);
+    };
+  }, [id]);
+
+  // ── Off-screen rescue ────────────────────────────────────────────────────
+  // If the windowed rect is fully out of reach (drag-released outside the
+  // viewport without popout firing, restored from a stale preMinimizedRect,
+  // or docked back from a popped-out state where the docked rect was
+  // off-screen), nudge it back into a position where the user can grab it.
+  // Runs whenever the window transitions INTO `windowed` from min/max/popout.
+  const prevStateRef = useRef<typeof windowState>(windowState);
+  const prevPopoutModeRef = useRef<typeof popoutMode>(popoutMode);
+  useEffect(() => {
+    const wasNonWindowed =
+      prevStateRef.current !== "windowed" || prevPopoutModeRef.current !== null;
+    const isNowWindowed = windowState === "windowed" && popoutMode === null;
+    prevStateRef.current = windowState;
+    prevPopoutModeRef.current = popoutMode;
+    if (wasNonWindowed && isNowWindowed) {
+      dispatch(
+        clampWindowRect({
+          id,
+          viewportWidth: window.innerWidth,
+          viewportHeight: window.innerHeight,
+        }),
+      );
+    }
+  }, [dispatch, id, windowState, popoutMode]);
+
   const isMinimized = windowState === "minimized";
   const isMaximized = windowState === "maximized";
   const isPopoutCandidate = popoutCandidateId === id;
@@ -662,10 +734,10 @@ export function WindowPanel({
       actionsLeft={actionsLeft}
       actionsRight={resolvedActionsRight}
       onDragStart={onDragStart}
-      onMinimize={onMinimize}
+      onMinimize={handleMinimize}
       onToggleMaximize={onToggleMaximize}
       onClose={handleClose}
-      onRestore={onRestore}
+      onRestore={handleRestoreClearingSnapshot}
       isMaximized={isMaximized}
       isMinimized={isMinimized}
       snapLeft={snapLeft}
@@ -679,8 +751,6 @@ export function WindowPanel({
       onToggleSidebar={toggleSidebar}
       onSaveWindowState={overlayId ? handleSaveWindowState : undefined}
       onPopOut={canShowPopOut ? handlePopOut : undefined}
-      popOutDisabled={popOutDisabled}
-      popOutDisabledReason={popOutDisabledReason}
     />
   );
 
@@ -946,6 +1016,7 @@ export function WindowPanel({
 
       {!isMinimized && (
         <div
+          ref={bodyRef}
           className={cn(
             fitContent ? "overflow-visible" : "flex-1 overflow-auto min-h-0",
             bodyClassName,
@@ -1007,10 +1078,6 @@ interface WindowHeaderProps {
    * Hidden entirely on mobile and when no popout capability is available.
    */
   onPopOut?: () => void;
-  /** Whether the "Pop out" button should be shown as disabled (PiP slot taken, etc.). */
-  popOutDisabled?: boolean;
-  /** Tooltip / disabled-reason text for the "Pop out" button. */
-  popOutDisabledReason?: string;
 }
 
 function WindowHeader({
@@ -1035,8 +1102,6 @@ function WindowHeader({
   onToggleSidebar,
   onSaveWindowState,
   onPopOut,
-  popOutDisabled,
-  popOutDisabledReason,
 }: WindowHeaderProps) {
   return (
     <div
@@ -1079,8 +1144,6 @@ function WindowHeader({
             onToggleSidebar={onToggleSidebar}
             onSaveWindowState={onSaveWindowState}
             onPopOut={onPopOut}
-            popOutDisabled={popOutDisabled}
-            popOutDisabledReason={popOutDisabledReason}
           />
         </div>
       </div>
@@ -1156,8 +1219,6 @@ interface TrafficLightGroupProps {
   onToggleSidebar: () => void;
   onSaveWindowState?: () => void;
   onPopOut?: () => void;
-  popOutDisabled?: boolean;
-  popOutDisabledReason?: string;
 }
 
 function TrafficLightGroup({
@@ -1178,8 +1239,6 @@ function TrafficLightGroup({
   onToggleSidebar,
   onSaveWindowState,
   onPopOut,
-  popOutDisabled,
-  popOutDisabledReason,
 }: TrafficLightGroupProps) {
   return (
     <div className="flex items-center gap-1.5 shrink-0 cursor-default">
@@ -1227,8 +1286,6 @@ function TrafficLightGroup({
         arrangeAll={arrangeAll}
         onSaveWindowState={onSaveWindowState}
         onPopOut={onPopOut}
-        popOutDisabled={popOutDisabled}
-        popOutDisabledReason={popOutDisabledReason}
       />
 
       {/* Sidebar toggle — sits tight next to the traffic lights */}
@@ -1313,10 +1370,6 @@ interface GreenTrafficLightProps {
   onSaveWindowState?: () => void;
   /** When set, renders a "Pop out" entry that opens the window in a separate browser window. */
   onPopOut?: () => void;
-  /** When true, "Pop out" is rendered as disabled with the reason as tooltip. */
-  popOutDisabled?: boolean;
-  /** Human-readable disabled reason (e.g. "Another window is already popped out"). */
-  popOutDisabledReason?: string;
 }
 
 function GreenTrafficLight({
@@ -1331,8 +1384,6 @@ function GreenTrafficLight({
   arrangeAll,
   onSaveWindowState,
   onPopOut,
-  popOutDisabled,
-  popOutDisabledReason,
 }: GreenTrafficLightProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -1564,26 +1615,21 @@ function GreenTrafficLight({
             </button>
           )}
 
-          {/* Pop out — opens the window in a separate browser window
-              (Document Picture-in-Picture or window.open fallback).
-              Hidden entirely when popout is unavailable (mobile / unsupported). */}
+          {/* Pop out — opens the window in a separate browser window.
+              The popout hook chooses Document Picture-in-Picture (frameless,
+              always-on-top) when available and the slot is free; otherwise
+              falls back to a regular browser window so multiple popouts
+              never interfere with each other. Hidden entirely when popout
+              is unavailable (mobile / unsupported browser / already out). */}
           {onPopOut && (
             <>
               <div className="border-t border-border/50 my-1" />
               <button
                 type="button"
-                className={cn(
-                  "flex items-center gap-2.5 w-full px-3 py-1.5 transition-colors",
-                  popOutDisabled
-                    ? "text-foreground/40 cursor-not-allowed"
-                    : "text-foreground/80 hover:bg-accent",
-                )}
-                onClick={() => {
-                  if (!popOutDisabled) handleAction(onPopOut);
-                }}
+                className="flex items-center gap-2.5 w-full px-3 py-1.5 transition-colors text-foreground/80 hover:bg-accent"
+                onClick={() => handleAction(onPopOut)}
                 onPointerDown={(e) => e.stopPropagation()}
-                disabled={popOutDisabled}
-                title={popOutDisabled ? popOutDisabledReason : "Pop out into a floating window"}
+                title="Pop out into a separate window"
               >
                 <ExternalLink className="w-3.5 h-3.5 shrink-0" />
                 <span className="flex-1 text-left">Pop out</span>

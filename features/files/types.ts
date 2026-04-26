@@ -39,7 +39,7 @@ export type GranteeType = "user" | "group";
 //
 // Note on table naming: The Python team's doc uses `cld_file_share_links`
 // and `cld_file_groups`. The actual DB tables are `cld_share_links` and
-// `cld_user_groups` / `cld_user_group_members`. See PYTHON_TEAM_COMMS.md.
+// `cld_user_groups` / `cld_user_group_members`. See for_python/REQUESTS.md.
 
 type CloudTables = Database["public"]["Tables"];
 
@@ -178,7 +178,7 @@ export interface CloudUserGroupMember {
 // updates the shape, only [redux/converters.ts](./redux/converters.ts) needs
 // to change.
 //
-// Open question logged in PYTHON_TEAM_COMMS.md on exact schema.
+// Open question logged in for_python/REQUESTS.md on exact schema.
 
 export interface CloudTreeFileRow {
   kind: "file";
@@ -524,48 +524,155 @@ export interface BulkMoveFoldersRequest {
 }
 
 /**
- * Per-item outcome inside a bulk response. Aligns with the standard
- * "succeeded[] + failed[{id, reason}]" envelope the Python team uses for
- * partial-failure operations.
+ * Per-item outcome inside a bulk response. Matches the backend
+ * `BulkResultItem` shape: `{ id, ok, error }` per item plus the
+ * aggregate counters returned alongside.
  */
-export interface BulkOperationFailure {
+export interface BulkResultItem {
   id: string;
-  /** One of the `CloudFilesErrorCode` values. */
-  code: string;
-  message: string;
+  ok: boolean;
+  /** Error code/message string when `ok` is false; null on success. */
+  error: string | null;
 }
 
-export interface BulkOperationResponse {
-  succeeded: string[];
-  failed: BulkOperationFailure[];
+/**
+ * Aggregate envelope returned by every bulk endpoint:
+ *   - `DELETE /files/bulk`
+ *   - `POST /files/bulk/move`
+ *   - `POST /folders/bulk/move`
+ *
+ * The aggregate `succeeded` and `failed` are NUMBERS (counts), not
+ * arrays. Per-item detail lives in `results`.
+ */
+export interface BulkResponse {
+  results: BulkResultItem[];
+  succeeded: number;
+  failed: number;
 }
 
 // ---------------------------------------------------------------------------
-// 10d. Guest → user migration (Python P-?? contract)
+// 10d. Guest → user migration
 // ---------------------------------------------------------------------------
 
 /**
- * Body for `POST /files/migrate-guest-to-user`. Sent right after a guest
- * signs up — the request is authenticated as the new user but carries the
- * *previous* `X-Guest-Fingerprint` header so the backend can claim every
- * guest-owned file and folder for the new user id.
+ * Request body for `POST /files/migrate-guest-to-user`.
+ *
+ * **The fingerprint is sent as the `X-Guest-Fingerprint` HEADER** (the
+ * client adds it from `RequestOptions.guestFingerprint`), not in the
+ * body. The backend resolves the fingerprint server-side, refuses if
+ * the resolved guest UUID does not match `guest_id`, and records the
+ * migration in `cld_guest_migrations` — so a second call with a
+ * different `new_user_id` returns `409 guest_locked`.
  */
 export interface MigrateGuestToUserRequest {
-  /** Guest fingerprint to claim files from. */
-  guest_fingerprint: string;
-  /** Optional: limit migration to a single fingerprint scope. */
-  dry_run?: boolean;
+  /** Must equal the authenticated user_id (server verifies). */
+  new_user_id: string;
+  /**
+   * Optional. When provided, the backend cross-checks that the
+   * server-resolved fingerprint maps to this guest UUID. Mismatch → 403.
+   * When omitted, the server relies entirely on the fingerprint header.
+   */
+  guest_id?: string;
 }
 
+/**
+ * Response body for the migration endpoint. Both legacy and current
+ * field names are present (the backend returns both for transition).
+ */
 export interface MigrateGuestToUserResponse {
-  /** New user id files were transferred to. */
-  user_id: string;
-  /** Source guest fingerprint. */
-  guest_fingerprint: string;
+  // Counts (current shape)
+  files: number;
+  folders: number;
+  groups: number;
+  perms: number;
+  shares: number;
+  // Counts (alias shape kept for FE compatibility)
   files_migrated: number;
   folders_migrated: number;
-  /** Optional details if the backend reports per-resource outcomes. */
-  details?: BulkOperationResponse | null;
+  groups_migrated: number;
+  permissions_migrated: number;
+  shares_migrated: number;
+}
+
+// ---------------------------------------------------------------------------
+// 10e. Storage usage / quotas / tier (GET /files/usage)
+// ---------------------------------------------------------------------------
+
+/**
+ * Response body of `GET /files/usage`. Drives the storage indicator,
+ * the tier badge, and feature gating in the UI. `null` on a numeric
+ * field means "no cap" (typically Enterprise tier).
+ */
+export interface StorageUsageResponse {
+  tier_id: string;
+  tier_name: string;
+  is_blocked: boolean;
+  blocked_reason: string | null;
+  bytes_used: number;
+  files_count: number;
+  daily_upload_count: number;
+  daily_upload_bytes: number;
+  max_storage_bytes: number | null;
+  max_file_size_bytes: number | null;
+  max_files: number | null;
+  max_versions_per_file: number | null;
+  max_daily_uploads: number | null;
+  max_daily_upload_bytes: number | null;
+  max_bulk_items: number | null;
+  rate_limit_uploads_per_min: number | null;
+  rate_limit_downloads_per_min: number | null;
+  features: Record<string, unknown>;
+}
+
+// ---------------------------------------------------------------------------
+// 10f. Trash + restore (GET /files/trash, POST /files/{id}/restore)
+// ---------------------------------------------------------------------------
+
+/**
+ * Response body of `GET /files/trash`. Soft-deleted files + folders for
+ * the authenticated user (or guest fingerprint).
+ */
+export interface TrashListResponse {
+  files: FileRecordApi[];
+  folders: CloudFolderRow[];
+}
+
+// ---------------------------------------------------------------------------
+// 10g. Search (GET /files/search)
+// ---------------------------------------------------------------------------
+
+/**
+ * Response body of `GET /files/search?q=&mime_prefix=&limit=&offset=`.
+ * The backend matches against filename + path substring; `mime_prefix`
+ * filters by `mime_type LIKE 'prefix%'`.
+ */
+export interface SearchFilesResponse {
+  results: FileRecordApi[];
+  query: string;
+  total_returned: number;
+}
+
+export interface SearchFilesParams {
+  q: string;
+  mimePrefix?: string;
+  limit?: number;
+  offset?: number;
+}
+
+// ---------------------------------------------------------------------------
+// 10h. Rename + copy (POST /files/{id}/rename, POST /files/{id}/copy)
+// ---------------------------------------------------------------------------
+
+export interface RenameFileRequest {
+  /** Full new logical path including filename. Backend auto-creates parents. */
+  new_path: string;
+}
+
+export interface CopyFileRequest {
+  /** Full target logical path including filename. Backend auto-creates parents. */
+  target_path: string;
+  /** Default false. When false, conflicts return `409 file_already_exists`. */
+  overwrite?: boolean;
 }
 
 // Convenience thunk-arg variants (camelCase mirrors of the request bodies).
@@ -595,8 +702,43 @@ export interface UpdateFolderArg {
 }
 
 export interface MigrateGuestToUserArg {
+  /** Authenticated user id files are being claimed FOR. */
+  newUserId: string;
+  /** Optional cross-check. Backend resolves the fingerprint anyway. */
+  guestId?: string;
+  /**
+   * Server-bound proof of guest identity. Sent as the
+   * `X-Guest-Fingerprint` header by the client. Required by the backend.
+   */
   guestFingerprint: string;
-  dryRun?: boolean;
+}
+
+// ---------------------------------------------------------------------------
+// 10i. Rename / copy thunk args (camelCase mirrors)
+// ---------------------------------------------------------------------------
+
+export interface RenameFileToPathArg {
+  fileId: string;
+  /** Full new logical path including filename. */
+  newPath: string;
+}
+
+export interface CopyFileArg {
+  fileId: string;
+  /** Full target logical path including filename. */
+  targetPath: string;
+  overwrite?: boolean;
+}
+
+// ---------------------------------------------------------------------------
+// 10j. Search (camelCase mirrors)
+// ---------------------------------------------------------------------------
+
+export interface SearchFilesArg {
+  q: string;
+  mimePrefix?: string;
+  limit?: number;
+  offset?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -621,6 +763,9 @@ export type RequestKind =
   | "folder-update"
   | "folder-delete"
   | "bulk-delete-files"
+  | "file-rename-path"
+  | "file-copy"
+  | "file-restore"
   | "bulk-move-files"
   | "bulk-move-folders"
   | "migrate-guest";
@@ -639,15 +784,58 @@ export interface LedgerEntry {
 
 export type { BackendApiError } from "@/lib/api/errors";
 
-/** Files-specific error codes. Aligned with cld_files_frontend.md §11. */
+/**
+ * Files-specific error codes.
+ *
+ * Aligned with the Python backend's error envelope. The retry posture
+ * column is the FE contract — every caller must respect it:
+ *
+ * | Code                      | HTTP | Retry?  | UX hint                 |
+ * |---------------------------|------|---------|--------------------------|
+ * | invalid_request           | 400  | no      | fix the request          |
+ * | invalid_path              | 400  | no      | fix the path             |
+ * | invalid_metadata          | 400  | no      | fix the patch            |
+ * | fingerprint_required      | 400  | no      | guest header missing     |
+ * | auth_required             | 401  | no      | sign in                  |
+ * | permission_denied         | 403  | no      | request access           |
+ * | guest_id_mismatch         | 403  | no      | re-auth                  |
+ * | not_found                 | 404  | no      | resource gone            |
+ * | conflict                  | 409  | no      | overwrite=true to force  |
+ * | file_already_exists       | 409  | no      | overwrite=true to force  |
+ * | guest_locked              | 409  | no      | already migrated         |
+ * | file_too_large            | 413  | no      | upgrade tier             |
+ * | storage_quota_exceeded    | 413  | no      | upgrade tier             |
+ * | file_count_exceeded       | 413  | no      | upgrade tier             |
+ * | daily_uploads_exceeded    | 413  | no      | wait until tomorrow      |
+ * | daily_bytes_exceeded      | 413  | no      | wait until tomorrow      |
+ * | bulk_too_large            | 413  | no      | smaller batch            |
+ * | rate_limited              | 429  | YES (b) | exponential backoff      |
+ * | account_blocked           | 423  | no      | contact support          |
+ * | share_link_invalid        | 410  | no      | link revoked / expired   |
+ * | internal                  | 5xx  | YES (b) | exponential backoff      |
+ * | cld_sync_unavailable      | 503  | YES (b) | exponential backoff      |
+ */
 export type CloudFilesErrorCode =
   | "invalid_request"
+  | "invalid_path"
   | "invalid_metadata"
+  | "fingerprint_required"
   | "auth_required"
   | "permission_denied"
+  | "guest_id_mismatch"
   | "not_found"
-  | "share_link_invalid"
+  | "conflict"
+  | "file_already_exists"
+  | "guest_locked"
   | "file_too_large"
+  | "storage_quota_exceeded"
+  | "file_count_exceeded"
+  | "daily_uploads_exceeded"
+  | "daily_bytes_exceeded"
+  | "bulk_too_large"
+  | "rate_limited"
+  | "account_blocked"
+  | "share_link_invalid"
   | "internal"
   | "cld_sync_unavailable";
 

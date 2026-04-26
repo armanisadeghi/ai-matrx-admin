@@ -87,6 +87,39 @@ describe("windowManagerSlice — popout", () => {
       expect(state.activePipWindowId).toBe("w1");
     });
 
+    it("allows mode=popup when another window holds the pip slot (multi-popout coexistence)", () => {
+      let state = withRegistered([
+        { id: "w1", rect: RECT_A },
+        { id: "w2", rect: RECT_B },
+      ]);
+      // w1 pops out as PiP, claiming the slot
+      state = reducer(state, popOutWindow({ id: "w1", mode: "pip" }));
+      // w2 pops out as POPUP — should succeed, since popups don't claim the slot
+      state = reducer(state, popOutWindow({ id: "w2", mode: "popup" }));
+      // Both windows are popped out simultaneously
+      expect(state.windows.w1.popoutMode).toBe("pip");
+      expect(state.windows.w2.popoutMode).toBe("popup");
+      // PiP slot still belongs to w1 — popup mode doesn't disturb it
+      expect(state.activePipWindowId).toBe("w1");
+      // w2 saved its prePopoutRect for dock-back
+      expect(state.windows.w2.prePopoutRect).toEqual(RECT_B);
+    });
+
+    it("docking the pip-holder while a popup peer is open keeps the popup intact", () => {
+      let state = withRegistered([
+        { id: "w1", rect: RECT_A },
+        { id: "w2", rect: RECT_B },
+      ]);
+      state = reducer(state, popOutWindow({ id: "w1", mode: "pip" }));
+      state = reducer(state, popOutWindow({ id: "w2", mode: "popup" }));
+      // Dock w1 (the PiP) — w2 should be untouched
+      state = reducer(state, dockWindow("w1"));
+      expect(state.windows.w1.popoutMode).toBeNull();
+      expect(state.windows.w2.popoutMode).toBe("popup");
+      // PiP slot is now free
+      expect(state.activePipWindowId).toBeNull();
+    });
+
     it("allows the same window to re-dispatch popOutWindow idempotently", () => {
       let state = withRegistered([{ id: "w1", rect: RECT_A }]);
       state = reducer(state, popOutWindow({ id: "w1", mode: "pip" }));

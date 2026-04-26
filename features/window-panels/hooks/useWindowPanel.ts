@@ -29,6 +29,7 @@ import {
   updateWindowRect,
   updateWindowTitle,
   setPopoutCandidate,
+  clampWindowRect,
   selectWindow,
   type WindowRect,
 } from "@/lib/redux/slices/windowManagerSlice";
@@ -315,6 +316,20 @@ export function useWindowPanel(
             height: entry.windowed.height,
           };
           onTriggerPopoutRef.current(lastRect);
+        } else {
+          // Off-screen rescue: if the user released the drag outside the
+          // viewport without triggering a popout (e.g. they dragged past
+          // the edge but not far enough / long enough to dwell, or popout
+          // was unavailable), pull the window back so its header stays
+          // grabbable. The clamp reducer is a no-op when rect is already
+          // in bounds, so this is cheap to dispatch unconditionally.
+          dispatch(
+            clampWindowRect({
+              id,
+              viewportWidth: window.innerWidth,
+              viewportHeight: window.innerHeight,
+            }),
+          );
         }
         // Suppress unused-var lint on lastClientX/Y — they're tracked for
         // potential future telemetry (drag distance, exit edge, etc.)

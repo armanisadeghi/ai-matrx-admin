@@ -209,11 +209,18 @@ export async function cloudUploadRaw(
       ? await Files_uploadFileWithProgress(
           params,
           options.onProgress,
-          { requestId, signal: options.signal },
+          {
+            requestId,
+            signal: options.signal,
+            // Reuse requestId as the idempotency key — single intended
+            // upload from the FE perspective, single key on the BE.
+            idempotencyKey: requestId,
+          },
         )
       : await Files_uploadFile(params, {
           requestId,
           signal: options.signal,
+          idempotencyKey: requestId,
         });
 
     let shareToken: string | undefined;
@@ -319,6 +326,8 @@ export async function cloudUpload(
 
     const upload = await Files_uploadFileWithProgress(
       params,
+      // The progress callback is the second positional arg to
+      // uploadFileWithProgress; opts (with idempotencyKey) is the third.
       (ev) => {
         dispatch(
           updateUploadProgress({
@@ -328,7 +337,7 @@ export async function cloudUpload(
         );
         options.onProgress?.(ev);
       },
-      { requestId, signal: options.signal },
+      { requestId, signal: options.signal, idempotencyKey: requestId },
     );
 
     // 2. Slice upsert — file is now visible in the tree without

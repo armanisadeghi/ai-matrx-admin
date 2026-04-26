@@ -35,6 +35,13 @@
  * imported server-side without pulling in React/component code.
  */
 import type { ComponentType } from "react";
+import {
+  notesTrayPreview,
+  quickTasksTrayPreview,
+  cloudFilesTrayPreview,
+  scraperTrayPreview,
+  smartCodeEditorTrayPreview,
+} from "./tray-previews";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -173,6 +180,64 @@ export interface WindowRegistryEntry {
    * time; can read Redux state via selectors passed by the grid host.
    */
   seedData?: (ctx: unknown) => Record<string, unknown> | undefined;
+
+  // ── Minimized tray chip rendering ──────────────────────────────────────────
+  //
+  // When a window is minimized, the tray chip body has three rendering modes:
+  //
+  //   1. CUSTOM   — registry provides `renderTrayPreview` returning JSX
+  //                 (best look-and-feel; opt-in per window-type)
+  //   2. SNAPSHOT — chip shows a captured image of the window body taken
+  //                 just before minimize (via html-to-image or similar — the
+  //                 window owns the capture function via captureTraySnapshot)
+  //   3. DEFAULT  — generic muted "label · category" text below the title
+  //
+  // CUSTOM > SNAPSHOT > DEFAULT (in that order of preference per chip render)
+
+  /**
+   * Optional custom JSX for the minimized tray chip body. If provided, takes
+   * precedence over snapshot mode. Receives the window's persisted data and
+   * ids so it can render type-specific content (e.g. last note title, file
+   * name, message preview, task count).
+   *
+   * Keep the rendered content cheap — runs every time the tray chip renders.
+   * Use selectors / memoization for non-trivial data lookups.
+   */
+  renderTrayPreview?: (
+    ctx: TrayPreviewContext,
+  ) => import("react").ReactNode;
+
+  /**
+   * Optional snapshot capture function. When provided AND `renderTrayPreview`
+   * is NOT provided, the tray chip shows the captured image.
+   *
+   * Called once with the window body's root element just BEFORE the minimize
+   * transition. Should return a data URL (typically `image/png` or
+   * `image/jpeg`) representing a thumbnail of the body. Recommended max size:
+   * 256×128 px — chips are small and large data URLs bloat sessionStorage.
+   *
+   * Implementation is per-window because different content needs different
+   * capture strategies (`html-to-image` for typical DOM, `canvas.toDataURL`
+   * for chart/canvas-native windows, custom server-side render for video
+   * frames, etc.). The core does NOT bundle a default snapshot library to
+   * keep the bundle lean.
+   *
+   * If the function throws or returns null, the chip falls back to DEFAULT
+   * rendering. Errors are silently swallowed in production; logged in dev.
+   */
+  captureTraySnapshot?: (bodyEl: HTMLElement) => Promise<string | null>;
+}
+
+/** Context passed to `renderTrayPreview` so windows can render their own state. */
+export interface TrayPreviewContext {
+  /** The window's persisted `data` object from `window_sessions.data`. */
+  data: Record<string, unknown>;
+  /** Stable overlay id (matches `WindowEntry.id` for overlay-managed windows). */
+  overlayId: string;
+  /** Instance id — `"default"` for singleton windows. */
+  instanceId: string;
+  /** The display title (same as `WindowEntry.title`). */
+  title: string;
 }
 
 // ─── Registry ─────────────────────────────────────────────────────────────────
@@ -290,6 +355,7 @@ const REGISTRY: WindowRegistryEntry[] = [
     ephemeral: true,
     mobilePresentation: "fullscreen",
     instanceMode: "multi",
+    renderTrayPreview: smartCodeEditorTrayPreview,
   },
 
   // ── Notes ─────────────────────────────────────────────────────────────────
@@ -305,6 +371,7 @@ const REGISTRY: WindowRegistryEntry[] = [
     defaultData: { openTabs: [], activeTabId: null },
     mobilePresentation: "fullscreen",
     urlSync: { key: "notes" },
+    renderTrayPreview: notesTrayPreview,
   },
 
   // ── Notes Beta ────────────────────────────────────────────────────────────
@@ -360,6 +427,7 @@ const REGISTRY: WindowRegistryEntry[] = [
     mobilePresentation: "drawer",
     mobileSidebarAs: "drawer",
     urlSync: { key: "quick_tasks" },
+    renderTrayPreview: quickTasksTrayPreview,
   },
 
   // ── Quick Task Save (ephemeral — create + scope-tag + link anything) ─────
@@ -403,6 +471,7 @@ const REGISTRY: WindowRegistryEntry[] = [
     mobilePresentation: "fullscreen",
     mobileSidebarAs: "drawer",
     urlSync: { key: "cloud_files" },
+    renderTrayPreview: cloudFilesTrayPreview,
   },
 
   // ── Web Scraper ───────────────────────────────────────────────────────────
@@ -426,6 +495,7 @@ const REGISTRY: WindowRegistryEntry[] = [
     mobilePresentation: "fullscreen",
     mobileSidebarAs: "drawer",
     urlSync: { key: "scraper" },
+    renderTrayPreview: scraperTrayPreview,
   },
 
   // ── PDF Extractor ─────────────────────────────────────────────────────────

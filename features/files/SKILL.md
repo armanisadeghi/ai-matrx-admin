@@ -29,10 +29,9 @@ This skill enforces the architecture established in [features/files/FEATURE.md](
 
 Read, in this order:
 
-1. [features/files/cloud_files_frontend.md](cloud_files_frontend.md) — backend contract from the Python team (do not edit).
-2. [features/files/FEATURE.md](FEATURE.md) — current architecture.
-3. [features/files/migration/INVENTORY.md](migration/INVENTORY.md) — is the surface you're touching legacy or new?
-4. [features/agents/redux/agent-shortcuts/slice.ts](../agents/redux/agent-shortcuts/slice.ts) — the record + dirty-tracking pattern you're copying.
+1. [features/files/from_python/UPDATES.md](from_python/UPDATES.md) — backend contract + release notes from the Python team. Read-only.
+2. [features/files/FEATURE.md](FEATURE.md) — current FE architecture.
+3. [features/agents/redux/agent-shortcuts/slice.ts](../agents/redux/agent-shortcuts/slice.ts) — the record + dirty-tracking pattern you're copying.
 
 For route work under `app/(a)/cloud-files/`, additionally run these skills before writing code:
 - `Skill(vercel-plugin:next-cache-components)`
@@ -121,7 +120,7 @@ const link = await createShareLink(fileId, {
 | Signed URL returns 403 | Expired. Use `useSignedUrl` (auto-refreshes). Never cache raw signed URLs across mounts. |
 | Tree shows stale state after reconnect | `reconcileTree()` dispatch missing from the realtime middleware's `SUBSCRIBED`-after-error handler. |
 | Type error on `CloudFile.metadata` | You're using an inline type somewhere. Delete it and import from [types.ts](types.ts). |
-| 413 on upload | File >100MB. No chunked path yet — see [PYTHON_TEAM_COMMS.md](PYTHON_TEAM_COMMS.md). |
+| 413 on upload | File >tier cap (or >100MB free). No chunked path yet — see [for_python/REQUESTS.md](for_python/REQUESTS.md) item 3. |
 
 ---
 
@@ -130,8 +129,7 @@ const link = await createShareLink(fileId, {
 After any non-trivial change:
 
 1. Update [FEATURE.md](FEATURE.md) — architecture sections, invariants, status.
-2. Update [migration/INVENTORY.md](migration/INVENTORY.md) — legacy→new status transitions.
-3. Append to the bottom of [FEATURE.md](FEATURE.md) change log with date + one-line summary.
-4. If you asked the Python team anything, log it in [PYTHON_TEAM_COMMS.md](PYTHON_TEAM_COMMS.md).
+2. Append to the bottom of [FEATURE.md](FEATURE.md) change log with date + one-line summary.
+3. If you asked the Python team anything new, log it in [for_python/REQUESTS.md](for_python/REQUESTS.md). When the Python team ships something, the resolution lands in [from_python/UPDATES.md](from_python/UPDATES.md) and the matching entry in REQUESTS.md flips to 🟢 resolved.
 
 Treat docs as weight-equal to code. Stale docs cascade across every future agent touching this system.

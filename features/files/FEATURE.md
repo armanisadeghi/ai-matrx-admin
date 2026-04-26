@@ -19,7 +19,7 @@ If you're modifying anything in this feature, **also update this doc and [migrat
 - **Components** are built once in `features/files/components/core/` and composed into 6 **surfaces**: Page, WindowPanel, MobileStack, Embedded, Dialog, Drawer. The core never knows its host.
 - **Route** for the full app is [app/(a)/cloud-files/](../../app/(a)/cloud-files/). Public shares under [app/(public)/share/[token]/](../../app/(public)/share/).
 
-**Backend contract:** [cloud_files_frontend.md](cloud_files_frontend.md) — owned by the Python team. Never drift from it.
+**Backend contract:** [from_python/UPDATES.md](from_python/UPDATES.md) — Python-team-owned. Never drift from it. Anything FE wants from Python goes in [for_python/REQUESTS.md](for_python/REQUESTS.md).
 
 ---
 
@@ -255,7 +255,7 @@ See [migration/MASTER-PLAN.md](migration/MASTER-PLAN.md) for the phase-ordered p
 - [x] Phase 9 — Progressive consumer migration
 - [x] Phase 10 — Validation soak (rolled into Phase 11 after the Python team finished their migration — running side-by-side is no longer possible because the legacy backend is gone)
 - [x] Phase 11 — Legacy deletion
-- [ ] Phase 12 — Backend optimization follow-ups (ongoing; driven by PYTHON_TEAM_COMMS.md)
+- [ ] Phase 12 — Backend optimization follow-ups (ongoing; tracked in [for_python/REQUESTS.md](for_python/REQUESTS.md))
 
 ---
 
@@ -415,3 +415,35 @@ See [migration/MASTER-PLAN.md](migration/MASTER-PLAN.md) for the phase-ordered p
   **(7) Type additions.** [types.ts](types.ts) gained `CreateFolderRequest`, `FolderPatchRequest`, `BulkDeleteFilesRequest`, `BulkMoveFilesRequest`, `BulkMoveFoldersRequest`, `BulkOperationFailure`, `BulkOperationResponse`, `MigrateGuestToUserRequest`, `MigrateGuestToUserResponse`, plus camelCase thunk-arg variants `BulkDeleteFilesArg`, `BulkMoveFilesArg`, `BulkMoveFoldersArg`, `UpdateFolderArg`, `MigrateGuestToUserArg`. `RequestKind` extended with `folder-create` / `folder-update` / `folder-delete` / `bulk-delete-files` / `bulk-move-files` / `bulk-move-folders` / `migrate-guest`.
 
   **Verification:** `pnpm tsc --noEmit -p tsconfig.json` clean under `features/files/**` (zero errors). Pre-existing unrelated baseline elsewhere unchanged.
+
+- **2026-04-26** (round 2) — Reconciled with Python's round-4 hardening release; doc consolidation.
+
+  **Backend release this absorbs (see [from_python/UPDATES.md](from_python/UPDATES.md)):** CORS lockdown, JWT audience verification, path sanitization, RFC-5987 filenames, `nosniff`+force-attachment for active MIMEs, real hard-delete (S3 + versions + permissions + share-links), share-link `is_active` enforced on resolve, `cld_get_user_file_tree` identity-locked, guest fingerprint + idempotency-key + bypass headers, atomic version bump, folder permission inheritance via recursive CTE, folder soft-delete + rename cascade, pagination on every list endpoint, tier-based quotas + rate limits, bulk concurrency cap, RPC + endpoint additions.
+
+  **Type reconciliation (BREAKING resolved):**
+  - `BulkOperationResponse` (FE) → `BulkResponse` shape `{ results: BulkResultItem[], succeeded: number, failed: number }`. Bulk thunks now iterate `results.filter(r => !r.ok)` for rollback. Old types deleted (no remaining consumers).
+  - `MigrateGuestToUserRequest` body shape switched to `{ new_user_id, guest_id? }`; fingerprint moved to required `X-Guest-Fingerprint` header. `MigrateGuestToUserResponse` now lists both legacy and current field names.
+  - `CloudFilesErrorCode` union expanded with the full quota / rate-limit code set: `invalid_path`, `fingerprint_required`, `guest_id_mismatch`, `conflict`, `file_already_exists`, `guest_locked`, `storage_quota_exceeded`, `file_count_exceeded`, `daily_uploads_exceeded`, `daily_bytes_exceeded`, `bulk_too_large`, `rate_limited`, `account_blocked`. Each code carries a documented retry posture (see comment block above the union).
+
+  **New endpoints wired** in [api/files.ts](api/files.ts): `getStorageUsage` (`GET /files/usage`), `listTrash` (`GET /files/trash`), `restoreFile` (`POST /files/{id}/restore`), `searchFiles` (`GET /files/search`), `renameFile` (`POST /files/{id}/rename`), `copyFile` (`POST /files/{id}/copy`), plus `?inline=true` query on `downloadFile` and `?limit=&offset=` on `listFiles`. New corresponding types: `StorageUsageResponse`, `TrashListResponse`, `SearchFilesResponse`, `SearchFilesParams`, `RenameFileRequest`, `CopyFileRequest`, plus `RenameFileToPathArg`, `CopyFileArg`, `SearchFilesArg` thunk-arg variants.
+
+  **Header plumbing in [api/client.ts](api/client.ts):**
+  - `X-Idempotency-Key` (`opts.idempotencyKey`) — every upload thunk now reuses its `requestId` as the idempotency key so retries don't create duplicate version rows.
+  - `X-Cloud-Files-Bypass` (`opts.cloudFilesBypass`) — opt-in only, for trusted internal callers.
+  - 429 status now maps to `rate_limited`; 409 added → `conflict`.
+
+  **PATCH metadata default-merge:** `Files.patchFile` now uses the backend's new merge-by-default behavior (which matches what the FE always assumed). Added `Files.patchFileReplaceMetadata` for the rare overwrite-the-whole-blob case.
+
+  **Rename / move thunks switched to dedicated endpoint:** `renameFile` thunk calls `POST /files/{id}/rename` with the full new path; the old metadata-hack via `__rename_request__` is gone. `moveFile` thunk computes `<targetFolder.folderPath>/<filename>` and calls the same rename endpoint — single-file moves are just renames to a different parent path. Backend auto-creates missing parent folders.
+
+  **Migrate-guest thunk:** body changed to `{ new_user_id, guest_id? }`; fingerprint sent as `X-Guest-Fingerprint` header via `RequestOptions.guestFingerprint`. `MigrateGuestToUserArg` now requires `newUserId` + `guestFingerprint`; the thunk validates both before dispatching.
+
+  **Doc consolidation (the user-facing reason for this round):** the `features/files/` doc tree shrank from 13 markdown files to 5. The bilateral comms layer is now exactly two docs:
+  - [from_python/UPDATES.md](from_python/UPDATES.md) — Python-team-owned. We read; we do not edit. Absorbs `cloud_files_frontend.md`, `cloud_files_changes_for_react_team.md`, `cloud_files_quality_assessment.md`.
+  - [for_python/REQUESTS.md](for_python/REQUESTS.md) — FE-owned. We update; Python reads. Absorbs `PYTHON_TEAM_COMMS.md` and the Python-team items from `ARCHITECTURE_FLAWS.md`.
+
+  Internal FE docs kept: `FEATURE.md` (this file), `SKILL.md` (skill checklist), `UPLOAD_TROUBLESHOOTING.md` (debug guide). Deleted: `cloud_files_frontend.md`, `cloud_files_changes_for_react_team.md`, `cloud_files_quality_assessment.md`, `PYTHON_TEAM_COMMS.md`, `ARCHITECTURE_FLAWS.md`, `HANDOFF.md`, `migration/` directory (Phase 11 complete), `migrations/RLS_RECURSION_FIX.md` (resolved).
+
+  References inside `FEATURE.md`, `SKILL.md`, `types.ts`, and `MediaThumbnail.tsx` updated to point at the new docs.
+
+  **Verification:** `pnpm tsc --noEmit -p tsconfig.json` clean repo-wide.

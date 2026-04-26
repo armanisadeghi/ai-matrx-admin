@@ -60,6 +60,8 @@ export function runSagaViaRegistry(saga: () => Generator): void {
   if (runSagaFn) {
     runSagaFn(saga);
   } else {
-    console.warn("[store-singleton] runSaga called before a store was initialized");
+    console.warn(
+      "[store-singleton] runSaga called before a store was initialized",
+    );
   }
 }

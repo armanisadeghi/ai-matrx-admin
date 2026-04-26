@@ -206,4 +206,3 @@ export interface WorkflowState {
   fetchTimestamp: number | null;
   dataFetched: boolean;
 }
-

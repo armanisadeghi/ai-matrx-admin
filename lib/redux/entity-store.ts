@@ -29,7 +29,10 @@ import { syncPolicies } from "@/lib/sync/registry";
 import type { IdentityKey } from "@/lib/sync/types";
 import { mapUserData, type UserData } from "@/utils/userDataMapper";
 import { getEmptyGlobalCache } from "@/utils/schema/schema-processing/emptyGlobalCache";
-import type { InitialReduxState, LiteInitialReduxState } from "@/types/reduxTypes";
+import type {
+  InitialReduxState,
+  LiteInitialReduxState,
+} from "@/types/reduxTypes";
 import { defaultUserPreferences } from "@/lib/redux/slices/defaultPreferences";
 import {
   initializeUserPreferencesState,
@@ -120,7 +123,8 @@ function resolveEntityStoreBootstrapState(
     userProfile: split.userProfile,
     testRoutes: input.testRoutes ?? [],
     userPreferences,
-    globalCache: input.globalCache !== undefined ? input.globalCache : baseGlobalCache,
+    globalCache:
+      input.globalCache !== undefined ? input.globalCache : baseGlobalCache,
   };
 
   if (input.contextMenuCache !== undefined) {
@@ -146,7 +150,9 @@ export const makeEntityStore = (
   const globalCache = resolved.globalCache as InitialReduxState["globalCache"];
 
   if (!globalCache?.schema) {
-    throw new Error("[entity-store] Schema must be provided to create entity store");
+    throw new Error(
+      "[entity-store] Schema must be provided to create entity store",
+    );
   }
 
   const rootReducer = createEntityRootReducer({
@@ -203,7 +209,8 @@ export const makeEntityStore = (
 
   const rootSagaInstance = createEntityRootSaga(
     resolved.globalCache
-      ? (resolved.globalCache as InitialReduxState["globalCache"]).entityNames ?? []
+      ? ((resolved.globalCache as InitialReduxState["globalCache"])
+          .entityNames ?? [])
       : [],
   );
   entitySagaRunner.run(rootSagaInstance);

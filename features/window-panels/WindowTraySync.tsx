@@ -4,8 +4,13 @@
  * WindowTraySync
  *
  * Mounts ONCE in the root layout. Attaches a single debounced resize listener
- * that recomputes the positions of all minimized windows whenever the viewport
- * changes. Zero re-renders — fires and forgets.
+ * that:
+ *  1. Recomputes the positions of all minimized windows (tray slots can change
+ *     when chips-per-row shifts on viewport resize).
+ *  2. Clamps every docked windowed window into the new viewport so windows
+ *     positioned for a larger screen stay reachable after a downsize.
+ *
+ * Zero re-renders — fires and forgets.
  *
  * Debounce: 500ms — a continuous window-drag generates exactly one dispatch
  * when the user stops moving. Short bursts (e.g. snapping) are ignored.
@@ -16,7 +21,10 @@
 
 import { useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { recomputeTrayPositions } from "@/lib/redux/slices/windowManagerSlice";
+import {
+  recomputeTrayPositions,
+  clampAllWindowRects,
+} from "@/lib/redux/slices/windowManagerSlice";
 
 const DEBOUNCE_MS = 500;
 
@@ -29,12 +37,10 @@ export function WindowTraySync() {
     const handleResize = () => {
       if (timer !== null) clearTimeout(timer);
       timer = setTimeout(() => {
-        dispatch(
-          recomputeTrayPositions({
-            viewportWidth: window.innerWidth,
-            viewportHeight: window.innerHeight,
-          }),
-        );
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        dispatch(recomputeTrayPositions({ viewportWidth, viewportHeight }));
+        dispatch(clampAllWindowRects({ viewportWidth, viewportHeight }));
         timer = null;
       }, DEBOUNCE_MS);
     };

@@ -32,6 +32,9 @@ import {
 } from "@/lib/redux/slices/windowManagerSlice";
 
 import { TRAY_GAP_X, TRAY_CHIP_W_DESKTOP } from "./constants/tray";
+import { getRegistryEntryByOverlayId } from "./registry/windowRegistry";
+import { renderIcon } from "@/components/official/icons/IconResolver";
+import { TrayChipPreview } from "./WindowTray/TrayChipPreview";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -96,6 +99,14 @@ export function WindowTray() {
 
 function MobileTrayChip({ id, title }: { id: string; title: string }) {
   const dispatch = useAppDispatch();
+  const registryEntry = getRegistryEntryByOverlayId(id);
+  const iconNode = registryEntry?.icon
+    ? renderIcon(registryEntry.icon, {
+        className: "h-3 w-3 shrink-0 text-muted-foreground",
+      })
+    : (
+      <AppWindow className="h-3 w-3 shrink-0 text-muted-foreground" />
+    );
   return (
     <button
       type="button"
@@ -106,7 +117,7 @@ function MobileTrayChip({ id, title }: { id: string; title: string }) {
       )}
       onClick={() => dispatch(restoreWindow(id))}
     >
-      <AppWindow className="h-3 w-3 shrink-0 text-muted-foreground" />
+      {iconNode}
       <span className="truncate max-w-[120px]">{title}</span>
     </button>
   );
@@ -126,6 +137,17 @@ function TrayChip({ id, title, chipWidth }: TrayChipProps) {
   const dragStartSlot = useRef<number | null>(null);
   // Track whether the mousedown moved enough to count as a drag
   const didDrag = useRef(false);
+
+  // Resolve registry icon — falls back to AppWindow when no entry exists
+  // or no icon is configured. `renderIcon` returns a JSX element.
+  const registryEntry = getRegistryEntryByOverlayId(id);
+  const iconNode = registryEntry?.icon
+    ? renderIcon(registryEntry.icon, {
+        className: "h-3.5 w-3.5 text-muted-foreground shrink-0",
+      })
+    : (
+      <AppWindow className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+    );
 
   const handleRestore = useCallback(() => {
     dispatch(restoreWindow(id));
@@ -181,7 +203,7 @@ function TrayChip({ id, title, chipWidth }: TrayChipProps) {
         "pointer-events-auto flex flex-col rounded-xl select-none",
         "bg-card/95 backdrop-blur-md border border-border shadow-lg",
         "cursor-grab active:cursor-grabbing",
-        "hover:bg-accent/60 transition-colors duration-150",
+        "hover:bg-accent/60 hover:border-primary/30 transition-colors duration-150",
         "overflow-hidden",
       )}
       style={{ width: chipWidth, minWidth: chipWidth, touchAction: "none" }}
@@ -190,8 +212,8 @@ function TrayChip({ id, title, chipWidth }: TrayChipProps) {
       title="Click to restore"
     >
       {/* ── Header row ──────────────────────────────────────────────────── */}
-      <div className="flex items-center gap-2 px-3 h-8 border-b border-border/60">
-        <AppWindow className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+      <div className="flex items-center gap-2 px-3 h-8 border-b border-border/60 shrink-0">
+        {iconNode}
         <span className="truncate flex-1 text-xs font-semibold text-foreground/90">
           {title}
         </span>
@@ -209,11 +231,8 @@ function TrayChip({ id, title, chipWidth }: TrayChipProps) {
         </button>
       </div>
 
-      {/* ── Body row ────────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-center gap-1.5 px-3 h-8">
-        <div className="flex-1 h-1.5 rounded-full bg-muted-foreground/20" />
-        <div className="w-1/3 h-1.5 rounded-full bg-muted-foreground/10" />
-      </div>
+      {/* ── Body row — content varies by registry preview mode ──────────── */}
+      <TrayChipPreview windowId={id} title={title} />
     </div>
   );
 }

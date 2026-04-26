@@ -19,7 +19,7 @@ import {
 } from "./client";
 import type {
   BulkMoveFoldersRequest,
-  BulkOperationResponse,
+  BulkResponse,
   CloudFolderRow,
   CreateFolderRequest,
   FolderPatchRequest,
@@ -101,8 +101,8 @@ export async function deleteFolder(
 export async function bulkMoveFolders(
   body: BulkMoveFoldersRequest,
   opts: RequestOptions = {},
-): Promise<{ data: BulkOperationResponse; meta: ResponseMeta }> {
-  return postJson<BulkOperationResponse, BulkMoveFoldersRequest>(
+): Promise<{ data: BulkResponse; meta: ResponseMeta }> {
+  return postJson<BulkResponse, BulkMoveFoldersRequest>(
     "/folders/bulk/move",
     body,
     opts,

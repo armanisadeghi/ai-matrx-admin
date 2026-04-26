@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Loader2, Plus, X } from "lucide-react";
+import { Database, Loader2, Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { setPreference } from "@/lib/redux/slices/userPreferencesSlice";
@@ -12,6 +12,17 @@ import type {
   SandboxTier,
 } from "@/types/sandbox";
 import { extractErrorMessage } from "@/utils/errors";
+import {
+  findTierInfo,
+  formatPersistenceSize,
+  useUserPersistence,
+} from "@/hooks/sandbox/use-user-persistence";
+
+const TIER_GUIDANCE: Record<SandboxTier, string> = {
+  ec2: "Best for one-shot agent runs and cost-controlled tasks. Backed by S3 — your home dir is restored on each new sandbox.",
+  hosted:
+    "Best for long-lived editor sessions, workloads > 5 GB, or anything that needs internal Matrx services. Per-user volume mounted at /home/agent.",
+};
 
 interface CreateSandboxModalProps {
   open: boolean;
@@ -50,6 +61,11 @@ export const CreateSandboxModal: React.FC<CreateSandboxModalProps> = ({
   const [ttlMinutes, setTtlMinutes] = useState<number | "">(60);
   const [error, setError] = useState<string | null>(null);
   const [loadingTemplates, setLoadingTemplates] = useState(false);
+
+  // Pull the user's per-tier persistence info so we can render
+  // "Your saved data: 1.3 GB" next to the tier picker.
+  const persistence = useUserPersistence({ skip: !open });
+  const tierInfo = findTierInfo(persistence.info, tier);
 
   useEffect(() => {
     if (!open) return;
@@ -168,7 +184,28 @@ export const CreateSandboxModal: React.FC<CreateSandboxModalProps> = ({
                 Hosted (heavy)
               </Tab>
             </div>
+            <p className="mt-1 text-[10px] leading-snug text-neutral-500 dark:text-neutral-400">
+              {TIER_GUIDANCE[tier]}
+            </p>
           </Field>
+          <div className="flex items-start gap-2 rounded-sm border border-blue-200 bg-blue-50 px-2 py-1.5 text-[11px] text-blue-900 dark:border-blue-900/50 dark:bg-blue-950/40 dark:text-blue-200">
+            <Database size={12} className="mt-0.5 shrink-0" />
+            <div className="flex-1">
+              <div className="font-medium">
+                Your saved data on {tier === "hosted" ? "Hosted" : "EC2"}:{" "}
+                {persistence.loading ? (
+                  <span className="text-neutral-500">…</span>
+                ) : (
+                  formatPersistenceSize(tierInfo?.current_size_bytes)
+                )}
+              </div>
+              <div className="text-[10px] leading-snug opacity-80">
+                {tierInfo?.sandbox_count
+                  ? `${tierInfo.sandbox_count} sandbox${tierInfo.sandbox_count === 1 ? "" : "es"} reference this volume.`
+                  : "Your /home/agent is restored automatically when you create a new sandbox on this tier."}
+              </div>
+            </div>
+          </div>
           <Field label="Template">
             <select
               disabled={loadingTemplates || busy}

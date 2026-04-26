@@ -76,7 +76,7 @@ import type {
   BulkDeleteFilesArg,
   BulkMoveFilesArg,
   BulkMoveFoldersArg,
-  BulkOperationResponse,
+  BulkResponse,
   CloudFile,
   CloudFileFieldSnapshot,
   CloudFilePermission,
@@ -665,7 +665,17 @@ export const uploadFiles = createAsyncThunk<
                 bytesUploaded: ev.loaded,
               }),
             ),
-          { requestId },
+          {
+            requestId,
+            // Idempotency key — the same value across automatic retries of
+            // the same intended upload. The backend stores it in
+            // `metadata._idempotency_key` so retries don't create duplicate
+            // version rows. We reuse `requestId` because we generate it
+            // once per intended upload, before any retry. (If we ever add
+            // a retry layer that issues a new requestId per attempt, that
+            // layer must keep the idempotencyKey stable.)
+            idempotencyKey: requestId,
+          },
         );
         // Upsert file into slice from response.
         dispatch(
@@ -769,19 +779,15 @@ export const renameFile = createAsyncThunk<void, RenameFileArg, ThunkApi>(
     });
 
     try {
-      // Rename is expressed as a metadata patch in the backend (file_path is
-      // derived server-side from file_name + parent). We use the metadata field
-      // as the vehicle since there's no dedicated rename endpoint today.
-      await Files.patchFile(
+      // Use the dedicated rename endpoint — it accepts a full new path,
+      // auto-creates parent folders if any segment is missing, and lets
+      // the backend handle the file_path / storage_uri update atomically.
+      const { data } = await Files.renameFile(
         fileId,
-        {
-          metadata: {
-            ...record.metadata,
-            __rename_request__: { new_name: newName, request_id: requestId },
-          },
-        },
+        { new_path: newPath },
         { requestId },
       );
+      dispatch(upsertFile(apiFileRecordToCloudFile(data)));
       dispatch(markFileSaved({ id: fileId }));
     } catch (err) {
       dispatch(rollbackFileOptimisticUpdate({ id: fileId, snapshot }));
@@ -836,19 +842,23 @@ export const moveFile = createAsyncThunk<void, MoveFileArg, ThunkApi>(
     });
 
     try {
-      await Files.patchFile(
+      // Move = rename to a new full logical path. The backend's rename
+      // endpoint auto-creates missing parent folders, so we just compute
+      // `<targetFolderPath>/<filename>` (or `<filename>` for root) and
+      // hand it over.
+      const targetFolder =
+        newParentFolderId === null
+          ? null
+          : getState().cloudFiles.foldersById[newParentFolderId] ?? null;
+      const targetPrefix = targetFolder ? `${targetFolder.folderPath}/` : "";
+      const newPath = `${targetPrefix}${record.fileName}`;
+
+      const { data } = await Files.renameFile(
         fileId,
-        {
-          metadata: {
-            ...record.metadata,
-            __move_request__: {
-              new_parent_folder_id: newParentFolderId,
-              request_id: requestId,
-            },
-          },
-        },
+        { new_path: newPath },
         { requestId },
       );
+      dispatch(upsertFile(apiFileRecordToCloudFile(data)));
       dispatch(markFileSaved({ id: fileId }));
     } catch (err) {
       // Rollback tree membership + field.
@@ -1189,17 +1199,18 @@ export const getSignedUrl = createAsyncThunk<
 /**
  * Soft-delete (or hard-delete) many files in one round-trip.
  *
- * Returns the per-item envelope so the caller can decide how to surface
- * partial failures (toast vs. row-level error chips). Successful ids are
- * removed from the local store immediately for snappy UI.
+ * Returns the standard `BulkResponse` envelope so the caller can decide
+ * how to surface partial failures (toast vs. row-level error chips).
+ * Successful ids are removed from the local store immediately for
+ * snappy UI; failed ids are restored from the pre-change snapshot.
  */
 export const bulkDeleteFiles = createAsyncThunk<
-  BulkOperationResponse,
+  BulkResponse,
   BulkDeleteFilesArg,
   ThunkApi
 >("cloudFiles/bulkDeleteFiles", async (arg, { dispatch, getState }) => {
   if (arg.fileIds.length === 0) {
-    return { succeeded: [], failed: [] };
+    return { results: [], succeeded: 0, failed: 0 };
   }
 
   // Snapshot pre-change records for rollback on per-item failures.
@@ -1226,11 +1237,17 @@ export const bulkDeleteFiles = createAsyncThunk<
       { file_ids: arg.fileIds, hard_delete: arg.hardDelete },
       { requestId },
     );
-    const result = data ?? { succeeded: arg.fileIds, failed: [] };
+    const result: BulkResponse =
+      data ?? {
+        results: arg.fileIds.map((id) => ({ id, ok: true, error: null })),
+        succeeded: arg.fileIds.length,
+        failed: 0,
+      };
 
-    // Rollback any items the backend reports as failed.
-    for (const failure of result.failed) {
-      const snap = snapshots.get(failure.id);
+    // Roll back any items the backend reports as failed.
+    for (const r of result.results) {
+      if (r.ok) continue;
+      const snap = snapshots.get(r.id);
       if (snap) dispatch(upsertFile(snap));
     }
     return result;
@@ -1248,12 +1265,12 @@ export const bulkDeleteFiles = createAsyncThunk<
  * move to root.
  */
 export const bulkMoveFiles = createAsyncThunk<
-  BulkOperationResponse,
+  BulkResponse,
   BulkMoveFilesArg,
   ThunkApi
 >("cloudFiles/bulkMoveFiles", async (arg, { dispatch, getState }) => {
   if (arg.fileIds.length === 0) {
-    return { succeeded: [], failed: [] };
+    return { results: [], succeeded: 0, failed: 0 };
   }
 
   const state = getState();
@@ -1301,8 +1318,9 @@ export const bulkMoveFiles = createAsyncThunk<
     );
 
     // Roll back per-item failures.
-    for (const failure of data.failed) {
-      const snap = snapshots.get(failure.id);
+    for (const r of data.results) {
+      if (r.ok) continue;
+      const snap = snapshots.get(r.id);
       if (!snap || snap.parentFolderId === arg.newParentFolderId) continue;
       dispatch(
         detachChildFromFolder({
@@ -1352,12 +1370,12 @@ export const bulkMoveFiles = createAsyncThunk<
  * to root. The backend cascades `folder_path` updates to descendants.
  */
 export const bulkMoveFolders = createAsyncThunk<
-  BulkOperationResponse,
+  BulkResponse,
   BulkMoveFoldersArg,
   ThunkApi
 >("cloudFiles/bulkMoveFolders", async (arg, { dispatch, getState }) => {
   if (arg.folderIds.length === 0) {
-    return { succeeded: [], failed: [] };
+    return { results: [], succeeded: 0, failed: 0 };
   }
 
   const state = getState();
@@ -1402,8 +1420,9 @@ export const bulkMoveFolders = createAsyncThunk<
     );
 
     // Roll back per-item failures.
-    for (const failure of data.failed) {
-      const snap = snapshots.get(failure.id);
+    for (const r of data.results) {
+      if (r.ok) continue;
+      const snap = snapshots.get(r.id);
       if (!snap || snap.parentId === arg.newParentId) continue;
       dispatch(
         detachChildFromFolder({
@@ -1469,6 +1488,9 @@ export const migrateGuestToUser = createAsyncThunk<
   if (!arg.guestFingerprint) {
     throw new Error("guestFingerprint is required");
   }
+  if (!arg.newUserId) {
+    throw new Error("newUserId is required");
+  }
   const requestId = newRequestId();
   registerRequest({
     requestId,
@@ -1478,10 +1500,13 @@ export const migrateGuestToUser = createAsyncThunk<
   });
 
   try {
+    // Body carries the AUTHED user's id (server cross-checks against the
+    // JWT subject). Fingerprint goes in the X-Guest-Fingerprint header
+    // — it's the server-bound proof of guest identity.
     const { data } = await Files.migrateGuestToUser(
       {
-        guest_fingerprint: arg.guestFingerprint,
-        dry_run: arg.dryRun,
+        new_user_id: arg.newUserId,
+        guest_id: arg.guestId,
       },
       { requestId, guestFingerprint: arg.guestFingerprint },
     );

@@ -3,18 +3,21 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { extractErrorMessage } from "@/utils/errors";
 import {
+  Archive,
   ArrowDownToLine,
   ArrowUpFromLine,
   Check,
   ChevronDown,
   ChevronRight,
   CircleAlert,
+  Eye,
   GitBranch,
   KeyRound,
   Loader2,
   Minus,
   Plus,
   RefreshCw,
+  Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -57,7 +60,15 @@ export const SourceControlPanel: React.FC<SourceControlPanelProps> = ({
     staged: false,
     unstaged: false,
     untracked: false,
+    autoStash: false,
   });
+  /**
+   * Auto-stash branches written by the matrx_agent persistence module on
+   * graceful shutdown (Phase 3 of the persistence plan). Each entry is a
+   * `matrx/auto-stash/<ts>` branch containing the dirty + untracked work
+   * the previous sandbox closed with.
+   */
+  const [autoStashes, setAutoStashes] = useState<AutoStashEntry[]>([]);
 
   // ── Refresh ─────────────────────────────────────────────────────────────
   const refresh = useCallback(async () => {
@@ -79,9 +90,20 @@ export const SourceControlPanel: React.FC<SourceControlPanelProps> = ({
     }
   }, [adapter, cwd]);
 
+  // ── Auto-stash discovery ────────────────────────────────────────────────
+  const refreshAutoStashes = useCallback(async () => {
+    if (!activeSandboxId) {
+      setAutoStashes([]);
+      return;
+    }
+    const found = await listAutoStashBranches(activeSandboxId, cwd);
+    setAutoStashes(found);
+  }, [activeSandboxId, cwd]);
+
   useEffect(() => {
     void refresh();
-  }, [refresh]);
+    void refreshAutoStashes();
+  }, [refresh, refreshAutoStashes]);
 
   // ── Mutations ───────────────────────────────────────────────────────────
   const wrap = useCallback(
@@ -143,6 +165,82 @@ export const SourceControlPanel: React.FC<SourceControlPanelProps> = ({
     await commit();
     if (!error) await push();
   }, [commit, push, error]);
+
+  // ── Auto-stash actions ──────────────────────────────────────────────────
+  const applyAutoStash = useCallback(
+    async (entry: AutoStashEntry) => {
+      if (!activeSandboxId) return;
+      await wrap(async () => {
+        // `git checkout <branch> -- .` overlays files from the branch onto
+        // the working tree without creating a merge commit. The user then
+        // reviews via the existing Staged/Unstaged sections and commits when
+        // ready. Predictable and conflict-free for the common case.
+        const r = await execInSandbox(
+          activeSandboxId,
+          `git checkout ${quote(entry.branch)} -- .`,
+          cwd,
+        );
+        if (r.exit_code !== 0) {
+          throw new Error(r.stderr || `git checkout exit ${r.exit_code}`);
+        }
+      }, "apply auto-stash");
+    },
+    [activeSandboxId, cwd, wrap],
+  );
+
+  const viewAutoStashDiff = useCallback(
+    async (entry: AutoStashEntry) => {
+      if (!activeSandboxId) return;
+      try {
+        const r = await execInSandbox(
+          activeSandboxId,
+          `git diff HEAD..${quote(entry.branch)}`,
+          cwd,
+        );
+        const text = r.stdout || "(no diff)";
+        const tabId = `auto-stash-diff:${activeSandboxId}:${entry.branch}`;
+        dispatch(
+          openTab({
+            id: tabId,
+            path: `auto-stash://${entry.branch}`,
+            name: `Δ ${entry.branch.replace(/^matrx\/auto-stash\//, "")}`,
+            language: "diff",
+            content: text,
+            pristineContent: text,
+            dirty: false,
+          }),
+        );
+      } catch (err) {
+        setError(extractErrorMessage(err));
+      }
+    },
+    [activeSandboxId, cwd, dispatch],
+  );
+
+  const discardAutoStash = useCallback(
+    async (entry: AutoStashEntry) => {
+      if (!activeSandboxId) return;
+      await wrap(async () => {
+        // Local delete (always); push delete is best-effort because the
+        // remote branch may not exist (auto-stash only pushes when creds
+        // were configured at shutdown).
+        const r = await execInSandbox(
+          activeSandboxId,
+          `git branch -D ${quote(entry.branch)}; git push origin :${quote(entry.branch)} 2>/dev/null || true`,
+          cwd,
+        );
+        if (r.exit_code !== 0 && /not found|no such ref/i.test(r.stderr)) {
+          // Already gone — treat as success.
+          return;
+        }
+        if (r.exit_code !== 0) {
+          throw new Error(r.stderr || `branch -D exit ${r.exit_code}`);
+        }
+        await refreshAutoStashes();
+      }, "discard auto-stash");
+    },
+    [activeSandboxId, cwd, refreshAutoStashes, wrap],
+  );
 
   // ── Diff preview ────────────────────────────────────────────────────────
   const openDiff = useCallback(
@@ -269,12 +367,44 @@ export const SourceControlPanel: React.FC<SourceControlPanelProps> = ({
           status.unstaged.length === 0 &&
           status.untracked.length === 0 &&
           status.conflicted.length === 0 &&
+          autoStashes.length === 0 &&
           !error && (
             <div className="flex flex-col items-center gap-2 px-6 py-8 text-center text-neutral-500 dark:text-neutral-400">
               <GitBranch size={28} strokeWidth={1.2} />
               <p className="text-xs">Working tree is clean.</p>
             </div>
           )}
+        {autoStashes.length > 0 && (
+          <Section
+            title="Auto-saved from previous session"
+            count={autoStashes.length}
+            collapsed={collapsed.autoStash}
+            onToggle={() =>
+              setCollapsed((prev) => ({
+                ...prev,
+                autoStash: !prev.autoStash,
+              }))
+            }
+            tone="info"
+          >
+            <div className="px-2 pb-1 text-[10px] leading-snug text-neutral-500 dark:text-neutral-400">
+              Found {autoStashes.length} auto-saved stash branch
+              {autoStashes.length === 1 ? "" : "es"}. Apply overlays the saved
+              files onto your current working tree — no merge commit. Discard
+              deletes the branch (and its remote copy if any).
+            </div>
+            {autoStashes.map((entry) => (
+              <AutoStashRow
+                key={entry.branch}
+                entry={entry}
+                busy={busy}
+                onApply={() => void applyAutoStash(entry)}
+                onView={() => void viewAutoStashDiff(entry)}
+                onDiscard={() => void discardAutoStash(entry)}
+              />
+            ))}
+          </Section>
+        )}
         {conflictCount > 0 && (
           <Section
             title="Merge Conflicts"
@@ -378,7 +508,7 @@ interface SectionProps {
   count: number;
   collapsed: boolean;
   onToggle: () => void;
-  tone?: "default" | "danger";
+  tone?: "default" | "danger" | "info";
   children: React.ReactNode;
 }
 
@@ -398,7 +528,9 @@ const Section: React.FC<SectionProps> = ({
         "sticky top-0 z-[1] flex w-full items-center gap-1 bg-white px-2 py-1 text-left text-[10px] font-semibold uppercase tracking-wide dark:bg-neutral-950",
         tone === "danger"
           ? "text-red-600 dark:text-red-400"
-          : "text-neutral-500 dark:text-neutral-400",
+          : tone === "info"
+            ? "text-blue-600 dark:text-blue-400"
+            : "text-neutral-500 dark:text-neutral-400",
       )}
     >
       {collapsed ? (
@@ -412,6 +544,154 @@ const Section: React.FC<SectionProps> = ({
     {!collapsed && children}
   </div>
 );
+
+interface AutoStashEntry {
+  branch: string;
+  /** Author/committer date in ISO-8601 (or whatever the orchestrator gave us). */
+  date: string;
+  /** Short SHA of the branch's tip. */
+  shortSha: string;
+}
+
+interface AutoStashRowProps {
+  entry: AutoStashEntry;
+  busy: boolean;
+  onApply: () => void;
+  onView: () => void;
+  onDiscard: () => void;
+}
+
+const AutoStashRow: React.FC<AutoStashRowProps> = ({
+  entry,
+  busy,
+  onApply,
+  onView,
+  onDiscard,
+}) => {
+  const label = entry.branch.replace(/^matrx\/auto-stash\//, "");
+  return (
+    <div
+      className={cn(
+        "group flex items-center gap-1 px-2 text-[12px]",
+        ROW_HEIGHT,
+        HOVER_ROW,
+      )}
+    >
+      <Archive size={12} className="shrink-0 text-blue-500" />
+      <div className="flex min-w-0 flex-1 flex-col">
+        <span className="truncate font-mono text-[11px]">{label}</span>
+        {entry.date && (
+          <span className="truncate text-[9px] text-neutral-500 dark:text-neutral-400">
+            {entry.shortSha} · {formatStashDate(entry.date)}
+          </span>
+        )}
+      </div>
+      <button
+        type="button"
+        aria-label="View diff"
+        title="View diff vs HEAD"
+        onClick={onView}
+        disabled={busy}
+        className="flex h-5 w-5 shrink-0 items-center justify-center rounded-sm text-neutral-500 hover:bg-neutral-200 hover:text-neutral-900 disabled:opacity-50 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
+      >
+        <Eye size={12} />
+      </button>
+      <button
+        type="button"
+        aria-label="Apply auto-stash"
+        title="Apply (overlay files onto working tree)"
+        onClick={onApply}
+        disabled={busy}
+        className="flex h-5 shrink-0 items-center gap-0.5 rounded-sm border border-blue-400 bg-blue-500 px-1.5 text-[10px] text-white hover:bg-blue-600 disabled:opacity-50"
+      >
+        <Plus size={11} />
+        Apply
+      </button>
+      <button
+        type="button"
+        aria-label="Discard auto-stash"
+        title="Delete this auto-stash branch"
+        onClick={onDiscard}
+        disabled={busy}
+        className="flex h-5 w-5 shrink-0 items-center justify-center rounded-sm text-neutral-500 hover:bg-red-100 hover:text-red-600 disabled:opacity-50 dark:text-neutral-400 dark:hover:bg-red-950/50 dark:hover:text-red-400"
+      >
+        <Trash2 size={12} />
+      </button>
+    </div>
+  );
+};
+
+function formatStashDate(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  const now = Date.now();
+  const diffMs = now - d.getTime();
+  const diffH = diffMs / (1000 * 60 * 60);
+  if (diffH < 1) return `${Math.max(1, Math.round(diffMs / 60000))}m ago`;
+  if (diffH < 24) return `${Math.round(diffH)}h ago`;
+  if (diffH < 24 * 7) return `${Math.round(diffH / 24)}d ago`;
+  return d.toLocaleDateString();
+}
+
+/**
+ * Discover `matrx/auto-stash/*` branches in the active repo. Uses the
+ * sandbox's exec endpoint directly because the daemon's structured `branch`
+ * action only handles create/delete/switch — there's no "list with metadata"
+ * primitive yet. Errors are swallowed (treated as "no stashes").
+ */
+async function listAutoStashBranches(
+  instanceId: string,
+  cwd: string,
+): Promise<AutoStashEntry[]> {
+  try {
+    const r = await execInSandbox(
+      instanceId,
+      `git for-each-ref --format='%(refname:short)|%(objectname:short)|%(committerdate:iso-strict)' refs/heads/matrx/auto-stash/`,
+      cwd,
+    );
+    if (r.exit_code !== 0) return [];
+    return r.stdout
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((line) => {
+        const [branch, shortSha, date] = line.split("|");
+        return { branch, shortSha, date };
+      })
+      .filter((e) => e.branch && e.branch.startsWith("matrx/auto-stash/"))
+      .sort((a, b) => (a.date < b.date ? 1 : -1)); // newest first
+  } catch {
+    return [];
+  }
+}
+
+interface RawExecResult {
+  stdout: string;
+  stderr: string;
+  exit_code: number;
+}
+
+async function execInSandbox(
+  instanceId: string,
+  command: string,
+  cwd: string,
+): Promise<RawExecResult> {
+  const resp = await fetch(`/api/sandbox/${instanceId}/exec`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ command, cwd, timeout: 30 }),
+  });
+  if (!resp.ok) {
+    const text = await resp.text().catch(() => resp.statusText);
+    throw new Error(`exec failed (${resp.status}): ${text}`);
+  }
+  return (await resp.json()) as RawExecResult;
+}
+
+/** POSIX-shell-safe single-quoting. */
+function quote(s: string): string {
+  return `'${s.replace(/'/g, "'\\''")}'`;
+}
 
 interface ChangeRowProps {
   path: string;

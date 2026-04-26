@@ -22,6 +22,13 @@ import type {
   SandboxStatus,
 } from "@/types/sandbox";
 import { ACTIVE_SANDBOX_STATUSES } from "@/types/sandbox";
+import {
+  ACTIVE_EFFECTIVE_STATUSES,
+  STATUS_LABELS,
+  getEffectiveStatus,
+  statusPillClasses,
+} from "@/lib/sandbox/status";
+import { useTimeRemaining } from "@/hooks/sandbox/use-time-remaining";
 import { CreateSandboxModal } from "./CreateSandboxModal";
 import { MockFilesystemAdapter } from "../../adapters/MockFilesystemAdapter";
 import {
@@ -30,6 +37,7 @@ import {
 } from "../../adapters/SandboxProcessAdapter";
 import { SandboxFilesystemAdapter } from "../../adapters/SandboxFilesystemAdapter";
 import { useCodeWorkspace } from "../../CodeWorkspaceProvider";
+import { openSessionReportTab } from "../../runtime/openSessionReport";
 import {
   selectActiveSandboxId,
   setActiveSandboxId,
@@ -103,9 +111,10 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
 
   const connect = useCallback(
     (instance: SandboxInstance) => {
-      if (!ACTIVE_SANDBOX_STATUSES.includes(instance.status)) {
+      const effective = getEffectiveStatus(instance);
+      if (!ACTIVE_SANDBOX_STATUSES.includes(effective)) {
         setError(
-          `Sandbox ${instance.id} is ${instance.status} — it must be starting/ready/running to connect.`,
+          `Sandbox ${instance.id} is ${STATUS_LABELS[effective].toLowerCase()} — it must be starting/ready/running to connect.`,
         );
         return;
       }
@@ -114,10 +123,21 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
         ? instance.sandbox_id.slice(0, 10)
         : instance.id.slice(0, 8);
       const rootPath = instance.hot_path || "/home/agent";
-      setFilesystem(
-        new SandboxFilesystemAdapter(instance.id, `Sandbox ${label}`, rootPath),
+      const fs = new SandboxFilesystemAdapter(
+        instance.id,
+        `Sandbox ${label}`,
+        rootPath,
       );
+      setFilesystem(fs);
       setProcess(new SandboxProcessAdapter(instance.id, rootPath));
+      // Best-effort: surface the per-sandbox session report (written by the
+      // matrx_agent persistence module on every boot). Silent no-op when
+      // the file isn't there yet — first-ever sandbox for this user.
+      void openSessionReportTab({
+        adapter: fs,
+        sandboxId: instance.id,
+        dispatch,
+      });
     },
     [dispatch, setFilesystem, setProcess],
   );
@@ -370,10 +390,13 @@ const SandboxRow: React.FC<SandboxRowProps> = ({
   onExtend,
   onDelete,
 }) => {
-  const canConnect = ACTIVE_SANDBOX_STATUSES.includes(instance.status);
-  const canStop = ["ready", "running", "starting"].includes(instance.status);
-  const canExtend = ["ready", "running"].includes(instance.status);
-  const ttl = formatTtl(instance.expires_at);
+  // Always render the *effective* status so this panel can't disagree with
+  // the `/sandbox` list page about whether a sandbox is still alive.
+  const effective = getEffectiveStatus(instance);
+  const canConnect = ACTIVE_SANDBOX_STATUSES.includes(effective);
+  const canStop = ["ready", "running", "starting"].includes(effective);
+  const canExtend = ACTIVE_EFFECTIVE_STATUSES.includes(effective);
+  const remaining = useTimeRemaining(instance.expires_at, "minute");
 
   return (
     <div>
@@ -404,10 +427,10 @@ const SandboxRow: React.FC<SandboxRowProps> = ({
         <span
           className={cn(
             "shrink-0 rounded px-1.5 py-[1px] text-[10px] uppercase tracking-wide",
-            statusClasses(instance.status),
+            statusPillClasses(effective),
           )}
         >
-          {instance.status}
+          {STATUS_LABELS[effective]}
         </span>
       </button>
       {isExpanded && (
@@ -417,11 +440,13 @@ const SandboxRow: React.FC<SandboxRowProps> = ({
             <dd className="truncate">{instance.id}</dd>
             <dt className="text-neutral-500">Path</dt>
             <dd className="truncate">{instance.hot_path ?? "—"}</dd>
-            {ttl && (
+            {instance.expires_at && (
               <>
-                <dt className="text-neutral-500">TTL</dt>
+                <dt className="text-neutral-500">
+                  {remaining.isExpired ? "Ended" : "Ends in"}
+                </dt>
                 <dd className="flex items-center gap-1">
-                  <Clock size={10} /> {ttl}
+                  <Clock size={10} /> {remaining.text}
                 </dd>
               </>
             )}
@@ -506,37 +531,6 @@ function ActionButton({
       {label}
     </button>
   );
-}
-
-function statusClasses(status: SandboxStatus): string {
-  switch (status) {
-    case "ready":
-    case "running":
-      return "bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300";
-    case "starting":
-    case "creating":
-      return "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300";
-    case "stopped":
-    case "shutting_down":
-      return "bg-neutral-200 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300";
-    case "expired":
-      return "bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300";
-    case "failed":
-      return "bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300";
-    default:
-      return "bg-neutral-200 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300";
-  }
-}
-
-function formatTtl(expiresAt: string | null): string | null {
-  if (!expiresAt) return null;
-  const diffMs = new Date(expiresAt).getTime() - Date.now();
-  if (diffMs <= 0) return "expired";
-  const mins = Math.floor(diffMs / 60000);
-  if (mins < 60) return `${mins}m`;
-  const hrs = Math.floor(mins / 60);
-  const rem = mins % 60;
-  return rem ? `${hrs}h ${rem}m` : `${hrs}h`;
 }
 
 function formatDate(iso: string): string {

@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { JsonTreeViewer } from "@/components/official/json-explorer/JsonTreeViewer";
+import { JsonTruncator } from "@/components/official-candidate/json-truncator/JsonTruncator";
 import {
   RefreshCw,
   Loader2,
@@ -141,6 +142,7 @@ type LogResponse = {
 };
 
 type ViewMode = "log-only" | "split" | "json-only" | "raw";
+type JsonTab = "explorer" | "truncator" | "plain";
 
 // ─── Level / Category display helpers ────────────────────────────────────────
 
@@ -788,6 +790,8 @@ export default function CoolifyLogViewer({
   const [filters, setFilters] = useState<LogFilters>(defaultFilters());
   const [selectedLine, setSelectedLine] = useState<ParsedLogLine | null>(null);
 
+  const [jsonTab, setJsonTab] = useState<JsonTab>("explorer");
+
   // Selection state — anchor is first click, tail is shift-click endpoint
   const [selAnchor, setSelAnchor] = useState<number | null>(null);
   const [selTail, setSelTail] = useState<number | null>(null);
@@ -1316,10 +1320,67 @@ export default function CoolifyLogViewer({
 
         {(viewMode === "split" || viewMode === "json-only") && (
           <div
-            className={`flex flex-col min-h-0 overflow-hidden bg-neutral-900 ${viewMode === "split" ? "w-1/2" : "w-full"}`}
+            className={`flex flex-col min-h-0 overflow-hidden bg-neutral-900 border-l border-neutral-800 ${viewMode === "split" ? "w-1/2" : "w-full"}`}
           >
+            {/* ── JSON panel header: tabs + close ── */}
+            <div className="shrink-0 flex items-center border-b border-neutral-800 bg-neutral-950">
+              <div className="flex items-center flex-1">
+                {(
+                  [
+                    { id: "explorer" as JsonTab, label: "Explorer" },
+                    { id: "truncator" as JsonTab, label: "Truncator" },
+                    { id: "plain" as JsonTab, label: "Plain JSON" },
+                  ] as const
+                ).map(({ id, label }) => (
+                  <button
+                    key={id}
+                    onClick={() => setJsonTab(id)}
+                    className={`px-3 py-1.5 text-[11px] font-medium border-b-2 transition-colors ${
+                      jsonTab === id
+                        ? "border-blue-500 text-blue-400 bg-white/5"
+                        : "border-transparent text-neutral-500 hover:text-neutral-300 hover:bg-white/5"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => {
+                  setViewMode("log-only");
+                  setSelectedLine(null);
+                }}
+                className="shrink-0 p-1.5 mr-1 text-neutral-600 hover:text-white hover:bg-white/10 rounded transition-colors"
+                title="Close panel"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+
+            {/* ── JSON panel body ── */}
             {jsonPanelData != null ? (
-              <JsonTreeViewer data={jsonPanelData} />
+              <>
+                {jsonTab === "explorer" && (
+                  <div className="flex-1 min-h-0 overflow-hidden">
+                    <JsonTreeViewer data={jsonPanelData} />
+                  </div>
+                )}
+                {jsonTab === "truncator" && (
+                  <div className="flex-1 min-h-0 overflow-hidden">
+                    <JsonTruncator
+                      initialValue={JSON.stringify(jsonPanelData, null, 2)}
+                      tabbed
+                      defaultTab="fields"
+                      className="h-full"
+                    />
+                  </div>
+                )}
+                {jsonTab === "plain" && (
+                  <pre className="flex-1 min-h-0 overflow-auto p-3 text-xs font-mono leading-5 text-neutral-300 whitespace-pre-wrap break-all">
+                    {JSON.stringify(jsonPanelData, null, 2)}
+                  </pre>
+                )}
+              </>
             ) : (
               <div className="flex flex-col items-center justify-center h-full text-neutral-600 text-xs gap-2">
                 <PanelLeft className="h-8 w-8 opacity-30" />

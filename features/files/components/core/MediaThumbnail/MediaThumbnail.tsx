@@ -15,7 +15,7 @@
  *                       displays the first frame as a still poster
  *   "pdf-firstpage"  → reserved; falls back to icon today (pdfjs is too
  *                       heavy to load in folder listings without backend
- *                       prerendering — see PYTHON_TEAM_COMMS)
+ *                       prerendering — see for_python/REQUESTS.md)
  *   "backend-thumb"  → reads `metadata.thumbnail_url`. Fallback to icon
  *                       when missing (the field doesn't exist server-side
  *                       yet — Python team request logged)
@@ -62,7 +62,7 @@ export function MediaThumbnail({
   });
 
   // Backend-thumbnail strategy reads the metadata field directly. The Python
-  // team's contract for this field is logged in PYTHON_TEAM_COMMS — until it
+  // team's contract for this field is logged in for_python/REQUESTS.md — until it
   // ships, this branch is dormant for every file.
   const backendUrl =
     strategy === "backend-thumb"

@@ -84,13 +84,6 @@ export function usePopoutWindow(windowId: string): UsePopoutWindowReturn {
   // Hold style-cleanup for this window's popout. Disposed on close.
   const stylesDisposeRef = useRef<(() => void) | null>(null);
 
-  // Self-ref so the toast action can re-invoke the latest openPopout without
-  // stale-closure issues across renders.
-  const openPopoutRef = useRef<
-    | ((opts: OpenPopoutOptions) => Promise<OpenPopoutResult>)
-    | null
-  >(null);
-
   /**
    * Idempotent close handler. Called from:
    *  - `pagehide` (browser X click, programmatic close, parent navigation)
@@ -132,36 +125,6 @@ export function usePopoutWindow(windowId: string): UsePopoutWindowReturn {
    */
   const openPopout = useCallback(
     async (opts: OpenPopoutOptions): Promise<OpenPopoutResult> => {
-      // Single-PiP enforcement (defense-in-depth — reducer also checks).
-      if (
-        activePipWindowId !== null &&
-        activePipWindowId !== windowId
-      ) {
-        // Capture the in-flight slot-holder id so the action button can
-        // dock-and-retry without racing against subsequent renders.
-        const blockingId = activePipWindowId;
-        toast.error("Floating window already open", {
-          description:
-            "Only one floating Picture-in-Picture window is allowed at a time.",
-          action: {
-            label: "Dock & pop out this one",
-            onClick: () => {
-              // Dock the blocking window, then retry. The retry click is
-              // itself a user gesture, satisfying requestWindow's policy.
-              dispatch(dockWindow(blockingId));
-              // queueMicrotask preserves the user-gesture stack while
-              // letting the dispatch settle. The ref guarantees we invoke
-              // the LATEST openPopout closure (not a stale one captured
-              // when the toast was first shown).
-              queueMicrotask(() => {
-                void openPopoutRef.current?.(opts);
-              });
-            },
-          },
-        });
-        return { ok: false, reason: "pip-slot-taken" };
-      }
-
       const capability = detectPopoutCapability();
       if (capability === "none") {
         toast.error("Pop-out not supported", {
@@ -170,11 +133,20 @@ export function usePopoutWindow(windowId: string): UsePopoutWindowReturn {
         return { ok: false, reason: "no-capability" };
       }
 
+      // Single-PiP-per-origin: when a different window already holds the
+      // Document PiP slot, we MUST skip `requestWindow()` — calling it would
+      // close the existing PiP and steal its slot (per the WICG spec). Fall
+      // through to `window.open()` instead so both windows coexist
+      // peacefully. The price is browser chrome on the second window.
+      const slotTakenByOther =
+        activePipWindowId !== null && activePipWindowId !== windowId;
+
       let pipWin: Window | null = null;
       let mode: "pip" | "popup" = "popup";
 
-      // Try Document PiP first if available
-      if (capability === "pip") {
+      // Try Document PiP only when the slot is free OR this same window
+      // already owns it (idempotent re-popout).
+      if (capability === "pip" && !slotTakenByOther) {
         try {
           const w = window as WindowWithDocumentPictureInPicture;
           if (w.documentPictureInPicture) {
@@ -254,12 +226,6 @@ export function usePopoutWindow(windowId: string): UsePopoutWindowReturn {
     },
     [activePipWindowId, dispatch, handleClose, windowId],
   );
-
-  // Keep the ref pointing at the latest openPopout so the slot-taken toast
-  // action always invokes the most up-to-date closure (with current
-  // activePipWindowId, etc.). Run synchronously during render so the ref
-  // is correct before any user interaction.
-  openPopoutRef.current = openPopout;
 
   /** Programmatic close — triggers the same lifecycle as user-clicked-X. */
   const close = useCallback(() => {

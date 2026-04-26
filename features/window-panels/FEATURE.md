@@ -420,9 +420,19 @@ A "Dock" button in the popout's `PopoutTopBar` returns the window to the parent 
 | Safari, Firefox, others | **`window.open` popup** | Universal fallback. Browser chrome visible (URL bar, tabs). |
 | Embedded WebView, no `window.open` | (none) | "Pop out" UI hidden entirely. |
 
-### Single-PiP enforcement
+### Single-PiP enforcement (multi-popout coexistence)
 
-Chromium allows only one Document PiP window per origin at a time. Attempting to pop out a second window while one is already in PiP produces a toast "Floating window already open" with a **Dock & pop out this one** action button — clicking it docks the existing PiP and opens the new one.
+Chromium allows only one Document PiP window per origin at a time, AND its `requestWindow()` API is destructive: calling it while a PiP is already open silently closes the existing one. To prevent windows from stomping on each other, the popout hook **transparently falls back to `window.open()` for second+ popouts**.
+
+| State | First popout | Second popout |
+|---|---|---|
+| DPiP supported, slot free | DPiP (frameless, always-on-top) | DPiP (frameless, always-on-top) |
+| DPiP supported, slot taken by another window | — | **`window.open()` popup** (browser chrome visible) |
+| DPiP unsupported (Safari, Firefox) | `window.open()` popup | `window.open()` popup |
+
+Both windows then coexist independently — neither affects the other. The first one keeps its glass chrome; subsequent ones get regular browser windows. The user can dock the DPiP window to free the slot, then pop a new one out as DPiP if desired.
+
+This replaces the older "refuse with toast + Dock & pop out this one" UX, which surprised users by docking their existing PiP when they expected to open a second window.
 
 ### Files
 

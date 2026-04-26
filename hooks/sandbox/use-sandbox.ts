@@ -114,6 +114,12 @@ export function useSandboxInstances(projectId?: string) {
           "[useSandboxInstances] createInstance: Starting creation request",
         );
 
+        // Forward every field the API accepts. The earlier truncated body
+        // silently dropped `tier`, `template`, `template_version`, `resources`,
+        // and `labels`, which made the `/sandbox` page incapable of creating
+        // anything but the default-tier sandbox even after we added a tier
+        // picker to it. Keep this in lockstep with `SandboxCreateRequest` and
+        // the POST handler in `app/api/sandbox/route.ts`.
         const resp = await fetch("/api/sandbox", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -121,6 +127,11 @@ export function useSandboxInstances(projectId?: string) {
             project_id: req.project_id || projectId,
             config: req.config,
             ttl_seconds: req.ttl_seconds,
+            tier: req.tier,
+            template: req.template,
+            template_version: req.template_version,
+            resources: req.resources,
+            labels: req.labels,
           }),
         });
 
