@@ -28,7 +28,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { BACKGROUND_PATTERN } from "@/constants/chat";
-import { getGlobalIsAdmin } from "@/lib/globalState";
+// Phase 4 PR 4.C: getGlobalIsAdmin import was unused; deleted alongside
+// the rest of lib/globalState.ts. Use selectIsAdmin if needed.
 import {
   DropdownMenu,
   DropdownMenuContent,

@@ -29,6 +29,7 @@ import { useRef } from "react";
 import { Provider } from "react-redux";
 import { bootSync } from "@/lib/sync/engine/boot";
 import { syncPolicies } from "@/lib/sync/registry";
+import { attachStore } from "@/lib/sync/identity";
 import { writeThemeCookie, type ThemeMode } from "@/styles/themes/themeSlice";
 
 // Generic factory shape — both `makeStore` (slim) and `makeEntityStore`
@@ -51,6 +52,14 @@ function getOrCreateClientStore(
   if (existing) return existing;
 
   const store = factory(initialState);
+
+  // Phase 4 PR 4.C: wire the reactive identity source. `attachStore` lets
+  // non-React consumers (entity sagas, server-bridge utilities) read the
+  // live Redux state via `getIdentityContext()` without holding their own
+  // subscription. Replaces `lib/globalState.ts` (deleted) and
+  // `app/Providers.tsx::setGlobalUserId` (deleted).
+  attachStore(store);
+
   void bootSync({
     store,
     identity: store._sync.identity,

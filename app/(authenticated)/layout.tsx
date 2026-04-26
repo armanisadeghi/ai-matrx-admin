@@ -12,7 +12,10 @@ import { getEmptyGlobalCache } from "@/utils/schema/schema-processing/emptyGloba
 import { InitialReduxState } from "@/types/reduxTypes";
 import NavigationLoader from "@/components/loaders/NavigationLoader";
 import { headers } from "next/headers";
-import { setGlobalUserIdAndToken } from "@/lib/globalState";
+// Phase 4 PR 4.C: removed `setGlobalUserIdAndToken` import — `lib/globalState.ts`
+// is deleted in this PR. The Redux preloaded state below carries the user data;
+// `lib/sync/identity::attachStore` (called from StoreProvider) wires the
+// reactive identity source so non-React consumers see the current state.
 import ResponsiveLayout from "@/components/layout/new-layout/ResponsiveLayout";
 
 const emptyGlobalCache = getEmptyGlobalCache();
@@ -67,7 +70,6 @@ export default async function AuthenticatedLayout({
     serverIsMobile: isMobile,
   };
 
-  setGlobalUserIdAndToken(userData.id, accessToken, isAdmin);
   const testDirectories: string[] = [];
 
   const initialReduxState: InitialReduxState = {

@@ -23,7 +23,10 @@ import {
   getSSRAgentShellData,
 } from "@/utils/supabase/ssrShellData";
 import { mapUserData } from "@/utils/userDataMapper";
-import { setGlobalUserIdAndToken } from "@/lib/globalState";
+// Phase 4 PR 4.C: setGlobalUserIdAndToken removed — the dispatch(setUser(...))
+// below already updates the Redux state, and `lib/sync/identity::attachStore`
+// (wired in StoreProvider) makes that state visible to non-React consumers.
+// No imperative seeding needed.
 import type { ContextMenuRow } from "@/utils/supabase/ssrShellData";
 
 export default function DeferredShellData() {
@@ -68,9 +71,6 @@ export default function DeferredShellData() {
         const userData = mapUserData(user, accessToken, shellData.is_admin);
 
         dispatch(setUser(userData));
-
-        // Set global state for socket middleware and other non-React consumers
-        setGlobalUserIdAndToken(user.id, accessToken ?? "", shellData.is_admin);
 
         if (shellData.preferences_exists && shellData.preferences) {
           for (const [key, value] of Object.entries(shellData.preferences)) {

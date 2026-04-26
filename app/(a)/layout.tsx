@@ -6,7 +6,10 @@ import { mapUserData } from "@/utils/userDataMapper";
 import { checkIsUserAdmin } from "@/utils/supabase/userSessionData";
 import { getEmptyGlobalCache } from "@/utils/schema/schema-processing/emptyGlobalCache";
 import { InitialReduxState } from "@/types/reduxTypes";
-import { setGlobalUserIdAndToken } from "@/lib/globalState";
+// Phase 4 PR 4.C: removed `setGlobalUserIdAndToken` import — `lib/globalState.ts`
+// is deleted in this PR. The Redux preloaded state below carries the user data;
+// `lib/sync/identity::attachStore` (called from StoreProvider) wires the
+// reactive identity source so non-React consumers see the current state.
 import Sidebar from "@/features/shell/components/sidebar/Sidebar";
 import Header from "@/features/shell/components/header/Header";
 import MobileDock from "@/features/shell/components/dock/MobileDock";
@@ -70,8 +73,6 @@ export default async function AppLayout({
 
     const accessToken = session?.access_token;
     userData = mapUserData(user, accessToken, isAdmin);
-
-    setGlobalUserIdAndToken(userData.id, accessToken, isAdmin);
 
     initialReduxState = {
       user: userData,

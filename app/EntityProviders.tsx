@@ -38,8 +38,12 @@ import DeferredSingletons from "./DeferredSingletons";
 import GlobalTaskShortcut from "@/features/tasks/widgets/GlobalTaskShortcut";
 import CreateTaskFromSourceDialog from "@/features/tasks/widgets/CreateTaskFromSourceDialog";
 import { CloudFilesPickerHost } from "@/features/files/components/pickers/CloudFilesPickerHost";
-import { setGlobalUserIdAndToken } from "@/lib/globalState";
-import { setGlobalUserId } from "@/app/Providers";
+
+// Phase 4 PR 4.C: deleted both imperative seed sites (setGlobalUserId from
+// app/Providers + setGlobalUserIdAndToken from lib/globalState). The
+// reactive identity source (lib/sync/identity::attachStore) hooks the
+// store at creation time, so non-React consumers always see the current
+// Redux state.
 
 // Entity-only providers (kept inline here so entity routes don't have to
 // wrap with `<EntityPack>` individually).
@@ -56,14 +60,6 @@ export function EntityProviders({
   children,
   initialReduxState,
 }: EntityProvidersProps) {
-  // Mirror to both globals (see comment in app/Providers.tsx).
-  setGlobalUserId(initialReduxState.user.id);
-  setGlobalUserIdAndToken(
-    initialReduxState.user.id ?? "",
-    initialReduxState.user.accessToken ?? "",
-    initialReduxState.user.isAdmin ?? false,
-  );
-
   return (
     <ReactQueryProvider>
       <StoreProvider

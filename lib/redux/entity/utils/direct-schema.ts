@@ -24,7 +24,7 @@ import { MatrxVariant } from '@/components/ui/types';
 import { getGlobalCache } from '@/utils/schema/schema-processing/processSchema';
 import { RelationshipDetails } from '@/utils/schema/fullRelationships';
 import { EntityMetadata, EntityFieldRecord } from '../types/stateTypes';
-import { getGlobalUserId } from '@/lib/globalState';
+import { getIdentityContext } from '@/lib/sync/identity';
 import { TypeBrand } from '@/utils/schema/initialSchemas';
 import { EntityNameOfficial, relationships } from '@/types/schema';
 
@@ -334,13 +334,13 @@ export const hasUserIdField = (entityKey: EntityKeys): boolean => {
 
 export const addUserIdToData = (entityKey: EntityKeys, data: any) => {
     const hasUserId = hasUserIdField(entityKey);
-    const userId = getGlobalUserId();
-    
+    const { userId } = getIdentityContext();
+
     if (hasUserId && userId && !data['user_id']) {
         // console.log('adding userId to data for Entity: ', entityKey, { ...data, user_id: userId });
         return { ...data, user_id: userId };
     }
-    
+
     return data;
 };
 

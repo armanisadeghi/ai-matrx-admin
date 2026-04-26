@@ -17,7 +17,10 @@ import { headers } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
 import { mapUserData, type UserData } from "@/utils/userDataMapper";
 import { checkIsUserAdmin } from "@/utils/supabase/userSessionData";
-import { setGlobalUserIdAndToken } from "@/lib/globalState";
+// Phase 4 PR 4.C: removed `setGlobalUserIdAndToken` import — `lib/globalState.ts`
+// is deleted in this PR. Callers receive userData and inject it into the
+// Redux preloaded state; `lib/sync/identity::attachStore` then makes it
+// available to non-React consumers.
 
 export interface AuthedLayoutData {
   userData: UserData;
@@ -55,8 +58,6 @@ export async function loadAuthedLayoutData(): Promise<AuthedLayoutData> {
 
   const accessToken = session?.access_token;
   const userData = mapUserData(user, accessToken, isAdmin);
-
-  setGlobalUserIdAndToken(userData.id, accessToken ?? "", isAdmin);
 
   return { userData, accessToken, isAdmin, isMobile };
 }
