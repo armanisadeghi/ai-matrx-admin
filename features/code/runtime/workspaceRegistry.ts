@@ -1,4 +1,4 @@
-import type { AppStore } from "@/lib/redux/store";
+import type { AppStore } from "@/lib/redux/store.types";
 import type { FilesystemAdapter } from "../adapters/FilesystemAdapter";
 import type { ProcessAdapter } from "../adapters/ProcessAdapter";
 
@@ -64,10 +64,7 @@ export function listWorkspaceIds(): string[] {
 }
 
 /** Subscribe to a specific workspace id (also fires with `null` on unregister). */
-export function subscribeWorkspace(
-  id: string,
-  fn: Listener,
-): () => void {
+export function subscribeWorkspace(id: string, fn: Listener): () => void {
   let subs = listeners.get(id);
   if (!subs) {
     subs = new Set();
