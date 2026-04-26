@@ -1,7 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { BrokerMapEntry, BrokerIdentifier } from "../types";
 import { v4 as uuidv4 } from "uuid";
-import { brokerActions } from "../index";
+import { brokerActions } from "../slice";
 
 export interface TempBrokerConfig {
     source: string;

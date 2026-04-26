@@ -1,4 +1,4 @@
-import { WindowRect } from "@/lib/redux/slices/windowManagerSlice";
+import type { WindowRect } from "@/features/window-panels/window-panel.types";
 
 /**
  * Calculates a 4-grid quadrant (2x2).

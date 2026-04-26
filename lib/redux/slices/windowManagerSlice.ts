@@ -7,6 +7,11 @@ import {
   computeGlobalArrangement,
   GlobalLayoutType,
 } from "@/features/window-panels/utils/windowArrangements";
+// WindowRect lives in the shared types file so that windowArrangements.ts
+// (a feature utility) can import it without pulling in this Redux slice,
+// which would create a cycle. Re-exported here for backward compatibility.
+export type { WindowRect } from "@/features/window-panels/window-panel.types";
+import type { WindowRect } from "@/features/window-panels/window-panel.types";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -25,13 +30,6 @@ export type WindowState = "windowed" | "maximized" | "minimized";
  * - `null`: Window is docked inside the parent viewport (the default).
  */
 export type PopoutMode = "pip" | "popup" | null;
-
-export interface WindowRect {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
 
 export interface WindowEntry {
   id: string;

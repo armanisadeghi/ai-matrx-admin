@@ -19,7 +19,7 @@
  */
 
 import type { LLMParams } from "./agent-api-types";
-import type { ResultDisplayMode } from "./instance.types";
+import type { ResultDisplayMode } from "@/features/agents/utils/run-ui-utils";
 import type { VariablesPanelStyle } from "../components/inputs/variable-input-variations/variable-input-options";
 import type { ApplicationScope } from "../utils/scope-mapping";
 

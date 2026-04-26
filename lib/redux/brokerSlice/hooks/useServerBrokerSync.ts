@@ -2,7 +2,8 @@
 // hooks/useServerBrokerSync.ts
 import { useEffect, useRef, useMemo } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { brokerSelectors, BrokerIdentifier } from "@/lib/redux/brokerSlice";
+import { brokerSelectors } from "@/lib/redux/brokerSlice/brokerSelectors";
+import type { BrokerIdentifier } from "@/lib/redux/brokerSlice/types";
 import { createSelector } from "reselect";
 import type { RootState } from "@/lib/redux/store";
 
