@@ -11,14 +11,6 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import {
-  DndContext,
-  PointerSensor,
-  closestCenter,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-} from "@dnd-kit/core";
 import { ArrowDown, ArrowUp, Search as SearchIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -36,7 +28,6 @@ import {
   setSort,
   toggleSelection,
 } from "@/features/files/redux/slice";
-import { moveFile } from "@/features/files/redux/thunks";
 import type {
   CloudFilePermission,
   CloudFileRecord,
@@ -163,31 +154,9 @@ export function FileTable({
     [dispatch, onActivateFolder, onActivateFile],
   );
 
-  // Drag-and-drop: files can be dropped onto folder rows to move them.
-  // PointerSensor `distance: 6` keeps single-clicks (selection) clean —
-  // the drag only kicks in once the pointer travels ≥6px while held.
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-  );
-  const handleDragEnd = useCallback(
-    (event: DragEndEvent) => {
-      const active = event.active.data.current as
-        | { type?: string; id?: string }
-        | undefined;
-      const over = event.over?.data.current as
-        | { type?: string; id?: string }
-        | undefined;
-      if (!active?.id || !over?.id) return;
-      // Only file → folder moves are supported. Folder→folder is a Phase 12
-      // ask (no `moveFolder` thunk yet).
-      if (active.type !== "file" || over.type !== "folder") return;
-      if (active.id === over.id) return;
-      void dispatch(
-        moveFile({ fileId: active.id, newParentFolderId: over.id }),
-      );
-    },
-    [dispatch],
-  );
+  // Drag-and-drop is wired at the PageShell level so files dragged from
+  // this table can also be dropped onto NavSidebar folders, not just rows
+  // within this table. We just contribute draggable/droppable nodes here.
 
   if (rows.length === 0) {
     if (treeWideSearch) {
@@ -226,11 +195,6 @@ export function FileTable({
   }
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragEnd={handleDragEnd}
-    >
       <div
         className={cn("flex h-full w-full flex-col overflow-hidden", className)}
       >
@@ -347,7 +311,6 @@ export function FileTable({
           />
         ) : null}
       </div>
-    </DndContext>
   );
 }
 

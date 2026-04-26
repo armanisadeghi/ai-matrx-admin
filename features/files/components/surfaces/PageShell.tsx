@@ -27,6 +27,14 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  DndContext,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
   Activity,
   FileInput,
   FileStack,
@@ -54,11 +62,23 @@ import {
   selectViewMode,
 } from "@/features/files/redux/selectors";
 import { setActiveFileId, setActiveFolderId } from "@/features/files/redux/slice";
+import { moveFile as moveFileThunk } from "@/features/files/redux/thunks";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { FileTree } from "@/features/files/components/core/FileTree/FileTree";
 import { FileUploadDropzone } from "@/features/files/components/core/FileUploadDropzone/FileUploadDropzone";
 import { OnboardingEmptyState } from "./OnboardingEmptyState";
 import { MobileStack } from "./MobileStack";
 import { PreviewPane } from "./PreviewPane";
+import { useFileShortcuts } from "./useFileShortcuts";
 import { BulkActionsBar } from "./dropbox/BulkActionsBar";
 import { ContentHeader } from "./dropbox/ContentHeader";
 import { EmptyState } from "./dropbox/EmptyState";
@@ -148,6 +168,39 @@ function PageShellDesktop({
 
   // One-time apply of initial selection.
   useOneShotSelection(initialFolderId, initialFileId);
+
+  // Global keyboard shortcuts — copy link, duplicate, delete. Strictly
+  // focus-scoped: skips when an input/textarea/contentEditable is focused
+  // or any dialog is open. Returns the pending-delete state so we can
+  // gate destructive shortcuts behind a confirm.
+  const shortcuts = useFileShortcuts();
+
+  // Drag-and-drop wired at the shell level so a file dragged from the
+  // FileTable / FileGrid can be dropped onto a folder ANYWHERE — table
+  // rows, grid cells, OR sidebar folder list. PointerSensor distance 6
+  // keeps single-clicks (selection) clean.
+  const dndSensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+  );
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const active = event.active.data.current as
+        | { type?: string; id?: string }
+        | undefined;
+      const over = event.over?.data.current as
+        | { type?: string; id?: string }
+        | undefined;
+      if (!active?.id || !over?.id) return;
+      // Only file → folder moves are supported. Folder→folder is a Phase
+      // 12 ask (no `moveFolder` thunk yet).
+      if (active.type !== "file" || over.type !== "folder") return;
+      if (active.id === over.id) return;
+      void dispatch(
+        moveFileThunk({ fileId: active.id, newParentFolderId: over.id }),
+      );
+    },
+    [dispatch],
+  );
 
   const handleSelectFolder = useCallback(
     (folderId: string) => {
@@ -255,6 +308,11 @@ function PageShellDesktop({
   const showPreviewPane = !!activeFile;
 
   return (
+    <DndContext
+      sensors={dndSensors}
+      collisionDetection={closestCenter}
+      onDragEnd={handleDragEnd}
+    >
     <div
       className={cn(
         "flex h-[calc(100dvh-var(--header-height))] overflow-hidden bg-background",
@@ -414,7 +472,39 @@ function PageShellDesktop({
       {/* Bulk-actions toolbar — fixed-position pill at the bottom of the
        * viewport. Renders nothing unless one or more rows are selected. */}
       <BulkActionsBar />
+
+      {/* Confirm dialog for keyboard-shortcut deletes. Destructive ops
+       * always go through a dialog so an accidental Backspace press
+       * doesn't quietly trash files. */}
+      <AlertDialog
+        open={shortcuts.pendingDelete !== null}
+        onOpenChange={(open) => {
+          if (!open) shortcuts.clearPendingDelete();
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {shortcuts.pendingDelete?.kind === "batch"
+                ? `Delete ${shortcuts.pendingDelete.ids.length} files?`
+                : "Delete file?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {shortcuts.pendingDelete?.kind === "batch"
+                ? "These files will move to trash. You can restore them for 30 days before bytes are removed."
+                : "This will move the file to trash. You can restore it from versions for 30 days before bytes are removed."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => void shortcuts.confirmDelete()}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
+    </DndContext>
   );
 }
 

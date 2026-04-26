@@ -1,0 +1,219 @@
+/**
+ * features/files/components/surfaces/useFileShortcuts.ts
+ *
+ * Global keyboard shortcuts for the cloud-files page. Mounts a single
+ * `keydown` listener on the window with strict focus-scoping so the
+ * handlers don't fire when the user is typing in inputs / dialogs / the
+ * preview / context-menus.
+ *
+ * Shortcuts (matched on activeFileId):
+ *   ⌘L / Ctrl+L  → Copy share link
+ *   ⌘D / Ctrl+D  → Duplicate (client-side fetch + re-upload)
+ *   ⌫ / Delete   → Soft-delete (with confirm)
+ *
+ * Shortcuts that operate on the multi-selection (regardless of activeFileId):
+ *   ⌫ / Delete   → Batch soft-delete the selection
+ *
+ * The handlers MUST be conservative: this hook lives at PageShell level,
+ * so any false positive interrupts user typing in the search box, file
+ * preview text, dialogs, etc. We refuse to fire when:
+ *   • An input/textarea/contentEditable is focused
+ *   • A dialog/alertdialog is open (Radix sets `aria-hidden` on
+ *     background; we check `document.querySelector('[role="dialog"]')`)
+ *   • The user is mid-IME composition (`event.isComposing`)
+ *
+ * Browser shortcuts we deliberately preserve:
+ *   ⌘D in some browsers = bookmark; we `preventDefault()` only AFTER
+ *   confirming we own the file context, so the bookmark is suppressed
+ *   only when our handler runs.
+ */
+
+"use client";
+
+import { useEffect, useState } from "react";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import {
+  selectActiveFileId,
+  selectAllFilesMap,
+  selectSelection,
+} from "../../redux/selectors";
+import {
+  clearSelection,
+  setActiveFileId,
+} from "../../redux/slice";
+import {
+  deleteFile as deleteFileThunk,
+  getSignedUrl as getSignedUrlThunk,
+  uploadFiles as uploadFilesThunk,
+} from "../../redux/thunks";
+
+interface PendingDelete {
+  kind: "single" | "batch";
+  ids: string[];
+}
+
+/**
+ * Returns a confirm-delete state + a clearer. The PageShell renders an
+ * AlertDialog wired to this state so destructive shortcuts don't run
+ * silently.
+ */
+export function useFileShortcuts(): {
+  pendingDelete: PendingDelete | null;
+  clearPendingDelete: () => void;
+  confirmDelete: () => Promise<void>;
+} {
+  const dispatch = useAppDispatch();
+  const activeFileId = useAppSelector(selectActiveFileId);
+  const selection = useAppSelector(selectSelection);
+  const filesById = useAppSelector(selectAllFilesMap);
+
+  const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      // IME composition — never intercept.
+      if (e.isComposing) return;
+
+      // Input focus — never intercept (typing in search, dialogs, etc).
+      const target = (e.target as HTMLElement | null) ?? null;
+      if (target) {
+        const tag = target.tagName;
+        if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+        if (target.isContentEditable) return;
+      }
+
+      // Open dialog / alert — never intercept (Radix mounts as portal at
+      // body level; the trigger of our shortcuts shouldn't undermine an
+      // open confirm dialog).
+      if (
+        typeof document !== "undefined" &&
+        document.querySelector('[role="dialog"], [role="alertdialog"]')
+      ) {
+        return;
+      }
+
+      const isMac = /Mac|iPhone|iPad/i.test(navigator.platform);
+      const cmdKey = isMac ? e.metaKey : e.ctrlKey;
+      const onlyCmd = cmdKey && !e.altKey && !e.shiftKey;
+
+      // ⌘L / Ctrl+L — copy share link for the active file.
+      if (onlyCmd && e.key.toLowerCase() === "l") {
+        if (!activeFileId) return;
+        e.preventDefault();
+        void (async () => {
+          try {
+            const result = await dispatch(
+              getSignedUrlThunk({ fileId: activeFileId, expiresIn: 3600 }),
+            );
+            const url =
+              (result as { payload?: { url?: string } } | undefined)?.payload
+                ?.url;
+            if (url && navigator.clipboard) {
+              await navigator.clipboard.writeText(url);
+            }
+          } catch {
+            /* swallow — user can fall back to the menu */
+          }
+        })();
+        return;
+      }
+
+      // ⌘D / Ctrl+D — duplicate the active file (client-side fan-out).
+      if (onlyCmd && e.key.toLowerCase() === "d") {
+        if (!activeFileId) return;
+        const file = filesById[activeFileId];
+        if (!file) return;
+        e.preventDefault();
+        void (async () => {
+          try {
+            const result = await dispatch(
+              getSignedUrlThunk({ fileId: activeFileId, expiresIn: 600 }),
+            );
+            const url =
+              (result as { payload?: { url?: string } } | undefined)?.payload
+                ?.url;
+            if (!url) return;
+            const blob = await fetch(url).then((r) => {
+              if (!r.ok) throw new Error(`HTTP ${r.status}`);
+              return r.blob();
+            });
+            const base = file.fileName;
+            const dot = base.lastIndexOf(".");
+            const newName =
+              dot > 0
+                ? `${base.slice(0, dot)} (copy)${base.slice(dot)}`
+                : `${base} (copy)`;
+            const dupFile = new File([blob], newName, {
+              type: file.mimeType ?? blob.type,
+            });
+            await dispatch(
+              uploadFilesThunk({
+                files: [dupFile],
+                parentFolderId: file.parentFolderId,
+                visibility: file.visibility,
+              }),
+            ).unwrap();
+          } catch {
+            /* swallow — user can retry via the menu */
+          }
+        })();
+        return;
+      }
+
+      // Delete / Backspace — soft-delete. Prefer batch over single when a
+      // multi-selection exists.
+      if (e.key === "Delete" || e.key === "Backspace") {
+        const selectedFileIds = selection.selectedIds.filter(
+          (id) => filesById[id],
+        );
+        if (selectedFileIds.length > 1) {
+          e.preventDefault();
+          setPendingDelete({ kind: "batch", ids: selectedFileIds });
+          return;
+        }
+        if (activeFileId && filesById[activeFileId]) {
+          e.preventDefault();
+          setPendingDelete({ kind: "single", ids: [activeFileId] });
+          return;
+        }
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [activeFileId, dispatch, filesById, selection.selectedIds]);
+
+  const clearPendingDelete = () => setPendingDelete(null);
+
+  const confirmDelete = async () => {
+    if (!pendingDelete) return;
+    const ids = [...pendingDelete.ids];
+    setPendingDelete(null);
+    if (pendingDelete.kind === "single") {
+      try {
+        await dispatch(deleteFileThunk({ fileId: ids[0] })).unwrap();
+        // If the deleted file was the previewed one, dismiss the pane.
+        if (ids[0] === activeFileId) dispatch(setActiveFileId(null));
+      } catch {
+        /* nothing to do — slice surfaces error state */
+      }
+      return;
+    }
+    // Batch — concurrency 4
+    let cursor = 0;
+    const runners = Array.from({ length: Math.min(4, ids.length) }, async () => {
+      while (cursor < ids.length) {
+        const i = cursor++;
+        try {
+          await dispatch(deleteFileThunk({ fileId: ids[i] })).unwrap();
+        } catch {
+          /* per-item failure tolerable */
+        }
+      }
+    });
+    await Promise.all(runners);
+    dispatch(clearSelection());
+  };
+
+  return { pendingDelete, clearPendingDelete, confirmDelete };
+}

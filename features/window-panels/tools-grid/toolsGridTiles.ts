@@ -15,20 +15,31 @@
  * grid" — it does NOT duplicate any registry data (label is usually pulled
  * from the registry unless overridden for a tile-specific name like the
  * legacy "Notes" tile that opens notesBetaWindow).
+ *
+ * **Agent-family tiles:** each `label` should match the `label` on the
+ * matching entry in `features/window-panels/registry/windowRegistry.ts`
+ * (same `overlayId`). New grid-only entries are suffixed with ` (new)`.
  */
 import type { LucideIcon } from "lucide-react";
 import {
   Activity,
+  AppWindow,
   ArrowUp,
   AudioLines,
   BookMarked,
+  Bot,
+  Box,
+  Boxes,
+  Brackets,
   Brain,
   Bug,
   BugPlay,
   Building2,
   CheckSquare,
+  Clapperboard,
   Cpu,
   Database,
+  DoorOpen,
   FileCode2,
   FileJson,
   FileScan,
@@ -38,22 +49,33 @@ import {
   GalleryHorizontalEnd,
   Globe,
   History,
+  KeyRound,
   LayoutDashboard,
   Layers,
   List,
   ListFilter,
   Mail,
+  MessageCircle,
   MessageSquare,
   Mic,
+  Milestone,
+  Minimize2,
   MonitorPlay,
+  Network,
   Newspaper,
+  Orbit,
+  PanelRight,
+  Radio,
   ScrollText,
+  Search,
   Settings,
-  Settings2,
   Share2,
+  Shrink,
   SlidersHorizontal,
   Sparkles,
   StickyNote,
+  TestTube2,
+  ToyBrick,
   Upload,
   Wand2,
 } from "lucide-react";
@@ -98,6 +120,24 @@ export interface TileContext {
   dispatch: AppDispatch;
   getState: () => RootState;
   router: { push: (path: string) => void };
+}
+
+/** Seeds `agentId` from the in-editor active agent or the first owned agent. */
+function seedAgentId(ctx: TileContext): { agentId: string } | undefined {
+  const state = ctx.getState();
+  const id =
+    selectActiveAgentId(state) ?? selectOwnedAgentIds(state)[0] ?? null;
+  return id ? { agentId: id } : undefined;
+}
+
+/** Same as `seedAgentId` for overlays whose data uses `initialAgentId`. */
+function seedInitialAgentId(
+  ctx: TileContext,
+): { initialAgentId: string } | undefined {
+  const state = ctx.getState();
+  const id =
+    selectActiveAgentId(state) ?? selectOwnedAgentIds(state)[0] ?? null;
+  return id ? { initialAgentId: id } : undefined;
 }
 
 export interface ToolsGridTile {
@@ -313,7 +353,7 @@ export const TOOLS_GRID_TILES: ReadonlyArray<ToolsGridTile> = [
     seedData: () => ({ instanceId: "default" }),
   },
 
-  // ── Agents ─────────────────────────────────────────────────────────────
+  // ── Agents (labels match windowRegistry `label` for each overlayId) ───
   {
     id: "tile.agent-run",
     label: "Agent Run",
@@ -322,20 +362,20 @@ export const TOOLS_GRID_TILES: ReadonlyArray<ToolsGridTile> = [
     overlayId: "agentRunWindow",
   },
   {
-    // Opens `agentContentSidebarWindow` seeded with the active agent
-    // (falls back to the first owned agent). Matches the legacy
-    // `openAgentContentFromTools` helper.
-    id: "tile.agent-content",
-    label: "Agent Content Sidebar",
+    id: "tile.agent-advanced-editor",
+    label: "Agent Advanced Editor (new)",
+    icon: Brackets,
+    category: "agents",
+    overlayId: "agentAdvancedEditorWindow",
+    seedData: (ctx) => seedInitialAgentId(ctx),
+  },
+  {
+    id: "tile.agent-content-sidebar",
+    label: "Agent Editor (Sidebar)",
     icon: FileStack,
     category: "agents",
     overlayId: "agentContentSidebarWindow",
-    seedData: ({ getState }) => {
-      const state = getState();
-      const agentId =
-        selectActiveAgentId(state) ?? selectOwnedAgentIds(state)[0] ?? null;
-      return agentId ? { agentId } : undefined;
-    },
+    seedData: (ctx) => seedInitialAgentId(ctx),
   },
   {
     id: "tile.agent-settings",
@@ -345,11 +385,11 @@ export const TOOLS_GRID_TILES: ReadonlyArray<ToolsGridTile> = [
     overlayId: "agentSettingsWindow",
   },
   {
-    id: "tile.ai-results",
-    label: "AI Results",
-    icon: Wand2,
+    id: "tile.agent-run-history",
+    label: "Run History",
+    icon: History,
     category: "agents",
-    overlayId: "quickAIResults",
+    overlayId: "agentRunHistoryWindow",
   },
   {
     id: "tile.agent-import",
@@ -359,18 +399,73 @@ export const TOOLS_GRID_TILES: ReadonlyArray<ToolsGridTile> = [
     overlayId: "agentImportWindow",
   },
   {
-    id: "tile.agent-run-history",
-    label: "Run History",
-    icon: History,
-    category: "agents",
-    overlayId: "agentRunHistoryWindow",
-  },
-  {
     id: "tile.agent-connections",
     label: "Agent Connections",
-    icon: Settings2,
+    icon: Network,
     category: "agents",
     overlayId: "agentConnectionsWindow",
+  },
+  {
+    id: "tile.ai-results",
+    label: "AI Results",
+    icon: Wand2,
+    category: "agents",
+    overlayId: "quickAIResults",
+  },
+  {
+    id: "tile.agent-optimizer",
+    label: "Matrx Agent Optimizer (new)",
+    icon: Sparkles,
+    category: "agents",
+    overlayId: "agentOptimizerWindow",
+    seedData: (ctx) => seedAgentId(ctx),
+  },
+  {
+    id: "tile.agent-interface-variations",
+    label: "Interface Variations (new)",
+    icon: AppWindow,
+    category: "agents",
+    overlayId: "agentInterfaceVariationsWindow",
+    seedData: (ctx) => seedAgentId(ctx),
+  },
+  {
+    id: "tile.agent-create-app",
+    label: "Create Agent App (new)",
+    icon: Clapperboard,
+    category: "agents",
+    overlayId: "agentCreateAppWindow",
+    seedData: (ctx) => seedAgentId(ctx),
+  },
+  {
+    id: "tile.agent-data-storage",
+    label: "Data Storage Support (new)",
+    icon: Boxes,
+    category: "agents",
+    overlayId: "agentDataStorageWindow",
+    seedData: (ctx) => seedAgentId(ctx),
+  },
+  {
+    id: "tile.agent-find-usages",
+    label: "Find Usages (new)",
+    icon: Search,
+    category: "agents",
+    overlayId: "agentFindUsagesWindow",
+    seedData: (ctx) => seedAgentId(ctx),
+  },
+  {
+    id: "tile.agent-convert-system",
+    label: "Convert to System Agent (new)",
+    icon: DoorOpen,
+    category: "agents",
+    overlayId: "agentConvertSystemWindow",
+    seedData: (ctx) => seedAgentId(ctx),
+  },
+  {
+    id: "tile.agent-gate",
+    label: "Agent Gate (new)",
+    icon: Milestone,
+    category: "agents",
+    overlayId: "agentGateWindow",
   },
 
   // ── Files & Web ────────────────────────────────────────────────────────
@@ -530,7 +625,7 @@ export const TOOLS_GRID_TILES: ReadonlyArray<ToolsGridTile> = [
     overlayId: "quickTasksWindow",
   },
 
-  // ── Admin ──────────────────────────────────────────────────────────────
+  // ── Admin (incl. agent debug / widgets — labels match windowRegistry) ──
   {
     id: "tile.agent-debug",
     label: "Agent Debug",
@@ -538,6 +633,7 @@ export const TOOLS_GRID_TILES: ReadonlyArray<ToolsGridTile> = [
     category: "admin",
     gate: "admin",
     overlayId: "agentDebugWindow",
+    seedData: (ctx) => seedInitialAgentId(ctx),
   },
   {
     id: "tile.memory-inspector",
@@ -548,8 +644,34 @@ export const TOOLS_GRID_TILES: ReadonlyArray<ToolsGridTile> = [
     overlayId: "observationalMemoryWindow",
   },
   {
+    id: "tile.create-shortcut",
+    label: "Create Shortcut (new)",
+    icon: KeyRound,
+    category: "admin",
+    gate: "admin",
+    overlayId: "agentAdminShortcutWindow",
+    seedData: (ctx) => seedAgentId(ctx),
+  },
+  {
+    id: "tile.find-usages-admin",
+    label: "Find Usages (Admin) (new)",
+    icon: Search,
+    category: "admin",
+    gate: "admin",
+    overlayId: "agentAdminFindUsagesWindow",
+    seedData: (ctx) => seedAgentId(ctx),
+  },
+  {
+    id: "tile.message-analysis",
+    label: "Response Analysis (new)",
+    icon: TestTube2,
+    category: "admin",
+    gate: "admin",
+    overlayId: "messageAnalysisWindow",
+  },
+  {
     id: "tile.ui-state",
-    label: "UI State",
+    label: "Instance UI State",
     icon: LayoutDashboard,
     category: "admin",
     gate: "admin",
@@ -557,7 +679,7 @@ export const TOOLS_GRID_TILES: ReadonlyArray<ToolsGridTile> = [
   },
   {
     id: "tile.exec-inspector",
-    label: "Exec Inspector",
+    label: "Execution Inspector",
     icon: Cpu,
     category: "admin",
     gate: "admin",
@@ -596,5 +718,109 @@ export const TOOLS_GRID_TILES: ReadonlyArray<ToolsGridTile> = [
     category: "admin",
     gate: "admin",
     overlayId: "agentAssistantMarkdownDebugWindow",
+  },
+  {
+    id: "tile.undo-history",
+    label: "Undo History (new)",
+    icon: History,
+    category: "admin",
+    gate: "admin",
+    overlayId: "undoHistory",
+  },
+  {
+    id: "tile.content-history",
+    label: "Content History (new)",
+    icon: FileStack,
+    category: "admin",
+    gate: "admin",
+    overlayId: "contentHistory",
+  },
+  {
+    id: "tile.agent-full-modal",
+    label: "Agent (full modal) (new)",
+    icon: AppWindow,
+    category: "admin",
+    gate: "admin",
+    overlayId: "agentFullModal",
+  },
+  {
+    id: "tile.agent-compact-modal",
+    label: "Agent (compact) (new)",
+    icon: Shrink,
+    category: "admin",
+    gate: "admin",
+    overlayId: "agentCompactModal",
+  },
+  {
+    id: "tile.agent-chat-bubble",
+    label: "Agent Chat Bubble (new)",
+    icon: MessageCircle,
+    category: "admin",
+    gate: "admin",
+    overlayId: "agentChatBubble",
+  },
+  {
+    id: "tile.agent-inline-overlay",
+    label: "Agent (inline) (new)",
+    icon: Box,
+    category: "admin",
+    gate: "admin",
+    overlayId: "agentInlineOverlay",
+  },
+  {
+    id: "tile.agent-sidebar-overlay",
+    label: "Agent (sidebar) (new)",
+    icon: PanelRight,
+    category: "admin",
+    gate: "admin",
+    overlayId: "agentSidebarOverlay",
+  },
+  {
+    id: "tile.agent-flexible-panel",
+    label: "Agent (flexible) (new)",
+    icon: Orbit,
+    category: "admin",
+    gate: "admin",
+    overlayId: "agentFlexiblePanel",
+  },
+  {
+    id: "tile.agent-panel-overlay",
+    label: "Agent (panel) (new)",
+    icon: ToyBrick,
+    category: "admin",
+    gate: "admin",
+    overlayId: "agentPanelOverlay",
+  },
+  {
+    id: "tile.agent-toast-overlay",
+    label: "Agent (toast) (new)",
+    icon: Radio,
+    category: "admin",
+    gate: "admin",
+    overlayId: "agentToastOverlay",
+  },
+  {
+    id: "tile.agent-floating-chat",
+    label: "Agent (floating chat) (new)",
+    icon: MessageSquare,
+    category: "admin",
+    gate: "admin",
+    overlayId: "agentFloatingChat",
+  },
+  {
+    id: "tile.agent-chat-collapsible",
+    label: "Agent Chat (collapsible) (new)",
+    icon: Minimize2,
+    category: "admin",
+    gate: "admin",
+    overlayId: "agentChatCollapsible",
+  },
+  {
+    id: "tile.agent-chat-assistant",
+    label: "Agent Chat Assistant (new)",
+    icon: Bot,
+    category: "admin",
+    gate: "admin",
+    overlayId: "agentChatAssistant",
   },
 ];

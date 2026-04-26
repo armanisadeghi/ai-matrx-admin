@@ -12,6 +12,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
+import { useDroppable } from "@dnd-kit/core";
 import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -77,45 +78,16 @@ export function NavSidebarFlatFolders() {
           folder.visibility === "shared" || folder.visibility === "public";
         return (
           <li key={folder.id}>
-            <div
-              className={cn(
-                "group flex items-center gap-1 rounded px-1.5 py-1 text-sm",
-                isActive
-                  ? "bg-accent text-foreground"
-                  : "text-foreground/80 hover:bg-accent/60",
-              )}
-            >
-              <button
-                type="button"
-                aria-label={isOpen ? "Collapse folder" : "Expand folder"}
-                onClick={() => handleToggle(folder.id)}
-                className={cn(
-                  "flex h-4 w-4 items-center justify-center rounded text-muted-foreground",
-                  !hasSubfolders && "invisible",
-                )}
-                tabIndex={hasSubfolders ? 0 : -1}
-              >
-                <ChevronRight
-                  className={cn(
-                    "h-3 w-3 transition-transform",
-                    isOpen && "rotate-90",
-                  )}
-                  aria-hidden="true"
-                />
-              </button>
-              <button
-                type="button"
-                onClick={() => handleSelect(folder.id)}
-                className="flex min-w-0 flex-1 items-center gap-2 truncate text-left"
-              >
-                <FolderIconWithMembers
-                  isShared={isShared}
-                  open={isOpen || isActive}
-                  size={16}
-                />
-                <span className="truncate">{folder.folderName}</span>
-              </button>
-            </div>
+            <DroppableSidebarFolder
+              folderId={folder.id}
+              folderName={folder.folderName}
+              isShared={isShared}
+              isActive={isActive}
+              isOpen={isOpen}
+              hasSubfolders={hasSubfolders}
+              onToggle={() => handleToggle(folder.id)}
+              onSelect={() => handleSelect(folder.id)}
+            />
             {isOpen && hasSubfolders ? (
               <NestedFolderList
                 folderIds={childFolderIds}
@@ -127,6 +99,81 @@ export function NavSidebarFlatFolders() {
         );
       })}
     </ul>
+  );
+}
+
+interface DroppableSidebarFolderProps {
+  folderId: string;
+  folderName: string;
+  isShared: boolean;
+  isActive: boolean;
+  isOpen: boolean;
+  hasSubfolders: boolean;
+  onToggle: () => void;
+  onSelect: () => void;
+}
+
+/**
+ * Sidebar folder row that doubles as a drop target. A file dragged from
+ * the FileTable / FileGrid (registered with PageShell's DndContext) can be
+ * dropped here to move it into this folder.
+ */
+function DroppableSidebarFolder({
+  folderId,
+  folderName,
+  isShared,
+  isActive,
+  isOpen,
+  hasSubfolders,
+  onToggle,
+  onSelect,
+}: DroppableSidebarFolderProps) {
+  const { isOver, setNodeRef } = useDroppable({
+    id: `sidebar-folder-${folderId}`,
+    data: { type: "folder", id: folderId },
+  });
+  return (
+    <div
+      ref={setNodeRef}
+      className={cn(
+        "group flex items-center gap-1 rounded px-1.5 py-1 text-sm",
+        isActive
+          ? "bg-accent text-foreground"
+          : "text-foreground/80 hover:bg-accent/60",
+        isOver && "bg-primary/10 ring-1 ring-inset ring-primary",
+      )}
+    >
+      <button
+        type="button"
+        aria-label={isOpen ? "Collapse folder" : "Expand folder"}
+        onClick={onToggle}
+        className={cn(
+          "flex h-4 w-4 items-center justify-center rounded text-muted-foreground",
+          !hasSubfolders && "invisible",
+        )}
+        tabIndex={hasSubfolders ? 0 : -1}
+      >
+        <ChevronRight
+          className={cn(
+            "h-3 w-3 transition-transform",
+            isOpen && "rotate-90",
+          )}
+          aria-hidden="true"
+        />
+      </button>
+      <button
+        type="button"
+        onClick={onSelect}
+        className="flex min-w-0 flex-1 items-center gap-2 truncate text-left"
+      >
+        <FolderIconWithMembers
+          isShared={isShared}
+          open={isOpen || isActive}
+          size={16}
+        />
+        <span className="truncate">{folderName}</span>
+      </button>
+    </div>
   );
 }
 
@@ -162,26 +209,58 @@ function NestedFolderList({
           folder.visibility === "shared" || folder.visibility === "public";
         return (
           <li key={folder.id}>
-            <button
-              type="button"
-              onClick={() => onSelect(folder.id)}
-              className={cn(
-                "flex w-full items-center gap-2 truncate rounded px-1.5 py-1 text-left text-sm",
-                isActive
-                  ? "bg-accent text-foreground"
-                  : "text-foreground/80 hover:bg-accent/60",
-              )}
-            >
-              <FolderIconWithMembers
-                isShared={isShared}
-                open={isActive}
-                size={14}
-              />
-              <span className="truncate">{folder.folderName}</span>
-            </button>
+            <DroppableNestedFolder
+              folderId={folder.id}
+              folderName={folder.folderName}
+              isShared={isShared}
+              isActive={isActive}
+              onSelect={() => onSelect(folder.id)}
+            />
           </li>
         );
       })}
     </ul>
+  );
+}
+
+interface DroppableNestedFolderProps {
+  folderId: string;
+  folderName: string;
+  isShared: boolean;
+  isActive: boolean;
+  onSelect: () => void;
+}
+
+function DroppableNestedFolder({
+  folderId,
+  folderName,
+  isShared,
+  isActive,
+  onSelect,
+}: DroppableNestedFolderProps) {
+  const { isOver, setNodeRef } = useDroppable({
+    id: `sidebar-nested-folder-${folderId}`,
+    data: { type: "folder", id: folderId },
+  });
+  return (
+    <button
+      ref={setNodeRef as unknown as React.Ref<HTMLButtonElement>}
+      type="button"
+      onClick={onSelect}
+      className={cn(
+        "flex w-full items-center gap-2 truncate rounded px-1.5 py-1 text-left text-sm",
+        isActive
+          ? "bg-accent text-foreground"
+          : "text-foreground/80 hover:bg-accent/60",
+        isOver && "bg-primary/10 ring-1 ring-inset ring-primary",
+      )}
+    >
+      <FolderIconWithMembers
+        isShared={isShared}
+        open={isActive}
+        size={14}
+      />
+      <span className="truncate">{folderName}</span>
+    </button>
   );
 }
