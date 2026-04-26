@@ -1,7 +1,7 @@
 // Internal structure types matching Python dataclasses
 
 import { UserDataReference } from "@/components/user-generated-table-data/tableReferences";
-import { BrokerMapEntry } from "../brokerSlice";
+import { BrokerMapEntry } from "../brokerSlice/types";
 import { Viewport } from "@xyflow/react";
 import type { Database } from "@/types/database.types";
 

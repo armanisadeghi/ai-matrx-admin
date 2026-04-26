@@ -1,6 +1,4 @@
 // File location: types/flashcards.types.ts
-import { useFlashcard } from '@/hooks/flashcard-app/useFlashcard';
-
 export type FlashcardData = {
     id?: string;
     order: number;

@@ -69,7 +69,7 @@ import urlSyncReducer from "./slices/urlSyncSlice";
 import agentCacheReducer from "./slices/agentCacheSlice";
 import agentDefinitionReducer from "@/features/agents/redux/agent-definition/slice";
 import { conversationListReducer } from "@/features/agents/redux/conversation-list/conversation-list.slice";
-import { conversationHistoryReducer } from "@/features/agents/redux/conversation-history";
+import { conversationHistoryReducer } from "@/features/agents/redux/conversation-history/slice";
 import agentShortcutReducer from "@/features/agents/redux/agent-shortcuts/slice";
 import agentShortcutCategoryReducer from "@/features/agents/redux/agent-shortcut-categories/slice";
 import agentContentBlockReducer from "@/features/agents/redux/agent-content-blocks/slice";

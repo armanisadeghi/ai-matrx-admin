@@ -9,7 +9,7 @@ import {
   setIsAuthenticated,
 } from '../slices/socketConnectionsSlice';
 import { updateErrorResponse } from '../slices/socketResponseSlice';
-import type { AppDispatch, RootState } from '@/lib/redux/store';
+import type { Dispatch, AnyAction } from 'redux';
 import { BACKEND_URLS } from '@/lib/api/endpoints';
 
 interface SocketAction {
@@ -17,7 +17,7 @@ interface SocketAction {
   payload?: any;
 }
 
-export const socketMiddleware: Middleware = (store: MiddlewareAPI<AppDispatch, RootState>) => (next) => (action: SocketAction) => {
+export const socketMiddleware: Middleware = (store: MiddlewareAPI<Dispatch<AnyAction>, unknown>) => (next) => (action: SocketAction) => {
   const socketManager = SocketConnectionManager.getInstance();
   const { dispatch, getState } = store;
 
@@ -146,7 +146,7 @@ export const socketMiddleware: Middleware = (store: MiddlewareAPI<AppDispatch, R
   return next(action);
 };
 
-function setupSocketListeners(socket: Socket, store: MiddlewareAPI<AppDispatch, RootState>, connectionId: string) {
+function setupSocketListeners(socket: Socket, store: MiddlewareAPI<Dispatch<AnyAction>, unknown>, connectionId: string) {
   const { dispatch } = store;
   const socketManager = SocketConnectionManager.getInstance();
 
@@ -181,7 +181,7 @@ function setupSocketListeners(socket: Socket, store: MiddlewareAPI<AppDispatch, 
   });
 }
 
-function setupGlobalErrorListener(socket: Socket, store: MiddlewareAPI<AppDispatch, RootState>, connectionId: string) {
+function setupGlobalErrorListener(socket: Socket, store: MiddlewareAPI<Dispatch<AnyAction>, unknown>, connectionId: string) {
   const { dispatch, getState } = store;
   socket.off('global_error');
   socket.on('global_error', (errorData) => {

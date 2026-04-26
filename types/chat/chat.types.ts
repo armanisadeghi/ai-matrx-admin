@@ -1,4 +1,3 @@
-import { DEFAULT_ENDPOINT_ID, DEFAULT_MODE, DEFAULT_MODEL_ID } from "@/constants/chat";
 import { MatrxRecordId } from "@/types/entityTypes";
 
 export type ChatMode = "general" | "research" | "brainstorm" | "analyze" | "images" | "video" | "code" | "recipe";
