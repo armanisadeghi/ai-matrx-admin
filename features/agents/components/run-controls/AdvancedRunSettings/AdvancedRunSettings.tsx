@@ -3,15 +3,9 @@
 /**
  * AdvancedRunSettings
  *
- * Algorithm-driven settings panel. The user declares what they need across
- * several axes; a server-side resolver later translates that into a
- * concrete model + provider-specific parameters. No model names appear
- * anywhere in the UI.
- *
- * This file is deliberately composition-only — it wires constants,
- * primitives, and the complexity algorithm together. No explanations,
- * descriptions, or helper text clutter the page. If something needs
- * explaining, put it in a tooltip.
+ * Composition-only. Hands the panel value to the algorithm engine and
+ * displays a complexity badge top-right. The engine and its rules live
+ * under ./algorithm/ — this component never imports rule weights directly.
  */
 
 import React, { useCallback, useMemo, useState } from 'react';
@@ -43,7 +37,7 @@ import {
   StructuredCheckboxGrid,
   type SectionAccent,
 } from './primitives';
-import { computeComplexity } from './complexity';
+import { runAlgorithm } from './algorithm';
 import { ComplexityBadge } from './ComplexityBadge';
 
 export interface AdvancedRunSettingsProps {
@@ -92,16 +86,14 @@ export function AdvancedRunSettings({
     onReset?.();
   }, [onChange, onReset]);
 
-  const complexity = useMemo(() => computeComplexity(value), [value]);
+  const algorithmResult = useMemo(() => runAlgorithm(value), [value]);
 
   return (
     <div className={cn('flex flex-col gap-6 w-full', className)}>
-      {/* Top bar — just the complexity badge, right-aligned. */}
       <div className="flex items-center justify-end">
-        <ComplexityBadge result={complexity} />
+        <ComplexityBadge result={algorithmResult} />
       </div>
 
-      {/* What do you need? — blue */}
       <Section accent="blue" title="What do you need?">
         <SectionRow label="Primary Output">
           <PillChoiceGroup<PrimaryOutput>
@@ -121,7 +113,6 @@ export function AdvancedRunSettings({
         </SectionRow>
       </Section>
 
-      {/* Model attributes — violet */}
       <Section accent="violet" title="Model attributes">
         {ATTRIBUTES.map((attr) => (
           <SectionRow key={attr.id} label={attr.label}>
@@ -133,7 +124,6 @@ export function AdvancedRunSettings({
         ))}
       </Section>
 
-      {/* Importance — amber */}
       <Section accent="amber" title="How important are these?">
         {IMPORTANCE_ITEMS.map((item) => (
           <SectionRow key={item.id} label={item.label}>
@@ -147,7 +137,6 @@ export function AdvancedRunSettings({
         ))}
       </Section>
 
-      {/* Thinking depth — emerald */}
       <Section accent="emerald" title="How hard should the model think?">
         <SectionRow label="Thinking depth">
           <LevelPillGroup
@@ -157,7 +146,6 @@ export function AdvancedRunSettings({
         </SectionRow>
       </Section>
 
-      {/* Tools — rose */}
       <Section accent="rose" title="Tools">
         <PillChoiceGroup<ToolKey>
           mode="multi"
@@ -168,7 +156,6 @@ export function AdvancedRunSettings({
         />
       </Section>
 
-      {/* Output skills — indigo */}
       <Section accent="indigo" title="What can the agent create?">
         <StructuredCheckboxGrid<ArtifactSkillKey>
           options={ARTIFACT_SKILLS}
@@ -178,7 +165,6 @@ export function AdvancedRunSettings({
         />
       </Section>
 
-      {/* Footer */}
       <div className="flex items-center justify-end pt-2 border-t border-border">
         <button
           type="button"
@@ -195,8 +181,6 @@ export function AdvancedRunSettings({
     </div>
   );
 }
-
-// ── Internal Section wrapper ────────────────────────────────────────────────
 
 function Section({
   accent,

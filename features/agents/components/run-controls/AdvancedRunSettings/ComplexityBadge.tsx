@@ -3,13 +3,13 @@
 /**
  * ComplexityBadge
  *
- * Visual indicator for the "complexity" score returned by complexity.ts.
- * Pure presentation — takes a pre-computed result, renders a colored pill.
+ * Pure presentation. Reads only `total` and `band` from the algorithm
+ * result, renders a colored pill.
  */
 
 import React from 'react';
 import { cn } from '@/lib/utils';
-import type { ComplexityBand, ComplexityResult } from './complexity';
+import type { AlgorithmResult, ComplexityBand } from './algorithm';
 
 const BAND_DOT: Record<ComplexityBand, string> = {
   low: 'bg-emerald-500',
@@ -32,7 +32,7 @@ const BAND_TINT: Record<ComplexityBand, string> = {
   extreme: 'bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-900/60',
 };
 
-export function ComplexityBadge({ result }: { result: ComplexityResult }) {
+export function ComplexityBadge({ result }: { result: AlgorithmResult }) {
   const { total, band } = result;
   return (
     <div
