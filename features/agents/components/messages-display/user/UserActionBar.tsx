@@ -36,9 +36,9 @@ import {
 import type { Json } from "@/types/database.types";
 import { selectMessagePosition } from "@/features/agents/redux/execution-system/messages/messages.selectors";
 import { toast } from "sonner";
-import { EditResubmitOutcomeDialog } from "./EditResubmitOutcomeDialog";
-import { DeleteMessageDialog } from "./DeleteMessageDialog";
-import { showForkOutcomeToast } from "./ForkOutcomeToast";
+import { EditResubmitOutcomeDialog } from "../message-options/EditResubmitOutcomeDialog";
+import { DeleteMessageDialog } from "../message-options/DeleteMessageDialog";
+import { showForkOutcomeToast } from "../message-options/ForkOutcomeToast";
 
 function serializeSaveError(error: unknown): {
   logPayload: Record<string, unknown>;
@@ -77,7 +77,7 @@ function serializeSaveError(error: unknown): {
 }
 
 const MessageOptionsMenu = lazy(() =>
-  import("./MessageOptionsMenu").then((m) => ({
+  import("../message-options/MessageOptionsMenu").then((m) => ({
     default: m.MessageOptionsMenu,
   })),
 );

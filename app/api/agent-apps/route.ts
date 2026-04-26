@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
     // Surface the common "slug already taken" error with a clear message
     // instead of a raw Postgres unique-violation payload.
     const { data: existing, error: existingError } = await supabase
-      .from("agent_apps")
+      .from("aga_apps")
       .select("id")
       .eq("slug", normalizedSlug)
       .maybeSingle();
@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
     // would fail a typical owner-check INSERT policy.
     const writer = isGlobal ? createAdminClient() : supabase;
     const { data, error } = await writer
-      .from("agent_apps")
+      .from("aga_apps")
       .insert(insertPayload)
       .select()
       .single();

@@ -19,7 +19,7 @@ export async function GET(
     }
 
     const { data, error } = await supabase
-      .from("agent_apps")
+      .from("aga_apps")
       .select("*")
       .eq("id", id)
       .single();
@@ -67,7 +67,7 @@ export async function PATCH(
     const body = await request.json();
 
     const { data, error } = await supabase
-      .from("agent_apps")
+      .from("aga_apps")
       .update(body)
       .eq("id", id)
       .select()
@@ -107,7 +107,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { error } = await supabase.from("agent_apps").delete().eq("id", id);
+    const { error } = await supabase.from("aga_apps").delete().eq("id", id);
 
     if (error) {
       return NextResponse.json(

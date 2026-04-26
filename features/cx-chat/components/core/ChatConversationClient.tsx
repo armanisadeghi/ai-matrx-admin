@@ -26,7 +26,7 @@ import {
 } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
 import { selectTurnCount } from "@/features/cx-chat/_legacy-stubs";
 import { ArrowDown } from "lucide-react";
-import { AgentConversationDisplay } from "@/features/agents/components/run/AgentConversationDisplay";
+import { AgentConversationDisplay } from "@/features/agents/components/messages-display/AgentConversationDisplay";
 import { SmartAgentInput } from "@/features/agents/components/inputs/smart-input/SmartAgentInput";
 
 const AgentPickerSheet = dynamic(

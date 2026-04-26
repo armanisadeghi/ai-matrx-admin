@@ -3,7 +3,7 @@ import { useDomCapturePrint } from "@/features/chat/hooks/useDomCapturePrint";
 import MarkdownStream from "@/components/MarkdownStream";
 import { ClassifiedMetadata } from "@/components/mardown-display/chat-markdown/analyzer/types";
 import { localMessage } from "@/features/chat/components/response/MessageItem";
-import { AssistantActionBar } from "@/features/agents/components/run/message-actions/AssistantActionBar";
+import { AssistantActionBar } from "@/features/agents/components/messages-display/assistant/AssistantActionBar";
 
 interface AssistantMessageProps {
   message: localMessage;

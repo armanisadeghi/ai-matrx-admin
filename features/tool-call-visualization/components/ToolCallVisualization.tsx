@@ -368,10 +368,10 @@ export const ToolCallVisualization: React.FC<ToolCallVisualizationProps> = (
   props,
 ) => {
   if ("requestId" in props && props.requestId) {
-    console.log(
-      "[TOOL CALL VISUALIZATION] Returning RequestDrivenShell for requestId:",
-      props.requestId,
-    );
+    // console.log(
+    //   "[TOOL CALL VISUALIZATION] Returning RequestDrivenShell for requestId:",
+    //   props.requestId,
+    // );
     return (
       <RequestDrivenShell
         requestId={props.requestId}
@@ -381,10 +381,10 @@ export const ToolCallVisualization: React.FC<ToolCallVisualizationProps> = (
       />
     );
   }
-  console.log(
-    "[TOOL CALL VISUALIZATION] Returning ToolCallVisualizationInner for entries:",
-    props.entries,
-  );
+  // console.log(
+  //   "[TOOL CALL VISUALIZATION] Returning ToolCallVisualizationInner for entries:",
+  //   props.entries,
+  // );
   return (
     <ToolCallVisualizationInner
       entries={props.entries ?? []}

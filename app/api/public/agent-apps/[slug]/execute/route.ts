@@ -46,7 +46,7 @@ function adminAny(): any {
 async function resolveApp(slug: string): Promise<AppLookup | null> {
   const admin = adminAny();
   const { data } = await admin
-    .from("agent_apps")
+    .from("aga_apps")
     .select(
       "id, slug, name, status, is_public, agent_id, agent_version_id, use_latest, variable_schema",
     )

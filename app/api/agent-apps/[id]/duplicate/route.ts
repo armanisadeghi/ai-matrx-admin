@@ -19,7 +19,7 @@ export async function POST(
     }
 
     const { data: original, error: fetchError } = await supabase
-      .from("agent_apps")
+      .from("aga_apps")
       .select("*")
       .eq("id", id)
       .single();
@@ -37,7 +37,7 @@ export async function POST(
 
     while (true) {
       const { data: existing } = await supabase
-        .from("agent_apps")
+        .from("aga_apps")
         .select("id")
         .eq("slug", slug)
         .maybeSingle();
@@ -49,7 +49,7 @@ export async function POST(
     }
 
     const { data: newApp, error: insertError } = await supabase
-      .from("agent_apps")
+      .from("aga_apps")
       .insert({
         user_id: user.id,
         agent_id: original.agent_id,

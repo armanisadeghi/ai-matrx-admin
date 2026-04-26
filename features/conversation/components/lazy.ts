@@ -51,11 +51,13 @@ export const LazyUserMessage = lazy(() =>
 
 export const LazyMessageOptionsMenu = lazy(
   () =>
-    import("@/features/agents/components/run/message-actions/MessageOptionsMenu"),
+    import("@/features/agents/components/messages-display/message-options/MessageOptionsMenu"),
 );
 
 export const LazyToolCallVisualization = lazy(() =>
-  import("@/features/tool-call-visualization").then((m) => ({
-    default: m.ToolCallVisualization,
-  })),
+  import("@/features/tool-call-visualization/components/ToolCallVisualization").then(
+    (m) => ({
+      default: m.ToolCallVisualization,
+    }),
+  ),
 );

@@ -40,9 +40,9 @@ import {
   selectMessageById,
   extractFlatText,
 } from "@/features/agents/redux/execution-system/messages/messages.selectors";
-import { AssistantError } from "./AssistantError";
-import { AssistantActionBar } from "@/features/agents/components/run/message-actions/AssistantActionBar";
-import { RetryConfirmDialog } from "@/features/agents/components/run/message-actions/RetryConfirmDialog";
+import { AssistantError } from "../../run/AssistantError";
+import { AssistantActionBar } from "./AssistantActionBar";
+import { RetryConfirmDialog } from "@/features/agents/components/messages-display/message-options/RetryConfirmDialog";
 import { atomicRetry } from "@/features/agents/redux/execution-system/message-crud/atomic-retry.thunk";
 import { PersistedToolCallCard } from "@/features/tool-call-visualization/components/PersistedToolCallCard";
 import { Button } from "@/components/ui/button";

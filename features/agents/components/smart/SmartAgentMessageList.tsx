@@ -36,11 +36,11 @@ import {
   selectShowDefinitionMessageContent,
   selectHiddenMessageCount,
 } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
-import { AgentUserMessage } from "../run/AgentUserMessage";
+import { AgentUserMessage } from "../messages-display/user/AgentUserMessage";
 
 const AgentAssistantMessage = dynamic(
   () =>
-    import("../run/AgentAssistantMessage").then((m) => ({
+    import("../messages-display/assistant/AgentAssistantMessage").then((m) => ({
       default: m.AgentAssistantMessage,
     })),
   { ssr: false },

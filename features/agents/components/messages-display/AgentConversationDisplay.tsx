@@ -30,11 +30,11 @@ import {
   selectStreamPhase,
   selectLatestRequestId,
 } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
-import { AgentUserMessage } from "./AgentUserMessage";
+import { AgentUserMessage } from "./user/AgentUserMessage";
 
 const AgentAssistantMessage = dynamic(
   () =>
-    import("./AgentAssistantMessage").then((m) => ({
+    import("./assistant/AgentAssistantMessage").then((m) => ({
       default: m.AgentAssistantMessage,
     })),
   { ssr: false },
@@ -42,7 +42,7 @@ const AgentAssistantMessage = dynamic(
 
 const AgentEmptyMessageDisplay = dynamic(
   () =>
-    import("../shared/AgentEmptyMessageDisplay").then((m) => ({
+    import("./assistant/AgentEmptyMessageDisplay").then((m) => ({
       default: m.AgentEmptyMessageDisplay,
     })),
   { ssr: false },

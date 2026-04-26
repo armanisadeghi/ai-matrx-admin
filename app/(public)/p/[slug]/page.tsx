@@ -27,7 +27,7 @@ async function resolveAgentAppMetadata(slug: string): Promise<{
   const column = isId ? "id" : "slug";
 
   const { data } = await supabase
-    .from("agent_apps")
+    .from("aga_apps")
     .select("name, tagline, description, preview_image_url, favicon_url")
     .eq(column, slug)
     .eq("status", "published")

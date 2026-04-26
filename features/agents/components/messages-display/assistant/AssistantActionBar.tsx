@@ -33,7 +33,7 @@ import {
 import type { Json } from "@/types/database.types";
 import { toast } from "sonner";
 import { selectMessagePosition } from "@/features/agents/redux/execution-system/messages/messages.selectors";
-import { DeleteMessageDialog } from "./DeleteMessageDialog";
+import { DeleteMessageDialog } from "../message-options/DeleteMessageDialog";
 
 function serializeSaveError(error: unknown): {
   logPayload: Record<string, unknown>;
@@ -72,7 +72,7 @@ function serializeSaveError(error: unknown): {
 }
 
 const MessageOptionsMenu = lazy(() =>
-  import("./MessageOptionsMenu").then((m) => ({
+  import("../message-options/MessageOptionsMenu").then((m) => ({
     default: m.MessageOptionsMenu,
   })),
 );

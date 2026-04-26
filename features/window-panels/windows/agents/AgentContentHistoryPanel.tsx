@@ -11,16 +11,12 @@ import {
   Bot,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  useAppDispatch,
-  useAppSelector,
-  useAppStore,
-} from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { selectAgentById } from "@/features/agents/redux/agent-definition/selectors";
 import { fetchAgentConversations } from "@/features/agents/redux/conversation-list/conversation-list.thunks";
 import { makeSelectAgentConversations } from "@/features/agents/redux/conversation-list/conversation-list.selectors";
 import type { ConversationListItem } from "@/features/agents/redux/conversation-list/conversation-list.types";
-import { AgentConversationDisplay } from "@/features/agents/components/run/AgentConversationDisplay";
+import { AgentConversationDisplay } from "@/features/agents/components/messages-display/AgentConversationDisplay";
 import { loadConversation } from "@/features/agents/redux/execution-system/thunks/load-conversation.thunk";
 import { createManualInstance } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
 import type { RootState } from "@/lib/redux/store";

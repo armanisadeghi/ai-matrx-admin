@@ -109,8 +109,6 @@ features/agents/
 │   │   ├── AgentUserMessage.tsx
 │   │   ├── AssistantActionBar.tsx
 │   │   ├── AssistantError.tsx
-│   │   ├── InlineToolCalls.tsx
-│   │   ├── ToolCallCard.tsx
 │   │   └── run-sidebar/
 │   │       ├── AgentRunsSidebar.tsx    ← sidebar (conversation history list)
 │   │       └── SidebarHeader.tsx      ← sidebar's header row

@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback } from "react";
 import { ArrowDown } from "lucide-react";
-import { AgentConversationDisplay } from "../run/AgentConversationDisplay";
+import { AgentConversationDisplay } from "../messages-display/AgentConversationDisplay";
 import { CreatorRunPanel } from "../run-controls/CreatorRunPanel";
 import { SmartAgentInput } from "../inputs/smart-input/SmartAgentInput";
 

@@ -1,8 +1,8 @@
 # FEATURE.md — `agent-apps`
 
-**Status:** `scaffolded` — Redux slice + provisional types exist; backing DB table (`agx_app` / `cx_app`) may not exist; UI rendering path in build. Thunks currently stub and throw.
+**Status:** `live (data-migration soak)` — backing DB table is `aga_apps` with 54 rows migrated from `prompt_apps`. Public dual-path resolver in `/p/[slug]` prefers agent path. Authenticated CRUD + admin UI live. Redux thunks still stubbed (admin/CRUD paths use the service layer; not blocking).
 **Tier:** `1`
-**Last updated:** `2026-04-22`
+**Last updated:** `2026-04-25`
 
 ---
 
@@ -147,6 +147,8 @@ Thunks stub and throw. Backing DB table not yet created. UI rendering path in bu
 
 ## Change log
 
+- `2026-04-25` — Migrated 54 of 61 `prompt_apps` rows into `aga_apps` via `migrations/migrate_prompt_apps_to_aga_apps.sql`. IDs preserved (`agent_id := prompt_id` — verified 100% match against `agx_agent`). All migrated rows force `use_latest=true` because legacy `prompt_version_id`s are orphaned in `agx_version`. `status='published'` rows flipped to `is_public=true` so the dual-path resolver in `/p/[slug]` can serve them publicly. 7 apps with variable-name mismatches (`metro_name → region_name`, `state → state_name`, orphan `presentation_style`) skipped pending manual fix; they remain on the legacy prompt-app path. `success_rate` normalized from mixed 0..100 / 0..1 to 0..1 fraction. Aggregate counters carried over; raw `prompt_app_executions` not migrated.
+- `2026-04-25` — Renamed 18 runtime references of `"agent_apps"` to `"aga_apps"` across `app/(public)/p/[slug]/page.tsx`, `app/api/agent-apps/**`, `app/api/public/agent-apps/[slug]/execute/route.ts`, `lib/services/agent-apps-admin-service.ts`. The deployed table has always been `aga_apps`; sibling tables (`aga_executions`, `aga_errors`, `aga_rate_limits`, `aga_categories`, `aga_versions`) were already correctly referenced. The main-table mismatch had gone unnoticed only because no rows had ever flowed through these code paths until this migration.
 - `2026-04-25` — Admin route imports: `AgentAppsGrid`, editor shell components, and `AgentApp` type now use direct paths (`components/layouts/…`, `components/…`, `types`) instead of `@/features/agent-apps` barrel.
 - `2026-04-22` — claude: initial FEATURE.md extracted from `agent-system-mental-model.md` §6.
 - `2026-04-22` — claude: `POST /api/agent-apps` now accepts `scope: "global"` for admins, writing rows with all scope columns null via `createAdminClient()`. New admin UI lives at `administration/system-agents/apps/` (list + `apps/new/` form). This is distinct from `administration/agent-apps/` (moderation of user-published apps). `fetchAgentAppsAdmin` gained a `scope: "global" | "user"` filter.

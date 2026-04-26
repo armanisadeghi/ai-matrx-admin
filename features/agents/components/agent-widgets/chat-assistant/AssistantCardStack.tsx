@@ -28,15 +28,17 @@ import { selectInstanceVariableDefinitions } from "@/features/agents/redux/execu
 import { selectShowVariablePanel } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { executeInstance } from "@/features/agents/redux/execution-system/thunks/execute-instance.thunk";
 import { executeChatInstance } from "@/features/agents/redux/execution-system/thunks/execute-chat-instance.thunk";
-import { AgentUserMessage } from "../../run/AgentUserMessage";
+import { AgentUserMessage } from "../../messages-display/user/AgentUserMessage";
 import { AgentPlanningIndicator } from "../../shared/AgentPlanningIndicator";
 import { ChatAssistantVariableInputs } from "./ChatAssistantVariableInputs";
 
 const AgentAssistantMessage = dynamic(
   () =>
-    import("../../run/AgentAssistantMessage").then((m) => ({
-      default: m.AgentAssistantMessage,
-    })),
+    import("../../messages-display/assistant/AgentAssistantMessage").then(
+      (m) => ({
+        default: m.AgentAssistantMessage,
+      }),
+    ),
   { ssr: false },
 );
 

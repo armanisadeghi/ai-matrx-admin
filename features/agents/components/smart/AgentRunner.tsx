@@ -38,7 +38,7 @@ import { executeInstance } from "@/features/agents/redux/execution-system/thunks
 import { executeChatInstance } from "@/features/agents/redux/execution-system/thunks/execute-chat-instance.thunk";
 import { SmartAgentInput } from "../inputs/smart-input/SmartAgentInput";
 import { PreExecutionAgentInput } from "../inputs/PreExecutionAgentInput";
-import { AgentConversationDisplay } from "../run/AgentConversationDisplay";
+import { AgentConversationDisplay } from "../messages-display/AgentConversationDisplay";
 
 interface AgentRunnerProps {
   conversationId: string;

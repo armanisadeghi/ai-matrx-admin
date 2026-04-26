@@ -206,7 +206,7 @@ export async function fetchAgentAppsAdmin(filters?: {
 }): Promise<AgentAppAdminView[]> {
   const supabase = getClient();
   let query = supabase
-    .from("agent_apps")
+    .from("aga_apps")
     .select("*")
     .order("updated_at", { ascending: false });
 
@@ -251,7 +251,7 @@ export async function getAgentAppById(
 ): Promise<AgentAppAdminView | null> {
   const supabase = getClient();
   const { data, error } = await supabase
-    .from("agent_apps")
+    .from("aga_apps")
     .select("*")
     .eq("id", id)
     .single();
@@ -279,7 +279,7 @@ export async function updateAgentAppAdmin(
     patch.rate_limit_authenticated = input.rate_limit_authenticated;
 
   const { data, error } = await supabase
-    .from("agent_apps")
+    .from("aga_apps")
     .update(patch)
     .eq("id", input.id)
     .select()
@@ -310,7 +310,7 @@ export async function fetchAgentAppExecutions(filters?: {
   if (data && data.length > 0) {
     const appIds = [...new Set(data.map((e: any) => e.app_id))] as string[];
     const { data: apps } = await supabase
-      .from("agent_apps")
+      .from("aga_apps")
       .select("id, name, slug")
       .in("id", appIds);
     const appMap = new Map(((apps ?? []) as any[]).map((a) => [a.id, a]));
@@ -347,7 +347,7 @@ export async function fetchAgentAppErrors(filters?: {
   if (data && data.length > 0) {
     const appIds = [...new Set(data.map((e: any) => e.app_id))] as string[];
     const { data: apps } = await supabase
-      .from("agent_apps")
+      .from("aga_apps")
       .select("id, name, slug")
       .in("id", appIds);
     const appMap = new Map(((apps ?? []) as any[]).map((a) => [a.id, a]));
@@ -422,7 +422,7 @@ export async function fetchAgentAppRateLimits(filters?: {
   if (data && data.length > 0) {
     const appIds = [...new Set(data.map((e: any) => e.app_id))] as string[];
     const { data: apps } = await supabase
-      .from("agent_apps")
+      .from("aga_apps")
       .select("id, name, slug")
       .in("id", appIds);
     const appMap = new Map(((apps ?? []) as any[]).map((a) => [a.id, a]));
