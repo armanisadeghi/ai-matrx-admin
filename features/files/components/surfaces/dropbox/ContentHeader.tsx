@@ -39,7 +39,10 @@ import { NewMenu } from "./NewMenu";
 import type { CloudFilesSection } from "./section";
 
 const SECTION_TITLES: Record<CloudFilesSection, string> = {
-  all: "All files",
+  // "Home" — labeled this way (instead of "All files") because the section
+  // shows only root-level folders + files, not every file in the tree.
+  // Recents/Starred/etc. surface deeper files via different selectors.
+  all: "Home",
   folders: "Folders",
   "folders-root": "Folders",
   photos: "Photos",

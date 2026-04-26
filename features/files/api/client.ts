@@ -24,6 +24,7 @@ import { supabase } from "@/utils/supabase/client";
 import { getStore } from "@/lib/redux/store-singleton";
 import { selectResolvedBaseUrl } from "@/lib/redux/slices/apiConfigSlice";
 import { extractErrorMessage } from "@/utils/errors";
+import { getCachedFingerprint } from "@/lib/services/fingerprint-service";
 
 // ---------------------------------------------------------------------------
 // Request ID helper
@@ -98,16 +99,14 @@ export function resolveBaseUrl(override?: string): string {
 // JWT
 // ---------------------------------------------------------------------------
 
-async function getAccessToken(): Promise<string> {
+/**
+ * Resolve the access token for the current request. Returns `null` for guests
+ * (no Supabase session); the caller decides whether that's acceptable based
+ * on whether a guest fingerprint is available.
+ */
+async function getAccessTokenOrNull(): Promise<string | null> {
   const { data, error } = await supabase.auth.getSession();
-  if (error || !data.session?.access_token) {
-    throw new BackendApiError({
-      code: "auth_required",
-      detail: error?.message ?? "No active session",
-      userMessage: "Please sign in to continue.",
-      status: 401,
-    });
-  }
+  if (error || !data.session?.access_token) return null;
   return data.session.access_token;
 }
 
@@ -124,6 +123,13 @@ export interface RequestOptions {
   signal?: AbortSignal;
   /** Override base URL (tests, staging, etc.). */
   baseUrlOverride?: string;
+  /**
+   * Override the guest fingerprint sent as `X-Guest-Fingerprint`. By default
+   * we read it synchronously from the fingerprint service. Pass an explicit
+   * value when calling from a context that has a different identity (e.g.
+   * the migrate-guest-to-user endpoint, which needs the OLD fingerprint).
+   */
+  guestFingerprint?: string;
 }
 
 export interface ResponseMeta {
@@ -138,16 +144,29 @@ async function buildHeaders(
   opts: RequestOptions,
   includeContentType: boolean,
 ): Promise<{ headers: Record<string, string>; requestId: string }> {
-  const token = await getAccessToken();
+  const token = await getAccessTokenOrNull();
+  const fingerprint = opts.guestFingerprint ?? getCachedFingerprint();
+
+  // Reject only when neither identity exists. Authed users still send the
+  // fingerprint so the backend can correlate / migrate guest activity.
+  if (!token && !fingerprint) {
+    throw new BackendApiError({
+      code: "auth_required",
+      detail: "No active session and no guest fingerprint available",
+      userMessage: "Please sign in to continue.",
+      status: 401,
+    });
+  }
+
   const requestId = opts.requestId ?? newRequestId();
   const headers: Record<string, string> = {
-    Authorization: `Bearer ${token}`,
     "X-Request-Id": requestId,
     Accept: "application/json",
   };
-  if (includeContentType) {
-    headers["Content-Type"] = "application/json";
-  }
+  if (token) headers.Authorization = `Bearer ${token}`;
+  if (fingerprint) headers["X-Guest-Fingerprint"] = fingerprint;
+  if (includeContentType) headers["Content-Type"] = "application/json";
+
   return { headers, requestId };
 }
 
@@ -237,6 +256,32 @@ export async function del<T = null>(
 }
 
 /**
+ * DELETE with a JSON body. The bulk-delete endpoint takes an `{ file_ids }`
+ * payload — RFC 9110 allows DELETE bodies and the Python team's contract
+ * uses one, so we expose this variant explicitly.
+ */
+export async function delJson<T = null, B = unknown>(
+  path: string,
+  body: B,
+  opts: RequestOptions = {},
+): Promise<{ data: T | null; meta: ResponseMeta }> {
+  const { headers, requestId } = await buildHeaders(opts, true);
+  const response = await fetch(
+    `${resolveBaseUrl(opts.baseUrlOverride)}${path}`,
+    {
+      method: "DELETE",
+      headers,
+      body: JSON.stringify(body),
+      signal: opts.signal,
+    },
+  );
+  if (!response.ok) throw await parseHttpError(response);
+  const text = await response.text();
+  const data = text ? (JSON.parse(text) as T) : null;
+  return { data, meta: meta(response, requestId) };
+}
+
+/**
  * Multipart upload WITHOUT progress. Use `uploadWithProgress` for UI.
  */
 export async function postMultipart<T>(
@@ -270,14 +315,24 @@ export async function uploadWithProgress<T>(
   onProgress: (event: UploadProgressEvent) => void,
   opts: RequestOptions = {},
 ): Promise<{ data: T; meta: ResponseMeta }> {
-  const token = await getAccessToken();
+  const token = await getAccessTokenOrNull();
+  const fingerprint = opts.guestFingerprint ?? getCachedFingerprint();
+  if (!token && !fingerprint) {
+    throw new BackendApiError({
+      code: "auth_required",
+      detail: "No active session and no guest fingerprint available",
+      userMessage: "Please sign in to continue.",
+      status: 401,
+    });
+  }
   const requestId = opts.requestId ?? newRequestId();
   const url = `${resolveBaseUrl(opts.baseUrlOverride)}${path}`;
 
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open("POST", url, true);
-    xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+    if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+    if (fingerprint) xhr.setRequestHeader("X-Guest-Fingerprint", fingerprint);
     xhr.setRequestHeader("X-Request-Id", requestId);
     xhr.setRequestHeader("Accept", "application/json");
 

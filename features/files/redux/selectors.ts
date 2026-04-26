@@ -197,13 +197,19 @@ export const selectChildrenByFolderId = createSelector(
 );
 
 export const selectChildrenOfFolder = createSelector(
-  [selectChildrenByFolderId, (_state: StateWithCloudFiles, folderId: string) => folderId],
+  [
+    selectChildrenByFolderId,
+    (_state: StateWithCloudFiles, folderId: string) => folderId,
+  ],
   (byId, folderId): TreeChildren =>
     byId[folderId] ?? { folderIds: [], fileIds: [] },
 );
 
 export const selectIsFolderFullyLoaded = createSelector(
-  [selectTreeSlice, (_state: StateWithCloudFiles, folderId: string) => folderId],
+  [
+    selectTreeSlice,
+    (_state: StateWithCloudFiles, folderId: string) => folderId,
+  ],
   (tree, folderId): boolean => tree.fullyLoadedFolderIds[folderId] === true,
 );
 

@@ -81,6 +81,39 @@ row or copy-all to clipboard with one click.
 the synchronous reason, every caller's `catch` was rewritten to read
 the actual cause instead of swallowing it.
 
+✅ **Preview pipeline bypasses S3 CORS** — `useFileBlob(fileId)` fetches
+through the Python `/files/{id}/download` endpoint and returns a
+same-origin `blob:` URL. PDF, Markdown, Code, Text, and Data
+(CSV/TSV/JSON/XLSX) previewers all use it now, so direct
+`fetch(signedUrl)` is no longer on any preview path. See item P-8 below
+for the underlying bucket-policy fix that's still owed.
+
+✅ **Guest fingerprint header plumbed through `client.ts`** — every
+mutation now sends `X-Guest-Fingerprint` (when the cached fingerprint
+is available), in addition to `Authorization` for authed users.
+Auth-or-fingerprint contract is enforced (a request with neither
+identity is rejected client-side with `auth_required`).
+
+✅ **Folder CRUD wired to REST** — `createFolder`, `updateFolder` (new),
+and `deleteFolder` thunks now hit `POST/PATCH/DELETE /folders` instead
+of `supabase.from("cld_folders")`. The browser no longer writes to
+`cld_folders` for these flows.
+
+✅ **Bulk thunks** — `bulkDeleteFiles`, `bulkMoveFiles`, and
+`bulkMoveFolders` go through the new Python bulk endpoints with
+optimistic local updates and per-item rollback on partial failures.
+
+✅ **Guest → user migration thunk** — `migrateGuestToUser({ guestFingerprint })`
+calls `POST /files/migrate-guest-to-user` and is ready to be wired
+into the post-signup flow.
+
+✅ **"All files" → "Home"** — the section was misleadingly labeled
+"All files" but actually shows root-level items only (deeper files
+live under Recents / Starred / dedicated folders). Renamed in
+`ContentHeader.tsx`'s `SECTION_TITLES` and the `PRIMARY_SECTIONS`
+nav array. The IconRail tooltip already said "Home" — now consistent
+across all surfaces.
+
 ---
 
 ## ⚠️ For the PYTHON TEAM
@@ -215,29 +248,64 @@ want to be paranoid.
 
 ---
 
-### 🟢 P-6. Folder CRUD endpoints (still missing)
+### ✅ P-6. Folder CRUD endpoints — DELIVERED
 
-Already on the backlog (from prior `PYTHON_TEAM_COMMS.md` — left
-here for completeness):
-
-- `POST /folders` — create a folder explicitly (rare; usually upload auto-creates).
-- `PATCH /folders/:id` — rename.
-- `DELETE /folders/:id` — soft-delete recursively.
-- `POST /folders/:id/move` — move to a new parent.
-
-Right now folder rename / delete is unsupported in the UI because no
-endpoint exists.
+`POST /folders`, `PATCH /folders/{id}`, `DELETE /folders/{id}` are
+live. FE wired in `features/files/api/folders.ts` and consumed by
+`createFolder`, `updateFolder`, `deleteFolder` thunks. No browser-side
+writes to `cld_folders` remain in the upload + folder-CRUD paths.
 
 ---
 
-### 🟢 P-7. Bulk operations
+### ✅ P-7. Bulk operations — DELIVERED
 
-- `DELETE /files/bulk` `{ file_ids[], hard_delete? }`
-- `POST /files/bulk/move` `{ file_ids[], new_parent_folder_id }`
-- `POST /folders/bulk/move`
+`DELETE /files/bulk`, `POST /files/bulk/move`, `POST /folders/bulk/move`
+are live. FE wired in `features/files/api/{files,folders}.ts` and
+consumed by `bulkDeleteFiles`, `bulkMoveFiles`, `bulkMoveFolders`
+thunks. The bulk envelope `{ succeeded[], failed[{id, code, message}] }`
+is honored — partial-failure items are rolled back via per-item
+snapshots.
 
-The FE currently fans out per-file calls (concurrency 4). Works but
-generates 50× the request volume on bulk delete.
+---
+
+### 🔴 P-8. S3 bucket CORS still rejects browser `fetch()` of signed URLs
+
+**Symptom:** Opening a CSV / PDF / TXT file used to fail with
+`HTTP 403 Forbidden` while "Open in new tab" worked fine. Cause: the
+S3 bucket (`matrx-user-files`) doesn't allow our origin in CORS, so
+`fetch(signedUrl)` triggers a preflight that S3 rejects. Anchor
+navigation and `<img>`/`<video>`/`<audio>` are CORS-exempt and
+unaffected.
+
+**FE workaround (already shipped):** all fetch-based previewers
+(`PdfPreview`, `MarkdownPreview`, `CodePreview`, `TextPreview`,
+`DataPreview`) now route through `useFileBlob`, which downloads
+through the Python `/files/{id}/download` endpoint and returns a
+same-origin `blob:` URL. So previews work today regardless of bucket
+CORS.
+
+**What we still want from Python/Infra:** add the production app
+origins to the S3 bucket CORS policy so direct `fetch(signedUrl)` and
+`<a download>` against the bucket also work cleanly. Once that lands
+we can simplify previewers back to the signed URL path (one less
+round-trip through Python for each preview).
+
+Suggested CORS policy (XML):
+```xml
+<CORSConfiguration>
+  <CORSRule>
+    <AllowedOrigin>https://app.aimatrx.com</AllowedOrigin>
+    <AllowedOrigin>https://*.vercel.app</AllowedOrigin>
+    <AllowedOrigin>http://localhost:3000</AllowedOrigin>
+    <AllowedMethod>GET</AllowedMethod>
+    <AllowedMethod>HEAD</AllowedMethod>
+    <AllowedHeader>*</AllowedHeader>
+    <ExposeHeader>Content-Length</ExposeHeader>
+    <ExposeHeader>Content-Type</ExposeHeader>
+    <MaxAgeSeconds>3600</MaxAgeSeconds>
+  </CORSRule>
+</CORSConfiguration>
+```
 
 ---
 
@@ -289,28 +357,25 @@ land (P-6), this will move to the backend too.
 
 ---
 
-### 🔴 R-3. Wire guest-upload support once Python ships P-1
+### ✅ R-3. Wire guest-upload support — DONE
 
-**FE work** (after Python lands fingerprint auth):
+`features/files/api/client.ts → buildHeaders()` now:
+- Reads `getAccessTokenOrNull()` (no longer throws when missing).
+- Reads `getCachedFingerprint()` synchronously.
+- Sends `Authorization: Bearer <jwt>` when a session exists.
+- Sends `X-Guest-Fingerprint: <fp>` whenever a fingerprint is
+  available (even for authed users — backend can correlate prior
+  guest activity with the new auth identity).
+- Throws `auth_required` only when **both** are absent.
 
-```diff
-  // features/files/api/client.ts → buildHeaders()
-  async function buildHeaders(opts, includeContentType) {
--   const token = await getAccessToken();        // throws if no JWT
-+   const { user, fingerprint } = await getAuthOrFingerprint();
-    const headers = { ... };
-+   if (user) headers.Authorization = `Bearer ${user.token}`;
-+   else if (fingerprint) headers["X-Guest-Fingerprint"] = fingerprint;
-+   else throw new BackendApiError(...);
-  }
-```
+`uploadWithProgress` matches the same convention. `RequestOptions`
+gained an explicit `guestFingerprint?: string` override for the
+migrate-guest endpoint, which needs to send the OLD fingerprint
+even though the request is authed.
 
-`getAuthOrFingerprint` already has most of its plumbing in
-`hooks/useFingerprint.ts` and `lib/redux/slices/userSlice.ts`. Need
-to plumb the fingerprint into the `cloudUpload` request headers.
-
-After this, **delete** `hooks/usePublicFileUpload.ts` entirely. It's
-only there because guest uploads were impossible.
+**Still TODO — non-blocking:** `hooks/usePublicFileUpload.ts` and the
+`public-chat-uploads` Supabase bucket can now be retired. Track in
+INVENTORY.md.
 
 ---
 
@@ -352,11 +417,19 @@ disappears. Delete it and the `public-chat-uploads` Supabase bucket.
 
 ---
 
-### 🟡 R-6. Folder CRUD UI is half-built
+### ✅ R-6. Folder CRUD UI wired to REST — DONE
 
-`createFolder` / `deleteFolder` / `ensureFolderPath` thunks exist but
-write to `cld_folders` directly. Once Python ships P-6, switch them
-to REST calls. UI shouldn't change.
+`createFolder` and `deleteFolder` thunks now hit the Python
+`POST/DELETE /folders` endpoints. New `updateFolder` thunk added for
+rename / move / visibility / metadata edits via `PATCH /folders/{id}`,
+with optimistic local apply + rollback on failure.
+
+`ensureFolderPath` is **kept intentionally** for the rare case of
+"create a folder explicitly without uploading anything." It still
+writes via supabase-js because no equivalent server-side path-create
+helper exists yet — but uploads no longer call it (R-2). When the
+Python team adds a path-style create on `POST /folders`
+(`{ folder_path: "Images/Chat" }`), this can move server-side too.
 
 ---
 

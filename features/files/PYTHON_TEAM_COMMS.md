@@ -133,6 +133,72 @@ Live ledger of questions, feature requests, and backend-side asks. Every interac
 
 ---
 
+### 2026-04-26 — Req: S3 bucket CORS for browser `fetch()` of signed URLs
+
+**Status:** 🟠 deferred — frontend has a clean workaround.
+**Priority:** Medium (DX / latency, not a user-facing breakage).
+**Context:** Signed URLs returned by `GET /files/{id}/url` work
+fine for HTML elements that don't trigger CORS (`<img>`, `<video>`,
+`<audio>`, `<iframe>`, anchor navigation). They **fail with HTTP 403
+Forbidden** when the browser does `fetch(signedUrl)` because the
+`matrx-user-files` bucket policy doesn't allow our origin in CORS,
+so the preflight is rejected. This was breaking PDF / Markdown /
+Code / Text / Data previews, all of which need to read bytes via
+`fetch()` (or pdfjs's worker, which uses fetch under the hood).
+**Workaround in production now:** every fetch-based previewer routes
+through the Python `/files/{id}/download` endpoint via the new
+`useFileBlob` hook. The endpoint streams the bytes through FastAPI
+(which already has correct CORS) and we hand the previewer a
+`blob:` URL.
+**Ask:** Add the production app origins to the bucket CORS policy
+so direct signed-URL fetch works too. Suggested policy in
+[ARCHITECTURE_FLAWS.md item P-8](ARCHITECTURE_FLAWS.md#p-8).
+**Blocker?** No — workaround is shipped and stable. Removing the
+extra Python round-trip is a latency / bandwidth win, not a
+correctness fix.
+
+---
+
+### 2026-04-26 — Req: Confirm bulk + folder CRUD wire formats
+
+**Status:** 🟢 partially resolved — endpoints accepted by FE; field
+names assumed.
+**Priority:** Low.
+**Context:** Per the Python team's last status report, P-6 (folder
+CRUD) and P-7 (bulk operations) shipped. We've wired the FE assuming
+these wire formats:
+- `POST /folders` body: `{ folder_path? | folder_name + parent_id?, visibility?, metadata? }`
+- `PATCH /folders/{id}` body: `{ folder_name?, parent_id?, visibility?, metadata? }`
+- `DELETE /folders/{id}?hard_delete=true`
+- `DELETE /files/bulk` body: `{ file_ids: string[], hard_delete?: boolean }`
+- `POST /files/bulk/move` body: `{ file_ids: string[], new_parent_folder_id: string | null }`
+- `POST /folders/bulk/move` body: `{ folder_ids: string[], new_parent_id: string | null }`
+- `POST /files/migrate-guest-to-user` body: `{ guest_fingerprint: string, dry_run?: boolean }`
+- Bulk response envelope: `{ succeeded: string[], failed: { id, code, message }[] }`
+**Ask:** Confirm field names match exactly (snake_case spelled
+above). Update `cloud_files_frontend.md` §6 with these shapes so
+future agents don't have to reverse-engineer them.
+**Workaround:** FE renames at the boundary if anything differs;
+small fix.
+
+---
+
+### 2026-04-26 — Req: `POST /folders` should accept path-style `folder_path`
+
+**Status:** 🟡 awaiting confirmation.
+**Priority:** Low.
+**Context:** The FE's `ensureFolderPath` thunk creates intermediate
+folders (e.g. "Images/Chat/2026") via supabase-js because no
+backend equivalent existed. Now that `POST /folders` is live, we
+want to delete that thunk's supabase-js path too.
+**Ask:** Confirm `POST /folders` accepts `{ folder_path: "A/B/C" }`
+and creates each missing segment atomically (matching the upload
+auto-create semantics). If not, please add it — the alternative is
+the FE sequencing N create calls, which races on concurrent
+uploads to the same path.
+
+---
+
 ## Entry template
 
 When logging a new item, copy-paste:

@@ -9,9 +9,11 @@
 
 import {
   del,
+  delJson,
   downloadBlob,
   getJson,
   patchJson,
+  postJson,
   postMultipart,
   uploadWithProgress,
   type RequestOptions,
@@ -19,9 +21,14 @@ import {
   type UploadProgressEvent,
 } from "./client";
 import type {
+  BulkDeleteFilesRequest,
+  BulkMoveFilesRequest,
+  BulkOperationResponse,
   FilePatchRequest,
   FileRecordApi,
   FileUploadResponse,
+  MigrateGuestToUserRequest,
+  MigrateGuestToUserResponse,
   PermissionLevel,
   SignedUrlResponse,
   Visibility,
@@ -176,5 +183,70 @@ export async function getSignedUrl(
   return getJson<SignedUrlResponse>(
     `/files/${fileId}/url?expires_in=${expiresIn}`,
     opts,
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Bulk operations (Python P-7)
+// ---------------------------------------------------------------------------
+
+/**
+ * Soft-delete (or hard-delete with `hard_delete: true`) many files in one
+ * call. Returns a per-item succeeded/failed envelope so the UI can show
+ * partial-failure feedback without aborting the whole batch.
+ */
+export async function bulkDeleteFiles(
+  body: BulkDeleteFilesRequest,
+  opts: RequestOptions = {},
+): Promise<{ data: BulkOperationResponse | null; meta: ResponseMeta }> {
+  return delJson<BulkOperationResponse, BulkDeleteFilesRequest>(
+    "/files/bulk",
+    body,
+    opts,
+  );
+}
+
+/**
+ * Move many files to a new parent folder in one call. `new_parent_folder_id`
+ * = null moves to root. Returns per-item outcomes.
+ */
+export async function bulkMoveFiles(
+  body: BulkMoveFilesRequest,
+  opts: RequestOptions = {},
+): Promise<{ data: BulkOperationResponse; meta: ResponseMeta }> {
+  return postJson<BulkOperationResponse, BulkMoveFilesRequest>(
+    "/files/bulk/move",
+    body,
+    opts,
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Guest → user migration
+// ---------------------------------------------------------------------------
+
+/**
+ * Claim every file/folder owned by a guest fingerprint for the currently
+ * authenticated user. Call this once on first sign-in/sign-up after a guest
+ * session — the request is authed as the new user and carries the OLD
+ * fingerprint in the body.
+ *
+ * Pass `guestFingerprint` via `RequestOptions` so it also flows through the
+ * `X-Guest-Fingerprint` header — some backend builds key off the header
+ * rather than the body for parity with other guest-aware endpoints.
+ */
+export async function migrateGuestToUser(
+  body: MigrateGuestToUserRequest,
+  opts: RequestOptions = {},
+): Promise<{ data: MigrateGuestToUserResponse; meta: ResponseMeta }> {
+  return postJson<MigrateGuestToUserResponse, MigrateGuestToUserRequest>(
+    "/files/migrate-guest-to-user",
+    body,
+    {
+      ...opts,
+      // Always carry the source fingerprint in the header too, so the
+      // backend can pick whichever input it prefers.
+      guestFingerprint: opts.guestFingerprint ?? body.guest_fingerprint,
+    },
   );
 }

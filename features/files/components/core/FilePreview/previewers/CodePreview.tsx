@@ -14,7 +14,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
-import { AlertCircle, Copy, Check, ExternalLink } from "lucide-react";
+import { AlertCircle, Copy, Check } from "lucide-react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import {
   vscDarkPlus,
@@ -22,8 +22,7 @@ import {
 } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { cn } from "@/lib/utils";
 import { extname } from "../../../../utils/path";
-import { extractErrorMessage } from "@/utils/errors";
-import { toPreviewProxyUrl } from "@/features/files/utils/preview-url";
+import { useFileBlob } from "@/features/files/hooks/useFileBlob";
 
 /**
  * Lightweight theme reader. The project doesn't use next-themes — theme
@@ -51,7 +50,7 @@ function useIsDark(): boolean {
 }
 
 export interface CodePreviewProps {
-  url: string | null;
+  fileId: string;
   fileName: string;
   /** Cap fetched bytes — 1MB is plenty for any sane code file. */
   maxBytes?: number;
@@ -131,12 +130,18 @@ function detectLanguage(fileName: string): string {
 }
 
 export function CodePreview({
-  url,
+  fileId,
   fileName,
   maxBytes = 1024 * 1024,
   className,
 }: CodePreviewProps) {
   const isDark = useIsDark();
+  // Pulls bytes via the Python `/files/{id}/download` endpoint and gives
+  // us a `blob:` URL — same-origin, JWT-authenticated, CORS-safe. The
+  // S3-signed URL would 403 here because S3 bucket CORS doesn't allow
+  // `fetch()` from the browser.
+  const { blob, loading: blobLoading, error: blobError } = useFileBlob(fileId);
+
   const [text, setText] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [truncated, setTruncated] = useState(false);
@@ -145,31 +150,31 @@ export function CodePreview({
   const language = useMemo(() => detectLanguage(fileName), [fileName]);
 
   useEffect(() => {
-    if (!url) return;
+    if (!blob) return;
     let cancelled = false;
     setError(null);
     setText(null);
     setTruncated(false);
-    fetch(toPreviewProxyUrl(url) ?? url)
-      .then(async (res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-        const blob = await res.blob();
-        if (cancelled) return;
+    (async () => {
+      try {
         if (blob.size > maxBytes) {
+          if (cancelled) return;
           setTruncated(true);
           setText(await blob.slice(0, maxBytes).text());
         } else {
           setText(await blob.text());
         }
-      })
-      .catch((err: unknown) => {
+      } catch (err) {
         if (cancelled) return;
-        setError(extractErrorMessage(err));
-      });
+        setError(err instanceof Error ? err.message : String(err));
+      }
+    })();
     return () => {
       cancelled = true;
     };
-  }, [url, maxBytes]);
+  }, [blob, maxBytes]);
+
+  const combinedError = error ?? blobError;
 
   const onCopy = async () => {
     if (!text) return;
@@ -182,11 +187,7 @@ export function CodePreview({
     }
   };
 
-  if (error) {
-    const isNetworkLike =
-      error.toLowerCase().includes("fetch") ||
-      error.toLowerCase().includes("network") ||
-      error.startsWith("HTTP ");
+  if (combinedError) {
     return (
       <div
         className={cn(
@@ -199,33 +200,16 @@ export function CodePreview({
           <AlertCircle className="h-6 w-6 text-destructive" />
         </div>
         <div className="space-y-1">
-          <h3 className="text-sm font-semibold">
-            {isNetworkLike
-              ? "Couldn't reach this file"
-              : "Couldn't read this file"}
-          </h3>
+          <h3 className="text-sm font-semibold">Couldn&apos;t load this file</h3>
           <p className="max-w-md text-xs text-muted-foreground break-words">
-            {isNetworkLike
-              ? "The browser couldn't fetch the file's contents. The signed URL may have expired, the backend may be unreachable, or CORS may be blocking the request."
-              : error}
+            {combinedError}
           </p>
         </div>
-        {url ? (
-          <a
-            href={url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90"
-          >
-            <ExternalLink className="h-3.5 w-3.5" />
-            Open in new tab
-          </a>
-        ) : null}
       </div>
     );
   }
 
-  if (text == null) {
+  if (blobLoading || text == null) {
     return (
       <div
         className={cn(

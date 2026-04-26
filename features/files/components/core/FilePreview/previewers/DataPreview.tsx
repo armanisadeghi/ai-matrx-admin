@@ -28,7 +28,6 @@ import {
   ChevronDown,
   Copy,
   Database,
-  ExternalLink,
   FileJson,
   FileSpreadsheet,
   Loader2,
@@ -37,12 +36,12 @@ import {
 import Papa from "papaparse";
 import { cn } from "@/lib/utils";
 import { extname } from "@/features/files/utils/path";
-import { toPreviewProxyUrl } from "@/features/files/utils/preview-url";
+import { useFileBlob } from "@/features/files/hooks/useFileBlob";
 
 const ROWS_PER_PAGE = 25;
 
 export interface DataPreviewProps {
-  url: string | null;
+  fileId: string;
   fileName: string;
   className?: string;
 }
@@ -60,14 +59,17 @@ function detectKind(fileName: string): DataKind {
   return "unknown";
 }
 
-export function DataPreview({ url, fileName, className }: DataPreviewProps) {
+export function DataPreview({ fileId, fileName, className }: DataPreviewProps) {
   const kind = useMemo(() => detectKind(fileName), [fileName]);
+
+  // Same-origin blob via the Python download endpoint — no S3 CORS to fight.
+  const { blob, loading: blobLoading, error: blobError } = useFileBlob(fileId);
 
   // Tabular state
   const [data, setData] = useState<Row[] | null>(null);
   const [jsonRaw, setJsonRaw] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [parseError, setParseError] = useState<string | null>(null);
+  const [parsing, setParsing] = useState(true);
 
   // XLSX-specific
   const [sheetNames, setSheetNames] = useState<string[]>([]);
@@ -82,15 +84,13 @@ export function DataPreview({ url, fileName, className }: DataPreviewProps) {
 
   // ── Loaders ──────────────────────────────────────────────────────────────
 
-  const loadJson = useCallback(async (fileUrl: string) => {
-    const res = await fetch(toPreviewProxyUrl(fileUrl) ?? fileUrl);
-    if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-    const text = await res.text();
+  const loadJson = useCallback(async (b: Blob) => {
+    const text = await b.text();
     setJsonRaw(text);
     let parsed: unknown;
     try {
       parsed = JSON.parse(text);
-    } catch (err) {
+    } catch {
       // Not JSON we can table-render — keep raw for the JSON view path.
       setData(null);
       return;
@@ -100,7 +100,6 @@ export function DataPreview({ url, fileName, className }: DataPreviewProps) {
       return;
     }
     if (parsed && typeof parsed === "object") {
-      // Look for the first array-valued property; otherwise wrap the object.
       const arrayProp = Object.values(parsed as Record<string, unknown>).find(
         (v) => Array.isArray(v),
       );
@@ -114,35 +113,26 @@ export function DataPreview({ url, fileName, className }: DataPreviewProps) {
     setData(null);
   }, []);
 
-  const loadDelimited = useCallback(
-    async (fileUrl: string, delimiter: string) => {
-      const res = await fetch(toPreviewProxyUrl(fileUrl) ?? fileUrl);
-      if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-      const text = await res.text();
-      const parsed = Papa.parse<Row>(text, {
-        header: true,
-        dynamicTyping: true,
-        skipEmptyLines: true,
-        delimiter,
-      });
-      if (parsed.errors.length) {
-        // Surface only the first parse error; PapaParse is permissive enough
-        // that one malformed line shouldn't break the rest of the preview.
-        // eslint-disable-next-line no-console
-        console.warn("[DataPreview] parse warning:", parsed.errors[0]);
-      }
-      setData(parsed.data);
-    },
-    [],
-  );
+  const loadDelimited = useCallback(async (b: Blob, delimiter: string) => {
+    const text = await b.text();
+    const parsed = Papa.parse<Row>(text, {
+      header: true,
+      dynamicTyping: true,
+      skipEmptyLines: true,
+      delimiter,
+    });
+    if (parsed.errors.length) {
+      // eslint-disable-next-line no-console
+      console.warn("[DataPreview] parse warning:", parsed.errors[0]);
+    }
+    setData(parsed.data);
+  }, []);
 
-  const loadXlsx = useCallback(async (fileUrl: string, sheetName?: string) => {
+  const loadXlsx = useCallback(async (b: Blob, sheetName?: string) => {
     // SheetJS is heavy (~600KB) — only pull it in when an Excel file is
     // actually opened. The dynamic import is a separate chunk.
     const XLSX = await import("xlsx");
-    const res = await fetch(toPreviewProxyUrl(fileUrl) ?? fileUrl);
-    if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-    const buf = await res.arrayBuffer();
+    const buf = await b.arrayBuffer();
     const wb = XLSX.read(buf, { type: "array" });
 
     const names = wb.SheetNames ?? [];
@@ -177,10 +167,10 @@ export function DataPreview({ url, fileName, className }: DataPreviewProps) {
   // ── Effect: initial load ─────────────────────────────────────────────────
 
   useEffect(() => {
-    if (!url) return;
+    if (!blob) return;
     let cancelled = false;
-    setLoading(true);
-    setError(null);
+    setParsing(true);
+    setParseError(null);
     setData(null);
     setJsonRaw(null);
     setPage(1);
@@ -190,44 +180,47 @@ export function DataPreview({ url, fileName, className }: DataPreviewProps) {
     const run = async () => {
       try {
         if (kind === "json") {
-          await loadJson(url);
+          await loadJson(blob);
         } else if (kind === "csv") {
-          await loadDelimited(url, ",");
+          await loadDelimited(blob, ",");
         } else if (kind === "tsv") {
-          await loadDelimited(url, "\t");
+          await loadDelimited(blob, "\t");
         } else if (kind === "xlsx") {
-          await loadXlsx(url);
+          await loadXlsx(blob);
         } else {
           throw new Error(`Unsupported data format: ${detectKind(fileName)}`);
         }
       } catch (err) {
         if (cancelled) return;
-        setError(extractErrorMessage(err));
+        setParseError(extractErrorMessage(err));
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) setParsing(false);
       }
     };
     void run();
     return () => {
       cancelled = true;
     };
-  }, [url, kind, loadJson, loadDelimited, loadXlsx, fileName]);
+  }, [blob, kind, loadJson, loadDelimited, loadXlsx, fileName]);
+
+  const error = parseError ?? blobError;
+  const loading = blobLoading || parsing;
 
   // ── XLSX: sheet swap ─────────────────────────────────────────────────────
 
   const onSwitchSheet = useCallback(
     async (sheet: string) => {
-      if (!url || kind !== "xlsx") return;
-      setLoading(true);
+      if (!blob || kind !== "xlsx") return;
+      setParsing(true);
       try {
-        await loadXlsx(url, sheet);
+        await loadXlsx(blob, sheet);
       } catch (err) {
-        setError(extractErrorMessage(err));
+        setParseError(extractErrorMessage(err));
       } finally {
-        setLoading(false);
+        setParsing(false);
       }
     },
-    [url, kind, loadXlsx],
+    [blob, kind, loadXlsx],
   );
 
   // ── Sort + filter + paginate ─────────────────────────────────────────────
@@ -323,22 +316,11 @@ export function DataPreview({ url, fileName, className }: DataPreviewProps) {
           <AlertCircle className="h-6 w-6 text-destructive" />
         </div>
         <div className="space-y-1">
-          <h3 className="text-sm font-semibold">Couldn't load this file</h3>
+          <h3 className="text-sm font-semibold">Couldn&apos;t load this file</h3>
           <p className="max-w-md text-xs text-muted-foreground break-words">
             {error}
           </p>
         </div>
-        {url ? (
-          <a
-            href={url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90"
-          >
-            <ExternalLink className="h-3.5 w-3.5" />
-            Open in new tab
-          </a>
-        ) : null}
       </div>
     );
   }

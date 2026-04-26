@@ -353,9 +353,12 @@ export default modelRegistrySlice.reducer;
 // Base selectors — plain lookups only, no transformation (Rule 4)
 // ---------------------------------------------------------------------------
 
-const selectRegistrySlice = (state: StateWithModelRegistry) => state.modelRegistry;
-const selectEntities = (state: StateWithModelRegistry) => state.modelRegistry.entities;
-const selectActiveIds = (state: StateWithModelRegistry) => state.modelRegistry.activeIds;
+const selectRegistrySlice = (state: StateWithModelRegistry) =>
+  state.modelRegistry;
+const selectEntities = (state: StateWithModelRegistry) =>
+  state.modelRegistry.entities;
+const selectActiveIds = (state: StateWithModelRegistry) =>
+  state.modelRegistry.activeIds;
 const selectDeprecatedIds = (state: StateWithModelRegistry) =>
   state.modelRegistry.deprecatedIds;
 
@@ -434,7 +437,8 @@ export const selectAllModelOptions = createSelector(
 export const selectModelLabelById = createSelector(
   [
     selectEntities,
-    (_state: StateWithModelRegistry, modelId: string | null | undefined) => modelId,
+    (_state: StateWithModelRegistry, modelId: string | null | undefined) =>
+      modelId,
   ],
   (entities, modelId): string | undefined => {
     if (!modelId) return undefined;
@@ -451,7 +455,8 @@ export const selectModelLabelById = createSelector(
 export const selectModelNameById = createSelector(
   [
     selectEntities,
-    (_state: StateWithModelRegistry, modelId: string | null | undefined) => modelId,
+    (_state: StateWithModelRegistry, modelId: string | null | undefined) =>
+      modelId,
   ],
   (entities, modelId): string | undefined => {
     if (!modelId) return undefined;
@@ -468,7 +473,10 @@ export const selectModelNameById = createSelector(
  * subscribe to different IDs simultaneously.
  */
 export const selectModelById = createSelector(
-  [selectEntities, (_state: StateWithModelRegistry, modelId: string) => modelId],
+  [
+    selectEntities,
+    (_state: StateWithModelRegistry, modelId: string) => modelId,
+  ],
   (entities, modelId): AIModelRecord | undefined => entities[modelId],
 );
 
@@ -481,7 +489,10 @@ export const selectModelById = createSelector(
  */
 export const makeSelectModelById = () =>
   createSelector(
-    [selectEntities, (_state: StateWithModelRegistry, modelId: string) => modelId],
+    [
+      selectEntities,
+      (_state: StateWithModelRegistry, modelId: string) => modelId,
+    ],
     (entities, modelId): AIModelRecord | undefined => entities[modelId],
   );
 
@@ -489,7 +500,10 @@ export const makeSelectModelById = () =>
  * Controls blob for a model. Undefined when record not found or not yet fetched.
  */
 export const selectModelControls = createSelector(
-  [selectEntities, (_state: StateWithModelRegistry, modelId: string) => modelId],
+  [
+    selectEntities,
+    (_state: StateWithModelRegistry, modelId: string) => modelId,
+  ],
   (entities, modelId) => entities[modelId]?.controls,
 );
 
@@ -497,7 +511,10 @@ export const selectModelControls = createSelector(
  * fetchType for a single model — 'options', 'full', or undefined if unknown.
  */
 export const selectModelFetchType = createSelector(
-  [selectEntities, (_state: StateWithModelRegistry, modelId: string) => modelId],
+  [
+    selectEntities,
+    (_state: StateWithModelRegistry, modelId: string) => modelId,
+  ],
   (entities, modelId): ModelRecordFetchType | undefined =>
     entities[modelId]?._fetchType,
 );
@@ -534,7 +551,8 @@ export const selectAllModelsReady = createSelector(
 export const selectModelFullyLoaded = createSelector(
   [
     selectEntities,
-    (_state: StateWithModelRegistry, modelId: string | null | undefined) => modelId,
+    (_state: StateWithModelRegistry, modelId: string | null | undefined) =>
+      modelId,
   ],
   (entities, modelId): boolean => {
     if (!modelId) return false;

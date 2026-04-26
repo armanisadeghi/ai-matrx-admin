@@ -9,64 +9,63 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AlertCircle, ExternalLink } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { extractErrorMessage } from "@/utils/errors";
-import { toPreviewProxyUrl } from "@/features/files/utils/preview-url";
+import { useFileBlob } from "@/features/files/hooks/useFileBlob";
 
 export interface TextPreviewProps {
-  url: string | null;
+  fileId: string;
   /** Max bytes to fetch. Defaults 1MB. */
   maxBytes?: number;
   className?: string;
 }
 
 export function TextPreview({
-  url,
+  fileId,
   maxBytes = 1024 * 1024,
   className,
 }: TextPreviewProps) {
+  // Pulls bytes via the Python `/files/{id}/download` endpoint and gives
+  // us a `blob:` URL. Same-origin, JWT-authenticated, CORS-safe — no S3
+  // signed-URL hosts ever hit the browser fetch path.
+  const { blob, loading: blobLoading, error: blobError } = useFileBlob(fileId);
+
   const [text, setText] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [truncated, setTruncated] = useState(false);
 
   useEffect(() => {
-    if (!url) return;
+    if (!blob) return;
     let cancelled = false;
     setError(null);
     setText(null);
     setTruncated(false);
-    fetch(toPreviewProxyUrl(url) ?? url)
-      .then(async (res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const blob = await res.blob();
-        if (cancelled) return;
+    (async () => {
+      try {
         if (blob.size > maxBytes) {
           const slice = blob.slice(0, maxBytes);
+          if (cancelled) return;
           setTruncated(true);
           setText(await slice.text());
         } else {
           setText(await blob.text());
         }
-      })
-      .catch((err: unknown) => {
+      } catch (err) {
         if (cancelled) return;
-        setError(extractErrorMessage(err));
-      });
+        setError(err instanceof Error ? err.message : String(err));
+      }
+    })();
     return () => {
       cancelled = true;
     };
-  }, [url, maxBytes]);
+  }, [blob, maxBytes]);
 
-  if (error) {
-    // Honest error UI — distinguishes "we can't reach the file" (network /
-    // CORS / expired URL) from "we can't render this format" (which is a
-    // capability problem, not a fetch problem). The previous version always
-    // said "Preview failed" which the user correctly called out as misleading.
-    const isNetworkLike =
-      error.toLowerCase().includes("fetch") ||
-      error.toLowerCase().includes("network") ||
-      error.startsWith("HTTP ");
+  // Surface the underlying download error verbatim so users see the real
+  // backend response (HTTP 401 / 403 / 404 / network) instead of a
+  // generic "Preview failed".
+  const combinedError = error ?? blobError;
+
+  if (combinedError) {
     return (
       <div
         className={cn(
@@ -79,33 +78,16 @@ export function TextPreview({
           <AlertCircle className="h-6 w-6 text-destructive" />
         </div>
         <div className="space-y-1">
-          <h3 className="text-sm font-semibold">
-            {isNetworkLike
-              ? "Couldn't reach this file"
-              : "Couldn't read this file"}
-          </h3>
+          <h3 className="text-sm font-semibold">Couldn&apos;t load this file</h3>
           <p className="max-w-md text-xs text-muted-foreground break-words">
-            {isNetworkLike
-              ? "The browser couldn't fetch the file's contents. The signed URL may have expired, the backend may be unreachable, or CORS may be blocking the request."
-              : error}
+            {combinedError}
           </p>
         </div>
-        {url ? (
-          <a
-            href={url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90"
-          >
-            <ExternalLink className="h-3.5 w-3.5" />
-            Open in new tab
-          </a>
-        ) : null}
       </div>
     );
   }
 
-  if (text == null) {
+  if (blobLoading || text == null) {
     return (
       <div
         className={cn(

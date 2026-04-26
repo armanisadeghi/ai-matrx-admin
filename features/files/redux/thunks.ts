@@ -73,6 +73,10 @@ import {
 import { getFileFromState } from "./selectors";
 
 import type {
+  BulkDeleteFilesArg,
+  BulkMoveFilesArg,
+  BulkMoveFoldersArg,
+  BulkOperationResponse,
   CloudFile,
   CloudFileFieldSnapshot,
   CloudFilePermission,
@@ -83,6 +87,8 @@ import type {
   DeactivateShareLinkArg,
   DeleteFileArg,
   GrantPermissionArg,
+  MigrateGuestToUserArg,
+  MigrateGuestToUserResponse,
   MoveFileArg,
   RenameFileArg,
   RestoreVersionArg,
@@ -340,16 +346,22 @@ export const loadShareLinks = createAsyncThunk<
 // Python team ships a REST endpoint later, these thunks can be swapped to
 // hit it without changing callers.
 
+/**
+ * Create a folder via the Python REST contract. We hit `POST /folders` with
+ * the explicit `{ folder_name, parent_id }` form because callers already
+ * resolve the parent id from the tree. The path-style form (`folder_path`)
+ * is preferred for upload-time auto-create, which `uploadFiles` handles.
+ *
+ * Architecturally important: this thunk no longer touches `cld_folders` from
+ * the browser. Folder writes were the single biggest source of RLS recursion
+ * regressions; routing them through the backend (which uses SECURITY DEFINER
+ * helpers) makes the path uniform with file uploads.
+ */
 export const createFolder = createAsyncThunk<
   string,
   import("@/features/files/types").CreateFolderArg,
   ThunkApi
->("cloudFiles/createFolder", async (arg, { dispatch, getState }) => {
-  const state = getState();
-  const parent = arg.parentId
-    ? state.cloudFiles.foldersById[arg.parentId]
-    : null;
-
+>("cloudFiles/createFolder", async (arg, { dispatch }) => {
   const folderName = arg.folderName.trim();
   if (!folderName) {
     throw new Error("Folder name cannot be empty.");
@@ -358,44 +370,126 @@ export const createFolder = createAsyncThunk<
     throw new Error("Folder names cannot contain '/' or '\\'.");
   }
 
-  const folderPath = parent ? `${parent.folderPath}/${folderName}` : folderName;
+  const requestId = newRequestId();
+  registerRequest({
+    requestId,
+    kind: "folder-create",
+    resourceId: null,
+    resourceType: "folder",
+  });
 
-  // Pull owner_id from the current session — RLS enforces the match anyway.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Must be signed in to create a folder.");
+  try {
+    const { data: row } = await Folders.createFolder(
+      {
+        folder_name: folderName,
+        parent_id: arg.parentId,
+        visibility: arg.visibility ?? "private",
+        metadata: arg.metadata ?? null,
+      },
+      { requestId },
+    );
 
-  const insertRow = {
-    folder_name: folderName,
-    folder_path: folderPath,
-    owner_id: user.id,
-    parent_id: arg.parentId,
-    visibility: arg.visibility ?? "private",
-    metadata: (arg.metadata ?? {}) as Record<string, unknown>,
+    const folder = dbRowToCloudFolder(row);
+    dispatch(upsertFolder(folder));
+    dispatch(
+      attachChildToFolder({
+        parentFolderId: folder.parentId,
+        kind: "folder",
+        id: folder.id,
+      }),
+    );
+    return folder.id;
+  } finally {
+    releaseRequest(requestId);
+  }
+});
+
+/**
+ * Update folder properties — rename, move (`parentId`), change visibility,
+ * patch metadata. Optimistic: applies the patch locally before the REST call
+ * and rolls back on failure.
+ */
+export const updateFolder = createAsyncThunk<
+  void,
+  import("@/features/files/types").UpdateFolderArg,
+  ThunkApi
+>("cloudFiles/updateFolder", async (arg, { dispatch, getState }) => {
+  const state = getState();
+  const folder = state.cloudFiles.foldersById[arg.folderId];
+  if (!folder) throw new Error(`Folder not found: ${arg.folderId}`);
+
+  const requestId = newRequestId();
+  registerRequest({
+    requestId,
+    kind: "folder-update",
+    resourceId: arg.folderId,
+    resourceType: "folder",
+  });
+
+  // Optimistic: apply the patch locally.
+  const patch = arg.patch;
+  const optimistic: CloudFolder = {
+    ...folder,
+    ...(patch.folderName !== undefined ? { folderName: patch.folderName } : {}),
+    ...(patch.parentId !== undefined ? { parentId: patch.parentId } : {}),
+    ...(patch.visibility !== undefined ? { visibility: patch.visibility } : {}),
+    ...(patch.metadata !== undefined ? { metadata: patch.metadata } : {}),
   };
+  dispatch(upsertFolder(optimistic));
 
-  const { data, error } = await supabase
-    .from("cld_folders")
-    .insert(insertRow)
-    .select("*")
-    .single();
-
-  if (error) {
-    // Surface FK + unique-violation errors as-is.
-    throw error;
+  // Track move in tree state — detach from old parent, attach under new.
+  if (patch.parentId !== undefined && patch.parentId !== folder.parentId) {
+    dispatch(
+      detachChildFromFolder({
+        parentFolderId: folder.parentId,
+        kind: "folder",
+        id: folder.id,
+      }),
+    );
+    dispatch(
+      attachChildToFolder({
+        parentFolderId: patch.parentId,
+        kind: "folder",
+        id: folder.id,
+      }),
+    );
   }
 
-  const folder = dbRowToCloudFolder(data);
-  dispatch(upsertFolder(folder));
-  dispatch(
-    attachChildToFolder({
-      parentFolderId: folder.parentId,
-      kind: "folder",
-      id: folder.id,
-    }),
-  );
-  return folder.id;
+  try {
+    const { data: row } = await Folders.patchFolder(
+      arg.folderId,
+      {
+        folder_name: patch.folderName,
+        parent_id: patch.parentId,
+        visibility: patch.visibility,
+        metadata: patch.metadata ?? null,
+      },
+      { requestId },
+    );
+    dispatch(upsertFolder(dbRowToCloudFolder(row)));
+  } catch (err) {
+    // Roll back to the pre-edit folder state and tree links.
+    dispatch(upsertFolder(folder));
+    if (patch.parentId !== undefined && patch.parentId !== folder.parentId) {
+      dispatch(
+        detachChildFromFolder({
+          parentFolderId: patch.parentId,
+          kind: "folder",
+          id: folder.id,
+        }),
+      );
+      dispatch(
+        attachChildToFolder({
+          parentFolderId: folder.parentId,
+          kind: "folder",
+          id: folder.id,
+        }),
+      );
+    }
+    throw err;
+  } finally {
+    releaseRequest(requestId);
+  }
 });
 
 export const deleteFolder = createAsyncThunk<
@@ -407,22 +501,24 @@ export const deleteFolder = createAsyncThunk<
   const folder = state.cloudFiles.foldersById[arg.folderId];
   if (!folder) return;
 
-  // Optimistic: mark deleted or remove.
-  if (arg.hardDelete) {
-    const { error } = await supabase
-      .from("cld_folders")
-      .delete()
-      .eq("id", arg.folderId);
-    if (error) throw error;
-  } else {
-    const { error } = await supabase
-      .from("cld_folders")
-      .update({ deleted_at: new Date().toISOString() })
-      .eq("id", arg.folderId);
-    if (error) throw error;
-  }
+  const requestId = newRequestId();
+  registerRequest({
+    requestId,
+    kind: "folder-delete",
+    resourceId: arg.folderId,
+    resourceType: "folder",
+  });
 
-  dispatch(removeFolder({ id: arg.folderId }));
+  try {
+    await Folders.deleteFolder(
+      arg.folderId,
+      { hardDelete: arg.hardDelete },
+      { requestId },
+    );
+    dispatch(removeFolder({ id: arg.folderId }));
+  } finally {
+    releaseRequest(requestId);
+  }
 });
 
 /**
@@ -1079,4 +1175,318 @@ export const getSignedUrl = createAsyncThunk<
 >("cloudFiles/getSignedUrl", async ({ fileId, expiresIn }) => {
   const { data } = await Files.getSignedUrl(fileId, { expiresIn });
   return { url: data.url, expiresIn: data.expires_in };
+});
+
+// ---------------------------------------------------------------------------
+// Bulk operations (Python P-7)
+// ---------------------------------------------------------------------------
+//
+// Each bulk thunk applies the optimistic local change up front, then makes a
+// single REST round-trip. The backend returns a per-item succeeded/failed
+// envelope; we re-apply the failed entries by re-upserting their pre-change
+// state from a snapshot taken before the optimistic update.
+
+/**
+ * Soft-delete (or hard-delete) many files in one round-trip.
+ *
+ * Returns the per-item envelope so the caller can decide how to surface
+ * partial failures (toast vs. row-level error chips). Successful ids are
+ * removed from the local store immediately for snappy UI.
+ */
+export const bulkDeleteFiles = createAsyncThunk<
+  BulkOperationResponse,
+  BulkDeleteFilesArg,
+  ThunkApi
+>("cloudFiles/bulkDeleteFiles", async (arg, { dispatch, getState }) => {
+  if (arg.fileIds.length === 0) {
+    return { succeeded: [], failed: [] };
+  }
+
+  // Snapshot pre-change records for rollback on per-item failures.
+  const state = getState();
+  const snapshots = new Map<string, CloudFile>();
+  for (const id of arg.fileIds) {
+    const file = state.cloudFiles.filesById[id];
+    if (file) snapshots.set(id, file);
+  }
+
+  const requestId = newRequestId();
+  registerRequest({
+    requestId,
+    kind: "bulk-delete-files",
+    resourceId: null,
+    resourceType: "file",
+  });
+
+  // Optimistic: remove all targets from the local store.
+  for (const id of arg.fileIds) dispatch(removeFile({ id }));
+
+  try {
+    const { data } = await Files.bulkDeleteFiles(
+      { file_ids: arg.fileIds, hard_delete: arg.hardDelete },
+      { requestId },
+    );
+    const result = data ?? { succeeded: arg.fileIds, failed: [] };
+
+    // Rollback any items the backend reports as failed.
+    for (const failure of result.failed) {
+      const snap = snapshots.get(failure.id);
+      if (snap) dispatch(upsertFile(snap));
+    }
+    return result;
+  } catch (err) {
+    // Whole-call failure — restore everything we removed.
+    for (const snap of snapshots.values()) dispatch(upsertFile(snap));
+    throw err;
+  } finally {
+    releaseRequest(requestId);
+  }
+});
+
+/**
+ * Move many files to a new parent folder in one round-trip. Pass `null` to
+ * move to root.
+ */
+export const bulkMoveFiles = createAsyncThunk<
+  BulkOperationResponse,
+  BulkMoveFilesArg,
+  ThunkApi
+>("cloudFiles/bulkMoveFiles", async (arg, { dispatch, getState }) => {
+  if (arg.fileIds.length === 0) {
+    return { succeeded: [], failed: [] };
+  }
+
+  const state = getState();
+  const snapshots = new Map<string, CloudFile>();
+  for (const id of arg.fileIds) {
+    const file = state.cloudFiles.filesById[id];
+    if (file) snapshots.set(id, file);
+  }
+
+  const requestId = newRequestId();
+  registerRequest({
+    requestId,
+    kind: "bulk-move-files",
+    resourceId: null,
+    resourceType: "file",
+  });
+
+  // Optimistic: re-parent + retract from old parent / attach to new in tree.
+  for (const [id, file] of snapshots) {
+    if (file.parentFolderId === arg.newParentFolderId) continue;
+    dispatch(
+      detachChildFromFolder({
+        parentFolderId: file.parentFolderId,
+        kind: "file",
+        id,
+      }),
+    );
+    dispatch(
+      attachChildToFolder({
+        parentFolderId: arg.newParentFolderId,
+        kind: "file",
+        id,
+      }),
+    );
+    dispatch(upsertFile({ ...file, parentFolderId: arg.newParentFolderId }));
+  }
+
+  try {
+    const { data } = await Files.bulkMoveFiles(
+      {
+        file_ids: arg.fileIds,
+        new_parent_folder_id: arg.newParentFolderId,
+      },
+      { requestId },
+    );
+
+    // Roll back per-item failures.
+    for (const failure of data.failed) {
+      const snap = snapshots.get(failure.id);
+      if (!snap || snap.parentFolderId === arg.newParentFolderId) continue;
+      dispatch(
+        detachChildFromFolder({
+          parentFolderId: arg.newParentFolderId,
+          kind: "file",
+          id: snap.id,
+        }),
+      );
+      dispatch(
+        attachChildToFolder({
+          parentFolderId: snap.parentFolderId,
+          kind: "file",
+          id: snap.id,
+        }),
+      );
+      dispatch(upsertFile(snap));
+    }
+    return data;
+  } catch (err) {
+    // Whole-call failure — restore everything.
+    for (const snap of snapshots.values()) {
+      if (snap.parentFolderId === arg.newParentFolderId) continue;
+      dispatch(
+        detachChildFromFolder({
+          parentFolderId: arg.newParentFolderId,
+          kind: "file",
+          id: snap.id,
+        }),
+      );
+      dispatch(
+        attachChildToFolder({
+          parentFolderId: snap.parentFolderId,
+          kind: "file",
+          id: snap.id,
+        }),
+      );
+      dispatch(upsertFile(snap));
+    }
+    throw err;
+  } finally {
+    releaseRequest(requestId);
+  }
+});
+
+/**
+ * Move many folders to a new parent in one round-trip. Pass `null` to move
+ * to root. The backend cascades `folder_path` updates to descendants.
+ */
+export const bulkMoveFolders = createAsyncThunk<
+  BulkOperationResponse,
+  BulkMoveFoldersArg,
+  ThunkApi
+>("cloudFiles/bulkMoveFolders", async (arg, { dispatch, getState }) => {
+  if (arg.folderIds.length === 0) {
+    return { succeeded: [], failed: [] };
+  }
+
+  const state = getState();
+  const snapshots = new Map<string, CloudFolder>();
+  for (const id of arg.folderIds) {
+    const folder = state.cloudFiles.foldersById[id];
+    if (folder) snapshots.set(id, folder);
+  }
+
+  const requestId = newRequestId();
+  registerRequest({
+    requestId,
+    kind: "bulk-move-folders",
+    resourceId: null,
+    resourceType: "folder",
+  });
+
+  // Optimistic: rewire each folder under the new parent.
+  for (const [id, folder] of snapshots) {
+    if (folder.parentId === arg.newParentId) continue;
+    dispatch(
+      detachChildFromFolder({
+        parentFolderId: folder.parentId,
+        kind: "folder",
+        id,
+      }),
+    );
+    dispatch(
+      attachChildToFolder({
+        parentFolderId: arg.newParentId,
+        kind: "folder",
+        id,
+      }),
+    );
+    dispatch(upsertFolder({ ...folder, parentId: arg.newParentId }));
+  }
+
+  try {
+    const { data } = await Folders.bulkMoveFolders(
+      { folder_ids: arg.folderIds, new_parent_id: arg.newParentId },
+      { requestId },
+    );
+
+    // Roll back per-item failures.
+    for (const failure of data.failed) {
+      const snap = snapshots.get(failure.id);
+      if (!snap || snap.parentId === arg.newParentId) continue;
+      dispatch(
+        detachChildFromFolder({
+          parentFolderId: arg.newParentId,
+          kind: "folder",
+          id: snap.id,
+        }),
+      );
+      dispatch(
+        attachChildToFolder({
+          parentFolderId: snap.parentId,
+          kind: "folder",
+          id: snap.id,
+        }),
+      );
+      dispatch(upsertFolder(snap));
+    }
+    return data;
+  } catch (err) {
+    for (const snap of snapshots.values()) {
+      if (snap.parentId === arg.newParentId) continue;
+      dispatch(
+        detachChildFromFolder({
+          parentFolderId: arg.newParentId,
+          kind: "folder",
+          id: snap.id,
+        }),
+      );
+      dispatch(
+        attachChildToFolder({
+          parentFolderId: snap.parentId,
+          kind: "folder",
+          id: snap.id,
+        }),
+      );
+      dispatch(upsertFolder(snap));
+    }
+    throw err;
+  } finally {
+    releaseRequest(requestId);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Guest → user migration
+// ---------------------------------------------------------------------------
+
+/**
+ * Claim every file/folder owned by a guest fingerprint for the currently
+ * authenticated user. Call this once on first sign-in/sign-up after a guest
+ * session — the request is authed as the new user and carries the OLD
+ * fingerprint via header + body.
+ *
+ * After the call returns, the caller should re-load the user file tree
+ * (`loadUserFileTree({ userId })`) so the previously-guest-owned items
+ * appear in the user's tree.
+ */
+export const migrateGuestToUser = createAsyncThunk<
+  MigrateGuestToUserResponse,
+  MigrateGuestToUserArg,
+  ThunkApi
+>("cloudFiles/migrateGuestToUser", async (arg) => {
+  if (!arg.guestFingerprint) {
+    throw new Error("guestFingerprint is required");
+  }
+  const requestId = newRequestId();
+  registerRequest({
+    requestId,
+    kind: "migrate-guest",
+    resourceId: null,
+    resourceType: null,
+  });
+
+  try {
+    const { data } = await Files.migrateGuestToUser(
+      {
+        guest_fingerprint: arg.guestFingerprint,
+        dry_run: arg.dryRun,
+      },
+      { requestId, guestFingerprint: arg.guestFingerprint },
+    );
+    return data;
+  } finally {
+    releaseRequest(requestId);
+  }
 });

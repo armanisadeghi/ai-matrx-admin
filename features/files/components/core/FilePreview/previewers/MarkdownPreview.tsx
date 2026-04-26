@@ -14,7 +14,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AlertCircle, ExternalLink, Loader2 } from "lucide-react";
+import { AlertCircle, Loader2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
@@ -22,55 +22,55 @@ import rehypeKatex from "rehype-katex";
 import rehypePrism from "rehype-prism-plus";
 import "katex/dist/katex.min.css";
 import { cn } from "@/lib/utils";
-import { extractErrorMessage } from "@/utils/errors";
-import { toPreviewProxyUrl } from "@/features/files/utils/preview-url";
+import { useFileBlob } from "@/features/files/hooks/useFileBlob";
 
 export interface MarkdownPreviewProps {
-  url: string | null;
+  fileId: string;
   /** Cap fetched bytes — 1MB is plenty for any reasonable readme. */
   maxBytes?: number;
   className?: string;
 }
 
 export function MarkdownPreview({
-  url,
+  fileId,
   maxBytes = 1024 * 1024,
   className,
 }: MarkdownPreviewProps) {
+  // Same-origin blob via the Python download endpoint — no S3 CORS to fight.
+  const { blob, loading: blobLoading, error: blobError } = useFileBlob(fileId);
+
   const [content, setContent] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [truncated, setTruncated] = useState(false);
 
   useEffect(() => {
-    if (!url) return;
+    if (!blob) return;
     let cancelled = false;
     setError(null);
     setContent(null);
     setTruncated(false);
-
-    fetch(toPreviewProxyUrl(url) ?? url)
-      .then(async (res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-        const blob = await res.blob();
-        if (cancelled) return;
+    (async () => {
+      try {
         if (blob.size > maxBytes) {
+          if (cancelled) return;
           setTruncated(true);
           setContent(await blob.slice(0, maxBytes).text());
         } else {
           setContent(await blob.text());
         }
-      })
-      .catch((err: unknown) => {
+      } catch (err) {
         if (cancelled) return;
-        setError(extractErrorMessage(err));
-      });
-
+        setError(err instanceof Error ? err.message : String(err));
+      }
+    })();
     return () => {
       cancelled = true;
     };
-  }, [url, maxBytes]);
+  }, [blob, maxBytes]);
 
-  if (error) {
+  const combinedError = error ?? blobError;
+
+  if (combinedError) {
     return (
       <div
         className={cn(
@@ -83,27 +83,16 @@ export function MarkdownPreview({
           <AlertCircle className="h-6 w-6 text-destructive" />
         </div>
         <div className="space-y-1">
-          <h3 className="text-sm font-semibold">Couldn't load this Markdown</h3>
+          <h3 className="text-sm font-semibold">Couldn&apos;t load this Markdown</h3>
           <p className="max-w-md text-xs text-muted-foreground break-words">
-            {error}
+            {combinedError}
           </p>
         </div>
-        {url ? (
-          <a
-            href={url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90"
-          >
-            <ExternalLink className="h-3.5 w-3.5" />
-            Open in new tab
-          </a>
-        ) : null}
       </div>
     );
   }
 
-  if (content == null) {
+  if (blobLoading || content == null) {
     return (
       <div
         className={cn(

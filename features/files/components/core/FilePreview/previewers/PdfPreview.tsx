@@ -7,16 +7,21 @@
  * NOTE: this file is itself dynamically imported by FilePreview (see
  * ../FilePreview.tsx). That ensures non-PDF previews never pay the PDF
  * bundle cost.
+ *
+ * Bytes are fetched through the Python `/files/{id}/download` endpoint via
+ * `useFileBlob` rather than the S3 signed URL — same-origin blob means
+ * react-pdf's worker fetch is CORS-safe regardless of the bucket policy.
  */
 
 "use client";
 
 import { useMemo, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
-import { AlertCircle, ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
+import { AlertCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import "react-pdf/dist/Page/TextLayer.css";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import { cn } from "@/lib/utils";
+import { useFileBlob } from "@/features/files/hooks/useFileBlob";
 
 // Worker source — pinned to the installed pdfjs version.
 if (typeof window !== "undefined") {
@@ -24,31 +29,25 @@ if (typeof window !== "undefined") {
 }
 
 export interface PdfPreviewProps {
-  url: string | null;
+  fileId: string;
   className?: string;
 }
 
-export default function PdfPreview({ url, className }: PdfPreviewProps) {
+export default function PdfPreview({ fileId, className }: PdfPreviewProps) {
+  // Same-origin blob URL via the Python download endpoint — sidesteps S3
+  // CORS that would otherwise 403 a `fetch()` from pdfjs's worker.
+  const { url, loading: blobLoading, error: blobError } = useFileBlob(fileId);
+
   const [numPages, setNumPages] = useState(0);
   const [pageNumber, setPageNumber] = useState(1);
-  const [error, setError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
+  // Memoize the file descriptor so react-pdf doesn't reload on every render.
   const documentFile = useMemo(() => (url ? { url } : null), [url]);
 
-  if (!documentFile) {
-    return (
-      <div
-        className={cn(
-          "flex h-full w-full items-center justify-center bg-muted/20",
-          className,
-        )}
-      >
-        <div className="h-10 w-10 animate-pulse rounded bg-muted" />
-      </div>
-    );
-  }
+  const combinedError = loadError ?? blobError;
 
-  if (error) {
+  if (combinedError) {
     return (
       <div
         className={cn(
@@ -61,22 +60,24 @@ export default function PdfPreview({ url, className }: PdfPreviewProps) {
           <AlertCircle className="h-6 w-6 text-destructive" />
         </div>
         <div className="space-y-1">
-          <h3 className="text-sm font-semibold">Couldn't load this PDF</h3>
+          <h3 className="text-sm font-semibold">Couldn&apos;t load this PDF</h3>
           <p className="max-w-md text-xs text-muted-foreground break-words">
-            {error}
+            {combinedError}
           </p>
         </div>
-        {url ? (
-          <a
-            href={url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90"
-          >
-            <ExternalLink className="h-3.5 w-3.5" />
-            Open in new tab
-          </a>
-        ) : null}
+      </div>
+    );
+  }
+
+  if (blobLoading || !documentFile) {
+    return (
+      <div
+        className={cn(
+          "flex h-full w-full items-center justify-center bg-muted/20",
+          className,
+        )}
+      >
+        <div className="h-10 w-10 animate-pulse rounded bg-muted" />
       </div>
     );
   }
@@ -94,7 +95,7 @@ export default function PdfPreview({ url, className }: PdfPreviewProps) {
           setNumPages(n);
           setPageNumber((p) => Math.min(p, n));
         }}
-        onLoadError={(err) => setError(err.message)}
+        onLoadError={(err) => setLoadError(err.message)}
         loading={
           <div className="mt-6 h-6 w-40 animate-pulse rounded bg-muted" />
         }

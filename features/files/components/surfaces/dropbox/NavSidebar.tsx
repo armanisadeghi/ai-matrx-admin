@@ -2,7 +2,7 @@
  * features/files/components/surfaces/dropbox/NavSidebar.tsx
  *
  * Secondary sidebar — the "Home" column in the Dropbox shell. Contains:
- *   - Primary sections (All files, Photos, Shared, File requests, Deleted files)
+ *   - Primary sections (Home, Recents, Photos, Shared, File requests, Deleted files)
  *   - Quick access (Starred placeholder + "Drag important items here" hint)
  *   - Folder list in either flat (default) or tree mode, toggled via
  *     `SidebarModeToggle`.

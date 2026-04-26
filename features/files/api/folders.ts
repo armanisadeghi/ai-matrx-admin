@@ -1,15 +1,33 @@
 /**
  * features/files/api/folders.ts
  *
- * Folder listing via REST. Folder CRUD is handled through file-move operations
- * on the backend (no dedicated folder-create endpoint in the current contract
- * — logged in PYTHON_TEAM_COMMS.md if we need one).
+ * Folder CRUD against the Python REST backend. Listing also goes through
+ * REST here for parity with the contract; supabase-js reads remain the
+ * preferred path for the live tree (`cld_get_user_file_tree`).
  *
- * Backend contract: features/files/cld_files_frontend.md §6.
+ * Backend contract: features/files/cloud_files_frontend.md §6 (Folders)
+ * plus the Python team's P-6 (folder CRUD) deliverables.
  */
 
-import { getJson, type RequestOptions, type ResponseMeta } from "./client";
-import type { CloudFolderRow } from "@/features/files/types";
+import {
+  del,
+  getJson,
+  patchJson,
+  postJson,
+  type RequestOptions,
+  type ResponseMeta,
+} from "./client";
+import type {
+  BulkMoveFoldersRequest,
+  BulkOperationResponse,
+  CloudFolderRow,
+  CreateFolderRequest,
+  FolderPatchRequest,
+} from "@/features/files/types";
+
+// ---------------------------------------------------------------------------
+// Read
+// ---------------------------------------------------------------------------
 
 export async function listFolders(
   params: { parentPath?: string } = {},
@@ -19,4 +37,74 @@ export async function listFolders(
     ? `?parent_path=${encodeURIComponent(params.parentPath)}`
     : "";
   return getJson<CloudFolderRow[]>(`/files/folders${q}`, opts);
+}
+
+// ---------------------------------------------------------------------------
+// Create / update / delete (Python P-6)
+// ---------------------------------------------------------------------------
+
+/**
+ * Create a folder. Prefer path-style (`folder_path: "Images/Chat"`) — the
+ * backend will create any missing intermediate folders atomically and
+ * idempotently, matching upload semantics.
+ */
+export async function createFolder(
+  body: CreateFolderRequest,
+  opts: RequestOptions = {},
+): Promise<{ data: CloudFolderRow; meta: ResponseMeta }> {
+  return postJson<CloudFolderRow, CreateFolderRequest>(
+    "/folders",
+    body,
+    opts,
+  );
+}
+
+/**
+ * Update a folder — rename, move (via `parent_id`), or change visibility.
+ * The backend cascades `folder_path` updates to descendants on the server
+ * side; we don't replay that on the client.
+ */
+export async function patchFolder(
+  folderId: string,
+  body: FolderPatchRequest,
+  opts: RequestOptions = {},
+): Promise<{ data: CloudFolderRow; meta: ResponseMeta }> {
+  return patchJson<CloudFolderRow, FolderPatchRequest>(
+    `/folders/${folderId}`,
+    body,
+    opts,
+  );
+}
+
+/**
+ * Soft-delete a folder. Pass `?hard_delete=true` to bypass the trash. The
+ * backend cascades to all descendants.
+ */
+export async function deleteFolder(
+  folderId: string,
+  params: { hardDelete?: boolean } = {},
+  opts: RequestOptions = {},
+): Promise<{ data: null; meta: ResponseMeta }> {
+  const q = params.hardDelete ? "?hard_delete=true" : "";
+  return del<null>(`/folders/${folderId}${q}`, opts);
+}
+
+// ---------------------------------------------------------------------------
+// Bulk (Python P-7)
+// ---------------------------------------------------------------------------
+
+/**
+ * Move many folders to a new parent in one call. Returns a per-item
+ * succeeded/failed envelope so the caller can show per-row error chips
+ * without aborting the whole batch.
+ */
+export async function bulkMoveFolders(
+  body: BulkMoveFoldersRequest,
+  opts: RequestOptions = {},
+): Promise<{ data: BulkOperationResponse; meta: ResponseMeta }> {
+  return postJson<BulkOperationResponse, BulkMoveFoldersRequest>(
+    "/folders/bulk/move",
+    body,
+    opts,
+  );
 }

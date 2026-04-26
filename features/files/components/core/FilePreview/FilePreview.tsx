@@ -153,25 +153,41 @@ export function FilePreview({
           className={className}
         />
       );
+    // Fetch-based previewers receive `fileId` so they can pull the bytes
+    // through the Python `/files/{id}/download` endpoint via `useFileBlob`.
+    // That sidesteps S3-CORS — the signed URL works in `<img>` / `<video>`
+    // / `<audio>` (no CORS preflight) but `fetch(signedUrl)` returns 403
+    // until the S3 bucket policy is fixed.
     case "pdf":
-      return <PdfPreview url={url} className={className} />;
+      return <PdfPreview fileId={fileId} className={className} />;
     case "markdown":
-      return <MarkdownPreview url={url} className={className} />;
+      return <MarkdownPreview fileId={fileId} className={className} />;
     case "data":
+      return (
+        <DataPreview
+          fileId={fileId}
+          fileName={file.fileName}
+          className={className}
+        />
+      );
     case "spreadsheet":
       return (
-        <DataPreview url={url} fileName={file.fileName} className={className} />
+        <DataPreview
+          fileId={fileId}
+          fileName={file.fileName}
+          className={className}
+        />
       );
     case "code":
       return (
         <CodePreview
-          url={url}
+          fileId={fileId}
           fileName={file.fileName}
           className={className}
         />
       );
     case "text":
-      return <TextPreview url={url} className={className} />;
+      return <TextPreview fileId={fileId} className={className} />;
     case "generic":
     default:
       return (

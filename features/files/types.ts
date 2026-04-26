@@ -470,6 +470,136 @@ export interface DeactivateShareLinkArg {
 }
 
 // ---------------------------------------------------------------------------
+// 10b. Folder CRUD requests (Python P-6 contract)
+// ---------------------------------------------------------------------------
+
+/**
+ * Request body for `POST /folders` — create a folder. The Python team
+ * accepts a logical path (e.g. "Images/Chat") OR an explicit name + parentId.
+ * Path-style is preferred because the backend creates intermediate folders
+ * atomically and idempotently, matching upload's auto-create semantics.
+ */
+export interface CreateFolderRequest {
+  /** Path style: "Images/Chat/2026". Backend creates any missing segments. */
+  folder_path?: string;
+  /** Explicit name (used when `parent_id` is set). */
+  folder_name?: string;
+  /** Required when using `folder_name`; null = root. */
+  parent_id?: string | null;
+  visibility?: Visibility;
+  metadata?: Record<string, unknown> | null;
+}
+
+/** Body for `PATCH /folders/{id}`. */
+export interface FolderPatchRequest {
+  folder_name?: string;
+  /** Move: new parent folder id, or null to move to root. */
+  parent_id?: string | null;
+  visibility?: Visibility;
+  metadata?: Record<string, unknown> | null;
+}
+
+// ---------------------------------------------------------------------------
+// 10c. Bulk operations (Python P-7 contract)
+// ---------------------------------------------------------------------------
+
+/** Body for `DELETE /files/bulk`. */
+export interface BulkDeleteFilesRequest {
+  file_ids: string[];
+  hard_delete?: boolean;
+}
+
+/** Body for `POST /files/bulk/move`. */
+export interface BulkMoveFilesRequest {
+  file_ids: string[];
+  /** Target parent folder id, or null to move to root. */
+  new_parent_folder_id: string | null;
+}
+
+/** Body for `POST /folders/bulk/move`. */
+export interface BulkMoveFoldersRequest {
+  folder_ids: string[];
+  /** Target parent folder id, or null to move to root. */
+  new_parent_id: string | null;
+}
+
+/**
+ * Per-item outcome inside a bulk response. Aligns with the standard
+ * "succeeded[] + failed[{id, reason}]" envelope the Python team uses for
+ * partial-failure operations.
+ */
+export interface BulkOperationFailure {
+  id: string;
+  /** One of the `CloudFilesErrorCode` values. */
+  code: string;
+  message: string;
+}
+
+export interface BulkOperationResponse {
+  succeeded: string[];
+  failed: BulkOperationFailure[];
+}
+
+// ---------------------------------------------------------------------------
+// 10d. Guest → user migration (Python P-?? contract)
+// ---------------------------------------------------------------------------
+
+/**
+ * Body for `POST /files/migrate-guest-to-user`. Sent right after a guest
+ * signs up — the request is authenticated as the new user but carries the
+ * *previous* `X-Guest-Fingerprint` header so the backend can claim every
+ * guest-owned file and folder for the new user id.
+ */
+export interface MigrateGuestToUserRequest {
+  /** Guest fingerprint to claim files from. */
+  guest_fingerprint: string;
+  /** Optional: limit migration to a single fingerprint scope. */
+  dry_run?: boolean;
+}
+
+export interface MigrateGuestToUserResponse {
+  /** New user id files were transferred to. */
+  user_id: string;
+  /** Source guest fingerprint. */
+  guest_fingerprint: string;
+  files_migrated: number;
+  folders_migrated: number;
+  /** Optional details if the backend reports per-resource outcomes. */
+  details?: BulkOperationResponse | null;
+}
+
+// Convenience thunk-arg variants (camelCase mirrors of the request bodies).
+export interface BulkDeleteFilesArg {
+  fileIds: string[];
+  hardDelete?: boolean;
+}
+
+export interface BulkMoveFilesArg {
+  fileIds: string[];
+  newParentFolderId: string | null;
+}
+
+export interface BulkMoveFoldersArg {
+  folderIds: string[];
+  newParentId: string | null;
+}
+
+export interface UpdateFolderArg {
+  folderId: string;
+  patch: {
+    folderName?: string;
+    parentId?: string | null;
+    visibility?: Visibility;
+    metadata?: Record<string, unknown>;
+  };
+}
+
+export interface MigrateGuestToUserArg {
+  guestFingerprint: string;
+  dryRun?: boolean;
+}
+
+// ---------------------------------------------------------------------------
 // 11. Request ledger
 // ---------------------------------------------------------------------------
 //
@@ -486,7 +616,14 @@ export type RequestKind =
   | "grant-permission"
   | "revoke-permission"
   | "create-share-link"
-  | "deactivate-share-link";
+  | "deactivate-share-link"
+  | "folder-create"
+  | "folder-update"
+  | "folder-delete"
+  | "bulk-delete-files"
+  | "bulk-move-files"
+  | "bulk-move-folders"
+  | "migrate-guest";
 
 export interface LedgerEntry {
   requestId: string;
