@@ -1,23 +1,14 @@
 // File: lib/redux/store.ts
+// Phase 4 — slim store. No entity imports whatsoever.
+// Entity-aware routes use `makeEntityStore` from `./entity-store.ts`.
 "use client";
 
 import { configureStore, ThunkAction, Action } from "@reduxjs/toolkit";
 import createSagaMiddleware from "redux-saga";
-// Phase 1 of entity-isolation migration: store.ts uses the entity-aware
-// saga for back-compat. Phase 4 flips this to `createSlimRootSaga` from
-// `./sagas/rootSaga`.
-import { createRootSaga } from "@/lib/redux/sagas/entity-rootSaga";
-// Phase 1 of entity-isolation migration: store.ts still uses the entity-aware
-// reducer for back-compat. Phase 4 flips this to `createSlimRootReducer` from
-// `./rootReducer` so the slim chunk no longer pulls in `lib/redux/entity/**`
-// or `utils/schema/initial*Schemas`. See plan in
-// `~/.claude/plans/the-entity-system-which-bubbly-wind.md`.
-import { createRootReducer } from "@/lib/redux/entity-rootReducer";
+import { createSlimRootSaga } from "@/lib/redux/sagas/rootSaga";
+import { createSlimRootReducer } from "@/lib/redux/rootReducer";
 import { loggerMiddleware } from "@/utils/logger";
-// Phase 11: legacy `storageMiddleware` removed. Cloud-files state is
-// driven by `cloudFilesRealtimeMiddleware` (imported below).
 import { enableMapSet } from "immer";
-import { entitySagaMiddleware } from "./entity/entitySagaMiddleware";
 import { socketMiddleware } from "./socket-io/connection/socketMiddleware";
 import { autoSaveMiddleware } from "@/features/notes/redux/autoSaveMiddleware";
 import { codeFilesAutoSaveMiddleware } from "@/features/code-files/redux/autoSaveMiddleware";
@@ -28,8 +19,7 @@ import { deriveIdentity } from "@/lib/sync/identity";
 import { syncPolicies } from "@/lib/sync/registry";
 import type { IdentityKey } from "@/lib/sync/types";
 import { mapUserData, type UserData } from "@/utils/userDataMapper";
-import { getEmptyGlobalCache } from "@/utils/schema/schema-processing/emptyGlobalCache";
-import { InitialReduxState, LiteInitialReduxState } from "@/types/reduxTypes";
+import type { BaseReduxState, LiteInitialReduxState } from "@/types/reduxTypes";
 import { defaultUserPreferences } from "@/lib/redux/slices/defaultPreferences";
 import {
   initializeUserPreferencesState,
@@ -38,14 +28,16 @@ import {
 } from "@/lib/redux/slices/userPreferencesSlice";
 import type { UserAuthState } from "@/lib/redux/slices/userAuthSlice";
 import type { UserProfileState } from "@/lib/redux/slices/userProfileSlice";
-import { setStoreSingleton } from "./store-singleton";
+import {
+  setStoreSingleton,
+  setRunSaga,
+  runSagaViaRegistry,
+} from "./store-singleton";
 
 /**
- * Phase 4: split a flat `UserData` (the wire shape from `mapUserData` and
- * SSR layouts) into the two new slices' preloaded states. Keeps server
- * layouts oblivious to the slice split — they keep passing
- * `initialReduxState.user = mapUserData(...)` and the store does the
- * domain partitioning here.
+ * Splits a flat `UserData` wire shape into the two slice preloaded states.
+ * Server layouts keep passing `initialReduxState.user = mapUserData(...)`;
+ * the store partitions it into `userAuth` + `userProfile` here.
  */
 function splitUserData(user: UserData): {
   userAuth: UserAuthState;
@@ -62,53 +54,36 @@ function splitUserData(user: UserData): {
       identities: user.identities,
       isAdmin: user.isAdmin,
       accessToken: user.accessToken,
-      tokenExpiresAt: null, // not on UserData wire shape
-      // Mark authReady=true if we have an id OR if this is an explicit guest
-      // seed (server layout always populates this — UserData is never partial).
-      // Guests get authReady=true from `usePublicAuthSync` after fingerprint.
+      tokenExpiresAt: null,
       authReady: user.id !== null,
     },
     userProfile: {
       userMetadata: user.userMetadata,
-      fingerprintId: null, // not on UserData wire shape; populated by usePublicAuthSync
+      fingerprintId: null,
       shellDataLoaded: false,
     },
   };
 }
-const sagaMiddleware = createSagaMiddleware();
 
-/**
- * Starts an additional saga on the running store's saga middleware.
- * Used by injectEntityReducers to start entity sagas after on-demand injection.
- */
-export function runSaga<T>(saga: () => Generator): void {
-  sagaMiddleware.run(saga as () => any);
-}
+const sagaMiddleware = createSagaMiddleware();
 
 /**
  * Sync engine context attached to the store as `_sync`. Consumed by
  * `StoreProvider` to drive `bootSync` without double-opening the channel.
- *
- * `identity` stays live (updated on every swap) so passive readers — like
- * the demo panel — get the current value. `getIdentity()` is the same read
- * wrapped as a function, required by the middleware/scheduler internals
- * that hold a stable reference across renders.
  */
 export interface StoreSyncContext {
   channel: SyncChannel;
   identity: IdentityKey;
-  /** Live identity getter. Use this over `identity` when holding a reference across swaps. */
   getIdentity: () => IdentityKey;
-  /** Runtime identity swap (auth flip). Phase 4 wires a reactive listener. */
   setIdentity: (next: IdentityKey) => void;
 }
 
 function resolveUserPreferencesForBootstrap(
-  input: Partial<InitialReduxState> & LiteInitialReduxState,
-  base: InitialReduxState,
+  input: Partial<BaseReduxState> & LiteInitialReduxState,
+  base: { userPreferences: UserPreferencesState },
 ): UserPreferencesState {
   if (input.userPreferences === undefined) {
-    return base.userPreferences as UserPreferencesState;
+    return base.userPreferences;
   }
   const raw = input.userPreferences as Record<string, unknown>;
   if (raw && typeof raw === "object" && "_meta" in raw) {
@@ -121,18 +96,11 @@ function resolveUserPreferencesForBootstrap(
 }
 
 /**
- * Builds a complete preloaded state for store creation from optional / partial
- * bootstrap data (public routes, tests). Server layouts should pass full state.
- *
- * Phase 4: the legacy `user` key is split into `userAuth` + `userProfile` and
- * the legacy field is **omitted from the output** — there is no `user` reducer
- * in the rootReducer anymore, so including it would trigger Redux's
- * "Unexpected key 'user'" warning at store creation time. Server layouts keep
- * passing the flat `UserData` wire shape via `input.user` (back-compat); we
- * partition it into the two slice slots and discard the wire shape.
+ * Builds slim preloaded state from optional partial bootstrap data.
+ * Does NOT include `globalCache` — the slim store has no entity reducers.
  */
 export function resolveStoreBootstrapState(
-  input?: Partial<InitialReduxState> & LiteInitialReduxState,
+  input?: Partial<BaseReduxState> & LiteInitialReduxState,
 ): Record<string, unknown> {
   const baseUser = mapUserData(null, undefined, false);
   const baseSplit = splitUserData(baseUser);
@@ -140,7 +108,6 @@ export function resolveStoreBootstrapState(
     defaultUserPreferences,
     true,
   );
-  const baseGlobalCache = getEmptyGlobalCache();
 
   if (!input) {
     return {
@@ -148,7 +115,6 @@ export function resolveStoreBootstrapState(
       userProfile: baseSplit.userProfile,
       testRoutes: [] as string[],
       userPreferences: baseUserPreferences,
-      globalCache: baseGlobalCache,
     };
   }
 
@@ -159,18 +125,12 @@ export function resolveStoreBootstrapState(
   const split = splitUserData(mergedUser);
 
   const out: Record<string, unknown> = {
-    // NOTE: no `user` key — see function-level comment.
     userAuth: split.userAuth,
     userProfile: split.userProfile,
     testRoutes: input.testRoutes ?? [],
     userPreferences: resolveUserPreferencesForBootstrap(input, {
-      user: baseUser,
-      testRoutes: [],
       userPreferences: baseUserPreferences,
-      globalCache: baseGlobalCache,
     }),
-    globalCache:
-      input.globalCache !== undefined ? input.globalCache : baseGlobalCache,
   };
 
   if (input.contextMenuCache !== undefined) {
@@ -190,30 +150,11 @@ export function resolveStoreBootstrapState(
 }
 
 export const makeStore = (
-  initialState?: Partial<InitialReduxState> & LiteInitialReduxState,
+  initialState?: Partial<BaseReduxState> & LiteInitialReduxState,
 ) => {
   const resolved = resolveStoreBootstrapState(initialState);
-  const globalCache = resolved.globalCache as InitialReduxState["globalCache"];
+  const rootReducer = createSlimRootReducer();
 
-  if (!globalCache?.schema) {
-    throw new Error("Schema must be provided to create store");
-  }
-
-  // The rootReducer factory historically takes the full InitialReduxState;
-  // it only reads `globalCache` for the entity-system bootstrap, so a
-  // narrowed shape with that field is sufficient.
-  const rootReducer = createRootReducer({
-    globalCache,
-  } as InitialReduxState);
-
-  // --- Sync engine wiring (PR 1.B) -----------------------------------------
-  // Identity + channel are created here so the middleware closure owns them.
-  // StoreProvider calls `bootSync` post-construction, passing the same channel
-  // back via `openChannel` override so nothing is double-opened.
-  // `_sync` is attached to the returned store and consumed by StoreProvider.
-  // Phase 4: read user id from the post-split `userAuth` slice instead of the
-  // legacy `user` slot. The legacy field is preserved on the bootstrap state
-  // for back-compat with non-redux readers but is no longer authoritative.
   const initialBootUserId =
     (resolved.userAuth as { id?: string | null } | undefined)?.id ?? null;
   const initialIdentity: IdentityKey = deriveIdentity({
@@ -242,10 +183,8 @@ export const makeStore = (
         loggerMiddleware,
         socketMiddleware,
         syncMiddleware,
-        entitySagaMiddleware,
         autoSaveMiddleware,
         codeFilesAutoSaveMiddleware,
-        // notesRealtimeMiddleware — re-enable when workspace converges to Redux
         cloudFilesRealtimeMiddleware,
       ),
     devTools: process.env.NODE_ENV !== "production",
@@ -258,22 +197,18 @@ export const makeStore = (
     setIdentity: (next: IdentityKey) => {
       currentIdentity = next;
       syncChannel.setIdentity(next);
-      // Keep the public `.identity` snapshot in lockstep with the closure so
-      // passive readers (demo UI, dev console) don't observe a stale key.
       syncContext.identity = next;
     },
   };
-  // Attach sync context so StoreProvider can call bootSync with the same
-  // channel + identity getter/setter that the middleware closed over.
   const storeWithSync = Object.assign(store, { _sync: syncContext });
 
-  const rootSagaInstance = createRootSaga(
-    resolved.globalCache.entityNames ?? [],
-  );
+  const rootSagaInstance = createSlimRootSaga();
   sagaMiddleware.run(rootSagaInstance);
 
-  // Keep reference for utility access via the leaf-module singleton.
   setStoreSingleton(storeWithSync);
+  // Register this store's sagaMiddleware so `runSaga` from this module
+  // (and any consumer that imports it) always runs on the active store.
+  setRunSaga((saga) => sagaMiddleware.run(saga as () => any));
 
   return storeWithSync;
 };
@@ -288,11 +223,18 @@ export type AppThunk<ReturnType = void> = ThunkAction<
   Action
 >;
 
-// Re-export `getStore` from the leaf singleton module so existing callers
-// (`features/**/*`, `utils/auth/getUserId`, `lib/redux/entity/injectEntityReducers`)
-// don't break during the entity-isolation migration. New code should import
-// from `./store-singleton` directly to avoid pulling in this file's
-// reducer/middleware graph.
+/**
+ * Run an additional saga on whichever store's sagaMiddleware is currently
+ * active. Delegates to the registry so entity routes correctly use the
+ * entity store's sagaMiddleware even though this module is imported by
+ * `injectEntityReducers`.
+ */
+export function runSaga(saga: () => Generator): void {
+  runSagaViaRegistry(saga);
+}
+
+// Re-export `getStore` from the leaf singleton so existing callers don't
+// need to change their import paths.
 export { getStoreSingleton as getStore } from "./store-singleton";
 
 enableMapSet();

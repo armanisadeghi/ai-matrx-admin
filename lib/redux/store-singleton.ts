@@ -42,3 +42,24 @@ export function getStoreSingleton(): AppStore | null {
  * preserves source-compat while we migrate call sites.
  */
 export const getStore = getStoreSingleton;
+
+// ---------------------------------------------------------------------------
+// Saga runner registry — allows `runSaga` from `store.ts` to always invoke
+// whichever store's sagaMiddleware is currently active (slim OR entity).
+// Both `makeStore` and `makeEntityStore` call `setRunSaga` after construction.
+// ---------------------------------------------------------------------------
+type SagaRunner = (saga: () => Generator) => void;
+
+let runSagaFn: SagaRunner | null = null;
+
+export function setRunSaga(fn: SagaRunner): void {
+  runSagaFn = fn;
+}
+
+export function runSagaViaRegistry(saga: () => Generator): void {
+  if (runSagaFn) {
+    runSagaFn(saga);
+  } else {
+    console.warn("[store-singleton] runSaga called before a store was initialized");
+  }
+}
