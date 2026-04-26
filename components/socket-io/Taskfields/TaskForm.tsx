@@ -1,7 +1,7 @@
 // components/TaskFields/TaskForm.tsx
 import React, { useMemo } from "react";
 import { useSelector } from "react-redux";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import { TaskField } from "./TaskField";
 import { getTaskSchema } from "@/constants/socket-schema";
 import { useSocketTask } from "@/lib/redux/socket-io/hooks/useSocketTasks";

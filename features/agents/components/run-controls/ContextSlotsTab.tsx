@@ -23,7 +23,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Plus, Trash2, Pencil, Check, X, RefreshCw } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import type {
   ContextObjectType,
   ContextSlot,

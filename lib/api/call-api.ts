@@ -59,7 +59,7 @@ import type { ThunkAction } from "redux-thunk";
 
 // ─── Internal infrastructure ─────────────────────────────────────────────────
 
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import {
   selectAccessToken,
   selectFingerprintId,

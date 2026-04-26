@@ -1,6 +1,6 @@
 import { createSelector } from "@reduxjs/toolkit";
 import { ModuleName, ModuleSchema } from "../dynamic/moduleSchema";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 
 export const createModuleSelectors = <T extends ModuleSchema>(
   moduleName: ModuleName,

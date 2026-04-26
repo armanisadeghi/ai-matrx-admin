@@ -10,7 +10,7 @@ import { EnhancedCard } from "@/components/matrx/Entity/prewired-components/layo
 import EntitySelection from "@/components/matrx/Entity/prewired-components/entity-management/EntitySelection";
 import { UnifiedLayoutProps } from "@/components/matrx/Entity/prewired-components/layouts/types";
 import { useAppSelector } from "@/lib/redux/hooks";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import { selectEntityPrettyName } from "@/lib/redux/schema/globalCacheSelectors";
 import { SmartExpandButton } from "@/components/matrx/Entity/prewired-components/layouts/smart-layouts/SmartExpandButton";
 import EntitySmartContent from "@/components/matrx/Entity/prewired-components/layouts/smart-layouts/SmartEntityContent";

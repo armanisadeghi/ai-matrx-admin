@@ -12,7 +12,7 @@
 
 "use client";
 
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import { createSelector } from "reselect";
 import type { UserAuthState } from "@/lib/redux/slices/userAuthSlice";
 import type { UserProfileState } from "@/lib/redux/slices/userProfileSlice";

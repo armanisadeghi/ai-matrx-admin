@@ -3,7 +3,7 @@
 
 import { useMemo } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import { EntityKeys, EntityFieldKeys } from "@/types/entityTypes";
 import { NameFormat } from "@/types/AutomationSchemaTypes";
 import {

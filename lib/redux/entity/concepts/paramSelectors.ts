@@ -1,7 +1,7 @@
 // @ts-nocheck
 // lib/redux/tables/selectors.ts
 
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import { createSelector } from "@reduxjs/toolkit";
 import { EntityKeys } from "@/types/entityTypes";
 import { useAppSelector } from "@/lib/redux/hooks";

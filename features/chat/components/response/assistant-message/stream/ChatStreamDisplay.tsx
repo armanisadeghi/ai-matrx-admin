@@ -10,7 +10,7 @@ import { parseTaggedContent } from "@/components/mardown-display/markdown-classi
 import ThinkingVisualization from "@/components/mardown-display/blocks/thinking-reasoning/ThinkingVisualization";
 import ReasoningVisualization from "@/components/mardown-display/blocks/thinking-reasoning/ReasoningVisualization";
 import QuestionnaireLoadingVisualization from "@/components/mardown-display/chat-markdown/QuestionnaireLoadingVisualization";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import ControlledLoadingIndicator from "@/features/chat/components/response/chat-loading/ControlledLoadingIndicator";
 import { createChatSelectors } from "@/lib/redux/entity/custom-selectors/chatSelectors";
 import { createTaskResponseSelectors } from "@/lib/redux/socket-io/selectors/socket-response-selectors";

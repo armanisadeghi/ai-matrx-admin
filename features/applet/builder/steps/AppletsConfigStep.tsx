@@ -5,7 +5,7 @@ import { PlusIcon, BookOpenIcon, SaveIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import {
   startNewApplet,
   setActiveApplet,

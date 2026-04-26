@@ -1,5 +1,5 @@
 import { createSelector } from "reselect";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import { BrokerIdentifier } from "../types";
 import { FieldOptionsRuntime } from "../types";
 import { resolveBrokerId } from "../utils";

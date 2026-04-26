@@ -6,7 +6,7 @@ import {
 import { useEffect, useCallback, useState, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import { FetchRecordsPayload, SortPayload } from "../actions";
 import { FilterCondition } from "../types/stateTypes";
 

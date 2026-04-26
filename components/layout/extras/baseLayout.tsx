@@ -4,7 +4,7 @@
 // import { cn } from "@/styles/themes/utils";
 // import Sidebar from "./extras/Sidebar";
 // import { useSelector } from 'react-redux';
-// import type { RootState } from "@/lib/redux/store.types";
+// import type { RootState } from "@/lib/redux/store";
 //
 // // Normal layout component
 // export const NormalLayout = ({ links, open, setOpen, children }: any) => {

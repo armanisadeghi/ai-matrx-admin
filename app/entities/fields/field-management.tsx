@@ -11,7 +11,7 @@ import {
 import { noErrors } from "@/utils/utils";
 import { UnifiedLayoutProps } from "@/components/matrx/Entity/prewired-components/layouts/types";
 import { createEntitySelectors } from "@/lib/redux/entity/selectors";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { ENTITY_FIELD_COMPONENTS } from "./component-lookup";
 import {

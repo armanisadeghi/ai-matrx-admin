@@ -3,7 +3,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 const EMPTY_TOAST_QUEUE: never[] = [];
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import { PromptRunnerModalConfig } from "@/features/prompts/types/modal";
 
 /**

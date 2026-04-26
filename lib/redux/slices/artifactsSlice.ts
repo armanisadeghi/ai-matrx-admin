@@ -12,7 +12,7 @@
 // Parallel to agentCacheSlice — same pattern of byId + id-list indexes.
 
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import type {
   CxArtifactRecord,
   ArtifactType,

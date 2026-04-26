@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import { selectAppletById } from "@/lib/redux/app-builder/selectors/appletSelectors";
 import { saveAppletThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
 import { AppletBuilder } from "@/lib/redux/app-builder/types";

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useAppStore } from "@/lib/redux/hooks";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import {

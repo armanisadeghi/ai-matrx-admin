@@ -13,7 +13,7 @@ import EntitySmartContent from "@/components/matrx/Entity/prewired-components/la
 import { useDynamicMeasurements } from "@/hooks/ui/useDynamicMeasurements";
 import MeasurementMonitor from "../parts/MeasurementMonitor";
 import { useAppSelector } from "@/lib/redux/hooks";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import { selectEntityPrettyName } from "@/lib/redux/schema/globalCacheSelectors";
 
 export const SmartLayoutStacked: React.FC<UnifiedLayoutProps> = (

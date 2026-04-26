@@ -9,7 +9,7 @@ import {
   ChatMessage,
 } from "@/types/flashcards.types";
 import { useDispatch, useSelector } from "react-redux";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import { addMessage } from "@/lib/redux/slices/flashcardChatSlice";
 import { openai, defaultOpenAiModel } from "@/lib/ai/openAiBrowserClient";
 

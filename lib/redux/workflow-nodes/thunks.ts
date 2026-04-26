@@ -6,7 +6,7 @@ import {
   WorkflowNodeCreateInput,
   WorkflowNodeUpdateInput,
 } from "./types";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 
 export const fetchAllWorkflowNodes = createAsyncThunk(
   "workflowNodes/fetchAll",

@@ -3,7 +3,7 @@
 import React from "react";
 import { useSelector } from "react-redux";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import UserAvatar from "@/components/layout/UserAvatar";
 import { Button } from "@/components/ui/button";
 import {

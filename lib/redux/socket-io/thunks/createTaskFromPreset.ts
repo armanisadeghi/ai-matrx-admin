@@ -8,7 +8,7 @@ import {
 import { createTask } from "./createTaskThunk";
 import { submitTask, submitTaskNew } from "./submitTaskThunk";
 import { nanoid } from "nanoid";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 
 // ===== INTERFACES =====
 

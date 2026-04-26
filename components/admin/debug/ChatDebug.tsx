@@ -12,7 +12,7 @@ import {
 } from "@/lib/redux/slices/apiConfigSlice";
 // Legacy chat debug panel — stubbed during Redux unification. Selectors
 // return empty data; the panel still mounts but shows nothing for chat.
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 const selectSession = (
   _state: RootState,
   _sessionId: string,

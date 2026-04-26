@@ -10,7 +10,7 @@ import {
   SortPayload,
   FlexibleQueryOptions,
 } from "@/lib/redux/entity/types/stateTypes";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import { getEntitySlice } from "@/lib/redux/entity/entitySlice";
 import { Draft } from "immer";
 import { useEntitySelection } from "@/lib/redux/entity/hooks/useEntitySelection";

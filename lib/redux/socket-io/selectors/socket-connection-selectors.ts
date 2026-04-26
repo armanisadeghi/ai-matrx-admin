@@ -1,7 +1,7 @@
 // File Location: lib/redux/socket-io/selectors/socket-connection-selectors.ts
 "use client";
 import { createSelector } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 
 // ==================== Connection Selectors ====================
 

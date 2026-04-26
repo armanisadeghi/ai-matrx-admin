@@ -17,7 +17,7 @@ import {
   SAVE_COMPLETE,
 } from "@/types/storage.types";
 import { storageManager } from "./storageManager";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import { toast } from "@/lib/toast-service";
 
 // console.log('Creating storage sync saga');

@@ -12,7 +12,7 @@ import {
   parseRecordKey,
 } from "@/lib/redux/entity/utils/stateHelpUtils";
 import { getEntitySlice } from "@/lib/redux/entity/entitySlice";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { useCallback, useMemo } from "react";
 import { getEntityMetadata } from "../utils/direct-schema";

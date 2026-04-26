@@ -12,7 +12,7 @@ import {
   PromptData,
 } from "@/features/prompts/types/core";
 import { getModelDefaults } from "@/features/prompts/hooks/useModelControls";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import { selectModelById } from "@/features/ai-models/redux/modelRegistrySlice";
 import { AIModel } from "@/features/ai-models/redux/modelRegistrySlice";
 

@@ -11,7 +11,7 @@ import {
   getComponentGroupById,
 } from "../service/fieldContainerService";
 import { ContainerBuilder } from "../types";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 
 import { v4 as uuidv4 } from "uuid";
 import { selectContainerById } from "../selectors/containerSelectors";

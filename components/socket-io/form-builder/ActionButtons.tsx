@@ -10,7 +10,7 @@ import {
 } from "@/lib/redux/socket-io/slices/socketTasksSlice";
 import { submitTask } from "@/lib/redux/socket-io/thunks/submitTaskThunk";
 import { copyToClipboard } from "../utils/clipboard-utils";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 
 interface ActionButtonsProps {
   taskId: string;

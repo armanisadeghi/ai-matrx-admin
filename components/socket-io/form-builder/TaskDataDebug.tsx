@@ -1,7 +1,7 @@
 import React from "react";
 import { useSelector } from "react-redux";
 import { selectTaskDataById } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 
 interface TaskDataDebugProps {
   taskId: string;

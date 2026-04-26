@@ -3,7 +3,7 @@
 
 import { createSelector } from "@reduxjs/toolkit";
 import { EntityKeys } from "@/types/entityTypes";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import { createEntitySelectors } from "../selectors";
 import { MatrxRecordId } from "@/types/entityTypes";
 

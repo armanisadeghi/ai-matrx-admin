@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { Edge } from "@xyflow/react";
 import { useSelector } from "react-redux";
 import { useAppSelector } from "@/lib/redux/hooks";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import { workflowsSelectors } from "@/lib/redux/workflow/selectors";
 import { workflowNodesSelectors } from "@/lib/redux/workflow-nodes/selectors";
 import { BrokerSourceConfig } from "@/lib/redux/workflow/types";

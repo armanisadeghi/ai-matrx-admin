@@ -12,7 +12,7 @@ import {
   updateTaskFieldByPath,
 } from "@/lib/redux/socket-io/thunks/taskFieldThunks";
 import { useSelector } from "react-redux";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import { selectTaskDataById } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
 
 interface ArrayFieldProps {

@@ -8,7 +8,7 @@ import {
   selectTaskDataById,
 } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
 import { arrayOperation } from "@/lib/redux/socket-io/thunks/taskFieldThunks";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import ActionButtons from "./ActionButtons";
 import TaskDataDebug from "./TaskDataDebug";

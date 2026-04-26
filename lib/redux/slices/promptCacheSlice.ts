@@ -1,7 +1,7 @@
 // lib/redux/slices/promptCacheSlice.ts
 
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import {
   PromptData,
   PromptMessage,

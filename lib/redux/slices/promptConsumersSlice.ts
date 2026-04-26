@@ -13,7 +13,7 @@
 //   3. To select: use makeSelectFilteredPrompts("prompts-main") from promptSelectors.ts
 
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 
 // ── Types (re-exported so selectors and hooks can import from one place) ───────
 

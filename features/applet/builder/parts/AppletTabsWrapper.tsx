@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
 import SectionCard from "@/components/official/cards/SectionCard";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import { selectActiveAppletId } from "@/lib/redux/app-builder/selectors/appletSelectors";
 import { selectAppletsByAppId } from "@/lib/redux/app-builder/selectors/appletSelectors";
 import { setActiveApplet } from "@/lib/redux/app-builder/slices/appletBuilderSlice";

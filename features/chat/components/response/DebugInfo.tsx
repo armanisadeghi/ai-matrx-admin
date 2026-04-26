@@ -1,5 +1,5 @@
 import React from "react";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectListenerIdsByTaskId } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
 import type { SocketErrorObject } from "@/lib/redux/socket-io/socket.types";

@@ -1,4 +1,4 @@
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import type { MessagePart } from "@/types/python-generated/stream-events";
 import type { InputSubmissionPhase } from "@/features/agents/types/instance.types";
 

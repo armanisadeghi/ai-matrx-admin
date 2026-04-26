@@ -10,7 +10,7 @@
  */
 import { useCallback } from "react";
 import { useSelector } from "react-redux";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import {
   openOverlay,

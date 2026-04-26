@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import { Button } from "@/components/ui/button";
 
 /**

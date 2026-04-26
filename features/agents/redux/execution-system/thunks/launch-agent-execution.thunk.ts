@@ -19,7 +19,7 @@
  */
 
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import type {
   ManagedAgentOptions,
   ResultDisplayMode,

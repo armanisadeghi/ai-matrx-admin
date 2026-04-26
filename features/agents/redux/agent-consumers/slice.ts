@@ -12,7 +12,7 @@
 //   3. To select: use makeSelectFilteredAgents("agents-main") from agentSelectors.ts
 
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 

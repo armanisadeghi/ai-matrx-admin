@@ -2,7 +2,7 @@
 import React from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import { useRouter, usePathname } from "next/navigation";
 import {
   selectAppRuntimeConfig,

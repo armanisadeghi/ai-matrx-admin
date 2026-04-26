@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { setEditorContextDisabledTabs } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.slice";
 import { selectCodeTabs, selectActiveTabId } from "../redux/tabsSlice";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 
 interface ContextChipProps {
   conversationId: string | null | undefined;

@@ -11,7 +11,7 @@
  */
 
 import { createSelector } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import type { VariableDefinition } from "@/features/agents/types/agent-definition.types";
 
 // Stable references returned when the instance hasn't been initialized yet.

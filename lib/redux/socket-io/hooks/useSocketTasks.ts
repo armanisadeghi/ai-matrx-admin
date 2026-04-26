@@ -23,7 +23,7 @@ import {
 } from "@/lib/redux/socket-io/slices/socketTasksSlice";
 import { createTask } from "@/lib/redux/socket-io/thunks/createTaskThunk";
 import { submitTask } from "@/lib/redux/socket-io/thunks/submitTaskThunk";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import { useAppDispatch } from "@/lib/redux/hooks";
 
 // Hook for creating and managing tasks

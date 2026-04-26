@@ -1,5 +1,5 @@
 import { createSelector } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import { FieldBuilder } from "../types";
 import { selectAppletBrokerMappings } from "@/lib/redux/app-builder/selectors/appletSelectors";
 import { BrokerMapping, ComponentType } from "@/types/customAppTypes";

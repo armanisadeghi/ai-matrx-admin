@@ -24,7 +24,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { Copy, Check } from "lucide-react";
 import { useAppSelector } from "@/lib/redux/hooks";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import type {
   ContextObjectType,
   ContextSlot,

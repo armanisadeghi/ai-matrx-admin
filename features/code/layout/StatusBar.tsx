@@ -14,7 +14,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { useCodeWorkspace } from "../CodeWorkspaceProvider";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import { resolveEnvironmentForTab } from "../editor/monaco-environments";
 import { selectActiveTab } from "../redux/tabsSlice";
 import {

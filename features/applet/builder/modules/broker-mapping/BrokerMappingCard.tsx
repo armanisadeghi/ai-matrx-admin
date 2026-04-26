@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import SectionCard from "@/components/official/cards/SectionCard";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import {
   selectFieldLoading,
   selectActiveFieldId,

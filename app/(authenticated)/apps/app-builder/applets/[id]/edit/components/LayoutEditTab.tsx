@@ -16,7 +16,7 @@ import {
   selectAppletName,
 } from "@/lib/redux/app-builder/selectors/appletSelectors";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import {
   setAppletIcon,
   setAppletSubmitText,

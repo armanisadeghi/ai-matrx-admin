@@ -64,7 +64,7 @@ import {
   selectContainersByIds,
 } from "@/lib/redux/app-builder/selectors/containerSelectors";
 import { ComponentGroup } from "@/types/customAppTypes";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 
 // Define type for groupIds
 type GroupId = string;

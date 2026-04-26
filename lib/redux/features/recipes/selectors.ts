@@ -2,7 +2,7 @@
 // redux/features/recipes/selectors.ts
 
 import { createSelector } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 
 export const getRecipeInstance =
   (recipeId: string) =>

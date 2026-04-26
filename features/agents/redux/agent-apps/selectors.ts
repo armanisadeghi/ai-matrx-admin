@@ -1,7 +1,7 @@
 "use client";
 
 import { createSelector } from "reselect";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import type { AgentApp, AgentAppRecord } from "./types";
 import type { FieldFlags } from "../shared/field-flags";
 import { hasField } from "../shared/field-flags";

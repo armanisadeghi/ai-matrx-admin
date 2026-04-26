@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useSearchParams } from "next/navigation";
 import { setIsInWindow, setLayoutStyle } from "@/lib/redux/slices/layoutSlice";
-import type { RootState } from "@/lib/redux/store.types"; // Adjust this import path as needed
+import type { RootState } from "@/lib/redux/store"; // Adjust this import path as needed
 
 export const useWindowAware = () => {
   const dispatch = useDispatch();

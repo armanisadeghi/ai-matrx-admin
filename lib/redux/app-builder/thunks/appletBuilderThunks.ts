@@ -10,7 +10,7 @@ import {
   isAppletSlugAvailable,
 } from "../service/customAppletService";
 import { AppletBuilder, ContainerBuilder } from "../types";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import { selectAppletById } from "../selectors/appletSelectors";
 import { setActiveApplet } from "../slices/appletBuilderSlice";
 

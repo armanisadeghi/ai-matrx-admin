@@ -3,7 +3,7 @@ import { takeEvery, call, put, select } from 'redux-saga/effects';
 
 import { createEntitySlice  } from '../entity/slice';
 import {loadDataForSchema, loadSchemaForContext} from "@/lib/redux/ui/uiThunks";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import {EntityKeys} from "@/types/entityTypes"; // Import actions from data slice
 
 function* handleLoadSchema(action: ReturnType<typeof loadSchemaForContext>) {

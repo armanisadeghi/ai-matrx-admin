@@ -33,7 +33,7 @@ import {
   OnReconnect,
 } from "@xyflow/react";
 import { useSelector } from "react-redux";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import { WorkflowNodeItem } from "../nodes/wf-nodes/WorkflowNode";
 import { UserInputSourceNode } from "../nodes/source-node/user-input/UserInputSourceNode";
 import { UserDataSourceNode } from "../nodes/source-node/user-data/UserDataSourceNode";

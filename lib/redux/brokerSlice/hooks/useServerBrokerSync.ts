@@ -4,7 +4,7 @@ import { useEffect, useRef, useMemo } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { brokerSelectors, BrokerIdentifier } from "@/lib/redux/brokerSlice";
 import { createSelector } from "reselect";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 
 interface SyncConfig {
   brokers: BrokerIdentifier[];

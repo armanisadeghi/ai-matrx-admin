@@ -6,7 +6,7 @@ import FullScreenOverlay from "@/components/official/FullScreenOverlay";
 import AccordionWrapper from "@/components/matrx/matrx-collapsible/AccordionWrapper";
 import TaskDataDebug from "@/components/socket-io/form-builder/TaskDataDebug";
 import { getAllFieldPaths } from "@/constants/socket-schema";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import FancyJsonExplorer from "@/features/scraper/parts/FancyJsonExplorer";
 import RawJsonExplorer from "@/components/official/json-explorer/RawJsonExplorer";
 import BookmarkViewer from "@/features/scraper/parts/BookmarkViewer";

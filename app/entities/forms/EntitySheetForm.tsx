@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { UnifiedLayoutProps } from "@/components/matrx/Entity/prewired-components/layouts/types";
 import { EntityKeys, MatrxRecordId } from "@/types/entityTypes";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import { selectEntityPrettyName } from "@/lib/redux/schema/globalCacheSelectors";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";

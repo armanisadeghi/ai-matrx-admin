@@ -16,7 +16,7 @@ import { navigationLinks } from "@/constants/navigation-links";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import { openFeedbackDialog } from "@/lib/redux/slices/overlaySlice";
 import { brokerSelectors } from "@/lib/redux/brokerSlice";
 import { selectTaskFirstListenerId } from "@/lib/redux/socket-io/selectors/socket-task-selectors";

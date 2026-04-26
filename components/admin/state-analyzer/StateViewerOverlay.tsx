@@ -1,7 +1,7 @@
 // state-analyzer/StateViewerOverlay.tsx
 import React, { useRef, useState } from "react";
 import FullScreenOverlay from "@/components/official/FullScreenOverlay";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import { useAppStore } from "@/lib/redux/hooks";
 import {
   getStateViewerTabs,

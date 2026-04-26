@@ -1,4 +1,4 @@
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 
 export const selectAllTools = (state: RootState) => state.tools.tools;
 export const selectToolsStatus = (state: RootState) => state.tools.status;

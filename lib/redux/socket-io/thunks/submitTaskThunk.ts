@@ -18,7 +18,7 @@ import {
   setTaskFields,
 } from "../slices/socketTasksSlice";
 import { selectPrimaryConnection } from "../selectors";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import { v4 as uuidv4 } from "uuid";
 import { SocketConnectionManager } from "../connection/socketConnectionManager";
 import { setConnection } from "../slices/socketConnectionsSlice";

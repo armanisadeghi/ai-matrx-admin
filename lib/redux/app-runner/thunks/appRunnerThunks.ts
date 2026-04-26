@@ -26,7 +26,7 @@ import {
   CustomAppConfig,
   BrokerMapping,
 } from "@/types/customAppTypes";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 
 // Object to store validation results for retrieval later
 const validationStore: Record<string, ValidationResult> = {};

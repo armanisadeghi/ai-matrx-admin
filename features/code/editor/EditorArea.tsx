@@ -18,7 +18,7 @@ import { useReloadTab } from "../hooks/useReloadTab";
 import { useSendSelectionAsContext } from "../agent-context/useSendSelectionAsContext";
 import { useEditorContextMenuActions } from "../agent-context/useEditorContextMenuActions";
 import { selectFocusedConversation } from "@/features/agents/redux/execution-system/conversation-focus/conversation-focus.selectors";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import { useEnvironmentForActiveTab } from "./monaco-environments";
 import { EditorTabs } from "./EditorTabs";
 import { EditorToolbar } from "./EditorToolbar";

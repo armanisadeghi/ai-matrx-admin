@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { Check, Loader2, Settings as SettingsIcon } from "lucide-react";
 import { useSelector } from "react-redux";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { SettingsTree } from "@/components/official/settings/tree/SettingsTree";

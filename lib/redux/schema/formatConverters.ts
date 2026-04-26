@@ -1,5 +1,5 @@
 // lib/redux/schema/formatConverters.ts
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import { EntityKeys, FieldDatabaseColumn } from "@/types/entityTypes";
 import {
   selectEntityNameToDatabase,

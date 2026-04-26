@@ -15,7 +15,7 @@
 //   consumerId) so React doesn't recreate it on every render.
 
 import { createSelector } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import {
   selectAllUserPrompts,
   selectSharedPrompts,

@@ -1,7 +1,7 @@
 import React from "react";
 import { useSelector } from "react-redux";
 import { useAppDispatch } from "@/lib/redux/hooks"; // Need this import
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import {
   Dialog,
   DialogContent,

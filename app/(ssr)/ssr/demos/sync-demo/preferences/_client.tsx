@@ -33,7 +33,7 @@ import {
   setModulePreferences,
   resetModulePreferences,
 } from "@/lib/redux/slices/userPreferencesSlice";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import type { IdentityKey } from "@/lib/sync/types";
 
 // Shape of a slice record written by the engine's IDB persistence layer. Kept

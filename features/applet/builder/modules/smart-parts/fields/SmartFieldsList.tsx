@@ -57,7 +57,7 @@ import {
 } from "@/lib/redux/app-builder/selectors/fieldSelectors";
 import { FieldDefinition } from "@/types/customAppTypes";
 import { getFieldComponentStyle } from "@/features/applet/styles/styles";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 
 // Define type for fieldIds
 type FieldId = string;

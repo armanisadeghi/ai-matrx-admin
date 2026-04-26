@@ -1,6 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { supabase } from "@/utils/supabase/client";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import type { DatabaseTool } from "@/utils/supabase/tools-service";
 
 export const fetchAvailableTools = createAsyncThunk<

@@ -21,7 +21,7 @@
 //   - System / builtin agents (agentType = 'builtin') are separated from user agents.
 
 import { createSelector } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import { selectLiveAgents } from "../agent-definition/selectors";
 import {
   selectAgentConsumer,

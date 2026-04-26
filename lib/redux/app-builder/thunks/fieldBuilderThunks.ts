@@ -9,7 +9,7 @@ import {
 } from "../service/fieldComponentService";
 import { FieldBuilder } from "../types";
 import { ContainerBuilder } from "../types";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import { selectFieldById } from "../selectors/fieldSelectors";
 import {
   addOrRefreshFieldInGroup,

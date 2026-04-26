@@ -20,7 +20,7 @@ import {
 } from "@/types/entityTypes";
 import MatrxTooltip from "@/components/matrx/MatrxTooltip";
 import { Button } from "@/components/ui/button";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import {
   ActionDefinition,
   EntityActionGroupProps,

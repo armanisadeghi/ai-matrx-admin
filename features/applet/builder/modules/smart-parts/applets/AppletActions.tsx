@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { XIcon, SaveIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import {
   setAppId,
   setActiveApplet,

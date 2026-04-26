@@ -23,7 +23,7 @@ import {
   FetchStrategy,
 } from "@/types/AutomationSchemaTypes";
 import { useAppSelector, useAppDispatch } from "../../hooks";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import {
   EntityMetadata,
   EntityRecordMap,

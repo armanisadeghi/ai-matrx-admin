@@ -10,7 +10,7 @@ import { getContainerBuilderState } from "@/lib/redux/app-builder/selectors/cont
 import { getFieldBuilderState } from "@/lib/redux/app-builder/selectors/fieldSelectors";
 import { Button } from "@/components/ui/button";
 import { Bug } from "lucide-react";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import RawJsonExplorer from "@/components/official/json-explorer/RawJsonExplorer";
 import { useUser } from "@/lib/hooks/useUser";

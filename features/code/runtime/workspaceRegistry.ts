@@ -1,4 +1,4 @@
-import type { AppStore } from "@/lib/redux/store.types";
+import type { AppStore } from "@/lib/redux/store";
 import type { FilesystemAdapter } from "../adapters/FilesystemAdapter";
 import type { ProcessAdapter } from "../adapters/ProcessAdapter";
 

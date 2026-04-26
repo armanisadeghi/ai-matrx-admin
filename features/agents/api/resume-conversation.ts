@@ -25,7 +25,7 @@ import { callApi } from "@/lib/api/call-api";
 import type { ApiCallResult } from "@/lib/api/call-api";
 import type { ThunkAction } from "redux-thunk";
 import type { UnknownAction } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import type { TypedStreamEvent } from "@/types/python-generated/stream-events";
 
 // ── Local types ──────────────────────────────────────────────────────────────

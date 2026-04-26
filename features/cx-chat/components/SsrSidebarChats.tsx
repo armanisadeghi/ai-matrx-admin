@@ -44,7 +44,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 // rebuilt, swap these for `selectGlobalConversationList`, the
 // `conversationListActions.*` optimistic mutations, and real thunks.
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 
 interface CxConversationListItem {
   id: string;

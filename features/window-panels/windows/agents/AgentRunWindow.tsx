@@ -45,7 +45,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import {
   selectAgentById,
   selectAgentExecutionPayload,

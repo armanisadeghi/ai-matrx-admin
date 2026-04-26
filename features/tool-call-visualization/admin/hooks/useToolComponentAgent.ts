@@ -6,7 +6,7 @@ import { useApiAuth } from "@/hooks/useApiAuth";
 import { selectResolvedBaseUrl } from "@/lib/redux/slices/apiConfigSlice";
 import { ENDPOINTS, BACKEND_URLS } from "@/lib/api/endpoints";
 import { consumeStream } from "@/lib/api/stream-parser";
-import type { RootState } from "@/lib/redux/store.types";
+import type { RootState } from "@/lib/redux/store";
 import { extractErrorMessage } from "@/utils/errors";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
