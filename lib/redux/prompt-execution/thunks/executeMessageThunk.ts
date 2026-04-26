@@ -264,7 +264,7 @@ export const executeMessage = createAsyncThunk<
       runName = runName || "New Conversation";
 
       // Fire and forget - use runTracking values for correct source_type and source_id
-      const userId = (getState() as RootState).user.id;
+      const userId = (getState() as RootState).userAuth.id;
       saveRunToDBAsync(
         runId,
         runName,

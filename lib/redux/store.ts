@@ -121,35 +121,35 @@ function resolveUserPreferencesForBootstrap(
 }
 
 /**
- * Builds a complete InitialReduxState for store creation from optional / partial
+ * Builds a complete preloaded state for store creation from optional / partial
  * bootstrap data (public routes, tests). Server layouts should pass full state.
  *
- * Phase 4: returns a state shape with `userAuth` + `userProfile` keys instead
- * of the legacy `user` key — split happens here so server layouts can keep
- * passing the flat `UserData` wire shape via `initialReduxState.user`.
+ * Phase 4: the legacy `user` key is split into `userAuth` + `userProfile` and
+ * the legacy field is **omitted from the output** — there is no `user` reducer
+ * in the rootReducer anymore, so including it would trigger Redux's
+ * "Unexpected key 'user'" warning at store creation time. Server layouts keep
+ * passing the flat `UserData` wire shape via `input.user` (back-compat); we
+ * partition it into the two slice slots and discard the wire shape.
  */
 export function resolveStoreBootstrapState(
   input?: Partial<InitialReduxState> & LiteInitialReduxState,
-): InitialReduxState & Record<string, unknown> {
+): Record<string, unknown> {
   const baseUser = mapUserData(null, undefined, false);
   const baseSplit = splitUserData(baseUser);
-  const base: InitialReduxState = {
-    user: baseUser,
-    testRoutes: [] as string[],
-    userPreferences: initializeUserPreferencesState(
-      defaultUserPreferences,
-      true,
-    ),
-    globalCache: getEmptyGlobalCache(),
-  };
+  const baseUserPreferences = initializeUserPreferencesState(
+    defaultUserPreferences,
+    true,
+  );
+  const baseGlobalCache = getEmptyGlobalCache();
 
   if (!input) {
-    const out = {
-      ...base,
+    return {
       userAuth: baseSplit.userAuth,
       userProfile: baseSplit.userProfile,
-    } as InitialReduxState & Record<string, unknown>;
-    return out;
+      testRoutes: [] as string[],
+      userPreferences: baseUserPreferences,
+      globalCache: baseGlobalCache,
+    };
   }
 
   const mergedUser =
@@ -158,21 +158,20 @@ export function resolveStoreBootstrapState(
       : baseUser;
   const split = splitUserData(mergedUser);
 
-  const merged: InitialReduxState = {
-    user: mergedUser,
-    testRoutes: input.testRoutes ?? base.testRoutes,
-    userPreferences: resolveUserPreferencesForBootstrap(input, base),
-    globalCache:
-      input.globalCache !== undefined
-        ? (input.globalCache as InitialReduxState["globalCache"])
-        : base.globalCache,
-  };
-
-  const out = {
-    ...merged,
+  const out: Record<string, unknown> = {
+    // NOTE: no `user` key — see function-level comment.
     userAuth: split.userAuth,
     userProfile: split.userProfile,
-  } as InitialReduxState & Record<string, unknown>;
+    testRoutes: input.testRoutes ?? [],
+    userPreferences: resolveUserPreferencesForBootstrap(input, {
+      user: baseUser,
+      testRoutes: [],
+      userPreferences: baseUserPreferences,
+      globalCache: baseGlobalCache,
+    }),
+    globalCache:
+      input.globalCache !== undefined ? input.globalCache : baseGlobalCache,
+  };
 
   if (input.contextMenuCache !== undefined) {
     out.contextMenuCache = input.contextMenuCache;
@@ -194,12 +193,18 @@ export const makeStore = (
   initialState?: Partial<InitialReduxState> & LiteInitialReduxState,
 ) => {
   const resolved = resolveStoreBootstrapState(initialState);
+  const globalCache = resolved.globalCache as InitialReduxState["globalCache"];
 
-  if (!resolved.globalCache?.schema) {
+  if (!globalCache?.schema) {
     throw new Error("Schema must be provided to create store");
   }
 
-  const rootReducer = createRootReducer(resolved as InitialReduxState);
+  // The rootReducer factory historically takes the full InitialReduxState;
+  // it only reads `globalCache` for the entity-system bootstrap, so a
+  // narrowed shape with that field is sufficient.
+  const rootReducer = createRootReducer({
+    globalCache,
+  } as InitialReduxState);
 
   // --- Sync engine wiring (PR 1.B) -----------------------------------------
   // Identity + channel are created here so the middleware closure owns them.

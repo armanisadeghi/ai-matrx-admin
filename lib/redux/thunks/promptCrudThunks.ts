@@ -115,7 +115,7 @@ export const fetchAllUserPrompts = createAsyncThunk<
 >("promptCrud/fetchAll", async (_, { dispatch, getState }) => {
   dispatch(setListStatus({ status: "loading" }));
 
-  const userId = (getState() as RootState).user.id;
+  const userId = (getState() as RootState).userAuth.id;
   if (!userId) {
     dispatch(setListStatus({ status: "error", error: "Not authenticated" }));
     throw new Error("Not authenticated");
@@ -183,7 +183,7 @@ export const createUserPrompt = createAsyncThunk<
   Omit<PromptData, "id" | "createdAt" | "updatedAt" | "userId">,
   { dispatch: AppDispatch; state: RootState }
 >("promptCrud/create", async (data, { dispatch, getState }) => {
-  const userId = (getState() as RootState).user.id;
+  const userId = (getState() as RootState).userAuth.id;
   if (!userId) throw new Error("Not authenticated");
 
   const { data: row, error } = await supabase
@@ -256,7 +256,7 @@ export const upsertUserPrompt = createAsyncThunk<
   PromptData,
   { dispatch: AppDispatch; state: RootState }
 >("promptCrud/upsert", async (data, { dispatch, getState }) => {
-  const userId = (getState() as RootState).user.id;
+  const userId = (getState() as RootState).userAuth.id;
   if (!userId) throw new Error("Not authenticated");
 
   const payload: Partial<PromptDb> = {
