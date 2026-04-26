@@ -50,12 +50,9 @@ import { useMemo } from "react";
 import { AgentRunWrapper } from "@/features/agents/components/smart/AgentRunWrapper";
 import { AgentVersionDiffPage } from "@/features/agents/components/diff/AgentVersionDiffPage";
 import { AgentContentHistoryPanel } from "./AgentContentHistoryPanel";
+import { AgentContentTab } from "./agent-content.types";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
-
-// Re-exported from the pure types file so consumers that previously imported
-// from this component don't need to update their import paths.
-export type { AgentContentTab } from "./agent-content.types";
 
 interface TabDefinition {
   id: AgentContentTab;

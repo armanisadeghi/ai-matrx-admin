@@ -538,10 +538,7 @@ const windowManagerSlice = createSlice({
      * "Release to pop out" outline. Cleared on every pointerup regardless
      * of whether popout actually fires.
      */
-    setPopoutCandidate(
-      state,
-      action: PayloadAction<{ id: string | null }>,
-    ) {
+    setPopoutCandidate(state, action: PayloadAction<{ id: string | null }>) {
       state.popoutCandidateId = action.payload.id;
     },
 

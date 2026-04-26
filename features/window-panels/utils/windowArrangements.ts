@@ -4,7 +4,11 @@ import type { WindowRect } from "@/features/window-panels/window-panel.types";
  * Calculates a 4-grid quadrant (2x2).
  * @param index 0: top-left, 1: top-right, 2: bottom-left, 3: bottom-right
  */
-export function getGrid4Rect(index: number, vw: number, vh: number): WindowRect {
+export function getGrid4Rect(
+  index: number,
+  vw: number,
+  vh: number,
+): WindowRect {
   const w = Math.round(vw / 2);
   const h = Math.round(vh / 2);
   return {
@@ -19,7 +23,11 @@ export function getGrid4Rect(index: number, vw: number, vh: number): WindowRect 
  * Calculates a 6-grid partition (3 columns x 2 rows).
  * @param index 0-5. 0-2 is top row (left-to-right), 3-5 is bottom row.
  */
-export function getGrid6Rect(index: number, vw: number, vh: number): WindowRect {
+export function getGrid6Rect(
+  index: number,
+  vw: number,
+  vh: number,
+): WindowRect {
   const w = Math.round(vw / 3);
   const h = Math.round(vh / 2);
   return {
@@ -33,7 +41,11 @@ export function getGrid6Rect(index: number, vw: number, vh: number): WindowRect 
 /**
  * Calculates an 8-window grid (4 columns, 2 a rows)
  */
-export function getGrid8Rect(index: number, vw: number, vh: number): WindowRect {
+export function getGrid8Rect(
+  index: number,
+  vw: number,
+  vh: number,
+): WindowRect {
   const w = Math.round(vw / 4);
   const h = Math.round(vh / 2);
   return {
@@ -47,7 +59,11 @@ export function getGrid8Rect(index: number, vw: number, vh: number): WindowRect 
 /**
  * Calculates a 9-window grid (3 columns, 3 rows)
  */
-export function getGrid9Rect(index: number, vw: number, vh: number): WindowRect {
+export function getGrid9Rect(
+  index: number,
+  vw: number,
+  vh: number,
+): WindowRect {
   const w = Math.round(vw / 3);
   const h = Math.round(vh / 3);
   return {
@@ -61,7 +77,11 @@ export function getGrid9Rect(index: number, vw: number, vh: number): WindowRect 
 /**
  * Calculates a 12-window grid (4 columns, 3 rows)
  */
-export function getGrid12Rect(index: number, vw: number, vh: number): WindowRect {
+export function getGrid12Rect(
+  index: number,
+  vw: number,
+  vh: number,
+): WindowRect {
   const w = Math.round(vw / 4);
   const h = Math.round(vh / 3);
   return {
@@ -76,7 +96,11 @@ export function getGrid12Rect(index: number, vw: number, vh: number): WindowRect
  * Calculates 2 stacked windows on the right edge.
  * @param index 0: top right half, 1: bottom right half
  */
-export function getStackedRight2Rect(index: number, vw: number, vh: number): WindowRect {
+export function getStackedRight2Rect(
+  index: number,
+  vw: number,
+  vh: number,
+): WindowRect {
   const w = Math.round(vw / 2);
   const h = Math.round(vh / 2);
   return {
@@ -91,7 +115,11 @@ export function getStackedRight2Rect(index: number, vw: number, vh: number): Win
  * Calculates 3 stacked windows on the right edge.
  * @param index 0, 1, 2 top-to-bottom on the right third of the screen.
  */
-export function getStackedRight3Rect(index: number, vw: number, vh: number): WindowRect {
+export function getStackedRight3Rect(
+  index: number,
+  vw: number,
+  vh: number,
+): WindowRect {
   const w = Math.round(vw / 3);
   const h = Math.round(vh / 3);
   return {
@@ -106,7 +134,11 @@ export function getStackedRight3Rect(index: number, vw: number, vh: number): Win
  * Calculates 4 stacked windows on the right edge.
  * @param index 0,1,2,3 top-to-bottom on the right quarter of the screen.
  */
-export function getStackedRight4Rect(index: number, vw: number, vh: number): WindowRect {
+export function getStackedRight4Rect(
+  index: number,
+  vw: number,
+  vh: number,
+): WindowRect {
   const w = Math.round(vw / 4);
   const h = Math.round(vh / 4);
   return {
@@ -120,7 +152,11 @@ export function getStackedRight4Rect(index: number, vw: number, vh: number): Win
 /**
  * Calculates 5 stacked windows on the right edge.
  */
-export function getStackedRight5Rect(index: number, vw: number, vh: number): WindowRect {
+export function getStackedRight5Rect(
+  index: number,
+  vw: number,
+  vh: number,
+): WindowRect {
   const w = Math.round(vw / 5);
   const h = Math.round(vh / 5);
   return {
@@ -135,7 +171,11 @@ export function getStackedRight5Rect(index: number, vw: number, vh: number): Win
  * Calculates 2 stacked windows on the left edge.
  * @param index 0: top left half, 1: bottom left half
  */
-export function getStackedLeft2Rect(index: number, vw: number, vh: number): WindowRect {
+export function getStackedLeft2Rect(
+  index: number,
+  vw: number,
+  vh: number,
+): WindowRect {
   const w = Math.round(vw / 2);
   const h = Math.round(vh / 2);
   return {
@@ -150,7 +190,11 @@ export function getStackedLeft2Rect(index: number, vw: number, vh: number): Wind
  * Calculates 3 stacked windows on the left edge.
  * @param index 0, 1, 2 top-to-bottom on the left third of the screen.
  */
-export function getStackedLeft3Rect(index: number, vw: number, vh: number): WindowRect {
+export function getStackedLeft3Rect(
+  index: number,
+  vw: number,
+  vh: number,
+): WindowRect {
   const w = Math.round(vw / 3);
   const h = Math.round(vh / 3);
   return {
@@ -165,7 +209,11 @@ export function getStackedLeft3Rect(index: number, vw: number, vh: number): Wind
  * Calculates 4 stacked windows on the left edge.
  * @param index 0,1,2,3 top-to-bottom on the left quarter of the screen.
  */
-export function getStackedLeft4Rect(index: number, vw: number, vh: number): WindowRect {
+export function getStackedLeft4Rect(
+  index: number,
+  vw: number,
+  vh: number,
+): WindowRect {
   const w = Math.round(vw / 4);
   const h = Math.round(vh / 4);
   return {
@@ -179,7 +227,11 @@ export function getStackedLeft4Rect(index: number, vw: number, vh: number): Wind
 /**
  * Calculates 5 stacked windows on the left edge.
  */
-export function getStackedLeft5Rect(index: number, vw: number, vh: number): WindowRect {
+export function getStackedLeft5Rect(
+  index: number,
+  vw: number,
+  vh: number,
+): WindowRect {
   const w = Math.round(vw / 5);
   const h = Math.round(vh / 5);
   return {
@@ -190,7 +242,20 @@ export function getStackedLeft5Rect(index: number, vw: number, vh: number): Wind
   };
 }
 
-export type GlobalLayoutType = "grid4" | "grid6" | "grid8" | "grid9" | "grid12" | "stackRight2" | "stackRight3" | "stackRight4" | "stackRight5" | "stackLeft2" | "stackLeft3" | "stackLeft4" | "stackLeft5";
+export type GlobalLayoutType =
+  | "grid4"
+  | "grid6"
+  | "grid8"
+  | "grid9"
+  | "grid12"
+  | "stackRight2"
+  | "stackRight3"
+  | "stackRight4"
+  | "stackRight5"
+  | "stackLeft2"
+  | "stackLeft3"
+  | "stackLeft4"
+  | "stackLeft5";
 
 /**
  * Helper: Applies global arrangement to an array of windows logic.
@@ -203,9 +268,16 @@ export function computeGlobalArrangement(
   vh: number,
   dirX: "ltr" | "rtl" = "rtl",
   dirY: "ttb" | "btt" = "ttb",
-  primary: "horizontal" | "vertical" = "vertical"
+  primary: "horizontal" | "vertical" = "vertical",
 ): { id: string; rect: WindowRect }[] {
-  const specs: Record<GlobalLayoutType, { cols: number, rows: number, fn: (i: number, w: number, h: number) => WindowRect }> = {
+  const specs: Record<
+    GlobalLayoutType,
+    {
+      cols: number;
+      rows: number;
+      fn: (i: number, w: number, h: number) => WindowRect;
+    }
+  > = {
     grid4: { cols: 2, rows: 2, fn: getGrid4Rect },
     grid6: { cols: 3, rows: 2, fn: getGrid6Rect },
     grid8: { cols: 4, rows: 2, fn: getGrid8Rect },
@@ -225,7 +297,7 @@ export function computeGlobalArrangement(
 
   return windowIds.map((id, i) => {
     let col, row;
-    
+
     if (primary === "horizontal") {
       col = i % spec.cols;
       row = Math.floor(i / spec.cols);
@@ -233,16 +305,16 @@ export function computeGlobalArrangement(
       row = i % spec.rows;
       col = Math.floor(i / spec.rows);
     }
-    
+
     if (dirX === "rtl") {
       const targetCol = col % spec.cols;
-      col = (col - targetCol) + (spec.cols - 1 - targetCol);
+      col = col - targetCol + (spec.cols - 1 - targetCol);
     }
     if (dirY === "btt") {
       const targetRow = row % spec.rows;
-      row = (row - targetRow) + (spec.rows - 1 - targetRow);
+      row = row - targetRow + (spec.rows - 1 - targetRow);
     }
-    
+
     const targetIndex = row * spec.cols + col;
 
     return {
