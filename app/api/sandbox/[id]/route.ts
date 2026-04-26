@@ -1,19 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/utils/supabase/server'
-
-const ORCHESTRATOR_URL = process.env.MATRX_ORCHESTRATOR_URL || 'http://54.144.86.132:8000'
-const ORCHESTRATOR_API_KEY = process.env.MATRX_ORCHESTRATOR_API_KEY || ''
-
-function orchestratorHeaders(): Record<string, string> {
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-    if (ORCHESTRATOR_API_KEY) {
-        headers['X-API-Key'] = ORCHESTRATOR_API_KEY
-    }
-    return headers
-}
+import {
+    lookupSandboxAndOrchestrator,
+    orchestratorJsonHeaders,
+} from '@/lib/sandbox/orchestrator-routing'
 
 export async function GET(
-    request: NextRequest,
+    _request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
@@ -60,47 +53,48 @@ export async function GET(
     }
 }
 
+/**
+ * PUT /api/sandbox/[id]
+ *
+ * Body:
+ *   { action: "stop" | "extend", ttl_seconds?: number }
+ *
+ * 'stop'   → calls orchestrator DELETE ?graceful=true, marks DB stopped.
+ * 'extend' → DEPRECATED, use POST /api/sandbox/[id]/extend instead.
+ *            For backward compatibility this still works but now correctly
+ *            forwards to the orchestrator (the prior version only updated
+ *            the DB, which silently drifted from the container's TTL).
+ */
 export async function PUT(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const { id } = await params
-        const supabase = await createClient()
-        const {
-            data: { user },
-            error: userError,
-        } = await supabase.auth.getUser()
-
-        if (userError || !user) {
-            return NextResponse.json({ error: 'User not authenticated' }, { status: 401 })
-        }
-
         const body = await request.json()
         const { action } = body
 
-        const { data: instance, error: fetchError } = await supabase
-            .from('sandbox_instances')
-            .select('*')
-            .eq('id', id)
-            .eq('user_id', user.id)
-            .single()
-
-        if (fetchError || !instance) {
-            return NextResponse.json({ error: 'Sandbox instance not found' }, { status: 404 })
+        const lookup = await lookupSandboxAndOrchestrator(id)
+        if (!lookup.ok) {
+            return NextResponse.json({ error: lookup.error }, { status: lookup.status })
         }
+
+        const supabase = await createClient()
 
         if (action === 'stop') {
             try {
                 const resp = await fetch(
-                    `${ORCHESTRATOR_URL}/sandboxes/${instance.sandbox_id}?graceful=true`,
-                    { method: 'DELETE', headers: orchestratorHeaders() }
+                    `${lookup.orchestrator.url}/sandboxes/${lookup.sandboxId}?graceful=true`,
+                    { method: 'DELETE', headers: orchestratorJsonHeaders(lookup.orchestrator) }
                 )
                 if (!resp.ok && resp.status !== 404) {
                     console.error('Orchestrator stop failed:', resp.status)
                 }
             } catch (fetchErr) {
-                console.warn('Orchestrator not reachable during stop — updating DB only:', fetchErr instanceof Error ? fetchErr.message : fetchErr)
+                console.warn(
+                    'Orchestrator not reachable during stop — updating DB only:',
+                    fetchErr instanceof Error ? fetchErr.message : fetchErr
+                )
             }
 
             const { data: updated, error: updateError } = await supabase
@@ -126,17 +120,61 @@ export async function PUT(
         }
 
         if (action === 'extend') {
-            const additionalSeconds = body.ttl_seconds || 3600
-            const currentExpiry = instance.expires_at
-                ? new Date(instance.expires_at)
-                : new Date()
-            const newExpiry = new Date(currentExpiry.getTime() + additionalSeconds * 1000)
+            // Forward to the orchestrator first, then mirror its authoritative
+            // expires_at into our DB. The previous DB-only path silently drifted
+            // because the orchestrator runs its own clock for idle/expiry sweeps.
+            const ttlSeconds = Number(body?.ttl_seconds ?? 3600)
+            if (!Number.isFinite(ttlSeconds) || ttlSeconds < 60 || ttlSeconds > 86400) {
+                return NextResponse.json(
+                    { error: 'ttl_seconds must be between 60 and 86400' },
+                    { status: 400 }
+                )
+            }
+
+            let resp: Response
+            try {
+                resp = await fetch(
+                    `${lookup.orchestrator.url}/sandboxes/${lookup.sandboxId}/extend`,
+                    {
+                        method: 'POST',
+                        headers: orchestratorJsonHeaders(lookup.orchestrator),
+                        body: JSON.stringify({ ttl_seconds: ttlSeconds }),
+                    }
+                )
+            } catch (fetchErr) {
+                console.error('Orchestrator extend connection failed:', fetchErr)
+                return NextResponse.json(
+                    { error: 'Sandbox orchestrator is not reachable' },
+                    { status: 502 }
+                )
+            }
+
+            if (!resp.ok) {
+                const errBody = await resp.text()
+                return NextResponse.json(
+                    { error: 'Failed to extend sandbox', details: errBody },
+                    { status: resp.status >= 500 ? 502 : resp.status }
+                )
+            }
+
+            const orchPayload = await resp.json()
+            const newExpiresAt = orchPayload?.new_expires_at || orchPayload?.expires_at
+            if (!newExpiresAt) {
+                return NextResponse.json(
+                    {
+                        error:
+                            'Orchestrator extend returned no expires_at — likely a pre-v0.2.0 stub. ' +
+                            'Update the orchestrator and try again.',
+                    },
+                    { status: 502 }
+                )
+            }
 
             const { data: updated, error: updateError } = await supabase
                 .from('sandbox_instances')
                 .update({
-                    expires_at: newExpiry.toISOString(),
-                    ttl_seconds: instance.ttl_seconds + additionalSeconds,
+                    expires_at: newExpiresAt,
+                    ttl_seconds: ttlSeconds,
                 })
                 .eq('id', id)
                 .select()
@@ -144,12 +182,12 @@ export async function PUT(
 
             if (updateError) {
                 return NextResponse.json(
-                    { error: 'Failed to extend sandbox TTL', details: updateError.message },
+                    { error: 'Failed to mirror extend in DB', details: updateError.message },
                     { status: 500 }
                 )
             }
 
-            return NextResponse.json({ instance: updated })
+            return NextResponse.json({ instance: updated, orchestrator: orchPayload })
         }
 
         return NextResponse.json(
@@ -169,54 +207,42 @@ export async function PUT(
 }
 
 export async function DELETE(
-    request: NextRequest,
+    _request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const { id } = await params
-        const supabase = await createClient()
-        const {
-            data: { user },
-            error: userError,
-        } = await supabase.auth.getUser()
 
-        if (userError || !user) {
-            return NextResponse.json({ error: 'User not authenticated' }, { status: 401 })
+        const lookup = await lookupSandboxAndOrchestrator(id)
+        if (!lookup.ok) {
+            return NextResponse.json({ error: lookup.error }, { status: lookup.status })
         }
 
-        const { data: instance, error: fetchError } = await supabase
-            .from('sandbox_instances')
-            .select('sandbox_id, status')
-            .eq('id', id)
-            .eq('user_id', user.id)
-            .single()
-
-        if (fetchError || !instance) {
-            return NextResponse.json({ error: 'Sandbox instance not found' }, { status: 404 })
-        }
-
-        if (['creating', 'starting', 'ready', 'running'].includes(instance.status)) {
+        if (['creating', 'starting', 'ready', 'running'].includes(lookup.status)) {
             try {
                 const resp = await fetch(
-                    `${ORCHESTRATOR_URL}/sandboxes/${instance.sandbox_id}?graceful=false`,
-                    { method: 'DELETE', headers: orchestratorHeaders() }
+                    `${lookup.orchestrator.url}/sandboxes/${lookup.sandboxId}?graceful=false`,
+                    { method: 'DELETE', headers: orchestratorJsonHeaders(lookup.orchestrator) }
                 )
                 if (!resp.ok && resp.status !== 404) {
                     console.error('Orchestrator destroy failed:', resp.status)
                 }
             } catch (fetchErr) {
-                console.warn('Orchestrator not reachable during delete — removing DB record only:', fetchErr instanceof Error ? fetchErr.message : fetchErr)
+                console.warn(
+                    'Orchestrator not reachable during delete — removing DB record only:',
+                    fetchErr instanceof Error ? fetchErr.message : fetchErr
+                )
             }
         }
 
-        // Soft delete: set deleted_at timestamp instead of hard deleting
+        const supabase = await createClient()
         const { error: deleteError } = await supabase
             .from('sandbox_instances')
             .update({
                 deleted_at: new Date().toISOString(),
                 status: 'stopped',
-                stopped_at: instance.status !== 'stopped' ? new Date().toISOString() : undefined,
-                stop_reason: 'user_deleted',
+                stopped_at: lookup.status !== 'stopped' ? new Date().toISOString() : undefined,
+                stop_reason: 'user_requested',
             })
             .eq('id', id)
 

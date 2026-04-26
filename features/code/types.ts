@@ -23,8 +23,33 @@ export interface FilesystemNode {
 }
 
 export interface FilesystemWatchEvent {
-  type: "created" | "modified" | "deleted";
+  type: "created" | "modified" | "deleted" | "moved";
   path: string;
+  /** Present for "moved" events — the original path before the rename. */
+  fromPath?: string;
+}
+
+export interface FilesystemStat {
+  path: string;
+  kind: FilesystemNodeKind | "symlink";
+  size: number;
+  /** Unix mode bits (e.g. 0o644). */
+  mode?: number;
+  /** ISO date string. */
+  modifiedAt?: string;
+  /** sha1 of contents — when the adapter cheaply provides it. */
+  hash?: string;
+  /** Symlink target, if `kind === "symlink"`. */
+  target?: string;
+}
+
+export interface FilesystemSearchHit {
+  path: string;
+  /** 1-based line number of the match. */
+  line: number;
+  column?: number;
+  /** The matched line contents (trimmed). */
+  text: string;
 }
 
 // ─── Editor files / tabs ─────────────────────────────────────────────────────

@@ -1,18 +1,24 @@
-import type { FilesystemNode, FilesystemWatchEvent } from "../types";
+import type {
+  FilesystemNode,
+  FilesystemSearchHit,
+  FilesystemStat,
+  FilesystemWatchEvent,
+} from "../types";
 
 /**
  * Adapter interface for all filesystem sources.
  *
  * Implementations:
  *  - MockFilesystemAdapter — static in-memory project for demos/tests.
- *  - SandboxFilesystemAdapter — proxies to /api/sandbox/[id]/exec for a live
- *    Coolify-hosted sandbox container.
- *  - (future) AwsFilesystemAdapter — reads the user's cloud project stored
- *    on AWS.
+ *  - SandboxFilesystemAdapter — talks to /api/sandbox/[id]/fs/* (proxies the
+ *    rich orchestrator filesystem API; binary-safe, atomic writes, watcher).
  *
  * The adapter is the single boundary between the workspace UI and whatever
  * storage/runtime is backing it. Keep it narrow; prefer separate adapter
  * methods over plumbing conditionals through the UI.
+ *
+ * Methods marked optional may be unimplemented by simpler adapters (Mock).
+ * UI code should feature-detect (`if (adapter.stat)`).
  */
 export interface FilesystemAdapter {
   /** Stable identifier — prefixed to file ids so they survive adapter swaps. */
@@ -27,9 +33,44 @@ export interface FilesystemAdapter {
   listChildren(path: string): Promise<FilesystemNode[]>;
   readFile(path: string): Promise<string>;
   writeFile?(path: string, content: string): Promise<void>;
+
+  /** Optional — single-file stat. */
+  stat?(path: string): Promise<FilesystemStat>;
+  /** Optional — read a binary file as base64. */
+  readFileBinary?(path: string): Promise<string>;
+  /** Optional — write base64-encoded binary content. */
+  writeFileBinary?(path: string, base64: string): Promise<void>;
+  /** Optional — make a directory (mkdir -p when `parents` is true). */
+  mkdir?(path: string, parents?: boolean): Promise<void>;
+  /** Optional — delete a file or directory. */
+  delete?(path: string, recursive?: boolean): Promise<void>;
+  /** Optional — atomic rename. */
+  rename?(fromPath: string, toPath: string, overwrite?: boolean): Promise<void>;
+  /** Optional — copy a file or directory. */
+  copy?(fromPath: string, toPath: string, recursive?: boolean): Promise<void>;
+
   /**
    * Optional subscription. Adapters without a live backend can omit this; the
    * workspace will fall back to explicit refresh actions.
    */
   watch?(path: string, cb: (ev: FilesystemWatchEvent) => void): () => void;
+
+  /** Optional — server-side content search (ripgrep). Streams matches via cb. */
+  searchContent?(opts: {
+    query: string;
+    regex?: boolean;
+    caseSensitive?: boolean;
+    includeGlobs?: string[];
+    excludeGlobs?: string[];
+    maxResults?: number;
+    onHit: (hit: FilesystemSearchHit) => void;
+    signal?: AbortSignal;
+  }): Promise<{ truncated: boolean }>;
+
+  /** Optional — server-side path search (fd). */
+  searchPaths?(opts: {
+    pattern: string;
+    fuzzy?: boolean;
+    maxResults?: number;
+  }): Promise<string[]>;
 }

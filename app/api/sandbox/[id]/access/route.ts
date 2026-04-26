@@ -1,52 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/utils/supabase/server'
+import {
+    lookupSandboxAndOrchestrator,
+    orchestratorJsonHeaders,
+} from '@/lib/sandbox/orchestrator-routing'
 
-const ORCHESTRATOR_URL = process.env.MATRX_ORCHESTRATOR_URL || 'http://54.144.86.132:8000'
-const ORCHESTRATOR_API_KEY = process.env.MATRX_ORCHESTRATOR_API_KEY || ''
-
+/**
+ * POST /api/sandbox/[id]/access
+ *
+ * Generates a one-time Ed25519 keypair, injects the public half into the
+ * container, and returns the private half for direct human SSH. The orchestrator
+ * never stores the private key.
+ *
+ * Tier-aware: routes to the correct orchestrator based on the sandbox row's
+ * config.tier.
+ */
 export async function POST(
-    request: NextRequest,
+    _request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const { id } = await params
-        const supabase = await createClient()
-        const {
-            data: { user },
-            error: userError,
-        } = await supabase.auth.getUser()
 
-        if (userError || !user) {
-            return NextResponse.json({ error: 'User not authenticated' }, { status: 401 })
+        const lookup = await lookupSandboxAndOrchestrator(id)
+        if (!lookup.ok) {
+            return NextResponse.json({ error: lookup.error }, { status: lookup.status })
         }
 
-        const { data: instance, error: fetchError } = await supabase
-            .from('sandbox_instances')
-            .select('sandbox_id, status')
-            .eq('id', id)
-            .eq('user_id', user.id)
-            .single()
-
-        if (fetchError || !instance) {
-            return NextResponse.json({ error: 'Sandbox instance not found' }, { status: 404 })
-        }
-
-        if (!['ready', 'running'].includes(instance.status)) {
+        if (!['ready', 'running'].includes(lookup.status)) {
             return NextResponse.json(
-                { error: `Sandbox is not running (status: ${instance.status})` },
+                { error: `Sandbox is not running (status: ${lookup.status})` },
                 { status: 409 }
             )
         }
 
-        const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-        if (ORCHESTRATOR_API_KEY) {
-            headers['X-API-Key'] = ORCHESTRATOR_API_KEY
-        }
-
         try {
             const resp = await fetch(
-                `${ORCHESTRATOR_URL}/sandboxes/${instance.sandbox_id}/access`,
-                { method: 'POST', headers }
+                `${lookup.orchestrator.url}/sandboxes/${lookup.sandboxId}/access`,
+                { method: 'POST', headers: orchestratorJsonHeaders(lookup.orchestrator) }
             )
 
             if (!resp.ok) {
@@ -63,7 +53,7 @@ export async function POST(
         } catch (fetchError) {
             console.error('Orchestrator connection failed:', fetchError)
             return NextResponse.json(
-                { error: 'Sandbox orchestrator is not reachable. Ensure the orchestrator service is running.' },
+                { error: 'Sandbox orchestrator is not reachable' },
                 { status: 502 }
             )
         }

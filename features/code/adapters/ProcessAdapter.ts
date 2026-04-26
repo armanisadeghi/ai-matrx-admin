@@ -18,17 +18,29 @@ export interface ProcessAdapter {
 
   exec(
     command: string,
-    opts?: { cwd?: string; timeoutSec?: number },
+    opts?: {
+      cwd?: string;
+      timeoutSec?: number;
+      env?: Record<string, string>;
+      stdin?: string;
+    },
   ): Promise<ProcessResult>;
 
   /**
-   * Optional live stream. Not required for v1 — `exec` alone drives the UI.
-   * When implemented, consumers should still `await exec(...)` for the final
-   * exit code; `stream` supplies incremental chunks in the meantime.
+   * Optional live stream. Backed by the orchestrator's /exec/stream SSE
+   * endpoint — incremental stdout/stderr arrive via `onEvent`, and the final
+   * `ProcessResult` resolves with the exit code. Cancellation: pass an
+   * AbortSignal; aborting closes the SSE which signals the orchestrator to
+   * SIGTERM the running command.
    */
   stream?(
     command: string,
     onEvent: (ev: ProcessEvent) => void,
-    opts?: { cwd?: string; signal?: AbortSignal },
+    opts?: {
+      cwd?: string;
+      env?: Record<string, string>;
+      stdin?: string;
+      signal?: AbortSignal;
+    },
   ): Promise<ProcessResult>;
 }

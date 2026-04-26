@@ -15,6 +15,23 @@ export type SandboxStopReason =
     | 'graceful_shutdown'
     | 'admin'
 
+export type SandboxTier = 'ec2' | 'hosted'
+
+/**
+ * Per-sandbox config slot. Free-form JSON. The frontend stuffs `tier` + `template`
+ * + `template_version` + `resources` + `labels` here when no dedicated columns
+ * exist (db migration to promote them is a follow-up). The orchestrator reads
+ * the same payload back via `config` on `SandboxResponse`.
+ */
+export interface SandboxConfig {
+    tier?: SandboxTier
+    template?: string
+    template_version?: string
+    resources?: { cpu?: number; memory_mb?: number; disk_mb?: number }
+    labels?: Record<string, string>
+    [extraKey: string]: unknown
+}
+
 export interface SandboxInstance {
     id: string
     user_id: string
@@ -24,7 +41,7 @@ export interface SandboxInstance {
     container_id: string | null
     hot_path: string
     cold_path: string
-    config: Record<string, unknown>
+    config: SandboxConfig
     ttl_seconds: number
     expires_at: string | null
     last_heartbeat_at: string | null
@@ -54,6 +71,10 @@ export interface SandboxExecRequest {
     command: string
     timeout?: number
     cwd?: string
+    /** Additional env vars merged into the sandbox default env for this single call. */
+    env?: Record<string, string>
+    /** Optional stdin payload — bypasses the 10K command-length cap. */
+    stdin?: string
 }
 
 export interface SandboxExecResponse {
@@ -65,8 +86,16 @@ export interface SandboxExecResponse {
 
 export interface SandboxCreateRequest {
     project_id?: string
-    config?: Record<string, unknown>
+    config?: SandboxConfig
     ttl_seconds?: number
+    /** Tier picker — 'ec2' (ephemeral, S3-backed) or 'hosted' (this server, larger workloads). */
+    tier?: SandboxTier
+    /** Template id; see `GET /api/templates`. */
+    template?: string
+    template_version?: string
+    /** Resource overrides (hosted tier only). */
+    resources?: { cpu?: number; memory_mb?: number; disk_mb?: number }
+    labels?: Record<string, string>
 }
 
 export type SandboxAction = 'stop' | 'extend'
@@ -74,6 +103,26 @@ export type SandboxAction = 'stop' | 'extend'
 export interface SandboxActionRequest {
     action: SandboxAction
     ttl_seconds?: number
+}
+
+export interface SandboxExtendResponse {
+    sandbox_id: string
+    ttl_seconds: number
+    expires_at: string
+    new_expires_at: string
+}
+
+export interface SandboxTemplate {
+    id: string
+    version: string
+    description: string
+    image: string
+    tier: SandboxTier | null
+    languages: string[]
+}
+
+export interface SandboxTemplateListResponse {
+    templates: SandboxTemplate[]
 }
 
 export interface SandboxAccessResponse {

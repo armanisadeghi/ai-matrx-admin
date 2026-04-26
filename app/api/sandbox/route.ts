@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/utils/supabase/server'
-
-const ORCHESTRATOR_URL = process.env.MATRX_ORCHESTRATOR_URL || 'http://54.144.86.132:8000'
-const ORCHESTRATOR_API_KEY = process.env.MATRX_ORCHESTRATOR_API_KEY || ''
+import {
+    resolveOrchestratorByTier,
+    orchestratorJsonHeaders,
+} from '@/lib/sandbox/orchestrator-routing'
+import type { SandboxConfig, SandboxTier } from '@/types/sandbox'
 
 export async function GET(request: NextRequest) {
     try {
@@ -13,21 +15,18 @@ export async function GET(request: NextRequest) {
         } = await supabase.auth.getUser()
 
         if (userError || !user) {
-            return NextResponse.json(
-                { error: 'User not authenticated' },
-                { status: 401 }
-            )
+            return NextResponse.json({ error: 'User not authenticated' }, { status: 401 })
         }
 
         const { searchParams } = new URL(request.url)
         const projectId = searchParams.get('project_id')
         const status = searchParams.get('status')
+        const tier = searchParams.get('tier')
         const limit = parseInt(searchParams.get('limit') || '50')
         const offset = parseInt(searchParams.get('offset') || '0')
 
-        // Exclude soft-deleted instances by default
         const includeDeleted = searchParams.get('include_deleted') === 'true'
-        
+
         let query = supabase
             .from('sandbox_instances')
             .select('*', { count: 'exact' })
@@ -38,11 +37,9 @@ export async function GET(request: NextRequest) {
         if (!includeDeleted) {
             query = query.is('deleted_at', null)
         }
-
         if (projectId) {
             query = query.eq('project_id', projectId)
         }
-
         if (status) {
             query = query.eq('status', status)
         }
@@ -57,8 +54,18 @@ export async function GET(request: NextRequest) {
             )
         }
 
+        // Optional client-side tier filter — we store tier in `config` (JSONB)
+        // until we promote it to a column, so a SQL-side filter would need a
+        // JSON path operator. Filtering in JS is fine for the modest list size.
+        let instances = data || []
+        if (tier) {
+            instances = instances.filter(
+                (row) => (row.config as SandboxConfig | null)?.tier === tier
+            )
+        }
+
         return NextResponse.json({
-            instances: data || [],
+            instances,
             pagination: {
                 total: count || 0,
                 limit,
@@ -87,14 +94,29 @@ export async function POST(request: NextRequest) {
         } = await supabase.auth.getUser()
 
         if (userError || !user) {
-            return NextResponse.json(
-                { error: 'User not authenticated' },
-                { status: 401 }
-            )
+            return NextResponse.json({ error: 'User not authenticated' }, { status: 401 })
         }
 
         const body = await request.json()
-        const { project_id, config, ttl_seconds } = body
+        const {
+            project_id,
+            config,
+            ttl_seconds,
+            tier: tierInput,
+            template,
+            template_version,
+            resources,
+            labels,
+        } = body as {
+            project_id?: string
+            config?: SandboxConfig
+            ttl_seconds?: number
+            tier?: SandboxTier
+            template?: string
+            template_version?: string
+            resources?: { cpu?: number; memory_mb?: number; disk_mb?: number }
+            labels?: Record<string, string>
+        }
 
         if (project_id) {
             const { data: project, error: projectError } = await supabase
@@ -104,10 +126,7 @@ export async function POST(request: NextRequest) {
                 .single()
 
             if (projectError || !project) {
-                return NextResponse.json(
-                    { error: 'Project not found' },
-                    { status: 404 }
-                )
+                return NextResponse.json({ error: 'Project not found' }, { status: 404 })
             }
         }
 
@@ -119,47 +138,71 @@ export async function POST(request: NextRequest) {
 
         if (!countError && activeInstances && activeInstances.length >= 5) {
             return NextResponse.json(
-                { error: 'Maximum active sandbox limit reached (5). Stop an existing sandbox first.' },
+                {
+                    error:
+                        'Maximum active sandbox limit reached (5). Stop an existing sandbox first.',
+                },
                 { status: 429 }
             )
         }
 
-        const orchestratorHeaders: Record<string, string> = {
-            'Content-Type': 'application/json',
+        // Resolve tier — explicit > config.tier > default 'ec2' for back-compat.
+        const tier: SandboxTier = tierInput || (config?.tier as SandboxTier) || 'ec2'
+        const target = resolveOrchestratorByTier(tier)
+
+        // Forward to the matching orchestrator.
+        const orchestratorBody: Record<string, unknown> = {
+            user_id: user.id,
+            config: config || {},
+            tier,
         }
-        if (ORCHESTRATOR_API_KEY) {
-            orchestratorHeaders['X-API-Key'] = ORCHESTRATOR_API_KEY
-        }
+        if (template) orchestratorBody.template = template
+        if (template_version) orchestratorBody.template_version = template_version
+        if (resources) orchestratorBody.resources = resources
+        if (labels) orchestratorBody.labels = labels
+        if (ttl_seconds) orchestratorBody.ttl_seconds = ttl_seconds
 
         let orchestratorResp: Response
         try {
-            orchestratorResp = await fetch(`${ORCHESTRATOR_URL}/sandboxes`, {
+            orchestratorResp = await fetch(`${target.url}/sandboxes`, {
                 method: 'POST',
-                headers: orchestratorHeaders,
-                body: JSON.stringify({
-                    user_id: user.id,
-                    config: config || {},
-                }),
+                headers: orchestratorJsonHeaders(target),
+                body: JSON.stringify(orchestratorBody),
             })
         } catch (fetchError) {
-            console.error('Orchestrator connection failed:', fetchError)
+            console.error(`Orchestrator (${tier}) connection failed:`, fetchError)
             return NextResponse.json(
-                { error: 'Sandbox orchestrator is not reachable. Ensure the orchestrator service is running.' },
+                {
+                    error: `Sandbox orchestrator (${tier}) is not reachable. Ensure the orchestrator service is running.`,
+                },
                 { status: 502 }
             )
         }
 
         if (!orchestratorResp.ok) {
             const errBody = await orchestratorResp.text()
-            console.error('Orchestrator create failed:', orchestratorResp.status, errBody)
+            console.error(`Orchestrator create (${tier}) failed:`, orchestratorResp.status, errBody)
             return NextResponse.json(
                 { error: 'Failed to create sandbox container', details: errBody },
-                { status: 502 }
+                { status: orchestratorResp.status === 400 ? 400 : 502 }
             )
         }
 
         const orchestratorData = await orchestratorResp.json()
-        const effectiveTtl = ttl_seconds || 7200
+        const effectiveTtl = ttl_seconds || orchestratorData?.ttl_seconds || 7200
+
+        // Pack tier/template/resources/labels into config until we have dedicated
+        // columns (a follow-up Supabase migration). The orchestrator's response
+        // also includes these fields as top-level — we keep our copy in `config`
+        // for the routing logic in lookupSandboxAndOrchestrator.
+        const persistedConfig: SandboxConfig = {
+            ...(config || {}),
+            tier,
+            ...(template ? { template } : {}),
+            ...(template_version ? { template_version } : {}),
+            ...(resources ? { resources } : {}),
+            ...(labels ? { labels } : {}),
+        }
 
         const sandboxRecord = {
             user_id: user.id,
@@ -169,14 +212,13 @@ export async function POST(request: NextRequest) {
             container_id: orchestratorData.container_id,
             hot_path: orchestratorData.hot_path || '/home/agent',
             cold_path: orchestratorData.cold_path || '/data/cold',
-            config: config || {},
+            config: persistedConfig,
             ttl_seconds: effectiveTtl,
-            expires_at: new Date(Date.now() + effectiveTtl * 1000).toISOString(),
+            expires_at:
+                orchestratorData.expires_at ||
+                new Date(Date.now() + effectiveTtl * 1000).toISOString(),
         }
 
-        // Use upsert to handle orphaned records — if the orchestrator returns a sandbox_id
-        // that already exists in the DB (from a previous failed/expired attempt), update it
-        // instead of failing with a duplicate key error.
         const { data: instance, error: insertError } = await supabase
             .from('sandbox_instances')
             .upsert(sandboxRecord, { onConflict: 'sandbox_id' })

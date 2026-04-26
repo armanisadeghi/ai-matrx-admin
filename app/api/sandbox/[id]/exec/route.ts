@@ -1,45 +1,43 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/utils/supabase/server'
+import {
+    lookupSandboxAndOrchestrator,
+    orchestratorJsonHeaders,
+} from '@/lib/sandbox/orchestrator-routing'
 
-const ORCHESTRATOR_URL = process.env.MATRX_ORCHESTRATOR_URL || 'http://54.144.86.132:8000'
-const ORCHESTRATOR_API_KEY = process.env.MATRX_ORCHESTRATOR_API_KEY || ''
-
+/**
+ * POST /api/sandbox/[id]/exec
+ *
+ * Buffered exec — single JSON response at end-of-command. For long-running
+ * commands use POST /api/sandbox/[id]/exec/stream instead.
+ *
+ * Body:
+ *   { command: string, timeout?: number, cwd?: string,
+ *     env?: Record<string,string>, stdin?: string }
+ *
+ * Tier routing is automatic: the sandbox row's `config.tier` determines which
+ * orchestrator we forward to.
+ */
 export async function POST(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const { id } = await params
-        const supabase = await createClient()
-        const {
-            data: { user },
-            error: userError,
-        } = await supabase.auth.getUser()
 
-        if (userError || !user) {
-            return NextResponse.json({ error: 'User not authenticated' }, { status: 401 })
+        const lookup = await lookupSandboxAndOrchestrator(id)
+        if (!lookup.ok) {
+            return NextResponse.json({ error: lookup.error }, { status: lookup.status })
         }
 
-        const { data: instance, error: fetchError } = await supabase
-            .from('sandbox_instances')
-            .select('sandbox_id, status')
-            .eq('id', id)
-            .eq('user_id', user.id)
-            .single()
-
-        if (fetchError || !instance) {
-            return NextResponse.json({ error: 'Sandbox instance not found' }, { status: 404 })
-        }
-
-        if (!['ready', 'running'].includes(instance.status)) {
+        if (!['ready', 'running'].includes(lookup.status)) {
             return NextResponse.json(
-                { error: `Sandbox is not running (status: ${instance.status})` },
+                { error: `Sandbox is not running (status: ${lookup.status})` },
                 { status: 409 }
             )
         }
 
         const body = await request.json()
-        const { command, timeout, cwd } = body
+        const { command, timeout, cwd, env, stdin } = body
 
         if (!command || typeof command !== 'string' || !command.trim()) {
             return NextResponse.json({ error: 'command is required' }, { status: 400 })
@@ -52,25 +50,20 @@ export async function POST(
             )
         }
 
-        const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-        if (ORCHESTRATOR_API_KEY) {
-            headers['X-API-Key'] = ORCHESTRATOR_API_KEY
-        }
-
         const execPayload: Record<string, unknown> = {
             command,
             timeout: Math.min(Math.max(timeout || 30, 1), 600),
         }
-        if (cwd && typeof cwd === 'string') {
-            execPayload.cwd = cwd
-        }
+        if (cwd && typeof cwd === 'string') execPayload.cwd = cwd
+        if (env && typeof env === 'object') execPayload.env = env
+        if (typeof stdin === 'string') execPayload.stdin = stdin
 
         try {
             const resp = await fetch(
-                `${ORCHESTRATOR_URL}/sandboxes/${instance.sandbox_id}/exec`,
+                `${lookup.orchestrator.url}/sandboxes/${lookup.sandboxId}/exec`,
                 {
                     method: 'POST',
-                    headers,
+                    headers: orchestratorJsonHeaders(lookup.orchestrator),
                     body: JSON.stringify(execPayload),
                 }
             )
@@ -89,7 +82,7 @@ export async function POST(
         } catch (fetchError) {
             console.error('Orchestrator connection failed:', fetchError)
             return NextResponse.json(
-                { error: 'Sandbox orchestrator is not reachable. Ensure the orchestrator service is running.' },
+                { error: 'Sandbox orchestrator is not reachable' },
                 { status: 502 }
             )
         }

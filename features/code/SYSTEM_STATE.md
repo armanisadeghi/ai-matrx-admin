@@ -1,9 +1,11 @@
 # `/code` Workspace — System State & Gap Audit
 
-**Last updated:** 2026‑04‑25
+**Last updated:** 2026‑04‑26
 **Scope:** Everything under `features/code/`, plus its hooks, adapters, and the slices it consumes from elsewhere in the app.
 
 This doc is the single source of truth for the `/code` (VSCode‑style) workspace. It captures (1) what is shipped, (2) what is wired but incomplete, (3) what is intentionally deferred, and (4) the shape of the next four work items: Monaco type environments, sandbox API delivery audit, editor→agent context protocol, and known‑environment settings.
+
+> **2026-04-26 update:** the sandbox API audit in §3 has been rewritten — the previous "wishlist not delivered" verdict was based on probing `/openapi.json` against a stale EC2 deploy. The actual orchestrator code (v0.2.0) implements the rich proxy surface, but the proxy routes use `@router.api_route` with broad path catchalls that don't surface in OpenAPI the same way. There is also a new self-hosted "hosted-tier" orchestrator at `https://orchestrator.dev.codematrx.com` — see §3 below.
 
 ---
 
@@ -245,60 +247,50 @@ There is no Git activity view yet. The plan is `features/code/views/source-contr
 
 ---
 
-## 3. Sandbox API delivery audit
+## 3. Sandbox API delivery audit (revised 2026‑04‑26)
 
-I probed the orchestrator directly:
+The orchestrator code on disk (v0.2.0) implements the full rich surface. The previous "only 8 endpoints" finding came from probing `/openapi.json`, which omits routes registered with `@router.api_route("/{sandbox_id}/fs/{path:path}", methods=[...])`-style catchalls. The new authoritative discovery endpoint is `GET /api-surface` — frontends should use that instead.
 
-```bash
-curl -sS http://54.144.86.132:8000/openapi.json | jq '.paths | keys'
-```
+There are now **two orchestrators**:
 
-Result (verbatim):
+| Tier | URL | Backed by |
+|---|---|---|
+| `ec2` | `http://54.144.86.132:8000` | EC2 host, S3 hot/cold, Supabase Postgres |
+| `hosted` | `https://orchestrator.dev.codematrx.com` | Matrx dev server, Docker volumes, in‑memory store today |
 
-```
-[
-  "/",
-  "/health",
-  "/sandboxes",
-  "/sandboxes/{sandbox_id}",
-  "/sandboxes/{sandbox_id}/complete",
-  "/sandboxes/{sandbox_id}/error",
-  "/sandboxes/{sandbox_id}/exec",
-  "/sandboxes/{sandbox_id}/heartbeat"
-]
-```
+Sandboxes carry a `tier` field (persisted in `sandbox_instances.config.tier`) so the proxy routes can forward to the right orchestrator. See `lib/sandbox/orchestrator-routing.ts`.
 
-### 3.1 Wishlist scoreboard
+### 3.1 Wishlist scoreboard (orchestrator code v0.2.0)
 
-| Wishlist item | Priority | Delivered? | Notes |
-|---------------|----------|------------|-------|
-| §3.1.1 Structured FS API (`/fs/list /stat /read /write /patch /delete /mkdir /rename /copy`) | P0 | ❌ | None of the 9 endpoints exist. |
-| §3.1.2 Streaming `exec` (SSE / WebSocket, with stdin/env/cancel) | P0 | ❌ | `/exec` is still buffered JSON; no `stdin`, `env`, or cancel. `command` cap still 10 KB. |
-| §3.1.3 Real PTY WebSocket | P0 | ❌ | No `wss` route. |
-| §3.1.4 Git workflow primitives (`/git/clone /status /diff /add /commit /push /pull /branch /stash /log`) | P0 | ❌ | Not present. |
-| §3.1.5 Git credential model (`/credentials`) | P0 | ❌ | Not present. |
-| §3.1.6 Template selection at create time | P0 | ❌ | `CreateSandboxRequest` still `{ user_id, config }` — no `template`, `template_version`, `resources`, `labels`. |
-| §3.1.7 TTL / heartbeat | P0 | 🟡 partial | `POST /sandboxes/{id}/heartbeat` exists. **No `extend` endpoint** — our `extend` route still drifts the DB. |
-| §3.2.1 File watcher | P1 | ❌ | |
-| §3.2.2 Server‑side search (ripgrep) | P1 | ❌ | |
-| §3.2.3 Bulk fs ops + upload/download | P1 | ❌ | |
-| §3.2.4 Process management | P1 | ❌ | |
-| §3.2.5 Port forwarding | P1 | ❌ | |
-| §3.3.* Snapshot / multi‑user / LSP / AI sockets | P2 | ❌ | |
-| (new) `POST /sandboxes/{id}/complete` | n/a | ✨ | Not in the wishlist. Agent self‑signals task completion → graceful shutdown. |
-| (new) `POST /sandboxes/{id}/error` | n/a | ✨ | Not in the wishlist. Agent self‑reports error → graceful shutdown. |
+| Wishlist item | Priority | Code on disk | EC2 deploy | Hosted deploy | Frontend |
+|---|---|---|---|---|---|
+| §3.1.1 Structured FS API (list/stat/read/write/patch/delete/mkdir/rename/copy/upload/download/batch) | P0 | ✅ | 🚀 stale (deploy disk-full; see matrx-sandbox `docs/OPERATIONS.md`) | ✅ live | ✅ `SandboxFilesystemAdapter` rewritten 2026‑04‑26 |
+| §3.1.2 Streaming `exec` (SSE) with env/stdin | P0 | ✅ | 🚀 | ✅ | ✅ `SandboxProcessAdapter.stream()` |
+| §3.1.3 Real PTY WebSocket | P0 | ✅ | 🚀 | ✅ | ⏳ `TerminalTab` rewrite still pending |
+| §3.1.4 Git workflow primitives | P0 | ✅ | 🚀 | ✅ | ✅ `SandboxGitAdapter` |
+| §3.1.5 Git credential model | P0 | ✅ | 🚀 | ✅ | ✅ via `SandboxGitAdapter.setGithubToken/...` |
+| §3.1.6 Template selection at create time | P0 | ✅ (`template`, `template_version`, `tier`, `resources`, `labels`) | 🚀 | ✅ | ✅ create flow accepts these (Sandboxes panel UI still pending) |
+| §3.1.7 TTL `extend` (persists `expires_at`) + heartbeat | P0 | ✅ | 🚀 | ✅ | ✅ `/api/sandbox/[id]/extend` + `useSandboxHeartbeat` |
+| §3.2.1 File watcher (WebSocket) | P1 | ✅ `/fs/watch` | 🚀 | ✅ | ✅ `SandboxFilesystemAdapter.watch()` |
+| §3.2.2 Server‑side search (ripgrep + fd) | P1 | ✅ `/search/{path}` | 🚀 | ✅ | ✅ `searchContent` / `searchPaths` on the adapter |
+| §3.2.3 Bulk fs / upload / download | P1 | ✅ in daemon | 🚀 | ✅ | ⏳ adapter helpers pending |
+| §3.2.4 Process listing + signal | P1 | ✅ `/processes` | 🚀 | ✅ | ✅ proxy routes; consumer pending |
+| §3.2.5 Port listing | P1 | ✅ `/ports` | 🚀 | ✅ | ✅ proxy route; consumer pending |
+| §3.2.5 Public preview URL exposure | P1 | ❌ | — | — | — |
+| §3.3.* Snapshot / multi‑user / LSP / AI sockets | P2 | ❌ | — | — | — |
+| (new) `POST /sandboxes/{id}/complete` | n/a | ✅ | ✅ | ✅ | not consumed |
+| (new) `POST /sandboxes/{id}/error` | n/a | ✅ | ✅ | ✅ | not consumed |
+| (new) `GET /api-surface` | n/a | ✅ v0.2.0 | 🚀 | ✅ | not consumed (use for capability discovery) |
 
-**Net delivery:** 1 partial (§3.1.7 heartbeat only — `extend` missing), 0 full, 16 not started.
+**Net delivery:** Every P0 surface shipped in code; hosted tier is fully live; EC2 deploy is blocked by an infra issue (host disk full). Frontend has caught up on backends/adapters; `TerminalTab` PTY rewrite + bulk upload UI are the remaining client gaps.
 
-### 3.2 Recommendation
+### 3.2 Discovery — use `/api-surface`, not `/openapi.json`
 
-I think the most likely explanation is that "the wishlist is done" was scoped to a **different** wishlist than the one in `features/code/SANDBOX_API_WISHLIST.md`, or it was misreported. Concrete next step:
+Both orchestrators expose `GET /api-surface` (no auth). It returns the authoritative route list including the catchall proxy routes, plus `tier` and `version`. Use this when documenting capabilities or detecting feature support. The `/openapi.json` schema is incomplete — keep it for human reference only.
 
-1. Forward this section as a Markdown excerpt to the orchestrator team with the note: *"Verified live against `/openapi.json` — only `heartbeat` shows up. Please confirm whether the wishlist work is on a different branch / feature flag, or if there was a scope mismatch."*
-2. While we wait, ship the heartbeat client (we already have it in the editor — just need to invoke it) so the TTL drift bug closes.
-3. Hold the `SandboxFilesystemAdapter` rewrite until §3.1.1 lands. Anything we'd write today against the current shell layer is throwaway.
+### 3.3 EC2 deploy resilience
 
-A patch for the `/api/sandbox/[id]/heartbeat` proxy route + a hook (`useSandboxHeartbeat`) is small and unblocking and will be done in a follow‑up.
+The two prior deploy failures and the 2026‑04‑26 attempt all failed at "Deploy to EC2 via SSM" with `failed to register layer: ... no space left on device`. Remediation belongs to the matrx-sandbox ops side (prune Docker on the host, add a workflow `docker system prune -af` step before `docker pull`). Until that lands, the EC2 tier stays on pre-wishlist code; the hosted tier (this server) is unaffected.
 
 ---
 
