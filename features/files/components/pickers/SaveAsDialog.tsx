@@ -16,6 +16,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, Check, Loader2, X } from "lucide-react";
+import { extractErrorMessage } from "@/utils/errors";
 import {
   Dialog,
   DialogContent,
@@ -171,7 +172,7 @@ function SaveAsBody({
       );
       onOpenChange(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(extractErrorMessage(err));
     } finally {
       setSubmitting(false);
     }

@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { extractErrorMessage } from "@/utils/errors";
 import {
   Tooltip,
   TooltipContent,
@@ -515,7 +516,7 @@ export default function DynamicApiClient() {
       toast.success(`Loaded ${endpoints.length} endpoints from spec`);
     } catch (err) {
       toast.error("Failed to fetch OpenAPI spec", {
-        description: err instanceof Error ? err.message : String(err),
+        description: extractErrorMessage(err),
       });
     } finally {
       setOpenApiLoading(false);

@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import type { FilesystemAdapter } from "../../adapters/FilesystemAdapter";
 import type { FilesystemNode } from "../../types";
 import { FileIcon } from "../../styles/file-icon";
+import { extractErrorMessage } from "@/utils/errors";
 import {
   ACTIVE_ROW,
   HOVER_ROW,
@@ -53,7 +54,7 @@ export const FileTreeNode: React.FC<FileTreeNodeProps> = ({
       })
       .catch((err) => {
         if (!cancelled)
-          setLoadError(err instanceof Error ? err.message : String(err));
+          setLoadError(extractErrorMessage(err));
       });
     return () => {
       cancelled = true;
@@ -115,7 +116,7 @@ export const FileTreeNode: React.FC<FileTreeNodeProps> = ({
         // Auto-expand to surface what was just dropped.
         if (!expanded) onToggle(node.path);
       } catch (err) {
-        setLoadError(err instanceof Error ? err.message : String(err));
+        setLoadError(extractErrorMessage(err));
       }
     },
     [isDir, adapter, node.path, expanded, onToggle],

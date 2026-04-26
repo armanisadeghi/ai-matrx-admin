@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminSupabaseClient } from '@/utils/supabase/getScriptClient';
 import type { ProviderModelEntry, ProviderModelsCache } from '@/features/ai-models/types';
+import { extractErrorMessage } from "@/utils/errors";
 
 export const dynamic = 'force-dynamic';
 
@@ -114,7 +115,7 @@ export async function POST(request: NextRequest) {
         try {
             models = await providerConfig.fetchModels();
         } catch (fetchErr) {
-            const msg = fetchErr instanceof Error ? fetchErr.message : String(fetchErr);
+            const msg = extractErrorMessage(fetchErr);
             return NextResponse.json({ error: `Failed to fetch from ${providerConfig.name}: ${msg}` }, { status: 502 });
         }
 

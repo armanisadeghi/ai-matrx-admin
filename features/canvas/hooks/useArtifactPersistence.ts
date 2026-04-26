@@ -15,6 +15,7 @@ import { canvasArtifactService } from "@/features/canvas/services/canvasArtifact
 import { extractArtifacts, hasArtifacts } from "@/features/canvas/utils/extractArtifacts";
 import type { ExtractedArtifact } from "@/features/canvas/utils/extractArtifacts";
 import type { CanvasArtifactRow } from "@/features/canvas/services/canvasArtifactService";
+import { extractErrorMessage } from "@/utils/errors";
 
 interface PersistArtifactsParams {
     /** Full accumulated content from the assistant message */
@@ -104,7 +105,7 @@ export function useArtifactPersistence() {
             } catch (err) {
                 result.errors.push({
                     artifact,
-                    error: err instanceof Error ? err.message : String(err),
+                    error: extractErrorMessage(err),
                 });
             }
         }

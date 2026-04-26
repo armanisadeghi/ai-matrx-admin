@@ -8,6 +8,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
+import { extractErrorMessage } from "@/utils/errors";
 import {
   FileUp,
   FolderPlus,
@@ -88,7 +89,7 @@ export function NewMenu({ parentFolderId, className }: NewMenuProps) {
       setNewFolderName("");
       setCreateOpen(false);
     } catch (err) {
-      setCreateError(err instanceof Error ? err.message : String(err));
+      setCreateError(extractErrorMessage(err));
     } finally {
       setCreating(false);
     }

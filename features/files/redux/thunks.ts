@@ -24,6 +24,7 @@ import * as Permissions from "@/features/files/api/permissions";
 import * as ShareLinks from "@/features/files/api/share-links";
 import * as Versions from "@/features/files/api/versions";
 import { newRequestId } from "@/features/files/api/client";
+import { extractErrorMessage } from "@/utils/errors";
 import {
   apiFileRecordToCloudFile,
   dbRowToCloudFile,
@@ -584,7 +585,7 @@ export const uploadFiles = createAsyncThunk<
         );
         uploaded.push(data.file_id);
       } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
+        const message = extractErrorMessage(err);
         dispatch(
           updateUploadStatus({
             requestId,
@@ -664,7 +665,7 @@ export const renameFile = createAsyncThunk<void, RenameFileArg, ThunkApi>(
       dispatch(markFileSaved({ id: fileId }));
     } catch (err) {
       dispatch(rollbackFileOptimisticUpdate({ id: fileId, snapshot }));
-      const msg = err instanceof Error ? err.message : String(err);
+      const msg = extractErrorMessage(err);
       dispatch(setFileError({ id: fileId, error: msg }));
       throw err;
     } finally {
@@ -746,7 +747,7 @@ export const moveFile = createAsyncThunk<void, MoveFileArg, ThunkApi>(
         }),
       );
       dispatch(rollbackFileOptimisticUpdate({ id: fileId, snapshot }));
-      const msg = err instanceof Error ? err.message : String(err);
+      const msg = extractErrorMessage(err);
       dispatch(setFileError({ id: fileId, error: msg }));
       throw err;
     } finally {
@@ -811,7 +812,7 @@ export const updateFileMetadata = createAsyncThunk<
       dispatch(markFileSaved({ id: fileId }));
     } catch (err) {
       dispatch(rollbackFileOptimisticUpdate({ id: fileId, snapshot }));
-      const msg = err instanceof Error ? err.message : String(err);
+      const msg = extractErrorMessage(err);
       dispatch(setFileError({ id: fileId, error: msg }));
       throw err;
     } finally {

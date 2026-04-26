@@ -3,6 +3,7 @@ import { MatrxRecordId } from "@/types/entityTypes";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Conversation, Message, MessageRole } from "@/types/chat/chat.types";
 import { useCreateConvoAndMessage } from "@/app/entities/hooks/crud/by-relationships/useCreateConvoAndMessage";
+import { extractErrorMessage } from "@/utils/errors";
 import {
     NEW_CONVERSATION_ID,
     CHAT_RELATIONSHIP_BASE_CONFIG,
@@ -82,7 +83,7 @@ export function useNewConversation() {
             console.error("Error saving new conversation:", error);
             return {
                 success: false,
-                error: error instanceof Error ? error : new Error(String(error)),
+                error: error instanceof Error ? error : new Error(extractErrorMessage(error)),
             };
         }
     }, [saveConversationAndMessage]);

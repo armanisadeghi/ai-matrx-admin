@@ -8,6 +8,7 @@
 
 import { NextResponse } from 'next/server'
 import { createClient } from '@/utils/supabase/server'
+import { extractErrorMessage } from "@/utils/errors";
 
 export async function GET(request: Request) {
     const { searchParams, origin } = new URL(request.url)
@@ -96,7 +97,7 @@ export async function GET(request: Request) {
         console.log(`[${timestamp}] Auth callback - No code present, redirecting to login`)
         return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent('Invalid authentication callback')}`)
     } catch (unexpectedError) {
-        const errMsg = unexpectedError instanceof Error ? unexpectedError.message : String(unexpectedError)
+        const errMsg = extractErrorMessage(unexpectedError)
         const errStack = unexpectedError instanceof Error ? unexpectedError.stack : 'no stack'
         console.error(`[${timestamp}] Auth callback - UNEXPECTED ERROR: ${errMsg}`)
         console.error(`[${timestamp}] Auth callback - Stack: ${errStack}`)

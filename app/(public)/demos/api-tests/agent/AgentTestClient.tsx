@@ -3,6 +3,7 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import { parseNdjsonStream } from "@/lib/api/stream-parser";
 import { ENDPOINTS } from "@/lib/api/endpoints";
+import { extractErrorMessage } from "@/utils/errors";
 import {
   Bot,
   Loader2,
@@ -387,7 +388,7 @@ export default function AgentTestClient() {
           } catch {
             /* noop */
           }
-          throw new Error(String(msg));
+          throw new Error(extractErrorMessage(msg));
         }
 
         if (!res.body) throw new Error("No response body");

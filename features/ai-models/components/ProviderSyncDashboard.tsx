@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { extractErrorMessage } from "@/utils/errors";
 import {
   RefreshCw,
   CheckCircle2,
@@ -888,7 +889,7 @@ export default function ProviderSyncDashboard({
         onModelsChanged?.();
       }
     } catch (err) {
-      setSyncError(err instanceof Error ? err.message : String(err));
+      setSyncError(extractErrorMessage(err));
     } finally {
       setSyncingId(null);
     }

@@ -11,6 +11,7 @@
 import { useEffect, useState } from "react";
 import { AlertCircle, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { extractErrorMessage } from "@/utils/errors";
 
 export interface TextPreviewProps {
   url: string | null;
@@ -49,7 +50,7 @@ export function TextPreview({
       })
       .catch((err: unknown) => {
         if (cancelled) return;
-        setError(err instanceof Error ? err.message : String(err));
+        setError(extractErrorMessage(err));
       });
     return () => {
       cancelled = true;

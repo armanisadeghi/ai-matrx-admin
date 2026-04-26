@@ -12,6 +12,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import * as Files from "@/features/files/api/files";
+import { extractErrorMessage } from "@/utils/errors";
 
 const SAFETY_MARGIN_MS = 30 * 1000; // refresh 30s before expiry
 
@@ -55,7 +56,7 @@ export function useSignedUrl(
       setUrl(data.url);
       expiresAtRef.current = Date.now() + data.expires_in * 1000;
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
+      const msg = extractErrorMessage(err);
       setError(msg);
       setUrl(null);
     } finally {

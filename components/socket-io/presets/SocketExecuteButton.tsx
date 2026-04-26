@@ -8,6 +8,7 @@ import { createTaskFromPresetQuick } from "@/lib/redux/socket-io/thunks/createTa
 import { Play, Zap, CheckCircle, AlertCircle } from "lucide-react";
 import { ButtonProps } from "@/components/ui/button";
 import { SocketPanelResponse } from "@/components/socket/response/SocketPanelResponse";
+import { extractErrorMessage } from "@/utils/errors";
 
 interface SocketExecuteButtonProps extends Omit<ButtonProps, 'onClick'> {
     // Core required props
@@ -89,7 +90,7 @@ export const SocketExecuteButton: React.FC<SocketExecuteButtonProps> = ({
             onExecuteComplete?.(createdTaskId);
 
         } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : String(err);
+            const errorMessage = extractErrorMessage(err);
             setError(errorMessage);
             onExecuteError?.(errorMessage);
             console.error(`❌ Execution failed:`, err);

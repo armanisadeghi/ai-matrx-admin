@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { setPreference } from "@/lib/redux/slices/userPreferencesSlice";
 import type {
+import { extractErrorMessage } from "@/utils/errors";
   SandboxCreateRequest,
   SandboxTemplate,
   SandboxTemplateListResponse,
@@ -79,7 +80,7 @@ export const CreateSandboxModal: React.FC<CreateSandboxModalProps> = ({
         }
       } catch (err) {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : String(err));
+          setError(extractErrorMessage(err));
           setTemplates([]);
         }
       } finally {
@@ -131,7 +132,7 @@ export const CreateSandboxModal: React.FC<CreateSandboxModalProps> = ({
     try {
       await onCreate(request);
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(extractErrorMessage(err));
     }
   };
 

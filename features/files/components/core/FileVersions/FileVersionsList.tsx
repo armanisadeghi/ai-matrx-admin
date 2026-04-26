@@ -14,6 +14,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { extractErrorMessage } from "@/utils/errors";
 import {
   AlertCircle,
   History,
@@ -63,7 +64,7 @@ export function FileVersionsList({ fileId, className }: FileVersionsListProps) {
     try {
       await dispatch(loadFileVersions({ fileId })).unwrap();
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(extractErrorMessage(err));
     } finally {
       setLoading(false);
     }

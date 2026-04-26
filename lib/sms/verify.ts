@@ -9,6 +9,7 @@
 
 import { getTwilioClient, getVerifyServiceSid } from './client';
 import type { VerificationResult } from './types';
+import { extractErrorMessage } from "@/utils/errors";
 
 /**
  * Send a verification code to a phone number.
@@ -32,7 +33,7 @@ export async function sendVerification(
       status: verification.status,
     };
   } catch (err) {
-    const error = err instanceof Error ? err.message : String(err);
+    const error = extractErrorMessage(err);
     console.error('Failed to send verification:', error);
     return { success: false, error };
   }
@@ -60,7 +61,7 @@ export async function checkVerification(
       status: check.status,
     };
   } catch (err) {
-    const error = err instanceof Error ? err.message : String(err);
+    const error = extractErrorMessage(err);
     console.error('Failed to check verification:', error);
     return { success: false, error };
   }

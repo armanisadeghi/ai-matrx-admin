@@ -8,6 +8,7 @@ import { DbFunctionNode } from "@/features/workflows/types";
 import { useRouter } from "next/navigation";
 import { toggleMode } from "@/styles/themes/themeSlice";
 import { createClient } from "@/utils/supabase/client";
+import { extractErrorMessage } from "@/utils/errors";
 
 export interface NodeMenuCoreProps {
     data: DbFunctionNode;
@@ -67,7 +68,7 @@ export const NodeMenuCore: React.FC<NodeMenuCoreProps> = ({
 
             onExecuteComplete?.(taskId);
         } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : String(err);
+            const errorMessage = extractErrorMessage(err);
             onExecuteError?.(errorMessage);
         } finally {
             setIsExecuting(false);

@@ -15,6 +15,7 @@
  */
 
 import React, { useState } from "react";
+import { extractErrorMessage } from "@/utils/errors";
 import {
   AlertTriangle,
   Network,
@@ -403,7 +404,7 @@ async function runServerScenario(args: {
     });
     return { ok: true, detail: "Stream consumed cleanly" };
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
+    const message = extractErrorMessage(err);
     return { ok: false, error: message };
   }
 }

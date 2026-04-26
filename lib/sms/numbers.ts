@@ -7,6 +7,7 @@
 import { getTwilioClient, getAppBaseUrl } from './client';
 import { createAdminClient } from '@/utils/supabase/adminClient';
 import type { PhoneNumberPurchaseOptions, PhoneNumberInfo } from './types';
+import { extractErrorMessage } from "@/utils/errors";
 
 /**
  * Search for available phone numbers to purchase.
@@ -91,7 +92,7 @@ export async function purchasePhoneNumber(
 
     return { success: true, data: numberInfo };
   } catch (err) {
-    const error = err instanceof Error ? err.message : String(err);
+    const error = extractErrorMessage(err);
     console.error('Failed to purchase phone number:', error);
     return { success: false, error };
   }

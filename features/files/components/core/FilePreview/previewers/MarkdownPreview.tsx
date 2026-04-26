@@ -22,6 +22,7 @@ import rehypeKatex from "rehype-katex";
 import rehypePrism from "rehype-prism-plus";
 import "katex/dist/katex.min.css";
 import { cn } from "@/lib/utils";
+import { extractErrorMessage } from "@/utils/errors";
 
 export interface MarkdownPreviewProps {
   url: string | null;
@@ -60,7 +61,7 @@ export function MarkdownPreview({
       })
       .catch((err: unknown) => {
         if (cancelled) return;
-        setError(err instanceof Error ? err.message : String(err));
+        setError(extractErrorMessage(err));
       });
 
     return () => {

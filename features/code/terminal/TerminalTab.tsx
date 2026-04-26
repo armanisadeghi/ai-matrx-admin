@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import "@xterm/xterm/css/xterm.css";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { extractErrorMessage } from "@/utils/errors";
 import {
   appendLine,
   clearLines,
@@ -220,7 +221,7 @@ export const TerminalTab: React.FC<TerminalTabProps> = ({
         if (aborted) {
           state.term.write(`${DIM}^C cancelled${RESET}\r\n`);
         } else {
-          const message = err instanceof Error ? err.message : String(err);
+          const message = extractErrorMessage(err);
           state.term.write(`${RED}${message}${RESET}\r\n`);
           dispatch(
             appendLine({

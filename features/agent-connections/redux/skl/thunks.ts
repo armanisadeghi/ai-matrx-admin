@@ -1,6 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { supabase } from "@/utils/supabase/client";
 import { sklActions } from "./slice";
+import { extractErrorMessage } from "@/utils/errors";
 import {
   rowToShortcutCategory,
   rowToSklCategory,
@@ -120,7 +121,7 @@ export const fetchSkillDefinitions = createAsyncThunk(
       dispatch(sklActions.definitionsReceived(rows));
       return rows;
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
+      const msg = extractErrorMessage(err);
       dispatch(sklActions.definitionsError(msg));
       throw err;
     }
@@ -236,7 +237,7 @@ export const fetchRenderDefinitions = createAsyncThunk(
       dispatch(sklActions.renderDefinitionsReceived(rows));
       return rows;
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
+      const msg = extractErrorMessage(err);
       dispatch(sklActions.renderDefinitionsError(msg));
       throw err;
     }
@@ -364,7 +365,7 @@ export const fetchRenderBlockCategories = createAsyncThunk(
       dispatch(sklActions.renderBlockCategoriesReceived(rows));
       return rows;
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
+      const msg = extractErrorMessage(err);
       dispatch(sklActions.renderBlockCategoriesError(msg));
       throw err;
     }
@@ -386,7 +387,7 @@ export const fetchResources = createAsyncThunk(
       dispatch(sklActions.resourcesReceived(rows));
       return rows;
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
+      const msg = extractErrorMessage(err);
       dispatch(sklActions.resourcesError(msg));
       throw err;
     }

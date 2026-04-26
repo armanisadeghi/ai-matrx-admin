@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { extractErrorMessage } from "@/utils/errors";
 import {
   ArrowDownToLine,
   ArrowUpFromLine,
@@ -71,7 +72,7 @@ export const SourceControlPanel: React.FC<SourceControlPanelProps> = ({
       const next = await adapter.status({ cwd });
       setStatus(next);
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(extractErrorMessage(err));
       setStatus(null);
     } finally {
       setLoading(false);
@@ -94,7 +95,7 @@ export const SourceControlPanel: React.FC<SourceControlPanelProps> = ({
       } catch (err) {
         setError(
           (busyMessage ? `${busyMessage}: ` : "") +
-            (err instanceof Error ? err.message : String(err)),
+            (extractErrorMessage(err)),
         );
       } finally {
         setBusy(false);
@@ -163,7 +164,7 @@ export const SourceControlPanel: React.FC<SourceControlPanelProps> = ({
           }),
         );
       } catch (err) {
-        setError(err instanceof Error ? err.message : String(err));
+        setError(extractErrorMessage(err));
       }
     },
     [adapter, cwd, activeSandboxId, dispatch],

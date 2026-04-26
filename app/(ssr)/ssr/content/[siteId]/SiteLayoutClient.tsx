@@ -1,6 +1,7 @@
 "use client";
 
 import React, {
+import { extractErrorMessage } from "@/utils/errors";
   useEffect,
   useState,
   createContext,
@@ -98,7 +99,7 @@ export default function SiteLayoutClient({
       const data = await CmsSiteService.getSite(siteId);
       setSite(data);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(extractErrorMessage(err));
     } finally {
       setIsLoading(false);
     }

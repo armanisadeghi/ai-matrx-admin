@@ -21,6 +21,7 @@ import { selectActiveUploads } from "@/features/files/redux/selectors";
 import { useFileUpload } from "@/features/files/hooks/useFileUpload";
 import { UploadProgressList } from "./UploadProgressList";
 import type { UploadFilesArg } from "@/features/files/types";
+import { extractErrorMessage } from "@/utils/errors";
 
 export interface FileUploadDropzoneProps {
   /** Parent folder for uploads. null = root. */
@@ -71,7 +72,7 @@ export function FileUploadDropzone({
           onError(`Failed to upload: ${failed.join(", ")}`);
         }
       } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
+        const message = extractErrorMessage(err);
         onError?.(message);
       }
     },

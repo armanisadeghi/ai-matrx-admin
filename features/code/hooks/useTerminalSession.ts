@@ -3,6 +3,7 @@
 import { useCallback } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { useCodeWorkspace } from "../CodeWorkspaceProvider";
+import { extractErrorMessage } from "@/utils/errors";
 import {
   appendLine,
   appendLines,
@@ -68,7 +69,7 @@ export function useTerminalSession() {
         dispatch(
           appendLine({
             type: "stderr",
-            text: err instanceof Error ? err.message : String(err),
+            text: extractErrorMessage(err),
             tab: "terminal",
           }),
         );

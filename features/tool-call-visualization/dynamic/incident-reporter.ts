@@ -7,6 +7,7 @@
  */
 
 import type { IncidentPayload } from "./types";
+import { extractErrorMessage } from "@/utils/errors";
 
 // ---------------------------------------------------------------------------
 // Config
@@ -114,7 +115,7 @@ export function reportCompilationError(
     componentVersion?: string
 ): void {
     const err =
-        error instanceof Error ? error : new Error(String(error));
+        error instanceof Error ? error : new Error(extractErrorMessage(error));
 
     reportIncident({
         tool_name: toolName,
@@ -139,7 +140,7 @@ export function reportRuntimeError(
     componentVersion?: string
 ): void {
     const err =
-        error instanceof Error ? error : new Error(String(error));
+        error instanceof Error ? error : new Error(extractErrorMessage(error));
 
     reportIncident({
         tool_name: toolName,
@@ -161,7 +162,7 @@ export function reportFetchError(
     error: unknown
 ): void {
     const err =
-        error instanceof Error ? error : new Error(String(error));
+        error instanceof Error ? error : new Error(extractErrorMessage(error));
 
     reportIncident({
         tool_name: toolName,

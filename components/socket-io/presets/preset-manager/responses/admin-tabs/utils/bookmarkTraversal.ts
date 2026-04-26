@@ -1,3 +1,4 @@
+import { extractErrorMessage } from "@/utils/errors";
 /**
  * Safely traverses a bookmark path to extract data from a nested object
  * 
@@ -72,7 +73,7 @@ export function traverseBookmarkPath(
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : String(error),
+      error: extractErrorMessage(error),
       path: bookmarkPath
     };
   }

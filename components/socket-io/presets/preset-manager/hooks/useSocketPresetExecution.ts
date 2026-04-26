@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { createTaskFromPresetQuick } from "@/lib/redux/socket-io/thunks/createTaskFromPreset";
 import { SocketPresetExecutionConfig } from "../SocketPresetManager";
+import { extractErrorMessage } from "@/utils/errors";
 
 /**
  * Hook for managing socket preset execution state and logic
@@ -47,7 +48,7 @@ export const useSocketPresetExecution = (config: SocketPresetExecutionConfig) =>
       config.onExecuteComplete?.(createdTaskId);
 
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : String(err);
+      const errorMessage = extractErrorMessage(err);
       setError(errorMessage);
 
       // Call the onExecuteError callback

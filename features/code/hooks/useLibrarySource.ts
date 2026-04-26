@@ -6,6 +6,7 @@ import { createClient } from "@/utils/supabase/client";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { getLibrarySource } from "../library-sources/registry";
 import type { SourceEntry } from "../library-sources/types";
+import { extractErrorMessage } from "@/utils/errors";
 
 type Status = "idle" | "loading" | "ready" | "error";
 
@@ -56,7 +57,7 @@ export function useLibrarySource(sourceId: string): UseLibrarySourceResult {
       setEntries(list);
       setStatus("ready");
     } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
+      const message = extractErrorMessage(err);
       setEntries([]);
       setStatus("error");
       setError(message);

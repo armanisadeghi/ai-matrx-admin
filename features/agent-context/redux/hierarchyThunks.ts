@@ -35,6 +35,7 @@ import { hydrateTasksFromContext } from "./tasksSlice";
 import type { ScopeType } from "./scope/types";
 import type { Scope } from "./scope/types";
 import type { AppDispatch } from "@/lib/redux/store";
+import { extractErrorMessage } from "@/utils/errors";
 
 // ─── Internal helpers ─────────────────────────────────────────────────────
 
@@ -84,7 +85,24 @@ async function doFetchFullContext(dispatch: AppDispatch) {
   dispatch(fullContextFetchStarted());
   try {
     const { data, error } = await supabase.rpc("get_user_full_context");
-    if (error) throw error;
+
+    if (error) {
+      // New users with no org memberships may trigger a Postgres-level error
+      // (e.g. RLS, no rows). Treat this as an empty state rather than a crash.
+      const msg = extractErrorMessage(error);
+      const isEmptyState =
+        error.code === "PGRST116" || // "no rows returned"
+        msg.toLowerCase().includes("no rows") ||
+        msg.toLowerCase().includes("no data");
+
+      if (isEmptyState) {
+        dispatch(fullContextFetchSucceeded({ organizations: [] }));
+        return;
+      }
+
+      console.error("[fetchFullContext] RPC error:", error);
+      throw error;
+    }
 
     const response = (data as unknown as FullContextResponse) ?? {
       organizations: [],
@@ -125,8 +143,8 @@ async function doFetchFullContext(dispatch: AppDispatch) {
 
     dispatch(fullContextFetchSucceeded(response));
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    console.error("[fetchFullContext]", message);
+    const message = extractErrorMessage(err);
+    console.error("[fetchFullContext]", message, err);
     dispatch(fullContextFetchFailed(message));
   }
 }

@@ -19,6 +19,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import type { RootState } from "@/lib/redux/store";
 import { callbackManager } from "@/utils/callbackManager";
+import { extractErrorMessage } from "@/utils/errors";
 import {
   WIDGET_TOOL_NAME_TO_HANDLE_METHOD,
   type WidgetActionName,
@@ -83,7 +84,7 @@ export const dispatchWidgetAction = createAsyncThunk<
           result = { ok: true, applied: toolName };
         } catch (cause) {
           const message =
-            cause instanceof Error ? cause.message : String(cause);
+            extractErrorMessage(cause);
           result = {
             ok: false,
             reason: "failed",

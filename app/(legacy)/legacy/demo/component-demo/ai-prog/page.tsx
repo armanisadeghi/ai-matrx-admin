@@ -8,7 +8,8 @@ export default async function AiProgDemosIndexPage() {
       directory={join(
         process.cwd(),
         "app",
-        "(authenticated)",
+        "(legacy)",
+        "legacy",
         "demo",
         "component-demo",
         "ai-prog",

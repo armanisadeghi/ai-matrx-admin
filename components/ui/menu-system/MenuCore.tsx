@@ -9,6 +9,7 @@ import { createClient } from "@/utils/supabase/client";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { toggleMode } from "@/styles/themes/themeSlice";
 import { createTaskFromPresetQuick } from "@/lib/redux/socket-io/thunks/createTaskFromPreset";
+import { extractErrorMessage } from "@/utils/errors";
 
 interface MenuCoreProps extends MenuRenderProps {
     menuId: string;
@@ -58,7 +59,7 @@ export const MenuCore: React.FC<MenuCoreProps> = ({
 
                             onExecuteComplete?.(taskId);
                         } catch (err) {
-                            const errorMessage = err instanceof Error ? err.message : String(err);
+                            const errorMessage = extractErrorMessage(err);
                             menuProps.onExecuteError?.(errorMessage);
                         }
                     }

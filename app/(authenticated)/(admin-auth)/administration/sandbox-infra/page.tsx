@@ -20,6 +20,7 @@
  */
 
 import { useCallback, useEffect, useState } from "react";
+import { extractErrorMessage } from "@/utils/errors";
 import {
     Activity,
     AlertCircle,
@@ -373,7 +374,7 @@ export default function SandboxInfraPage() {
             }
         } catch (err) {
             toast.error("Network error", {
-                description: err instanceof Error ? err.message : String(err),
+                description: extractErrorMessage(err),
             });
         } finally {
             setDispatching(false);

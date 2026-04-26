@@ -7,7 +7,8 @@ export default async function ComponentDemoPage() {
       directory={join(
         process.cwd(),
         "app",
-        "(authenticated)",
+        "(legacy)",
+        "legacy",
         "demo",
         "component-demo",
       )}

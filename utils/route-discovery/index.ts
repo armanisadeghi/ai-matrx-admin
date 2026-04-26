@@ -28,6 +28,11 @@ export async function scanRoutes(
       }
     }
   } catch (error) {
+    const err = error as NodeJS.ErrnoException;
+    // Missing directory (e.g. stale RouteIndexPage path after a route move)
+    if (err.code === "ENOENT") {
+      return routes;
+    }
     console.error(`[route-discovery] Error reading directory ${dir}:`, error);
   }
 
@@ -41,15 +46,17 @@ export async function scanRoutesShallow(dir: string): Promise<string[]> {
     const entries = await readdir(dir, { withFileTypes: true });
 
     for (const entry of entries) {
-      if (!entry.isDirectory() || entry.name.startsWith("_") || entry.name.startsWith("[")) continue;
+      if (
+        !entry.isDirectory() ||
+        entry.name.startsWith("_") ||
+        entry.name.startsWith("[")
+      )
+        continue;
 
       const subDir = join(dir, entry.name);
       try {
         const subEntries = await readdir(subDir);
-        if (
-          subEntries.includes("page.tsx") ||
-          subEntries.includes("page.ts")
-        ) {
+        if (subEntries.includes("page.tsx") || subEntries.includes("page.ts")) {
           routes.push(entry.name);
         }
       } catch {
@@ -57,10 +64,11 @@ export async function scanRoutesShallow(dir: string): Promise<string[]> {
       }
     }
   } catch (error) {
-    console.error(
-      `[route-discovery] Error reading directory ${dir}:`,
-      error,
-    );
+    const err = error as NodeJS.ErrnoException;
+    if (err.code === "ENOENT") {
+      return routes.sort();
+    }
+    console.error(`[route-discovery] Error reading directory ${dir}:`, error);
   }
 
   return routes.sort();

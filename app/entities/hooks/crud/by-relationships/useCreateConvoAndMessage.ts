@@ -8,6 +8,7 @@ import { SelectionMode } from "@/lib/redux/entity/types/stateTypes";
 import { ConversationData } from "@/types/AutomationSchemaTypes";
 import { getEntitySlice } from "@/lib/redux/entity/entitySlice";
 import { createEntitySelectors } from "@/lib/redux/entity/selectors";
+import { extractErrorMessage } from "@/utils/errors";
 
 
 export interface SaveConversationAndMessageResult {
@@ -149,7 +150,7 @@ export const useCreateConvoAndMessage = ({
             return {
                 conversationSuccess: false,
                 messageSuccess: false,
-                error: error instanceof Error ? error : new Error(String(error)),
+                error: error instanceof Error ? error : new Error(extractErrorMessage(error)),
             };
         }
     }, [conversationCrud, messageCrud]);

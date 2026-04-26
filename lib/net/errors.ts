@@ -1,3 +1,5 @@
+import { extractErrorMessage } from "@/utils/errors";
+
 /**
  * Structured errors for the resilience layer.
  *
@@ -111,7 +113,7 @@ export function toNetError(err: unknown): NetError {
   }
   return new NetError(
     "unknown",
-    err instanceof Error ? err.message : String(err),
+    extractErrorMessage(err),
     { cause: err },
   );
 }

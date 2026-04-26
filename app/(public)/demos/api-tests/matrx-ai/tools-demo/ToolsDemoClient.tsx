@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
+import { extractErrorMessage } from "@/utils/errors";
 import {
   Tooltip,
   TooltipContent,
@@ -224,7 +225,7 @@ export default function ToolsDemoClient() {
         `Loaded ${data.length} tool${data.length === 1 ? "" : "s"}`,
       );
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
+      const msg = extractErrorMessage(err);
       setLoadError(msg);
       toast.error("Failed to load tools", { description: msg });
     } finally {
@@ -288,7 +289,7 @@ export default function ToolsDemoClient() {
       setExecStatus("complete");
       toast.success("Tool executed successfully");
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
+      const msg = extractErrorMessage(err);
       setErrorMessage(msg);
       setExecStatus("error");
       toast.error("Execution failed", { description: msg });

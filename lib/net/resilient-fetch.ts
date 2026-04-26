@@ -7,6 +7,7 @@
  * simply unreachable.
  */
 
+import { extractErrorMessage } from "@/utils/errors";
 import {
   AbortedError,
   ConnectTimeoutError,
@@ -129,7 +130,7 @@ export async function resilientFetch(
     }
     if (err instanceof HttpError) throw err;
     throw new NetworkError(
-      err instanceof Error ? err.message : String(err),
+      extractErrorMessage(err),
       err,
     );
   } finally {

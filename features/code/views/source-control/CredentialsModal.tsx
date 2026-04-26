@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { extractErrorMessage } from "@/utils/errors";
 import {
   Eye,
   EyeOff,
@@ -62,7 +63,7 @@ export const CredentialsModal: React.FC<CredentialsModalProps> = ({
         setKnownHosts("");
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(extractErrorMessage(err));
     } finally {
       setBusy(false);
     }
@@ -76,7 +77,7 @@ export const CredentialsModal: React.FC<CredentialsModalProps> = ({
       await adapter.revokeCredentials();
       setMessage("Credentials revoked.");
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(extractErrorMessage(err));
     } finally {
       setBusy(false);
     }
@@ -92,7 +93,7 @@ export const CredentialsModal: React.FC<CredentialsModalProps> = ({
         "Workspace GitHub token attached — git push/pull are ready in this sandbox.",
       );
     } catch (err) {
-      const raw = err instanceof Error ? err.message : String(err);
+      const raw = extractErrorMessage(err);
       // Friendlier copy when the server doesn't have the token configured.
       if (raw.includes("412")) {
         setError(

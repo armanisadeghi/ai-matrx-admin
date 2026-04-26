@@ -1,4 +1,5 @@
 import type { ProcessResult } from "../types";
+import { extractErrorMessage } from "@/utils/errors";
 import {
   appendLine,
   appendLines,
@@ -102,7 +103,7 @@ export async function runShellCommand({
     dispatch(appendLines(lines));
     return result;
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
+    const message = extractErrorMessage(err);
     dispatch(
       appendLine({
         type: "stderr",

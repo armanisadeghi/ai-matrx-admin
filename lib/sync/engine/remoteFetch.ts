@@ -15,6 +15,7 @@
  */
 
 import type { Store } from "@reduxjs/toolkit";
+import { extractErrorMessage } from "@/utils/errors";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { FallbackContext, IdentityKey, Policy } from "../types";
 import { buildRehydrateAction } from "./rehydrate";
@@ -89,7 +90,7 @@ export async function invokeRemoteFetch(opts: InvokeRemoteFetchOptions): Promise
             } catch (err) {
                 logger.error("fallback.deserialize.failed", {
                     sliceName: policy.config.sliceName,
-                    meta: { error: err instanceof Error ? err.message : String(err) },
+                    meta: { error: extractErrorMessage(err) },
                 });
                 return;
             }
@@ -132,7 +133,7 @@ export async function invokeRemoteFetch(opts: InvokeRemoteFetchOptions): Promise
                 // on next cold boot; only cache warming is impacted.
                 logger.warn("fallback.cache.warm.failed", {
                     sliceName: policy.config.sliceName,
-                    meta: { error: err instanceof Error ? err.message : String(err) },
+                    meta: { error: extractErrorMessage(err) },
                 });
             }
         }
@@ -146,7 +147,7 @@ export async function invokeRemoteFetch(opts: InvokeRemoteFetchOptions): Promise
     } catch (err) {
         logger.warn("fallback.error", {
             sliceName: policy.config.sliceName,
-            meta: { error: err instanceof Error ? err.message : String(err), reason },
+            meta: { error: extractErrorMessage(err), reason },
         });
     } finally {
         if (externalSignal) {

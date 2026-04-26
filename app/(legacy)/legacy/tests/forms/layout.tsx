@@ -15,7 +15,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       directory={join(
         process.cwd(),
         "app",
-        "(authenticated)",
+        "(legacy)",
+        "legacy",
         "tests",
         "forms",
       )}

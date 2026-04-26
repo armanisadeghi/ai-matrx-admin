@@ -21,6 +21,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { extractErrorMessage } from "@/utils/errors";
 import {
   AlertCircle,
   ArrowUpDown,
@@ -203,7 +204,7 @@ export function DataPreview({ url, fileName, className }: DataPreviewProps) {
         }
       } catch (err) {
         if (cancelled) return;
-        setError(err instanceof Error ? err.message : String(err));
+        setError(extractErrorMessage(err));
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -223,7 +224,7 @@ export function DataPreview({ url, fileName, className }: DataPreviewProps) {
       try {
         await loadXlsx(url, sheet);
       } catch (err) {
-        setError(err instanceof Error ? err.message : String(err));
+        setError(extractErrorMessage(err));
       } finally {
         setLoading(false);
       }

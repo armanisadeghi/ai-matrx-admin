@@ -20,6 +20,7 @@
  */
 
 import { useCallback, useMemo, useState } from "react";
+import { extractErrorMessage } from "@/utils/errors";
 import {
   getFileDetailsByUrl,
   type EnhancedFileDetails,
@@ -187,7 +188,7 @@ export const useFileUploadWithStorage = (bucket: string, path?: string) => {
         setResults((prev) => [...prev, result]);
         return result;
       } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
+        const message = extractErrorMessage(err);
         setError(message || "Upload failed");
         return null;
       } finally {

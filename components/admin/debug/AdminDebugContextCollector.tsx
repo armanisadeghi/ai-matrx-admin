@@ -17,6 +17,7 @@
 import { useEffect, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useAppDispatch } from "@/lib/redux/hooks";
+import { extractErrorMessage } from "@/utils/errors";
 import {
   setRouteContext,
   appendConsoleError,
@@ -91,7 +92,7 @@ export function AdminDebugContextCollector() {
       const reason = event.reason;
       scheduleAppend({
         id: uuidv4(),
-        message: reason instanceof Error ? reason.message : String(reason),
+        message: extractErrorMessage(reason),
         source: "unhandledrejection",
         stack: reason instanceof Error ? reason.stack : undefined,
         capturedAt: Date.now(),

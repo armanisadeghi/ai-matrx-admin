@@ -40,6 +40,7 @@ import { executeInstance } from "@/features/agents/redux/execution-system/thunks
 import { setUserVariableValues } from "@/features/agents/redux/execution-system/instance-variable-values/instance-variable-values.slice";
 import { setContextEntries } from "@/features/agents/redux/execution-system/instance-context/instance-context.slice";
 import { fetchAgentExecutionMinimal } from "@/features/agents/redux/agent-definition/thunks";
+import { extractErrorMessage } from "@/utils/errors";
 import {
   selectPrimaryRequest,
   selectAccumulatedText,
@@ -143,7 +144,7 @@ export function useAiPostProcess() {
         // Fire-and-forget — the UI reads streaming state from redux selectors.
         dispatch(executeInstance({ conversationId: cid }));
       } catch (err) {
-        setError(err instanceof Error ? err.message : String(err));
+        setError(extractErrorMessage(err));
       } finally {
         setLaunching(false);
       }

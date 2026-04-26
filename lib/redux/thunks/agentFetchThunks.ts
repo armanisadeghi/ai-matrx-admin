@@ -20,6 +20,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import { supabase } from "@/utils/supabase/client";
 import type { RootState, AppDispatch } from "../store";
 import type { DbRpcRow } from "@/types/supabase-rpc";
+import { extractErrorMessage } from "@/utils/errors";
 import {
   AgentRecord,
   AgentSource,
@@ -272,7 +273,7 @@ export const fetchAgentSlimList = createAsyncThunk<
 
     dispatch(setAgentError(null));
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
+    const message = extractErrorMessage(err);
     dispatch(setAgentError(message));
     dispatch(setAgentFetchStatus({ source: reduxSource, status: "error" }));
     if (source === "owned") {

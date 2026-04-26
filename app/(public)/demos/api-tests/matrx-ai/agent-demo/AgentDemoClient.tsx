@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
+import { extractErrorMessage } from "@/utils/errors";
 import {
   Tooltip,
   TooltipContent,
@@ -472,7 +473,7 @@ export default function AgentDemoClient() {
       });
     } catch (err) {
       toast.error("Warm failed", {
-        description: err instanceof Error ? err.message : String(err),
+        description: extractErrorMessage(err),
       });
     }
   };

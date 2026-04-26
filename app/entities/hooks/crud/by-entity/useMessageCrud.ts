@@ -2,6 +2,7 @@ import { useCallback, useState, useEffect, useMemo } from "react";
 import useCreateUpdateRecord from "../useCreateUpdateRecord";
 import { Message, MessageRole, MessageType, MessageMetadata } from "@/types/chat/chat.types";
 import { getPermanentId } from "@/lib/redux/entity/utils/stateHelpUtils";
+import { extractErrorMessage } from "@/utils/errors";
 
 interface UseMessageProps {
     conversationId: string | undefined;
@@ -271,7 +272,7 @@ export const useMessageCrud = ({ conversationId }: UseMessageProps) => {
             console.error("Error saving message:", error);
             return {
                 success: false,
-                error: error instanceof Error ? error : new Error(String(error)),
+                error: error instanceof Error ? error : new Error(extractErrorMessage(error)),
             };
         }
     }, [messageWithDefaults, saveAsync]);

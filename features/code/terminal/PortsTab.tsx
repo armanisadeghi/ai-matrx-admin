@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { extractErrorMessage } from "@/utils/errors";
 import {
   Check,
   Copy,
@@ -61,7 +62,7 @@ export const PortsTab: React.FC<PortsTabProps> = ({ className }) => {
       setError(null);
     } catch (err) {
       if (ctl.signal.aborted) return;
-      setError(err instanceof Error ? err.message : String(err));
+      setError(extractErrorMessage(err));
     } finally {
       if (!ctl.signal.aborted) setLoading(false);
     }

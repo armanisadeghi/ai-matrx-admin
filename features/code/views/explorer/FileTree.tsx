@@ -9,6 +9,7 @@ import { selectActiveTab } from "../../redux/tabsSlice";
 import { selectExplorerRootOverride } from "../../redux/codeWorkspaceSlice";
 import { FileTreeNode } from "./FileTreeNode";
 import { useFileTreeExpansion } from "./useFileTreeExpansion";
+import { extractErrorMessage } from "@/utils/errors";
 import {
   FileTreeWatcherProvider,
   useDirectoryVersion,
@@ -57,7 +58,7 @@ const FileTreeBody: React.FC<{ rootPath: string; refreshKey: number }> = ({
       })
       .catch((err) => {
         if (!cancelled)
-          setError(err instanceof Error ? err.message : String(err));
+          setError(extractErrorMessage(err));
       });
     return () => {
       cancelled = true;
@@ -66,7 +67,7 @@ const FileTreeBody: React.FC<{ rootPath: string; refreshKey: number }> = ({
 
   const handleOpen = (path: string) => {
     openFile(path).catch((err) => {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(extractErrorMessage(err));
     });
   };
 

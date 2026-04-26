@@ -17,6 +17,7 @@
  */
 
 import type { Store } from "@reduxjs/toolkit";
+import { extractErrorMessage } from "@/utils/errors";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { IdentityKey, Policy, WriteContext } from "../types";
 import { logger } from "../logger";
@@ -106,7 +107,7 @@ export function createRemoteWriteScheduler(
         } catch (err) {
             logger.warn("idb.write.error", {
                 sliceName,
-                meta: { error: err instanceof Error ? err.message : String(err) },
+                meta: { error: extractErrorMessage(err) },
             });
         }
 
@@ -133,7 +134,7 @@ export function createRemoteWriteScheduler(
         } catch (err) {
             logger.warn("remote.write.error", {
                 sliceName,
-                meta: { error: err instanceof Error ? err.message : String(err) },
+                meta: { error: extractErrorMessage(err) },
             });
         } finally {
             maybeClearPending(sliceName, controller);

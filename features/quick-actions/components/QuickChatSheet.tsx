@@ -12,6 +12,7 @@ import { startPromptInstance } from '@/lib/redux/prompt-execution/thunks/startIn
 import { selectInstance } from '@/lib/redux/prompt-execution/slice';
 import { getBuiltinId } from '@/lib/redux/prompt-execution/builtins';
 import { v4 as uuidv4 } from 'uuid';
+import { extractErrorMessage } from "@/utils/errors";
 
 interface QuickChatSheetProps {
     onClose?: () => void;
@@ -67,7 +68,7 @@ export function QuickChatSheet({ onClose, className }: QuickChatSheetProps) {
             
             setCurrentRunId(newRunId);
         } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : String(error);
+            const errorMessage = extractErrorMessage(error);
             console.error('[QuickChatSheet] Failed to initialize chat:', error);
             setInitError(errorMessage);
         } finally {

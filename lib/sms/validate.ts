@@ -7,6 +7,7 @@
 
 import twilio from 'twilio';
 import { getAuthToken, getAppBaseUrl } from './client';
+import { extractErrorMessage } from "@/utils/errors";
 
 /**
  * Validate a Twilio webhook request signature.
@@ -74,7 +75,7 @@ export async function validateTwilioWebhook(
 
     return { valid: true, params };
   } catch (err) {
-    const error = err instanceof Error ? err.message : String(err);
+    const error = extractErrorMessage(err);
     return { valid: false, params: {}, error };
   }
 }

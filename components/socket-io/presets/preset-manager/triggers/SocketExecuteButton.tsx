@@ -4,6 +4,7 @@ import { useAppDispatch } from "@/lib/redux/hooks";
 import { createTaskFromPresetQuick } from "@/lib/redux/socket-io/thunks/createTaskFromPreset";
 import { Play, Zap } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { extractErrorMessage } from "@/utils/errors";
 
 interface SocketExecuteButtonProps {
     presetName: string;
@@ -43,7 +44,7 @@ export const SocketExecuteButton: React.FC<SocketExecuteButtonProps> = ({
             onExecuteComplete?.(taskId);
 
         } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : String(err);
+            const errorMessage = extractErrorMessage(err);
             onExecuteError?.(errorMessage);
         } finally {
             setIsExecuting(false);

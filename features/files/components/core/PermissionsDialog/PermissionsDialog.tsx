@@ -11,6 +11,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Loader2, Trash2, UserPlus } from "lucide-react";
+import { extractErrorMessage } from "@/utils/errors";
 import {
   Dialog,
   DialogContent,
@@ -123,7 +124,7 @@ export function PermissionsDialogBody({
       setGranteeId("");
       setExpiresAt("");
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(extractErrorMessage(err));
     } finally {
       setSubmitting(false);
     }

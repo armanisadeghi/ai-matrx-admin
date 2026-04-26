@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { extractErrorMessage } from "@/utils/errors";
 import {
   Clock,
   ExternalLink,
@@ -75,7 +76,7 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
       const data = await resp.json();
       setInstances((data.instances ?? []) as SandboxInstance[]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(extractErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -148,7 +149,7 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
         }
         setCreateModalOpen(false);
       } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
+        const message = extractErrorMessage(err);
         setError(message);
         throw err;
       } finally {
@@ -175,7 +176,7 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
         if (activeId === instance.id) disconnect();
         await refresh();
       } catch (err) {
-        setError(err instanceof Error ? err.message : String(err));
+        setError(extractErrorMessage(err));
       } finally {
         setBusyId(null);
       }
@@ -202,7 +203,7 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
         if (activeId === instance.id) disconnect();
         await refresh();
       } catch (err) {
-        setError(err instanceof Error ? err.message : String(err));
+        setError(extractErrorMessage(err));
       } finally {
         setBusyId(null);
       }
@@ -229,7 +230,7 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
         }
         await refresh();
       } catch (err) {
-        setError(err instanceof Error ? err.message : String(err));
+        setError(extractErrorMessage(err));
       } finally {
         setBusyId(null);
       }

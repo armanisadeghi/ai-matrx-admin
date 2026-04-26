@@ -11,6 +11,7 @@
  *   const result = await client.callTool("search", { query: "hello" });
  */
 
+import { extractErrorMessage } from "@/utils/errors";
 import {
   initializeConnection,
   type HttpTransportOptions,
@@ -231,7 +232,7 @@ export class McpClient {
       try {
         return await fn();
       } catch (err) {
-        lastError = err instanceof Error ? err : new Error(String(err));
+        lastError = err instanceof Error ? err : new Error(extractErrorMessage(err));
 
         // Don't retry auth errors
         if (err instanceof McpAuthError) throw err;

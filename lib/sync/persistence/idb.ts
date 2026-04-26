@@ -19,6 +19,7 @@
 
 import Dexie, { type Table } from "dexie";
 import { logger } from "../logger";
+import { extractErrorMessage } from "@/utils/errors";
 
 export const IDB_NAME = "matrx-sync";
 export const IDB_SCHEMA_VERSION = 1;
@@ -75,7 +76,7 @@ export function openDb(): Promise<MatrxSyncDb | null> {
             return db;
         } catch (err) {
             logger.warn("idb.open.error", {
-                meta: { error: err instanceof Error ? err.message : String(err) },
+                meta: { error: extractErrorMessage(err) },
             });
             return null;
         }
@@ -127,7 +128,7 @@ export async function readSlice(
     } catch (err) {
         logger.warn("idb.read.error", {
             sliceName,
-            meta: { error: err instanceof Error ? err.message : String(err) },
+            meta: { error: extractErrorMessage(err) },
         });
         return null;
     }
@@ -163,7 +164,7 @@ export async function writeSlice(
     } catch (err) {
         logger.warn("idb.write.error", {
             sliceName,
-            meta: { error: err instanceof Error ? err.message : String(err) },
+            meta: { error: extractErrorMessage(err) },
         });
     }
 }
@@ -183,7 +184,7 @@ export async function clearIdentity(identityKey: string): Promise<number> {
         return count;
     } catch (err) {
         logger.warn("idb.clearIdentity.error", {
-            meta: { error: err instanceof Error ? err.message : String(err) },
+            meta: { error: extractErrorMessage(err) },
         });
         return 0;
     }
@@ -199,7 +200,7 @@ export async function clearAll(): Promise<void> {
         await db.slices.clear();
     } catch (err) {
         logger.warn("idb.clearAll.error", {
-            meta: { error: err instanceof Error ? err.message : String(err) },
+            meta: { error: extractErrorMessage(err) },
         });
     }
 }

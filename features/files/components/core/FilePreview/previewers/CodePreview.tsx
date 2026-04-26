@@ -19,6 +19,7 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus, vs } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { cn } from "@/lib/utils";
 import { extname } from "../../../../utils/path";
+import { extractErrorMessage } from "@/utils/errors";
 
 /**
  * Lightweight theme reader. The project doesn't use next-themes — theme
@@ -159,7 +160,7 @@ export function CodePreview({
       })
       .catch((err: unknown) => {
         if (cancelled) return;
-        setError(err instanceof Error ? err.message : String(err));
+        setError(extractErrorMessage(err));
       });
     return () => {
       cancelled = true;

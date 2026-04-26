@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { extractErrorMessage } from "@/utils/errors";
 import {
   Tooltip,
   TooltipContent,
@@ -494,7 +495,7 @@ function validateRawJson(text: string): RawJsonIssue[] {
   try {
     parsed = JSON.parse(text);
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
+    const msg = extractErrorMessage(err);
     const m = msg.match(/line\s+(\d+)\s+column\s+(\d+)/i);
     return [
       {

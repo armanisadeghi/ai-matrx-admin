@@ -78,6 +78,7 @@ import {
 import { parseNdjsonStream } from "@/lib/api/stream-parser";
 import { resilientFetch } from "@/lib/net/resilient-fetch";
 import { isNetError } from "@/lib/net/errors";
+import { extractErrorMessage } from "@/utils/errors";
 
 // ─── Auto-generated types (source of truth for all request/response shapes) ──
 
@@ -676,7 +677,7 @@ function normalizeError(err: unknown): ApiCallError {
     return { type: "network_error", message: err.message };
   }
 
-  return { type: "unknown", message: String(err) };
+  return { type: "unknown", message: extractErrorMessage(err) };
 }
 
 // ============================================================================

@@ -18,6 +18,7 @@ import JSON5 from "json5";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle } from "lucide-react";
+import { extractErrorMessage } from "@/utils/errors";
 
 interface SettingsJsonEditorProps {
   /** Initial JSON text shown in the editor. */
@@ -64,7 +65,7 @@ function parseJson5(text: string): ParseResult {
     }
     return { ok: true, parsed: parsed as Record<string, unknown> };
   } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
+    const msg = extractErrorMessage(e);
     const match = msg.match(JSON5_LOCATION_RE);
     if (match) {
       return {

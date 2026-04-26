@@ -26,6 +26,7 @@ import { readSlice as readIdbSlice } from "../persistence/idb";
 import { getPreset } from "../policies/presets";
 import { buildRehydrateAction } from "./rehydrate";
 import { createStaleRefreshScheduler, invokeRemoteFetch, type StaleRefreshRegistration } from "./remoteFetch";
+import { extractErrorMessage } from "@/utils/errors";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { IdentityKey, Policy } from "../types";
 
@@ -151,7 +152,7 @@ function rehydrateFromStorage(
             } catch (err) {
                 logger.error("boot.deserialize.failed", {
                     sliceName: policy.config.sliceName,
-                    meta: { error: err instanceof Error ? err.message : String(err) },
+                    meta: { error: extractErrorMessage(err) },
                 });
                 continue;
             }
@@ -209,7 +210,7 @@ async function hydrateFromIdb(
                         logger.error("boot.idb.deserialize.failed", {
                             sliceName: policy.config.sliceName,
                             meta: {
-                                error: err instanceof Error ? err.message : String(err),
+                                error: extractErrorMessage(err),
                             },
                         });
                         continue;
@@ -241,7 +242,7 @@ async function hydrateFromIdb(
                         logger.error("boot.idbFallback.deserialize.failed", {
                             sliceName: policy.config.sliceName,
                             meta: {
-                                error: err instanceof Error ? err.message : String(err),
+                                error: extractErrorMessage(err),
                             },
                         });
                         continue;
@@ -262,7 +263,7 @@ async function hydrateFromIdb(
         } catch (err) {
             logger.warn("boot.idb.read.failed", {
                 sliceName: policy.config.sliceName,
-                meta: { error: err instanceof Error ? err.message : String(err) },
+                meta: { error: extractErrorMessage(err) },
             });
         }
     }
@@ -365,7 +366,7 @@ export async function bootSync(options: BootOptions): Promise<BootResult> {
             hydrated = await hydrateFromIdb(policies, identity, store, hydratedFromLocal);
         } catch (err) {
             logger.warn("boot.idb.pass.failed", {
-                meta: { error: err instanceof Error ? err.message : String(err) },
+                meta: { error: extractErrorMessage(err) },
             });
         }
         const after = new Set<string>([...hydratedFromLocal, ...hydrated]);

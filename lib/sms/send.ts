@@ -8,6 +8,7 @@
 import { getTwilioClient, getMessagingServiceSid, getAppBaseUrl } from './client';
 import { createAdminClient } from '@/utils/supabase/adminClient';
 import type { SendSmsOptions, SendSmsResult } from './types';
+import { extractErrorMessage } from "@/utils/errors";
 
 /**
  * Send an SMS message via Twilio Messaging Service.
@@ -46,7 +47,7 @@ export async function sendSms(options: SendSmsOptions): Promise<SendSmsResult> {
       status: message.status,
     };
   } catch (err) {
-    const error = err instanceof Error ? err.message : String(err);
+    const error = extractErrorMessage(err);
     console.error('Failed to send SMS:', error);
     return {
       success: false,

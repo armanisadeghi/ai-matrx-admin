@@ -13,6 +13,7 @@ import Groq from "groq-sdk";
 import { resolveUser } from "@/utils/supabase/resolveUser";
 import { logTranscriptionError } from "@/features/audio/services/audioErrorLogger";
 import { filterWhisperHallucinations } from "@/features/audio/utils/hallucinationFilter";
+import { extractErrorMessage } from "@/utils/errors";
 
 export const maxDuration = 120;
 
@@ -57,7 +58,7 @@ async function transcribeWithRetry(
       const result = await groq.audio.transcriptions.create(options as never);
       return { data: result, attempts: attempt };
     } catch (err: unknown) {
-      lastError = err instanceof Error ? err : new Error(String(err));
+      lastError = err instanceof Error ? err : new Error(extractErrorMessage(err));
       const status = (err as { status?: number })?.status;
       const retryAfter = (
         err as { headers?: { get?: (k: string) => string | null } }
@@ -179,7 +180,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error: unknown) {
-    const err = error instanceof Error ? error : new Error(String(error));
+    const err = error instanceof Error ? error : new Error(extractErrorMessage(error));
     const status = (error as { status?: number })?.status;
 
     console.error("[/api/audio/transcribe] Final failure:", err.message);

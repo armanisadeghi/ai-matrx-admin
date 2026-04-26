@@ -15,7 +15,8 @@ export default async function ManyToManyUiIndexPage() {
       directory={join(
         process.cwd(),
         "app",
-        "(authenticated)",
+        "(legacy)",
+        "legacy",
         "demo",
         "many-to-many-ui",
       )}

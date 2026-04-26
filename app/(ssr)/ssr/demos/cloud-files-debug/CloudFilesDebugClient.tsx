@@ -18,6 +18,7 @@
  */
 
 import React, {
+import { extractErrorMessage } from "@/utils/errors";
   useCallback,
   useEffect,
   useMemo,
@@ -204,7 +205,7 @@ export function CloudFilesDebugClient() {
           requestBody: null,
           responseHeaders: null,
           responseBody: null,
-          error: err instanceof Error ? err.message : String(err),
+          error: extractErrorMessage(err),
         };
         setLogs((l) => [entry, ...l]);
         setRunning((r) => ({ ...r, [key]: false }));
@@ -248,7 +249,7 @@ export function CloudFilesDebugClient() {
         });
       } catch (err) {
         const durationMs = Math.round(performance.now() - startMs);
-        const message = err instanceof Error ? err.message : String(err);
+        const message = extractErrorMessage(err);
         const entry: LogEntry = {
           id,
           ts: Date.now(),
@@ -280,7 +281,7 @@ export function CloudFilesDebugClient() {
       try {
         responseBody = await resp.text();
       } catch (err) {
-        responseBody = `<failed to read body: ${err instanceof Error ? err.message : String(err)}>`;
+        responseBody = `<failed to read body: ${extractErrorMessage(err)}>`;
       }
 
       const entry: LogEntry = {

@@ -6,6 +6,7 @@ import { codeFilesActions } from "@/features/code-files/redux/slice";
 import { saveFileNow } from "@/features/code-files/redux/thunks";
 import { selectCodeFileById } from "@/features/code-files/redux/selectors";
 import { createClient } from "@/utils/supabase/client";
+import { extractErrorMessage } from "@/utils/errors";
 import {
   markTabSaved,
   selectActiveTab,
@@ -92,7 +93,7 @@ export function useSaveActiveTab() {
           dispatch(markTabSaved(tab.id));
           return { tabId: tab.id, ok: true };
         } catch (err) {
-          const message = err instanceof Error ? err.message : String(err);
+          const message = extractErrorMessage(err);
           return { tabId: tab.id, ok: false, error: message };
         }
       }
@@ -140,7 +141,7 @@ export function useSaveActiveTab() {
                 "This row was modified somewhere else after you opened it. Reload the tab to pick up the remote changes before saving.",
             };
           }
-          const message = err instanceof Error ? err.message : String(err);
+          const message = extractErrorMessage(err);
           return { tabId: tab.id, ok: false, error: message };
         }
       }
@@ -158,7 +159,7 @@ export function useSaveActiveTab() {
         dispatch(markTabSaved(tab.id));
         return { tabId: tab.id, ok: true };
       } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
+        const message = extractErrorMessage(err);
         return { tabId: tab.id, ok: false, error: message };
       }
     },

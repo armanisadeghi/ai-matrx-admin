@@ -14,6 +14,7 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { extractErrorMessage } from "@/utils/errors";
 import {
   Check,
   ChevronRight,
@@ -95,7 +96,7 @@ export function MemoryStateInspector({
     } catch (e) {
       setState({
         status: "error",
-        error: e instanceof Error ? e.message : String(e),
+        error: extractErrorMessage(e),
       });
     }
   }, [conversationId]);

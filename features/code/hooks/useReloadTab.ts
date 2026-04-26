@@ -5,6 +5,7 @@ import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
 import { createClient } from "@/utils/supabase/client";
 import { replaceTabContent, selectTabById } from "../redux/tabsSlice";
 import { getAdapterForTabId } from "../library-sources/registry";
+import { extractErrorMessage } from "@/utils/errors";
 
 export interface ReloadResult {
   tabId: string;
@@ -67,7 +68,7 @@ export function useReloadTab() {
         );
         return { tabId, ok: true, previousContent };
       } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
+        const message = extractErrorMessage(err);
         return { tabId, ok: false, error: message };
       }
     },

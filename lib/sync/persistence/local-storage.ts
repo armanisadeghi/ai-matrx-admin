@@ -11,6 +11,7 @@
 
 import { logger } from "../logger";
 import type { PersistenceAdapter, PersistenceRecord } from "./types";
+import { extractErrorMessage } from "@/utils/errors";
 
 function hasLocalStorage(): boolean {
     if (typeof window === "undefined") return false;
@@ -40,7 +41,7 @@ export const localStorageAdapter: PersistenceAdapter = {
             return parsed as PersistenceRecord;
         } catch (err) {
             logger.warn("persist.read.failed", {
-                meta: { storageKey, error: err instanceof Error ? err.message : String(err) },
+                meta: { storageKey, error: extractErrorMessage(err) },
             });
             return null;
         }
@@ -53,7 +54,7 @@ export const localStorageAdapter: PersistenceAdapter = {
         } catch (err) {
             // QuotaExceededError or disabled storage — degrade gracefully.
             logger.warn("persist.write.failed", {
-                meta: { storageKey, error: err instanceof Error ? err.message : String(err) },
+                meta: { storageKey, error: extractErrorMessage(err) },
             });
         }
     },
@@ -63,7 +64,7 @@ export const localStorageAdapter: PersistenceAdapter = {
             window.localStorage.removeItem(storageKey);
         } catch (err) {
             logger.warn("persist.remove.failed", {
-                meta: { storageKey, error: err instanceof Error ? err.message : String(err) },
+                meta: { storageKey, error: extractErrorMessage(err) },
             });
         }
     },

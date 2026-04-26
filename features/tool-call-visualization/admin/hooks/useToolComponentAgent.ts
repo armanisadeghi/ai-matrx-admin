@@ -7,6 +7,7 @@ import { selectResolvedBaseUrl } from '@/lib/redux/slices/apiConfigSlice';
 import { ENDPOINTS, BACKEND_URLS } from '@/lib/api/endpoints';
 import { consumeStream } from '@/lib/api/stream-parser';
 import type { RootState } from '@/lib/redux/store';
+import { extractErrorMessage } from "@/utils/errors";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -107,7 +108,7 @@ export function useToolComponentAgent(): UseToolComponentAgentReturn {
                 } catch {
                     // use default
                 }
-                throw new Error(String(errorMsg));
+                throw new Error(extractErrorMessage(errorMsg));
             }
 
             if (!response.body) throw new Error('No response body from Agent API');

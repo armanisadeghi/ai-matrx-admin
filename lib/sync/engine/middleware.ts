@@ -13,6 +13,7 @@
  */
 
 import type {
+import { extractErrorMessage } from "@/utils/errors";
   Action,
   Middleware,
   MiddlewareAPI,
@@ -82,7 +83,7 @@ function serializeBody(policy: Policy<any>, sliceState: unknown): unknown {
     } catch (err) {
       logger.error("persist.serialize.failed", {
         sliceName: cfg.sliceName,
-        meta: { error: err instanceof Error ? err.message : String(err) },
+        meta: { error: extractErrorMessage(err) },
       });
       return null;
     }
@@ -193,7 +194,7 @@ export function createSyncMiddleware(ctx: SyncMiddlewareContext): Middleware {
         void sliceState;
       } catch (err) {
         logger.error("broadcast.emit.failed", {
-          meta: { error: err instanceof Error ? err.message : String(err) },
+          meta: { error: extractErrorMessage(err) },
         });
       }
     }
@@ -297,7 +298,7 @@ export function createSyncMiddleware(ctx: SyncMiddlewareContext): Middleware {
       } catch (err) {
         logger.error("apply.prePaint.failed", {
           sliceName: policy.config.sliceName,
-          meta: { error: err instanceof Error ? err.message : String(err) },
+          meta: { error: extractErrorMessage(err) },
         });
       }
     }

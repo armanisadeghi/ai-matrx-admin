@@ -12,6 +12,7 @@
 import { logger } from "./logger";
 import { parseSyncMessage, type SyncMessage } from "./messages";
 import type { IdentityKey } from "./types";
+import { extractErrorMessage } from "@/utils/errors";
 
 export const CHANNEL_NAME = "matrx-sync";
 
@@ -61,14 +62,14 @@ export function openSyncChannel(initialIdentity: IdentityKey): SyncChannel {
                         h(msg);
                     } catch (err) {
                         logger.error("broadcast.handler-threw", {
-                            meta: { error: err instanceof Error ? err.message : String(err) },
+                            meta: { error: extractErrorMessage(err) },
                         });
                     }
                 }
             };
         } catch (err) {
             logger.error("broadcast.open-failed", {
-                meta: { error: err instanceof Error ? err.message : String(err) },
+                meta: { error: extractErrorMessage(err) },
             });
             bc = null;
         }
@@ -83,7 +84,7 @@ export function openSyncChannel(initialIdentity: IdentityKey): SyncChannel {
                 logger.debug("broadcast.emit", { meta: { type: message.type } });
             } catch (err) {
                 logger.error("broadcast.post-failed", {
-                    meta: { error: err instanceof Error ? err.message : String(err) },
+                    meta: { error: extractErrorMessage(err) },
                 });
             }
         },

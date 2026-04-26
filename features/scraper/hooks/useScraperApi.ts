@@ -21,6 +21,7 @@ import { useBackendApi } from "@/hooks/useBackendApi";
 import { ENDPOINTS } from "@/lib/api/endpoints";
 import { consumeStream } from "@/lib/api/stream-parser";
 import type {
+import { extractErrorMessage } from "@/utils/errors";
   PhasePayload,
   TypedDataPayload,
   ErrorPayload,
@@ -245,7 +246,7 @@ function makeScraperDiagnostics(
   err: unknown,
   received: ScraperApiErrorDiagnostics["received"],
 ): ScraperApiErrorDiagnostics {
-  const msg = err instanceof Error ? err.message : String(err);
+  const msg = extractErrorMessage(err);
   const causeRaw =
     err instanceof Error && err.cause !== undefined ? err.cause : undefined;
   return {
@@ -1019,7 +1020,7 @@ export function useScraperApi(): UseScraperApiReturn {
           } catch (mapErr) {
             throw new Error(
               `mapToScraperResult failed at index ${i} (${urls[i] ?? "?"}): ${
-                mapErr instanceof Error ? mapErr.message : String(mapErr)
+                extractErrorMessage(mapErr)
               }`,
               { cause: { failedResultIndex: i } },
             );
@@ -1226,7 +1227,7 @@ export function useScraperApi(): UseScraperApiReturn {
           } catch (mapErr) {
             throw new Error(
               `mapToScraperResult failed at index ${i} (${(r.url as string) ?? "?"}): ${
-                mapErr instanceof Error ? mapErr.message : String(mapErr)
+                extractErrorMessage(mapErr)
               }`,
               { cause: { failedResultIndex: i } },
             );
@@ -1334,7 +1335,7 @@ export function useScraperApi(): UseScraperApiReturn {
           } catch (mapErr) {
             throw new Error(
               `mapToScraperResult failed at index ${i} (${(r.url as string) ?? "?"}): ${
-                mapErr instanceof Error ? mapErr.message : String(mapErr)
+                extractErrorMessage(mapErr)
               }`,
               { cause: { failedResultIndex: i } },
             );

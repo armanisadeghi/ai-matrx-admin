@@ -21,6 +21,7 @@
 import { getStore } from "@/lib/redux/store";
 import * as Api from "@/features/files/api";
 import { CloudFolders } from "@/features/files/utils/folder-conventions";
+import { extractErrorMessage } from "@/utils/errors";
 import {
   deleteFile,
   uploadFiles,
@@ -105,7 +106,7 @@ async function uploadWithRetry(
 
       return { fileId, signedUrl: url.url };
     } catch (err) {
-      lastError = err instanceof Error ? err : new Error(String(err));
+      lastError = err instanceof Error ? err : new Error(extractErrorMessage(err));
       if (attempt < maxAttempts) {
         const delay = Math.min(
           RETRY_CONFIG.BASE_DELAY_MS * Math.pow(2, attempt - 1),

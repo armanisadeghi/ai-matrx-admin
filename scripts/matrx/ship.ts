@@ -24,6 +24,7 @@ import { execSync } from "child_process";
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from "fs";
 import * as path from "path";
 import { homedir } from "os";
+import { extractErrorMessage } from "@/utils/errors";
 
 // ── Constants ─────────────────────────────────────────────────────────
 
@@ -331,7 +332,7 @@ async function callMcpTool(
     return json;
   } catch (error) {
     clearTimeout(timeout);
-    const msg = error instanceof Error ? error.message : String(error);
+    const msg = extractErrorMessage(error);
 
     if (msg.includes("abort") || msg.includes("timeout")) {
       throw new Error(
@@ -382,7 +383,7 @@ async function shipVersion(
     const data = (await response.json()) as Record<string, unknown>;
     return { ok: response.ok, data };
   } catch (error) {
-    const msg = error instanceof Error ? error.message : String(error);
+    const msg = extractErrorMessage(error);
 
     if (msg.includes("abort") || msg.includes("timeout")) {
       throw new Error(
@@ -432,7 +433,7 @@ async function getStatus(config: ShipConfig): Promise<void> {
     console.log(`   Deployed: ${data.deployedAt}`);
     console.log();
   } catch (error) {
-    const msg = error instanceof Error ? error.message : String(error);
+    const msg = extractErrorMessage(error);
     if (
       msg.includes("fetch failed") ||
       msg.includes("ECONNREFUSED") ||
@@ -502,7 +503,7 @@ async function handleSetup(args: string[]): Promise<void> {
     if (data.status !== "ok") throw new Error("Health check failed");
     console.log(`✅ Connected to server manager`);
   } catch (error) {
-    const msg = error instanceof Error ? error.message : String(error);
+    const msg = extractErrorMessage(error);
     console.error(`❌ Cannot reach ${server}/health`);
     if (msg.includes("abort")) {
       console.error("   Connection timed out.");
@@ -644,7 +645,7 @@ async function handleInit(args: string[]): Promise<void> {
     console.error("❌ Failed to provision instance");
     console.error(
       "   ",
-      error instanceof Error ? error.message : String(error),
+      extractErrorMessage(error),
     );
     process.exit(1);
   }
@@ -821,7 +822,7 @@ async function handleLegacyInit(args: string[]): Promise<void> {
       throw new Error("Health check returned non-ok status");
     console.log(`✅ Connected to ${data.service} (project: ${data.project})`);
   } catch (error) {
-    const msg = error instanceof Error ? error.message : String(error);
+    const msg = extractErrorMessage(error);
     console.error(`❌ Cannot reach ${url}/health`);
     if (
       msg.includes("fetch failed") ||
@@ -907,7 +908,7 @@ async function handleShip(args: string[]): Promise<void> {
     console.error("\n❌ Failed to create version");
     console.error(
       "   ",
-      error instanceof Error ? error.message : String(error),
+      extractErrorMessage(error),
     );
     process.exit(1);
   }
@@ -1096,7 +1097,7 @@ async function handleHistory(args: string[]): Promise<void> {
     console.error("❌ Failed to read git history");
     console.error(
       "   ",
-      error instanceof Error ? error.message : String(error),
+      extractErrorMessage(error),
     );
     process.exit(1);
   }
@@ -1214,7 +1215,7 @@ async function handleHistory(args: string[]): Promise<void> {
       console.error(`\n\n❌ Failed at batch starting index ${i}`);
       console.error(
         "   ",
-        error instanceof Error ? error.message : String(error),
+        extractErrorMessage(error),
       );
       if (totalImported > 0) {
         console.log(
@@ -1379,7 +1380,7 @@ async function handleUpdate(): Promise<void> {
       throw new Error("Downloaded file doesn't look like the ship CLI");
     }
   } catch (error) {
-    const msg = error instanceof Error ? error.message : String(error);
+    const msg = extractErrorMessage(error);
     console.error(`❌ Failed to download update`);
     if (msg.includes("abort")) {
       console.error("   Connection timed out. Check your internet connection.");

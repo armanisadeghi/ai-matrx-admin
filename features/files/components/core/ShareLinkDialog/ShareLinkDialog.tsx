@@ -14,6 +14,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Copy, Link, Loader2, Trash2 } from "lucide-react";
+import { extractErrorMessage } from "@/utils/errors";
 import {
   Dialog,
   DialogContent,
@@ -135,7 +136,7 @@ export function ShareLinkDialogBody({
       setExpiresAt("");
       setMaxUses("");
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(extractErrorMessage(err));
     } finally {
       setCreating(false);
     }

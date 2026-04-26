@@ -8,7 +8,8 @@ export default async function DraggablesDemosIndexPage() {
       directory={join(
         process.cwd(),
         "app",
-        "(authenticated)",
+        "(legacy)",
+        "legacy",
         "demo",
         "component-demo",
         "draggables",

@@ -7,6 +7,7 @@ import { useCodeWorkspace } from "../../CodeWorkspaceProvider";
 import { runShellCommand } from "../../runtime/agentTools";
 import { SidePanelAction, SidePanelHeader } from "../SidePanelChrome";
 import { HOVER_ROW, ROW_HEIGHT } from "../../styles/tokens";
+import { extractErrorMessage } from "@/utils/errors";
 
 interface RunPanelProps {
   className?: string;
@@ -90,7 +91,7 @@ export const RunPanel: React.FC<RunPanelProps> = ({ className }) => {
 
       setScripts(found);
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(extractErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -115,7 +116,7 @@ export const RunPanel: React.FC<RunPanelProps> = ({ className }) => {
           workspaceId,
         });
       } catch (err) {
-        setError(err instanceof Error ? err.message : String(err));
+        setError(extractErrorMessage(err));
       } finally {
         setRunningName(null);
       }

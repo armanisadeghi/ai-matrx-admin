@@ -4,6 +4,7 @@ import { Conversation, ConversationMetadata, ChatMode } from "@/types/chat/chat.
 import { MatrxRecordId } from "@/types/entityTypes";
 import { getPermanentId } from "@/lib/redux/entity/utils/stateHelpUtils";
 import { useUpdateRecordFields } from "../../unsaved-records/useUpdateFields";
+import { extractErrorMessage } from "@/utils/errors";
 
 interface UseConversationProps {
 }
@@ -241,7 +242,7 @@ export const useConversationCrud = ({}: UseConversationProps = {}): UseConversat
             console.error("Error saving conversation:", error);
             return {
                 success: false,
-                error: error instanceof Error ? error : new Error(String(error)),
+                error: error instanceof Error ? error : new Error(extractErrorMessage(error)),
             };
         }
     }, [saveAsync]);
