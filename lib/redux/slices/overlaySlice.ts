@@ -14,7 +14,7 @@
 // All existing callers that omit instanceId continue to work with zero changes.
 
 import { createSlice, createSelector } from "@reduxjs/toolkit";
-import { AgentContentTab } from "@/features/window-panels/windows/agents/AgentContentWindow";
+import type { AgentContentTab } from "@/features/window-panels/windows/agents/agent-content.types";
 
 export const DEFAULT_INSTANCE_ID = "default";
 

@@ -53,18 +53,9 @@ import { AgentContentHistoryPanel } from "./AgentContentHistoryPanel";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-export type AgentContentTab =
-  | "messages"
-  | "system"
-  | "settings"
-  | "variables"
-  | "tools"
-  | "context"
-  | "overview"
-  | "share"
-  | "run"
-  | "history"
-  | "versions";
+// Re-exported from the pure types file so consumers that previously imported
+// from this component don't need to update their import paths.
+export type { AgentContentTab } from "./agent-content.types";
 
 interface TabDefinition {
   id: AgentContentTab;
