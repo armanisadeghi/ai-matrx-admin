@@ -103,11 +103,10 @@ export function useUploadAndShare(): UseUploadAndShareResult {
       ).unwrap();
 
       if (failed.length > 0 || uploaded.length === 0) {
-        throw new Error(
-          failed.length
-            ? `Upload failed: ${failed.join(", ")}`
-            : "Upload failed: unknown error",
-        );
+        // `failed` items are `{ name, error }` since 2026-04-24 — surface
+        // the real backend error rather than a stringified object.
+        const message = failed[0]?.error ?? "unknown error";
+        throw new Error(`Upload failed: ${message}`);
       }
 
       const fileId = uploaded[0];
@@ -184,11 +183,8 @@ export async function uploadAndShare(
     .unwrap();
 
   if (failed.length > 0 || uploaded.length === 0) {
-    throw new Error(
-      failed.length
-        ? `Upload failed: ${failed.join(", ")}`
-        : "Upload failed: unknown error",
-    );
+    const message = failed[0]?.error ?? "unknown error";
+    throw new Error(`Upload failed: ${message}`);
   }
 
   const fileId = uploaded[0];

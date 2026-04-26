@@ -236,8 +236,12 @@ export async function uploadTaskAttachment(
       .unwrap();
 
     if (failed.length > 0 || uploaded.length === 0) {
+      // `failed` is `Array<{name, error}>` since 2026-04-24 — extract the
+      // real backend error so callers can surface it to the user instead
+      // of seeing a silent null return.
+      const reason = failed[0]?.error ?? "Upload failed";
       console.error("Task attachment upload failed:", failed);
-      return null;
+      throw new Error(`Couldn't attach file: ${reason}`);
     }
     const fileId = uploaded[0];
 

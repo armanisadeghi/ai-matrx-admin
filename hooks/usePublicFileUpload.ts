@@ -1,5 +1,26 @@
 // hooks/usePublicFileUpload.ts
-// Standalone file upload hook for public routes - no Redux dependency
+//
+// ⚠️ INTENTIONALLY uses Supabase Storage directly — NOT a bug.
+//
+// Why this exists alongside the new cloud-files system:
+//   • The cloud-files Python backend gates EVERY mutation on a Supabase
+//     JWT (`Authorization: Bearer ...`).
+//   • Public-chat at `/p/[slug]` runs WITHOUT authentication — visitors
+//     are anonymous, no session, no JWT. They cannot use cloud-files.
+//   • Therefore public-chat keeps using a public Supabase Storage bucket
+//     (`public-chat-uploads`) configured for anonymous writes via RLS.
+//
+// CONSTRAINTS for callers:
+//   • Use this ONLY from `app/(public)/**` routes or other unauthenticated
+//     contexts. Authenticated callers must use `useFileUploadWithStorage`,
+//     `useUploadAndGet`, or `useUploadAndShare` — see
+//     features/files/UPLOAD_TROUBLESHOOTING.md for the full list.
+//   • The 'public-chat-uploads' bucket has its own retention policy
+//     (auto-cleanup), upload-size limit, and RLS rules. Do NOT add new
+//     bucket names here without coordinating retention.
+//
+// If you find an authenticated caller using this hook, that IS a bug —
+// migrate it to one of the cloud-files patterns.
 
 import { useState, useCallback } from 'react';
 import { createClient } from '@/utils/supabase/client';

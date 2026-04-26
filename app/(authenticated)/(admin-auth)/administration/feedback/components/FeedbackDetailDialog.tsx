@@ -224,10 +224,8 @@ export default function FeedbackDetailDialog({
   const replyTextareaRef = useRef<HTMLTextAreaElement>(null);
   const composeTextareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const { uploadToPublicUserAssets } = useFileUploadWithStorage(
-    "user-public-assets",
-    "feedback-images",
-  );
+  const { uploadToPublicUserAssets, lastErrorRef } =
+    useFileUploadWithStorage("user-public-assets", "feedback-images");
 
   // Paste-to-upload handler — call with setter and loading setter
   const handleImagePaste = useCallback(
@@ -253,16 +251,21 @@ export default function FeedbackDetailDialog({
             if (result?.url) {
               setImages((prev) => [...prev, result.url]);
               toast.success("Image attached");
+            } else {
+              const reason = lastErrorRef.current ?? "Upload failed";
+              toast.error(`Couldn't upload image: ${reason}`);
             }
-          } catch {
-            toast.error("Failed to upload image");
+          } catch (err) {
+            const reason =
+              err instanceof Error ? err.message : "Upload failed";
+            toast.error(`Couldn't upload image: ${reason}`);
           } finally {
             setUploading(false);
           }
         }
       }
     },
-    [uploadToPublicUserAssets],
+    [uploadToPublicUserAssets, lastErrorRef],
   );
 
   // Attach paste listeners to both textareas when they mount
@@ -298,23 +301,36 @@ export default function FeedbackDetailDialog({
         const files = Array.from(input.files ?? []);
         if (!files.length) return;
         setUploading(true);
+        let attached = 0;
+        let firstError: string | null = null;
         try {
           for (const file of files) {
             const result = await uploadToPublicUserAssets(file);
-            if (result?.url) setImages((prev) => [...prev, result.url]);
+            if (result?.url) {
+              setImages((prev) => [...prev, result.url]);
+              attached += 1;
+            } else if (!firstError) {
+              firstError = lastErrorRef.current ?? "Upload failed";
+            }
           }
-          toast.success(
-            `${files.length} image${files.length > 1 ? "s" : ""} attached`,
-          );
-        } catch {
-          toast.error("Failed to upload image(s)");
+          if (attached > 0) {
+            toast.success(
+              `${attached} image${attached > 1 ? "s" : ""} attached`,
+            );
+          }
+          if (firstError) {
+            toast.error(`Some images failed: ${firstError}`);
+          }
+        } catch (err) {
+          const reason = err instanceof Error ? err.message : "Upload failed";
+          toast.error(`Couldn't upload image(s): ${reason}`);
         } finally {
           setUploading(false);
         }
       };
       input.click();
     },
-    [uploadToPublicUserAssets],
+    [uploadToPublicUserAssets, lastErrorRef],
   );
 
   /** Apply fresh server data to both the live item and all form fields */

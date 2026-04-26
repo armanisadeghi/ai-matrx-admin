@@ -100,7 +100,12 @@ export function UploadResourcePicker({ onBack, onSelect }: UploadResourcePickerP
     const [uploadError, setUploadError] = useState<string | null>(null);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-    const { uploadMultipleToPrivateUserAssets, error: hookError, isLoading } = useFileUploadWithStorage("userContent", "prompt-attachments");
+    const {
+        uploadMultipleToPrivateUserAssets,
+        error: hookError,
+        isLoading,
+        lastErrorRef,
+    } = useFileUploadWithStorage("userContent", "prompt-attachments");
 
     const isProcessing = fileStatuses.some((f) => f.status === "compressing" || f.status === "uploading");
 
@@ -162,7 +167,14 @@ export function UploadResourcePicker({ onBack, onSelect }: UploadResourcePickerP
             const results = await uploadMultipleToPrivateUserAssets(filesToUpload);
 
             if (!results || results.length === 0) {
-                const errMsg = hookError || "Upload failed. The file may exceed the storage limit or an unexpected error occurred.";
+                // Read the synchronous ref first — `hookError` is React state
+                // and lags one render after the failure. Without this, users
+                // saw the previous error (or a generic message) instead of
+                // the one that just happened.
+                const errMsg =
+                    lastErrorRef.current ||
+                    hookError ||
+                    "Upload failed. The file may exceed the storage limit or an unexpected error occurred.";
                 for (let i = 0; i < updatedStatuses.length; i++) {
                     updatedStatuses[i] = { ...updatedStatuses[i], status: "error", errorMessage: errMsg };
                 }

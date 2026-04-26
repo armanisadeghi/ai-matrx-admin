@@ -12,6 +12,7 @@ import {
   Slider,
   Label
 } from '@/components/ui';
+import { toast } from 'sonner';
 import { useFileUploadWithStorage } from '@/components/ui/file-upload/useFileUploadWithStorage';
 
 // Default aspect ratio options
@@ -60,7 +61,8 @@ const ImageCropper = ({
   
   // Upload state
   const [isProcessing, setIsProcessing] = useState(false);
-  const { uploadMultipleToPublicUserAssets, isLoading } = useFileUploadWithStorage("user-public-assets");
+  const { uploadMultipleToPublicUserAssets, isLoading, lastErrorRef } =
+    useFileUploadWithStorage("user-public-assets");
 
   const handleCropAreaComplete = useCallback((croppedArea, croppedAreaPixels) => {
     setCroppedAreaPixels(croppedAreaPixels);
@@ -167,20 +169,26 @@ const ImageCropper = ({
       
       // Upload the cropped image
       const uploadResults = await uploadMultipleToPublicUserAssets([file]);
-      
+
       if (uploadResults && uploadResults.length > 0) {
         // Get the URL from the first result
         const uploadedUrl = uploadResults[0].url;
-        
+
         // Pass the URL back to the parent component
         onComplete(uploadedUrl);
-        
+
         // Close the dialog
         setIsOpen(false);
+      } else {
+        const reason = lastErrorRef.current ?? 'Upload failed';
+        toast.error(`Couldn't save cropped image: ${reason}`);
       }
     } catch (e) {
+      const reason = e instanceof Error ? e.message : 'Failed to crop image';
       console.error('Failed to crop image:', e);
-      alert('Failed to crop image. The image might be protected from editing.');
+      // Replaces a banned native `alert()` (per CLAUDE.md UI rules) and
+      // surfaces the real reason instead of a generic message.
+      toast.error(`Couldn't save cropped image: ${reason}`);
     } finally {
       setIsProcessing(false);
     }

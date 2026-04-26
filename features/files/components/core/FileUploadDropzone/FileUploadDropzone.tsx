@@ -69,7 +69,13 @@ export function FileUploadDropzone({
         });
         if (uploaded.length && onUploaded) onUploaded(uploaded);
         if (failed.length && onError) {
-          onError(`Failed to upload: ${failed.join(", ")}`);
+          // `failed` is `{ name, error }[]` — surface BOTH the file and the
+          // real backend reason. Joining objects rendered "[object Object]"
+          // to the user, hiding every actual failure cause (CORS, 413, 401…).
+          const message = failed
+            .map((f) => `${f.name}: ${f.error}`)
+            .join("; ");
+          onError(message);
         }
       } catch (err) {
         const message = extractErrorMessage(err);

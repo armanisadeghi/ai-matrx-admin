@@ -16,7 +16,11 @@ export interface UseFileUploadResult {
   upload: (
     files: File[],
     options?: Omit<UploadFilesArg, "files">,
-  ) => Promise<{ uploaded: string[]; failed: string[] }>;
+  ) => Promise<{
+    uploaded: string[];
+    /** Per-file failure with the real backend error, not just the filename. */
+    failed: Array<{ name: string; error: string }>;
+  }>;
 }
 
 export function useFileUpload(

@@ -97,10 +97,8 @@ export function AgentTextarea({
   const showExpand = !singleRow && (isExpanded || charCount > 80);
 
   // ── File upload ─────────────────────────────────────────────────────────────
-  const { uploadMultipleToPrivateUserAssets } = useFileUploadWithStorage(
-    uploadBucket,
-    uploadPath,
-  );
+  const { uploadMultipleToPrivateUserAssets, lastErrorRef } =
+    useFileUploadWithStorage(uploadBucket, uploadPath);
 
   const handleSend = useCallback(() => {
     if (disableSend) return;
@@ -116,31 +114,37 @@ export function AgentTextarea({
     async (file: File) => {
       try {
         const results = await uploadMultipleToPrivateUserAssets([file]);
-        if (results && results.length > 0) {
-          const url = (results[0] as { url?: string })?.url;
-          if (!url) return;
-          const resourceId = `res_${Date.now()}_paste`;
-          dispatch(
-            addResource({
-              conversationId,
-              blockType: "image",
-              source: { url },
-              resourceId,
-            }),
-          );
-          dispatch(
-            setResourcePreview({
-              conversationId,
-              resourceId,
-              preview: file.name,
-            }),
-          );
+        if (!results || results.length === 0) {
+          // Hook caught the error and returned an empty array; surface
+          // the synchronous reason instead of a generic message.
+          const reason = lastErrorRef.current ?? "Upload failed";
+          toast.error(`Couldn't upload pasted image: ${reason}`);
+          return;
         }
-      } catch {
-        toast.error("Failed to upload pasted image");
+        const url = (results[0] as { url?: string })?.url;
+        if (!url) return;
+        const resourceId = `res_${Date.now()}_paste`;
+        dispatch(
+          addResource({
+            conversationId,
+            blockType: "image",
+            source: { url },
+            resourceId,
+          }),
+        );
+        dispatch(
+          setResourcePreview({
+            conversationId,
+            resourceId,
+            preview: file.name,
+          }),
+        );
+      } catch (err) {
+        const reason = err instanceof Error ? err.message : "Upload failed";
+        toast.error(`Couldn't upload pasted image: ${reason}`);
       }
     },
-    [conversationId, dispatch, uploadMultipleToPrivateUserAssets],
+    [conversationId, dispatch, uploadMultipleToPrivateUserAssets, lastErrorRef],
   );
 
   useClipboardPaste({

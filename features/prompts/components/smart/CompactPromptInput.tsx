@@ -95,10 +95,8 @@ export function CompactPromptInput({
   );
 
   // File upload hook for paste support
-  const { uploadMultipleToPrivateUserAssets } = useFileUploadWithStorage(
-    uploadBucket,
-    uploadPath,
-  );
+  const { uploadMultipleToPrivateUserAssets, lastErrorRef: uploadErrorRef } =
+    useFileUploadWithStorage(uploadBucket, uploadPath);
 
   // Voice transcription hook
   const {
@@ -157,22 +155,29 @@ export function CompactPromptInput({
 
       try {
         const results = await uploadMultipleToPrivateUserAssets([file]);
-        if (results && results.length > 0) {
-          // Use the upload thunk instead
-          const { uploadAndAddFileResource } =
-            await import("@/lib/redux/prompt-execution/thunks/resourceThunks");
-          await dispatch(
-            uploadAndAddFileResource({
-              runId,
-              file,
-              bucket: uploadBucket,
-              path: uploadPath,
-              uploadFn: uploadMultipleToPrivateUserAssets,
-            }),
-          );
+        if (!results || results.length === 0) {
+          const reason = uploadErrorRef.current ?? "Upload failed";
+          toast.error(`Couldn't upload pasted image: ${reason}`);
+          return;
         }
+        // Use the upload thunk instead
+        const { uploadAndAddFileResource } = await import(
+          "@/lib/redux/prompt-execution/thunks/resourceThunks"
+        );
+        await dispatch(
+          uploadAndAddFileResource({
+            runId,
+            file,
+            bucket: uploadBucket,
+            path: uploadPath,
+            uploadFn: uploadMultipleToPrivateUserAssets,
+          }),
+        );
       } catch (error) {
+        const reason =
+          error instanceof Error ? error.message : "Upload failed";
         console.error("Failed to upload pasted image:", error);
+        toast.error(`Couldn't upload pasted image: ${reason}`);
       }
     },
     [
@@ -181,6 +186,7 @@ export function CompactPromptInput({
       uploadBucket,
       uploadPath,
       uploadMultipleToPrivateUserAssets,
+      uploadErrorRef,
     ],
   );
 

@@ -24,12 +24,15 @@ import {
 // buffering. `force-dynamic` defeats any accidental caching of the response.
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-// Vercel Pro allows up to 300s on Fluid Compute; pick the maximum so a
-// fresh `pnpm install` or large `git clone` finishes inside one request
-// instead of being killed at the default 60s.
+// Vercel hard cap on Pro Serverless Functions is 300s — the build will
+// reject anything higher with "Serverless Functions must have a maxDuration
+// between 1 and 300 for plan pro" (https://vercel.com/docs/limits). Hobby
+// is 60s, Enterprise is 900s; Fluid Compute does NOT raise the per-request
+// ceiling. Anything that genuinely needs to run longer than 5 minutes
+// (full `pnpm install` cold cache, `next build`, large `pnpm test` matrix)
+// must talk to the orchestrator directly — see
+// `features/code/SANDBOX_DIRECT_ENDPOINTS.md` for the proposed contract.
 export const maxDuration = 300;
-
-// This used to be set to 800s, but we had build errors from Vercel and reduced it to 300s.
 
 export async function POST(
   request: NextRequest,

@@ -111,10 +111,8 @@ export function PromptInput({
   const pendingVoiceSubmitRef = useRef(false);
 
   // File upload hook for paste support
-  const { uploadMultipleToPrivateUserAssets } = useFileUploadWithStorage(
-    uploadBucket,
-    uploadPath,
-  );
+  const { uploadMultipleToPrivateUserAssets, lastErrorRef: uploadErrorRef } =
+    useFileUploadWithStorage(uploadBucket, uploadPath);
 
   // Voice transcription hook
   const {
@@ -208,17 +206,25 @@ export function PromptInput({
     async (file: File) => {
       try {
         const results = await uploadMultipleToPrivateUserAssets([file]);
-        if (results && results.length > 0 && onResourcesChange) {
+        if (!results || results.length === 0) {
+          const reason = uploadErrorRef.current ?? "Upload failed";
+          toast.error(`Couldn't upload pasted image: ${reason}`);
+          return;
+        }
+        if (onResourcesChange) {
           onResourcesChange((prevResources: Resource[]) => [
             ...prevResources,
             { type: "file", data: results[0] },
           ]);
         }
       } catch (error) {
+        const reason =
+          error instanceof Error ? error.message : "Upload failed";
         console.error("Failed to upload pasted image:", error);
+        toast.error(`Couldn't upload pasted image: ${reason}`);
       }
     },
-    [onResourcesChange, uploadMultipleToPrivateUserAssets],
+    [onResourcesChange, uploadMultipleToPrivateUserAssets, uploadErrorRef],
   );
 
   // Setup clipboard paste

@@ -425,7 +425,13 @@ export function useImageStudio(
           fileIdByName.set(file.fileName, file.id);
         }
 
-        const failedFilenamesSet = new Set<string>(result.failed);
+        // `failed` shape changed in 2026-04-24: each entry is now
+        // `{ name, error }` so the real backend error reaches callers
+        // instead of just the filename. The set we build for variant-
+        // matching only needs the names.
+        const failedFilenamesSet = new Set<string>(
+          result.failed.map((f) => f.name),
+        );
         const savedAt = new Date().toISOString();
 
         setFiles((prev) =>
@@ -451,7 +457,7 @@ export function useImageStudio(
           folderPath,
           parentFolderId,
           savedCount: result.uploaded.length,
-          failedFilenames: result.failed,
+          failedFilenames: result.failed.map((f) => f.name),
         });
       } catch (err) {
         const msg = err instanceof Error ? err.message : "Save failed";

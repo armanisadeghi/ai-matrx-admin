@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Image, Upload, X } from 'lucide-react';
+import { toast } from 'sonner';
 import { useFileUploadWithStorage } from '@/components/ui/file-upload/useFileUploadWithStorage';
 
 interface ImageUploadFieldProps {
@@ -21,31 +22,36 @@ const ImageUploadField: React.FC<ImageUploadFieldProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
   
-  const { uploadFile, error } = useFileUploadWithStorage(bucket, path);
+  const { uploadFile, error, lastErrorRef } = useFileUploadWithStorage(bucket, path);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
-    
+
     const file = files[0]; // Only take the first file
-    
+
     // Validate file is an image
     if (!file.type.startsWith('image/')) {
-      alert('Please upload an image file');
+      toast.error('Please select an image file.');
       return;
     }
-    
+
     try {
       setIsUploading(true);
-      
+
       // Upload the file using the provided hook
       const result = await uploadFile(file);
-      
+
       if (result && result.url) {
         onChange(result.url);
+      } else {
+        const reason = lastErrorRef.current ?? 'Upload failed';
+        toast.error(`Upload failed: ${reason}`);
       }
     } catch (err) {
+      const reason = err instanceof Error ? err.message : 'Upload failed';
       console.error('Upload error:', err);
+      toast.error(`Upload failed: ${reason}`);
     } finally {
       setIsUploading(false);
       // Clear the input value so the same file can be uploaded again if needed

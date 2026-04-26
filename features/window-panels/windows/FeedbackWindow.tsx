@@ -197,10 +197,8 @@ function FeedbackWindowBody({ onClose }: { onClose: () => void }) {
   }, []);
 
   // ── Image upload ─────────────────────────────────────────────────────────
-  const { uploadToPublicUserAssets } = useFileUploadWithStorage(
-    "user-public-assets",
-    "feedback-images",
-  );
+  const { uploadToPublicUserAssets, lastErrorRef: uploadErrorRef } =
+    useFileUploadWithStorage("user-public-assets", "feedback-images");
 
   const { captureTab, captureScreen, isCapturing } = useScreenCapture({
     hideSelectors: [".feedback-window-panel"],
@@ -233,15 +231,20 @@ function FeedbackWindowBody({ onClose }: { onClose: () => void }) {
           resolveSlot(slotId, result.url);
           toast.success("Screenshot attached!");
         } else {
-          errorSlot(slotId, "Upload failed");
-          toast.error("Screenshot captured but upload failed");
+          // The hook caught the error internally and returned null;
+          // surface the real reason from the synchronous ref.
+          const reason = uploadErrorRef.current ?? "Upload failed";
+          errorSlot(slotId, reason);
+          toast.error(`Upload failed: ${reason}`);
         }
-      } catch {
-        errorSlot(slotId, "Upload failed");
-        toast.error("Failed to upload screenshot");
+      } catch (err) {
+        const reason =
+          err instanceof Error ? err.message : "Failed to upload screenshot";
+        errorSlot(slotId, reason);
+        toast.error(`Upload failed: ${reason}`);
       }
     },
-    [uploadToPublicUserAssets, resolveSlot, errorSlot],
+    [uploadToPublicUserAssets, resolveSlot, errorSlot, uploadErrorRef],
   );
 
   const handleTabCapture = useCallback(async () => {
@@ -288,14 +291,24 @@ function FeedbackWindowBody({ onClose }: { onClose: () => void }) {
           resolveSlot(slotId, result.url);
           toast.success("Image pasted and uploaded");
         } else {
-          errorSlot(slotId, "Upload failed");
+          const reason = uploadErrorRef.current ?? "Upload failed";
+          errorSlot(slotId, reason);
+          toast.error(`Paste upload failed: ${reason}`);
         }
-      } catch {
-        errorSlot(slotId, "Upload failed");
-        toast.error("Failed to upload pasted image");
+      } catch (err) {
+        const reason =
+          err instanceof Error ? err.message : "Failed to upload pasted image";
+        errorSlot(slotId, reason);
+        toast.error(`Paste upload failed: ${reason}`);
       }
     },
-    [addPendingSlot, uploadToPublicUserAssets, resolveSlot, errorSlot],
+    [
+      addPendingSlot,
+      uploadToPublicUserAssets,
+      resolveSlot,
+      errorSlot,
+      uploadErrorRef,
+    ],
   );
 
   // Ctrl+V paste handler

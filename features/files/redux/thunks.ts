@@ -492,13 +492,17 @@ export const ensureFolderPath = createAsyncThunk<
 // ---------------------------------------------------------------------------
 
 export const uploadFiles = createAsyncThunk<
-  { uploaded: string[]; failed: string[] },
+  { uploaded: string[]; failed: Array<{ name: string; error: string }> },
   UploadFilesArg,
   ThunkApi
 >("cloudFiles/uploadFiles", async (arg, { dispatch, getState }) => {
   const concurrency = Math.max(1, arg.concurrency ?? 3);
   const uploaded: string[] = [];
-  const failed: string[] = [];
+  // Track REAL error per file (not just filename). Without this, every
+  // upload failure surfaces to callers as the file's name rather than the
+  // backend's actual error code/message — which is what made the Phase
+  // 11 migration look "broken" when really we just couldn't see why.
+  const failed: Array<{ name: string; error: string }> = [];
 
   // Resolve logical path prefix from parent folder (if any).
   const state = getState();
@@ -593,7 +597,7 @@ export const uploadFiles = createAsyncThunk<
             error: message,
           }),
         );
-        failed.push(file.name);
+        failed.push({ name: file.name, error: message });
       } finally {
         releaseRequest(requestId);
       }

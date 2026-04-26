@@ -311,10 +311,8 @@ export function ConversationInput({
   const [isResourcePickerOpen, setIsResourcePickerOpen] = useState(false);
 
   // ── File upload ────────────────────────────────────────────────────────────
-  const { uploadFile, isLoading: isUploading } = useFileUploadWithStorage(
-    uploadBucket,
-    uploadPath,
-  );
+  const { uploadFile, isLoading: isUploading, lastErrorRef } =
+    useFileUploadWithStorage(uploadBucket, uploadPath);
 
   const handleFilesSelected = useCallback(
     async (files: FileList | File[]) => {
@@ -322,7 +320,13 @@ export function ConversationInput({
       for (const file of filesArray) {
         try {
           const result = await uploadFile(file);
-          if (!result) throw new Error("Upload returned no result");
+          if (!result) {
+            // Hook caught the error and returned null; read the
+            // synchronous ref to get the real backend reason.
+            const reason = lastErrorRef.current ?? "Upload failed";
+            toast.error(`Couldn't upload ${file.name}: ${reason}`);
+            continue;
+          }
           const resource: Resource = {
             type: file.type.startsWith("image/") ? "image_link" : "file",
             data: {
@@ -336,11 +340,12 @@ export function ConversationInput({
             chatConversationsActions.addResource({ sessionId, resource }),
           );
         } catch (err) {
-          toast.error(`Failed to upload ${file.name}`);
+          const reason = err instanceof Error ? err.message : "Upload failed";
+          toast.error(`Couldn't upload ${file.name}: ${reason}`);
         }
       }
     },
-    [dispatch, sessionId, uploadFile],
+    [dispatch, sessionId, uploadFile, lastErrorRef],
   );
 
   const handleResourceSelected = useCallback(

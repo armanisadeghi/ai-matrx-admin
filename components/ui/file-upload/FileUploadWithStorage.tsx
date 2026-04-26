@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { toast } from "sonner";
 import { MultiFileUpload, MiniFileUpload } from "@/components/ui/file-upload/file-upload";
 import { useFileUploadWithStorage } from "@/components/ui/file-upload/useFileUploadWithStorage";
 import { EnhancedFileDetails } from "@/utils/file-operations/constants";
@@ -41,7 +42,8 @@ export const FileUploadWithStorage: React.FC<FileUploadWithStorageProps> = ({
         uploadFiles,
         uploadMultipleToPublicUserAssets,
         uploadMultipleToPrivateUserAssets,
-        isLoading
+        isLoading,
+        lastErrorRef
     } = useFileUploadWithStorage(bucket, path);
     const [uploadingFiles, setUploadingFiles] = useState<File[]>([]);
 
@@ -68,9 +70,18 @@ export const FileUploadWithStorage: React.FC<FileUploadWithStorageProps> = ({
 
             if (results.length > 0 && onUploadComplete) {
                 onUploadComplete(results);
+            } else if (results.length === 0 && files.length > 0) {
+                // Hook caught the error and returned an empty array — surface
+                // the synchronous reason so users don't think uploads silently
+                // succeeded (the previous "console.error only" path was
+                // basically invisible).
+                const reason = lastErrorRef.current ?? "Upload failed";
+                toast.error(`Upload failed: ${reason}`);
             }
         } catch (error) {
+            const reason = error instanceof Error ? error.message : "Upload failed";
             console.error("🔧 Error in handleFilesChange:", error);
+            toast.error(`Upload failed: ${reason}`);
         } finally {
             setUploadingFiles([]);
         }

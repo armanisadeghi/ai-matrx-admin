@@ -19,7 +19,7 @@
  * `useUploadAndShare` / `useUploadAndGet` from `@/features/files/hooks`.
  */
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { extractErrorMessage } from "@/utils/errors";
 import {
   getFileDetailsByUrl,
@@ -124,6 +124,13 @@ export const useFileUploadWithStorage = (bucket: string, path?: string) => {
   const [results, setResults] = useState<UploadResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // `error` is React state — readable AFTER a re-render, which is after
+  // the awaited upload promise resolves to the caller. So consumers that
+  // do `const r = await uploadFile(f); if (!r) toast.error(error)` see
+  // the PREVIOUS error, not the one that just happened. The ref captures
+  // the latest synchronously so callers can use `lastErrorRef.current`
+  // immediately after the await.
+  const lastErrorRef = useRef<string | null>(null);
 
   // -------------------------------------------------------------------------
   // Core primitive — upload one file to a given folder path, return the
@@ -157,17 +164,31 @@ export const useFileUploadWithStorage = (bucket: string, path?: string) => {
         ).unwrap();
 
         if (failed.length > 0 || uploaded.length === 0) {
-          throw new Error(failed[0] ?? "Upload failed");
+          // Surface the REAL backend error, not the filename. Without this,
+          // every upload failure looked like "screenshot.png" in the toast,
+          // hiding the actual cause (CORS, 401, 413, network, etc.).
+          const realError = failed[0]?.error ?? "Upload failed";
+          throw new Error(realError);
         }
 
         const fileId = uploaded[0];
-        const link = await dispatch(
-          createShareLink({
-            resourceId: fileId,
-            resourceType: "file",
-            permissionLevel: "read",
-          }),
-        ).unwrap();
+        let link: import("@/features/files/types").CloudShareLink;
+        try {
+          link = await dispatch(
+            createShareLink({
+              resourceId: fileId,
+              resourceType: "file",
+              permissionLevel: "read",
+            }),
+          ).unwrap();
+        } catch (linkErr) {
+          // Upload succeeded but share-link creation failed. Keep the file
+          // around (the user can still find it in /cloud-files) but report
+          // a clear error so they don't think the upload silently broke.
+          throw new Error(
+            `File uploaded but share link couldn't be created: ${extractErrorMessage(linkErr)}`,
+          );
+        }
 
         const origin =
           typeof window !== "undefined" ? window.location.origin : "";
@@ -188,8 +209,14 @@ export const useFileUploadWithStorage = (bucket: string, path?: string) => {
         setResults((prev) => [...prev, result]);
         return result;
       } catch (err) {
-        const message = extractErrorMessage(err);
-        setError(message || "Upload failed");
+        const message = extractErrorMessage(err) || "Upload failed";
+        lastErrorRef.current = message;
+        setError(message);
+        // Also log so devs can see the chain in the console even if the
+        // caller swallows the toast. With CORS or 401 errors, the
+        // BackendApiError carries useful detail/code we want preserved.
+        // eslint-disable-next-line no-console
+        console.error("[useFileUploadWithStorage] upload failed:", err);
         return null;
       } finally {
         setIsLoading(false);
@@ -309,5 +336,12 @@ export const useFileUploadWithStorage = (bucket: string, path?: string) => {
     results,
     isLoading,
     error,
+    /**
+     * Latest error message — updated synchronously inside the failure
+     * branch so callers can read it immediately after `await uploadXxx()`
+     * returns null. Use this for toasts; use the `error` state for
+     * persistent UI rendering.
+     */
+    lastErrorRef,
   };
 };
