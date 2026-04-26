@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { TabsContent, ScrollArea } from "@/components/ui";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { TabsContent } from "@/components/ui/tabs";
 import { CopyButton } from "@/components/matrx/buttons/CopyButton";
 import { MarkdownCopyButton } from "@/components/matrx/buttons/MarkdownCopyButton";
 import { cleanMarkdown } from '@/utils/markdown-processors/clean-markdown-to-text';

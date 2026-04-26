@@ -2,7 +2,8 @@
 
 import React, { Suspense, useState } from "react";
 import { useEntity } from "@/lib/redux/entity/hooks/useEntity";
-import { Button, Input } from "@/components/ui";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { MatrxTableLoading } from "@/components/matrx/LoadingComponents";
 import MatrxTable from "@/app/(authenticated)/tests/matrx-table/components/MatrxTable";
 import { EntityKeys } from '@/types/entityTypes';

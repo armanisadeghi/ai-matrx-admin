@@ -9,7 +9,7 @@ import { IconMenu2, IconX } from "@tabler/icons-react";
 import { Settings, User } from "lucide-react";
 import { useSelector } from "react-redux";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/layout/MatrixLogo";
 // @ts-ignore - constants module exists but TypeScript may not resolve it correctly

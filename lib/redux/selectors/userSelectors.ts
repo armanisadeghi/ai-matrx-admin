@@ -12,7 +12,7 @@
 
 "use client";
 
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import { createSelector } from "reselect";
 import type { UserAuthState } from "@/lib/redux/slices/userAuthSlice";
 import type { UserProfileState } from "@/lib/redux/slices/userProfileSlice";
@@ -49,9 +49,8 @@ export const selectUserEmail = (state: RootState): string | null =>
   state.userAuth.email;
 export const selectUserPhone = (state: RootState): string | null =>
   state.userAuth.phone;
-export const selectUserEmailConfirmedAt = (
-  state: RootState,
-): string | null => state.userAuth.emailConfirmedAt;
+export const selectUserEmailConfirmedAt = (state: RootState): string | null =>
+  state.userAuth.emailConfirmedAt;
 export const selectUserLastSignInAt = (state: RootState): string | null =>
   state.userAuth.lastSignInAt;
 

@@ -2,7 +2,9 @@
 import React from "react";
 import { Radio, CheckCircle, XCircle, Minimize2 } from "lucide-react";
 import { FiRefreshCw } from "react-icons/fi";
-import { Button, Label, Switch } from "@/components/ui";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import ConnectionStatusIndicator from "@/components/socket-io/status-indicators/ConnectionStatusIndicator";
 import AuthStatusIndicator from "@/components/socket-io/status-indicators/AuthStatusIndicator";
 import ConnectionTypeIndicator from "@/components/socket-io/status-indicators/ConnectionTypeIndicator";

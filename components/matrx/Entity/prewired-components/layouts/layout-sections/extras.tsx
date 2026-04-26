@@ -1,5 +1,7 @@
 import React from "react";
-import {CardHeader, CardTitle, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui";
+import { CardHeader } from "@/components/ui/card";
+import { CardTitle } from "@/components/ui/card";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {cn} from "@/lib/utils";
 import {HelpCircle} from "lucide-react";
 import {ComponentDensity} from "@/types/componentConfigTypes";

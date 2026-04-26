@@ -1,19 +1,24 @@
 // @ts-nocheck
 // redux/features/recipes/selectors.ts
 
-import { createSelector } from '@reduxjs/toolkit';
-import type { RootState } from '@/lib/redux/store';
+import { createSelector } from "@reduxjs/toolkit";
+import type { RootState } from "@/lib/redux/store.types";
 
-export const getRecipeInstance = (recipeId: string) =>
-    // @ts-ignore - COMPLEX: Property 'recipes' does not exist on RootState - requires state structure refactor or recipes slice addition
-    (state: RootState) => state.recipes.recipeInstances[recipeId];
+export const getRecipeInstance =
+  (recipeId: string) =>
+  // @ts-ignore - COMPLEX: Property 'recipes' does not exist on RootState - requires state structure refactor or recipes slice addition
+  (state: RootState) =>
+    state.recipes.recipeInstances[recipeId];
 
 // @ts-ignore - COMPLEX: Property 'recipes' does not exist on RootState - requires state structure refactor or recipes slice addition
-export const getActiveRecipeIds = (state: RootState) => state.recipes.activeRecipeIds;
+export const getActiveRecipeIds = (state: RootState) =>
+  state.recipes.activeRecipeIds;
 
 export const getActiveRecipeInstances = createSelector(
-    [getActiveRecipeIds,
-        // @ts-ignore - COMPLEX: Property 'recipes' does not exist on RootState - requires state structure refactor or recipes slice addition
-        (state: RootState) => state.recipes.recipeInstances],
-    (activeIds, instances) => activeIds.map(id => instances[id])
+  [
+    getActiveRecipeIds,
+    // @ts-ignore - COMPLEX: Property 'recipes' does not exist on RootState - requires state structure refactor or recipes slice addition
+    (state: RootState) => state.recipes.recipeInstances,
+  ],
+  (activeIds, instances) => activeIds.map((id) => instances[id]),
 );

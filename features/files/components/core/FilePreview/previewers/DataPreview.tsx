@@ -37,6 +37,7 @@ import {
 import Papa from "papaparse";
 import { cn } from "@/lib/utils";
 import { extname } from "@/features/files/utils/path";
+import { toPreviewProxyUrl } from "@/features/files/utils/preview-url";
 
 const ROWS_PER_PAGE = 25;
 
@@ -82,7 +83,7 @@ export function DataPreview({ url, fileName, className }: DataPreviewProps) {
   // ── Loaders ──────────────────────────────────────────────────────────────
 
   const loadJson = useCallback(async (fileUrl: string) => {
-    const res = await fetch(fileUrl);
+    const res = await fetch(toPreviewProxyUrl(fileUrl) ?? fileUrl);
     if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
     const text = await res.text();
     setJsonRaw(text);
@@ -115,7 +116,7 @@ export function DataPreview({ url, fileName, className }: DataPreviewProps) {
 
   const loadDelimited = useCallback(
     async (fileUrl: string, delimiter: string) => {
-      const res = await fetch(fileUrl);
+      const res = await fetch(toPreviewProxyUrl(fileUrl) ?? fileUrl);
       if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
       const text = await res.text();
       const parsed = Papa.parse<Row>(text, {
@@ -135,46 +136,43 @@ export function DataPreview({ url, fileName, className }: DataPreviewProps) {
     [],
   );
 
-  const loadXlsx = useCallback(
-    async (fileUrl: string, sheetName?: string) => {
-      // SheetJS is heavy (~600KB) — only pull it in when an Excel file is
-      // actually opened. The dynamic import is a separate chunk.
-      const XLSX = await import("xlsx");
-      const res = await fetch(fileUrl);
-      if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-      const buf = await res.arrayBuffer();
-      const wb = XLSX.read(buf, { type: "array" });
+  const loadXlsx = useCallback(async (fileUrl: string, sheetName?: string) => {
+    // SheetJS is heavy (~600KB) — only pull it in when an Excel file is
+    // actually opened. The dynamic import is a separate chunk.
+    const XLSX = await import("xlsx");
+    const res = await fetch(toPreviewProxyUrl(fileUrl) ?? fileUrl);
+    if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+    const buf = await res.arrayBuffer();
+    const wb = XLSX.read(buf, { type: "array" });
 
-      const names = wb.SheetNames ?? [];
-      if (names.length === 0) {
-        setSheetNames([]);
-        setActiveSheet("");
-        setData([]);
-        return;
-      }
-      setSheetNames(names);
-      const sheet = sheetName && names.includes(sheetName) ? sheetName : names[0];
-      setActiveSheet(sheet);
+    const names = wb.SheetNames ?? [];
+    if (names.length === 0) {
+      setSheetNames([]);
+      setActiveSheet("");
+      setData([]);
+      return;
+    }
+    setSheetNames(names);
+    const sheet = sheetName && names.includes(sheetName) ? sheetName : names[0];
+    setActiveSheet(sheet);
 
-      const ws = wb.Sheets[sheet];
-      const aoa = XLSX.utils.sheet_to_json<unknown[]>(ws, { header: 1 });
-      if (aoa.length === 0) {
-        setData([]);
-        return;
-      }
-      const headers = (aoa[0] as unknown[]).map((h) => String(h ?? ""));
-      const rows: Row[] = aoa.slice(1).map((row) => {
-        const obj: Row = {};
-        const arr = row as unknown[];
-        headers.forEach((h, i) => {
-          obj[h || `col${i + 1}`] = arr[i] ?? null;
-        });
-        return obj;
+    const ws = wb.Sheets[sheet];
+    const aoa = XLSX.utils.sheet_to_json<unknown[]>(ws, { header: 1 });
+    if (aoa.length === 0) {
+      setData([]);
+      return;
+    }
+    const headers = (aoa[0] as unknown[]).map((h) => String(h ?? ""));
+    const rows: Row[] = aoa.slice(1).map((row) => {
+      const obj: Row = {};
+      const arr = row as unknown[];
+      headers.forEach((h, i) => {
+        obj[h || `col${i + 1}`] = arr[i] ?? null;
       });
-      setData(rows);
-    },
-    [],
-  );
+      return obj;
+    });
+    setData(rows);
+  }, []);
 
   // ── Effect: initial load ─────────────────────────────────────────────────
 
@@ -389,7 +387,9 @@ export function DataPreview({ url, fileName, className }: DataPreviewProps) {
             </span>
             <span className="text-xs text-muted-foreground tabular-nums">
               {filtered.length.toLocaleString()} rows
-              {search ? ` (filtered from ${data?.length.toLocaleString() ?? 0})` : ""}
+              {search
+                ? ` (filtered from ${data?.length.toLocaleString() ?? 0})`
+                : ""}
             </span>
           </div>
 

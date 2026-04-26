@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import MarkdownClassificationTester from "./MarkdownClassificationTester";
-import { Button } from "@/components/ui";
+import { Button } from "@/components/ui/button";
 import { Maximize2, X } from "lucide-react";
 
 interface FullscreenMarkdownEditorProps {

@@ -1,5 +1,5 @@
 import type { AnyAction } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import {
   setPreference,
   type UserPreferences,
@@ -10,10 +10,7 @@ import {
   setCustomServerUrl,
   clearAdminPreferences,
 } from "@/lib/redux/slices/adminPreferencesSlice";
-import {
-  setIsInWindow,
-  setLayoutStyle,
-} from "@/lib/redux/slices/layoutSlice";
+import { setIsInWindow, setLayoutStyle } from "@/lib/redux/slices/layoutSlice";
 import {
   toggleWindowsHidden,
   restoreAll,
@@ -134,7 +131,10 @@ export const sliceBindings: Record<string, SliceBinding> = {
  * "theme.mode" → { slice: "theme", key: "mode" }
  * "userPreferences.prompts.defaultTemperature" → { slice: "userPreferences", key: "prompts.defaultTemperature" }
  */
-export function parseSettingsPath(path: string): { slice: string; key: string } {
+export function parseSettingsPath(path: string): {
+  slice: string;
+  key: string;
+} {
   const firstDot = path.indexOf(".");
   if (firstDot === -1) {
     throw new Error(`Invalid settings path "${path}" — missing slice prefix`);

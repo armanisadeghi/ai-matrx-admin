@@ -1,7 +1,7 @@
 "use client";
 
 import { createSelector } from "reselect";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import type {
   AgentShortcutCategoryDef,
   AgentShortcutCategoryRecord,
@@ -101,8 +101,7 @@ export const selectCategoriesByScope = createSelector(
   [
     selectAllCategoriesArray,
     (_s: RootState, scope: Scope, _scopeId?: string | null) => scope,
-    (_s: RootState, _scope: Scope, scopeId?: string | null) =>
-      scopeId ?? null,
+    (_s: RootState, _scope: Scope, scopeId?: string | null) => scopeId ?? null,
   ],
   (categories, scope, scopeId): AgentShortcutCategoryRecord[] =>
     categories.filter((c) =>
@@ -111,8 +110,10 @@ export const selectCategoriesByScope = createSelector(
 );
 
 export const selectCategoriesByPlacementType = createSelector(
-  [selectAllCategoriesArray, (_s: RootState, placementType: string) =>
-    placementType],
+  [
+    selectAllCategoriesArray,
+    (_s: RootState, placementType: string) => placementType,
+  ],
   (categories, placementType) =>
     categories.filter((c) => c.placementType === placementType),
 );

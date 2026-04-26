@@ -5,7 +5,7 @@ import MessageItem from "@/features/chat/components/response/MessageItem";
 import { useAppSelector } from "@/lib/redux/hooks";
 import AssistantStream from "@/features/chat/components/response/assistant-message/stream/AssistantStream";
 import { createChatSelectors } from "@/lib/redux/entity/custom-selectors/chatSelectors";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import { DebugInfo } from "./DebugInfo";
 import ErrorCard from "./assistant-message/stream/ErrorCard";
 import { selectTaskStreamingById } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
@@ -14,7 +14,13 @@ import {
   selectPrimaryResponseErrorsByTaskId,
 } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 import { selectTaskFirstListenerId } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
-import { selectResponseTextByListenerId, selectResponseEndedByListenerId, selectResponseDataByListenerId, selectResponseInfoByListenerId, selectResponseErrorsByListenerId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
+import {
+  selectResponseTextByListenerId,
+  selectResponseEndedByListenerId,
+  selectResponseDataByListenerId,
+  selectResponseInfoByListenerId,
+  selectResponseErrorsByListenerId,
+} from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 
 const INFO = false;
 const DEBUG = false;

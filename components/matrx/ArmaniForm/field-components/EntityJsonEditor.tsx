@@ -20,7 +20,7 @@ import {
     Edit3
 } from 'lucide-react';
 import {Input} from "@/components/ui/input";
-import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@/components/ui';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {Card} from '@/components/ui/card';
 import {Button} from '@/components/ui/button';
 import {Textarea} from '@/components/ui/textarea';

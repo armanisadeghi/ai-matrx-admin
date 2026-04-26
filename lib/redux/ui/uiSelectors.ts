@@ -1,5 +1,5 @@
 // selectors.ts
-import type { RootState } from '@/lib/redux/store';
+import type { RootState } from "@/lib/redux/store.types";
 
 export const selectCurrentSchema = (state: RootState) => state.ui.currentSchema;
 export const selectCurrentData = (state: RootState) => state.ui.data;

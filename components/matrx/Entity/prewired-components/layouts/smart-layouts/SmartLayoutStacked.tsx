@@ -1,6 +1,8 @@
 import React from "react";
 import { cn } from "@/lib/utils";
-import { CardContent, ScrollArea, Button } from "@/components/ui";
+import { Button } from "@/components/ui/button";
+import { CardContent } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { densityConfig } from "@/config/ui/entity-layout-config";
 import { EnhancedCard } from "@/components/matrx/Entity/prewired-components/layouts/parts/EnhancedCard";
 import { LayoutHeader } from "@/components/matrx/Entity/prewired-components/layouts/layout-sections/extras";
@@ -11,7 +13,7 @@ import EntitySmartContent from "@/components/matrx/Entity/prewired-components/la
 import { useDynamicMeasurements } from "@/hooks/ui/useDynamicMeasurements";
 import MeasurementMonitor from "../parts/MeasurementMonitor";
 import { useAppSelector } from "@/lib/redux/hooks";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import { selectEntityPrettyName } from "@/lib/redux/schema/globalCacheSelectors";
 
 export const SmartLayoutStacked: React.FC<UnifiedLayoutProps> = (

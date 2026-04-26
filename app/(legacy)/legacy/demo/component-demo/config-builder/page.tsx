@@ -1,6 +1,6 @@
 'use client';
 
-import { ConfigBuilder } from "@/components/ui";
+import { ConfigBuilder } from "@/components/matrx/ConfigBuilder/index";
 import { Inter } from 'next/font/google';
 
 const inter = Inter({ 

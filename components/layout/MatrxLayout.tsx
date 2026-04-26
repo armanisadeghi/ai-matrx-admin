@@ -20,7 +20,7 @@ import { appSidebarLinks } from "@/constants";
 import { Settings, User } from "lucide-react";
 import { useSelector } from "react-redux";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import { ThemeSwitcher } from "@/styles/themes/ThemeSwitcher";
 import {
   Tooltip,

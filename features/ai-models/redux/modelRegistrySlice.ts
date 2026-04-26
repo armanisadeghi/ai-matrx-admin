@@ -5,7 +5,7 @@ import {
 } from "@reduxjs/toolkit";
 import { createClient } from "@/utils/supabase/client";
 import { normalizeModel } from "@/features/ai-models/utils/model-normalizer";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import type { Database } from "@/types/database.types";
 
 // ---------------------------------------------------------------------------

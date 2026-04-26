@@ -4,7 +4,7 @@ import {
     getPresentationClasses,
     getPresentationHandlers, PresentationButtons, PresentationHeader
 } from "@/components/matrx/ArmaniForm/action-system/presentation/common";
-import {Dialog, DialogContent, DialogTrigger} from "@/components/ui";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import cn from "classnames";
 import React from "react";
 

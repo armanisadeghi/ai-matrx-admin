@@ -1,6 +1,6 @@
 import React from "react";
 import {AArrowDown, AArrowUp} from "lucide-react";
-import {Button} from "@/components/ui";
+import { Button } from "@/components/ui/button";
 import {SmartButtonProps} from "./types";
 
 export const FontSizeButton: React.FC<SmartButtonProps & { type: 'increase' | 'decrease' }> = (

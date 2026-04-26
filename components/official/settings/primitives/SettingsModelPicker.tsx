@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/select";
 import { useModels } from "@/features/ai-models/hooks/useModels";
 import { useSelector } from "react-redux";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import type { SettingsCommonProps } from "../types";
 
 type Scope = "all" | "active" | "inactive";

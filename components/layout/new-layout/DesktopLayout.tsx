@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/tooltip";
 import { QuickActionsMenu } from "@/features/quick-actions/components/QuickActionsMenu";
 import FeedbackButton from "@/features/feedback/FeedbackButton";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import { selectIsAdmin, selectUser } from "@/lib/redux/selectors/userSelectors";
 import Image from "next/image";
 import { useVoicePadAdvanced } from "@/components/official-candidate/voice-pad/hooks/useVoicePad";

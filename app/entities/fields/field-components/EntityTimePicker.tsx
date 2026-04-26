@@ -4,7 +4,7 @@ import React, { useState, useCallback, useMemo } from "react";
 import { Clock } from "lucide-react";
 import { format, parse } from "date-fns";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui";
+import { Button } from "@/components/ui/button";
 import {
   Popover,
   PopoverContent,

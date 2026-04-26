@@ -1,6 +1,7 @@
 // Modified InlineFormCard to match ArmaniForm styling
 import React, {useState} from "react";
-import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui";
+import { CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardTitle } from "@/components/ui/card";
 import {X} from "lucide-react";
 import { motion } from "motion/react";
 import {cn} from "@/lib/utils";

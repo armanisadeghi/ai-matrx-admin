@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import { AlertCircle, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { extractErrorMessage } from "@/utils/errors";
+import { toPreviewProxyUrl } from "@/features/files/utils/preview-url";
 
 export interface TextPreviewProps {
   url: string | null;
@@ -35,7 +36,7 @@ export function TextPreview({
     setError(null);
     setText(null);
     setTruncated(false);
-    fetch(url)
+    fetch(toPreviewProxyUrl(url) ?? url)
       .then(async (res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const blob = await res.blob();

@@ -1,7 +1,7 @@
 // lib/redux/slices/promptCacheSlice.ts
 
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import {
   PromptData,
   PromptMessage,
@@ -333,7 +333,8 @@ export const selectEditablePrompts = createSelector(
     const sharedEditable = shared.filter((p) => p.canEdit);
     return {
       ownedPrompts: owned,
-      sharedEditable: sharedEditable.length === 0 ? EMPTY_SHARED_RECORDS : sharedEditable,
+      sharedEditable:
+        sharedEditable.length === 0 ? EMPTY_SHARED_RECORDS : sharedEditable,
     };
   },
 );

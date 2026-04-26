@@ -10,7 +10,7 @@
  */
 import { useCallback } from "react";
 import { useSelector } from "react-redux";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import {
   openOverlay,
@@ -71,9 +71,9 @@ export function usePreferencesModal(): UsePreferencesModalReturn {
   );
   const overlayData = useSelector(
     (s: RootState) =>
-      selectOverlayData(s, "userPreferencesWindow") as
-        | { initialTab?: PreferenceTab }
-        | null,
+      selectOverlayData(s, "userPreferencesWindow") as {
+        initialTab?: PreferenceTab;
+      } | null,
   );
   const activeTab = overlayData?.initialTab;
 

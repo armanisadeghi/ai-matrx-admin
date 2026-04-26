@@ -2,7 +2,7 @@
 import {useState, useEffect, useMemo} from 'react';
 import {Button} from '@/components/ui/button';
 import {Card} from '@/components/ui/card';
-import {FullJsonViewer} from '@/components/ui';
+import { FullJsonViewer } from "@/components/ui/JsonComponents/JsonViewerComponent";
 import {Maximize2, Minimize2, X} from 'lucide-react';
 import {cn} from '@/lib/utils';
 import {useAppSelector} from '@/lib/redux/hooks';

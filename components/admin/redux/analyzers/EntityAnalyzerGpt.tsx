@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
-import { FullJsonViewer } from "@/components/ui";
+import { FullJsonViewer } from "@/components/ui/JsonComponents/JsonViewerComponent";
 import { EntityKeys } from "@/types/entityTypes";
 import { selectFormattedEntityOptions } from "@/lib/redux/schema/globalCacheSelectors";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import { cn } from "@/lib/utils"; // Utility for conditional class names
-import { Button } from "@/components/ui"; // Assuming Button is imported from shadcn components
+import { Button } from "@/components/ui/button"; // Assuming Button is imported from shadcn components
 
 type Position = "left" | "right" | "top" | "bottom" | "center";
 type InitialState = "minimized" | "expanded" | "full";

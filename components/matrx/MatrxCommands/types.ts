@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import {Dispatch} from "redux";
 import { type VariantProps } from "class-variance-authority";
-import {buttonVariants} from "@/components/ui";
+import { buttonVariants } from "@/components/ui/button";
 
 export type CommandType =
     | 'entity'

@@ -43,7 +43,7 @@ import {
     Link,
     ChevronsUpDown,
 } from "lucide-react";
-import { Slider } from "@/components/ui";
+import { Slider } from "@/components/ui/slider";
 
 // Define TypeScript types
 export type TranscriptSegment = {

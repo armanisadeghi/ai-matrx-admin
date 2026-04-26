@@ -1,17 +1,17 @@
 // lib/redux/slices/promptRunnerSlice.ts
 
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 const EMPTY_TOAST_QUEUE: never[] = [];
-import type { RootState } from '@/lib/redux/store';
-import { PromptRunnerModalConfig } from '@/features/prompts/types/modal';
+import type { RootState } from "@/lib/redux/store.types";
+import { PromptRunnerModalConfig } from "@/features/prompts/types/modal";
 
 /**
  * Prompt Runner Slice
- * 
+ *
  * Manages the active PromptRunnerModal state globally via Redux.
  * Allows opening prompts from anywhere without rendering modals in every component.
- * 
+ *
  * Architecture supports multiple modals in future, but starts with single active modal.
  */
 
@@ -56,8 +56,8 @@ export interface PromptRunnerState {
     config: PromptRunnerModalConfig | null;
     runId: string | null; // Added runId for unified system
     taskId: string | null;
-    position: 'left' | 'right';
-    size: 'sm' | 'md' | 'lg';
+    position: "left" | "right";
+    size: "sm" | "md" | "lg";
     openedAt: number | null;
   };
 
@@ -67,7 +67,7 @@ export interface PromptRunnerState {
     config: PromptRunnerModalConfig | null;
     runId: string | null; // Added runId for unified system
     taskId: string | null;
-    position: 'left' | 'right' | 'top' | 'bottom';
+    position: "left" | "right" | "top" | "bottom";
     openedAt: number | null;
   };
 
@@ -123,8 +123,8 @@ const initialState: PromptRunnerState = {
     config: null,
     runId: null,
     taskId: null,
-    position: 'right',
-    size: 'md',
+    position: "right",
+    size: "md",
     openedAt: null,
   },
   flexiblePanel: {
@@ -132,7 +132,7 @@ const initialState: PromptRunnerState = {
     config: null,
     runId: null,
     taskId: null,
-    position: 'right',
+    position: "right",
     openedAt: null,
   },
   toastQueue: [],
@@ -144,11 +144,14 @@ const initialState: PromptRunnerState = {
 };
 
 const promptRunnerSlice = createSlice({
-  name: 'promptRunner',
+  name: "promptRunner",
   initialState,
   reducers: {
     // ========== MODAL-FULL ==========
-    openPromptModal: (state, action: PayloadAction<PromptRunnerModalConfig>) => {
+    openPromptModal: (
+      state,
+      action: PayloadAction<PromptRunnerModalConfig>,
+    ) => {
       state.activeModal = {
         isOpen: true,
         config: action.payload,
@@ -157,15 +160,21 @@ const promptRunnerSlice = createSlice({
         openedAt: Date.now(),
       };
     },
-    closePromptModal: (state, action: PayloadAction<{ responseText?: string } | undefined>) => {
+    closePromptModal: (
+      state,
+      action: PayloadAction<{ responseText?: string } | undefined>,
+    ) => {
       // Save to recent results before closing (with response text for persistence)
       if (state.activeModal.config && state.activeModal.openedAt) {
-        const responseText = action.payload?.responseText ?? '';
+        const responseText = action.payload?.responseText ?? "";
 
         const recent = {
           id: `result-${Date.now()}`,
-          promptName: state.activeModal.config.promptData?.name || state.activeModal.config.title || 'Unknown Prompt',
-          displayType: 'modal-full' as const,
+          promptName:
+            state.activeModal.config.promptData?.name ||
+            state.activeModal.config.title ||
+            "Unknown Prompt",
+          displayType: "modal-full" as const,
           timestamp: state.activeModal.openedAt,
           runId: state.activeModal.runId, // Include runId for reference
           taskId: state.activeModal.taskId, // Keep taskId for reference
@@ -181,11 +190,16 @@ const promptRunnerSlice = createSlice({
 
         // Save to session storage
         try {
-          const existing = JSON.parse(sessionStorage.getItem('recentPromptResults') || '[]');
+          const existing = JSON.parse(
+            sessionStorage.getItem("recentPromptResults") || "[]",
+          );
           const updated = [recent, ...existing].slice(0, 20); // Keep last 20
-          sessionStorage.setItem('recentPromptResults', JSON.stringify(updated));
+          sessionStorage.setItem(
+            "recentPromptResults",
+            JSON.stringify(updated),
+          );
         } catch (e) {
-          console.error('Failed to save recent result:', e);
+          console.error("Failed to save recent result:", e);
         }
       }
 
@@ -202,7 +216,10 @@ const promptRunnerSlice = createSlice({
         state.activeModal.taskId = action.payload;
       }
     },
-    updatePromptConfig: (state, action: PayloadAction<Partial<PromptRunnerModalConfig>>) => {
+    updatePromptConfig: (
+      state,
+      action: PayloadAction<Partial<PromptRunnerModalConfig>>,
+    ) => {
       if (state.activeModal.config) {
         state.activeModal.config = {
           ...state.activeModal.config,
@@ -212,7 +229,10 @@ const promptRunnerSlice = createSlice({
     },
 
     // ========== MODAL-COMPACT ==========
-    openCompactModal: (state, action: PayloadAction<PromptRunnerModalConfig>) => {
+    openCompactModal: (
+      state,
+      action: PayloadAction<PromptRunnerModalConfig>,
+    ) => {
       state.compactModal = {
         isOpen: true,
         config: action.payload,
@@ -221,15 +241,21 @@ const promptRunnerSlice = createSlice({
         openedAt: Date.now(),
       };
     },
-    closeCompactModal: (state, action: PayloadAction<{ responseText?: string } | undefined>) => {
+    closeCompactModal: (
+      state,
+      action: PayloadAction<{ responseText?: string } | undefined>,
+    ) => {
       // Save to recent results before closing (with response text for persistence)
       if (state.compactModal.config && state.compactModal.openedAt) {
-        const responseText = action.payload?.responseText ?? '';
+        const responseText = action.payload?.responseText ?? "";
 
         const recent = {
           id: `result-${Date.now()}`,
-          promptName: state.compactModal.config.promptData?.name || state.compactModal.config.title || 'Unknown Prompt',
-          displayType: 'modal-compact' as const,
+          promptName:
+            state.compactModal.config.promptData?.name ||
+            state.compactModal.config.title ||
+            "Unknown Prompt",
+          displayType: "modal-compact" as const,
           timestamp: state.compactModal.openedAt,
           runId: state.compactModal.runId, // Include runId for reference
           taskId: state.compactModal.taskId, // Keep taskId for reference
@@ -245,11 +271,16 @@ const promptRunnerSlice = createSlice({
 
         // Save to session storage
         try {
-          const existing = JSON.parse(sessionStorage.getItem('recentPromptResults') || '[]');
+          const existing = JSON.parse(
+            sessionStorage.getItem("recentPromptResults") || "[]",
+          );
           const updated = [recent, ...existing].slice(0, 20); // Keep last 20
-          sessionStorage.setItem('recentPromptResults', JSON.stringify(updated));
+          sessionStorage.setItem(
+            "recentPromptResults",
+            JSON.stringify(updated),
+          );
         } catch (e) {
-          console.error('Failed to save recent result:', e);
+          console.error("Failed to save recent result:", e);
         }
       }
 
@@ -268,19 +299,22 @@ const promptRunnerSlice = createSlice({
     },
 
     // ========== INLINE OVERLAY ==========
-    openInlineOverlay: (state, action: PayloadAction<{
-      result?: string;
-      runId?: string;
-      taskId?: string;
-      originalText: string;
-      promptName: string | null;
-      isStreaming?: boolean;
-      callbacks: {
-        onReplace?: (text: string) => void;
-        onInsertBefore?: (text: string) => void;
-        onInsertAfter?: (text: string) => void;
-      };
-    }>) => {
+    openInlineOverlay: (
+      state,
+      action: PayloadAction<{
+        result?: string;
+        runId?: string;
+        taskId?: string;
+        originalText: string;
+        promptName: string | null;
+        isStreaming?: boolean;
+        callbacks: {
+          onReplace?: (text: string) => void;
+          onInsertBefore?: (text: string) => void;
+          onInsertAfter?: (text: string) => void;
+        };
+      }>,
+    ) => {
       state.inlineOverlay = {
         isOpen: true,
         result: action.payload.result || null,
@@ -316,30 +350,39 @@ const promptRunnerSlice = createSlice({
     },
 
     // ========== SIDEBAR ==========
-    openSidebarResult: (state, action: PayloadAction<{
-      config: PromptRunnerModalConfig;
-      position?: 'left' | 'right';
-      size?: 'sm' | 'md' | 'lg';
-    }>) => {
+    openSidebarResult: (
+      state,
+      action: PayloadAction<{
+        config: PromptRunnerModalConfig;
+        position?: "left" | "right";
+        size?: "sm" | "md" | "lg";
+      }>,
+    ) => {
       state.sidebarResult = {
         isOpen: true,
         config: action.payload.config,
         runId: action.payload.config.runId || null, // Extract runId from config
         taskId: null,
-        position: action.payload.position || 'right',
-        size: action.payload.size || 'md',
+        position: action.payload.position || "right",
+        size: action.payload.size || "md",
         openedAt: Date.now(),
       };
     },
-    closeSidebarResult: (state, action: PayloadAction<{ responseText?: string } | undefined>) => {
+    closeSidebarResult: (
+      state,
+      action: PayloadAction<{ responseText?: string } | undefined>,
+    ) => {
       // Save to recent results before closing (with response text for persistence)
       if (state.sidebarResult.config && state.sidebarResult.openedAt) {
-        const responseText = action.payload?.responseText ?? '';
+        const responseText = action.payload?.responseText ?? "";
 
         const recent = {
           id: `result-${Date.now()}`,
-          promptName: state.sidebarResult.config.promptData?.name || state.sidebarResult.config.title || 'Unknown Prompt',
-          displayType: 'sidebar' as const,
+          promptName:
+            state.sidebarResult.config.promptData?.name ||
+            state.sidebarResult.config.title ||
+            "Unknown Prompt",
+          displayType: "sidebar" as const,
           timestamp: state.sidebarResult.openedAt,
           runId: state.sidebarResult.runId, // Include runId for reference
           taskId: state.sidebarResult.taskId, // Keep taskId for reference
@@ -355,11 +398,16 @@ const promptRunnerSlice = createSlice({
 
         // Save to session storage
         try {
-          const existing = JSON.parse(sessionStorage.getItem('recentPromptResults') || '[]');
+          const existing = JSON.parse(
+            sessionStorage.getItem("recentPromptResults") || "[]",
+          );
           const updated = [recent, ...existing].slice(0, 20); // Keep last 20
-          sessionStorage.setItem('recentPromptResults', JSON.stringify(updated));
+          sessionStorage.setItem(
+            "recentPromptResults",
+            JSON.stringify(updated),
+          );
         } catch (e) {
-          console.error('Failed to save recent result:', e);
+          console.error("Failed to save recent result:", e);
         }
       }
 
@@ -368,8 +416,8 @@ const promptRunnerSlice = createSlice({
         config: null,
         runId: null,
         taskId: null,
-        position: 'right',
-        size: 'md',
+        position: "right",
+        size: "md",
         openedAt: null,
       };
     },
@@ -378,40 +426,49 @@ const promptRunnerSlice = createSlice({
         state.sidebarResult.taskId = action.payload;
       }
     },
-    updateSidebarPosition: (state, action: PayloadAction<'left' | 'right'>) => {
+    updateSidebarPosition: (state, action: PayloadAction<"left" | "right">) => {
       if (state.sidebarResult.isOpen) {
         state.sidebarResult.position = action.payload;
       }
     },
-    updateSidebarSize: (state, action: PayloadAction<'sm' | 'md' | 'lg'>) => {
+    updateSidebarSize: (state, action: PayloadAction<"sm" | "md" | "lg">) => {
       if (state.sidebarResult.isOpen) {
         state.sidebarResult.size = action.payload;
       }
     },
 
     // ========== FLEXIBLE PANEL ==========
-    openFlexiblePanel: (state, action: PayloadAction<{
-      config: PromptRunnerModalConfig;
-      position?: 'left' | 'right' | 'top' | 'bottom';
-    }>) => {
+    openFlexiblePanel: (
+      state,
+      action: PayloadAction<{
+        config: PromptRunnerModalConfig;
+        position?: "left" | "right" | "top" | "bottom";
+      }>,
+    ) => {
       state.flexiblePanel = {
         isOpen: true,
         config: action.payload.config,
         runId: action.payload.config.runId || null, // Extract runId from config
         taskId: null,
-        position: action.payload.position || 'right',
+        position: action.payload.position || "right",
         openedAt: Date.now(),
       };
     },
-    closeFlexiblePanel: (state, action: PayloadAction<{ responseText?: string } | undefined>) => {
+    closeFlexiblePanel: (
+      state,
+      action: PayloadAction<{ responseText?: string } | undefined>,
+    ) => {
       // Save to recent results before closing (with response text for persistence)
       if (state.flexiblePanel.config && state.flexiblePanel.openedAt) {
-        const responseText = action.payload?.responseText ?? '';
+        const responseText = action.payload?.responseText ?? "";
 
         const recent = {
           id: `result-${Date.now()}`,
-          promptName: state.flexiblePanel.config.promptData?.name || state.flexiblePanel.config.title || 'Unknown Prompt',
-          displayType: 'flexible-panel' as const,
+          promptName:
+            state.flexiblePanel.config.promptData?.name ||
+            state.flexiblePanel.config.title ||
+            "Unknown Prompt",
+          displayType: "flexible-panel" as const,
           timestamp: state.flexiblePanel.openedAt,
           runId: state.flexiblePanel.runId, // Include runId for reference
           taskId: state.flexiblePanel.taskId, // Keep taskId for reference
@@ -427,11 +484,16 @@ const promptRunnerSlice = createSlice({
 
         // Save to session storage
         try {
-          const existing = JSON.parse(sessionStorage.getItem('recentPromptResults') || '[]');
+          const existing = JSON.parse(
+            sessionStorage.getItem("recentPromptResults") || "[]",
+          );
           const updated = [recent, ...existing].slice(0, 20); // Keep last 20
-          sessionStorage.setItem('recentPromptResults', JSON.stringify(updated));
+          sessionStorage.setItem(
+            "recentPromptResults",
+            JSON.stringify(updated),
+          );
         } catch (e) {
-          console.error('Failed to save recent result:', e);
+          console.error("Failed to save recent result:", e);
         }
       }
 
@@ -440,7 +502,7 @@ const promptRunnerSlice = createSlice({
         config: null,
         runId: null,
         taskId: null,
-        position: 'right',
+        position: "right",
         openedAt: null,
       };
     },
@@ -449,23 +511,29 @@ const promptRunnerSlice = createSlice({
         state.flexiblePanel.taskId = action.payload;
       }
     },
-    updateFlexiblePanelPosition: (state, action: PayloadAction<'left' | 'right' | 'top' | 'bottom'>) => {
+    updateFlexiblePanelPosition: (
+      state,
+      action: PayloadAction<"left" | "right" | "top" | "bottom">,
+    ) => {
       if (state.flexiblePanel.isOpen) {
         state.flexiblePanel.position = action.payload;
       }
     },
 
     // ========== TOAST ==========
-    addToastResult: (state, action: PayloadAction<{
-      result: string;
-      promptName: string | null;
-      duration?: number;
-      promptData?: any;
-      executionConfig?: any;
-      runId?: string;
-      taskId?: string;
-      isStreaming?: boolean;
-    }>) => {
+    addToastResult: (
+      state,
+      action: PayloadAction<{
+        result: string;
+        promptName: string | null;
+        duration?: number;
+        promptData?: any;
+        executionConfig?: any;
+        runId?: string;
+        taskId?: string;
+        isStreaming?: boolean;
+      }>,
+    ) => {
       state.toastQueue.push({
         id: `toast-${Date.now()}-${Math.random()}`,
         result: action.payload.result,
@@ -480,17 +548,22 @@ const promptRunnerSlice = createSlice({
       });
     },
     removeToast: (state, action: PayloadAction<string>) => {
-      state.toastQueue = state.toastQueue.filter(t => t.id !== action.payload);
+      state.toastQueue = state.toastQueue.filter(
+        (t) => t.id !== action.payload,
+      );
     },
     clearAllToasts: (state) => {
       state.toastQueue = [];
     },
 
     // ========== PRE-EXECUTION MODAL ==========
-    openPreExecutionModal: (state, action: PayloadAction<{
-      config: PromptRunnerModalConfig;
-      targetResultDisplay: string;
-    }>) => {
+    openPreExecutionModal: (
+      state,
+      action: PayloadAction<{
+        config: PromptRunnerModalConfig;
+        targetResultDisplay: string;
+      }>,
+    ) => {
       state.preExecutionModal = {
         isOpen: true,
         config: action.payload.config,
@@ -551,9 +624,9 @@ export const selectSidebarResultConfig = (state: RootState) =>
 export const selectSidebarResultRunId = (state: RootState) =>
   state.promptRunner?.sidebarResult?.runId || null;
 export const selectSidebarPosition = (state: RootState) =>
-  state.promptRunner?.sidebarResult?.position || 'right';
+  state.promptRunner?.sidebarResult?.position || "right";
 export const selectSidebarSize = (state: RootState) =>
-  state.promptRunner?.sidebarResult?.size || 'md';
+  state.promptRunner?.sidebarResult?.size || "md";
 export const selectSidebarTaskId = (state: RootState) =>
   state.promptRunner?.sidebarResult?.taskId || null;
 
@@ -565,7 +638,7 @@ export const selectFlexiblePanelConfig = (state: RootState) =>
 export const selectFlexiblePanelRunId = (state: RootState) =>
   state.promptRunner?.flexiblePanel?.runId || null;
 export const selectFlexiblePanelPosition = (state: RootState) =>
-  state.promptRunner?.flexiblePanel?.position || 'right';
+  state.promptRunner?.flexiblePanel?.position || "right";
 export const selectFlexiblePanelTaskId = (state: RootState) =>
   state.promptRunner?.flexiblePanel?.taskId || null;
 
@@ -620,4 +693,3 @@ export const {
 } = promptRunnerSlice.actions;
 
 export default promptRunnerSlice.reducer;
-

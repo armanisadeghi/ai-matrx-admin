@@ -1,7 +1,7 @@
 "use client";
 
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 
 export interface AgentAssistantMarkdownDraftEntry {
   conversationId: string;

@@ -10,7 +10,7 @@
  */
 
 import { createSelector } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import type {
   BuilderAdvancedSettings,
   InstanceUIState,

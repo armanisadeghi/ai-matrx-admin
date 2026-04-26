@@ -23,6 +23,7 @@ import rehypePrism from "rehype-prism-plus";
 import "katex/dist/katex.min.css";
 import { cn } from "@/lib/utils";
 import { extractErrorMessage } from "@/utils/errors";
+import { toPreviewProxyUrl } from "@/features/files/utils/preview-url";
 
 export interface MarkdownPreviewProps {
   url: string | null;
@@ -47,7 +48,7 @@ export function MarkdownPreview({
     setContent(null);
     setTruncated(false);
 
-    fetch(url)
+    fetch(toPreviewProxyUrl(url) ?? url)
       .then(async (res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
         const blob = await res.blob();

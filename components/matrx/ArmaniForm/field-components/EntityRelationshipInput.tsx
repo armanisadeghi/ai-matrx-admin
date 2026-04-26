@@ -1,5 +1,5 @@
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { Spinner } from "@/components/ui";
+import { Spinner } from "@/components/ui/spinner";
 import { SearchIcon } from "lucide-react";
 
 import EntityButton from "@/components/matrx/ArmaniForm/field-components/EntityButton";

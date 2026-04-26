@@ -1,6 +1,9 @@
 "use client";
 import { useSelector } from "react-redux";
-import { Card, CardContent, CardHeader, CardTitle, ScrollArea, Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui";
+import { CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardTitle } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { CopyButton } from "@/components/matrx/buttons/CopyButton";
 import JsonToCollapsible from "@/components/matrx/matrx-collapsible/json-to-collapsible";
 import StreamDisplayOverlay from "./StreamDisplayOverlay";

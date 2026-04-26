@@ -1,8 +1,9 @@
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 
 const EMPTY_CLIENT_TOOLS: string[] = [];
 
 export const selectInstanceClientTools =
   (conversationId: string) =>
   (state: RootState): string[] =>
-    state.instanceClientTools.byConversationId[conversationId] ?? EMPTY_CLIENT_TOOLS;
+    state.instanceClientTools.byConversationId[conversationId] ??
+    EMPTY_CLIENT_TOOLS;

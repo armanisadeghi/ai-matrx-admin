@@ -1,19 +1,10 @@
 "use client";
 import { useState } from "react";
 import AccordionWrapper from "@/components/matrx/matrx-collapsible/AccordionWrapper";
-import {
-    Input,
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-    Button,
-    Tabs,
-    TabsList,
-    TabsTrigger,
-    TabsContent,
-} from "@/components/ui";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import StreamMonitorPanel from "./StreamMonitorPanel";
 import ActiveEventsPanel from "./ActiveEventsPanel";
 import EventStatusIndicator from "./EventStatusIndicator";

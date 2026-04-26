@@ -10,17 +10,10 @@ import {
   MatrxAccordionTrigger,
   MatrxAccordionContent,
 } from "@/components/ui/samples/accordion";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-  Checkbox,
-  Label,
-  RadioGroup,
-  RadioGroupItem,
-} from "@/components/ui";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { motion } from "motion/react";
 import { Settings, Code, Palette, Layout, Plus } from "lucide-react";
 import TextDivider from "@/components/matrx/TextDivider";

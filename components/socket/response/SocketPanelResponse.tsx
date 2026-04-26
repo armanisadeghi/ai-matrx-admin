@@ -1,15 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import {
-    Card,
-    CardHeader,
-    CardTitle,
-    Tabs,
-    TabsList,
-    TabsTrigger,
-    TabsContent,
-} from "@/components/ui";
+import { CardHeader } from "@/components/ui/card";
+import { Card, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectResponseTextByListenerId, selectResponseDataByListenerId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 import { selectTaskFirstListenerId } from "@/lib/redux/socket-io/selectors/socket-task-selectors";

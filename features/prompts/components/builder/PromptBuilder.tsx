@@ -13,7 +13,7 @@ import {
   getModelDefaults,
 } from "@/features/prompts/hooks/useModelControls";
 import { useAppSelector, useAppDispatch, useAppStore } from "@/lib/redux/hooks";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import { usePromptRunner } from "@/features/prompts/hooks/usePromptRunner";
 import {
   AiModelsPreferences,

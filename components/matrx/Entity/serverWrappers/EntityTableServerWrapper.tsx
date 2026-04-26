@@ -1,7 +1,8 @@
 // app/(authenticated)/entity-crud/[entityName]/EntityComponent.tsx
 import {Suspense} from "react";
 import {EntityKeys} from "@/types/entityTypes";
-import {Card, CardContent} from "@/components/ui";
+import { CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import {MatrxTableLoading} from "@/components/matrx/LoadingComponents";
 import EntityTableContainer from "@/components/matrx/Entity/EntityTableContainer";
 

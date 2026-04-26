@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button } from '@/components/ui';
+import { Button } from "@/components/ui/button";
 import { X, CheckCircle2, XCircle, ChevronUp, ChevronDown, Frown } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { MatrxRecordId } from '@/types/entityTypes';

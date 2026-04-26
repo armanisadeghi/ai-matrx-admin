@@ -3,7 +3,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAllConnections, selectPrimaryConnectionId } from "@/lib/redux/socket-io/selectors/socket-connection-selectors";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface ActiveConnectionSelectorProps {
   onConnectionSelect: (connectionId: string) => void;

@@ -2,7 +2,10 @@
 import React, { useState } from "react";
 import { Radio, CheckCircle, XCircle, ChevronDown, ChevronUp, Settings, Maximize2 } from "lucide-react";
 import { FiRefreshCw } from "react-icons/fi";
-import { Button, Label, Switch, Popover, PopoverContent, PopoverTrigger } from "@/components/ui";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Switch } from "@/components/ui/switch";
 import ConnectionStatusIndicator from "@/components/socket-io/status-indicators/ConnectionStatusIndicator";
 import AuthStatusIndicator from "@/components/socket-io/status-indicators/AuthStatusIndicator";
 import ConnectionTypeIndicator from "@/components/socket-io/status-indicators/ConnectionTypeIndicator";

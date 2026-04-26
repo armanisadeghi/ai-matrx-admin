@@ -25,7 +25,7 @@ import { loadConversation } from "@/features/agents/redux/execution-system/thunk
 import { selectConversationExists } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
 import ChatWelcomeClient from "@/features/cx-chat/components/ChatWelcomeClient";
 import ChatConversationClient from "@/features/cx-chat/components/core/ChatConversationClient";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 

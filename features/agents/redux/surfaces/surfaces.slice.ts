@@ -32,7 +32,7 @@
  */
 
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 
 // =============================================================================
 // Types
@@ -107,7 +107,10 @@ const surfacesSlice = createSlice({
       state.pendingNavigation[surfaceKey] = { conversationId, reason };
     },
 
-    clearPendingNavigation(state, action: PayloadAction<{ surfaceKey: string }>) {
+    clearPendingNavigation(
+      state,
+      action: PayloadAction<{ surfaceKey: string }>,
+    ) {
       delete state.pendingNavigation[action.payload.surfaceKey];
     },
   },

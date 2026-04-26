@@ -12,7 +12,8 @@ import {
 } from "@/components/ui/select";
 import TextDivider from "@/components/matrx/TextDivider";
 import LightSwitchToggle from "@/components/matrx/LightSwitchToggle";
-import { Input, Label } from "@/components/ui";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export default function DemoPage() {
   const [basicSwitchState, setBasicSwitchState] = useState(false);

@@ -2,10 +2,10 @@
 
 import React from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MatrxSwitch } from "@/components/ui";
-import { Slider } from "@/components/ui";
-import { Input } from "@/components/ui";
-import { RadioGroup, RadioGroupItem } from "@/components/ui";
+import { MatrxSwitch } from "@/components/ui/matrx/matrix-switch";
+import { Slider } from "@/components/ui/slider";
+import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CheckIcon, ChevronDownIcon } from "lucide-react";

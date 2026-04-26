@@ -10,7 +10,7 @@ import { ToolsManager } from "../configuration/ToolsManager";
 import { SystemMessage } from "../configuration/SystemMessage";
 import { PromptMessages } from "./PromptMessages";
 import { Plus } from "lucide-react";
-import { Button } from "@/components/ui";
+import { Button } from "@/components/ui/button";
 import { VariableCustomComponent } from "@/features/prompts/types/core";
 
 interface PromptBuilderLeftPanelProps {

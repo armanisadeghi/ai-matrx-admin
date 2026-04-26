@@ -21,7 +21,7 @@
 import { parseHttpError, BackendApiError } from "@/lib/api/errors";
 import { BACKEND_URLS } from "@/lib/api/endpoints";
 import { supabase } from "@/utils/supabase/client";
-import { getStore } from "@/lib/redux/store";
+import { getStore } from "@/lib/redux/store-singleton";
 import { selectResolvedBaseUrl } from "@/lib/redux/slices/apiConfigSlice";
 import { extractErrorMessage } from "@/utils/errors";
 

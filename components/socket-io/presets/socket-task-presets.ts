@@ -1,6 +1,6 @@
 import { SchemaField, SOCKET_TASKS } from "@/constants/socket-schema";
 import { flexibleJsonParse } from "@/utils/json/json-utils";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import { BrokerValues } from "@/types/socket-schema-types";
 
 /* Socket Task Preset Creation Guide
@@ -249,30 +249,27 @@ const useSocketExecution = (presetName: string) => {
 
 */
 
-
-
-
 // ===== TYPES & INTERFACES =====
 
 export type SocketTaskName = keyof typeof SOCKET_TASKS;
 
 export interface FieldMapper {
-    sourceField: string | ((data: any) => any);  // Path or transformer function
-    transform?: (value: any) => any;             // Custom transformation
-    defaultValue?: any;                          // Fallback value if source is undefined
-    required?: boolean;                          // Override schema requirement for this mapping
+  sourceField: string | ((data: any) => any); // Path or transformer function
+  transform?: (value: any) => any; // Custom transformation
+  defaultValue?: any; // Fallback value if source is undefined
+  required?: boolean; // Override schema requirement for this mapping
 }
 
 export interface TaskPreset {
-    name: string;                                // Unique preset identifier
-    description: string;                         // Human-readable description
-    targetTask: SocketTaskName;                 // Which socket task to create
-    service: string;                            // Which service to submit to
-    fieldMappings: Record<string, FieldMapper>; // How to map fields
-    preprocessor?: (data: any) => any;          // Transform source data before mapping
-    postprocessor?: (taskData: any) => any;    // Transform task data after mapping
-    validation?: (sourceData: any) => { isValid: boolean; errors: string[] }; // Custom validation
-    brokerSources?: string[];                   // Optional: limit auto-included brokers to specific sources
+  name: string; // Unique preset identifier
+  description: string; // Human-readable description
+  targetTask: SocketTaskName; // Which socket task to create
+  service: string; // Which service to submit to
+  fieldMappings: Record<string, FieldMapper>; // How to map fields
+  preprocessor?: (data: any) => any; // Transform source data before mapping
+  postprocessor?: (taskData: any) => any; // Transform task data after mapping
+  validation?: (sourceData: any) => { isValid: boolean; errors: string[] }; // Custom validation
+  brokerSources?: string[]; // Optional: limit auto-included brokers to specific sources
 }
 
 // ===== BROKER AUTO-INCLUSION UTILITIES =====
@@ -281,61 +278,69 @@ export interface TaskPreset {
  * Checks if a task schema has broker_values field
  */
 function taskSupportsBrokers(taskName: SocketTaskName): boolean {
-    const schema = SOCKET_TASKS[taskName];
-    return schema && 'broker_values' in schema;
+  const schema = SOCKET_TASKS[taskName];
+  return schema && "broker_values" in schema;
 }
 
 /**
  * Gets all current broker values, optionally filtered by source
  */
-function getAllBrokerValues(state?: RootState, brokerSources?: string[]): BrokerValues[] {
-    if (!state) return [];
+function getAllBrokerValues(
+  state?: RootState,
+  brokerSources?: string[],
+): BrokerValues[] {
+  if (!state) return [];
 
-    const { brokers, brokerMap } = state.broker;
-    const brokerValues: BrokerValues[] = [];
+  const { brokers, brokerMap } = state.broker;
+  const brokerValues: BrokerValues[] = [];
 
-    // If no source filtering, include all brokers
-    if (!brokerSources || brokerSources.length === 0) {
-        Object.entries(brokers).forEach(([brokerId, value]) => {
-            if (value !== undefined && value !== null) {
-                brokerValues.push({
-                    id: brokerId,
-                    value: value, // Preserve original data type
-                    ready: true
-                });
-            }
+  // If no source filtering, include all brokers
+  if (!brokerSources || brokerSources.length === 0) {
+    Object.entries(brokers).forEach(([brokerId, value]) => {
+      if (value !== undefined && value !== null) {
+        brokerValues.push({
+          id: brokerId,
+          value: value, // Preserve original data type
+          ready: true,
         });
-    } else {
-        // Filter by broker sources using mapping
-        Object.values(brokerMap).forEach(entry => {
-            if (brokerSources.includes(entry.source)) {
-                const value = brokers[entry.brokerId];
-                if (value !== undefined && value !== null) {
-                    brokerValues.push({
-                        id: entry.brokerId,
-                        value: value, // Preserve original data type
-                        ready: true
-                    });
-                }
-            }
-        });
-    }
+      }
+    });
+  } else {
+    // Filter by broker sources using mapping
+    Object.values(brokerMap).forEach((entry) => {
+      if (brokerSources.includes(entry.source)) {
+        const value = brokers[entry.brokerId];
+        if (value !== undefined && value !== null) {
+          brokerValues.push({
+            id: entry.brokerId,
+            value: value, // Preserve original data type
+            ready: true,
+          });
+        }
+      }
+    });
+  }
 
-    return brokerValues;
+  return brokerValues;
 }
 
 /**
  * Merges auto-included brokers with existing broker_values, ensuring no overwrites
  */
-function mergeBrokerValues(existingBrokers: BrokerValues[], autoBrokers: BrokerValues[]): BrokerValues[] {
-    // Create a map of existing broker IDs for quick lookup
-    const existingIds = new Set(existingBrokers.map(broker => broker.id));
+function mergeBrokerValues(
+  existingBrokers: BrokerValues[],
+  autoBrokers: BrokerValues[],
+): BrokerValues[] {
+  // Create a map of existing broker IDs for quick lookup
+  const existingIds = new Set(existingBrokers.map((broker) => broker.id));
 
-    // Only include auto-brokers that aren't already provided
-    const filteredAutoBrokers = autoBrokers.filter(broker => !existingIds.has(broker.id));
+  // Only include auto-brokers that aren't already provided
+  const filteredAutoBrokers = autoBrokers.filter(
+    (broker) => !existingIds.has(broker.id),
+  );
 
-    // Combine existing (first priority) with filtered auto-brokers
-    return [...existingBrokers, ...filteredAutoBrokers];
+  // Combine existing (first priority) with filtered auto-brokers
+  return [...existingBrokers, ...filteredAutoBrokers];
 }
 
 // ===== TRANSFORMATION UTILITIES =====
@@ -344,68 +349,77 @@ function mergeBrokerValues(existingBrokers: BrokerValues[], autoBrokers: BrokerV
  * Gets a value from source data using a field path (supports dot notation)
  */
 function getValueByPath(obj: any, path: string): any {
-    if (!path || !obj) return undefined;
+  if (!path || !obj) return undefined;
 
-    return path.split('.').reduce((current, key) => {
-        return current && typeof current === 'object' ? current[key] : undefined;
-    }, obj);
+  return path.split(".").reduce((current, key) => {
+    return current && typeof current === "object" ? current[key] : undefined;
+  }, obj);
 }
 
 /**
  * Applies schema-aware type conversion to a value
  */
-function convertBySchemaType(value: any, targetField: string, taskName: SocketTaskName): any {
-    const schema = SOCKET_TASKS[taskName];
-    if (!schema || !schema[targetField]) return value;
+function convertBySchemaType(
+  value: any,
+  targetField: string,
+  taskName: SocketTaskName,
+): any {
+  const schema = SOCKET_TASKS[taskName];
+  if (!schema || !schema[targetField]) return value;
 
-    const fieldDef = schema[targetField] as SchemaField;
-    const expectedType = fieldDef.DATA_TYPE?.toLowerCase();
+  const fieldDef = schema[targetField] as SchemaField;
+  const expectedType = fieldDef.DATA_TYPE?.toLowerCase();
 
-    if (value === undefined || value === null) {
-        return fieldDef.DEFAULT;
-    }
+  if (value === undefined || value === null) {
+    return fieldDef.DEFAULT;
+  }
 
-    try {
-        switch (expectedType) {
-            case "number":
-                const numValue = typeof value === "string" ? parseFloat(value) : value;
-                return isNaN(numValue) ? fieldDef.DEFAULT : numValue;
+  try {
+    switch (expectedType) {
+      case "number":
+        const numValue = typeof value === "string" ? parseFloat(value) : value;
+        return isNaN(numValue) ? fieldDef.DEFAULT : numValue;
 
-            case "integer":
-                const intValue = typeof value === "string" ? parseInt(value, 10) : value;
-                return isNaN(intValue) ? fieldDef.DEFAULT : intValue;
+      case "integer":
+        const intValue =
+          typeof value === "string" ? parseInt(value, 10) : value;
+        return isNaN(intValue) ? fieldDef.DEFAULT : intValue;
 
-            case "boolean":
-                if (typeof value === "boolean") return value;
-                if (typeof value === "string") {
-                    if (value === "true") return true;
-                    if (value === "false") return false;
-                }
-                return fieldDef.DEFAULT;
-
-            case "object":
-                if (typeof value === "string") {
-                    const result = flexibleJsonParse(value);
-                    return result.success ? result.data : fieldDef.DEFAULT;
-                }
-                return typeof value === "object" ? value : fieldDef.DEFAULT;
-
-            case "array":
-                if (Array.isArray(value)) return value;
-                if (typeof value === "string") {
-                    const result = flexibleJsonParse(value);
-                    return result.success && Array.isArray(result.data) ? result.data : fieldDef.DEFAULT;
-                }
-                return fieldDef.DEFAULT;
-
-            case "string":
-            default:
-                return typeof value === "string" ? value : String(value || fieldDef.DEFAULT || "");
+      case "boolean":
+        if (typeof value === "boolean") return value;
+        if (typeof value === "string") {
+          if (value === "true") return true;
+          if (value === "false") return false;
         }
-    } catch (error) {
-        console.warn(`Type conversion failed for field ${targetField}:`, error);
         return fieldDef.DEFAULT;
+
+      case "object":
+        if (typeof value === "string") {
+          const result = flexibleJsonParse(value);
+          return result.success ? result.data : fieldDef.DEFAULT;
+        }
+        return typeof value === "object" ? value : fieldDef.DEFAULT;
+
+      case "array":
+        if (Array.isArray(value)) return value;
+        if (typeof value === "string") {
+          const result = flexibleJsonParse(value);
+          return result.success && Array.isArray(result.data)
+            ? result.data
+            : fieldDef.DEFAULT;
+        }
+        return fieldDef.DEFAULT;
+
+      case "string":
+      default:
+        return typeof value === "string"
+          ? value
+          : String(value || fieldDef.DEFAULT || "");
     }
+  } catch (error) {
+    console.warn(`Type conversion failed for field ${targetField}:`, error);
+    return fieldDef.DEFAULT;
+  }
 }
 
 /**
@@ -414,67 +428,83 @@ function convertBySchemaType(value: any, targetField: string, taskName: SocketTa
  * @param preset - The preset configuration to use
  * @param state - Optional Redux state for broker auto-inclusion
  */
-export function transformDataWithPreset(sourceData: any, preset: TaskPreset, state?: RootState): any {
-    try {
-        // Step 1: Run preprocessor if available
-        const processedSource = preset.preprocessor ? preset.preprocessor(sourceData) : sourceData;
+export function transformDataWithPreset(
+  sourceData: any,
+  preset: TaskPreset,
+  state?: RootState,
+): any {
+  try {
+    // Step 1: Run preprocessor if available
+    const processedSource = preset.preprocessor
+      ? preset.preprocessor(sourceData)
+      : sourceData;
 
-        // Step 2: Apply field mappings
-        const taskData: any = {};
+    // Step 2: Apply field mappings
+    const taskData: any = {};
 
-        for (const [targetField, mapper] of Object.entries(preset.fieldMappings)) {
-            let value: any;
+    for (const [targetField, mapper] of Object.entries(preset.fieldMappings)) {
+      let value: any;
 
-            // Get value from source
-            if (typeof mapper.sourceField === "function") {
-                value = mapper.sourceField(processedSource);
-            } else {
-                value = getValueByPath(processedSource, mapper.sourceField);
-            }
+      // Get value from source
+      if (typeof mapper.sourceField === "function") {
+        value = mapper.sourceField(processedSource);
+      } else {
+        value = getValueByPath(processedSource, mapper.sourceField);
+      }
 
-            // Apply custom transform if provided
-            if (mapper.transform) {
-                value = mapper.transform(value);
-            }
+      // Apply custom transform if provided
+      if (mapper.transform) {
+        value = mapper.transform(value);
+      }
 
-            // Use default if value is undefined
-            if (value === undefined && mapper.defaultValue !== undefined) {
-                value = mapper.defaultValue;
-            }
+      // Use default if value is undefined
+      if (value === undefined && mapper.defaultValue !== undefined) {
+        value = mapper.defaultValue;
+      }
 
-            // Apply schema-aware type conversion
-            value = convertBySchemaType(value, targetField, preset.targetTask);
+      // Apply schema-aware type conversion
+      value = convertBySchemaType(value, targetField, preset.targetTask);
 
-            taskData[targetField] = value;
-        }
-
-        // Step 3: Fill in schema defaults for unmapped fields
-        const schema = SOCKET_TASKS[preset.targetTask];
-        for (const [fieldName, fieldDef] of Object.entries(schema)) {
-            if (!(fieldName in taskData)) {
-                const typedFieldDef = fieldDef as SchemaField;
-                taskData[fieldName] = typedFieldDef.DEFAULT;
-            }
-        }
-
-        // Step 4: Auto-include brokers if task supports them and state is available
-        if (state && taskSupportsBrokers(preset.targetTask)) {
-            const autoBrokers = getAllBrokerValues(state, preset.brokerSources);
-            if (autoBrokers.length > 0) {
-                const existingBrokers = taskData.broker_values || [];
-                taskData.broker_values = mergeBrokerValues(existingBrokers, autoBrokers);
-                console.log(`🔗 Auto-included ${autoBrokers.length} brokers for task ${preset.targetTask}${preset.brokerSources ? ` (sources: ${preset.brokerSources.join(', ')})` : ''}`);
-            }
-        }
-
-        // Step 5: Run postprocessor if available
-        const finalTaskData = preset.postprocessor ? preset.postprocessor(taskData) : taskData;
-
-        return finalTaskData;
-    } catch (error) {
-        console.error(`Failed to transform data with preset ${preset.name}:`, error);
-        throw new Error(`Transformation failed: ${error.message}`);
+      taskData[targetField] = value;
     }
+
+    // Step 3: Fill in schema defaults for unmapped fields
+    const schema = SOCKET_TASKS[preset.targetTask];
+    for (const [fieldName, fieldDef] of Object.entries(schema)) {
+      if (!(fieldName in taskData)) {
+        const typedFieldDef = fieldDef as SchemaField;
+        taskData[fieldName] = typedFieldDef.DEFAULT;
+      }
+    }
+
+    // Step 4: Auto-include brokers if task supports them and state is available
+    if (state && taskSupportsBrokers(preset.targetTask)) {
+      const autoBrokers = getAllBrokerValues(state, preset.brokerSources);
+      if (autoBrokers.length > 0) {
+        const existingBrokers = taskData.broker_values || [];
+        taskData.broker_values = mergeBrokerValues(
+          existingBrokers,
+          autoBrokers,
+        );
+        console.log(
+          `🔗 Auto-included ${autoBrokers.length} brokers for task ${preset.targetTask}${preset.brokerSources ? ` (sources: ${preset.brokerSources.join(", ")})` : ""}`,
+        );
+      }
+    }
+
+    // Step 5: Run postprocessor if available
+    const finalTaskData = preset.postprocessor
+      ? preset.postprocessor(taskData)
+      : taskData;
+
+    return finalTaskData;
+  } catch (error) {
+    console.error(
+      `Failed to transform data with preset ${preset.name}:`,
+      error,
+    );
+    throw new Error(`Transformation failed: ${error.message}`);
+  }
 }
 
 // ===== PRESET DEFINITIONS =====
@@ -483,183 +513,199 @@ export function transformDataWithPreset(sourceData: any, preset: TaskPreset, sta
  * Transform a workflow step into an EXECUTE_SINGLE_STEP task
  */
 export const WORKFLOW_STEP_TO_EXECUTE_SINGLE_STEP: TaskPreset = {
-    name: "workflow_step_to_execute_single_step",
-    description: "Convert a workflow step object to an EXECUTE_SINGLE_STEP socket task",
-    targetTask: "execute_single_step",
-    service: "workflow_service",
-    brokerSources: ["workflows", "applet", "system"],
-    fieldMappings: {
-        single_node: {
-            sourceField: (data: any) => data,  // Pass the entire node data directly
-            required: true
-        },
-        user_inputs: {
-            sourceField: "user_inputs",
-            defaultValue: [],
-            transform: (userInputs: any) => {
-                if (!Array.isArray(userInputs)) return [];
-                return userInputs.map(input => {
-                    // If input doesn't have a 'value' key but has 'default_value', use default_value
-                    if (typeof input === 'object' && input !== null && !('value' in input) && 'default_value' in input) {
-                        return {
-                            ...input,
-                            value: input.default_value
-                        };
-                    }
-                    return input;
-                });
-            }
-        }
+  name: "workflow_step_to_execute_single_step",
+  description:
+    "Convert a workflow step object to an EXECUTE_SINGLE_STEP socket task",
+  targetTask: "execute_single_step",
+  service: "workflow_service",
+  brokerSources: ["workflows", "applet", "system"],
+  fieldMappings: {
+    single_node: {
+      sourceField: (data: any) => data, // Pass the entire node data directly
+      required: true,
     },
-    validation: (sourceData: any) => {
-        const errors: string[] = [];
+    user_inputs: {
+      sourceField: "user_inputs",
+      defaultValue: [],
+      transform: (userInputs: any) => {
+        if (!Array.isArray(userInputs)) return [];
+        return userInputs.map((input) => {
+          // If input doesn't have a 'value' key but has 'default_value', use default_value
+          if (
+            typeof input === "object" &&
+            input !== null &&
+            !("value" in input) &&
+            "default_value" in input
+          ) {
+            return {
+              ...input,
+              value: input.default_value,
+            };
+          }
+          return input;
+        });
+      },
+    },
+  },
+  validation: (sourceData: any) => {
+    const errors: string[] = [];
 
-        if (!sourceData.function_id && !sourceData.id) {
-            errors.push("Step must have a function_id or id");
-        }
-
-        return {
-            isValid: errors.length === 0,
-            errors
-        };
+    if (!sourceData.function_id && !sourceData.id) {
+      errors.push("Step must have a function_id or id");
     }
-};
 
+    return {
+      isValid: errors.length === 0,
+      errors,
+    };
+  },
+};
 
 /**
  * Transform workflow flow data into a START_WORKFLOW_WITH_STRUCTURE task
  */
 export const FLOW_NODES_TO_START_WORKFLOW: TaskPreset = {
-    name: "flow_nodes_to_start_workflow",
-    description: "Convert workflow flow nodes to a START_WORKFLOW_WITH_STRUCTURE socket task for executing entire workflows",
-    targetTask: "start_workflow_with_structure",
-    service: "workflow_service",
-    brokerSources: ["workflows", "applet", "system"],
-    fieldMappings: {
-        nodes: {
-            sourceField: "nodes",
-            defaultValue: [],
-            transform: (nodes: any) => {
-                if (!Array.isArray(nodes)) return [];
-                // Filter out non-workflow nodes (userInput, brokerRelay) and return only BaseNode data
-                return nodes
-                    .filter(node => !node.type || (node.type !== 'userInput' && node.type !== 'brokerRelay'))
-                    .map(node => node);
-            },
-            required: true
-        },
-        user_inputs: {
-            sourceField: "user_inputs",
-            defaultValue: [],
-            transform: (userInputs: any) => {
-                if (!Array.isArray(userInputs)) return [];
-                return userInputs.map(input => {
-                    // If input doesn't have a 'value' key but has 'default_value', use default_value
-                    if (typeof input === 'object' && input !== null && !('value' in input) && 'default_value' in input) {
-                        return {
-                            ...input,
-                            value: input.default_value
-                        };
-                    }
-                    return input;
-                });
-            }
-        },
-        relays: {
-            sourceField: "relays",
-            defaultValue: [],
-            transform: (relays: any) => {
-                if (!Array.isArray(relays)) return [];
-                console.log("relays", JSON.stringify(relays, null, 2))
-                return relays.map(relay => ({
-                    source: relay.source_broker_id || "",
-                    targets: relay.target_broker_ids || []
-                }));
-            }
-        }
+  name: "flow_nodes_to_start_workflow",
+  description:
+    "Convert workflow flow nodes to a START_WORKFLOW_WITH_STRUCTURE socket task for executing entire workflows",
+  targetTask: "start_workflow_with_structure",
+  service: "workflow_service",
+  brokerSources: ["workflows", "applet", "system"],
+  fieldMappings: {
+    nodes: {
+      sourceField: "nodes",
+      defaultValue: [],
+      transform: (nodes: any) => {
+        if (!Array.isArray(nodes)) return [];
+        // Filter out non-workflow nodes (userInput, brokerRelay) and return only BaseNode data
+        return nodes
+          .filter(
+            (node) =>
+              !node.type ||
+              (node.type !== "userInput" && node.type !== "brokerRelay"),
+          )
+          .map((node) => node);
+      },
+      required: true,
     },
-    validation: (sourceData: any) => {
-        const errors: string[] = [];
+    user_inputs: {
+      sourceField: "user_inputs",
+      defaultValue: [],
+      transform: (userInputs: any) => {
+        if (!Array.isArray(userInputs)) return [];
+        return userInputs.map((input) => {
+          // If input doesn't have a 'value' key but has 'default_value', use default_value
+          if (
+            typeof input === "object" &&
+            input !== null &&
+            !("value" in input) &&
+            "default_value" in input
+          ) {
+            return {
+              ...input,
+              value: input.default_value,
+            };
+          }
+          return input;
+        });
+      },
+    },
+    relays: {
+      sourceField: "relays",
+      defaultValue: [],
+      transform: (relays: any) => {
+        if (!Array.isArray(relays)) return [];
+        console.log("relays", JSON.stringify(relays, null, 2));
+        return relays.map((relay) => ({
+          source: relay.source_broker_id || "",
+          targets: relay.target_broker_ids || [],
+        }));
+      },
+    },
+  },
+  validation: (sourceData: any) => {
+    const errors: string[] = [];
 
-        if (!sourceData.nodes || !Array.isArray(sourceData.nodes)) {
-            errors.push("Flow data must have a nodes array");
-        }
-
-        if (sourceData.nodes && sourceData.nodes.length === 0) {
-            errors.push("Workflow must have at least one node to execute");
-        }
-
-        return {
-            isValid: errors.length === 0,
-            errors
-        };
+    if (!sourceData.nodes || !Array.isArray(sourceData.nodes)) {
+      errors.push("Flow data must have a nodes array");
     }
+
+    if (sourceData.nodes && sourceData.nodes.length === 0) {
+      errors.push("Workflow must have at least one node to execute");
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors,
+    };
+  },
 };
-
-
 
 /**
  * Transform recipe data into a RUN_RECIPE task
  */
 export const RECIPE_DATA_TO_RUN_RECIPE: TaskPreset = {
-    name: "recipe_data_to_run_recipe",
-    description: "Convert recipe data to a RUN_RECIPE socket task",
-    targetTask: "run_recipe",
-    service: "ai_chat_service",
-    fieldMappings: {
-        recipe_id: {
-            sourceField: "recipe_id",
-            required: true
-        },
-        broker_values: {
-            sourceField: "brokers",
-            defaultValue: [],
-            transform: (brokers: any) => {
-                if (!Array.isArray(brokers)) return [];
-                return brokers.map(broker => ({
-                    name: broker.name || "",
-                    id: broker.id || "",
-                    value: broker.value || "",
-                    ready: broker.ready !== false // Default to true
-                }));
-            }
-        },
-        overrides: {
-            sourceField: "overrides",
-            defaultValue: null
-        },
-        stream: {
-            sourceField: "stream",
-            defaultValue: true
-        }
-    }
+  name: "recipe_data_to_run_recipe",
+  description: "Convert recipe data to a RUN_RECIPE socket task",
+  targetTask: "run_recipe",
+  service: "ai_chat_service",
+  fieldMappings: {
+    recipe_id: {
+      sourceField: "recipe_id",
+      required: true,
+    },
+    broker_values: {
+      sourceField: "brokers",
+      defaultValue: [],
+      transform: (brokers: any) => {
+        if (!Array.isArray(brokers)) return [];
+        return brokers.map((broker) => ({
+          name: broker.name || "",
+          id: broker.id || "",
+          value: broker.value || "",
+          ready: broker.ready !== false, // Default to true
+        }));
+      },
+    },
+    overrides: {
+      sourceField: "overrides",
+      defaultValue: null,
+    },
+    stream: {
+      sourceField: "stream",
+      defaultValue: true,
+    },
+  },
 };
 
 // ===== PRESET REGISTRY =====
 
 export const TASK_PRESETS: Record<string, TaskPreset> = {
-    [WORKFLOW_STEP_TO_EXECUTE_SINGLE_STEP.name]: WORKFLOW_STEP_TO_EXECUTE_SINGLE_STEP,
-    [RECIPE_DATA_TO_RUN_RECIPE.name]: RECIPE_DATA_TO_RUN_RECIPE,
-    [FLOW_NODES_TO_START_WORKFLOW.name]: FLOW_NODES_TO_START_WORKFLOW,
+  [WORKFLOW_STEP_TO_EXECUTE_SINGLE_STEP.name]:
+    WORKFLOW_STEP_TO_EXECUTE_SINGLE_STEP,
+  [RECIPE_DATA_TO_RUN_RECIPE.name]: RECIPE_DATA_TO_RUN_RECIPE,
+  [FLOW_NODES_TO_START_WORKFLOW.name]: FLOW_NODES_TO_START_WORKFLOW,
 };
 
 /**
  * Get a preset by name
  */
 export function getPreset(presetName: string): TaskPreset | undefined {
-    return TASK_PRESETS[presetName];
+  return TASK_PRESETS[presetName];
 }
 
 /**
  * Get all available preset names
  */
 export function getAvailablePresets(): string[] {
-    return Object.keys(TASK_PRESETS);
+  return Object.keys(TASK_PRESETS);
 }
 
 /**
  * Get presets that target a specific task
  */
 export function getPresetsForTask(taskName: SocketTaskName): TaskPreset[] {
-    return Object.values(TASK_PRESETS).filter(preset => preset.targetTask === taskName);
-} 
+  return Object.values(TASK_PRESETS).filter(
+    (preset) => preset.targetTask === taskName,
+  );
+}

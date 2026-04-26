@@ -11,7 +11,7 @@
  */
 
 import { createSelector } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import type { VariableDefinition } from "@/features/agents/types/agent-definition.types";
 
 // Stable references returned when the instance hasn't been initialized yet.
@@ -28,8 +28,8 @@ const EMPTY_PROVENANCE: Record<string, "user" | "scope" | "default" | "none"> =
 export const selectInstanceVariableDefinitions =
   (conversationId: string) =>
   (state: RootState): VariableDefinition[] =>
-    state.instanceVariableValues.byConversationId[conversationId]?.definitions ??
-    EMPTY_DEFINITIONS;
+    state.instanceVariableValues.byConversationId[conversationId]
+      ?.definitions ?? EMPTY_DEFINITIONS;
 
 /**
  * Raw user-provided values for an instance.
@@ -46,8 +46,8 @@ export const selectUserVariableValues =
 export const selectScopeVariableValues =
   (conversationId: string) =>
   (state: RootState): Record<string, unknown> =>
-    state.instanceVariableValues.byConversationId[conversationId]?.scopeValues ??
-    EMPTY_RECORD;
+    state.instanceVariableValues.byConversationId[conversationId]
+      ?.scopeValues ?? EMPTY_RECORD;
 
 /**
  * Fully resolved variables — the three-tier merge.
@@ -58,7 +58,8 @@ export const selectScopeVariableValues =
  */
 export const selectResolvedVariables = (conversationId: string) =>
   createSelector(
-    (state: RootState) => state.instanceVariableValues.byConversationId[conversationId],
+    (state: RootState) =>
+      state.instanceVariableValues.byConversationId[conversationId],
     (entry) => {
       if (!entry) return EMPTY_RECORD;
 
@@ -90,7 +91,8 @@ export const selectResolvedVariables = (conversationId: string) =>
  */
 export const selectMissingRequiredVariables = (conversationId: string) =>
   createSelector(
-    (state: RootState) => state.instanceVariableValues.byConversationId[conversationId],
+    (state: RootState) =>
+      state.instanceVariableValues.byConversationId[conversationId],
     (entry) => {
       if (!entry) return EMPTY_NAMES;
 
@@ -125,7 +127,8 @@ export const selectMissingRequiredVariables = (conversationId: string) =>
  */
 export const selectVariableProvenance = (conversationId: string) =>
   createSelector(
-    (state: RootState) => state.instanceVariableValues.byConversationId[conversationId],
+    (state: RootState) =>
+      state.instanceVariableValues.byConversationId[conversationId],
     (entry) => {
       if (!entry) return EMPTY_PROVENANCE;
 

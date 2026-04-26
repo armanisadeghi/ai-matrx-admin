@@ -14,7 +14,7 @@
  */
 
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import {
   callConversationMemoryCost,
   type MemoryCostSummary,
@@ -40,10 +40,7 @@ export const fetchMemoryCost = createAsyncThunk<
   { state: RootState }
 >(
   "observationalMemory/fetchCost",
-  async (
-    { conversationId, signal },
-    { dispatch, rejectWithValue },
-  ) => {
+  async ({ conversationId, signal }, { dispatch, rejectWithValue }) => {
     dispatch(setCostFetchStatus({ conversationId, status: "loading" }));
 
     const result = await dispatch(

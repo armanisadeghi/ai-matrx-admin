@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { SocketHeaderFull } from "./SocketHeaderFull";
 import SocketHeaderCompact from "./SocketHeaderCompact";
 import { RotateCcw } from "lucide-react";
-import { Button } from "@/components/ui";
+import { Button } from "@/components/ui/button";
 
 interface ResponsiveSocketHeaderProps {
     onTestModeChange?: (testMode: boolean) => void;

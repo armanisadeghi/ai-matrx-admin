@@ -3,11 +3,7 @@
 import React, { useMemo } from 'react';
 import { CalendarIcon } from "lucide-react";
 import { isValid } from 'date-fns';
-import {
-    MatrxDatePicker,
-    MatrxDateRangePicker,
-    MatrxDatePickerWithPresets
-} from '@/components/ui';
+import { MatrxDatePicker, MatrxDateRangePicker, MatrxDatePickerWithPresets } from "@/components/ui/matrx-date-picker";
 import { EntityComponentBaseProps } from "../../types";
 import { MatrxVariant } from '@/components/ui/types';
 import { useFieldStyles } from '../add-ons/useFieldStyles';

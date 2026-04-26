@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 
-import { Switch } from '@/components/ui';
+import { Switch } from "@/components/ui/switch";
 import { useEditorContext } from '@/providers/rich-text-editor/Provider';
 
 

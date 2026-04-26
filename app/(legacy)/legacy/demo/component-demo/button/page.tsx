@@ -2,25 +2,14 @@
 "use client";
 
 import * as React from "react";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-  Checkbox,
-  Input,
-  Label,
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-  TextDivider,
-} from "@/components/ui";
+import { TextDivider } from "@/components/matrx/TextDivider";
+import { CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MatrxButton, ButtonGroup } from "@/components/ui/samples/button";
 import {
   MatrxSelect,

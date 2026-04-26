@@ -2,18 +2,15 @@
 
 import React from "react";
 import { cn } from "@/lib/utils";
-import {
-  ScrollArea,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui";
+import { CardContent, CardHeader } from "@/components/ui/card";
+import { CardTitle } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { densityConfig } from "@/config/ui/entity-layout-config";
 import { EnhancedCard } from "@/components/matrx/Entity/prewired-components/layouts/parts/EnhancedCard";
 import EntitySelection from "@/components/matrx/Entity/prewired-components/entity-management/EntitySelection";
 import { UnifiedLayoutProps } from "@/components/matrx/Entity/prewired-components/layouts/types";
 import { useAppSelector } from "@/lib/redux/hooks";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import { selectEntityPrettyName } from "@/lib/redux/schema/globalCacheSelectors";
 import { SmartExpandButton } from "@/components/matrx/Entity/prewired-components/layouts/smart-layouts/SmartExpandButton";
 import EntitySmartContent from "@/components/matrx/Entity/prewired-components/layouts/smart-layouts/SmartEntityContent";

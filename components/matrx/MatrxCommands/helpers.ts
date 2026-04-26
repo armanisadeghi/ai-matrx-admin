@@ -1,6 +1,6 @@
 'use client';
 
-import {useToast} from "@/components/ui";
+import { useToast } from "@/components/ui/matrx/use-toast";
 
 
 const showConfirmDialog = async (message: string): Promise<boolean> => {

@@ -1,4 +1,5 @@
-import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/ui";
+import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import {MoreVertical, Trash2} from "lucide-react";
 import React from "react";
 import { ProcessState, Message, Conversation } from "@/types/voice/voiceAssistantTypes";

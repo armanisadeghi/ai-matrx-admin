@@ -11,13 +11,13 @@
  */
 
 import { createSelector } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import type { ToolLifecycleEntry } from "@/features/agents/types/request.types";
 import {
-    selectAllToolLifecycles as selectAllToolLifecyclesBase,
-    selectToolCallIdsInOrder as selectToolCallIdsInOrderBase,
-    selectToolLifecycle as selectToolLifecycleBase,
-    selectToolLifecycleMap as selectToolLifecycleMapBase,
+  selectAllToolLifecycles as selectAllToolLifecyclesBase,
+  selectToolCallIdsInOrder as selectToolCallIdsInOrderBase,
+  selectToolLifecycle as selectToolLifecycleBase,
+  selectToolLifecycleMap as selectToolLifecycleMapBase,
 } from "@/features/agents/redux/execution-system/active-requests/active-requests.selectors";
 
 // Re-export the canonical per-call and per-request selectors under the
@@ -34,43 +34,42 @@ export const selectToolCallIdsInOrder = selectToolCallIdsInOrderBase;
  * Use this in the canonical shell to render tool cards in emission order.
  */
 export const selectOrderedToolLifecycles = (requestId: string) =>
-    createSelector(
-        (state: RootState) =>
-            state.activeRequests.byRequestId[requestId]?.toolLifecycle,
-        (state: RootState) =>
-            state.activeRequests.byRequestId[requestId]?.timeline,
-        (lifecycle, timeline): ToolLifecycleEntry[] => {
-            if (!lifecycle) return [];
-            if (!timeline || timeline.length === 0) {
-                return Object.values(lifecycle);
-            }
-            const seen = new Set<string>();
-            const out: ToolLifecycleEntry[] = [];
-            for (const entry of timeline) {
-                if (
-                    entry.kind === "tool_event" &&
-                    entry.subEvent === "tool_started" &&
-                    !seen.has(entry.callId)
-                ) {
-                    seen.add(entry.callId);
-                    const lc = lifecycle[entry.callId];
-                    if (lc) out.push(lc);
-                }
-            }
-            // Include any lifecycle entries that weren't captured on the timeline
-            // (e.g. seeded from persisted history without a real tool_started).
-            for (const [callId, lc] of Object.entries(lifecycle)) {
-                if (!seen.has(callId)) out.push(lc);
-            }
-            return out;
-        },
-    );
+  createSelector(
+    (state: RootState) =>
+      state.activeRequests.byRequestId[requestId]?.toolLifecycle,
+    (state: RootState) => state.activeRequests.byRequestId[requestId]?.timeline,
+    (lifecycle, timeline): ToolLifecycleEntry[] => {
+      if (!lifecycle) return [];
+      if (!timeline || timeline.length === 0) {
+        return Object.values(lifecycle);
+      }
+      const seen = new Set<string>();
+      const out: ToolLifecycleEntry[] = [];
+      for (const entry of timeline) {
+        if (
+          entry.kind === "tool_event" &&
+          entry.subEvent === "tool_started" &&
+          !seen.has(entry.callId)
+        ) {
+          seen.add(entry.callId);
+          const lc = lifecycle[entry.callId];
+          if (lc) out.push(lc);
+        }
+      }
+      // Include any lifecycle entries that weren't captured on the timeline
+      // (e.g. seeded from persisted history without a real tool_started).
+      for (const [callId, lc] of Object.entries(lifecycle)) {
+        if (!seen.has(callId)) out.push(lc);
+      }
+      return out;
+    },
+  );
 
 /** True if at least one tool lifecycle entry exists for the request. */
 export const selectHasAnyTools =
-    (requestId: string) =>
-    (state: RootState): boolean => {
-        const map = state.activeRequests.byRequestId[requestId]?.toolLifecycle;
-        if (!map) return false;
-        return Object.keys(map).length > 0;
-    };
+  (requestId: string) =>
+  (state: RootState): boolean => {
+    const map = state.activeRequests.byRequestId[requestId]?.toolLifecycle;
+    if (!map) return false;
+    return Object.keys(map).length > 0;
+  };

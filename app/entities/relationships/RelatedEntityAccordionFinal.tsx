@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {Accordion, AccordionContent, AccordionItem, AccordionTrigger} from "@/components/ui";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import {cn} from "@/lib/utils";
 import {ChevronRight} from 'lucide-react';
 import ArmaniFormFinal from "@/app/entities/forms/ArmaniFormFinal";

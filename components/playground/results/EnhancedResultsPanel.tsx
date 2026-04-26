@@ -2,7 +2,7 @@
 
 import React, { useRef, useState } from "react";
 import { PanelImperativeHandle, Panel, Separator } from "react-resizable-panels";
-import { Card } from "@/components/ui";
+import { Card } from "@/components/ui/card";
 import DraggableToolbar, { ToolbarAction } from "../components/DraggableToolbar";
 import EnhancedContentRenderer from "@/components/mardown-display/enhanced-rederer-older/EnhancedMarkdownRenderer";
 import { Copy } from "lucide-react";

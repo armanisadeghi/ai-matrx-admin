@@ -13,7 +13,7 @@ import {
     EntityOperations, EntityFlags, EntityOperationMode
 } from '@/lib/redux/entity/types/stateTypes';
 import { Callback, callbackManager } from "@/utils/callbackManager";
-import { toast } from '@/components/ui';
+import { toast } from "@/components/ui/matrx/use-toast";
 import { useEntityValidation } from "@/lib/redux/entity/hooks/useEntityValidation";
 
 interface UseEntityFormOptions {

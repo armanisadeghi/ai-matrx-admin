@@ -5,7 +5,7 @@ import * as SheetPrimitive from "@radix-ui/react-dialog";
 import { Cross2Icon } from "@radix-ui/react-icons";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
-import { ScrollArea } from "@/components/ui";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 // Enhanced variant definitions
 const sheetVariants = cva(

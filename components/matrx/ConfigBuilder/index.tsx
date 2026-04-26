@@ -24,7 +24,8 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import ConfigJSONViewer from "./ConfigJSONViewer";
-import { Label, RadioGroup, RadioGroupItem } from "@/components/ui";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { cn } from "@/lib/utils";
 const inter = Inter({
     subsets: ["latin"],

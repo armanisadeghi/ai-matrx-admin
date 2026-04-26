@@ -3,7 +3,7 @@
 import React from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import { ThemeSwitcherIcon } from "@/styles/themes/ThemeSwitcher";
 import Image from "next/image";
 import Link from "next/link";

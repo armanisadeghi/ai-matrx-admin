@@ -5,11 +5,7 @@ import {CalendarIcon} from "lucide-react";
 import {cn} from "@/utils/cn";
 import {format, isValid} from 'date-fns';
 import {Label} from "@/components/ui/label";
-import {
-    MatrxDatePicker,
-    MatrxDateRangePicker,
-    MatrxDatePickerWithPresets
-} from '@/components/ui';
+import { MatrxDatePicker, MatrxDateRangePicker, MatrxDatePickerWithPresets } from "@/components/ui/matrx-date-picker";
 import {EntityBaseFieldProps} from "../EntityBaseField";
 import {MatrxVariant} from "../field-components/types";
 

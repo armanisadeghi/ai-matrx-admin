@@ -1,6 +1,6 @@
 'use client';
 
-import { Textarea } from "@/components/ui";
+import { Textarea } from "@/components/ui/textarea";
 import { cn } from '@/utils/cn';
 import React, { useState } from "react";
 import JSON5 from 'json5';

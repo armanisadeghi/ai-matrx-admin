@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem, Button } from "@/components/ui";
+import { Button } from "@/components/ui/button";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { markdownSamples, getAllMarkdownSampleIds } from "./sample-data/markdown-samples";
 import { getCoordinatorSelectOptions, getCoordinatorConfig, getSampleDataIds, getDefaultViewId } from "./markdown-coordinator";
 import { PROCESSOR_REGISTRY } from "./processors/processor-registry";

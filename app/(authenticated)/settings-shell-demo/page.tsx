@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Settings as SettingsIcon, ShieldCheck } from "lucide-react";
 import { useSelector } from "react-redux";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import { Button } from "@/components/ui/button";
 import { SettingsShell } from "@/features/settings/components/SettingsShell";
 
@@ -12,7 +12,8 @@ export default function SettingsShellDemoPage() {
   const [asAdmin, setAsAdmin] = useState(false);
   const isRealAdmin = useSelector(
     (s: RootState) =>
-      (s as RootState & { user?: { isAdmin?: boolean } }).user?.isAdmin ?? false,
+      (s as RootState & { user?: { isAdmin?: boolean } }).user?.isAdmin ??
+      false,
   );
 
   return (
@@ -26,9 +27,9 @@ export default function SettingsShellDemoPage() {
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
           Phase 4 demo — the real settings window, wired to the Phase 3
-          registry. Desktop mounts as a draggable WindowPanel with tree
-          sidebar + breadcrumb + tab host. Mobile mounts as an iOS push-nav
-          drawer. Tabs are placeholders until Phase 5.
+          registry. Desktop mounts as a draggable WindowPanel with tree sidebar
+          + breadcrumb + tab host. Mobile mounts as an iOS push-nav drawer. Tabs
+          are placeholders until Phase 5.
         </p>
 
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">

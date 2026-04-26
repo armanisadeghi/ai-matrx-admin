@@ -1,7 +1,7 @@
 import React, {Suspense, useState} from "react";
 import useDatabase from "@/lib/hooks/useDatabase";
 import SchemaSelect from "@/components/matrx/schema/ops/SchemaSelect";
-import {Button} from "@/components/ui";
+import { Button } from "@/components/ui/button";
 import {MatrxTableLoading} from "@/components/matrx/LoadingComponents";
 import MatrxTable from "@/app/(authenticated)/tests/matrx-table/components/MatrxTable";
 

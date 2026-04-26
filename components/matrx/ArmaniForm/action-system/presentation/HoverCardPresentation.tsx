@@ -1,9 +1,5 @@
 import React from "react";
-import {
-    HoverCard,
-    HoverCardTrigger,
-    HoverCardContent,
-} from "@/components/ui";
+import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
 import {PresentationComponent} from "./types";
 import {cn} from "@/lib/utils";
 import {

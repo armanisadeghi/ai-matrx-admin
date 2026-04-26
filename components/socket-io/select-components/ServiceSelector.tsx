@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getAvailableServices } from "@/constants/socket-schema";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { formatText } from "@/utils/text/text-case-converter";

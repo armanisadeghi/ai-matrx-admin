@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Button } from "@/components/ui";
+import { Button } from "@/components/ui/button";
 import { DbFunctionNode, DbNodeData, WorkflowDependency } from "@/features/workflows/types";
 import { addArgMappingWithBrokerId } from "@/features/workflows/react-flow/node-editor/workflow-node-editor/utils/arg-utils";
 import { upsertWorkflowDependency } from "../../react-flow/node-editor/workflow-node-editor/utils/dependency-utils";

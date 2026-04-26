@@ -1,6 +1,7 @@
 // File: components/socket/admin/SocketAdmin.tsx
 "use client";
-import { Card, CardContent } from "@/components/ui";
+import { CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import DynamicForm from "@/components/socket-io/form-builder/DynamicForm";
 import AccordionWrapper from "../../matrx/matrx-collapsible/AccordionWrapper";
 import { cn } from "@/lib/utils";

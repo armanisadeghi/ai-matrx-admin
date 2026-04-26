@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button } from '@/components/ui';
+import { Button } from "@/components/ui/button";
 import { X, ArrowUpRight, Database, CloudOff, ChevronUp, ChevronDown } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { ChipData } from '@/types/editor.types';

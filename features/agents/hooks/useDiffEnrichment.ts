@@ -5,12 +5,14 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAllTools } from "@/features/agents/redux/tools/tools.selectors";
 import { selectMcpCatalog } from "@/features/agents/redux/mcp/mcp.slice";
 import type { EnrichmentContext } from "@/components/diff/adapters/types";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 
 export function useDiffEnrichment(): EnrichmentContext {
   const allTools = useAppSelector(selectAllTools);
   const mcpCatalog = useAppSelector(selectMcpCatalog);
-  const modelEntities = useAppSelector((state: RootState) => state.modelRegistry.entities);
+  const modelEntities = useAppSelector(
+    (state: RootState) => state.modelRegistry.entities,
+  );
 
   return useMemo(
     (): EnrichmentContext => ({

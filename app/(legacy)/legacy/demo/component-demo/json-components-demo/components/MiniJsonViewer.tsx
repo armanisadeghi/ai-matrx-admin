@@ -1,7 +1,8 @@
 "use client";
 import { useState } from "react";
 import { motion } from "motion/react";
-import { Button, Card } from "@/components/ui"; // Assuming these are shadcn/ui components
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card"; // Assuming these are shadcn/ui components
 import { cn } from "@/lib/utils";
 
 interface JsonViewerProps {

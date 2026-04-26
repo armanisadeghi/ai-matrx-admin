@@ -13,7 +13,7 @@ import {
     Paperclip
 } from 'lucide-react';
 import {useQuickReference} from "@/lib/redux/entity/hooks/useQuickReference";
-import {Checkbox} from "@/components/ui";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const EmailList = ({onEmailClick}: { onEmailClick?: () => void }) => {
     const entityKey = "emails";

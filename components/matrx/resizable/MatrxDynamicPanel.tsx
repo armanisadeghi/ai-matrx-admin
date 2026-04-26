@@ -1,11 +1,7 @@
 'use client';
 
 import React from 'react';
-import {
-    ResizablePanelGroup,
-    ResizablePanel,
-    ResizableHandle,
-} from '@/components/ui';
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/matrx/resizable";
 import {Button} from '@/components/ui/button';
 import {
     ChevronLeft,

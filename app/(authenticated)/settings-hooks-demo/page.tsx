@@ -2,7 +2,7 @@
 
 import { useSelector } from "react-redux";
 import { Sparkles, ShieldCheck, Palette, Brain, Search } from "lucide-react";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import { SettingsSwitch } from "@/components/official/settings/primitives/SettingsSwitch";
 import { SettingsSelect } from "@/components/official/settings/primitives/SettingsSelect";
 import { SettingsSlider } from "@/components/official/settings/primitives/SettingsSlider";

@@ -1,4 +1,6 @@
-import { Card, CardContent, Skeleton } from "@/components/ui";
+import { CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const AppletSkeleton = () => {
     return (

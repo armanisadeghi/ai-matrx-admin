@@ -53,7 +53,7 @@ import {
 import { launchAgentExecution } from "@/features/agents/redux/execution-system/thunks/launch-agent-execution.thunk";
 import { loadConversation } from "@/features/agents/redux/execution-system/thunks/load-conversation.thunk";
 import { DEFAULT_AGENT_ID } from "@/features/cx-chat/components/agent/local-agents";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 
 // ── URL parsing ───────────────────────────────────────────────────────────────
 

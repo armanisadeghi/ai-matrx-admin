@@ -1,6 +1,6 @@
 'use client';
 
-import {Progress} from "@/components/ui";
+import { Progress } from "@/components/ui/progress";
 import React from "react";
 import { ProcessState, Message, Conversation } from "@/types/voice/voiceAssistantTypes";
 

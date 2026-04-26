@@ -1,4 +1,7 @@
-// components/ui/index.tsx
+/**
+ * Aggregated UI exports for `react-live` / DynamicComponentRenderer only.
+ * App code should import from `@/components/ui/<component>` directly.
+ */
 
 export * from "./JsonComponents";
 

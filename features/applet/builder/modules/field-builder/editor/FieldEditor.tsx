@@ -17,7 +17,7 @@ import { saveFieldThunk, fetchFieldByIdThunk } from "@/lib/redux/app-builder/thu
 import { addFieldAndCompileContainerThunk } from "@/lib/redux/app-builder/thunks/containerBuilderThunks";
 import { recompileAppletThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
 import { useToast } from "@/components/ui/use-toast";
-import { LoadingSpinner } from "@/components/ui";
+import { LoadingSpinner } from "@/components/ui/spinner";
 import SmartFieldBuilder from "./SmartFieldBuilder";
 import FieldEditorActions from "./FieldEditorActions";
 import FieldPreview from "../previews/FieldPreview";  

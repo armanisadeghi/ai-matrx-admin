@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import type { McpCatalogEntry } from "@/features/agents/types/mcp.types";
 import {
   fetchMcpCatalog,

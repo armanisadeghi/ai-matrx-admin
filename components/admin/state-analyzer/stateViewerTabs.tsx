@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import type { TabDefinition } from "@/components/official/FullScreenOverlay";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import GenericSliceViewer from "./sliceViewers/GenericSliceViewer";
 import EntitySliceViewer from "./sliceViewers/EntitySliceViewer";
 import { featureSchemas } from "@/lib/redux/dynamic/featureSchema";

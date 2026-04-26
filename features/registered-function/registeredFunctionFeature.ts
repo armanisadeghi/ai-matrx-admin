@@ -1,25 +1,31 @@
 // features/registered-function/registeredFunctionFeature.ts
 
-import { RegisteredFunctionBaseSchema, RegisteredFunctionBase } from '@/types/registeredFunctionTypes';
+import {
+  RegisteredFunctionBaseSchema,
+  RegisteredFunctionBase,
+} from "@/types/registeredFunctionTypes";
 import { createFeatureSlice } from "@/lib/redux/slices/featureSliceCreator";
 import { createFeatureSelectors } from "@/lib/redux/selectors/featureSelectors";
-import { createFeatureActions } from '@/lib/redux/actions/featureActions';
+import { createFeatureActions } from "@/lib/redux/actions/featureActions";
 
-import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
-import type { RootState } from '@/lib/redux/store';
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
+import type { RootState } from "@/lib/redux/store.types";
 
-const featureName = 'registeredFunction' as const;
+const featureName = "registeredFunction" as const;
 
-const { reducer } = createFeatureSlice(featureName, RegisteredFunctionBaseSchema);
+const { reducer } = createFeatureSlice(
+  featureName,
+  RegisteredFunctionBaseSchema,
+);
 
-const selectors = createFeatureSelectors<typeof RegisteredFunctionBaseSchema>(featureName);
+const selectors =
+  createFeatureSelectors<typeof RegisteredFunctionBaseSchema>(featureName);
 
 export const useRegisteredFunctionSelector = <TSelected>(
-    selector: (state: RootState) => TSelected
+  selector: (state: RootState) => TSelected,
 ): TSelected => useAppSelector(selector);
 
 export const useRegisteredFunctionDispatch = useAppDispatch;
 
 export const registeredFunctionReducer = reducer;
 export const registeredFunctionSelectors = selectors;
-

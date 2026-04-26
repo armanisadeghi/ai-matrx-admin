@@ -1,13 +1,13 @@
-import React from 'react';
+import React from "react";
 import { cn } from "@/lib/utils";
+import { BackgroundGradient } from "@/components/ui/background-gradient";
 import {
-  BackgroundGradient,
   Card,
   CardHeader,
   CardTitle,
   CardDescription,
-  CardContent
-} from "@/components/ui";
+  CardContent,
+} from "@/components/ui/card";
 
 export interface GradientCardProps {
   // Content props
@@ -15,7 +15,7 @@ export interface GradientCardProps {
   subtitle?: string;
   description?: string;
   children?: React.ReactNode;
-  
+
   // Styling props
   className?: string;
   containerClassName?: string;
@@ -23,11 +23,11 @@ export interface GradientCardProps {
   titleClassName?: string;
   subtitleClassName?: string;
   contentClassName?: string;
-  
+
   // Text wrapping controls
   allowTitleWrap?: boolean;
   allowDescriptionWrap?: boolean;
-  
+
   // Sizing props (only used when wrapping is disabled)
   titleLineClamp?: number;
   descriptionLineClamp?: number;
@@ -41,7 +41,7 @@ export const MatrxGradientCard = ({
   subtitle,
   description,
   children,
-  
+
   // Styling props
   className,
   containerClassName,
@@ -49,11 +49,11 @@ export const MatrxGradientCard = ({
   titleClassName,
   subtitleClassName,
   contentClassName,
-  
+
   // Text wrapping controls
   allowTitleWrap = false,
   allowDescriptionWrap = false,
-  
+
   // Sizing props
   titleLineClamp = 2,
   descriptionLineClamp = 2,
@@ -61,46 +61,48 @@ export const MatrxGradientCard = ({
   minDescriptionHeight = "3rem",
 }: GradientCardProps) => {
   return (
-    <BackgroundGradient 
+    <BackgroundGradient
       className={containerClassName}
       containerClassName={cn("p-[2px] rounded-xl", containerClassName)}
     >
-      <Card className={cn(
-        "h-full bg-card group-hover:bg-background transition-colors rounded-xl",
-        className
-      )}>
+      <Card
+        className={cn(
+          "h-full bg-card group-hover:bg-background transition-colors rounded-xl",
+          className,
+        )}
+      >
         <CardHeader className={headerClassName}>
-          <CardTitle 
+          <CardTitle
             className={cn(
               {
                 [`line-clamp-${titleLineClamp}`]: !allowTitleWrap,
-                [`min-h-[${minTitleHeight}]`]: !allowTitleWrap && minTitleHeight,
-                "whitespace-normal": allowTitleWrap
+                [`min-h-[${minTitleHeight}]`]:
+                  !allowTitleWrap && minTitleHeight,
+                "whitespace-normal": allowTitleWrap,
               },
-              titleClassName
+              titleClassName,
             )}
           >
             {title}
           </CardTitle>
           {subtitle && (
-            <CardDescription className={cn(
-              "whitespace-normal",
-              subtitleClassName
-            )}>
+            <CardDescription
+              className={cn("whitespace-normal", subtitleClassName)}
+            >
               {subtitle}
             </CardDescription>
           )}
         </CardHeader>
         <CardContent className={contentClassName}>
           {description && (
-            <p className={cn(
-              "text-md",
-              {
+            <p
+              className={cn("text-md", {
                 [`line-clamp-${descriptionLineClamp}`]: !allowDescriptionWrap,
-                [`min-h-[${minDescriptionHeight}]`]: !allowDescriptionWrap && minDescriptionHeight,
-                "whitespace-normal": allowDescriptionWrap
-              }
-            )}>
+                [`min-h-[${minDescriptionHeight}]`]:
+                  !allowDescriptionWrap && minDescriptionHeight,
+                "whitespace-normal": allowDescriptionWrap,
+              })}
+            >
               {description}
             </p>
           )}

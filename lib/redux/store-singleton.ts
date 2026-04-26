@@ -6,18 +6,25 @@
 // modules that need to read state from outside React) call
 // `getStoreSingleton()`.
 //
-// CRITICAL: this file imports nothing at runtime. That's the whole point —
-// utilities that previously imported `getStore` from `@/lib/redux/store`
-// dragged the entire reducer/middleware/saga graph into the consumer's
-// chunk and produced TDZ cycles when a slice imported a util that imported
-// the store. Routing through this leaf module breaks the cycle.
+// CRITICAL: this file imports NOTHING from the project at all — not even
+// type-only imports. That's the whole point — utilities that previously
+// imported `getStore` from `@/lib/redux/store` dragged the entire
+// reducer/middleware/saga graph into the consumer's chunk and produced TDZ
+// cycles. Routing through this leaf module breaks all those cycles.
 //
-// The `AppStore` type import is `import type` only (erased at runtime) so
-// it does not create a load-time dependency on `./store.ts`.
+// AppStore is defined structurally below (no import needed) and is
+// compatible with the actual EnhancedStore via TypeScript structural typing.
 //
 // See `~/.claude/plans/the-entity-system-which-bubbly-wind.md`.
 
-import type { AppStore } from "./store";
+// Import ONLY from external packages — never from the project — to keep this
+// module cycle-free. EnhancedStore<any,any,any> is structurally compatible
+// with the actual concrete store; callers cast getState() as needed.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+import type { EnhancedStore } from "@reduxjs/toolkit";
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type AppStore = EnhancedStore<any, any, any>;
 
 let storeInstance: AppStore | null = null;
 

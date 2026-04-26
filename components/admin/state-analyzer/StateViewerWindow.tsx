@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import { useAppStore } from "@/lib/redux/hooks";
 import {
   getStateViewerTabs,

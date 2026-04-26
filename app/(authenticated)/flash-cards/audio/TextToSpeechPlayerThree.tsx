@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { CartesiaClient, WebPlayer } from "@cartesia/cartesia-js";
 import { Play, Pause, RotateCcw } from "lucide-react";
 import VoiceConfigSelects from "@/components/audio/VoiceConfigSelects";
-import { Textarea } from "@/components/ui";
+import { Textarea } from "@/components/ui/textarea";
 
 interface TextToSpeechPlayerProps {
     text: string;

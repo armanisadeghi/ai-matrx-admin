@@ -1,10 +1,6 @@
 // components/ui/custom-collapsible.tsx
 import React from 'react';
-import {
-    Collapsible,
-    CollapsibleContent,
-    CollapsibleTrigger
-} from '@/components/ui';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {ChevronDown} from "lucide-react";
 import {cn} from "@/lib/utils";
 

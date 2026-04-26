@@ -30,7 +30,7 @@ import { useRouter } from "next/navigation";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import { setMode } from "@/styles/themes/themeSlice";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import { openFeedbackDialog } from "@/lib/redux/slices/overlaySlice";
 import { brokerSelectors } from "@/lib/redux/brokerSlice";
 import { Notification } from "@/types/notification.types";

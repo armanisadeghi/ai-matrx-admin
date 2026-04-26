@@ -8,7 +8,7 @@
 // or in useMemo with a stable ID to ensure proper memoization.
 
 import { createSelector } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import {
   selectArtifactsById,
   selectArtifactAllIds,

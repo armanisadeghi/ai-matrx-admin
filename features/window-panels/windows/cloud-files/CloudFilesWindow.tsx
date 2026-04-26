@@ -22,7 +22,7 @@
 
 import { useState } from "react";
 import { useSelector } from "react-redux";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { CloudFilesRealtimeProvider } from "@/features/files/providers/CloudFilesRealtimeProvider";
 import {

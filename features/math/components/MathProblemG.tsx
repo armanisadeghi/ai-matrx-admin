@@ -7,7 +7,7 @@ import {BlockMath} from 'react-katex';
 import {motion} from 'motion/react';
 import {Card, CardContent} from '@/components/ui/card';
 import ControlPanel from './ControlPanel';
-import {BackgroundGradient} from "@/components/ui";
+import { BackgroundGradient } from "@/components/ui/background-gradient";
 import SolutionAnswer from "./SolutionAnswer";
 import { MathProblemProps } from '../types';
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowLeft } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui';
+import { CardHeader } from "@/components/ui/card";
+import { Card, CardTitle, CardDescription } from "@/components/ui/card";
 import { OptionCardData } from './types';
 import { getDynamicIconSelection } from "@/utils/icons/getDynamicIcons";
 import { cn } from '@/utils/cn';

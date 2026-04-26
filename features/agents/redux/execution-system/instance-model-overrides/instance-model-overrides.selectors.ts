@@ -6,7 +6,7 @@
  * The agentDefinition slice is never accessed from here.
  */
 
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import type { InstanceModelOverrideState } from "@/features/agents/types/instance.types";
 import type { LLMParams } from "@/features/agents/types/agent-api-types";
 

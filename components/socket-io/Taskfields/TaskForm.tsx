@@ -1,10 +1,10 @@
 // components/TaskFields/TaskForm.tsx
-import React, { useMemo } from 'react';
-import { useSelector } from 'react-redux';
-import type { RootState } from '@/lib/redux/store';
-import { TaskField } from './TaskField';
-import { getTaskSchema } from '@/constants/socket-schema';
-import { useSocketTask } from '@/lib/redux/socket-io/hooks/useSocketTasks';
+import React, { useMemo } from "react";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/lib/redux/store.types";
+import { TaskField } from "./TaskField";
+import { getTaskSchema } from "@/constants/socket-schema";
+import { useSocketTask } from "@/lib/redux/socket-io/hooks/useSocketTasks";
 
 interface TaskFormProps {
   taskId: string;
@@ -15,12 +15,12 @@ interface TaskFormProps {
 
 export const TaskForm: React.FC<TaskFormProps> = ({
   taskId,
-  className = '',
+  className = "",
   excludeFields = [],
   onSubmit,
 }) => {
-  const task = useSelector((state: RootState) =>
-    state.socketTasks.tasks[taskId]
+  const task = useSelector(
+    (state: RootState) => state.socketTasks.tasks[taskId],
   );
 
   const { submit, validationState, isComplete, error } = useSocketTask(taskId);
@@ -31,10 +31,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({
   }
 
   // Get schema for this task
-  const schema = useMemo(() =>
-    getTaskSchema(task.taskName),
-    [task.taskName]
-  );
+  const schema = useMemo(() => getTaskSchema(task.taskName), [task.taskName]);
 
   if (!schema) {
     return <div className="error">Schema not found for {task.taskName}</div>;
@@ -42,7 +39,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({
 
   // Get all fields from schema, excluding any specified
   const fields = Object.keys(schema).filter(
-    field => !excludeFields.includes(field)
+    (field) => !excludeFields.includes(field),
   );
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -56,7 +53,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({
 
   return (
     <form className={`task-form ${className}`} onSubmit={handleSubmit}>
-      {fields.map(field => (
+      {fields.map((field) => (
         <TaskField
           key={field}
           taskId={taskId}
@@ -90,7 +87,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({
           disabled={!validationState.isValid || isComplete}
           className="submit-button"
         >
-          {isComplete ? 'Submitted' : 'Submit'}
+          {isComplete ? "Submitted" : "Submit"}
         </button>
       </div>
     </form>

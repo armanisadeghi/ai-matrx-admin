@@ -1,9 +1,7 @@
 // EntityDataSection.tsx
 import React from 'react';
-import {
-    CardContent,
-    ScrollArea
-} from '@/components/ui';
+import { CardContent } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { EnhancedCard } from "../../parts/EnhancedCard";
 import { LayoutHeader } from "../../parts/LayoutHeader";
 import {useAppSelector} from "@/lib/redux/hooks";

@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
 import { cn } from "@/styles/themes/utils";
-import { Label } from "@/components/ui";
+import { Label } from "@/components/ui/label";
 import { FloatingSelectLabel } from "@/app/entities/fields/field-components/add-ons/FloatingFieldLabel";
 
 interface Option {

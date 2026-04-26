@@ -1,69 +1,75 @@
-import React, { useEffect, useState } from 'react';
-import { UnifiedLayoutProps } from '@/components/matrx/Entity/prewired-components/layouts/types';
-import { EntityKeys, MatrxRecordId } from '@/types/entityTypes';
-import type { RootState } from "@/lib/redux/store";
+import React, { useEffect, useState } from "react";
+import { UnifiedLayoutProps } from "@/components/matrx/Entity/prewired-components/layouts/types";
+import { EntityKeys, MatrxRecordId } from "@/types/entityTypes";
+import type { RootState } from "@/lib/redux/store.types";
 import { selectEntityPrettyName } from "@/lib/redux/schema/globalCacheSelectors";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
-import { Button } from '@/components/ui/button';
-import { useCreateRecord } from '../hooks/unsaved-records/useCreateRecord';
-import { useUpdateRecord } from '../hooks/crud/useUpdateRecord';
-import { getUnifiedLayoutProps } from '../layout/configs';
-import { generateTemporaryRecordId } from '@/lib/redux/entity/utils/stateHelpUtils';
+import { Button } from "@/components/ui/button";
+import { useCreateRecord } from "../hooks/unsaved-records/useCreateRecord";
+import { useUpdateRecord } from "../hooks/crud/useUpdateRecord";
+import { getUnifiedLayoutProps } from "../layout/configs";
+import { generateTemporaryRecordId } from "@/lib/redux/entity/utils/stateHelpUtils";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import EntityFormMinimalAnyRecord from './EntityFormMinimalAnyRecord';
-import { ScrollArea } from '@/components/ui';
-import { useDispatch } from 'react-redux';
-type FormMode = 'create' | 'edit' | 'view';
+import EntityFormMinimalAnyRecord from "./EntityFormMinimalAnyRecord";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useDispatch } from "react-redux";
+type FormMode = "create" | "edit" | "view";
 
 interface EntitySheetFormProps {
   mode: FormMode;
   entityName: EntityKeys;
   recordId?: MatrxRecordId;
-  position?: 'left' | 'right' | 'top' | 'bottom';
-  size?: 'sm' | 'default' | 'lg' | 'xl' | 'full';
+  position?: "left" | "right" | "top" | "bottom";
+  size?: "sm" | "default" | "lg" | "xl" | "full";
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
 const EntitySheetForm = ({
-  mode = 'view',
+  mode = "view",
   entityName,
   recordId,
-  position = 'right',
-  size = 'default',
+  position = "right",
+  size = "default",
   open,
   onOpenChange,
 }: EntitySheetFormProps) => {
-  const [tempRecordId, setTempRecordId] = useState<MatrxRecordId | undefined>(undefined);
+  const [tempRecordId, setTempRecordId] = useState<MatrxRecordId | undefined>(
+    undefined,
+  );
   const dispatch = useDispatch();
   const { actions, store } = useEntityTools(entityName);
   const entityState = store.getState()[entityName];
-  const entityPrettyName = useAppSelector((state: RootState) => selectEntityPrettyName(state, entityName));
+  const entityPrettyName = useAppSelector((state: RootState) =>
+    selectEntityPrettyName(state, entityName),
+  );
 
   const unifiedLayoutProps = getUnifiedLayoutProps({
-    formComponent: 'MINIMAL',
-    quickReferenceType: 'LIST',
+    formComponent: "MINIMAL",
+    quickReferenceType: "LIST",
     isExpanded: true,
     handlers: {},
-    entityKey: entityName
+    entityKey: entityName,
   }) as UnifiedLayoutProps;
 
   const { createRecord } = useCreateRecord(entityName);
-  const { updateRecord } = useUpdateRecord(entityName, { onComplete: () => onOpenChange(false) });
+  const { updateRecord } = useUpdateRecord(entityName, {
+    onComplete: () => onOpenChange(false),
+  });
 
   useEffect(() => {
     if (open) {
-      if (mode === 'create') {
+      if (mode === "create") {
         const tempId = generateTemporaryRecordId(entityState);
         dispatch(actions.startRecordCreation({ count: 1, tempId }));
         setTempRecordId(tempId);
-      } else if (mode === 'edit' && recordId) {
+      } else if (mode === "edit" && recordId) {
         dispatch(actions.startRecordUpdateById(recordId));
       }
     }
@@ -76,18 +82,18 @@ const EntitySheetForm = ({
   };
 
   const handleSave = () => {
-    if (mode === 'create' && tempRecordId) {
+    if (mode === "create" && tempRecordId) {
       createRecord(tempRecordId);
-    } else if (mode === 'edit' && recordId) {
+    } else if (mode === "edit" && recordId) {
       updateRecord(recordId);
     }
   };
 
   const getTitle = () => {
     switch (mode) {
-      case 'create':
+      case "create":
         return `New ${entityPrettyName}`;
-      case 'edit':
+      case "edit":
         return `Edit ${entityPrettyName}`;
       default:
         return `View ${entityPrettyName}`;
@@ -96,26 +102,26 @@ const EntitySheetForm = ({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side={position} className={`w-full ${size === 'lg' ? 'sm:max-w-lg' : size === 'xl' ? 'sm:max-w-xl' : size === 'full' ? 'sm:max-w-[100vw]' : 'sm:max-w-md'}`}>
+      <SheetContent
+        side={position}
+        className={`w-full ${size === "lg" ? "sm:max-w-lg" : size === "xl" ? "sm:max-w-xl" : size === "full" ? "sm:max-w-[100vw]" : "sm:max-w-md"}`}
+      >
         <SheetHeader>
           <SheetTitle>{getTitle()}</SheetTitle>
         </SheetHeader>
-        <ScrollArea className='h-[calc(100%-4rem)]'>
+        <ScrollArea className="h-[calc(100%-4rem)]">
           <EntityFormMinimalAnyRecord
-            recordId={mode === 'create' ? tempRecordId : recordId}
+            recordId={mode === "create" ? tempRecordId : recordId}
             unifiedLayoutProps={unifiedLayoutProps}
           />
         </ScrollArea>
         <div className="flex justify-end space-x-2 mt-4">
-          <Button
-            variant="outline"
-            onClick={handleClose}
-          >
+          <Button variant="outline" onClick={handleClose}>
             Cancel
           </Button>
-          {(mode === 'create' || mode === 'edit') && (
+          {(mode === "create" || mode === "edit") && (
             <Button onClick={handleSave}>
-              {mode === 'create' ? 'Create' : 'Save'}
+              {mode === "create" ? "Create" : "Save"}
             </Button>
           )}
         </div>

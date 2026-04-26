@@ -10,7 +10,7 @@ import {
   LayoutDashboard,
   LayoutTemplate,
 } from "lucide-react";
-import { Card } from "@/components/ui";
+import { Card } from "@/components/ui/card";
 import { parseMarkdownSimple } from "../markdown-classification/processors/custom/simple-markdown-parser";
 import EnhancedMarkdownCard from "../../playground/results/EnhancedMarkdownCard";
 import { DisplayTheme, SIMPLE_THEME_OPTIONS, THEMES } from "../themes";

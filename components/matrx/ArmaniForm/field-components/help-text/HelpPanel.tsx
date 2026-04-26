@@ -1,4 +1,4 @@
-import { Dialog } from "@/components/ui";
+import { Dialog } from "@/components/ui/dialog";
 import {PresentationComponent} from "@/components/matrx/ArmaniForm/action-system/presentation/types";
 
 import { useHelpContent } from './useHelpContent';

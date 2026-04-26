@@ -35,7 +35,7 @@
  */
 
 import { debounce, put, select } from "redux-saga/effects";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import {
   setAgentVariableDefinitions,
   setAgentSettings,

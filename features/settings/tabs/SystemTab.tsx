@@ -2,7 +2,7 @@
 
 import { Activity, Megaphone } from "lucide-react";
 import { useSelector } from "react-redux";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
 import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
 import { SettingsReadOnlyValue } from "@/components/official/settings/layout/SettingsReadOnlyValue";

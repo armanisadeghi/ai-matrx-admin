@@ -4,7 +4,7 @@ import React from "react";
 import Image from "next/image";
 import { useSelector } from "react-redux";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 
 interface UserAvatarProps {
   size?: number;

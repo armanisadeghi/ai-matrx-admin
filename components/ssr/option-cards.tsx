@@ -2,7 +2,8 @@
 import React from 'react';
 import Link from 'next/link';
 import { ArrowRight, ListCollapse } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui';
+import { CardHeader, CardContent } from "@/components/ui/card";
+import { Card, CardTitle, CardDescription } from "@/components/ui/card";
 import { getDynamicIconSelection } from "@/utils/icons/getDynamicIcons";
 import { OptionCardData } from './types';
 import { cn } from '@/utils/cn';

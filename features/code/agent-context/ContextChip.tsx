@@ -5,11 +5,8 @@ import { Brain, Check, FileCode2, Square, SquareCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { setEditorContextDisabledTabs } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.slice";
-import {
-  selectCodeTabs,
-  selectActiveTabId,
-} from "../redux/tabsSlice";
-import type { RootState } from "@/lib/redux/store";
+import { selectCodeTabs, selectActiveTabId } from "../redux/tabsSlice";
+import type { RootState } from "@/lib/redux/store.types";
 
 interface ContextChipProps {
   conversationId: string | null | undefined;
@@ -37,8 +34,8 @@ export const ContextChip: React.FC<ContextChipProps> = ({
   const activeId = useAppSelector(selectActiveTabId);
   const disabled = useAppSelector((state: RootState) =>
     conversationId
-      ? state.instanceUIState?.byConversationId?.[conversationId]
-          ?.editorContextDisabledTabs ?? []
+      ? (state.instanceUIState?.byConversationId?.[conversationId]
+          ?.editorContextDisabledTabs ?? [])
       : [],
   );
 
@@ -145,11 +142,17 @@ export const ContextChip: React.FC<ContextChipProps> = ({
                     className="flex w-full items-center gap-1.5 px-2 py-1 text-left text-[12px] hover:bg-neutral-100 dark:hover:bg-neutral-800/70"
                   >
                     {enabled ? (
-                      <SquareCheck size={12} className="shrink-0 text-blue-500" />
+                      <SquareCheck
+                        size={12}
+                        className="shrink-0 text-blue-500"
+                      />
                     ) : (
                       <Square size={12} className="shrink-0 text-neutral-400" />
                     )}
-                    <FileCode2 size={12} className="shrink-0 text-neutral-500" />
+                    <FileCode2
+                      size={12}
+                      className="shrink-0 text-neutral-500"
+                    />
                     <span className="min-w-0 flex-1 truncate">
                       {tab.name}
                       {tab.dirty && (

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { TextGenerateEffect } from '@/components/ui';
+import { TextGenerateEffect } from "@/components/ui/text-generate-effect";
 
 const phrases = [
     `AI: The ultimate proof that humans will work tirelessly to replace themselves with something smarter.`,

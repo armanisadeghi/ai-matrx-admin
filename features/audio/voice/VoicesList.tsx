@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { listVoices } from '@/lib/cartesia/cartesiaUtils';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
+import { CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardTitle } from "@/components/ui/card";
 import { FullJsonViewer } from '@/components/ui/JsonComponents/JsonViewerComponent';
 import { motion } from 'motion/react';
 import { TooltipProvider } from '@/components/ui/tooltip';

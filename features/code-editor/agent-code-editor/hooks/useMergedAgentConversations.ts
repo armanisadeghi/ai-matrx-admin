@@ -22,7 +22,7 @@
 import { useEffect, useMemo } from "react";
 import { createSelector } from "@reduxjs/toolkit";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import { fetchAgentConversations } from "@/features/agents/redux/conversation-list/conversation-list.thunks";
 import { conversationListCacheKey } from "@/features/agents/redux/conversation-list/conversation-list.types";
 import type {

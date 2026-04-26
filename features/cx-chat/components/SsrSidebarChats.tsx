@@ -44,7 +44,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 // rebuilt, swap these for `selectGlobalConversationList`, the
 // `conversationListActions.*` optimistic mutations, and real thunks.
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 
 interface CxConversationListItem {
   id: string;
@@ -54,22 +54,22 @@ interface CxConversationListItem {
   status: "active" | "completed" | "archived";
 }
 const EMPTY_ITEMS: CxConversationListItem[] = [];
-const selectCxConversationItems = (_state: RootState): CxConversationListItem[] =>
-  EMPTY_ITEMS;
+const selectCxConversationItems = (
+  _state: RootState,
+): CxConversationListItem[] => EMPTY_ITEMS;
 const selectCxConversationListStatus = (
   _state: RootState,
 ): "idle" | "loading" | "success" | "error" => "idle";
 const selectCxConversationHasMore = (_state: RootState): boolean => false;
 const selectCxConversationIsPending =
-  (_id: string) => (_state: RootState): boolean => false;
+  (_id: string) =>
+  (_state: RootState): boolean =>
+    false;
 const prependConversation = (payload: CxConversationListItem) => ({
   type: "cxConversations/legacy-prepend-noop" as const,
   payload,
 });
-const touchConversation = (payload: {
-  id: string;
-  updatedAt?: string;
-}) => ({
+const touchConversation = (payload: { id: string; updatedAt?: string }) => ({
   type: "cxConversations/legacy-touch-noop" as const,
   payload,
 });

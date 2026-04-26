@@ -1,12 +1,13 @@
 import { createSelector } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import type { InstanceContextEntry } from "@/features/agents/types/instance.types";
 
 const EMPTY_CONTEXT_ENTRIES: InstanceContextEntry[] = [];
 
 export const selectInstanceContextEntries = (conversationId: string) =>
   createSelector(
-    (state: RootState) => state.instanceContext.byConversationId[conversationId],
+    (state: RootState) =>
+      state.instanceContext.byConversationId[conversationId],
     (context): InstanceContextEntry[] => {
       if (!context) return EMPTY_CONTEXT_ENTRIES;
       const values = Object.values(context);
@@ -24,7 +25,8 @@ export const selectInstanceContextEntry =
  */
 export const selectSlotMatchedContext = (conversationId: string) =>
   createSelector(
-    (state: RootState) => state.instanceContext.byConversationId[conversationId],
+    (state: RootState) =>
+      state.instanceContext.byConversationId[conversationId],
     (context): InstanceContextEntry[] => {
       if (!context) return EMPTY_CONTEXT_ENTRIES;
       const filtered = Object.values(context).filter((e) => e.slotMatched);
@@ -37,7 +39,8 @@ export const selectSlotMatchedContext = (conversationId: string) =>
  */
 export const selectAdHocContext = (conversationId: string) =>
   createSelector(
-    (state: RootState) => state.instanceContext.byConversationId[conversationId],
+    (state: RootState) =>
+      state.instanceContext.byConversationId[conversationId],
     (context): InstanceContextEntry[] => {
       if (!context) return EMPTY_CONTEXT_ENTRIES;
       const filtered = Object.values(context).filter((e) => !e.slotMatched);

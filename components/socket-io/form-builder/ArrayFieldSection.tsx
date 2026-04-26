@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button } from '@/components/ui';
+import { Button } from "@/components/ui/button";
 import { Trash, Plus } from 'lucide-react';
 import { formatLabel } from "@/components/socket-io/utils/label-util";
 import { SchemaField } from "@/constants/socket-schema";

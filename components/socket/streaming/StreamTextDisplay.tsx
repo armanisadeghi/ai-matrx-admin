@@ -1,6 +1,7 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
+import { CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardTitle } from "@/components/ui/card";
 import { CopyButton } from "@/components/matrx/buttons/CopyButton";
 import { cn } from "@/lib/utils";
 import { useRef, useEffect, MouseEvent } from "react";

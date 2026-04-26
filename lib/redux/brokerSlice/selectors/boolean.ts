@@ -1,6 +1,6 @@
 // types/boolean/index.ts
 import { createSelector } from "reselect";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import { BrokerIdentifier } from "../types";
 import { resolveBrokerId } from "../utils";
 
@@ -12,37 +12,34 @@ const selectIdArgs = (_: RootState, idArgs: BrokerIdentifier) => idArgs;
 
 // Selectors
 const selectBoolean = createSelector(
-    [
-        (state: RootState) => state.broker,
-        selectIdArgs
-    ],
-    (broker, idArgs): boolean | undefined => {
-        const brokerId = resolveBrokerId(broker, idArgs);
-        if (!brokerId) return undefined;
+  [(state: RootState) => state.broker, selectIdArgs],
+  (broker, idArgs): boolean | undefined => {
+    const brokerId = resolveBrokerId(broker, idArgs);
+    if (!brokerId) return undefined;
 
-        const brokerValue = broker.brokers[brokerId];
-        return isBoolean(brokerValue) ? brokerValue : undefined;
-    }
+    const brokerValue = broker.brokers[brokerId];
+    return isBoolean(brokerValue) ? brokerValue : undefined;
+  },
 );
 
 const selectIsTrue = createSelector(
-    [selectBoolean],
-    (value): boolean => value === true
+  [selectBoolean],
+  (value): boolean => value === true,
 );
 
 const selectIsFalse = createSelector(
-    [selectBoolean],
-    (value): boolean => value === false
+  [selectBoolean],
+  (value): boolean => value === false,
 );
 
 const selectBooleanExists = createSelector(
-    [selectBoolean],
-    (value): boolean => value !== undefined
+  [selectBoolean],
+  (value): boolean => value !== undefined,
 );
 
 export const booleanSelectors = {
-    selectBoolean,
-    selectIsTrue,
-    selectIsFalse,
-    selectBooleanExists,
+  selectBoolean,
+  selectIsTrue,
+  selectIsFalse,
+  selectBooleanExists,
 };

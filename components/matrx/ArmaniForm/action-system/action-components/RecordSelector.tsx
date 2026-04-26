@@ -1,5 +1,5 @@
 import React from "react";
-import {Button} from "@/components/ui";
+import { Button } from "@/components/ui/button";
 
 
 const RecordSelector = ({field, value, onChange, onSearch, records = [], loading = false}) => {

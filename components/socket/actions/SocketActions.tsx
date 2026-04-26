@@ -1,6 +1,6 @@
 // File Location: components/socket/actions/SocketActions.tsx
 
-import { Button } from '@/components/ui';
+import { Button } from "@/components/ui/button";
 import { Plus, Send, Trash2 } from 'lucide-react';
 
 interface SocketActionsProps {

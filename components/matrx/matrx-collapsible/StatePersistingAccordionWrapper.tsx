@@ -1,9 +1,5 @@
 import React, { ReactNode, useState } from 'react';
-import {
-    Accordion,
-    AccordionItem,
-    AccordionTrigger,
-} from '@/components/ui';
+import { Accordion, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 interface AccordionWrapperProps {
     children: ReactNode;

@@ -2,16 +2,10 @@
 
 import React, { useState, useCallback } from 'react';
 import Cropper from 'react-easy-crop';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogFooter,
-  Button,
-  Slider,
-  Label
-} from '@/components/ui';
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
 import { toast } from 'sonner';
 import { useFileUploadWithStorage } from '@/components/ui/file-upload/useFileUploadWithStorage';
 

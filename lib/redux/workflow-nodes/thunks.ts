@@ -1,62 +1,66 @@
-import { createAsyncThunk } from '@reduxjs/toolkit';
-import { workflowNodeService } from './service';
-import { workflowNodesSelectors } from './selectors';
-import { WorkflowNode, WorkflowNodeCreateInput, WorkflowNodeUpdateInput } from './types';
-import type { RootState } from '@/lib/redux/store';
+import { createAsyncThunk } from "@reduxjs/toolkit";
+import { workflowNodeService } from "./service";
+import { workflowNodesSelectors } from "./selectors";
+import {
+  WorkflowNode,
+  WorkflowNodeCreateInput,
+  WorkflowNodeUpdateInput,
+} from "./types";
+import type { RootState } from "@/lib/redux/store.types";
 
 export const fetchAllWorkflowNodes = createAsyncThunk(
-  'workflowNodes/fetchAll',
+  "workflowNodes/fetchAll",
   async () => {
     return await workflowNodeService.fetchAll();
-  }
+  },
 );
 
 export const fetchOneWorkflowNode = createAsyncThunk(
-  'workflowNodes/fetchOne',
+  "workflowNodes/fetchOne",
   async (id: string) => {
     return await workflowNodeService.fetchOne(id);
-  }
+  },
 );
 
 export const fetchWorkflowNodesByWorkflowId = createAsyncThunk(
-  'workflowNodes/fetchByWorkflowId',
+  "workflowNodes/fetchByWorkflowId",
   async (workflowId: string) => {
     return await workflowNodeService.fetchByWorkflowId(workflowId);
-  }
+  },
 );
 
 export const createWorkflowNode = createAsyncThunk(
-  'workflowNodes/create',
+  "workflowNodes/create",
   async (node: WorkflowNodeCreateInput) => {
     return await workflowNodeService.create(node);
-  }
+  },
 );
 
 export const updateWorkflowNode = createAsyncThunk(
-  'workflowNodes/update',
+  "workflowNodes/update",
   async ({ id, updates }: { id: string; updates: WorkflowNodeUpdateInput }) => {
     return await workflowNodeService.update(id, updates);
-  }
+  },
 );
 
 export const deleteWorkflowNode = createAsyncThunk(
-  'workflowNodes/delete',
+  "workflowNodes/delete",
   async (id: string) => {
     return await workflowNodeService.delete(id);
-  }
+  },
 );
 
 export const saveWorkflowNode = createAsyncThunk(
-  'workflowNodes/save',
+  "workflowNodes/save",
   async (
     {
       id,
-      updates
+      updates,
     }: {
       id: string;
-      updates?: WorkflowNodeUpdateInput
+      updates?: WorkflowNodeUpdateInput;
     },
-    { getState }
+    { getState },
   ) => {
     // 1. Get current node state from Redux
     const state = getState() as RootState;
@@ -71,11 +75,11 @@ export const saveWorkflowNode = createAsyncThunk(
 
     // 3. Save to database using the current updateWorkflowNode service
     return await workflowNodeService.update(id, nodeToSave);
-  }
+  },
 );
 
 export const duplicateWorkflowNode = createAsyncThunk(
-  'workflowNodes/duplicate',
+  "workflowNodes/duplicate",
   async (id: string, { getState }) => {
     // 1. Get current node state from Redux
     const state = getState() as RootState;
@@ -97,7 +101,7 @@ export const duplicateWorkflowNode = createAsyncThunk(
     // 3. Modify step_name to add " copy"
     const duplicatedNode: WorkflowNodeCreateInput = {
       ...nodeData,
-      step_name: nodeData.step_name ? `${nodeData.step_name} copy` : 'Copy',
+      step_name: nodeData.step_name ? `${nodeData.step_name} copy` : "Copy",
     };
 
     // 4. Modify position in ui_data if it exists
@@ -113,5 +117,5 @@ export const duplicateWorkflowNode = createAsyncThunk(
 
     // 5. Create the new node using the service
     return await workflowNodeService.create(duplicatedNode);
-  }
+  },
 );

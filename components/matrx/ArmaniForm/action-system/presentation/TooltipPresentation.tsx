@@ -8,29 +8,14 @@ import {
     PresentationHeader
 } from "./common";
 import {cn} from "@/utils/cn";
-import {
-    Collapsible, ContextMenu, ContextMenuContent, ContextMenuTrigger,
-    Dialog,
-    DialogContent, DialogDescription, DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuTrigger,
-    HoverCard,
-    HoverCardContent,
-    HoverCardTrigger,
-    Sheet,
-    SheetContent,
-    SheetHeader,
-    SheetTitle,
-    SheetTrigger,
-    Tooltip,
-    TooltipContent,
-    TooltipTrigger,
-    Button
-} from "@/components/ui";
+import { Button } from "@/components/ui/button";
+import { Collapsible } from "@/components/ui/collapsible";
+import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from "@/components/ui/context-menu/context-menu";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 
 export const TooltipPresentation: PresentationComponent = (

@@ -4,7 +4,7 @@
 
 import React from 'react';
 import FlashcardComponent from './components/FlashcardComponent';
-import {Cover} from "@/components/ui";
+import { Cover } from "@/components/ui/cover";
 
 const FlashcardsPage: React.FC = () => {
     return (

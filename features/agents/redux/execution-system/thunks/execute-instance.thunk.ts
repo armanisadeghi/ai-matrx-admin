@@ -21,7 +21,7 @@
  */
 
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import type { AssembledAgentStartRequest } from "@/features/agents/types/request.types";
 import type { MessagePart } from "@/types/python-generated/stream-events";
 import { generateRequestId } from "../utils/ids";

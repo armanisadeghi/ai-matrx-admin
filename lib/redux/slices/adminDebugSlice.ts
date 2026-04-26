@@ -19,7 +19,7 @@
 // the original design — they drive the floating debug panels in DebugIndicatorManager.
 
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import type { DebugData } from "@/components/debug/SystemPromptDebugModal";
 
 // ============================================================================

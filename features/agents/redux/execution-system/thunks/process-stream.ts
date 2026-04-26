@@ -12,7 +12,7 @@
  *  - Old CompletionStats replaced with UserRequestResult from completion.result
  */
 
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import type { CompletionStats } from "@/features/agents/types/instance.types";
 import type { ClientMetrics } from "@/features/agents/types/request.types";
 import type { ToolLifecycleStatus } from "@/features/agents/types/request.types";

@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import {CardContent} from '@/components/ui/card';
 import {Button} from '@/components/ui/button';
-import {FullJsonViewer} from '@/components/ui';
+import { FullJsonViewer } from "@/components/ui/JsonComponents/JsonViewerComponent";
 import {ChevronLeft} from 'lucide-react';
 import {EntityKeys} from '@/types/entityTypes';
 import {selectFormattedEntityOptions} from '@/lib/redux/schema/globalCacheSelectors';

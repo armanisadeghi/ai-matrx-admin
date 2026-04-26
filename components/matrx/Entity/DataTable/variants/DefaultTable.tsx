@@ -11,16 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { flexRender } from "@tanstack/react-table";
 import { Spinner } from "@/components/ui/spinner";
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ChevronDown } from "lucide-react";
 import * as React from "react";
 import EntityTabModal from "@/components/matrx/Entity/modal/EntityTabModal";

@@ -36,6 +36,8 @@
     "ship:init": "tsx scripts/matrx/ship.ts init",
     "ship:setup": "tsx scripts/matrx/ship.ts setup",
     "ship:history": "tsx scripts/matrx/ship.ts history",
+    "find-circular": "npx madge --circular --extensions ts,tsx --ts-config tsconfig.json lib/redux/ 2>&1",
+    "find-circular:count": "npx madge --circular --extensions ts,tsx --ts-config tsconfig.json lib/redux/ 2>&1 | grep 'Found'",
     "check:public-imports": "npx tsx scripts/check-public-imports.ts",
     "check:registry": "tsx scripts/check-registry.ts",
     "check:bundle": "tsx scripts/check-bundle-size.ts",

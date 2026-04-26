@@ -1,5 +1,10 @@
 import React, { useEffect } from 'react';
-import { TabsContent, ScrollArea, Label, Input, Textarea, Button } from "@/components/ui";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { TabsContent } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import { CopyButton } from "@/components/matrx/buttons/CopyButton";
 
 interface PropertiesBrowserTabProps {

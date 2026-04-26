@@ -1,9 +1,5 @@
 import React from "react";
-import {
-    ContextMenu,
-    ContextMenuTrigger,
-    ContextMenuContent,
-} from "@/components/ui";
+import { ContextMenu, ContextMenuTrigger, ContextMenuContent } from "@/components/ui/context-menu/context-menu";
 import {PresentationComponent} from "./types";
 import {cn} from "@/lib/utils";
 import {

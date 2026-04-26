@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { staticLucideIconMap } from "@/components/official/icons/IconResolver";
 import { LiveProvider, LiveError, LivePreview } from "react-live";
-import * as UIComponents from "@/components/ui";
+import * as UIComponents from "@/components/ui/react-live-scope";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { supabase } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";

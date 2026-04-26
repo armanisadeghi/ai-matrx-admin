@@ -1,7 +1,7 @@
 import {useState, useEffect, useMemo} from 'react';
 import {Button} from '@/components/ui/button';
 import {CardContent} from '@/components/ui/card';
-import {FullJsonViewer} from '@/components/ui';
+import { FullJsonViewer } from "@/components/ui/JsonComponents/JsonViewerComponent";
 import {useAppSelector} from '@/lib/redux/hooks';
 import {EntityKeys} from '@/types/entityTypes';
 import {selectFormattedEntityOptions} from '@/lib/redux/schema/globalCacheSelectors';

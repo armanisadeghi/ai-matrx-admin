@@ -9,7 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MathProblemProps } from "../types";
 import ControlPanel from "./ControlPanel";
-import { BackgroundGradient } from "@/components/ui";
+import { BackgroundGradient } from "@/components/ui/background-gradient";
 import SolutionAnswer from "./SolutionAnswer";
 
 const MathProblem: React.FC<MathProblemProps> = ({

@@ -1,9 +1,5 @@
-import {
-     DialogDescription, DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    Button
-} from "@/components/ui";
+import { Button } from "@/components/ui/button";
+import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import React from "react";
 import {PresentationConfig, PresentationControls} from "./types";
 import { cn } from '@/utils/cn';

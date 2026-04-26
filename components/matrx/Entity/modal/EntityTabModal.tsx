@@ -13,7 +13,7 @@ import {
 } from "@/components/matrx/Entity/types/entityForm";
 import EntityForm from "@/components/matrx/Entity/form/EntityForm";
 import { useEntityTabModal } from "@/components/matrx/Entity/hooks/useEntityTabModal";
-import { Button } from "@/components/ui";
+import { Button } from "@/components/ui/button";
 
 const EntityTabModal: React.FC<
   EntityTabModalProps & { className?: string }

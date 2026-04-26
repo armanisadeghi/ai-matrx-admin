@@ -7,7 +7,7 @@ import SchemaSelect from './SchemaSelect';
 import { SchemaBasedJsonEditor } from '@/components/ui/JsonComponents';
 import { Button } from '@/components/ui/button';
 import { v4 as uuidv4 } from 'uuid';
-import { Input } from "@/components/ui";
+import { Input } from "@/components/ui/input";
 
 const CreateOperationJson: React.FC = () => {
     const [selectedSchema, setSelectedSchema] = useState<string | null>(null);

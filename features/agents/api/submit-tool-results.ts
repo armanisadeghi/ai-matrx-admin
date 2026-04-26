@@ -19,7 +19,7 @@
 import { callApi } from "@/lib/api/call-api";
 import type { ThunkAction, ThunkDispatch } from "redux-thunk";
 import type { UnknownAction } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 
 type ToolResultsDispatch = ThunkDispatch<RootState, unknown, UnknownAction>;
 import type { components } from "@/types/python-generated/api-types";
@@ -78,10 +78,7 @@ function postToolResults(
           );
         } else {
           // eslint-disable-next-line no-console
-          console.error(
-            "[submit-tool-results] POST failed",
-            result.error,
-          );
+          console.error("[submit-tool-results] POST failed", result.error);
         }
       }
     } catch (e) {

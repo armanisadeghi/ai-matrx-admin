@@ -8,11 +8,7 @@ import {
     PresentationHeader
 } from "./common";
 import {cn} from "@/utils/cn";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuTrigger,
-} from "@/components/ui";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 export const DropdownPresentation: PresentationComponent = (
     {

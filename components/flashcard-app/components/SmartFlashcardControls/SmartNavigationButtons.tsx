@@ -1,7 +1,7 @@
 import React from "react";
 import {SmartButtonProps} from "@/components/flashcard-app/components/SmartFlashcardControls/types";
 import {ArrowLeft, ArrowRight, Shuffle} from "lucide-react";
-import {Button} from "@/components/ui";
+import { Button } from "@/components/ui/button";
 
 export const NavigationButton: React.FC<SmartButtonProps & { type: 'previous' | 'next' | 'shuffle' }> = (
     {

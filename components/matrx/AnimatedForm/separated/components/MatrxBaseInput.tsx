@@ -1,6 +1,6 @@
 // components/MatrxBaseInput.tsx
 
-import { Input } from "@/components/ui";
+import { Input } from "@/components/ui/input";
 import {cn} from "@/utils/cn";
 import React from "react";
 import { MatrxBaseInputProps } from "@/types/componentConfigTypes";

@@ -1,15 +1,20 @@
-import React from 'react';
-import { useSelector } from 'react-redux';
+import React from "react";
+import { useSelector } from "react-redux";
 import { selectTaskDataById } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
-import type { RootState } from '@/lib/redux/store';
+import type { RootState } from "@/lib/redux/store.types";
 
 interface TaskDataDebugProps {
   taskId: string;
   show?: boolean;
 }
 
-const TaskDataDebug: React.FC<TaskDataDebugProps> = ({ taskId, show = true }) => {
-  const taskData = useSelector((state: RootState) => selectTaskDataById(state, taskId));
+const TaskDataDebug: React.FC<TaskDataDebugProps> = ({
+  taskId,
+  show = true,
+}) => {
+  const taskData = useSelector((state: RootState) =>
+    selectTaskDataById(state, taskId),
+  );
 
   if (!show) return null;
 
@@ -25,4 +30,4 @@ const TaskDataDebug: React.FC<TaskDataDebugProps> = ({ taskId, show = true }) =>
   );
 };
 
-export default TaskDataDebug; 
+export default TaskDataDebug;

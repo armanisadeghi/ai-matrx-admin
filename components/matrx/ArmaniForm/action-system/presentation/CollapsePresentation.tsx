@@ -1,7 +1,5 @@
 import React from "react";
-import {
-    Collapsible,
-} from "@/components/ui";
+import { Collapsible } from "@/components/ui/collapsible";
 import {PresentationComponent} from "./types";
 import {cn} from "@/lib/utils";
 import {

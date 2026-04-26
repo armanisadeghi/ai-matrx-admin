@@ -1,7 +1,7 @@
 import React, {useState} from "react";
 import useDatabase from "@/lib/hooks/useDatabase";
 import SchemaSelect from "@/components/matrx/schema/ops/SchemaSelect";
-import {Button} from "@/components/ui";
+import { Button } from "@/components/ui/button";
 
 const CreateOperation = () => {
     const [selectedSchema, setSelectedSchema] = useState<string | null>(null);

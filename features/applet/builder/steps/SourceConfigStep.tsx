@@ -7,7 +7,7 @@ import AppletSourceSelection from "@/features/applet/builder/modules/broker-mapp
 import { RecipeSelectionList } from "@/features/applet/builder/modules/recipe-source/RecipeSelectionList";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import {
   selectAppletCompiledRecipeId,
   selectAppletsByAppId,

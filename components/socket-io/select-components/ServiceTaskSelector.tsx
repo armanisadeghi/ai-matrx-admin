@@ -3,7 +3,7 @@
 import React from "react";
 import { ServiceSelector } from "./ServiceSelector";
 import { TaskSelector } from "./TaskSelector";
-import { Button } from "@/components/ui";
+import { Button } from "@/components/ui/button";
 import { Play } from "lucide-react";
 import { formatText } from "@/utils/text/text-case-converter";
 import { useAppDispatch } from "@/lib/redux/hooks";

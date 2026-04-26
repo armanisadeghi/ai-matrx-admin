@@ -1,15 +1,18 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
-import type { RootState } from '@/lib/redux/store';
-import { Button } from '@/components/ui/button';
+import type { RootState } from "@/lib/redux/store.types";
+import { Button } from "@/components/ui/button";
 
 /**
  * A utility component to debug broker map entries and values
  * Only use during development, remove in production
  */
-const BrokerDebugger: React.FC<{ fieldId?: string; fieldObject?: any }> = ({ fieldId, fieldObject }) => {
+const BrokerDebugger: React.FC<{ fieldId?: string; fieldObject?: any }> = ({
+  fieldId,
+  fieldObject,
+}) => {
   const brokerState = useAppSelector((state: RootState) => state.broker);
   // For toggle visibility
   const [isVisible, setIsVisible] = useState(false);
@@ -19,25 +22,27 @@ const BrokerDebugger: React.FC<{ fieldId?: string; fieldObject?: any }> = ({ fie
   // Force refresh every second to see real-time updates
   useEffect(() => {
     const timer = setInterval(() => {
-      setChangeCount(prev => prev + 1);
+      setChangeCount((prev) => prev + 1);
     }, 1000);
 
     return () => clearInterval(timer);
   }, []);
 
   // Get the specific entry for this field if a fieldId is provided
-  const mapKey = fieldId ? `applet:${fieldId}` : '';
+  const mapKey = fieldId ? `applet:${fieldId}` : "";
   const fieldEntry = fieldId ? brokerState.brokerMap[mapKey] : null;
-  const fieldValue = fieldEntry ? brokerState.brokers[fieldEntry.brokerId] : undefined;
+  const fieldValue = fieldEntry
+    ? brokerState.brokers[fieldEntry.brokerId]
+    : undefined;
 
   // Get all entries related to applet preview
   const previewEntries = Object.entries(brokerState.brokerMap)
-    .filter(([key]) => key.startsWith('applet:'))
+    .filter(([key]) => key.startsWith("applet:"))
     .map(([key, entry]) => ({
       key,
       entry,
       // @ts-ignore - brokerId exists on BrokerMapEntry but type system doesn't recognize it
-      value: brokerState.brokers[entry.brokerId]
+      value: brokerState.brokers[entry.brokerId],
     }));
 
   if (!isVisible) {
@@ -74,7 +79,9 @@ const BrokerDebugger: React.FC<{ fieldId?: string; fieldObject?: any }> = ({ fie
       {/* Display full field object */}
       {fieldObject && (
         <div className="mb-4">
-          <h4 className="text-sm font-medium text-gray-800 dark:text-gray-200">Field Object</h4>
+          <h4 className="text-sm font-medium text-gray-800 dark:text-gray-200">
+            Field Object
+          </h4>
           <div className="text-xs p-2 bg-gray-100 dark:bg-gray-800 rounded mb-2 max-h-40 overflow-auto">
             <pre className="whitespace-pre-wrap break-all">
               {JSON.stringify(fieldObject, null, 2)}
@@ -85,13 +92,16 @@ const BrokerDebugger: React.FC<{ fieldId?: string; fieldObject?: any }> = ({ fie
 
       {fieldId && (
         <div className="mb-4">
-          <h4 className="text-sm font-medium text-gray-800 dark:text-gray-200">Current Field</h4>
+          <h4 className="text-sm font-medium text-gray-800 dark:text-gray-200">
+            Current Field
+          </h4>
           <div className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded mb-1">
             <span className="font-medium">Map Key:</span> {mapKey}
           </div>
 
           <div className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded mb-1">
-            <span className="font-medium">Broker ID:</span> {fieldEntry?.brokerId || 'Not found'}
+            <span className="font-medium">Broker ID:</span>{" "}
+            {fieldEntry?.brokerId || "Not found"}
           </div>
 
           <div className="text-xs p-2 bg-gray-100 dark:bg-gray-800 rounded mb-2">
@@ -99,32 +109,36 @@ const BrokerDebugger: React.FC<{ fieldId?: string; fieldObject?: any }> = ({ fie
             <pre className="whitespace-pre-wrap break-all">
               {fieldValue !== undefined
                 ? JSON.stringify(fieldValue, null, 2)
-                : 'No value found'}
+                : "No value found"}
             </pre>
           </div>
         </div>
       )}
 
       <div className="mb-4">
-        <h4 className="text-sm font-medium text-gray-800 dark:text-gray-200">All Preview Entries ({previewEntries.length})</h4>
+        <h4 className="text-sm font-medium text-gray-800 dark:text-gray-200">
+          All Preview Entries ({previewEntries.length})
+        </h4>
         {previewEntries.length === 0 ? (
           <div className="text-xs p-2 bg-gray-100 dark:bg-gray-800 rounded my-1">
             No entries found
           </div>
         ) : (
           previewEntries.map(({ key, entry, value }) => (
-            <div key={key} className="text-xs p-2 bg-gray-100 dark:bg-gray-800 rounded my-1">
-              <div className="font-medium">{key.replace('applet:', '')}</div>
+            <div
+              key={key}
+              className="text-xs p-2 bg-gray-100 dark:bg-gray-800 rounded my-1"
+            >
+              <div className="font-medium">{key.replace("applet:", "")}</div>
               {/* @ts-ignore - brokerId exists on BrokerMapEntry but type system doesn't recognize it */}
               <div className="opacity-75">BrokerID: {entry.brokerId}</div>
               <div>
-                Value: {value !== undefined ?
-                  (typeof value === 'object' ?
-                    JSON.stringify(value) :
-                    String(value)
-                  ) :
-                  'undefined'
-                }
+                Value:{" "}
+                {value !== undefined
+                  ? typeof value === "object"
+                    ? JSON.stringify(value)
+                    : String(value)
+                  : "undefined"}
               </div>
             </div>
           ))
@@ -134,4 +148,4 @@ const BrokerDebugger: React.FC<{ fieldId?: string; fieldObject?: any }> = ({ fie
   );
 };
 
-export default BrokerDebugger; 
+export default BrokerDebugger;

@@ -13,9 +13,7 @@ import {
 import { Cross2Icon } from "@radix-ui/react-icons"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
-import { ScrollArea } from "@/components/ui"
-
-// Maintain the same variant definitions
+import { ScrollArea } from "@/components/ui/scroll-area";// Maintain the same variant definitions
 const sheetVariants = cva(
   "gap-4 bg-background p-6 shadow-lg",
   {

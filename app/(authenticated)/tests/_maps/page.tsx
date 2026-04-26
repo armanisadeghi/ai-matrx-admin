@@ -3,20 +3,14 @@
 import { useState } from "react";
 import OpenStreetMapComponent from "./OpenStreetMapComponent";
 import { LatLngExpression } from "leaflet";
-import {
-    Input,
-    Textarea,
-    Select,
-    SelectTrigger,
-    SelectValue,
-    SelectContent,
-    SelectItem,
-    Slider,
-    Switch,
-    DatePicker,
-    Checkbox,
-    Label
-} from "@/components/ui";
+import { Checkbox } from "@/components/ui/checkbox";
+import { DatePicker } from "@/components/ui/date-picker";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import { LOCATIONS, CUSTOM_LAYERS } from "./constants";
 
 export default function MapsPage() {

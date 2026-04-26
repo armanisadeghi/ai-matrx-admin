@@ -2,8 +2,8 @@
 
 import React, { useState } from 'react';
 import { X, Plus, Copy, Check, Wand2, ChevronDown, ChevronUp, ListFilter } from 'lucide-react';
-import { Button } from '@/components/ui';
-import { Input } from '@/components/ui';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 const UUIDArrayField = () => {
     const [inputValue, setInputValue] = useState('');

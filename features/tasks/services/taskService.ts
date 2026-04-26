@@ -11,7 +11,7 @@ import {
 } from "@/features/files/redux/thunks";
 import { ensureFolderPath } from "@/features/files/redux/thunks";
 import { folderForTask } from "@/features/files/utils/folder-conventions";
-import { getStore } from "@/lib/redux/store";
+import { getStore } from "@/lib/redux/store-singleton";
 
 export interface CreateTaskInput {
   title: string;

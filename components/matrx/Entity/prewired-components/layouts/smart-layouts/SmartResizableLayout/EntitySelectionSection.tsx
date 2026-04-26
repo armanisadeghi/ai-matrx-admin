@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { CardContent } from '@/components/ui';
+import { CardContent } from "@/components/ui/card";
 import { EnhancedCard } from "../../parts/EnhancedCard";
 import { LayoutHeader } from "../../parts/LayoutHeader";
 import { UnifiedLayoutProps } from '../../types';

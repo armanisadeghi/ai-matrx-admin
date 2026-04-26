@@ -2,14 +2,9 @@ import React from "react";
 import {cn} from "@/utils/cn";
 import {Link} from "lucide-react";
 import {EntityDropdownMenu} from "./EntityDropdownMenu";
-import {
-    Button,
-    Tooltip,
-    TooltipContent,
-    TooltipTrigger,
-    Switch,
-    TooltipProvider
-} from "@/components/ui";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import {CustomTriggerComponentProps, TriggerProps} from "./types";
 import {iconRegistry} from "../icons/iconRegistry";
 import type { VariantProps } from "class-variance-authority";

@@ -2,7 +2,7 @@
 import React from 'react';
 import {MoreVertical, Trash2, Edit2, Eye} from "lucide-react";
 import {Button} from "@/components/ui/button";
-import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/ui";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import {useVoiceChat} from "@/hooks/tts/useVoiceChat";
 
 interface ConversationMenuProps {

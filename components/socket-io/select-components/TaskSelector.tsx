@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getTasksForService } from "@/constants/socket-schema";
 import { useAppDispatch } from "@/lib/redux/hooks";
 

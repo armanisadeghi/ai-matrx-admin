@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Group, Panel, Separator, GroupImperativeHandle, PanelImperativeHandle } from "react-resizable-panels";
-import { Button } from "@/components/ui";
+import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { MatrxRecordId } from "@/types/entityTypes";
 import ConfirmationDialog, { DialogType } from "../components/ConfirmationDialog";

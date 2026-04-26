@@ -1,17 +1,8 @@
-import {
-    Card,
-    CardHeader,
-    CardTitle,
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
-    Tabs,
-    TabsList,
-    TabsTrigger,
-    TabsContent,
-    ScrollArea,
-} from "@/components/ui";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { CardHeader } from "@/components/ui/card";
+import { Card, CardTitle } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useState, useMemo, useEffect } from "react";
 import { MarkdownCopyButton } from "@/components/matrx/buttons/MarkdownCopyButton";
 import DebugViewTab from "./tabs/DebugViewTab";

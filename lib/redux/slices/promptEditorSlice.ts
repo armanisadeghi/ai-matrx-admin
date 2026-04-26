@@ -12,7 +12,7 @@ import {
   PromptData,
 } from "@/features/prompts/types/core";
 import { getModelDefaults } from "@/features/prompts/hooks/useModelControls";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import { selectModelById } from "@/features/ai-models/redux/modelRegistrySlice";
 import { AIModel } from "@/features/ai-models/redux/modelRegistrySlice";
 
@@ -200,11 +200,13 @@ export const switchModel = createAsyncThunk(
         } else if (key === "tools") {
           // Only preserve tools if new model supports tools
           const controls =
-            typeof newModel.controls === 'object' && newModel.controls !== null
+            typeof newModel.controls === "object" && newModel.controls !== null
               ? (newModel.controls as Record<string, unknown>)
               : undefined;
           const toolsControl =
-            controls && typeof controls.tools === 'object' && controls.tools !== null
+            controls &&
+            typeof controls.tools === "object" &&
+            controls.tools !== null
               ? (controls.tools as Record<string, unknown>)
               : undefined;
           if (toolsControl?.allowed || toolsControl?.default) {
@@ -319,8 +321,16 @@ const promptEditorSlice = createSlice({
           state.id = action.payload.id;
           state.name = action.payload.name || "";
           state.description = action.payload.description || "";
-          state.messages = (Array.isArray(action.payload.messages) ? action.payload.messages : []) as PromptMessage[];
-          state.variableDefaults = (Array.isArray(action.payload.variable_defaults) ? action.payload.variable_defaults : []) as PromptVariable[];
+          state.messages = (
+            Array.isArray(action.payload.messages)
+              ? action.payload.messages
+              : []
+          ) as PromptMessage[];
+          state.variableDefaults = (
+            Array.isArray(action.payload.variable_defaults)
+              ? action.payload.variable_defaults
+              : []
+          ) as PromptVariable[];
           state.settings = action.payload.settings || {};
           state.lastSavedAt = action.payload.updated_at;
         } else {

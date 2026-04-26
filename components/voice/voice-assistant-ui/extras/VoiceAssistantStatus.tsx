@@ -2,7 +2,8 @@
 
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Button, Progress } from '@/components/ui';
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { AlertCircle, Loader2, Mic, Settings, Volume2 } from 'lucide-react';
 import { useVoiceChat } from "@/hooks/tts/useVoiceChat";
 

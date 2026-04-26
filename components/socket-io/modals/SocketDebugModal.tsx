@@ -6,11 +6,14 @@ import FullScreenOverlay from "@/components/official/FullScreenOverlay";
 import AccordionWrapper from "@/components/matrx/matrx-collapsible/AccordionWrapper";
 import TaskDataDebug from "@/components/socket-io/form-builder/TaskDataDebug";
 import { getAllFieldPaths } from "@/constants/socket-schema";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import FancyJsonExplorer from "@/features/scraper/parts/FancyJsonExplorer";
 import RawJsonExplorer from "@/components/official/json-explorer/RawJsonExplorer";
 import BookmarkViewer from "@/features/scraper/parts/BookmarkViewer";
-import { selectTaskResponsesByTaskId, selectPrimaryResponseDataByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
+import {
+  selectTaskResponsesByTaskId,
+  selectPrimaryResponseDataByTaskId,
+} from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectTaskById } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
 
@@ -19,13 +22,22 @@ export interface DebugModalProps {
   debugMode?: boolean;
 }
 
-const SocketDebugModal: React.FC<DebugModalProps> = ({ taskId, debugMode = true }) => {
+const SocketDebugModal: React.FC<DebugModalProps> = ({
+  taskId,
+  debugMode = true,
+}) => {
   const [isOpen, setIsOpen] = useState(false);
-  const taskState = useAppSelector((state: RootState) => selectTaskById(state, taskId));
+  const taskState = useAppSelector((state: RootState) =>
+    selectTaskById(state, taskId),
+  );
   const allFieldPaths = getAllFieldPaths(taskState?.taskName || "");
 
-  const allResponses = useAppSelector((state: RootState) => selectTaskResponsesByTaskId(taskId)(state));
-  const dataResponse = useAppSelector((state: RootState) => selectPrimaryResponseDataByTaskId(taskId)(state));
+  const allResponses = useAppSelector((state: RootState) =>
+    selectTaskResponsesByTaskId(taskId)(state),
+  );
+  const dataResponse = useAppSelector((state: RootState) =>
+    selectPrimaryResponseDataByTaskId(taskId)(state),
+  );
 
   const handleOpen = () => setIsOpen(true);
   const handleClose = () => setIsOpen(false);

@@ -1,21 +1,12 @@
 'use client';
 
 import React from 'react';
-import {
-    Card,
-    Input,
-    Switch,
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
-    Button,
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from '@/components/ui';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import {Info} from 'lucide-react';
 import {getDisplayValue, getFormattedTitle} from "@/components/socket/recipes/utils";
 

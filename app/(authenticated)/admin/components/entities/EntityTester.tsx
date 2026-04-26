@@ -12,7 +12,7 @@ import {
     TableHeader,
     TableRow
 } from '@/components/ui/table';
-import {Button} from '@/components/ui';
+import { Button } from "@/components/ui/button";
 import {Input} from '@/components/ui/input';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
 import {Alert, AlertDescription} from '@/components/ui/alert';
@@ -24,7 +24,8 @@ import {EntityKeys, EntityData} from '@/types/entityTypes';
 import {useEntity} from '@/lib/redux/entity/hooks/useEntity';
 import {MatrxRecordId} from '@/lib/redux/entity/types/stateTypes';
 import {createRecordKey} from "@/lib/redux/entity/utils/stateHelpUtils";
-import {JsonViewer, EditableJsonViewer} from '@/components/ui';
+import { JsonViewer } from "@/components/ui/JsonComponents/JsonViewerComponent";
+import { EditableJsonViewer } from "@/components/ui/JsonComponents/JsonEditor";
 import {selectFormattedEntityOptions} from '@/lib/redux/schema/globalCacheSelectors';
 import {FlexibleQueryOptions} from '@/lib/redux/entity/types/stateTypes';
 import {v4 as uuidv4} from 'uuid';

@@ -4,7 +4,7 @@ import React, {Suspense, useState, useEffect} from "react";
 import { EntityKeys } from '@/types/entityTypes';
 import { useEntity } from "@/lib/redux/entity/hooks/useEntity";
 import SchemaSelect from "@/components/matrx/schema/ops/SchemaSelect";
-import {Button} from "@/components/ui";
+import { Button } from "@/components/ui/button";
 import {MatrxTableLoading} from "@/components/matrx/LoadingComponents";
 import MatrxTable from "@/app/(authenticated)/tests/matrx-table/components/MatrxTable";
 

@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Button, Card, Dialog, DialogContent, DialogTitle } from '@/components/ui';
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { CockpitControls } from '../types';
 import { RefreshCw, Copy, Maximize2 } from 'lucide-react';
 

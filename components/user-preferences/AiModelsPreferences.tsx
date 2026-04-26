@@ -9,7 +9,7 @@ import { Loader2, Search, Check, X, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import {
   setPreference,

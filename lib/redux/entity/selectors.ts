@@ -10,7 +10,7 @@ import {
   AllEntityFieldKeys,
   EntityFieldKeys,
 } from "@/types/entityTypes";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import {
   EnhancedRecord,
   EntityOperationMode,

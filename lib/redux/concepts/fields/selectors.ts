@@ -1,6 +1,6 @@
 // selectors.ts
 import { createSelector } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import { FieldIdentifier } from "./types";
 import { createFieldId } from "./fieldUtils";
 import { fieldAdapter } from "./fieldSlice";

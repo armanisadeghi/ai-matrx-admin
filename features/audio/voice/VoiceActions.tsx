@@ -1,7 +1,13 @@
 "use client";
 
 import { cloneVoiceFromFile, createVoice } from "@/lib/cartesia/cartesiaUtils";
-import { Button, Input, Textarea, FileUpload, RadioGroup, RadioGroupItem, Label, Switch } from "@/components/ui";
+import { Button } from "@/components/ui/button";
+import { FileUpload } from "@/components/ui/file-upload/file-upload";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import { useAiAudio } from "@/features/audio/voice/AiVoicePage";
 import { Language } from "@/lib/cartesia/cartesia.types";
 import { useState } from "react";

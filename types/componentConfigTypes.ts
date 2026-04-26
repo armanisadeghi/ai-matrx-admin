@@ -1,5 +1,5 @@
 // types.ts
-import { Card } from "@/components/ui";
+import { Card } from "@/components/ui/card";
 import React from "react";
 import { MatrxVariant } from "@/components/matrx/ArmaniForm/field-components/types";
 import { EntityKeys } from "@/types/entityTypes";

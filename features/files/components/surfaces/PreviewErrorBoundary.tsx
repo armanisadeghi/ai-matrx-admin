@@ -24,7 +24,7 @@
 import React from "react";
 import { AlertCircle, ExternalLink, RefreshCcw, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getStore } from "@/lib/redux/store";
+import { getStore } from "@/lib/redux/store-singleton";
 import { setActiveFileId } from "@/features/files/redux/slice";
 import { getSignedUrl } from "@/features/files/redux/thunks";
 

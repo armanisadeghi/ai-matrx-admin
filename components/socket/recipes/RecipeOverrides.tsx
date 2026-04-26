@@ -1,13 +1,9 @@
 // File Location: components/socket/recipes/RecipeOverrides.tsx
 "use client";
 
-import {
-  Input,
-  Label,
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { ChevronDown } from "lucide-react";
 import { ArmaniCollapsible } from "@/components/matrx/matrx-collapsible/armani-collapsible";
 

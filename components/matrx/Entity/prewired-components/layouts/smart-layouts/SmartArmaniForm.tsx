@@ -4,7 +4,7 @@ import React, { useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/styles/themes/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import { selectEntityPrettyName } from "@/lib/redux/schema/globalCacheSelectors";
 import {
   cardVariants,

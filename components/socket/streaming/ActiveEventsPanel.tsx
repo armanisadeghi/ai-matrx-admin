@@ -1,6 +1,6 @@
 "use client";
 
-import { Badge } from "@/components/ui";
+import { Badge } from "@/components/ui/badge";
 import { CheckCircleIcon, XCircleIcon, ActivityIcon, ArrowRightIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { selectAllResponses } from "@/lib/redux/socket-io/selectors/socket-response-selectors";

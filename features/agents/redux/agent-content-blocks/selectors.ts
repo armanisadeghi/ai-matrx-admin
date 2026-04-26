@@ -1,11 +1,8 @@
 "use client";
 
 import { createSelector } from "reselect";
-import type { RootState } from "@/lib/redux/store";
-import type {
-  AgentContentBlockDef,
-  AgentContentBlockRecord,
-} from "./types";
+import type { RootState } from "@/lib/redux/store.types";
+import type { AgentContentBlockDef, AgentContentBlockRecord } from "./types";
 import {
   matchesScope,
   scopeIndexKey,
@@ -101,13 +98,10 @@ export const selectContentBlocksByScope = createSelector(
   [
     selectAllContentBlocksArray,
     (_s: RootState, scope: Scope, _scopeId?: string | null) => scope,
-    (_s: RootState, _scope: Scope, scopeId?: string | null) =>
-      scopeId ?? null,
+    (_s: RootState, _scope: Scope, scopeId?: string | null) => scopeId ?? null,
   ],
   (blocks, scope, scopeId) =>
-    blocks.filter((b) =>
-      matchesScope(b, { scope, scopeId: scopeId ?? null }),
-    ),
+    blocks.filter((b) => matchesScope(b, { scope, scopeId: scopeId ?? null })),
 );
 
 export const selectContentBlocksByScopeRef = createSelector(
@@ -116,8 +110,10 @@ export const selectContentBlocksByScopeRef = createSelector(
 );
 
 export const selectContentBlocksByCategoryId = createSelector(
-  [selectAllContentBlocksArray, (_s: RootState, categoryId: string) =>
-    categoryId],
+  [
+    selectAllContentBlocksArray,
+    (_s: RootState, categoryId: string) => categoryId,
+  ],
   (blocks, categoryId) => blocks.filter((b) => b.categoryId === categoryId),
 );
 

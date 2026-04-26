@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {Accordion, AccordionContent, AccordionItem, AccordionTrigger} from "@/components/ui";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import {createEntitySelectors} from "@/lib/redux/entity/selectors";
 import {EntityData, EntityKeys} from "@/types/entityTypes";
 import {useAppDispatch, useAppSelector} from "@/lib/redux/hooks";

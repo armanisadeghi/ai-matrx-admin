@@ -2,14 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAppSelector } from '@/lib/redux/hooks';
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-  Button,
-} from '@/components/ui';
+import { Button } from "@/components/ui/button";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 
 import { markdownSamples } from './sample-data/markdown-samples';
 import { getCoordinatorSelectOptions, getCoordinatorConfig, getSpecificViewComponent } from './markdown-coordinator';

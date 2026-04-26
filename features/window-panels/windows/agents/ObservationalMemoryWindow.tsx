@@ -42,7 +42,7 @@ import {
 } from "@/features/agents/redux/execution-system/observational-memory/observational-memory.selectors";
 import { selectInstance } from "@/features/agents/redux/execution-system/conversations/conversations.selectors";
 import { selectAgentById } from "@/features/agents/redux/agent-definition/selectors";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 
 // =============================================================================
 // Sidebar

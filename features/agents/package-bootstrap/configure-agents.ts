@@ -23,7 +23,7 @@ import {
 } from "@/lib/redux/slices/userSlice";
 import { selectResolvedBaseUrl } from "@/lib/redux/slices/apiConfigSlice";
 import { callbackManager } from "@/utils/callbackManager";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 
 /**
  * Wire host adapters into the agents package. Pass the Redux store so

@@ -1,6 +1,8 @@
 "use client";
 
-import { Tabs, TabsList, TabsTrigger, TabsContent, Button, InlineCopyButton } from "@/components/ui";
+import { InlineCopyButton } from "@/components/matrx/buttons/InlineCopyButton";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import ProcessorExtractor from "@/components/official/processor-extractor/ProcessorExtractor";
 import { ViewRenderer, AstViewRenderer } from "@/components/mardown-display/markdown-classification/custom-views/ViewRenderer";
 import { getCoordinatorConfig } from "@/components/mardown-display/markdown-classification/markdown-coordinator";

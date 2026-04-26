@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Button } from "@/components/ui";
+import { Button } from "@/components/ui/button";
 import { Maximize2, X } from "lucide-react";
 import SocketAccordionResponse from "./SocketAccordionResponse";
 

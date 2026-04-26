@@ -1,4 +1,5 @@
-import {Button, Input} from "@/components/ui";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {Image as ImageIcon, Maximize2, Minimize2, MoreHorizontal, Paperclip, Smile} from "lucide-react";
 import React from "react";
 

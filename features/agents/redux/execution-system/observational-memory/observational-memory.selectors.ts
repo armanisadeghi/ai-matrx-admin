@@ -8,7 +8,7 @@
  */
 
 import { createSelector } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import type {
   MemoryEventEntry,
   ObservationalMemoryConversationState,
@@ -20,9 +20,8 @@ import type {
 
 // ── Raw accessors ────────────────────────────────────────────────────────────
 
-export const selectObservationalMemoryState = (
-  conversationId: string | null | undefined,
-) =>
+export const selectObservationalMemoryState =
+  (conversationId: string | null | undefined) =>
   (state: RootState): ObservationalMemoryConversationState | undefined => {
     if (!conversationId) return undefined;
     return state.observationalMemory.byConversationId[conversationId];
@@ -89,9 +88,7 @@ export const selectMemoryDegraded =
 
 export const selectMemoryLastError =
   (conversationId: string | null | undefined) =>
-  (
-    state: RootState,
-  ): ObservationalMemoryConversationState["lastError"] => {
+  (state: RootState): ObservationalMemoryConversationState["lastError"] => {
     if (!conversationId) return null;
     return (
       state.observationalMemory.byConversationId[conversationId]?.lastError ??
@@ -155,8 +152,8 @@ export const selectMemoryCostSummary =
   (state: RootState): MemoryCostSummary | null => {
     if (!conversationId) return null;
     return (
-      state.observationalMemory.byConversationId[conversationId]
-        ?.costSummary ?? null
+      state.observationalMemory.byConversationId[conversationId]?.costSummary ??
+      null
     );
   };
 

@@ -37,7 +37,7 @@ import {Badge} from "@/components/ui/badge";
 import {Loader2} from "lucide-react";
 import LogViewer from './LogViewer';
 import {EntityKeys} from '@/types/entityTypes';
-import {useToast} from "@/components/ui";
+import { useToast } from "@/components/ui/matrx/use-toast";
 import {useEntityLogging} from "@/app/(authenticated)/admin/components/entities/useEntityLogging";
 import PreWiredEntitySelectName from './PreWiredEntitySelectName';
 import BrowseTab from './tabs/BrowseTab';

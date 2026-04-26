@@ -20,7 +20,7 @@ import type { ConversationListItem } from "@/features/agents/redux/conversation-
 import { AgentConversationDisplay } from "@/features/agents/components/messages-display/AgentConversationDisplay";
 import { loadConversation } from "@/features/agents/redux/execution-system/thunks/load-conversation.thunk";
 import { createManualInstance } from "@/features/agents/redux/execution-system/thunks/create-instance.thunk";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import { useAppStore } from "@/lib/redux/hooks";
 import { AgentListDropdown } from "@/features/agents/components/agent-listings/AgentListDropdown";
 

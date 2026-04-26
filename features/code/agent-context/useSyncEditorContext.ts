@@ -6,7 +6,7 @@ import {
   removeContextEntry,
   setContextEntries,
 } from "@/features/agents/redux/execution-system/instance-context/instance-context.slice";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import {
   EDITOR_TABS_KEY,
   filterDisabledTabs,

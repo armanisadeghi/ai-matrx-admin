@@ -1,7 +1,7 @@
 // components/TaskFields/TaskFieldInput.tsx
 import React from 'react';
 import { useTaskField } from '@/lib/redux/socket-io/hooks/useTaskField';
-import { Input } from '@/components/ui';
+import { Input } from "@/components/ui/input";
 
 interface TaskFieldInputProps {
   taskId: string;

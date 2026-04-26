@@ -17,7 +17,7 @@
  */
 
 import { useAppSelector } from "@/lib/redux/hooks";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import { ToolCallVisualization } from "./ToolCallVisualization";
 
 interface LiveToolCallCardProps {

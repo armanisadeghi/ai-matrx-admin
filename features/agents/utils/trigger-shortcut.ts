@@ -46,7 +46,7 @@ export interface TriggerShortcutArgs {
  * await triggerShortcut(dispatch, { shortcutId, scope: { selection } });
  *
  * // Anywhere (will lazy-import the store):
- * import { getStore } from "@/lib/redux/store";
+ * import { getStore } from "@/lib/redux/store-singleton";
  * await triggerShortcut(getStore()!.dispatch, { shortcutId, scope });
  * ```
  *

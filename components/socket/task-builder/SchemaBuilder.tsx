@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useMemo, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui";
+import { CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import AccordionWrapper from "../../matrx/matrx-collapsible/AccordionWrapper";
 import IconInputWithValidation from "@/components/official/icons/IconInputWithValidation.dynamic";

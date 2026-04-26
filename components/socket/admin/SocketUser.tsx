@@ -1,5 +1,6 @@
 "use client";
-import { Card, CardContent } from "@/components/ui";
+import { CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import DynamicForm from "@/components/socket-io/form-builder/DynamicForm";
 import { SocketAccordionResponse } from "@/components/socket/response/SocketAccordionResponse";

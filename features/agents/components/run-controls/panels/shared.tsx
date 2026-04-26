@@ -17,7 +17,7 @@
 
 import React from "react";
 import { createSelector } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import type { ActiveRequest } from "@/features/agents/types/request.types";
 import type {
   UserRequestResult,
@@ -35,8 +35,7 @@ export const EMPTY_REQUEST_LIST: ActiveRequest[] = [];
  */
 export function makeSelectConversationRequests(conversationId: string) {
   return createSelector(
-    (state: RootState) =>
-      state.activeRequests.byConversationId[conversationId],
+    (state: RootState) => state.activeRequests.byConversationId[conversationId],
     (state: RootState) => state.activeRequests.byRequestId,
     (ids, byId): ActiveRequest[] => {
       if (!ids || ids.length === 0) return EMPTY_REQUEST_LIST;

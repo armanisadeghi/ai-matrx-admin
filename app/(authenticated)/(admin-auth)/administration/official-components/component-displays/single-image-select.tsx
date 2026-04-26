@@ -13,7 +13,7 @@ import { Separator } from '@/components/ui/separator';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Camera, User, Shield } from 'lucide-react';
-import { Input } from '@/components/ui';
+import { Input } from "@/components/ui/input";
 
 interface ComponentDisplayProps {
   component?: ComponentEntry;

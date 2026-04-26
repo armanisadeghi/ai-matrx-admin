@@ -18,7 +18,7 @@
 
 "use client";
 
-import { getStore } from "@/lib/redux/store";
+import { getStore } from "@/lib/redux/store-singleton";
 import * as Api from "@/features/files/api";
 import { CloudFolders } from "@/features/files/utils/folder-conventions";
 import { extractErrorMessage } from "@/utils/errors";
@@ -108,7 +108,8 @@ async function uploadWithRetry(
 
       return { fileId, signedUrl: url.url };
     } catch (err) {
-      lastError = err instanceof Error ? err : new Error(extractErrorMessage(err));
+      lastError =
+        err instanceof Error ? err : new Error(extractErrorMessage(err));
       if (attempt < maxAttempts) {
         const delay = Math.min(
           RETRY_CONFIG.BASE_DELAY_MS * Math.pow(2, attempt - 1),

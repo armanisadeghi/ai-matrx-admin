@@ -1,6 +1,9 @@
 // components/AiSettingsModal.tsx
 import { Settings2 } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Input, Label, Slider } from "@/components/ui";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
 import { AiCallParams } from "@/types/voice/voiceAssistantTypes";
 
 interface AiSettingsModalProps {

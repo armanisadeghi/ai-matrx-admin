@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {Accordion, AccordionContent, AccordionItem, AccordionTrigger} from "@/components/ui";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import {EntityData, EntityKeys} from "@/types/entityTypes";
 import {cn} from "@/lib/utils";
 import {ChevronRight, ChevronDown} from 'lucide-react';

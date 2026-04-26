@@ -1,6 +1,8 @@
 import React from 'react';
 import {cn} from '@/lib/utils';
-import {Button, Input, ScrollArea} from "@/components/ui";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {Archive, Forward, ImageIcon, Mail, MoreHorizontal, Paperclip, Reply, Smile, Trash2} from "lucide-react";
 
 type GridPosition = {

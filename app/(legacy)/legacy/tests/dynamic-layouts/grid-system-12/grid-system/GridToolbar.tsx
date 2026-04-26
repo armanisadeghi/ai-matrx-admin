@@ -17,7 +17,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {MoreVertical, Plus, Trash, RefreshCw} from 'lucide-react'
-import {EnhancedJsonViewer} from '@/components/ui';
+import { EnhancedJsonViewer } from "@/components/ui/JsonComponents/JsonViewerComponent";
 import {GRID_CONFIG} from './config';
 import { GridSettings, Container } from './gridTypes';
 

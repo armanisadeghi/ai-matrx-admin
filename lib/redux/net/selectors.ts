@@ -1,5 +1,5 @@
 import { createSelector } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import type { NetRequest } from "./netRequestsSlice";
 
 const selectNetRequestsRoot = (state: RootState) =>
@@ -19,13 +19,10 @@ const selectNetHealthRoot = (state: RootState) =>
   ).netHealth;
 
 export const selectNetRequestById = (id: string | undefined | null) =>
-  createSelector(
-    [selectNetRequestsRoot],
-    (root): NetRequest | null => {
-      if (!id || !root) return null;
-      return root.byId[id] ?? null;
-    },
-  );
+  createSelector([selectNetRequestsRoot], (root): NetRequest | null => {
+    if (!id || !root) return null;
+    return root.byId[id] ?? null;
+  });
 
 export const selectActiveNetRequests = createSelector(
   [selectNetRequestsRoot],

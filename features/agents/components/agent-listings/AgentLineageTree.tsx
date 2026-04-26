@@ -37,7 +37,7 @@ import {
 } from "@/features/agents/redux/agent-definition/selectors";
 import { useAgentShortcuts } from "@/features/agent-shortcuts/hooks/useAgentShortcuts";
 import { selectShortcutsByAgentId } from "@/features/agents/redux/agent-shortcuts/selectors";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import type { AgentDefinitionRecord } from "@/features/agents/types/agent-definition.types";
 import type { AgentShortcutRecord } from "@/features/agents/redux/agent-shortcuts/types";
 import {

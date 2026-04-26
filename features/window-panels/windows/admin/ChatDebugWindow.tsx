@@ -13,7 +13,7 @@ import {
 } from "@/lib/redux/slices/adminDebugSlice";
 // Legacy chat debug window — reads removed `chatConversations` slice. Debug
 // UI is non-critical; stubbed to render empty while chat is rebuilt.
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 const chatConversationsActions = {
   updateUIState: (_payload: unknown) => ({
     type: "noop" as const,

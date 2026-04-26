@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { FaBars } from "react-icons/fa";
 import { cn } from "@/lib/utils";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 import { ShareModal } from "@/features/sharing";

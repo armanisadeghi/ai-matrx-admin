@@ -1,12 +1,8 @@
 // components/table/columnDefinitions.tsx
 import { EntityData, EntityKeys } from "@/types/entityTypes";
-import {
-  Checkbox,
-  Badge,
-  Collapsible,
-  CollapsibleTrigger,
-  CollapsibleContent,
-} from "@/components/ui";
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/ButtonMine";
 import { formatDistance } from "date-fns";
 import { cn } from "@/lib/utils";

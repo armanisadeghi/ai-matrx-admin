@@ -1,4 +1,7 @@
-import { Switch, Button, Tooltip, TooltipContent, TooltipTrigger, Badge } from '@/components/ui';
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Link } from 'lucide-react';
 import { EntityData, EntityKeys } from '@/types/entityTypes';
 import { ButtonSize, ButtonVariant } from '../types/tableBuilderTypes';

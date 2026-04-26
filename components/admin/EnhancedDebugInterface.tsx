@@ -27,7 +27,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import { EntityKeys } from "@/types/entityTypes";
 import ReorderableTabs from "./ReorderableTab";
 import ResizableDebugPanel from "./ResizableDebugPanel";

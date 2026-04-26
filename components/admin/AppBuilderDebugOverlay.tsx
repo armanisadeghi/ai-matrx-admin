@@ -1,6 +1,8 @@
 "use client";
 import React, { useState } from "react";
-import FullScreenOverlay, { TabDefinition } from "@/components/official/FullScreenOverlay";
+import FullScreenOverlay, {
+  TabDefinition,
+} from "@/components/official/FullScreenOverlay";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { getAppletBuilderState } from "@/lib/redux/app-builder/selectors/appletSelectors";
 import { getAppBuilderState } from "@/lib/redux/app-builder/selectors/appSelectors";
@@ -8,22 +10,21 @@ import { getContainerBuilderState } from "@/lib/redux/app-builder/selectors/cont
 import { getFieldBuilderState } from "@/lib/redux/app-builder/selectors/fieldSelectors";
 import { Button } from "@/components/ui/button";
 import { Bug } from "lucide-react";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import RawJsonExplorer from "@/components/official/json-explorer/RawJsonExplorer";
 import { useUser } from "@/lib/hooks/useUser";
 
-
 export type PositionType =
-  | 'top-left'
-  | 'top-right'
-  | 'top-center'
-  | 'bottom-left'
-  | 'bottom-right'
-  | 'bottom-center'
-  | 'middle-left'
-  | 'middle-right'
-  | 'center';
+  | "top-left"
+  | "top-right"
+  | "top-center"
+  | "bottom-left"
+  | "bottom-right"
+  | "bottom-center"
+  | "middle-left"
+  | "middle-right"
+  | "center";
 
 interface AppBuilderDebugOverlayProps {
   className?: string;
@@ -44,7 +45,9 @@ interface TabContentWithSubtabsProps {
   data: any;
 }
 
-const TabContentWithSubtabs: React.FC<TabContentWithSubtabsProps> = ({ data }) => {
+const TabContentWithSubtabs: React.FC<TabContentWithSubtabsProps> = ({
+  data,
+}) => {
   return (
     <div className="w-full h-full">
       <Tabs defaultValue="simple" className="w-full h-full">
@@ -67,7 +70,10 @@ const TabContentWithSubtabs: React.FC<TabContentWithSubtabsProps> = ({ data }) =
         <TabsContent value="simple" className="mt-0 h-[calc(100%-96px)]">
           <JsonDisplay data={data} />
         </TabsContent>
-        <TabsContent value="explorer" className="h-[calc(100%-65px)] w-full p-4">
+        <TabsContent
+          value="explorer"
+          className="h-[calc(100%-65px)] w-full p-4"
+        >
           <RawJsonExplorer pageData={data} />
         </TabsContent>
       </Tabs>
@@ -77,32 +83,32 @@ const TabContentWithSubtabs: React.FC<TabContentWithSubtabsProps> = ({ data }) =
 
 const getPositionClasses = (position: PositionType): string => {
   switch (position) {
-    case 'top-left':
-      return 'fixed top-4 left-4';
-    case 'top-right':
-      return 'fixed top-4 right-4';
-    case 'top-center':
-      return 'fixed top-4 left-1/2 -translate-x-1/2';
-    case 'bottom-left':
-      return 'fixed bottom-4 left-4';
-    case 'bottom-right':
-      return 'fixed bottom-4 right-4';
-    case 'bottom-center':
-      return 'fixed bottom-4 left-1/2 -translate-x-1/2';
-    case 'middle-left':
-      return 'fixed top-1/2 left-4 -translate-y-1/2';
-    case 'middle-right':
-      return 'fixed top-1/2 right-4 -translate-y-1/2';
-    case 'center':
-      return 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2';
+    case "top-left":
+      return "fixed top-4 left-4";
+    case "top-right":
+      return "fixed top-4 right-4";
+    case "top-center":
+      return "fixed top-4 left-1/2 -translate-x-1/2";
+    case "bottom-left":
+      return "fixed bottom-4 left-4";
+    case "bottom-right":
+      return "fixed bottom-4 right-4";
+    case "bottom-center":
+      return "fixed bottom-4 left-1/2 -translate-x-1/2";
+    case "middle-left":
+      return "fixed top-1/2 left-4 -translate-y-1/2";
+    case "middle-right":
+      return "fixed top-1/2 right-4 -translate-y-1/2";
+    case "center":
+      return "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2";
     default:
-      return 'fixed top-1/2 right-4 -translate-y-1/2';
+      return "fixed top-1/2 right-4 -translate-y-1/2";
   }
 };
 
 const AppBuilderDebugOverlay: React.FC<AppBuilderDebugOverlayProps> = ({
-  className = '',
-  position = 'middle-right'
+  className = "",
+  position = "middle-right",
 }) => {
   const [isDebugOpen, setIsDebugOpen] = useState(false);
 
@@ -122,23 +128,23 @@ const AppBuilderDebugOverlay: React.FC<AppBuilderDebugOverlayProps> = ({
     {
       id: "app",
       label: "App Builder",
-      content: <TabContentWithSubtabs data={appState} />
+      content: <TabContentWithSubtabs data={appState} />,
     },
     {
       id: "applet",
       label: "Applet Builder",
-      content: <TabContentWithSubtabs data={appletState} />
+      content: <TabContentWithSubtabs data={appletState} />,
     },
     {
       id: "container",
       label: "Container Builder",
-      content: <TabContentWithSubtabs data={containerState} />
+      content: <TabContentWithSubtabs data={containerState} />,
     },
     {
       id: "field",
       label: "Field Builder",
-      content: <TabContentWithSubtabs data={fieldState} />
-    }
+      content: <TabContentWithSubtabs data={fieldState} />,
+    },
   ];
 
   return (

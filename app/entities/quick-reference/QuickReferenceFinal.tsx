@@ -14,7 +14,8 @@ import {useSelectQuickRef} from "@/app/entities/hooks/useSelectQuickRef";
 import {memo} from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
-import {Card, CardContent} from "@/components/ui";
+import { CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 
 interface EntityQuickReferenceCardsProps<TEntity extends EntityKeys> {
     entityKey: TEntity;

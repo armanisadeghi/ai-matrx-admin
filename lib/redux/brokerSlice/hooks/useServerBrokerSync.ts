@@ -1,10 +1,10 @@
 // @ts-nocheck
 // hooks/useServerBrokerSync.ts
-import { useEffect, useRef, useMemo } from 'react';
+import { useEffect, useRef, useMemo } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { brokerSelectors, BrokerIdentifier } from '@/lib/redux/brokerSlice';
-import { createSelector } from 'reselect';
-import type { RootState } from "@/lib/redux/store";
+import { brokerSelectors, BrokerIdentifier } from "@/lib/redux/brokerSlice";
+import { createSelector } from "reselect";
+import type { RootState } from "@/lib/redux/store.types";
 
 interface SyncConfig {
   brokers: BrokerIdentifier[];
@@ -12,21 +12,30 @@ interface SyncConfig {
   syncOnChange?: boolean;
 }
 
-export function useServerBrokerSync({ brokers, syncInterval = 30000, syncOnChange = true }: SyncConfig) {
+export function useServerBrokerSync({
+  brokers,
+  syncInterval = 30000,
+  syncOnChange = true,
+}: SyncConfig) {
   const lastSyncRef = useRef<Record<string, any>>({});
 
   // Create a stable reference to the brokers array
-  const stableBrokers = useMemo(() => brokers, [
-    // We stringify the brokers to create a proper dependency
-    JSON.stringify(brokers.map(b => {
-      // Handle both variants of the BrokerIdentifier type
-      if ('brokerId' in b) {
-        return `brokerId:${b.brokerId}`;
-      } else {
-        return `${b.source}:${b.id}`;
-      }
-    }))
-  ]);
+  const stableBrokers = useMemo(
+    () => brokers,
+    [
+      // We stringify the brokers to create a proper dependency
+      JSON.stringify(
+        brokers.map((b) => {
+          // Handle both variants of the BrokerIdentifier type
+          if ("brokerId" in b) {
+            return `brokerId:${b.brokerId}`;
+          } else {
+            return `${b.source}:${b.id}`;
+          }
+        }),
+      ),
+    ],
+  );
 
   // Create a memoized selector that will only recompute when the actual values change
   const selectBrokerValues = useMemo(() => {
@@ -34,17 +43,17 @@ export function useServerBrokerSync({ brokers, syncInterval = 30000, syncOnChang
       [(state: RootState) => state.brokerConcept],
       (brokerConcept) => {
         const values: Record<string, any> = {};
-        stableBrokers.forEach(idArgs => {
+        stableBrokers.forEach((idArgs) => {
           const key = JSON.stringify(idArgs);
           // Use existing helpers to get broker values
           const brokerId = brokerSelectors.selectBrokerId(
             { brokerConcept } as RootState,
-            idArgs
+            idArgs,
           );
           values[key] = brokerId ? brokerConcept.brokers[brokerId] : undefined;
         });
         return values;
-      }
+      },
     );
   }, [stableBrokers]);
 
@@ -56,7 +65,7 @@ export function useServerBrokerSync({ brokers, syncInterval = 30000, syncOnChang
     const brokersToSync = [];
 
     // Check which brokers have changed
-    stableBrokers.forEach(idArgs => {
+    stableBrokers.forEach((idArgs) => {
       const key = JSON.stringify(idArgs);
       const currentValue = brokerValues[key];
 
@@ -66,7 +75,7 @@ export function useServerBrokerSync({ brokers, syncInterval = 30000, syncOnChang
 
       brokersToSync.push({
         idArgs,
-        value: currentValue
+        value: currentValue,
       });
 
       lastSyncRef.current[key] = currentValue;
@@ -74,13 +83,13 @@ export function useServerBrokerSync({ brokers, syncInterval = 30000, syncOnChang
 
     if (brokersToSync.length > 0) {
       try {
-        await fetch('/api/brokers/sync', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ brokers: brokersToSync })
+        await fetch("/api/brokers/sync", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ brokers: brokersToSync }),
         });
       } catch (error) {
-        console.error('Broker sync failed:', error);
+        console.error("Broker sync failed:", error);
       }
     }
   };

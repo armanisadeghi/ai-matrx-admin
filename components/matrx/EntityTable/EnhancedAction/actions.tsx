@@ -5,7 +5,7 @@ import {ReactNode} from 'react';
 import {EntityKeys, EntityData, AutomationEntity} from '@/types/entityTypes';
 import {Edit, Eye, Wand} from "lucide-react";
 import MatrxTooltip from '../../MatrxTooltip';
-import {Button} from "@/components/ui";
+import { Button } from "@/components/ui/button";
 import {AppRouterInstance} from "next/dist/shared/lib/app-router-context.shared-runtime";
 
 

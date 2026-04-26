@@ -30,7 +30,7 @@
 
 // import LightSwitchToggle from "@/components/matrx/LightSwitchToggle";
 // import MultiSwitchToggle from "@/components/matrx/MultiSwitchToggle";
-// import { Button } from "@/components/ui";
+// import { Button } from "@/components/ui/button";
 
 // const PromptSettings = ({ initialSettings }) => {
 //   const [temperature, setTemperature] = useState(

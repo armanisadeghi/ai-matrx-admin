@@ -1,7 +1,7 @@
 // components/TaskFields/TaskFieldJsonEditor.tsx
 import React, { useState } from 'react';
 import { useTaskField } from '@/lib/redux/socket-io/hooks/useTaskField';
-import { Textarea } from '@/components/ui';
+import { Textarea } from "@/components/ui/textarea";
 
 interface TaskFieldJsonEditorProps {
   taskId: string;

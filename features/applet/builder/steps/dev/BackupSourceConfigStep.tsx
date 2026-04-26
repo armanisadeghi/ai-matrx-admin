@@ -8,7 +8,7 @@ import AppletSourceSelection from "@/features/applet/builder/modules/broker-mapp
 import RecipeSelector from "@/features/applet/builder/modules/broker-mapping/RecipeSelector";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import { selectActiveAppletId } from "@/lib/redux/app-builder/selectors/appletSelectors";
 import { selectAppletCompiledRecipeId } from "@/lib/redux/app-builder/selectors/appletSelectors";
 import { selectAppletSourceConfig } from "@/lib/redux/app-builder/selectors/appletSelectors";

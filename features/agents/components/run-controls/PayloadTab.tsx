@@ -24,7 +24,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { Copy, Check } from "lucide-react";
 import { useAppSelector } from "@/lib/redux/hooks";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import type {
   ContextObjectType,
   ContextSlot,
@@ -33,11 +33,7 @@ import type { InstanceContextEntry } from "@/features/agents/types/instance.type
 import type { MessagePart } from "@/types/python-generated/stream-events";
 import { assembleRequest } from "@/features/agents/redux/execution-system/thunks/execute-instance.thunk";
 import { selectAgentContextSlots } from "@/features/agents/redux/agent-definition/selectors";
-import {
-  EmptyStats,
-  StatRow,
-  StatSection,
-} from "./panels/shared";
+import { EmptyStats, StatRow, StatSection } from "./panels/shared";
 import { TYPE_COLORS } from "./ContextSlotsTab";
 import { cn } from "@/lib/utils";
 
@@ -59,9 +55,7 @@ function selectInstanceContextMap(
   state: RootState,
   conversationId: string,
 ): Record<string, InstanceContextEntry> {
-  return (
-    state.instanceContext.byConversationId[conversationId] ?? EMPTY_MAP
-  );
+  return state.instanceContext.byConversationId[conversationId] ?? EMPTY_MAP;
 }
 
 // =============================================================================
@@ -101,9 +95,7 @@ function ValueBlock({
 }) {
   const text = valuePreview(value);
   const isMultiline =
-    type === "json" ||
-    text.length > 80 ||
-    text.includes("\n");
+    type === "json" || text.length > 80 || text.includes("\n");
   if (!isMultiline) {
     return (
       <span className="font-mono text-[11px] text-foreground/90 break-all">
@@ -424,7 +416,10 @@ export function PayloadTab({ conversationId }: PayloadTabProps) {
 
       {/* ── Scope ────────────────────────────────────────────────────────── */}
       <StatSection title="Scope">
-        <StatRow label="organization_id" value={request.organization_id ?? "—"} />
+        <StatRow
+          label="organization_id"
+          value={request.organization_id ?? "—"}
+        />
         <StatRow label="project_id" value={request.project_id ?? "—"} />
         <StatRow label="task_id" value={request.task_id ?? "—"} />
       </StatSection>

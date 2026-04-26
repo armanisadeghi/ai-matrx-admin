@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 
 import { simpleJsonObject, complexJsonObject, largeJsonObject, invalidJsonString, JsonDataType } from "../sampleData";
 import TextDivider from "@/components/matrx/TextDivider";
-import { JsonViewer } from "@/components/ui";
+import { JsonViewer } from "@/components/ui/JsonComponents/JsonViewerComponent";
 import { FullJsonViewer, JsonEditor } from "@/components/ui/JsonComponents";
 import MiniJsonViewer from "./MiniJsonViewer";
 import MiniFullEditableJsonViewer, { MiniEditableJsonViewer } from "./MiniJsonEditor";

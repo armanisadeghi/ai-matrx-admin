@@ -13,7 +13,7 @@ import {
 } from '@/components/matrx/ArmaniForm/field-components/select/types';
 import {User, Building, TreePine, Tags, Split, Group, Network, Search, Command} from 'lucide-react';
 import MatrxEntitySelect from '@/components/matrx/ArmaniForm/field-components/select/entity-select';
-import {JsonViewer} from '@/components/ui';
+import { JsonViewer } from "@/components/ui/JsonComponents/JsonViewerComponent";
 
 function sanitizeForJSON(obj: any): any {
     if (Array.isArray(obj)) {

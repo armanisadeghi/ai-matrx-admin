@@ -2,7 +2,7 @@
 import React, {TextareaHTMLAttributes, useMemo, useState} from "react";
 import {cn} from "@/styles/themes/utils";
 import {Label} from "@/components/ui/label";
-import {Textarea} from "@/components/ui";
+import { Textarea } from "@/components/ui/textarea";
 import {EntityBaseFieldProps} from "../EntityBaseField";
 import {createEntitySelectors} from "@/lib/redux/entity/selectors";
 import {useAppDispatch, useAppSelector} from "@/lib/redux/hooks";

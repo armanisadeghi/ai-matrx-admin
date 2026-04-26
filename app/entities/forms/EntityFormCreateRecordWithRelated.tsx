@@ -10,7 +10,7 @@ import { useFieldRenderer } from '../hooks/form-related/useFieldRenderer';
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 import { useCreateRecord } from '../hooks/unsaved-records/useCreateRecord';
-import { Button } from '@/components/ui';
+import { Button } from "@/components/ui/button";
 
 interface EntityFormCreateRecordWithRelatedProps {
     unifiedLayoutProps: UnifiedLayoutProps;

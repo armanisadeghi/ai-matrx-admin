@@ -9,7 +9,7 @@
  * call sites.
  */
 
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import type { ConversationListItem } from "./conversation-list.types";
 import { conversationListCacheKey } from "./conversation-list.types";
 import { upsertConversationInCaches } from "./conversation-list.slice";
@@ -54,8 +54,7 @@ export function buildConversationListItemFromExecution(
     updatedAt: overrides?.updatedAt ?? now,
     status: overrides?.status ?? "active",
     messageCount: overrides?.messageCount ?? 1,
-    agentVersionNumber:
-      overrides?.agentVersionNumber ?? agent?.version ?? 0,
+    agentVersionNumber: overrides?.agentVersionNumber ?? agent?.version ?? 0,
     initialAgentVersionId:
       overrides?.initialAgentVersionId ??
       (agent?.isVersion === true ? agent.id : ""),
@@ -98,9 +97,10 @@ export function upsertConversationFromExecutionAction(
     [allKey]: { agentId: built.canonicalAgentId, versionFilter: null },
   };
   for (const v of built.alsoTouchVersionFilters) {
-    cacheIdentities[
-      conversationListCacheKey(built.canonicalAgentId, v)
-    ] = { agentId: built.canonicalAgentId, versionFilter: v };
+    cacheIdentities[conversationListCacheKey(built.canonicalAgentId, v)] = {
+      agentId: built.canonicalAgentId,
+      versionFilter: v,
+    };
   }
 
   return upsertConversationInCaches({

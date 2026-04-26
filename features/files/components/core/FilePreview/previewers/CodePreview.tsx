@@ -16,10 +16,14 @@
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { AlertCircle, Copy, Check, ExternalLink } from "lucide-react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { vscDarkPlus, vs } from "react-syntax-highlighter/dist/esm/styles/prism";
+import {
+  vscDarkPlus,
+  vs,
+} from "react-syntax-highlighter/dist/esm/styles/prism";
 import { cn } from "@/lib/utils";
 import { extname } from "../../../../utils/path";
 import { extractErrorMessage } from "@/utils/errors";
+import { toPreviewProxyUrl } from "@/features/files/utils/preview-url";
 
 /**
  * Lightweight theme reader. The project doesn't use next-themes — theme
@@ -146,7 +150,7 @@ export function CodePreview({
     setError(null);
     setText(null);
     setTruncated(false);
-    fetch(url)
+    fetch(toPreviewProxyUrl(url) ?? url)
       .then(async (res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
         const blob = await res.blob();
@@ -236,7 +240,10 @@ export function CodePreview({
 
   return (
     <div
-      className={cn("flex h-full w-full flex-col overflow-hidden bg-card", className)}
+      className={cn(
+        "flex h-full w-full flex-col overflow-hidden bg-card",
+        className,
+      )}
     >
       <div className="flex items-center justify-between gap-2 border-b border-border bg-muted/30 px-3 py-1.5 shrink-0">
         <div className="flex items-center gap-2 text-xs text-muted-foreground min-w-0">
@@ -273,7 +280,9 @@ export function CodePreview({
             lineHeight: "1.25rem",
             padding: "0.75rem",
           }}
-          codeTagProps={{ style: { fontFamily: "var(--font-mono, monospace)" } }}
+          codeTagProps={{
+            style: { fontFamily: "var(--font-mono, monospace)" },
+          }}
         >
           {text}
         </SyntaxHighlighter>

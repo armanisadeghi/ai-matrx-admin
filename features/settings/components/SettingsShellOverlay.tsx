@@ -1,7 +1,7 @@
 "use client";
 
 import { useSelector } from "react-redux";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import {
   closeOverlay,
@@ -38,25 +38,25 @@ export function SettingsShellOverlay() {
     selectIsOverlayOpen(s, "userPreferences"),
   );
   const windowData = useSelector(
-    (s: RootState) => selectOverlayData(s, "userPreferencesWindow") as OverlayData | null,
+    (s: RootState) =>
+      selectOverlayData(s, "userPreferencesWindow") as OverlayData | null,
   );
   const modalData = useSelector(
-    (s: RootState) => selectOverlayData(s, "userPreferences") as OverlayData | null,
+    (s: RootState) =>
+      selectOverlayData(s, "userPreferences") as OverlayData | null,
   );
 
   const isOpen = isWindowOpen || isModalOpen;
   const data = windowData ?? modalData;
 
   // Admin status comes from the user slice; treat as boolean.
-  const isAdmin = useSelector(
-    (s: RootState) =>
-      Boolean(
-        (s as RootState & { user?: { isAdmin?: boolean } }).user?.isAdmin,
-      ),
+  const isAdmin = useSelector((s: RootState) =>
+    Boolean((s as RootState & { user?: { isAdmin?: boolean } }).user?.isAdmin),
   );
 
   const handleClose = () => {
-    if (isWindowOpen) dispatch(closeOverlay({ overlayId: "userPreferencesWindow" }));
+    if (isWindowOpen)
+      dispatch(closeOverlay({ overlayId: "userPreferencesWindow" }));
     if (isModalOpen) dispatch(closeOverlay({ overlayId: "userPreferences" }));
   };
 
@@ -66,7 +66,9 @@ export function SettingsShellOverlay() {
     <SettingsShell
       isOpen
       onClose={handleClose}
-      initialTabId={data?.initialTabId ?? mapLegacyTab(data?.initialTab) ?? undefined}
+      initialTabId={
+        data?.initialTabId ?? mapLegacyTab(data?.initialTab) ?? undefined
+      }
       isAdmin={data?.isAdmin ?? isAdmin}
     />
   );

@@ -12,12 +12,22 @@ import {
 } from "@/lib/redux/slices/apiConfigSlice";
 // Legacy chat debug panel — stubbed during Redux unification. Selectors
 // return empty data; the panel still mounts but shows nothing for chat.
-import type { RootState } from "@/lib/redux/store";
-const selectSession = (_state: RootState, _sessionId: string): Record<string, unknown> | undefined => undefined;
+import type { RootState } from "@/lib/redux/store.types";
+const selectSession = (
+  _state: RootState,
+  _sessionId: string,
+): Record<string, unknown> | undefined => undefined;
 const selectMessages = (_state: RootState, _sessionId: string): unknown[] => [];
-const selectUIState = (_state: RootState, _sessionId: string): Record<string, unknown> | undefined => undefined;
-const selectIsStreaming = (_state: RootState, _sessionId: string): boolean => false;
-const selectAllToolCalls = (_state: RootState, _sessionId: string): Record<string, unknown> => ({});
+const selectUIState = (
+  _state: RootState,
+  _sessionId: string,
+): Record<string, unknown> | undefined => undefined;
+const selectIsStreaming = (_state: RootState, _sessionId: string): boolean =>
+  false;
+const selectAllToolCalls = (
+  _state: RootState,
+  _sessionId: string,
+): Record<string, unknown> => ({});
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -236,7 +246,10 @@ export default function ChatDebug() {
             <Row label="Agent ID" value={String(session.agentId ?? "")} />
             <Row label="API Mode" value={String(session.apiMode ?? "")} />
             <Row label="Messages" value={String(messages.length)} />
-            <Row label="Tool Calls" value={String(Object.keys(toolCalls).length)} />
+            <Row
+              label="Tool Calls"
+              value={String(Object.keys(toolCalls).length)}
+            />
             <Row
               label="Show Debug Info"
               value={String(uiState?.showDebugInfo ?? false)}
@@ -254,7 +267,9 @@ export default function ChatDebug() {
             {session.error != null && (
               <Row
                 label="Error"
-                value={<span className="text-red-400">{String(session.error)}</span>}
+                value={
+                  <span className="text-red-400">{String(session.error)}</span>
+                }
               />
             )}
           </div>

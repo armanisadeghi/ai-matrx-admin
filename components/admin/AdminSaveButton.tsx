@@ -4,7 +4,7 @@
 import { saveJson } from "@/actions/json.actions";
 import { savePublicText, savePublicImage } from "@/actions/file.actions";
 import React, { useState } from "react";
-import { Button } from "@/components/ui";
+import { Button } from "@/components/ui/button";
 
 interface SaveButtonProps {
     content: any;

@@ -1,6 +1,7 @@
 import React from "react";
 import { cn } from "@/lib/utils";
-import { CardContent, ScrollArea } from "@/components/ui";
+import { CardContent } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { densityConfig } from "@/config/ui/entity-layout-config";
 import { EnhancedCard } from "@/components/matrx/Entity/prewired-components/layouts/parts/EnhancedCard";
 import { LayoutHeader } from "@/components/matrx/Entity/prewired-components/layouts/layout-sections/extras";
@@ -9,7 +10,7 @@ import { UnifiedLayoutProps } from "@/components/matrx/Entity/prewired-component
 import { SmartExpandButton } from "./SmartExpandButton";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectEntityPrettyName } from "@/lib/redux/schema/globalCacheSelectors";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import EntitySmartContent from "@/components/matrx/Entity/prewired-components/layouts/smart-layouts/NotSmartEntityContent";
 import { useDynamicMeasurements } from "@/hooks/ui/useDynamicMeasurements";
 import MeasurementMonitor from "../parts/MeasurementMonitor";

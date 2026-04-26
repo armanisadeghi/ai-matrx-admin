@@ -2,7 +2,8 @@
 
 import EntityRecordServerWrapper from "@/components/matrx/Entity/serverWrappers/EntityRecordServerWrapper";
 import {EntityKeys} from "@/types/entityTypes";
-import { Card, CardContent } from "@/components/ui";
+import { CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { EntityRecordHeader } from "@/components/matrx/Entity/headers/EntityPageHeader";
 
 type Params = Promise<{

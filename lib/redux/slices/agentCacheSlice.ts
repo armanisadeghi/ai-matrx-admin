@@ -17,7 +17,7 @@
 //   shared   — prompts explicitly shared with the current user (not "secret sauce" share)
 
 import { createSlice, createSelector, PayloadAction } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

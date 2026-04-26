@@ -13,7 +13,7 @@
 
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { createClient } from "@/utils/supabase/client";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 import {
   selectModelById,
   type AIModel,

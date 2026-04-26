@@ -41,7 +41,7 @@ import {
 } from "../_legacy-stubs";
 import type { LLMParams } from "@/lib/types/agent-chat";
 import { DEFAULT_AGENTS } from "@/features/cx-chat/components/agent/local-agents";
-import type { RootState } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store.types";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 

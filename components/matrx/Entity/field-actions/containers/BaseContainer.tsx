@@ -1,7 +1,7 @@
 // containers/base/BaseContainer.tsx
 import React from 'react';
 import {Sheet, SheetContent, SheetHeader, SheetTitle} from '@/components/ui/sheet';
-import {Dialog, DialogContent, DialogHeader, DialogTitle} from "@/components/ui";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {motion, AnimatePresence} from 'motion/react';
 import {Popover, PopoverContent} from '@/components/ui/popover';
 import {
