@@ -20,20 +20,14 @@
  */
 
 import { useCallback, useMemo, useRef, useState } from "react";
-import { extractErrorMessage } from "@/utils/errors";
 import {
   getFileDetailsByUrl,
   type EnhancedFileDetails,
 } from "@/utils/file-operations/constants";
 import type { StorageMetadata } from "@/utils/file-operations/types";
-import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { selectUserId } from "@/lib/redux/selectors/userSelectors";
+import { useAppDispatch } from "@/lib/redux/hooks";
 import { CloudFolders } from "@/features/files/utils/folder-conventions";
-import { ensureFolderPath } from "@/features/files/redux/thunks";
-import {
-  createShareLink,
-  uploadFiles as cloudUploadFiles,
-} from "@/features/files/redux/thunks";
+import { cloudUpload, isCloudUploadFailure } from "@/features/files/upload";
 
 // ---------------------------------------------------------------------------
 // Bucket → folder mapping
@@ -120,7 +114,6 @@ function synthesizeMetadata(file: File): StorageMetadata {
 
 export const useFileUploadWithStorage = (bucket: string, path?: string) => {
   const dispatch = useAppDispatch();
-  const userId = useAppSelector(selectUserId);
   const [results, setResults] = useState<UploadResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -139,88 +132,59 @@ export const useFileUploadWithStorage = (bucket: string, path?: string) => {
 
   const uploadOneTo = useCallback(
     async (folderPath: string, file: File): Promise<UploadResult | null> => {
-      try {
-        setIsLoading(true);
-        setError(null);
+      setIsLoading(true);
+      setError(null);
 
-        const parentFolderId = await dispatch(
-          ensureFolderPath({
-            folderPath,
-            visibility: "private",
-          }),
-        ).unwrap();
+      // Single source of truth — `cloudUpload` posts to the Python backend,
+      // which auto-creates any missing folders and handles share-link
+      // creation in one round-trip. The browser never queries
+      // `cld_folders` directly, which sidesteps the well-known RLS
+      // recursion bug on `cld_file_permissions`.
+      const result = await cloudUpload(
+        file,
+        {
+          folderPath,
+          visibility: "private",
+          metadata: {
+            origin: "legacy-compat:useFileUploadWithStorage",
+            legacy_bucket: bucket,
+          },
+          createShareLink: true,
+        },
+        dispatch,
+      );
 
-        const { uploaded, failed } = await dispatch(
-          cloudUploadFiles({
-            files: [file],
-            parentFolderId,
-            visibility: "private",
-            concurrency: 1,
-            metadata: {
-              origin: "legacy-compat:useFileUploadWithStorage",
-              legacy_bucket: bucket,
-            },
-          }),
-        ).unwrap();
+      setIsLoading(false);
 
-        if (failed.length > 0 || uploaded.length === 0) {
-          // Surface the REAL backend error, not the filename. Without this,
-          // every upload failure looked like "screenshot.png" in the toast,
-          // hiding the actual cause (CORS, 401, 413, network, etc.).
-          const realError = failed[0]?.error ?? "Upload failed";
-          throw new Error(realError);
-        }
-
-        const fileId = uploaded[0];
-        let link: import("@/features/files/types").CloudShareLink;
-        try {
-          link = await dispatch(
-            createShareLink({
-              resourceId: fileId,
-              resourceType: "file",
-              permissionLevel: "read",
-            }),
-          ).unwrap();
-        } catch (linkErr) {
-          // Upload succeeded but share-link creation failed. Keep the file
-          // around (the user can still find it in /cloud-files) but report
-          // a clear error so they don't think the upload silently broke.
-          throw new Error(
-            `File uploaded but share link couldn't be created: ${extractErrorMessage(linkErr)}`,
-          );
-        }
-
-        const origin =
-          typeof window !== "undefined" ? window.location.origin : "";
-        const shareUrl = `${origin.replace(/\/$/, "")}/share/${link.shareToken}`;
-
-        const metadata = synthesizeMetadata(file);
-        const details = getFileDetailsByUrl(shareUrl, metadata, fileId);
-
-        const result: UploadResult = {
-          url: shareUrl,
-          type: classifyFileType(file.type),
-          details,
-          metadata,
-          // Re-use the cloud-files UUID as the localId so callers that
-          // stored this id can still reason about the file.
-          localId: fileId,
-        };
-        setResults((prev) => [...prev, result]);
-        return result;
-      } catch (err) {
-        const message = extractErrorMessage(err) || "Upload failed";
-        lastErrorRef.current = message;
-        setError(message);
-        // Also log so devs can see the chain in the console even if the
-        // caller swallows the toast. With CORS or 401 errors, the
-        // BackendApiError carries useful detail/code we want preserved.
+      if (isCloudUploadFailure(result)) {
+        lastErrorRef.current = result.error;
+        setError(result.error);
+        // Log so devs can see the full error chain in the console even
+        // if the caller swallows the toast.
         // eslint-disable-next-line no-console
-        console.error("[useFileUploadWithStorage] upload failed:", err);
+        console.error(
+          "[useFileUploadWithStorage] upload failed:",
+          result.error,
+          result.errorCode ? `(code: ${result.errorCode})` : "",
+        );
         return null;
-      } finally {
-        setIsLoading(false);
       }
+
+      const shareUrl = result.shareUrl ?? "";
+      const metadata = synthesizeMetadata(file);
+      const details = getFileDetailsByUrl(shareUrl, metadata, result.fileId);
+
+      const out: UploadResult = {
+        url: shareUrl,
+        type: classifyFileType(file.type),
+        details,
+        metadata,
+        // Re-use the cloud-files UUID as the localId so callers that
+        // stored this id can still reason about the file.
+        localId: result.fileId,
+      };
+      setResults((prev) => [...prev, out]);
+      return out;
     },
     [dispatch, bucket],
   );
@@ -268,33 +232,14 @@ export const useFileUploadWithStorage = (bucket: string, path?: string) => {
   }, []);
 
   const createUserDirectories = useCallback(async (): Promise<boolean> => {
-    try {
-      setIsLoading(true);
-      if (!userId) throw new Error("User ID is not available");
-      await dispatch(
-        ensureFolderPath({
-          folderPath: "Shared Assets",
-          visibility: "private",
-        }),
-      ).unwrap();
-      await dispatch(
-        ensureFolderPath({
-          folderPath: "Private Assets",
-          visibility: "private",
-        }),
-      ).unwrap();
-      return true;
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Failed to create user directories",
-      );
-      return false;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [dispatch, userId]);
+    // Legacy no-op — the Python backend creates "Shared Assets" /
+    // "Private Assets" / any other folder on demand during upload, so
+    // pre-creating them is unnecessary. Kept for back-compat: previous
+    // callers that pre-flighted directory creation now just see `true`
+    // and proceed to upload. No callers in the live tree (verified
+    // 2026-04-24).
+    return true;
+  }, []);
 
   const uploadToPublicUserAssets = useCallback(
     (file: File) => uploadOneTo("Shared Assets", file),

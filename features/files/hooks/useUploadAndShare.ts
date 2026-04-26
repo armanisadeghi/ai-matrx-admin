@@ -28,7 +28,7 @@
 
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { createShareLink, ensureFolderPath, uploadFiles } from "@/features/files/redux/thunks";
+import { cloudUpload, isCloudUploadFailure } from "@/features/files/upload";
 import type {
   PermissionLevel,
   Visibility,
@@ -81,58 +81,39 @@ export function useUploadAndShare(): UseUploadAndShareResult {
       metadata,
       appOrigin,
     }: UploadAndShareArgs): Promise<UploadAndShareResult> => {
-      let resolvedParent: string | null = parentFolderId ?? null;
-
-      if (folderPath && folderPath.trim()) {
-        resolvedParent = await dispatch(
-          ensureFolderPath({
-            folderPath: folderPath.trim().replace(/^\/+|\/+$/g, ""),
-            visibility,
-          }),
-        ).unwrap();
-      }
-
-      const { uploaded, failed } = await dispatch(
-        uploadFiles({
-          files: [file],
-          parentFolderId: resolvedParent,
+      // Single source of truth — `cloudUpload` calls the Python backend
+      // directly. The backend creates any missing folders AND the share
+      // link in one round-trip. No supabase-js direct queries → no RLS
+      // recursion bug exposure.
+      const result = await cloudUpload(
+        file,
+        {
+          folderPath: folderPath?.trim().replace(/^\/+|\/+$/g, ""),
+          parentFolderId: parentFolderId ?? null,
           visibility,
           metadata,
-          concurrency: 1,
-        }),
-      ).unwrap();
-
-      if (failed.length > 0 || uploaded.length === 0) {
-        // `failed` items are `{ name, error }` since 2026-04-24 — surface
-        // the real backend error rather than a stringified object.
-        const message = failed[0]?.error ?? "unknown error";
-        throw new Error(`Upload failed: ${message}`);
+          createShareLink: true,
+          shareLinkPermissionLevel: permissionLevel,
+          shareLinkMaxUses: maxUses,
+          shareLinkExpiresAt: expiresAt,
+        },
+        dispatch,
+      );
+      if (isCloudUploadFailure(result)) {
+        throw new Error(result.error);
       }
-
-      const fileId = uploaded[0];
-
-      const link = await dispatch(
-        createShareLink({
-          resourceId: fileId,
-          resourceType: "file",
-          permissionLevel,
-          maxUses,
-          expiresAt,
-        }),
-      ).unwrap();
-
-      const origin =
-        appOrigin ??
-        (typeof window !== "undefined" ? window.location.origin : "");
-      const shareUrl = `${origin.replace(/\/$/, "")}/share/${link.shareToken}`;
-
-      // The upload response's file_path is the logical path; echo it so
-      // callers that previously relied on it (rare) can keep a breadcrumb.
+      // `appOrigin` override is rare — `cloudUpload` already builds a URL
+      // from window.location.origin. Honor an explicit override here for
+      // SSR/worker callers that synthesize their own.
+      const shareUrl =
+        appOrigin && result.shareToken
+          ? `${appOrigin.replace(/\/$/, "")}/share/${result.shareToken}`
+          : result.shareUrl ?? "";
       return {
-        fileId,
-        shareToken: link.shareToken,
+        fileId: result.fileId,
+        shareToken: result.shareToken ?? "",
         shareUrl,
-        filePath: link.resourceId, // best effort — exact path isn't in state yet
+        filePath: result.filePath,
       };
     },
     [dispatch],
@@ -147,69 +128,37 @@ export function useUploadAndShare(): UseUploadAndShareResult {
 // ---------------------------------------------------------------------------
 
 /**
- * Imperative `uploadAndShare` — callable from non-React contexts. Requires
- * the redux store to be initialized.
+ * Imperative `uploadAndShare` — callable from non-React contexts. Wraps
+ * the same `cloudUpload` primitive as the hook; the only difference is
+ * pulling the dispatch from the store singleton.
  */
 export async function uploadAndShare(
   args: UploadAndShareArgs,
 ): Promise<UploadAndShareResult> {
-  const { getStore } = await import("@/lib/redux/store");
-  const store = getStore();
-  if (!store) throw new Error("Redux store not ready");
-
-  let resolvedParent: string | null = args.parentFolderId ?? null;
-
-  if (args.folderPath && args.folderPath.trim()) {
-    resolvedParent = await store
-      .dispatch(
-        ensureFolderPath({
-          folderPath: args.folderPath.trim().replace(/^\/+|\/+$/g, ""),
-          visibility: args.visibility ?? "private",
-        }),
-      )
-      .unwrap();
+  const { cloudUploadImperative, isCloudUploadFailure } = await import(
+    "@/features/files/upload/cloudUpload"
+  );
+  const result = await cloudUploadImperative(args.file, {
+    folderPath: args.folderPath?.trim().replace(/^\/+|\/+$/g, ""),
+    parentFolderId: args.parentFolderId ?? null,
+    visibility: args.visibility ?? "private",
+    metadata: args.metadata,
+    createShareLink: true,
+    shareLinkPermissionLevel: args.permissionLevel ?? "read",
+    shareLinkMaxUses: args.maxUses,
+    shareLinkExpiresAt: args.expiresAt,
+  });
+  if (isCloudUploadFailure(result)) {
+    throw new Error(result.error);
   }
-
-  const { uploaded, failed } = await store
-    .dispatch(
-      uploadFiles({
-        files: [args.file],
-        parentFolderId: resolvedParent,
-        visibility: args.visibility ?? "private",
-        metadata: args.metadata,
-        concurrency: 1,
-      }),
-    )
-    .unwrap();
-
-  if (failed.length > 0 || uploaded.length === 0) {
-    const message = failed[0]?.error ?? "unknown error";
-    throw new Error(`Upload failed: ${message}`);
-  }
-
-  const fileId = uploaded[0];
-
-  const link = await store
-    .dispatch(
-      createShareLink({
-        resourceId: fileId,
-        resourceType: "file",
-        permissionLevel: args.permissionLevel ?? "read",
-        maxUses: args.maxUses,
-        expiresAt: args.expiresAt,
-      }),
-    )
-    .unwrap();
-
-  const origin =
-    args.appOrigin ??
-    (typeof window !== "undefined" ? window.location.origin : "");
-  const shareUrl = `${origin.replace(/\/$/, "")}/share/${link.shareToken}`;
-
+  const shareUrl =
+    args.appOrigin && result.shareToken
+      ? `${args.appOrigin.replace(/\/$/, "")}/share/${result.shareToken}`
+      : result.shareUrl ?? "";
   return {
-    fileId,
-    shareToken: link.shareToken,
+    fileId: result.fileId,
+    shareToken: result.shareToken ?? "",
     shareUrl,
-    filePath: link.resourceId,
+    filePath: result.filePath,
   };
 }

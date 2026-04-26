@@ -253,7 +253,9 @@ function WindowTitleContent({
       <AgentListDropdown
         onSelect={onAgentSelect}
         label={agentId ? displayName : "Select agent…"}
-        className="max-w-[180px] md:max-w-[240px] py-1 rounded-full"
+        noBorder
+        compact
+        className="max-w-[180px] md:max-w-[240px] rounded-none bg-transparent"
       />
     </div>
   );
@@ -263,12 +265,14 @@ function WindowTitleContent({
 
 interface AgentRunBodyProps {
   agentId: string;
+  currentPath: string;
   selectedConversationId: string | null;
   onNewRunCleared: () => void;
 }
 
 function AgentRunBody({
   agentId,
+  currentPath,
   selectedConversationId,
   onNewRunCleared,
 }: AgentRunBodyProps) {
@@ -443,7 +447,11 @@ function AgentRunBody({
           <PlusTapButton onClick={handleNewRun} />
         </div>
         <div className="flex-1 min-w-0 flex justify-center">
-          <AgentModeController agentId={agentId} />
+          <AgentModeController
+            agentId={agentId}
+            basePath="/agents"
+            currentPath={currentPath}
+          />
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
           <AgentSaveStatus agentId={agentId} />
@@ -581,6 +589,7 @@ function AgentRunWindowInner({
         <AgentRunBody
           key={agentId}
           agentId={agentId}
+          currentPath={window.location.pathname}
           selectedConversationId={selectedConversationId}
           onNewRunCleared={handleNewRunCleared}
         />

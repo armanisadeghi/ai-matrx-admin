@@ -250,6 +250,7 @@
     "jest": "latest",
     "jest-environment-jsdom": "^30.3.0",
     "jsdom": "latest",
+    "madge": "^8.0.0",
     "os-browserify": "latest",
     "postcss": "latest",
     "process": "latest",

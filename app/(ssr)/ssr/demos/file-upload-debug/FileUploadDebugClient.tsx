@@ -34,11 +34,14 @@ import React, {
 } from "react";
 import {
   AlertCircle,
+  Check,
   CheckCircle2,
   ChevronDown,
   ChevronRight,
   Clipboard,
   Cloud,
+  Copy,
+  CopyCheck,
   ExternalLink,
   HardDriveUpload,
   Loader2,
@@ -59,10 +62,7 @@ import {
 } from "@/lib/redux/slices/apiConfigSlice";
 import { resolveBaseUrl } from "@/features/files/api/client";
 import { useFileUploadWithStorage } from "@/components/ui/file-upload/useFileUploadWithStorage";
-import {
-  ensureFolderPath,
-  uploadFiles as cloudUploadFiles,
-} from "@/features/files/redux/thunks";
+import { uploadFiles as cloudUploadFiles } from "@/features/files/redux/thunks";
 import { useUploadAndGet } from "@/features/files/hooks/useUploadAndGet";
 import { useUploadAndShare } from "@/features/files/hooks/useUploadAndShare";
 import { cn } from "@/lib/utils";
@@ -96,6 +96,61 @@ function fmtBytes(n: number): string {
   return `${(n / (1024 * 1024)).toFixed(2)} MB`;
 }
 
+/**
+ * Render a single log entry as a self-contained, copy-pasteable text
+ * block. Designed for pasting into a bug report or a chat — includes
+ * everything the recipient needs to triage.
+ */
+function formatLogEntry(entry: LogEntry): string {
+  const lines: string[] = [
+    `[${fmtTs(entry.ts)}] ${entry.pattern}`,
+    `Status: ${entry.ok ? "SUCCESS" : "FAILURE"} · ${entry.durationMs}ms`,
+    `File:   ${entry.fileName} (${fmtBytes(entry.fileSize)})`,
+    `Target: ${entry.target}`,
+  ];
+  if (entry.fileId) lines.push(`File ID: ${entry.fileId}`);
+  if (entry.shareUrl) lines.push(`Share URL: ${entry.shareUrl}`);
+  if (entry.error) lines.push(`Error: ${entry.error}`);
+  let rawString: string;
+  try {
+    rawString = JSON.stringify(entry.raw, null, 2);
+  } catch {
+    rawString = String(entry.raw);
+  }
+  lines.push("Raw response:");
+  lines.push(rawString);
+  return lines.join("\n");
+}
+
+/** Copy text to clipboard with a fallback for non-secure contexts. */
+async function copyText(text: string): Promise<boolean> {
+  if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      /* fall through to the textarea fallback */
+    }
+  }
+  if (typeof document !== "undefined") {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      document.execCommand("copy");
+      return true;
+    } catch {
+      return false;
+    } finally {
+      ta.remove();
+    }
+  }
+  return false;
+}
+
 // ─── Component ────────────────────────────────────────────────────────────
 
 export function FileUploadDebugClient() {
@@ -109,6 +164,9 @@ export function FileUploadDebugClient() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [running, setRunning] = useState<Record<string, boolean>>({});
+  // Per-row "Copied!" flash + a separate flag for the "Copy all" button.
+  const [copiedRowId, setCopiedRowId] = useState<string | null>(null);
+  const [copiedAll, setCopiedAll] = useState(false);
 
   // Pre-pick a file once so the same file goes through every pattern.
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -256,7 +314,9 @@ export function FileUploadDebugClient() {
     [legacyHook, runWithTiming],
   );
 
-  // 2. cloud-files thunk directly
+  // 2. cloud-files thunk directly — uses the new `folderPath` option so
+  //    the backend handles folder creation. No more `ensureFolderPath`
+  //    (which queried `cld_folders` directly and hit RLS recursion).
   const onThunkDirect = useCallback(
     async (file: File) => {
       await runWithTiming(
@@ -264,16 +324,11 @@ export function FileUploadDebugClient() {
         "Debug Uploads",
         file,
         async () => {
-          const parentFolderId = await dispatch(
-            ensureFolderPath({
-              folderPath: "Debug Uploads",
-              visibility: "private",
-            }),
-          ).unwrap();
           const result = await dispatch(
             cloudUploadFiles({
               files: [file],
-              parentFolderId,
+              folderPath: "Debug Uploads",
+              parentFolderId: null,
               visibility: "private",
               concurrency: 1,
               metadata: { origin: "debug-page" },
@@ -460,6 +515,27 @@ export function FileUploadDebugClient() {
   const toggleExpand = (id: string) =>
     setExpanded((e) => ({ ...e, [id]: !e[id] }));
 
+  const copyOneLog = useCallback(async (entry: LogEntry) => {
+    const ok = await copyText(formatLogEntry(entry));
+    if (ok) {
+      setCopiedRowId(entry.id);
+      window.setTimeout(() => setCopiedRowId((v) => (v === entry.id ? null : v)), 1600);
+    }
+  }, []);
+
+  const copyAllLogs = useCallback(async () => {
+    if (logs.length === 0) return;
+    const blob = logs
+      .map((e, i) => `── #${logs.length - i} ─────────────────\n${formatLogEntry(e)}`)
+      .join("\n\n");
+    const header = `File Upload Debug — ${logs.length} ${logs.length === 1 ? "entry" : "entries"}\nBackend: ${baseUrl ?? "(none)"}\nUser: ${userEmail ?? userId ?? "(no session)"}\n\n`;
+    const ok = await copyText(header + blob);
+    if (ok) {
+      setCopiedAll(true);
+      window.setTimeout(() => setCopiedAll(false), 1600);
+    }
+  }, [logs, baseUrl, userEmail, userId]);
+
   const activeHealth = useMemo(
     () => allServerHealth.find((h) => h.isActive),
     [allServerHealth],
@@ -640,7 +716,7 @@ export function FileUploadDebugClient() {
             />
             <PatternButton
               label="cloud-files uploadFiles thunk (direct)"
-              hint="ensureFolderPath + uploadFiles + share-link skipped"
+              hint="uploadFiles thunk with folderPath (no share-link; one round-trip)"
               running={!!running["uploadFiles thunk (direct dispatch)"]}
               disabled={!selectedFile}
               onClick={() => selectedFile && onThunkDirect(selectedFile)}
@@ -676,15 +752,36 @@ export function FileUploadDebugClient() {
           <div className="flex items-center justify-between gap-2 border-b border-border bg-muted/40 px-3 py-1.5">
             <h2 className="text-sm font-medium">Event log ({logs.length})</h2>
             {logs.length > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-7 gap-1.5 text-xs"
-                onClick={clearLogs}
-              >
-                <X className="h-3 w-3" />
-                Clear
-              </Button>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 gap-1.5 text-xs"
+                  onClick={() => void copyAllLogs()}
+                  title="Copy every entry to clipboard (header + raw JSON)"
+                >
+                  {copiedAll ? (
+                    <>
+                      <Check className="h-3 w-3 text-success" />
+                      Copied
+                    </>
+                  ) : (
+                    <>
+                      <CopyCheck className="h-3 w-3" />
+                      Copy all
+                    </>
+                  )}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 gap-1.5 text-xs"
+                  onClick={clearLogs}
+                >
+                  <X className="h-3 w-3" />
+                  Clear
+                </Button>
+              </div>
             )}
           </div>
           <div className="divide-y divide-border">
@@ -698,7 +795,9 @@ export function FileUploadDebugClient() {
                 key={entry.id}
                 entry={entry}
                 expanded={!!expanded[entry.id]}
+                copied={copiedRowId === entry.id}
                 onToggle={() => toggleExpand(entry.id)}
+                onCopy={() => void copyOneLog(entry)}
               />
             ))}
           </div>
@@ -771,37 +870,64 @@ function PatternButton({
 function LogRow({
   entry,
   expanded,
+  copied,
   onToggle,
+  onCopy,
 }: {
   entry: LogEntry;
   expanded: boolean;
+  copied: boolean;
   onToggle: () => void;
+  onCopy: () => void;
 }) {
   const Icon = entry.ok ? CheckCircle2 : AlertCircle;
   const iconClass = entry.ok ? "text-success" : "text-destructive";
   return (
     <div className="text-xs">
-      <button
-        type="button"
-        onClick={onToggle}
-        className="w-full flex items-center gap-2 px-3 py-1.5 hover:bg-muted/50 text-left"
-      >
-        {expanded ? (
-          <ChevronDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-        ) : (
-          <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-        )}
-        <Icon className={cn("h-3.5 w-3.5 shrink-0", iconClass)} />
-        <span className="font-mono w-20 shrink-0 text-muted-foreground">
-          {fmtTs(entry.ts)}
-        </span>
-        <span className="font-mono flex-1 truncate" title={entry.pattern}>
-          {entry.pattern}
-        </span>
-        <span className="font-mono w-14 shrink-0 text-right text-muted-foreground">
-          {entry.durationMs}ms
-        </span>
-      </button>
+      {/* Header is a flex row with the toggle as the wide click target and a
+       * separate copy button that doesn't propagate to the toggle. */}
+      <div className="w-full flex items-center gap-2 px-3 py-1.5 hover:bg-muted/50">
+        <button
+          type="button"
+          onClick={onToggle}
+          className="flex flex-1 items-center gap-2 text-left min-w-0"
+        >
+          {expanded ? (
+            <ChevronDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+          ) : (
+            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+          )}
+          <Icon className={cn("h-3.5 w-3.5 shrink-0", iconClass)} />
+          <span className="font-mono w-20 shrink-0 text-muted-foreground">
+            {fmtTs(entry.ts)}
+          </span>
+          <span className="font-mono flex-1 truncate" title={entry.pattern}>
+            {entry.pattern}
+          </span>
+          <span className="font-mono w-14 shrink-0 text-right text-muted-foreground">
+            {entry.durationMs}ms
+          </span>
+        </button>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onCopy();
+          }}
+          aria-label="Copy this entry to clipboard"
+          title={copied ? "Copied!" : "Copy to clipboard"}
+          className={cn(
+            "flex h-6 w-6 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-accent hover:text-foreground shrink-0",
+            copied && "text-success",
+          )}
+        >
+          {copied ? (
+            <Check className="h-3.5 w-3.5" />
+          ) : (
+            <Copy className="h-3.5 w-3.5" />
+          )}
+        </button>
+      </div>
       {expanded && (
         <div className="bg-muted/30 border-t border-border px-3 py-2 space-y-2 font-mono text-[11px]">
           <Detail label="Target folder" value={entry.target} />

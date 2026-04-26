@@ -8,11 +8,11 @@ import { AgentNewRunButton } from "../shared/AgentNewRunButton";
 
 interface AgentRunHeaderProps {
   agentId: string;
+  basePath: string;
+  currentPath: string;
   agentName: string;
   surfaceKey: string;
   backHref?: string;
-  /** Base path for mode-switch navigation. Defaults to `/agents`. */
-  basePath?: string;
 }
 
 export function AgentRunHeader({
@@ -21,6 +21,7 @@ export function AgentRunHeader({
   surfaceKey,
   backHref = "/agents",
   basePath = "/agents",
+  currentPath,
 }: AgentRunHeaderProps) {
   return (
     <div className="hidden lg:flex items-center justify-between w-full gap-2 shrink-0">
@@ -34,7 +35,11 @@ export function AgentRunHeader({
         <AgentNewRunButton surfaceKey={surfaceKey} />
       </div>
       <div>
-        <AgentModeController agentId={agentId} basePath={basePath} />
+        <AgentModeController
+          agentId={agentId}
+          basePath={basePath}
+          currentPath={currentPath}
+        />
       </div>
       <div className="flex items-center gap-1.5 pt-0.5 shrink-0">
         <AgentSaveStatus agentId={agentId} />

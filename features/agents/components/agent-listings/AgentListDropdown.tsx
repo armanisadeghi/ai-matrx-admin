@@ -35,6 +35,10 @@ interface AgentListDropdownProps {
   label?: string;
   /** Custom trigger element — replaces the default text button. */
   triggerSlot?: React.ReactNode;
+  /** Remove the border from the default trigger button. */
+  noBorder?: boolean;
+  /** Use a compact (h-5) trigger instead of the default h-7. */
+  compact?: boolean;
 }
 
 export function AgentListDropdown({
@@ -43,6 +47,8 @@ export function AgentListDropdown({
   className,
   label = "Agents",
   triggerSlot,
+  noBorder = false,
+  compact = false,
 }: AgentListDropdownProps) {
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
@@ -131,9 +137,10 @@ export function AgentListDropdown({
   const trigger = triggerSlot ?? (
     <button
       className={cn(
-        "inline-flex items-center gap-1.5 h-7 px-2.5 rounded-md text-xs font-medium",
-        "border border-border bg-background hover:bg-muted/50 transition-colors",
-        "text-foreground/80 hover:text-foreground",
+        "inline-flex items-center rounded-md text-xs font-medium transition-colors",
+        "bg-background hover:bg-muted/50 text-foreground/80 hover:text-foreground",
+        compact ? "h-5 gap-1 px-1.5" : "h-7 gap-1.5 px-2.5",
+        !noBorder && "border border-border",
         className,
       )}
     >

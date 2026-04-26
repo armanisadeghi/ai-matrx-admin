@@ -172,8 +172,20 @@ export function PreviewPane({
       aria-label="File preview"
     >
       {/* Header */}
-      <div className="flex items-center gap-2 border-b border-border bg-muted/30 px-3 py-2 shrink-0">
-        <div className="flex min-w-0 flex-1 items-center gap-2">
+      <div className="flex items-center gap-2 border-b border-border bg-muted/30 px-2 py-2 shrink-0">
+        {/* Close — leftmost so it's never obscured by the app's user avatar
+         * in the top-right corner. Esc keyboard shortcut also works. */}
+        <button
+          type="button"
+          onClick={handleClose}
+          title="Close preview (Esc)"
+          aria-label="Close preview"
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+        >
+          <X className="h-4 w-4" />
+        </button>
+
+        <div className="flex min-w-0 flex-1 items-center gap-1.5">
           {file ? (
             <FileIcon fileName={file.fileName} size={16} className="shrink-0" />
           ) : null}
@@ -185,7 +197,9 @@ export function PreviewPane({
           </p>
         </div>
 
-        <div className="flex items-center gap-0.5 shrink-0">
+        {/* Action buttons — right side, with a small right margin so they
+         * stay clear of the user's avatar. */}
+        <div className="flex items-center gap-0.5 shrink-0 mr-12">
           <PreviewIconButton
             onClick={handleCopyLink}
             disabled={!file || copying}
@@ -219,18 +233,6 @@ export function PreviewPane({
             ariaLabel="Open full view"
           >
             <ExternalLink className="h-3.5 w-3.5" />
-          </PreviewIconButton>
-          <div className="mx-1 h-4 w-px bg-border" />
-          {/* Close — clean icon button (no text). Esc keyboard shortcut also
-           * works. The user can't get trapped: this lives in the panel
-           * header, not the page header, so it doesn't collide with the
-           * top-right user-avatar dropdown. */}
-          <PreviewIconButton
-            onClick={handleClose}
-            title="Close preview (Esc)"
-            ariaLabel="Close preview"
-          >
-            <X className="h-4 w-4" />
           </PreviewIconButton>
         </div>
       </div>

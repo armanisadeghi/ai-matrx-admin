@@ -13,8 +13,14 @@ import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { Copy, MoreHorizontal, Share2, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
-import type { CloudFileRecord, CloudFolderRecord } from "@/features/files/types";
-import { formatFileSize, formatRelativeTime } from "@/features/files/utils/format";
+import type {
+  CloudFileRecord,
+  CloudFolderRecord,
+} from "@/features/files/types";
+import {
+  formatFileSize,
+  formatRelativeTime,
+} from "@/features/files/utils/format";
 import { FileIcon } from "@/features/files/components/core/FileIcon/FileIcon";
 import { FileContextMenu } from "@/features/files/components/core/FileContextMenu/FileContextMenu";
 import { useFileActions } from "@/features/files/components/core/FileActions/useFileActions";
@@ -27,6 +33,8 @@ export interface FileTableRowProps {
   file?: CloudFileRecord;
   folder?: CloudFolderRecord;
   selected: boolean;
+  /** True when this file is currently open in the preview pane. */
+  isPreviewActive?: boolean;
   onToggleSelected: () => void;
   onActivate: () => void;
   onOpenShare: () => void;
@@ -55,6 +63,7 @@ interface FileRowProps extends FileTableRowProps {
 function FileRow({
   file,
   selected,
+  isPreviewActive,
   onToggleSelected,
   onActivate,
   onOpenShare,
@@ -85,7 +94,11 @@ function FileRow({
       ref={setNodeRef}
       className={cn(
         "group border-b text-sm transition-colors",
-        selected ? "bg-accent/70" : "hover:bg-accent/40",
+        isPreviewActive
+          ? "bg-primary/10 border-l-2 border-l-primary"
+          : selected
+            ? "bg-accent/70"
+            : "hover:bg-accent/40",
         isDragging && "opacity-50",
       )}
       onMouseEnter={() => setHovered(true)}

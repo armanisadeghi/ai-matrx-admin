@@ -504,12 +504,26 @@ export const uploadFiles = createAsyncThunk<
   // 11 migration look "broken" when really we just couldn't see why.
   const failed: Array<{ name: string; error: string }> = [];
 
-  // Resolve logical path prefix from parent folder (if any).
+  // Resolve logical path prefix.
+  //
+  // Order of preference:
+  //   1. `folderPath` arg — passed directly (the Python backend
+  //      auto-creates the hierarchy server-side; the browser never has to
+  //      query `cld_folders` via supabase-js, which avoids the
+  //      well-known RLS recursion bug on `cld_file_permissions`).
+  //   2. `parentFolderId` — look up the folder in slice state (works when
+  //      the folder is already loaded from the tree RPC or realtime).
+  //   3. Empty prefix — file lands at root.
   const state = getState();
-  const parentFolder = arg.parentFolderId
-    ? state.cloudFiles.foldersById[arg.parentFolderId]
-    : null;
-  const prefix = parentFolder ? `${parentFolder.folderPath}/` : "";
+  let prefix = "";
+  if (arg.folderPath) {
+    prefix = `${arg.folderPath.replace(/^\/+|\/+$/g, "")}/`;
+  } else if (arg.parentFolderId) {
+    const parentFolder = state.cloudFiles.foldersById[arg.parentFolderId];
+    if (parentFolder) {
+      prefix = `${parentFolder.folderPath}/`;
+    }
+  }
 
   const queue = [...arg.files];
   async function worker(): Promise<void> {

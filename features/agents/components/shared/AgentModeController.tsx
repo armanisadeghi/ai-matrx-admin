@@ -87,13 +87,17 @@ export function deriveAgentMode(
   return "view";
 }
 
+type AgentModeControllerProps = {
+  agentId: string;
+  basePath: string;
+  currentPath: string;
+};
+
 export function AgentModeController({
   agentId,
   basePath = "/agents",
-}: {
-  agentId: string;
-  basePath?: string;
-}) {
+  currentPath,
+}: AgentModeControllerProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [, startTransition] = useTransition();
@@ -128,7 +132,7 @@ export function AgentModeController({
 
   return (
     <>
-      <div className="shell-glass flex items-center gap-0.5 rounded-full p-0.5">
+      <div className="shell-glass flex items-center gap-0 rounded-full p-0.5">
         {MODES.map(({ id, label, icon: Icon }) => {
           const isActive = id === mode;
           return (
@@ -142,8 +146,8 @@ export function AgentModeController({
               }}
               title={label}
               className={cn(
-                "flex items-center justify-center gap-1 py-0.5 text-[0.6875rem] font-medium rounded-full transition-colors cursor-pointer",
-                "px-1.5 xl:px-2.5",
+                "flex items-center justify-center gap-1 p-0.5 text-[0.6875rem] font-medium rounded-full transition-colors cursor-pointer",
+                "px-1.5",
                 "[&_svg]:w-3.5 [&_svg]:h-3.5",
                 isActive
                   ? "bg-[var(--shell-glass-bg-active)] text-[var(--shell-nav-text-hover)]"

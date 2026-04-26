@@ -70,12 +70,16 @@ const DEFAULT_EDITOR_CONTEXT =
 
 interface AgentWidgetsPageProps {
   agentId: string;
+  basePath: string;
+  currentPath: string;
   initialAgentName: string;
 }
 
 export function AgentWidgetsPage({
   agentId,
+  currentPath,
   initialAgentName,
+  basePath = "/agents",
 }: AgentWidgetsPageProps) {
   const dispatch = useAppDispatch();
   const { launchAgent } = useAgentLauncher();
@@ -334,7 +338,11 @@ export function AgentWidgetsPage({
           />
         </div>
         <div>
-          <AgentModeController agentId={agentId} />
+          <AgentModeController
+            agentId={agentId}
+            basePath={basePath}
+            currentPath={currentPath}
+          />
         </div>
         <div className="flex items-center gap-1.5 pt-0.5 shrink-0">
           <AgentSaveStatus agentId={agentId} />

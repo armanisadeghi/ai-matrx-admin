@@ -8,16 +8,10 @@ import { AgentHeaderMobile } from "./AgentHeaderMobile";
 
 interface AgentHeaderProps {
   agentId: string;
-  /** Agent name from the SSR fetch — passed to the selector island so the
-   *  initial render shows the real name with zero flash or loading state. */
+  basePath: string;
+  currentPath: string;
   agentName: string;
-  /** Back-link target. Defaults to `/agents` for the user-facing route.
-   *  The admin system-agents route passes `/administration/system-agents/agents`. */
   backHref?: string;
-  /** Base path used for mode-switch navigation inside this header
-   *  (e.g. build/run/latest). Agent IDs are appended as `${basePath}/${id}`.
-   *  Defaults to `/agents`. */
-  basePath?: string;
 }
 
 /**
@@ -32,6 +26,7 @@ export function AgentHeader({
   agentName,
   backHref = "/agents",
   basePath = "/agents",
+  currentPath,
 }: AgentHeaderProps) {
   return (
     <>
@@ -56,7 +51,11 @@ export function AgentHeader({
           </Link>
           <AgentSelectorIsland agentId={agentId} initialName={agentName} />
         </div>
-        <AgentModeController agentId={agentId} basePath={basePath} />
+        <AgentModeController
+          agentId={agentId}
+          basePath={basePath}
+          currentPath={currentPath}
+        />
         <div className="flex items-center gap-1.5 shrink-0">
           <AgentSaveStatus agentId={agentId} />
           <div className="w-px h-4 bg-border/50" />

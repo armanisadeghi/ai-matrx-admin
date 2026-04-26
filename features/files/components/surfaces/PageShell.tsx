@@ -61,7 +61,10 @@ import {
   selectTreeStatus,
   selectViewMode,
 } from "@/features/files/redux/selectors";
-import { setActiveFileId, setActiveFolderId } from "@/features/files/redux/slice";
+import {
+  setActiveFileId,
+  setActiveFolderId,
+} from "@/features/files/redux/slice";
 import { moveFile as moveFileThunk } from "@/features/files/redux/thunks";
 import {
   AlertDialog,
@@ -313,197 +316,197 @@ function PageShellDesktop({
       collisionDetection={closestCenter}
       onDragEnd={handleDragEnd}
     >
-    <div
-      className={cn(
-        "flex h-[calc(100dvh-var(--header-height))] overflow-hidden bg-background",
-        className,
-      )}
-    >
-      <IconRail section={section} />
-
-      <ResizablePanelGroup
-        orientation="horizontal"
-        autoSave="matrx-cloud-files-dropbox-v4"
-        className="h-full min-h-0 w-full"
-      >
-        {/* Nav sidebar */}
-        <ResizablePanel
-          id={PANEL_IDS.SIDE}
-          defaultSize={pct(sidebarDefaultPercent)}
-          minSize={pct(sidebarMinPercent)}
-          maxSize={pct(40)}
-          className="border-r border-border/70"
-        >
-          <NavSidebar section={section} />
-        </ResizablePanel>
-
-        <ResizableHandle />
-
-        {/* Main */}
-        <ResizablePanel
-          id={PANEL_IDS.MAIN}
-          minSize={pct(showPreviewPane ? 30 : 40)}
-        >
-          <div className="flex h-full flex-col overflow-hidden">
-            <TopBar
-              parentFolderId={activeFolderId}
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-            />
-
-            {section === "folders" ? (
-              <FolderExplorer
-                onSelectFolder={handleSelectFolder}
-                onSelectFile={handleSelectFile}
-              />
-            ) : (
-              <>
-                <ContentHeader
-                  section={section}
-                  activeFolderId={activeFolderId}
-                  activeFilter={filter}
-                  onFilterToggle={handleFilterToggle}
-                  showActions={
-                    !showPlaceholder &&
-                    section !== "trash" &&
-                    section !== "starred"
-                  }
-                  showFilterRow={
-                    !showPlaceholder &&
-                    section !== "trash" &&
-                    section !== "starred"
-                  }
-                />
-
-                <div className="flex-1 overflow-hidden">
-                  {showPlaceholder ? (
-                    <SectionPlaceholder section={section} />
-                  ) : isEmpty && section === "all" ? (
-                    <FileUploadDropzone
-                      parentFolderId={null}
-                      mode="overlay"
-                      className="h-full w-full"
-                    >
-                      <OnboardingEmptyState />
-                    </FileUploadDropzone>
-                  ) : section === "starred" ? (
-                    <EmptyState
-                      icon={Star}
-                      title="Starred items"
-                      comingSoon
-                      description="Star any file or folder to pin it here for quick access."
-                    />
-                  ) : showTableOrGrid ? (
-                    <FileUploadDropzone
-                      parentFolderId={activeFolderId}
-                      mode="overlay"
-                      className="h-full w-full"
-                    >
-                      {viewMode === "grid" ? (
-                        <FileGrid
-                          folders={searchScopedFolders}
-                          files={searchScopedFiles}
-                          permissionsByResourceId={permissionsByResourceId}
-                          section={section}
-                          searchQuery={searchQuery}
-                          filter={effectiveFilter}
-                          treeWideSearch={isSearching}
-                          onActivateFolder={handleSelectFolder}
-                          onActivateFile={handleSelectFile}
-                          emptyState={
-                            section === "photos" ||
-                            section === "shared" ||
-                            section === "trash" ? (
-                              <SectionPlaceholder section={section} />
-                            ) : undefined
-                          }
-                        />
-                      ) : (
-                        <FileTable
-                          folders={searchScopedFolders}
-                          files={searchScopedFiles}
-                          permissionsByResourceId={permissionsByResourceId}
-                          section={section}
-                          searchQuery={searchQuery}
-                          filter={effectiveFilter}
-                          treeWideSearch={isSearching}
-                          onActivateFolder={handleSelectFolder}
-                          onActivateFile={handleSelectFile}
-                          emptyState={
-                            section === "photos" ||
-                            section === "shared" ||
-                            section === "trash" ? (
-                              <SectionPlaceholder section={section} />
-                            ) : undefined
-                          }
-                        />
-                      )}
-                    </FileUploadDropzone>
-                  ) : null}
-                </div>
-              </>
-            )}
-          </div>
-        </ResizablePanel>
-
-        {/* Preview pane — only mounted when a file is selected. The user
-         * always has an escape: the Close (X) button on the header bar
-         * clears `activeFileId`, which collapses this panel and reveals the
-         * full file list behind it. The list itself is also still partially
-         * visible behind the resize handle — clicking it (e.g. picking a
-         * different file) just swaps the previewed file. autoSave keeps the
-         * preferred width across mounts. */}
-        {showPreviewPane && (
-          <>
-            <ResizableHandle />
-            <ResizablePanel
-              id={PANEL_IDS.PREVIEW}
-              defaultSize={pct(PREVIEW_DEFAULT_PCT)}
-              minSize={pct(PREVIEW_MIN_PCT)}
-              maxSize={pct(PREVIEW_MAX_PCT)}
-              className="border-l border-border/70"
-            >
-              <PreviewPane fileId={activeFile!.id} />
-            </ResizablePanel>
-          </>
+      <div
+        className={cn(
+          "flex h-[calc(100dvh-var(--header-height))] overflow-hidden bg-background",
+          className,
         )}
-      </ResizablePanelGroup>
-
-      {/* Bulk-actions toolbar — fixed-position pill at the bottom of the
-       * viewport. Renders nothing unless one or more rows are selected. */}
-      <BulkActionsBar />
-
-      {/* Confirm dialog for keyboard-shortcut deletes. Destructive ops
-       * always go through a dialog so an accidental Backspace press
-       * doesn't quietly trash files. */}
-      <AlertDialog
-        open={shortcuts.pendingDelete !== null}
-        onOpenChange={(open) => {
-          if (!open) shortcuts.clearPendingDelete();
-        }}
       >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              {shortcuts.pendingDelete?.kind === "batch"
-                ? `Delete ${shortcuts.pendingDelete.ids.length} files?`
-                : "Delete file?"}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {shortcuts.pendingDelete?.kind === "batch"
-                ? "These files will move to trash. You can restore them for 30 days before bytes are removed."
-                : "This will move the file to trash. You can restore it from versions for 30 days before bytes are removed."}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => void shortcuts.confirmDelete()}>
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
+        <IconRail section={section} />
+
+        <ResizablePanelGroup
+          orientation="horizontal"
+          autoSave="matrx-cloud-files-dropbox-v4"
+          className="h-full min-h-0 w-full"
+        >
+          {/* Nav sidebar */}
+          <ResizablePanel
+            id={PANEL_IDS.SIDE}
+            defaultSize={pct(sidebarDefaultPercent)}
+            minSize={pct(sidebarMinPercent)}
+            maxSize={pct(40)}
+            className="border-r border-border/70"
+          >
+            <NavSidebar section={section} />
+          </ResizablePanel>
+
+          <ResizableHandle />
+
+          {/* Main */}
+          <ResizablePanel
+            id={PANEL_IDS.MAIN}
+            minSize={pct(showPreviewPane ? 30 : 40)}
+          >
+            <div className="flex h-full flex-col overflow-hidden">
+              <TopBar
+                parentFolderId={activeFolderId}
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+              />
+
+              {section === "folders" ? (
+                <FolderExplorer
+                  onSelectFolder={handleSelectFolder}
+                  onSelectFile={handleSelectFile}
+                />
+              ) : (
+                <>
+                  <ContentHeader
+                    section={section}
+                    activeFolderId={activeFolderId}
+                    activeFilter={filter}
+                    onFilterToggle={handleFilterToggle}
+                    showActions={
+                      !showPlaceholder &&
+                      section !== "trash" &&
+                      section !== "starred"
+                    }
+                    showFilterRow={
+                      !showPlaceholder &&
+                      section !== "trash" &&
+                      section !== "starred"
+                    }
+                  />
+
+                  <div className="flex-1 overflow-hidden">
+                    {showPlaceholder ? (
+                      <SectionPlaceholder section={section} />
+                    ) : isEmpty && section === "all" ? (
+                      <FileUploadDropzone
+                        parentFolderId={null}
+                        mode="overlay"
+                        className="h-full w-full"
+                      >
+                        <OnboardingEmptyState />
+                      </FileUploadDropzone>
+                    ) : section === "starred" ? (
+                      <EmptyState
+                        icon={Star}
+                        title="Starred items"
+                        comingSoon
+                        description="Star any file or folder to pin it here for quick access."
+                      />
+                    ) : showTableOrGrid ? (
+                      <FileUploadDropzone
+                        parentFolderId={activeFolderId}
+                        mode="overlay"
+                        className="h-full w-full"
+                      >
+                        {viewMode === "grid" ? (
+                          <FileGrid
+                            folders={searchScopedFolders}
+                            files={searchScopedFiles}
+                            permissionsByResourceId={permissionsByResourceId}
+                            section={section}
+                            searchQuery={searchQuery}
+                            filter={effectiveFilter}
+                            treeWideSearch={isSearching}
+                            onActivateFolder={handleSelectFolder}
+                            onActivateFile={handleSelectFile}
+                            emptyState={
+                              section === "photos" ||
+                              section === "shared" ||
+                              section === "trash" ? (
+                                <SectionPlaceholder section={section} />
+                              ) : undefined
+                            }
+                          />
+                        ) : (
+                          <FileTable
+                            folders={searchScopedFolders}
+                            files={searchScopedFiles}
+                            permissionsByResourceId={permissionsByResourceId}
+                            section={section}
+                            searchQuery={searchQuery}
+                            filter={effectiveFilter}
+                            treeWideSearch={isSearching}
+                            onActivateFolder={handleSelectFolder}
+                            onActivateFile={handleSelectFile}
+                            emptyState={
+                              section === "photos" ||
+                              section === "shared" ||
+                              section === "trash" ? (
+                                <SectionPlaceholder section={section} />
+                              ) : undefined
+                            }
+                          />
+                        )}
+                      </FileUploadDropzone>
+                    ) : null}
+                  </div>
+                </>
+              )}
+            </div>
+          </ResizablePanel>
+
+          {/* Preview pane — only mounted when a file is selected. The user
+           * always has an escape: the Close (X) button on the header bar
+           * clears `activeFileId`, which collapses this panel and reveals the
+           * full file list behind it. The list itself is also still partially
+           * visible behind the resize handle — clicking it (e.g. picking a
+           * different file) just swaps the previewed file. autoSave keeps the
+           * preferred width across mounts. */}
+          {showPreviewPane && (
+            <>
+              <ResizableHandle />
+              <ResizablePanel
+                id={PANEL_IDS.PREVIEW}
+                defaultSize={pct(PREVIEW_DEFAULT_PCT)}
+                minSize={pct(PREVIEW_MIN_PCT)}
+                maxSize={pct(PREVIEW_MAX_PCT)}
+                className="border-l border-border/70"
+              >
+                <PreviewPane key={activeFile!.id} fileId={activeFile!.id} />
+              </ResizablePanel>
+            </>
+          )}
+        </ResizablePanelGroup>
+
+        {/* Bulk-actions toolbar — fixed-position pill at the bottom of the
+         * viewport. Renders nothing unless one or more rows are selected. */}
+        <BulkActionsBar />
+
+        {/* Confirm dialog for keyboard-shortcut deletes. Destructive ops
+         * always go through a dialog so an accidental Backspace press
+         * doesn't quietly trash files. */}
+        <AlertDialog
+          open={shortcuts.pendingDelete !== null}
+          onOpenChange={(open) => {
+            if (!open) shortcuts.clearPendingDelete();
+          }}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                {shortcuts.pendingDelete?.kind === "batch"
+                  ? `Delete ${shortcuts.pendingDelete.ids.length} files?`
+                  : "Delete file?"}
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                {shortcuts.pendingDelete?.kind === "batch"
+                  ? "These files will move to trash. You can restore them for 30 days before bytes are removed."
+                  : "This will move the file to trash. You can restore it from versions for 30 days before bytes are removed."}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={() => void shortcuts.confirmDelete()}>
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
     </DndContext>
   );
 }

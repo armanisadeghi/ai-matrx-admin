@@ -18,7 +18,10 @@ import { formatFileSize } from "@/features/files/utils/format";
 import { FileIcon } from "@/features/files/components/core/FileIcon/FileIcon";
 import { FileContextMenu } from "@/features/files/components/core/FileContextMenu/FileContextMenu";
 import { useFileActions } from "@/features/files/components/core/FileActions/useFileActions";
-import type { CloudFileRecord, CloudFolderRecord } from "@/features/files/types";
+import type {
+  CloudFileRecord,
+  CloudFolderRecord,
+} from "@/features/files/types";
 import { FolderIconWithMembers } from "./FolderIconWithMembers";
 
 export interface FileGridCellProps {
@@ -26,6 +29,8 @@ export interface FileGridCellProps {
   file?: CloudFileRecord;
   folder?: CloudFolderRecord;
   selected: boolean;
+  /** True when this file is currently open in the preview pane. */
+  isPreviewActive?: boolean;
   isShared: boolean;
   onToggleSelected: () => void;
   onActivate: () => void;
@@ -52,6 +57,7 @@ interface GridFileProps extends FileGridCellProps {
 function GridFile({
   file,
   selected,
+  isPreviewActive,
   isShared,
   onToggleSelected,
   onActivate,
@@ -76,7 +82,11 @@ function GridFile({
       ref={setNodeRef}
       className={cn(
         "group flex flex-col rounded-lg border bg-card overflow-hidden transition-shadow",
-        selected && "ring-2 ring-ring",
+        isPreviewActive
+          ? "ring-2 ring-primary bg-primary/5"
+          : selected
+            ? "ring-2 ring-ring"
+            : null,
         "hover:shadow-sm",
         isDragging && "opacity-50",
       )}

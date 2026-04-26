@@ -12,7 +12,11 @@ import { useCallback, useMemo, useState } from "react";
 import { Search as SearchIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { selectAllFoldersMap, selectSelection } from "@/features/files/redux/selectors";
+import {
+  selectActiveFileId,
+  selectAllFoldersMap,
+  selectSelection,
+} from "@/features/files/redux/selectors";
 import {
   setActiveFileId,
   setActiveFolderId,
@@ -65,6 +69,7 @@ export function FileGrid({
 }: FileGridProps) {
   const dispatch = useAppDispatch();
   const selection = useAppSelector(selectSelection);
+  const activeFileId = useAppSelector(selectActiveFileId);
   const foldersById = useAppSelector(selectAllFoldersMap);
 
   const resolveFolderPath = useCallback(
@@ -154,74 +159,75 @@ export function FileGrid({
   }
 
   return (
-      <div
-        className={cn("flex h-full w-full flex-col overflow-hidden", className)}
-      >
-        {treeWideSearch ? (
-          <div className="flex items-center gap-2 border-b bg-muted/30 px-4 py-1.5 text-xs text-muted-foreground shrink-0">
-            <SearchIcon className="h-3.5 w-3.5" />
-            <span>
-              Showing {rows.length} {rows.length === 1 ? "result" : "results"}{" "}
-              from all folders for &ldquo;
-              <span className="font-medium text-foreground">{searchQuery}</span>
-              &rdquo;
-            </span>
-          </div>
-        ) : null}
-        <div className="flex-1 overflow-auto p-4">
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-            {rows.map((row) => {
-              const id = row.kind === "file" ? row.file.id : row.folder.id;
-              const visibility =
-                row.kind === "file"
-                  ? row.file.visibility
-                  : row.folder.visibility;
-              const isShared = isSharedResource(
-                id,
-                visibility,
-                permissionsByResourceId,
-              );
-              const selected = selection.selectedIds.includes(id);
-              const parentFolderId =
-                row.kind === "file"
-                  ? row.file.parentFolderId
-                  : row.folder.parentId;
-              const parentPath = treeWideSearch
-                ? resolveFolderPath(parentFolderId ?? null)
-                : null;
-              return (
-                <FileGridCell
-                  key={id}
-                  kind={row.kind}
-                  file={row.kind === "file" ? row.file : undefined}
-                  folder={row.kind === "folder" ? row.folder : undefined}
-                  selected={selected}
-                  isShared={isShared}
-                  onToggleSelected={() => dispatch(toggleSelection({ id }))}
-                  onActivate={() => handleActivate(row)}
-                  onOpenShare={() =>
-                    setShareTarget({
-                      resourceId: id,
-                      resourceType: row.kind,
-                    })
-                  }
-                  parentPath={parentPath}
-                />
-              );
-            })}
-          </div>
+    <div
+      className={cn("flex h-full w-full flex-col overflow-hidden", className)}
+    >
+      {treeWideSearch ? (
+        <div className="flex items-center gap-2 border-b bg-muted/30 px-4 py-1.5 text-xs text-muted-foreground shrink-0">
+          <SearchIcon className="h-3.5 w-3.5" />
+          <span>
+            Showing {rows.length} {rows.length === 1 ? "result" : "results"}{" "}
+            from all folders for &ldquo;
+            <span className="font-medium text-foreground">{searchQuery}</span>
+            &rdquo;
+          </span>
         </div>
-
-        {shareTarget ? (
-          <ShareLinkDialog
-            open={!!shareTarget}
-            onOpenChange={(open) => {
-              if (!open) setShareTarget(null);
-            }}
-            resourceId={shareTarget.resourceId}
-            resourceType={shareTarget.resourceType}
-          />
-        ) : null}
+      ) : null}
+      <div className="flex-1 overflow-auto p-4">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          {rows.map((row) => {
+            const id = row.kind === "file" ? row.file.id : row.folder.id;
+            const visibility =
+              row.kind === "file" ? row.file.visibility : row.folder.visibility;
+            const isShared = isSharedResource(
+              id,
+              visibility,
+              permissionsByResourceId,
+            );
+            const selected = selection.selectedIds.includes(id);
+            const isPreviewActive =
+              row.kind === "file" && row.file.id === activeFileId;
+            const parentFolderId =
+              row.kind === "file"
+                ? row.file.parentFolderId
+                : row.folder.parentId;
+            const parentPath = treeWideSearch
+              ? resolveFolderPath(parentFolderId ?? null)
+              : null;
+            return (
+              <FileGridCell
+                key={id}
+                kind={row.kind}
+                file={row.kind === "file" ? row.file : undefined}
+                folder={row.kind === "folder" ? row.folder : undefined}
+                selected={selected}
+                isPreviewActive={isPreviewActive}
+                isShared={isShared}
+                onToggleSelected={() => dispatch(toggleSelection({ id }))}
+                onActivate={() => handleActivate(row)}
+                onOpenShare={() =>
+                  setShareTarget({
+                    resourceId: id,
+                    resourceType: row.kind,
+                  })
+                }
+                parentPath={parentPath}
+              />
+            );
+          })}
+        </div>
       </div>
+
+      {shareTarget ? (
+        <ShareLinkDialog
+          open={!!shareTarget}
+          onOpenChange={(open) => {
+            if (!open) setShareTarget(null);
+          }}
+          resourceId={shareTarget.resourceId}
+          resourceType={shareTarget.resourceType}
+        />
+      ) : null}
+    </div>
   );
 }

@@ -383,7 +383,21 @@ export interface EnsureFolderPathArg {
 
 export interface UploadFilesArg {
   files: File[];
-  parentFolderId: string | null;
+  /**
+   * Existing folder id (rare — only when you've already created/loaded the
+   * folder via realtime or the tree RPC). Prefer `folderPath` for new
+   * uploads — the backend auto-creates folders so the browser doesn't
+   * need to query `cld_folders` (which can recurse on RLS until the
+   * SECURITY DEFINER policy fix lands; see HANDOFF.md).
+   */
+  parentFolderId?: string | null;
+  /**
+   * Logical folder path (e.g. "Images/Chat" or "Debug Uploads"). The
+   * Python backend creates any missing folders during upload. This is
+   * the recommended option for new uploads — it doesn't trigger any
+   * supabase-js queries on `cld_folders` from the browser.
+   */
+  folderPath?: string | null;
   visibility?: Visibility;
   shareWith?: string[];
   shareLevel?: PermissionLevel;

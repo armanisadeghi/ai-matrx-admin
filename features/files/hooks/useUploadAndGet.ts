@@ -16,7 +16,7 @@
 
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { ensureFolderPath, uploadFiles } from "@/features/files/redux/thunks";
+import { cloudUpload, isCloudUploadFailure } from "@/features/files/upload";
 import type {
   PermissionLevel,
   Visibility,
@@ -66,39 +66,28 @@ export function useUploadAndGet(): UseUploadAndGetResult {
       metadata,
       changeSummary,
     }: UploadAndGetArgs): Promise<UploadAndGetResult> => {
-      let resolvedParent: string | null = parentFolderId ?? null;
-
-      if (folderPath && folderPath.trim()) {
-        // Auto-create the chain and land at the leaf.
-        resolvedParent = await dispatch(
-          ensureFolderPath({
-            folderPath: folderPath.trim().replace(/^\/+|\/+$/g, ""),
-            visibility,
-          }),
-        ).unwrap();
-      }
-
-      const { uploaded, failed } = await dispatch(
-        uploadFiles({
-          files: [file],
-          parentFolderId: resolvedParent,
+      // Single source of truth — `cloudUpload` posts to the Python backend
+      // which auto-creates any missing folders. We deliberately don't call
+      // `ensureFolderPath` here because that would query
+      // `supabase.from("cld_folders")` directly from the browser, which
+      // hits the well-known RLS recursion bug on `cld_file_permissions`.
+      const result = await cloudUpload(
+        file,
+        {
+          folderPath: folderPath?.trim().replace(/^\/+|\/+$/g, ""),
+          parentFolderId: parentFolderId ?? null,
           visibility,
           shareWith,
           shareLevel,
           metadata,
           changeSummary,
-          concurrency: 1,
-        }),
-      ).unwrap();
-
-      if (failed.length > 0 || uploaded.length === 0) {
-        // `failed` items are `{ name, error }` since 2026-04-24 — surface
-        // the real backend error rather than a stringified object.
-        const message = failed[0]?.error ?? "unknown error";
-        throw new Error(`Upload failed: ${message}`);
+        },
+        dispatch,
+      );
+      if (isCloudUploadFailure(result)) {
+        throw new Error(result.error);
       }
-
-      return { fileId: uploaded[0] };
+      return { fileId: result.fileId };
     },
     [dispatch],
   );
