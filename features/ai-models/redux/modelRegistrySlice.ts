@@ -5,7 +5,10 @@ import {
 } from "@reduxjs/toolkit";
 import { createClient } from "@/utils/supabase/client";
 import { normalizeModel } from "@/features/ai-models/utils/model-normalizer";
-import type { RootState } from "@/lib/redux/store";
+// Minimal local state type — avoids importing RootState from store.ts (which
+// transitively imports this slice via reduxTypes → modelRegistrySlice),
+// breaking the type-level circular dependency.
+type StateWithModelRegistry = { modelRegistry: ModelRegistryState };
 import type { Database } from "@/types/database.types";
 
 // ---------------------------------------------------------------------------
@@ -350,19 +353,19 @@ export default modelRegistrySlice.reducer;
 // Base selectors — plain lookups only, no transformation (Rule 4)
 // ---------------------------------------------------------------------------
 
-const selectRegistrySlice = (state: RootState) => state.modelRegistry;
-const selectEntities = (state: RootState) => state.modelRegistry.entities;
-const selectActiveIds = (state: RootState) => state.modelRegistry.activeIds;
-const selectDeprecatedIds = (state: RootState) =>
+const selectRegistrySlice = (state: StateWithModelRegistry) => state.modelRegistry;
+const selectEntities = (state: StateWithModelRegistry) => state.modelRegistry.entities;
+const selectActiveIds = (state: StateWithModelRegistry) => state.modelRegistry.activeIds;
+const selectDeprecatedIds = (state: StateWithModelRegistry) =>
   state.modelRegistry.deprecatedIds;
 
-export const selectModelFetchScope = (state: RootState) =>
+export const selectModelFetchScope = (state: StateWithModelRegistry) =>
   state.modelRegistry.fetchScope;
-export const selectModelRegistryLoading = (state: RootState) =>
+export const selectModelRegistryLoading = (state: StateWithModelRegistry) =>
   state.modelRegistry.isLoading;
-export const selectModelRegistryError = (state: RootState) =>
+export const selectModelRegistryError = (state: StateWithModelRegistry) =>
   state.modelRegistry.error;
-export const selectModelRegistryLastFetched = (state: RootState) =>
+export const selectModelRegistryLastFetched = (state: StateWithModelRegistry) =>
   state.modelRegistry.lastFetched;
 
 // ---------------------------------------------------------------------------
@@ -431,7 +434,7 @@ export const selectAllModelOptions = createSelector(
 export const selectModelLabelById = createSelector(
   [
     selectEntities,
-    (_state: RootState, modelId: string | null | undefined) => modelId,
+    (_state: StateWithModelRegistry, modelId: string | null | undefined) => modelId,
   ],
   (entities, modelId): string | undefined => {
     if (!modelId) return undefined;
@@ -448,7 +451,7 @@ export const selectModelLabelById = createSelector(
 export const selectModelNameById = createSelector(
   [
     selectEntities,
-    (_state: RootState, modelId: string | null | undefined) => modelId,
+    (_state: StateWithModelRegistry, modelId: string | null | undefined) => modelId,
   ],
   (entities, modelId): string | undefined => {
     if (!modelId) return undefined;
@@ -465,7 +468,7 @@ export const selectModelNameById = createSelector(
  * subscribe to different IDs simultaneously.
  */
 export const selectModelById = createSelector(
-  [selectEntities, (_state: RootState, modelId: string) => modelId],
+  [selectEntities, (_state: StateWithModelRegistry, modelId: string) => modelId],
   (entities, modelId): AIModelRecord | undefined => entities[modelId],
 );
 
@@ -478,7 +481,7 @@ export const selectModelById = createSelector(
  */
 export const makeSelectModelById = () =>
   createSelector(
-    [selectEntities, (_state: RootState, modelId: string) => modelId],
+    [selectEntities, (_state: StateWithModelRegistry, modelId: string) => modelId],
     (entities, modelId): AIModelRecord | undefined => entities[modelId],
   );
 
@@ -486,7 +489,7 @@ export const makeSelectModelById = () =>
  * Controls blob for a model. Undefined when record not found or not yet fetched.
  */
 export const selectModelControls = createSelector(
-  [selectEntities, (_state: RootState, modelId: string) => modelId],
+  [selectEntities, (_state: StateWithModelRegistry, modelId: string) => modelId],
   (entities, modelId) => entities[modelId]?.controls,
 );
 
@@ -494,7 +497,7 @@ export const selectModelControls = createSelector(
  * fetchType for a single model — 'options', 'full', or undefined if unknown.
  */
 export const selectModelFetchType = createSelector(
-  [selectEntities, (_state: RootState, modelId: string) => modelId],
+  [selectEntities, (_state: StateWithModelRegistry, modelId: string) => modelId],
   (entities, modelId): ModelRecordFetchType | undefined =>
     entities[modelId]?._fetchType,
 );
@@ -531,7 +534,7 @@ export const selectAllModelsReady = createSelector(
 export const selectModelFullyLoaded = createSelector(
   [
     selectEntities,
-    (_state: RootState, modelId: string | null | undefined) => modelId,
+    (_state: StateWithModelRegistry, modelId: string | null | undefined) => modelId,
   ],
   (entities, modelId): boolean => {
     if (!modelId) return false;

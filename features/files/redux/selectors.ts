@@ -9,8 +9,12 @@
 "use client";
 
 import { createSelector } from "reselect";
-import type { RootState } from "@/lib/redux/store";
 import { sortChildren as sortChildrenUtil } from "./tree-utils";
+import type { CloudFilesState } from "@/features/files/types";
+
+// Minimal local state shape — avoids importing from store.ts (which imports
+// this module), which would create a type-level circular dependency.
+type StateWithCloudFiles = { cloudFiles: CloudFilesState };
 import type {
   CloudFile,
   CloudFileRecord,
@@ -34,7 +38,7 @@ export const EMPTY_CLOUD_SHARE_LINKS: CloudShareLink[] = [];
 // Slice root
 // ---------------------------------------------------------------------------
 
-const selectSlice = (state: RootState) => state.cloudFiles;
+const selectSlice = (state: StateWithCloudFiles) => state.cloudFiles;
 
 // ---------------------------------------------------------------------------
 // Files
@@ -51,13 +55,13 @@ export const selectAllFilesArray = createSelector(
 );
 
 export const selectFileById = createSelector(
-  [selectAllFilesMap, (_state: RootState, id: string) => id],
+  [selectAllFilesMap, (_state: StateWithCloudFiles, id: string) => id],
   (map, id): CloudFileRecord | undefined => map[id],
 );
 
 /** Imperative — middleware / thunks. */
 export function getFileFromState(
-  state: RootState,
+  state: StateWithCloudFiles,
   id: string,
 ): CloudFileRecord | undefined {
   return state.cloudFiles.filesById[id];
@@ -132,12 +136,12 @@ export const selectAllFoldersArray = createSelector(
 );
 
 export const selectFolderById = createSelector(
-  [selectAllFoldersMap, (_state: RootState, id: string) => id],
+  [selectAllFoldersMap, (_state: StateWithCloudFiles, id: string) => id],
   (map, id): CloudFolderRecord | undefined => map[id],
 );
 
 export function getFolderFromState(
-  state: RootState,
+  state: StateWithCloudFiles,
   id: string,
 ): CloudFolderRecord | undefined {
   return state.cloudFiles.foldersById[id];
@@ -193,13 +197,13 @@ export const selectChildrenByFolderId = createSelector(
 );
 
 export const selectChildrenOfFolder = createSelector(
-  [selectChildrenByFolderId, (_state: RootState, folderId: string) => folderId],
+  [selectChildrenByFolderId, (_state: StateWithCloudFiles, folderId: string) => folderId],
   (byId, folderId): TreeChildren =>
     byId[folderId] ?? { folderIds: [], fileIds: [] },
 );
 
 export const selectIsFolderFullyLoaded = createSelector(
-  [selectTreeSlice, (_state: RootState, folderId: string) => folderId],
+  [selectTreeSlice, (_state: StateWithCloudFiles, folderId: string) => folderId],
   (tree, folderId): boolean => tree.fullyLoadedFolderIds[folderId] === true,
 );
 
@@ -279,7 +283,7 @@ export const selectSelection = createSelector(
 );
 
 export const selectIsSelected = createSelector(
-  [selectSelection, (_s: RootState, id: string) => id],
+  [selectSelection, (_s: StateWithCloudFiles, id: string) => id],
   (selection, id): boolean => selection.selectedIds.includes(id),
 );
 
@@ -293,7 +297,7 @@ export const selectSelectedCount = createSelector(
 // ---------------------------------------------------------------------------
 
 export const selectVersionsForFile = createSelector(
-  [selectSlice, (_s: RootState, fileId: string) => fileId],
+  [selectSlice, (_s: StateWithCloudFiles, fileId: string) => fileId],
   (slice, fileId): CloudFileVersion[] => slice.versionsByFileId[fileId] ?? [],
 );
 
@@ -302,7 +306,7 @@ export const selectVersionsForFile = createSelector(
 // ---------------------------------------------------------------------------
 
 export const selectPermissionsForResource = createSelector(
-  [selectSlice, (_s: RootState, resourceId: string) => resourceId],
+  [selectSlice, (_s: StateWithCloudFiles, resourceId: string) => resourceId],
   (slice, resourceId): CloudFilePermission[] | undefined =>
     slice.permissionsByResourceId[resourceId],
 );
@@ -316,7 +320,7 @@ export const selectEffectivePermissionForFile = createSelector(
   [
     selectFileById,
     selectPermissionsForResource,
-    (_s: RootState, _fileId: string, userId: string) => userId,
+    (_s: StateWithCloudFiles, _fileId: string, userId: string) => userId,
   ],
   (file, permissions, userId): PermissionLevel | null => {
     if (!file) return null;
@@ -346,7 +350,7 @@ export const selectEffectivePermissionForFile = createSelector(
 // ---------------------------------------------------------------------------
 
 export const selectShareLinksForResource = createSelector(
-  [selectSlice, (_s: RootState, resourceId: string) => resourceId],
+  [selectSlice, (_s: StateWithCloudFiles, resourceId: string) => resourceId],
   (slice, resourceId): CloudShareLink[] | undefined =>
     slice.shareLinksByResourceId[resourceId],
 );
@@ -370,12 +374,12 @@ export const selectAllGroupsArray = createSelector(
 );
 
 export const selectGroupById = createSelector(
-  [selectSlice, (_s: RootState, id: string) => id],
+  [selectSlice, (_s: StateWithCloudFiles, id: string) => id],
   (slice, id): CloudUserGroup | undefined => slice.groupsById[id],
 );
 
 export const selectGroupMembers = createSelector(
-  [selectSlice, (_s: RootState, groupId: string) => groupId],
+  [selectSlice, (_s: StateWithCloudFiles, groupId: string) => groupId],
   (slice, groupId): CloudUserGroupMember[] =>
     slice.groupMembersByGroupId[groupId] ?? [],
 );
@@ -390,7 +394,7 @@ export const selectAllUploads = createSelector(
 );
 
 export const selectUploadByRequestId = createSelector(
-  [selectAllUploads, (_s: RootState, requestId: string) => requestId],
+  [selectAllUploads, (_s: StateWithCloudFiles, requestId: string) => requestId],
   (uploads, requestId): UploadState | undefined => uploads[requestId],
 );
 

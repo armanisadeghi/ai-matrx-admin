@@ -4,7 +4,11 @@
 // For auto-generated notes, materializes them (first DB insert) on first edit.
 
 import type { Middleware } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store";
+import type { NotesSliceState } from "./notes.types";
+
+// Minimal local state type — avoids importing RootState from store.ts (which
+// imports this middleware), breaking the type-level circular dependency.
+type StateWithNotes = { notes: NotesSliceState };
 import { supabase } from "@/utils/supabase/client";
 import {
   markNoteSaving,
@@ -54,7 +58,7 @@ export const autoSaveMiddleware: Middleware =
     if (!noteId) return result;
 
     // Read current note from state
-    const state = storeApi.getState() as RootState;
+    const state = storeApi.getState() as StateWithNotes;
     const record = state.notes?.notes?.[noteId] as NoteRecord | undefined;
     if (!record || !record._dirty) return result;
 
@@ -69,7 +73,7 @@ export const autoSaveMiddleware: Middleware =
     const timer = setTimeout(async () => {
       saveTimers.delete(noteId);
 
-      const currentState = storeApi.getState() as RootState;
+      const currentState = storeApi.getState() as StateWithNotes;
       const currentRecord = currentState.notes?.notes?.[noteId] as
         | NoteRecord
         | undefined;
@@ -93,7 +97,7 @@ export const autoSaveMiddleware: Middleware =
       }
 
       // Re-read state after potential label update
-      const stateAfterLabel = storeApi.getState() as RootState;
+      const stateAfterLabel = storeApi.getState() as StateWithNotes;
       const recordAfterLabel = stateAfterLabel.notes?.notes?.[noteId] as
         | NoteRecord
         | undefined;

@@ -27,7 +27,11 @@
 
 import type { Middleware } from "@reduxjs/toolkit";
 import { supabase } from "@/utils/supabase/client";
-import type { RootState } from "@/lib/redux/store";
+import type { CloudFilesState } from "@/features/files/types";
+
+// Minimal local state type — avoids importing RootState from store.ts which
+// imports this middleware, creating a type-level cycle.
+type StateWithCloudFiles = { cloudFiles: CloudFilesState };
 import type {
   RealtimeChannel,
   RealtimePostgresChangesPayload,
@@ -397,7 +401,7 @@ export const cloudFilesRealtimeMiddleware: Middleware = (store) => {
 
     // For a single event we'd merge into the existing array. Simpler: refetch
     // the list for this file. Cheap query, and keeps order / counts correct.
-    const state = store.getState() as RootState;
+    const state = store.getState() as StateWithCloudFiles;
     const existing = state.cloudFiles.versionsByFileId[fileId] ?? [];
 
     if (payload.eventType === "DELETE") {
@@ -430,7 +434,7 @@ export const cloudFilesRealtimeMiddleware: Middleware = (store) => {
     const resourceId = newRow?.resource_id ?? oldRow?.resource_id;
     if (!resourceId) return;
 
-    const state = store.getState() as RootState;
+    const state = store.getState() as StateWithCloudFiles;
     const existing = state.cloudFiles.permissionsByResourceId[resourceId] ?? [];
 
     if (payload.eventType === "DELETE") {
@@ -460,7 +464,7 @@ export const cloudFilesRealtimeMiddleware: Middleware = (store) => {
     const resourceId = newRow?.resource_id ?? oldRow?.resource_id;
     if (!resourceId) return;
 
-    const state = store.getState() as RootState;
+    const state = store.getState() as StateWithCloudFiles;
     const existing = state.cloudFiles.shareLinksByResourceId[resourceId] ?? [];
 
     if (payload.eventType === "DELETE") {

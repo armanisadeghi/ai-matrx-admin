@@ -11,7 +11,13 @@
 //   - codeFiles/setLocalTags
 
 import type { Middleware } from "@reduxjs/toolkit";
-import type { AppDispatch, RootState } from "@/lib/redux/store";
+import type { ThunkDispatch, UnknownAction } from "@reduxjs/toolkit";
+import type { CodeFilesSliceState } from "./code-files.types";
+
+// Minimal local types — avoids importing from store.ts (which imports this
+// middleware), breaking the type-level circular dependency.
+type StateWithCodeFiles = { codeFiles: CodeFilesSliceState };
+type AppDispatch = ThunkDispatch<StateWithCodeFiles, unknown, UnknownAction>;
 import { getCodeAutoSaveDelay } from "./code-files.types";
 import { saveFileNow } from "./thunks";
 
@@ -36,7 +42,7 @@ export const codeFilesAutoSaveMiddleware: Middleware =
     const fileId = payload?.id;
     if (!fileId) return result;
 
-    const state = storeApi.getState() as RootState;
+    const state = storeApi.getState() as StateWithCodeFiles;
     const rec = state.codeFiles.files[fileId];
     if (!rec || !rec._dirty) return result;
     if (rec.is_readonly) return result;
@@ -48,7 +54,7 @@ export const codeFilesAutoSaveMiddleware: Middleware =
 
     const timer = setTimeout(() => {
       saveTimers.delete(fileId);
-      const currentState = storeApi.getState() as RootState;
+      const currentState = storeApi.getState() as StateWithCodeFiles;
       const current = currentState.codeFiles.files[fileId];
       if (!current || !current._dirty || current._saving) return;
       (storeApi.dispatch as AppDispatch)(saveFileNow({ id: fileId })).catch(

@@ -15,7 +15,13 @@
 "use client";
 
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import type { AppDispatch, RootState } from "@/lib/redux/store";
+import type { ThunkDispatch, UnknownAction } from "@reduxjs/toolkit";
+import type { CloudFilesState } from "@/features/files/types";
+
+// Minimal local types — avoids importing from store.ts (which imports this
+// module via rootReducer → middleware chain), breaking the type-level cycle.
+type StateWithCloudFiles = { cloudFiles: CloudFilesState };
+type AppDispatch = ThunkDispatch<StateWithCloudFiles, unknown, UnknownAction>;
 import { supabase } from "@/utils/supabase/client";
 
 import * as Files from "@/features/files/api/files";
@@ -87,7 +93,7 @@ import type {
   Visibility,
 } from "@/features/files/types";
 
-type ThunkApi = { dispatch: AppDispatch; state: RootState };
+type ThunkApi = { dispatch: AppDispatch; state: StateWithCloudFiles };
 
 // ---------------------------------------------------------------------------
 // Reads
