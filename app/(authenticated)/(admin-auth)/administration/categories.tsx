@@ -130,6 +130,14 @@ export const adminCategories = [
     iconColor: "text-orange-600",
     features: [
       {
+        title: "Sandbox Infrastructure",
+        description:
+          "Live health for the EC2 + self-hosted orchestrators backing /code: per-tier disk/memory/CPU pressure, container counts, latest deploy runs, and one-click trigger. Catches silent deploy failures early.",
+        icon: <IconDashboard />,
+        link: "/administration/sandbox-infra",
+        isNew: true,
+      },
+      {
         title: "Sandbox Management",
         description:
           "Monitor all sandbox instances, manage containers, and access running sandboxes via SSH",
