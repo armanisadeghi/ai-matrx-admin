@@ -26,6 +26,7 @@ import {
   Cpu,
   Zap,
   BrainCircuit,
+  Database,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -142,6 +143,12 @@ const settingsNavItems: SettingsNavItem[] = [
     href: "/settings/integrations",
     icon: <Plug className="h-3.5 w-3.5" />,
     IconComp: Plug,
+  },
+  {
+    title: "Sandbox Storage",
+    href: "/settings/sandbox-storage",
+    icon: <Database className="h-3.5 w-3.5" />,
+    IconComp: Database,
   },
   {
     title: "Orgs",

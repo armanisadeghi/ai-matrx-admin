@@ -46,7 +46,10 @@ export const SourceControlPanel: React.FC<SourceControlPanelProps> = ({
 
   const cwd = filesystem.rootPath || "/home/agent";
   const adapter = useMemo(
-    () => (activeSandboxId ? new SandboxGitAdapter({ instanceId: activeSandboxId }) : null),
+    () =>
+      activeSandboxId
+        ? new SandboxGitAdapter({ instanceId: activeSandboxId })
+        : null,
     [activeSandboxId],
   );
 
@@ -74,7 +77,9 @@ export const SourceControlPanel: React.FC<SourceControlPanelProps> = ({
   const refresh = useCallback(async () => {
     if (!adapter) {
       setStatus(null);
-      setError("No sandbox connected — Source Control needs an active sandbox.");
+      setError(
+        "No sandbox connected — Source Control needs an active sandbox.",
+      );
       return;
     }
     setLoading(true);
@@ -116,8 +121,7 @@ export const SourceControlPanel: React.FC<SourceControlPanelProps> = ({
         await refresh();
       } catch (err) {
         setError(
-          (busyMessage ? `${busyMessage}: ` : "") +
-            (extractErrorMessage(err)),
+          (busyMessage ? `${busyMessage}: ` : "") + extractErrorMessage(err),
         );
       } finally {
         setBusy(false);
@@ -533,11 +537,7 @@ const Section: React.FC<SectionProps> = ({
             : "text-neutral-500 dark:text-neutral-400",
       )}
     >
-      {collapsed ? (
-        <ChevronRight size={10} />
-      ) : (
-        <ChevronDown size={10} />
-      )}
+      {collapsed ? <ChevronRight size={10} /> : <ChevronDown size={10} />}
       <span className="flex-1">{title}</span>
       <span>{count}</span>
     </button>
@@ -750,7 +750,10 @@ function StatusBadge({ status }: { status: string }) {
     "??": { label: "U", color: "text-emerald-500" },
   };
   const entry = map[code] ??
-    map[status] ?? { label: status.slice(0, 1) || "?", color: "text-neutral-400" };
+    map[status] ?? {
+      label: status.slice(0, 1) || "?",
+      color: "text-neutral-400",
+    };
   return (
     <span
       className={cn(

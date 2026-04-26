@@ -1,6 +1,6 @@
 # `/code` Workspace — System State & Gap Audit
 
-**Last updated:** 2026‑04‑26 (post-completion sweep + EC2 incident note + terminal live-streaming fix + AI-context bridge fix + workspace-token git auth + sandbox UX truth pass — see [`QA_CHECKLIST.md`](./QA_CHECKLIST.md))
+**Last updated:** 2026‑04‑26 (post-completion sweep + EC2 incident note + terminal live-streaming fix + AI-context bridge fix + workspace-token git auth + sandbox UX truth pass + persistence Phase 4 frontend — see [`QA_CHECKLIST.md`](./QA_CHECKLIST.md))
 **Scope:** Everything under `features/code/`, plus its hooks, adapters, and the slices it consumes from elsewhere in the app.
 
 This doc is the single source of truth for the `/code` (VSCode‑style) workspace. It captures (1) what is shipped, (2) what is wired but incomplete, (3) what is intentionally deferred, and (4) the wire format / mechanics of the editor→agent context bridge and the Monaco type environment system.
@@ -20,6 +20,8 @@ This doc is the single source of truth for the `/code` (VSCode‑style) workspac
 > **2026‑04‑26 terminal live‑streaming fix.** During the post‑clone smoke test, `git clone` showed a single line of output and then sat for 5 minutes with no further updates, even though the clone itself succeeded inside the container. Three issues compounded: (1) `TerminalTab.runCommand` always called the buffered `/exec` endpoint and never the SSE `/exec/stream` one — output was held until end‑of‑command and the buffered path's 60s default timeout was killing the visible request before `git clone` finished; (2) the streaming route had no `maxDuration`, so on Vercel Pro it would have died at 60s anyway; (3) `SandboxProcessAdapter.openPty` resolved its Promise synchronously instead of waiting for `WebSocket.onopen`, so on Vercel — where Next route handlers cannot complete the 101 upgrade — the buffered keystroke listener was disposed before the WS failed, dropping pasted commands. **Fix applied 2026‑04‑26:** (a) `runCommand` now prefers `adapter.stream()` when available and writes stdout/stderr to xterm chunk‑by‑chunk; Ctrl‑C while running aborts the SSE which propagates a SIGTERM through the proxy. (b) `app/api/sandbox/[id]/exec/stream/route.ts` now exports `runtime = 'nodejs'`, `dynamic = 'force-dynamic'`, and `maxDuration = 300` (Vercel Pro hard cap — see correction below). (c) `openPty` now returns a Promise that only resolves on `socket.onopen`, with a 4 s connect timeout that rejects so the caller stays on the buffered fallback when the upgrade isn't possible. (d) Multi‑line paste in buffered mode now queues lines rather than dropping them — every command in a paste runs sequentially. End result: `git clone`, `pnpm install`, and similar long commands now stream output live up to 300 s.
 
 > **2026‑04‑26 sandbox UX truth pass.** Two independent sandbox surfaces (`/sandbox` list page and `/code` `SandboxesPanel`) had drifted: the list page applied a client-side `getEffectiveStatus` override that flipped a still-`ready` row to `expired` once `expires_at` was past, while the panel showed the raw DB status verbatim — same row, different label. The list page also ticked its time-remaining display every 30s while the detail page ticked every 1s; the panel did not tick at all and only refreshed on the 4s status poll (or never, once the row stopped polling). The "+1h Debug Time" admin button on the detail page sent `{ action: 'extend', seconds: 3600 }` to the legacy DB-only `PUT /api/sandbox/[id]` route, but the route expects `ttl_seconds` — so the button silently no-op'd and the orchestrator's authoritative TTL never moved. Finally, the History pane on the list page invited a recovery action that does not exist (the container is destroyed; nothing to restart), and the delete dialog claimed "deleted sandboxes are retained temporarily for recovery" which is not true today. **Fix applied 2026‑04‑26:** (a) extracted shared `getEffectiveStatus`, `STATUS_LABELS`, `STATUS_BADGE_VARIANT`, `LIST_ACTIVE_STATUSES`, `statusPillClasses`, and `ACTIVE_EFFECTIVE_STATUSES` into [`lib/sandbox/status.ts`](../../lib/sandbox/status.ts) — every consumer (`/sandbox` list, `/sandbox/[id]` detail, `SandboxesPanel`) now reads through the same helper, so they cannot disagree about whether a sandbox is alive. (b) Added [`hooks/sandbox/use-time-remaining.ts`](../../hooks/sandbox/use-time-remaining.ts) — a `useTimeRemaining(expiresAt, granularity)` hook with `'second'` (detail page) and `'minute'` (list/panel) granularities. The detail page card now reads `Ends in: 1h 5m 23s` over `Initial allotment: 2h 0m` instead of the previous confusing `Time Remaining` over `TTL: 2h 0m` pairing. (c) Both the user-facing `+1h` button and the admin `+1h Debug Time` button now hit `POST /api/sandbox/[id]/extend` with `ttl_seconds`, matching what `SandboxesPanel` already does — the legacy `PUT ?action=extend` path is dead from the UI. (d) `useSandboxInstances.createInstance` now forwards `tier`, `template`, `template_version`, `resources`, and `labels` instead of dropping them — the `/sandbox` page's create dialog grew tier and template pickers (mirroring `CreateSandboxModal`) plus user-pref persistence in `userPreferences.coding.lastSandboxTier` / `lastSandboxTemplate`, so both surfaces produce the same kind of sandbox. (e) The list page's History block now reads "History — read-only record" with an explicit "containers have been destroyed and the data inside them is gone — they cannot be restarted" caption; both delete dialogs replaced the false "retained temporarily for recovery" copy with "anything inside the container that wasn't pushed to git is gone for good." This pass is intentionally surgical — once the Python team finishes persistent-volume / snapshot work (see [`SANDBOX_DIRECT_ENDPOINTS.md`](./SANDBOX_DIRECT_ENDPOINTS.md) and the `/python-team` notes thread), the History block becomes the place to surface "Restore previous environment" actions and the data-loss caption gets replaced with the actual persistent-folder summary.
+
+> **2026‑04‑26 persistence Phase 4 frontend.** The Python team shipped Phases 1+2+3 of the persistence plan: per-user Docker volume mounted at `/home/agent` on the hosted tier (matrx-user-`<uid>`), 5-minute background session manifests at `~/.matrx/session.json`, git auto-stash on graceful shutdown (`matrx/auto-stash/<ts>` branches pushed to origin when creds work), session reports rendered to `~/.matrx/session-report.md`, and two new orchestrator endpoints (`GET /users/{user_id}/persistence`, `DELETE /users/{user_id}/volume`). Phase 4 frontend now consumes all of it: (a) **API proxy** — [`app/api/sandbox/persistence/route.ts`](../../app/api/sandbox/persistence/route.ts) fans out to every configured tier, aggregates totals, and exposes a `partial` flag so the UI can render `—` (not `0 B`) when an orchestrator is unreachable. The `DELETE` half forwards `?tier=…` (or wipes every tier when omitted) and surfaces the orchestrator's 4xx-when-still-mounted refusal verbatim. (b) **Hook + helpers** — [`hooks/sandbox/use-user-persistence.ts`](../../hooks/sandbox/use-user-persistence.ts) exposes `{ info, loading, error, refresh, deleteVolume }` plus `formatPersistenceSize(bytes)` and `findTierInfo(info, tier)`. Race-guarded with a `reqIdRef` so fast tier toggles don't paint stale data; deletion is reflected optimistically before the next refresh returns. (c) **Storage badge** — [`features/code/views/sandboxes/CreateSandboxModal.tsx`](./views/sandboxes/CreateSandboxModal.tsx) and [`app/(authenticated)/sandbox/page.tsx`](../../app/(authenticated)/sandbox/page.tsx) both render "Your saved data: 1.3 GB" beneath the tier picker so users see what's already persisted before they pick a tier. The list page also got per-tier guidance copy lifted from the Python team's "tier purposes" table. (d) **Truthful history + delete copy** — `/sandbox` page and `/sandbox/[id]` page both updated: the History block now says "the container was destroyed but your `/home/agent` volume persists — create a new sandbox on the same tier to pick up where you left off" instead of the old "data is gone" line, and the delete dialog points users at `/settings/sandbox-storage` for full wipes. (e) **Auto-open session report** — [`features/code/runtime/openSessionReport.ts`](./runtime/openSessionReport.ts) reads `~/.matrx/session-report.md` on connect (with retry backoff for daemon warmup) and dispatches `openTab` so the report shows up as a Markdown tab the moment the workspace mounts. Wired into `SandboxesPanel`'s `connect` callback. (f) **Source Control auto-stash** — [`features/code/views/source-control/SourceControlPanel.tsx`](./views/source-control/SourceControlPanel.tsx) discovers `matrx/auto-stash/*` branches via `git for-each-ref --format=…` (run through `SandboxProcessAdapter.exec`, since `SandboxGitAdapter.branch` doesn't expose list-with-metadata), and renders an "Auto-saved from previous session" section with **Apply** (`git checkout <branch> -- .`), **View diff** (opens a `git-diff:auto-stash:<ts>` tab), and **Discard** (`git branch -D` + `git push origin :<branch>`). (g) **Settings page** — [`app/(authenticated)/settings/sandbox-storage/page.tsx`](../../app/(authenticated)/settings/sandbox-storage/page.tsx) is registered in `SettingsLayoutClient` and shows per-tier size, sandbox count, volume name, S3 prefix, last sync; per-tier and global wipe buttons gated through a confirm dialog that surfaces the orchestrator's "still mounted" 409 if a sandbox is alive. **Phase 5** (per-user quotas, admin panel surfacing) and **Phase 6** (cross-tier S3-as-truth + cloud_sync) remain on the Python roadmap and are blocked on AWS creds being attached to the hosted server.
 
 > **2026‑04‑26 Vercel `maxDuration` correction.** The previous note claimed Vercel Pro Fluid Compute allows `maxDuration = 800`. That is **wrong** — the build broke with `Builder returned invalid maxDuration value … must have a maxDuration between 1 and 300 for plan pro` (https://vercel.com/docs/limits). The platform caps Pro Serverless Functions at **300s** regardless of Fluid Compute. Hobby is 60s; Enterprise is 900s. **Fix applied 2026‑04‑26:** dropped to `maxDuration = 300` on `app/api/sandbox/[id]/exec/stream/route.ts` (the only sandbox route that exceeded the default). 5 minutes is enough for `git clone` of any repo we ship and most `pnpm install` runs, but it is **not** enough for cold `next build` or large test matrices. Anything that needs to outlive 5 minutes — and we want every long-running terminal/exec/PTY path eventually to do so — must connect to the orchestrator directly without going through Vercel. The contract for that is specified in [`SANDBOX_DIRECT_ENDPOINTS.md`](./SANDBOX_DIRECT_ENDPOINTS.md) (Python‑team requirements doc).
 
@@ -48,6 +50,9 @@ This doc is the single source of truth for the `/code` (VSCode‑style) workspac
 | Tier + template picker | ✅ Shipped | "New sandbox" modal pulls `GET /api/templates?tier=…`; last tier persisted in `userPreferences.coding.lastSandboxTier`. |
 | Ports bottom panel | ✅ Shipped | Polls `/api/sandbox/[id]/ports` every 5s; click‑to‑copy host:port. |
 | Heartbeat + extend | ✅ Shipped | `useSandboxHeartbeat` mounted in `CodeWorkspace` gated on `activeSandboxId`; `extendSandbox` switched to `POST /api/sandbox/[id]/extend`. |
+| Per-user persistence — frontend | ✅ Shipped | Storage badge on create dialogs, session report auto-opens on connect, auto-stash branches in Source Control, `/settings/sandbox-storage` page. Backed by Python‑team Phases 1+2+3. See §8. |
+| Persistence quotas + admin panel surfacing | ⏳ Backend pending | Phase 5 — `user_persistence` table + cap enforcement in `hot-sync.sh`. Owner: Python team. |
+| Cross-tier S3-as-truth + cloud_sync integration | ⏳ Blocked on AWS creds | Phase 6 — needs AWS creds attached to the hosted server. Owner: Python team. |
 | LSP / multi‑user collab / public preview URLs | ❌ Out of scope | P2 sandbox‑team work — see §3 row "Snapshot / multi‑user / LSP / AI sockets". |
 
 ---
@@ -418,6 +423,66 @@ The QA contract is in [`QA_CHECKLIST.md`](./QA_CHECKLIST.md). It runs the 10‑s
 | `features/agents/redux/execution-system/instance-context/instance-context.slice.ts` | The slot the editor will write into. |
 | `features/agents/redux/execution-system/thunks/execute-instance.thunk.ts` | `assembleRequest` packs `instanceContext` into the wire. |
 | `features/agents/types/request.types.ts` | `AssembledAgentStartRequest.context`. |
+| `app/api/sandbox/persistence/route.ts` | GET/DELETE proxy to every orchestrator's `/users/{user_id}/persistence` + `/users/{user_id}/volume`. |
+| `hooks/sandbox/use-user-persistence.ts` | `useUserPersistence()` + `formatPersistenceSize` + `findTierInfo`. |
+| `features/code/runtime/openSessionReport.ts` | Auto-opens `~/.matrx/session-report.md` as a tab on connect. |
+| `app/(authenticated)/settings/sandbox-storage/page.tsx` | Settings UI for per-tier wipe of persistent storage. |
+
+---
+
+## 8. Persistent storage — frontend wiring (shipped 2026‑04‑26)
+
+The Python team's persistence Phases 1+2+3 (per-user `/home/agent` Docker volume on hosted, S3 prefix on EC2, session manifest, git auto-stash, session report) are fully consumed by the workspace. This section documents the surfaces for future maintainers — the underlying behavior is owned by the orchestrator and is described in the Python‑team‑maintained `docs/PERSISTENCE_PLAN.md`.
+
+### 8.1 Data flow
+
+```
+orchestrator                                     matrx-admin
+─────────────────────────────                   ────────────────────────────────────
+GET  /users/{uid}/persistence  ──proxy──▶  GET  /api/sandbox/persistence
+DELETE /users/{uid}/volume     ──proxy──▶  DELETE /api/sandbox/persistence?tier=…
+~/.matrx/session-report.md     ──read───▶  openSessionReportTab → openTab
+git branch matrx/auto-stash/*  ──exec───▶  SourceControlPanel auto-stash section
+```
+
+The Next API route fans out to every tier configured on the deployment (`hosted` and/or `ec2`). The `partial` flag in the response lets the UI distinguish "tier missing data" from "tier reported `0 B`" so we never mislabel a never-fetched tier as empty.
+
+### 8.2 Hook contract
+
+`useUserPersistence({ skip?, tier? }) → { info, loading, error, refresh, deleteVolume }`
+
+- `info: UserPersistenceResponse | null` — `{ user_id, total_size_bytes, partial, tiers: UserPersistenceInfo[] }`.
+- `refresh(tier?)` — re-fetches; pass a tier to scope, omit to refresh all.
+- `deleteVolume(tier?)` — fans out the DELETE; resolves to `{ ok, error? }`. Optimistically zeroes out the matching tier in `info` so the UI updates before the round-trip completes.
+- `formatPersistenceSize(bytes | null | undefined)` — returns `"—"` for null/undefined, otherwise `"X.X GB | X.X MB | XXX KB | X B"`.
+- `findTierInfo(info, tier)` — convenience for create dialogs that only care about one tier.
+
+### 8.3 Auto-stash branches
+
+Naming convention is fixed by the orchestrator: `matrx/auto-stash/<unix-timestamp>`. The Source Control panel discovers them with:
+
+```bash
+git for-each-ref --format='%(refname:short)|%(committerdate:iso-strict)|%(subject)' refs/heads/matrx/auto-stash/
+```
+
+run through `SandboxProcessAdapter.exec`. We deliberately bypass `SandboxGitAdapter.branch` because that method only handles create/delete/switch — there's no list-with-metadata endpoint on the orchestrator's `/git/branch` route. Apply uses `git checkout <branch> -- .` so the user's current `HEAD` stays put; discarding does both `git branch -D` *and* a force `git push origin :<branch>` so the cleanup propagates to the remote.
+
+### 8.4 Session report
+
+`features/code/runtime/openSessionReport.ts` retries reading `~/.matrx/session-report.md` with backoff (immediate / 500ms / 1500ms / 3000ms) so the tab opens once the in-container daemon finishes rendering it. A `not found` short-circuits early (first-ever connect — no prior session). The tab id is `session-report:<sandboxId>` so it can't accumulate duplicates if the user reconnects.
+
+### 8.5 Settings page
+
+`/settings/sandbox-storage` mirrors what the orchestrator reports on each tier. Wipe buttons are disabled when `current_size_bytes === 0`. The "Wipe everything" card only renders when at least one tier has data. The 409 response from the orchestrator (volume still mounted) is surfaced inline in the confirm dialog with a link back to `/sandbox`, where the user can stop the active sandbox first.
+
+### 8.6 What's not wired (Phase 5+6)
+
+| Item | Owner | Blocker |
+|---|---|---|
+| Quota override per user (`hot_quota_bytes` / `total_quota_bytes`) | Python team | Phase 5 — `user_persistence` table + `hot-sync.sh` cap enforcement. |
+| Admin panel quota surfacing | matrx-admin | Waits on Phase 5 columns. |
+| Cross-tier portability (S3 authoritative for both tiers) | Python team | Phase 6 — needs AWS creds attached to the hosted server. |
+| Org-shared persistence | Python team | Deferred past v1 per user directive. |
 
 ---
 

@@ -14,7 +14,7 @@
  * operations happen here — this is a read-only map.
  */
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   AppWindow,
@@ -24,9 +24,14 @@ import {
   ExternalLink,
   GitBranch,
   Loader2,
+  Maximize2,
+  Minimize2,
+  Search,
+  X,
   Zap,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -95,6 +100,47 @@ export function AgentLineageTree() {
 
   const isShortcutsLoading = globalQuery.isLoading || userQuery.isLoading;
 
+  // ── Expand state, lifted so we can offer expand-all / collapse-all ──────
+  // A simple `Set` of opened agent ids. The "expand all" button fills it with
+  // every visible builtin id; "collapse all" clears it. Cards toggle their own
+  // id in/out as before — they're now controlled.
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const [search, setSearch] = useState("");
+
+  const visibleBuiltins = useMemo(() => {
+    if (!search.trim()) return builtins;
+    const q = search.toLowerCase();
+    return builtins.filter((a) => {
+      const name = (a.name ?? "").toLowerCase();
+      const desc = (a.description ?? "").toLowerCase();
+      return name.includes(q) || desc.includes(q);
+    });
+  }, [builtins, search]);
+
+  const allExpanded =
+    visibleBuiltins.length > 0 &&
+    visibleBuiltins.every((a) => expandedIds.has(a.id));
+
+  const handleExpandAll = useCallback(() => {
+    setExpandedIds(new Set(visibleBuiltins.map((a) => a.id)));
+  }, [visibleBuiltins]);
+
+  const handleCollapseAll = useCallback(() => {
+    setExpandedIds(new Set());
+  }, []);
+
+  const toggleOne = useCallback((id: string) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }, []);
+
   if (builtins.length === 0) {
     return (
       <Card>
@@ -107,17 +153,80 @@ export function AgentLineageTree() {
   }
 
   return (
-    <div className="space-y-2">
-      {builtins.map((agent) => (
-        <LineageCard
-          key={agent.id}
-          agent={agent}
-          derived={derivedBySource.get(agent.id) ?? []}
-          apps={appsByAgent.get(agent.id) ?? []}
-          appsLoading={appsLoading}
-          shortcutsLoading={isShortcutsLoading}
-        />
-      ))}
+    <div className="space-y-3">
+      <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex-1 min-w-[200px] relative">
+          <div className="flex items-center gap-2 px-3 h-8 rounded-md border border-border bg-card">
+            <Search className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search system agents..."
+              className="flex-1 bg-transparent border-0 outline-none text-sm text-foreground placeholder:text-muted-foreground py-1 min-w-0"
+            />
+            {search && (
+              <button
+                onClick={() => setSearch("")}
+                className="p-0.5 hover:bg-muted/50 rounded transition-colors flex-shrink-0"
+                aria-label="Clear search"
+              >
+                <X className="h-3.5 w-3.5 text-muted-foreground" />
+              </button>
+            )}
+          </div>
+        </div>
+        <span className="text-xs text-muted-foreground shrink-0">
+          {visibleBuiltins.length} agent{visibleBuiltins.length !== 1 ? "s" : ""}
+        </span>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={allExpanded ? handleCollapseAll : handleExpandAll}
+          disabled={visibleBuiltins.length === 0}
+          className="h-8"
+          title={
+            allExpanded
+              ? "Collapse every card so you can scan the agent list at a glance"
+              : "Expand every card to see all derived agents, shortcuts, and apps in one view"
+          }
+        >
+          {allExpanded ? (
+            <>
+              <Minimize2 className="h-3.5 w-3.5 mr-1.5" />
+              Collapse all
+            </>
+          ) : (
+            <>
+              <Maximize2 className="h-3.5 w-3.5 mr-1.5" />
+              Expand all
+            </>
+          )}
+        </Button>
+      </div>
+
+      {visibleBuiltins.length === 0 ? (
+        <Card>
+          <CardContent className="p-8 text-center text-sm text-muted-foreground">
+            No system agents match &ldquo;{search}&rdquo;.
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-2">
+          {visibleBuiltins.map((agent) => (
+            <LineageCard
+              key={agent.id}
+              agent={agent}
+              derived={derivedBySource.get(agent.id) ?? []}
+              apps={appsByAgent.get(agent.id) ?? []}
+              appsLoading={appsLoading}
+              shortcutsLoading={isShortcutsLoading}
+              isOpen={expandedIds.has(agent.id)}
+              onToggle={() => toggleOne(agent.id)}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -128,14 +237,17 @@ function LineageCard({
   apps,
   appsLoading,
   shortcutsLoading,
+  isOpen,
+  onToggle,
 }: {
   agent: AgentDefinitionRecord;
   derived: AgentDefinitionRecord[];
   apps: AgentAppAdminView[];
   appsLoading: boolean;
   shortcutsLoading: boolean;
+  isOpen: boolean;
+  onToggle: () => void;
 }) {
-  const [open, setOpen] = useState(false);
   const shortcuts = useAppSelector((state: RootState) =>
     selectShortcutsByAgentId(state, agent.id),
   );
@@ -146,10 +258,10 @@ function LineageCard({
     <Card className="overflow-hidden">
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={onToggle}
         className="w-full flex items-center gap-3 p-3 hover:bg-accent/30 transition-colors text-left"
       >
-        {open ? (
+        {isOpen ? (
           <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
         ) : (
           <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
@@ -188,7 +300,7 @@ function LineageCard({
         </div>
       </button>
 
-      {open && (
+      {isOpen && (
         <div className="border-t border-border bg-muted/20 p-3 space-y-3">
           {totalRefs === 0 ? (
             <div className="text-xs text-muted-foreground px-1">
