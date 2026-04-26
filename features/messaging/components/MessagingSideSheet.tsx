@@ -2,6 +2,7 @@
 
 import React, { useCallback } from "react";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
+import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import {
   selectMessagingIsOpen,
   selectMessagingSheetWidth,
@@ -30,7 +31,7 @@ export function MessagingSideSheet() {
   const currentConversation = useAppSelector(selectCurrentConversation);
 
   // Get user from Redux - use auth.users.id (UUID)
-  const user = useAppSelector((state) => state.user);
+  const user = useAppSelector(selectUser);
   const userId = user?.id;
   const displayName =
     user?.userMetadata?.fullName ||

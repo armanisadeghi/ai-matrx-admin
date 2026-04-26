@@ -190,7 +190,7 @@ interface FolderQuickPickProps {
 function FolderQuickPick({ instanceId }: FolderQuickPickProps) {
   const dispatch = useAppDispatch();
   const allFolders = useAppSelector(selectAllFolders);
-  const userId = useAppSelector((s) => s.user?.id);
+  const userId = useAppSelector((s) => s.userAuth?.id);
   const [createFolderOpen, setCreateFolderOpen] = useState(false);
 
   const handleFolderClick = useCallback(

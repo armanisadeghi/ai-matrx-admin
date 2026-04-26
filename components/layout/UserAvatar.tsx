@@ -3,6 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import { useSelector } from "react-redux";
+import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import type { RootState } from "@/lib/redux/store";
 
 interface UserAvatarProps {
@@ -17,7 +18,7 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
   showBackground = true,
 }) => {
   // Get user data from Redux store
-  const user = useSelector((state: RootState) => state.user);
+  const user = useSelector(selectUser);
 
   // Determine display name using the same logic from your original component
   const displayName =

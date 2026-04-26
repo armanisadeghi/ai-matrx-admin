@@ -14,7 +14,7 @@ export default function FeedbackButton({
   className = "",
 }: FeedbackButtonProps) {
   const dispatch = useAppDispatch();
-  const userId = useAppSelector((state) => state.user.id);
+  const userId = useAppSelector((state) => state.userAuth.id);
   const feedbackFeatureViewCount = useAppSelector(
     (state) => state.userPreferences.system.feedbackFeatureViewCount,
   );

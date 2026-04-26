@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
+import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import type { RootState } from "@/lib/redux/store";
 import { useRouter, usePathname } from "next/navigation";
 import {
@@ -72,7 +73,7 @@ export const HeaderLogic: React.FC<HeaderLogicProps> = ({
         return "";
     }, [pathname, config?.slug]);
 
-    const user = useAppSelector((state: RootState) => state.user);
+    const user = useAppSelector(selectUser);
     const displayName = user.userMetadata.name || user.userMetadata.fullName || user.email?.split("@")[0] || "User";
     const profilePhoto = user.userMetadata.picture || null;
 

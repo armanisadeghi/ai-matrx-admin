@@ -12,6 +12,7 @@ import { Logo } from "@/components/layout/MatrixLogo";
 import { appSidebarLinks } from "@/constants";
 import { Settings, User, ChevronLeft, ChevronRight } from "lucide-react";
 import { useSelector } from "react-redux";
+import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import type { RootState } from "@/lib/redux/store";
 import { ThemeSwitcher } from "@/styles/themes/ThemeSwitcher";
 import {
@@ -361,7 +362,7 @@ export function MatrxLayoutDirect({
   initialOpen = false,
   isAdmin,
 }: DirectLayoutProps) {
-  const user = useSelector((state: RootState) => state.user);
+  const user = useSelector(selectUser);
   const displayName =
     user.userMetadata.name ||
     user.userMetadata.fullName ||

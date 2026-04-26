@@ -2,6 +2,7 @@
 "use client";
 import React from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
+import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import type { RootState } from "@/lib/redux/store";
 import { ThemeSwitcherIcon } from "@/styles/themes/ThemeSwitcher";
 import Image from "next/image";
@@ -38,7 +39,7 @@ export const MobileAppHeader = ({
   isPreview = false,
 }: MobileAppHeaderProps) => {
   const router = useRouter();
-  const user = useAppSelector((state: RootState) => state.user);
+  const user = useAppSelector(selectUser);
   const displayName =
     user.userMetadata.name ||
     user.userMetadata.fullName ||

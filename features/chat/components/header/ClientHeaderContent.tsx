@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Bell } from "lucide-react";
 import Image from "next/image";
 import { useSelector } from "react-redux";
-import type { RootState } from "@/lib/redux/store";
+import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import { ThemeSwitcherIcon } from "@/styles/themes/ThemeSwitcher";
 import { TbListSearch } from "react-icons/tb";
 import Link from "next/link";
@@ -29,7 +29,7 @@ const ClientHeaderContent: React.FC<ClientHeaderContentProps> = ({ baseRoute = "
         dispatch(chatActions.initialize());
     }, []);
 
-    const user = useSelector((state: RootState) => state.user);
+    const user = useSelector(selectUser);
     const displayName = user.userMetadata?.name || user.userMetadata?.fullName || user.email?.split("@")[0] || "User";
     const profilePhoto = user.userMetadata?.picture || null;
 

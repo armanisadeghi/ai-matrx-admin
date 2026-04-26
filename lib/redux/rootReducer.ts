@@ -19,7 +19,11 @@ import { createModuleSlice } from "./slices/moduleSliceCreator";
 import { moduleSchemas, ModuleName } from "./dynamic/moduleSchema";
 import layoutReducer from "./slices/layoutSlice";
 import formReducer from "./slices/formSlice";
-import userReducer from "./slices/userSlice";
+// Phase 4: legacy `userSlice` replaced by userAuth + userProfile (decisions D1).
+// userAuth is volatile (auth secrets MUST NOT persist).
+// userProfile uses boot-critical preset (userMetadata persists for first paint).
+import userAuthReducer from "./slices/userAuthSlice";
+import userProfileReducer from "./slices/userProfileSlice";
 
 import userPreferencesReducer from "./slices/userPreferencesSlice";
 import testRoutesReducer from "./slices/testRoutesSlice";
@@ -157,7 +161,8 @@ const moduleReducers = Object.keys(moduleSchemas).reduce(
  * `entitySystem`).
  */
 export const slimReducerMap = {
-  user: userReducer,
+  userAuth: userAuthReducer,
+  userProfile: userProfileReducer,
   userPreferences: userPreferencesReducer,
 
   adminDebug: adminDebugReducer,

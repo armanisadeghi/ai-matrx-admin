@@ -27,6 +27,7 @@ import AnnouncementProvider from "@/components/layout/AnnouncementProvider";
 import AdminFeatureProvider from "@/features/admin/AdminFeatureProvider";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { useAppDispatch } from "@/lib/redux/hooks";
+import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import { brokerActions } from "@/lib/redux/brokerSlice";
 import { fetchFullContext } from "@/features/agent-context/redux/hierarchyThunks";
 // `loadPreferences` + `preferencesMiddleware` removed in PR 1.B. The middleware
@@ -63,7 +64,7 @@ const SYSTEM_BROKERS = [
 
 export default function DeferredSingletons() {
   const dispatch = useAppDispatch();
-  const user = useAppSelector((state) => state.user);
+  const user = useAppSelector(selectUser);
 
   useIdleTask("broker-registration", 5, () => {
     dispatch(brokerActions.addOrUpdateRegisterEntries(SYSTEM_BROKERS));

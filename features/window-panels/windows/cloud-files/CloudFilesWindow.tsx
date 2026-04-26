@@ -43,7 +43,7 @@ export default function CloudFilesWindow({
   initialTab = "browse",
 }: CloudFilesWindowProps) {
   const [activeTab, setActiveTab] = useState<CloudFilesWindowTab>(initialTab);
-  const userId = useSelector((state: RootState) => state.user?.id ?? null);
+  const userId = useSelector((state: RootState) => state.userAuth?.id ?? null);
 
   if (!isOpen) return null;
 

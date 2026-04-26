@@ -154,7 +154,7 @@ export const notesRealtimeMiddleware: Middleware = (storeApi) => {
     // Start subscription when notes list is loaded
     if (fetchNotesList.fulfilled.match(action)) {
       const state = storeApi.getState() as RootState;
-      const userId = state.user?.id;
+      const userId = state.userAuth?.id;
       if (userId && !channel) {
         subscribe(userId);
       }

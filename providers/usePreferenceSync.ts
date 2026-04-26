@@ -6,7 +6,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { supabase } from '@/utils/supabase/client';
 
 export function usePreferenceSync() {
-    const userId = useAppSelector((state) => state.user.id);
+    const userId = useAppSelector((state) => state.userAuth.id);
     const preferences = useAppSelector((state) => state.userPreferences);
 
     useEffect(() => {

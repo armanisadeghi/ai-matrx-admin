@@ -8,6 +8,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { IconMenu2, IconX } from "@tabler/icons-react";
 import { Settings, User } from "lucide-react";
 import { useSelector } from "react-redux";
+import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import type { RootState } from "@/lib/redux/store";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/layout/MatrixLogo";
@@ -55,7 +56,7 @@ export function LayoutWithSidebar({
   children?: React.ReactNode;
   initialOpen?: boolean;
 }) {
-  const user = useSelector((state: RootState) => state.user);
+  const user = useSelector(selectUser);
   const displayName =
     user.userMetadata.name ||
     user.userMetadata.fullName ||

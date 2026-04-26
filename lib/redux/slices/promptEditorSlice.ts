@@ -103,7 +103,7 @@ export const savePrompt = createAsyncThunk(
       const state = getState() as RootState;
       const { id, name, description, messages, variableDefaults, settings } =
         state.promptEditor;
-      const userId = state.user.id;
+      const userId = state.userAuth.id;
       if (!userId) throw new Error("User not authenticated");
 
       const supabase = createClient();

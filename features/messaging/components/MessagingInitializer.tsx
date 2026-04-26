@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useCallback } from "react";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
+import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import {
   setMessagingAvailable,
   setConversations,
@@ -41,7 +42,7 @@ export function MessagingInitializer() {
   const mountedRef = useRef(true);
 
   // Get user from Redux
-  const user = useAppSelector((state) => state.user);
+  const user = useAppSelector(selectUser);
   const userId = user?.id;
 
   // Track current conversation to avoid incrementing unread for active conversation

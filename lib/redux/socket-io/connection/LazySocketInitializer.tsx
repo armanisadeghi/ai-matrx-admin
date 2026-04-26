@@ -18,7 +18,7 @@ export default function LazySocketInitializer() {
   const connectionRequested = useAppSelector(
     (state) => state.socketConnections.connectionRequested,
   );
-  const userId = useAppSelector((state) => state.user.id);
+  const userId = useAppSelector((state) => state.userAuth.id);
   const initialized = useRef(false);
 
   useEffect(() => {

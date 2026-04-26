@@ -3,7 +3,8 @@
 import React, { useEffect, useMemo, useRef } from "react";
 import { useParams } from "next/navigation";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
-import { 
+import { selectUser } from "@/lib/redux/selectors/userSelectors";
+import {
   closeMessaging,
   setCurrentConversation,
   markConversationAsRead,
@@ -21,7 +22,7 @@ export default function ConversationPage() {
   const markAsReadCalledRef = useRef(false);
 
   // Get user from Redux - use auth.users.id (UUID)
-  const user = useAppSelector((state) => state.user);
+  const user = useAppSelector(selectUser);
   const userId = user?.id;
   const displayName = useMemo(() =>
     user?.userMetadata?.fullName ||

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, Check, AlertCircle } from 'lucide-react';
 import { useToastManager } from '@/hooks/useToastManager';
 import { useAppSelector } from '@/lib/redux/hooks';
+import { selectUser } from '@/lib/redux/selectors/userSelectors';
 
 interface PageProps {
     params: {
@@ -17,7 +18,7 @@ interface PageProps {
 export default function AcceptSharedNotePage({ params }: PageProps) {
     const router = useRouter();
     const toast = useToastManager('notes');
-    const user = useAppSelector((state) => state.user);
+    const user = useAppSelector(selectUser);
     
     const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
     const [errorMessage, setErrorMessage] = useState('');

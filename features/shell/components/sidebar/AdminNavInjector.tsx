@@ -58,7 +58,7 @@ function AdminMobileItems() {
 }
 
 export default function AdminNavInjector() {
-  const isAdmin = useAppSelector((state) => state.user.isAdmin);
+  const isAdmin = useAppSelector((state) => state.userAuth.isAdmin);
   const [sidebarSlot, setSidebarSlot] = useState<HTMLElement | null>(null);
   const [mobileSlot, setMobileSlot] = useState<HTMLElement | null>(null);
 

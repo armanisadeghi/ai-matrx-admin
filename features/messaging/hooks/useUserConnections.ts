@@ -14,6 +14,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { useAppSelector } from "@/lib/redux/hooks";
+import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import { useConversations } from "@/hooks/useSupabaseMessaging";
 import { useUserOrganizations } from "@/features/organizations/hooks";
 import type { UserBasicInfo } from "../types";
@@ -63,7 +64,7 @@ export function useUserConnections(): UseUserConnectionsReturn {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const user = useAppSelector((state) => state.user);
+  const user = useAppSelector(selectUser);
   const currentUserId = user?.id;
 
   // Get conversations for past message contacts

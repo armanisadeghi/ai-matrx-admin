@@ -12,6 +12,7 @@
 
 import React from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
+import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import { ConversationList } from "@/features/messaging/components/ConversationList";
 
 export default function MessagesLayoutClient({
@@ -20,7 +21,7 @@ export default function MessagesLayoutClient({
   children: React.ReactNode;
 }) {
   // Get user from Redux - use auth.users.id (UUID)
-  const user = useAppSelector((state) => state.user);
+  const user = useAppSelector(selectUser);
   const userId = user?.id;
 
   return (

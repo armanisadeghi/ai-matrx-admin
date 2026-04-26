@@ -41,7 +41,7 @@ export const useFlashcard = (initialFlashcards: FlashcardData[]) => {
 
   const firstName = useSelector(
     (state: RootState) =>
-      state.user.userMetadata.fullName?.split(" ")[0] || null,
+      state.userProfile.userMetadata.fullName?.split(" ")[0] || null,
   );
 
   const [isFlipped, setIsFlipped] = useState(false);

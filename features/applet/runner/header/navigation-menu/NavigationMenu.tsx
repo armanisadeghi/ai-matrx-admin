@@ -15,6 +15,7 @@ import Link from "next/link";
 import { navigationLinks } from "@/constants/navigation-links";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
+import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import type { RootState } from "@/lib/redux/store";
 import { openFeedbackDialog } from "@/lib/redux/slices/overlaySlice";
 import { brokerSelectors } from "@/lib/redux/brokerSlice";
@@ -71,7 +72,7 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = ({
   const isMobile = useIsMobile();
   const theme = useAppSelector((s) => s.theme.mode);
   const setTheme = (t: "light" | "dark") => dispatch(setMode(t));
-  const user = useAppSelector((state: RootState) => state.user);
+  const user = useAppSelector(selectUser);
   const displayName =
     user.userMetadata.name ||
     user.userMetadata.fullName ||

@@ -24,6 +24,7 @@ import {
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
 import { useAppSelector } from "@/lib/redux/hooks";
+import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import { useDebounce } from "@/features/tasks/hooks/useDebounce";
 import { useUserConnections, type ConnectionUser } from "../hooks/useUserConnections";
 import type { UserBasicInfo } from "../types";
@@ -66,7 +67,7 @@ export function NewConversationDialog({
   const [creatingUserId, setCreatingUserId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const user = useAppSelector((state) => state.user);
+  const user = useAppSelector(selectUser);
   const currentUserId = user?.id;
 
   const { connections, isLoading: connectionsLoading } = useUserConnections();

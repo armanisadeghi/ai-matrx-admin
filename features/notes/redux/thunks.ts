@@ -40,7 +40,7 @@ import {
 
 function getUserId(getState: () => unknown): string {
   const state = getState() as RootState;
-  const userId = state.user.id;
+  const userId = state.userAuth.id;
   if (!userId) throw new Error("User is not authenticated");
   return userId;
 }

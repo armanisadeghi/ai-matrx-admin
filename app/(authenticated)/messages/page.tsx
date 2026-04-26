@@ -2,6 +2,7 @@
 
 import React, { useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
+import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import { closeMessaging } from "@/features/messaging/redux/messagingSlice";
 import { ConversationList } from "@/features/messaging/components/ConversationList";
 import { MessagesHeader } from "@/components/layout/new-layout/PageSpecificHeader";
@@ -11,7 +12,7 @@ export default function MessagesPage() {
   const dispatch = useAppDispatch();
 
   // Get user from Redux - use auth.users.id (UUID)
-  const user = useAppSelector((state) => state.user);
+  const user = useAppSelector(selectUser);
   const userId = user?.id;
 
   // Close side sheet on mount (using full page view)

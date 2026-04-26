@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useCallback, useMemo } from "react";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
+import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import { selectCurrentConversation } from "../redux/messagingSlice";
 import { useChat } from "@/hooks/useSupabaseMessaging";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -29,7 +30,7 @@ export function ChatThread({
   const conversation = useAppSelector(selectCurrentConversation);
 
   // Get user from Redux state - use auth.users.id (UUID)
-  const user = useAppSelector((state) => state.user);
+  const user = useAppSelector(selectUser);
   const userId = propUserId || user?.id;
   
   // Memoize displayName to prevent unnecessary effect re-runs

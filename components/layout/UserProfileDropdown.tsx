@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useSelector } from "react-redux";
+import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import type { RootState } from "@/lib/redux/store";
 import UserAvatar from "@/components/layout/UserAvatar";
 import { Button } from "@/components/ui/button";
@@ -20,7 +21,7 @@ interface UserProfileDropdownProps {
 
 const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ className = "" }) => {
     // Get user data from Redux store
-    const user = useSelector((state: RootState) => state.user);
+    const user = useSelector(selectUser);
 
     // Determine display name using the same logic from UserAvatar
     const displayName = user.userMetadata?.name || user.userMetadata?.fullName || user.email?.split("@")[0] || "User";

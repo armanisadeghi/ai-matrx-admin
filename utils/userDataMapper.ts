@@ -89,29 +89,8 @@ export function mapUserData(
   };
 }
 
-// Selectors
-export const selectUser = (state: any) => state.user;
-
-export const selectDisplayName = (state: any) => {
-  const user = state.user;
-  return (
-    user.userMetadata.name ||
-    user.userMetadata.fullName ||
-    (user.email ? user.email.split("@")[0] : null) ||
-    "User"
-  );
-};
-
-export const selectProfilePhoto = (state: any) => {
-  const user = state.user;
-  return user.userMetadata.picture || null;
-};
-
-export const selectIsAdmin = (state: any) => {
-  const user = state.user;
-  return user.isAdmin || false;
-};
-
-export const selectAccessToken = (state: any) => {
-  return state.user.accessToken || null;
-};
+// Phase 4: dead shadow selectors removed (selectUser, selectDisplayName,
+// selectProfilePhoto, selectIsAdmin, selectAccessToken). Audit confirmed
+// zero imports of these from `@/utils/userDataMapper`. The canonical
+// versions live in `@/lib/redux/selectors/userSelectors.ts` and read
+// from the post-split `userAuth` + `userProfile` slices.

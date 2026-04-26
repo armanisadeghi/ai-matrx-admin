@@ -28,6 +28,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
+import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import { setMode } from "@/styles/themes/themeSlice";
 import type { RootState } from "@/lib/redux/store";
 import { openFeedbackDialog } from "@/lib/redux/slices/overlaySlice";
@@ -39,7 +40,7 @@ export function MobileUnifiedMenu() {
   const router = useRouter();
   const theme = useAppSelector((s) => s.theme.mode);
   const setTheme = (t: "light" | "dark") => dispatch(setMode(t));
-  const user = useAppSelector((state: RootState) => state.user);
+  const user = useAppSelector(selectUser);
   const displayName =
     user.userMetadata.name ||
     user.userMetadata.fullName ||

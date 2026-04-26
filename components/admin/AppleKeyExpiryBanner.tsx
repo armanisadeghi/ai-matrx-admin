@@ -12,7 +12,7 @@ import {
 const DISMISS_KEY_PREFIX = 'apple-key-expiry-dismissed-';
 
 export default function AppleKeyExpiryBanner() {
-    const isAdmin = useAppSelector((state) => state.user.isAdmin);
+    const isAdmin = useAppSelector((state) => state.userAuth.isAdmin);
     const [visible, setVisible] = useState(false);
     const [message, setMessage] = useState('');
 

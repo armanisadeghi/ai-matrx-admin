@@ -27,7 +27,7 @@ import { openSyncChannel, type SyncChannel } from "@/lib/sync/channel";
 import { deriveIdentity } from "@/lib/sync/identity";
 import { syncPolicies } from "@/lib/sync/registry";
 import type { IdentityKey } from "@/lib/sync/types";
-import { mapUserData } from "@/utils/userDataMapper";
+import { mapUserData, type UserData } from "@/utils/userDataMapper";
 import { getEmptyGlobalCache } from "@/utils/schema/schema-processing/emptyGlobalCache";
 import { InitialReduxState, LiteInitialReduxState } from "@/types/reduxTypes";
 import { defaultUserPreferences } from "@/lib/redux/slices/defaultPreferences";
@@ -36,7 +36,45 @@ import {
   UserPreferences,
   UserPreferencesState,
 } from "@/lib/redux/slices/userPreferencesSlice";
+import type { UserAuthState } from "@/lib/redux/slices/userAuthSlice";
+import type { UserProfileState } from "@/lib/redux/slices/userProfileSlice";
 import { setStoreSingleton } from "./store-singleton";
+
+/**
+ * Phase 4: split a flat `UserData` (the wire shape from `mapUserData` and
+ * SSR layouts) into the two new slices' preloaded states. Keeps server
+ * layouts oblivious to the slice split — they keep passing
+ * `initialReduxState.user = mapUserData(...)` and the store does the
+ * domain partitioning here.
+ */
+function splitUserData(user: UserData): {
+  userAuth: UserAuthState;
+  userProfile: UserProfileState;
+} {
+  return {
+    userAuth: {
+      id: user.id,
+      email: user.email,
+      phone: user.phone,
+      emailConfirmedAt: user.emailConfirmedAt,
+      lastSignInAt: user.lastSignInAt,
+      appMetadata: user.appMetadata,
+      identities: user.identities,
+      isAdmin: user.isAdmin,
+      accessToken: user.accessToken,
+      tokenExpiresAt: null, // not on UserData wire shape
+      // Mark authReady=true if we have an id OR if this is an explicit guest
+      // seed (server layout always populates this — UserData is never partial).
+      // Guests get authReady=true from `usePublicAuthSync` after fingerprint.
+      authReady: user.id !== null,
+    },
+    userProfile: {
+      userMetadata: user.userMetadata,
+      fingerprintId: null, // not on UserData wire shape; populated by usePublicAuthSync
+      shellDataLoaded: false,
+    },
+  };
+}
 const sagaMiddleware = createSagaMiddleware();
 
 /**
@@ -85,12 +123,18 @@ function resolveUserPreferencesForBootstrap(
 /**
  * Builds a complete InitialReduxState for store creation from optional / partial
  * bootstrap data (public routes, tests). Server layouts should pass full state.
+ *
+ * Phase 4: returns a state shape with `userAuth` + `userProfile` keys instead
+ * of the legacy `user` key — split happens here so server layouts can keep
+ * passing the flat `UserData` wire shape via `initialReduxState.user`.
  */
 export function resolveStoreBootstrapState(
   input?: Partial<InitialReduxState> & LiteInitialReduxState,
 ): InitialReduxState & Record<string, unknown> {
+  const baseUser = mapUserData(null, undefined, false);
+  const baseSplit = splitUserData(baseUser);
   const base: InitialReduxState = {
-    user: mapUserData(null, undefined, false),
+    user: baseUser,
     testRoutes: [] as string[],
     userPreferences: initializeUserPreferencesState(
       defaultUserPreferences,
@@ -100,12 +144,22 @@ export function resolveStoreBootstrapState(
   };
 
   if (!input) {
-    return base as InitialReduxState & Record<string, unknown>;
+    const out = {
+      ...base,
+      userAuth: baseSplit.userAuth,
+      userProfile: baseSplit.userProfile,
+    } as InitialReduxState & Record<string, unknown>;
+    return out;
   }
 
+  const mergedUser =
+    input.user !== undefined
+      ? ({ ...baseUser, ...input.user } as UserData)
+      : baseUser;
+  const split = splitUserData(mergedUser);
+
   const merged: InitialReduxState = {
-    user:
-      input.user !== undefined ? { ...base.user, ...input.user } : base.user,
+    user: mergedUser,
     testRoutes: input.testRoutes ?? base.testRoutes,
     userPreferences: resolveUserPreferencesForBootstrap(input, base),
     globalCache:
@@ -114,10 +168,14 @@ export function resolveStoreBootstrapState(
         : base.globalCache,
   };
 
-  const out = merged as InitialReduxState & Record<string, unknown>;
+  const out = {
+    ...merged,
+    userAuth: split.userAuth,
+    userProfile: split.userProfile,
+  } as InitialReduxState & Record<string, unknown>;
 
   if (input.contextMenuCache !== undefined) {
-    merged.contextMenuCache = input.contextMenuCache;
+    out.contextMenuCache = input.contextMenuCache;
   }
   if (input.agentContextMenuCache !== undefined) {
     out.agentContextMenuCache = input.agentContextMenuCache;
@@ -148,8 +206,11 @@ export const makeStore = (
   // StoreProvider calls `bootSync` post-construction, passing the same channel
   // back via `openChannel` override so nothing is double-opened.
   // `_sync` is attached to the returned store and consumed by StoreProvider.
+  // Phase 4: read user id from the post-split `userAuth` slice instead of the
+  // legacy `user` slot. The legacy field is preserved on the bootstrap state
+  // for back-compat with non-redux readers but is no longer authoritative.
   const initialBootUserId =
-    (resolved.user as { id?: string | null } | undefined)?.id ?? null;
+    (resolved.userAuth as { id?: string | null } | undefined)?.id ?? null;
   const initialIdentity: IdentityKey = deriveIdentity({
     userId: initialBootUserId,
   });

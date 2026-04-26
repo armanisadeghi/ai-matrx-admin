@@ -37,7 +37,7 @@ export function NoteTabBar({ instanceId }: NoteTabBarProps) {
   const openTabs = useAppSelector(selectInstanceTabs(instanceId));
   const activeTabId = useAppSelector(selectInstanceActiveTab(instanceId));
   const splitNoteId = useAppSelector(selectInstanceSplitNoteId(instanceId));
-  const userId = useAppSelector((s) => s.user?.id);
+  const userId = useAppSelector((s) => s.userAuth?.id);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const hydratedRef = useRef(false);
