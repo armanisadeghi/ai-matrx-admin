@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
+import { extractErrorMessage } from '@/utils/errors';
 import { Logo } from '@/public/MatrixLogo';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -313,7 +314,7 @@ export default function ConsentClient() {
                 title: 'Network error',
                 message: 'Unable to reach the server. Please check your connection and try again.',
                 retryable: true,
-                detail: { code: String(err) },
+                detail: { code: extractErrorMessage(err) },
             });
         }
     }
@@ -351,7 +352,7 @@ export default function ConsentClient() {
                 title: 'Network error',
                 message: 'Unable to reach the server. Please check your connection and try again.',
                 retryable: true,
-                detail: { code: String(err) },
+                detail: { code: extractErrorMessage(err) },
             });
         }
     }

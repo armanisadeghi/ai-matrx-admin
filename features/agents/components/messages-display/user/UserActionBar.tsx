@@ -39,6 +39,7 @@ import { toast } from "sonner";
 import { EditResubmitOutcomeDialog } from "../message-options/EditResubmitOutcomeDialog";
 import { DeleteMessageDialog } from "../message-options/DeleteMessageDialog";
 import { showForkOutcomeToast } from "../message-options/ForkOutcomeToast";
+import { extractErrorMessage } from "@/utils/errors";
 
 function serializeSaveError(error: unknown): {
   logPayload: Record<string, unknown>;
@@ -73,7 +74,7 @@ function serializeSaveError(error: unknown): {
       message,
     };
   }
-  return { logPayload: { raw: String(error) }, message: "Save failed" };
+  return { logPayload: { raw: extractErrorMessage(error) }, message: "Save failed" };
 }
 
 const MessageOptionsMenu = lazy(() =>

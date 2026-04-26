@@ -13,12 +13,12 @@
  */
 
 import type {
-import { extractErrorMessage } from "@/utils/errors";
   Action,
   Middleware,
   MiddlewareAPI,
   Dispatch,
 } from "@reduxjs/toolkit";
+import { extractErrorMessage } from "@/utils/errors";
 import { logger } from "../logger";
 import { buildActionMessage, type ActionMessage } from "../messages";
 /* eslint-disable @typescript-eslint/no-explicit-any */

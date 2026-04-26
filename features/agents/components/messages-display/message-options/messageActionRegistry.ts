@@ -70,6 +70,7 @@ import {
 import type { MenuItem } from "@/components/official/AdvancedMenu";
 import type { AppDispatch, RootState } from "@/lib/redux/store";
 import type { Json } from "@/types/database.types";
+import { extractErrorMessage } from "@/utils/errors";
 
 const PENDING_ACTION_KEY = "matrx_pending_post_auth_action";
 
@@ -173,7 +174,7 @@ function serializeError(error: unknown): Record<string, unknown> {
       name: e.name ?? null,
     };
   }
-  return { raw: String(error) };
+  return { raw: extractErrorMessage(error) };
 }
 
 function requireAuth(

@@ -41,6 +41,7 @@ import { getIconComponent } from "@/components/official/icons/IconResolver";
 import type { PromptShortcut, ShortcutCategory } from "../types/core";
 import { duplicatePromptShortcut } from "../services/admin-service";
 import { getUserFriendlyError } from "../utils/error-handler";
+import { extractErrorMessage } from "@/utils/errors";
 
 interface DuplicateShortcutModalProps {
   isOpen: boolean;
@@ -95,9 +96,9 @@ export function DuplicateShortcutModal({
       await duplicatePromptShortcut(shortcut.id, selectedCategory);
       onSuccess();
       onClose();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error duplicating shortcut:", err);
-      const errorMsg = err.message || String(err);
+      const errorMsg = extractErrorMessage(err);
 
       // Handle the unique constraint error specifically
       if (

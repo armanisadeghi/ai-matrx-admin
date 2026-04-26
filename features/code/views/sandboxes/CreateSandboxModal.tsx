@@ -6,12 +6,12 @@ import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { setPreference } from "@/lib/redux/slices/userPreferencesSlice";
 import type {
-import { extractErrorMessage } from "@/utils/errors";
   SandboxCreateRequest,
   SandboxTemplate,
   SandboxTemplateListResponse,
   SandboxTier,
 } from "@/types/sandbox";
+import { extractErrorMessage } from "@/utils/errors";
 
 interface CreateSandboxModalProps {
   open: boolean;

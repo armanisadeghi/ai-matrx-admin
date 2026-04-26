@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
+import { extractErrorMessage } from "@/utils/errors";
 
 type LogEntry = { ts: string; ok: boolean; msg: string };
 
@@ -91,7 +92,7 @@ export default function DesktopHandoffPage() {
                         body: JSON.stringify({ refresh_token: refreshToken }),
                     });
                 } catch (e) {
-                    log(false, `fetch threw: ${String(e)}`);
+                    log(false, `fetch threw: ${extractErrorMessage(e)}`);
                     return;
                 }
 

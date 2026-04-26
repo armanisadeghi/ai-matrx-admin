@@ -23,6 +23,7 @@ import { BACKEND_URLS } from "@/lib/api/endpoints";
 import { supabase } from "@/utils/supabase/client";
 import { getStore } from "@/lib/redux/store";
 import { selectResolvedBaseUrl } from "@/lib/redux/slices/apiConfigSlice";
+import { extractErrorMessage } from "@/utils/errors";
 
 // ---------------------------------------------------------------------------
 // Request ID helper
@@ -303,7 +304,7 @@ export async function uploadWithProgress<T>(
           reject(
             new BackendApiError({
               code: "internal",
-              detail: `Failed to parse upload response: ${String(err)}`,
+              detail: `Failed to parse upload response: ${extractErrorMessage(err)}`,
               userMessage: "Upload succeeded but response was malformed.",
               status: xhr.status,
               requestId,

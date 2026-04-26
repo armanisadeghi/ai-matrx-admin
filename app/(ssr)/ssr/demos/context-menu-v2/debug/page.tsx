@@ -6,6 +6,7 @@ import { fetchUnifiedMenu } from "@/features/agents/redux/agent-shortcuts/thunks
 import { selectAllShortcutsArray } from "@/features/agents/redux/agent-shortcuts/selectors";
 import { selectAllCategoriesArray } from "@/features/agents/redux/agent-shortcut-categories/selectors";
 import { selectAllContentBlocksArray } from "@/features/agents/redux/agent-content-blocks/selectors";
+import { extractErrorMessage } from "@/utils/errors";
 
 type DebugPayload = {
   counts: Record<string, number>;
@@ -32,14 +33,14 @@ export default function ContextMenuDebugPage() {
         if (j.error) setDebugError(j.error);
         else setDebug(j);
       })
-      .catch((e) => setDebugError(String(e)));
+      .catch((e) => setDebugError(extractErrorMessage(e)));
   }, []);
 
   useEffect(() => {
     dispatch(fetchUnifiedMenu({ scope: "global" }))
       .unwrap()
       .then(() => setFetched(true))
-      .catch((e) => setFetchError(String(e)));
+      .catch((e) => setFetchError(extractErrorMessage(e)));
   }, [dispatch]);
 
   return (

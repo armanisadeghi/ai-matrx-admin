@@ -41,7 +41,7 @@ import { AgentVariablesPanel } from "@/features/agents/components/variables-mana
 import { AgentToolsManager } from "@/features/agents/components/tools-management/AgentToolsManager";
 import { AgentContextSlotsManager } from "@/features/agents/components/context-slots-management/AgentContextSlotsManager";
 import { AgentSettingsForm } from "@/features/agents/components/settings/AgentSettingsForm";
-import { AgentModelPanel } from "@/features/agents/components/model/AgentModelPanel";
+import { AgentSettingsCore } from "@/features/agents/components/settings-management/AgentSettingsCore";
 import { AgentSharePanel } from "@/features/agents/components/sharing/AgentSharePanel";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -377,7 +377,13 @@ export function TabContent({
         </ScrollArea>
       )}
 
-      {activeTab === "settings" && <AgentModelPanel agentId={agentId} />}
+      {activeTab === "settings" && (
+        <div className="flex flex-col h-full min-h-0">
+          <div className="flex-1 min-h-0 overflow-hidden px-4">
+            <AgentSettingsCore agentId={agentId} />
+          </div>
+        </div>
+      )}
 
       {activeTab === "variables" && <AgentVariablesPanel agentId={agentId} />}
 

@@ -10,6 +10,7 @@
 import { createClient } from '@supabase/supabase-js';
 import * as dotenv from 'dotenv';
 import { resolve } from 'path';
+import { extractErrorMessage } from '../utils/errors';
 
 // Load environment variables
 dotenv.config({ path: resolve(process.cwd(), '.env.local') });
@@ -114,9 +115,9 @@ async function migrateMathProblems() {
             }
             
             successCount++;
-        } catch (error: any) {
+        } catch (error: unknown) {
             errorCount++;
-            const errorMessage = error?.message || String(error);
+            const errorMessage = extractErrorMessage(error);
             errors.push({
                 id: problem.id,
                 title: problem.title,

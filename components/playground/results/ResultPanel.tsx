@@ -20,6 +20,7 @@ import { selectResponseTextByListenerId } from "@/lib/redux/socket-io/selectors/
 import { selectResponseEndedByListenerId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 import { useAppSelector } from "@/lib/redux/hooks";
 import MarkdownStream from "@/components/MarkdownStream";
+import { extractErrorMessage } from "@/utils/errors";
 
 interface ResultPanelProps {
   id: string;
@@ -169,7 +170,7 @@ export function ResultPanel({
           return (
             <div className="relative h-full">
               <div className="p-4 text-red-500 dark:text-red-400">
-                Invalid JSON: {String(error)}
+                Invalid JSON: {extractErrorMessage(error)}
               </div>
               <pre className="p-4 whitespace-pre-wrap overflow-y-auto font-mono text-sm h-full">
                 {streamingText}

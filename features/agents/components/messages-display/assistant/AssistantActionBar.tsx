@@ -34,6 +34,7 @@ import type { Json } from "@/types/database.types";
 import { toast } from "sonner";
 import { selectMessagePosition } from "@/features/agents/redux/execution-system/messages/messages.selectors";
 import { DeleteMessageDialog } from "../message-options/DeleteMessageDialog";
+import { extractErrorMessage } from "@/utils/errors";
 
 function serializeSaveError(error: unknown): {
   logPayload: Record<string, unknown>;
@@ -68,7 +69,7 @@ function serializeSaveError(error: unknown): {
       message,
     };
   }
-  return { logPayload: { raw: String(error) }, message: "Save failed" };
+  return { logPayload: { raw: extractErrorMessage(error) }, message: "Save failed" };
 }
 
 const MessageOptionsMenu = lazy(() =>

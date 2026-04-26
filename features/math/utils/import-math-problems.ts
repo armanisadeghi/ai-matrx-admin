@@ -9,6 +9,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { insertMathProblem, bulkInsertMathProblems } from '../service';
 import { MathProblemInsert } from '../types';
 import { normalizeMathProblemLatex } from './latex-normalizer';
+import { extractErrorMessage } from '@/utils/errors';
 
 /**
  * Input format from AI (matches generation guide)
@@ -180,10 +181,10 @@ export async function importMathProblem(
         await insertMathProblem(transformed);
 
         return { success: true };
-    } catch (error: any) {
+    } catch (error: unknown) {
         return {
             success: false,
-            error: error?.message || String(error)
+            error: extractErrorMessage(error)
         };
     }
 }
@@ -223,11 +224,11 @@ export async function importMathProblems(
             const transformed = transformProblem(problem);
             await insertMathProblem(transformed);
             result.inserted++;
-        } catch (error: any) {
+        } catch (error: unknown) {
             result.failed++;
             result.errors.push({
                 problem: problem.title || 'Unknown',
-                error: error?.message || String(error)
+                error: extractErrorMessage(error)
             });
 
             if (stopOnError) {

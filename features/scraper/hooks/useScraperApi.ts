@@ -21,7 +21,6 @@ import { useBackendApi } from "@/hooks/useBackendApi";
 import { ENDPOINTS } from "@/lib/api/endpoints";
 import { consumeStream } from "@/lib/api/stream-parser";
 import type {
-import { extractErrorMessage } from "@/utils/errors";
   PhasePayload,
   TypedDataPayload,
   ErrorPayload,
@@ -29,6 +28,7 @@ import { extractErrorMessage } from "@/utils/errors";
   InfoPayload,
   TypedStreamEvent,
 } from "@/lib/api/types";
+import { extractErrorMessage } from "@/utils/errors";
 import type {
   QuickScrapeRequest,
   SearchKeywordsRequest,

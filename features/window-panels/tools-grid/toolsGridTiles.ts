@@ -59,9 +59,7 @@ import {
 } from "lucide-react";
 
 import type { AppDispatch, RootState } from "@/lib/redux/store";
-import {
-  selectActiveAgentId,
-} from "@/lib/redux/slices/agent-settings/selectors";
+import { selectActiveAgentId } from "@/lib/redux/slices/agent-settings/selectors";
 import { selectOwnedAgentIds } from "@/lib/redux/slices/agentCacheSlice";
 
 /**
@@ -328,7 +326,7 @@ export const TOOLS_GRID_TILES: ReadonlyArray<ToolsGridTile> = [
     // (falls back to the first owned agent). Matches the legacy
     // `openAgentContentFromTools` helper.
     id: "tile.agent-content",
-    label: "Agent Content",
+    label: "Agent Content Sidebar",
     icon: FileStack,
     category: "agents",
     overlayId: "agentContentSidebarWindow",

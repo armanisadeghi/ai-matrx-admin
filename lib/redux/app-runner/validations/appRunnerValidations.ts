@@ -1,4 +1,5 @@
 import { CustomAppConfig, CustomAppletConfig, AppletLayoutOption, AppLayoutOptions } from '@/types/customAppTypes';
+import { extractErrorMessage } from '@/utils/errors';
 
 // Types for validation results
 export interface ValidationIssue {
@@ -320,7 +321,7 @@ export function validateAppWithApplets(
           code: 'VALIDATOR_ERROR',
           message: `Error running validator ${validator.name || 'unknown'}: ${error}`,
           severity: 'error',
-          data: { validatorName: validator.name, error: String(error) }
+          data: { validatorName: validator.name, error: extractErrorMessage(error) }
         });
       }
     }
@@ -343,7 +344,7 @@ export function validateAppWithApplets(
         code: 'VALIDATION_SYSTEM_ERROR',
         message: 'Validation system error (safely contained)',
         severity: 'error',
-        data: { error: String(error) }
+        data: { error: extractErrorMessage(error) }
       }]
     };
   }

@@ -1,5 +1,6 @@
 import { sendEmail, emailTemplates } from './client';
 import { marked } from 'marked';
+import { extractErrorMessage } from '@/utils/errors';
 
 /**
  * Email Export Service
@@ -94,7 +95,7 @@ export async function emailChatResponse(options: {
   return {
     success: false,
     message: 'Failed to send email',
-    error: result.error instanceof Error ? result.error.message : String(result.error),
+    error: extractErrorMessage(result.error),
   };
 }
 
@@ -167,7 +168,7 @@ export async function emailTableExport(options: {
   return {
     success: false,
     message: 'Failed to send email',
-    error: result.error instanceof Error ? result.error.message : String(result.error),
+    error: extractErrorMessage(result.error),
   };
 }
 
@@ -227,7 +228,7 @@ export async function emailShareLink(options: {
   return {
     success: false,
     message: 'Failed to send email',
-    error: result.error instanceof Error ? result.error.message : String(result.error),
+    error: extractErrorMessage(result.error),
   };
 }
 

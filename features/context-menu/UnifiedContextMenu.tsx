@@ -92,6 +92,7 @@ import {
   toggleOverlay,
 } from "@/lib/redux/slices/overlaySlice";
 import { ContextDebugModal } from "@/components/debug/ContextDebugModal";
+import { extractErrorMessage } from "@/utils/errors";
 import { getIconComponent } from "@/components/official/icons/IconResolver";
 import { toast } from "@/components/ui/use-toast";
 
@@ -973,7 +974,7 @@ export function UnifiedContextMenu({
     } catch (error) {
       console.error("[UnifiedContextMenu] Error executing shortcut:", error);
       const errorMessage =
-        error instanceof Error ? error.message : "An unknown error occurred";
+        error instanceof Error ? error.message : extractErrorMessage(error);
 
       toast({
         title: "Execution Failed",
@@ -983,7 +984,9 @@ export function UnifiedContextMenu({
             <p className="text-sm text-muted-foreground">{errorMessage}</p>
             {isDebugMode && (
               <pre className="mt-2 text-xs bg-muted p-2 rounded overflow-x-auto">
-                {error instanceof Error ? error.stack : String(error)}
+                {error instanceof Error
+                  ? error.stack ?? error.message
+                  : extractErrorMessage(error)}
               </pre>
             )}
           </div>
