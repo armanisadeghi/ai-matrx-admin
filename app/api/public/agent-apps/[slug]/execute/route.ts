@@ -1,3 +1,13 @@
+// DEPRECATED — DO NOT USE.
+//
+// This route was the Phase-8 bespoke proxy: client → Next.js → Python →
+// Next.js → client. As of 2026-04-25, the public renderer
+// (`AgentAppPublicRenderer`) calls Python directly using `useApiAuth().getHeaders()`,
+// matching the standard agent-execution path used everywhere else in the app.
+//
+// The route is left in place only as a temporary fallback for any external
+// caller that may have hard-coded this URL. Internal code should not call it.
+// Slated for deletion after Phase 14 soak.
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/adminClient";

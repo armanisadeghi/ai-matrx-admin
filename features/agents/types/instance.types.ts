@@ -71,6 +71,7 @@ export type SourceFeature =
    */
   | "context-menu"
   | "prompt-app"
+  | "agent-app"
   | "research"
   | "chat-route"
   | "code-editor"
@@ -553,6 +554,19 @@ export interface InstanceUIState {
    * onTextInsertAfter callbacks once the AI response is ready.
    */
   originalText: string | null;
+
+  /**
+   * Editor-context bridge (matrx /code workspace).
+   *
+   * Tab ids that the user has explicitly excluded from the editor → agent
+   * context bridge for this instance. The bridge mirrors every open tab into
+   * `editor.tab.<id>` context entries; ids in this set are skipped (and the
+   * matching context entry, if any, is removed). Persisted per-conversation
+   * so the user's preference rides along the conversation.
+   *
+   * Empty/undefined = include all tabs (default).
+   */
+  editorContextDisabledTabs?: string[];
 }
 
 // =============================================================================

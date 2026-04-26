@@ -15,8 +15,13 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import type { SandboxInstance, SandboxStatus } from "@/types/sandbox";
+import type {
+  SandboxCreateRequest,
+  SandboxInstance,
+  SandboxStatus,
+} from "@/types/sandbox";
 import { ACTIVE_SANDBOX_STATUSES } from "@/types/sandbox";
+import { CreateSandboxModal } from "./CreateSandboxModal";
 import { MockFilesystemAdapter } from "../../adapters/MockFilesystemAdapter";
 import {
   MockProcessAdapter,
@@ -55,6 +60,7 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
   const [loading, setLoading] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const pollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -121,31 +127,36 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
     setProcess(new MockProcessAdapter());
   }, [dispatch, setFilesystem, setProcess]);
 
-  const createSandbox = useCallback(async () => {
-    setCreating(true);
-    setError(null);
-    try {
-      const resp = await fetch("/api/sandbox", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
-      });
-      const data = await resp.json();
-      if (!resp.ok) {
-        throw new Error(data?.error ?? `Create failed (${resp.status})`);
+  const createSandbox = useCallback(
+    async (request: SandboxCreateRequest = {}) => {
+      setCreating(true);
+      setError(null);
+      try {
+        const resp = await fetch("/api/sandbox", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(request),
+        });
+        const data = await resp.json();
+        if (!resp.ok) {
+          throw new Error(data?.error ?? `Create failed (${resp.status})`);
+        }
+        await refresh();
+        if (data.instance) {
+          const created = data.instance as SandboxInstance;
+          dispatch(setActiveSandboxId(created.id));
+        }
+        setCreateModalOpen(false);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        setError(message);
+        throw err;
+      } finally {
+        setCreating(false);
       }
-      await refresh();
-      if (data.instance) {
-        // Auto-connect once it reaches ready.
-        const created = data.instance as SandboxInstance;
-        dispatch(setActiveSandboxId(created.id));
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
-    } finally {
-      setCreating(false);
-    }
-  }, [dispatch, refresh]);
+    },
+    [dispatch, refresh],
+  );
 
   const stopSandbox = useCallback(
     async (instance: SandboxInstance) => {
@@ -204,10 +215,13 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
       setBusyId(instance.id);
       setError(null);
       try {
-        const resp = await fetch(`/api/sandbox/${instance.id}`, {
-          method: "PUT",
+        // Use the dedicated /extend route (talks to the orchestrator and
+        // mirrors expires_at back). The legacy PUT ?action=extend was DB-only
+        // and silently drifted from the orchestrator's authoritative TTL.
+        const resp = await fetch(`/api/sandbox/${instance.id}/extend`, {
+          method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "extend", ttl_seconds: 3600 }),
+          body: JSON.stringify({ ttl_seconds: 3600 }),
         });
         if (!resp.ok) {
           const data = await resp.json().catch(() => null);
@@ -239,7 +253,7 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
             <SidePanelAction
               icon={creating ? Loader2 : Plus}
               label="New sandbox"
-              onClick={() => void createSandbox()}
+              onClick={() => setCreateModalOpen(true)}
             />
             <SidePanelAction
               icon={loading ? Loader2 : RefreshCw}
@@ -292,7 +306,7 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
             <p className="text-xs">No sandboxes yet.</p>
             <button
               type="button"
-              onClick={() => void createSandbox()}
+              onClick={() => setCreateModalOpen(true)}
               disabled={creating}
               className="flex items-center gap-1 rounded border border-blue-400 bg-blue-500 px-2 py-1 text-[11px] text-white hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
             >
@@ -322,6 +336,12 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
           />
         ))}
       </div>
+      <CreateSandboxModal
+        open={createModalOpen}
+        busy={creating}
+        onClose={() => setCreateModalOpen(false)}
+        onCreate={createSandbox}
+      />
     </div>
   );
 };

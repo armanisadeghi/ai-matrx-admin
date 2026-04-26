@@ -22,11 +22,32 @@ type StandaloneCodeEditor = {
     dispose: () => void;
   };
   addCommand: (keybinding: number, handler: () => void) => void;
+  getSelection: () => MonacoSelection | null;
+  getModel: () => MonacoModel | null;
 };
 
+export type MonacoSelection = {
+  startLineNumber: number;
+  startColumn: number;
+  endLineNumber: number;
+  endColumn: number;
+  isEmpty: () => boolean;
+};
+
+export type MonacoModel = {
+  getValueInRange: (range: {
+    startLineNumber: number;
+    startColumn: number;
+    endLineNumber: number;
+    endColumn: number;
+  }) => string;
+};
+
+export type { StandaloneCodeEditor };
+
 type MonacoNamespace = {
-  KeyMod: { CtrlCmd: number };
-  KeyCode: { KeyS: number };
+  KeyMod: { CtrlCmd: number; Shift: number };
+  KeyCode: { KeyS: number; KeyL: number };
 };
 
 export interface MonacoEditorProps {
@@ -44,6 +65,10 @@ export interface MonacoEditorProps {
   /** Invoked when the user hits Cmd/Ctrl+S inside the editor. Host decides
    *  what to do (route to code_files / filesystem adapter / etc). */
   onSave?: () => void;
+  /** Invoked when the user hits Cmd/Ctrl+Shift+L inside the editor — host
+   *  reads the current selection from the editor instance (via
+   *  `onEditorMount`) and ships it to the agent as a one-off context entry. */
+  onSendSelection?: () => void;
   /** Tailwind class to size/position the editor. */
   className?: string;
 }
@@ -56,6 +81,7 @@ export const MonacoEditor: React.FC<MonacoEditorProps> = ({
   onChange,
   onEditorMount,
   onSave,
+  onSendSelection,
   className,
 }) => {
   const [isConfigured, setIsConfigured] = useState(false);
@@ -66,9 +92,14 @@ export const MonacoEditor: React.FC<MonacoEditorProps> = ({
   // callback without needing to re-register the command (addCommand has no
   // dispose hook that's easy to thread through).
   const onSaveRef = useRef<MonacoEditorProps["onSave"]>(onSave);
+  const onSendSelectionRef =
+    useRef<MonacoEditorProps["onSendSelection"]>(onSendSelection);
   useEffect(() => {
     onSaveRef.current = onSave;
   }, [onSave]);
+  useEffect(() => {
+    onSendSelectionRef.current = onSendSelection;
+  }, [onSendSelection]);
 
   // Fire Monaco configuration exactly once per app session.
   useEffect(() => {
@@ -94,6 +125,12 @@ export const MonacoEditor: React.FC<MonacoEditorProps> = ({
         ed.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
           onSaveRef.current?.();
         });
+        ed.addCommand(
+          monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyL,
+          () => {
+            onSendSelectionRef.current?.();
+          },
+        );
       }
       onEditorMount?.(ed);
     },

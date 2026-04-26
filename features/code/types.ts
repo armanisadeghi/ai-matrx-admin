@@ -72,14 +72,18 @@ export interface EditorFile {
   /**
    * Remote `updated_at` captured at load time for source-backed tabs
    * (prompt apps, agent apps, tool UIs). Used by the optimistic
-   * concurrency check inside `useSaveActiveTab`. Undefined for tabs
-   * that don't need conflict detection (filesystem, code_files).
-   *
-   * TODO: Once sources support Realtime subscriptions, this field will
-   * be pushed forward live and the conflict path becomes a warning
-   * instead of a hard stop.
+   * concurrency check inside `useSaveActiveTab`, and refreshed live
+   * via `useTabRealtimeWatcher` so the conflict path can degrade to a
+   * soft warning when the remote row moves under the user's feet.
    */
   remoteUpdatedAt?: string;
+  /**
+   * Wall-clock timestamp of the last successful save (ISO string). Set
+   * by `markTabSaved`. Used by the editor toolbar to surface a "Saved
+   * 12s ago"-style indicator. Undefined until the tab has been saved
+   * at least once during this session.
+   */
+  lastSavedAt?: string;
 }
 
 // ─── Process / terminal ──────────────────────────────────────────────────────
@@ -105,6 +109,7 @@ export type ActivityViewId =
   | "explorer"
   | "search"
   | "git"
+  | "source-control"
   | "run"
   | "extensions"
   | "sandboxes"

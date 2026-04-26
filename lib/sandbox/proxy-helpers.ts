@@ -10,36 +10,36 @@
  * Server-only.
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from "next/server";
 import {
-    lookupSandboxAndOrchestrator,
-    type OrchestratorTarget,
-} from '@/lib/sandbox/orchestrator-routing'
+  lookupSandboxAndOrchestrator,
+  type OrchestratorTarget,
+} from "@/lib/sandbox/orchestrator-routing";
 
 const HOP_BY_HOP_HEADERS = new Set([
-    'host',
-    'content-length',
-    'connection',
-    'transfer-encoding',
-    'keep-alive',
-    'cookie',
-    // We add x-api-key ourselves
-    'x-api-key',
-    'authorization',
-])
+  "host",
+  "content-length",
+  "connection",
+  "transfer-encoding",
+  "keep-alive",
+  "cookie",
+  // We add x-api-key ourselves
+  "x-api-key",
+  "authorization",
+]);
 
 function buildUpstreamHeaders(
-    request: NextRequest,
-    target: OrchestratorTarget
+  request: NextRequest,
+  target: OrchestratorTarget,
 ): Headers {
-    const headers = new Headers()
-    request.headers.forEach((value, key) => {
-        if (!HOP_BY_HOP_HEADERS.has(key.toLowerCase())) {
-            headers.set(key, value)
-        }
-    })
-    if (target.apiKey) headers.set('X-API-Key', target.apiKey)
-    return headers
+  const headers = new Headers();
+  request.headers.forEach((value, key) => {
+    if (!HOP_BY_HOP_HEADERS.has(key.toLowerCase())) {
+      headers.set(key, value);
+    }
+  });
+  if (target.apiKey) headers.set("X-API-Key", target.apiKey);
+  return headers;
 }
 
 /**
@@ -51,51 +51,51 @@ function buildUpstreamHeaders(
  * hop-by-hop ones).
  */
 export async function forwardToOrchestrator(
-    request: NextRequest,
-    upstreamUrl: string,
-    target: OrchestratorTarget,
-    options: { stream?: boolean; timeoutMs?: number } = {}
+  request: NextRequest,
+  upstreamUrl: string,
+  target: OrchestratorTarget,
+  options: { stream?: boolean; timeoutMs?: number } = {},
 ): Promise<Response> {
-    const init: RequestInit = {
-        method: request.method,
-        headers: buildUpstreamHeaders(request, target),
-    }
+  const init: RequestInit = {
+    method: request.method,
+    headers: buildUpstreamHeaders(request, target),
+  };
 
-    // Body for non-GET/HEAD. Streaming bodies (e.g. multipart upload) need
-    // duplex: 'half' on the fetch init to opt into streaming.
-    if (request.method !== 'GET' && request.method !== 'HEAD') {
-        init.body = request.body
-        // @ts-expect-error — duplex is required by Node's undici when streaming a body
-        init.duplex = 'half'
-    }
+  // Body for non-GET/HEAD. Streaming bodies (e.g. multipart upload) need
+  // duplex: 'half' on the fetch init to opt into streaming.
+  if (request.method !== "GET" && request.method !== "HEAD") {
+    init.body = request.body;
+    // @ts-expect-error — duplex is required by Node's undici when streaming a body
+    init.duplex = "half";
+  }
 
-    if (options.timeoutMs) {
-        init.signal = AbortSignal.timeout(options.timeoutMs)
-    }
+  if (options.timeoutMs) {
+    init.signal = AbortSignal.timeout(options.timeoutMs);
+  }
 
-    try {
-        const upstream = await fetch(upstreamUrl, init)
+  try {
+    const upstream = await fetch(upstreamUrl, init);
 
-        // Filter out hop-by-hop response headers
-        const responseHeaders = new Headers()
-        upstream.headers.forEach((value, key) => {
-            if (!HOP_BY_HOP_HEADERS.has(key.toLowerCase())) {
-                responseHeaders.set(key, value)
-            }
-        })
+    // Filter out hop-by-hop response headers
+    const responseHeaders = new Headers();
+    upstream.headers.forEach((value, key) => {
+      if (!HOP_BY_HOP_HEADERS.has(key.toLowerCase())) {
+        responseHeaders.set(key, value);
+      }
+    });
 
-        return new Response(upstream.body, {
-            status: upstream.status,
-            statusText: upstream.statusText,
-            headers: responseHeaders,
-        })
-    } catch (err) {
-        const message = err instanceof Error ? err.message : 'Unknown error'
-        return NextResponse.json(
-            { error: 'Sandbox orchestrator is not reachable', details: message },
-            { status: 502 }
-        )
-    }
+    return new Response(upstream.body, {
+      status: upstream.status,
+      statusText: upstream.statusText,
+      headers: responseHeaders,
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    return NextResponse.json(
+      { error: "Sandbox orchestrator is not reachable", details: message },
+      { status: 502 },
+    );
+  }
 }
 
 /**
@@ -104,12 +104,13 @@ export async function forwardToOrchestrator(
  * the handler can use to call `forwardToOrchestrator`.
  */
 export async function resolveProxyContext(sandboxRowId: string) {
-    const lookup = await lookupSandboxAndOrchestrator(sandboxRowId)
-    if (!lookup.ok) {
-        return {
-            ok: false as const,
-            response: NextResponse.json({ error: lookup.error }, { status: lookup.status }),
-        }
-    }
-    return { ok: true as const, ...lookup }
+  const lookup = await lookupSandboxAndOrchestrator(sandboxRowId);
+  if (lookup.ok === false) {
+    const { status, error } = lookup;
+    return {
+      ok: false as const,
+      response: NextResponse.json({ error }, { status }),
+    };
+  }
+  return { ok: true as const, ...lookup };
 }

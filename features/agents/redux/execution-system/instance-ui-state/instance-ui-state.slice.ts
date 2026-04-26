@@ -420,6 +420,21 @@ const instanceUIStateSlice = createSlice({
       }
     },
 
+    /**
+     * Editor-context bridge: replace the disabled-tab id list for this
+     * instance. Used by the ContextChip popover to toggle individual tabs
+     * in/out of the editor → agent context stream.
+     */
+    setEditorContextDisabledTabs(
+      state,
+      action: PayloadAction<{ conversationId: string; tabIds: string[] }>,
+    ) {
+      const entry = state.byConversationId[action.payload.conversationId];
+      if (entry) {
+        entry.editorContextDisabledTabs = action.payload.tabIds;
+      }
+    },
+
     setShowAutoClearToggle(
       state,
       action: PayloadAction<{ conversationId: string; value: boolean }>,
@@ -617,6 +632,7 @@ export const {
   setExpandedVariableId,
   toggleCreatorDebug,
   setSubmitOnEnter,
+  setEditorContextDisabledTabs,
   setShowAutoClearToggle,
   setAutoClearConversation,
   setReuseConversationId,

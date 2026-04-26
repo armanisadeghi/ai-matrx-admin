@@ -1,9 +1,10 @@
 "use client";
 
 import React from "react";
-import { X } from "lucide-react";
+import { Database, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FileIcon } from "../styles/file-icon";
+import { getAdapterForTabId } from "../library-sources/registry";
 
 export interface EditorTabProps {
   id: string;
@@ -24,6 +25,10 @@ export const EditorTab: React.FC<EditorTabProps> = ({
   onClose,
   onMiddleClick,
 }) => {
+  const sourceAdapter = getAdapterForTabId(id);
+  const sourceLabel = sourceAdapter
+    ? `Single source of truth — saves write back to ${sourceAdapter.label}`
+    : null;
   return (
     <div
       role="tab"
@@ -48,6 +53,18 @@ export const EditorTab: React.FC<EditorTabProps> = ({
     >
       <FileIcon name={name} kind="file" size={14} />
       <span className="max-w-[180px] truncate">{name}</span>
+      {sourceLabel ? (
+        <span
+          title={sourceLabel}
+          aria-label={sourceLabel}
+          className={cn(
+            "flex h-4 w-4 items-center justify-center rounded text-emerald-600 dark:text-emerald-400",
+            !active && "opacity-70",
+          )}
+        >
+          <Database size={11} aria-hidden />
+        </span>
+      ) : null}
       <button
         type="button"
         aria-label={dirty ? "Close (unsaved changes)" : "Close"}

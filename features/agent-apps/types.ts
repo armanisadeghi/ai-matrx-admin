@@ -119,11 +119,12 @@ export interface AgentAppRecord {
 
 export type AgentApp = AgentAppRecord;
 
+// PublicAgentApp now keeps `agent_id`, `agent_version_id`, and `use_latest`.
+// The renderer needs them so it can call the standard agent-execution path
+// (`/ai/agents/{agentId}` / `/ai/conversations/{id}`) directly from the
+// client — same model as shortcuts, no bespoke Next.js proxy.
 export type PublicAgentApp = Omit<
   AgentAppRecord,
-  | "agent_id"
-  | "agent_version_id"
-  | "use_latest"
   | "user_id"
   | "organization_id"
   | "project_id"

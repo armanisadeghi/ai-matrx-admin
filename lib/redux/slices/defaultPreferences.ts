@@ -100,6 +100,9 @@ export const defaultUserPreferences: UserPreferences = {
     historyGrouping: "date",
     historyPageSize: 30,
     favoriteConversationIds: [],
+    lastSandboxTier: "ec2",
+    lastSandboxTemplate: "bare",
+    monacoEnvironmentsEnabled: true,
   },
   flashcard: {
     fontSize: 16,

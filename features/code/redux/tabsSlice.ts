@@ -59,6 +59,7 @@ const slice = createSlice({
       if (!tab) return;
       tab.pristineContent = tab.content;
       tab.dirty = false;
+      tab.lastSavedAt = new Date().toISOString();
     },
     /** Refresh the `remoteUpdatedAt` stored alongside a tab — used by
      *  the source adapter save path to keep the optimistic guard in

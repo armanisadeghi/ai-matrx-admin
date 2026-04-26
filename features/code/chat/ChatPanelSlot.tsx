@@ -10,6 +10,8 @@ import { SidePanelHeader, SidePanelAction } from "../views/SidePanelChrome";
 import { AVATAR_RESERVE } from "../styles/tokens";
 import { AgentPicker } from "./AgentPicker";
 import { useCodeWorkspaceHistory } from "./useCodeWorkspaceHistory";
+import { ContextChip } from "../agent-context/ContextChip";
+import { useSyncEditorContext } from "../agent-context/useSyncEditorContext";
 
 interface ChatPanelSlotProps {
   /** Base path used by header controls inside the runner. Defaults to the
@@ -40,7 +42,13 @@ export const ChatPanelSlot: React.FC<ChatPanelSlotProps> = ({
   const dispatch = useAppDispatch();
   const searchParams = useSearchParams();
   const agentId = searchParams.get("agentId");
+  const conversationId = searchParams.get("conversationId");
   const { filter } = useCodeWorkspaceHistory();
+
+  // Auto-mount the editor → agent context bridge whenever both a workspace
+  // tab set and a chat instance are live. The hook is a no-op when
+  // `conversationId` is null, so it's safe to call unconditionally.
+  useSyncEditorContext(conversationId);
 
   const openSettings = useCallback(() => {
     dispatch(
@@ -68,6 +76,7 @@ export const ChatPanelSlot: React.FC<ChatPanelSlotProps> = ({
         title="Chat"
         actions={
           <div className="flex items-center gap-1">
+            <ContextChip conversationId={conversationId} />
             <AgentPicker
               variant="inline"
               filter={filter}

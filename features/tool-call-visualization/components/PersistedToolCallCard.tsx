@@ -97,11 +97,14 @@ export function PersistedToolCallCard({
   );
 
   return (
-    <ToolCallVisualization
-      entries={[entry]}
-      isPersisted
-      hasContent={false}
-      className="mb-2"
-    />
+    <div className="border border-red-500">
+      <p> Persisted Tool Call Card</p>
+      <ToolCallVisualization
+        entries={[entry]}
+        isPersisted
+        hasContent={false}
+        className="mb-2"
+      />
+    </div>
   );
 }

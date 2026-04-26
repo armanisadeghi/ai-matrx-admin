@@ -46,13 +46,17 @@ export function useSaveActiveTab() {
   const { filesystem } = useCodeWorkspace();
 
   return useCallback(
-    async (tabIdOverride?: string): Promise<SaveResult | null> => {
+    async (
+      tabIdOverride?: string,
+      options?: { force?: boolean },
+    ): Promise<SaveResult | null> => {
       const state = store.getState();
       const tab = tabIdOverride
         ? selectTabById(tabIdOverride)(state)
         : selectActiveTab(state);
       if (!tab) return null;
       if (!tab.dirty) return { tabId: tab.id, ok: true };
+      const force = options?.force === true;
 
       // Branch 1: library tab → route to code-files thunk.
       if (isLibraryTabId(tab.id)) {
@@ -113,7 +117,10 @@ export function useSaveActiveTab() {
             rowId: parsed.rowId,
             fieldId: parsed.fieldId,
             content: tab.content,
-            expectedUpdatedAt: tab.remoteUpdatedAt,
+            // When `force` is set we deliberately skip the optimistic
+            // concurrency guard so the user can intentionally overwrite
+            // a remote-updated row.
+            expectedUpdatedAt: force ? undefined : tab.remoteUpdatedAt,
           });
           dispatch(markTabSaved(tab.id));
           dispatch(

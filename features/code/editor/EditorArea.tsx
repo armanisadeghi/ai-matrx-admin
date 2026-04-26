@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import { FileCode } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { codeFilesActions } from "@/features/code-files/redux/slice";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import { selectActiveTab, updateTabContent } from "../redux/tabsSlice";
 import { AVATAR_RESERVE, EDITOR_BG } from "../styles/tokens";
 import {
@@ -12,9 +14,13 @@ import {
   isLibraryTabId,
 } from "../hooks/useOpenLibraryFile";
 import { useSaveActiveTab } from "../hooks/useSaveActiveTab";
+import { useReloadTab } from "../hooks/useReloadTab";
+import { useSendSelectionAsContext } from "../agent-context/useSendSelectionAsContext";
+import type { RootState } from "@/lib/redux/store";
+import { useEnvironmentForActiveTab } from "./monaco-environments";
 import { EditorTabs } from "./EditorTabs";
 import { EditorToolbar } from "./EditorToolbar";
-import { MonacoEditor } from "./MonacoEditor";
+import { MonacoEditor, type StandaloneCodeEditor } from "./MonacoEditor";
 
 interface EditorAreaProps {
   rightSlotAvailable?: boolean;
@@ -34,6 +40,31 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
   const dispatch = useAppDispatch();
   const activeTab = useAppSelector(selectActiveTab);
   const saveActiveTab = useSaveActiveTab();
+  const reloadTab = useReloadTab();
+  const searchParams = useSearchParams();
+  const conversationId = searchParams.get("conversationId");
+  const editorRef = useRef<StandaloneCodeEditor | null>(null);
+
+  const { sendSelection, canSend: canSendSelection } =
+    useSendSelectionAsContext({
+      conversationId,
+      activeTab,
+      editorRef,
+      notify: ({ type, text }) =>
+        type === "success" ? toast.success(text) : toast.error(text),
+    });
+
+  const handleEditorMount = useCallback((editor: StandaloneCodeEditor) => {
+    editorRef.current = editor;
+  }, []);
+
+  const monacoEnvironmentsEnabled = useAppSelector(
+    (state: RootState) =>
+      state.userPreferences.coding.monacoEnvironmentsEnabled ?? true,
+  );
+  const { activeEnvironment } = useEnvironmentForActiveTab({
+    enabled: monacoEnvironmentsEnabled,
+  });
 
   const handleChange = useCallback(
     (next: string) => {
@@ -55,11 +86,66 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
 
   const handleSave = useCallback(() => {
     void saveActiveTab().then((result) => {
-      if (result && !result.ok) {
-        console.error("[EditorArea] save failed", result.error);
+      if (!result) return;
+      if (result.ok) return;
+      if (result.conflict) {
+        const conflictTabId = result.tabId;
+        toast.warning("Remote row updated since you opened this tab", {
+          description:
+            "Reload to pick up the remote changes (your local edits are copied to the clipboard) or Overwrite to push your version anyway.",
+          duration: 15000,
+          action: {
+            label: "Reload",
+            onClick: () => {
+              void reloadTab(conflictTabId).then((reload) => {
+                if (!reload.ok) {
+                  toast.error("Reload failed", {
+                    description: reload.error ?? "Unknown error",
+                  });
+                  return;
+                }
+                if (
+                  reload.previousContent &&
+                  typeof navigator !== "undefined" &&
+                  navigator.clipboard
+                ) {
+                  void navigator.clipboard
+                    .writeText(reload.previousContent)
+                    .catch(() => {
+                      // Clipboard access can be denied silently — the
+                      // user can still see the remote content in the
+                      // editor.
+                    });
+                }
+                toast.success("Reloaded from remote");
+              });
+            },
+          },
+          cancel: {
+            label: "Overwrite",
+            onClick: () => {
+              void saveActiveTab(conflictTabId, { force: true }).then(
+                (forced) => {
+                  if (!forced) return;
+                  if (forced.ok) {
+                    toast.success("Saved (overwrote remote)");
+                  } else {
+                    toast.error("Overwrite failed", {
+                      description: forced.error ?? "Unknown error",
+                    });
+                  }
+                },
+              );
+            },
+          },
+        });
+        return;
       }
+      toast.error("Save failed", {
+        description: result.error ?? "Unknown error",
+      });
     });
-  }, [saveActiveTab]);
+  }, [saveActiveTab, reloadTab]);
 
   // Fallback save shortcut for when focus is in the editor area but not
   // inside Monaco itself (e.g. on the tab strip). Mirrors Cmd/Ctrl+S.
@@ -94,6 +180,9 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
           onSaveActiveTab={handleSave}
           hasDirtyActiveTab={Boolean(activeTab?.dirty)}
           hasActiveTab={Boolean(activeTab)}
+          lastSavedAt={activeTab?.lastSavedAt}
+          onSendSelectionAsContext={sendSelection}
+          canSendSelectionAsContext={canSendSelection}
         />
       </div>
       <div className="relative flex-1 min-h-0">
@@ -105,6 +194,8 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
             path={activeTab.path}
             onChange={handleChange}
             onSave={handleSave}
+            onSendSelection={sendSelection}
+            onEditorMount={handleEditorMount}
           />
         ) : (
           <EmptyEditorState />

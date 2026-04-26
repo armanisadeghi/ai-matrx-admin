@@ -10,7 +10,6 @@ import React, {
 import dynamic from "next/dynamic";
 import { transform } from "@babel/standalone";
 import { AlertCircle, Copy, Check, MoreHorizontal } from "lucide-react";
-import { v4 as uuidv4 } from "uuid";
 import { useApiAuth } from "@/hooks/useApiAuth";
 import { useGuestLimit } from "@/hooks/useGuestLimit";
 import { GuestLimitWarning } from "@/components/guest/GuestLimitWarning";
@@ -23,14 +22,17 @@ import {
 import { AgentAppErrorBoundary } from "./AgentAppErrorBoundary";
 import MarkdownStream from "@/components/MarkdownStream";
 import PublicMessageOptionsMenu from "@/features/public-chat/components/PublicMessageOptionsMenu";
-import type {
-  TypedStreamEvent,
-  ChunkPayload,
-  ErrorPayload,
-} from "@/types/python-generated/stream-events";
+import type { TypedStreamEvent } from "@/types/python-generated/stream-events";
 import type { PublicAgentApp } from "../types";
-import { parseNdjsonStream } from "@/lib/api/stream-parser";
 import { useCanvas } from "@/features/canvas/hooks/useCanvas";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { launchAgentExecution } from "@/features/agents/redux/execution-system/thunks/launch-agent-execution.thunk";
+import {
+  selectAccumulatedText,
+  selectRequest,
+  selectPrimaryRequest,
+} from "@/features/agents/redux/execution-system/active-requests/active-requests.selectors";
+import { useWarmAgent } from "@/features/agents/hooks/useWarmAgent";
 
 const HtmlPreviewModal = dynamic(
   () => import("@/features/html-pages/components/HtmlPreviewModal"),
@@ -61,21 +63,53 @@ export function AgentAppPublicRenderer({
   slug,
   TestComponent,
 }: AgentAppPublicRendererProps) {
+  const dispatch = useAppDispatch();
+
   const [isExecuting, setIsExecuting] = useState(false);
-  const [error, setError] = useState<{ type: string; message: string } | null>(
-    null,
-  );
-  const [streamEvents, setStreamEvents] = useState<TypedStreamEvent[]>([]);
-  const [isStreamComplete, setIsStreamComplete] = useState(false);
-  const [dbConversationId, setDbConversationId] = useState<string | null>(null);
-  const dbConversationIdRef = useRef<string | null>(null);
-  const executionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const abortControllerRef = useRef<AbortController | null>(null);
-  const currentTaskIdRef = useRef<string | null>(null);
-  const streamEventsRef = useRef<TypedStreamEvent[]>([]);
-  const streamRafIdRef = useRef<number | null>(null);
+  const [localError, setLocalError] = useState<
+    { type: string; message: string } | null
+  >(null);
+  const [conversationId, setConversationId] = useState<string | null>(null);
 
   const { isAuthenticated, fingerprintId } = useApiAuth();
+
+  // Streaming state is owned by Redux (active-requests slice). We capture
+  // `conversationId` synchronously via the launcher's `onConversationCreated`
+  // callback (fires immediately after instance creation, well before the
+  // stream starts), then derive the active requestId from
+  // `selectPrimaryRequest`. Reading by requestId from the awaited launcher
+  // result would be wrong here — the launcher awaits the entire stream
+  // before resolving, so by then there's nothing left to subscribe to.
+  const primaryRequest = useAppSelector((state) =>
+    conversationId ? selectPrimaryRequest(conversationId)(state) : undefined,
+  );
+  const requestId = primaryRequest?.requestId ?? null;
+
+  const responseText = useAppSelector((state) =>
+    requestId ? selectAccumulatedText(requestId)(state) : "",
+  );
+  const request = useAppSelector((state) =>
+    requestId ? selectRequest(requestId)(state) : undefined,
+  );
+  const requestStatus = request?.status;
+  const isStreaming =
+    requestStatus === "running" || requestStatus === "streaming";
+  const isStreamComplete = requestStatus === "complete";
+  const requestError =
+    requestStatus === "error"
+      ? {
+          type: "stream_error",
+          message:
+            (request as unknown as { errorMessage?: string })?.errorMessage ??
+            "Agent execution failed",
+        }
+      : null;
+  const error = localError ?? requestError;
+
+  // streamEvents is preserved in the prop contract for legacy custom UIs but
+  // is intentionally empty — Redux exposes higher-level render blocks instead.
+  // The standard templates only consume `response`, not raw events.
+  const streamEvents: TypedStreamEvent[] = useMemo(() => [], []);
 
   const guestLimit = useGuestLimit();
 
@@ -85,15 +119,18 @@ export function AgentAppPublicRenderer({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fingerprintId]);
 
-  useEffect(() => {
-    return () => {
-      if (executionTimeoutRef.current) clearTimeout(executionTimeoutRef.current);
-      if (abortControllerRef.current) abortControllerRef.current.abort();
-      if (streamRafIdRef.current !== null) {
-        cancelAnimationFrame(streamRafIdRef.current);
-      }
-    };
-  }, []);
+  // No local cleanup needed: Redux owns the request lifecycle and the
+  // launcher attaches its own AbortController per conversation.
+
+  // Pre-warm the agent on the configured backend. Fires on idle (after
+  // hydration / first paint) so it never competes with the page's render
+  // path. If the user submits before the warm completes, the real call
+  // simply finds the cache populated; no race.
+  const pinnedVersionId =
+    !app.use_latest && app.agent_version_id ? app.agent_version_id : null;
+  useWarmAgent(pinnedVersionId ?? app.agent_id, {
+    isVersion: !!pinnedVersionId,
+  });
 
   const validateVariables = useCallback(
     (variables: Record<string, unknown>) => {
@@ -145,186 +182,80 @@ export function AgentAppPublicRenderer({
   );
 
   const resetConversation = useCallback(() => {
-    dbConversationIdRef.current = null;
-    setDbConversationId(null);
-    setStreamEvents([]);
-    streamEventsRef.current = [];
-    setIsStreamComplete(false);
-    setError(null);
+    setConversationId(null);
+    setLocalError(null);
   }, []);
 
   const handleExecute = useCallback(
     async (variables: Record<string, unknown>, userInput?: string) => {
       setIsExecuting(true);
-      setError(null);
-      setStreamEvents([]);
-      setIsStreamComplete(false);
-      currentTaskIdRef.current = null;
-      streamEventsRef.current = [];
-      if (streamRafIdRef.current !== null) {
-        cancelAnimationFrame(streamRafIdRef.current);
-        streamRafIdRef.current = null;
-      }
-
-      if (executionTimeoutRef.current) {
-        clearTimeout(executionTimeoutRef.current);
-        executionTimeoutRef.current = null;
-      }
-
-      abortControllerRef.current = new AbortController();
+      setLocalError(null);
 
       try {
         const { validVariables, validationErrors } =
           validateVariables(variables);
 
         if (validationErrors.length > 0) {
-          setError({
+          setLocalError({
             type: "execution_error",
             message: validationErrors.join("; "),
           });
-          setIsExecuting(false);
           return;
         }
 
         if (!isAuthenticated && !guestLimit.allowed) {
-          setError({
+          setLocalError({
             type: "execution_error",
             message:
               "You have reached the maximum number of free executions. Please sign up to continue.",
           });
-          setIsExecuting(false);
           return;
         }
 
-        const existingConversationId = dbConversationIdRef.current;
-
-        const fetchResponse = await fetch(
-          `/api/public/agent-apps/${slug}/execute`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              variables: validVariables,
-              variables_provided: variables,
-              user_input: userInput,
-              fingerprint: fingerprintId,
-              conversation_id: existingConversationId,
-              metadata: {
-                timestamp: new Date().toISOString(),
-                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                conversation_id: existingConversationId,
-              },
-            }),
-            signal: abortControllerRef.current.signal,
-          },
-        );
-
-        if (!fetchResponse.ok) {
-          let errorMsg = `HTTP ${fetchResponse.status}`;
-          try {
-            const errorData = await fetchResponse.json();
-            if (
-              typeof errorData.error === "object" &&
-              errorData.error !== null
-            ) {
-              errorMsg =
-                errorData.error.user_message ||
-                errorData.error.message ||
-                JSON.stringify(errorData.error);
-            } else {
-              errorMsg =
-                errorData.error ||
-                errorData.message ||
-                errorData.detail ||
-                errorMsg;
-            }
-            if (
-              fetchResponse.status === 429 &&
-              errorData.guest_limit
-            ) {
-              guestLimit.refresh();
-            }
-          } catch {
-            // use default errorMsg
-          }
-          throw new Error(errorMsg);
+        // Delegate to the canonical agent-execution path. `launchAgentExecution`
+        // owns: URL routing (/ai/agents/{id} vs /ai/conversations/{id}),
+        // is_new / is_version flags, auth headers (Bearer for authed, fingerprint
+        // for guests via the API client), conversation creation, request lifecycle,
+        // and NDJSON streaming into Redux. The renderer just consumes the resulting
+        // `requestId` via selectors above (`responseText`, `requestStatus`, etc).
+        //
+        // displayMode "direct" = caller (this renderer + the user's TSX) owns the
+        // UI surface; the launcher does not open any overlay/modal.
+        if (process.env.NODE_ENV !== "production") {
+          console.log("[AgentApp] launchAgentExecution", {
+            agent_id: app.agent_id,
+            slug,
+            isAuthenticated,
+            fingerprintId,
+            variables: validVariables,
+          });
         }
 
-        if (!fetchResponse.body) {
-          throw new Error("No response body from Agent API");
-        }
-
-        const serverConversationId =
-          fetchResponse.headers.get("X-Conversation-ID") ?? uuidv4();
-        dbConversationIdRef.current = serverConversationId;
-        setDbConversationId(serverConversationId);
-
-        const headerTaskId = fetchResponse.headers.get("X-Task-ID");
-        if (headerTaskId) currentTaskIdRef.current = headerTaskId;
-
-        let localChunkCount = 0;
-        let localHasError = false;
-
-        const { events } = parseNdjsonStream(
-          fetchResponse,
-          abortControllerRef.current.signal,
-        );
-
-        for await (const event of events) {
-          streamEventsRef.current.push(event);
-          if (streamRafIdRef.current === null) {
-            streamRafIdRef.current = requestAnimationFrame(() => {
-              streamRafIdRef.current = null;
-              setStreamEvents([...streamEventsRef.current]);
-            });
-          }
-
-          if (event.event === "chunk") localChunkCount++;
-
-          if (event.event === "error") {
-            localHasError = true;
-            const errData = event.data as unknown as ErrorPayload;
-            const errMsg =
-              errData.user_message ||
-              errData.message ||
-              "Unknown error from stream";
-            setError({ type: "stream_error", message: errMsg });
-            if (currentTaskIdRef.current) {
-              fetch(`/api/public/agent-apps/${slug}/execute`, {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  task_id: currentTaskIdRef.current,
-                  error_type: "stream_error",
-                  error_message: errMsg,
-                }),
-              }).catch(() => {});
-            }
-          }
-        }
-
-        if (streamRafIdRef.current !== null) {
-          cancelAnimationFrame(streamRafIdRef.current);
-          streamRafIdRef.current = null;
-        }
-        setStreamEvents([...streamEventsRef.current]);
-        setIsStreamComplete(true);
-
-        if (localChunkCount === 0 && !localHasError) {
-          const emptyMsg = "The AI returned an empty response. Please try again.";
-          setError({ type: "empty_result", message: emptyMsg });
-          if (currentTaskIdRef.current) {
-            fetch(`/api/public/agent-apps/${slug}/execute`, {
-              method: "PATCH",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                task_id: currentTaskIdRef.current,
-                error_type: "empty_result",
-                error_message: "Stream completed with no content chunks",
-              }),
-            }).catch(() => {});
-          }
-        }
+        await dispatch(
+          launchAgentExecution({
+            agentId: app.agent_id,
+            surfaceKey: `agent-app:${slug}`,
+            sourceFeature: "agent-app",
+            displayMode: "direct",
+            userInput,
+            variables: validVariables,
+            // Without this the launcher creates the conversation + sets it
+            // ready, but returns without dispatching executeInstance — see
+            // launch-agent-execution.thunk.ts step 5. Agent apps always want
+            // immediate execution on submit; there is no manual "Run" button
+            // separate from the form.
+            autoRun: true,
+            // Capture conversationId synchronously, before the stream starts.
+            // The launcher's awaited promise doesn't resolve until the stream
+            // has fully completed (see pollForCompletion in
+            // launch-agent-execution.thunk.ts step 5), so subscribing by the
+            // post-await result would mean the renderer never sees the
+            // streaming text — only the final blob. Setting conversationId
+            // here lets selectPrimaryRequest pick up the live request and
+            // selectAccumulatedText stream the text into the UI.
+            onConversationCreated: (id) => setConversationId(id),
+          }),
+        ).unwrap();
 
         guestLimit.refresh();
       } catch (err: unknown) {
@@ -333,30 +264,20 @@ export function AgentAppPublicRenderer({
           // silent
         } else {
           const errMsg = e?.message || "Execution failed";
-          setError({ type: "execution_error", message: errMsg });
-          if (currentTaskIdRef.current) {
-            fetch(`/api/public/agent-apps/${slug}/execute`, {
-              method: "PATCH",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                task_id: currentTaskIdRef.current,
-                error_type: "execution_error",
-                error_message: errMsg,
-              }),
-            }).catch(() => {});
-          }
+          setLocalError({ type: "execution_error", message: errMsg });
         }
       } finally {
         setIsExecuting(false);
-        abortControllerRef.current = null;
       }
     },
     [
+      app.agent_id,
       slug,
       isAuthenticated,
       fingerprintId,
       guestLimit,
       validateVariables,
+      dispatch,
     ],
   );
 
@@ -399,12 +320,8 @@ export function AgentAppPublicRenderer({
     }
   }, [app.component_code, app.allowed_imports, TestComponent]);
 
-  const responseText = useMemo(() => {
-    return streamEvents
-      .filter((e) => e.event === "chunk")
-      .map((e) => (e.data as unknown as ChunkPayload).text)
-      .join("");
-  }, [streamEvents]);
+  // responseText is already derived from Redux above (selectAccumulatedText).
+  // The old local-streamEvents → text reduction is gone with the bespoke fetch.
 
   const { open: openCanvas } = useCanvas();
 
@@ -427,10 +344,10 @@ export function AgentAppPublicRenderer({
       data: { html: responseText },
       metadata: {
         title: app.name || "Response",
-        sourceMessageId: dbConversationId ?? undefined,
+        sourceMessageId: conversationId ?? undefined,
       },
     });
-  }, [openCanvas, responseText, app.name, dbConversationId]);
+  }, [openCanvas, responseText, app.name, conversationId]);
 
   const [isCopied, setIsCopied] = useState(false);
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
@@ -481,7 +398,7 @@ export function AgentAppPublicRenderer({
                   ? { remaining: guestLimit.remaining, total: 5 }
                   : null
               }
-              conversationId={dbConversationId}
+              conversationId={conversationId}
               onResetConversation={resetConversation}
             />
           </AgentAppErrorBoundary>
@@ -516,13 +433,13 @@ export function AgentAppPublicRenderer({
               </button>
             </div>
 
-            {streamEvents.length > 0 && (
+            {responseText && (
               <div className="bg-textured">
                 <MarkdownStream
-                  events={streamEvents}
+                  content={responseText}
                   isStreamActive={isExecuting && !isStreamComplete}
                   onError={(err) =>
-                    setError({ type: "render_error", message: err })
+                    setLocalError({ type: "render_error", message: err })
                   }
                 />
               </div>

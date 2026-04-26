@@ -1,13 +1,14 @@
 "use client";
 
 import { useMemo } from "react";
-import { Code, Filter, History } from "lucide-react";
+import { Code, Filter, History, Layers } from "lucide-react";
 import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
 import { SettingsMultiSelect } from "@/components/official/settings/primitives/SettingsMultiSelect";
 import { SettingsNumberInput } from "@/components/official/settings/primitives/SettingsNumberInput";
 import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
 import { SettingsSegmented } from "@/components/official/settings/primitives/SettingsSegmented";
 import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
+import { SettingsSwitch } from "@/components/official/settings/primitives/SettingsSwitch";
 import { useSetting } from "../hooks/useSetting";
 import { useAppSelector } from "@/lib/redux/hooks";
 import {
@@ -35,6 +36,8 @@ export default function CodeWorkspaceTab() {
   const [pageSize, setPageSize] = useSetting<number>(
     "userPreferences.coding.historyPageSize",
   );
+  const [monacoEnvironmentsEnabled, setMonacoEnvironmentsEnabled] =
+    useSetting<boolean>("userPreferences.coding.monacoEnvironmentsEnabled");
 
   const allTags = useAppSelector(selectAllAgentTags);
   const allCategories = useAppSelector(selectAllAgentCategories);
@@ -163,6 +166,16 @@ export default function CodeWorkspaceTab() {
           min={10}
           max={100}
           step={5}
+          last
+        />
+      </SettingsSection>
+
+      <SettingsSection title="Editor type environments" icon={Layers}>
+        <SettingsSwitch
+          label="Load per-tab type definitions"
+          description="Load curated React/Lucide/ShadCN/Node typings for prompt-app, aga-app, tool-ui, and sandbox tabs. Disable to see vanilla TypeScript errors instead."
+          checked={monacoEnvironmentsEnabled ?? true}
+          onCheckedChange={setMonacoEnvironmentsEnabled}
           last
         />
       </SettingsSection>

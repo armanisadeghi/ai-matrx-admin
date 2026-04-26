@@ -1,4 +1,8 @@
-import type { ProcessAdapter } from "./ProcessAdapter";
+import type {
+  ProcessAdapter,
+  PtyHandle,
+  PtyOpenOptions,
+} from "./ProcessAdapter";
 import type { ProcessEvent, ProcessResult } from "../types";
 
 /** Matches the response shape of /api/sandbox/[id]/exec */
@@ -165,6 +169,127 @@ export class SandboxProcessAdapter implements ProcessAdapter {
 
     if (cwd) this.cwd = cwd;
     return { stdout, stderr, exitCode, cwd };
+  }
+
+  /**
+   * Open a PTY session.
+   *
+   * Connects via same-origin WebSocket to `/api/sandbox/[id]/pty`. The Next
+   * API route's role is to forward the upgrade to the orchestrator's
+   * `/sandboxes/{sandbox_id}/pty` endpoint (see
+   * [app/api/sandbox/[id]/pty/route.ts](../../app/api/sandbox/%5Bid%5D/pty/route.ts)
+   * for the wire-format contract).
+   *
+   * Each frame is a single JSON object terminated by `\n`. Falls back
+   * gracefully when the browser cannot reach the WebSocket — the caller
+   * can drop back to read-line emulation.
+   */
+  async openPty(opts: PtyOpenOptions): Promise<PtyHandle> {
+    if (typeof window === "undefined") {
+      throw new Error("openPty is only available in the browser");
+    }
+
+    const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const params = new URLSearchParams();
+    if (opts.cols) params.set("cols", String(opts.cols));
+    if (opts.rows) params.set("rows", String(opts.rows));
+    if (opts.cwd) params.set("cwd", opts.cwd);
+    if (opts.shell) params.set("shell", opts.shell);
+    if (opts.env) params.set("env", JSON.stringify(opts.env));
+    const qs = params.toString();
+    const url = `${proto}//${window.location.host}/api/sandbox/${this.instanceId}/pty${qs ? `?${qs}` : ""}`;
+
+    const socket = new WebSocket(url);
+    let isOpen = false;
+    let closed = false;
+
+    const send = (frame: object) => {
+      if (!isOpen || socket.readyState !== WebSocket.OPEN) return;
+      try {
+        socket.send(JSON.stringify(frame));
+      } catch {
+        /* socket may have flipped to CLOSING — ignore */
+      }
+    };
+
+    const handle: PtyHandle = {
+      get isOpen() {
+        return isOpen && !closed;
+      },
+      write(data: string) {
+        send({ type: "input", data });
+      },
+      resize(cols: number, rows: number) {
+        send({ type: "resize", cols, rows });
+      },
+      signal(name: string) {
+        send({ type: "signal", signal: name });
+      },
+      close() {
+        if (closed) return;
+        closed = true;
+        try {
+          socket.close(1000, "client closed");
+        } catch {
+          /* ignore */
+        }
+      },
+    };
+
+    socket.onmessage = (event) => {
+      const raw = typeof event.data === "string" ? event.data : "";
+      if (!raw) return;
+      // Daemon may send either single JSON object frames or NDJSON when
+      // batched. Split on newlines and parse each non-empty line.
+      for (const line of raw.split("\n")) {
+        if (!line.trim()) continue;
+        let msg: Record<string, unknown> | null = null;
+        try {
+          msg = JSON.parse(line);
+        } catch {
+          // Malformed frame — pass the raw bytes through so users still
+          // see something sensible if the daemon ever degrades.
+          opts.onData(line);
+          continue;
+        }
+        if (!msg) continue;
+        if (msg.type === "output") {
+          opts.onData(typeof msg.data === "string" ? msg.data : "");
+        } else if (msg.type === "exit") {
+          opts.onExit?.(
+            typeof msg.code === "number" ? msg.code : null,
+            typeof msg.signal === "string" ? msg.signal : null,
+          );
+        } else if (msg.type === "error") {
+          opts.onError?.(
+            new Error(
+              typeof msg.message === "string" ? msg.message : "PTY error",
+            ),
+          );
+        } else if (msg.type === "ready") {
+          opts.onReady?.();
+        }
+        // Ignore unknown frame types so the daemon can extend without
+        // breaking older clients.
+      }
+    };
+    socket.onopen = () => {
+      isOpen = true;
+      // Some daemons don't emit an explicit ready frame — synthesise one.
+      opts.onReady?.();
+    };
+    socket.onerror = () => {
+      opts.onError?.(new Error("PTY transport error"));
+    };
+    socket.onclose = () => {
+      isOpen = false;
+      if (!closed) {
+        closed = true;
+        opts.onExit?.(null, null);
+      }
+    };
+
+    return handle;
   }
 }
 

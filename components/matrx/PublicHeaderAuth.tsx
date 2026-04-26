@@ -1,6 +1,6 @@
 'use client';
 
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { LayoutDashboard, LogIn } from 'lucide-react';
 import { useSelector } from 'react-redux';
@@ -30,7 +30,18 @@ export function PublicHeaderAuth() {
   const isAdmin = useSelector(selectIsAdmin);
   const router = useRouter();
 
-  const isAuthenticated = !!user.id;
+  // Avoid hydration mismatch: AuthSyncWrapper populates the user slice after
+  // mount, so the very first client render must match the server's render
+  // (always unauthenticated). After mount we honor the real Redux state.
+  // Without this gate, the server emits the Sign In <Button> and the client's
+  // first render emits the authed <div>, which triggers React's hydration
+  // error and unmounts the entire subtree.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isAuthenticated = mounted && !!user.id;
 
   // Calculate initials for avatar fallback
   const initials = displayName

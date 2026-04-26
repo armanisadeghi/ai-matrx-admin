@@ -5,7 +5,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectActiveView } from "../redux/codeWorkspaceSlice";
 import { ExplorerPanel } from "./explorer/ExplorerPanel";
 import { SearchPanel } from "./search/SearchPanel";
-import { GitPanel } from "./git/GitPanel";
+import { SourceControlPanel } from "./source-control/SourceControlPanel";
 import { RunPanel } from "./run/RunPanel";
 import { ExtensionsPanel } from "./extensions/ExtensionsPanel";
 import { SandboxesPanel } from "./sandboxes/SandboxesPanel";
@@ -25,8 +25,9 @@ export const SidePanelRouter: React.FC = () => {
       return <ExplorerPanel />;
     case "search":
       return <SearchPanel />;
+    case "source-control":
     case "git":
-      return <GitPanel />;
+      return <SourceControlPanel />;
     case "run":
       return <RunPanel />;
     case "extensions":

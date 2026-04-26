@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from "next/server";
 import {
-    lookupSandboxAndOrchestrator,
-    orchestratorJsonHeaders,
-} from '@/lib/sandbox/orchestrator-routing'
+  lookupSandboxAndOrchestrator,
+  orchestratorJsonHeaders,
+} from "@/lib/sandbox/orchestrator-routing";
 
 /**
  * POST /api/sandbox/[id]/access
@@ -15,56 +15,64 @@ import {
  * config.tier.
  */
 export async function POST(
-    _request: NextRequest,
-    { params }: { params: Promise<{ id: string }> }
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
 ) {
-    try {
-        const { id } = await params
+  try {
+    const { id } = await params;
 
-        const lookup = await lookupSandboxAndOrchestrator(id)
-        if (!lookup.ok) {
-            return NextResponse.json({ error: lookup.error }, { status: lookup.status })
-        }
-
-        if (!['ready', 'running'].includes(lookup.status)) {
-            return NextResponse.json(
-                { error: `Sandbox is not running (status: ${lookup.status})` },
-                { status: 409 }
-            )
-        }
-
-        try {
-            const resp = await fetch(
-                `${lookup.orchestrator.url}/sandboxes/${lookup.sandboxId}/access`,
-                { method: 'POST', headers: orchestratorJsonHeaders(lookup.orchestrator) }
-            )
-
-            if (!resp.ok) {
-                const errBody = await resp.text()
-                console.error('Orchestrator access request failed:', resp.status, errBody)
-                return NextResponse.json(
-                    { error: 'Failed to generate SSH access', details: errBody },
-                    { status: resp.status >= 500 ? 502 : resp.status }
-                )
-            }
-
-            const result = await resp.json()
-            return NextResponse.json(result)
-        } catch (fetchError) {
-            console.error('Orchestrator connection failed:', fetchError)
-            return NextResponse.json(
-                { error: 'Sandbox orchestrator is not reachable' },
-                { status: 502 }
-            )
-        }
-    } catch (error) {
-        console.error('Sandbox access API error:', error)
-        return NextResponse.json(
-            {
-                error: 'Internal server error',
-                details: error instanceof Error ? error.message : 'Unknown error',
-            },
-            { status: 500 }
-        )
+    const lookup = await lookupSandboxAndOrchestrator(id);
+    if (lookup.ok === false) {
+      const { error, status } = lookup;
+      return NextResponse.json({ error }, { status });
     }
+
+    if (!["ready", "running"].includes(lookup.status)) {
+      return NextResponse.json(
+        { error: `Sandbox is not running (status: ${lookup.status})` },
+        { status: 409 },
+      );
+    }
+
+    try {
+      const resp = await fetch(
+        `${lookup.orchestrator.url}/sandboxes/${lookup.sandboxId}/access`,
+        {
+          method: "POST",
+          headers: orchestratorJsonHeaders(lookup.orchestrator),
+        },
+      );
+
+      if (!resp.ok) {
+        const errBody = await resp.text();
+        console.error(
+          "Orchestrator access request failed:",
+          resp.status,
+          errBody,
+        );
+        return NextResponse.json(
+          { error: "Failed to generate SSH access", details: errBody },
+          { status: resp.status >= 500 ? 502 : resp.status },
+        );
+      }
+
+      const result = await resp.json();
+      return NextResponse.json(result);
+    } catch (fetchError) {
+      console.error("Orchestrator connection failed:", fetchError);
+      return NextResponse.json(
+        { error: "Sandbox orchestrator is not reachable" },
+        { status: 502 },
+      );
+    }
+  } catch (error) {
+    console.error("Sandbox access API error:", error);
+    return NextResponse.json(
+      {
+        error: "Internal server error",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 },
+    );
+  }
 }

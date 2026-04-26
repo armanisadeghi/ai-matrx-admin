@@ -9,6 +9,10 @@ import { selectActiveTab } from "../../redux/tabsSlice";
 import { selectExplorerRootOverride } from "../../redux/codeWorkspaceSlice";
 import { FileTreeNode } from "./FileTreeNode";
 import { useFileTreeExpansion } from "./useFileTreeExpansion";
+import {
+  FileTreeWatcherProvider,
+  useDirectoryVersion,
+} from "./FileTreeWatcher";
 
 interface FileTreeProps {
   refreshKey?: number;
@@ -16,18 +20,35 @@ interface FileTreeProps {
 
 export const FileTree: React.FC<FileTreeProps> = ({ refreshKey = 0 }) => {
   const { filesystem } = useCodeWorkspace();
-  const openFile = useOpenFile();
-  const activeTab = useAppSelector(selectActiveTab);
   const override = useAppSelector(selectExplorerRootOverride);
   const rootPath = override ?? filesystem.rootPath;
+
+  return (
+    <FileTreeWatcherProvider rootPath={rootPath}>
+      <FileTreeBody rootPath={rootPath} refreshKey={refreshKey} />
+    </FileTreeWatcherProvider>
+  );
+};
+
+const FileTreeBody: React.FC<{ rootPath: string; refreshKey: number }> = ({
+  rootPath,
+  refreshKey,
+}) => {
+  const { filesystem } = useCodeWorkspace();
+  const openFile = useOpenFile();
+  const activeTab = useAppSelector(selectActiveTab);
 
   const { isExpanded, toggle } = useFileTreeExpansion([rootPath]);
   const [roots, setRoots] = useState<FilesystemNode[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // The root directory has its own watch version — when the parent of any
+  // top-level entry changes (e.g. a new file was created at the root) we
+  // refetch the root listing.
+  const rootVersion = useDirectoryVersion(rootPath);
+
   useEffect(() => {
     let cancelled = false;
-    setRoots(null);
     setError(null);
     filesystem
       .listChildren(rootPath)
@@ -41,7 +62,7 @@ export const FileTree: React.FC<FileTreeProps> = ({ refreshKey = 0 }) => {
     return () => {
       cancelled = true;
     };
-  }, [filesystem, rootPath, refreshKey]);
+  }, [filesystem, rootPath, refreshKey, rootVersion]);
 
   const handleOpen = (path: string) => {
     openFile(path).catch((err) => {

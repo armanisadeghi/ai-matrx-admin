@@ -163,6 +163,17 @@ export interface CodingPreferences {
   historyGrouping: ConversationHistoryGrouping;
   /** How many conversations to fetch per page in the code-workspace history. */
   historyPageSize: number;
+  /** Last-used sandbox tier in the "New sandbox" modal — defaults to "ec2". */
+  lastSandboxTier: "ec2" | "hosted";
+  /** Last-used sandbox template id (e.g. "bare", "node-20"). */
+  lastSandboxTemplate: string;
+  /**
+   * When true, the code workspace activates per-adapter Monaco type
+   * environments (prompt-app, aga-app, tool-ui, library, sandbox-fs,
+   * html). Disabling falls back to the bare baseline (vanilla TS) for
+   * users who'd rather see unmoderated diagnostics.
+   */
+  monacoEnvironmentsEnabled: boolean;
   /**
    * Client-side favorite conversations. The `cx_conversation` table has no
    * favorite column yet; we persist ids in preferences so favorites still
@@ -394,6 +405,9 @@ export const initializeUserPreferencesState = (
       historyGrouping: "date",
       historyPageSize: 30,
       favoriteConversationIds: [],
+      lastSandboxTier: "ec2",
+      lastSandboxTemplate: "bare",
+      monacoEnvironmentsEnabled: true,
     },
     playground: {
       lastRecipeId: "",

@@ -276,4 +276,65 @@ export class SandboxFilesystemAdapter implements FilesystemAdapter {
     const data = await resp.json();
     return (data.paths ?? []) as string[];
   }
+
+  // ── bulk fs ────────────────────────────────────────────────────────────────
+
+  async upload(path: string, blob: Blob): Promise<void> {
+    const arrayBuffer = await blob.arrayBuffer();
+    const base64 = arrayBufferToBase64(arrayBuffer);
+    await this.writeFileBinary(path, base64);
+  }
+
+  async download(path: string): Promise<Blob> {
+    const base64 = await this.readFileBinary(path);
+    const bytes = base64ToUint8Array(base64);
+    // Copy into a fresh ArrayBuffer so the resulting Blob doesn't
+    // capture a `Uint8Array<ArrayBufferLike>` (which can be a
+    // SharedArrayBuffer view) that TypeScript can't narrow back to the
+    // strict `BlobPart` union under newer lib.dom.
+    const buffer = new ArrayBuffer(bytes.byteLength);
+    new Uint8Array(buffer).set(bytes);
+    return new Blob([buffer]);
+  }
+
+  async batchRead(paths: string[]): Promise<Record<string, string>> {
+    if (paths.length === 0) return {};
+    const resp = await fetch(this.url("batch/read"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ paths, encoding: "utf8" }),
+    });
+    if (!resp.ok) {
+      // Fallback when the orchestrator doesn't expose a batch endpoint:
+      // sequential reads. Keeps callers working on older tiers.
+      if (resp.status === 404 || resp.status === 405) {
+        const out: Record<string, string> = {};
+        for (const p of paths) {
+          out[p] = await this.readFile(p);
+        }
+        return out;
+      }
+      const text = await resp.text().catch(() => resp.statusText);
+      throw new Error(`fs batch/read failed (${resp.status}): ${text}`);
+    }
+    const data = (await resp.json()) as { files?: Record<string, string> };
+    return data.files ?? {};
+  }
+}
+
+function arrayBufferToBase64(buf: ArrayBuffer): string {
+  const bytes = new Uint8Array(buf);
+  let binary = "";
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
+  }
+  return typeof window !== "undefined" ? window.btoa(binary) : Buffer.from(binary, "binary").toString("base64");
+}
+
+function base64ToUint8Array(base64: string): Uint8Array {
+  const binary = typeof window !== "undefined" ? window.atob(base64) : Buffer.from(base64, "base64").toString("binary");
+  const out = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) out[i] = binary.charCodeAt(i);
+  return out;
 }

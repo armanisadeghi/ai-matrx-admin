@@ -1,11 +1,13 @@
 # `/code` Workspace — System State & Gap Audit
 
-**Last updated:** 2026‑04‑26
+**Last updated:** 2026‑04‑25 (post-completion sweep — see [`QA_CHECKLIST.md`](./QA_CHECKLIST.md))
 **Scope:** Everything under `features/code/`, plus its hooks, adapters, and the slices it consumes from elsewhere in the app.
 
-This doc is the single source of truth for the `/code` (VSCode‑style) workspace. It captures (1) what is shipped, (2) what is wired but incomplete, (3) what is intentionally deferred, and (4) the shape of the next four work items: Monaco type environments, sandbox API delivery audit, editor→agent context protocol, and known‑environment settings.
+This doc is the single source of truth for the `/code` (VSCode‑style) workspace. It captures (1) what is shipped, (2) what is wired but incomplete, (3) what is intentionally deferred, and (4) the wire format / mechanics of the editor→agent context bridge and the Monaco type environment system.
 
-> **2026-04-26 update:** the sandbox API audit in §3 has been rewritten — the previous "wishlist not delivered" verdict was based on probing `/openapi.json` against a stale EC2 deploy. The actual orchestrator code (v0.2.0) implements the rich proxy surface, but the proxy routes use `@router.api_route` with broad path catchalls that don't surface in OpenAPI the same way. There is also a new self-hosted "hosted-tier" orchestrator at `https://orchestrator.dev.codematrx.com` — see §3 below.
+> **2026‑04‑25 verification:** Probed both orchestrators directly via `GET /api-surface`. **Both EC2 and hosted are live at v0.2.0 with identical route surfaces** — the earlier "EC2 stale, deploy disk‑full" remark in §3 is no longer accurate. Capability discovery should always go through `/api-surface`, never `/openapi.json` (which omits catchall proxy routes). See §3 below.
+
+> **End-to-end verification:** The 10-step smoke test in [`QA_CHECKLIST.md`](./QA_CHECKLIST.md) is the gate for "fully done". Run it against the hosted tier after any meaningful workspace change.
 
 ---
 
@@ -13,18 +15,24 @@ This doc is the single source of truth for the `/code` (VSCode‑style) workspac
 
 | Area | Status | Comment |
 |------|--------|---------|
-| Workspace shell, panels, activity bar | ✅ Shipped | `WorkspaceLayout`, `react-resizable-panels`, all five activity views render. |
+| Workspace shell, panels, activity bar | ✅ Shipped | `WorkspaceLayout`, `react-resizable-panels`, all six activity views render (added `source-control`). |
 | Monaco editor, tabs, dirty state, `Cmd/Ctrl+S` | ✅ Shipped | Save dispatches to the right backend by tab id. |
-| Filesystem adapters (Mock, Sandbox via `exec`) | ✅ Shipped, ⚠️ shell‑bound | Sandbox adapter synthesises `ls`/`cat`/`base64` because the orchestrator has no FS API. |
-| Process / terminal adapter | ✅ Shipped, ⚠️ no streaming | xterm.js client‑side; one‑shot exec per command; no PTY. |
+| Filesystem adapter (Sandbox, structured FS API) | ✅ Shipped | `SandboxFilesystemAdapter` consumes `/fs/*` directly — no shell synthesis. Bulk read / upload / download / drag‑and‑drop wired. |
+| Terminal — real PTY over WebSocket | ✅ Shipped | xterm attaches to `/api/sandbox/[id]/pty` (WS proxy). Buffered fallback retained for `MockProcessAdapter`. |
 | Code Library: `code_files`/`code_folders` browser | ✅ Shipped | Backed by the existing `code-files` Redux slice. |
-| Library Source Adapters (`prompt_apps`, `aga_apps`, `tool_ui_components`) | ✅ Shipped | Direct‑edit source rows with optimistic concurrency. |
+| Library Source Adapters (`prompt_apps`, `aga_apps`, `tool_ui_components`) | ✅ Shipped | Direct‑edit source rows with optimistic concurrency, source-of-truth badge, conflict toast (Reload/Overwrite), Realtime softening. |
 | Universal "save & open in code editor" flow | ✅ Shipped | Wired into `HtmlPreviewModal` and chat code blocks. |
 | Conversation history / agent filter / favorites | ✅ Shipped | Lives next to the chat panel; filter by tags; date/agent grouping. |
-| Per‑adapter Monaco type environments | ❌ Not built | This is why prompt‑app/aga‑app/tool‑ui tabs show spurious type errors. **(Item #2)** |
-| Sandbox API beyond `exec` + `heartbeat` | ❌ Not delivered | Verified directly against `http://54.144.86.132:8000/openapi.json`. **(Item #3)** |
-| Editor → agent context‑bag protocol | 🟡 Half built | The Python side already has `ctx_get`/`instanceContext`. Editor side needs a bridge + UI. **(Item #4)** |
-| Real Git, search, watcher, port forward, LSP | ❌ Not delivered | Blocked on sandbox API. |
+| Per‑adapter Monaco type environments | ✅ Shipped | Refcounted registry, six environments (`prompt-app`, `aga-app`, `tool-ui`, `library`, `sandbox-fs`, `html`), status‑bar indicator, settings toggle. |
+| Sandbox API surface (FS / exec / PTY / git / search / watch / processes / ports / templates / extend / heartbeat) | ✅ Shipped on both tiers | Verified via `GET /api-surface`. See §3 for the live capability matrix. |
+| Editor → agent context‑bag bridge | ✅ Shipped | `features/code/agent-context/`, auto‑mounted in `ChatPanelSlot`. ctx_get keys: `editor.tabs`, `editor.tab.<id>`, `editor.selection.<id>`. See §4. |
+| Source Control activity view | ✅ Shipped | `features/code/views/source-control/` over `SandboxGitAdapter`. Status panel, diff tab (`git-diff:` prefix), commit/push, credentials modal. |
+| Server‑side search (ripgrep) + fuzzy path search | ✅ Shipped | `SearchPanel` consumes `searchContent` / `searchPaths`; falls back to client walker when adapter lacks them. |
+| File watcher → live tree | ✅ Shipped | `FileTree` subscribes to `filesystem.watch()`; node tree updates in Redux on `created` / `modified` / `deleted` / `moved`. |
+| Tier + template picker | ✅ Shipped | "New sandbox" modal pulls `GET /api/templates?tier=…`; last tier persisted in `userPreferences.coding.lastSandboxTier`. |
+| Ports bottom panel | ✅ Shipped | Polls `/api/sandbox/[id]/ports` every 5s; click‑to‑copy host:port. |
+| Heartbeat + extend | ✅ Shipped | `useSandboxHeartbeat` mounted in `CodeWorkspace` gated on `activeSandboxId`; `extendSandbox` switched to `POST /api/sandbox/[id]/extend`. |
+| LSP / multi‑user collab / public preview URLs | ❌ Out of scope | P2 sandbox‑team work — see §3 row "Snapshot / multi‑user / LSP / AI sockets". |
 
 ---
 
@@ -183,269 +191,190 @@ useSaveAndOpenInCodeEditor()         // universal: save arbitrary code → code_
 
 ## 2. Known gaps / things not set up yet
 
-### 2.1 Per‑adapter Monaco type environments — Item #2 in the user's request
+Most of the historic gaps have been closed. What remains is sandbox‑team P2 work and a small set of intentional matrx‑admin deferrals; everything else moved into §0/§3 as shipped.
 
-**Symptom:** Open a `prompt-app:*` tab — Monaco shows red squiggles on `import { Button } from '@/components/ui/button'`, on `useState`, on JSX, etc. The compiler thinks they're ambient errors.
+### 2.1 Sandbox‑team P2 (out of scope here)
 
-**Root cause:** `features/code/editor/monaco-config.ts` deliberately registers **no** `extraLib` definitions ("for an arbitrary‑file editor it's noisier than helpful"). The type definitions used by the legacy `features/code-editor/` editor (`features/code-editor/config/type-definitions.ts` — React, lucide, shadcn UI) are not loaded by `/code`.
+| Gap | Owner | Why deferred |
+|---|---|---|
+| Public preview URL exposure | sandbox team | Needs Caddy/CF reverse‑proxy plumbing on the orchestrator side. The Ports bottom panel already lists LISTEN ports; preview links plug in once the URL exposure ships. |
+| Snapshot / restore | sandbox team | P2; not on the workspace's critical path. |
+| Multi‑user collab on a single sandbox | sandbox team | P2; OT/CRDT layer would need to live in the orchestrator. |
+| LSP server multiplex | sandbox team | P2; Monaco would need a WS bridge to a per‑container `tsserver`/`pyright`. |
+| AI socket framing helpers | sandbox team | P2; tangential to the workspace. |
 
-**Why "deliberate" was right but is now wrong:** When the editor only opened sandbox files of arbitrary repos, dumping React types in confused things. Now the editor opens **specific, structured** content (a prompt app's component, a tool UI component's `inline_code` field) where we know exactly what runtime is in scope. The fix is to pick the right environment per tab, not globally.
+### 2.2 matrx-admin deferrals
 
-**What's needed (designed, not built):**
-- A `MonacoEnvironment` registry keyed by `environmentId`.
-- Each environment lists the `extraLibs` and (optionally) compiler‑option overrides to apply when a file from that environment is open.
-- `LibrarySourceAdapter` declares which environment its tabs use.
-- `MonacoEditor` lazily loads + activates an environment on first use; deactivates on close.
-
-Concrete environments we will need on day one:
-
-| ID | Used by | Includes |
-|----|---------|----------|
-| `prompt-app-v1` | `prompt_apps` | React 19 minimal types, lucide‑react subset, shadcn UI subset, `PromptAppContext` ambient. JSX preserve. `strict: false`, `checkJs: false`, but `noSemanticValidation: false`. |
-| `aga-app-v1` | `aga_apps` | Same as prompt‑app plus the `AgaAppHostProps`, `useAgaApp()` ambient hook. |
-| `tool-ui-inline-v1` | `tool_ui_components.inline_code` | React + `ToolInlineProps<TArgs, TResult>`. |
-| `tool-ui-overlay-v1` | `tool_ui_components.overlay_code` | React + `ToolOverlayProps<TArgs, TResult>`, `closeOverlay()`. |
-| `library-tsx-v1` | `code_files` of kind `*.tsx` | React 19 globals only, no project‑internal modules. |
-| `sandbox-bare-v1` | `Sandbox*Adapter` | Currently `noSemanticValidation: true` — same as today. |
-
-The exact ambient declarations for `PromptAppContext`, `AgaAppHostProps`, `ToolInlineProps`, `ToolOverlayProps` should be **generated** from the actual runtime types so they never drift; we'll wire a small build step to re‑emit them. Until that lands we hand‑maintain a single `features/code/library-sources/environments/<id>.d.ts.ts` per env.
-
-> Open question for the user: do you want me to (a) hand‑author the ambient .d.ts strings now and ship the env registry, or (b) also wire the `features/code-editor/config/type-definitions.ts` legacy bundle in as a fallback so things "just compile" while we author proper envs? My recommendation is **(a)** — clean envs from the start; the legacy bundle was an `any`‑heavy compromise.
-
-### 2.2 Sandbox orchestrator — Item #3 in the user's request
-
-The team confirmed the wishlist is "done." A direct probe of `http://54.144.86.132:8000/openapi.json` says **otherwise**. See §3 for the full audit. TL;DR: only `POST /sandboxes/{id}/heartbeat` shipped. Nothing else from the wishlist is on the orchestrator yet.
-
-### 2.3 Editor → agent context‑bag protocol — Item #4 in the user's request
-
-**Status:** Server‑side primitive (`ctx_get`) and Redux slot (`instanceContext`) already exist. Editor‑side bridge does not. See §4 for the design.
-
-### 2.4 Terminal: not a real PTY
-
-`features/code/terminal/TerminalTab.tsx` is xterm.js eating one‑shot `exec` responses. Arrow keys scroll history but are not sent to a remote shell; ctrl‑c can't interrupt a running command (it just kills the in‑flight HTTP request); `vim` / `nano` / `git commit` (which spawns an editor) cannot run. Blocked on §3.1.3 of the wishlist.
-
-### 2.5 Realtime push for source rows
-
-`useSaveActiveTab` does optimistic concurrency on save. The reverse direction — getting **notified** when someone else updates the row — is a TODO. The slice already supports this (`replaceTabContent` action). To turn it on we need a Supabase Realtime subscription per open source‑backed tab; this is a small follow‑up and is documented in `features/code/types.ts` as a TODO on `EditorFile.remoteUpdatedAt`.
-
-### 2.6 `Sandboxes` panel: TTL/extend bug
-
-`PUT /api/sandbox/[id] { action: "extend" }` only updates the Postgres row — it never tells the orchestrator. The orchestrator runs its own clock (and now also accepts heartbeats), so we have drift. Fixed up by either (a) calling the new `/sandboxes/{id}/heartbeat` from the workspace every 60s while the sandbox is the active backend, or (b) waiting for the (still missing) `POST /sandboxes/{id}/extend` endpoint. See §3.
-
-### 2.7 No source control panel
-
-There is no Git activity view yet. The plan is `features/code/views/source-control/` backed by a `SandboxGitAdapter` once the `/git/*` endpoints land. Until then, all git work is via the (fake) terminal.
-
-### 2.8 Other deferred items
-
-- **No file watch / live reload** — needs §3.2.1 from the wishlist.
-- **No find‑in‑files** — needs §3.2.2.
-- **No port forward / preview URLs** — needs §3.2.5.
-- **No LSP** — needs §3.3.3.
-- **No multi‑user collab on a sandbox** — needs §3.3.2.
-- **No bulk upload / zip download** — needs §3.2.3.
+| Item | Why we're not doing it now |
+|---|---|
+| Generated ambient `.d.ts` for prompt-app / aga-app / tool-ui | The current envs are hand‑authored against curated subsets in [`features/code-editor/config/type-definitions.ts`](../code-editor/config/type-definitions.ts). Generating these from the live runtime types is a build‑step follow‑up; the hand‑authored versions catch the spurious squiggles (the original symptom) and are versioned in the env files. |
+| `git rebase --interactive` and other interactive porcelain in the Source Control view | The view targets the 95% workflow (status / stage / commit / push / pull / branch / stash / diff / credentials). Rebases land via the terminal — xterm is now a real PTY, so it just works. |
+| LSP-style cross-file rename / "find references" | Monaco can't do it without a real LSP and we don't have one. Out of scope until §2.1's LSP gap closes. |
+| Public preview URL click-through in the Ports tab | Surfaces only host:port today; the click-to-copy is the workaround until preview URLs land. |
+| In-process collaboration cursors on shared tabs | Out of scope; the source-of-truth flow + Realtime softening is enough for the single-user-at-a-time case, which is the entire current product surface. |
 
 ---
 
-## 3. Sandbox API delivery audit (revised 2026‑04‑26)
+## 3. Sandbox API delivery audit (verified live 2026‑04‑25)
 
-The orchestrator code on disk (v0.2.0) implements the full rich surface. The previous "only 8 endpoints" finding came from probing `/openapi.json`, which omits routes registered with `@router.api_route("/{sandbox_id}/fs/{path:path}", methods=[...])`-style catchalls. The new authoritative discovery endpoint is `GET /api-surface` — frontends should use that instead.
+The orchestrator team shipped the full wishlist surface across both tiers. Earlier verdicts in this file (and in the 2026‑04‑26 commit) used `/openapi.json` for discovery, which omits any route registered with a `{path:path}` catchall (`/fs/*`, `/git/*`, `/search/*`). Use `GET /api-surface` instead — it returns the authoritative route list including catchalls, plus `tier` and `version`.
 
 There are now **two orchestrators**:
 
-| Tier | URL | Backed by |
+| Tier | URL | Notes |
 |---|---|---|
-| `ec2` | `http://54.144.86.132:8000` | EC2 host, S3 hot/cold, Supabase Postgres |
-| `hosted` | `https://orchestrator.dev.codematrx.com` | Matrx dev server, Docker volumes, in‑memory store today |
+| `ec2` | `http://54.144.86.132:8000` | v0.2.0 live (verified `/api-surface` 2026‑04‑25). Earlier disk‑full deploy failure has been resolved. |
+| `hosted` | `https://orchestrator.dev.codematrx.com` | v0.2.0 live (verified `/api-surface` 2026‑04‑25). Matrx dev server, Docker volumes, in‑memory store today. |
 
 Sandboxes carry a `tier` field (persisted in `sandbox_instances.config.tier`) so the proxy routes can forward to the right orchestrator. See `lib/sandbox/orchestrator-routing.ts`.
 
-### 3.1 Wishlist scoreboard (orchestrator code v0.2.0)
+### 3.1 Wishlist scoreboard
 
-| Wishlist item | Priority | Code on disk | EC2 deploy | Hosted deploy | Frontend |
-|---|---|---|---|---|---|
-| §3.1.1 Structured FS API (list/stat/read/write/patch/delete/mkdir/rename/copy/upload/download/batch) | P0 | ✅ | 🚀 stale (deploy disk-full; see matrx-sandbox `docs/OPERATIONS.md`) | ✅ live | ✅ `SandboxFilesystemAdapter` rewritten 2026‑04‑26 |
-| §3.1.2 Streaming `exec` (SSE) with env/stdin | P0 | ✅ | 🚀 | ✅ | ✅ `SandboxProcessAdapter.stream()` |
-| §3.1.3 Real PTY WebSocket | P0 | ✅ | 🚀 | ✅ | ⏳ `TerminalTab` rewrite still pending |
-| §3.1.4 Git workflow primitives | P0 | ✅ | 🚀 | ✅ | ✅ `SandboxGitAdapter` |
-| §3.1.5 Git credential model | P0 | ✅ | 🚀 | ✅ | ✅ via `SandboxGitAdapter.setGithubToken/...` |
-| §3.1.6 Template selection at create time | P0 | ✅ (`template`, `template_version`, `tier`, `resources`, `labels`) | 🚀 | ✅ | ✅ create flow accepts these (Sandboxes panel UI still pending) |
-| §3.1.7 TTL `extend` (persists `expires_at`) + heartbeat | P0 | ✅ | 🚀 | ✅ | ✅ `/api/sandbox/[id]/extend` + `useSandboxHeartbeat` |
-| §3.2.1 File watcher (WebSocket) | P1 | ✅ `/fs/watch` | 🚀 | ✅ | ✅ `SandboxFilesystemAdapter.watch()` |
-| §3.2.2 Server‑side search (ripgrep + fd) | P1 | ✅ `/search/{path}` | 🚀 | ✅ | ✅ `searchContent` / `searchPaths` on the adapter |
-| §3.2.3 Bulk fs / upload / download | P1 | ✅ in daemon | 🚀 | ✅ | ⏳ adapter helpers pending |
-| §3.2.4 Process listing + signal | P1 | ✅ `/processes` | 🚀 | ✅ | ✅ proxy routes; consumer pending |
-| §3.2.5 Port listing | P1 | ✅ `/ports` | 🚀 | ✅ | ✅ proxy route; consumer pending |
-| §3.2.5 Public preview URL exposure | P1 | ❌ | — | — | — |
-| §3.3.* Snapshot / multi‑user / LSP / AI sockets | P2 | ❌ | — | — | — |
-| (new) `POST /sandboxes/{id}/complete` | n/a | ✅ | ✅ | ✅ | not consumed |
-| (new) `POST /sandboxes/{id}/error` | n/a | ✅ | ✅ | ✅ | not consumed |
-| (new) `GET /api-surface` | n/a | ✅ v0.2.0 | 🚀 | ✅ | not consumed (use for capability discovery) |
+| Wishlist item | Priority | Backend | Frontend |
+|---|---|---|---|
+| §3.1.1 Structured FS API (list/stat/read/write/patch/delete/mkdir/rename/copy + binary) | P0 | ✅ both tiers | ✅ `SandboxFilesystemAdapter` (no shell synth) |
+| §3.1.2 Streaming `exec` (SSE) with env/stdin/cancel | P0 | ✅ both tiers | ✅ `SandboxProcessAdapter.stream()` — used by `TerminalTab` buffered fallback path. |
+| §3.1.3 Real PTY WebSocket (`/sandboxes/{id}/pty`) | P0 | ✅ both tiers | ✅ `app/api/sandbox/[id]/pty/route.ts` proxies the WS upgrade; xterm attaches directly. |
+| §3.1.4 Git workflow primitives | P0 | ✅ both tiers | ✅ `SandboxGitAdapter` consumed by `features/code/views/source-control/`. |
+| §3.1.5 Git credential model | P0 | ✅ both tiers | ✅ Credentials modal (`setGithubToken` / `setSshKey` / `revokeCredentials`) in the Source Control view. |
+| §3.1.6 Template selection at create time | P0 | ✅ both tiers | ✅ Tier/template picker modal in `SandboxesPanel`; last tier persisted in `userPreferences.coding.lastSandboxTier`. |
+| §3.1.7 TTL `extend` + heartbeat | P0 | ✅ both tiers | ✅ `useSandboxHeartbeat` mounted in `CodeWorkspace`; extend uses `POST /api/sandbox/[id]/extend`. |
+| §3.2.1 File watcher (WebSocket) | P1 | ✅ both tiers | ✅ `FileTree` subscribes via `filesystem.watch()`; Redux node tree mutates on events. |
+| §3.2.2 Server‑side search (ripgrep + fd) | P1 | ✅ both tiers | ✅ `SearchPanel` uses `searchContent()` (ripgrep) + `searchPaths()` (fd). Falls back to client walker on Mock adapter. |
+| §3.2.3 Bulk fs / upload / download | P1 | ✅ daemon supports `batch`/`upload`/`download` | ✅ `FilesystemAdapter.upload` / `download` / `batchRead` shipped on the sandbox adapter; drag‑and‑drop wired in `FileTree`. |
+| §3.2.4 Process listing + signal | P1 | ✅ both tiers (`/processes`, `/processes/{pid}/signal`) | ⏳ proxy routes shipped; no UI consumer yet — out of scope (no compelling need surfaced). |
+| §3.2.5 Port listing | P1 | ✅ both tiers (`/ports`) | ✅ Ports bottom‑panel tab polls every 5s with click‑to‑copy. |
+| §3.2.5 Public preview URL exposure | P1 | ❌ not implemented | Out of scope — sandbox team. |
+| §3.3.* Snapshot / multi‑user / LSP / AI sockets | P2 | ❌ not implemented | Out of scope — sandbox team. |
+| (new) `POST /sandboxes/{id}/complete` | n/a | ✅ | Agent‑self‑signal lifecycle; not consumed by the editor. |
+| (new) `POST /sandboxes/{id}/error` | n/a | ✅ | Same as above. |
+| (new) `GET /api-surface` | n/a | ✅ | Consumed by `lib/sandbox/api-surface.ts` capability cache (per‑tier route detection used for graceful tier‑rollback degradation). |
 
-**Net delivery:** Every P0 surface shipped in code; hosted tier is fully live; EC2 deploy is blocked by an infra issue (host disk full). Frontend has caught up on backends/adapters; `TerminalTab` PTY rewrite + bulk upload UI are the remaining client gaps.
+**Net delivery:** Every P0 wishlist item is live on both the backend and the frontend. Every P1 item except *public preview URLs* and *process listing UI* is shipped. The remaining sandbox‑team gaps (preview URLs, snapshot, multi‑user, LSP, AI sockets) are tracked in §2.1 as out‑of‑scope for this workspace.
 
 ### 3.2 Discovery — use `/api-surface`, not `/openapi.json`
 
-Both orchestrators expose `GET /api-surface` (no auth). It returns the authoritative route list including the catchall proxy routes, plus `tier` and `version`. Use this when documenting capabilities or detecting feature support. The `/openapi.json` schema is incomplete — keep it for human reference only.
+Both orchestrators expose `GET /api-surface` (no auth). It returns the authoritative route list including the catchall proxy routes, plus `tier` and `version`. Always probe this when documenting capabilities, never `/openapi.json`. Sample (2026‑04‑25, both tiers identical):
 
-### 3.3 EC2 deploy resilience
+```
+GET /api-surface  →  {"service":"matrx-sandbox-orchestrator","version":"0.2.0","tier":"<ec2|hosted>","routes":[…26 routes…]}
+```
 
-The two prior deploy failures and the 2026‑04‑26 attempt all failed at "Deploy to EC2 via SSM" with `failed to register layer: ... no space left on device`. Remediation belongs to the matrx-sandbox ops side (prune Docker on the host, add a workflow `docker system prune -af` step before `docker pull`). Until that lands, the EC2 tier stays on pre-wishlist code; the hosted tier (this server) is unaffected.
+### 3.3 Frontend status
+
+All eight items from the previous "frontend gap" list have shipped. The capability cache (`lib/sandbox/api-surface.ts`) exists so any future tier rollback degrades gracefully. New consumers for the remaining sandbox endpoints (process list / signal, public preview URLs once they exist) can be added piecemeal without further architectural work.
 
 ---
 
-## 4. Editor → agent context‑bag protocol — design
+## 4. Editor → agent context bridge — shipped (2026‑04‑25)
 
-### 4.1 The Python primitive already exists
+The bridge is live in `features/code/agent-context/`. It mirrors the open editor tabs into the active chat instance's `instanceContext`, so the Python agent can pull buffer content lazily via `ctx_get` instead of having every body inlined into every prompt.
 
-The agent execution system already implements the exact pattern the user described:
+### 4.1 ctx_get key list
 
-- `instanceContext` slice (`features/agents/redux/execution-system/instance-context/instance-context.slice.ts`) holds a per‑conversation `Record<string, InstanceContextEntry>`.
-- `assembleRequest` reads `selectContextPayload(conversationId)` and packs it into `AssembledAgentStartRequest.context: Record<string, unknown>`.
-- The slice header comment is explicit: *"The model doesn't see them directly — it retrieves them via `ctx_get`."*
+| Key | Always emitted? | Value shape | Notes |
+|---|---|---|---|
+| `editor.tabs` | Yes (when bridge is mounted) | `EditorTabsSummary` — see below | Cheap manifest the agent reads first to discover what's open. **No buffer content** lives here. |
+| `editor.tab.<tabId>` | One per non-disabled open tab | `EditorTabContextValue` — see below | Carries the buffer content. Agent fetches only the tabs it needs. Stale tabs (closed or disabled in the popover) are removed via `removeContextEntry`. |
+| `editor.selection.<tabId>` | On‑demand | `SelectionContextValue` — see below | Created when the user fires the **Send selection as context** Monaco command (Cmd/Ctrl+Shift+L) or the toolbar button. Survives until the user fires it again or closes the tab. |
 
-So the wire protocol, the server tool, and the Redux slot are all there. The slot is currently filled by manual user actions (drag a Resource onto the chat panel, etc.). What's missing is the **editor → instanceContext bridge**.
+The `<tabId>` namespace follows the workspace‑wide tab id convention (§1.7) — e.g. `library:abc`, `prompt-app:abc`, `tool-ui:abc:inline_code`, `fs:sandbox:/home/agent/foo.ts`.
 
-### 4.2 Design goals
+### 4.2 Wire format
 
-1. **Zero context bloat.** No file body ever appears in the assistant prompt. The model sees a manifest entry and decides per‑turn whether to pull the body via `ctx_get`.
-2. **One key per file, stable across edits.** `editor.tab.<tabId>` — same tab id used everywhere else in the workspace.
-3. **Single index entry the model can cheaply read.** A `editor.manifest` key holding `[{ id, label, language, kind, path, dirty, sizeChars, hash }, …]` for every exposed tab, so the model can list them with one `ctx_get`.
-4. **User control.** A toggle per tab ("Expose to agent" — default ON for the active tab, OFF for the rest) so the user can scope the assistant's view.
-5. **No surprise mutation.** Setting context never edits the conversation history. Removing a tab from context simply removes the entry; if the model already pulled it, that's fine — its earlier turns stand.
-6. **Adapter‑agnostic.** Works the same for Mock FS, Sandbox FS, code_files, prompt_apps, aga_apps, tool_ui_components.
-
-### 4.3 Shape of an entry
+All values are emitted with `type: "json"` so they round‑trip through `assembleRequest` → `AssembledAgentStartRequest.context` verbatim.
 
 ```ts
-type EditorContextEntryValue =
-  | { kind: "manifest"; entries: ManifestRow[] }
-  | { kind: "file";
-      tabId: string;
-      label: string;          // human display name
-      language: string;       // monaco language id
-      origin: "fs" | "code_files" | "library_source";
-      path?: string;          // present for fs / code_files
-      sourceId?: string;      // present for library_source ("prompt_apps" etc)
-      rowId?: string;         // present for library_source
-      fieldId?: string;       // present for multi‑field library sources
-      dirty: boolean;
-      sizeChars: number;
-      hash: string;           // sha1 of current content; lets the model cache
-      content: string;        // ★ the actual body — only ever fetched via ctx_get
-    };
+// editor.tabs
+interface EditorTabsSummary {
+  tabs: Array<{
+    id: string;
+    path: string;
+    name: string;
+    language: string;
+    dirty: boolean;
+  }>;
+  activeId: string | null;
+}
 
-interface ManifestRow {
-  tabId: string; key: string; label: string; language: string;
-  origin: string; path?: string; sourceId?: string;
-  dirty: boolean; sizeChars: number; hash: string;
+// editor.tab.<tabId>
+interface EditorTabContextValue {
+  id: string;
+  path: string;
+  name: string;
+  language: string;
+  content: string;
+  pristineContent: string;
+  dirty: boolean;
+  remoteUpdatedAt?: string;
+}
+
+// editor.selection.<tabId>
+interface SelectionContextValue {
+  id: string;
+  path: string;
+  name: string;
+  language: string;
+  selection: {
+    startLine: number;
+    startColumn: number;
+    endLine: number;
+    endColumn: number;
+  };
+  text: string;
+  capturedAt: string;
 }
 ```
 
-Keys:
-- `editor.manifest` → manifest entry (always present, even if empty).
-- `editor.tab.<tabId>` → file entry for each **exposed** tab.
+### 4.3 Bridge mechanics
 
-### 4.4 Bridge implementation (sketch)
+- **Selector** — `selectEditorContextEntries(state)` (`features/code/agent-context/editorContextEntries.ts`) builds the canonical entry list from `tabsSlice`. Memoized via Reselect; only re‑runs when tab ids/content/language/dirty references change.
+- **Per‑instance disable list** — `instanceUIState.byConversationId[id].editorContextDisabledTabs: string[]` holds tab ids the user has explicitly excluded. `filterDisabledTabs` strips them from the entry list **and** prunes them out of the `editor.tabs` summary's `tabs[]` so the agent never sees ghosts.
+- **Sync hook** — `useSyncEditorContext(conversationId)` is mounted once in `ChatPanelSlot` (auto‑on whenever a workspace + conversation are both live). Debounce 250ms. On each push it dispatches `setContextEntries` with the live entries, then dispatches `removeContextEntry` for any keys present in the previous push but absent now (closed tabs / newly disabled tabs).
+- **Selection capture** — `useSendSelectionAsContext({ conversationId, activeTab, editorRef })` exposes a `sendSelection()` callback. Wired to (a) the Monaco command `Cmd/Ctrl+Shift+L` (registered inside `MonacoEditor`), and (b) the new Brain icon in `EditorToolbar`. Empty selection → toast error; success → toast confirmation with the captured length.
 
-A new module `features/code/agent-context/` with:
+### 4.4 UI surface
 
-```
-agent-context/
-  types.ts                 // EditorContextEntryValue, ManifestRow
-  selectors.ts             // selectExposedTabs, selectEditorManifest
-  useEditorContextSync.ts  // the bridge hook
-  EditorContextToggleButton.tsx  // per‑tab UI
-  preferences.ts           // userPreferences.coding.editorContext: { defaultExposeActiveOnly: boolean, sizeCapKB: number }
-```
+- **Chat header** — `<ContextChip>` next to the agent picker. Shows `<included>/<total>` with a brain glyph; clicking opens a popover with one row per open tab + All / None buttons. Toggles persist in `instanceUIState.editorContextDisabledTabs` so they survive conversation refreshes within the session.
+- **Editor toolbar** — Brain icon next to Save. Disabled when there's no `conversationId` in the URL or no active tab. Tooltip surfaces the keybinding.
 
-`useEditorContextSync(conversationId)` is the single integration point. It is mounted once by the chat panel for the active conversation. It:
+### 4.5 Why this shape
 
-1. Subscribes to `selectExposedTabs` (debounced ~200ms).
-2. Diffs vs. the current `state.instanceContext.byConversationId[conversationId]`.
-3. Dispatches `setContextEntries` for added/changed entries and `removeContextEntry` for removed ones.
-4. Always emits the `editor.manifest` row.
-5. Honors a hard size cap (`coding.editorContext.sizeCapKB`, default 256 KB total) — if exceeded, drops the largest non‑active entries first and surfaces a toast.
-
-### 4.5 Why we don't put file bodies on the user message
-
-We considered piggy‑backing on the existing `Resource` mechanism (which packs files into `user_input` as `MessagePart`s). Two problems:
-
-1. Resources are **part of the message record**. They live forever in `cx_message.content` and bloat every subsequent turn's prompt. The user explicitly said "no context bloat."
-2. Resources are user‑visible inputs, not ambient. Using them for "the editor's open files" muddies the conversation history.
-
-`instanceContext` is the right slot precisely because it is **ambient and lazily retrieved** — the server hands the model a list of keys and the model fetches what it needs.
-
-### 4.6 Required python‑side touches (questions we need to confirm)
-
-The Python team will need to:
-
-- Confirm `ctx_get` already accepts a `kind: "file"` payload shape with a `content` string and exposes the manifest tool. If `ctx_get` is body‑agnostic (current assumption), no Python change is needed — the model just gets back the JSON value verbatim.
-- Optionally add a `ctx_list_files` convenience tool that filters `ctx_get` keys by the `editor.tab.*` prefix and returns the manifest. This is a 5‑line shortcut for the model and is a nice‑to‑have, not required.
-
-If `ctx_get` only supports primitives (text/file_url) today, we need either (a) a content‑type extension or (b) we serialize bodies to text and inline them under a `language` hint. Let's confirm with Python before implementing.
-
-### 4.7 UI surface
-
-- **Editor toolbar**: a "Context" group with a **Sync icon** badge showing `<exposed>/<total>` open tabs. Click → popover with checkboxes per tab.
-- **Tab strip**: a small dot on each tab when it's currently exposed.
-- **Chat panel header**: a single‑line summary (e.g., `Sharing 3 files · 12 KB`) that opens the same popover.
-
-### 4.8 Settings (`features/settings/tabs/CodeWorkspaceTab.tsx`)
-
-Add:
-
-- `defaultExposeActiveOnly: boolean` (default `true`)
-- `defaultExposeAll: boolean` (default `false`)
-- `sizeCapKB: number` (default `256`)
-- `excludeBinaryExtensions: string[]` (default `["png","jpg","jpeg","gif","webp","pdf","zip","tar","gz","exe","dll","bin"]`)
-
-### 4.9 Open questions to confirm before implementing
-
-1. **`ctx_get` content‑type:** Does `ctx_get` round‑trip arbitrary JSON values (including a `string` body of any size), or is there a per‑value cap on the Python side?
-2. **Manifest tool:** Does it make sense for Python to expose a `ctx_list_files` shortcut, or is `ctx_get("editor.manifest")` enough?
-3. **Default exposure:** Should the active tab be exposed automatically on every conversation, or only when the user explicitly opts in?
-4. **History tabs:** When the user navigates away from `/code` and the conversation continues, do we keep the last‑synced manifest in `instanceContext`, or zero it out? My default is **zero out on workspace exit** — the agent should reflect the live editor state, not a stale snapshot. Confirm.
+- **No prompt bloat.** The summary is tiny; the bodies live in `instanceContext` which the model only reads via `ctx_get` per‑turn. No buffer ever shows up in `cx_message.content`.
+- **No surprise edits.** The bridge is one‑way (editor → context). Agent edits flow through normal MCP/tool calls; we never round‑trip via `instanceContext`.
+- **Per‑conversation scoping.** Disable lists live on the conversation's `instanceUIState`, so the same workspace can serve multiple chat instances with different exposure settings.
+- **Stable keys.** `editor.tab.<tabId>` reuses the workspace‑wide tab id convention (§1.7), so an agent can correlate a context entry with any other workspace event (save, conflict, etc.) by id alone.
 
 ---
 
-## 5. "Known environments" type‑error fix — concrete plan
+## 5. Monaco type environments — shipped
 
-(Restating §2.1 in actionable form so we can ship it next.)
+The system in `features/code/editor/monaco-environments/` is live: a refcounted registry plus a hook that activates the right environment per active tab.
 
 ```
-features/code/library-sources/environments/
+features/code/editor/monaco-environments/
   types.ts                 // MonacoEnvironment interface
-  registry.ts              // register/getEnvironment/listEnvironments
-  prompt-app-v1.ts         // ambient .d.ts strings + compilerOptions overrides
-  aga-app-v1.ts
-  tool-ui-inline-v1.ts
-  tool-ui-overlay-v1.ts
-  library-tsx-v1.ts
-  index.ts                 // side‑effect register + barrel
+  registry.ts              // refcounted activate/deactivate; disposes ITypingsExtraLib handles
+  useEnvironmentForActiveTab.ts
+  envs/
+    prompt-app.ts          // React 19 + Lucide + ShadCN ambient .d.ts subset
+    aga-app.ts             // shares the prompt-app baseline
+    tool-ui.ts             // React baseline + tool-result typing utility
+    library.ts             // minimal opt-in env for arbitrary code_files
+    sandbox-fs.ts          // node typings only when the file extension warrants
+    html.ts                // JSON schemas only (no TS)
+  resolveEnvironmentForTab.ts // tab id + path → environment id
 ```
 
-```
-features/code/editor/
-  monaco-environment.ts    // applyEnvironment(monaco, envId), refcounted
-  MonacoEditor.tsx         // accepts environmentId prop; calls applyEnvironment in BeforeMount
-```
+A status‑bar pill in `features/code/layout/StatusBar.tsx` shows the active env (or `env: off` when the global toggle is off). The Code Workspace settings tab exposes a `monacoEnvironmentsEnabled` switch; default is on. Activation is refcounted, so opening a second `prompt-app:*` tab does not re‑register libs and closing one of two does not tear down. Disposing on transitions is critical because Monaco's TS worker otherwise accumulates extra libs forever.
 
-`LibrarySourceAdapter` gains an optional `environmentId?: string`. `useOpenSourceEntry` reads it and stamps it onto the new `EditorFile.environmentId` field; `EditorArea` passes it through. `MockFilesystemAdapter` and `SandboxFilesystemAdapter` get an `environmentId` per‑node hint (via simple extension matching) so `library-tsx-v1` is also picked up for arbitrary `.tsx` files we open.
-
-Activation is **refcounted** — opening a second `prompt-app:*` tab does not re‑register libs, closing one of two doesn't tear down. We hold a `Map<envId, count>` and only call Monaco's `addExtraLib` / `dispose` on transitions. `dispose` is critical because Monaco's TS worker accumulates extra libs forever otherwise.
-
-Diagnostics policy per env: `prompt-app-v1` and friends turn `noSemanticValidation: false` on so the user actually sees real type errors. `sandbox-bare-v1` keeps `noSemanticValidation: true` because we have no idea what the surrounding repo's tsconfig looks like.
+Diagnostics policy: structured envs (`prompt-app`, `aga-app`, `tool-ui`, `library`) keep `noSemanticValidation: false`. `sandbox-fs` keeps `noSemanticValidation: true` because we have no visibility into the surrounding repo's tsconfig.
 
 ---
 
-## 6. Ordered work plan (next sessions)
+## 6. Acceptance gate
 
-1. **(M)** Build `features/code/library-sources/environments/` with the six envs in §2.1, plus `applyEnvironment` refcounting in `MonacoEditor`. Wire `environmentId` through `LibrarySourceAdapter` → `useOpenSourceEntry` → `EditorFile`. Verify no spurious red squiggles on a real prompt‑app tab.
-2. **(S)** Ship `useSandboxHeartbeat` + a tiny proxy route `/api/sandbox/[id]/heartbeat` so we stop drifting against the orchestrator. (The heartbeat endpoint *is* live.)
-3. **(L)** Pause for confirmation on §4 (editor‑context bridge); answer the four questions in §4.9 with the Python team; then ship `features/code/agent-context/`.
-4. **(M)** Add Realtime subscriptions for source‑backed tabs (§2.5) so `remoteUpdatedAt` flows in passively.
-5. **(blocked)** Sandbox API rewrite (`SandboxFilesystemAdapter`, `SandboxProcessAdapter.stream`, `TerminalTab` PTY wiring, `SandboxGitAdapter`) — wait for orchestrator delivery per §3.
+The QA contract is in [`QA_CHECKLIST.md`](./QA_CHECKLIST.md). It runs the 10‑step end‑to‑end smoke (create hosted sandbox → connect → watcher → git clone → ripgrep search → streaming exec → real PTY (`vim`) → prompt‑app save with type env → forced conflict → 30‑min idle heartbeat → editor‑context `ctx_get`). Re‑run after any non‑trivial change to either the workspace or the orchestrator surface.
 
 ---
 
@@ -462,7 +391,13 @@ Diagnostics policy per env: `prompt-app-v1` and friends turn `noSemanticValidati
 | `features/code/hooks/useSaveActiveTab.ts` | The save‑routing brain. |
 | `features/code/hooks/useOpenSourceEntry.ts` | Loads + opens any source‑backed entry. |
 | `features/code/hooks/useSaveAndOpenInCodeEditor.ts` | Public helper for "save anywhere → /code". |
-| `features/code/SANDBOX_API_WISHLIST.md` | The contract handed to the orchestrator team. |
+| `features/code/SANDBOX_API_WISHLIST.md` | Retired — points back to §3 of this doc. |
+| `features/code/QA_CHECKLIST.md` | 10‑step end‑to‑end smoke against the hosted tier. |
+| `features/code/agent-context/` | Editor → agent context bridge (selector + sync hook + selection capture). |
+| `features/code/editor/monaco-environments/` | Refcounted Monaco type‑environment registry. |
+| `features/code/views/source-control/` | Git activity view (status / diff / commit / push / credentials). |
+| `lib/sandbox/api-surface.ts` | Per‑tier capability cache fed by `GET /api-surface`. |
+| `app/api/sandbox/[id]/pty/route.ts` | WebSocket‑upgrade proxy for the orchestrator PTY route. |
 | `features/agents/redux/execution-system/instance-context/instance-context.slice.ts` | The slot the editor will write into. |
 | `features/agents/redux/execution-system/thunks/execute-instance.thunk.ts` | `assembleRequest` packs `instanceContext` into the wire. |
 | `features/agents/types/request.types.ts` | `AssembledAgentStartRequest.context`. |

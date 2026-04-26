@@ -6,6 +6,7 @@ import {
   ChevronsLeft,
   ChevronsRight,
   GitBranch,
+  Layers,
   MessageSquare,
   PanelRightOpen,
   Terminal as TerminalIcon,
@@ -13,9 +14,9 @@ import {
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { useCodeWorkspace } from "../CodeWorkspaceProvider";
-import {
-  selectActiveTab,
-} from "../redux/tabsSlice";
+import type { RootState } from "@/lib/redux/store";
+import { resolveEnvironmentForTab } from "../editor/monaco-environments";
+import { selectActiveTab } from "../redux/tabsSlice";
 import {
   selectFarRightOpen,
   selectRightOpen,
@@ -47,6 +48,14 @@ export const StatusBar: React.FC<StatusBarProps> = ({
   const rightOpen = useAppSelector(selectRightOpen);
   const farRightOpen = useAppSelector(selectFarRightOpen);
   const terminalOpen = useAppSelector(selectTerminalOpen);
+  const monacoEnvironmentsEnabled = useAppSelector(
+    (state: RootState) =>
+      state.userPreferences.coding.monacoEnvironmentsEnabled ?? true,
+  );
+  const activeEnvironment =
+    monacoEnvironmentsEnabled && activeTab
+      ? resolveEnvironmentForTab(activeTab)
+      : null;
 
   return (
     <div
@@ -82,6 +91,26 @@ export const StatusBar: React.FC<StatusBarProps> = ({
             <span>{activeTab.language}</span>
             <span>UTF-8</span>
             <span>LF</span>
+            {activeEnvironment ? (
+              <span
+                className="flex items-center gap-1"
+                title={
+                  activeEnvironment.description ??
+                  `Monaco type environment: ${activeEnvironment.label}`
+                }
+              >
+                <Layers size={12} />
+                <span>{activeEnvironment.label}</span>
+              </span>
+            ) : monacoEnvironmentsEnabled ? null : (
+              <span
+                className="flex items-center gap-1 opacity-70"
+                title="Type environments are disabled in Code Workspace settings"
+              >
+                <Layers size={12} />
+                <span>env: off</span>
+              </span>
+            )}
           </>
         )}
         <button

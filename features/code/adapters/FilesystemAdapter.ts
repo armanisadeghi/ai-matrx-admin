@@ -73,4 +73,23 @@ export interface FilesystemAdapter {
     fuzzy?: boolean;
     maxResults?: number;
   }): Promise<string[]>;
+
+  /**
+   * Optional — upload a Blob (e.g. from a drag-and-drop event) to the given
+   * path. Adapters that don't support binary uploads can omit this and the
+   * UI will fall back to a base64 readFileBinary write.
+   */
+  upload?(path: string, blob: Blob): Promise<void>;
+
+  /**
+   * Optional — download a file as a Blob. Used by the file tree's
+   * "download" context-menu action.
+   */
+  download?(path: string): Promise<Blob>;
+
+  /**
+   * Optional — read multiple files in a single round-trip. Used by the agent
+   * context bridge to assemble editor.tabs payloads without fan-out latency.
+   */
+  batchRead?(paths: string[]): Promise<Record<string, string>>;
 }

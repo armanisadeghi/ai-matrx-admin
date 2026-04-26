@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { FilesystemAdapter } from "../../adapters";
+import type { FilesystemAdapter } from "../../adapters/FilesystemAdapter";
 import type { FilesystemNode } from "../../types";
 import { FileIcon } from "../../styles/file-icon";
 import {
@@ -12,6 +12,7 @@ import {
   ROW_HEIGHT,
   TEXT_BODY,
 } from "../../styles/tokens";
+import { useDirectoryVersion } from "./FileTreeWatcher";
 
 interface FileTreeNodeProps {
   node: FilesystemNode;
@@ -36,14 +37,19 @@ export const FileTreeNode: React.FC<FileTreeNodeProps> = ({
   const isDir = node.kind === "directory";
   const [children, setChildren] = useState<FilesystemNode[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+  // Refetch when a watch event invalidates this directory.
+  const version = useDirectoryVersion(node.path);
 
   useEffect(() => {
     let cancelled = false;
-    if (!isDir || !expanded || children !== null) return;
+    if (!isDir || !expanded) return;
     adapter
       .listChildren(node.path)
       .then((list) => {
-        if (!cancelled) setChildren(list);
+        if (!cancelled) {
+          setChildren(list);
+          setLoadError(null);
+        }
       })
       .catch((err) => {
         if (!cancelled)
@@ -52,7 +58,7 @@ export const FileTreeNode: React.FC<FileTreeNodeProps> = ({
     return () => {
       cancelled = true;
     };
-  }, [isDir, expanded, children, adapter, node.path]);
+  }, [isDir, expanded, adapter, node.path, version]);
 
   const handleClick = useCallback(() => {
     if (isDir) onToggle(node.path);
@@ -75,6 +81,46 @@ export const FileTreeNode: React.FC<FileTreeNodeProps> = ({
     [handleClick, isDir, expanded, node.path, onToggle],
   );
 
+  // Drop zone for OS file uploads. Only directories accept drops; the file
+  // is written into that directory using its original basename. Adapters
+  // without an `upload` method silently no-op.
+  const [dragOver, setDragOver] = useState(false);
+  const handleDragOver = useCallback(
+    (e: React.DragEvent) => {
+      if (!isDir || !adapter.upload) return;
+      if (e.dataTransfer?.types?.includes("Files")) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "copy";
+        setDragOver(true);
+      }
+    },
+    [isDir, adapter],
+  );
+  const handleDragLeave = useCallback(() => {
+    if (dragOver) setDragOver(false);
+  }, [dragOver]);
+  const handleDrop = useCallback(
+    async (e: React.DragEvent) => {
+      if (!isDir || !adapter.upload) return;
+      e.preventDefault();
+      setDragOver(false);
+      const files = Array.from(e.dataTransfer?.files ?? []);
+      if (files.length === 0) return;
+      const dirPath = node.path.replace(/\/$/, "");
+      try {
+        for (const file of files) {
+          const target = `${dirPath}/${file.name}`;
+          await adapter.upload!(target, file);
+        }
+        // Auto-expand to surface what was just dropped.
+        if (!expanded) onToggle(node.path);
+      } catch (err) {
+        setLoadError(err instanceof Error ? err.message : String(err));
+      }
+    },
+    [isDir, adapter, node.path, expanded, onToggle],
+  );
+
   return (
     <div className="select-none">
       <div
@@ -84,12 +130,17 @@ export const FileTreeNode: React.FC<FileTreeNodeProps> = ({
         tabIndex={0}
         onClick={handleClick}
         onKeyDown={handleKeyDown}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={(e) => void handleDrop(e)}
         className={cn(
           "flex items-center gap-1 text-[13px]",
           ROW_HEIGHT,
           TEXT_BODY,
           HOVER_ROW,
           activePath === node.path && ACTIVE_ROW,
+          dragOver &&
+            "bg-blue-100 outline outline-1 outline-blue-400 dark:bg-blue-950/60",
           "cursor-pointer rounded-sm",
         )}
         style={{ paddingLeft: 8 + depth * 12 }}

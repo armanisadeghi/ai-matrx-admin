@@ -2,6 +2,7 @@
 
 import React from "react";
 import {
+  Brain,
   MessageSquare,
   PanelBottom,
   PanelRight,
@@ -30,6 +31,15 @@ interface EditorToolbarProps {
   hasDirtyActiveTab?: boolean;
   /** Whether there's an active tab at all (disables save when false). */
   hasActiveTab?: boolean;
+  /** ISO string of the active tab's last successful save during this
+   *  session, surfaced as a "Saved 12s ago" indicator. */
+  lastSavedAt?: string;
+  /** Capture the current Monaco selection and ship it to the agent's
+   *  instanceContext as a one-off `editor.selection.<id>` entry. */
+  onSendSelectionAsContext?: () => void;
+  /** Disables the selection-context button when there's no chat instance
+   *  to publish to (or no active tab). */
+  canSendSelectionAsContext?: boolean;
   className?: string;
 }
 
@@ -44,6 +54,9 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
   onSaveActiveTab,
   hasDirtyActiveTab = false,
   hasActiveTab = false,
+  lastSavedAt,
+  onSendSelectionAsContext,
+  canSendSelectionAsContext = false,
   className,
 }) => {
   const dispatch = useAppDispatch();
@@ -73,6 +86,22 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
           onClick={onSaveActiveTab}
         />
       )}
+      {hasActiveTab && lastSavedAt ? (
+        <LastSavedIndicator iso={lastSavedAt} dirty={hasDirtyActiveTab} />
+      ) : null}
+      {onSendSelectionAsContext && (
+        <ToolbarButton
+          icon={Brain}
+          active={false}
+          disabled={!canSendSelectionAsContext}
+          label={
+            canSendSelectionAsContext
+              ? "Send selection as context (\u2318\u21E7L)"
+              : "Open a chat to send selection"
+          }
+          onClick={onSendSelectionAsContext}
+        />
+      )}
       <ToolbarButton
         icon={PanelBottom}
         active={terminalOpen}
@@ -98,6 +127,47 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
     </div>
   );
 };
+
+function LastSavedIndicator({ iso, dirty }: { iso: string; dirty: boolean }) {
+  const [, setTick] = React.useState(0);
+  React.useEffect(() => {
+    // Re-render every 30s so the relative timestamp stays fresh while
+    // the tab is open. Cheap because the parent doesn't re-render unless
+    // the active tab actually changes.
+    const id = window.setInterval(() => setTick((t) => t + 1), 30_000);
+    return () => window.clearInterval(id);
+  }, []);
+  const ts = new Date(iso);
+  const fullLabel = ts.toLocaleString();
+  const relative = formatRelative(ts);
+  return (
+    <span
+      className={cn(
+        "ml-1 hidden whitespace-nowrap px-1 text-[11px] sm:inline",
+        dirty
+          ? "text-amber-600 dark:text-amber-400"
+          : "text-neutral-500 dark:text-neutral-400",
+      )}
+      title={dirty ? `Saved ${fullLabel} — unsaved edits since` : `Saved ${fullLabel}`}
+      aria-label={dirty ? `Last saved ${fullLabel}, with unsaved edits` : `Last saved ${fullLabel}`}
+    >
+      {dirty ? "Edits since " : "Saved "}
+      {relative}
+    </span>
+  );
+}
+
+function formatRelative(when: Date): string {
+  const seconds = Math.max(0, Math.round((Date.now() - when.getTime()) / 1000));
+  if (seconds < 5) return "just now";
+  if (seconds < 60) return `${seconds}s ago`;
+  const minutes = Math.round(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.round(hours / 24);
+  return `${days}d ago`;
+}
 
 function ToolbarButton({
   icon: Icon,

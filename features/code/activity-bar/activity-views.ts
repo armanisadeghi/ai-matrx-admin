@@ -22,7 +22,7 @@ export const ACTIVITY_VIEWS: ActivityViewDescriptor[] = [
   { id: "explorer", label: "Explorer", icon: Files, shortcut: "\u2318\u21E7E" },
   { id: "search", label: "Search", icon: Search, shortcut: "\u2318\u21E7F" },
   {
-    id: "git",
+    id: "source-control",
     label: "Source Control",
     icon: GitBranch,
     shortcut: "\u2303\u21E7G",

@@ -15,6 +15,7 @@ import {
 } from "../redux/terminalSlice";
 import { useCodeWorkspace } from "../CodeWorkspaceProvider";
 import { useMonacoTheme } from "../editor/useMonacoTheme";
+import type { PtyHandle } from "../adapters/ProcessAdapter";
 
 interface TerminalTabProps {
   className?: string;
@@ -40,6 +41,12 @@ interface SessionState {
   running: boolean;
   /** Latest Redux line id rendered into xterm (for agent-line mirroring). */
   lastSeenLineId: number;
+  /** Live PTY handle when the adapter supports it; xterm is attached
+   *  directly to it and the read-line emulation below is bypassed. */
+  pty: PtyHandle | null;
+  /** Disposable for the term.onData listener so we can swap it when the
+   *  PTY connects/disconnects without leaking handlers. */
+  onDataDisposer: (() => void) | null;
 }
 
 // ANSI color escape codes
@@ -157,7 +164,7 @@ export const TerminalTab: React.FC<TerminalTabProps> = ({
     [dispatch, writePromptFor],
   );
 
-  // ── Input handler (read-line emulation) ─────────────────────────────────
+  // ── Input handler (read-line emulation, used when no PTY is available) ─
   const handleData = useCallback(
     (state: SessionState, data: string) => {
       if (state.running) return;
@@ -353,16 +360,91 @@ export const TerminalTab: React.FC<TerminalTabProps> = ({
         historyIdx: null,
         running: false,
         lastSeenLineId: parseLineId(reduxLines[reduxLines.length - 1]?.id),
+        pty: null,
+        onDataDisposer: null,
       };
       sessionRef.current = session;
 
-      term.onData((data) => handleData(session, data));
+      // Default wiring: read-line emulation on top of `process.exec()`.
+      // If the active adapter supports a real PTY, we'll swap this out
+      // below.
+      const bufferedListener = term.onData((data) => handleData(session, data));
+      session.onDataDisposer = () => bufferedListener.dispose();
 
       term.write(
         `${BOLD}Matrx Terminal${RESET}${DIM} — ${processRef.current.isReady ? "connected" : "no process adapter"}${RESET}\r\n`,
       );
       writePromptFor(session);
       setReady(true);
+
+      // Try to upgrade to a real PTY in the background. If the adapter
+      // doesn't expose `openPty` (Mock) or the WebSocket can't connect
+      // (Vercel deploy without an upgrade hook), we silently keep the
+      // buffered fallback so users still get a working terminal.
+      void attachPty(session);
+    };
+
+    /** Attempt to attach xterm directly to a PTY WebSocket. */
+    const attachPty = async (state: SessionState) => {
+      const adapter = processRef.current;
+      if (!adapter.openPty) return;
+      const term = state.term;
+      try {
+        const handle = await adapter.openPty({
+          cols: term.cols,
+          rows: term.rows,
+          cwd: adapter.cwd || "/home/agent",
+          onData: (data: string) => {
+            // The remote PTY echoes input itself, drives its own prompt,
+            // and emits ANSI directly. Just write the bytes through.
+            term.write(data);
+          },
+          onExit: (code, signal) => {
+            term.write(
+              `\r\n${DIM}[pty closed${
+                code !== null ? ` exit ${code}` : ""
+              }${signal ? ` signal ${signal}` : ""}]${RESET}\r\n`,
+            );
+            // Fall back to buffered emulation so the user still has a
+            // useful prompt while we don't auto-reconnect.
+            detachPty(state);
+            writePromptFor(state);
+          },
+          onError: (err) => {
+            term.write(
+              `\r\n${DIM}[pty error: ${err.message}; falling back to buffered terminal]${RESET}\r\n`,
+            );
+          },
+        });
+        if (cancelled) {
+          handle.close();
+          return;
+        }
+        // Tear down the buffered listener and route keystrokes straight
+        // to the PTY. The remote daemon owns line editing, history,
+        // signal handling, and prompt rendering from this point.
+        state.onDataDisposer?.();
+        const liveListener = term.onData((data) => handle.write(data));
+        state.onDataDisposer = () => liveListener.dispose();
+        state.pty = handle;
+        // Clear the local-prompt scaffolding so we don't render two
+        // prompts on top of each other when the daemon emits its own.
+        term.write("\r\x1b[K");
+      } catch {
+        // Adapter said it supports PTY but the connection failed; keep
+        // the buffered fallback active.
+      }
+    };
+
+    /** Restore buffered read-line emulation after a PTY drops. */
+    const detachPty = (state: SessionState) => {
+      state.pty?.close();
+      state.pty = null;
+      state.onDataDisposer?.();
+      const bufferedListener = state.term.onData((data) =>
+        handleData(state, data),
+      );
+      state.onDataDisposer = () => bufferedListener.dispose();
     };
 
     void boot();
@@ -371,6 +453,8 @@ export const TerminalTab: React.FC<TerminalTabProps> = ({
       cancelled = true;
       const s = sessionRef.current;
       if (s) {
+        s.pty?.close();
+        s.onDataDisposer?.();
         s.term.dispose();
         sessionRef.current = null;
       }
@@ -388,6 +472,15 @@ export const TerminalTab: React.FC<TerminalTabProps> = ({
         s.fit.fit();
       } catch {
         /* noop */
+      }
+      // Tell the remote PTY about the new viewport so line wrapping and
+      // full-screen apps (vim/top) stay correct.
+      if (s.pty?.isOpen) {
+        try {
+          s.pty.resize(s.term.cols, s.term.rows);
+        } catch {
+          /* ignore */
+        }
       }
     });
     ro.observe(containerRef.current);
@@ -418,6 +511,11 @@ export const TerminalTab: React.FC<TerminalTabProps> = ({
   useEffect(() => {
     const s = sessionRef.current;
     if (!s) return;
+    // When a real PTY is attached the daemon owns the screen — painting
+    // over agent output would corrupt full-screen apps like vim. Bail
+    // unconditionally; agent commands are still recorded in Redux and
+    // can be inspected via the agent log views.
+    if (s.pty?.isOpen) return;
     for (const line of reduxLines) {
       const id = parseLineId(line.id);
       if (id <= s.lastSeenLineId) continue;
@@ -451,7 +549,7 @@ export const TerminalTab: React.FC<TerminalTabProps> = ({
     if (!s) return;
     s.term.clear();
     dispatch(clearLines("terminal"));
-    writePromptFor(s);
+    if (!s.pty?.isOpen) writePromptFor(s);
   }, [dispatch, writePromptFor]);
 
   return (
