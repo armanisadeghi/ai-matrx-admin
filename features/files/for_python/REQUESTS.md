@@ -287,6 +287,47 @@ that lands in shared folders. For internal-only uploads we can defer.
 
 (Most recent first.)
 
+### 🟢 CORS `Access-Control-Allow-Headers` includes all upload custom headers
+
+**Resolved:** 2026-04-26 (Python).
+
+**What broke:** After the security/CORS lockdown release, the
+preflight `Access-Control-Allow-Headers` was missing `Accept`,
+`X-Idempotency-Key`, and `X-Cloud-Files-Bypass` (plus several
+browser-default headers). Starlette's `CORSMiddleware` only echoes
+back what's in `allow_headers`, so the preflight silently rejected
+any request whose actual request-header set wasn't a subset. Browser
+symptom: every direct (non-proxy) upload returned `xhr.error` after
+~30 ms — a cached preflight rejection. Only the same-origin Next.js
+`/api/images/upload` proxy worked.
+
+**What shipped:** Python's `aidream/api/app.py` middleware now
+allows the full canonical set:
+```
+Authorization, Content-Type, Accept,
+X-Request-Id, X-Guest-Fingerprint, X-Fingerprint-ID,
+X-Idempotency-Key, X-Cloud-Files-Bypass,
++ accept-encoding, accept-language, cache-control, pragma,
++ content-length, content-disposition, content-type,
++ if-match, if-modified-since, if-none-match, if-unmodified-since,
++ origin, range, referer, user-agent, x-requested-with,
++ x-correlation-id, x-sandbox-service-token
+```
+plus `HEAD` added to `allow_methods` and `Last-Modified`,
+`Content-Range`, `Accept-Ranges`, `Content-Disposition` to
+`expose_headers`.
+
+**FE side:** Re-enabled `X-Idempotency-Key` as the default on every
+upload — both in [features/files/upload/cloudUpload.ts](../upload/cloudUpload.ts)
+(both `cloudUploadRaw` paths and the dispatch-aware `cloudUpload`)
+and in the `uploadFiles` thunk in
+[features/files/redux/thunks.ts](../redux/thunks.ts). Each upload
+reuses its `requestId` as the idempotency key so any automatic retry
+hits the same backend record (stored in
+`metadata._idempotency_key`).
+
+---
+
 ### 🟢 Folder CRUD endpoints
 
 **Resolved:** 2026-04-26.

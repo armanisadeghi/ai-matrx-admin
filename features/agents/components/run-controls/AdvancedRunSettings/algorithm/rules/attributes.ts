@@ -15,7 +15,7 @@
  *     premium models from contention).
  */
 
-import type { Level, PointContribution, PointRule } from '../types';
+import type { Level, PointContribution, PointRule } from "../types";
 
 const RAW_INTELLIGENCE_POINTS: Record<Level, number> = {
   minimal: 0,
@@ -45,31 +45,31 @@ const COST_POINTS: Record<Level, number> = {
 const REASONING_ABILITY_POINTS: Record<Level, number> = {
   minimal: 0,
   low: 3,
-  medium: 12,
-  high: 45,
-  max: 100,
+  medium: 5,
+  high: 7,
+  max: 10,
 };
 
 export const attributePoints: PointRule = (input) => {
   const { attributes } = input;
   return [
     {
-      source: 'attributes.rawIntelligence',
+      source: "attributes.rawIntelligence",
       label: `Raw Intelligence: ${attributes.rawIntelligence}`,
       points: RAW_INTELLIGENCE_POINTS[attributes.rawIntelligence],
     },
     {
-      source: 'attributes.speed',
+      source: "attributes.speed",
       label: `Speed: ${attributes.speed}`,
       points: SPEED_POINTS[attributes.speed],
     },
     {
-      source: 'attributes.cost',
+      source: "attributes.cost",
       label: `Cost: ${attributes.cost}`,
       points: COST_POINTS[attributes.cost],
     },
     {
-      source: 'attributes.reasoningAbility',
+      source: "attributes.reasoningAbility",
       label: `Reasoning Ability: ${attributes.reasoningAbility}`,
       points: REASONING_ABILITY_POINTS[attributes.reasoningAbility],
     },

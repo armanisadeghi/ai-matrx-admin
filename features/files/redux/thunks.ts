@@ -667,13 +667,11 @@ export const uploadFiles = createAsyncThunk<
             ),
           {
             requestId,
-            // Idempotency key — the same value across automatic retries of
-            // the same intended upload. The backend stores it in
+            // Idempotency key — same value across automatic retries of the
+            // same intended upload. The backend stores it in
             // `metadata._idempotency_key` so retries don't create duplicate
-            // version rows. We reuse `requestId` because we generate it
-            // once per intended upload, before any retry. (If we ever add
-            // a retry layer that issues a new requestId per attempt, that
-            // layer must keep the idempotencyKey stable.)
+            // version rows. We reuse `requestId` because it's generated
+            // once per intended upload, before any retry.
             idempotencyKey: requestId,
           },
         );

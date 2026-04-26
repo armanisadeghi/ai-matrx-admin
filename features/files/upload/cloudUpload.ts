@@ -213,7 +213,9 @@ export async function cloudUploadRaw(
             requestId,
             signal: options.signal,
             // Reuse requestId as the idempotency key — single intended
-            // upload from the FE perspective, single key on the BE.
+            // upload from the FE perspective, single key on the BE. Backend
+            // stores it in `metadata._idempotency_key` so retries don't
+            // double-create version rows.
             idempotencyKey: requestId,
           },
         )
@@ -326,8 +328,6 @@ export async function cloudUpload(
 
     const upload = await Files_uploadFileWithProgress(
       params,
-      // The progress callback is the second positional arg to
-      // uploadFileWithProgress; opts (with idempotencyKey) is the third.
       (ev) => {
         dispatch(
           updateUploadProgress({
