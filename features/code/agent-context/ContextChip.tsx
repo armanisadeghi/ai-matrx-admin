@@ -8,6 +8,9 @@ import { setEditorContextDisabledTabs } from "@/features/agents/redux/execution-
 import { selectCodeTabs, selectActiveTabId } from "../redux/tabsSlice";
 import type { RootState } from "@/lib/redux/store";
 
+/** Stable reference when a conversation has no `editorContextDisabledTabs` yet (selector must not return `[]`). */
+const EMPTY_DISABLED_TABS: string[] = [];
+
 interface ContextChipProps {
   conversationId: string | null | undefined;
   className?: string;
@@ -32,12 +35,12 @@ export const ContextChip: React.FC<ContextChipProps> = ({
   const dispatch = useAppDispatch();
   const tabsState = useAppSelector(selectCodeTabs);
   const activeId = useAppSelector(selectActiveTabId);
-  const disabled = useAppSelector((state: RootState) =>
-    conversationId
-      ? (state.instanceUIState?.byConversationId?.[conversationId]
-          ?.editorContextDisabledTabs ?? [])
-      : [],
-  );
+  const editorContextDisabledRaw = useAppSelector((state: RootState) => {
+    if (!conversationId) return undefined;
+    return state.instanceUIState?.byConversationId?.[conversationId]
+      ?.editorContextDisabledTabs;
+  });
+  const disabled = editorContextDisabledRaw ?? EMPTY_DISABLED_TABS;
 
   const tabs = useMemo(
     () =>

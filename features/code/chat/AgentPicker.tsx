@@ -74,6 +74,21 @@ export const AgentPicker: React.FC<AgentPickerProps> = ({
   // the session without editing preferences.
   const [bypassFilter, setBypassFilter] = useState(false);
 
+  // The saved `filter` flows in from `useCodeWorkspaceHistory`, which reads
+  // user preferences. Those prefs are hydrated client-side from Supabase /
+  // localStorage and are NOT in the SSR snapshot, so the server renders
+  // `filter` as the default ("all") while the client renders the user's
+  // saved value (e.g. "specific"). That divergence reshapes
+  // `<AgentList>`'s children (header chip present on client, absent on
+  // server) and triggers a hydration mismatch.
+  //
+  // Gate the chip behind a mount flag so the FIRST render on both server
+  // and client matches; the chip animates in after hydration.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const selectFilteredAgents = useMemo(() => makeSelectAgentsForFilter(), []);
   const filteredAgents = useAppSelector((state) =>
     selectFilteredAgents(state, filter),
@@ -149,7 +164,7 @@ export const AgentPicker: React.FC<AgentPickerProps> = ({
     : null;
 
   const filterChip =
-    filter && filter.mode !== "all" ? (
+    mounted && filter && filter.mode !== "all" ? (
       <FilterChip
         label={describeFilter(filter)}
         bypassed={bypassFilter}

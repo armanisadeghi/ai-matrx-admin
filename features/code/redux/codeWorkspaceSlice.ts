@@ -58,7 +58,7 @@ export interface CodeWorkspaceState {
 }
 
 const initialState: CodeWorkspaceState = {
-  activeView: "explorer",
+  activeView: "library",
   sideOpen: true,
   rightOpen: true,
   farRightOpen: false,

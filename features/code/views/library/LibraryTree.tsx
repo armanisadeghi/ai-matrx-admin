@@ -1,11 +1,23 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { ChevronRight, FolderHeart } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { loadCodeFilesList, loadCodeFolders } from "@/features/code-files/redux/thunks";
-import { makeSelectFilesInFolder, selectCodeFilesListStatus, selectCodeFilesListError, selectCodeFoldersLoaded, selectTopLevelFolders } from "@/features/code-files/redux/selectors";
-import { type CodeFolder, type CodeFileRecord } from "@/features/code-files/redux/code-files.types";
+import {
+  loadCodeFilesList,
+  loadCodeFolders,
+} from "@/features/code-files/redux/thunks";
+import {
+  makeSelectFilesInFolder,
+  selectCodeFilesListStatus,
+  selectCodeFilesListError,
+  selectCodeFoldersLoaded,
+  selectTopLevelFolders,
+} from "@/features/code-files/redux/selectors";
+import {
+  type CodeFolder,
+  type CodeFileRecord,
+} from "@/features/code-files/redux/code-files.types";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectActiveTabId } from "../../redux/tabsSlice";
 import {
@@ -41,11 +53,22 @@ export const LibraryTree: React.FC<{ refreshKey?: number }> = ({
   const activeTabId = useAppSelector(selectActiveTabId);
   const openFile = useOpenLibraryFile();
 
+  // Auto-load only on the `idle` transition. We deliberately do NOT
+  // auto-retry on `error` here — without that guard, the slice's
+  // status oscillates `error → loading → error → ...` (because each
+  // failed dispatch sets `loading`, which re-runs this effect, which
+  // re-dispatches), pinning the main thread and crashing the tab.
+  // The error UI below renders a manual Retry button instead.
+  // `refreshKey` (bumped by the panel's Refresh button) forces a
+  // re-load by bypassing the effect's natural deduping.
+  const lastRefreshKeyRef = useRef(refreshKey);
   useEffect(() => {
-    if (listStatus === "idle" || listStatus === "error") {
+    const forced = refreshKey !== lastRefreshKeyRef.current;
+    lastRefreshKeyRef.current = refreshKey;
+    if (listStatus === "idle" || forced) {
       dispatch(loadCodeFilesList());
     }
-    if (!foldersLoaded) {
+    if (!foldersLoaded || forced) {
       dispatch(loadCodeFolders());
     }
   }, [dispatch, listStatus, foldersLoaded, refreshKey]);

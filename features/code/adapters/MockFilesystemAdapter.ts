@@ -6,70 +6,29 @@ interface MockNode {
   content?: string;
 }
 
-/** A realistic-ish Next.js-style project tree used by the default route. */
+/**
+ * Empty placeholder filesystem rendered when no sandbox is connected.
+ *
+ * We intentionally ship NO sample files here — the prior demo project was
+ * confusing for users who expected the Explorer to either reflect their
+ * real saved code (Library) or a connected sandbox. The single README
+ * just tells them how to get a real workspace.
+ */
 const MOCK_PROJECT: Record<string, MockNode> = {
   "/": { kind: "directory" },
   "/README.md": {
     kind: "file",
-    content: `# matrx-code demo project\n\nThis is a **mock** project loaded by the MockFilesystemAdapter. Swap the\nworkspace's adapter to a SandboxFilesystemAdapter (via the Sandboxes view)\nto edit real files in a live container.\n`,
-  },
-  "/package.json": {
-    kind: "file",
-    content: JSON.stringify(
-      {
-        name: "matrx-code-demo",
-        version: "0.1.0",
-        private: true,
-        scripts: { dev: "next dev", build: "next build", start: "next start" },
-        dependencies: {
-          next: "latest",
-          react: "latest",
-          "react-dom": "latest",
-        },
-      },
-      null,
-      2,
-    ),
-  },
-  "/tsconfig.json": {
-    kind: "file",
-    content: JSON.stringify(
-      { compilerOptions: { target: "ES2020", strict: true, jsx: "preserve" } },
-      null,
-      2,
-    ),
-  },
-  "/.gitignore": {
-    kind: "file",
-    content: "node_modules\n.next\n.env*.local\ndist\n",
-  },
-  "/src": { kind: "directory" },
-  "/src/index.ts": {
-    kind: "file",
-    content: `export function greet(name: string): string {\n  return \`Hello, \${name}!\`;\n}\n\nconsole.log(greet("world"));\n`,
-  },
-  "/src/App.tsx": {
-    kind: "file",
-    content: `import React from "react";\n\nexport function App() {\n  return (\n    <div className="p-6">\n      <h1 className="text-2xl font-semibold">Hello from Matrx Code</h1>\n      <p className="text-sm text-muted-foreground">\n        Edit me in the editor \u2014 this is a mock adapter.\n      </p>\n    </div>\n  );\n}\n`,
-  },
-  "/src/styles.css": {
-    kind: "file",
-    content: `:root {\n  --accent: #3b82f6;\n}\n\nbody {\n  font-family: system-ui, sans-serif;\n}\n`,
-  },
-  "/src/lib": { kind: "directory" },
-  "/src/lib/utils.ts": {
-    kind: "file",
-    content: `export function cn(...parts: Array<string | undefined | null | false>): string {\n  return parts.filter(Boolean).join(" ");\n}\n`,
-  },
-  "/src/components": { kind: "directory" },
-  "/src/components/Button.tsx": {
-    kind: "file",
-    content: `import React from "react";\n\ninterface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {\n  variant?: "primary" | "ghost";\n}\n\nexport function Button({ variant = "primary", className, ...rest }: ButtonProps) {\n  return <button className={className} {...rest} />;\n}\n`,
-  },
-  "/public": { kind: "directory" },
-  "/public/robots.txt": {
-    kind: "file",
-    content: "User-agent: *\nAllow: /\n",
+    content:
+      `# No workspace connected\n\n` +
+      `This Explorer view is a placeholder filesystem.\n\n` +
+      `To get a real workspace:\n\n` +
+      `1. Open the **Sandboxes** view in the activity bar (left side) and\n` +
+      `   create or attach to a sandbox container — the Explorer will then\n` +
+      `   show that sandbox's filesystem and the editor will edit real\n` +
+      `   files inside it.\n\n` +
+      `2. Or open the **Code Library** view (default) to browse code you\n` +
+      `   already saved (your saved files, prompt apps, agent apps, and\n` +
+      `   tool UI components).\n`,
   },
 };
 

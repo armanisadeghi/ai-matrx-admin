@@ -202,8 +202,13 @@ interface PayloadTabProps {
 }
 
 export function PayloadTab({ conversationId }: PayloadTabProps) {
-  const request = useAppSelector((state) =>
-    assembleRequest(state, conversationId),
+  // `assembleRequest` always allocates a new object — it must not be the direct
+  // return value of `useAppSelector` (unstable ref / dev double-invoke warning).
+  // Subscribe to the root state, then memoize one assembly per state snapshot.
+  const state = useAppSelector((s: RootState) => s);
+  const request = useMemo(
+    () => assembleRequest(state, conversationId),
+    [state, conversationId],
   );
 
   const agentId = useAppSelector((state) =>
