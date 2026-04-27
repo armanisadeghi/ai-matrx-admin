@@ -427,7 +427,7 @@ export default function SandboxListPage() {
                             : "Best for long-lived editor sessions, workloads > 5 GB, or anything that needs internal Matrx services. Per-user volume mounted at /home/agent."}
                         </p>
                       </div>
-                      <div className="flex items-start gap-2 rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-900 dark:border-blue-900/50 dark:bg-blue-950/40 dark:text-blue-200">
+                      {/* <div className="flex items-start gap-2 rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-900 dark:border-blue-900/50 dark:bg-blue-950/40 dark:text-blue-200">
                         <Container className="w-4 h-4 mt-0.5 shrink-0" />
                         <div className="flex-1">
                           <div className="font-medium">
@@ -447,7 +447,7 @@ export default function SandboxListPage() {
                               : "Your home dir is preserved across sessions on this tier. Anything outside /home/agent is not."}
                           </div>
                         </div>
-                      </div>
+                      </div> */}
                       <div>
                         <label className="text-sm font-medium">Template</label>
                         <select
@@ -709,12 +709,12 @@ export default function SandboxListPage() {
                       <div className="px-4 pb-2 text-xs text-muted-foreground">
                         These sandboxes have ended — their containers were
                         destroyed when the session closed. Anything you saved
-                        inside <code className="font-mono">/home/agent</code>{" "}
-                        is preserved on this tier and is mounted automatically
-                        on the next sandbox you create. Anything outside that
-                        directory (running processes, packages installed at
-                        the system level, env vars set in the shell) is gone.
-                        See the session report on your next sandbox for a
+                        inside <code className="font-mono">/home/agent</code> is
+                        preserved on this tier and is mounted automatically on
+                        the next sandbox you create. Anything outside that
+                        directory (running processes, packages installed at the
+                        system level, env vars set in the shell) is gone. See
+                        the session report on your next sandbox for a
                         per-session summary of what was carried over and what
                         was not.
                       </div>
@@ -806,10 +806,13 @@ export default function SandboxListPage() {
                 ? " The running container will be destroyed and "
                 : " "}
               the sandbox row will be removed from your list.{" "}
-              <strong>Your /home/agent volume on this tier is not deleted</strong>
-              {" "}— it stays put and will be re-mounted on the next sandbox you
-              create. To wipe persistent storage entirely, use Settings → Sandbox
-              Storage. If you just want to stop this container, use Stop instead.
+              <strong>
+                Your /home/agent volume on this tier is not deleted
+              </strong>{" "}
+              — it stays put and will be re-mounted on the next sandbox you
+              create. To wipe persistent storage entirely, use Settings →
+              Sandbox Storage. If you just want to stop this container, use Stop
+              instead.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

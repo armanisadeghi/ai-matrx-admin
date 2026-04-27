@@ -32,6 +32,7 @@ export default function MobileActionsMenu() {
   const handleCreateFolder = async () => {
     // For now, just prompt with a simple alert-style approach
     // In a real app, you'd want a proper modal/dialog
+    // TODO(browser-dialog-cleanup): replace with <Dialog /> + <Input />
     const folderName = prompt('Enter folder name:');
     if (folderName?.trim()) {
       try {

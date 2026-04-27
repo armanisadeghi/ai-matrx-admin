@@ -3,9 +3,12 @@
 import React, { useMemo, useState } from "react";
 import { FolderOpen, Loader2, FileText, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { SectionToolbar } from "../SectionToolbar";
 import { SectionFooter } from "../SectionFooter";
 import { useResources } from "../../hooks/useResources";
+
+type ResourceItem = ReturnType<typeof useResources>["resources"][number];
 
 const RESOURCE_TYPES = [
   "all",
@@ -20,6 +23,7 @@ type ResourceFilter = (typeof RESOURCE_TYPES)[number];
 export function ResourcesSection() {
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<ResourceFilter>("all");
+  const [deleteTarget, setDeleteTarget] = useState<ResourceItem | null>(null);
   const { resources, loading, error, remove } = useResources();
 
   const filtered = useMemo(() => {
@@ -110,14 +114,7 @@ export function ResourcesSection() {
               </div>
               <button
                 type="button"
-                onClick={() => {
-                  if (
-                    typeof window !== "undefined" &&
-                    window.confirm(`Delete resource "${r.filename}"?`)
-                  ) {
-                    remove(r.id);
-                  }
-                }}
+                onClick={() => setDeleteTarget(r)}
                 className="h-7 w-7 rounded-md opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center transition-all"
                 aria-label="Delete resource"
               >
@@ -131,6 +128,28 @@ export function ResourcesSection() {
         description="Supporting files — scripts, references, templates, examples — that skills load on invocation. Create and edit flows coming with the DetailEditor rollout."
         learnMoreLabel="Learn more about resources"
         learnMoreHref="#"
+      />
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
+        title="Delete resource"
+        description={
+          deleteTarget ? (
+            <>
+              Delete resource <b>{deleteTarget.filename}</b>?
+            </>
+          ) : null
+        }
+        confirmLabel="Delete"
+        variant="destructive"
+        onConfirm={() => {
+          if (deleteTarget) {
+            remove(deleteTarget.id);
+            setDeleteTarget(null);
+          }
+        }}
       />
     </div>
   );

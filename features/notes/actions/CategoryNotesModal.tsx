@@ -23,6 +23,7 @@ import { useNotesRedux } from '../hooks/useNotesRedux';
 import type { Note } from '../types';
 import { toast } from 'sonner';
 import { getFolderIconAndColor } from '../utils/folderUtils';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 
 export interface CategoryNotesModalProps {
     open: boolean;
@@ -63,6 +64,7 @@ export function CategoryNotesModal({
     const [editNoteContent, setEditNoteContent] = useState('');
     const [actionLoading, setActionLoading] = useState(false);
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+    const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
 
     // Get category icon and color
     const { icon: CategoryIcon, color: categoryColor } = getFolderIconAndColor(categoryName);
@@ -187,10 +189,13 @@ export function CategoryNotesModal({
         setEditNoteContent('');
     };
 
-    const handleDelete = async (noteId: string) => {
-        if (!confirm('Are you sure you want to delete this?')) {
-            return;
-        }
+    const handleDelete = (noteId: string) => {
+        setDeleteTargetId(noteId);
+    };
+
+    const confirmDelete = async () => {
+        const noteId = deleteTargetId;
+        if (!noteId) return;
 
         setActionLoading(true);
         try {
@@ -199,6 +204,7 @@ export function CategoryNotesModal({
             if (selectedNoteId === noteId) {
                 setSelectedNoteId(null);
             }
+            setDeleteTargetId(null);
         } catch (error) {
             console.error('Error deleting:', error);
             toast.error('Failed to delete');
@@ -516,6 +522,18 @@ export function CategoryNotesModal({
                     )}
                 </div>
             </DialogContent>
+            <ConfirmDialog
+                open={!!deleteTargetId}
+                onOpenChange={(open) => {
+                    if (!open && !actionLoading) setDeleteTargetId(null);
+                }}
+                title="Delete note"
+                description="Are you sure you want to delete this?"
+                confirmLabel="Delete"
+                variant="destructive"
+                busy={actionLoading}
+                onConfirm={confirmDelete}
+            />
         </Dialog>
     );
 }

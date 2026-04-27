@@ -79,13 +79,17 @@ const LIST_COLUMNS =
  * Fetch metadata (no content) for all of the current user's code files.
  * Used to populate the manager/sidebar without pulling potentially massive
  * blobs into memory.
+ *
+ * Note: no explicit `user_id` filter — RLS on `code_files` scopes rows to
+ * the caller's `auth.uid()`. Adding a redundant `.eq("user_id", ...)`
+ * here would force this fetch to wait for the Redux auth slice to
+ * hydrate, which is exactly the bug that surfaced as
+ * "Failed to load library — Not authenticated" on first paint.
  */
 export async function fetchCodeFilesList(): Promise<CodeFile[]> {
-  const userId = requireUserId();
   const { data, error } = await supabase
     .from("code_files")
     .select(LIST_COLUMNS)
-    .eq("user_id", userId)
     .eq("is_deleted", false)
     .order("updated_at", { ascending: false });
 
@@ -200,11 +204,12 @@ export async function deleteCodeFile(id: string): Promise<void> {
 // ── Folders ─────────────────────────────────────────────────────────────────
 
 export async function fetchCodeFolders(): Promise<CodeFolder[]> {
-  const userId = requireUserId();
+  // No explicit `user_id` filter — RLS scopes rows by `auth.uid()`. See
+  // the matching note on `fetchCodeFilesList` for why we don't gate this
+  // fetch on Redux auth-state hydration.
   const { data, error } = await supabase
     .from("code_file_folders")
     .select("*")
-    .eq("user_id", userId)
     .eq("is_active", true)
     .order("sort_order", { ascending: true })
     .order("name", { ascending: true });

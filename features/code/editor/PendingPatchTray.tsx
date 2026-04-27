@@ -13,7 +13,7 @@
  * editor surface to act on them.
  */
 
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { Check, ChevronDown, ChevronUp, Sparkles, X } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { cn } from "@/lib/utils";
@@ -31,7 +31,16 @@ export const PendingPatchTray: React.FC = () => {
   const dispatch = useAppDispatch();
   const activeTab = useAppSelector(selectActiveTab);
   const tabId = activeTab?.id ?? null;
-  const pendingPatches = useAppSelector(selectPendingPatchesForTab(tabId));
+  // Memoize the factory selector per `tabId` so React-Redux sees the
+  // SAME selector instance across renders. Without this we'd create a
+  // fresh `createSelector` (with empty cache) every render — safe, but
+  // forces the filter to run on every read. See Rule 7 in
+  // `.cursor/skills/redux-selector-rules`.
+  const selectPending = useMemo(
+    () => selectPendingPatchesForTab(tabId),
+    [tabId],
+  );
+  const pendingPatches = useAppSelector(selectPending);
   const [expandedPatchIds, setExpandedPatchIds] = useState<
     Record<string, boolean>
   >({});

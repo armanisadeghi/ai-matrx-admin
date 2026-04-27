@@ -144,18 +144,21 @@ The library renders `role="separator"`, `aria-controls`, `aria-orientation`, `ar
 ```tsx
 <Separator
   className={[
-    "w-0.5 bg-border transition-colors cursor-col-resize",
-    "focus:outline-none",                        // kill the browser's default focus outline
+    "bg-border transition-colors focus:outline-none",
+    // kill the browser's default focus outline (the lib sets tabIndex={0})
     "data-[separator=hover]:bg-primary",
-    "data-[separator=focus]:bg-primary",         // after click — keep the primary color, not the browser outline
+    "data-[separator=active]:bg-primary",   // mouse-down / focused — covers the "click reveals a white line" bug
     "data-[separator=dragging]:bg-primary",
+    // orientation-aware sizing (works in both horizontal and vertical Groups)
+    "[&[aria-orientation=vertical]]:w-0.5 [&[aria-orientation=vertical]]:cursor-col-resize",
+    "[&[aria-orientation=horizontal]]:h-0.5 [&[aria-orientation=horizontal]]:cursor-row-resize",
   ].join(" ")}
 />
 ```
 
-The library sets `tabIndex={0}` on the Separator, so clicking it focuses it. Without `focus:outline-none` the browser draws its default focus outline — a 1px near-white line in the center — which looks correct in light mode but stands out hard in dark mode. **Always set `focus:outline-none` and explicitly style all four `data-separator` states** (`default` is the inherited `bg-border`; the other three should at minimum match `hover`). Style `data-separator=focus` separately, not just `data-separator=hover`, or you'll get a "click reveals a bright line" bug.
+The library sets `tabIndex={0}` on the Separator, so clicking it focuses it. Without `focus:outline-none` the browser draws its default focus outline — a 1px near-white line in the center — which looks fine in light mode but stands out in dark mode. **Always set `focus:outline-none` and explicitly style `hover`, `active`, AND `dragging`** (style only `hover` and the bar reverts to `bg-border` the moment you click — that's the bug).
 
-If you don't want to type this every time, use the project wrapper at [`components/ui/resizable.tsx`](../../../components/ui/resizable.tsx) — `ResizableHandle` already does it.
+In this codebase: use [`components/ui/resizable.tsx`](../../../components/ui/resizable.tsx)'s `ResizableHandle` for theme-aware horizontal handles, OR import the demo-shared `Handle` from [`app/(ssr)/ssr/demos/resizables/_lib/Handle.tsx`](../../../app/(ssr)/ssr/demos/resizables/_lib/Handle.tsx) which is orientation-aware (works in both horizontal and vertical Groups, no hardcoded cursor). Don't reinvent the class string in every demo.
 
 ### Imperative handles
 
@@ -372,6 +375,31 @@ function SidebarPanel() {
 
 The Redux value is the "intent." The library still owns the size. Don't put the size in Redux — that's drift waiting to happen.
 
+**If you need a toggle button whose icon flips when the panel is collapsed (whether by click OR by drag-to-collapse), mirror only the BOOLEAN in `useState` and update it inside `onResize`:**
+
+```tsx
+const [collapsed, setCollapsed] = useState(false);
+
+const trackCollapse: OnPanelResize = (next, _id, prev) => {
+  if (prev === undefined) return;             // first mount — skip
+  const wasCollapsed = prev.asPercentage === 0;
+  const isCollapsed = next.asPercentage === 0;
+  if (wasCollapsed !== isCollapsed) setCollapsed(isCollapsed);
+};
+
+<Panel
+  id="sidebar"
+  panelRef={sidebarRef}
+  collapsible
+  collapsedSize="0%"
+  defaultSize="20%"
+  minSize="5%"
+  onResize={trackCollapse}
+/>
+```
+
+The `useState` here tracks **intent** (open/closed boolean) — NOT size. Size still lives in the library. This is the only legitimate `useState` you should add for a panel.
+
 ---
 
 ## §5 — Conditional panels (mount/unmount, not just collapse)
@@ -426,7 +454,26 @@ export const cookieStorage: LayoutStorage = {
 };
 ```
 
-Note: `useDefaultLayout` only runs on the client (it's in a `'use client'` component). For SSR-correct first paint with conditional panels, also pass an explicit `defaultLayout` from cookies in the server page (read the cookie matching the same storage key).
+Note: `useDefaultLayout` only runs on the client (it's in a `'use client'` component). For SSR-correct first paint with conditional panels, ALSO read the toggle state from a cookie on the server so the initial render mounts the correct set of panels:
+
+```tsx
+// Server page — page.tsx
+const toggles = await readJsonCookie<Toggles>("panels:demo-05:toggles");
+return (
+  <ConditionalWorkbench initialShowRight={toggles?.showRight ?? true} />
+);
+
+// Client component
+const [showRight, setShowRight] = useState(initialShowRight);
+useEffect(() => {
+  // persist toggle state so SSR can pick the right initial set next time
+  document.cookie = `panels:demo-05:toggles=${encodeURIComponent(JSON.stringify({ showRight }))}; path=/; max-age=31536000; SameSite=Lax`;
+}, [showRight]);
+const panelIds = ["left", "center", ...(showRight ? ["right"] : [])];
+const { defaultLayout, onLayoutChanged } = useDefaultLayout({ id, panelIds, storage: cookieStorage });
+```
+
+Working example: [`05-conditional-panels/`](../../../app/(ssr)/ssr/demos/resizables/05-conditional-panels/).
 
 ---
 
@@ -517,7 +564,102 @@ Each separator is independent — pulling separator B doesn't move separator A. 
 12. **Don't rely on `Layout` being an array.** v4 layout is `{ [panelId: string]: number }`. v3-shaped persisted data needs migration (the `useDefaultLayout` hook does it automatically via `readLegacyLayout`; if you wrote your own persistence in v3, migrate manually).
 13. **`Panel`'s `className`/`style` apply to a NESTED inner div, not the outer `data-panel` div.** Target the outer with `[data-panel]` selector or `elementRef`.
 14. **Don't expect `onCollapse`/`onExpand`.** Removed in v4. Detect transitions in `onResize` by comparing `prev.asPercentage` to `next.asPercentage`.
-15. **Don't forget `focus:outline-none` on a custom Separator.** The library sets `tabIndex={0}`, so clicking the separator focuses it; without that class the browser paints a near-white default outline that's invisible in light mode but jarring in dark mode. Style all four `data-separator` states (`default`/`hover`/`focus`/`dragging`), not just `hover`. See §1 for the canonical class list, or use the project wrapper.
+15. **Don't forget `focus:outline-none` on a custom Separator.** The library sets `tabIndex={0}`, so clicking the separator focuses it; without that class the browser paints a near-white default outline that's invisible in light mode but jarring in dark mode. Style `hover`, `active`, AND `dragging` data-states — not just `hover`. See §1 for the canonical class list, or use a project wrapper.
+16. **Don't set sidebar `minSize` too high.** Project convention: sidebars use `minSize="5%"` (or `"8%"` if it's a *primary* sidebar that should never go invisibly small). **`minSize="12%"` and up is wrong** — agents do this constantly and it ruins the UX because users can't shrink the sidebar to a comfortable size before collapsing. Main / reader panels can use bigger mins (20–30%) since they're the focus area. Fixed rails (activity bar, etc.) use `minSize=maxSize=defaultSize="48px"` (or whatever pixel size).
+17. **Don't roll your own "is this collapsed" tracking with `useEffect` reading the ref.** If you need a button icon to flip on collapse, mirror only the `boolean` (intent) in `useState` and update it inside `onResize` by comparing `prev.asPercentage === 0` to `next.asPercentage === 0`. The library still owns the size; you only own the icon flip. Use [`_lib/RegisteredPanel.tsx`](../../../app/(ssr)/ssr/demos/resizables/_lib/RegisteredPanel.tsx) — it does this for you and registers the ref with the cross-portal provider.
+18. **Don't render your own `<header>` element inside the page body.** Use [`<PageHeader>`](../../../features/shell/components/header/PageHeader.tsx) — it portals into the shell's already-glass header. A custom in-body header double-stacks the chrome and leaves an empty gap at the bottom.
+19. **Don't add padding / borders / `bg-*` around `TapTargetButton`s.** The component already includes 44pt touch target, glass disc, focus ring, and tooltip. Wrapping in `<div className="p-1 rounded hover:bg-accent">` doubles the padding and breaks the visual contract.
+20. **Don't make the whole page `'use client'`.** The page is a Server Component. Add `'use client'` only at small leaves — `ClientGroup`, `RegisteredPanel`, `Handle`, `HeaderControls`, providers. Server-component children pass through `<Panel>` as `children`. Reference: [`app/(a)/agents/[id]/build/page.tsx`](../../../app/(a)/agents/[id]/build/page.tsx).
+21. **Don't put `bg-*` on the root of `<PageHeader>` content.** The shell header is the glass surface. Adding a background on the injected content breaks the visual.
+
+---
+
+## §8.5 — Server-first page composition (this is the project pattern)
+
+**The page must be a Server Component.** Push `'use client'` down to the smallest possible islands. The reference is [`app/(a)/agents/[id]/build/page.tsx`](../../../app/(a)/agents/[id]/build/page.tsx); the demos at `/ssr/demos/resizables/*` follow the same shape.
+
+### The skeleton
+
+```tsx
+// page.tsx — SERVER COMPONENT (no 'use client')
+import { Panel } from "react-resizable-panels";
+import PageHeader from "@/features/shell/components/header/PageHeader";
+import { ClientGroup } from "../_lib/ClientGroup";
+import { Handle } from "../_lib/Handle";
+import { PanelControlProvider } from "../_lib/PanelControlProvider";
+import { RegisteredPanel } from "../_lib/RegisteredPanel";
+import { readLayoutCookie } from "../_lib/readLayoutCookie";
+import { MyHeaderControls } from "./HeaderControls";
+
+const COOKIE_NAME = "panels:my-page";
+
+export default async function MyPage() {
+  const defaultLayout = await readLayoutCookie(COOKIE_NAME);
+  return (
+    <PanelControlProvider>
+      <PageHeader>
+        <MyHeaderControls />          {/* client island — TapTargetButtons */}
+      </PageHeader>
+
+      <div className="h-full overflow-hidden">
+        <ClientGroup id="my-page" cookieName={COOKIE_NAME} defaultLayout={defaultLayout} className="h-full w-full">
+          <RegisteredPanel registerAs="sidebar" id="sidebar" collapsible collapsedSize="0%" defaultSize="20%" minSize="5%">
+            <SidebarContent />        {/* SERVER COMPONENT */}
+          </RegisteredPanel>
+          <Handle />
+          <Panel id="main" minSize="30%">
+            <MainContent />            {/* SERVER COMPONENT */}
+          </Panel>
+        </ClientGroup>
+      </div>
+    </PanelControlProvider>
+  );
+}
+```
+
+### What's a server vs client island here
+
+| Component | Boundary | Why |
+|---|---|---|
+| `page.tsx` | **server** | Awaits cookies, renders the tree |
+| `<PanelControlProvider>` | client | Holds the ref registry + collapsed state in `useState` |
+| `<PageHeader>` | server | Just a portal sender; no hooks |
+| `<MyHeaderControls>` | client | Reads context, has `onClick` handlers |
+| `<ClientGroup>` | client | Owns `onLayoutChanged` (function = not serializable across RSC) |
+| `<RegisteredPanel>` | client | Owns `usePanelRef()` + `onResize` + `useEffect(register)` |
+| `<Handle>` | client | Library `<Separator>` is `'use client'` |
+| `SidebarContent`, `MainContent` | **server** | Pure JSX — pass them as `children` to `<Panel>`. They can `await` data, read cookies, etc. |
+
+### `<PageHeader>` rules (non-negotiable)
+
+- `<PageHeader>` is a **server component** that portals its children into the shell header center slot. The shell header already has the glass background; you don't add it.
+- **Do NOT render your own `<header>` element inside the page body.** If you do, you double-stack headers and leave a gap at the bottom.
+- Children must be **self-contained and transparent at the root** — never give the root child `bg-card`, `bg-muted`, or any background class. The shell header is the surface; let it show through.
+- Use **TapTargetButtons** for icons (`PanelLeftTapButton`, `PanelRightTapButton`, `TerminalTapButton`, `MessageTapButton`, etc., from [`components/icons/tap-buttons.tsx`](../../../components/icons/tap-buttons.tsx)). They include their own padding, glass disc, focus ring, and tooltip — **don't wrap them in extra padding** or add `className="p-1 rounded hover:bg-accent"` around them.
+- For non-icon content (titles, subtitles), use plain text spans/h1 with no bg — see [`_lib/DemoTitle.tsx`](../../../app/(ssr)/ssr/demos/resizables/_lib/DemoTitle.tsx).
+
+### Cross-portal panel control via `<PanelControlProvider>`
+
+The header is portaled into a different DOM subtree than the panels. **React Context propagates through portals along the React tree, NOT the DOM tree** — so a Provider above both `<PageHeader>` and the page body bridges the two sides.
+
+[`_lib/PanelControlProvider.tsx`](../../../app/(ssr)/ssr/demos/resizables/_lib/PanelControlProvider.tsx) holds:
+- A `Map<name, RefObject<PanelImperativeHandle>>` registry
+- A `Record<name, boolean>` collapsed-intent map
+- `register(name, ref)` / `setCollapsed(name, value)` / `toggle(name)` / `isCollapsed(name)`
+
+[`_lib/RegisteredPanel.tsx`](../../../app/(ssr)/ssr/demos/resizables/_lib/RegisteredPanel.tsx) wraps `<Panel>` and:
+1. Acquires a ref via `usePanelRef()`
+2. Publishes it to the provider via `useEffect(() => register(name, ref))`
+3. Updates collapsed-intent on every `onResize` transition
+
+Header buttons read `isCollapsed(name)` to flip their icon and call `toggle(name)` on click. **Library still owns size.** Provider only owns intent + ref bookkeeping.
+
+### Mount/unmount panels (different beast)
+
+If you genuinely want to remove a panel from the DOM (not collapse it), follow [`05-conditional-panels/`](../../../app/(ssr)/ssr/demos/resizables/05-conditional-panels/):
+- A separate `<MountStateProvider>` holds `showRight` boolean + a cookie writer.
+- Server reads the toggle cookie so the SSR pass mounts the correct set of panels (no flash).
+- A small client `<ConditionalGroup>` renders `<Group>` with `useDefaultLayout({ panelIds })` so each combination gets its own remembered layout.
 
 ---
 
@@ -526,9 +668,11 @@ Each separator is independent — pulling separator B doesn't move separator A. 
 - **Theme-styled wrappers exist.** Prefer importing `ResizablePanelGroup`/`ResizablePanel`/`ResizableHandle` from [`@/components/ui/resizable`](../../../components/ui/resizable.tsx) when you want the standard handle styling and theme-aware focus rings. They're thin v4-aware wrappers around `Group`/`Panel`/`Separator` and they're already `'use client'`.
 - **For SSR-first pages**, render `<Group>` directly (it carries its own `'use client'`) or use a hand-written `'use client'` wrapper when you need callbacks. The shadcn wrapper is always client; if you mount it from a Server Component, you cannot pass `onLayoutChanged` from the server side.
 - **Cookie naming convention:** `panels:${groupId}` (e.g. `panels:demo-01`, `panels:vscode-shell`). Keep all panel-layout cookies under the `panels:` namespace so they're easy to clear and find in devtools.
+- **Sidebar `minSize` convention:** **5%** by default. **8%** for primary sidebars that should never go invisibly small. Anything **≥12%** is too restrictive — agents have a strong tendency to over-set this. Main / reader / editor panels: 20–30%. Fixed rails (activity bar): `minSize=maxSize=defaultSize="48px"`.
 - **Layout state lives in Redux only when** a non-adjacent component needs to toggle a panel (toolbar button → panel rendered elsewhere). Keep only the *intent* (boolean isOpen) in Redux; let the library own the *size*.
 - **Window Panels (overlays) are a different system.** [`features/window-panels/`](../../../features/window-panels/) is for floating windows, modals, sheets, drawers — overlays. `react-resizable-panels` is for split-pane layouts. Don't mix them.
-- **Page wrapper convention:** `<div className="h-[calc(100dvh-var(--header-height))] overflow-hidden">` — sets full viewport height minus the 2.5rem header, hides overflow so child scrolls are contained.
+- **Page wrapper convention with `<PageHeader>`:** when you use the PageHeader portal (the standard for this codebase), the page body just needs `<div className="h-full overflow-hidden">` — the shell already accounts for the header. Do NOT use `h-[calc(100dvh-var(--header-height))]` AND a custom body header — that double-stacks. The legacy in-body-header convention only applies to pages that opt out of `<PageHeader>` (which you should not).
+- **TapTargetButtons for header icons:** Import from [`components/icons/tap-buttons.tsx`](../../../components/icons/tap-buttons.tsx). Available pre-made: `PanelLeftTapButton`, `PanelRightTapButton`, `TerminalTapButton`, `MessageTapButton`, `MenuTapButton`, `SettingsTapButton`, `SearchTapButton`, `Settings2TapButton`, `BellTapButton`, `PlayTapButton`, `PlusTapButton`, `XTapButton`, `SaveTapButton`, `WrenchTapButton`, `BugTapButton`, `RobotTapButton`, etc. All variants take `onClick`, `ariaLabel`, `tooltip`. Do NOT wrap them in containers with padding or borders — they already have a 44pt target + 32px glass disc + focus ring.
 - **Mobile:** resizable panels collapse poorly on phones. Use `useIsMobile()` and swap to a stacked layout or drawer on mobile widths. (Pattern documented per CLAUDE.md "NEVER tabs on mobile, NEVER nested scrolling.")
 - **Demos that prove every pattern in this skill:** [`app/(ssr)/ssr/demos/resizables/`](../../../app/(ssr)/ssr/demos/resizables/). Refer to a demo whose route name matches your task before writing new code.
 
@@ -572,7 +716,13 @@ import type {
 - [ ] If SSR: cookie path used (server reads → `defaultLayout` → client wrapper writes). NOT `localStorage`.
 - [ ] No `<div>` between `<Group>` and `<Panel>` / `<Separator>`.
 - [ ] If using imperative API across the tree: Redux holds intent (boolean), one effect drives `panelRef`. Size stays in the library.
-- [ ] Custom Separator has `focus:outline-none` AND explicit styling for `data-[separator=hover|focus|dragging]` (not just `hover`).
+- [ ] Custom Separator has `focus:outline-none` AND explicit styling for `data-[separator=hover|active|dragging]` (not just `hover`).
+- [ ] Sidebar `minSize` is `"5%"` or `"8%"`, not 12+ percent. Main panel `minSize` is 20–30%. Fixed rails set `min=max=default` to the same pixel value.
+- [ ] Page is a Server Component (no `'use client'` at the top of `page.tsx`). Function is `async`, awaits cookies, returns JSX.
+- [ ] Header content goes through `<PageHeader>` — no `<header>` element in the page body.
+- [ ] Header icons are `TapTargetButton`s from `components/icons/tap-buttons.tsx`, with no wrapping padding/borders.
+- [ ] Cross-component toggles (header button → panel) go through `<PanelControlProvider>` + `<RegisteredPanel>` (Context preserves across portal).
+- [ ] Panel content (Sidebar, Editor, etc.) is server-rendered — passed as `children` to `<Panel>`, NOT inlined in a `'use client'` wrapper.
 
 ---
 

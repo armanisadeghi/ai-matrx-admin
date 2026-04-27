@@ -31,6 +31,7 @@ export function useShare() {
             setCopied(true);
             setTimeout(() => setCopied(false), 2000);
         } catch {
+            // TODO(browser-dialog-cleanup): replace with <Dialog /> + <Input />
             // Last resort: prompt
             window.prompt('Copy this link:', url);
         }

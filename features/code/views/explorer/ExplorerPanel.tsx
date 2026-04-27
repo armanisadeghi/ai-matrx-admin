@@ -6,20 +6,23 @@ import {
   FilePlus,
   FolderPlus,
   Home,
-  Info,
   MoreHorizontal,
+  Plug,
   RefreshCw,
   Server,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { loadUserFileTree } from "@/features/files/redux/thunks";
 import {
+  selectActiveSandboxId,
   selectExplorerRootOverride,
   setActiveView,
   setExplorerRootOverride,
 } from "../../redux/codeWorkspaceSlice";
 import { useCodeWorkspace } from "../../CodeWorkspaceProvider";
 import { SidePanelHeader, SidePanelAction } from "../SidePanelChrome";
+import { CloudFilesExplorer } from "./CloudFilesExplorer";
 import { FileTree } from "./FileTree";
 
 interface ExplorerPanelProps {
@@ -28,15 +31,41 @@ interface ExplorerPanelProps {
 
 const QUICK_ROOTS = ["/", "/home", "/workspace", "/data", "/tmp"];
 
+/**
+ * Single Explorer panel that swaps its body based on what the workspace is
+ * pointed at.
+ *
+ *   • No sandbox connected → the user's actual cloud files
+ *     (`cld_files` / `cld_folders`) — images, videos, PDFs, datasets,
+ *     code, anything they've uploaded. Reuses the same FileTree
+ *     component as `/cloud-files` so previews, drag-and-drop, and
+ *     keyboard nav all "just work". Path bar / quick-roots are hidden
+ *     because cloud files don't live on a unix-style path tree.
+ *   • Sandbox connected     → the sandbox's filesystem rendered as a
+ *     classic VSCode-style file tree, with a path bar + quick-roots for
+ *     fast navigation around the container.
+ *
+ * In both modes the header shows a sandbox-status button that jumps to the
+ * Sandboxes view, so users can pick / disconnect a sandbox without leaving
+ * the Explorer mental model. The user's saved code (`code_files`) remains
+ * one click away via the Library activity icon.
+ */
 export const ExplorerPanel: React.FC<ExplorerPanelProps> = ({ className }) => {
   const dispatch = useAppDispatch();
   const { filesystem } = useCodeWorkspace();
+  const activeSandboxId = useAppSelector(selectActiveSandboxId);
+  const userId = useAppSelector((state) => state.userAuth?.id ?? null);
   const override = useAppSelector(selectExplorerRootOverride);
   const rootPath = override ?? filesystem.rootPath;
   const [refreshKey, setRefreshKey] = useState(0);
   const [editing, setEditing] = useState(false);
   const [draftPath, setDraftPath] = useState(rootPath);
-  const isMock = filesystem.id === "mock";
+
+  // A sandbox is "connected" when the workspace has been pointed at one
+  // *and* the active filesystem adapter isn't the default Mock fallback.
+  // Using both checks keeps us honest if the adapter swaps out of band.
+  const sandboxConnected = Boolean(activeSandboxId) && filesystem.id !== "mock";
+  const showFileTree = sandboxConnected;
 
   const segments = useMemo(() => pathSegments(rootPath), [rootPath]);
 
@@ -62,13 +91,47 @@ export const ExplorerPanel: React.FC<ExplorerPanelProps> = ({ className }) => {
     setEditing(false);
   }, [draftPath, navigate]);
 
+  const refresh = useCallback(() => {
+    if (showFileTree) {
+      // Sandbox FS — bump the watcher key, the FileTree will refetch.
+      setRefreshKey((k) => k + 1);
+    } else if (userId) {
+      // Cloud files — re-hydrate the tree from the API. The realtime
+      // channel keeps us live, but explicit refresh is the user's
+      // escape hatch when something gets wedged.
+      void dispatch(loadUserFileTree({ userId }));
+    }
+  }, [dispatch, showFileTree, userId]);
+
+  const openSandboxes = useCallback(() => {
+    dispatch(setActiveView("sandboxes"));
+  }, [dispatch]);
+
+  // Subtitle gives the user one-glance confirmation of what they're
+  // looking at without us shouting "Mock Project" or other dev jargon.
+  const subtitle = sandboxConnected ? filesystem.label : "Your cloud files";
+
   return (
     <div className={cn("flex h-full min-h-0 flex-col", className)}>
       <SidePanelHeader
         title="Explorer"
-        subtitle={filesystem.label}
+        subtitle={subtitle}
         actions={
           <>
+            {sandboxConnected ? (
+              <SidePanelAction
+                icon={Plug}
+                label={`Sandbox: ${filesystem.label} — manage`}
+                onClick={openSandboxes}
+                active
+              />
+            ) : (
+              <SidePanelAction
+                icon={Server}
+                label="Connect a sandbox"
+                onClick={openSandboxes}
+              />
+            )}
             <SidePanelAction
               icon={FilePlus}
               label="New File"
@@ -82,7 +145,7 @@ export const ExplorerPanel: React.FC<ExplorerPanelProps> = ({ className }) => {
             <SidePanelAction
               icon={RefreshCw}
               label="Refresh Explorer"
-              onClick={() => setRefreshKey((k) => k + 1)}
+              onClick={refresh}
             />
             <SidePanelAction
               icon={MoreHorizontal}
@@ -93,92 +156,81 @@ export const ExplorerPanel: React.FC<ExplorerPanelProps> = ({ className }) => {
         }
       />
 
-      {isMock && (
-        <div className="flex items-start gap-1.5 border-b border-amber-200 bg-amber-50 px-3 py-1.5 text-[11px] text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-200">
-          <Info size={12} className="mt-[2px] shrink-0" />
-          <div className="flex-1">
-            <div>Viewing a demo project. Files aren't real.</div>
+      {showFileTree ? (
+        <>
+          {/* Path bar ─────────────────────────────────────────────────── */}
+          <div className="flex shrink-0 items-center gap-1 border-b border-neutral-200 px-2 py-1 text-[11px] dark:border-neutral-800">
             <button
               type="button"
-              onClick={() => dispatch(setActiveView("sandboxes"))}
-              className="mt-0.5 inline-flex items-center gap-1 text-[10px] font-medium text-amber-800 underline-offset-2 hover:underline dark:text-amber-100"
+              title="Go to adapter root"
+              onClick={() => navigate(filesystem.rootPath)}
+              className="flex h-5 w-5 items-center justify-center rounded-sm text-neutral-500 hover:bg-neutral-200 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
             >
-              <Server size={10} />
-              Connect a sandbox
+              <Home size={10} />
+            </button>
+            {editing ? (
+              <input
+                autoFocus
+                value={draftPath}
+                onChange={(e) => setDraftPath(e.target.value)}
+                onBlur={() => setEditing(false)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") commitDraft();
+                  if (e.key === "Escape") {
+                    setEditing(false);
+                    setDraftPath(rootPath);
+                  }
+                }}
+                className="h-5 flex-1 rounded-sm border border-blue-500 bg-white px-1 font-mono text-[11px] outline-none dark:bg-neutral-900"
+              />
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setDraftPath(rootPath);
+                  setEditing(true);
+                }}
+                className="flex min-w-0 flex-1 items-center truncate font-mono text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+                title="Click to edit path"
+              >
+                <BreadcrumbRow segments={segments} onJump={navigate} />
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={goUp}
+              disabled={rootPath === "/"}
+              title="Go up"
+              className="flex h-5 items-center rounded-sm px-1 text-neutral-500 hover:bg-neutral-200 hover:text-neutral-900 disabled:opacity-40 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
+            >
+              ..
             </button>
           </div>
-        </div>
+
+          {/* Quick-jump row — one-click hops to filesystem roots we expect to exist */}
+          <div className="flex shrink-0 flex-wrap gap-1 border-b border-neutral-200 px-2 py-1 dark:border-neutral-800">
+            {QUICK_ROOTS.map((p) => (
+              <button
+                key={p}
+                type="button"
+                onClick={() => navigate(p)}
+                className={cn(
+                  "rounded-sm px-1.5 py-[1px] font-mono text-[10px]",
+                  rootPath === p
+                    ? "bg-blue-500 text-white"
+                    : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200 dark:bg-neutral-800/60 dark:text-neutral-400 dark:hover:bg-neutral-700/60",
+                )}
+              >
+                {p}
+              </button>
+            ))}
+          </div>
+
+          <FileTree refreshKey={refreshKey} />
+        </>
+      ) : (
+        <CloudFilesExplorer />
       )}
-
-      {/* Path bar ───────────────────────────────────────────────────────── */}
-      <div className="flex shrink-0 items-center gap-1 border-b border-neutral-200 px-2 py-1 text-[11px] dark:border-neutral-800">
-        <button
-          type="button"
-          title="Go to adapter root"
-          onClick={() => navigate(filesystem.rootPath)}
-          className="flex h-5 w-5 items-center justify-center rounded-sm text-neutral-500 hover:bg-neutral-200 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
-        >
-          <Home size={10} />
-        </button>
-        {editing ? (
-          <input
-            autoFocus
-            value={draftPath}
-            onChange={(e) => setDraftPath(e.target.value)}
-            onBlur={() => setEditing(false)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") commitDraft();
-              if (e.key === "Escape") {
-                setEditing(false);
-                setDraftPath(rootPath);
-              }
-            }}
-            className="h-5 flex-1 rounded-sm border border-blue-500 bg-white px-1 font-mono text-[11px] outline-none dark:bg-neutral-900"
-          />
-        ) : (
-          <button
-            type="button"
-            onClick={() => {
-              setDraftPath(rootPath);
-              setEditing(true);
-            }}
-            className="flex min-w-0 flex-1 items-center truncate font-mono text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
-            title="Click to edit path"
-          >
-            <BreadcrumbRow segments={segments} onJump={navigate} />
-          </button>
-        )}
-        <button
-          type="button"
-          onClick={goUp}
-          disabled={rootPath === "/"}
-          title="Go up"
-          className="flex h-5 items-center rounded-sm px-1 text-neutral-500 hover:bg-neutral-200 hover:text-neutral-900 disabled:opacity-40 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
-        >
-          ..
-        </button>
-      </div>
-
-      {/* Quick-jump row — one-click hops to filesystem roots we expect to exist */}
-      <div className="flex shrink-0 flex-wrap gap-1 border-b border-neutral-200 px-2 py-1 dark:border-neutral-800">
-        {QUICK_ROOTS.map((p) => (
-          <button
-            key={p}
-            type="button"
-            onClick={() => navigate(p)}
-            className={cn(
-              "rounded-sm px-1.5 py-[1px] font-mono text-[10px]",
-              rootPath === p
-                ? "bg-blue-500 text-white"
-                : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200 dark:bg-neutral-800/60 dark:text-neutral-400 dark:hover:bg-neutral-700/60",
-            )}
-          >
-            {p}
-          </button>
-        ))}
-      </div>
-
-      <FileTree refreshKey={refreshKey} />
     </div>
   );
 };

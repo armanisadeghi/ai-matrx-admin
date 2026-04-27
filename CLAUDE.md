@@ -183,10 +183,52 @@ Stale docs cascade across parallel agents and corrupt the mental model of every 
 
 - **Icons:** Lucide React only — no emojis
 - **Backgrounds:** `bg-textured` for main backgrounds
-- **Dialogs:** Never use browser `alert()`/`confirm()`/`prompt()` — use `@/components/ui/alert-dialog`
 - **Loading:** Use component library loading states — no plain text "Loading..."
 - **Layout:** Space-efficient, minimal padding/gaps
 - **Page wrapper:** `<div className="h-[calc(100vh-2.5rem)] flex flex-col overflow-hidden">`
+
+### 🚫 Browser dialogs are BANNED — zero tolerance
+
+**Never call `window.confirm`, `window.alert`, `window.prompt`, or their bare forms (`confirm(...)`, `alert(...)`, `prompt(...)`) in any user-facing code.** They render with default OS chrome (no theming, no dark mode, ugly), block the entire main thread, are unstyleable, and ship a "this site is asking…" Chrome banner that screams "amateur hour." Treat them as if they don't exist in the language. This rule applies to demos, admin tools, test pages, internal panels, and prototypes — *every single thing* a real human will ever see.
+
+If you're tempted to write `confirm("Delete this?")`, stop. Use the components below.
+
+| Use case | Component |
+|---|---|
+| Confirm a destructive or irreversible action (replaces `window.confirm`) | `<ConfirmDialog />` from `@/components/ui/confirm-dialog` |
+| Show success / error / info to the user (replaces `window.alert`) | `toast.success(...)` / `toast.error(...)` from `sonner` |
+| Capture a single string from the user (replaces `window.prompt`) | An inline form, or a `<Dialog />` from `@/components/ui/dialog` with an `<Input />`, or an `EmailInputDialog`-style modal |
+| Unsaved-changes guard on close/leave | `<ConfirmDialog />` driven by a `beforeunload`/`router.events` blocker — **never** `confirm("Discard changes?")` |
+
+**`<ConfirmDialog />` canonical usage:**
+
+```tsx
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+
+const [target, setTarget] = useState<Item | null>(null);
+const [busy, setBusy] = useState(false);
+
+// Trigger:
+<button onClick={() => setTarget(item)}>Delete</button>
+
+// Render once at the bottom of the component:
+<ConfirmDialog
+  open={!!target}
+  onOpenChange={(open) => { if (!open && !busy) setTarget(null); }}
+  title="Delete item"
+  description={<>Permanently delete <b>{target?.name}</b>. This cannot be undone.</>}
+  confirmLabel="Delete"
+  variant="destructive"
+  busy={busy}
+  onConfirm={async () => {
+    setBusy(true);
+    try { await deleteItem(target!.id); setTarget(null); }
+    finally { setBusy(false); }
+  }}
+/>
+```
+
+**Boy-scout rule:** if you encounter an existing `window.confirm`/`window.alert`/`window.prompt`/bare `confirm(...)`/`alert(...)`/`prompt(...)` while working in a file, fix it in the same change. Every leftover is a customer-visible enterprise-grade-fail.
 
 ---
 

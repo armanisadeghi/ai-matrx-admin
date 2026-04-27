@@ -1,0 +1,152 @@
+"use client";
+
+/**
+ * features/code/views/explorer/CloudFilesExplorer.tsx
+ *
+ * Renders the user's actual cloud files (`cld_files` / `cld_folders`) inside
+ * the code workspace Explorer side panel — same data and same FileTree
+ * component used by `/cloud-files` and the floating CloudFiles window.
+ *
+ * Why this exists:
+ *   • The "Library" activity already shows saved code snippets (`code_files`).
+ *     The Explorer should show the user's *real* files (images, PDFs,
+ *     videos, audio, datasets, …) so previews and uploads stay one click
+ *     away no matter which sandbox / agent the user is in.
+ *   • By reusing `features/files/.../FileTree` we get virtualization,
+ *     keyboard nav, drag-and-drop moves, and consistent UX for free.
+ *   • Activating a file opens the global `filePreviewWindow` overlay,
+ *     so the user lands in the canonical PreviewPane (image/video/pdf/
+ *     markdown/code) without leaving the code workspace.
+ *
+ * Mounts `<CloudFilesRealtimeProvider>` locally so the cloud-files Redux
+ * tree is hydrated and stays live even when the user opens the workspace
+ * outside the `/cloud-files` route group.
+ */
+
+import { useCallback } from "react";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { CloudFilesRealtimeProvider } from "@/features/files/providers/CloudFilesRealtimeProvider";
+import { FileTree } from "@/features/files/components/core/FileTree/FileTree";
+import {
+  setActiveFileId,
+  setActiveFolderId,
+} from "@/features/files/redux/slice";
+import { selectTreeStatus } from "@/features/files/redux/selectors";
+import { openFilePreview } from "@/features/files/components/preview/openFilePreview";
+
+interface CloudFilesExplorerProps {
+  className?: string;
+}
+
+export function CloudFilesExplorer({ className }: CloudFilesExplorerProps) {
+  const dispatch = useAppDispatch();
+  const userId = useAppSelector((state) => state.userAuth?.id ?? null);
+
+  const handleSelectFile = useCallback(
+    (fileId: string) => {
+      dispatch(setActiveFileId(fileId));
+    },
+    [dispatch],
+  );
+
+  const handleSelectFolder = useCallback(
+    (folderId: string) => {
+      dispatch(setActiveFolderId(folderId));
+      dispatch(setActiveFileId(null));
+    },
+    [dispatch],
+  );
+
+  // Double-click / Enter → open the canonical preview surface in a
+  // floating WindowPanel. Same UX as clicking a file chip anywhere else
+  // in the app.
+  const handleActivateFile = useCallback((fileId: string) => {
+    openFilePreview(fileId);
+  }, []);
+
+  // Folder activation is already handled by the tree's expand/collapse —
+  // we still set the active folder so any consumer that cares (e.g.,
+  // breadcrumbs) stays in sync.
+  const handleActivateFolder = useCallback(
+    (folderId: string) => {
+      dispatch(setActiveFolderId(folderId));
+    },
+    [dispatch],
+  );
+
+  if (!userId) {
+    return (
+      <div className="flex h-full w-full items-center justify-center p-3 text-[11px] text-neutral-500">
+        Sign in to see your cloud files.
+      </div>
+    );
+  }
+
+  return (
+    <CloudFilesRealtimeProvider userId={userId}>
+      <CloudFilesExplorerBody
+        className={className}
+        onSelectFile={handleSelectFile}
+        onSelectFolder={handleSelectFolder}
+        onActivateFile={handleActivateFile}
+        onActivateFolder={handleActivateFolder}
+      />
+    </CloudFilesRealtimeProvider>
+  );
+}
+
+interface CloudFilesExplorerBodyProps {
+  className?: string;
+  onSelectFile: (fileId: string) => void;
+  onSelectFolder: (folderId: string) => void;
+  onActivateFile: (fileId: string) => void;
+  onActivateFolder: (folderId: string) => void;
+}
+
+function CloudFilesExplorerBody({
+  className,
+  onSelectFile,
+  onSelectFolder,
+  onActivateFile,
+  onActivateFolder,
+}: CloudFilesExplorerBodyProps) {
+  const treeStatus = useAppSelector(selectTreeStatus);
+
+  // First-load skeleton — avoids a "No cloud files yet" flash before
+  // the initial RPC resolves. Subsequent fetches keep the previous tree
+  // visible (no flash).
+  if (treeStatus === "idle" || treeStatus === "loading") {
+    return (
+      <div className="flex flex-col gap-1.5 p-3">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div
+            key={i}
+            className="h-4 animate-pulse rounded bg-neutral-200/70 dark:bg-neutral-800/60"
+            style={{ width: `${50 + ((i * 13) % 40)}%` }}
+          />
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <FileTree
+      className={className}
+      onSelectFile={onSelectFile}
+      onSelectFolder={onSelectFolder}
+      onActivateFile={onActivateFile}
+      onActivateFolder={onActivateFolder}
+      emptyState={
+        <div className="px-3 text-center text-[11px] leading-relaxed">
+          <div className="font-medium text-neutral-700 dark:text-neutral-300">
+            No cloud files yet
+          </div>
+          <div className="mt-1 text-neutral-500">
+            Upload files from the Cloud Files page or any chat input to see them
+            here.
+          </div>
+        </div>
+      }
+    />
+  );
+}

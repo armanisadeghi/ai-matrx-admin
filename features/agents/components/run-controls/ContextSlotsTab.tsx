@@ -41,6 +41,7 @@ import {
   clearBuilderContext,
 } from "@/features/agents/hooks/useBuilderContextSeed";
 import { cn } from "@/lib/utils";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 // =============================================================================
 // Selectors
@@ -145,6 +146,7 @@ interface ContextSlotsTabProps {
 
 export function ContextSlotsTab({ conversationId }: ContextSlotsTabProps) {
   const dispatch = useAppDispatch();
+  const [clearAllOpen, setClearAllOpen] = useState(false);
 
   const agentId = useAppSelector(
     useMemo(
@@ -222,14 +224,13 @@ export function ContextSlotsTab({ conversationId }: ContextSlotsTabProps) {
   );
 
   const handleClearAll = useCallback(() => {
-    if (
-      !window.confirm(
-        "Clear every context value for this agent? This removes them from the current instance AND from saved storage.",
-      )
-    )
-      return;
+    setClearAllOpen(true);
+  }, []);
+
+  const confirmClearAll = useCallback(() => {
     dispatch(clearInstanceContext(conversationId));
     if (agentId) clearBuilderContext(agentId);
+    setClearAllOpen(false);
   }, [conversationId, agentId, dispatch]);
 
   const hasAnyValues =
@@ -309,6 +310,17 @@ export function ContextSlotsTab({ conversationId }: ContextSlotsTabProps) {
           </div>
         </section>
       </div>
+      <ConfirmDialog
+        open={clearAllOpen}
+        onOpenChange={(open) => {
+          if (!open) setClearAllOpen(false);
+        }}
+        title="Clear all context"
+        description="Clear every context value for this agent? This removes them from the current instance AND from saved storage."
+        confirmLabel="Clear all"
+        variant="destructive"
+        onConfirm={confirmClearAll}
+      />
     </div>
   );
 }

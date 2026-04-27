@@ -88,6 +88,7 @@ import { useShortcutTrigger } from "@/features/agents/hooks/useShortcutTrigger";
 import type { ApplicationScope } from "@/features/agents/utils/scope-mapping";
 import { insertTextAtTextareaCursor } from "@/utils/text-insertion";
 import { toast } from "@/components/ui/use-toast";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useQuickActions } from "@/features/quick-actions/hooks/useQuickActions";
 import { getPlacementTypeMeta } from "@/features/prompt-builtins/constants";
 import { useNoteContextMenuGroups } from "./useNoteContextMenuGroups";
@@ -331,6 +332,8 @@ export function NoteContextMenuHeavy({
   const [skipSelectionRestore, setSkipSelectionRestore] = useState(false);
   const findReplaceOpenRef = useRef(false);
   const [contextDebugOpen, setContextDebugOpen] = useState(false);
+  const [permanentDeleteOpen, setPermanentDeleteOpen] = useState(false);
+  const [permanentDeleteBusy, setPermanentDeleteBusy] = useState(false);
 
   const capturedSelection = useRef<{
     text: string;
@@ -1380,26 +1383,7 @@ export function NoteContextMenuHeavy({
         {isAdmin && (
           <Item
             className="flex items-center gap-2 text-xs text-destructive focus:text-destructive [&_svg]:w-3.5 [&_svg]:h-3.5"
-            onSelect={async () => {
-              if (
-                !window.confirm(
-                  "Permanently delete this note? This cannot be undone.",
-                )
-              )
-                return;
-              try {
-                const { permanentlyDeleteNote } =
-                  await import("@/features/notes/service/notesService");
-                await permanentlyDeleteNote(noteId);
-                onDelete();
-                toast({ title: "Note permanently deleted" });
-              } catch (err) {
-                toast({
-                  title: "Failed to permanently delete",
-                  variant: "destructive",
-                });
-              }
-            }}
+            onSelect={() => setPermanentDeleteOpen(true)}
           >
             <Trash2 /> Permanently Delete
           </Item>
@@ -1475,6 +1459,36 @@ export function NoteContextMenuHeavy({
           }}
         />
       )}
+
+      <ConfirmDialog
+        open={permanentDeleteOpen}
+        onOpenChange={(open) => {
+          if (!open && !permanentDeleteBusy) setPermanentDeleteOpen(false);
+        }}
+        title="Permanently delete note"
+        description="Permanently delete this note? This cannot be undone."
+        confirmLabel="Permanently delete"
+        variant="destructive"
+        busy={permanentDeleteBusy}
+        onConfirm={async () => {
+          setPermanentDeleteBusy(true);
+          try {
+            const { permanentlyDeleteNote } =
+              await import("@/features/notes/service/notesService");
+            await permanentlyDeleteNote(noteId);
+            onDelete();
+            toast({ title: "Note permanently deleted" });
+            setPermanentDeleteOpen(false);
+          } catch (err) {
+            toast({
+              title: "Failed to permanently delete",
+              variant: "destructive",
+            });
+          } finally {
+            setPermanentDeleteBusy(false);
+          }
+        }}
+      />
     </>
   );
 }

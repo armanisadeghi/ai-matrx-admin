@@ -38,6 +38,7 @@ import {
 import { SandboxFilesystemAdapter } from "../../adapters/SandboxFilesystemAdapter";
 import { useCodeWorkspace } from "../../CodeWorkspaceProvider";
 import { openSessionReportTab } from "../../runtime/openSessionReport";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   selectActiveSandboxId,
   setActiveSandboxId,
@@ -73,6 +74,9 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
   const [creating, setCreating] = useState(false);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<SandboxInstance | null>(
+    null,
+  );
 
   const pollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -221,10 +225,6 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
 
   const deleteSandbox = useCallback(
     async (instance: SandboxInstance) => {
-      const confirmed = window.confirm(
-        `Delete sandbox ${instance.sandbox_id?.slice(0, 10) ?? instance.id.slice(0, 8)}?`,
-      );
-      if (!confirmed) return;
       setBusyId(instance.id);
       setError(null);
       try {
@@ -237,6 +237,7 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
         }
         if (activeId === instance.id) disconnect();
         await refresh();
+        setDeleteTarget(null);
       } catch (err) {
         setError(extractErrorMessage(err));
       } finally {
@@ -368,7 +369,7 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
             onConnect={() => connect(instance)}
             onStop={() => void stopSandbox(instance)}
             onExtend={() => void extendSandbox(instance)}
-            onDelete={() => void deleteSandbox(instance)}
+            onDelete={() => setDeleteTarget(instance)}
           />
         ))}
       </div>
@@ -377,6 +378,32 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
         busy={creating}
         onClose={() => setCreateModalOpen(false)}
         onCreate={createSandbox}
+      />
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => {
+          if (!open && busyId !== deleteTarget?.id) setDeleteTarget(null);
+        }}
+        title="Delete sandbox"
+        description={
+          deleteTarget ? (
+            <>
+              This will permanently delete sandbox{" "}
+              <span className="font-mono">
+                {deleteTarget.sandbox_id?.slice(0, 14) ??
+                  deleteTarget.id.slice(0, 8)}
+              </span>
+              . Any unsaved files in the container will be lost. This cannot be
+              undone.
+            </>
+          ) : null
+        }
+        confirmLabel="Delete sandbox"
+        variant="destructive"
+        busy={!!deleteTarget && busyId === deleteTarget.id}
+        onConfirm={() => {
+          if (deleteTarget) void deleteSandbox(deleteTarget);
+        }}
       />
     </div>
   );

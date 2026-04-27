@@ -50,7 +50,6 @@
 
 import { useEffect, useMemo, useRef } from "react";
 import { toast } from "sonner";
-import { shallowEqual } from "react-redux";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { useCodeWorkspace } from "../CodeWorkspaceProvider";
 import {
@@ -131,18 +130,18 @@ export function useApplyFsChangesToOpenTabs(
       ? activeSandboxId
       : GLOBAL_BUCKET_KEY);
 
-  // We don't subscribe to the whole bucket — the ring grows on every
-  // event and would re-run any deep-equal selector. Instead we subscribe
-  // to a tiny `{ length, lastSeq }` projection; the consumer effect then
-  // pulls the actual rows from the store via `getState()`.
-  const ringSummary = useAppSelector((state) => {
+  // Subscribe to a single primitive — the highest `seq` on the bucket's
+  // ring. When this advances, fresh events arrived; the effect below
+  // pulls the actual rows from `store.getState()` and walks them.
+  // Returning a primitive (number) — not `{ length, lastSeq }` — keeps
+  // React-Redux's `inputStabilityCheck` happy and skips a layer of
+  // shallowEqual bookkeeping. See `.cursor/skills/redux-selector-rules`
+  // → Rule 6.
+  const lastSeq = useAppSelector((state) => {
     const bucket = selectFsChangesBucket(state, bucketKey);
-    const last = bucket.ring[bucket.ring.length - 1];
-    return {
-      length: bucket.ring.length,
-      lastSeq: last?.seq ?? 0,
-    };
-  }, shallowEqual);
+    const tail = bucket.ring[bucket.ring.length - 1];
+    return tail ? tail.seq : 0;
+  });
 
   // Cursor — the highest `seq` we've already processed for this bucket.
   // Initialized lazily on first run so the hook never replays history.
@@ -163,10 +162,10 @@ export function useApplyFsChangesToOpenTabs(
   const adapterId = filesystem.id;
 
   useEffect(() => {
-    if (!ringSummary.length) return;
+    if (lastSeq === 0) return;
     const cursor = cursorRef.current;
     if (!cursor || cursor.bucketKey !== bucketKey) return;
-    if (ringSummary.lastSeq <= cursor.seq) return;
+    if (lastSeq <= cursor.seq) return;
 
     const state = store.getState();
     const bucket = selectFsChangesBucket(state, bucketKey);
@@ -311,7 +310,7 @@ export function useApplyFsChangesToOpenTabs(
       );
     }
 
-    cursorRef.current = { bucketKey, seq: ringSummary.lastSeq };
+    cursorRef.current = { bucketKey, seq: lastSeq };
 
     // Tiny aggregate toast when an agent edits many open files at once —
     // suppresses N individual successes from drowning the user.
@@ -348,16 +347,7 @@ export function useApplyFsChangesToOpenTabs(
         }
       }
     }
-  }, [
-    bucketKey,
-    ringSummary.length,
-    ringSummary.lastSeq,
-    adapterId,
-    dispatch,
-    store,
-    filesystem,
-    silent,
-  ]);
+  }, [bucketKey, lastSeq, adapterId, dispatch, store, filesystem, silent]);
 
   // Stable return — no value, this hook's only job is the side effect.
   return useMemo(() => undefined, []) as void;

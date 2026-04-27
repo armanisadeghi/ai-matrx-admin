@@ -916,6 +916,22 @@
        offset just opens space between the element and the ring while showing
        whatever surface (card, sheet, page bg) the element sits on. */
     --tw-ring-offset-color: transparent;
+
+    /* Pin every element's outline-color to our themed --ring BEFORE focus
+       arrives. Why: Tailwind v4 expanded `transition-colors` to include
+       `outline-color`. With the original CSS default (`outline-color:
+       currentColor`), the inherited value on most elements is the foreground
+       text color — near-white in dark mode. When focus arrived, our
+       `*:focus-visible { outline: 2px solid hsl(var(--ring)) }` rule changed
+       outline-color from currentColor (≈ white) to --ring (gray), and any
+       element carrying `transition-colors` faded between the two over 150ms.
+       That fade was the persistent "half-second white flash" on Tabbing onto
+       the resizable Separator (which uses transition-colors for its hover/
+       active background swap). By pre-setting outline-color globally, the
+       :focus-visible rule below sets the same value the element already had,
+       so the transition has nothing to animate — focus appears instantly,
+       and other color transitions (background, border, etc.) still work. */
+    outline-color: hsl(var(--ring));
   }
 
   /* Native focus outline — replace the UA default color with our themed --ring.

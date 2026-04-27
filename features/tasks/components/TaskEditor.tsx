@@ -51,6 +51,7 @@ import TaskAttachmentsPanel from "./TaskAttachmentsPanel";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { cn } from "@/utils/cn";
 
 type Priority = "low" | "medium" | "high" | null;
@@ -106,6 +107,7 @@ function TaskEditorInner({ taskId }: { taskId: string }) {
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [idCopied, setIdCopied] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   const [comments, setComments] = useState<
     { id: string; content: string; user_id: string; created_at: string }[]
@@ -197,9 +199,12 @@ function TaskEditorInner({ taskId }: { taskId: string }) {
     dispatch(clearTaskEdit(taskId));
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (isDeleting) return;
-    if (!confirm("Delete this task? This cannot be undone.")) return;
+    setDeleteConfirmOpen(true);
+  };
+
+  const confirmDelete = async () => {
     setIsDeleting(true);
     try {
       await dispatch(
@@ -208,6 +213,7 @@ function TaskEditorInner({ taskId }: { taskId: string }) {
           projectId: task.project_id ?? "__unassigned__",
         }),
       );
+      setDeleteConfirmOpen(false);
     } finally {
       setIsDeleting(false);
     }
@@ -685,6 +691,18 @@ function TaskEditorInner({ taskId }: { taskId: string }) {
           </section>
         </div>
       </div>
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        onOpenChange={(open) => {
+          if (!open && !isDeleting) setDeleteConfirmOpen(false);
+        }}
+        title="Delete task"
+        description="Delete this task? This cannot be undone."
+        confirmLabel="Delete"
+        variant="destructive"
+        busy={isDeleting}
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 }

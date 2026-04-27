@@ -18,7 +18,7 @@
  * owns matching, applying, and reconciling.
  */
 
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export type PendingPatchStatus = "pending" | "applied" | "rejected";
 
@@ -207,6 +207,12 @@ const EMPTY_PATCH_LIST: PendingPatch[] = [];
 export const selectCodePatches = (state: WithCodePatches) =>
   state.codePatches ?? initialState;
 
+/**
+ * Returns the raw patch list for a tab, or a stable empty array. The
+ * inner selector reads a slice ref directly so it's safe to call
+ * `useAppSelector` on without further memoization — the only allocation
+ * happens when the slice itself changes.
+ */
 export const selectAllPatchesForTab =
   (tabId: string | null | undefined) =>
   (state: WithCodePatches): PendingPatch[] => {
@@ -214,14 +220,36 @@ export const selectAllPatchesForTab =
     return selectCodePatches(state).byTabId[tabId] ?? EMPTY_PATCH_LIST;
   };
 
-export const selectPendingPatchesForTab =
-  (tabId: string | null | undefined) =>
-  (state: WithCodePatches): PendingPatch[] => {
-    const all = selectAllPatchesForTab(tabId)(state);
-    return all.filter((p) => p.status === "pending");
-  };
+/**
+ * Returns only the `pending` patches for a tab. `.filter()` allocates a
+ * new array, so this MUST be memoized with `createSelector` — otherwise
+ * React-Redux's `inputStabilityCheck` (dev-only, runs the selector
+ * twice per render) sees two different array references and fires the
+ * "Selector unknown returned a different result" warning.
+ *
+ * Factory pattern: callers should `useMemo(() => selectPendingPatchesForTab(tabId), [tabId])`
+ * so the same memoized instance is reused across renders (Rule 7 in
+ * `.cursor/skills/redux-selector-rules`). Without that, every render
+ * creates a fresh selector with an empty cache — still safe (each
+ * instance is internally consistent within a single render) but it
+ * forces the filter to recompute on every selector read.
+ */
+export const selectPendingPatchesForTab = (tabId: string | null | undefined) =>
+  createSelector([selectAllPatchesForTab(tabId)], (all): PendingPatch[] =>
+    all.length === 0
+      ? EMPTY_PATCH_LIST
+      : all.filter((p) => p.status === "pending"),
+  );
 
-export const selectPendingPatchCountForTab =
-  (tabId: string | null | undefined) =>
-  (state: WithCodePatches): number =>
-    selectPendingPatchesForTab(tabId)(state).length;
+/**
+ * Count of pending patches for a tab. Built on top of the memoized
+ * pending selector so we don't re-filter the list when callers only
+ * need the count. Returns a primitive, so no extra memoization is
+ * required at the use site.
+ */
+export const selectPendingPatchCountForTab = (
+  tabId: string | null | undefined,
+) => {
+  const pending = selectPendingPatchesForTab(tabId);
+  return (state: WithCodePatches): number => pending(state).length;
+};

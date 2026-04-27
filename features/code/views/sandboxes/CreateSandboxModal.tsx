@@ -77,7 +77,8 @@ export const CreateSandboxModal: React.FC<CreateSandboxModalProps> = ({
         const resp = await fetch(
           `/api/templates?tier=${encodeURIComponent(tier)}`,
         );
-        if (!resp.ok) throw new Error(`Templates fetch failed (${resp.status})`);
+        if (!resp.ok)
+          throw new Error(`Templates fetch failed (${resp.status})`);
         const data = (await resp.json()) as SandboxTemplateListResponse;
         if (cancelled) return;
         setTemplates(data.templates ?? []);
@@ -188,24 +189,6 @@ export const CreateSandboxModal: React.FC<CreateSandboxModalProps> = ({
               {TIER_GUIDANCE[tier]}
             </p>
           </Field>
-          <div className="flex items-start gap-2 rounded-sm border border-blue-200 bg-blue-50 px-2 py-1.5 text-[11px] text-blue-900 dark:border-blue-900/50 dark:bg-blue-950/40 dark:text-blue-200">
-            <Database size={12} className="mt-0.5 shrink-0" />
-            <div className="flex-1">
-              <div className="font-medium">
-                Your saved data on {tier === "hosted" ? "Hosted" : "EC2"}:{" "}
-                {persistence.loading ? (
-                  <span className="text-neutral-500">…</span>
-                ) : (
-                  formatPersistenceSize(tierInfo?.current_size_bytes)
-                )}
-              </div>
-              <div className="text-[10px] leading-snug opacity-80">
-                {tierInfo?.sandbox_count
-                  ? `${tierInfo.sandbox_count} sandbox${tierInfo.sandbox_count === 1 ? "" : "es"} reference this volume.`
-                  : "Your /home/agent is restored automatically when you create a new sandbox on this tier."}
-              </div>
-            </div>
-          </div>
           <Field label="Template">
             <select
               disabled={loadingTemplates || busy}
@@ -239,7 +222,9 @@ export const CreateSandboxModal: React.FC<CreateSandboxModalProps> = ({
               max={60 * 24}
               value={ttlMinutes}
               onChange={(e) =>
-                setTtlMinutes(e.target.value === "" ? "" : Number(e.target.value))
+                setTtlMinutes(
+                  e.target.value === "" ? "" : Number(e.target.value),
+                )
               }
               className="h-7 w-32 rounded-sm border border-neutral-300 bg-white px-2 text-[12px] dark:border-neutral-700 dark:bg-neutral-900"
             />

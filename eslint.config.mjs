@@ -35,6 +35,52 @@ export default [
             'react/no-unescaped-entities': 'off',
             'import/no-anonymous-default-export': 'off',
             'no-restricted-imports': ['error', windowPanelsImportRestriction],
+            // Browser dialogs are banned — see CLAUDE.md "Browser dialogs are BANNED".
+            // Use <ConfirmDialog /> from @/components/ui/confirm-dialog,
+            // or toast.success/error from sonner, or a proper <Dialog />.
+            // Set to 'warn' (not 'error') only because the codebase has a
+            // long tail of legacy violations being cleaned up incrementally.
+            // For new code, treat the warning as a hard stop.
+            'no-alert': 'warn',
+            'no-restricted-globals': [
+                'warn',
+                {
+                    name: 'confirm',
+                    message:
+                        'Browser confirm() is banned. Use <ConfirmDialog /> from @/components/ui/confirm-dialog. See CLAUDE.md.',
+                },
+                {
+                    name: 'alert',
+                    message:
+                        'Browser alert() is banned. Use toast.success/error from sonner. See CLAUDE.md.',
+                },
+                {
+                    name: 'prompt',
+                    message:
+                        'Browser prompt() is banned. Use a <Dialog /> with an <Input />. See CLAUDE.md.',
+                },
+            ],
+            'no-restricted-properties': [
+                'warn',
+                {
+                    object: 'window',
+                    property: 'confirm',
+                    message:
+                        'window.confirm is banned. Use <ConfirmDialog /> from @/components/ui/confirm-dialog. See CLAUDE.md.',
+                },
+                {
+                    object: 'window',
+                    property: 'alert',
+                    message:
+                        'window.alert is banned. Use toast.success/error from sonner. See CLAUDE.md.',
+                },
+                {
+                    object: 'window',
+                    property: 'prompt',
+                    message:
+                        'window.prompt is banned. Use a <Dialog /> with an <Input />. See CLAUDE.md.',
+                },
+            ],
         },
     },
     {

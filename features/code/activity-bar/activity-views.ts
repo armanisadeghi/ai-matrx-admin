@@ -20,6 +20,11 @@ export interface ActivityViewDescriptor {
 
 export const ACTIVITY_VIEWS: ActivityViewDescriptor[] = [
   { id: "explorer", label: "Explorer", icon: Files, shortcut: "\u2318\u21E7E" },
+  // Sandboxes sits directly under Explorer so connecting / switching a
+  // sandbox is a one-click move from the user's files. The Explorer's
+  // own header also surfaces a sandbox status button that jumps here.
+  { id: "sandboxes", label: "Sandboxes", icon: Server },
+  { id: "library", label: "Code Library", icon: Library },
   { id: "search", label: "Search", icon: Search, shortcut: "\u2318\u21E7F" },
   {
     id: "source-control",
@@ -34,8 +39,6 @@ export const ACTIVITY_VIEWS: ActivityViewDescriptor[] = [
     icon: Blocks,
     shortcut: "\u2318\u21E7X",
   },
-  { id: "sandboxes", label: "Sandboxes", icon: Server },
-  { id: "library", label: "Code Library", icon: Library },
 ];
 
 export function getActivityView(id: ActivityViewId): ActivityViewDescriptor {

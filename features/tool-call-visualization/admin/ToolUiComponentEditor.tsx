@@ -38,6 +38,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { ToolUiComponentRow } from "@/features/tool-call-visualization/dynamic/types";
 import {
@@ -181,6 +182,7 @@ export function ToolUiComponentEditor({
   const [activeTab, setActiveTab] = useState("inline");
   const [existingComponent, setExistingComponent] =
     useState<ToolUiComponentRow | null>(null);
+  const [markAsV2ConfirmOpen, setMarkAsV2ConfirmOpen] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -333,22 +335,16 @@ export function ToolUiComponentEditor({
   };
 
   const handleMarkAsV2 = () => {
-    if (
-      !confirm(
-        "Mark this component as contract version 2?\n\n" +
-          "Only do this AFTER rewriting inline_code, overlay_code, header_subtitle_code, " +
-          "and header_extras_code to consume the new contract: ({ entry, events, onOpenOverlay, toolGroupId, isPersisted }).\n\n" +
-          "v1 components are no longer rendered at runtime and fall back to GenericRenderer. " +
-          "Flipping to v2 without rewriting the code will cause render errors.",
-      )
-    ) {
-      return;
-    }
+    setMarkAsV2ConfirmOpen(true);
+  };
+
+  const confirmMarkAsV2 = () => {
     setFormData((prev) => ({ ...prev, contract_version: 2 }));
     toast({
       title: "Marked as v2",
       description: "Save the component to persist the contract version change.",
     });
+    setMarkAsV2ConfirmOpen(false);
   };
 
   const contractBanner =

@@ -3,7 +3,10 @@
 import React, { useState } from "react";
 import { FolderPlus, RefreshCw } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { loadCodeFilesList, loadCodeFolders } from "@/features/code-files/redux/thunks";
+import {
+  loadCodeFilesList,
+  loadCodeFolders,
+} from "@/features/code-files/redux/thunks";
 import { selectCodeFilesListStatus } from "@/features/code-files/redux/selectors";
 import { cn } from "@/lib/utils";
 import { SidePanelHeader, SidePanelAction } from "../SidePanelChrome";
@@ -59,16 +62,6 @@ export const LibraryPanel: React.FC<LibraryPanelProps> = ({ className }) => {
           </>
         }
       />
-
-      <div className="flex items-start gap-1.5 border-b border-blue-200 bg-blue-50 px-3 py-1.5 text-[11px] text-blue-900 dark:border-blue-900/60 dark:bg-blue-950/40 dark:text-blue-200">
-        <div className="flex-1">
-          Everything you save via{" "}
-          <span className="font-mono">Save to Code</span> or{" "}
-          <span className="font-mono">Save &amp; open in editor</span> shows up
-          here.
-        </div>
-      </div>
-
       <LibraryTree refreshKey={refreshKey} />
     </div>
   );

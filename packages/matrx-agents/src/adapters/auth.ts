@@ -1,7 +1,7 @@
 /**
  * AuthLike — resolver for the credentials attached to outbound AI requests.
  *
- * The package never reads `state.user` directly (doing so would couple it
+ * The package never reads `state.userProfile` directly (doing so would couple it
  * to the host's Redux shape). Instead, it asks the auth adapter at
  * dispatch time for the current access token OR fingerprint id. The
  * consumer's implementation reads whatever store / context / cookie it
