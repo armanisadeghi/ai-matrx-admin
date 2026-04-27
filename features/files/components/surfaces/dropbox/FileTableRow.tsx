@@ -23,6 +23,7 @@ import {
 } from "@/features/files/utils/format";
 import { FileIcon } from "@/features/files/components/core/FileIcon/FileIcon";
 import { FileContextMenu } from "@/features/files/components/core/FileContextMenu/FileContextMenu";
+import { FolderContextMenu } from "@/features/files/components/core/FolderContextMenu/FolderContextMenu";
 import { useFileActions } from "@/features/files/components/core/FileActions/useFileActions";
 import { FolderIconWithMembers } from "./FolderIconWithMembers";
 import { AccessBadge } from "./AccessBadge";
@@ -225,7 +226,11 @@ function FolderRow({
               </span>
             ) : null}
           </div>
-          <FolderRowActions visible={hovered} onShare={onOpenShare} />
+          <FolderRowActions
+            visible={hovered}
+            onShare={onOpenShare}
+            folderId={folder.id}
+          />
         </div>
       </td>
       <td className="px-4 py-2 text-muted-foreground whitespace-nowrap">—</td>
@@ -299,9 +304,14 @@ function RowActions({ visible, onShare, onCopyLink, fileId }: RowActionsProps) {
 interface FolderRowActionsProps {
   visible: boolean;
   onShare: () => void;
+  folderId: string;
 }
 
-function FolderRowActions({ visible, onShare }: FolderRowActionsProps) {
+function FolderRowActions({
+  visible,
+  onShare,
+  folderId,
+}: FolderRowActionsProps) {
   return (
     <div
       className={cn(
@@ -323,6 +333,15 @@ function FolderRowActions({ visible, onShare }: FolderRowActionsProps) {
       <IconButton label="Star" title="Coming soon" disabled>
         <Star className="h-3.5 w-3.5" />
       </IconButton>
+      <FolderContextMenu folderId={folderId}>
+        <IconButton
+          label="More"
+          onClick={(e) => e.stopPropagation()}
+          onDoubleClick={(e) => e.stopPropagation()}
+        >
+          <MoreHorizontal className="h-3.5 w-3.5" />
+        </IconButton>
+      </FolderContextMenu>
     </div>
   );
 }

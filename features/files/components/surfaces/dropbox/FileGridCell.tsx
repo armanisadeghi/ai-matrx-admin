@@ -16,6 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { formatFileSize } from "@/features/files/utils/format";
 import { MediaThumbnail } from "@/features/files/components/core/MediaThumbnail/MediaThumbnail";
 import { FileContextMenu } from "@/features/files/components/core/FileContextMenu/FileContextMenu";
+import { FolderContextMenu } from "@/features/files/components/core/FolderContextMenu/FolderContextMenu";
 import { useFileActions } from "@/features/files/components/core/FileActions/useFileActions";
 import type {
   CloudFileRecord,
@@ -247,6 +248,14 @@ function GridFolder({
           <GridIconButton label="Star" title="Coming soon" disabled>
             <Star className="h-3.5 w-3.5" />
           </GridIconButton>
+          <FolderContextMenu folderId={folder.id}>
+            <GridIconButton
+              label="More"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <MoreHorizontal className="h-3.5 w-3.5" />
+            </GridIconButton>
+          </FolderContextMenu>
         </div>
       </div>
 

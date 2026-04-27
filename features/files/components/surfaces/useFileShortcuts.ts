@@ -34,18 +34,23 @@ import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   selectActiveFileId,
+  selectActiveFolderId,
   selectAllFilesMap,
+  selectAllFoldersMap,
+  selectChildrenOfFolder,
   selectSelection,
 } from "../../redux/selectors";
 import {
   clearSelection,
   setActiveFileId,
+  setSelection,
 } from "../../redux/slice";
 import {
   deleteFile as deleteFileThunk,
   getSignedUrl as getSignedUrlThunk,
   uploadFiles as uploadFilesThunk,
 } from "../../redux/thunks";
+import { requestRename } from "../core/RenameDialog/RenameHost";
 
 interface PendingDelete {
   kind: "single" | "batch";
@@ -64,8 +69,13 @@ export function useFileShortcuts(): {
 } {
   const dispatch = useAppDispatch();
   const activeFileId = useAppSelector(selectActiveFileId);
+  const activeFolderId = useAppSelector(selectActiveFolderId);
   const selection = useAppSelector(selectSelection);
   const filesById = useAppSelector(selectAllFilesMap);
+  const foldersById = useAppSelector(selectAllFoldersMap);
+  const activeFolderChildren = useAppSelector((state) =>
+    selectChildrenOfFolder(state, activeFolderId ?? ""),
+  );
 
   const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null);
 
@@ -160,6 +170,52 @@ export function useFileShortcuts(): {
         return;
       }
 
+      // ⌘A / Ctrl+A — select every visible file + folder under the active
+      // folder. Skipped on subroutes (Trash, Shared, etc.) where activeFolderId
+      // isn't set; the user can still ⌘A inside an explicit list later if we
+      // expose more entry points.
+      if (onlyCmd && e.key.toLowerCase() === "a") {
+        const ids = [
+          ...activeFolderChildren.folderIds,
+          ...activeFolderChildren.fileIds,
+        ];
+        if (ids.length === 0) return;
+        e.preventDefault();
+        dispatch(setSelection({ selectedIds: ids, anchorId: ids[0] ?? null }));
+        return;
+      }
+
+      // F2 — rename. Targets, in priority order:
+      //   1. Single-selection file or folder
+      //   2. Active file (preview is open)
+      //   3. Active folder
+      if (e.key === "F2" && !cmdKey && !e.altKey && !e.shiftKey) {
+        const sel = selection.selectedIds;
+        if (sel.length === 1) {
+          const id = sel[0];
+          if (filesById[id]) {
+            e.preventDefault();
+            requestRename("file", id);
+            return;
+          }
+          if (foldersById[id]) {
+            e.preventDefault();
+            requestRename("folder", id);
+            return;
+          }
+        }
+        if (activeFileId && filesById[activeFileId]) {
+          e.preventDefault();
+          requestRename("file", activeFileId);
+          return;
+        }
+        if (activeFolderId && foldersById[activeFolderId]) {
+          e.preventDefault();
+          requestRename("folder", activeFolderId);
+          return;
+        }
+      }
+
       // Delete / Backspace — soft-delete. Prefer batch over single when a
       // multi-selection exists.
       if (e.key === "Delete" || e.key === "Backspace") {
@@ -181,7 +237,15 @@ export function useFileShortcuts(): {
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [activeFileId, dispatch, filesById, selection.selectedIds]);
+  }, [
+    activeFileId,
+    activeFolderId,
+    activeFolderChildren,
+    dispatch,
+    filesById,
+    foldersById,
+    selection.selectedIds,
+  ]);
 
   const clearPendingDelete = () => setPendingDelete(null);
 

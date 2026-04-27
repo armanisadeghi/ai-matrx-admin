@@ -82,6 +82,7 @@ import { OnboardingEmptyState } from "./OnboardingEmptyState";
 import { MobileStack } from "./MobileStack";
 import { PreviewPane } from "./PreviewPane";
 import { useFileShortcuts } from "./useFileShortcuts";
+import { RenameHost } from "@/features/files/components/core/RenameDialog/RenameHost";
 import { BulkActionsBar } from "./dropbox/BulkActionsBar";
 import { ContentHeader } from "./dropbox/ContentHeader";
 import { EmptyState } from "./dropbox/EmptyState";
@@ -523,6 +524,8 @@ function PageShellDesktop({
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        <RenameHost />
       </div>
     </DndContext>
   );

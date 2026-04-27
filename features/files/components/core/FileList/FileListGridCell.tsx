@@ -12,6 +12,7 @@ import { MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FileIcon } from "@/features/files/components/core/FileIcon/FileIcon";
 import { FileContextMenu } from "@/features/files/components/core/FileContextMenu/FileContextMenu";
+import { FolderContextMenu } from "@/features/files/components/core/FolderContextMenu/FolderContextMenu";
 import { formatFileSize, truncateFilename } from "@/features/files/utils/format";
 import type { CloudFileRecord, CloudFolderRecord } from "@/features/files/types";
 
@@ -103,7 +104,21 @@ function FileListGridCellImpl({
         className="absolute top-1 right-1 opacity-0 group-hover:opacity-100"
         onClick={(e) => e.stopPropagation()}
       >
-        {!isFolder ? (
+        {isFolder ? (
+          <FolderContextMenu
+            folderId={record.id}
+            onRename={onRename}
+            onMove={onMove}
+          >
+            <button
+              type="button"
+              aria-label="Folder actions"
+              className="flex h-6 w-6 items-center justify-center rounded bg-background/80 hover:bg-background"
+            >
+              <MoreHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
+            </button>
+          </FolderContextMenu>
+        ) : (
           <FileContextMenu
             fileId={record.id}
             onRename={onRename}
@@ -118,7 +133,7 @@ function FileListGridCellImpl({
               <MoreHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
             </button>
           </FileContextMenu>
-        ) : null}
+        )}
       </div>
     </div>
   );

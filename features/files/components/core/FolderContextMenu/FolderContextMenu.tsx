@@ -40,6 +40,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectFolderById } from "@/features/files/redux/selectors";
 import { deleteFolder as deleteFolderThunk } from "@/features/files/redux/thunks";
 import { extractErrorMessage } from "@/utils/errors";
+import { RenameDialog } from "@/features/files/components/core/RenameDialog/RenameDialog";
 
 export interface FolderContextMenuProps {
   folderId: string;
@@ -61,8 +62,12 @@ export function FolderContextMenu({
   const dispatch = useAppDispatch();
   const folder = useAppSelector((state) => selectFolderById(state, folderId));
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [renameOpen, setRenameOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  // Default rename handler opens the built-in dialog. Hosts can override.
+  const handleRename = onRename ?? (() => setRenameOpen(true));
 
   const handleDelete = useCallback(async () => {
     setDeleting(true);
@@ -84,13 +89,11 @@ export function FolderContextMenu({
           {children}
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
-          {onRename ? (
-            <DropdownMenuItem onClick={onRename}>
-              <Edit2 className="mr-2 h-4 w-4" />
-              Rename
-              <DropdownMenuShortcut>F2</DropdownMenuShortcut>
-            </DropdownMenuItem>
-          ) : null}
+          <DropdownMenuItem onClick={handleRename}>
+            <Edit2 className="mr-2 h-4 w-4" />
+            Rename
+            <DropdownMenuShortcut>F2</DropdownMenuShortcut>
+          </DropdownMenuItem>
           {onMove ? (
             <DropdownMenuItem onClick={onMove}>
               <FolderInput className="mr-2 h-4 w-4" />
@@ -103,9 +106,7 @@ export function FolderContextMenu({
               New folder inside
             </DropdownMenuItem>
           ) : null}
-          {onRename || onMove || onNewFolderInside ? (
-            <DropdownMenuSeparator />
-          ) : null}
+          <DropdownMenuSeparator />
           <DropdownMenuItem
             className="text-destructive focus:text-destructive"
             onClick={() => setConfirmOpen(true)}
@@ -155,6 +156,16 @@ export function FolderContextMenu({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {folder && !onRename ? (
+        <RenameDialog
+          open={renameOpen}
+          onOpenChange={setRenameOpen}
+          kind="folder"
+          resourceId={folderId}
+          currentName={folder.folderName}
+        />
+      ) : null}
     </>
   );
 }

@@ -70,6 +70,7 @@ import { openFolderPicker } from "@/features/files/components/pickers/CloudFiles
 import { openFilePreview } from "@/features/files/components/preview/openFilePreview";
 import { useFileActions } from "@/features/files/components/core/FileActions/useFileActions";
 import { FileInfoDialog } from "@/features/files/components/core/FileInfo/FileInfoDialog";
+import { RenameDialog } from "@/features/files/components/core/RenameDialog/RenameDialog";
 
 export interface FileContextMenuProps {
   fileId: string;
@@ -95,7 +96,13 @@ export function FileContextMenu({
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
   const [batchConfirmOpen, setBatchConfirmOpen] = useState(false);
+  const [renameOpen, setRenameOpen] = useState(false);
   const [busy, setBusy] = useState<"download" | "move" | "delete" | null>(null);
+
+  // When the host doesn't supply its own rename handler, fall back to the
+  // built-in RenameDialog so renaming works everywhere the menu is mounted.
+  const handleRename = onRename ?? (() => setRenameOpen(true));
+  const file = filesById[fileId];
 
   // When the right-clicked file is part of a multi-selection AND selection
   // has more than one item, the menu pivots to "batch actions" mode and
@@ -353,13 +360,11 @@ export function FileContextMenu({
 
           <DropdownMenuSeparator />
 
-          {onRename ? (
-            <DropdownMenuItem onClick={onRename}>
-              <Edit2 className="mr-2 h-4 w-4" />
-              Rename
-              <DropdownMenuShortcut>F2</DropdownMenuShortcut>
-            </DropdownMenuItem>
-          ) : null}
+          <DropdownMenuItem onClick={handleRename}>
+            <Edit2 className="mr-2 h-4 w-4" />
+            Rename
+            <DropdownMenuShortcut>F2</DropdownMenuShortcut>
+          </DropdownMenuItem>
           {onMove ? (
             <DropdownMenuItem onClick={onMove}>
               <FolderInput className="mr-2 h-4 w-4" />
@@ -475,6 +480,16 @@ export function FileContextMenu({
         open={infoOpen}
         onOpenChange={setInfoOpen}
       />
+
+      {file && !onRename ? (
+        <RenameDialog
+          open={renameOpen}
+          onOpenChange={setRenameOpen}
+          kind="file"
+          resourceId={fileId}
+          currentName={file.fileName}
+        />
+      ) : null}
     </>
   );
 }

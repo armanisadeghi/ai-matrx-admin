@@ -2,9 +2,10 @@
 // Utilities for managing dynamic favicons across the application
 
 import {
-  allNavigationLinks,
+  faviconRouteData,
   type FaviconConfig,
-} from "@/constants/navigation-links";
+  type FaviconRouteEntry,
+} from "@/constants/favicon-route-data";
 import { Metadata } from "next";
 
 // ─── System-route color families ──────────────────────────────────────────────
@@ -109,14 +110,14 @@ export function svgToDataURI(svg: string): string {
  */
 export function findNavigationLinkByPath(
   pathname: string,
-): (typeof allNavigationLinks)[0] | undefined {
+): FaviconRouteEntry | undefined {
   // Try exact match first
-  const exactMatch = allNavigationLinks.find((link) => link.href === pathname);
+  const exactMatch = faviconRouteData.find((link) => link.href === pathname);
   if (exactMatch) return exactMatch;
 
   // Try to match by route prefix (for nested routes)
   // Sort by href length (descending) to match more specific routes first
-  const sortedLinks = [...allNavigationLinks].sort(
+  const sortedLinks = [...faviconRouteData].sort(
     (a, b) => b.href.length - a.href.length,
   );
   return sortedLinks.find((link) => pathname.startsWith(link.href));
@@ -276,10 +277,9 @@ export function createCustomFaviconMetadata(
  * Useful for generating static favicons or documentation
  */
 export function getAllRoutesWithFavicons() {
-  return allNavigationLinks
+  return faviconRouteData
     .filter((link) => link.favicon)
     .map((link) => ({
-      label: link.label,
       href: link.href,
       favicon: link.favicon!,
     }));

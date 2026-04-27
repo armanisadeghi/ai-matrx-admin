@@ -84,22 +84,23 @@ export function RenameDialog({
 
   const handleSubmit = useCallback(async () => {
     const result = validateRenameInput(value, currentName);
-    if (!result.ok) {
+    if (result.ok === false) {
       setError(result.error);
       return;
     }
+    const nextName = result.value;
     setBusy(true);
     setError(null);
     try {
       if (kind === "file") {
         await dispatch(
-          renameFileThunk({ fileId: resourceId, newName: result.value }),
+          renameFileThunk({ fileId: resourceId, newName: nextName }),
         ).unwrap();
       } else {
         await dispatch(
           updateFolderThunk({
             folderId: resourceId,
-            patch: { folderName: result.value },
+            patch: { folderName: nextName },
           }),
         ).unwrap();
       }
