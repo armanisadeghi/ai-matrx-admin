@@ -4,6 +4,7 @@ import {
   resolveOrchestratorByTier,
   orchestratorJsonHeaders,
 } from "@/lib/sandbox/orchestrator-routing";
+import { reconcileUserSandboxes } from "@/lib/sandbox/reconcile";
 import type { SandboxConfig, SandboxTier } from "@/types/sandbox";
 
 export async function GET(request: NextRequest) {
@@ -139,13 +140,43 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const { data: activeInstances, error: countError } = await supabase
-      .from("sandbox_instances")
-      .select("id", { count: "exact" })
-      .eq("user_id", user.id)
-      .in("status", ["creating", "starting", "ready", "running"]);
+    const ACTIVE_STATUSES = ["creating", "starting", "ready", "running"];
+    const ACTIVE_LIMIT = 5;
 
-    if (!countError && activeInstances && activeInstances.length >= 5) {
+    const countActive = async () => {
+      const { data, error } = await supabase
+        .from("sandbox_instances")
+        .select("id", { count: "exact" })
+        .eq("user_id", user.id)
+        .in("status", ACTIVE_STATUSES)
+        .is("deleted_at", null);
+      return { data, error };
+    };
+
+    let { data: activeInstances, error: countError } = await countActive();
+
+    // Self-heal: if we're at the limit, ask each orchestrator whether the
+    // sandboxes the rows reference actually still exist. Rows whose
+    // containers are gone get marked destroyed so they free their slot.
+    // This catches the common case where an in-memory orchestrator restart
+    // (or an out-of-band container destroy) leaves Supabase rows stranded
+    // in 'ready'/'running' forever.
+    if (
+      !countError &&
+      activeInstances &&
+      activeInstances.length >= ACTIVE_LIMIT
+    ) {
+      const summary = await reconcileUserSandboxes(user.id);
+      if (summary.reconciled > 0) {
+        ({ data: activeInstances, error: countError } = await countActive());
+      }
+    }
+
+    if (
+      !countError &&
+      activeInstances &&
+      activeInstances.length >= ACTIVE_LIMIT
+    ) {
       return NextResponse.json(
         {
           error:
