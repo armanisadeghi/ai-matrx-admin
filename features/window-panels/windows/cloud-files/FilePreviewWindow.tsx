@@ -3,7 +3,7 @@
  *
  * Floating WindowPanel wrapper around the canonical
  * [PreviewPane](../../../../files/components/surfaces/PreviewPane.tsx) — the
- * SAME preview surface users see in `/cloud-files` (filename + Copy link
+ * SAME preview surface users see in `/files` (filename + Copy link
  * + Download + Open full view + Close + tabs for Preview / Versions +
  * the full FilePreview body).
  *
@@ -20,7 +20,7 @@
  *
  * Realtime: mounts `<CloudFilesRealtimeProvider>` locally so the file's
  * versions / permissions / share-link state stay live even when the
- * window is opened outside the `/cloud-files` route group.
+ * window is opened outside the `/files` route group.
  */
 
 "use client";

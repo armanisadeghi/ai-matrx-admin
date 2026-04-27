@@ -8,6 +8,7 @@ import { codeFilesActions } from "@/features/code-files/redux/slice";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { selectActiveTab, updateTabContent } from "../redux/tabsSlice";
+import { isPreviewTab } from "../types";
 import { AVATAR_RESERVE, EDITOR_BG } from "../styles/tokens";
 import {
   codeFileIdFromTabId,
@@ -27,6 +28,7 @@ import { EditorTabs } from "./EditorTabs";
 import { EditorToolbar } from "./EditorToolbar";
 import { MonacoEditor, type StandaloneCodeEditor } from "./MonacoEditor";
 import { BinaryFileViewer } from "./BinaryFileViewer";
+import { CloudFilePreviewer } from "./CloudFilePreviewer";
 import { PendingPatchTray } from "./PendingPatchTray";
 
 interface EditorAreaProps {
@@ -216,10 +218,11 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
       if (mod && !e.shiftKey && !e.altKey && (e.key === "s" || e.key === "S")) {
         // Only intercept when there's actually something to save.
         if (!activeTab) return;
-        // Binary previews have no editable buffer — let the browser
-        // keep its default Cmd+S so users can save the page if they
-        // really want to, instead of silently swallowing the keystroke.
-        if (activeTab.kind === "binary-preview") return;
+        // Preview tabs (binary / cloud-file) have no editable buffer —
+        // let the browser keep its default Cmd+S so users can save the
+        // page if they really want to, instead of silently swallowing
+        // the keystroke.
+        if (isPreviewTab(activeTab.kind)) return;
         e.preventDefault();
         handleSave();
       }
@@ -253,7 +256,9 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
       <PendingPatchTray />
       <div className="relative flex-1 min-h-0">
         {activeTab ? (
-          activeTab.kind === "binary-preview" ? (
+          activeTab.kind === "cloud-file-preview" ? (
+            <CloudFilePreviewer key={activeTab.id} tab={activeTab} />
+          ) : activeTab.kind === "binary-preview" ? (
             <BinaryFileViewer key={activeTab.id} tab={activeTab} />
           ) : (
             <MonacoEditor

@@ -4,7 +4,7 @@
  * Side-panel preview for a single file. Lives to the RIGHT of the file list
  * inside PageShell — never replaces the list, so the user always has a way
  * back. Header bar exposes copy-link, download, "Open full view" (routes to
- * `/cloud-files/f/{fileId}`), and a Close (X) action that clears the active
+ * `/files/f/{fileId}`), and a Close (X) action that clears the active
  * file selection so the panel collapses.
  *
  * Why this exists separately from FilePreview:
@@ -54,7 +54,7 @@ export interface PreviewPaneProps {
   onClose?: () => void;
   /**
    * Called when the user clicks "Open full view". Defaults to routing to
-   * `/cloud-files/f/{fileId}`.
+   * `/files/f/{fileId}`.
    */
   onOpen?: () => void;
   className?: string;
@@ -113,12 +113,12 @@ export function PreviewPane({
     }
     // Always clear the active selection so the panel unmounts.
     dispatch(setActiveFileId(null));
-    // If we're on a `/cloud-files/f/{fileId}` URL, the route hydrates
+    // If we're on a `/files/f/{fileId}` URL, the route hydrates
     // `initialFileId` on every mount — clearing state alone isn't enough,
     // because reload or any soft navigation back here would re-open the
-    // panel. Pop the user back to `/cloud-files` so the URL also resets.
-    if (pathname?.startsWith("/cloud-files/f/")) {
-      router.push("/cloud-files");
+    // panel. Pop the user back to `/files` so the URL also resets.
+    if (pathname?.startsWith("/files/f/")) {
+      router.push("/files");
     }
   }, [dispatch, onClose, pathname, router]);
 
@@ -127,7 +127,7 @@ export function PreviewPane({
       onOpen();
       return;
     }
-    router.push(`/cloud-files/f/${fileId}`);
+    router.push(`/files/f/${fileId}`);
   }, [fileId, onOpen, router]);
 
   // Esc closes the preview — matches Dropbox / Drive muscle memory and is the

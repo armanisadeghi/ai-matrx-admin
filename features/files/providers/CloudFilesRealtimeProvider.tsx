@@ -3,7 +3,7 @@
  *
  * Mounts the realtime subscription for the current user on mount and tears it
  * down on unmount / user change. Drop this inside an authenticated layout
- * (e.g., app/(a)/cloud-files/layout.tsx) — or globally if every authed page
+ * (e.g., app/(a)/files/layout.tsx) — or globally if every authed page
  * should receive cloud-files updates.
  */
 

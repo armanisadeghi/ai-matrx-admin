@@ -3,6 +3,7 @@ import PageHeader from "@/features/shell/components/header/PageHeader";
 import { createRouteMetadata } from "@/utils/route-metadata";
 import { Handle } from "../_lib/Handle";
 import { DemoTitle } from "../_lib/DemoTitle";
+import { BackChevron } from "../_lib/BackChevron";
 
 export const metadata = createRouteMetadata("/ssr/demos/resizables/00-baseline", {
   title: "00 · Baseline 2-panel split",
@@ -21,10 +22,13 @@ export default function BaselineDemoPage() {
   return (
     <>
       <PageHeader>
-        <DemoTitle
-          title="Demo 00 — baseline"
-          subtitle="2-panel split · no persistence · pure server component"
-        />
+        <div className="flex items-center gap-2 min-w-0 w-full">
+          <BackChevron href="/ssr/demos/resizables" />
+          <DemoTitle
+            title="Demo 00 — baseline"
+            subtitle="2-panel split · no persistence · pure server component"
+          />
+        </div>
       </PageHeader>
 
       <div className="h-full overflow-hidden">
@@ -34,7 +38,8 @@ export default function BaselineDemoPage() {
           className="h-full w-full"
         >
           <Panel id="left" defaultSize="50%" minSize="20%">
-            <div className="h-full p-4 bg-muted overflow-auto">
+            {/* static title at top — clear the header zone with pt */}
+            <div className="h-full overflow-auto bg-muted px-4 pb-4 pt-[var(--shell-header-h)]">
               <h2 className="text-sm font-medium mb-2">Left panel</h2>
               <p className="text-xs text-muted-foreground">
                 <code className="text-foreground">defaultSize=&quot;50%&quot;</code>{" "}
@@ -46,7 +51,7 @@ export default function BaselineDemoPage() {
           <Handle />
 
           <Panel id="right" defaultSize="50%" minSize="20%">
-            <div className="h-full p-4 bg-card overflow-auto">
+            <div className="h-full overflow-auto bg-card px-4 pb-4 pt-[var(--shell-header-h)]">
               <h2 className="text-sm font-medium mb-2">Right panel</h2>
               <p className="text-xs text-muted-foreground">
                 Drag the separator. Reload returns to default 50/50 (no

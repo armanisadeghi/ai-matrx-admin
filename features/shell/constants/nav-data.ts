@@ -109,7 +109,7 @@ export const primaryNavItems: ShellNavItem[] = [
   },
   {
     label: "Files",
-    href: "/cloud-files",
+    href: "/files",
     iconName: "FolderOpen",
     section: "primary",
     dockOrder: 6,

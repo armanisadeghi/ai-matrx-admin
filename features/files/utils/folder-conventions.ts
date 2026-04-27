@@ -3,7 +3,7 @@
  *
  * Canonical folder paths for every feature that uploads on behalf of the
  * user. The rule is simple: **organize files the way a user would expect to
- * find them.** When a user opens `/cloud-files`, they should be able to
+ * find them.** When a user opens `/files`, they should be able to
  * point at a folder and say "that's where X goes" without us explaining it.
  *
  * Two buckets:
@@ -128,7 +128,9 @@ export function folderForPodcast(podcastId: string): string {
 
 /** True if the folder is under `.matrx-tmp/` (user-hidden). */
 export function isHiddenFolder(folderPath: string): boolean {
-  return folderPath === CloudFolders.TMP || folderPath.startsWith(".matrx-tmp/");
+  return (
+    folderPath === CloudFolders.TMP || folderPath.startsWith(".matrx-tmp/")
+  );
 }
 
 /**

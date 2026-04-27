@@ -1,7 +1,7 @@
 /**
  * features/files/components/surfaces/PageShell.tsx
  *
- * Dropbox-style shell for the `/cloud-files` route family. Renders every
+ * Dropbox-style shell for the `/files` route family. Renders every
  * sibling section (All files, Photos, Shared, File requests, Deleted files,
  * Starred, Activity, Folders) from the same layout — pass `section` to pick.
  *
@@ -90,20 +90,20 @@ import { MobileStack } from "./MobileStack";
 import { PreviewPane } from "./PreviewPane";
 import { useFileShortcuts } from "./useFileShortcuts";
 import { RenameHost } from "@/features/files/components/core/RenameDialog/RenameHost";
-import { BulkActionsBar } from "./dropbox/BulkActionsBar";
-import { ContentHeader } from "./dropbox/ContentHeader";
-import { EmptyState } from "./dropbox/EmptyState";
-import { FileGrid } from "./dropbox/FileGrid";
-import { FileTable } from "./dropbox/FileTable";
-import type { FilterChipKey } from "./dropbox/FilterChips";
-import { IconRail } from "./dropbox/IconRail";
-import { NavSidebar } from "./dropbox/NavSidebar";
+import { BulkActionsBar } from "./desktop/BulkActionsBar";
+import { ContentHeader } from "./desktop/ContentHeader";
+import { EmptyState } from "./desktop/EmptyState";
+import { FileGrid } from "./desktop/FileGrid";
+import { FileTable } from "./desktop/FileTable";
+import type { FilterChipKey } from "./desktop/FilterChips";
+import { IconRail } from "./desktop/IconRail";
+import { NavSidebar } from "./desktop/NavSidebar";
 import {
   SidebarModeProvider,
   type SidebarMode,
-} from "./dropbox/SidebarModeToggle";
-import { TopBar } from "./dropbox/TopBar";
-import type { CloudFilesSection } from "./dropbox/section";
+} from "./desktop/SidebarModeToggle";
+import { TopBar } from "./desktop/TopBar";
+import type { CloudFilesSection } from "./desktop/section";
 
 export interface PageShellProps {
   /** Initial selection (for deep-linked routes). */

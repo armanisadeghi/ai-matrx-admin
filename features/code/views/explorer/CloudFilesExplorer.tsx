@@ -5,7 +5,7 @@
  *
  * Renders the user's actual cloud files (`cld_files` / `cld_folders`) inside
  * the code workspace Explorer side panel — same data and same FileTree
- * component used by `/cloud-files` and the floating CloudFiles window.
+ * component used by `/files` and the floating CloudFiles window.
  *
  * Why this exists:
  *   • The "Library" activity already shows saved code snippets (`code_files`).
@@ -14,13 +14,17 @@
  *     away no matter which sandbox / agent the user is in.
  *   • By reusing `features/files/.../FileTree` we get virtualization,
  *     keyboard nav, drag-and-drop moves, and consistent UX for free.
- *   • Activating a file opens the global `filePreviewWindow` overlay,
- *     so the user lands in the canonical PreviewPane (image/video/pdf/
- *     markdown/code) without leaving the code workspace.
+ *   • Selecting a file (single-click or Enter) opens it as a regular
+ *     editor tab via `useOpenCloudFile`. The tab uses the
+ *     `cloud-file-preview` kind, which renders the canonical
+ *     `<FilePreview>` (image/video/pdf/markdown/code) inside the
+ *     editor area — same UX as opening sandbox files. This matches the
+ *     sandbox FileTree's single-click-to-open behaviour so users don't
+ *     have to learn two different interaction models.
  *
  * Mounts `<CloudFilesRealtimeProvider>` locally so the cloud-files Redux
  * tree is hydrated and stays live even when the user opens the workspace
- * outside the `/cloud-files` route group.
+ * outside the `/files` route group.
  */
 
 import { useCallback } from "react";
@@ -32,7 +36,7 @@ import {
   setActiveFolderId,
 } from "@/features/files/redux/slice";
 import { selectTreeStatus } from "@/features/files/redux/selectors";
-import { openFilePreview } from "@/features/files/components/preview/openFilePreview";
+import { useOpenCloudFile } from "../../hooks/useOpenCloudFile";
 
 interface CloudFilesExplorerProps {
   className?: string;
@@ -41,12 +45,19 @@ interface CloudFilesExplorerProps {
 export function CloudFilesExplorer({ className }: CloudFilesExplorerProps) {
   const dispatch = useAppDispatch();
   const userId = useAppSelector((state) => state.userAuth?.id ?? null);
+  const openCloudFile = useOpenCloudFile();
 
+  // Single-click on a file → open as an editor tab AND mark it
+  // selected. This mirrors the sandbox FileTree where a click opens
+  // the file. Activation (double-click / Enter) is the same action,
+  // so the second handler just routes back through `openCloudFile`,
+  // which short-circuits when the tab already exists.
   const handleSelectFile = useCallback(
     (fileId: string) => {
       dispatch(setActiveFileId(fileId));
+      openCloudFile(fileId);
     },
-    [dispatch],
+    [dispatch, openCloudFile],
   );
 
   const handleSelectFolder = useCallback(
@@ -57,12 +68,12 @@ export function CloudFilesExplorer({ className }: CloudFilesExplorerProps) {
     [dispatch],
   );
 
-  // Double-click / Enter → open the canonical preview surface in a
-  // floating WindowPanel. Same UX as clicking a file chip anywhere else
-  // in the app.
-  const handleActivateFile = useCallback((fileId: string) => {
-    openFilePreview(fileId);
-  }, []);
+  const handleActivateFile = useCallback(
+    (fileId: string) => {
+      openCloudFile(fileId);
+    },
+    [openCloudFile],
+  );
 
   // Folder activation is already handled by the tree's expand/collapse —
   // we still set the active folder so any consumer that cares (e.g.,

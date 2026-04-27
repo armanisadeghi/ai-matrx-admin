@@ -12,6 +12,7 @@ import {
   type EditorDiagnostic,
 } from "../redux/diagnosticsSlice";
 import type { EditorFile } from "../types";
+import { isPreviewTab } from "../types";
 
 /**
  * Editor → Agent Context Bridge
@@ -244,7 +245,8 @@ export const selectEditorContextEntries = createSelector(
 
     // ── editor.tab.<active> (full content, ACTIVE ONLY) ────────────────────
     // Other text tabs deliberately do NOT carry content — see header.
-    if (activeTab && activeTab.kind !== "binary-preview") {
+    // Preview tabs (binary / cloud-file) have no editable buffer.
+    if (activeTab && !isPreviewTab(activeTab.kind)) {
       entries.push({
         key: editorTabKey(activeTab.id),
         value: tabPayload(activeTab),
@@ -257,8 +259,9 @@ export const selectEditorContextEntries = createSelector(
     // Always shipped so the agent can verify "no diagnostics" even when
     // the slice is empty. Counts are derived from Monaco markers via
     // `useMonacoMarkers` — populated only on surfaces that mount the hook.
-    const activeDiagnostics =
-      activeTab ? diagnosticsByTabId[activeTab.id] ?? [] : [];
+    const activeDiagnostics = activeTab
+      ? (diagnosticsByTabId[activeTab.id] ?? [])
+      : [];
     const counts = activeDiagnostics.reduce(
       (acc, d) => {
         acc[d.severity] += 1;

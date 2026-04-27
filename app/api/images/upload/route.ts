@@ -12,7 +12,7 @@ export const runtime = "nodejs";
  * migration (Phase C6, 2026-04-23) it goes through the new backend so:
  *
  *   • Every variant appears in the user's cloud-files tree under
- *     `Images/<folder-or-Generated>/<uuid>/` — visible in `/cloud-files`.
+ *     `Images/<folder-or-Generated>/<uuid>/` — visible in `/files`.
  *   • The returned URLs are share links (`/share/:token`) that never
  *     expire; safe to persist into DB rows as OG / cover images.
  *   • The caller API is unchanged — same FormData in, same JSON shape out.

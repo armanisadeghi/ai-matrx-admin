@@ -1,6 +1,7 @@
+import { cookies } from "next/headers";
+import type { Layout } from "react-resizable-panels";
 import PageHeader from "@/features/shell/components/header/PageHeader";
 import { createRouteMetadata } from "@/utils/route-metadata";
-import { readJsonCookie } from "../_lib/readLayoutCookie";
 import { MountStateProvider } from "./MountStateProvider";
 import { ConditionalHeaderControls } from "./HeaderControls";
 import { ConditionalGroup } from "./ConditionalGroup";
@@ -10,31 +11,59 @@ export const metadata = createRouteMetadata(
   {
     title: "05 · Conditional panels (mount / unmount)",
     description:
-      "Right panel is mounted vs unmounted (not just collapsed). Each combination of mounted panels remembers its own layout via useDefaultLayout({ id, panelIds }).",
+      "Right panel is mounted vs unmounted (not just collapsed). Each combination of mounted panels remembers its own layout.",
   },
 );
 
 const TOGGLE_COOKIE = "panels:demo-05:toggles";
+const GROUP_ID = "demo-05";
 
 interface Toggles {
   showRight: boolean;
 }
 
-// SERVER COMPONENT. Reads only the toggle cookie server-side so the initial
-// render mounts the correct set of panels (no flash of wrong layout).
-//
-// The actual <Group> uses useDefaultLayout({ panelIds }) on the client,
-// which builds a different storage key per panel combination. Reading the
-// matching combo's layout cookie server-side too is a future polish — the
-// current trade-off is a brief client-only re-read on first paint, which is
-// fine because we already mount the correct PANELS server-side.
+function buildLayoutCookieKey(panelIds: string[]) {
+  // Matches the library's auto-save key format so reads and writes line up.
+  return `react-resizable-panels:${[GROUP_ID, ...panelIds].join(":")}`;
+}
+
+async function readState(): Promise<{
+  showRight: boolean;
+  initialLayout: Layout | undefined;
+}> {
+  const store = await cookies();
+
+  const togglesRaw = store.get(TOGGLE_COOKIE)?.value;
+  let showRight = true;
+  if (togglesRaw) {
+    try {
+      const parsed = JSON.parse(decodeURIComponent(togglesRaw)) as Toggles;
+      showRight = !!parsed.showRight;
+    } catch {}
+  }
+
+  const panelIds = ["left", "center", ...(showRight ? ["right"] : [])];
+  const layoutRaw = store.get(buildLayoutCookieKey(panelIds))?.value;
+  let initialLayout: Layout | undefined;
+  if (layoutRaw) {
+    try {
+      initialLayout = JSON.parse(decodeURIComponent(layoutRaw)) as Layout;
+    } catch {}
+  }
+
+  return { showRight, initialLayout };
+}
+
+// SERVER COMPONENT. Reads BOTH the toggle cookie AND the matching combination's
+// layout cookie so the SSR pass mounts the right set of panels with the right
+// flex-grow values. Without the layout read, server renders auto-distributed
+// sizes and the client recomputes from the cookie → hydration mismatch.
 export default async function ConditionalPanelsPage() {
-  const toggles = await readJsonCookie<Toggles>(TOGGLE_COOKIE);
-  const initialShowRight = toggles?.showRight ?? true;
+  const { showRight, initialLayout } = await readState();
 
   return (
     <MountStateProvider
-      initialShowRight={initialShowRight}
+      initialShowRight={showRight}
       toggleCookie={TOGGLE_COOKIE}
     >
       <PageHeader>
@@ -42,7 +71,7 @@ export default async function ConditionalPanelsPage() {
       </PageHeader>
 
       <div className="h-full overflow-hidden">
-        <ConditionalGroup />
+        <ConditionalGroup initialLayout={initialLayout} />
       </div>
     </MountStateProvider>
   );

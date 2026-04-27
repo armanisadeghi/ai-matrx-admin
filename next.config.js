@@ -73,6 +73,10 @@ const nextConfig = {
                 destination: '/ssr/dashboard',
                 permanent: false,
             },
+            // /cloud-files was renamed to /files (2026-04-27). Permanent redirects
+            // so old bookmarks, share links, and external references keep working.
+            { source: '/cloud-files/:path*', destination: '/files/:path*', permanent: true },
+            { source: '/cloud-files', destination: '/files', permanent: true },
             // Entity-isolation migration (Phase 2+): legacy entity-bound routes
             // moved under /legacy/* so they can boot through the entity-aware
             // store/providers without bloating slim chunks. Old URLs are 307'd

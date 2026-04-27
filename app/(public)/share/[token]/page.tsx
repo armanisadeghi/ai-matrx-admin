@@ -6,7 +6,7 @@
  * Shows the metadata and a prominent Download action.
  *
  * This is the fallback for unauthenticated visitors. Authenticated users
- * following their own shared link land on `/cloud-files/share/:token`, which
+ * following their own shared link land on `/files/share/:token`, which
  * redirects them into the full app.
  */
 

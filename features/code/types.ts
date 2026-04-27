@@ -56,11 +56,31 @@ export interface FilesystemSearchHit {
 
 /**
  * Tab kind. Defaults to `"editor"` when absent (legacy tabs are always
- * Monaco-backed). `"binary-preview"` tabs render through `BinaryFileViewer`
- * — bytes are fetched lazily from the active filesystem adapter, never put
- * into Redux, never shipped to the agent context bridge.
+ * Monaco-backed).
+ *
+ *  - `"editor"`            → standard Monaco-backed text editor.
+ *  - `"binary-preview"`    → renders through `BinaryFileViewer`. Bytes
+ *    are fetched lazily from the active filesystem adapter via
+ *    `filesystem.download(path)` — never put into Redux, never shipped
+ *    to the agent context bridge.
+ *  - `"cloud-file-preview"` → renders the canonical cloud-files
+ *    `<FilePreview fileId={cloudFileId}>` (image / video / audio / pdf
+ *    / markdown / code / data). Bytes flow through the cloud-files
+ *    signed-URL + blob-cache pipeline; nothing goes through the active
+ *    code-workspace filesystem adapter. The tab's `path` is a synthetic
+ *    `cloud-file:/<name>` display string and the file is identified
+ *    by `cloudFileId`.
  */
-export type EditorTabKind = "editor" | "binary-preview";
+export type EditorTabKind = "editor" | "binary-preview" | "cloud-file-preview";
+
+/**
+ * Tabs that don't have an editable text buffer (no Monaco, no AI patches,
+ * no save pipeline, no selection-as-context). Centralising the check
+ * keeps every consumer in sync when a new preview kind is added.
+ */
+export function isPreviewTab(kind?: EditorTabKind): boolean {
+  return kind === "binary-preview" || kind === "cloud-file-preview";
+}
 
 export interface EditorFile {
   /** Stable id. Typically the absolute path prefixed with adapter id. */
@@ -85,11 +105,18 @@ export interface EditorFile {
    */
   kind?: EditorTabKind;
   /**
-   * Resolved MIME type for the file. Only populated on `"binary-preview"`
-   * tabs today — the binary viewer reads it to pick the right previewer
-   * primitive (image / video / audio / pdf / generic).
+   * Resolved MIME type for the file. Populated on preview tabs
+   * (`"binary-preview"` / `"cloud-file-preview"`) — the previewer
+   * primitives use it to pick the right player (image / video / audio
+   * / pdf / generic).
    */
   mime?: string;
+  /**
+   * cld_files UUID. Set only on `"cloud-file-preview"` tabs and is the
+   * sole identifier the previewer needs — `path` is just for the tab
+   * label / breadcrumbs and never hits a filesystem adapter.
+   */
+  cloudFileId?: string;
   /**
    * Remote `updated_at` captured at load time for source-backed tabs
    * (prompt apps, agent apps, tool UIs). Used by the optimistic

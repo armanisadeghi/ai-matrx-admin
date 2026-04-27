@@ -15,7 +15,7 @@
  *
  * Also mounts <CloudFilesRealtimeProvider> locally so the realtime
  * subscription is guaranteed when the window opens from contexts outside
- * `/cloud-files/`.
+ * `/files/`.
  */
 
 "use client";

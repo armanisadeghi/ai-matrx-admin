@@ -413,7 +413,7 @@ const QuickTasksWindow = dynamic(
 
 // File preview — single-file canonical PreviewPane in a draggable
 // WindowPanel. Triggered via `openFilePreview(fileId)`. Same surface
-// users get on /cloud-files; here it's just delivered as a non-blocking
+// users get on /files; here it's just delivered as a non-blocking
 // window. Registered in windowRegistry as `filePreviewWindow`.
 const FilePreviewWindow = dynamic(
   () =>
@@ -1648,7 +1648,7 @@ export const OverlayController: React.FC = () => {
       {/* File Preview — instanced, multiple can be open simultaneously */}
       {/* Legacy filePreviewWindow + fileUploadWindow removed in Phase 11.
           File previews now use FilePreview from @/features/files or the
-          /cloud-files/f/[fileId] route; uploads use the dropzone inside
+          /files/f/[fileId] route; uploads use the dropzone inside
           the cloud-files window or useUploadAndGet / useUploadAndShare. */}
 
       {/* Image Uploader — instanced; driven by useOpenImageUploaderWindow */}

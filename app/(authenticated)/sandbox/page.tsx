@@ -9,7 +9,6 @@ import {
   Trash2,
   RefreshCw,
   Timer,
-  AlertCircle,
   Loader2,
   CheckCircle2,
   History,
@@ -20,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Label } from "@/components/ui/label";
 import {
   Table,
   TableHeader,
@@ -37,30 +37,18 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useSandboxInstances } from "@/hooks/sandbox/use-sandbox";
 import { useTimeRemaining } from "@/hooks/sandbox/use-time-remaining";
-import {
-  findTierInfo,
-  formatPersistenceSize,
-  useUserPersistence,
-} from "@/hooks/sandbox/use-user-persistence";
-import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { setPreference } from "@/lib/redux/slices/userPreferencesSlice";
 import {
   LIST_ACTIVE_STATUSES,
   STATUS_BADGE_VARIANT,
   STATUS_LABELS,
   getEffectiveStatus,
 } from "@/lib/sandbox/status";
-import { extractErrorMessage } from "@/utils/errors";
-import type {
-  SandboxCreateRequest,
-  SandboxInstance,
-  SandboxStatus,
-  SandboxTemplate,
-  SandboxTemplateListResponse,
-  SandboxTier,
-} from "@/types/sandbox";
+import { CreateSandboxFormFields } from "@/features/code/views/sandboxes/CreateSandboxFormFields";
+import { useSandboxCreate } from "@/features/code/views/sandboxes/useSandboxCreate";
+import type { SandboxInstance, SandboxStatus } from "@/types/sandbox";
 
 function StatusBadge({ status }: { status: SandboxStatus }) {
   return (
@@ -82,8 +70,6 @@ function TimeRemaining({ expiresAt }: { expiresAt: string | null }) {
 
 export default function SandboxListPage() {
   const router = useRouter();
-  const dispatch = useAppDispatch();
-  const codingPrefs = useAppSelector((s) => s.userPreferences.coding);
   const {
     instances,
     loading,
@@ -108,62 +94,12 @@ export default function SandboxListPage() {
   );
   const [stoppingIds, setStoppingIds] = useState<Set<string>>(new Set());
   const [ttlHours, setTtlHours] = useState(2);
-  const [tier, setTier] = useState<SandboxTier>(
-    codingPrefs?.lastSandboxTier ?? "ec2",
-  );
-  const [templateId, setTemplateId] = useState<string>(
-    codingPrefs?.lastSandboxTemplate ?? "bare",
-  );
-  const [templateVersion, setTemplateVersion] = useState<string>("");
-  const [templates, setTemplates] = useState<SandboxTemplate[] | null>(null);
-  const [loadingTemplates, setLoadingTemplates] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
 
-  // User's per-tier persistent-storage info (volume size + sandbox count).
-  // Drives the "Your saved data: 1.3 GB" badge in the create dialog.
-  const persistence = useUserPersistence({ skip: !createOpen });
-  const tierPersistence = findTierInfo(persistence.info, tier);
-
-  // Fetch the live template catalog whenever the dialog opens or the user
-  // flips between tiers. Mirrors the picker in `CreateSandboxModal` (the
-  // /code workspace's create flow) so both surfaces show the same options.
-  useEffect(() => {
-    if (!createOpen) return;
-    let cancelled = false;
-    setLoadingTemplates(true);
-    void (async () => {
-      try {
-        const resp = await fetch(
-          `/api/templates?tier=${encodeURIComponent(tier)}`,
-        );
-        if (!resp.ok)
-          throw new Error(`Templates fetch failed (${resp.status})`);
-        const data = (await resp.json()) as SandboxTemplateListResponse;
-        if (cancelled) return;
-        const list = data.templates ?? [];
-        setTemplates(list);
-        if (!list.some((t) => t.id === templateId)) {
-          const fallback = list[0]?.id ?? "bare";
-          setTemplateId(fallback);
-          setTemplateVersion(list[0]?.version ?? "");
-        } else {
-          const match = list.find((t) => t.id === templateId);
-          if (match) setTemplateVersion(match.version);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setCreateError(extractErrorMessage(err));
-          setTemplates([]);
-        }
-      } finally {
-        if (!cancelled) setLoadingTemplates(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [createOpen, tier]);
+  // Tier/template state, last-used persistence, and template catalog fetch
+  // all live in `useSandboxCreate` so the `CreateSandboxModal` (in the /code
+  // workspace) and this page stay in lockstep.
+  const createForm = useSandboxCreate({ enabled: createOpen });
 
   useEffect(() => {
     fetchInstances();
@@ -200,29 +136,11 @@ export default function SandboxListPage() {
     setCreateError(null);
     setCreatedInstanceId(null);
 
-    // Persist the user's last-used tier/template so the dialog opens with
-    // their choice next time. Same pattern as `CreateSandboxModal`.
-    dispatch(
-      setPreference({
-        module: "coding",
-        preference: "lastSandboxTier",
-        value: tier,
-      }),
-    );
-    dispatch(
-      setPreference({
-        module: "coding",
-        preference: "lastSandboxTemplate",
-        value: templateId,
-      }),
-    );
+    // Persist last-used tier/template so the dialog opens with the same
+    // choice next time. Hook handles the dispatch.
+    createForm.persistChoices();
 
-    const request: SandboxCreateRequest = {
-      ttl_seconds: ttlHours * 3600,
-      tier,
-      template: templateId,
-    };
-    if (templateVersion) request.template_version = templateVersion;
+    const request = createForm.buildRequest({ ttlSeconds: ttlHours * 3600 });
     const result = await createInstance(request);
 
     if (result.instance) {
@@ -387,111 +305,36 @@ export default function SandboxListPage() {
                         automatically shut down after the specified duration.
                       </DialogDescription>
                     </DialogHeader>
-                    <div className="space-y-4 py-4">
-                      {createError && (
-                        <div className="flex items-start gap-2.5 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
-                          <AlertCircle className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
-                          <div>
-                            <p className="text-sm font-medium text-destructive">
-                              Creation Failed
-                            </p>
-                            <p className="text-xs text-destructive/80 mt-0.5">
-                              {createError}
-                            </p>
-                          </div>
-                        </div>
-                      )}
-                      <div>
-                        <label className="text-sm font-medium">Tier</label>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Button
-                            type="button"
-                            variant={tier === "ec2" ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => setTier("ec2")}
+                    <div className="py-4">
+                      <CreateSandboxFormFields
+                        form={createForm}
+                        submitError={createError}
+                      >
+                        <div className="space-y-1.5">
+                          <Label className="text-sm font-medium">
+                            Duration
+                          </Label>
+                          <ToggleGroup
+                            type="single"
+                            value={String(ttlHours)}
+                            onValueChange={(value) => {
+                              if (value) setTtlHours(Number(value));
+                            }}
+                            className="justify-start gap-1"
                           >
-                            EC2 (S3-backed)
-                          </Button>
-                          <Button
-                            type="button"
-                            variant={tier === "hosted" ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => setTier("hosted")}
-                          >
-                            Hosted (heavy)
-                          </Button>
+                            {[1, 2, 4, 8].map((h) => (
+                              <ToggleGroupItem
+                                key={h}
+                                value={String(h)}
+                                aria-label={`${h} hour${h === 1 ? "" : "s"}`}
+                                className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                              >
+                                {h}h
+                              </ToggleGroupItem>
+                            ))}
+                          </ToggleGroup>
                         </div>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {tier === "ec2"
-                            ? "Best for one-shot agent runs and cost-controlled tasks. Backed by S3 — your /home/agent is restored on every new sandbox."
-                            : "Best for long-lived editor sessions, workloads > 5 GB, or anything that needs internal Matrx services. Per-user volume mounted at /home/agent."}
-                        </p>
-                      </div>
-                      {/* <div className="flex items-start gap-2 rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-900 dark:border-blue-900/50 dark:bg-blue-950/40 dark:text-blue-200">
-                        <Container className="w-4 h-4 mt-0.5 shrink-0" />
-                        <div className="flex-1">
-                          <div className="font-medium">
-                            Your saved data on{" "}
-                            {tier === "hosted" ? "Hosted" : "EC2"}:{" "}
-                            {persistence.loading ? (
-                              <span className="text-muted-foreground">…</span>
-                            ) : (
-                              formatPersistenceSize(
-                                tierPersistence?.current_size_bytes,
-                              )
-                            )}
-                          </div>
-                          <div className="text-xs leading-snug opacity-80 mt-0.5">
-                            {tierPersistence?.sandbox_count
-                              ? `${tierPersistence.sandbox_count} sandbox${tierPersistence.sandbox_count === 1 ? "" : "es"} reference this volume — your work follows you.`
-                              : "Your home dir is preserved across sessions on this tier. Anything outside /home/agent is not."}
-                          </div>
-                        </div>
-                      </div> */}
-                      <div>
-                        <label className="text-sm font-medium">Template</label>
-                        <select
-                          className="mt-1 h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
-                          disabled={loadingTemplates}
-                          value={templateId}
-                          onChange={(e) => {
-                            setTemplateId(e.target.value);
-                            const match = templates?.find(
-                              (t) => t.id === e.target.value,
-                            );
-                            if (match) setTemplateVersion(match.version);
-                          }}
-                        >
-                          {(templates ?? []).map((t) => (
-                            <option key={`${t.id}@${t.version}`} value={t.id}>
-                              {t.id} — {t.description}
-                            </option>
-                          ))}
-                          {(!templates || templates.length === 0) && (
-                            <option value="bare">bare — Default sandbox</option>
-                          )}
-                        </select>
-                        {templateVersion && (
-                          <p className="text-xs text-muted-foreground mt-1">
-                            version: {templateVersion}
-                          </p>
-                        )}
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium">Duration</label>
-                        <div className="flex items-center gap-2 mt-1">
-                          {[1, 2, 4, 8].map((h) => (
-                            <Button
-                              key={h}
-                              variant={ttlHours === h ? "default" : "outline"}
-                              size="sm"
-                              onClick={() => setTtlHours(h)}
-                            >
-                              {h}h
-                            </Button>
-                          ))}
-                        </div>
-                      </div>
+                      </CreateSandboxFormFields>
                     </div>
                     <DialogFooter>
                       <Button
@@ -505,7 +348,7 @@ export default function SandboxListPage() {
                       </Button>
                       <Button
                         onClick={handleCreate}
-                        disabled={loadingTemplates}
+                        disabled={createForm.loadingTemplates}
                       >
                         <Plus className="w-4 h-4 mr-2" />
                         Create Sandbox

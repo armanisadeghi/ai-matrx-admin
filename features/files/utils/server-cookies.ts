@@ -7,8 +7,8 @@
  */
 
 import { cookies } from "next/headers";
-import { SIDEBAR_MODE_COOKIE } from "@/features/files/components/surfaces/dropbox/SidebarModeToggle";
-import type { SidebarMode } from "@/features/files/components/surfaces/dropbox/SidebarModeToggle";
+import { SIDEBAR_MODE_COOKIE } from "@/features/files/components/surfaces/desktop/SidebarModeToggle";
+import type { SidebarMode } from "@/features/files/components/surfaces/desktop/SidebarModeToggle";
 
 export async function readSidebarModeCookie(): Promise<SidebarMode> {
   const store = await cookies();

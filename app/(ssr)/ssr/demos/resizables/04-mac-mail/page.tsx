@@ -6,6 +6,10 @@ import {
   Trash,
   Star,
   Sparkles,
+  Search,
+  Plus,
+  Bot,
+  ChevronDown,
 } from "lucide-react";
 import PageHeader from "@/features/shell/components/header/PageHeader";
 import { createRouteMetadata } from "@/utils/route-metadata";
@@ -20,7 +24,7 @@ import { MailHeaderControls } from "./HeaderControls";
 export const metadata = createRouteMetadata("/ssr/demos/resizables/04-mac-mail", {
   title: "04 · Mac Mail (multi-sidebar)",
   description:
-    "Folders + Messages + Reader + Inspector. Three independent collapsibles, each with its own pre-collapse memory.",
+    "Folders + Messages + Reader + Inspector + Chat history. Four independent collapsibles, each with its own pre-collapse memory.",
 });
 
 const COOKIE_NAME = "panels:demo-04";
@@ -37,6 +41,7 @@ export default async function MacMailPage() {
       <div className="h-full overflow-hidden">
         <ClientGroup
           id="demo-04"
+          groupKey="root"
           cookieName={COOKIE_NAME}
           orientation="horizontal"
           defaultLayout={defaultLayout}
@@ -44,10 +49,11 @@ export default async function MacMailPage() {
         >
           <RegisteredPanel
             registerAs="folders"
+            groupKey="root"
             id="folders"
             collapsible
             collapsedSize="0%"
-            defaultSize="14%"
+            defaultSize="13%"
             minSize="5%"
           >
             <Folders />
@@ -56,10 +62,11 @@ export default async function MacMailPage() {
 
           <RegisteredPanel
             registerAs="messages"
+            groupKey="root"
             id="messages"
             collapsible
             collapsedSize="0%"
-            defaultSize="22%"
+            defaultSize="20%"
             minSize="5%"
           >
             <MessagesList />
@@ -73,13 +80,27 @@ export default async function MacMailPage() {
 
           <RegisteredPanel
             registerAs="inspector"
+            groupKey="root"
             id="inspector"
             collapsible
             collapsedSize="0%"
-            defaultSize="18%"
+            defaultSize="16%"
             minSize="5%"
           >
             <Inspector />
+          </RegisteredPanel>
+          <Handle />
+
+          <RegisteredPanel
+            registerAs="chat-history"
+            groupKey="root"
+            id="chat-history"
+            collapsible
+            collapsedSize="0%"
+            defaultSize="14%"
+            minSize="5%"
+          >
+            <ChatHistorySurface />
           </RegisteredPanel>
         </ClientGroup>
       </div>
@@ -98,7 +119,7 @@ function Folders() {
     { icon: Trash, name: "Trash", count: null },
   ];
   return (
-    <div className="h-full overflow-auto bg-muted">
+    <div className="h-full overflow-auto bg-muted pt-[var(--shell-header-h)]">
       <div className="px-3 py-1.5 text-[11px] uppercase tracking-wider text-muted-foreground">
         Mailboxes
       </div>
@@ -131,8 +152,8 @@ function MessagesList() {
     { from: "Vercel", subject: "Deployment ready", preview: "Production deployment for" },
   ];
   return (
-    <div className="h-full overflow-auto bg-card">
-      <div className="px-3 py-1.5 text-[11px] uppercase tracking-wider text-muted-foreground border-b border-border">
+    <div className="h-full overflow-auto bg-card pt-[var(--shell-header-h)]">
+      <div className="px-3 py-1.5 text-[11px] uppercase tracking-wider text-muted-foreground">
         Inbox · {messages.length}
       </div>
       <ul className="divide-y divide-border">
@@ -158,8 +179,8 @@ function MessagesList() {
 
 function Reader() {
   return (
-    <div className="h-full overflow-auto bg-background">
-      <div className="px-4 py-3 border-b border-border">
+    <div className="h-full overflow-auto bg-background pt-[var(--shell-header-h)]">
+      <div className="px-4 py-3">
         <div className="text-sm font-medium text-foreground">
           PR #2841 needs review
         </div>
@@ -183,7 +204,7 @@ function Reader() {
 
 function Inspector() {
   return (
-    <div className="h-full overflow-auto bg-muted">
+    <div className="h-full overflow-auto bg-muted pt-[var(--shell-header-h)]">
       <div className="px-3 py-1.5 text-[11px] uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
         <Sparkles className="h-3 w-3" /> AI summary
       </div>
@@ -191,6 +212,51 @@ function Inspector() {
         Three repos saw activity today — review GitHub PR first; Linear and
         Vercel items can wait.
       </div>
+    </div>
+  );
+}
+
+function ChatHistorySurface() {
+  const chats = [
+    { id: 1, title: "Inbox triage", time: "5m" },
+    { id: 2, title: "PR review draft", time: "20m" },
+    { id: 3, title: "Stripe summary", time: "1h" },
+    { id: 4, title: "Quarterly digest", time: "2d" },
+  ];
+  return (
+    <div className="h-full flex flex-col bg-muted pt-[var(--shell-header-h)]">
+      <div className="p-2 space-y-1.5 shrink-0">
+        <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-background">
+          <Search className="h-3 w-3 text-muted-foreground shrink-0" />
+          <input
+            placeholder="Search chats"
+            className="bg-transparent text-xs flex-1 outline-none placeholder:text-muted-foreground"
+          />
+        </div>
+        <button className="flex items-center gap-1.5 px-2 py-1 rounded bg-background w-full text-xs">
+          <Bot className="h-3 w-3 text-muted-foreground shrink-0" />
+          <span className="flex-1 text-left text-foreground">Mail Triage</span>
+          <ChevronDown className="h-3 w-3 text-muted-foreground shrink-0" />
+        </button>
+        <button className="flex items-center gap-1.5 px-2 py-1 rounded text-xs text-muted-foreground hover:bg-accent hover:text-foreground w-full">
+          <Plus className="h-3 w-3" />
+          New Agent
+        </button>
+      </div>
+      <div className="px-3 py-1 text-[10px] uppercase tracking-wider text-muted-foreground shrink-0">
+        Recent
+      </div>
+      <ul className="flex-1 overflow-auto text-xs">
+        {chats.map((c) => (
+          <li
+            key={c.id}
+            className="px-3 py-1.5 cursor-pointer hover:bg-accent flex items-baseline gap-2"
+          >
+            <span className="flex-1 text-foreground/80 truncate">{c.title}</span>
+            <span className="text-[10px] text-muted-foreground shrink-0">{c.time}</span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

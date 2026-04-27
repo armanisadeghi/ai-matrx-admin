@@ -10,7 +10,7 @@ import TaskApp from "@/features/tasks/components/TaskApp";
 import { QuickChatSheet } from "./QuickChatSheet";
 import { QuickDataSheet } from "./QuickDataSheet";
 // Legacy QuickFilesSheet removed in Phase 11. The Files tab below now
-// links to the new /cloud-files route instead of rendering an inline sheet.
+// links to the /files route instead of rendering an inline sheet.
 import Link from "next/link";
 import { ActivePromptResults } from "@/features/prompts/components/results-display/ActivePromptResults";
 import { Button } from "@/components/ui/button";
@@ -119,10 +119,10 @@ export function UtilitiesOverlay({
             Browse, upload, and share files from the dedicated Cloud Files page.
           </p>
           <Link
-            href="/cloud-files"
+            href="/files"
             className="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground hover:bg-primary/90"
           >
-            Open Cloud Files
+            Open Files
           </Link>
         </div>
       ),
@@ -153,7 +153,7 @@ export function UtilitiesOverlay({
       case "data":
         return "/data";
       case "files":
-        return "/cloud-files";
+        return "/files";
       default:
         return null;
     }

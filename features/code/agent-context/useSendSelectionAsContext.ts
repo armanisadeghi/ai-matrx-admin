@@ -5,6 +5,7 @@ import { useAppDispatch } from "@/lib/redux/hooks";
 import { setContextEntry } from "@/features/agents/redux/execution-system/instance-context/instance-context.slice";
 import type { StandaloneCodeEditor } from "../editor/MonacoEditor";
 import type { EditorFile } from "../types";
+import { isPreviewTab } from "../types";
 import { editorSelectionKey } from "./editorContextEntries";
 
 export interface SelectionContextValue {
@@ -52,11 +53,12 @@ export function useSendSelectionAsContext(
 } {
   const { conversationId, activeTab, editorRef, notify } = opts;
   const dispatch = useAppDispatch();
-  // Binary previews (image / video / pdf) don't mount Monaco, so there's
-  // nothing to select. Disable the toolbar action up-front rather than
-  // letting users click into a "no text selected" toast.
+  // Preview tabs (binary-preview / cloud-file-preview) don't mount
+  // Monaco, so there's nothing to select. Disable the toolbar action
+  // up-front rather than letting users click into a "no text selected"
+  // toast.
   const canSend = Boolean(
-    conversationId && activeTab && activeTab.kind !== "binary-preview",
+    conversationId && activeTab && !isPreviewTab(activeTab.kind),
   );
 
   const sendSelection = useCallback((): boolean => {

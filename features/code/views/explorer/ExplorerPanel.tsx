@@ -38,7 +38,7 @@ const QUICK_ROOTS = ["/", "/home", "/workspace", "/data", "/tmp"];
  *   • No sandbox connected → the user's actual cloud files
  *     (`cld_files` / `cld_folders`) — images, videos, PDFs, datasets,
  *     code, anything they've uploaded. Reuses the same FileTree
- *     component as `/cloud-files` so previews, drag-and-drop, and
+ *     component as `/files` so previews, drag-and-drop, and
  *     keyboard nav all "just work". Path bar / quick-roots are hidden
  *     because cloud files don't live on a unix-style path tree.
  *   • Sandbox connected     → the sandbox's filesystem rendered as a

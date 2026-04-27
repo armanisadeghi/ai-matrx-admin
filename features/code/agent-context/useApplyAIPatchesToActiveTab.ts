@@ -44,6 +44,7 @@ import { parseCodeEdits } from "@/features/code-editor/agent-code-editor/utils/p
 import { applyCodeEdits } from "@/features/code-editor/agent-code-editor/utils/applyCodeEdits";
 import { selectCodeTabs, type CodeTabsState } from "../redux/tabsSlice";
 import { stagePatches } from "../redux/codePatchesSlice";
+import { isPreviewTab } from "../types";
 
 interface UseApplyAIPatchesToActiveTabOptions {
   /** Conversation whose stream we observe. Pass `null` to disable. */
@@ -76,8 +77,8 @@ function locateBlocksAcrossTabs(
     const winners: string[] = [];
     for (const tabId of Object.keys(tabs.byId)) {
       const tab = tabs.byId[tabId];
-      // Binary previews have no editable buffer.
-      if (tab.kind === "binary-preview") continue;
+      // Preview tabs (binary / cloud-file) have no editable buffer.
+      if (isPreviewTab(tab.kind)) continue;
       const result = applyCodeEdits(tab.content, [edit]);
       if (result.success && result.appliedEdits === 1) {
         winners.push(tabId);

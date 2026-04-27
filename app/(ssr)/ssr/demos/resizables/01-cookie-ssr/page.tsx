@@ -4,6 +4,7 @@ import { createRouteMetadata } from "@/utils/route-metadata";
 import { ClientGroup } from "../_lib/ClientGroup";
 import { Handle } from "../_lib/Handle";
 import { DemoTitle } from "../_lib/DemoTitle";
+import { BackChevron } from "../_lib/BackChevron";
 import { readLayoutCookie } from "../_lib/readLayoutCookie";
 
 export const metadata = createRouteMetadata(
@@ -28,10 +29,13 @@ export default async function CookieSsrDemoPage() {
   return (
     <>
       <PageHeader>
-        <DemoTitle
-          title="Demo 01 — cookie-backed SSR"
-          subtitle="server reads · client writes on pointer-up · no flash on reload"
-        />
+        <div className="flex items-center gap-2 min-w-0 w-full">
+          <BackChevron href="/ssr/demos/resizables" />
+          <DemoTitle
+            title="Demo 01 — cookie-backed SSR"
+            subtitle="server reads · client writes on pointer-up · no flash on reload"
+          />
+        </div>
       </PageHeader>
 
       <div className="h-full overflow-hidden">
@@ -43,7 +47,7 @@ export default async function CookieSsrDemoPage() {
           className="h-full w-full"
         >
           <Panel id="left" defaultSize="20%" minSize="5%">
-            <div className="h-full p-4 bg-muted overflow-auto">
+            <div className="h-full overflow-auto bg-muted px-4 pb-4 pt-[var(--shell-header-h)]">
               <h2 className="text-sm font-medium mb-2">Left</h2>
               <p className="text-xs text-muted-foreground">
                 <code className="text-foreground">id=&quot;left&quot;</code> · default 20%
@@ -54,7 +58,7 @@ export default async function CookieSsrDemoPage() {
           <Handle />
 
           <Panel id="center" defaultSize="60%" minSize="30%">
-            <div className="h-full p-4 bg-card overflow-auto">
+            <div className="h-full overflow-auto bg-card px-4 pb-4 pt-[var(--shell-header-h)]">
               <h2 className="text-sm font-medium mb-2">Center</h2>
               <p className="text-xs text-muted-foreground">
                 <code className="text-foreground">id=&quot;center&quot;</code> · default 60%
@@ -71,7 +75,7 @@ export default async function CookieSsrDemoPage() {
           <Handle />
 
           <Panel id="right" defaultSize="20%" minSize="5%">
-            <div className="h-full p-4 bg-muted overflow-auto">
+            <div className="h-full overflow-auto bg-muted px-4 pb-4 pt-[var(--shell-header-h)]">
               <h2 className="text-sm font-medium mb-2">Right</h2>
               <p className="text-xs text-muted-foreground">
                 <code className="text-foreground">id=&quot;right&quot;</code> · default 20%

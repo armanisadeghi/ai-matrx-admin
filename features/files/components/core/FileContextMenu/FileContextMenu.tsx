@@ -52,10 +52,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import type { Visibility } from "@/features/files/types";
-import {
-  clearSelection,
-  setActiveFileId,
-} from "@/features/files/redux/slice";
+import { clearSelection, setActiveFileId } from "@/features/files/redux/slice";
 import {
   selectAllFilesMap,
   selectSelection,
@@ -109,8 +106,7 @@ export function FileContextMenu({
   // operates on the entire selection. Otherwise it's a normal single-file
   // menu (the legacy menu behaved the same way).
   const isInMulti =
-    selection.selectedIds.length > 1 &&
-    selection.selectedIds.includes(fileId);
+    selection.selectedIds.length > 1 && selection.selectedIds.includes(fileId);
   const batchFileIds = isInMulti
     ? selection.selectedIds.filter((id) => filesById[id])
     : [];
@@ -161,8 +157,8 @@ export function FileContextMenu({
         const res = await dispatch(
           getSignedUrlThunk({ fileId: id, expiresIn: 3600 }),
         );
-        const url =
-          (res as { payload?: { url?: string } } | undefined)?.payload?.url;
+        const url = (res as { payload?: { url?: string } } | undefined)?.payload
+          ?.url;
         if (!url) return;
         const a = document.createElement("a");
         a.href = url;
@@ -220,11 +216,9 @@ export function FileContextMenu({
     if (!file) return;
     setBusy("download"); // reuse busy state — same UX (spinner on item)
     try {
-      const res = await dispatch(
-        getSignedUrlThunk({ fileId, expiresIn: 600 }),
-      );
-      const url =
-        (res as { payload?: { url?: string } } | undefined)?.payload?.url;
+      const res = await dispatch(getSignedUrlThunk({ fileId, expiresIn: 600 }));
+      const url = (res as { payload?: { url?: string } } | undefined)?.payload
+        ?.url;
       if (!url) throw new Error("Couldn't fetch a signed URL.");
       const blob = await fetch(url).then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
@@ -262,7 +256,7 @@ export function FileContextMenu({
   // wrinkles:
   //
   //   1. If the cloud-files PageShell is mounted (user is on
-  //      `/cloud-files/...`), `setActiveFileId` opens the side panel and
+  //      `/files/...`), `setActiveFileId` opens the side panel and
   //      the CustomEvent below tells it which tab to pop.
   //   2. If we're anywhere else, the side panel doesn't exist — but
   //      `openFilePreview(fileId)` opens the canonical PreviewPane
@@ -287,9 +281,18 @@ export function FileContextMenu({
     [dispatch, fileId],
   );
 
-  const handlePreview = useCallback(() => openInPreview("preview"), [openInPreview]);
-  const handleShowDetails = useCallback(() => openInPreview("info"), [openInPreview]);
-  const handleShowVersions = useCallback(() => openInPreview("versions"), [openInPreview]);
+  const handlePreview = useCallback(
+    () => openInPreview("preview"),
+    [openInPreview],
+  );
+  const handleShowDetails = useCallback(
+    () => openInPreview("info"),
+    [openInPreview],
+  );
+  const handleShowVersions = useCallback(
+    () => openInPreview("versions"),
+    [openInPreview],
+  );
 
   return (
     <>
@@ -305,7 +308,8 @@ export function FileContextMenu({
             <>
               <div className="flex items-center gap-1.5 px-2 py-1 text-[11px] uppercase tracking-wide text-muted-foreground">
                 <Layers className="h-3 w-3" />
-                {batchFileIds.length} {batchFileIds.length === 1 ? "file" : "files"} selected
+                {batchFileIds.length}{" "}
+                {batchFileIds.length === 1 ? "file" : "files"} selected
               </div>
               <DropdownMenuSeparator />
               <DropdownMenuItem
@@ -334,98 +338,102 @@ export function FileContextMenu({
             </>
           ) : (
             <>
-          <DropdownMenuItem onClick={handlePreview}>
-            <Eye className="mr-2 h-4 w-4" />
-            Preview
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => void actions.download()}>
-            <Download className="mr-2 h-4 w-4" />
-            Download
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={() => {
-              void actions.copyShareUrl();
-            }}
-          >
-            <Copy className="mr-2 h-4 w-4" />
-            Copy link
-            <DropdownMenuShortcut>{cmd}L</DropdownMenuShortcut>
-          </DropdownMenuItem>
-          {onShare ? (
-            <DropdownMenuItem onClick={onShare}>
-              <Share2 className="mr-2 h-4 w-4" />
-              Share…
-            </DropdownMenuItem>
-          ) : null}
-
-          <DropdownMenuSeparator />
-
-          <DropdownMenuItem onClick={handleRename}>
-            <Edit2 className="mr-2 h-4 w-4" />
-            Rename
-            <DropdownMenuShortcut>F2</DropdownMenuShortcut>
-          </DropdownMenuItem>
-          {onMove ? (
-            <DropdownMenuItem onClick={onMove}>
-              <FolderInput className="mr-2 h-4 w-4" />
-              Move…
-            </DropdownMenuItem>
-          ) : null}
-          <DropdownMenuItem
-            onClick={() => void handleDuplicate()}
-            disabled={busy !== null}
-          >
-            <CopyPlus className="mr-2 h-4 w-4" />
-            Duplicate
-            <DropdownMenuShortcut>{cmd}D</DropdownMenuShortcut>
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleShowDetails}>
-            <FileText className="mr-2 h-4 w-4" />
-            Show details
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setInfoOpen(true)}>
-            <Info className="mr-2 h-4 w-4" />
-            File info dialog
-            <DropdownMenuShortcut>{cmd}I</DropdownMenuShortcut>
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleShowVersions}>
-            <History className="mr-2 h-4 w-4" />
-            Show versions
-          </DropdownMenuItem>
-
-          <DropdownMenuSub>
-            <DropdownMenuSubTrigger>
-              <Lock className="mr-2 h-4 w-4" />
-              Visibility
-            </DropdownMenuSubTrigger>
-            <DropdownMenuSubContent>
+              <DropdownMenuItem onClick={handlePreview}>
+                <Eye className="mr-2 h-4 w-4" />
+                Preview
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => void actions.download()}>
+                <Download className="mr-2 h-4 w-4" />
+                Download
+              </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() => void handleVisibility("private")}
+                onClick={() => {
+                  void actions.copyShareUrl();
+                }}
               >
-                <Lock className="mr-2 h-4 w-4" />
-                Private
+                <Copy className="mr-2 h-4 w-4" />
+                Copy link
+                <DropdownMenuShortcut>{cmd}L</DropdownMenuShortcut>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => void handleVisibility("shared")}>
-                <Users className="mr-2 h-4 w-4" />
-                Shared
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => void handleVisibility("public")}>
-                <Globe className="mr-2 h-4 w-4" />
-                Public
-              </DropdownMenuItem>
-            </DropdownMenuSubContent>
-          </DropdownMenuSub>
+              {onShare ? (
+                <DropdownMenuItem onClick={onShare}>
+                  <Share2 className="mr-2 h-4 w-4" />
+                  Share…
+                </DropdownMenuItem>
+              ) : null}
 
-          <DropdownMenuSeparator />
+              <DropdownMenuSeparator />
 
-          <DropdownMenuItem
-            className="text-destructive focus:text-destructive"
-            onClick={() => setConfirmOpen(true)}
-          >
-            <Trash2 className="mr-2 h-4 w-4" />
-            Delete
-            <DropdownMenuShortcut>⌫</DropdownMenuShortcut>
-          </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleRename}>
+                <Edit2 className="mr-2 h-4 w-4" />
+                Rename
+                <DropdownMenuShortcut>F2</DropdownMenuShortcut>
+              </DropdownMenuItem>
+              {onMove ? (
+                <DropdownMenuItem onClick={onMove}>
+                  <FolderInput className="mr-2 h-4 w-4" />
+                  Move…
+                </DropdownMenuItem>
+              ) : null}
+              <DropdownMenuItem
+                onClick={() => void handleDuplicate()}
+                disabled={busy !== null}
+              >
+                <CopyPlus className="mr-2 h-4 w-4" />
+                Duplicate
+                <DropdownMenuShortcut>{cmd}D</DropdownMenuShortcut>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleShowDetails}>
+                <FileText className="mr-2 h-4 w-4" />
+                Show details
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setInfoOpen(true)}>
+                <Info className="mr-2 h-4 w-4" />
+                File info dialog
+                <DropdownMenuShortcut>{cmd}I</DropdownMenuShortcut>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleShowVersions}>
+                <History className="mr-2 h-4 w-4" />
+                Show versions
+              </DropdownMenuItem>
+
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <Lock className="mr-2 h-4 w-4" />
+                  Visibility
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent>
+                  <DropdownMenuItem
+                    onClick={() => void handleVisibility("private")}
+                  >
+                    <Lock className="mr-2 h-4 w-4" />
+                    Private
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => void handleVisibility("shared")}
+                  >
+                    <Users className="mr-2 h-4 w-4" />
+                    Shared
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => void handleVisibility("public")}
+                  >
+                    <Globe className="mr-2 h-4 w-4" />
+                    Public
+                  </DropdownMenuItem>
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
+
+              <DropdownMenuSeparator />
+
+              <DropdownMenuItem
+                className="text-destructive focus:text-destructive"
+                onClick={() => setConfirmOpen(true)}
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+                <DropdownMenuShortcut>⌫</DropdownMenuShortcut>
+              </DropdownMenuItem>
             </>
           )}
         </DropdownMenuContent>

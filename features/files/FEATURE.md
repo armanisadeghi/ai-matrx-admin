@@ -17,7 +17,7 @@ If you're modifying anything in this feature, **also update this doc and [migrat
 - **Live updates** come from Supabase Realtime on `cloud_files`, `cloud_file_versions`, `cloud_file_permissions`, `cloud_file_share_links`.
 - **State** lives in a single `cloudFiles` Redux slice, modeled on [features/agents/redux/agent-shortcuts/](../agents/redux/agent-shortcuts/): normalized, dirty-tracked, optimistic + rollback.
 - **Components** are built once in `features/files/components/core/` and composed into 6 **surfaces**: Page, WindowPanel, MobileStack, Embedded, Dialog, Drawer. The core never knows its host.
-- **Route** for the full app is [app/(a)/cloud-files/](../../app/(a)/cloud-files/). Public shares under [app/(public)/share/[token]/](../../app/(public)/share/).
+- **Route** for the full app is [app/(a)/files/](../../app/(a)/files/) (URL `/files`; `/cloud-files/*` 308s here permanently). Public shares under [app/(public)/share/[token]/](../../app/(public)/share/).
 
 **Backend contract:** [from_python/UPDATES.md](from_python/UPDATES.md) — Python-team-owned. Never drift from it. Anything FE wants from Python goes in [for_python/REQUESTS.md](for_python/REQUESTS.md).
 
@@ -205,7 +205,7 @@ components/
 ## Routes
 
 ```
-app/(a)/cloud-files/                                  # authed app
+app/(a)/files/                                        # authed app (URL `/files`; `/cloud-files/*` 308s here)
 ├── layout.tsx              # Server Component shell + <CloudFilesRealtimeProvider>
 ├── loading.tsx             # skeleton matching final DOM (zero layout shift)
 ├── error.tsx
@@ -234,7 +234,7 @@ Do not violate. If you're tempted, update this doc first with the reasoning.
 6. **Mutations are optimistic + rollback** — no spinner-then-refetch.
 7. **Realtime dedup via request ledger** — every REST write ships a `requestId`.
 8. **Dialog on desktop, Drawer on mobile** — enforced by surface branching.
-9. **`dvh` not `vh`** under `app/(a)/cloud-files/`.
+9. **`dvh` not `vh`** under `app/(a)/files/`.
 10. **Docs updated in the same change as code.**
 
 ---
@@ -447,3 +447,5 @@ See [migration/MASTER-PLAN.md](migration/MASTER-PLAN.md) for the phase-ordered p
   References inside `FEATURE.md`, `SKILL.md`, `types.ts`, and `MediaThumbnail.tsx` updated to point at the new docs.
 
   **Verification:** `pnpm tsc --noEmit -p tsconfig.json` clean repo-wide.
+
+- **2026-04-27** — Renamed the public route from `/cloud-files` to `/files`. The App Router segment moved from `app/(a)/cloud-files/` to [app/(a)/files/](../../app/(a)/files/), every consumer that hard-coded `/cloud-files` (nav data, Dropbox-shell sidebar/icon-rail/section nav, [PreviewPane.tsx](components/surfaces/PreviewPane.tsx) URL push/pop, the authed share resolver at [share/[token]/page.tsx](../../app/(a)/files/share/[token]/page.tsx), `not-found.tsx`, image-studio links, quick-actions overlay, studio variant tile) was updated to `/files`, and [next.config.js](../../next.config.js) gained two permanent (`308`) redirects — `/cloud-files/:path*` → `/files/:path*` and `/cloud-files` → `/files` — so existing bookmarks, share links, and external references keep working. The window-panels registry path (`features/window-panels/windows/cloud-files/`), `overlayId: "cloudFilesWindow"`, the diagnostic harness at `/ssr/demos/cloud-files-debug`, the Python REST contract under `/cloud-files/*`, the `bucket: "cloud-files"` storage sentinel, the Supabase Realtime channel name (`cloud-files:${userId}`), and internal DOM events (`cloud-files:open-preview-tab`, `cloud-files:open-rename`) were intentionally left unchanged — they are infrastructure / API contract names, not user-facing URLs. The skill name in [SKILL.md](SKILL.md) frontmatter (`name: cloud-files`) was kept because the skill describes the underlying file system, not the URL.

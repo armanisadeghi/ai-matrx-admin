@@ -25,7 +25,7 @@ export interface UseFileMenuActionsResult {
 
   // ── Open / preview ──
   /** Open the canonical PreviewPane (cloud-files side panel, OR the
-   *  global filePreviewWindow when not on /cloud-files). */
+   *  global filePreviewWindow when not on /files). */
   preview: () => void;
   /** Open preview and jump to the Info tab. */
   showDetails: () => void;
@@ -58,7 +58,7 @@ export function useFileMenuActions(fileId: string): UseFileMenuActionsResult {
     (tab: "preview" | "info" | "versions") => {
       // Set the active file id (so a mounted PageShell PreviewPane opens
       // to it) AND open the global filePreviewWindow (so chips outside
-      // /cloud-files get a window). Both are idempotent + cheap, so
+      // /files get a window). Both are idempotent + cheap, so
       // calling both is the safe default.
       dispatch(setActiveFileId(fileId));
       openFilePreview(fileId);
@@ -74,20 +74,14 @@ export function useFileMenuActions(fileId: string): UseFileMenuActionsResult {
   );
 
   const preview = useCallback(() => openInPreview("preview"), [openInPreview]);
-  const showDetails = useCallback(
-    () => openInPreview("info"),
-    [openInPreview],
-  );
+  const showDetails = useCallback(() => openInPreview("info"), [openInPreview]);
   const showVersions = useCallback(
     () => openInPreview("versions"),
     [openInPreview],
   );
 
   const download = useCallback(() => actions.download(), [actions]);
-  const copyShareUrl = useCallback(
-    () => actions.copyShareUrl(),
-    [actions],
-  );
+  const copyShareUrl = useCallback(() => actions.copyShareUrl(), [actions]);
   const setVisibility = useCallback(
     (v: Visibility) => actions.setVisibility(v),
     [actions],

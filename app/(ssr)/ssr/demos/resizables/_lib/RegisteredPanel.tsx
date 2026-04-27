@@ -12,35 +12,49 @@ import { usePanelControls } from "./PanelControlProvider";
 interface Props extends Omit<PanelProps, "panelRef" | "onResize"> {
   /** Logical name used by usePanelControls()/header buttons. */
   registerAs: string;
+  /** The Group this panel belongs to — must match a ClientGroup's groupKey. */
+  groupKey: string;
 }
 
-// Wraps <Panel> with two responsibilities:
-//   1. Acquire a usePanelRef and publish it to PanelControlProvider so a button
-//      anywhere in the tree (including portaled PageHeader content) can call
-//      .collapse() / .expand() on it.
-//   2. Detect collapse transitions inside onResize (compare prev vs next size)
-//      and update the boolean intent in context, so toggle icons flip even
-//      when the user drags below minSize and triggers an auto-collapse.
+function parseDefaultSizePercent(value: PanelProps["defaultSize"]): number {
+  if (value === undefined) return 0;
+  if (typeof value === "number") return value <= 100 ? value : 0;
+  const m = /^(\d+(?:\.\d+)?)%?$/.exec(value);
+  return m ? parseFloat(m[1]) : 0;
+}
+
+// Wraps <Panel> and:
+//   1. Registers its panelRef with the PanelControlProvider under groupKey.
+//   2. Reports resize percentages so the provider can keep lastOpenSize fresh
+//      and flip the boolean intent on drag-to-collapse.
 //
-// `children` is passed straight through to <Panel> — Server Components are
-// fine here, RSC composition allows it.
-export function RegisteredPanel({ registerAs, children, ...rest }: Props) {
-  const ref = usePanelRef();
-  const { register, setCollapsed } = usePanelControls();
+// `children` passes through to <Panel> — server components are fine.
+export function RegisteredPanel({
+  registerAs,
+  groupKey,
+  defaultSize,
+  children,
+  ...rest
+}: Props) {
+  const panelRef = usePanelRef();
+  const { registerPanel, notifyResize } = usePanelControls();
+  const defaultSizePercent = parseDefaultSizePercent(defaultSize);
 
   useEffect(() => {
-    register(registerAs, ref);
-  }, [register, registerAs, ref]);
+    registerPanel(registerAs, groupKey, panelRef, defaultSizePercent);
+  }, [registerPanel, registerAs, groupKey, panelRef, defaultSizePercent]);
 
-  const trackCollapse: OnPanelResize = (next, _id, prev) => {
-    if (prev === undefined) return;
-    const wasCollapsed = prev.asPercentage === 0;
-    const isCollapsed = next.asPercentage === 0;
-    if (wasCollapsed !== isCollapsed) setCollapsed(registerAs, isCollapsed);
+  const onResize: OnPanelResize = (next) => {
+    notifyResize(registerAs, next.asPercentage);
   };
 
   return (
-    <Panel {...rest} panelRef={ref} onResize={trackCollapse}>
+    <Panel
+      {...rest}
+      defaultSize={defaultSize}
+      panelRef={panelRef}
+      onResize={onResize}
+    >
       {children}
     </Panel>
   );
