@@ -652,12 +652,37 @@ export default async function MyPage() {
 
 **No `paddingTop: var(--shell-header-h)`** on the outer wrapper — that forces every panel below the header and creates the "boxed" feeling the design rejects.
 
-**Per-panel top-spacing decisions** are up to the panel's content:
-- A chat conversation panel should NOT add top padding — let the messages flow up. Latest messages stay at the bottom (visible); old messages scroll up behind the glass.
-- Panels with interactive elements at the very top (search input, dropdown) MAY want a small top padding so users can interact without the glass overlapping their tap target — but only when needed. Default is no padding.
-- Panel labels / titles: small uppercase text rendering behind the glass is fine; it's barely visible and the content still reads naturally.
+**Per-panel top-spacing is each column's own responsibility.** The page wrapper does NOT impose top padding; each panel surface decides based on its content:
 
-The agent builder uses a different pattern (`paddingTop: var(--shell-header-h)` per-panel) for a centered single-column reading view. For multi-panel split layouts, the convention is the opposite: **let content extend up.**
+- **Scrolling content (no `pt-` needed)** — chat conversations, message lists, any panel where the user scrolls. Content flows behind the header icons; if something is obscured, scrolling reveals it. Latest messages stay at the bottom (visible) by default. Example: the chat panel in [`03-vscode-shell/page.tsx`](../../../app/(ssr)/ssr/demos/resizables/03-vscode-shell/page.tsx) has no `pt-` and no top label — messages flow all the way to the top edge.
+
+- **Static or interactive top content (`pt-[var(--shell-header-h)]` required)** — anything that sits at the top and won't scroll out of the way: panel titles, file tabs, terminal tabs, search inputs, agent dropdowns, "+New" buttons. These MUST clear the shell header zone, otherwise the glass icons render on top of important UI. Add the padding at the OUTERMOST element of the panel surface so everything inside is safely below the header.
+
+```tsx
+// SCROLLING — no top padding, content can flow up under the header
+function ChatSurface() {
+  return (
+    <div className="h-full flex flex-col bg-muted">
+      <div className="flex-1 overflow-auto p-3 …">{messages}</div>
+      <div className="shrink-0 p-2">{input}</div>
+    </div>
+  );
+}
+
+// STATIC / INTERACTIVE TOP — pt clears the header
+function FilesSidebar() {
+  return (
+    <div className="h-full overflow-auto bg-muted pt-[var(--shell-header-h)]">
+      <div className="px-3 py-1.5 text-[11px] uppercase …">Files</div>
+      <ul>{items}</ul>
+    </div>
+  );
+}
+```
+
+Tailwind arbitrary-value `pt-[var(--shell-header-h)]` is preferred over the inline `style={{paddingTop: "var(--shell-header-h)"}}` — same effect, less noise, still resolves the live CSS var so a future header-height change propagates everywhere.
+
+The agent builder uses inline `paddingTop: "var(--shell-header-h)"` on individual single-column readers — same idea, just inline-style flavor. Both are valid; pick what reads cleanest in context.
 
 ### `<PageHeader>` rules (non-negotiable)
 
