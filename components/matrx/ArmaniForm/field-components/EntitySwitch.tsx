@@ -2,7 +2,7 @@ import React from "react";
 import * as SwitchPrimitives from "@radix-ui/react-switch";
 import {cn} from "@/utils/cn";
 import {Label} from "@/components/ui/label";
-import {EntityBaseFieldProps} from "../EntityBaseField";
+import type { EntityBaseFieldProps } from "../entityBaseFieldProps";
 
 interface EntitySwitchProps extends EntityBaseFieldProps,
     Omit<React.ComponentPropsWithoutRef<typeof SwitchPrimitives.Root>, 'onChange' | 'size' | 'value'> {

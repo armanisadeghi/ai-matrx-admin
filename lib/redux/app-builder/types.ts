@@ -1,4 +1,4 @@
-import { AppletContainer, CustomAppConfig, CustomAppletConfig, FieldDefinition } from "@/types/customAppTypes";
+import { AppletContainer, CustomAppConfig, CustomAppletConfig, FieldDefinition , AppletSourceConfig } from "@/types/customAppTypes";
 
 export interface FieldBuilder extends FieldDefinition {
     isPublic?: boolean;
@@ -38,6 +38,14 @@ export interface AppBuilder extends CustomAppConfig {
     appDataContext?: any;
 }
 
+export interface AppsState {
+    apps: Record<string, AppBuilder>;
+    isLoading: boolean;
+    error: string | null;
+    activeAppId: string | null;
+    newAppId: string | null;
+}
+
 export interface RuntimeBrokerDefinition {
     id: string;
     name: string;
@@ -45,3 +53,28 @@ export interface RuntimeBrokerDefinition {
     defaultValue?: any;
   }
   
+export interface ContainersState {
+    containers: Record<string, ContainerBuilder>;
+    isLoading: boolean;
+    error: string | null;
+    activeContainerId: string | null;
+    newContainerId: string | null;
+}
+
+export interface FieldsState {
+    fields: Record<string, FieldBuilder>;
+    isLoading: boolean;
+    error: string | null;
+    activeFieldId: string | null;
+    newFieldId: string | null;
+    hasFetched: boolean;
+}
+
+export interface AppletsState {
+    applets: Record<string, AppletBuilder>;
+    isLoading: boolean;
+    error: string | null;
+    activeAppletId: string | null;
+    newAppletId: string | null;
+    tempSourceConfigList: AppletSourceConfig[];
+}

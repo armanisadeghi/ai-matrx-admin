@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { FileUploadWithStorage } from "@/components/ui/file-upload/FileUploadWithStorage";
 import { EnhancedFileDetails } from "@/utils/file-operations/constants";
 import { FieldValidation, useFieldValidation } from "./common/FieldValidation";
-import { CommonFieldProps } from "./core/AppletFieldController";
+import { CommonFieldProps } from "./core/types";
 
 const FileUploadField: React.FC<CommonFieldProps> = ({ field, sourceId="no-applet-id", isMobile, source = "applet", disabled = false, className = "" }) => {
     const { id, label, componentProps, required } = field;

@@ -1,5 +1,3 @@
-import { XYPosition, Position, CoordinateExtent, Viewport } from "reactflow";
-
 import { DbBrokerRelayData } from "./relaynodeTypes";
 import { Node } from "reactflow";
 import { DbWorkflow } from "./coreWorkflowTypes";
@@ -10,44 +8,24 @@ import { UserInputNode } from "./userInputNodeTypes";
 import { BrokerRelayNode } from "./relaynodeTypes";
 import { DbWorkflowEdge } from "./edgeTypes";
 import { WorkflowEdge } from "./edgeTypes";
-import { EnrichedBroker } from "../utils/data-flow-manager";
-
 export * from "./coreWorkflowTypes";
 export * from "./functionNodeTypes";
 export * from "./userInputNodeTypes";
 export * from "./relaynodeTypes";
 export * from "./edgeTypes";
 
-export type PythonDataType =
-  | "int"
-  | "float"
-  | "str"
-  | "bool"
-  | "list"
-  | "tuple"
-  | "dict"
-  | "set";
+import type { EnrichedBroker } from "./enrichedBrokerTypes";
 
-export interface ReactFlowUIMetadata {
-  position: XYPosition;
-  type?: string;
-  sourcePosition?: Position;
-  targetPosition?: Position;
-  hidden?: boolean;
-  draggable?: boolean;
-  selectable?: boolean;
-  connectable?: boolean;
-  deletable?: boolean;
-  dragHandle?: string;
-  parentId?: string;
-  zIndex?: number;
-  extent?: "parent" | CoordinateExtent;
-  expandParent?: boolean;
-  ariaLabel?: string;
-  focusable?: boolean;
-  style?: React.CSSProperties;
-  className?: string;
-}
+export type { EnrichedBroker } from "./enrichedBrokerTypes";
+export type {
+  PythonDataType,
+  ReactFlowUIMetadata,
+} from "./workflowReactFlowTypes";
+export type {
+  KnownBroker,
+  KnownBrokerComputer,
+  NodeKnownBrokers,
+} from "./knownBrokersTypes";
 
 export interface DbCompleteWorkflow {
   workflow: DbWorkflow;

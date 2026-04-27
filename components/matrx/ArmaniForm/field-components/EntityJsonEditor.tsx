@@ -25,7 +25,7 @@ import {Card} from '@/components/ui/card';
 import {Button} from '@/components/ui/button';
 import {Textarea} from '@/components/ui/textarea';
 import jsonlint from 'jsonlint-mod';
-import {EntityBaseFieldProps} from "../EntityBaseField";
+import type { EntityBaseFieldProps } from "../entityBaseFieldProps";
 
 export interface ValidationError {
     line: number;

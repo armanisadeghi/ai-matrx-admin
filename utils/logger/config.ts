@@ -1,5 +1,5 @@
 // lib/logger/config.ts
-import { LogLevel } from '@/utils/logger';
+import { LogLevel } from './types';
 
 export const runtimeState = {
     featureFilter: new Set<string>(),

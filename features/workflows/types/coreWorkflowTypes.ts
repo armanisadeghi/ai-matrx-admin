@@ -1,5 +1,5 @@
 import type { Database } from "@/types/database.types";
-import { NodeKnownBrokers } from "../utils/knownBrokersRegistry";
+import type { NodeKnownBrokers } from "./knownBrokersTypes";
 
 export interface WorkflowNodeMetadata {
   knownBrokers?: NodeKnownBrokers;

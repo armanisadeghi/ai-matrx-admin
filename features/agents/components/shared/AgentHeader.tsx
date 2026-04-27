@@ -8,9 +8,14 @@ import { AgentHeaderMobile } from "./AgentHeaderMobile";
 
 interface AgentHeaderProps {
   agentId: string;
-  basePath: string;
-  currentPath: string;
   agentName: string;
+  /** Base path for nested mode routes. Defaults to `/agents` for the user
+   *  surface; admin passes `/administration/system-agents/agents`. */
+  basePath?: string;
+  /** SSR-friendly current path. Optional — falls back to `usePathname()` when
+   *  omitted. Pages that already know their pathname server-side can pass it
+   *  to skip the client-side hook in `AgentModeController`. */
+  currentPath?: string;
   backHref?: string;
 }
 

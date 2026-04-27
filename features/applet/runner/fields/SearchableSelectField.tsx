@@ -6,7 +6,7 @@ import { brokerSelectors, brokerActions } from "@/lib/redux/brokerSlice";
 import { ensureValidWidthClass } from "@/features/applet/constants/field-constants";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { CommonFieldProps } from "./core/AppletFieldController";
+import { CommonFieldProps } from "./core/types";
 
 // Import the shadcn/ui components
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";

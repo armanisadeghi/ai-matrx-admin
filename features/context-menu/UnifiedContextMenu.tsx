@@ -71,7 +71,8 @@ import {
   PLACEMENT_TYPE_META,
 } from "@/features/prompt-builtins/constants";
 import { mapScopeToVariables } from "@/features/prompt-builtins/utils/execution";
-import { usePromptRunner } from "@/features/prompts/hooks/usePromptRunner";
+import { useShortcutTrigger } from "@/features/agents/hooks/useShortcutTrigger";
+import type { ApplicationScope } from "@/features/agents/utils/scope-mapping";
 import type {
   MenuItem,
   ContentBlockItem,
@@ -207,8 +208,19 @@ export function UnifiedContextMenu({
     dbPlacementTypes.length > 0,
   );
 
-  // Execution via unified Redux system
-  const { openPrompt } = usePromptRunner();
+  // TODO(prompt-to-agent-sweep): Shortcut launches now go through the agent
+  // execution system via `useShortcutTrigger`. This works today only because
+  // `prompt_shortcuts.id == agx_shortcut.id` from the prompts→agents 1:1
+  // migration, so the same id passed by the legacy
+  // `context_menu_unified_view` resolves to a real `agx_shortcut` row. We're
+  // not yet consuming agent-shortcut metadata, scopeMappings, or any of the
+  // agent system's strengths — and inline text-replacement callbacks
+  // (`onTextReplace` / `onTextInsertBefore` / `onTextInsertAfter`) are
+  // currently dropped on the floor for `result_display === "inline"`
+  // shortcuts. Replace once this menu reads from `useUnifiedAgentContextMenu`
+  // (features/context-menu-v2) and routes inline text mutation through the
+  // `WidgetHandle` system instead of the legacy callback bag.
+  const trigger = useShortcutTrigger();
 
   // Quick Actions via Redux (hard-coded)
   const {
@@ -939,37 +951,17 @@ export function UnifiedContextMenu({
         );
       }
 
-      // Get result display type
-      const resultDisplay = shortcut.result_display || "modal-full";
-
-      // Build execution config
-      const executionConfig = {
-        auto_run: shortcut.auto_run ?? true,
-        allow_chat: shortcut.allow_chat ?? true,
-        show_variables: shortcut.show_variables ?? false,
-        apply_variables: shortcut.apply_variables ?? true,
-        track_in_runs: true,
-        use_pre_execution_input: shortcut.use_pre_execution_input ?? false,
-      };
-
-      // ⭐ Call unified system with ONLY the prompt ID
-      // Redux will handle fetching from cache (already populated by useUnifiedContextMenu)
-      await openPrompt({
-        promptId: builtin.id, // Just the ID - Redux handles the rest!
-        promptSource: "prompt_builtins", // Tell Redux this is a builtin, not a custom prompt
-        variables: shortcut.apply_variables ? variables : {},
-        executionConfig,
-        result_display: resultDisplay,
-        title: shortcut.label,
-        initialMessage: "",
-        // For inline display: pass text manipulation callbacks
-        ...(resultDisplay === "inline" &&
-          isEditable && {
-            onTextReplace,
-            onTextInsertBefore,
-            onTextInsertAfter,
-            originalText: selectionText,
-          }),
+      // Fire-and-forget agent shortcut launch. The agx_shortcut row carries
+      // display mode, auto_run, allow_chat, scopeMappings, etc. — we hand it
+      // the live UI scope and let the launcher manage everything downstream.
+      //
+      // 1:1 ID note: `shortcut.id` here is a `prompt_shortcuts.id` from the
+      // legacy `context_menu_unified_view`. It works as an agent-shortcut id
+      // because the prompts→agents migration preserved IDs across the two
+      // tables. See the TODO at the `useShortcutTrigger()` call site.
+      await trigger(shortcut.id, {
+        scope: applicationScope as unknown as ApplicationScope,
+        sourceFeature: "context-menu",
       });
     } catch (error) {
       console.error("[UnifiedContextMenu] Error executing shortcut:", error);

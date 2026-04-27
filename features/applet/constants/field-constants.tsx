@@ -22,7 +22,7 @@ import {
     Phone,
     Layers,
 } from "lucide-react";
-import { FIELD_DEFAULT_COMPONENT_PROPS } from "@/lib/redux/app-builder/slices/fieldBuilderSlice";
+import { FIELD_DEFAULT_COMPONENT_PROPS } from "@/lib/redux/app-builder/fieldBuilderDefaultProps";
 
 // Unified component information including icon, display name, and component details
 export interface ComponentInfo {
@@ -353,17 +353,7 @@ export const getCategorizedComponentOptions = () => {
         .sort((a, b) => a.category.localeCompare(b.category)); // Sort categories alphabetically
 };
 
-// Default rules if none are provided or a specific rule is missing
-export const defaultTableRules: Required<TableRules> = {
-    canAddRows: true,
-    canDeleteRows: true,
-    canAddColumns: true,
-    canDeleteColumns: true,
-    canEditCells: true,
-    canRenameColumns: true,
-    canSortRows: true,
-    canSortColumns: true,
-};
+export { defaultTableRules } from "@/types/appletDefaultTableRules";
 
 export const widthOptions = [
     { value: "w-full", label: "Full width (100%)" },

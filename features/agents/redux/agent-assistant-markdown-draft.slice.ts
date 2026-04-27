@@ -1,7 +1,6 @@
 "use client";
 
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store";
 
 export interface AgentAssistantMarkdownDraftEntry {
   conversationId: string;
@@ -63,11 +62,16 @@ export const agentAssistantMarkdownDraftSlice = createSlice({
 export const { upsertAssistantMarkdownDraft, clearAssistantMarkdownDrafts } =
   agentAssistantMarkdownDraftSlice.actions;
 
-export const selectAgentAssistantMarkdownDraftState = (state: RootState) =>
-  state.agentAssistantMarkdownDraft;
+type WithMarkdownDraft = {
+  agentAssistantMarkdownDraft: AgentAssistantMarkdownDraftState;
+};
+
+export const selectAgentAssistantMarkdownDraftState = (
+  state: WithMarkdownDraft,
+) => state.agentAssistantMarkdownDraft;
 
 export const selectLatestAssistantMarkdownDraft = (
-  state: RootState,
+  state: WithMarkdownDraft,
 ): AgentAssistantMarkdownDraftEntry | null => {
   const { entries, lastUpdatedKey } = state.agentAssistantMarkdownDraft;
   if (!lastUpdatedKey || !entries[lastUpdatedKey]) return null;

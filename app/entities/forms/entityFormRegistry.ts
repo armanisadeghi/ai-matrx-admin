@@ -5,6 +5,9 @@ import ArmaniFormFinal from "./ArmaniFormFinal";
 import EntityFormRecordSelections from "./EntityFormRecordSelections";
 import ArmaniFormSmart from "@/components/matrx/ArmaniForm/smart-form/ArmaniFormSmart";
 import ArmaniForm from "@/components/matrx/ArmaniForm/ArmaniForm";
+import type { EntityFormType } from "@/types/componentConfigTypes";
+
+export type { EntityFormType };
 
 export const ENTITY_FORM_COMPONENTS = {
   DEFAULT: EntityFormStandard,
@@ -16,8 +19,6 @@ export const ENTITY_FORM_COMPONENTS = {
   RECORD_SELECT: EntityFormRecordSelections,
   RECORD_MULTI_SELECT: EntityMultiSelectForms,
 } as const;
-
-export type EntityFormType = keyof typeof ENTITY_FORM_COMPONENTS;
 
 export const getEntityFormComponent = (name: EntityFormType) =>
   ENTITY_FORM_COMPONENTS[name] || ENTITY_FORM_COMPONENTS.DEFAULT;

@@ -7,7 +7,7 @@ import { brokerSelectors, brokerActions } from "@/lib/redux/brokerSlice";
 import { ensureValidWidthClass } from "@/features/applet/constants/field-constants";
 import { GripVertical, ArrowUp, ArrowDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { CommonFieldProps } from "./core/AppletFieldController";
+import { CommonFieldProps } from "./core/types";
 import { FieldOption } from "@/types/customAppTypes";
 
 interface SortableItem extends FieldOption {

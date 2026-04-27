@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { setActiveApplet } from "../appletBuilderSyncActions";
 import {
     createAppletThunk,
     updateAppletThunk,
@@ -100,14 +101,6 @@ export const appletBuilderSlice = createSlice({
                     state.activeAppletId = null;
                 }
             }
-        },
-        // Set the active applet for editing
-        setActiveApplet: (state, action: PayloadAction<string | null>) => {
-            const id = action.payload;
-            if (id !== null && !state.applets[id]) {
-                console.error(`Applet with ID ${id} not found in state`);
-            }
-            state.activeAppletId = id;
         },
         // Specific actions for AppletBuilder properties
         setName: (state, action: PayloadAction<{ id: string; name: string }>) => {
@@ -369,6 +362,14 @@ export const appletBuilderSlice = createSlice({
         },
     },
     extraReducers: (builder) => {
+        builder.addCase(setActiveApplet, (state, action) => {
+            const id = action.payload;
+            if (id !== null && !state.applets[id]) {
+                console.error(`Applet with ID ${id} not found in state`);
+            }
+            state.activeAppletId = id;
+        });
+
         // Add applet to app
         builder.addCase(addAppletToAppThunk.pending, (state) => {
             state.isLoading = true;
@@ -653,7 +654,6 @@ export const appletBuilderSlice = createSlice({
 export const {
     startNewApplet,
     cancelNewApplet,
-    setActiveApplet,
     setName,
     setDescription,
     setSlug,
@@ -688,5 +688,7 @@ export const {
     startWithData,
     setTempAppletSourceConfig,
 } = appletBuilderSlice.actions;
+
+export { setActiveApplet } from "../appletBuilderSyncActions";
 
 export default appletBuilderSlice.reducer;

@@ -1,5 +1,5 @@
 import type { Database } from "@/types/database.types";
-import { ReactFlowUIMetadata } from "@/features/workflows/types";
+import type { ReactFlowUIMetadata } from "@/features/workflows/types/workflowReactFlowTypes";
 import { Node } from "reactflow";
 
 // Represents a dependency between two broker ids.

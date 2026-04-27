@@ -1,5 +1,4 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store";
 import {
   AppletLayoutOption,
   AppletContainer,
@@ -66,28 +65,30 @@ export const {
 } = customAppletRuntimeSlice.actions;
 
 // Selectors
-export const selectAppletRuntimeApplets = (state: RootState) =>
+type WithCustomAppletRuntime = { customAppletRuntime: CustomAppletRuntimeState };
+
+export const selectAppletRuntimeApplets = (state: WithCustomAppletRuntime) =>
   state.customAppletRuntime.applets;
-export const selectAppletRuntimeStatus = (state: RootState) =>
+export const selectAppletRuntimeStatus = (state: WithCustomAppletRuntime) =>
   state.customAppletRuntime.status;
-export const selectAppletRuntimeIsInitialized = (state: RootState) =>
+export const selectAppletRuntimeIsInitialized = (state: WithCustomAppletRuntime) =>
   state.customAppletRuntime.status === "initialized";
-export const selectAppletRuntimeIsDebug = (state: RootState) =>
+export const selectAppletRuntimeIsDebug = (state: WithCustomAppletRuntime) =>
   state.customAppletRuntime.isDebug;
-export const selectAppletRuntimeIsDemo = (state: RootState) =>
+export const selectAppletRuntimeIsDemo = (state: WithCustomAppletRuntime) =>
   state.customAppletRuntime.isDemo;
-export const selectAppletRuntimeActiveAppletId = (state: RootState) =>
+export const selectAppletRuntimeActiveAppletId = (state: WithCustomAppletRuntime) =>
   state.customAppletRuntime.activeAppletId;
-export const selectAppletRuntimeActiveApplet = (state: RootState) => {
+export const selectAppletRuntimeActiveApplet = (state: WithCustomAppletRuntime) => {
   const activeId = state.customAppletRuntime.activeAppletId;
   return activeId ? state.customAppletRuntime.applets[activeId] : null;
 };
 
-export const selectAppletRuntimeById = (state: RootState, appletId: string) =>
+export const selectAppletRuntimeById = (state: WithCustomAppletRuntime, appletId: string) =>
   state.customAppletRuntime.applets[appletId];
 
 // Select applet by slug
-export const selectAppletRuntimeBySlug = (state: RootState, slug: string) => {
+export const selectAppletRuntimeBySlug = (state: WithCustomAppletRuntime, slug: string) => {
   const applets = state.customAppletRuntime.applets;
   return (
     (Object.values(applets) as CustomAppletConfig[]).find(
@@ -96,120 +97,120 @@ export const selectAppletRuntimeBySlug = (state: RootState, slug: string) => {
   );
 };
 
-export const selectAppletIdBySlug = (state: RootState, slug: string) => {
+export const selectAppletIdBySlug = (state: WithCustomAppletRuntime, slug: string) => {
   const applet = selectAppletRuntimeBySlug(state, slug);
   return applet?.id || null;
 };
 
-export const selectAppletRuntimeName = (state: RootState, appletId: string) =>
+export const selectAppletRuntimeName = (state: WithCustomAppletRuntime, appletId: string) =>
   state.customAppletRuntime.applets[appletId]?.name;
 export const selectAppletRuntimeDescription = (
-  state: RootState,
+  state: WithCustomAppletRuntime,
   appletId: string,
 ) => state.customAppletRuntime.applets[appletId]?.description;
-export const selectAppletRuntimeSlug = (state: RootState, appletId: string) =>
+export const selectAppletRuntimeSlug = (state: WithCustomAppletRuntime, appletId: string) =>
   state.customAppletRuntime.applets[appletId]?.slug;
 export const selectAppletRuntimeAppletIcon = (
-  state: RootState,
+  state: WithCustomAppletRuntime,
   appletId: string,
 ) => state.customAppletRuntime.applets[appletId]?.appletIcon;
 export const selectAppletRuntimeAppletSubmitText = (
-  state: RootState,
+  state: WithCustomAppletRuntime,
   appletId: string,
 ) => state.customAppletRuntime.applets[appletId]?.appletSubmitText;
 export const selectAppletRuntimeCreator = (
-  state: RootState,
+  state: WithCustomAppletRuntime,
   appletId: string,
 ) => state.customAppletRuntime.applets[appletId]?.creator;
 export const selectAppletRuntimePrimaryColor = (
-  state: RootState,
+  state: WithCustomAppletRuntime,
   appletId: string,
 ) => state.customAppletRuntime.applets[appletId]?.primaryColor;
 export const selectAppletRuntimeAccentColor = (
-  state: RootState,
+  state: WithCustomAppletRuntime,
   appletId: string,
 ) => state.customAppletRuntime.applets[appletId]?.accentColor;
 export const selectAppletRuntimeLayoutType = (
-  state: RootState,
+  state: WithCustomAppletRuntime,
   appletId: string,
 ) => state.customAppletRuntime.applets[appletId]?.layoutType;
 export const selectAppletRuntimeContainers = (
-  state: RootState,
+  state: WithCustomAppletRuntime,
   appletId: string,
 ) => state.customAppletRuntime.applets[appletId]?.containers;
 export const selectAppletRuntimeDataSourceConfig = (
-  state: RootState,
+  state: WithCustomAppletRuntime,
   appletId: string,
 ) => state.customAppletRuntime.applets[appletId]?.dataSourceConfig;
 export const selectAppletRuntimeBrokerMap = (
-  state: RootState,
+  state: WithCustomAppletRuntime,
   appletId: string,
 ) => state.customAppletRuntime.applets[appletId]?.brokerMap;
 export const selectAppletRuntimeResultComponentConfig = (
-  state: RootState,
+  state: WithCustomAppletRuntime,
   appletId: string,
 ) => state.customAppletRuntime.applets[appletId]?.resultComponentConfig;
 export const selectAppletRuntimeNextStepConfig = (
-  state: RootState,
+  state: WithCustomAppletRuntime,
   appletId: string,
 ) => state.customAppletRuntime.applets[appletId]?.nextStepConfig;
 export const selectAppletRuntimeCompiledRecipeId = (
-  state: RootState,
+  state: WithCustomAppletRuntime,
   appletId: string,
 ) => state.customAppletRuntime.applets[appletId]?.compiledRecipeId;
 export const selectAppletRuntimeSubcategoryId = (
-  state: RootState,
+  state: WithCustomAppletRuntime,
   appletId: string,
 ) => state.customAppletRuntime.applets[appletId]?.subcategoryId;
 export const selectAppletRuntimeImageUrl = (
-  state: RootState,
+  state: WithCustomAppletRuntime,
   appletId: string,
 ) => state.customAppletRuntime.applets[appletId]?.imageUrl;
-export const selectAppletRuntimeAppId = (state: RootState, appletId: string) =>
+export const selectAppletRuntimeAppId = (state: WithCustomAppletRuntime, appletId: string) =>
   state.customAppletRuntime.applets[appletId]?.appId;
 
-export const selectActiveApplet = (state: RootState) =>
+export const selectActiveApplet = (state: WithCustomAppletRuntime) =>
   state.customAppletRuntime.activeAppletId
     ? state.customAppletRuntime.applets[
         state.customAppletRuntime.activeAppletId
       ]
     : null;
 
-export const selectActiveAppletName = (state: RootState) =>
+export const selectActiveAppletName = (state: WithCustomAppletRuntime) =>
   selectActiveApplet(state)?.name;
-export const selectActiveAppletDescription = (state: RootState) =>
+export const selectActiveAppletDescription = (state: WithCustomAppletRuntime) =>
   selectActiveApplet(state)?.description;
-export const selectActiveAppletSlug = (state: RootState) =>
+export const selectActiveAppletSlug = (state: WithCustomAppletRuntime) =>
   selectActiveApplet(state)?.slug;
-export const selectActiveAppletIcon = (state: RootState) =>
+export const selectActiveAppletIcon = (state: WithCustomAppletRuntime) =>
   selectActiveApplet(state)?.appletIcon;
-export const selectActiveAppletSubmitText = (state: RootState) =>
+export const selectActiveAppletSubmitText = (state: WithCustomAppletRuntime) =>
   selectActiveApplet(state)?.appletSubmitText;
-export const selectActiveAppletCreator = (state: RootState) =>
+export const selectActiveAppletCreator = (state: WithCustomAppletRuntime) =>
   selectActiveApplet(state)?.creator;
-export const selectActiveAppletPrimaryColor = (state: RootState) =>
+export const selectActiveAppletPrimaryColor = (state: WithCustomAppletRuntime) =>
   selectActiveApplet(state)?.primaryColor;
-export const selectActiveAppletAccentColor = (state: RootState) =>
+export const selectActiveAppletAccentColor = (state: WithCustomAppletRuntime) =>
   selectActiveApplet(state)?.accentColor;
-export const selectActiveAppletLayoutType = (state: RootState) =>
+export const selectActiveAppletLayoutType = (state: WithCustomAppletRuntime) =>
   selectActiveApplet(state)?.layoutType;
-export const selectActiveAppletContainers = (state: RootState) =>
+export const selectActiveAppletContainers = (state: WithCustomAppletRuntime) =>
   selectActiveApplet(state)?.containers;
-export const selectActiveAppletDataSourceConfig = (state: RootState) =>
+export const selectActiveAppletDataSourceConfig = (state: WithCustomAppletRuntime) =>
   selectActiveApplet(state)?.dataSourceConfig;
-export const selectActiveAppletBrokerMap = (state: RootState) =>
+export const selectActiveAppletBrokerMap = (state: WithCustomAppletRuntime) =>
   selectActiveApplet(state)?.brokerMap;
-export const selectActiveAppletResultComponentConfig = (state: RootState) =>
+export const selectActiveAppletResultComponentConfig = (state: WithCustomAppletRuntime) =>
   selectActiveApplet(state)?.resultComponentConfig;
-export const selectActiveAppletNextStepConfig = (state: RootState) =>
+export const selectActiveAppletNextStepConfig = (state: WithCustomAppletRuntime) =>
   selectActiveApplet(state)?.nextStepConfig;
-export const selectActiveAppletCompiledRecipeId = (state: RootState) =>
+export const selectActiveAppletCompiledRecipeId = (state: WithCustomAppletRuntime) =>
   selectActiveApplet(state)?.compiledRecipeId;
-export const selectActiveAppletSubcategoryId = (state: RootState) =>
+export const selectActiveAppletSubcategoryId = (state: WithCustomAppletRuntime) =>
   selectActiveApplet(state)?.subcategoryId;
-export const selectActiveAppletImageUrl = (state: RootState) =>
+export const selectActiveAppletImageUrl = (state: WithCustomAppletRuntime) =>
   selectActiveApplet(state)?.imageUrl;
-export const selectActiveAppletAppId = (state: RootState) =>
+export const selectActiveAppletAppId = (state: WithCustomAppletRuntime) =>
   selectActiveApplet(state)?.appId;
 
 export default customAppletRuntimeSlice.reducer;

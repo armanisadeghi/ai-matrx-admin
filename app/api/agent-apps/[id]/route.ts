@@ -107,8 +107,55 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Look up the row to decide which deletion path applies.
+    const { data: existing, error: fetchError } = await supabase
+      .from("aga_apps")
+      .select("id, user_id")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (fetchError) {
+      return NextResponse.json(
+        { error: "Failed to look up agent app", details: fetchError.message },
+        { status: 500 },
+      );
+    }
+    if (!existing) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+
+    const isGlobal = existing.user_id === null;
+    if (isGlobal) {
+      // Global (system-scope) apps can only be deleted by admins. Use the
+      // admin client so RLS doesn't block the destructive write.
+      const { checkIsUserAdmin } = await import(
+        "@/utils/supabase/userSessionData"
+      );
+      const isAdmin = await checkIsUserAdmin(supabase, user.id);
+      if (!isAdmin) {
+        return NextResponse.json(
+          {
+            error: "Forbidden: only admins can delete system agent apps",
+          },
+          { status: 403 },
+        );
+      }
+      const { createAdminClient } = await import(
+        "@/utils/supabase/adminClient"
+      );
+      const admin = createAdminClient() as unknown as any;
+      const { error } = await admin.from("aga_apps").delete().eq("id", id);
+      if (error) {
+        return NextResponse.json(
+          { error: "Failed to delete system agent app", details: error.message },
+          { status: 500 },
+        );
+      }
+      return NextResponse.json({ success: true });
+    }
+
     // Belt-and-suspenders ownership check on top of RLS — matches the legacy
-    // prompt-apps DELETE handler. Admins still bypass via service-role flow.
+    // prompt-apps DELETE handler.
     const { error } = await supabase
       .from("aga_apps")
       .delete()

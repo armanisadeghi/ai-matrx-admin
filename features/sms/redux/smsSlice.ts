@@ -1,7 +1,6 @@
 "use client";
 
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store";
 import type {
   SmsState,
   SmsConversation,
@@ -154,22 +153,24 @@ export const {
 } = smsSlice.actions;
 
 // ---- Selectors ----
-export const selectSmsConversations = (state: RootState) =>
+type WithSms = { sms: SmsState };
+
+export const selectSmsConversations = (state: WithSms) =>
   state.sms.conversations;
-export const selectSmsCurrentConversationId = (state: RootState) =>
+export const selectSmsCurrentConversationId = (state: WithSms) =>
   state.sms.currentConversationId;
-export const selectSmsMessages = (state: RootState, conversationId: string) =>
+export const selectSmsMessages = (state: WithSms, conversationId: string) =>
   state.sms.messages[conversationId] || [];
-export const selectSmsPreferences = (state: RootState) => state.sms.preferences;
-export const selectSmsPhoneNumbers = (state: RootState) =>
+export const selectSmsPreferences = (state: WithSms) => state.sms.preferences;
+export const selectSmsPhoneNumbers = (state: WithSms) =>
   state.sms.phoneNumbers;
-export const selectSmsIsLoading = (state: RootState) => state.sms.isLoading;
-export const selectSmsIsSending = (state: RootState) => state.sms.isSending;
-export const selectSmsError = (state: RootState) => state.sms.error;
-export const selectSmsTotalConversations = (state: RootState) =>
+export const selectSmsIsLoading = (state: WithSms) => state.sms.isLoading;
+export const selectSmsIsSending = (state: WithSms) => state.sms.isSending;
+export const selectSmsError = (state: WithSms) => state.sms.error;
+export const selectSmsTotalConversations = (state: WithSms) =>
   state.sms.totalConversations;
-export const selectSmsUnreadTotal = (state: RootState) => state.sms.unreadTotal;
-export const selectSmsCurrentConversation = (state: RootState) =>
+export const selectSmsUnreadTotal = (state: WithSms) => state.sms.unreadTotal;
+export const selectSmsCurrentConversation = (state: WithSms) =>
   state.sms.conversations.find(
     (c) => c.id === state.sms.currentConversationId,
   ) || null;

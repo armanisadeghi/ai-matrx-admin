@@ -1,5 +1,15 @@
 "use client";
 
+// TODO(prompt-to-agent-sweep): This entire hook reads from the legacy
+// `context_menu_unified_view` (prompt-builtins source) and uses
+// `features/prompt-builtins/utils/menuHierarchy` + types. The whole notes
+// context menu currently sits on prompt-builtin data while routing launches
+// through the agent system via id-collision. Replace this hook with a thin
+// wrapper around `useUnifiedAgentContextMenu` from `features/context-menu-v2`
+// so menu data, scope precedence, and `enabledFeatures` filtering all come
+// from the agent side. After that swap, `NoteContextMenuContent` no longer
+// needs to import anything from `features/prompt-builtins/**`.
+
 // useNoteContextMenuGroups — Fetches and builds the category hierarchy for all
 // DB-driven context menu sections (ai-action, content-block, quick-action).
 // Fast path: reads from Redux contextMenuCache (populated by DeferredShellData).

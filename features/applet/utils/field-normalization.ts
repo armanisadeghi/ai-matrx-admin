@@ -1,9 +1,14 @@
 // File: "@/features/applet/utils/field-normalization.ts"
 
-import { FieldBuilder } from "@/lib/redux/app-builder/types";
-import { FieldDefinition, ComponentProps, ComponentType, FieldOption } from "@/types/customAppTypes";
+import {
+  FieldBuilderInput,
+  FieldDefinition,
+  ComponentProps,
+  ComponentType,
+  FieldOption,
+} from "@/types/customAppTypes";
 import { getComponentTypeDefaults, ensureValidWidthClass, ensureValidDirectionValue, ensureValidGridColsValue } from "@/features/applet/constants/field-constants";
-import { FIELD_DEFAULT_COMPONENT_PROPS } from "@/lib/redux/app-builder/slices/fieldBuilderSlice";
+import { FIELD_DEFAULT_COMPONENT_PROPS } from "@/lib/redux/app-builder/fieldBuilderDefaultProps";
 import { v4 as uuidv4 } from "uuid";
 
 export function processFieldOptions(options?: FieldOption[]): FieldOption[] {
@@ -16,7 +21,7 @@ export function processFieldOptions(options?: FieldOption[]): FieldOption[] {
     }));
 }
 
-export function normalizeFieldDefinition(field: Partial<FieldDefinition> | Partial<FieldBuilder>): FieldDefinition {
+export function normalizeFieldDefinition(field: FieldBuilderInput): FieldDefinition {
     const componentType = field.component || "textarea";
     const typeDefaultProps = getComponentTypeDefaults(componentType as ComponentType);
 
@@ -48,7 +53,7 @@ export function normalizeFieldDefinition(field: Partial<FieldDefinition> | Parti
 }
 
 
-export function normalizeFieldDefinitionWithUuid(field: Partial<FieldDefinition> | Partial<FieldBuilder>): FieldDefinition {
+export function normalizeFieldDefinitionWithUuid(field: FieldBuilderInput): FieldDefinition {
     const fieldWithId = {
         ...field,
         id: field.id || uuidv4()

@@ -6,7 +6,7 @@ import { ensureValidWidthClass } from "@/features/applet/constants/field-constan
 import { GripHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FieldOption } from "@/types/customAppTypes";
-import { CommonFieldProps } from "../core/AppletFieldController";
+import { CommonFieldProps } from "../core/types";
 
 // Extended interface for table data with order
 interface TableOption extends FieldOption {

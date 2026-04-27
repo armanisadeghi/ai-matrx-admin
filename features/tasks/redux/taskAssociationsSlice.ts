@@ -5,8 +5,8 @@ import {
   createAsyncThunk,
   PayloadAction,
 } from "@reduxjs/toolkit";
+import type { ThunkDispatch, UnknownAction } from "@reduxjs/toolkit";
 import { supabase } from "@/utils/supabase/client";
-import type { AppDispatch, RootState } from "@/lib/redux/store";
 import {
   upsertTaskWithLevel,
   type TaskRecord,
@@ -100,7 +100,7 @@ const entityKey = (type: string, id: string) => `${type}:${id}`;
 export const fetchTaskAssociations = createAsyncThunk<
   TaskAssociationsBundle,
   string,
-  { state: RootState; dispatch: AppDispatch }
+  { dispatch: ThunkDispatch<object, unknown, UnknownAction> }
 >("taskAssociations/fetch", async (taskId) => {
   const { data, error } = await supabase.rpc("get_task_associations", {
     p_task_id: taskId,
@@ -148,7 +148,7 @@ export const associateWithTask = createAsyncThunk<
     label?: string;
     metadata?: Record<string, unknown>;
   },
-  { state: RootState; dispatch: AppDispatch }
+  { dispatch: ThunkDispatch<object, unknown, UnknownAction> }
 >(
   "taskAssociations/associate",
   async (
@@ -184,7 +184,7 @@ export const associateWithTask = createAsyncThunk<
 export const dissociateFromTask = createAsyncThunk<
   { taskId: string; entityType: string; entityId: string },
   { taskId: string; entityType: string; entityId: string },
-  { state: RootState; dispatch: AppDispatch }
+  { dispatch: ThunkDispatch<object, unknown, UnknownAction> }
 >(
   "taskAssociations/dissociate",
   async ({ taskId, entityType, entityId }, { dispatch }) => {
@@ -225,7 +225,7 @@ export const createTaskWithAssociation = createAsyncThunk<
     label?: string | null;
     metadata?: Record<string, unknown>;
   },
-  { state: RootState; dispatch: AppDispatch }
+  { dispatch: ThunkDispatch<object, unknown, UnknownAction> }
 >("taskAssociations/createTaskWithAssociation", async (input, { dispatch }) => {
   const { data, error } = await supabase.rpc("create_task_with_association", {
     p_title: input.title,
@@ -326,7 +326,7 @@ export const createTasksBulk = createAsyncThunk<
     entity_id?: string | null;
     metadata?: Record<string, unknown>;
   },
-  { state: RootState; dispatch: AppDispatch }
+  { dispatch: ThunkDispatch<object, unknown, UnknownAction> }
 >("taskAssociations/createTasksBulk", async (input, { dispatch }) => {
   const { data, error } = await supabase.rpc("create_tasks_bulk", {
     p_items: input.items.map((x, i) => ({ ...x, index: i })),

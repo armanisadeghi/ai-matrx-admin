@@ -8,7 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { CommonFieldProps } from "../core/AppletFieldController";
+import { CommonFieldProps } from "../core/types";
 
 const SearchableSelectFieldConcept: React.FC<CommonFieldProps> = ({
     field,

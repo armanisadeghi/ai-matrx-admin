@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CommonFieldProps } from "./core/AppletFieldController";
+import { CommonFieldProps } from "./core/types";
 import { FieldValidation, useFieldValidation } from "./common/FieldValidation";
 
 const DateField: React.FC<CommonFieldProps> = ({ field, sourceId="no-applet-id", isMobile, source = "applet", disabled = false, className = "" }) => {

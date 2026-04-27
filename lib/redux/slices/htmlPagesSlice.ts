@@ -12,7 +12,6 @@
 //   - Editor local state (that stays in useHtmlPreviewState hook)
 
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store";
 import type { HtmlPageRecord } from "@/features/artifacts/types";
 
 // ── State shape ───────────────────────────────────────────────────────────────
@@ -136,28 +135,30 @@ export default htmlPagesSlice.reducer;
 
 // ── Base selectors ────────────────────────────────────────────────────────────
 
-export const selectHtmlPagesState = (state: RootState): HtmlPagesState =>
+type WithHtmlPages = { htmlPages: HtmlPagesState };
+
+export const selectHtmlPagesState = (state: WithHtmlPages): HtmlPagesState =>
   state.htmlPages;
 
 export const selectHtmlPagesById = (
-  state: RootState,
+  state: WithHtmlPages,
 ): Record<string, HtmlPageRecord> => state.htmlPages.pages;
 
-export const selectHtmlPageOrder = (state: RootState): string[] =>
+export const selectHtmlPageOrder = (state: WithHtmlPages): string[] =>
   state.htmlPages.pageOrder;
 
 export const selectHtmlPageListStatus = (
-  state: RootState,
+  state: WithHtmlPages,
 ): HtmlPageListStatus => state.htmlPages.listStatus;
 
-export const selectHtmlPageListError = (state: RootState): string | null =>
+export const selectHtmlPageListError = (state: WithHtmlPages): string | null =>
   state.htmlPages.listError;
 
-export const selectActivePageId = (state: RootState): string | null =>
+export const selectActivePageId = (state: WithHtmlPages): string | null =>
   state.htmlPages.activePageId;
 
 export const selectHtmlPageOpStatus = (
-  state: RootState,
+  state: WithHtmlPages,
   id: string,
 ): HtmlPageOpStatus | undefined => state.htmlPages.operationStatus[id];
 

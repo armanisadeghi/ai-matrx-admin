@@ -1,29 +1,17 @@
-import { DbFunctionNode, FunctionNode, WorkflowNodeMetadata } from "@/features/workflows/types";
+import type { DbFunctionNode, FunctionNode } from "@/features/workflows/types/functionNodeTypes";
+import type { WorkflowNodeMetadata } from "@/features/workflows/types/coreWorkflowTypes";
 import { RECIPE_NODE_DEFINITION } from "@/features/workflows/react-flow/node-editor/workflow-node-editor/custom-workflow-nodes/custom-nodes/custom-node-definitions";
+import type {
+    KnownBroker,
+    KnownBrokerComputer,
+    NodeKnownBrokers,
+} from "@/features/workflows/types/knownBrokersTypes";
 
-export interface KnownBroker {
-    id: string;
-    label: string;
-    description?: string;
-    dataType?: string;
-    guaranteed: boolean;
-    metadata?: Record<string, any>;
-}
-
-export interface NodeKnownBrokers {
-    version: "1.0";
-    computedAt: string;
-    runtimeBrokers: KnownBroker[];
-    globalBrokers?: KnownBroker[];
-    computationContext?: Record<string, any>;
-}
-
-export interface KnownBrokerComputer {
-    nodeType: string;
-    functionType?: string;
-    computeKnownBrokers: (node: FunctionNode) => NodeKnownBrokers | null;
-}
-
+export type {
+    KnownBroker,
+    KnownBrokerComputer,
+    NodeKnownBrokers,
+} from "@/features/workflows/types/knownBrokersTypes";
 
 const GLOBAL_BROKERS: KnownBroker[] = [
     {

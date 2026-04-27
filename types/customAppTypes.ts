@@ -1,5 +1,4 @@
-import { defaultTableRules } from "@/features/applet/constants/field-constants";
-import { FieldBuilder } from "@/lib/redux/app-builder/types";
+import { defaultTableRules } from "@/types/appletDefaultTableRules";
 import type { Json } from "@/types/database.types";
 import { ReactNode } from "react";
 
@@ -317,9 +316,18 @@ export type CustomAppletConfig = {
   overviewLabel?: string; // "This will replace the message for Minimalist Layout as well as show after submission if things are put together. (eg. What are you looking for?)"
 };
 
-export function normalizeFieldDefinition(
-  field: Partial<FieldDefinition> | Partial<FieldBuilder>,
-): FieldDefinition {
+/** Matches `FieldBuilder` in app-builder (FieldDefinition + editor flags) without importing app-builder. */
+export type FieldBuilderInput = Partial<
+  FieldDefinition & {
+    isPublic?: boolean;
+    authenticatedRead?: boolean;
+    publicRead?: boolean;
+    isDirty?: boolean;
+    isLocal?: boolean;
+  }
+>;
+
+export function normalizeFieldDefinition(field: FieldBuilderInput): FieldDefinition {
   const componentType = field.component || "textarea";
   const defaultComponentProps: ComponentProps = {
     min: 0,

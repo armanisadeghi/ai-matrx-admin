@@ -12,7 +12,6 @@
 // Parallel to agentCacheSlice — same pattern of byId + id-list indexes.
 
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store";
 import type {
   CxArtifactRecord,
   ArtifactType,
@@ -235,41 +234,43 @@ export default artifactsSlice.reducer;
 
 // ── Base selectors (used by artifactSelectors.ts) ─────────────────────────────
 
-export const selectArtifactsState = (state: RootState): ArtifactsState =>
+type WithArtifacts = { artifacts: ArtifactsState };
+
+export const selectArtifactsState = (state: WithArtifacts): ArtifactsState =>
   state.artifacts;
 
 export const selectArtifactsById = (
-  state: RootState,
+  state: WithArtifacts,
 ): Record<string, CxArtifactRecord> => state.artifacts.artifacts;
 
-export const selectArtifactAllIds = (state: RootState): string[] =>
+export const selectArtifactAllIds = (state: WithArtifacts): string[] =>
   state.artifacts.allIds;
 
 export const selectArtifactsByMessageIdIndex = (
-  state: RootState,
+  state: WithArtifacts,
 ): Record<string, string[]> => state.artifacts.byMessageId;
 
 export const selectArtifactsByConversationIdIndex = (
-  state: RootState,
+  state: WithArtifacts,
 ): Record<string, string[]> => state.artifacts.byConversationId;
 
 export const selectArtifactsByProjectIdIndex = (
-  state: RootState,
+  state: WithArtifacts,
 ): Record<string, string[]> => state.artifacts.byProjectId;
 
 export const selectArtifactsByTaskIdIndex = (
-  state: RootState,
+  state: WithArtifacts,
 ): Record<string, string[]> => state.artifacts.byTaskId;
 
 export const selectArtifactFetchStatus = (
-  state: RootState,
+  state: WithArtifacts,
 ): ArtifactFetchStatus => state.artifacts.fetchStatus;
 
-export const selectArtifactFetchError = (state: RootState): string | null =>
+export const selectArtifactFetchError = (state: WithArtifacts): string | null =>
   state.artifacts.fetchError;
 
 export const selectArtifactOperationStatus = (
-  state: RootState,
+  state: WithArtifacts,
   id: string,
 ): ArtifactOpStatus | undefined => state.artifacts.operationStatus[id];
 

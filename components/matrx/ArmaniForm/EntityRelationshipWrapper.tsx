@@ -3,7 +3,7 @@
 import React from "react";
 import { ENTITY_FIELD_COMPONENTS } from "./field-components/field-component-registries";
 import { EntityStateField } from "@/lib/redux/entity/types/stateTypes";
-import { EntityBaseFieldProps } from "./EntityBaseField";
+import type { EntityBaseFieldProps } from "./entityBaseFieldProps";
 
 export interface EntityRelationshipWrapperProps extends EntityBaseFieldProps {
   currentRecordData: Record<string, any>;

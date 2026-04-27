@@ -6,7 +6,9 @@ import {ImageEditorSchema} from "@/types/imageEditorTypes";
 import {
     aiAudioConfig,
 } from "@/features/audio/voice/aiVoiceModuleConfig";
-export type ModuleName = 'aiAudio' | 'aiChat' | 'imageEditor' | 'systemComponents';
+// Import from the cycle-free leaf module; re-export for backward compatibility.
+import type { ModuleName, BaseModuleSchema } from "./baseModuleSchema";
+export type { ModuleName, BaseModuleSchema };
 
 export interface SystemComponentsSchema {
     moduleName: 'systemComponents';
@@ -14,18 +16,6 @@ export interface SystemComponentsSchema {
     configs: Record<string, any>;
     userPreferences: Record<string, any>;
     data: Record<string, any>;
-    loading: boolean;
-    error: string | null;
-    staleTime: number;
-}
-
-
-export interface BaseModuleSchema<C, U, D> {
-    moduleName: ModuleName;
-    initiated: boolean;
-    configs: C;
-    userPreferences: U;
-    data: D;
     loading: boolean;
     error: string | null;
     staleTime: number;

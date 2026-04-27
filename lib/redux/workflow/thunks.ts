@@ -3,11 +3,13 @@ import { Node, Edge, Viewport } from "@xyflow/react";
 import { workflowService } from "./service";
 import { workflowNodeService } from "../workflow-nodes/service";
 import { setAll as setAllNodes, updateUiData } from "../workflow-nodes/slice";
-import { updateViewport } from "./slice";
 import { workflowsSelectors } from "./selectors";
 import { workflowNodesSelectors } from "../workflow-nodes/selectors";
 import { WorkflowCreateInput, WorkflowUpdateInput } from "./types";
-import type { RootState } from "../store";
+
+import type { WorkflowNodeState } from "../workflow-nodes/types";
+import type { WorkflowState } from "./types";
+type WithWorkflowAndNodes = { workflows: WorkflowState; workflowNodes: WorkflowNodeState };
 
 export const fetchAllWorkflows = createAsyncThunk("workflows/fetchAll", async () => {
     return await workflowService.fetchAll();
@@ -105,15 +107,13 @@ export const saveWorkflowFromReactFlow = createAsyncThunk(
         { getState, dispatch }
     ) => {
         // 1. Update workflow viewport in state
-        dispatch(
-            updateViewport({
-                id: workflowId,
-                viewport: reactFlowViewport,
-            })
-        );
+        dispatch({
+            type: 'workflows/updateViewport',
+            payload: { id: workflowId, viewport: reactFlowViewport },
+        });
 
         // 2. Get current workflow nodes from Redux
-        const state = getState() as RootState;
+        const state = getState() as WithWorkflowAndNodes;
         const workflowNodes = workflowNodesSelectors.nodesByWorkflowId(state, workflowId);
 
         // 3. Update ui_data for each workflow node with matching ReactFlow node
@@ -135,7 +135,7 @@ export const saveWorkflowFromReactFlow = createAsyncThunk(
         });
 
         // 4. Get updated state and save everything
-        const updatedState = getState() as RootState;
+        const updatedState = getState() as WithWorkflowAndNodes;
         const updatedWorkflow = workflowsSelectors.workflowById(updatedState, workflowId);
         const updatedWorkflowNodes = workflowNodesSelectors.nodesByWorkflowId(updatedState, workflowId);
 

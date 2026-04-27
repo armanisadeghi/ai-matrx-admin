@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 // Import the shadcn/ui components
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CommonFieldProps } from "./core/AppletFieldController";
+import { CommonFieldProps } from "./core/types";
 
 // Interface for phone number data
 interface PhoneData {

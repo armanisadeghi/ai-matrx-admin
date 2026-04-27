@@ -3,13 +3,13 @@ import React, {TextareaHTMLAttributes, useMemo, useState} from "react";
 import {cn} from "@/styles/themes/utils";
 import {Label} from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {EntityBaseFieldProps} from "../EntityBaseField";
+import type { EntityBaseFieldProps } from "../entityBaseFieldProps";
+import type { SmartComponentProps } from "../armaniSimpleFormTypes";
 import {createEntitySelectors} from "@/lib/redux/entity/selectors";
 import {useAppDispatch, useAppSelector} from "@/lib/redux/hooks";
-import {SmartComponentProps} from "@/components/matrx/ArmaniForm/SimpleRelationshipWrapper";
 import {updateFieldValue, initializeField} from "@/lib/redux/concepts/fields/fieldSlice";
 import {selectFieldValue} from "@/lib/redux/concepts/fields/selectors";
-import {useForm} from "@/lib/redux/concepts/fields/component-examples/fieldComponentExample";
+import { useForm } from "@/lib/redux/concepts/fields/component-examples/fieldFormContext";
 
 
 export const SmartTextarea: React.FC<SmartComponentProps> = (

@@ -5,67 +5,36 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { MinusCircle, PlusCircle } from 'lucide-react';
 
-import { MatrxVariant } from '@/components/ui/types';
 import { useDecimalHandler } from './useDecimalHandler';
 import { FieldComponentProps } from "@/app/entities/fields/types";
 import { StandardFieldLabel } from '../../add-ons/FloatingFieldLabel';
 import { useIntegerHandler } from './useIntegerHandler';
 import { useBigIntHandler } from './useBigIntHandler';
 import { useSerialHandler } from './useSerialHandler';
+import {
+  BIGINT_TYPES,
+  type ComponentCustomProps,
+  DECIMAL_TYPES,
+  INTEGER_TYPES,
+  NUMBER_TYPE_CONFIGS,
+  type NumberHandlerResult,
+  SERIAL_TYPES,
+} from './entityNumberInputShared';
 
-export type NumberType = 'default' | 'smallint' | 'integer' | 'bigint' | 'decimal' | 'real' | 'double' | 'serial' | 'bigserial';
-
-export const NUMBER_TYPE_CONFIGS = {
-    default: { min: -2147483648, max: 2147483647, step: 1 },
-    smallint: { min: -32768, max: 32767, step: 1 },
-    integer: { min: -2147483648, max: 2147483647, step: 1 },
-    bigint: { min: Number.MIN_SAFE_INTEGER, max: Number.MAX_SAFE_INTEGER, step: 1 },
-    decimal: { min: -999999999999.999999, max: 999999999999.999999, step: 0.000001, decimals: 6 },
-    real: { min: -3.4e38, max: 3.4e38, step: 0.000001, decimals: 6 },
-    double: { min: -1.7e308, max: 1.7e308, step: 0.000001, decimals: 15 },
-    serial: { min: 1, max: 2147483647, step: 1 },
-    bigserial: { min: 1, max: Number.MAX_SAFE_INTEGER, step: 1 },
-} as const;
-
-export interface NumberTypeConfig {
-    min: number;
-    max: number;
-    step: number;
-    decimals?: number;
-}
-
-export interface NumberHandlerResult {
-    displayValue: string;
-    handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    handleIncrement: () => void;
-    handleDecrement: () => void;
-    handleBlur: () => void;
-    error: string;
-    isDecrementDisabled?: boolean;
-}
-
-
-export interface NumberHandlerProps {
-    value: number | null;
-    onChange: (value: number | null) => void;
-    config: NumberTypeConfig;
-}
-
-export const INTEGER_TYPES = ['default', 'smallint', 'integer'] as const;
-export const DECIMAL_TYPES = ['decimal', 'real', 'double'] as const;
-export const SERIAL_TYPES = ['serial', 'bigserial'] as const;
-export const BIGINT_TYPES = ['bigint'] as const;
-
-export interface ComponentCustomProps extends Record<string, unknown> {
-    numberType?: NumberType;
-    hideControls?: boolean;
-    buttonVariant?: MatrxVariant;
-    allowNull?: boolean;
-    min?: number | 'default';
-    max?: number | 'default';
-    step?: number | 'default';
-    decimals?: number | 'default';
-}
+export type {
+  NumberType,
+  NumberTypeConfig,
+  NumberHandlerResult,
+  NumberHandlerProps,
+  ComponentCustomProps,
+} from './entityNumberInputShared';
+export {
+  NUMBER_TYPE_CONFIGS,
+  INTEGER_TYPES,
+  DECIMAL_TYPES,
+  SERIAL_TYPES,
+  BIGINT_TYPES,
+} from './entityNumberInputShared';
 
 type EntityNumberInputProps = FieldComponentProps<number>;
 

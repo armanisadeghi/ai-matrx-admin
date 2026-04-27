@@ -5,7 +5,6 @@
  */
 
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import type { RootState } from "../store";
 import {
   DiffState,
   PendingDiff,
@@ -289,18 +288,20 @@ export const {
 } = textDiffSlice.actions;
 
 // Selectors
-export const selectDiffState = (state: RootState) => state.textDiff;
-export const selectPendingDiffs = (state: RootState) =>
+type WithTextDiff = { textDiff: DiffState };
+
+export const selectDiffState = (state: WithTextDiff) => state.textDiff;
+export const selectPendingDiffs = (state: WithTextDiff) =>
   state.textDiff.pendingDiffs;
-export const selectAcceptedDiffs = (state: RootState) =>
+export const selectAcceptedDiffs = (state: WithTextDiff) =>
   state.textDiff.acceptedDiffs;
-export const selectRejectedDiffs = (state: RootState) =>
+export const selectRejectedDiffs = (state: WithTextDiff) =>
   state.textDiff.rejectedDiffs;
-export const selectIsDirty = (state: RootState) => state.textDiff.isDirty;
-export const selectCurrentText = (state: RootState) =>
+export const selectIsDirty = (state: WithTextDiff) => state.textDiff.isDirty;
+export const selectCurrentText = (state: WithTextDiff) =>
   state.textDiff.currentText;
-export const selectCanUndo = (state: RootState) =>
+export const selectCanUndo = (state: WithTextDiff) =>
   state.textDiff.acceptedDiffs.length > 0;
-export const selectDiffError = (state: RootState) => state.textDiff.error;
+export const selectDiffError = (state: WithTextDiff) => state.textDiff.error;
 
 export default textDiffSlice.reducer;

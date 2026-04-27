@@ -1,6 +1,6 @@
 // number-handlers/useSerialHandler.ts
 import { useState, useEffect, useCallback } from 'react';
-import { NumberTypeConfig } from './EntityNumberInput';
+import type { NumberTypeConfig } from './entityNumberInputShared';
 
 interface SerialHandlerProps {
     value: number | null;

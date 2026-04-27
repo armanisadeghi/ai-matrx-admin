@@ -1,7 +1,6 @@
 // lib/redux/slices/promptCacheSlice.ts
 
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store";
 import {
   PromptData,
   PromptMessage,
@@ -253,68 +252,70 @@ const promptCacheSlice = createSlice({
 
 // ── Raw slice accessors (inputs to memoized selectors) ────────────────────
 
-const selectPromptCacheSlice = (state: RootState) => state.promptCache;
-const selectAllPromptsRaw = (state: RootState) => state.promptCache?.allPrompts;
-const selectSharedPromptsRaw = (state: RootState) =>
+const selectPromptCacheSlice = (state: WithPromptCache) => state.promptCache;
+const selectAllPromptsRaw = (state: WithPromptCache) => state.promptCache?.allPrompts;
+const selectSharedPromptsRaw = (state: WithPromptCache) =>
   state.promptCache?.sharedPrompts;
 
 // ── Selectors: per-ID execution cache ─────────────────────────────────────
 
-export const selectCachedPrompt = (state: RootState, promptId: string) =>
+type WithPromptCache = { promptCache: PromptCacheState };
+
+export const selectCachedPrompt = (state: WithPromptCache, promptId: string) =>
   state.promptCache?.prompts[promptId];
 
-export const selectIsPromptCached = (state: RootState, promptId: string) =>
+export const selectIsPromptCached = (state: WithPromptCache, promptId: string) =>
   !!state.promptCache?.prompts[promptId];
 
-export const selectPromptFetchStatus = (state: RootState, promptId: string) =>
+export const selectPromptFetchStatus = (state: WithPromptCache, promptId: string) =>
   state.promptCache?.fetchStatus[promptId] ?? "idle";
 
-export const selectAllCachedPrompts = (state: RootState) =>
+export const selectAllCachedPrompts = (state: WithPromptCache) =>
   state.promptCache?.prompts;
 
 // ── Selectors: flat list (CRUD / management UIs) ───────────────────────────
 
 export const selectAllUserPrompts = (
-  state: RootState,
+  state: WithPromptCache,
 ): PromptData[] | undefined => state.promptCache?.allPrompts;
 
 export const selectUserPromptById = (
-  state: RootState,
+  state: WithPromptCache,
   id: string,
 ): PromptData | undefined =>
   state.promptCache?.allPrompts.find((p) => p.id === id);
 
-export const selectPromptsListStatus = (state: RootState): ListStatus =>
+export const selectPromptsListStatus = (state: WithPromptCache): ListStatus =>
   state.promptCache?.listStatus ?? "idle";
 
-export const selectPromptsListError = (state: RootState): string | null =>
+export const selectPromptsListError = (state: WithPromptCache): string | null =>
   state.promptCache?.listError ?? null;
 
-export const selectPromptsListIsLoading = (state: RootState): boolean =>
+export const selectPromptsListIsLoading = (state: WithPromptCache): boolean =>
   state.promptCache?.listStatus === "loading";
 
-export const selectPromptsLastFetchedAt = (state: RootState): number | null =>
+export const selectPromptsLastFetchedAt = (state: WithPromptCache): number | null =>
   state.promptCache?.lastFetchedAt ?? null;
 
 // ── Selectors: shared prompts ──────────────────────────────────────────────
 
 export const selectSharedPrompts = (
-  state: RootState,
+  state: WithPromptCache,
 ): SharedPromptRecord[] | undefined => state.promptCache?.sharedPrompts;
 
 export const selectSharedPromptById = (
-  state: RootState,
+  state: WithPromptCache,
   id: string,
 ): SharedPromptRecord | undefined =>
   state.promptCache?.sharedPrompts.find((p) => p.id === id);
 
-export const selectSharedPromptsListStatus = (state: RootState): ListStatus =>
+export const selectSharedPromptsListStatus = (state: WithPromptCache): ListStatus =>
   state.promptCache?.sharedListStatus ?? "idle";
 
-export const selectSharedPromptsListError = (state: RootState): string | null =>
+export const selectSharedPromptsListError = (state: WithPromptCache): string | null =>
   state.promptCache?.sharedListError ?? null;
 
-export const selectSharedPromptsIsLoading = (state: RootState): boolean =>
+export const selectSharedPromptsIsLoading = (state: WithPromptCache): boolean =>
   state.promptCache?.sharedListStatus === "loading";
 
 const EMPTY_PROMPT_DATA: PromptData[] = [];

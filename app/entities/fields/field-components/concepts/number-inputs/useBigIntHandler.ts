@@ -1,6 +1,6 @@
 // number-handlers/useBigIntHandler.ts
 import { useState, useEffect, useCallback } from 'react';
-import { NumberTypeConfig } from './EntityNumberInput';
+import type { NumberTypeConfig } from './entityNumberInputShared';
 
 
 interface BigIntHandlerProps {

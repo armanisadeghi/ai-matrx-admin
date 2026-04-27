@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { FieldDefinition, FieldOption } from "@/types/customAppTypes";
-import { CommonFieldProps } from "./core/AppletFieldController";
+import { CommonFieldProps } from "./core/types";
 import { filterAndSortBySearch } from "@/utils/search-scoring";
 
 export interface SelectedOptionValue extends FieldOption {

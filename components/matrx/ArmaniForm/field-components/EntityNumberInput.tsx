@@ -6,7 +6,7 @@ import {cn} from '@/lib/utils';
 import {Button} from '@/components/ui/ButtonMine';
 import {MinusCircle, PlusCircle} from 'lucide-react';
 import {Label} from '@/components/ui/label';
-import {EntityBaseFieldProps} from "../EntityBaseField";
+import type { EntityBaseFieldProps } from "../entityBaseFieldProps";
 import {MatrxVariant} from './types';
 import type { VariantProps } from "class-variance-authority";
 import { buttonVariants } from "@/components/ui/button";

@@ -1,6 +1,6 @@
 "use client";
 
-import { useAppDispatch } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   openAgentSettingsWindow,
   openAgentRunHistoryWindow,
@@ -17,6 +17,7 @@ import {
   openAgentAdminFindUsagesWindow,
 } from "@/lib/redux/slices/overlaySlice";
 import { duplicateAgent } from "@/features/agents/redux/agent-definition/thunks";
+import { selectAgentById } from "@/features/agents/redux/agent-definition/selectors";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -172,6 +173,30 @@ export function AgentOptionsMenu({
   const [isConverting, setIsConverting] = useState(false);
   const [isDuplicating, setIsDuplicating] = useState(false);
   const dispatch = useAppDispatch();
+
+  // Builtin/system agents need different menu options than user agents.
+  // - "Convert to Template" is meaningless — builtins ARE the templates users
+  //   fork from. Showing it would just produce a confusing redundant row in
+  //   the templates table.
+  // - "Convert/Update System Agent" promotes a user agent into a builtin;
+  //   running it on something that's already a builtin is a no-op category
+  //   error.
+  // We compute one filtered version of each item list per render rather than
+  // sprinkling conditionals through the JSX.
+  const agent = useAppSelector((state) => selectAgentById(state, agentId));
+  const isBuiltin = agent?.agentType === "builtin";
+
+  const managementItems = isBuiltin
+    ? AGENT_MANAGEMENT_ITEMS.filter(
+        (item) => item.label !== "Convert to Template",
+      )
+    : AGENT_MANAGEMENT_ITEMS;
+
+  const adminItems = isBuiltin
+    ? ADMIN_ITEMS.filter(
+        (item) => item.label !== "Convert/Update System Agent",
+      )
+    : ADMIN_ITEMS;
 
   const handleDesktopItemClick = async (label: string) => {
     if (label === "Edit Agent Info") {
@@ -344,7 +369,7 @@ export function AgentOptionsMenu({
         <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-semibold">
           Manage
         </DropdownMenuLabel>
-        {AGENT_MANAGEMENT_ITEMS.map(({ label, icon: Icon, soon }) => {
+        {managementItems.map(({ label, icon: Icon, soon }) => {
           const isLoading =
             (label === "Convert to Template" && isConverting) ||
             (label === "Duplicate" && isDuplicating);
@@ -386,19 +411,23 @@ export function AgentOptionsMenu({
         ))}
 
         {/* ── Admin ── */}
-        <DropdownMenuSeparator />
-        <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-semibold">
-          Admin
-        </DropdownMenuLabel>
-        {ADMIN_ITEMS.map(({ label, icon: Icon }) => (
-          <DropdownMenuItem
-            key={label}
-            onClick={() => handleDesktopItemClick(label)}
-          >
-            <Icon className="w-4 h-4 mr-2 text-muted-foreground" />
-            <span className="flex-1">{label}</span>
-          </DropdownMenuItem>
-        ))}
+        {adminItems.length > 0 && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-semibold">
+              Admin
+            </DropdownMenuLabel>
+            {adminItems.map(({ label, icon: Icon }) => (
+              <DropdownMenuItem
+                key={label}
+                onClick={() => handleDesktopItemClick(label)}
+              >
+                <Icon className="w-4 h-4 mr-2 text-muted-foreground" />
+                <span className="flex-1">{label}</span>
+              </DropdownMenuItem>
+            ))}
+          </>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -414,6 +443,21 @@ function MobileMenuContent({
   const [variationsOpen, setVariationsOpen] = useState(false);
   const [isBusy, setIsBusy] = useState(false);
   const dispatch = useAppDispatch();
+
+  // Same builtin-aware filtering as the desktop variant — see AgentOptionsMenu
+  // for the full rationale.
+  const agent = useAppSelector((state) => selectAgentById(state, agentId));
+  const isBuiltin = agent?.agentType === "builtin";
+  const managementItems = isBuiltin
+    ? AGENT_MANAGEMENT_ITEMS.filter(
+        (item) => item.label !== "Convert to Template",
+      )
+    : AGENT_MANAGEMENT_ITEMS;
+  const adminItems = isBuiltin
+    ? ADMIN_ITEMS.filter(
+        (item) => item.label !== "Convert/Update System Agent",
+      )
+    : ADMIN_ITEMS;
 
   const handleItem = async (label: string) => {
     if (label === "Edit Agent Info") {
@@ -579,7 +623,7 @@ function MobileMenuContent({
         </span>
       </div>
       <div className="py-1">
-        {AGENT_MANAGEMENT_ITEMS.map(({ label, icon: Icon, soon }) => (
+        {managementItems.map(({ label, icon: Icon, soon }) => (
           <button
             key={label}
             onClick={() => handleItem(label)}
@@ -624,24 +668,28 @@ function MobileMenuContent({
       </div>
 
       {/* ── Admin ── */}
-      <div className="h-px bg-border mx-3 my-1" />
-      <div className="px-4 py-1.5">
-        <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-semibold">
-          Admin
-        </span>
-      </div>
-      <div className="py-1">
-        {ADMIN_ITEMS.map(({ label, icon: Icon }) => (
-          <button
-            key={label}
-            onClick={() => handleItem(label)}
-            className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-foreground hover:bg-muted/50 active:bg-muted/70 transition-colors"
-          >
-            <Icon className="w-4 h-4 text-muted-foreground shrink-0" />
-            <span className="flex-1 text-left">{label}</span>
-          </button>
-        ))}
-      </div>
+      {adminItems.length > 0 && (
+        <>
+          <div className="h-px bg-border mx-3 my-1" />
+          <div className="px-4 py-1.5">
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-semibold">
+              Admin
+            </span>
+          </div>
+          <div className="py-1">
+            {adminItems.map(({ label, icon: Icon }) => (
+              <button
+                key={label}
+                onClick={() => handleItem(label)}
+                className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-foreground hover:bg-muted/50 active:bg-muted/70 transition-colors"
+              >
+                <Icon className="w-4 h-4 text-muted-foreground shrink-0" />
+                <span className="flex-1 text-left">{label}</span>
+              </button>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }

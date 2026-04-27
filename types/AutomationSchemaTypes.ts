@@ -1,246 +1,30 @@
 // File: types/AutomationSchemaTypes.ts
-import {AutomationEntity, EntityData, EntityKeys, EntityDataMixed, EntityDataOptional, EntityDataWithKey, ProcessedEntityData} from '@/types/entityTypes';
-import { EntityState } from '@/lib/redux/entity/types/stateTypes';
+import type { Expand, ExpandExcept } from "./automationSchemaPrimitives";
 
-export type TypeBrand<T> = { _typeBrand: T };
+export * from "./automationSchemaPrimitives";
 
-export type FieldDataOptionsType =
-    | 'string'
-    | 'number'
-    | 'boolean'
-    | 'array'
-    | 'object'
-    | 'json'
-    | 'null'
-    | 'undefined'
-    | 'any'
-    | 'function'
-    | 'symbol'
-    | 'union'
-    | 'bigint'
-    | 'date'
-    | 'map'
-    | 'set'
-    | 'tuple'
-    | 'enum'
-    | 'intersection'
-    | 'literal'
-    | 'void'
-    | 'never'
-    | 'uuid'
-    | 'email'
-    | 'url'
-    | 'phone'
-    | 'datetime';
+import {
+  AutomationEntity,
+  EntityData,
+  EntityKeys,
+  EntityDataMixed,
+  EntityDataOptional,
+  EntityDataWithKey,
+  ProcessedEntityData,
+} from "@/types/entityTypes";
+import { EntityState } from "@/lib/redux/entity/types/stateTypes";
 
-export type DataStructure =
-    | 'single'
-    | 'array'
-    | 'object'
-    | 'foreignKey'
-    | 'inverseForeignKey'
-    | 'manyToMany';
-
-export type FetchStrategy =
-    | 'simple'
-    | 'fk'
-    | 'ifk'
-    | 'm2m'
-    | 'fkAndIfk'
-    | 'm2mAndFk'
-    | 'm2mAndIfk'
-    | 'fkIfkAndM2M'
-    | 'none';
-
-export type RequiredNameFormats =
-    'frontend' |
-    'backend' |
-    'database' |
-    'pretty' |
-    'component'|
-    'kebab' |
-    'sqlFunctionRef';
-
-export type OptionalNameFormats =
-    'RestAPI' |
-    'GraphQL' |
-    'custom';
-
-export type NameFormat = RequiredNameFormats | OptionalNameFormats;
-
-export type AutomationDynamicName =
-    | 'dynamicAudio'
-    | 'dynamicImage'
-    | 'dynamicText'
-    | 'dynamicVideo'
-    | 'dynamicSocket'
-    | 'anthropic'
-    | 'openai'
-    | 'llama'
-    | 'googleAi';
-
-export type AutomationCustomName =
-    | 'flashcard'
-    | 'mathTutor'
-    | 'scraper';
-
-export type AutomationTableName =
-    'action'
-    | 'admins'
-    | 'aiAgent'
-    | 'aiEndpoint'
-    | 'aiModel'
-    | 'aiModelEndpoint'
-    | 'aiProvider'
-    | 'aiSettings'
-    | 'aiTrainingData'
-    | 'applet'
-    | 'appletContainers'
-    | 'arg'
-    | 'audioLabel'
-    | 'audioRecording'
-    | 'audioRecordingUsers'
-    | 'automationBoundaryBroker'
-    | 'automationMatrix'
-    | 'broker'
-    | 'brokerValue'
-    | 'bucketStructures'
-    | 'bucketTreeStructures'
-    | 'canvasCommentLikes'
-    | 'canvasComments'
-    | 'canvasItems'
-    | 'canvasLikes'
-    | 'canvasScores'
-    | 'canvasViews'
-    | 'category'
-    | 'categoryConfigs'
-    | 'compiledRecipe'
-    | 'componentGroups'
-    | 'containerFields'
-    | 'contentBlocks'
-    | 'conversation'
-    | 'customAppConfigs'
-    | 'customAppletConfigs'
-    | 'dataBroker'
-    | 'dataInputComponent'
-    | 'dataOutputComponent'
-    | 'displayOption'
-    | 'emails'
-    | 'extractor'
-    | 'fieldComponents'
-    | 'fileStructure'
-    | 'flashcardData'
-    | 'flashcardHistory'
-    | 'flashcardImages'
-    | 'flashcardSetRelations'
-    | 'flashcardSets'
-    | 'fullSpectrumPositions'
-    | 'htmlExtractions'
-    | 'message'
-    | 'messageBroker'
-    | 'messageTemplate'
-    | 'microserviceProject'
-    | 'nodeCategory'
-    | 'notes'
-    | 'organizationInvitations'
-    | 'organizationMembers'
-    | 'organizations'
-    | 'permissions'
-    | 'processor'
-    | 'projectMembers'
-    | 'projects'
-    | 'promptTemplates'
-    | 'prompts'
-    | 'quizSessions'
-    | 'recipe'
-    | 'recipeBroker'
-    | 'recipeDisplay'
-    | 'recipeMessage'
-    | 'recipeMessageReorderQueue'
-    | 'recipeModel'
-    | 'recipeProcessor'
-    | 'registeredFunction'
-    | 'registeredNode'
-    | 'registeredNodeResults'
-    | 'schemaTemplates'
-    | 'scrapeBaseConfig'
-    | 'scrapeCachePolicy'
-    | 'scrapeConfiguration'
-    | 'scrapeCycleRun'
-    | 'scrapeCycleTracker'
-    | 'scrapeDomain'
-    | 'scrapeDomainDisallowedNotes'
-    | 'scrapeDomainNotes'
-    | 'scrapeDomainQuickScrapeSettings'
-    | 'scrapeDomainRobotsTxt'
-    | 'scrapeDomainSitemap'
-    | 'scrapeJob'
-    | 'scrapeOverride'
-    | 'scrapeOverrideValue'
-    | 'scrapeParsedPage'
-    | 'scrapePathPattern'
-    | 'scrapePathPatternCachePolicy'
-    | 'scrapePathPatternOverride'
-    | 'scrapeQuickFailureLog'
-    | 'scrapeTask'
-    | 'scrapeTaskResponse'
-    | 'sharedCanvasItems'
-    | 'siteMetadata'
-    | 'subcategory'
-    | 'subcategoryConfigs'
-    | 'systemAnnouncements'
-    | 'systemFunction'
-    | 'tableData'
-    | 'tableFields'
-    | 'taskAssignments'
-    | 'taskAttachments'
-    | 'taskComments'
-    | 'tasks'
-    | 'tools'
-    | 'transcripts'
-    | 'transformer'
-    | 'userAchievements'
-    | 'userBookmarks'
-    | 'userFeedback'
-    | 'userFollows'
-    | 'userListItems'
-    | 'userLists'
-    | 'userPreferences'
-    | 'userStats'
-    | 'userTables'
-    | 'wcClaim'
-    | 'wcImpairmentDefinition'
-    | 'wcInjury'
-    | 'wcReport'
-    | 'workflow'
-    | 'workflowData'
-    | 'workflowEdge'
-    | 'workflowNode'
-    | 'workflowNodeData'
-    | 'workflowRelay'
-    | 'workflowUserInput';
-
-export type AutomationViewName =
-    'recipeComplete'
-    | 'viewRegisteredFunction'
-    | 'viewRegisteredFunctionAllRels';
-
-export type AutomationEntityName = AutomationTableName | AutomationViewName;
-
-// export type ProcessedSchema = ReturnType<typeof initializeTableSchema>;
-
-// export type UnifiedSchemaCache = ReturnType<typeof initializeSchemaSystem>
-
-// export type SchemaEntityKeys = keyof ProcessedSchema;
-
-export type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
-
-export type ExpandRecursively<T> = T extends object ? (T extends infer O ? { [K in keyof O]: ExpandRecursively<O[K]> } : never) : T;export type ExpandExcept<T, KeysToExclude extends string[] = []> = T extends object
-    ? {
-   [K in keyof T]: K extends KeysToExclude[number] ? T[K] : ExpandExcept<T[K], KeysToExclude>;
-} : T;
-
-export type EntityStateType<TEntity extends EntityKeys> = ExpandExcept<EntityState<TEntity>, ["entityFields", "relationships", "unsavedRecords", "primaryKeyMetadata", "primaryKeyValues", "metadata"]>;
+export type EntityStateType<TEntity extends EntityKeys> = ExpandExcept<
+  EntityState<TEntity>,
+  [
+    "entityFields",
+    "relationships",
+    "unsavedRecords",
+    "primaryKeyMetadata",
+    "primaryKeyValues",
+    "metadata",
+  ]
+>;
 
 export type ActionType = AutomationEntity<"action">;
 export type ActionDataRequired = Expand<EntityData<"action">>;
@@ -289,12 +73,21 @@ export type AiModelRecordMap = Record<"aiModelRecordId", AiModelData>;
 
 export type AiModelEndpointType = AutomationEntity<"aiModelEndpoint">;
 export type AiModelEndpointDataRequired = Expand<EntityData<"aiModelEndpoint">>;
-export type AiModelEndpointDataOptional = Expand<EntityDataOptional<"aiModelEndpoint">>;
-export type AiModelEndpointRecordWithKey = Expand<EntityDataWithKey<"aiModelEndpoint">>;
-export type AiModelEndpointProcessed = Expand<ProcessedEntityData<"aiModelEndpoint">>;
+export type AiModelEndpointDataOptional = Expand<
+  EntityDataOptional<"aiModelEndpoint">
+>;
+export type AiModelEndpointRecordWithKey = Expand<
+  EntityDataWithKey<"aiModelEndpoint">
+>;
+export type AiModelEndpointProcessed = Expand<
+  ProcessedEntityData<"aiModelEndpoint">
+>;
 export type AiModelEndpointData = Expand<EntityDataMixed<"aiModelEndpoint">>;
 export type AiModelEndpointState = EntityStateType<"aiModelEndpoint">;
-export type AiModelEndpointRecordMap = Record<"aiModelEndpointRecordId", AiModelEndpointData>;
+export type AiModelEndpointRecordMap = Record<
+  "aiModelEndpointRecordId",
+  AiModelEndpointData
+>;
 
 export type AiProviderType = AutomationEntity<"aiProvider">;
 export type AiProviderDataRequired = Expand<EntityData<"aiProvider">>;
@@ -316,12 +109,21 @@ export type AiSettingsRecordMap = Record<"aiSettingsRecordId", AiSettingsData>;
 
 export type AiTrainingDataType = AutomationEntity<"aiTrainingData">;
 export type AiTrainingDataDataRequired = Expand<EntityData<"aiTrainingData">>;
-export type AiTrainingDataDataOptional = Expand<EntityDataOptional<"aiTrainingData">>;
-export type AiTrainingDataRecordWithKey = Expand<EntityDataWithKey<"aiTrainingData">>;
-export type AiTrainingDataProcessed = Expand<ProcessedEntityData<"aiTrainingData">>;
+export type AiTrainingDataDataOptional = Expand<
+  EntityDataOptional<"aiTrainingData">
+>;
+export type AiTrainingDataRecordWithKey = Expand<
+  EntityDataWithKey<"aiTrainingData">
+>;
+export type AiTrainingDataProcessed = Expand<
+  ProcessedEntityData<"aiTrainingData">
+>;
 export type AiTrainingDataData = Expand<EntityDataMixed<"aiTrainingData">>;
 export type AiTrainingDataState = EntityStateType<"aiTrainingData">;
-export type AiTrainingDataRecordMap = Record<"aiTrainingDataRecordId", AiTrainingDataData>;
+export type AiTrainingDataRecordMap = Record<
+  "aiTrainingDataRecordId",
+  AiTrainingDataData
+>;
 
 export type AppletType = AutomationEntity<"applet">;
 export type AppletDataRequired = Expand<EntityData<"applet">>;
@@ -333,13 +135,24 @@ export type AppletState = EntityStateType<"applet">;
 export type AppletRecordMap = Record<"appletRecordId", AppletData>;
 
 export type AppletContainersType = AutomationEntity<"appletContainers">;
-export type AppletContainersDataRequired = Expand<EntityData<"appletContainers">>;
-export type AppletContainersDataOptional = Expand<EntityDataOptional<"appletContainers">>;
-export type AppletContainersRecordWithKey = Expand<EntityDataWithKey<"appletContainers">>;
-export type AppletContainersProcessed = Expand<ProcessedEntityData<"appletContainers">>;
+export type AppletContainersDataRequired = Expand<
+  EntityData<"appletContainers">
+>;
+export type AppletContainersDataOptional = Expand<
+  EntityDataOptional<"appletContainers">
+>;
+export type AppletContainersRecordWithKey = Expand<
+  EntityDataWithKey<"appletContainers">
+>;
+export type AppletContainersProcessed = Expand<
+  ProcessedEntityData<"appletContainers">
+>;
 export type AppletContainersData = Expand<EntityDataMixed<"appletContainers">>;
 export type AppletContainersState = EntityStateType<"appletContainers">;
-export type AppletContainersRecordMap = Record<"appletContainersRecordId", AppletContainersData>;
+export type AppletContainersRecordMap = Record<
+  "appletContainersRecordId",
+  AppletContainersData
+>;
 
 export type ArgType = AutomationEntity<"arg">;
 export type ArgDataRequired = Expand<EntityData<"arg">>;
@@ -361,39 +174,87 @@ export type AudioLabelRecordMap = Record<"audioLabelRecordId", AudioLabelData>;
 
 export type AudioRecordingType = AutomationEntity<"audioRecording">;
 export type AudioRecordingDataRequired = Expand<EntityData<"audioRecording">>;
-export type AudioRecordingDataOptional = Expand<EntityDataOptional<"audioRecording">>;
-export type AudioRecordingRecordWithKey = Expand<EntityDataWithKey<"audioRecording">>;
-export type AudioRecordingProcessed = Expand<ProcessedEntityData<"audioRecording">>;
+export type AudioRecordingDataOptional = Expand<
+  EntityDataOptional<"audioRecording">
+>;
+export type AudioRecordingRecordWithKey = Expand<
+  EntityDataWithKey<"audioRecording">
+>;
+export type AudioRecordingProcessed = Expand<
+  ProcessedEntityData<"audioRecording">
+>;
 export type AudioRecordingData = Expand<EntityDataMixed<"audioRecording">>;
 export type AudioRecordingState = EntityStateType<"audioRecording">;
-export type AudioRecordingRecordMap = Record<"audioRecordingRecordId", AudioRecordingData>;
+export type AudioRecordingRecordMap = Record<
+  "audioRecordingRecordId",
+  AudioRecordingData
+>;
 
 export type AudioRecordingUsersType = AutomationEntity<"audioRecordingUsers">;
-export type AudioRecordingUsersDataRequired = Expand<EntityData<"audioRecordingUsers">>;
-export type AudioRecordingUsersDataOptional = Expand<EntityDataOptional<"audioRecordingUsers">>;
-export type AudioRecordingUsersRecordWithKey = Expand<EntityDataWithKey<"audioRecordingUsers">>;
-export type AudioRecordingUsersProcessed = Expand<ProcessedEntityData<"audioRecordingUsers">>;
-export type AudioRecordingUsersData = Expand<EntityDataMixed<"audioRecordingUsers">>;
+export type AudioRecordingUsersDataRequired = Expand<
+  EntityData<"audioRecordingUsers">
+>;
+export type AudioRecordingUsersDataOptional = Expand<
+  EntityDataOptional<"audioRecordingUsers">
+>;
+export type AudioRecordingUsersRecordWithKey = Expand<
+  EntityDataWithKey<"audioRecordingUsers">
+>;
+export type AudioRecordingUsersProcessed = Expand<
+  ProcessedEntityData<"audioRecordingUsers">
+>;
+export type AudioRecordingUsersData = Expand<
+  EntityDataMixed<"audioRecordingUsers">
+>;
 export type AudioRecordingUsersState = EntityStateType<"audioRecordingUsers">;
-export type AudioRecordingUsersRecordMap = Record<"audioRecordingUsersRecordId", AudioRecordingUsersData>;
+export type AudioRecordingUsersRecordMap = Record<
+  "audioRecordingUsersRecordId",
+  AudioRecordingUsersData
+>;
 
-export type AutomationBoundaryBrokerType = AutomationEntity<"automationBoundaryBroker">;
-export type AutomationBoundaryBrokerDataRequired = Expand<EntityData<"automationBoundaryBroker">>;
-export type AutomationBoundaryBrokerDataOptional = Expand<EntityDataOptional<"automationBoundaryBroker">>;
-export type AutomationBoundaryBrokerRecordWithKey = Expand<EntityDataWithKey<"automationBoundaryBroker">>;
-export type AutomationBoundaryBrokerProcessed = Expand<ProcessedEntityData<"automationBoundaryBroker">>;
-export type AutomationBoundaryBrokerData = Expand<EntityDataMixed<"automationBoundaryBroker">>;
-export type AutomationBoundaryBrokerState = EntityStateType<"automationBoundaryBroker">;
-export type AutomationBoundaryBrokerRecordMap = Record<"automationBoundaryBrokerRecordId", AutomationBoundaryBrokerData>;
+export type AutomationBoundaryBrokerType =
+  AutomationEntity<"automationBoundaryBroker">;
+export type AutomationBoundaryBrokerDataRequired = Expand<
+  EntityData<"automationBoundaryBroker">
+>;
+export type AutomationBoundaryBrokerDataOptional = Expand<
+  EntityDataOptional<"automationBoundaryBroker">
+>;
+export type AutomationBoundaryBrokerRecordWithKey = Expand<
+  EntityDataWithKey<"automationBoundaryBroker">
+>;
+export type AutomationBoundaryBrokerProcessed = Expand<
+  ProcessedEntityData<"automationBoundaryBroker">
+>;
+export type AutomationBoundaryBrokerData = Expand<
+  EntityDataMixed<"automationBoundaryBroker">
+>;
+export type AutomationBoundaryBrokerState =
+  EntityStateType<"automationBoundaryBroker">;
+export type AutomationBoundaryBrokerRecordMap = Record<
+  "automationBoundaryBrokerRecordId",
+  AutomationBoundaryBrokerData
+>;
 
 export type AutomationMatrixType = AutomationEntity<"automationMatrix">;
-export type AutomationMatrixDataRequired = Expand<EntityData<"automationMatrix">>;
-export type AutomationMatrixDataOptional = Expand<EntityDataOptional<"automationMatrix">>;
-export type AutomationMatrixRecordWithKey = Expand<EntityDataWithKey<"automationMatrix">>;
-export type AutomationMatrixProcessed = Expand<ProcessedEntityData<"automationMatrix">>;
+export type AutomationMatrixDataRequired = Expand<
+  EntityData<"automationMatrix">
+>;
+export type AutomationMatrixDataOptional = Expand<
+  EntityDataOptional<"automationMatrix">
+>;
+export type AutomationMatrixRecordWithKey = Expand<
+  EntityDataWithKey<"automationMatrix">
+>;
+export type AutomationMatrixProcessed = Expand<
+  ProcessedEntityData<"automationMatrix">
+>;
 export type AutomationMatrixData = Expand<EntityDataMixed<"automationMatrix">>;
 export type AutomationMatrixState = EntityStateType<"automationMatrix">;
-export type AutomationMatrixRecordMap = Record<"automationMatrixRecordId", AutomationMatrixData>;
+export type AutomationMatrixRecordMap = Record<
+  "automationMatrixRecordId",
+  AutomationMatrixData
+>;
 
 export type BrokerType = AutomationEntity<"broker">;
 export type BrokerDataRequired = Expand<EntityData<"broker">>;
@@ -411,43 +272,92 @@ export type BrokerValueRecordWithKey = Expand<EntityDataWithKey<"brokerValue">>;
 export type BrokerValueProcessed = Expand<ProcessedEntityData<"brokerValue">>;
 export type BrokerValueData = Expand<EntityDataMixed<"brokerValue">>;
 export type BrokerValueState = EntityStateType<"brokerValue">;
-export type BrokerValueRecordMap = Record<"brokerValueRecordId", BrokerValueData>;
+export type BrokerValueRecordMap = Record<
+  "brokerValueRecordId",
+  BrokerValueData
+>;
 
 export type BucketStructuresType = AutomationEntity<"bucketStructures">;
-export type BucketStructuresDataRequired = Expand<EntityData<"bucketStructures">>;
-export type BucketStructuresDataOptional = Expand<EntityDataOptional<"bucketStructures">>;
-export type BucketStructuresRecordWithKey = Expand<EntityDataWithKey<"bucketStructures">>;
-export type BucketStructuresProcessed = Expand<ProcessedEntityData<"bucketStructures">>;
+export type BucketStructuresDataRequired = Expand<
+  EntityData<"bucketStructures">
+>;
+export type BucketStructuresDataOptional = Expand<
+  EntityDataOptional<"bucketStructures">
+>;
+export type BucketStructuresRecordWithKey = Expand<
+  EntityDataWithKey<"bucketStructures">
+>;
+export type BucketStructuresProcessed = Expand<
+  ProcessedEntityData<"bucketStructures">
+>;
 export type BucketStructuresData = Expand<EntityDataMixed<"bucketStructures">>;
 export type BucketStructuresState = EntityStateType<"bucketStructures">;
-export type BucketStructuresRecordMap = Record<"bucketStructuresRecordId", BucketStructuresData>;
+export type BucketStructuresRecordMap = Record<
+  "bucketStructuresRecordId",
+  BucketStructuresData
+>;
 
 export type BucketTreeStructuresType = AutomationEntity<"bucketTreeStructures">;
-export type BucketTreeStructuresDataRequired = Expand<EntityData<"bucketTreeStructures">>;
-export type BucketTreeStructuresDataOptional = Expand<EntityDataOptional<"bucketTreeStructures">>;
-export type BucketTreeStructuresRecordWithKey = Expand<EntityDataWithKey<"bucketTreeStructures">>;
-export type BucketTreeStructuresProcessed = Expand<ProcessedEntityData<"bucketTreeStructures">>;
-export type BucketTreeStructuresData = Expand<EntityDataMixed<"bucketTreeStructures">>;
+export type BucketTreeStructuresDataRequired = Expand<
+  EntityData<"bucketTreeStructures">
+>;
+export type BucketTreeStructuresDataOptional = Expand<
+  EntityDataOptional<"bucketTreeStructures">
+>;
+export type BucketTreeStructuresRecordWithKey = Expand<
+  EntityDataWithKey<"bucketTreeStructures">
+>;
+export type BucketTreeStructuresProcessed = Expand<
+  ProcessedEntityData<"bucketTreeStructures">
+>;
+export type BucketTreeStructuresData = Expand<
+  EntityDataMixed<"bucketTreeStructures">
+>;
 export type BucketTreeStructuresState = EntityStateType<"bucketTreeStructures">;
-export type BucketTreeStructuresRecordMap = Record<"bucketTreeStructuresRecordId", BucketTreeStructuresData>;
+export type BucketTreeStructuresRecordMap = Record<
+  "bucketTreeStructuresRecordId",
+  BucketTreeStructuresData
+>;
 
 export type CanvasCommentLikesType = AutomationEntity<"canvasCommentLikes">;
-export type CanvasCommentLikesDataRequired = Expand<EntityData<"canvasCommentLikes">>;
-export type CanvasCommentLikesDataOptional = Expand<EntityDataOptional<"canvasCommentLikes">>;
-export type CanvasCommentLikesRecordWithKey = Expand<EntityDataWithKey<"canvasCommentLikes">>;
-export type CanvasCommentLikesProcessed = Expand<ProcessedEntityData<"canvasCommentLikes">>;
-export type CanvasCommentLikesData = Expand<EntityDataMixed<"canvasCommentLikes">>;
+export type CanvasCommentLikesDataRequired = Expand<
+  EntityData<"canvasCommentLikes">
+>;
+export type CanvasCommentLikesDataOptional = Expand<
+  EntityDataOptional<"canvasCommentLikes">
+>;
+export type CanvasCommentLikesRecordWithKey = Expand<
+  EntityDataWithKey<"canvasCommentLikes">
+>;
+export type CanvasCommentLikesProcessed = Expand<
+  ProcessedEntityData<"canvasCommentLikes">
+>;
+export type CanvasCommentLikesData = Expand<
+  EntityDataMixed<"canvasCommentLikes">
+>;
 export type CanvasCommentLikesState = EntityStateType<"canvasCommentLikes">;
-export type CanvasCommentLikesRecordMap = Record<"canvasCommentLikesRecordId", CanvasCommentLikesData>;
+export type CanvasCommentLikesRecordMap = Record<
+  "canvasCommentLikesRecordId",
+  CanvasCommentLikesData
+>;
 
 export type CanvasCommentsType = AutomationEntity<"canvasComments">;
 export type CanvasCommentsDataRequired = Expand<EntityData<"canvasComments">>;
-export type CanvasCommentsDataOptional = Expand<EntityDataOptional<"canvasComments">>;
-export type CanvasCommentsRecordWithKey = Expand<EntityDataWithKey<"canvasComments">>;
-export type CanvasCommentsProcessed = Expand<ProcessedEntityData<"canvasComments">>;
+export type CanvasCommentsDataOptional = Expand<
+  EntityDataOptional<"canvasComments">
+>;
+export type CanvasCommentsRecordWithKey = Expand<
+  EntityDataWithKey<"canvasComments">
+>;
+export type CanvasCommentsProcessed = Expand<
+  ProcessedEntityData<"canvasComments">
+>;
 export type CanvasCommentsData = Expand<EntityDataMixed<"canvasComments">>;
 export type CanvasCommentsState = EntityStateType<"canvasComments">;
-export type CanvasCommentsRecordMap = Record<"canvasCommentsRecordId", CanvasCommentsData>;
+export type CanvasCommentsRecordMap = Record<
+  "canvasCommentsRecordId",
+  CanvasCommentsData
+>;
 
 export type CanvasItemsType = AutomationEntity<"canvasItems">;
 export type CanvasItemsDataRequired = Expand<EntityData<"canvasItems">>;
@@ -456,7 +366,10 @@ export type CanvasItemsRecordWithKey = Expand<EntityDataWithKey<"canvasItems">>;
 export type CanvasItemsProcessed = Expand<ProcessedEntityData<"canvasItems">>;
 export type CanvasItemsData = Expand<EntityDataMixed<"canvasItems">>;
 export type CanvasItemsState = EntityStateType<"canvasItems">;
-export type CanvasItemsRecordMap = Record<"canvasItemsRecordId", CanvasItemsData>;
+export type CanvasItemsRecordMap = Record<
+  "canvasItemsRecordId",
+  CanvasItemsData
+>;
 
 export type CanvasLikesType = AutomationEntity<"canvasLikes">;
 export type CanvasLikesDataRequired = Expand<EntityData<"canvasLikes">>;
@@ -465,16 +378,26 @@ export type CanvasLikesRecordWithKey = Expand<EntityDataWithKey<"canvasLikes">>;
 export type CanvasLikesProcessed = Expand<ProcessedEntityData<"canvasLikes">>;
 export type CanvasLikesData = Expand<EntityDataMixed<"canvasLikes">>;
 export type CanvasLikesState = EntityStateType<"canvasLikes">;
-export type CanvasLikesRecordMap = Record<"canvasLikesRecordId", CanvasLikesData>;
+export type CanvasLikesRecordMap = Record<
+  "canvasLikesRecordId",
+  CanvasLikesData
+>;
 
 export type CanvasScoresType = AutomationEntity<"canvasScores">;
 export type CanvasScoresDataRequired = Expand<EntityData<"canvasScores">>;
-export type CanvasScoresDataOptional = Expand<EntityDataOptional<"canvasScores">>;
-export type CanvasScoresRecordWithKey = Expand<EntityDataWithKey<"canvasScores">>;
+export type CanvasScoresDataOptional = Expand<
+  EntityDataOptional<"canvasScores">
+>;
+export type CanvasScoresRecordWithKey = Expand<
+  EntityDataWithKey<"canvasScores">
+>;
 export type CanvasScoresProcessed = Expand<ProcessedEntityData<"canvasScores">>;
 export type CanvasScoresData = Expand<EntityDataMixed<"canvasScores">>;
 export type CanvasScoresState = EntityStateType<"canvasScores">;
-export type CanvasScoresRecordMap = Record<"canvasScoresRecordId", CanvasScoresData>;
+export type CanvasScoresRecordMap = Record<
+  "canvasScoresRecordId",
+  CanvasScoresData
+>;
 
 export type CanvasViewsType = AutomationEntity<"canvasViews">;
 export type CanvasViewsDataRequired = Expand<EntityData<"canvasViews">>;
@@ -483,7 +406,10 @@ export type CanvasViewsRecordWithKey = Expand<EntityDataWithKey<"canvasViews">>;
 export type CanvasViewsProcessed = Expand<ProcessedEntityData<"canvasViews">>;
 export type CanvasViewsData = Expand<EntityDataMixed<"canvasViews">>;
 export type CanvasViewsState = EntityStateType<"canvasViews">;
-export type CanvasViewsRecordMap = Record<"canvasViewsRecordId", CanvasViewsData>;
+export type CanvasViewsRecordMap = Record<
+  "canvasViewsRecordId",
+  CanvasViewsData
+>;
 
 export type CategoryType = AutomationEntity<"category">;
 export type CategoryDataRequired = Expand<EntityData<"category">>;
@@ -496,75 +422,151 @@ export type CategoryRecordMap = Record<"categoryRecordId", CategoryData>;
 
 export type CategoryConfigsType = AutomationEntity<"categoryConfigs">;
 export type CategoryConfigsDataRequired = Expand<EntityData<"categoryConfigs">>;
-export type CategoryConfigsDataOptional = Expand<EntityDataOptional<"categoryConfigs">>;
-export type CategoryConfigsRecordWithKey = Expand<EntityDataWithKey<"categoryConfigs">>;
-export type CategoryConfigsProcessed = Expand<ProcessedEntityData<"categoryConfigs">>;
+export type CategoryConfigsDataOptional = Expand<
+  EntityDataOptional<"categoryConfigs">
+>;
+export type CategoryConfigsRecordWithKey = Expand<
+  EntityDataWithKey<"categoryConfigs">
+>;
+export type CategoryConfigsProcessed = Expand<
+  ProcessedEntityData<"categoryConfigs">
+>;
 export type CategoryConfigsData = Expand<EntityDataMixed<"categoryConfigs">>;
 export type CategoryConfigsState = EntityStateType<"categoryConfigs">;
-export type CategoryConfigsRecordMap = Record<"categoryConfigsRecordId", CategoryConfigsData>;
+export type CategoryConfigsRecordMap = Record<
+  "categoryConfigsRecordId",
+  CategoryConfigsData
+>;
 
 export type CompiledRecipeType = AutomationEntity<"compiledRecipe">;
 export type CompiledRecipeDataRequired = Expand<EntityData<"compiledRecipe">>;
-export type CompiledRecipeDataOptional = Expand<EntityDataOptional<"compiledRecipe">>;
-export type CompiledRecipeRecordWithKey = Expand<EntityDataWithKey<"compiledRecipe">>;
-export type CompiledRecipeProcessed = Expand<ProcessedEntityData<"compiledRecipe">>;
+export type CompiledRecipeDataOptional = Expand<
+  EntityDataOptional<"compiledRecipe">
+>;
+export type CompiledRecipeRecordWithKey = Expand<
+  EntityDataWithKey<"compiledRecipe">
+>;
+export type CompiledRecipeProcessed = Expand<
+  ProcessedEntityData<"compiledRecipe">
+>;
 export type CompiledRecipeData = Expand<EntityDataMixed<"compiledRecipe">>;
 export type CompiledRecipeState = EntityStateType<"compiledRecipe">;
-export type CompiledRecipeRecordMap = Record<"compiledRecipeRecordId", CompiledRecipeData>;
+export type CompiledRecipeRecordMap = Record<
+  "compiledRecipeRecordId",
+  CompiledRecipeData
+>;
 
 export type ComponentGroupsType = AutomationEntity<"componentGroups">;
 export type ComponentGroupsDataRequired = Expand<EntityData<"componentGroups">>;
-export type ComponentGroupsDataOptional = Expand<EntityDataOptional<"componentGroups">>;
-export type ComponentGroupsRecordWithKey = Expand<EntityDataWithKey<"componentGroups">>;
-export type ComponentGroupsProcessed = Expand<ProcessedEntityData<"componentGroups">>;
+export type ComponentGroupsDataOptional = Expand<
+  EntityDataOptional<"componentGroups">
+>;
+export type ComponentGroupsRecordWithKey = Expand<
+  EntityDataWithKey<"componentGroups">
+>;
+export type ComponentGroupsProcessed = Expand<
+  ProcessedEntityData<"componentGroups">
+>;
 export type ComponentGroupsData = Expand<EntityDataMixed<"componentGroups">>;
 export type ComponentGroupsState = EntityStateType<"componentGroups">;
-export type ComponentGroupsRecordMap = Record<"componentGroupsRecordId", ComponentGroupsData>;
+export type ComponentGroupsRecordMap = Record<
+  "componentGroupsRecordId",
+  ComponentGroupsData
+>;
 
 export type ContainerFieldsType = AutomationEntity<"containerFields">;
 export type ContainerFieldsDataRequired = Expand<EntityData<"containerFields">>;
-export type ContainerFieldsDataOptional = Expand<EntityDataOptional<"containerFields">>;
-export type ContainerFieldsRecordWithKey = Expand<EntityDataWithKey<"containerFields">>;
-export type ContainerFieldsProcessed = Expand<ProcessedEntityData<"containerFields">>;
+export type ContainerFieldsDataOptional = Expand<
+  EntityDataOptional<"containerFields">
+>;
+export type ContainerFieldsRecordWithKey = Expand<
+  EntityDataWithKey<"containerFields">
+>;
+export type ContainerFieldsProcessed = Expand<
+  ProcessedEntityData<"containerFields">
+>;
 export type ContainerFieldsData = Expand<EntityDataMixed<"containerFields">>;
 export type ContainerFieldsState = EntityStateType<"containerFields">;
-export type ContainerFieldsRecordMap = Record<"containerFieldsRecordId", ContainerFieldsData>;
+export type ContainerFieldsRecordMap = Record<
+  "containerFieldsRecordId",
+  ContainerFieldsData
+>;
 
 export type ContentBlocksType = AutomationEntity<"contentBlocks">;
 export type ContentBlocksDataRequired = Expand<EntityData<"contentBlocks">>;
-export type ContentBlocksDataOptional = Expand<EntityDataOptional<"contentBlocks">>;
-export type ContentBlocksRecordWithKey = Expand<EntityDataWithKey<"contentBlocks">>;
-export type ContentBlocksProcessed = Expand<ProcessedEntityData<"contentBlocks">>;
+export type ContentBlocksDataOptional = Expand<
+  EntityDataOptional<"contentBlocks">
+>;
+export type ContentBlocksRecordWithKey = Expand<
+  EntityDataWithKey<"contentBlocks">
+>;
+export type ContentBlocksProcessed = Expand<
+  ProcessedEntityData<"contentBlocks">
+>;
 export type ContentBlocksData = Expand<EntityDataMixed<"contentBlocks">>;
 export type ContentBlocksState = EntityStateType<"contentBlocks">;
-export type ContentBlocksRecordMap = Record<"contentBlocksRecordId", ContentBlocksData>;
+export type ContentBlocksRecordMap = Record<
+  "contentBlocksRecordId",
+  ContentBlocksData
+>;
 
 export type ConversationType = AutomationEntity<"conversation">;
 export type ConversationDataRequired = Expand<EntityData<"conversation">>;
-export type ConversationDataOptional = Expand<EntityDataOptional<"conversation">>;
-export type ConversationRecordWithKey = Expand<EntityDataWithKey<"conversation">>;
+export type ConversationDataOptional = Expand<
+  EntityDataOptional<"conversation">
+>;
+export type ConversationRecordWithKey = Expand<
+  EntityDataWithKey<"conversation">
+>;
 export type ConversationProcessed = Expand<ProcessedEntityData<"conversation">>;
 export type ConversationData = Expand<EntityDataMixed<"conversation">>;
 export type ConversationState = EntityStateType<"conversation">;
-export type ConversationRecordMap = Record<"conversationRecordId", ConversationData>;
+export type ConversationRecordMap = Record<
+  "conversationRecordId",
+  ConversationData
+>;
 
 export type CustomAppConfigsType = AutomationEntity<"customAppConfigs">;
-export type CustomAppConfigsDataRequired = Expand<EntityData<"customAppConfigs">>;
-export type CustomAppConfigsDataOptional = Expand<EntityDataOptional<"customAppConfigs">>;
-export type CustomAppConfigsRecordWithKey = Expand<EntityDataWithKey<"customAppConfigs">>;
-export type CustomAppConfigsProcessed = Expand<ProcessedEntityData<"customAppConfigs">>;
+export type CustomAppConfigsDataRequired = Expand<
+  EntityData<"customAppConfigs">
+>;
+export type CustomAppConfigsDataOptional = Expand<
+  EntityDataOptional<"customAppConfigs">
+>;
+export type CustomAppConfigsRecordWithKey = Expand<
+  EntityDataWithKey<"customAppConfigs">
+>;
+export type CustomAppConfigsProcessed = Expand<
+  ProcessedEntityData<"customAppConfigs">
+>;
 export type CustomAppConfigsData = Expand<EntityDataMixed<"customAppConfigs">>;
 export type CustomAppConfigsState = EntityStateType<"customAppConfigs">;
-export type CustomAppConfigsRecordMap = Record<"customAppConfigsRecordId", CustomAppConfigsData>;
+export type CustomAppConfigsRecordMap = Record<
+  "customAppConfigsRecordId",
+  CustomAppConfigsData
+>;
 
 export type CustomAppletConfigsType = AutomationEntity<"customAppletConfigs">;
-export type CustomAppletConfigsDataRequired = Expand<EntityData<"customAppletConfigs">>;
-export type CustomAppletConfigsDataOptional = Expand<EntityDataOptional<"customAppletConfigs">>;
-export type CustomAppletConfigsRecordWithKey = Expand<EntityDataWithKey<"customAppletConfigs">>;
-export type CustomAppletConfigsProcessed = Expand<ProcessedEntityData<"customAppletConfigs">>;
-export type CustomAppletConfigsData = Expand<EntityDataMixed<"customAppletConfigs">>;
+export type CustomAppletConfigsDataRequired = Expand<
+  EntityData<"customAppletConfigs">
+>;
+export type CustomAppletConfigsDataOptional = Expand<
+  EntityDataOptional<"customAppletConfigs">
+>;
+export type CustomAppletConfigsRecordWithKey = Expand<
+  EntityDataWithKey<"customAppletConfigs">
+>;
+export type CustomAppletConfigsProcessed = Expand<
+  ProcessedEntityData<"customAppletConfigs">
+>;
+export type CustomAppletConfigsData = Expand<
+  EntityDataMixed<"customAppletConfigs">
+>;
 export type CustomAppletConfigsState = EntityStateType<"customAppletConfigs">;
-export type CustomAppletConfigsRecordMap = Record<"customAppletConfigsRecordId", CustomAppletConfigsData>;
+export type CustomAppletConfigsRecordMap = Record<
+  "customAppletConfigsRecordId",
+  CustomAppletConfigsData
+>;
 
 export type DataBrokerType = AutomationEntity<"dataBroker">;
 export type DataBrokerDataRequired = Expand<EntityData<"dataBroker">>;
@@ -576,31 +578,66 @@ export type DataBrokerState = EntityStateType<"dataBroker">;
 export type DataBrokerRecordMap = Record<"dataBrokerRecordId", DataBrokerData>;
 
 export type DataInputComponentType = AutomationEntity<"dataInputComponent">;
-export type DataInputComponentDataRequired = Expand<EntityData<"dataInputComponent">>;
-export type DataInputComponentDataOptional = Expand<EntityDataOptional<"dataInputComponent">>;
-export type DataInputComponentRecordWithKey = Expand<EntityDataWithKey<"dataInputComponent">>;
-export type DataInputComponentProcessed = Expand<ProcessedEntityData<"dataInputComponent">>;
-export type DataInputComponentData = Expand<EntityDataMixed<"dataInputComponent">>;
+export type DataInputComponentDataRequired = Expand<
+  EntityData<"dataInputComponent">
+>;
+export type DataInputComponentDataOptional = Expand<
+  EntityDataOptional<"dataInputComponent">
+>;
+export type DataInputComponentRecordWithKey = Expand<
+  EntityDataWithKey<"dataInputComponent">
+>;
+export type DataInputComponentProcessed = Expand<
+  ProcessedEntityData<"dataInputComponent">
+>;
+export type DataInputComponentData = Expand<
+  EntityDataMixed<"dataInputComponent">
+>;
 export type DataInputComponentState = EntityStateType<"dataInputComponent">;
-export type DataInputComponentRecordMap = Record<"dataInputComponentRecordId", DataInputComponentData>;
+export type DataInputComponentRecordMap = Record<
+  "dataInputComponentRecordId",
+  DataInputComponentData
+>;
 
 export type DataOutputComponentType = AutomationEntity<"dataOutputComponent">;
-export type DataOutputComponentDataRequired = Expand<EntityData<"dataOutputComponent">>;
-export type DataOutputComponentDataOptional = Expand<EntityDataOptional<"dataOutputComponent">>;
-export type DataOutputComponentRecordWithKey = Expand<EntityDataWithKey<"dataOutputComponent">>;
-export type DataOutputComponentProcessed = Expand<ProcessedEntityData<"dataOutputComponent">>;
-export type DataOutputComponentData = Expand<EntityDataMixed<"dataOutputComponent">>;
+export type DataOutputComponentDataRequired = Expand<
+  EntityData<"dataOutputComponent">
+>;
+export type DataOutputComponentDataOptional = Expand<
+  EntityDataOptional<"dataOutputComponent">
+>;
+export type DataOutputComponentRecordWithKey = Expand<
+  EntityDataWithKey<"dataOutputComponent">
+>;
+export type DataOutputComponentProcessed = Expand<
+  ProcessedEntityData<"dataOutputComponent">
+>;
+export type DataOutputComponentData = Expand<
+  EntityDataMixed<"dataOutputComponent">
+>;
 export type DataOutputComponentState = EntityStateType<"dataOutputComponent">;
-export type DataOutputComponentRecordMap = Record<"dataOutputComponentRecordId", DataOutputComponentData>;
+export type DataOutputComponentRecordMap = Record<
+  "dataOutputComponentRecordId",
+  DataOutputComponentData
+>;
 
 export type DisplayOptionType = AutomationEntity<"displayOption">;
 export type DisplayOptionDataRequired = Expand<EntityData<"displayOption">>;
-export type DisplayOptionDataOptional = Expand<EntityDataOptional<"displayOption">>;
-export type DisplayOptionRecordWithKey = Expand<EntityDataWithKey<"displayOption">>;
-export type DisplayOptionProcessed = Expand<ProcessedEntityData<"displayOption">>;
+export type DisplayOptionDataOptional = Expand<
+  EntityDataOptional<"displayOption">
+>;
+export type DisplayOptionRecordWithKey = Expand<
+  EntityDataWithKey<"displayOption">
+>;
+export type DisplayOptionProcessed = Expand<
+  ProcessedEntityData<"displayOption">
+>;
 export type DisplayOptionData = Expand<EntityDataMixed<"displayOption">>;
 export type DisplayOptionState = EntityStateType<"displayOption">;
-export type DisplayOptionRecordMap = Record<"displayOptionRecordId", DisplayOptionData>;
+export type DisplayOptionRecordMap = Record<
+  "displayOptionRecordId",
+  DisplayOptionData
+>;
 
 export type EmailsType = AutomationEntity<"emails">;
 export type EmailsDataRequired = Expand<EntityData<"emails">>;
@@ -622,84 +659,179 @@ export type ExtractorRecordMap = Record<"extractorRecordId", ExtractorData>;
 
 export type FieldComponentsType = AutomationEntity<"fieldComponents">;
 export type FieldComponentsDataRequired = Expand<EntityData<"fieldComponents">>;
-export type FieldComponentsDataOptional = Expand<EntityDataOptional<"fieldComponents">>;
-export type FieldComponentsRecordWithKey = Expand<EntityDataWithKey<"fieldComponents">>;
-export type FieldComponentsProcessed = Expand<ProcessedEntityData<"fieldComponents">>;
+export type FieldComponentsDataOptional = Expand<
+  EntityDataOptional<"fieldComponents">
+>;
+export type FieldComponentsRecordWithKey = Expand<
+  EntityDataWithKey<"fieldComponents">
+>;
+export type FieldComponentsProcessed = Expand<
+  ProcessedEntityData<"fieldComponents">
+>;
 export type FieldComponentsData = Expand<EntityDataMixed<"fieldComponents">>;
 export type FieldComponentsState = EntityStateType<"fieldComponents">;
-export type FieldComponentsRecordMap = Record<"fieldComponentsRecordId", FieldComponentsData>;
+export type FieldComponentsRecordMap = Record<
+  "fieldComponentsRecordId",
+  FieldComponentsData
+>;
 
 export type FileStructureType = AutomationEntity<"fileStructure">;
 export type FileStructureDataRequired = Expand<EntityData<"fileStructure">>;
-export type FileStructureDataOptional = Expand<EntityDataOptional<"fileStructure">>;
-export type FileStructureRecordWithKey = Expand<EntityDataWithKey<"fileStructure">>;
-export type FileStructureProcessed = Expand<ProcessedEntityData<"fileStructure">>;
+export type FileStructureDataOptional = Expand<
+  EntityDataOptional<"fileStructure">
+>;
+export type FileStructureRecordWithKey = Expand<
+  EntityDataWithKey<"fileStructure">
+>;
+export type FileStructureProcessed = Expand<
+  ProcessedEntityData<"fileStructure">
+>;
 export type FileStructureData = Expand<EntityDataMixed<"fileStructure">>;
 export type FileStructureState = EntityStateType<"fileStructure">;
-export type FileStructureRecordMap = Record<"fileStructureRecordId", FileStructureData>;
+export type FileStructureRecordMap = Record<
+  "fileStructureRecordId",
+  FileStructureData
+>;
 
 export type FlashcardDataType = AutomationEntity<"flashcardData">;
 export type FlashcardDataDataRequired = Expand<EntityData<"flashcardData">>;
-export type FlashcardDataDataOptional = Expand<EntityDataOptional<"flashcardData">>;
-export type FlashcardDataRecordWithKey = Expand<EntityDataWithKey<"flashcardData">>;
-export type FlashcardDataProcessed = Expand<ProcessedEntityData<"flashcardData">>;
+export type FlashcardDataDataOptional = Expand<
+  EntityDataOptional<"flashcardData">
+>;
+export type FlashcardDataRecordWithKey = Expand<
+  EntityDataWithKey<"flashcardData">
+>;
+export type FlashcardDataProcessed = Expand<
+  ProcessedEntityData<"flashcardData">
+>;
 export type FlashcardDataData = Expand<EntityDataMixed<"flashcardData">>;
 export type FlashcardDataState = EntityStateType<"flashcardData">;
-export type FlashcardDataRecordMap = Record<"flashcardDataRecordId", FlashcardDataData>;
+export type FlashcardDataRecordMap = Record<
+  "flashcardDataRecordId",
+  FlashcardDataData
+>;
 
 export type FlashcardHistoryType = AutomationEntity<"flashcardHistory">;
-export type FlashcardHistoryDataRequired = Expand<EntityData<"flashcardHistory">>;
-export type FlashcardHistoryDataOptional = Expand<EntityDataOptional<"flashcardHistory">>;
-export type FlashcardHistoryRecordWithKey = Expand<EntityDataWithKey<"flashcardHistory">>;
-export type FlashcardHistoryProcessed = Expand<ProcessedEntityData<"flashcardHistory">>;
+export type FlashcardHistoryDataRequired = Expand<
+  EntityData<"flashcardHistory">
+>;
+export type FlashcardHistoryDataOptional = Expand<
+  EntityDataOptional<"flashcardHistory">
+>;
+export type FlashcardHistoryRecordWithKey = Expand<
+  EntityDataWithKey<"flashcardHistory">
+>;
+export type FlashcardHistoryProcessed = Expand<
+  ProcessedEntityData<"flashcardHistory">
+>;
 export type FlashcardHistoryData = Expand<EntityDataMixed<"flashcardHistory">>;
 export type FlashcardHistoryState = EntityStateType<"flashcardHistory">;
-export type FlashcardHistoryRecordMap = Record<"flashcardHistoryRecordId", FlashcardHistoryData>;
+export type FlashcardHistoryRecordMap = Record<
+  "flashcardHistoryRecordId",
+  FlashcardHistoryData
+>;
 
 export type FlashcardImagesType = AutomationEntity<"flashcardImages">;
 export type FlashcardImagesDataRequired = Expand<EntityData<"flashcardImages">>;
-export type FlashcardImagesDataOptional = Expand<EntityDataOptional<"flashcardImages">>;
-export type FlashcardImagesRecordWithKey = Expand<EntityDataWithKey<"flashcardImages">>;
-export type FlashcardImagesProcessed = Expand<ProcessedEntityData<"flashcardImages">>;
+export type FlashcardImagesDataOptional = Expand<
+  EntityDataOptional<"flashcardImages">
+>;
+export type FlashcardImagesRecordWithKey = Expand<
+  EntityDataWithKey<"flashcardImages">
+>;
+export type FlashcardImagesProcessed = Expand<
+  ProcessedEntityData<"flashcardImages">
+>;
 export type FlashcardImagesData = Expand<EntityDataMixed<"flashcardImages">>;
 export type FlashcardImagesState = EntityStateType<"flashcardImages">;
-export type FlashcardImagesRecordMap = Record<"flashcardImagesRecordId", FlashcardImagesData>;
+export type FlashcardImagesRecordMap = Record<
+  "flashcardImagesRecordId",
+  FlashcardImagesData
+>;
 
-export type FlashcardSetRelationsType = AutomationEntity<"flashcardSetRelations">;
-export type FlashcardSetRelationsDataRequired = Expand<EntityData<"flashcardSetRelations">>;
-export type FlashcardSetRelationsDataOptional = Expand<EntityDataOptional<"flashcardSetRelations">>;
-export type FlashcardSetRelationsRecordWithKey = Expand<EntityDataWithKey<"flashcardSetRelations">>;
-export type FlashcardSetRelationsProcessed = Expand<ProcessedEntityData<"flashcardSetRelations">>;
-export type FlashcardSetRelationsData = Expand<EntityDataMixed<"flashcardSetRelations">>;
-export type FlashcardSetRelationsState = EntityStateType<"flashcardSetRelations">;
-export type FlashcardSetRelationsRecordMap = Record<"flashcardSetRelationsRecordId", FlashcardSetRelationsData>;
+export type FlashcardSetRelationsType =
+  AutomationEntity<"flashcardSetRelations">;
+export type FlashcardSetRelationsDataRequired = Expand<
+  EntityData<"flashcardSetRelations">
+>;
+export type FlashcardSetRelationsDataOptional = Expand<
+  EntityDataOptional<"flashcardSetRelations">
+>;
+export type FlashcardSetRelationsRecordWithKey = Expand<
+  EntityDataWithKey<"flashcardSetRelations">
+>;
+export type FlashcardSetRelationsProcessed = Expand<
+  ProcessedEntityData<"flashcardSetRelations">
+>;
+export type FlashcardSetRelationsData = Expand<
+  EntityDataMixed<"flashcardSetRelations">
+>;
+export type FlashcardSetRelationsState =
+  EntityStateType<"flashcardSetRelations">;
+export type FlashcardSetRelationsRecordMap = Record<
+  "flashcardSetRelationsRecordId",
+  FlashcardSetRelationsData
+>;
 
 export type FlashcardSetsType = AutomationEntity<"flashcardSets">;
 export type FlashcardSetsDataRequired = Expand<EntityData<"flashcardSets">>;
-export type FlashcardSetsDataOptional = Expand<EntityDataOptional<"flashcardSets">>;
-export type FlashcardSetsRecordWithKey = Expand<EntityDataWithKey<"flashcardSets">>;
-export type FlashcardSetsProcessed = Expand<ProcessedEntityData<"flashcardSets">>;
+export type FlashcardSetsDataOptional = Expand<
+  EntityDataOptional<"flashcardSets">
+>;
+export type FlashcardSetsRecordWithKey = Expand<
+  EntityDataWithKey<"flashcardSets">
+>;
+export type FlashcardSetsProcessed = Expand<
+  ProcessedEntityData<"flashcardSets">
+>;
 export type FlashcardSetsData = Expand<EntityDataMixed<"flashcardSets">>;
 export type FlashcardSetsState = EntityStateType<"flashcardSets">;
-export type FlashcardSetsRecordMap = Record<"flashcardSetsRecordId", FlashcardSetsData>;
+export type FlashcardSetsRecordMap = Record<
+  "flashcardSetsRecordId",
+  FlashcardSetsData
+>;
 
-export type FullSpectrumPositionsType = AutomationEntity<"fullSpectrumPositions">;
-export type FullSpectrumPositionsDataRequired = Expand<EntityData<"fullSpectrumPositions">>;
-export type FullSpectrumPositionsDataOptional = Expand<EntityDataOptional<"fullSpectrumPositions">>;
-export type FullSpectrumPositionsRecordWithKey = Expand<EntityDataWithKey<"fullSpectrumPositions">>;
-export type FullSpectrumPositionsProcessed = Expand<ProcessedEntityData<"fullSpectrumPositions">>;
-export type FullSpectrumPositionsData = Expand<EntityDataMixed<"fullSpectrumPositions">>;
-export type FullSpectrumPositionsState = EntityStateType<"fullSpectrumPositions">;
-export type FullSpectrumPositionsRecordMap = Record<"fullSpectrumPositionsRecordId", FullSpectrumPositionsData>;
+export type FullSpectrumPositionsType =
+  AutomationEntity<"fullSpectrumPositions">;
+export type FullSpectrumPositionsDataRequired = Expand<
+  EntityData<"fullSpectrumPositions">
+>;
+export type FullSpectrumPositionsDataOptional = Expand<
+  EntityDataOptional<"fullSpectrumPositions">
+>;
+export type FullSpectrumPositionsRecordWithKey = Expand<
+  EntityDataWithKey<"fullSpectrumPositions">
+>;
+export type FullSpectrumPositionsProcessed = Expand<
+  ProcessedEntityData<"fullSpectrumPositions">
+>;
+export type FullSpectrumPositionsData = Expand<
+  EntityDataMixed<"fullSpectrumPositions">
+>;
+export type FullSpectrumPositionsState =
+  EntityStateType<"fullSpectrumPositions">;
+export type FullSpectrumPositionsRecordMap = Record<
+  "fullSpectrumPositionsRecordId",
+  FullSpectrumPositionsData
+>;
 
 export type HtmlExtractionsType = AutomationEntity<"htmlExtractions">;
 export type HtmlExtractionsDataRequired = Expand<EntityData<"htmlExtractions">>;
-export type HtmlExtractionsDataOptional = Expand<EntityDataOptional<"htmlExtractions">>;
-export type HtmlExtractionsRecordWithKey = Expand<EntityDataWithKey<"htmlExtractions">>;
-export type HtmlExtractionsProcessed = Expand<ProcessedEntityData<"htmlExtractions">>;
+export type HtmlExtractionsDataOptional = Expand<
+  EntityDataOptional<"htmlExtractions">
+>;
+export type HtmlExtractionsRecordWithKey = Expand<
+  EntityDataWithKey<"htmlExtractions">
+>;
+export type HtmlExtractionsProcessed = Expand<
+  ProcessedEntityData<"htmlExtractions">
+>;
 export type HtmlExtractionsData = Expand<EntityDataMixed<"htmlExtractions">>;
 export type HtmlExtractionsState = EntityStateType<"htmlExtractions">;
-export type HtmlExtractionsRecordMap = Record<"htmlExtractionsRecordId", HtmlExtractionsData>;
+export type HtmlExtractionsRecordMap = Record<
+  "htmlExtractionsRecordId",
+  HtmlExtractionsData
+>;
 
 export type MessageType = AutomationEntity<"message">;
 export type MessageDataRequired = Expand<EntityData<"message">>;
@@ -712,39 +844,77 @@ export type MessageRecordMap = Record<"messageRecordId", MessageData>;
 
 export type MessageBrokerType = AutomationEntity<"messageBroker">;
 export type MessageBrokerDataRequired = Expand<EntityData<"messageBroker">>;
-export type MessageBrokerDataOptional = Expand<EntityDataOptional<"messageBroker">>;
-export type MessageBrokerRecordWithKey = Expand<EntityDataWithKey<"messageBroker">>;
-export type MessageBrokerProcessed = Expand<ProcessedEntityData<"messageBroker">>;
+export type MessageBrokerDataOptional = Expand<
+  EntityDataOptional<"messageBroker">
+>;
+export type MessageBrokerRecordWithKey = Expand<
+  EntityDataWithKey<"messageBroker">
+>;
+export type MessageBrokerProcessed = Expand<
+  ProcessedEntityData<"messageBroker">
+>;
 export type MessageBrokerData = Expand<EntityDataMixed<"messageBroker">>;
 export type MessageBrokerState = EntityStateType<"messageBroker">;
-export type MessageBrokerRecordMap = Record<"messageBrokerRecordId", MessageBrokerData>;
+export type MessageBrokerRecordMap = Record<
+  "messageBrokerRecordId",
+  MessageBrokerData
+>;
 
 export type MessageTemplateType = AutomationEntity<"messageTemplate">;
 export type MessageTemplateDataRequired = Expand<EntityData<"messageTemplate">>;
-export type MessageTemplateDataOptional = Expand<EntityDataOptional<"messageTemplate">>;
-export type MessageTemplateRecordWithKey = Expand<EntityDataWithKey<"messageTemplate">>;
-export type MessageTemplateProcessed = Expand<ProcessedEntityData<"messageTemplate">>;
+export type MessageTemplateDataOptional = Expand<
+  EntityDataOptional<"messageTemplate">
+>;
+export type MessageTemplateRecordWithKey = Expand<
+  EntityDataWithKey<"messageTemplate">
+>;
+export type MessageTemplateProcessed = Expand<
+  ProcessedEntityData<"messageTemplate">
+>;
 export type MessageTemplateData = Expand<EntityDataMixed<"messageTemplate">>;
 export type MessageTemplateState = EntityStateType<"messageTemplate">;
-export type MessageTemplateRecordMap = Record<"messageTemplateRecordId", MessageTemplateData>;
+export type MessageTemplateRecordMap = Record<
+  "messageTemplateRecordId",
+  MessageTemplateData
+>;
 
 export type MicroserviceProjectType = AutomationEntity<"microserviceProject">;
-export type MicroserviceProjectDataRequired = Expand<EntityData<"microserviceProject">>;
-export type MicroserviceProjectDataOptional = Expand<EntityDataOptional<"microserviceProject">>;
-export type MicroserviceProjectRecordWithKey = Expand<EntityDataWithKey<"microserviceProject">>;
-export type MicroserviceProjectProcessed = Expand<ProcessedEntityData<"microserviceProject">>;
-export type MicroserviceProjectData = Expand<EntityDataMixed<"microserviceProject">>;
+export type MicroserviceProjectDataRequired = Expand<
+  EntityData<"microserviceProject">
+>;
+export type MicroserviceProjectDataOptional = Expand<
+  EntityDataOptional<"microserviceProject">
+>;
+export type MicroserviceProjectRecordWithKey = Expand<
+  EntityDataWithKey<"microserviceProject">
+>;
+export type MicroserviceProjectProcessed = Expand<
+  ProcessedEntityData<"microserviceProject">
+>;
+export type MicroserviceProjectData = Expand<
+  EntityDataMixed<"microserviceProject">
+>;
 export type MicroserviceProjectState = EntityStateType<"microserviceProject">;
-export type MicroserviceProjectRecordMap = Record<"microserviceProjectRecordId", MicroserviceProjectData>;
+export type MicroserviceProjectRecordMap = Record<
+  "microserviceProjectRecordId",
+  MicroserviceProjectData
+>;
 
 export type NodeCategoryType = AutomationEntity<"nodeCategory">;
 export type NodeCategoryDataRequired = Expand<EntityData<"nodeCategory">>;
-export type NodeCategoryDataOptional = Expand<EntityDataOptional<"nodeCategory">>;
-export type NodeCategoryRecordWithKey = Expand<EntityDataWithKey<"nodeCategory">>;
+export type NodeCategoryDataOptional = Expand<
+  EntityDataOptional<"nodeCategory">
+>;
+export type NodeCategoryRecordWithKey = Expand<
+  EntityDataWithKey<"nodeCategory">
+>;
 export type NodeCategoryProcessed = Expand<ProcessedEntityData<"nodeCategory">>;
 export type NodeCategoryData = Expand<EntityDataMixed<"nodeCategory">>;
 export type NodeCategoryState = EntityStateType<"nodeCategory">;
-export type NodeCategoryRecordMap = Record<"nodeCategoryRecordId", NodeCategoryData>;
+export type NodeCategoryRecordMap = Record<
+  "nodeCategoryRecordId",
+  NodeCategoryData
+>;
 
 export type NotesType = AutomationEntity<"notes">;
 export type NotesDataRequired = Expand<EntityData<"notes">>;
@@ -755,32 +925,69 @@ export type NotesData = Expand<EntityDataMixed<"notes">>;
 export type NotesState = EntityStateType<"notes">;
 export type NotesRecordMap = Record<"notesRecordId", NotesData>;
 
-export type OrganizationInvitationsType = AutomationEntity<"organizationInvitations">;
-export type OrganizationInvitationsDataRequired = Expand<EntityData<"organizationInvitations">>;
-export type OrganizationInvitationsDataOptional = Expand<EntityDataOptional<"organizationInvitations">>;
-export type OrganizationInvitationsRecordWithKey = Expand<EntityDataWithKey<"organizationInvitations">>;
-export type OrganizationInvitationsProcessed = Expand<ProcessedEntityData<"organizationInvitations">>;
-export type OrganizationInvitationsData = Expand<EntityDataMixed<"organizationInvitations">>;
-export type OrganizationInvitationsState = EntityStateType<"organizationInvitations">;
-export type OrganizationInvitationsRecordMap = Record<"organizationInvitationsRecordId", OrganizationInvitationsData>;
+export type OrganizationInvitationsType =
+  AutomationEntity<"organizationInvitations">;
+export type OrganizationInvitationsDataRequired = Expand<
+  EntityData<"organizationInvitations">
+>;
+export type OrganizationInvitationsDataOptional = Expand<
+  EntityDataOptional<"organizationInvitations">
+>;
+export type OrganizationInvitationsRecordWithKey = Expand<
+  EntityDataWithKey<"organizationInvitations">
+>;
+export type OrganizationInvitationsProcessed = Expand<
+  ProcessedEntityData<"organizationInvitations">
+>;
+export type OrganizationInvitationsData = Expand<
+  EntityDataMixed<"organizationInvitations">
+>;
+export type OrganizationInvitationsState =
+  EntityStateType<"organizationInvitations">;
+export type OrganizationInvitationsRecordMap = Record<
+  "organizationInvitationsRecordId",
+  OrganizationInvitationsData
+>;
 
 export type OrganizationMembersType = AutomationEntity<"organizationMembers">;
-export type OrganizationMembersDataRequired = Expand<EntityData<"organizationMembers">>;
-export type OrganizationMembersDataOptional = Expand<EntityDataOptional<"organizationMembers">>;
-export type OrganizationMembersRecordWithKey = Expand<EntityDataWithKey<"organizationMembers">>;
-export type OrganizationMembersProcessed = Expand<ProcessedEntityData<"organizationMembers">>;
-export type OrganizationMembersData = Expand<EntityDataMixed<"organizationMembers">>;
+export type OrganizationMembersDataRequired = Expand<
+  EntityData<"organizationMembers">
+>;
+export type OrganizationMembersDataOptional = Expand<
+  EntityDataOptional<"organizationMembers">
+>;
+export type OrganizationMembersRecordWithKey = Expand<
+  EntityDataWithKey<"organizationMembers">
+>;
+export type OrganizationMembersProcessed = Expand<
+  ProcessedEntityData<"organizationMembers">
+>;
+export type OrganizationMembersData = Expand<
+  EntityDataMixed<"organizationMembers">
+>;
 export type OrganizationMembersState = EntityStateType<"organizationMembers">;
-export type OrganizationMembersRecordMap = Record<"organizationMembersRecordId", OrganizationMembersData>;
+export type OrganizationMembersRecordMap = Record<
+  "organizationMembersRecordId",
+  OrganizationMembersData
+>;
 
 export type OrganizationsType = AutomationEntity<"organizations">;
 export type OrganizationsDataRequired = Expand<EntityData<"organizations">>;
-export type OrganizationsDataOptional = Expand<EntityDataOptional<"organizations">>;
-export type OrganizationsRecordWithKey = Expand<EntityDataWithKey<"organizations">>;
-export type OrganizationsProcessed = Expand<ProcessedEntityData<"organizations">>;
+export type OrganizationsDataOptional = Expand<
+  EntityDataOptional<"organizations">
+>;
+export type OrganizationsRecordWithKey = Expand<
+  EntityDataWithKey<"organizations">
+>;
+export type OrganizationsProcessed = Expand<
+  ProcessedEntityData<"organizations">
+>;
 export type OrganizationsData = Expand<EntityDataMixed<"organizations">>;
 export type OrganizationsState = EntityStateType<"organizations">;
-export type OrganizationsRecordMap = Record<"organizationsRecordId", OrganizationsData>;
+export type OrganizationsRecordMap = Record<
+  "organizationsRecordId",
+  OrganizationsData
+>;
 
 export type PermissionsType = AutomationEntity<"permissions">;
 export type PermissionsDataRequired = Expand<EntityData<"permissions">>;
@@ -789,7 +996,10 @@ export type PermissionsRecordWithKey = Expand<EntityDataWithKey<"permissions">>;
 export type PermissionsProcessed = Expand<ProcessedEntityData<"permissions">>;
 export type PermissionsData = Expand<EntityDataMixed<"permissions">>;
 export type PermissionsState = EntityStateType<"permissions">;
-export type PermissionsRecordMap = Record<"permissionsRecordId", PermissionsData>;
+export type PermissionsRecordMap = Record<
+  "permissionsRecordId",
+  PermissionsData
+>;
 
 export type ProcessorType = AutomationEntity<"processor">;
 export type ProcessorDataRequired = Expand<EntityData<"processor">>;
@@ -802,12 +1012,21 @@ export type ProcessorRecordMap = Record<"processorRecordId", ProcessorData>;
 
 export type ProjectMembersType = AutomationEntity<"projectMembers">;
 export type ProjectMembersDataRequired = Expand<EntityData<"projectMembers">>;
-export type ProjectMembersDataOptional = Expand<EntityDataOptional<"projectMembers">>;
-export type ProjectMembersRecordWithKey = Expand<EntityDataWithKey<"projectMembers">>;
-export type ProjectMembersProcessed = Expand<ProcessedEntityData<"projectMembers">>;
+export type ProjectMembersDataOptional = Expand<
+  EntityDataOptional<"projectMembers">
+>;
+export type ProjectMembersRecordWithKey = Expand<
+  EntityDataWithKey<"projectMembers">
+>;
+export type ProjectMembersProcessed = Expand<
+  ProcessedEntityData<"projectMembers">
+>;
 export type ProjectMembersData = Expand<EntityDataMixed<"projectMembers">>;
 export type ProjectMembersState = EntityStateType<"projectMembers">;
-export type ProjectMembersRecordMap = Record<"projectMembersRecordId", ProjectMembersData>;
+export type ProjectMembersRecordMap = Record<
+  "projectMembersRecordId",
+  ProjectMembersData
+>;
 
 export type ProjectsType = AutomationEntity<"projects">;
 export type ProjectsDataRequired = Expand<EntityData<"projects">>;
@@ -820,12 +1039,21 @@ export type ProjectsRecordMap = Record<"projectsRecordId", ProjectsData>;
 
 export type PromptTemplatesType = AutomationEntity<"promptTemplates">;
 export type PromptTemplatesDataRequired = Expand<EntityData<"promptTemplates">>;
-export type PromptTemplatesDataOptional = Expand<EntityDataOptional<"promptTemplates">>;
-export type PromptTemplatesRecordWithKey = Expand<EntityDataWithKey<"promptTemplates">>;
-export type PromptTemplatesProcessed = Expand<ProcessedEntityData<"promptTemplates">>;
+export type PromptTemplatesDataOptional = Expand<
+  EntityDataOptional<"promptTemplates">
+>;
+export type PromptTemplatesRecordWithKey = Expand<
+  EntityDataWithKey<"promptTemplates">
+>;
+export type PromptTemplatesProcessed = Expand<
+  ProcessedEntityData<"promptTemplates">
+>;
 export type PromptTemplatesData = Expand<EntityDataMixed<"promptTemplates">>;
 export type PromptTemplatesState = EntityStateType<"promptTemplates">;
-export type PromptTemplatesRecordMap = Record<"promptTemplatesRecordId", PromptTemplatesData>;
+export type PromptTemplatesRecordMap = Record<
+  "promptTemplatesRecordId",
+  PromptTemplatesData
+>;
 
 export type PromptsType = AutomationEntity<"prompts">;
 export type PromptsDataRequired = Expand<EntityData<"prompts">>;
@@ -838,12 +1066,19 @@ export type PromptsRecordMap = Record<"promptsRecordId", PromptsData>;
 
 export type QuizSessionsType = AutomationEntity<"quizSessions">;
 export type QuizSessionsDataRequired = Expand<EntityData<"quizSessions">>;
-export type QuizSessionsDataOptional = Expand<EntityDataOptional<"quizSessions">>;
-export type QuizSessionsRecordWithKey = Expand<EntityDataWithKey<"quizSessions">>;
+export type QuizSessionsDataOptional = Expand<
+  EntityDataOptional<"quizSessions">
+>;
+export type QuizSessionsRecordWithKey = Expand<
+  EntityDataWithKey<"quizSessions">
+>;
 export type QuizSessionsProcessed = Expand<ProcessedEntityData<"quizSessions">>;
 export type QuizSessionsData = Expand<EntityDataMixed<"quizSessions">>;
 export type QuizSessionsState = EntityStateType<"quizSessions">;
-export type QuizSessionsRecordMap = Record<"quizSessionsRecordId", QuizSessionsData>;
+export type QuizSessionsRecordMap = Record<
+  "quizSessionsRecordId",
+  QuizSessionsData
+>;
 
 export type RecipeType = AutomationEntity<"recipe">;
 export type RecipeDataRequired = Expand<EntityData<"recipe">>;
@@ -856,39 +1091,79 @@ export type RecipeRecordMap = Record<"recipeRecordId", RecipeData>;
 
 export type RecipeBrokerType = AutomationEntity<"recipeBroker">;
 export type RecipeBrokerDataRequired = Expand<EntityData<"recipeBroker">>;
-export type RecipeBrokerDataOptional = Expand<EntityDataOptional<"recipeBroker">>;
-export type RecipeBrokerRecordWithKey = Expand<EntityDataWithKey<"recipeBroker">>;
+export type RecipeBrokerDataOptional = Expand<
+  EntityDataOptional<"recipeBroker">
+>;
+export type RecipeBrokerRecordWithKey = Expand<
+  EntityDataWithKey<"recipeBroker">
+>;
 export type RecipeBrokerProcessed = Expand<ProcessedEntityData<"recipeBroker">>;
 export type RecipeBrokerData = Expand<EntityDataMixed<"recipeBroker">>;
 export type RecipeBrokerState = EntityStateType<"recipeBroker">;
-export type RecipeBrokerRecordMap = Record<"recipeBrokerRecordId", RecipeBrokerData>;
+export type RecipeBrokerRecordMap = Record<
+  "recipeBrokerRecordId",
+  RecipeBrokerData
+>;
 
 export type RecipeDisplayType = AutomationEntity<"recipeDisplay">;
 export type RecipeDisplayDataRequired = Expand<EntityData<"recipeDisplay">>;
-export type RecipeDisplayDataOptional = Expand<EntityDataOptional<"recipeDisplay">>;
-export type RecipeDisplayRecordWithKey = Expand<EntityDataWithKey<"recipeDisplay">>;
-export type RecipeDisplayProcessed = Expand<ProcessedEntityData<"recipeDisplay">>;
+export type RecipeDisplayDataOptional = Expand<
+  EntityDataOptional<"recipeDisplay">
+>;
+export type RecipeDisplayRecordWithKey = Expand<
+  EntityDataWithKey<"recipeDisplay">
+>;
+export type RecipeDisplayProcessed = Expand<
+  ProcessedEntityData<"recipeDisplay">
+>;
 export type RecipeDisplayData = Expand<EntityDataMixed<"recipeDisplay">>;
 export type RecipeDisplayState = EntityStateType<"recipeDisplay">;
-export type RecipeDisplayRecordMap = Record<"recipeDisplayRecordId", RecipeDisplayData>;
+export type RecipeDisplayRecordMap = Record<
+  "recipeDisplayRecordId",
+  RecipeDisplayData
+>;
 
 export type RecipeMessageType = AutomationEntity<"recipeMessage">;
 export type RecipeMessageDataRequired = Expand<EntityData<"recipeMessage">>;
-export type RecipeMessageDataOptional = Expand<EntityDataOptional<"recipeMessage">>;
-export type RecipeMessageRecordWithKey = Expand<EntityDataWithKey<"recipeMessage">>;
-export type RecipeMessageProcessed = Expand<ProcessedEntityData<"recipeMessage">>;
+export type RecipeMessageDataOptional = Expand<
+  EntityDataOptional<"recipeMessage">
+>;
+export type RecipeMessageRecordWithKey = Expand<
+  EntityDataWithKey<"recipeMessage">
+>;
+export type RecipeMessageProcessed = Expand<
+  ProcessedEntityData<"recipeMessage">
+>;
 export type RecipeMessageData = Expand<EntityDataMixed<"recipeMessage">>;
 export type RecipeMessageState = EntityStateType<"recipeMessage">;
-export type RecipeMessageRecordMap = Record<"recipeMessageRecordId", RecipeMessageData>;
+export type RecipeMessageRecordMap = Record<
+  "recipeMessageRecordId",
+  RecipeMessageData
+>;
 
-export type RecipeMessageReorderQueueType = AutomationEntity<"recipeMessageReorderQueue">;
-export type RecipeMessageReorderQueueDataRequired = Expand<EntityData<"recipeMessageReorderQueue">>;
-export type RecipeMessageReorderQueueDataOptional = Expand<EntityDataOptional<"recipeMessageReorderQueue">>;
-export type RecipeMessageReorderQueueRecordWithKey = Expand<EntityDataWithKey<"recipeMessageReorderQueue">>;
-export type RecipeMessageReorderQueueProcessed = Expand<ProcessedEntityData<"recipeMessageReorderQueue">>;
-export type RecipeMessageReorderQueueData = Expand<EntityDataMixed<"recipeMessageReorderQueue">>;
-export type RecipeMessageReorderQueueState = EntityStateType<"recipeMessageReorderQueue">;
-export type RecipeMessageReorderQueueRecordMap = Record<"recipeMessageReorderQueueRecordId", RecipeMessageReorderQueueData>;
+export type RecipeMessageReorderQueueType =
+  AutomationEntity<"recipeMessageReorderQueue">;
+export type RecipeMessageReorderQueueDataRequired = Expand<
+  EntityData<"recipeMessageReorderQueue">
+>;
+export type RecipeMessageReorderQueueDataOptional = Expand<
+  EntityDataOptional<"recipeMessageReorderQueue">
+>;
+export type RecipeMessageReorderQueueRecordWithKey = Expand<
+  EntityDataWithKey<"recipeMessageReorderQueue">
+>;
+export type RecipeMessageReorderQueueProcessed = Expand<
+  ProcessedEntityData<"recipeMessageReorderQueue">
+>;
+export type RecipeMessageReorderQueueData = Expand<
+  EntityDataMixed<"recipeMessageReorderQueue">
+>;
+export type RecipeMessageReorderQueueState =
+  EntityStateType<"recipeMessageReorderQueue">;
+export type RecipeMessageReorderQueueRecordMap = Record<
+  "recipeMessageReorderQueueRecordId",
+  RecipeMessageReorderQueueData
+>;
 
 export type RecipeModelType = AutomationEntity<"recipeModel">;
 export type RecipeModelDataRequired = Expand<EntityData<"recipeModel">>;
@@ -897,151 +1172,346 @@ export type RecipeModelRecordWithKey = Expand<EntityDataWithKey<"recipeModel">>;
 export type RecipeModelProcessed = Expand<ProcessedEntityData<"recipeModel">>;
 export type RecipeModelData = Expand<EntityDataMixed<"recipeModel">>;
 export type RecipeModelState = EntityStateType<"recipeModel">;
-export type RecipeModelRecordMap = Record<"recipeModelRecordId", RecipeModelData>;
+export type RecipeModelRecordMap = Record<
+  "recipeModelRecordId",
+  RecipeModelData
+>;
 
 export type RecipeProcessorType = AutomationEntity<"recipeProcessor">;
 export type RecipeProcessorDataRequired = Expand<EntityData<"recipeProcessor">>;
-export type RecipeProcessorDataOptional = Expand<EntityDataOptional<"recipeProcessor">>;
-export type RecipeProcessorRecordWithKey = Expand<EntityDataWithKey<"recipeProcessor">>;
-export type RecipeProcessorProcessed = Expand<ProcessedEntityData<"recipeProcessor">>;
+export type RecipeProcessorDataOptional = Expand<
+  EntityDataOptional<"recipeProcessor">
+>;
+export type RecipeProcessorRecordWithKey = Expand<
+  EntityDataWithKey<"recipeProcessor">
+>;
+export type RecipeProcessorProcessed = Expand<
+  ProcessedEntityData<"recipeProcessor">
+>;
 export type RecipeProcessorData = Expand<EntityDataMixed<"recipeProcessor">>;
 export type RecipeProcessorState = EntityStateType<"recipeProcessor">;
-export type RecipeProcessorRecordMap = Record<"recipeProcessorRecordId", RecipeProcessorData>;
+export type RecipeProcessorRecordMap = Record<
+  "recipeProcessorRecordId",
+  RecipeProcessorData
+>;
 
 export type RegisteredFunctionType = AutomationEntity<"registeredFunction">;
-export type RegisteredFunctionDataRequired = Expand<EntityData<"registeredFunction">>;
-export type RegisteredFunctionDataOptional = Expand<EntityDataOptional<"registeredFunction">>;
-export type RegisteredFunctionRecordWithKey = Expand<EntityDataWithKey<"registeredFunction">>;
-export type RegisteredFunctionProcessed = Expand<ProcessedEntityData<"registeredFunction">>;
-export type RegisteredFunctionData = Expand<EntityDataMixed<"registeredFunction">>;
+export type RegisteredFunctionDataRequired = Expand<
+  EntityData<"registeredFunction">
+>;
+export type RegisteredFunctionDataOptional = Expand<
+  EntityDataOptional<"registeredFunction">
+>;
+export type RegisteredFunctionRecordWithKey = Expand<
+  EntityDataWithKey<"registeredFunction">
+>;
+export type RegisteredFunctionProcessed = Expand<
+  ProcessedEntityData<"registeredFunction">
+>;
+export type RegisteredFunctionData = Expand<
+  EntityDataMixed<"registeredFunction">
+>;
 export type RegisteredFunctionState = EntityStateType<"registeredFunction">;
-export type RegisteredFunctionRecordMap = Record<"registeredFunctionRecordId", RegisteredFunctionData>;
+export type RegisteredFunctionRecordMap = Record<
+  "registeredFunctionRecordId",
+  RegisteredFunctionData
+>;
 
 export type RegisteredNodeType = AutomationEntity<"registeredNode">;
 export type RegisteredNodeDataRequired = Expand<EntityData<"registeredNode">>;
-export type RegisteredNodeDataOptional = Expand<EntityDataOptional<"registeredNode">>;
-export type RegisteredNodeRecordWithKey = Expand<EntityDataWithKey<"registeredNode">>;
-export type RegisteredNodeProcessed = Expand<ProcessedEntityData<"registeredNode">>;
+export type RegisteredNodeDataOptional = Expand<
+  EntityDataOptional<"registeredNode">
+>;
+export type RegisteredNodeRecordWithKey = Expand<
+  EntityDataWithKey<"registeredNode">
+>;
+export type RegisteredNodeProcessed = Expand<
+  ProcessedEntityData<"registeredNode">
+>;
 export type RegisteredNodeData = Expand<EntityDataMixed<"registeredNode">>;
 export type RegisteredNodeState = EntityStateType<"registeredNode">;
-export type RegisteredNodeRecordMap = Record<"registeredNodeRecordId", RegisteredNodeData>;
+export type RegisteredNodeRecordMap = Record<
+  "registeredNodeRecordId",
+  RegisteredNodeData
+>;
 
-export type RegisteredNodeResultsType = AutomationEntity<"registeredNodeResults">;
-export type RegisteredNodeResultsDataRequired = Expand<EntityData<"registeredNodeResults">>;
-export type RegisteredNodeResultsDataOptional = Expand<EntityDataOptional<"registeredNodeResults">>;
-export type RegisteredNodeResultsRecordWithKey = Expand<EntityDataWithKey<"registeredNodeResults">>;
-export type RegisteredNodeResultsProcessed = Expand<ProcessedEntityData<"registeredNodeResults">>;
-export type RegisteredNodeResultsData = Expand<EntityDataMixed<"registeredNodeResults">>;
-export type RegisteredNodeResultsState = EntityStateType<"registeredNodeResults">;
-export type RegisteredNodeResultsRecordMap = Record<"registeredNodeResultsRecordId", RegisteredNodeResultsData>;
+export type RegisteredNodeResultsType =
+  AutomationEntity<"registeredNodeResults">;
+export type RegisteredNodeResultsDataRequired = Expand<
+  EntityData<"registeredNodeResults">
+>;
+export type RegisteredNodeResultsDataOptional = Expand<
+  EntityDataOptional<"registeredNodeResults">
+>;
+export type RegisteredNodeResultsRecordWithKey = Expand<
+  EntityDataWithKey<"registeredNodeResults">
+>;
+export type RegisteredNodeResultsProcessed = Expand<
+  ProcessedEntityData<"registeredNodeResults">
+>;
+export type RegisteredNodeResultsData = Expand<
+  EntityDataMixed<"registeredNodeResults">
+>;
+export type RegisteredNodeResultsState =
+  EntityStateType<"registeredNodeResults">;
+export type RegisteredNodeResultsRecordMap = Record<
+  "registeredNodeResultsRecordId",
+  RegisteredNodeResultsData
+>;
 
 export type SchemaTemplatesType = AutomationEntity<"schemaTemplates">;
 export type SchemaTemplatesDataRequired = Expand<EntityData<"schemaTemplates">>;
-export type SchemaTemplatesDataOptional = Expand<EntityDataOptional<"schemaTemplates">>;
-export type SchemaTemplatesRecordWithKey = Expand<EntityDataWithKey<"schemaTemplates">>;
-export type SchemaTemplatesProcessed = Expand<ProcessedEntityData<"schemaTemplates">>;
+export type SchemaTemplatesDataOptional = Expand<
+  EntityDataOptional<"schemaTemplates">
+>;
+export type SchemaTemplatesRecordWithKey = Expand<
+  EntityDataWithKey<"schemaTemplates">
+>;
+export type SchemaTemplatesProcessed = Expand<
+  ProcessedEntityData<"schemaTemplates">
+>;
 export type SchemaTemplatesData = Expand<EntityDataMixed<"schemaTemplates">>;
 export type SchemaTemplatesState = EntityStateType<"schemaTemplates">;
-export type SchemaTemplatesRecordMap = Record<"schemaTemplatesRecordId", SchemaTemplatesData>;
+export type SchemaTemplatesRecordMap = Record<
+  "schemaTemplatesRecordId",
+  SchemaTemplatesData
+>;
 
 export type ScrapeBaseConfigType = AutomationEntity<"scrapeBaseConfig">;
-export type ScrapeBaseConfigDataRequired = Expand<EntityData<"scrapeBaseConfig">>;
-export type ScrapeBaseConfigDataOptional = Expand<EntityDataOptional<"scrapeBaseConfig">>;
-export type ScrapeBaseConfigRecordWithKey = Expand<EntityDataWithKey<"scrapeBaseConfig">>;
-export type ScrapeBaseConfigProcessed = Expand<ProcessedEntityData<"scrapeBaseConfig">>;
+export type ScrapeBaseConfigDataRequired = Expand<
+  EntityData<"scrapeBaseConfig">
+>;
+export type ScrapeBaseConfigDataOptional = Expand<
+  EntityDataOptional<"scrapeBaseConfig">
+>;
+export type ScrapeBaseConfigRecordWithKey = Expand<
+  EntityDataWithKey<"scrapeBaseConfig">
+>;
+export type ScrapeBaseConfigProcessed = Expand<
+  ProcessedEntityData<"scrapeBaseConfig">
+>;
 export type ScrapeBaseConfigData = Expand<EntityDataMixed<"scrapeBaseConfig">>;
 export type ScrapeBaseConfigState = EntityStateType<"scrapeBaseConfig">;
-export type ScrapeBaseConfigRecordMap = Record<"scrapeBaseConfigRecordId", ScrapeBaseConfigData>;
+export type ScrapeBaseConfigRecordMap = Record<
+  "scrapeBaseConfigRecordId",
+  ScrapeBaseConfigData
+>;
 
 export type ScrapeCachePolicyType = AutomationEntity<"scrapeCachePolicy">;
-export type ScrapeCachePolicyDataRequired = Expand<EntityData<"scrapeCachePolicy">>;
-export type ScrapeCachePolicyDataOptional = Expand<EntityDataOptional<"scrapeCachePolicy">>;
-export type ScrapeCachePolicyRecordWithKey = Expand<EntityDataWithKey<"scrapeCachePolicy">>;
-export type ScrapeCachePolicyProcessed = Expand<ProcessedEntityData<"scrapeCachePolicy">>;
-export type ScrapeCachePolicyData = Expand<EntityDataMixed<"scrapeCachePolicy">>;
+export type ScrapeCachePolicyDataRequired = Expand<
+  EntityData<"scrapeCachePolicy">
+>;
+export type ScrapeCachePolicyDataOptional = Expand<
+  EntityDataOptional<"scrapeCachePolicy">
+>;
+export type ScrapeCachePolicyRecordWithKey = Expand<
+  EntityDataWithKey<"scrapeCachePolicy">
+>;
+export type ScrapeCachePolicyProcessed = Expand<
+  ProcessedEntityData<"scrapeCachePolicy">
+>;
+export type ScrapeCachePolicyData = Expand<
+  EntityDataMixed<"scrapeCachePolicy">
+>;
 export type ScrapeCachePolicyState = EntityStateType<"scrapeCachePolicy">;
-export type ScrapeCachePolicyRecordMap = Record<"scrapeCachePolicyRecordId", ScrapeCachePolicyData>;
+export type ScrapeCachePolicyRecordMap = Record<
+  "scrapeCachePolicyRecordId",
+  ScrapeCachePolicyData
+>;
 
 export type ScrapeConfigurationType = AutomationEntity<"scrapeConfiguration">;
-export type ScrapeConfigurationDataRequired = Expand<EntityData<"scrapeConfiguration">>;
-export type ScrapeConfigurationDataOptional = Expand<EntityDataOptional<"scrapeConfiguration">>;
-export type ScrapeConfigurationRecordWithKey = Expand<EntityDataWithKey<"scrapeConfiguration">>;
-export type ScrapeConfigurationProcessed = Expand<ProcessedEntityData<"scrapeConfiguration">>;
-export type ScrapeConfigurationData = Expand<EntityDataMixed<"scrapeConfiguration">>;
+export type ScrapeConfigurationDataRequired = Expand<
+  EntityData<"scrapeConfiguration">
+>;
+export type ScrapeConfigurationDataOptional = Expand<
+  EntityDataOptional<"scrapeConfiguration">
+>;
+export type ScrapeConfigurationRecordWithKey = Expand<
+  EntityDataWithKey<"scrapeConfiguration">
+>;
+export type ScrapeConfigurationProcessed = Expand<
+  ProcessedEntityData<"scrapeConfiguration">
+>;
+export type ScrapeConfigurationData = Expand<
+  EntityDataMixed<"scrapeConfiguration">
+>;
 export type ScrapeConfigurationState = EntityStateType<"scrapeConfiguration">;
-export type ScrapeConfigurationRecordMap = Record<"scrapeConfigurationRecordId", ScrapeConfigurationData>;
+export type ScrapeConfigurationRecordMap = Record<
+  "scrapeConfigurationRecordId",
+  ScrapeConfigurationData
+>;
 
 export type ScrapeCycleRunType = AutomationEntity<"scrapeCycleRun">;
 export type ScrapeCycleRunDataRequired = Expand<EntityData<"scrapeCycleRun">>;
-export type ScrapeCycleRunDataOptional = Expand<EntityDataOptional<"scrapeCycleRun">>;
-export type ScrapeCycleRunRecordWithKey = Expand<EntityDataWithKey<"scrapeCycleRun">>;
-export type ScrapeCycleRunProcessed = Expand<ProcessedEntityData<"scrapeCycleRun">>;
+export type ScrapeCycleRunDataOptional = Expand<
+  EntityDataOptional<"scrapeCycleRun">
+>;
+export type ScrapeCycleRunRecordWithKey = Expand<
+  EntityDataWithKey<"scrapeCycleRun">
+>;
+export type ScrapeCycleRunProcessed = Expand<
+  ProcessedEntityData<"scrapeCycleRun">
+>;
 export type ScrapeCycleRunData = Expand<EntityDataMixed<"scrapeCycleRun">>;
 export type ScrapeCycleRunState = EntityStateType<"scrapeCycleRun">;
-export type ScrapeCycleRunRecordMap = Record<"scrapeCycleRunRecordId", ScrapeCycleRunData>;
+export type ScrapeCycleRunRecordMap = Record<
+  "scrapeCycleRunRecordId",
+  ScrapeCycleRunData
+>;
 
 export type ScrapeCycleTrackerType = AutomationEntity<"scrapeCycleTracker">;
-export type ScrapeCycleTrackerDataRequired = Expand<EntityData<"scrapeCycleTracker">>;
-export type ScrapeCycleTrackerDataOptional = Expand<EntityDataOptional<"scrapeCycleTracker">>;
-export type ScrapeCycleTrackerRecordWithKey = Expand<EntityDataWithKey<"scrapeCycleTracker">>;
-export type ScrapeCycleTrackerProcessed = Expand<ProcessedEntityData<"scrapeCycleTracker">>;
-export type ScrapeCycleTrackerData = Expand<EntityDataMixed<"scrapeCycleTracker">>;
+export type ScrapeCycleTrackerDataRequired = Expand<
+  EntityData<"scrapeCycleTracker">
+>;
+export type ScrapeCycleTrackerDataOptional = Expand<
+  EntityDataOptional<"scrapeCycleTracker">
+>;
+export type ScrapeCycleTrackerRecordWithKey = Expand<
+  EntityDataWithKey<"scrapeCycleTracker">
+>;
+export type ScrapeCycleTrackerProcessed = Expand<
+  ProcessedEntityData<"scrapeCycleTracker">
+>;
+export type ScrapeCycleTrackerData = Expand<
+  EntityDataMixed<"scrapeCycleTracker">
+>;
 export type ScrapeCycleTrackerState = EntityStateType<"scrapeCycleTracker">;
-export type ScrapeCycleTrackerRecordMap = Record<"scrapeCycleTrackerRecordId", ScrapeCycleTrackerData>;
+export type ScrapeCycleTrackerRecordMap = Record<
+  "scrapeCycleTrackerRecordId",
+  ScrapeCycleTrackerData
+>;
 
 export type ScrapeDomainType = AutomationEntity<"scrapeDomain">;
 export type ScrapeDomainDataRequired = Expand<EntityData<"scrapeDomain">>;
-export type ScrapeDomainDataOptional = Expand<EntityDataOptional<"scrapeDomain">>;
-export type ScrapeDomainRecordWithKey = Expand<EntityDataWithKey<"scrapeDomain">>;
+export type ScrapeDomainDataOptional = Expand<
+  EntityDataOptional<"scrapeDomain">
+>;
+export type ScrapeDomainRecordWithKey = Expand<
+  EntityDataWithKey<"scrapeDomain">
+>;
 export type ScrapeDomainProcessed = Expand<ProcessedEntityData<"scrapeDomain">>;
 export type ScrapeDomainData = Expand<EntityDataMixed<"scrapeDomain">>;
 export type ScrapeDomainState = EntityStateType<"scrapeDomain">;
-export type ScrapeDomainRecordMap = Record<"scrapeDomainRecordId", ScrapeDomainData>;
+export type ScrapeDomainRecordMap = Record<
+  "scrapeDomainRecordId",
+  ScrapeDomainData
+>;
 
-export type ScrapeDomainDisallowedNotesType = AutomationEntity<"scrapeDomainDisallowedNotes">;
-export type ScrapeDomainDisallowedNotesDataRequired = Expand<EntityData<"scrapeDomainDisallowedNotes">>;
-export type ScrapeDomainDisallowedNotesDataOptional = Expand<EntityDataOptional<"scrapeDomainDisallowedNotes">>;
-export type ScrapeDomainDisallowedNotesRecordWithKey = Expand<EntityDataWithKey<"scrapeDomainDisallowedNotes">>;
-export type ScrapeDomainDisallowedNotesProcessed = Expand<ProcessedEntityData<"scrapeDomainDisallowedNotes">>;
-export type ScrapeDomainDisallowedNotesData = Expand<EntityDataMixed<"scrapeDomainDisallowedNotes">>;
-export type ScrapeDomainDisallowedNotesState = EntityStateType<"scrapeDomainDisallowedNotes">;
-export type ScrapeDomainDisallowedNotesRecordMap = Record<"scrapeDomainDisallowedNotesRecordId", ScrapeDomainDisallowedNotesData>;
+export type ScrapeDomainDisallowedNotesType =
+  AutomationEntity<"scrapeDomainDisallowedNotes">;
+export type ScrapeDomainDisallowedNotesDataRequired = Expand<
+  EntityData<"scrapeDomainDisallowedNotes">
+>;
+export type ScrapeDomainDisallowedNotesDataOptional = Expand<
+  EntityDataOptional<"scrapeDomainDisallowedNotes">
+>;
+export type ScrapeDomainDisallowedNotesRecordWithKey = Expand<
+  EntityDataWithKey<"scrapeDomainDisallowedNotes">
+>;
+export type ScrapeDomainDisallowedNotesProcessed = Expand<
+  ProcessedEntityData<"scrapeDomainDisallowedNotes">
+>;
+export type ScrapeDomainDisallowedNotesData = Expand<
+  EntityDataMixed<"scrapeDomainDisallowedNotes">
+>;
+export type ScrapeDomainDisallowedNotesState =
+  EntityStateType<"scrapeDomainDisallowedNotes">;
+export type ScrapeDomainDisallowedNotesRecordMap = Record<
+  "scrapeDomainDisallowedNotesRecordId",
+  ScrapeDomainDisallowedNotesData
+>;
 
 export type ScrapeDomainNotesType = AutomationEntity<"scrapeDomainNotes">;
-export type ScrapeDomainNotesDataRequired = Expand<EntityData<"scrapeDomainNotes">>;
-export type ScrapeDomainNotesDataOptional = Expand<EntityDataOptional<"scrapeDomainNotes">>;
-export type ScrapeDomainNotesRecordWithKey = Expand<EntityDataWithKey<"scrapeDomainNotes">>;
-export type ScrapeDomainNotesProcessed = Expand<ProcessedEntityData<"scrapeDomainNotes">>;
-export type ScrapeDomainNotesData = Expand<EntityDataMixed<"scrapeDomainNotes">>;
+export type ScrapeDomainNotesDataRequired = Expand<
+  EntityData<"scrapeDomainNotes">
+>;
+export type ScrapeDomainNotesDataOptional = Expand<
+  EntityDataOptional<"scrapeDomainNotes">
+>;
+export type ScrapeDomainNotesRecordWithKey = Expand<
+  EntityDataWithKey<"scrapeDomainNotes">
+>;
+export type ScrapeDomainNotesProcessed = Expand<
+  ProcessedEntityData<"scrapeDomainNotes">
+>;
+export type ScrapeDomainNotesData = Expand<
+  EntityDataMixed<"scrapeDomainNotes">
+>;
 export type ScrapeDomainNotesState = EntityStateType<"scrapeDomainNotes">;
-export type ScrapeDomainNotesRecordMap = Record<"scrapeDomainNotesRecordId", ScrapeDomainNotesData>;
+export type ScrapeDomainNotesRecordMap = Record<
+  "scrapeDomainNotesRecordId",
+  ScrapeDomainNotesData
+>;
 
-export type ScrapeDomainQuickScrapeSettingsType = AutomationEntity<"scrapeDomainQuickScrapeSettings">;
-export type ScrapeDomainQuickScrapeSettingsDataRequired = Expand<EntityData<"scrapeDomainQuickScrapeSettings">>;
-export type ScrapeDomainQuickScrapeSettingsDataOptional = Expand<EntityDataOptional<"scrapeDomainQuickScrapeSettings">>;
-export type ScrapeDomainQuickScrapeSettingsRecordWithKey = Expand<EntityDataWithKey<"scrapeDomainQuickScrapeSettings">>;
-export type ScrapeDomainQuickScrapeSettingsProcessed = Expand<ProcessedEntityData<"scrapeDomainQuickScrapeSettings">>;
-export type ScrapeDomainQuickScrapeSettingsData = Expand<EntityDataMixed<"scrapeDomainQuickScrapeSettings">>;
-export type ScrapeDomainQuickScrapeSettingsState = EntityStateType<"scrapeDomainQuickScrapeSettings">;
-export type ScrapeDomainQuickScrapeSettingsRecordMap = Record<"scrapeDomainQuickScrapeSettingsRecordId", ScrapeDomainQuickScrapeSettingsData>;
+export type ScrapeDomainQuickScrapeSettingsType =
+  AutomationEntity<"scrapeDomainQuickScrapeSettings">;
+export type ScrapeDomainQuickScrapeSettingsDataRequired = Expand<
+  EntityData<"scrapeDomainQuickScrapeSettings">
+>;
+export type ScrapeDomainQuickScrapeSettingsDataOptional = Expand<
+  EntityDataOptional<"scrapeDomainQuickScrapeSettings">
+>;
+export type ScrapeDomainQuickScrapeSettingsRecordWithKey = Expand<
+  EntityDataWithKey<"scrapeDomainQuickScrapeSettings">
+>;
+export type ScrapeDomainQuickScrapeSettingsProcessed = Expand<
+  ProcessedEntityData<"scrapeDomainQuickScrapeSettings">
+>;
+export type ScrapeDomainQuickScrapeSettingsData = Expand<
+  EntityDataMixed<"scrapeDomainQuickScrapeSettings">
+>;
+export type ScrapeDomainQuickScrapeSettingsState =
+  EntityStateType<"scrapeDomainQuickScrapeSettings">;
+export type ScrapeDomainQuickScrapeSettingsRecordMap = Record<
+  "scrapeDomainQuickScrapeSettingsRecordId",
+  ScrapeDomainQuickScrapeSettingsData
+>;
 
-export type ScrapeDomainRobotsTxtType = AutomationEntity<"scrapeDomainRobotsTxt">;
-export type ScrapeDomainRobotsTxtDataRequired = Expand<EntityData<"scrapeDomainRobotsTxt">>;
-export type ScrapeDomainRobotsTxtDataOptional = Expand<EntityDataOptional<"scrapeDomainRobotsTxt">>;
-export type ScrapeDomainRobotsTxtRecordWithKey = Expand<EntityDataWithKey<"scrapeDomainRobotsTxt">>;
-export type ScrapeDomainRobotsTxtProcessed = Expand<ProcessedEntityData<"scrapeDomainRobotsTxt">>;
-export type ScrapeDomainRobotsTxtData = Expand<EntityDataMixed<"scrapeDomainRobotsTxt">>;
-export type ScrapeDomainRobotsTxtState = EntityStateType<"scrapeDomainRobotsTxt">;
-export type ScrapeDomainRobotsTxtRecordMap = Record<"scrapeDomainRobotsTxtRecordId", ScrapeDomainRobotsTxtData>;
+export type ScrapeDomainRobotsTxtType =
+  AutomationEntity<"scrapeDomainRobotsTxt">;
+export type ScrapeDomainRobotsTxtDataRequired = Expand<
+  EntityData<"scrapeDomainRobotsTxt">
+>;
+export type ScrapeDomainRobotsTxtDataOptional = Expand<
+  EntityDataOptional<"scrapeDomainRobotsTxt">
+>;
+export type ScrapeDomainRobotsTxtRecordWithKey = Expand<
+  EntityDataWithKey<"scrapeDomainRobotsTxt">
+>;
+export type ScrapeDomainRobotsTxtProcessed = Expand<
+  ProcessedEntityData<"scrapeDomainRobotsTxt">
+>;
+export type ScrapeDomainRobotsTxtData = Expand<
+  EntityDataMixed<"scrapeDomainRobotsTxt">
+>;
+export type ScrapeDomainRobotsTxtState =
+  EntityStateType<"scrapeDomainRobotsTxt">;
+export type ScrapeDomainRobotsTxtRecordMap = Record<
+  "scrapeDomainRobotsTxtRecordId",
+  ScrapeDomainRobotsTxtData
+>;
 
 export type ScrapeDomainSitemapType = AutomationEntity<"scrapeDomainSitemap">;
-export type ScrapeDomainSitemapDataRequired = Expand<EntityData<"scrapeDomainSitemap">>;
-export type ScrapeDomainSitemapDataOptional = Expand<EntityDataOptional<"scrapeDomainSitemap">>;
-export type ScrapeDomainSitemapRecordWithKey = Expand<EntityDataWithKey<"scrapeDomainSitemap">>;
-export type ScrapeDomainSitemapProcessed = Expand<ProcessedEntityData<"scrapeDomainSitemap">>;
-export type ScrapeDomainSitemapData = Expand<EntityDataMixed<"scrapeDomainSitemap">>;
+export type ScrapeDomainSitemapDataRequired = Expand<
+  EntityData<"scrapeDomainSitemap">
+>;
+export type ScrapeDomainSitemapDataOptional = Expand<
+  EntityDataOptional<"scrapeDomainSitemap">
+>;
+export type ScrapeDomainSitemapRecordWithKey = Expand<
+  EntityDataWithKey<"scrapeDomainSitemap">
+>;
+export type ScrapeDomainSitemapProcessed = Expand<
+  ProcessedEntityData<"scrapeDomainSitemap">
+>;
+export type ScrapeDomainSitemapData = Expand<
+  EntityDataMixed<"scrapeDomainSitemap">
+>;
 export type ScrapeDomainSitemapState = EntityStateType<"scrapeDomainSitemap">;
-export type ScrapeDomainSitemapRecordMap = Record<"scrapeDomainSitemapRecordId", ScrapeDomainSitemapData>;
+export type ScrapeDomainSitemapRecordMap = Record<
+  "scrapeDomainSitemapRecordId",
+  ScrapeDomainSitemapData
+>;
 
 export type ScrapeJobType = AutomationEntity<"scrapeJob">;
 export type ScrapeJobDataRequired = Expand<EntityData<"scrapeJob">>;
@@ -1054,66 +1524,157 @@ export type ScrapeJobRecordMap = Record<"scrapeJobRecordId", ScrapeJobData>;
 
 export type ScrapeOverrideType = AutomationEntity<"scrapeOverride">;
 export type ScrapeOverrideDataRequired = Expand<EntityData<"scrapeOverride">>;
-export type ScrapeOverrideDataOptional = Expand<EntityDataOptional<"scrapeOverride">>;
-export type ScrapeOverrideRecordWithKey = Expand<EntityDataWithKey<"scrapeOverride">>;
-export type ScrapeOverrideProcessed = Expand<ProcessedEntityData<"scrapeOverride">>;
+export type ScrapeOverrideDataOptional = Expand<
+  EntityDataOptional<"scrapeOverride">
+>;
+export type ScrapeOverrideRecordWithKey = Expand<
+  EntityDataWithKey<"scrapeOverride">
+>;
+export type ScrapeOverrideProcessed = Expand<
+  ProcessedEntityData<"scrapeOverride">
+>;
 export type ScrapeOverrideData = Expand<EntityDataMixed<"scrapeOverride">>;
 export type ScrapeOverrideState = EntityStateType<"scrapeOverride">;
-export type ScrapeOverrideRecordMap = Record<"scrapeOverrideRecordId", ScrapeOverrideData>;
+export type ScrapeOverrideRecordMap = Record<
+  "scrapeOverrideRecordId",
+  ScrapeOverrideData
+>;
 
 export type ScrapeOverrideValueType = AutomationEntity<"scrapeOverrideValue">;
-export type ScrapeOverrideValueDataRequired = Expand<EntityData<"scrapeOverrideValue">>;
-export type ScrapeOverrideValueDataOptional = Expand<EntityDataOptional<"scrapeOverrideValue">>;
-export type ScrapeOverrideValueRecordWithKey = Expand<EntityDataWithKey<"scrapeOverrideValue">>;
-export type ScrapeOverrideValueProcessed = Expand<ProcessedEntityData<"scrapeOverrideValue">>;
-export type ScrapeOverrideValueData = Expand<EntityDataMixed<"scrapeOverrideValue">>;
+export type ScrapeOverrideValueDataRequired = Expand<
+  EntityData<"scrapeOverrideValue">
+>;
+export type ScrapeOverrideValueDataOptional = Expand<
+  EntityDataOptional<"scrapeOverrideValue">
+>;
+export type ScrapeOverrideValueRecordWithKey = Expand<
+  EntityDataWithKey<"scrapeOverrideValue">
+>;
+export type ScrapeOverrideValueProcessed = Expand<
+  ProcessedEntityData<"scrapeOverrideValue">
+>;
+export type ScrapeOverrideValueData = Expand<
+  EntityDataMixed<"scrapeOverrideValue">
+>;
 export type ScrapeOverrideValueState = EntityStateType<"scrapeOverrideValue">;
-export type ScrapeOverrideValueRecordMap = Record<"scrapeOverrideValueRecordId", ScrapeOverrideValueData>;
+export type ScrapeOverrideValueRecordMap = Record<
+  "scrapeOverrideValueRecordId",
+  ScrapeOverrideValueData
+>;
 
 export type ScrapeParsedPageType = AutomationEntity<"scrapeParsedPage">;
-export type ScrapeParsedPageDataRequired = Expand<EntityData<"scrapeParsedPage">>;
-export type ScrapeParsedPageDataOptional = Expand<EntityDataOptional<"scrapeParsedPage">>;
-export type ScrapeParsedPageRecordWithKey = Expand<EntityDataWithKey<"scrapeParsedPage">>;
-export type ScrapeParsedPageProcessed = Expand<ProcessedEntityData<"scrapeParsedPage">>;
+export type ScrapeParsedPageDataRequired = Expand<
+  EntityData<"scrapeParsedPage">
+>;
+export type ScrapeParsedPageDataOptional = Expand<
+  EntityDataOptional<"scrapeParsedPage">
+>;
+export type ScrapeParsedPageRecordWithKey = Expand<
+  EntityDataWithKey<"scrapeParsedPage">
+>;
+export type ScrapeParsedPageProcessed = Expand<
+  ProcessedEntityData<"scrapeParsedPage">
+>;
 export type ScrapeParsedPageData = Expand<EntityDataMixed<"scrapeParsedPage">>;
 export type ScrapeParsedPageState = EntityStateType<"scrapeParsedPage">;
-export type ScrapeParsedPageRecordMap = Record<"scrapeParsedPageRecordId", ScrapeParsedPageData>;
+export type ScrapeParsedPageRecordMap = Record<
+  "scrapeParsedPageRecordId",
+  ScrapeParsedPageData
+>;
 
 export type ScrapePathPatternType = AutomationEntity<"scrapePathPattern">;
-export type ScrapePathPatternDataRequired = Expand<EntityData<"scrapePathPattern">>;
-export type ScrapePathPatternDataOptional = Expand<EntityDataOptional<"scrapePathPattern">>;
-export type ScrapePathPatternRecordWithKey = Expand<EntityDataWithKey<"scrapePathPattern">>;
-export type ScrapePathPatternProcessed = Expand<ProcessedEntityData<"scrapePathPattern">>;
-export type ScrapePathPatternData = Expand<EntityDataMixed<"scrapePathPattern">>;
+export type ScrapePathPatternDataRequired = Expand<
+  EntityData<"scrapePathPattern">
+>;
+export type ScrapePathPatternDataOptional = Expand<
+  EntityDataOptional<"scrapePathPattern">
+>;
+export type ScrapePathPatternRecordWithKey = Expand<
+  EntityDataWithKey<"scrapePathPattern">
+>;
+export type ScrapePathPatternProcessed = Expand<
+  ProcessedEntityData<"scrapePathPattern">
+>;
+export type ScrapePathPatternData = Expand<
+  EntityDataMixed<"scrapePathPattern">
+>;
 export type ScrapePathPatternState = EntityStateType<"scrapePathPattern">;
-export type ScrapePathPatternRecordMap = Record<"scrapePathPatternRecordId", ScrapePathPatternData>;
+export type ScrapePathPatternRecordMap = Record<
+  "scrapePathPatternRecordId",
+  ScrapePathPatternData
+>;
 
-export type ScrapePathPatternCachePolicyType = AutomationEntity<"scrapePathPatternCachePolicy">;
-export type ScrapePathPatternCachePolicyDataRequired = Expand<EntityData<"scrapePathPatternCachePolicy">>;
-export type ScrapePathPatternCachePolicyDataOptional = Expand<EntityDataOptional<"scrapePathPatternCachePolicy">>;
-export type ScrapePathPatternCachePolicyRecordWithKey = Expand<EntityDataWithKey<"scrapePathPatternCachePolicy">>;
-export type ScrapePathPatternCachePolicyProcessed = Expand<ProcessedEntityData<"scrapePathPatternCachePolicy">>;
-export type ScrapePathPatternCachePolicyData = Expand<EntityDataMixed<"scrapePathPatternCachePolicy">>;
-export type ScrapePathPatternCachePolicyState = EntityStateType<"scrapePathPatternCachePolicy">;
-export type ScrapePathPatternCachePolicyRecordMap = Record<"scrapePathPatternCachePolicyRecordId", ScrapePathPatternCachePolicyData>;
+export type ScrapePathPatternCachePolicyType =
+  AutomationEntity<"scrapePathPatternCachePolicy">;
+export type ScrapePathPatternCachePolicyDataRequired = Expand<
+  EntityData<"scrapePathPatternCachePolicy">
+>;
+export type ScrapePathPatternCachePolicyDataOptional = Expand<
+  EntityDataOptional<"scrapePathPatternCachePolicy">
+>;
+export type ScrapePathPatternCachePolicyRecordWithKey = Expand<
+  EntityDataWithKey<"scrapePathPatternCachePolicy">
+>;
+export type ScrapePathPatternCachePolicyProcessed = Expand<
+  ProcessedEntityData<"scrapePathPatternCachePolicy">
+>;
+export type ScrapePathPatternCachePolicyData = Expand<
+  EntityDataMixed<"scrapePathPatternCachePolicy">
+>;
+export type ScrapePathPatternCachePolicyState =
+  EntityStateType<"scrapePathPatternCachePolicy">;
+export type ScrapePathPatternCachePolicyRecordMap = Record<
+  "scrapePathPatternCachePolicyRecordId",
+  ScrapePathPatternCachePolicyData
+>;
 
-export type ScrapePathPatternOverrideType = AutomationEntity<"scrapePathPatternOverride">;
-export type ScrapePathPatternOverrideDataRequired = Expand<EntityData<"scrapePathPatternOverride">>;
-export type ScrapePathPatternOverrideDataOptional = Expand<EntityDataOptional<"scrapePathPatternOverride">>;
-export type ScrapePathPatternOverrideRecordWithKey = Expand<EntityDataWithKey<"scrapePathPatternOverride">>;
-export type ScrapePathPatternOverrideProcessed = Expand<ProcessedEntityData<"scrapePathPatternOverride">>;
-export type ScrapePathPatternOverrideData = Expand<EntityDataMixed<"scrapePathPatternOverride">>;
-export type ScrapePathPatternOverrideState = EntityStateType<"scrapePathPatternOverride">;
-export type ScrapePathPatternOverrideRecordMap = Record<"scrapePathPatternOverrideRecordId", ScrapePathPatternOverrideData>;
+export type ScrapePathPatternOverrideType =
+  AutomationEntity<"scrapePathPatternOverride">;
+export type ScrapePathPatternOverrideDataRequired = Expand<
+  EntityData<"scrapePathPatternOverride">
+>;
+export type ScrapePathPatternOverrideDataOptional = Expand<
+  EntityDataOptional<"scrapePathPatternOverride">
+>;
+export type ScrapePathPatternOverrideRecordWithKey = Expand<
+  EntityDataWithKey<"scrapePathPatternOverride">
+>;
+export type ScrapePathPatternOverrideProcessed = Expand<
+  ProcessedEntityData<"scrapePathPatternOverride">
+>;
+export type ScrapePathPatternOverrideData = Expand<
+  EntityDataMixed<"scrapePathPatternOverride">
+>;
+export type ScrapePathPatternOverrideState =
+  EntityStateType<"scrapePathPatternOverride">;
+export type ScrapePathPatternOverrideRecordMap = Record<
+  "scrapePathPatternOverrideRecordId",
+  ScrapePathPatternOverrideData
+>;
 
-export type ScrapeQuickFailureLogType = AutomationEntity<"scrapeQuickFailureLog">;
-export type ScrapeQuickFailureLogDataRequired = Expand<EntityData<"scrapeQuickFailureLog">>;
-export type ScrapeQuickFailureLogDataOptional = Expand<EntityDataOptional<"scrapeQuickFailureLog">>;
-export type ScrapeQuickFailureLogRecordWithKey = Expand<EntityDataWithKey<"scrapeQuickFailureLog">>;
-export type ScrapeQuickFailureLogProcessed = Expand<ProcessedEntityData<"scrapeQuickFailureLog">>;
-export type ScrapeQuickFailureLogData = Expand<EntityDataMixed<"scrapeQuickFailureLog">>;
-export type ScrapeQuickFailureLogState = EntityStateType<"scrapeQuickFailureLog">;
-export type ScrapeQuickFailureLogRecordMap = Record<"scrapeQuickFailureLogRecordId", ScrapeQuickFailureLogData>;
+export type ScrapeQuickFailureLogType =
+  AutomationEntity<"scrapeQuickFailureLog">;
+export type ScrapeQuickFailureLogDataRequired = Expand<
+  EntityData<"scrapeQuickFailureLog">
+>;
+export type ScrapeQuickFailureLogDataOptional = Expand<
+  EntityDataOptional<"scrapeQuickFailureLog">
+>;
+export type ScrapeQuickFailureLogRecordWithKey = Expand<
+  EntityDataWithKey<"scrapeQuickFailureLog">
+>;
+export type ScrapeQuickFailureLogProcessed = Expand<
+  ProcessedEntityData<"scrapeQuickFailureLog">
+>;
+export type ScrapeQuickFailureLogData = Expand<
+  EntityDataMixed<"scrapeQuickFailureLog">
+>;
+export type ScrapeQuickFailureLogState =
+  EntityStateType<"scrapeQuickFailureLog">;
+export type ScrapeQuickFailureLogRecordMap = Record<
+  "scrapeQuickFailureLogRecordId",
+  ScrapeQuickFailureLogData
+>;
 
 export type ScrapeTaskType = AutomationEntity<"scrapeTask">;
 export type ScrapeTaskDataRequired = Expand<EntityData<"scrapeTask">>;
@@ -1125,31 +1686,64 @@ export type ScrapeTaskState = EntityStateType<"scrapeTask">;
 export type ScrapeTaskRecordMap = Record<"scrapeTaskRecordId", ScrapeTaskData>;
 
 export type ScrapeTaskResponseType = AutomationEntity<"scrapeTaskResponse">;
-export type ScrapeTaskResponseDataRequired = Expand<EntityData<"scrapeTaskResponse">>;
-export type ScrapeTaskResponseDataOptional = Expand<EntityDataOptional<"scrapeTaskResponse">>;
-export type ScrapeTaskResponseRecordWithKey = Expand<EntityDataWithKey<"scrapeTaskResponse">>;
-export type ScrapeTaskResponseProcessed = Expand<ProcessedEntityData<"scrapeTaskResponse">>;
-export type ScrapeTaskResponseData = Expand<EntityDataMixed<"scrapeTaskResponse">>;
+export type ScrapeTaskResponseDataRequired = Expand<
+  EntityData<"scrapeTaskResponse">
+>;
+export type ScrapeTaskResponseDataOptional = Expand<
+  EntityDataOptional<"scrapeTaskResponse">
+>;
+export type ScrapeTaskResponseRecordWithKey = Expand<
+  EntityDataWithKey<"scrapeTaskResponse">
+>;
+export type ScrapeTaskResponseProcessed = Expand<
+  ProcessedEntityData<"scrapeTaskResponse">
+>;
+export type ScrapeTaskResponseData = Expand<
+  EntityDataMixed<"scrapeTaskResponse">
+>;
 export type ScrapeTaskResponseState = EntityStateType<"scrapeTaskResponse">;
-export type ScrapeTaskResponseRecordMap = Record<"scrapeTaskResponseRecordId", ScrapeTaskResponseData>;
+export type ScrapeTaskResponseRecordMap = Record<
+  "scrapeTaskResponseRecordId",
+  ScrapeTaskResponseData
+>;
 
 export type SharedCanvasItemsType = AutomationEntity<"sharedCanvasItems">;
-export type SharedCanvasItemsDataRequired = Expand<EntityData<"sharedCanvasItems">>;
-export type SharedCanvasItemsDataOptional = Expand<EntityDataOptional<"sharedCanvasItems">>;
-export type SharedCanvasItemsRecordWithKey = Expand<EntityDataWithKey<"sharedCanvasItems">>;
-export type SharedCanvasItemsProcessed = Expand<ProcessedEntityData<"sharedCanvasItems">>;
-export type SharedCanvasItemsData = Expand<EntityDataMixed<"sharedCanvasItems">>;
+export type SharedCanvasItemsDataRequired = Expand<
+  EntityData<"sharedCanvasItems">
+>;
+export type SharedCanvasItemsDataOptional = Expand<
+  EntityDataOptional<"sharedCanvasItems">
+>;
+export type SharedCanvasItemsRecordWithKey = Expand<
+  EntityDataWithKey<"sharedCanvasItems">
+>;
+export type SharedCanvasItemsProcessed = Expand<
+  ProcessedEntityData<"sharedCanvasItems">
+>;
+export type SharedCanvasItemsData = Expand<
+  EntityDataMixed<"sharedCanvasItems">
+>;
 export type SharedCanvasItemsState = EntityStateType<"sharedCanvasItems">;
-export type SharedCanvasItemsRecordMap = Record<"sharedCanvasItemsRecordId", SharedCanvasItemsData>;
+export type SharedCanvasItemsRecordMap = Record<
+  "sharedCanvasItemsRecordId",
+  SharedCanvasItemsData
+>;
 
 export type SiteMetadataType = AutomationEntity<"siteMetadata">;
 export type SiteMetadataDataRequired = Expand<EntityData<"siteMetadata">>;
-export type SiteMetadataDataOptional = Expand<EntityDataOptional<"siteMetadata">>;
-export type SiteMetadataRecordWithKey = Expand<EntityDataWithKey<"siteMetadata">>;
+export type SiteMetadataDataOptional = Expand<
+  EntityDataOptional<"siteMetadata">
+>;
+export type SiteMetadataRecordWithKey = Expand<
+  EntityDataWithKey<"siteMetadata">
+>;
 export type SiteMetadataProcessed = Expand<ProcessedEntityData<"siteMetadata">>;
 export type SiteMetadataData = Expand<EntityDataMixed<"siteMetadata">>;
 export type SiteMetadataState = EntityStateType<"siteMetadata">;
-export type SiteMetadataRecordMap = Record<"siteMetadataRecordId", SiteMetadataData>;
+export type SiteMetadataRecordMap = Record<
+  "siteMetadataRecordId",
+  SiteMetadataData
+>;
 
 export type SubcategoryType = AutomationEntity<"subcategory">;
 export type SubcategoryDataRequired = Expand<EntityData<"subcategory">>;
@@ -1158,34 +1752,72 @@ export type SubcategoryRecordWithKey = Expand<EntityDataWithKey<"subcategory">>;
 export type SubcategoryProcessed = Expand<ProcessedEntityData<"subcategory">>;
 export type SubcategoryData = Expand<EntityDataMixed<"subcategory">>;
 export type SubcategoryState = EntityStateType<"subcategory">;
-export type SubcategoryRecordMap = Record<"subcategoryRecordId", SubcategoryData>;
+export type SubcategoryRecordMap = Record<
+  "subcategoryRecordId",
+  SubcategoryData
+>;
 
 export type SubcategoryConfigsType = AutomationEntity<"subcategoryConfigs">;
-export type SubcategoryConfigsDataRequired = Expand<EntityData<"subcategoryConfigs">>;
-export type SubcategoryConfigsDataOptional = Expand<EntityDataOptional<"subcategoryConfigs">>;
-export type SubcategoryConfigsRecordWithKey = Expand<EntityDataWithKey<"subcategoryConfigs">>;
-export type SubcategoryConfigsProcessed = Expand<ProcessedEntityData<"subcategoryConfigs">>;
-export type SubcategoryConfigsData = Expand<EntityDataMixed<"subcategoryConfigs">>;
+export type SubcategoryConfigsDataRequired = Expand<
+  EntityData<"subcategoryConfigs">
+>;
+export type SubcategoryConfigsDataOptional = Expand<
+  EntityDataOptional<"subcategoryConfigs">
+>;
+export type SubcategoryConfigsRecordWithKey = Expand<
+  EntityDataWithKey<"subcategoryConfigs">
+>;
+export type SubcategoryConfigsProcessed = Expand<
+  ProcessedEntityData<"subcategoryConfigs">
+>;
+export type SubcategoryConfigsData = Expand<
+  EntityDataMixed<"subcategoryConfigs">
+>;
 export type SubcategoryConfigsState = EntityStateType<"subcategoryConfigs">;
-export type SubcategoryConfigsRecordMap = Record<"subcategoryConfigsRecordId", SubcategoryConfigsData>;
+export type SubcategoryConfigsRecordMap = Record<
+  "subcategoryConfigsRecordId",
+  SubcategoryConfigsData
+>;
 
 export type SystemAnnouncementsType = AutomationEntity<"systemAnnouncements">;
-export type SystemAnnouncementsDataRequired = Expand<EntityData<"systemAnnouncements">>;
-export type SystemAnnouncementsDataOptional = Expand<EntityDataOptional<"systemAnnouncements">>;
-export type SystemAnnouncementsRecordWithKey = Expand<EntityDataWithKey<"systemAnnouncements">>;
-export type SystemAnnouncementsProcessed = Expand<ProcessedEntityData<"systemAnnouncements">>;
-export type SystemAnnouncementsData = Expand<EntityDataMixed<"systemAnnouncements">>;
+export type SystemAnnouncementsDataRequired = Expand<
+  EntityData<"systemAnnouncements">
+>;
+export type SystemAnnouncementsDataOptional = Expand<
+  EntityDataOptional<"systemAnnouncements">
+>;
+export type SystemAnnouncementsRecordWithKey = Expand<
+  EntityDataWithKey<"systemAnnouncements">
+>;
+export type SystemAnnouncementsProcessed = Expand<
+  ProcessedEntityData<"systemAnnouncements">
+>;
+export type SystemAnnouncementsData = Expand<
+  EntityDataMixed<"systemAnnouncements">
+>;
 export type SystemAnnouncementsState = EntityStateType<"systemAnnouncements">;
-export type SystemAnnouncementsRecordMap = Record<"systemAnnouncementsRecordId", SystemAnnouncementsData>;
+export type SystemAnnouncementsRecordMap = Record<
+  "systemAnnouncementsRecordId",
+  SystemAnnouncementsData
+>;
 
 export type SystemFunctionType = AutomationEntity<"systemFunction">;
 export type SystemFunctionDataRequired = Expand<EntityData<"systemFunction">>;
-export type SystemFunctionDataOptional = Expand<EntityDataOptional<"systemFunction">>;
-export type SystemFunctionRecordWithKey = Expand<EntityDataWithKey<"systemFunction">>;
-export type SystemFunctionProcessed = Expand<ProcessedEntityData<"systemFunction">>;
+export type SystemFunctionDataOptional = Expand<
+  EntityDataOptional<"systemFunction">
+>;
+export type SystemFunctionRecordWithKey = Expand<
+  EntityDataWithKey<"systemFunction">
+>;
+export type SystemFunctionProcessed = Expand<
+  ProcessedEntityData<"systemFunction">
+>;
 export type SystemFunctionData = Expand<EntityDataMixed<"systemFunction">>;
 export type SystemFunctionState = EntityStateType<"systemFunction">;
-export type SystemFunctionRecordMap = Record<"systemFunctionRecordId", SystemFunctionData>;
+export type SystemFunctionRecordMap = Record<
+  "systemFunctionRecordId",
+  SystemFunctionData
+>;
 
 export type TableDataType = AutomationEntity<"tableData">;
 export type TableDataDataRequired = Expand<EntityData<"tableData">>;
@@ -1203,34 +1835,62 @@ export type TableFieldsRecordWithKey = Expand<EntityDataWithKey<"tableFields">>;
 export type TableFieldsProcessed = Expand<ProcessedEntityData<"tableFields">>;
 export type TableFieldsData = Expand<EntityDataMixed<"tableFields">>;
 export type TableFieldsState = EntityStateType<"tableFields">;
-export type TableFieldsRecordMap = Record<"tableFieldsRecordId", TableFieldsData>;
+export type TableFieldsRecordMap = Record<
+  "tableFieldsRecordId",
+  TableFieldsData
+>;
 
 export type TaskAssignmentsType = AutomationEntity<"taskAssignments">;
 export type TaskAssignmentsDataRequired = Expand<EntityData<"taskAssignments">>;
-export type TaskAssignmentsDataOptional = Expand<EntityDataOptional<"taskAssignments">>;
-export type TaskAssignmentsRecordWithKey = Expand<EntityDataWithKey<"taskAssignments">>;
-export type TaskAssignmentsProcessed = Expand<ProcessedEntityData<"taskAssignments">>;
+export type TaskAssignmentsDataOptional = Expand<
+  EntityDataOptional<"taskAssignments">
+>;
+export type TaskAssignmentsRecordWithKey = Expand<
+  EntityDataWithKey<"taskAssignments">
+>;
+export type TaskAssignmentsProcessed = Expand<
+  ProcessedEntityData<"taskAssignments">
+>;
 export type TaskAssignmentsData = Expand<EntityDataMixed<"taskAssignments">>;
 export type TaskAssignmentsState = EntityStateType<"taskAssignments">;
-export type TaskAssignmentsRecordMap = Record<"taskAssignmentsRecordId", TaskAssignmentsData>;
+export type TaskAssignmentsRecordMap = Record<
+  "taskAssignmentsRecordId",
+  TaskAssignmentsData
+>;
 
 export type TaskAttachmentsType = AutomationEntity<"taskAttachments">;
 export type TaskAttachmentsDataRequired = Expand<EntityData<"taskAttachments">>;
-export type TaskAttachmentsDataOptional = Expand<EntityDataOptional<"taskAttachments">>;
-export type TaskAttachmentsRecordWithKey = Expand<EntityDataWithKey<"taskAttachments">>;
-export type TaskAttachmentsProcessed = Expand<ProcessedEntityData<"taskAttachments">>;
+export type TaskAttachmentsDataOptional = Expand<
+  EntityDataOptional<"taskAttachments">
+>;
+export type TaskAttachmentsRecordWithKey = Expand<
+  EntityDataWithKey<"taskAttachments">
+>;
+export type TaskAttachmentsProcessed = Expand<
+  ProcessedEntityData<"taskAttachments">
+>;
 export type TaskAttachmentsData = Expand<EntityDataMixed<"taskAttachments">>;
 export type TaskAttachmentsState = EntityStateType<"taskAttachments">;
-export type TaskAttachmentsRecordMap = Record<"taskAttachmentsRecordId", TaskAttachmentsData>;
+export type TaskAttachmentsRecordMap = Record<
+  "taskAttachmentsRecordId",
+  TaskAttachmentsData
+>;
 
 export type TaskCommentsType = AutomationEntity<"taskComments">;
 export type TaskCommentsDataRequired = Expand<EntityData<"taskComments">>;
-export type TaskCommentsDataOptional = Expand<EntityDataOptional<"taskComments">>;
-export type TaskCommentsRecordWithKey = Expand<EntityDataWithKey<"taskComments">>;
+export type TaskCommentsDataOptional = Expand<
+  EntityDataOptional<"taskComments">
+>;
+export type TaskCommentsRecordWithKey = Expand<
+  EntityDataWithKey<"taskComments">
+>;
 export type TaskCommentsProcessed = Expand<ProcessedEntityData<"taskComments">>;
 export type TaskCommentsData = Expand<EntityDataMixed<"taskComments">>;
 export type TaskCommentsState = EntityStateType<"taskComments">;
-export type TaskCommentsRecordMap = Record<"taskCommentsRecordId", TaskCommentsData>;
+export type TaskCommentsRecordMap = Record<
+  "taskCommentsRecordId",
+  TaskCommentsData
+>;
 
 export type TasksType = AutomationEntity<"tasks">;
 export type TasksDataRequired = Expand<EntityData<"tasks">>;
@@ -1257,7 +1917,10 @@ export type TranscriptsRecordWithKey = Expand<EntityDataWithKey<"transcripts">>;
 export type TranscriptsProcessed = Expand<ProcessedEntityData<"transcripts">>;
 export type TranscriptsData = Expand<EntityDataMixed<"transcripts">>;
 export type TranscriptsState = EntityStateType<"transcripts">;
-export type TranscriptsRecordMap = Record<"transcriptsRecordId", TranscriptsData>;
+export type TranscriptsRecordMap = Record<
+  "transcriptsRecordId",
+  TranscriptsData
+>;
 
 export type TransformerType = AutomationEntity<"transformer">;
 export type TransformerDataRequired = Expand<EntityData<"transformer">>;
@@ -1266,34 +1929,64 @@ export type TransformerRecordWithKey = Expand<EntityDataWithKey<"transformer">>;
 export type TransformerProcessed = Expand<ProcessedEntityData<"transformer">>;
 export type TransformerData = Expand<EntityDataMixed<"transformer">>;
 export type TransformerState = EntityStateType<"transformer">;
-export type TransformerRecordMap = Record<"transformerRecordId", TransformerData>;
+export type TransformerRecordMap = Record<
+  "transformerRecordId",
+  TransformerData
+>;
 
 export type UserAchievementsType = AutomationEntity<"userAchievements">;
-export type UserAchievementsDataRequired = Expand<EntityData<"userAchievements">>;
-export type UserAchievementsDataOptional = Expand<EntityDataOptional<"userAchievements">>;
-export type UserAchievementsRecordWithKey = Expand<EntityDataWithKey<"userAchievements">>;
-export type UserAchievementsProcessed = Expand<ProcessedEntityData<"userAchievements">>;
+export type UserAchievementsDataRequired = Expand<
+  EntityData<"userAchievements">
+>;
+export type UserAchievementsDataOptional = Expand<
+  EntityDataOptional<"userAchievements">
+>;
+export type UserAchievementsRecordWithKey = Expand<
+  EntityDataWithKey<"userAchievements">
+>;
+export type UserAchievementsProcessed = Expand<
+  ProcessedEntityData<"userAchievements">
+>;
 export type UserAchievementsData = Expand<EntityDataMixed<"userAchievements">>;
 export type UserAchievementsState = EntityStateType<"userAchievements">;
-export type UserAchievementsRecordMap = Record<"userAchievementsRecordId", UserAchievementsData>;
+export type UserAchievementsRecordMap = Record<
+  "userAchievementsRecordId",
+  UserAchievementsData
+>;
 
 export type UserBookmarksType = AutomationEntity<"userBookmarks">;
 export type UserBookmarksDataRequired = Expand<EntityData<"userBookmarks">>;
-export type UserBookmarksDataOptional = Expand<EntityDataOptional<"userBookmarks">>;
-export type UserBookmarksRecordWithKey = Expand<EntityDataWithKey<"userBookmarks">>;
-export type UserBookmarksProcessed = Expand<ProcessedEntityData<"userBookmarks">>;
+export type UserBookmarksDataOptional = Expand<
+  EntityDataOptional<"userBookmarks">
+>;
+export type UserBookmarksRecordWithKey = Expand<
+  EntityDataWithKey<"userBookmarks">
+>;
+export type UserBookmarksProcessed = Expand<
+  ProcessedEntityData<"userBookmarks">
+>;
 export type UserBookmarksData = Expand<EntityDataMixed<"userBookmarks">>;
 export type UserBookmarksState = EntityStateType<"userBookmarks">;
-export type UserBookmarksRecordMap = Record<"userBookmarksRecordId", UserBookmarksData>;
+export type UserBookmarksRecordMap = Record<
+  "userBookmarksRecordId",
+  UserBookmarksData
+>;
 
 export type UserFeedbackType = AutomationEntity<"userFeedback">;
 export type UserFeedbackDataRequired = Expand<EntityData<"userFeedback">>;
-export type UserFeedbackDataOptional = Expand<EntityDataOptional<"userFeedback">>;
-export type UserFeedbackRecordWithKey = Expand<EntityDataWithKey<"userFeedback">>;
+export type UserFeedbackDataOptional = Expand<
+  EntityDataOptional<"userFeedback">
+>;
+export type UserFeedbackRecordWithKey = Expand<
+  EntityDataWithKey<"userFeedback">
+>;
 export type UserFeedbackProcessed = Expand<ProcessedEntityData<"userFeedback">>;
 export type UserFeedbackData = Expand<EntityDataMixed<"userFeedback">>;
 export type UserFeedbackState = EntityStateType<"userFeedback">;
-export type UserFeedbackRecordMap = Record<"userFeedbackRecordId", UserFeedbackData>;
+export type UserFeedbackRecordMap = Record<
+  "userFeedbackRecordId",
+  UserFeedbackData
+>;
 
 export type UserFollowsType = AutomationEntity<"userFollows">;
 export type UserFollowsDataRequired = Expand<EntityData<"userFollows">>;
@@ -1302,16 +1995,28 @@ export type UserFollowsRecordWithKey = Expand<EntityDataWithKey<"userFollows">>;
 export type UserFollowsProcessed = Expand<ProcessedEntityData<"userFollows">>;
 export type UserFollowsData = Expand<EntityDataMixed<"userFollows">>;
 export type UserFollowsState = EntityStateType<"userFollows">;
-export type UserFollowsRecordMap = Record<"userFollowsRecordId", UserFollowsData>;
+export type UserFollowsRecordMap = Record<
+  "userFollowsRecordId",
+  UserFollowsData
+>;
 
 export type UserListItemsType = AutomationEntity<"userListItems">;
 export type UserListItemsDataRequired = Expand<EntityData<"userListItems">>;
-export type UserListItemsDataOptional = Expand<EntityDataOptional<"userListItems">>;
-export type UserListItemsRecordWithKey = Expand<EntityDataWithKey<"userListItems">>;
-export type UserListItemsProcessed = Expand<ProcessedEntityData<"userListItems">>;
+export type UserListItemsDataOptional = Expand<
+  EntityDataOptional<"userListItems">
+>;
+export type UserListItemsRecordWithKey = Expand<
+  EntityDataWithKey<"userListItems">
+>;
+export type UserListItemsProcessed = Expand<
+  ProcessedEntityData<"userListItems">
+>;
 export type UserListItemsData = Expand<EntityDataMixed<"userListItems">>;
 export type UserListItemsState = EntityStateType<"userListItems">;
-export type UserListItemsRecordMap = Record<"userListItemsRecordId", UserListItemsData>;
+export type UserListItemsRecordMap = Record<
+  "userListItemsRecordId",
+  UserListItemsData
+>;
 
 export type UserListsType = AutomationEntity<"userLists">;
 export type UserListsDataRequired = Expand<EntityData<"userLists">>;
@@ -1324,12 +2029,21 @@ export type UserListsRecordMap = Record<"userListsRecordId", UserListsData>;
 
 export type UserPreferencesType = AutomationEntity<"userPreferences">;
 export type UserPreferencesDataRequired = Expand<EntityData<"userPreferences">>;
-export type UserPreferencesDataOptional = Expand<EntityDataOptional<"userPreferences">>;
-export type UserPreferencesRecordWithKey = Expand<EntityDataWithKey<"userPreferences">>;
-export type UserPreferencesProcessed = Expand<ProcessedEntityData<"userPreferences">>;
+export type UserPreferencesDataOptional = Expand<
+  EntityDataOptional<"userPreferences">
+>;
+export type UserPreferencesRecordWithKey = Expand<
+  EntityDataWithKey<"userPreferences">
+>;
+export type UserPreferencesProcessed = Expand<
+  ProcessedEntityData<"userPreferences">
+>;
 export type UserPreferencesData = Expand<EntityDataMixed<"userPreferences">>;
 export type UserPreferencesState = EntityStateType<"userPreferences">;
-export type UserPreferencesRecordMap = Record<"userPreferencesRecordId", UserPreferencesData>;
+export type UserPreferencesRecordMap = Record<
+  "userPreferencesRecordId",
+  UserPreferencesData
+>;
 
 export type UserStatsType = AutomationEntity<"userStats">;
 export type UserStatsDataRequired = Expand<EntityData<"userStats">>;
@@ -1358,14 +2072,29 @@ export type WcClaimData = Expand<EntityDataMixed<"wcClaim">>;
 export type WcClaimState = EntityStateType<"wcClaim">;
 export type WcClaimRecordMap = Record<"wcClaimRecordId", WcClaimData>;
 
-export type WcImpairmentDefinitionType = AutomationEntity<"wcImpairmentDefinition">;
-export type WcImpairmentDefinitionDataRequired = Expand<EntityData<"wcImpairmentDefinition">>;
-export type WcImpairmentDefinitionDataOptional = Expand<EntityDataOptional<"wcImpairmentDefinition">>;
-export type WcImpairmentDefinitionRecordWithKey = Expand<EntityDataWithKey<"wcImpairmentDefinition">>;
-export type WcImpairmentDefinitionProcessed = Expand<ProcessedEntityData<"wcImpairmentDefinition">>;
-export type WcImpairmentDefinitionData = Expand<EntityDataMixed<"wcImpairmentDefinition">>;
-export type WcImpairmentDefinitionState = EntityStateType<"wcImpairmentDefinition">;
-export type WcImpairmentDefinitionRecordMap = Record<"wcImpairmentDefinitionRecordId", WcImpairmentDefinitionData>;
+export type WcImpairmentDefinitionType =
+  AutomationEntity<"wcImpairmentDefinition">;
+export type WcImpairmentDefinitionDataRequired = Expand<
+  EntityData<"wcImpairmentDefinition">
+>;
+export type WcImpairmentDefinitionDataOptional = Expand<
+  EntityDataOptional<"wcImpairmentDefinition">
+>;
+export type WcImpairmentDefinitionRecordWithKey = Expand<
+  EntityDataWithKey<"wcImpairmentDefinition">
+>;
+export type WcImpairmentDefinitionProcessed = Expand<
+  ProcessedEntityData<"wcImpairmentDefinition">
+>;
+export type WcImpairmentDefinitionData = Expand<
+  EntityDataMixed<"wcImpairmentDefinition">
+>;
+export type WcImpairmentDefinitionState =
+  EntityStateType<"wcImpairmentDefinition">;
+export type WcImpairmentDefinitionRecordMap = Record<
+  "wcImpairmentDefinitionRecordId",
+  WcImpairmentDefinitionData
+>;
 
 export type WcInjuryType = AutomationEntity<"wcInjury">;
 export type WcInjuryDataRequired = Expand<EntityData<"wcInjury">>;
@@ -1396,54 +2125,108 @@ export type WorkflowRecordMap = Record<"workflowRecordId", WorkflowData>;
 
 export type WorkflowDataType = AutomationEntity<"workflowData">;
 export type WorkflowDataDataRequired = Expand<EntityData<"workflowData">>;
-export type WorkflowDataDataOptional = Expand<EntityDataOptional<"workflowData">>;
-export type WorkflowDataRecordWithKey = Expand<EntityDataWithKey<"workflowData">>;
+export type WorkflowDataDataOptional = Expand<
+  EntityDataOptional<"workflowData">
+>;
+export type WorkflowDataRecordWithKey = Expand<
+  EntityDataWithKey<"workflowData">
+>;
 export type WorkflowDataProcessed = Expand<ProcessedEntityData<"workflowData">>;
 export type WorkflowDataData = Expand<EntityDataMixed<"workflowData">>;
 export type WorkflowDataState = EntityStateType<"workflowData">;
-export type WorkflowDataRecordMap = Record<"workflowDataRecordId", WorkflowDataData>;
+export type WorkflowDataRecordMap = Record<
+  "workflowDataRecordId",
+  WorkflowDataData
+>;
 
 export type WorkflowEdgeType = AutomationEntity<"workflowEdge">;
 export type WorkflowEdgeDataRequired = Expand<EntityData<"workflowEdge">>;
-export type WorkflowEdgeDataOptional = Expand<EntityDataOptional<"workflowEdge">>;
-export type WorkflowEdgeRecordWithKey = Expand<EntityDataWithKey<"workflowEdge">>;
+export type WorkflowEdgeDataOptional = Expand<
+  EntityDataOptional<"workflowEdge">
+>;
+export type WorkflowEdgeRecordWithKey = Expand<
+  EntityDataWithKey<"workflowEdge">
+>;
 export type WorkflowEdgeProcessed = Expand<ProcessedEntityData<"workflowEdge">>;
 export type WorkflowEdgeData = Expand<EntityDataMixed<"workflowEdge">>;
 export type WorkflowEdgeState = EntityStateType<"workflowEdge">;
-export type WorkflowEdgeRecordMap = Record<"workflowEdgeRecordId", WorkflowEdgeData>;
+export type WorkflowEdgeRecordMap = Record<
+  "workflowEdgeRecordId",
+  WorkflowEdgeData
+>;
 
 export type WorkflowNodeType = AutomationEntity<"workflowNode">;
 export type WorkflowNodeDataRequired = Expand<EntityData<"workflowNode">>;
-export type WorkflowNodeDataOptional = Expand<EntityDataOptional<"workflowNode">>;
-export type WorkflowNodeRecordWithKey = Expand<EntityDataWithKey<"workflowNode">>;
+export type WorkflowNodeDataOptional = Expand<
+  EntityDataOptional<"workflowNode">
+>;
+export type WorkflowNodeRecordWithKey = Expand<
+  EntityDataWithKey<"workflowNode">
+>;
 export type WorkflowNodeProcessed = Expand<ProcessedEntityData<"workflowNode">>;
 export type WorkflowNodeData = Expand<EntityDataMixed<"workflowNode">>;
 export type WorkflowNodeState = EntityStateType<"workflowNode">;
-export type WorkflowNodeRecordMap = Record<"workflowNodeRecordId", WorkflowNodeData>;
+export type WorkflowNodeRecordMap = Record<
+  "workflowNodeRecordId",
+  WorkflowNodeData
+>;
 
 export type WorkflowNodeDataType = AutomationEntity<"workflowNodeData">;
-export type WorkflowNodeDataDataRequired = Expand<EntityData<"workflowNodeData">>;
-export type WorkflowNodeDataDataOptional = Expand<EntityDataOptional<"workflowNodeData">>;
-export type WorkflowNodeDataRecordWithKey = Expand<EntityDataWithKey<"workflowNodeData">>;
-export type WorkflowNodeDataProcessed = Expand<ProcessedEntityData<"workflowNodeData">>;
+export type WorkflowNodeDataDataRequired = Expand<
+  EntityData<"workflowNodeData">
+>;
+export type WorkflowNodeDataDataOptional = Expand<
+  EntityDataOptional<"workflowNodeData">
+>;
+export type WorkflowNodeDataRecordWithKey = Expand<
+  EntityDataWithKey<"workflowNodeData">
+>;
+export type WorkflowNodeDataProcessed = Expand<
+  ProcessedEntityData<"workflowNodeData">
+>;
 export type WorkflowNodeDataData = Expand<EntityDataMixed<"workflowNodeData">>;
 export type WorkflowNodeDataState = EntityStateType<"workflowNodeData">;
-export type WorkflowNodeDataRecordMap = Record<"workflowNodeDataRecordId", WorkflowNodeDataData>;
+export type WorkflowNodeDataRecordMap = Record<
+  "workflowNodeDataRecordId",
+  WorkflowNodeDataData
+>;
 
 export type WorkflowRelayType = AutomationEntity<"workflowRelay">;
 export type WorkflowRelayDataRequired = Expand<EntityData<"workflowRelay">>;
-export type WorkflowRelayDataOptional = Expand<EntityDataOptional<"workflowRelay">>;
-export type WorkflowRelayRecordWithKey = Expand<EntityDataWithKey<"workflowRelay">>;
-export type WorkflowRelayProcessed = Expand<ProcessedEntityData<"workflowRelay">>;
+export type WorkflowRelayDataOptional = Expand<
+  EntityDataOptional<"workflowRelay">
+>;
+export type WorkflowRelayRecordWithKey = Expand<
+  EntityDataWithKey<"workflowRelay">
+>;
+export type WorkflowRelayProcessed = Expand<
+  ProcessedEntityData<"workflowRelay">
+>;
 export type WorkflowRelayData = Expand<EntityDataMixed<"workflowRelay">>;
 export type WorkflowRelayState = EntityStateType<"workflowRelay">;
-export type WorkflowRelayRecordMap = Record<"workflowRelayRecordId", WorkflowRelayData>;
+export type WorkflowRelayRecordMap = Record<
+  "workflowRelayRecordId",
+  WorkflowRelayData
+>;
 
 export type WorkflowUserInputType = AutomationEntity<"workflowUserInput">;
-export type WorkflowUserInputDataRequired = Expand<EntityData<"workflowUserInput">>;
-export type WorkflowUserInputDataOptional = Expand<EntityDataOptional<"workflowUserInput">>;
-export type WorkflowUserInputRecordWithKey = Expand<EntityDataWithKey<"workflowUserInput">>;
-export type WorkflowUserInputProcessed = Expand<ProcessedEntityData<"workflowUserInput">>;
-export type WorkflowUserInputData = Expand<EntityDataMixed<"workflowUserInput">>;
+export type WorkflowUserInputDataRequired = Expand<
+  EntityData<"workflowUserInput">
+>;
+export type WorkflowUserInputDataOptional = Expand<
+  EntityDataOptional<"workflowUserInput">
+>;
+export type WorkflowUserInputRecordWithKey = Expand<
+  EntityDataWithKey<"workflowUserInput">
+>;
+export type WorkflowUserInputProcessed = Expand<
+  ProcessedEntityData<"workflowUserInput">
+>;
+export type WorkflowUserInputData = Expand<
+  EntityDataMixed<"workflowUserInput">
+>;
 export type WorkflowUserInputState = EntityStateType<"workflowUserInput">;
-export type WorkflowUserInputRecordMap = Record<"workflowUserInputRecordId", WorkflowUserInputData>;
+export type WorkflowUserInputRecordMap = Record<
+  "workflowUserInputRecordId",
+  WorkflowUserInputData
+>;

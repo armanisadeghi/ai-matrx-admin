@@ -5,7 +5,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { brokerSelectors, brokerActions } from "@/lib/redux/brokerSlice";
 import { ensureValidWidthClass } from "@/features/applet/constants/field-constants";
 import { cn } from "@/lib/utils";
-import { CommonFieldProps } from "./core/AppletFieldController";
+import { CommonFieldProps } from "./core/types";
 
 const JSONField: React.FC<CommonFieldProps> = ({ field, sourceId="no-applet-id", isMobile, source = "applet", disabled = false, className = "" }) => {
     const { id, label, placeholder = "Enter JSON data", componentProps, required, defaultValue } = field;

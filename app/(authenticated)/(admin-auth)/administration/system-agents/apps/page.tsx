@@ -6,15 +6,25 @@ import { useRouter } from "next/navigation";
 import {
   AppWindow,
   ArrowUpRight,
+  ExternalLink,
   Loader2,
   Plus,
   RefreshCw,
   Search,
+  Trash2,
   X,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -24,7 +34,19 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { toast } from "@/lib/toast-service";
+import {
   fetchAgentAppsAdmin,
+  updateAgentAppAdmin,
   type AgentAppAdminView,
 } from "@/lib/services/agent-apps-admin-service";
 
@@ -38,6 +60,13 @@ const STATUS_VARIANT: Record<
   suspended: "destructive",
 };
 
+const STATUS_OPTIONS: AgentAppAdminView["status"][] = [
+  "draft",
+  "published",
+  "archived",
+  "suspended",
+];
+
 export default function AdminSystemAppsListPage() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -45,6 +74,13 @@ export default function AdminSystemAppsListPage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState("");
+  // Per-row inflight flags so a slow update on one row doesn't disable the
+  // whole table.
+  const [busyIds, setBusyIds] = useState<Set<string>>(new Set());
+  const [deleteTarget, setDeleteTarget] = useState<AgentAppAdminView | null>(
+    null,
+  );
+  const [deleting, setDeleting] = useState(false);
 
   const load = useCallback(async (silent = false) => {
     if (silent) setRefreshing(true);
@@ -78,6 +114,62 @@ export default function AdminSystemAppsListPage() {
     startTransition(() => {
       router.push(`/administration/agent-apps/edit/${id}`);
     });
+  };
+
+  // Optimistic per-row patcher: write the new value into local state so the UI
+  // reacts instantly, fire the network call, roll back on failure.
+  const patchRow = useCallback(
+    async (id: string, patch: Partial<AgentAppAdminView>, label: string) => {
+      const prev = apps.find((a) => a.id === id);
+      if (!prev) return;
+      setBusyIds((s) => new Set(s).add(id));
+      setApps((rows) =>
+        rows.map((r) => (r.id === id ? { ...r, ...patch } : r)),
+      );
+      try {
+        const updated = await updateAgentAppAdmin({ id, ...patch });
+        setApps((rows) => rows.map((r) => (r.id === id ? updated : r)));
+        toast.success(`${label} updated.`);
+      } catch (err) {
+        setApps((rows) => rows.map((r) => (r.id === id ? prev : r)));
+        toast.error(
+          `Failed to update ${label.toLowerCase()}: ${
+            err instanceof Error ? err.message : String(err)
+          }`,
+        );
+      } finally {
+        setBusyIds((s) => {
+          const n = new Set(s);
+          n.delete(id);
+          return n;
+        });
+      }
+    },
+    [apps],
+  );
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    const id = deleteTarget.id;
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/agent-apps/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const payload = await res.json().catch(() => ({}));
+        throw new Error(payload.error ?? `HTTP ${res.status}`);
+      }
+      setApps((rows) => rows.filter((r) => r.id !== id));
+      toast.success("System app deleted.");
+      setDeleteTarget(null);
+    } catch (err) {
+      toast.error(
+        `Failed to delete: ${
+          err instanceof Error ? err.message : String(err)
+        }`,
+      );
+    } finally {
+      setDeleting(false);
+    }
   };
 
   return (
@@ -186,58 +278,143 @@ export default function AdminSystemAppsListPage() {
                     <TableRow>
                       <TableHead>Name</TableHead>
                       <TableHead>Slug</TableHead>
-                      <TableHead>Status</TableHead>
+                      <TableHead className="w-[140px]">Status</TableHead>
+                      <TableHead className="w-[80px] text-center">
+                        Public
+                      </TableHead>
                       <TableHead>Category</TableHead>
-                      <TableHead className="text-right">Executions</TableHead>
+                      <TableHead className="text-right">Runs</TableHead>
                       <TableHead className="text-right">Updated</TableHead>
-                      <TableHead className="w-[80px]" />
+                      <TableHead className="w-[120px] text-right">
+                        Actions
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filtered.map((a) => (
-                      <TableRow
-                        key={a.id}
-                        className="cursor-pointer hover:bg-accent/30"
-                        onClick={() => handleOpenEditor(a.id)}
-                      >
-                        <TableCell className="font-medium">{a.name}</TableCell>
-                        <TableCell className="text-muted-foreground text-xs">
-                          {a.slug}
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={STATUS_VARIANT[a.status] ?? "outline"}
-                            className="text-[10px]"
-                          >
-                            {a.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-xs">
-                          {a.category ?? "—"}
-                        </TableCell>
-                        <TableCell className="text-right text-xs">
-                          {a.total_executions ?? 0}
-                        </TableCell>
-                        <TableCell className="text-right text-xs text-muted-foreground">
-                          {a.updated_at
-                            ? new Date(a.updated_at).toLocaleDateString()
-                            : "—"}
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            disabled={isPending}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleOpenEditor(a.id);
-                            }}
-                          >
-                            <ArrowUpRight className="h-3.5 w-3.5" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {filtered.map((a) => {
+                      const isBusy = busyIds.has(a.id);
+                      return (
+                        <TableRow key={a.id} className="hover:bg-accent/30">
+                          <TableCell className="font-medium">
+                            <button
+                              type="button"
+                              className="text-left hover:underline"
+                              onClick={() => handleOpenEditor(a.id)}
+                            >
+                              {a.name}
+                            </button>
+                          </TableCell>
+                          <TableCell className="text-muted-foreground text-xs">
+                            {a.slug}
+                          </TableCell>
+                          <TableCell>
+                            <Select
+                              value={a.status}
+                              disabled={isBusy}
+                              onValueChange={(v) =>
+                                patchRow(
+                                  a.id,
+                                  {
+                                    status: v as AgentAppAdminView["status"],
+                                  },
+                                  "Status",
+                                )
+                              }
+                            >
+                              <SelectTrigger className="h-7 text-xs">
+                                <SelectValue>
+                                  <Badge
+                                    variant={STATUS_VARIANT[a.status] ?? "outline"}
+                                    className="text-[10px]"
+                                  >
+                                    {a.status}
+                                  </Badge>
+                                </SelectValue>
+                              </SelectTrigger>
+                              <SelectContent>
+                                {STATUS_OPTIONS.map((s) => (
+                                  <SelectItem
+                                    key={s}
+                                    value={s}
+                                    className="text-xs"
+                                  >
+                                    {s}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Switch
+                              checked={a.is_public}
+                              disabled={isBusy}
+                              onCheckedChange={(checked) =>
+                                patchRow(
+                                  a.id,
+                                  { is_public: checked },
+                                  "Visibility",
+                                )
+                              }
+                              aria-label={
+                                a.is_public ? "Make private" : "Make public"
+                              }
+                            />
+                          </TableCell>
+                          <TableCell className="text-xs">
+                            {a.category ?? "—"}
+                          </TableCell>
+                          <TableCell className="text-right text-xs">
+                            {a.total_executions ?? 0}
+                          </TableCell>
+                          <TableCell className="text-right text-xs text-muted-foreground">
+                            {a.updated_at
+                              ? new Date(a.updated_at).toLocaleDateString()
+                              : "—"}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end gap-0.5">
+                              {a.status === "published" && (
+                                <Button
+                                  asChild
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 w-7 p-0"
+                                  title="Open public URL"
+                                >
+                                  <Link
+                                    href={`/p/${a.slug}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
+                                    <ExternalLink className="h-3.5 w-3.5" />
+                                  </Link>
+                                </Button>
+                              )}
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 w-7 p-0"
+                                disabled={isPending}
+                                onClick={() => handleOpenEditor(a.id)}
+                                title="Open editor"
+                              >
+                                <ArrowUpRight className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 w-7 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                disabled={isBusy || deleting}
+                                onClick={() => setDeleteTarget(a)}
+                                title="Delete system app"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               </CardContent>
@@ -245,6 +422,47 @@ export default function AdminSystemAppsListPage() {
           )}
         </div>
       </div>
+
+      <AlertDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => {
+          if (!open && !deleting) setDeleteTarget(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-destructive">
+              Delete system app
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Permanently delete &ldquo;{deleteTarget?.name}&rdquo; (slug:{" "}
+              <span className="font-mono text-xs">{deleteTarget?.slug}</span>).
+              This removes the app for every user on the platform and cannot be
+              undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={deleting}
+              onClick={(e) => {
+                e.preventDefault();
+                void handleDelete();
+              }}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              {deleting ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete system app"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

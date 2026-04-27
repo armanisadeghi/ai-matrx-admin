@@ -17,7 +17,7 @@ import {
     FetchContainerByIdSuccessAction,
 } from "../thunks/containerBuilderThunks";
 import { saveFieldAndUpdateContainerThunk, saveFieldToContainerThunk } from "../thunks/fieldBuilderThunks";
-import { ContainerBuilder } from "../types";
+import { ContainerBuilder , ContainersState } from "../types";
 import { FieldDefinition } from "@/types/customAppTypes";
 import { v4 as uuidv4 } from "uuid";
 
@@ -45,13 +45,7 @@ export const DEFAULT_CONTAINER: Partial<ContainerBuilder> = {
     isLocal: true,
 };
 
-interface ContainersState {
-    containers: Record<string, ContainerBuilder>;
-    isLoading: boolean;
-    error: string | null;
-    activeContainerId: string | null;
-    newContainerId: string | null;
-}
+// ContainersState is defined in ../types to avoid circular imports
 
 const initialState: ContainersState = {
     containers: {},

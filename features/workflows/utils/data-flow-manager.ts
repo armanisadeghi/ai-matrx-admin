@@ -1,6 +1,9 @@
 import { DataBrokerData } from "@/types/AutomationSchemaTypes";
 import { UserInputNodeData, BrokerRelayNodeData, FunctionNodeData } from "@/features/workflows/types";
 import { createVirtualEdgeFingerprint } from "../service/edgeService";
+import type { EnrichedBroker } from "@/features/workflows/types/enrichedBrokerTypes";
+
+export type { EnrichedBroker } from "@/features/workflows/types/enrichedBrokerTypes";
 
 interface BrokerSource {
     nodeId: string;
@@ -11,19 +14,6 @@ interface BrokerTarget {
     nodeId: string;
     brokerId: string;
     label: string;
-}
-
-export interface EnrichedBroker {
-    id: string;
-    name?: string;
-    isKnown: boolean;
-    knownBrokerData?: DataBrokerData;
-    outputComponent?: string;
-    fieldComponentId?: string;
-    usageType: "source" | "target" | "both";
-    sourceNodes: string[];
-    targetNodes: string[];
-    targetLabels: string[];
 }
 
 export interface GeneratedEdge {

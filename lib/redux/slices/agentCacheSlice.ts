@@ -17,7 +17,6 @@
 //   shared   — prompts explicitly shared with the current user (not "secret sauce" share)
 
 import { createSlice, createSelector, PayloadAction } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -304,29 +303,31 @@ const EMPTY_IDS: string[] = [];
 const EMPTY_AGENTS: AgentRecord[] = [];
 const EMPTY_BY_ID: Record<string, AgentRecord> = {};
 
+type WithAgentCache = { agentCache: AgentCacheState };
+
 export const selectAgentById = (
-  state: RootState,
+  state: WithAgentCache,
   id: string,
 ): AgentRecord | undefined => state.agentCache?.byId[id];
 
 export const selectAllAgentsById = (
-  state: RootState,
+  state: WithAgentCache,
 ): Record<string, AgentRecord> => state.agentCache?.byId ?? EMPTY_BY_ID;
 
 // Raw ID arrays — stable because the slice stores them as stable references.
 // We fall back to EMPTY_IDS (not `[]`) so the reference never changes when empty.
-export const selectOwnedAgentIds = (state: RootState): string[] =>
+export const selectOwnedAgentIds = (state: WithAgentCache): string[] =>
   state.agentCache?.ownedIds ?? EMPTY_IDS;
 
-export const selectBuiltinAgentIds = (state: RootState): string[] =>
+export const selectBuiltinAgentIds = (state: WithAgentCache): string[] =>
   state.agentCache?.builtinIds ?? EMPTY_IDS;
 
-export const selectSharedAgentIds = (state: RootState): string[] =>
+export const selectSharedAgentIds = (state: WithAgentCache): string[] =>
   state.agentCache?.sharedIds ?? EMPTY_IDS;
 
 // Derived agent arrays — must be memoized because .map().filter() always
 // allocates a new array, making every call produce a new reference.
-const selectAgentsByIdMap = (state: RootState) => state.agentCache?.byId;
+const selectAgentsByIdMap = (state: WithAgentCache) => state.agentCache?.byId;
 
 export const selectOwnedAgents = createSelector(
   selectOwnedAgentIds,
@@ -355,30 +356,30 @@ export const selectSharedAgents = createSelector(
   },
 );
 
-export const selectAgentFetchStatus = (state: RootState): PerSourceStatus =>
+export const selectAgentFetchStatus = (state: WithAgentCache): PerSourceStatus =>
   state.agentCache?.fetchStatus ?? initialState.fetchStatus;
 
 export const selectAgentLastFetchedAt = (
-  state: RootState,
+  state: WithAgentCache,
 ): PerSourceTimestamp =>
   state.agentCache?.lastFetchedAt ?? initialState.lastFetchedAt;
 
-export const selectOwnedHasMore = (state: RootState): boolean =>
+export const selectOwnedHasMore = (state: WithAgentCache): boolean =>
   state.agentCache?.ownedHasMore ?? false;
 
-export const selectSharedHasMore = (state: RootState): boolean =>
+export const selectSharedHasMore = (state: WithAgentCache): boolean =>
   state.agentCache?.sharedHasMore ?? false;
 
-export const selectOwnedCursor = (state: RootState): string | null =>
+export const selectOwnedCursor = (state: WithAgentCache): string | null =>
   state.agentCache?.ownedCursor ?? null;
 
-export const selectSharedCursor = (state: RootState): string | null =>
+export const selectSharedCursor = (state: WithAgentCache): string | null =>
   state.agentCache?.sharedCursor ?? null;
 
-export const selectAgentError = (state: RootState): string | null =>
+export const selectAgentError = (state: WithAgentCache): string | null =>
   state.agentCache?.error ?? null;
 
-export const selectIsAgentCacheInitialized = (state: RootState): boolean => {
+export const selectIsAgentCacheInitialized = (state: WithAgentCache): boolean => {
   const status = state.agentCache?.fetchStatus;
   if (!status) return false;
   return (
@@ -399,14 +400,14 @@ const EMPTY_TOOLS: string[] = [];
 
 /** 1. All settings — the full jsonb blob as stored. */
 export const selectAgentSettings = (
-  state: RootState,
+  state: WithAgentCache,
   agentId: string,
 ): Record<string, unknown> | undefined =>
   state.agentCache?.byId[agentId]?.settings;
 
 /** 2. model_id — the agent's default model UUID. */
 export const selectAgentModelId = (
-  state: RootState,
+  state: WithAgentCache,
   agentId: string,
 ): string | undefined => {
   const s = state.agentCache?.byId[agentId]?.settings;
@@ -415,7 +416,7 @@ export const selectAgentModelId = (
 
 /** 3. tools — the tools array from settings (empty array when none configured). */
 export const selectAgentTools = (
-  state: RootState,
+  state: WithAgentCache,
   agentId: string,
 ): string[] => {
   const raw = state.agentCache?.byId[agentId]?.settings?.tools;
@@ -430,7 +431,7 @@ export const selectAgentTools = (
  * Returns a stable empty object when there are no remaining keys.
  */
 export const selectAgentRuntimeSettings = createSelector(
-  (state: RootState, agentId: string) =>
+  (state: WithAgentCache, agentId: string) =>
     state.agentCache?.byId[agentId]?.settings,
   (settings): Record<string, unknown> => {
     if (!settings) return EMPTY_SETTINGS;

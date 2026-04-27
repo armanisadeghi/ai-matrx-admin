@@ -1,6 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { BottomTabId } from "../types";
-import type { RootState } from "@/lib/redux/store";
 
 export interface TerminalLine {
   id: string;
@@ -90,15 +89,17 @@ export default slice.reducer;
 const emptyLines: TerminalLine[] = [];
 const emptyHistory: string[] = [];
 
-export const selectCodeTerminal = (state: RootState) =>
+type WithCodeTerminal = { codeTerminal: CodeTerminalState };
+
+export const selectCodeTerminal = (state: WithCodeTerminal) =>
   state.codeTerminal ?? initialState;
-export const selectTerminalOpen = (state: RootState) =>
+export const selectTerminalOpen = (state: WithCodeTerminal) =>
   selectCodeTerminal(state).open;
-export const selectTerminalActiveTab = (state: RootState) =>
+export const selectTerminalActiveTab = (state: WithCodeTerminal) =>
   selectCodeTerminal(state).activeTab;
-export const selectTerminalLines = (state: RootState) =>
+export const selectTerminalLines = (state: WithCodeTerminal) =>
   selectCodeTerminal(state).lines ?? emptyLines;
-export const selectTerminalHistory = (state: RootState) =>
+export const selectTerminalHistory = (state: WithCodeTerminal) =>
   selectCodeTerminal(state).history ?? emptyHistory;
-export const selectTerminalExecuting = (state: RootState) =>
+export const selectTerminalExecuting = (state: WithCodeTerminal) =>
   selectCodeTerminal(state).executing;

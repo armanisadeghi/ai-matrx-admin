@@ -18,13 +18,9 @@ import type {
   ContextObjectType,
 } from "@/features/agents/types/agent-api-types";
 import type { InstanceContextEntry } from "@/features/agents/types/instance.types";
+import { ApplicationScope } from "@/features/agents/types/scope.types";
 
-export interface ApplicationScope {
-  selection?: string;
-  content?: string;
-  context?: Record<string, unknown>;
-  [key: string]: unknown;
-}
+export type { ApplicationScope } from "@/features/agents/types/scope.types";
 
 export interface ScopeMappingResult {
   variableValues: Record<string, unknown>;
@@ -68,7 +64,13 @@ export function mapScopeToInstance(
 
   const trace = typeof window !== "undefined";
   const log = (msg: string, ...args: unknown[]) => {
-    if (trace) console.log(`%c[Shortcut]%c ${msg}`, "color:#10b981;font-weight:bold", "color:inherit", ...args);
+    if (trace)
+      console.log(
+        `%c[Shortcut]%c ${msg}`,
+        "color:#10b981;font-weight:bold",
+        "color:inherit",
+        ...args,
+      );
   };
 
   if (trace) {
@@ -77,22 +79,10 @@ export function mapScopeToInstance(
       "color:#10b981;font-weight:bold",
     );
     log("ui scope keys:", Object.keys(applicationScope));
-    log(
-      "scopeMappings (UI → variable or slot):",
-      scopeMappings ?? "(none)",
-    );
-    log(
-      "contextMappings (UI → context slot):",
-      contextMappings ?? "(none)",
-    );
-    log(
-      "agent knows variables:",
-      [...variableNames],
-    );
-    log(
-      "agent knows slots:",
-      [...slotMap.keys()],
-    );
+    log("scopeMappings (UI → variable or slot):", scopeMappings ?? "(none)");
+    log("contextMappings (UI → context slot):", contextMappings ?? "(none)");
+    log("agent knows variables:", [...variableNames]);
+    log("agent knows slots:", [...slotMap.keys()]);
   }
 
   // ── Pass 1: scopeMappings (UI key → variable OR context key) ────────────
@@ -100,7 +90,9 @@ export function mapScopeToInstance(
     for (const [sourceKey, targetName] of Object.entries(scopeMappings)) {
       const value = applicationScope[sourceKey];
       if (value === undefined) {
-        log(`  ✗ "${sourceKey}" → "${targetName}": UI scope has no value — skipped`);
+        log(
+          `  ✗ "${sourceKey}" → "${targetName}": UI scope has no value — skipped`,
+        );
         continue;
       }
 
@@ -108,7 +100,10 @@ export function mapScopeToInstance(
 
       if (variableNames.has(targetName)) {
         variableValues[targetName] = value;
-        log(`  ✓ "${sourceKey}" → variable "${targetName}" =`, previewValue(value));
+        log(
+          `  ✓ "${sourceKey}" → variable "${targetName}" =`,
+          previewValue(value),
+        );
       } else {
         const slot = slotMap.get(targetName);
         contextEntries.push({
@@ -130,12 +125,16 @@ export function mapScopeToInstance(
   if (contextMappings) {
     for (const [sourceKey, slotKey] of Object.entries(contextMappings)) {
       if (mappedScopeKeys.has(sourceKey)) {
-        log(`  • contextMappings "${sourceKey}" skipped — already mapped by scopeMappings`);
+        log(
+          `  • contextMappings "${sourceKey}" skipped — already mapped by scopeMappings`,
+        );
         continue;
       }
       const value = applicationScope[sourceKey];
       if (value === undefined) {
-        log(`  ✗ contextMappings "${sourceKey}" → slot "${slotKey}": UI scope has no value — skipped`);
+        log(
+          `  ✗ contextMappings "${sourceKey}" → slot "${slotKey}": UI scope has no value — skipped`,
+        );
         continue;
       }
 
@@ -173,10 +172,7 @@ export function mapScopeToInstance(
           type: slot?.type ?? inferContextType(ctxVal),
           label: slot?.label ?? ctxKey,
         });
-        log(
-          `  ◦ ad-hoc from context."${ctxKey}" →`,
-          previewValue(ctxVal),
-        );
+        log(`  ◦ ad-hoc from context."${ctxKey}" →`, previewValue(ctxVal));
       }
       continue;
     }
@@ -189,10 +185,7 @@ export function mapScopeToInstance(
       type: slot?.type ?? inferContextType(value),
       label: slot?.label ?? key,
     });
-    log(
-      `  ◦ ad-hoc "${key}" →`,
-      previewValue(value),
-    );
+    log(`  ◦ ad-hoc "${key}" →`, previewValue(value));
   }
 
   if (trace) {

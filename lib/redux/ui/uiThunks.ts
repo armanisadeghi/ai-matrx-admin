@@ -1,11 +1,9 @@
 // @ts-nocheck
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import type { AppDispatch, RootState } from "@/lib/redux/store";
 
 export const loadSchemaForContext = createAsyncThunk<
   UISchema,
   string,
-  { state: RootState }
 >("ui/loadSchemaForContext", async (context, { getState }) => {
   const schemaSlice = getState().globalCache;
   return schemaSlice.entities[context];
@@ -15,7 +13,6 @@ export const loadSchemaForContext = createAsyncThunk<
 export const loadDataForSchema = createAsyncThunk<
   Record<string, any>[],
   string,
-  { state: RootState }
 >("ui/loadDataForSchema", async (context, { getState }) => {
   const schemaSlice = getState().globalCache;
   const dataSlice = getState().entities;

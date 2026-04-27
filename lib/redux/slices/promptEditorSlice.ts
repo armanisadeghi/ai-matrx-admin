@@ -12,9 +12,7 @@ import {
   PromptData,
 } from "@/features/prompts/types/core";
 import { getModelDefaults } from "@/features/prompts/hooks/useModelControls";
-import type { RootState } from "@/lib/redux/store";
 import { selectModelById } from "@/features/ai-models/redux/modelRegistrySlice";
-import { AIModel } from "@/features/ai-models/redux/modelRegistrySlice";
 
 interface PromptEditorState {
   // Identity & Metadata (Root level)
@@ -100,7 +98,10 @@ export const savePrompt = createAsyncThunk(
   "promptEditor/save",
   async (_, { getState, rejectWithValue }) => {
     try {
-      const state = getState() as RootState;
+      const state = getState() as {
+        promptEditor: PromptEditorState;
+        userAuth: { id: string | null };
+      };
       const { id, name, description, messages, variableDefaults, settings } =
         state.promptEditor;
       const userId = state.userAuth.id;
@@ -154,7 +155,7 @@ export const savePrompt = createAsyncThunk(
 export const switchModel = createAsyncThunk(
   "promptEditor/switchModel",
   async (newModelId: string, { getState, dispatch }) => {
-    const state = getState() as RootState;
+    const state = getState() as { promptEditor: PromptEditorState };
     const currentSettings = state.promptEditor.settings;
     const newModel = selectModelById(state as any, newModelId); // Cast to any to avoid circular type issues if strict
 
@@ -396,26 +397,31 @@ export const {
 export default promptEditorSlice.reducer;
 
 // Selectors
-export const selectPromptEditorState = (state: RootState) => state.promptEditor;
-export const selectPromptId = (state: RootState) => state.promptEditor.id;
-export const selectPromptName = (state: RootState) => state.promptEditor.name;
-export const selectPromptDescription = (state: RootState) =>
+type WithPromptEditor = { promptEditor: PromptEditorState };
+
+export const selectPromptEditorState = (state: WithPromptEditor) =>
+  state.promptEditor;
+export const selectPromptId = (state: WithPromptEditor) =>
+  state.promptEditor.id;
+export const selectPromptName = (state: WithPromptEditor) =>
+  state.promptEditor.name;
+export const selectPromptDescription = (state: WithPromptEditor) =>
   state.promptEditor.description;
-export const selectPromptMessages = (state: RootState) =>
+export const selectPromptMessages = (state: WithPromptEditor) =>
   state.promptEditor.messages;
-export const selectPromptVariables = (state: RootState) =>
+export const selectPromptVariables = (state: WithPromptEditor) =>
   state.promptEditor.variableDefaults;
-export const selectPromptSettings = (state: RootState) =>
+export const selectPromptSettings = (state: WithPromptEditor) =>
   state.promptEditor.settings;
-export const selectSelectedModelId = (state: RootState) =>
+export const selectSelectedModelId = (state: WithPromptEditor) =>
   state.promptEditor.settings.model_id;
 export const selectPromptStatus = createSelector(
   [
-    (state: RootState) => state.promptEditor.isDirty,
-    (state: RootState) => state.promptEditor.isSaving,
-    (state: RootState) => state.promptEditor.isLoading,
-    (state: RootState) => state.promptEditor.error,
-    (state: RootState) => state.promptEditor.lastSavedAt,
+    (state: WithPromptEditor) => state.promptEditor.isDirty,
+    (state: WithPromptEditor) => state.promptEditor.isSaving,
+    (state: WithPromptEditor) => state.promptEditor.isLoading,
+    (state: WithPromptEditor) => state.promptEditor.error,
+    (state: WithPromptEditor) => state.promptEditor.lastSavedAt,
   ],
   (isDirty, isSaving, isLoading, error, lastSavedAt) => ({
     isDirty,
@@ -425,7 +431,7 @@ export const selectPromptStatus = createSelector(
     lastSavedAt,
   }),
 );
-export const selectTestModeState = (state: RootState) =>
+export const selectTestModeState = (state: WithPromptEditor) =>
   state.promptEditor.testMode;
-export const selectConversationMessages = (state: RootState) =>
+export const selectConversationMessages = (state: WithPromptEditor) =>
   state.promptEditor.testMode.conversationHistory;

@@ -1,5 +1,5 @@
+import type { AppletsState } from "../types";
 import { createSelector } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store";
 import { AppletBuilder } from "../types";
 import {
   BrokerMapping,
@@ -8,12 +8,13 @@ import {
   AppletContainer,
   AppletLayoutOption,
 } from "@/types/customAppTypes";
-import { selectFieldLabel } from "@/lib/redux/app-builder/selectors/fieldSelectors";
 
 // ================================ Base Selectors ================================
 
 // Base selector for the appletBuilder state
-export const getAppletBuilderState = (state: RootState) => state.appletBuilder;
+
+type WithAppletBuilder = { appletBuilder: AppletsState };
+export const getAppletBuilderState = (state: WithAppletBuilder) => state.appletBuilder;
 
 // Memoized selector for all applets
 export const selectAllApplets = createSelector(
@@ -23,7 +24,7 @@ export const selectAllApplets = createSelector(
 
 // Memoized selector for a specific applet by ID
 export const selectAppletById = createSelector(
-  [getAppletBuilderState, (state: RootState, id: string) => id],
+  [getAppletBuilderState, (state: WithAppletBuilder, id: string) => id],
   (appletBuilderState, id) => appletBuilderState.applets[id] || null,
 );
 
@@ -47,7 +48,7 @@ export const selectAppletError = createSelector(
 export const selectAppletsByIds = createSelector(
   [
     getAppletBuilderState,
-    (_state: RootState, appletIds: string[]) => appletIds,
+    (_state: WithAppletBuilder, appletIds: string[]) => appletIds,
   ],
   (appletBuilderState, appletIds) => {
     return appletIds
@@ -58,13 +59,13 @@ export const selectAppletsByIds = createSelector(
 
 // Memoized selector for applets associated with a specific app ID
 export const selectAppletsByAppId = createSelector(
-  [selectAllApplets, (_state: RootState, appId: string) => appId],
+  [selectAllApplets, (_state: WithAppletBuilder, appId: string) => appId],
   (applets, appId) => applets.filter((applet) => applet.appId === appId),
 );
 
 // Memoized selector for applets NOT associated with a specific app ID
 export const selectAppletsExcludingAppId = createSelector(
-  [selectAllApplets, (_state: RootState, appId: string) => appId],
+  [selectAllApplets, (_state: WithAppletBuilder, appId: string) => appId],
   (applets, appId) => applets.filter((applet) => applet.appId !== appId),
 );
 
@@ -214,7 +215,7 @@ export const selectAppletSourceConfig = selectAppletDataSourceConfig;
 // Find a source config by config ID within an applet
 export const selectSourceConfigByConfigId = createSelector(
   [
-    (state: RootState, appletId: string, configId: string) => {
+    (state: WithAppletBuilder, appletId: string, configId: string) => {
       const applet = getAppletBuilderState(state).applets[appletId];
       return { applet, configId };
     },
@@ -233,7 +234,7 @@ export const selectSourceConfigByConfigId = createSelector(
 // Find a source config by source type within an applet
 export const selectSourceConfigBySourceType = createSelector(
   [
-    (state: RootState, appletId: string, sourceType: string) => {
+    (state: WithAppletBuilder, appletId: string, sourceType: string) => {
       const applet = getAppletBuilderState(state).applets[appletId];
       return { applet, sourceType };
     },
@@ -248,7 +249,7 @@ export const selectSourceConfigBySourceType = createSelector(
 
 // Get all source configs for a specific source type across all applets
 export const selectAllSourceConfigsBySourceType = createSelector(
-  [selectAllApplets, (_state: RootState, sourceType: string) => sourceType],
+  [selectAllApplets, (_state: WithAppletBuilder, sourceType: string) => sourceType],
   (applets, sourceType) => {
     return applets.reduce((configs, applet) => {
       if (
@@ -266,7 +267,7 @@ export const selectAllSourceConfigsBySourceType = createSelector(
 
 // This one is fine - it's directly accessing state
 export const selectAppletBrokerMappings = createSelector(
-  [(state: RootState, id: string) => getAppletBuilderState(state).applets[id]],
+  [(state: WithAppletBuilder, id: string) => getAppletBuilderState(state).applets[id]],
   (applet) => (applet && applet.brokerMap ? applet.brokerMap : null),
 );
 
@@ -284,9 +285,9 @@ export const selectAppletBrokerFieldIds = createSelector(
 // This one needs fixing - it's creating new object references
 export const selectBrokerMappingByBrokerId = createSelector(
   [
-    (state: RootState) => state,
-    (state: RootState, appletId: string) => appletId,
-    (state: RootState, appletId: string, brokerId: string) => brokerId,
+    (state: WithAppletBuilder) => state,
+    (state: WithAppletBuilder, appletId: string) => appletId,
+    (state: WithAppletBuilder, appletId: string, brokerId: string) => brokerId,
   ],
   (state, appletId, brokerId) => {
     const applet = getAppletBuilderState(state).applets[appletId];
@@ -309,24 +310,24 @@ export const selectFieldIdByBrokerId = createSelector(
 
 // This one needs fixing - it's creating new object references
 export const selectFieldLabelByBrokerId = createSelector(
-  [selectFieldIdByBrokerId, (state: RootState) => state],
+  [selectFieldIdByBrokerId, (state: WithAppletBuilder) => state],
   (fieldId, state) => {
     if (!fieldId) return null;
-    return selectFieldLabel(state, fieldId);
+    return state.fieldBuilder.fields[fieldId]?.label ?? null;
   },
 );
 
 // Alternative approach for selectFieldLabelByBrokerId that avoids the nested selector call
 export const selectFieldLabelByBrokerIdAlt = createSelector(
   [
-    (state: RootState) => state,
-    (state: RootState, appletId: string) => appletId,
-    (state: RootState, appletId: string, brokerId: string) => brokerId,
+    (state: WithAppletBuilder) => state,
+    (state: WithAppletBuilder, appletId: string) => appletId,
+    (state: WithAppletBuilder, appletId: string, brokerId: string) => brokerId,
   ],
   (state, appletId, brokerId) => {
     const fieldId = selectFieldIdByBrokerId(state, appletId, brokerId);
     if (!fieldId) return null;
-    return selectFieldLabel(state, fieldId);
+    return state.fieldBuilder.fields[fieldId]?.label ?? null;
   },
 );
 
@@ -334,7 +335,7 @@ export const selectFieldLabelByBrokerIdAlt = createSelector(
 
 // Get all broker mappings for a specific broker ID across all applets
 export const selectAllBrokerMappingsByBrokerId = createSelector(
-  [selectAllApplets, (_state: RootState, brokerId: string) => brokerId],
+  [selectAllApplets, (_state: WithAppletBuilder, brokerId: string) => brokerId],
   (applets, brokerId) => {
     return applets.reduce((mappings, applet) => {
       if (applet.brokerMap && applet.brokerMap.length > 0) {
@@ -351,7 +352,7 @@ export const selectAllBrokerMappingsByBrokerId = createSelector(
 // 1. Select all needed brokers for a specific applet
 export const selectAllNeededBrokers = createSelector(
   [
-    (state: RootState, appletId: string) =>
+    (state: WithAppletBuilder, appletId: string) =>
       selectAppletDataSourceConfig(state, appletId),
   ],
   (dataSourceConfig: AppletSourceConfig | null) => {
@@ -369,9 +370,9 @@ export const selectAllNeededBrokers = createSelector(
 // 2. Select unmatched needed brokers (needed but not in brokerMap)
 export const selectUnmatchedNeededBrokers = createSelector(
   [
-    (state: RootState, appletId: string) =>
+    (state: WithAppletBuilder, appletId: string) =>
       selectAllNeededBrokers(state, appletId),
-    (state: RootState, appletId: string) =>
+    (state: WithAppletBuilder, appletId: string) =>
       selectAppletBrokerMappings(state, appletId),
   ],
   (neededBrokers: NeededBroker[], brokerMap: BrokerMapping[] | null) => {
@@ -388,7 +389,7 @@ export const selectUnmatchedNeededBrokers = createSelector(
 // 3. Select count of all needed brokers
 export const selectNeededBrokerCount = createSelector(
   [
-    (state: RootState, appletId: string) =>
+    (state: WithAppletBuilder, appletId: string) =>
       selectAllNeededBrokers(state, appletId),
   ],
   (neededBrokers: NeededBroker[]) => neededBrokers.length,
@@ -397,7 +398,7 @@ export const selectNeededBrokerCount = createSelector(
 // 4. Select count of unmatched needed brokers
 export const selectUnmatchedNeededBrokerCount = createSelector(
   [
-    (state: RootState, appletId: string) =>
+    (state: WithAppletBuilder, appletId: string) =>
       selectUnmatchedNeededBrokers(state, appletId),
   ],
   (unmatchedBrokers: NeededBroker[]) => unmatchedBrokers.length,
@@ -406,7 +407,7 @@ export const selectUnmatchedNeededBrokerCount = createSelector(
 // 5. Check broker map integrity (no duplicate broker IDs in brokerMap)
 export const selectIsBrokerMapIntegrity = createSelector(
   [
-    (state: RootState, appletId: string) =>
+    (state: WithAppletBuilder, appletId: string) =>
       selectAppletBrokerMappings(state, appletId),
   ],
   (brokerMap: BrokerMapping[] | null) => {
@@ -422,7 +423,7 @@ export const selectIsBrokerMapIntegrity = createSelector(
 // Select required needed brokers
 export const selectRequiredNeededBrokers = createSelector(
   [
-    (state: RootState, appletId: string) =>
+    (state: WithAppletBuilder, appletId: string) =>
       selectAllNeededBrokers(state, appletId),
   ],
   (neededBrokers: NeededBroker[]) =>
@@ -432,7 +433,7 @@ export const selectRequiredNeededBrokers = createSelector(
 // Select count of required needed brokers
 export const selectRequiredNeededBrokerCount = createSelector(
   [
-    (state: RootState, appletId: string) =>
+    (state: WithAppletBuilder, appletId: string) =>
       selectRequiredNeededBrokers(state, appletId),
   ],
   (requiredBrokers: NeededBroker[]) => requiredBrokers.length,
@@ -441,9 +442,9 @@ export const selectRequiredNeededBrokerCount = createSelector(
 // Check if all required brokers are mapped
 export const selectIsAllRequiredBrokersMapped = createSelector(
   [
-    (state: RootState, appletId: string) =>
+    (state: WithAppletBuilder, appletId: string) =>
       selectRequiredNeededBrokers(state, appletId),
-    (state: RootState, appletId: string) =>
+    (state: WithAppletBuilder, appletId: string) =>
       selectAppletBrokerMappings(state, appletId),
   ],
   (requiredBrokers: NeededBroker[], brokerMappings: BrokerMapping[] | null) => {
@@ -460,9 +461,9 @@ export const selectIsAllRequiredBrokersMapped = createSelector(
 // Select count of mapped brokers
 export const selectMappedBrokerCount = createSelector(
   [
-    (state: RootState, appletId: string) =>
+    (state: WithAppletBuilder, appletId: string) =>
       selectNeededBrokerCount(state, appletId),
-    (state: RootState, appletId: string) =>
+    (state: WithAppletBuilder, appletId: string) =>
       selectUnmatchedNeededBrokerCount(state, appletId),
   ],
   (neededBrokerCount: number, unmatchedBrokerCount: number) =>
@@ -472,9 +473,9 @@ export const selectMappedBrokerCount = createSelector(
 // Check if a specific broker is mapped
 export const selectIsBrokerMapped = createSelector(
   [
-    (state: RootState, appletId: string, brokerId: string) =>
+    (state: WithAppletBuilder, appletId: string, brokerId: string) =>
       selectAppletBrokerMappings(state, appletId),
-    (_state: RootState, _appletId: string, brokerId: string) => brokerId,
+    (_state: WithAppletBuilder, _appletId: string, brokerId: string) => brokerId,
   ],
   (brokerMappings, brokerId) => {
     if (!brokerMappings || brokerMappings.length === 0) {
@@ -487,9 +488,9 @@ export const selectIsBrokerMapped = createSelector(
 // Return sorted brokers with unmapped ones first, then required status, then alphabetically
 export const selectBrokerMappedStatus = createSelector(
   [
-    (state: RootState, appletId: string) =>
+    (state: WithAppletBuilder, appletId: string) =>
       selectAllNeededBrokers(state, appletId),
-    (state: RootState, appletId: string) =>
+    (state: WithAppletBuilder, appletId: string) =>
       selectAppletBrokerMappings(state, appletId),
   ],
   (neededBrokers, brokerMappings) => {
@@ -511,9 +512,9 @@ export const selectBrokerMappedStatus = createSelector(
 
 export const selectSortedNeededBrokers = createSelector(
   [
-    (state: RootState, appletId: string) =>
+    (state: WithAppletBuilder, appletId: string) =>
       selectAllNeededBrokers(state, appletId),
-    (state: RootState, appletId: string) =>
+    (state: WithAppletBuilder, appletId: string) =>
       selectBrokerMappedStatus(state, appletId),
   ],
   (neededBrokers, mappedStatus) => {
@@ -539,9 +540,9 @@ export const selectSortedNeededBrokers = createSelector(
 // Calculate broker mapping completion percentage
 export const selectBrokerMappingCompletionPercentage = createSelector(
   [
-    (state: RootState, appletId: string) =>
+    (state: WithAppletBuilder, appletId: string) =>
       selectNeededBrokerCount(state, appletId),
-    (state: RootState, appletId: string) =>
+    (state: WithAppletBuilder, appletId: string) =>
       selectMappedBrokerCount(state, appletId),
   ],
   (neededBrokerCount: number, mappedBrokerCount: number) => {
@@ -555,7 +556,7 @@ export const selectBrokerMappingCompletionPercentage = createSelector(
 // Returns a Set of all field IDs that are used in any container in the applet
 export const selectAllUsedFieldsInApplet = createSelector(
   [
-    (state: RootState, appletId: string) =>
+    (state: WithAppletBuilder, appletId: string) =>
       selectContainersForApplet(state, appletId),
   ],
   (containers) => {

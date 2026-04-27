@@ -3,29 +3,9 @@
 import React from "react";
 import { ENTITY_FIELD_COMPONENTS } from "./field-components/field-component-registries";
 import FormFieldMotionWrapper from "@/components/matrx/ArmaniForm/field-components/wrappers/FormFieldMotionWrapper";
-import { EntityKeys } from "@/types/entityTypes";
-import { EntityStateField } from "@/lib/redux/entity/types/stateTypes";
-import { MatrxVariant } from "@/components/matrx/ArmaniForm/field-components/types";
-import {
-  AnimationPreset,
-  ComponentDensity,
-  ComponentSize,
-} from "@/types/componentConfigTypes";
+import type { EntityBaseFieldProps } from "./entityBaseFieldProps";
 
-export interface EntityBaseFieldProps {
-  entityKey: EntityKeys;
-  dynamicFieldInfo: EntityStateField;
-  value?: any;
-  onChange: (value: any) => void;
-  density?: ComponentDensity;
-  animationPreset?: AnimationPreset;
-  size?: ComponentSize;
-  variant?: MatrxVariant;
-  labelPosition?: "default" | "left" | "right" | "top" | "bottom";
-  disabled?: boolean;
-  floatingLabel?: boolean;
-  className?: string;
-}
+export type { EntityBaseFieldProps } from "./entityBaseFieldProps";
 
 const EntityBaseField = ({
   entityKey,

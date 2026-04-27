@@ -6,7 +6,7 @@ import { brokerSelectors, brokerActions } from "@/lib/redux/brokerSlice";
 import { ensureValidWidthClass } from "@/features/applet/constants/field-constants";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { CommonFieldProps } from "./core/AppletFieldController";
+import { CommonFieldProps } from "./core/types";
 
 const TagInputField: React.FC<CommonFieldProps> = ({ field, sourceId="no-applet-id", isMobile, source = "applet", disabled = false, className = "" }) => {
     const { id, label, placeholder = "Type and press Enter to add tags", componentProps, required = false } = field;

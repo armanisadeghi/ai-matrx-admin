@@ -4,7 +4,7 @@ import React from "react";
 import {cn} from "@/utils/cn";
 import {Label} from "@/components/ui/label";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
-import {EntityBaseFieldProps} from "../EntityBaseField";
+import type { EntityBaseFieldProps } from "../entityBaseFieldProps";
 
 interface EntitySelectProps extends EntityBaseFieldProps,
     Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'onChange' | 'size' | 'value'> {

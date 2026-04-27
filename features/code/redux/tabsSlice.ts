@@ -1,6 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { EditorFile } from "../types";
-import type { RootState } from "@/lib/redux/store";
 
 export interface CodeTabsState {
   /** Map of tabId → file. */
@@ -130,15 +129,17 @@ export default slice.reducer;
 
 const emptyOrder: string[] = [];
 
-export const selectCodeTabs = (state: RootState) =>
+type WithCodeTabs = { codeTabs: CodeTabsState };
+
+export const selectCodeTabs = (state: WithCodeTabs) =>
   state.codeTabs ?? initialState;
-export const selectTabOrder = (state: RootState) =>
+export const selectTabOrder = (state: WithCodeTabs) =>
   selectCodeTabs(state).order ?? emptyOrder;
-export const selectTabById = (id: string) => (state: RootState) =>
+export const selectTabById = (id: string) => (state: WithCodeTabs) =>
   selectCodeTabs(state).byId[id];
-export const selectActiveTabId = (state: RootState) =>
+export const selectActiveTabId = (state: WithCodeTabs) =>
   selectCodeTabs(state).activeId;
-export const selectActiveTab = (state: RootState) => {
+export const selectActiveTab = (state: WithCodeTabs) => {
   const tabs = selectCodeTabs(state);
   return tabs.activeId ? tabs.byId[tabs.activeId] : null;
 };

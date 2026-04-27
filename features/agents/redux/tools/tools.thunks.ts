@@ -1,12 +1,13 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { supabase } from "@/utils/supabase/client";
-import type { RootState } from "@/lib/redux/store";
 import type { DatabaseTool } from "@/utils/supabase/tools-service";
+
+type WithTools = { tools: { tools: DatabaseTool[]; status: string } };
 
 export const fetchAvailableTools = createAsyncThunk<
   DatabaseTool[],
   void,
-  { state: RootState }
+  { state: WithTools }
 >("tools/fetchAvailable", async (_, { getState }) => {
   if (getState().tools.status === "succeeded") {
     return getState().tools.tools;

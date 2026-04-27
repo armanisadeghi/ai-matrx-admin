@@ -11,9 +11,10 @@ import {
   EntityStateField,
   MatrxRecordId,
 } from "@/lib/redux/entity/types/stateTypes";
-import EntityBaseField, { EntityBaseFieldProps } from "./EntityBaseField";
+import EntityBaseField from "./EntityBaseField";
+import type { EntityBaseFieldProps } from "./entityBaseFieldProps";
+import type { FormState, SmartComponentProps } from "./armaniSimpleFormTypes";
 import { EntityKeys } from "@/types/entityTypes";
-import { FormState } from "@/components/matrx/ArmaniForm/SimpleForm";
 import { createEntitySelectors } from "@/lib/redux/entity/selectors";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectEntityPrettyName } from "@/lib/redux/schema/globalCacheSelectors";
@@ -41,20 +42,7 @@ interface SimpleFormProps {
   dynamicStyles: DynamicStyleOptions;
 }
 
-export interface SmartComponentProps {
-  entityKey: EntityKeys;
-  matrxRecordId: MatrxRecordId;
-  fieldInfo: EntityStateField;
-  primaryEntityKey: EntityKeys;
-  primaryActiveRecordId: MatrxRecordId | null;
-  foreignActiveRecordIds: Record<EntityKeys, MatrxRecordId> | null;
-  formMode: "display" | "create" | "edit" | "view";
-  onSubmitUpdate?: (data: FormState) => void;
-  onSubmitCreate?: (data: FormState) => void;
-  onSubmitDelete?: () => void;
-  dynamicLayoutOptions: DynamicLayoutOptions;
-  dynamicStyles: DynamicStyleOptions;
-}
+export type { SmartComponentProps } from "./armaniSimpleFormTypes";
 
 const EntityFkWrapper = ({
   entityKey,

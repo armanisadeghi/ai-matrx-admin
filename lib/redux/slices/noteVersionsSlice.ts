@@ -5,7 +5,6 @@
  */
 
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import type { RootState } from '../store';
 import type { NoteVersion, VersionHistoryState } from '@/features/text-diff/types';
 import { supabase } from '@/utils/supabase/client';
 
@@ -168,16 +167,18 @@ export const { clearNoteVersions, clearAllVersions } = noteVersionsSlice.actions
 // Selectors
 // ============================================================================
 
-export const selectNoteVersions = (noteId: string) => (state: RootState) =>
+type WithNoteVersions = { noteVersions: VersionHistoryState };
+
+export const selectNoteVersions = (noteId: string) => (state: WithNoteVersions) =>
   state.noteVersions.versions[noteId];
 
-export const selectNoteVersionsLoading = (noteId: string) => (state: RootState) =>
+export const selectNoteVersionsLoading = (noteId: string) => (state: WithNoteVersions) =>
   state.noteVersions.loading[noteId] ?? false;
 
-export const selectNoteVersionsError = (noteId: string) => (state: RootState) =>
+export const selectNoteVersionsError = (noteId: string) => (state: WithNoteVersions) =>
   state.noteVersions.error[noteId] ?? null;
 
-export const selectLatestVersion = (noteId: string) => (state: RootState) => {
+export const selectLatestVersion = (noteId: string) => (state: WithNoteVersions) => {
   const versions = state.noteVersions.versions[noteId];
   if (!versions || versions.length === 0) return null;
   return versions[0]; // Already sorted by version_number DESC

@@ -12,7 +12,6 @@
 //   3. To select: use makeSelectFilteredAgents("agents-main") from agentSelectors.ts
 
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -176,13 +175,15 @@ const agentConsumersSlice = createSlice({
 
 // ── Selectors ──────────────────────────────────────────────────────────────────
 
+type WithAgentConsumers = { agentConsumers: AgentConsumersState };
+
 export const selectAgentConsumer = (
-  state: RootState,
+  state: WithAgentConsumers,
   consumerId: string,
 ): AgentConsumerState =>
   state.agentConsumers?.consumers[consumerId] ?? DEFAULT_AGENT_CONSUMER_STATE;
 
-export const selectAllAgentConsumers = (state: RootState) =>
+export const selectAllAgentConsumers = (state: WithAgentConsumers) =>
   state.agentConsumers?.consumers ?? {};
 
 // ── Exports ────────────────────────────────────────────────────────────────────

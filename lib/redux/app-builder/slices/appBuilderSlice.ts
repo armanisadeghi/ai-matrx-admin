@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { setActiveApp } from "../appBuilderSyncActions";
 import { createAppThunk, updateAppThunk, deleteAppThunk, addAppletThunk, removeAppletThunk, fetchAppsThunk, checkAppSlugUniqueness, FetchAppByIdSuccessAction, saveAppThunk } from "../thunks/appBuilderThunks";
-import { AppBuilder } from "../types";
+import { AppBuilder, type AppsState } from "../types";
 import { v4 as uuidv4 } from "uuid";
 import { AppLayoutOptions, CustomActionButton } from "@/types/customAppTypes";
 
@@ -35,14 +36,6 @@ export const DEFAULT_APP: Partial<AppBuilder> = {
     appDataContext: {},
 };
 
-
-export interface AppsState {
-    apps: Record<string, AppBuilder>;
-    isLoading: boolean;
-    error: string | null;
-    activeAppId: string | null;
-    newAppId: string | null;
-}
 
 const initialState: AppsState = {
     apps: {},
@@ -95,15 +88,6 @@ export const appBuilderSlice = createSlice({
                 }
             }
         },
-        // Set the active app for editing
-        setActiveApp: (state, action: PayloadAction<string | null>) => {
-            const id = action.payload;
-            if (id !== null && !state.apps[id]) {
-                console.error(`App with ID ${id} not found in state`);
-            }
-            state.activeAppId = id;
-        },
-        
         // Existing actions - preserve these
         setApp: (state, action: PayloadAction<AppBuilder>) => {
             state.apps[action.payload.id] = { ...action.payload, isDirty: action.payload.isDirty || true, isLocal: action.payload.isLocal || true, slugStatus: action.payload.slugStatus || 'unchecked' };
@@ -263,6 +247,14 @@ export const appBuilderSlice = createSlice({
         },
     },
     extraReducers: (builder) => {
+        builder.addCase(setActiveApp, (state, action) => {
+            const id = action.payload;
+            if (id !== null && !state.apps[id]) {
+                console.error(`App with ID ${id} not found in state`);
+            }
+            state.activeAppId = id;
+        });
+
         // Create App
         builder.addCase(createAppThunk.pending, (state) => {
             state.isLoading = true;
@@ -445,7 +437,6 @@ export const {
     
     // New slice-style actions
     startNewApp,
-    setActiveApp,
     cancelNewApp,
     setName,
     setDescription,
@@ -466,5 +457,7 @@ export const {
     setIsLocal,
     setSlugStatus,
 } = appBuilderSlice.actions;
+
+export { setActiveApp } from "../appBuilderSyncActions";
 
 export default appBuilderSlice.reducer;

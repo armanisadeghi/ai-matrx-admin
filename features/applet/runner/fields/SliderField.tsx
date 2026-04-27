@@ -5,7 +5,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { brokerSelectors, brokerActions } from "@/lib/redux/brokerSlice";
 import { ensureValidWidthClass } from "@/features/applet/constants/field-constants";
 import { cn } from "@/lib/utils";
-import { CommonFieldProps } from "./core/AppletFieldController";
+import { CommonFieldProps } from "./core/types";
 // Import the shadcn/ui components
 import * as SliderPrimitive from "@radix-ui/react-slider";
 

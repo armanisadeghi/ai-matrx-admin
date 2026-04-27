@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import SelectionPills from "./common/SelectionPills";
 import ValidationMessage from "./common/ValidationMessage";
 import { FieldOption } from "@/types/customAppTypes";
-import { CommonFieldProps } from "./core/AppletFieldController";
+import { CommonFieldProps } from "./core/types";
 
 // Define the type for selected option in state
 export interface SelectedOptionValue extends FieldOption {

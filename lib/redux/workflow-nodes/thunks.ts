@@ -1,12 +1,13 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { workflowNodeService } from "./service";
+
+type WithWorkflowNodes = { workflowNodes: WorkflowNodeState };
 import { workflowNodesSelectors } from "./selectors";
 import {
   WorkflowNode,
   WorkflowNodeCreateInput,
   WorkflowNodeUpdateInput,
 } from "./types";
-import type { RootState } from "@/lib/redux/store";
 
 export const fetchAllWorkflowNodes = createAsyncThunk(
   "workflowNodes/fetchAll",
@@ -63,7 +64,7 @@ export const saveWorkflowNode = createAsyncThunk(
     { getState },
   ) => {
     // 1. Get current node state from Redux
-    const state = getState() as RootState;
+    const state = getState() as WithWorkflowNodes;
     const currentNode = workflowNodesSelectors.nodeById(state, id);
 
     if (!currentNode) {
@@ -82,7 +83,7 @@ export const duplicateWorkflowNode = createAsyncThunk(
   "workflowNodes/duplicate",
   async (id: string, { getState }) => {
     // 1. Get current node state from Redux
-    const state = getState() as RootState;
+    const state = getState() as WithWorkflowNodes;
     const currentNode = workflowNodesSelectors.nodeById(state, id);
 
     if (!currentNode) {

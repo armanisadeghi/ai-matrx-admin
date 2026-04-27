@@ -89,8 +89,13 @@ export function deriveAgentMode(
 
 type AgentModeControllerProps = {
   agentId: string;
-  basePath: string;
-  currentPath: string;
+  /** Base path for mode URLs. Defaults to `/agents`. */
+  basePath?: string;
+  /** SSR-friendly current path. Optional — body uses `usePathname()` when
+   *  omitted (which is fine for the active-tab indicator since this is a
+   *  client component). Accepted so callers can pass it through without
+   *  conditional spreads. */
+  currentPath?: string;
 };
 
 export function AgentModeController({

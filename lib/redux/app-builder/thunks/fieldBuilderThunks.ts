@@ -1,4 +1,5 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
+import type { FieldsState } from "../types";
 import {
   createFieldComponent,
   updateFieldComponent,
@@ -9,13 +10,11 @@ import {
 } from "../service/fieldComponentService";
 import { FieldBuilder } from "../types";
 import { ContainerBuilder } from "../types";
-import type { RootState } from "@/lib/redux/store";
-import { selectFieldById } from "../selectors/fieldSelectors";
 import {
   addOrRefreshFieldInGroup,
   refreshAllFieldsInGroup,
 } from "../service/fieldContainerService";
-import { setActiveField } from "../slices/fieldBuilderSlice";
+import { setActiveField } from "../fieldBuilderSyncActions";
 import { getComponentTypeDefaults } from "@/features/applet/constants/field-constants";
 import { v4 as uuidv4 } from "uuid";
 import { normalizeFieldDefinitionWithUuid } from "@/features/applet/utils/field-normalization";
@@ -23,13 +22,16 @@ import { normalizeFieldDefinitionWithUuid } from "@/features/applet/utils/field-
 /**
  * Unified thunk for saving a field - handles both create and update
  */
+
+type WithFieldBuilder = { fieldBuilder: FieldsState };
+
 export const saveFieldThunk = createAsyncThunk<
   FieldBuilder,
   string,
-  { state: RootState }
+  { state: WithFieldBuilder }
 >("fieldBuilder/saveField", async (fieldId, { getState, rejectWithValue }) => {
   try {
-    const field = selectFieldById(getState(), fieldId);
+    const field = getState().fieldBuilder.fields[fieldId] ?? null;
 
     if (!field) {
       throw new Error(`Field with ID ${fieldId} not found`);
@@ -204,7 +206,7 @@ export const setFieldPublicThunk = createAsyncThunk<
 export const saveFieldToContainerThunk = createAsyncThunk<
   { containerId: string; updatedContainer: ContainerBuilder },
   { containerId: string; fieldId: string },
-  { state: RootState }
+  { state: WithFieldBuilder }
 >(
   "fieldBuilder/saveFieldToContainer",
   async ({ containerId, fieldId }, { rejectWithValue }) => {
@@ -246,13 +248,13 @@ export type FetchFieldByIdSuccessAction = ReturnType<
 export const setActiveFieldWithFetchThunk = createAsyncThunk<
   void,
   string,
-  { state: RootState }
+  { state: WithFieldBuilder }
 >(
   "fieldBuilder/setActiveFieldWithFetch",
   async (fieldId, { getState, dispatch, rejectWithValue }) => {
     try {
       // Check if field already exists in state
-      const field = selectFieldById(getState() as RootState, fieldId);
+      const field = getState().fieldBuilder.fields[fieldId] ?? null;
 
       if (field) {
         // If it exists, just set it as active

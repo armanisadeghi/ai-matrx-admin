@@ -11,8 +11,6 @@ import {
   getComponentGroupById,
 } from "../service/fieldContainerService";
 import { ContainerBuilder } from "../types";
-import type { RootState } from "@/lib/redux/store";
-
 import { v4 as uuidv4 } from "uuid";
 import { selectContainerById } from "../selectors/containerSelectors";
 import {
@@ -22,15 +20,19 @@ import {
 } from "../service/customAppletService";
 import { FieldDefinition } from "@/types/customAppTypes";
 import { saveFieldAndUpdateContainerThunk } from "./fieldBuilderThunks";
-import { setActiveContainer } from "../slices/containerBuilderSlice";
 
 /**
  * Unified thunk for saving a container - handles both create and update
  */
+
+import type { ContainersState } from "../types";
+
+type WithContainerBuilder = { containerBuilder: ContainersState };
+
 export const saveContainerThunk = createAsyncThunk<
   ContainerBuilder,
   string,
-  { state: RootState }
+  { state: WithContainerBuilder }
 >(
   "containerBuilder/saveContainer",
   async (containerId, { getState, rejectWithValue }) => {
@@ -113,7 +115,7 @@ export const saveContainerAndUpdateAppletThunk = createAsyncThunk(
 export const createContainerThunk = createAsyncThunk<
   ContainerBuilder,
   Partial<ContainerBuilder>,
-  { state: RootState }
+  { state: WithContainerBuilder }
 >(
   "containerBuilder/createContainer",
   async (containerData, { rejectWithValue }) => {
@@ -143,7 +145,7 @@ export const createContainerThunk = createAsyncThunk<
 export const updateContainerThunk = createAsyncThunk<
   ContainerBuilder,
   { id: string; changes: Partial<ContainerBuilder> },
-  { state: RootState }
+  { state: WithContainerBuilder }
 >(
   "containerBuilder/updateContainer",
   async ({ id, changes }, { getState, rejectWithValue }) => {
@@ -179,7 +181,7 @@ export const updateContainerThunk = createAsyncThunk<
 export const deleteContainerThunk = createAsyncThunk<
   void,
   string,
-  { state: RootState }
+  { state: WithContainerBuilder }
 >(
   "containerBuilder/deleteContainer",
   async (containerId, { rejectWithValue }) => {
@@ -196,7 +198,7 @@ export const deleteContainerThunk = createAsyncThunk<
 export const addFieldAndCompileContainerThunk = createAsyncThunk<
   { containerId: string; field: FieldDefinition },
   { containerId: string; field: FieldDefinition },
-  { state: RootState }
+  { state: WithContainerBuilder }
 >(
   "containerBuilder/addField",
   async ({ containerId, field }, { getState, rejectWithValue }) => {
@@ -227,7 +229,7 @@ export const addFieldAndCompileContainerThunk = createAsyncThunk<
 export const removeFieldThunk = createAsyncThunk<
   void,
   { containerId: string; fieldId: string },
-  { state: RootState }
+  { state: WithContainerBuilder }
 >(
   "containerBuilder/removeField",
   async ({ containerId, fieldId }, { rejectWithValue }) => {
@@ -251,7 +253,7 @@ export const updateFieldThunk = createAsyncThunk<
     updatedContainer: ContainerBuilder;
   },
   { containerId: string; fieldId: string; changes: Partial<FieldDefinition> },
-  { state: RootState }
+  { state: WithContainerBuilder }
 >(
   "containerBuilder/updateField",
   async ({ containerId, fieldId, changes }, { getState, rejectWithValue }) => {
@@ -296,7 +298,7 @@ export const updateFieldThunk = createAsyncThunk<
 export const recompileContainerThunk = createAsyncThunk<
   ContainerBuilder,
   string,
-  { state: RootState }
+  { state: WithContainerBuilder }
 >(
   "containerBuilder/recompileContainer",
   async (containerId, { rejectWithValue }) => {
@@ -328,7 +330,7 @@ export const recompileContainerThunk = createAsyncThunk<
 export const fetchContainersThunk = createAsyncThunk<
   ContainerBuilder[],
   void,
-  { state: RootState }
+  { state: WithContainerBuilder }
 >("containerBuilder/fetchContainers", async (_, { rejectWithValue }) => {
   try {
     const containers = await getAllComponentGroups();
@@ -343,7 +345,7 @@ export const fetchContainersThunk = createAsyncThunk<
 export const fetchContainerByIdThunk = createAsyncThunk<
   ContainerBuilder,
   string,
-  { state: RootState }
+  { state: WithContainerBuilder }
 >(
   "containerBuilder/fetchContainerById",
   async (containerId, { rejectWithValue }) => {
@@ -366,7 +368,7 @@ export const fetchContainerByIdThunk = createAsyncThunk<
 export const saveOrUpdateContainerToAppletThunk = createAsyncThunk<
   { appletId: string; updatedApplet: ContainerBuilder[] | null },
   { appletId: string; containerId: string; recompileAllFields?: boolean },
-  { state: RootState }
+  { state: WithContainerBuilder }
 >(
   "containerBuilder/saveOrUpdateContainerToApplet",
   async (
@@ -444,7 +446,7 @@ export const saveOrUpdateContainerToAppletThunk = createAsyncThunk<
 export const moveFieldUpThunk = createAsyncThunk<
   { containerId: string; newFieldsOrder: FieldDefinition[] },
   { containerId: string; fieldId: string },
-  { state: RootState }
+  { state: WithContainerBuilder }
 >(
   "containerBuilder/moveFieldUp",
   async ({ containerId, fieldId }, { getState, rejectWithValue }) => {
@@ -488,7 +490,7 @@ export const moveFieldUpThunk = createAsyncThunk<
 export const moveFieldDownThunk = createAsyncThunk<
   { containerId: string; newFieldsOrder: FieldDefinition[] },
   { containerId: string; fieldId: string },
-  { state: RootState }
+  { state: WithContainerBuilder }
 >(
   "containerBuilder/moveFieldDown",
   async ({ containerId, fieldId }, { getState, rejectWithValue }) => {
@@ -545,20 +547,20 @@ export type FetchContainerByIdSuccessAction = ReturnType<
 export const setActiveContainerWithFetchThunk = createAsyncThunk<
   void,
   string,
-  { state: RootState }
+  { state: WithContainerBuilder }
 >(
   "containerBuilder/setActiveContainerWithFetch",
   async (containerId, { getState, dispatch, rejectWithValue }) => {
     try {
       // Check if container already exists in state
       const container = selectContainerById(
-        getState() as RootState,
+        getState() as WithContainerBuilder,
         containerId,
       );
 
       if (container) {
         // If it exists, just set it as active
-        dispatch(setActiveContainer(containerId));
+        dispatch({ type: 'containerBuilder/setActiveContainer', payload: containerId });
       } else {
         // Otherwise, fetch it first
         try {
@@ -575,18 +577,18 @@ export const setActiveContainerWithFetchThunk = createAsyncThunk<
             );
 
             // Set it as active
-            dispatch(setActiveContainer(containerId));
+            dispatch({ type: 'containerBuilder/setActiveContainer', payload: containerId });
           } else {
             console.error(
               `Container with ID ${containerId} not found on server`,
             );
-            dispatch(setActiveContainer(null));
+            dispatch({ type: 'containerBuilder/setActiveContainer', payload: null });
           }
         } catch (error: any) {
           console.error(
             `Failed to fetch container with ID ${containerId}: ${error.message}`,
           );
-          dispatch(setActiveContainer(null));
+          dispatch({ type: 'containerBuilder/setActiveContainer', payload: null });
           return rejectWithValue(error.message || "Failed to fetch container");
         }
       }

@@ -6,7 +6,7 @@ import { brokerSelectors, brokerActions } from "@/lib/redux/brokerSlice";
 import { ensureValidWidthClass } from "@/features/applet/constants/field-constants";
 import { Star } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { CommonFieldProps } from "./core/AppletFieldController";
+import { CommonFieldProps } from "./core/types";
 
 // Maximum allowed stars
 const MAX_ALLOWED_STARS = 15;

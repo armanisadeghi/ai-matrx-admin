@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
-import { SelectedOptionValue } from "../DirectMultiSelectField";
+import { SelectedOptionValue } from "./types";
 
 interface SelectionPillsProps {
   selectedOptions: SelectedOptionValue[];
@@ -42,7 +42,7 @@ const SelectionPills: React.FC<SelectionPillsProps> = ({
           )}
         </Badge>
       ))}
-      
+
       {!disabled && onClearAll && selectedOptions.length > 1 && (
         <Badge
           className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 px-2 py-1 mr-1 mb-1 cursor-pointer"

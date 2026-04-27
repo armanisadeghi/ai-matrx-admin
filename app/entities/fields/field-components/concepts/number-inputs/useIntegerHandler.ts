@@ -1,6 +1,6 @@
 // number-handlers/useIntegerHandler.ts
 import { useState, useEffect, useCallback } from 'react';
-import { NumberHandlerResult, NumberTypeConfig } from './EntityNumberInput';
+import type { NumberHandlerResult, NumberTypeConfig } from './entityNumberInputShared';
 
 
 interface IntegerHandlerProps {

@@ -1,8 +1,36 @@
 /**
  * DynamicButtons
- * 
+ *
  * Database-driven button group that loads system prompts configured as buttons.
  * Shows disabled state for placeholders.
+ *
+ * TODO(prompt-to-agent-sweep): UNIQUE CASE — does NOT follow the 1:1 prompt→agent id mapping.
+ *
+ * Unlike notes / context-menu / quick-chat / code-editor consumers, this
+ * component reads from `public.system_prompts`, whose `source_prompt_id`
+ * column points at user-prompt rows in `public.prompts` (NOT
+ * `prompt_builtins`). Many rows even have `source_prompt_id = null` and
+ * rely on a hard-coded `functionality_id` ("translate-text",
+ * "explain-text", "fix-code", etc.) — i.e. the legacy "system prompts"
+ * router with no agent-side equivalent today.
+ *
+ * To migrate properly:
+ *   1. Decide whether the agent system grows a parallel
+ *      `agx_system_prompts` (or similar) registry, OR every
+ *      `system_prompts` row gets a paired `agx_shortcut` and we rewire
+ *      `useButtonPrompts` to load from `agx_shortcut` instead.
+ *   2. Once shortcuts exist for each row, swap this body for
+ *      `useShortcutTrigger()` and the appropriate scope mapping
+ *      (selection / content / context). The shortcut row provides
+ *      auto_run / allow_chat / display_mode — drop
+ *      `placement_settings.allowChat`, `<PromptRunnerModal>`, and the
+ *      whole local `runId`/modalOpen state.
+ *   3. For "no custom logic" buttons (Translate, Search Web, Explain,
+ *      etc.) the shortcut's default `display_mode: "modal-full"` is the
+ *      desired UI — drop the inline modal entirely.
+ *
+ * Until executed, this consumer keeps the legacy prompt-execution slice
+ * AND the `features/prompts/** ` runner UI alive.
  */
 
 'use client';

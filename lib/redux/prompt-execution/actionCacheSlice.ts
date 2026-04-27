@@ -5,7 +5,6 @@
  */
 
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import type { RootState } from "../store";
 import type { PromptAction } from "@/features/prompt-actions/types/promptActionTypes";
 
 /**
@@ -206,8 +205,10 @@ const actionCacheSlice = createSlice({
 /**
  * Get a cached action by ID
  */
+type WithActionCache = { actionCache: ActionCacheState };
+
 export const selectCachedAction = (
-  state: RootState,
+  state: WithActionCache,
   actionId: string,
 ): CachedAction | null => state.actionCache?.actions?.[actionId] || null;
 
@@ -215,7 +216,7 @@ export const selectCachedAction = (
  * Check if an action is cached
  */
 export const selectIsActionCached = (
-  state: RootState,
+  state: WithActionCache,
   actionId: string,
 ): boolean => !!state.actionCache?.actions?.[actionId];
 
@@ -223,7 +224,7 @@ export const selectIsActionCached = (
  * Get fetch status for an action
  */
 export const selectActionFetchStatus = (
-  state: RootState,
+  state: WithActionCache,
   actionId: string,
 ): "idle" | "loading" | "success" | "error" =>
   state.actionCache?.fetchStatus?.[actionId] || "idle";
@@ -232,7 +233,7 @@ export const selectActionFetchStatus = (
  * Get fetch error for an action
  */
 export const selectActionFetchError = (
-  state: RootState,
+  state: WithActionCache,
   actionId: string,
 ): string | null => state.actionCache?.errors?.[actionId] || null;
 
@@ -240,20 +241,20 @@ export const selectActionFetchError = (
  * Check if an action is stale
  */
 export const selectIsActionStale = (
-  state: RootState,
+  state: WithActionCache,
   actionId: string,
 ): boolean => state.actionCache?.actions?.[actionId]?.status === "stale";
 
 /**
  * Get all cached actions
  */
-export const selectAllCachedActions = (state: RootState): CachedAction[] =>
+export const selectAllCachedActions = (state: WithActionCache): CachedAction[] =>
   Object.values(state.actionCache?.actions || {});
 
 /**
  * Get all cached actions with status 'cached' (not stale)
  */
-export const selectFreshCachedActions = (state: RootState): CachedAction[] =>
+export const selectFreshCachedActions = (state: WithActionCache): CachedAction[] =>
   Object.values(state.actionCache?.actions || {}).filter(
     (action) => action.status === "cached",
   );
@@ -261,14 +262,14 @@ export const selectFreshCachedActions = (state: RootState): CachedAction[] =>
 /**
  * Get count of cached actions
  */
-export const selectCachedActionCount = (state: RootState): number =>
+export const selectCachedActionCount = (state: WithActionCache): number =>
   Object.keys(state.actionCache?.actions || {}).length;
 
 /**
  * Check if action is currently loading
  */
 export const selectIsActionLoading = (
-  state: RootState,
+  state: WithActionCache,
   actionId: string,
 ): boolean => state.actionCache?.fetchStatus?.[actionId] === "loading";
 
@@ -276,7 +277,7 @@ export const selectIsActionLoading = (
  * Get actions by tags (from cache only)
  */
 export const selectCachedActionsByTag = (
-  state: RootState,
+  state: WithActionCache,
   tag: string,
 ): CachedAction[] =>
   Object.values(state.actionCache?.actions || {}).filter((action) =>
@@ -287,7 +288,7 @@ export const selectCachedActionsByTag = (
  * Get actions by prompt ID (from cache only)
  */
 export const selectCachedActionsByPrompt = (
-  state: RootState,
+  state: WithActionCache,
   promptId: string,
 ): CachedAction[] =>
   Object.values(state.actionCache?.actions || {}).filter(

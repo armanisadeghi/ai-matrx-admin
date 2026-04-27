@@ -13,7 +13,7 @@
 import type { AgentType } from "./agent-definition.types";
 import { ContextObjectType, LLMParams } from "./agent-api-types";
 import type { SystemInstruction } from "./agent-api-types";
-import type { ApplicationScope } from "@/features/agents/utils/scope-mapping";
+import type { ApplicationScope } from "./scope.types";
 import type { MessagePart } from "@/types/python-generated/stream-events";
 import type { ResultDisplayMode } from "@/features/agents/utils/run-ui-utils";
 import type { VariablesPanelStyle } from "../components/inputs/variable-input-variations/variable-input-options";

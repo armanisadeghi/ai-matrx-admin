@@ -1,6 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { ActivityViewId } from "../types";
-import type { RootState } from "@/lib/redux/store";
 
 export interface CodeWorkspaceState {
   /** Which activity-bar view is currently selected. */
@@ -75,18 +74,20 @@ export default slice.reducer;
 
 // ─── Selectors ──────────────────────────────────────────────────────────────
 
-export const selectCodeWorkspace = (state: RootState) =>
+type WithCodeWorkspace = { codeWorkspace: CodeWorkspaceState };
+
+export const selectCodeWorkspace = (state: WithCodeWorkspace) =>
   state.codeWorkspace ?? initialState;
 
-export const selectActiveView = (state: RootState) =>
+export const selectActiveView = (state: WithCodeWorkspace) =>
   selectCodeWorkspace(state).activeView;
-export const selectSideOpen = (state: RootState) =>
+export const selectSideOpen = (state: WithCodeWorkspace) =>
   selectCodeWorkspace(state).sideOpen;
-export const selectRightOpen = (state: RootState) =>
+export const selectRightOpen = (state: WithCodeWorkspace) =>
   selectCodeWorkspace(state).rightOpen;
-export const selectFarRightOpen = (state: RootState) =>
+export const selectFarRightOpen = (state: WithCodeWorkspace) =>
   selectCodeWorkspace(state).farRightOpen;
-export const selectActiveSandboxId = (state: RootState) =>
+export const selectActiveSandboxId = (state: WithCodeWorkspace) =>
   selectCodeWorkspace(state).activeSandboxId;
-export const selectExplorerRootOverride = (state: RootState) =>
+export const selectExplorerRootOverride = (state: WithCodeWorkspace) =>
   selectCodeWorkspace(state).explorerRootOverride;

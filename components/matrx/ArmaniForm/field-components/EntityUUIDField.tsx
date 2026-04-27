@@ -14,7 +14,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
-import {EntityBaseFieldProps} from '../EntityBaseField';
+import type { EntityBaseFieldProps } from "../entityBaseFieldProps";
 
 interface EntityUUIDFieldProps extends EntityBaseFieldProps,
     Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'size' | 'value'> {

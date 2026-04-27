@@ -152,6 +152,64 @@ export function useAICodeEditor({
           const id = await dispatch(
             startPromptInstance({
               promptId: selectedBuiltinId,
+              // TODO(prompt-to-agent-sweep): Full agent-system rewrite required.
+              //
+              // This hook is structurally tied to the legacy prompt-execution
+              // Redux slice — `selectInstance`, `selectMessages`,
+              // `selectMergedVariables`, `selectStreamingTextForInstance`,
+              // `selectIsResponseEndedForInstance`, `updateVariable`,
+              // `removeInstance`, `completeExecutionThunk`, `executeMessage`
+              // all live on the prompt slice and have no automatic agent
+              // equivalent. The unrelated swap of `startPromptInstance` →
+              // `launchAgent` is a one-line change; the surrounding hook is
+              // not.
+              //
+              // Recipe for the proper swap:
+              //   1. Replace `startPromptInstance` with
+              //      `useShortcutTrigger()` and trigger one of the existing
+              //      shortcuts that target this agent:
+              //        - generic-code-editor agent
+              //          (87efa869-9c11-43cf-b3a8-5b7c775ee415) →
+              //          shortcut 00836ba6-10af-4a95-8c7e-6b5a03c0b3e4
+              //          ("Master Code Editor")
+              //        - code-editor-dynamic-context agent
+              //          (970856c5-3b9d-4034-ac9d-8d8a11fb3dba) →
+              //          shortcut 2c301ba1-e870-4a3f-abe6-8148c72a7425
+              //          ("Dynamic Context Code Editor")
+              //        - prompt-app-ui-editor agent
+              //          (c1c1f092-ba0d-4d6c-b352-b22fe6c48272) →
+              //          shortcut 6231578b-a52d-47c5-a41d-831000ddfa9e
+              //          ("Update Prompt App Code")
+              //      Pass `config: { displayMode: "direct" }` so no overlay
+              //      renders — this hook's consumer renders the chrome.
+              //   2. Capture conversationId via `onConversationCreated`.
+              //   3. Replace prompt-slice selectors with their agent
+              //      counterparts:
+              //        selectStreamingTextForInstance →
+              //          `selectLatestAccumulatedText(cid)` (aggregate)
+              //        selectIsResponseEndedForInstance →
+              //          `selectStreamPhase(cid)` === "complete"
+              //        selectMessages → `selectInstanceConversationHistory`
+              //        selectMergedVariables →
+              //          `selectInstanceVariableValues(cid)`
+              //   4. Replace `executeMessage` (multi-turn send) with
+              //      `dispatch(executeChatInstance({ conversationId }))`.
+              //   5. Drop `completeExecutionThunk` — the agent stream
+              //      machinery handles completion natively; the existing
+              //      `useEffect` that watches `isResponseEnded` should
+              //      simply branch on stream phase = "complete".
+              //   6. Drop the cachedPrompt path entirely — variable defaults
+              //      live on the agent record (queried by the launcher).
+              //      Special-variable injection (`buildSpecialVariables`)
+              //      moves into the `runtime.userInput` / variable seeding
+              //      layer of `trigger`/`launchAgent`.
+              //   7. Cleanup-on-close uses
+              //      `dispatch(destroyInstanceIfAllowed(cid))` instead of
+              //      `removeInstance({ runId })`.
+              //
+              // This is a ~150-line change inside this file plus the
+              // consuming `AICodeEditor.tsx`. Until done, this hook keeps
+              // `features/prompts/**` and the prompt-execution slice alive.
               promptSource: "prompt_builtins",
               variables: {},
               executionConfig: {

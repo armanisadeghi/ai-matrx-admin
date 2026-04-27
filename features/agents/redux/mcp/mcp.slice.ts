@@ -1,5 +1,4 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store";
 import type { McpCatalogEntry } from "@/features/agents/types/mcp.types";
 import {
   fetchMcpCatalog,
@@ -221,24 +220,26 @@ export default mcpSlice.reducer;
 // Selectors
 // ---------------------------------------------------------------------------
 
-const selectMcpState = (state: RootState) => state.mcp;
+type WithMcp = { mcp: McpSliceState };
 
-export const selectMcpCatalog = (state: RootState) =>
+const selectMcpState = (state: WithMcp) => state.mcp;
+
+export const selectMcpCatalog = (state: WithMcp) =>
   selectMcpState(state).catalog;
 
-export const selectMcpCatalogStatus = (state: RootState) =>
+export const selectMcpCatalogStatus = (state: WithMcp) =>
   selectMcpState(state).status;
 
-export const selectMcpCatalogError = (state: RootState) =>
+export const selectMcpCatalogError = (state: WithMcp) =>
   selectMcpState(state).error;
 
-export const selectMcpConnectingServerId = (state: RootState) =>
+export const selectMcpConnectingServerId = (state: WithMcp) =>
   selectMcpState(state).connectingServerId;
 
-export const selectMcpServerById = (state: RootState, serverId: string) =>
+export const selectMcpServerById = (state: WithMcp, serverId: string) =>
   selectMcpState(state).catalog.find((e) => e.serverId === serverId) ?? null;
 
-export const selectMcpCatalogByCategory = (state: RootState) => {
+export const selectMcpCatalogByCategory = (state: WithMcp) => {
   const catalog = selectMcpState(state).catalog;
   const grouped: Record<string, McpCatalogEntry[]> = {};
   for (const entry of catalog) {
@@ -250,17 +251,17 @@ export const selectMcpCatalogByCategory = (state: RootState) => {
 
 // ── Discovery selectors ──
 
-export const selectMcpDiscoveries = (state: RootState) =>
+export const selectMcpDiscoveries = (state: WithMcp) =>
   selectMcpState(state).discoveries;
 
-export const selectMcpServerDiscovery = (state: RootState, serverId: string) =>
+export const selectMcpServerDiscovery = (state: WithMcp, serverId: string) =>
   selectMcpState(state).discoveries[serverId] ?? null;
 
-export const selectMcpServerTools = (state: RootState, serverId: string) =>
+export const selectMcpServerTools = (state: WithMcp, serverId: string) =>
   selectMcpState(state).discoveries[serverId]?.tools ?? [];
 
 export const selectMcpServerDiscoveryStatus = (
-  state: RootState,
+  state: WithMcp,
   serverId: string,
 ) => selectMcpState(state).discoveries[serverId]?.status ?? "idle";
 
@@ -268,7 +269,7 @@ export const selectMcpServerDiscoveryStatus = (
  * Returns all discovered tools across all connected MCP servers,
  * tagged with their server ID for routing.
  */
-export const selectAllDiscoveredMcpTools = (state: RootState) => {
+export const selectAllDiscoveredMcpTools = (state: WithMcp) => {
   const discoveries = selectMcpState(state).discoveries;
   const allTools: Array<
     McpToolSchema & { serverId: string; serverName: string }

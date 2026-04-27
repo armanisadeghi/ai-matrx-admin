@@ -2,11 +2,11 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import { createCustomAppConfig, updateCustomAppConfig, deleteCustomAppConfig, getAllCustomAppConfigs, getCustomAppConfigById, getAllCustomAppConfigsWithApplets, isAppSlugAvailable } from "../service/customAppService";
 
 import { updateCustomAppletConfig, getCustomAppletConfigsByAppId, getAllCustomAppletConfigs } from "../service/customAppletService";
-import { AppBuilder, AppletBuilder } from "../types";
-import type { RootState } from "../../store";
-import { setApp, setActiveApp } from "../slices/appBuilderSlice";
-import { selectAppById } from "../selectors/appSelectors";
-import { v4 as uuidv4 } from 'uuid';
+import { AppBuilder, AppletBuilder, type AppsState } from "../types";
+import { setActiveApp } from "../appBuilderSyncActions";
+import { v4 as uuidv4 } from "uuid";
+
+type WithAppBuilder = { appBuilder: AppsState };
 
 export const createAppThunk = createAsyncThunk<AppBuilder, AppBuilder>(
     "appBuilder/createApp",
@@ -127,7 +127,7 @@ export const fetchAppsThunk = createAsyncThunk<AppBuilder[], void>(
     }
 );
 
-export const checkAppSlugUniqueness = createAsyncThunk<boolean, { slug: string; appId?: string }, { state: RootState }>(
+export const checkAppSlugUniqueness = createAsyncThunk<boolean, { slug: string; appId?: string }, { state: WithAppBuilder }>(
     'appBuilder/checkSlugUniqueness',
     async ({ slug, appId }, { rejectWithValue }) => {
         try {
@@ -154,13 +154,13 @@ export type FetchAppByIdSuccessAction = ReturnType<typeof fetchAppByIdSuccess>;
 export const setActiveAppWithFetchThunk = createAsyncThunk<
     void,
     string,
-    { state: RootState }
+    { state: WithAppBuilder }
 >(
     "appBuilder/setActiveAppWithFetch",
     async (appId, { getState, dispatch, rejectWithValue }) => {
         try {
             // Check if app already exists in state
-            const app = selectAppById(getState() as RootState, appId);
+            const app = getState().appBuilder.apps[appId];
 
             if (app) {
                 // If it exists, just dispatch the setActiveApp action
@@ -208,12 +208,12 @@ export const setActiveAppWithFetchThunk = createAsyncThunk<
 export const saveAppThunk = createAsyncThunk<
     AppBuilder,
     string,
-    { state: RootState }
+    { state: WithAppBuilder }
 >(
     "appBuilder/saveApp",
     async (appId, { getState, rejectWithValue }) => {
         try {
-            const app = selectAppById(getState() as RootState, appId);
+            const app = getState().appBuilder.apps[appId];
             if (!app) {
                 throw new Error(`App with ID ${appId} not found`);
             }
@@ -247,12 +247,12 @@ export const saveAppThunk = createAsyncThunk<
 export const createTemplateAppThunk = createAsyncThunk<
     void,
     { appId: string; templateType: 'simple' | 'complex' },
-    { state: RootState }
+    { state: WithAppBuilder }
 >(
     "appBuilder/createTemplateApp",
     async ({ appId, templateType }, { getState, dispatch, rejectWithValue }) => {
         try {
-            const app = selectAppById(getState() as RootState, appId);
+            const app = getState().appBuilder.apps[appId];
             if (!app) {
                 throw new Error(`App with ID ${appId} not found`);
             }

@@ -7,7 +7,7 @@ import { ensureValidWidthClass } from "@/features/applet/constants/field-constan
 import { cn } from "@/lib/utils";
 // Import the shadcn/ui components
 import * as SwitchPrimitives from "@radix-ui/react-switch";
-import { CommonFieldProps } from "./core/AppletFieldController";
+import { CommonFieldProps } from "./core/types";
 
 // Custom styled Switch component
 const Switch = React.forwardRef<

@@ -1,4 +1,30 @@
 // Phase 6 wrapper — replaced in Phase 15
+//
+// TODO(prompt-to-agent-sweep): Full swap to the agent system.
+// Apply the same recipe documented at the top of
+// `ContextAwareCodeEditorModal.tsx` — they share the canvas/parser flow
+// and only differ in the chrome (compact draggable modal vs. standard
+// dialog). Replace `<ContextAwarePromptCompactModal>` with the agent
+// equivalent rendering `<AgentRunner conversationId={...} />` inside
+// the compact wrapper, drive the launch via `useShortcutTrigger()` with
+// `config: { displayMode: "direct" }`, and rewire
+// `handleResponseComplete` to a `selectStreamPhase === "complete"`
+// effect.
+//
+// Existing shortcuts (modal-full default — override at trigger time):
+//   - generic-code-editor agent
+//     (87efa869-9c11-43cf-b3a8-5b7c775ee415) → shortcut
+//     00836ba6-10af-4a95-8c7e-6b5a03c0b3e4 ("Master Code Editor")
+//   - code-editor-dynamic-context agent
+//     (970856c5-3b9d-4034-ac9d-8d8a11fb3dba) → shortcut
+//     2c301ba1-e870-4a3f-abe6-8148c72a7425 ("Dynamic Context Code
+//     Editor")
+//   - prompt-app-ui-editor agent
+//     (c1c1f092-ba0d-4d6c-b352-b22fe6c48272) → shortcut
+//     6231578b-a52d-47c5-a41d-831000ddfa9e ("Update Prompt App Code")
+//
+// This consumer + its sibling Modal block deletion of
+// `features/prompts/**` until rewritten.
 "use client";
 
 import {

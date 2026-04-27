@@ -739,6 +739,13 @@ export function NoteContextMenuHeavy({
         );
       }
 
+      // TODO(prompt-to-agent-sweep): `item.id` here is a prompt-builtin row id
+      // being used as an agent-shortcut id. It works today because the IDs were
+      // preserved 1:1 during the prompts→agents migration, but this is brittle —
+      // we are not actually consuming agent-shortcut metadata, scopeMappings, or
+      // any of the agent system's strengths. Replace once `useNoteContextMenuGroups`
+      // is rewritten on top of `useUnifiedAgentContextMenu` so `item` is an
+      // `AgentMenuEntry` and the trigger goes through native agent shortcut data.
       // Fire-and-forget agent shortcut launch. The shortcut row carries
       // display mode, auto_run, allow_chat, scopeMappings, etc. — we hand
       // it the live UI scope and let it manage everything downstream.

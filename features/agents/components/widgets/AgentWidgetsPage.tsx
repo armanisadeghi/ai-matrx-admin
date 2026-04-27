@@ -70,9 +70,12 @@ const DEFAULT_EDITOR_CONTEXT =
 
 interface AgentWidgetsPageProps {
   agentId: string;
-  basePath: string;
-  currentPath: string;
   initialAgentName: string;
+  /** Base path for the embedded mode controller. Defaults to `/agents`. */
+  basePath?: string;
+  /** SSR-friendly current path. Optional — passed through to the mode
+   *  controller, which falls back to `usePathname()` when omitted. */
+  currentPath?: string;
 }
 
 export function AgentWidgetsPage({

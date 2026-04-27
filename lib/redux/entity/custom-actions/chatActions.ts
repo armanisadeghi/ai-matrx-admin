@@ -12,6 +12,10 @@ import {
   saveMessageThunk,
 } from "@/lib/redux/features/aiChats/thunks/entity/createMessageThunk";
 import { fetchRelatedMessagesThunk } from "@/lib/redux/features/aiChats/thunks/entity/fetchRelatedMessagesThunk";
+import {
+  CHAT_DEFAULT_MESSAGE_RUNTIME_FILTERS,
+  CHAT_DEFAULT_MESSAGE_RUNTIME_SORT,
+} from "@/lib/redux/entity/custom-actions/chatMessageRuntimeDefaults";
 
 export type MessageStatusOptions =
   | "pending"
@@ -33,13 +37,10 @@ export type RuntimeSort = {
 };
 
 const DEFAULT_MESSAGE_RUNTIME_FILTERS: RuntimeFilter[] = [
-  { field: "role", operator: "neq", value: "system" },
-  { field: "displayOrder", operator: "neq", value: 0 },
+  ...CHAT_DEFAULT_MESSAGE_RUNTIME_FILTERS,
 ];
-
 const DEFAULT_MESSAGE_RUNTIME_SORT: RuntimeSort = {
-  field: "displayOrder",
-  direction: "asc",
+  ...CHAT_DEFAULT_MESSAGE_RUNTIME_SORT,
 };
 
 export const getChatActionsWithThunks = () => {

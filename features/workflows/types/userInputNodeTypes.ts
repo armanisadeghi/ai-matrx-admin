@@ -1,8 +1,8 @@
 import type { Database } from "@/types/database.types";
-import {
+import type {
   PythonDataType,
   ReactFlowUIMetadata,
-} from "@/features/workflows/types";
+} from "@/features/workflows/types/workflowReactFlowTypes";
 import { Node } from "reactflow";
 
 export type DbUserInput =

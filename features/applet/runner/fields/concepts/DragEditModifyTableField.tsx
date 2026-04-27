@@ -15,7 +15,7 @@ import { brokerSelectors, brokerActions } from "@/lib/redux/brokerSlice";
 import { ensureValidWidthClass } from "@/features/applet/constants/field-constants";
 import { GripHorizontal, Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { CommonFieldProps } from "../core/AppletFieldController";
+import { CommonFieldProps } from "../core/types";
 
 // --- Types (assuming these are correct from previous versions) ---
 type CellValue = string | number | boolean | null;

@@ -308,3 +308,13 @@ export const slimReducerMap = {
 };
 
 export const createSlimRootReducer = () => combineReducers(slimReducerMap);
+
+/**
+ * Derive RootState from the root reducer directly so that slice files and
+ * thunks can import it from here instead of from store.ts, avoiding the
+ * store → rootReducer → slice → store circular dependency.
+ *
+ * This type is structurally identical to `ReturnType<AppStore["getState"]>`
+ * in store.ts — both are driven by the same slimReducerMap.
+ */
+export type RootState = ReturnType<ReturnType<typeof createSlimRootReducer>>;

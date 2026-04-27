@@ -16,7 +16,6 @@
  */
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import type { RootState } from '../store';
 import type {
   PromptExecutionState,
   ExecutionInstance,
@@ -702,19 +701,21 @@ export const {
  * Select instance by runId
  * Returns null if not found (stable reference)
  */
-export const selectInstance = (state: RootState, runId: string): ExecutionInstance | null =>
+type WithPromptExecution = { promptExecution: PromptExecutionState };
+
+export const selectInstance = (state: WithPromptExecution, runId: string): ExecutionInstance | null =>
   state.promptExecution?.instances[runId] ?? null;
 
 /**
  * Select all instances
  */
-export const selectAllInstances = (state: RootState) =>
+export const selectAllInstances = (state: WithPromptExecution) =>
   state.promptExecution?.instances ?? EMPTY_OBJECT;
 
 /**
  * Select instances for a prompt
  */
-export const selectInstancesByPromptId = (state: RootState, promptId: string) => {
+export const selectInstancesByPromptId = (state: WithPromptExecution, promptId: string) => {
   const runIds = state.promptExecution?.runsByPromptId[promptId] ?? EMPTY_ARRAY;
   return runIds
     .map(id => state.promptExecution.instances[id])
@@ -725,72 +726,72 @@ export const selectInstancesByPromptId = (state: RootState, promptId: string) =>
  * Select current input (ISOLATED)
  * Returns empty string if not found (stable primitive)
  */
-export const selectCurrentInput = (state: RootState, runId: string): string =>
+export const selectCurrentInput = (state: WithPromptExecution, runId: string): string =>
   state.promptExecution?.currentInputs[runId] ?? '';
 
 /**
  * Select resources (ISOLATED)
  * Returns stable empty array if not found
  */
-export const selectResources = (state: RootState, runId: string): any[] =>
+export const selectResources = (state: WithPromptExecution, runId: string): any[] =>
   state.promptExecution?.resources[runId] ?? EMPTY_ARRAY;
 
 /**
  * Select UI state (ISOLATED)
  * Returns stable default if not found
  */
-export const selectUIState = (state: RootState, runId: string): InstanceUIState =>
+export const selectUIState = (state: WithPromptExecution, runId: string): InstanceUIState =>
   state.promptExecution?.uiState[runId] ?? DEFAULT_UI_STATE;
 
 /**
  * Select messages from instance
  * Returns stable empty array if not found
  */
-export const selectMessages = (state: RootState, runId: string): ConversationMessage[] =>
+export const selectMessages = (state: WithPromptExecution, runId: string): ConversationMessage[] =>
   state.promptExecution?.instances[runId]?.messages ?? EMPTY_MESSAGES;
 
 /**
  * Select instance status
  * Returns null if not found (stable primitive)
  */
-export const selectInstanceStatus = (state: RootState, runId: string): ExecutionStatus | null =>
+export const selectInstanceStatus = (state: WithPromptExecution, runId: string): ExecutionStatus | null =>
   state.promptExecution?.instances[runId]?.status ?? null;
 
 /**
  * Select instance error
  */
-export const selectInstanceError = (state: RootState, runId: string): string | null =>
+export const selectInstanceError = (state: WithPromptExecution, runId: string): string | null =>
   state.promptExecution?.instances[runId]?.error ?? null;
 
 /**
  * Select user variables
  * Returns stable empty object if not found
  */
-export const selectUserVariables = (state: RootState, runId: string): Record<string, string> =>
+export const selectUserVariables = (state: WithPromptExecution, runId: string): Record<string, string> =>
   state.promptExecution?.instances[runId]?.variables.userValues ?? EMPTY_OBJECT;
 
 /**
  * Select execution tracking
  */
-export const selectExecutionTracking = (state: RootState, runId: string) =>
+export const selectExecutionTracking = (state: WithPromptExecution, runId: string) =>
   state.promptExecution?.instances[runId]?.execution ?? null;
 
 /**
  * Select run tracking
  */
-export const selectRunTracking = (state: RootState, runId: string) =>
+export const selectRunTracking = (state: WithPromptExecution, runId: string) =>
   state.promptExecution?.instances[runId]?.runTracking ?? null;
 
 /**
  * Select execution config
  */
-export const selectExecutionConfig = (state: RootState, runId: string) =>
+export const selectExecutionConfig = (state: WithPromptExecution, runId: string) =>
   state.promptExecution?.instances[runId]?.executionConfig ?? null;
 
 /**
  * Select scoped variables
  */
-export const selectScopedVariables = (state: RootState) =>
+export const selectScopedVariables = (state: WithPromptExecution) =>
   state.promptExecution?.scopedVariables ?? null;
 
 export default promptExecutionSlice.reducer;

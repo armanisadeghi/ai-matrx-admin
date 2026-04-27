@@ -1,11 +1,13 @@
 import { createSelector } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store";
 import { Node } from "@xyflow/react";
 import { RegisteredNodeData } from "@/types/AutomationSchemaTypes";
+import type { WorkflowNodeState } from './types';
 
-const selectWorkflowNodeState = (state: RootState) => state.workflowNodes;
+const selectWorkflowNodeState = (state: WithWorkflowNodes) => state.workflowNodes;
 
 // FIXED: Memoized selector to avoid array creation on every call
+type WithWorkflowNodes = { workflowNodes: WorkflowNodeState };
+
 export const selectAllWorkflowNodes = createSelector(
   [selectWorkflowNodeState],
   (nodeState) => {
@@ -15,7 +17,7 @@ export const selectAllWorkflowNodes = createSelector(
 );
 
 export const selectWorkflowNodeById = createSelector(
-  [selectWorkflowNodeState, (_: RootState, id: string) => id],
+  [selectWorkflowNodeState, (_: WithWorkflowNodes, id: string) => id],
   (nodeState, id) => nodeState.entities[id] || null,
 );
 
@@ -47,17 +49,17 @@ export const selectWorkflowNodesError = createSelector(
 );
 
 export const selectWorkflowNodeIsDirty = createSelector(
-  [selectWorkflowNodeState, (_: RootState, id: string) => id],
+  [selectWorkflowNodeState, (_: WithWorkflowNodes, id: string) => id],
   (nodeState, id) => nodeState.isDirty[id] || false,
 );
 
 export const selectWorkflowNodeStatus = createSelector(
-  [selectWorkflowNodeState, (_: RootState, id: string) => id],
+  [selectWorkflowNodeState, (_: WithWorkflowNodes, id: string) => id],
   (nodeState, id) => nodeState.status[id] || "pending",
 );
 
 export const selectWorkflowNodeResults = createSelector(
-  [selectWorkflowNodeState, (_: RootState, id: string) => id],
+  [selectWorkflowNodeState, (_: WithWorkflowNodes, id: string) => id],
   (nodeState, id) => nodeState.results[id] || null,
 );
 
@@ -74,7 +76,7 @@ export const selectWorkflowNodesDataFreshness = createSelector(
 
 // FIXED: Properly parameterized selector that accepts workflowId
 export const selectWorkflowNodesByWorkflowId = createSelector(
-  [selectAllWorkflowNodes, (_: RootState, workflowId: string) => workflowId],
+  [selectAllWorkflowNodes, (_: WithWorkflowNodes, workflowId: string) => workflowId],
   (allNodes, workflowId) =>
     allNodes.filter((node) => node.workflow_id === workflowId),
 );
@@ -96,7 +98,7 @@ export const selectXyFlowNodesByWorkflowId = createSelector(
 
 // FIXED: Properly parameterized selector that accepts nodeType
 export const selectWorkflowNodesByType = createSelector(
-  [selectAllWorkflowNodes, (_: RootState, nodeType: string) => nodeType],
+  [selectAllWorkflowNodes, (_: WithWorkflowNodes, nodeType: string) => nodeType],
   (nodes, nodeType) => nodes.filter((node) => node.node_type === nodeType),
 );
 
@@ -108,7 +110,7 @@ export const selectExecutionRequiredNodes = createSelector(
 
 // FIXED: Properly parameterized selector that accepts functionId
 export const selectWorkflowNodesByFunctionId = createSelector(
-  [selectAllWorkflowNodes, (_: RootState, functionId: string) => functionId],
+  [selectAllWorkflowNodes, (_: WithWorkflowNodes, functionId: string) => functionId],
   (nodes, functionId) =>
     nodes.filter((node) => node.function_id === functionId),
 );
@@ -118,7 +120,7 @@ export const selectWorkflowNodesByStatus = createSelector(
   [
     selectAllWorkflowNodes,
     selectWorkflowNodeState,
-    (_: RootState, status: string) => status,
+    (_: WithWorkflowNodes, status: string) => status,
   ],
   (nodes, nodeState, status) =>
     nodes.filter((node) => (nodeState.status[node.id] || "pending") === status),
@@ -136,17 +138,17 @@ export const selectAllWorkflowNodeResults = createSelector(
 
 // FIXED: Complex Array Selectors that properly accept node ID parameter
 export const selectWorkflowNodeInputs = createSelector(
-  [selectWorkflowNodeState, (_: RootState, id: string) => id],
+  [selectWorkflowNodeState, (_: WithWorkflowNodes, id: string) => id],
   (nodeState, id) => nodeState.entities[id]?.inputs || [],
 );
 
 export const selectWorkflowNodeOutputs = createSelector(
-  [selectWorkflowNodeState, (_: RootState, id: string) => id],
+  [selectWorkflowNodeState, (_: WithWorkflowNodes, id: string) => id],
   (nodeState, id) => nodeState.entities[id]?.outputs || [],
 );
 
 export const selectWorkflowNodeDependencies = createSelector(
-  [selectWorkflowNodeState, (_: RootState, id: string) => id],
+  [selectWorkflowNodeState, (_: WithWorkflowNodes, id: string) => id],
   (nodeState, id) => nodeState.entities[id]?.dependencies || [],
 );
 
@@ -170,8 +172,8 @@ export const selectActiveWorkflowNodeDependencies = createSelector(
 export const selectWorkflowNodeInputById = createSelector(
   [
     selectWorkflowNodeState,
-    (_: RootState, nodeId: string) => nodeId,
-    (_: RootState, nodeId: string, index: number) => index,
+    (_: WithWorkflowNodes, nodeId: string) => nodeId,
+    (_: WithWorkflowNodes, nodeId: string, index: number) => index,
   ],
   (nodeState, nodeId, index) => {
     const inputs = nodeState.entities[nodeId]?.inputs || [];
@@ -182,8 +184,8 @@ export const selectWorkflowNodeInputById = createSelector(
 export const selectWorkflowNodeOutputByBrokerId = createSelector(
   [
     selectWorkflowNodeState,
-    (_: RootState, nodeId: string) => nodeId,
-    (_: RootState, nodeId: string, brokerId: string) => brokerId,
+    (_: WithWorkflowNodes, nodeId: string) => nodeId,
+    (_: WithWorkflowNodes, nodeId: string, brokerId: string) => brokerId,
   ],
   (nodeState, nodeId, brokerId) => {
     const outputs = nodeState.entities[nodeId]?.outputs || [];
@@ -194,8 +196,8 @@ export const selectWorkflowNodeOutputByBrokerId = createSelector(
 export const selectWorkflowNodeInputValue = createSelector(
   [
     selectWorkflowNodeState,
-    (_: RootState, nodeId: string) => nodeId,
-    (_: RootState, nodeId: string, inputId: string) => inputId,
+    (_: WithWorkflowNodes, nodeId: string) => nodeId,
+    (_: WithWorkflowNodes, nodeId: string, inputId: string) => inputId,
   ],
   (nodeState, nodeId, inputId) => {
     const inputs = nodeState.entities[nodeId]?.inputs || [];

@@ -1,4 +1,13 @@
 // Phase 6 wrapper — replaced in Phase 15
+//
+// TODO(prompt-to-agent-sweep): Launcher already swapped to `useAgentLauncher`
+// in Phase 6, but we still hydrate the prompt configuration by SELECTing the
+// row out of `public.prompt_builtins` (see the supabase query in the open-effect
+// below) and we still pass `defaultBuiltinId` — a prompt-builtin uuid — straight
+// into `launchAgent`. This works only because the prompt→agent migration kept
+// IDs 1:1. Replace by reading the corresponding `agx_agent` row directly (same
+// id), drop the `prompt_builtins` table read, and stop importing `PromptData` /
+// `PromptMessage` / `PromptVariable` from `features/prompts/types/core`.
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";

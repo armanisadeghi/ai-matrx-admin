@@ -17,7 +17,7 @@ import React from 'react';
 import { EntityError, MatrxRecordId } from '@/lib/redux/entity/types/stateTypes';
 import { SmartCrudWrapperProps } from '@/components/matrx/Entity/prewired-components/layouts/smart-layouts/smart-actions/SmartCrudWrapper';
 import { QuickRefVariant } from '@/app/entities/quick-reference/dynamic-quick-ref/quick-ref-item';
-import type { EntityFormType } from "@/app/entities/forms/entityFormRegistry";
+import type { EntityFormType } from "@/types/componentConfigTypes";
 
 export interface UnifiedLayoutHandlers {
     setIsExpanded?: (value: boolean) => void;

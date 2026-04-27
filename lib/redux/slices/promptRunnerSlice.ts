@@ -3,7 +3,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 const EMPTY_TOAST_QUEUE: never[] = [];
-import type { RootState } from "@/lib/redux/store";
 import { PromptRunnerModalConfig } from "@/features/prompts/types/modal";
 
 /**
@@ -583,77 +582,79 @@ const promptRunnerSlice = createSlice({
 // ========== SELECTORS ==========
 
 // Modal-Full
-export const selectIsPromptModalOpen = (state: RootState) =>
+type WithPromptRunner = { promptRunner: PromptRunnerState };
+
+export const selectIsPromptModalOpen = (state: WithPromptRunner) =>
   state.promptRunner?.activeModal?.isOpen || false;
-export const selectPromptModalConfig = (state: RootState) =>
+export const selectPromptModalConfig = (state: WithPromptRunner) =>
   state.promptRunner?.activeModal?.config || null;
-export const selectPromptModalRunId = (state: RootState) =>
+export const selectPromptModalRunId = (state: WithPromptRunner) =>
   state.promptRunner?.activeModal?.runId || null;
-export const selectPromptModalTaskId = (state: RootState) =>
+export const selectPromptModalTaskId = (state: WithPromptRunner) =>
   state.promptRunner?.activeModal?.taskId || null;
-export const selectActivePromptModal = (state: RootState) =>
+export const selectActivePromptModal = (state: WithPromptRunner) =>
   state.promptRunner?.activeModal || null;
 
 // Modal-Compact
-export const selectIsCompactModalOpen = (state: RootState) =>
+export const selectIsCompactModalOpen = (state: WithPromptRunner) =>
   state.promptRunner?.compactModal?.isOpen || false;
-export const selectCompactModalConfig = (state: RootState) =>
+export const selectCompactModalConfig = (state: WithPromptRunner) =>
   state.promptRunner?.compactModal?.config || null;
-export const selectCompactModalRunId = (state: RootState) =>
+export const selectCompactModalRunId = (state: WithPromptRunner) =>
   state.promptRunner?.compactModal?.runId || null;
-export const selectCompactModalTaskId = (state: RootState) =>
+export const selectCompactModalTaskId = (state: WithPromptRunner) =>
   state.promptRunner?.compactModal?.taskId || null;
 
 // Inline Overlay
-export const selectIsInlineOverlayOpen = (state: RootState) =>
+export const selectIsInlineOverlayOpen = (state: WithPromptRunner) =>
   state.promptRunner?.inlineOverlay?.isOpen || false;
-export const selectInlineOverlayData = (state: RootState) =>
+export const selectInlineOverlayData = (state: WithPromptRunner) =>
   state.promptRunner?.inlineOverlay || null;
-export const selectInlineOverlayRunId = (state: RootState) =>
+export const selectInlineOverlayRunId = (state: WithPromptRunner) =>
   state.promptRunner?.inlineOverlay?.runId || null;
-export const selectInlineResult = (state: RootState) =>
+export const selectInlineResult = (state: WithPromptRunner) =>
   state.promptRunner?.inlineOverlay?.result || null;
-export const selectInlineIsStreaming = (state: RootState) =>
+export const selectInlineIsStreaming = (state: WithPromptRunner) =>
   state.promptRunner?.inlineOverlay?.isStreaming || false;
 
 // Sidebar
-export const selectIsSidebarResultOpen = (state: RootState) =>
+export const selectIsSidebarResultOpen = (state: WithPromptRunner) =>
   state.promptRunner?.sidebarResult?.isOpen || false;
-export const selectSidebarResultConfig = (state: RootState) =>
+export const selectSidebarResultConfig = (state: WithPromptRunner) =>
   state.promptRunner?.sidebarResult?.config || null;
-export const selectSidebarResultRunId = (state: RootState) =>
+export const selectSidebarResultRunId = (state: WithPromptRunner) =>
   state.promptRunner?.sidebarResult?.runId || null;
-export const selectSidebarPosition = (state: RootState) =>
+export const selectSidebarPosition = (state: WithPromptRunner) =>
   state.promptRunner?.sidebarResult?.position || "right";
-export const selectSidebarSize = (state: RootState) =>
+export const selectSidebarSize = (state: WithPromptRunner) =>
   state.promptRunner?.sidebarResult?.size || "md";
-export const selectSidebarTaskId = (state: RootState) =>
+export const selectSidebarTaskId = (state: WithPromptRunner) =>
   state.promptRunner?.sidebarResult?.taskId || null;
 
 // Flexible Panel
-export const selectIsFlexiblePanelOpen = (state: RootState) =>
+export const selectIsFlexiblePanelOpen = (state: WithPromptRunner) =>
   state.promptRunner?.flexiblePanel?.isOpen || false;
-export const selectFlexiblePanelConfig = (state: RootState) =>
+export const selectFlexiblePanelConfig = (state: WithPromptRunner) =>
   state.promptRunner?.flexiblePanel?.config || null;
-export const selectFlexiblePanelRunId = (state: RootState) =>
+export const selectFlexiblePanelRunId = (state: WithPromptRunner) =>
   state.promptRunner?.flexiblePanel?.runId || null;
-export const selectFlexiblePanelPosition = (state: RootState) =>
+export const selectFlexiblePanelPosition = (state: WithPromptRunner) =>
   state.promptRunner?.flexiblePanel?.position || "right";
-export const selectFlexiblePanelTaskId = (state: RootState) =>
+export const selectFlexiblePanelTaskId = (state: WithPromptRunner) =>
   state.promptRunner?.flexiblePanel?.taskId || null;
 
 // Toast
-export const selectToastQueue = (state: RootState) =>
+export const selectToastQueue = (state: WithPromptRunner) =>
   state.promptRunner?.toastQueue ?? EMPTY_TOAST_QUEUE;
-export const selectHasActiveToasts = (state: RootState) =>
+export const selectHasActiveToasts = (state: WithPromptRunner) =>
   (state.promptRunner?.toastQueue?.length || 0) > 0;
 
 // Pre-Execution Modal
-export const selectIsPreExecutionModalOpen = (state: RootState) =>
+export const selectIsPreExecutionModalOpen = (state: WithPromptRunner) =>
   state.promptRunner?.preExecutionModal?.isOpen || false;
-export const selectPreExecutionModalConfig = (state: RootState) =>
+export const selectPreExecutionModalConfig = (state: WithPromptRunner) =>
   state.promptRunner?.preExecutionModal?.config || null;
-export const selectPreExecutionTargetDisplay = (state: RootState) =>
+export const selectPreExecutionTargetDisplay = (state: WithPromptRunner) =>
   state.promptRunner?.preExecutionModal?.targetResultDisplay || null;
 
 // ========== ACTIONS EXPORT ==========

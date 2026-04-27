@@ -7,7 +7,7 @@ import { ensureValidWidthClass } from "@/features/applet/constants/field-constan
 import { cn } from "@/lib/utils";
 import { FieldDefinition, FieldOption } from "@/types/customAppTypes";
 import { Input } from "@/components/ui/input";
-import { CommonFieldProps } from "./core/AppletFieldController";
+import { CommonFieldProps } from "./core/types";
 
 export interface SelectedOptionValue extends FieldOption {
     selected: boolean;

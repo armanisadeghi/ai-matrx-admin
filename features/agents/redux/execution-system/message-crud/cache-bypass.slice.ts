@@ -18,7 +18,6 @@
  */
 
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store";
 
 // =============================================================================
 // Types — mirror the server's CacheBypass schema
@@ -117,9 +116,11 @@ export default cacheBypassSlice.reducer;
 // Selectors
 // =============================================================================
 
+type WithCacheBypass = { cacheBypass: CacheBypassState };
+
 export const selectPendingCacheBypass =
   (conversationId: string) =>
-  (state: RootState): CacheBypassFlags | null =>
+  (state: WithCacheBypass): CacheBypassFlags | null =>
     state.cacheBypass?.byConversationId?.[conversationId] ?? null;
 
 /**
@@ -131,7 +132,7 @@ export function consumePendingCacheBypass(
   conversationId: string,
 ): (
   dispatch: (action: unknown) => unknown,
-  getState: () => RootState,
+  getState: () => WithCacheBypass,
 ) => CacheBypassFlags | null {
   return (dispatch, getState) => {
     const state = getState();

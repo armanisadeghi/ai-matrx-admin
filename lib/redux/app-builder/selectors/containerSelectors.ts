@@ -1,10 +1,12 @@
 import { createSelector } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store";
 import { ContainerBuilder } from "../types";
+import type { ContainersState } from "../types";
 
 // ================================ Base Selectors ================================
 // Base selector for the containerBuilder state
-export const getContainerBuilderState = (state: RootState) =>
+type WithContainerBuilder = { containerBuilder: ContainersState };
+
+export const getContainerBuilderState = (state: WithContainerBuilder) =>
   state.containerBuilder;
 
 // Memoized selector for all containers
@@ -20,7 +22,7 @@ export const selectAllContainerIds = createSelector(
 );
 
 // Selector for a specific container by ID
-export const selectContainerById = (state: RootState, id?: string | null) =>
+export const selectContainerById = (state: WithContainerBuilder, id?: string | null) =>
   id ? getContainerBuilderState(state).containers[id] : undefined;
 
 // ================================ Status Selectors ================================
@@ -39,7 +41,7 @@ export const selectContainerError = createSelector(
 // ================================ Container Field Selectors ================================
 // Selector for fields associated with a container
 export const selectFieldsForContainer = (
-  state: RootState,
+  state: WithContainerBuilder,
   containerId?: string | null,
 ) => {
   if (!containerId) return [];
@@ -49,7 +51,7 @@ export const selectFieldsForContainer = (
 
 // Selector for a specific field within a container
 export const selectFieldById = (
-  state: RootState,
+  state: WithContainerBuilder,
   containerId?: string | null,
   fieldId?: string | null,
 ) => {
@@ -63,7 +65,7 @@ export const selectFieldById = (
 export const selectContainersByIds = createSelector(
   [
     getContainerBuilderState,
-    (_state: RootState, containerIds?: string[] | null) => containerIds || [],
+    (_state: WithContainerBuilder, containerIds?: string[] | null) => containerIds || [],
   ],
   (containerBuilderState, containerIds) => {
     if (!containerIds?.length) return [];
@@ -101,7 +103,7 @@ export const selectHasUnsavedContainerChanges = createSelector(
 
 // Selector for container dirty status
 export const selectIsContainerDirtyById = (
-  state: RootState,
+  state: WithContainerBuilder,
   id?: string | null,
 ) => {
   if (!id) return false;

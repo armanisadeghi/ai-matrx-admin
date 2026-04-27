@@ -4,7 +4,7 @@ import React, {useEffect, useRef} from "react";
 import {cn} from "@/utils/cn";
 import {Label} from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {EntityBaseFieldProps} from "../EntityBaseField";
+import type { EntityBaseFieldProps } from "../entityBaseFieldProps";
 
 interface EntityTextareaProps extends EntityBaseFieldProps,
     Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, 'onChange' | 'size' | 'value'> {

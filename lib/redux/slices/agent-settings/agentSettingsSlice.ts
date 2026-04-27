@@ -13,7 +13,6 @@
 
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { createClient } from "@/utils/supabase/client";
-import type { RootState } from "@/lib/redux/store";
 import {
   selectModelById,
   type AIModel,
@@ -200,11 +199,10 @@ export const requestModelSwitch = createAsyncThunk(
     { agentId, newModelId }: { agentId: string; newModelId: string },
     { getState, rejectWithValue },
   ) => {
-    const state = getState() as RootState;
-    const newModel = selectModelById(
-      state as Parameters<typeof selectModelById>[0],
-      newModelId,
-    );
+    const state = getState() as {
+      agentSettings: AgentSettingsState;
+    } & Parameters<typeof selectModelById>[0];
+    const newModel = selectModelById(state, newModelId);
 
     if (!newModel) {
       return rejectWithValue(`Model ${newModelId} not found in registry`);
@@ -277,7 +275,7 @@ export const requestModelSwitch = createAsyncThunk(
 export const saveAgentSettings = createAsyncThunk(
   "agentSettings/saveAgentSettings",
   async ({ agentId }: { agentId: string }, { getState, rejectWithValue }) => {
-    const state = getState() as RootState;
+    const state = getState() as { agentSettings: AgentSettingsState };
     const entry = state.agentSettings?.entries[agentId];
 
     if (!entry) {

@@ -10,9 +10,16 @@ import {
     saveFieldToContainerThunk,
     FetchFieldByIdSuccessAction
 } from "../thunks/fieldBuilderThunks";
+import { setActiveField } from "../fieldBuilderSyncActions";
 import { FieldBuilder } from "../types";
+import {
+    DEFAULT_FIELD,
+    FIELD_DEFAULT_COMPONENT_PROPS,
+} from "@/lib/redux/app-builder/fieldBuilderDefaultProps";
 import { fieldDirection, FieldOption } from "@/types/customAppTypes";
 import { ComponentProps } from "@/types/customAppTypes";
+
+export { DEFAULT_FIELD, FIELD_DEFAULT_COMPONENT_PROPS } from "@/lib/redux/app-builder/fieldBuilderDefaultProps";
 
 // Helper function to check if a field exists in state
 const checkFieldExists = (state: FieldsState, id: string): boolean => {
@@ -40,59 +47,6 @@ const normalizeField = (field: FieldBuilder): FieldBuilder => {
         isDirty: false,
         isLocal: false,
     } as FieldBuilder;
-};
-
-export const FIELD_DEFAULT_COMPONENT_PROPS: ComponentProps = {
-    min: 0,
-    max: 100,
-    step: 1,
-    rows: 3,
-    minDate: "",
-    maxDate: "",
-    onLabel: "Yes",
-    offLabel: "No",
-    multiSelect: false,
-    maxItems: 99999,
-    minItems: 0,
-    gridCols: "grid-cols-1",
-    autoComplete: "off",
-    direction: "vertical",
-    customContent: "",
-    showSelectAll: false,
-    width: "w-full",
-    valuePrefix: "",
-    valueSuffix: "",
-    maxLength: 999999,
-    spellCheck: false,
-    tableRules: {
-        canAddRows: true,
-        canSortRows: true,
-        canEditCells: true,
-        canAddColumns: true,
-        canDeleteRows: true,
-        canSortColumns: true,
-        canDeleteColumns: true,
-        canRenameColumns: true
-    }
-};
-
-// Default field configuration
-export const DEFAULT_FIELD: Partial<FieldBuilder> = {
-    label: "",
-    description: "",
-    helpText: "",
-    group: "default",
-    iconName: "",
-    component: "textarea",
-    required: false,
-    placeholder: "",
-    defaultValue: "",
-    options: [],
-    componentProps: FIELD_DEFAULT_COMPONENT_PROPS,
-    includeOther: false,
-    isPublic: false,
-    isDirty: false,
-    isLocal: true,
 };
 
 interface FieldsState {
@@ -141,14 +95,6 @@ export const fieldBuilderSlice = createSlice({
                     state.activeFieldId = null;
                 }
             }
-        },
-        // Set the active field for editing
-        setActiveField: (state, action: PayloadAction<string | null>) => {
-            const id = action.payload;
-            if (id !== null && !state.fields[id]) {
-                console.error(`Field with ID ${id} not found in state`);
-            }
-            state.activeFieldId = id;
         },
         // Direct actions for top-level FieldBuilder properties
         setLabel: (state, action: PayloadAction<{ id: string; label: string }>) => {
@@ -498,6 +444,14 @@ export const fieldBuilderSlice = createSlice({
         },
     },
     extraReducers: (builder) => {
+        builder.addCase(setActiveField, (state, action) => {
+            const id = action.payload;
+            if (id !== null && !state.fields[id]) {
+                console.error(`Field with ID ${id} not found in state`);
+            }
+            state.activeFieldId = id;
+        });
+
         // Create Field
         builder.addCase(createFieldThunk.pending, (state) => {
             state.isLoading = true;
@@ -673,7 +627,6 @@ export const fieldBuilderSlice = createSlice({
 export const {
     startFieldCreation,
     cancelFieldCreation,
-    setActiveField,
     setLabel,
     setDescription,
     setHelpText,
@@ -717,5 +670,7 @@ export const {
     setError,
     startWithData,
 } = fieldBuilderSlice.actions;
+
+export { setActiveField } from "../fieldBuilderSyncActions";
 
 export default fieldBuilderSlice.reducer;

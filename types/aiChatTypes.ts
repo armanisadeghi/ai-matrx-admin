@@ -1,6 +1,6 @@
 
 // AiChat types (placeholder, replace with actual types)
-import {BaseModuleSchema} from "@/lib/redux/dynamic/moduleSchema";
+import {BaseModuleSchema} from "@/lib/redux/dynamic/baseModuleSchema";
 
 interface AiChatConfig {}
 interface AiChatUserPreferences {}

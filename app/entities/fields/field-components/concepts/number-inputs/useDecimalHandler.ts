@@ -1,6 +1,6 @@
 // useDecimalHandler.ts
 import { useState, useEffect, useCallback } from 'react';
-import { NumberHandlerProps, NumberHandlerResult } from './EntityNumberInput';
+import type { NumberHandlerProps, NumberHandlerResult } from './entityNumberInputShared';
 
 export function useDecimalHandler({ value, onChange, config }: NumberHandlerProps): NumberHandlerResult {
     const [displayValue, setDisplayValue] = useState<string>('');

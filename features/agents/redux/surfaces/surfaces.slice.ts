@@ -32,7 +32,6 @@
  */
 
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store";
 
 // =============================================================================
 // Types
@@ -130,12 +129,14 @@ export default surfacesSlice.reducer;
 // Selectors
 // =============================================================================
 
+type WithSurfaces = { surfaces: SurfacesState };
+
 export const selectSurfaceRegistration =
   (surfaceKey: string) =>
-  (state: RootState): SurfaceRegistration | undefined =>
+  (state: WithSurfaces): SurfaceRegistration | undefined =>
     state.surfaces?.byKey?.[surfaceKey];
 
 export const selectPendingNavigation =
   (surfaceKey: string) =>
-  (state: RootState): PendingNavigation | undefined =>
+  (state: WithSurfaces): PendingNavigation | undefined =>
     state.surfaces?.pendingNavigation?.[surfaceKey];

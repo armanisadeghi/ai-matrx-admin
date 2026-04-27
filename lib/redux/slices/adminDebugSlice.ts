@@ -19,7 +19,6 @@
 // the original design — they drive the floating debug panels in DebugIndicatorManager.
 
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store";
 import type { DebugData } from "@/components/debug/SystemPromptDebugModal";
 
 // ============================================================================
@@ -223,17 +222,19 @@ export const {
 // ── Selectors ────────────────────────────────────────────────────────────────
 
 // Raw slice accessors — used as inputs to derived selectors
-const selectAdminDebugSlice = (state: RootState) => state.adminDebug;
-const selectIndicators = (state: RootState) => state.adminDebug.indicators;
+const selectAdminDebugSlice = (state: WithAdminDebug) => state.adminDebug;
+const selectIndicators = (state: WithAdminDebug) => state.adminDebug.indicators;
 
-export const selectIsDebugMode = (state: RootState) =>
+type WithAdminDebug = { adminDebug: AdminDebugState };
+
+export const selectIsDebugMode = (state: WithAdminDebug) =>
   state.adminDebug.isDebugMode;
-export const selectRouteContext = (state: RootState) =>
+export const selectRouteContext = (state: WithAdminDebug) =>
   state.adminDebug.routeContext;
-export const selectConsoleErrors = (state: RootState) =>
+export const selectConsoleErrors = (state: WithAdminDebug) =>
   state.adminDebug.consoleErrors;
-export const selectDebugData = (state: RootState) => state.adminDebug.debugData;
-export const selectDebugKey = (key: string) => (state: RootState) =>
+export const selectDebugData = (state: WithAdminDebug) => state.adminDebug.debugData;
+export const selectDebugKey = (key: string) => (state: WithAdminDebug) =>
   state.adminDebug.debugData[key];
 
 /** Full slice snapshot — only use for the "Copy Context" serialization path, not in reactive components. */
@@ -242,11 +243,11 @@ export const selectAdminDebug = selectAdminDebugSlice;
 /** All indicator sub-objects — direct reference; stable unless an indicator changes. */
 export const selectDebugIndicators = selectIndicators;
 
-export const selectPromptDebugIndicator = (state: RootState) =>
+export const selectPromptDebugIndicator = (state: WithAdminDebug) =>
   state.adminDebug.indicators.promptDebug;
-export const selectResourceDebugIndicator = (state: RootState) =>
+export const selectResourceDebugIndicator = (state: WithAdminDebug) =>
   state.adminDebug.indicators.resourceDebug;
-export const selectExecutionStateDebug = (state: RootState) =>
+export const selectExecutionStateDebug = (state: WithAdminDebug) =>
   state.adminDebug.indicators.executionStateDebug;
 
 export default adminDebugSlice.reducer;

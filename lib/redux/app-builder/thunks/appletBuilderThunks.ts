@@ -1,4 +1,5 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
+import type { AppletsState } from "../types";
 import {
   createCustomAppletConfig,
   updateCustomAppletConfig,
@@ -10,11 +11,12 @@ import {
   isAppletSlugAvailable,
 } from "../service/customAppletService";
 import { AppletBuilder, ContainerBuilder } from "../types";
-import type { RootState } from "@/lib/redux/store";
-import { selectAppletById } from "../selectors/appletSelectors";
-import { setActiveApplet } from "../slices/appletBuilderSlice";
+import { setActiveApplet } from "../appletBuilderSyncActions";
 
 // Define action creator for fetchAppletByIdSuccess
+
+type WithAppletBuilder = { appletBuilder: AppletsState };
+
 export const fetchAppletByIdSuccess = (applet: AppletBuilder) => ({
   type: "appletBuilder/fetchAppletByIdSuccess" as const,
   payload: applet,
@@ -31,13 +33,13 @@ export type FetchAppletByIdSuccessAction = ReturnType<
 export const setActiveAppletWithFetchThunk = createAsyncThunk<
   { success: boolean; exists: boolean },
   string,
-  { state: RootState }
+  { state: WithAppletBuilder }
 >(
   "appletBuilder/setActiveAppletWithFetch",
   async (appletId, { getState, dispatch, rejectWithValue }) => {
     try {
       // Check if applet already exists in state - using getState directly instead of a selector
-      const appletState = getState().appletBuilder.applets[appletId];
+      const appletState = (getState() as WithAppletBuilder).appletBuilder.applets[appletId];
 
       if (appletState) {
         // If it exists, just set it as active
@@ -90,12 +92,12 @@ export const setActiveAppletWithFetchThunk = createAsyncThunk<
 export const addAppletToAppThunk = createAsyncThunk<
   AppletBuilder,
   { appletId: string; appId: string },
-  { state: RootState }
+  { state: WithAppletBuilder }
 >(
   "appletBuilder/addAppletToApp",
   async ({ appletId, appId }, { getState, rejectWithValue }) => {
     try {
-      const applet = selectAppletById(getState() as RootState, appletId);
+      const applet = (getState() as WithAppletBuilder).appletBuilder.applets[appletId];
       if (!applet) {
         throw new Error(`Applet with ID ${appletId} not found`);
       }
@@ -124,12 +126,12 @@ export const addAppletToAppThunk = createAsyncThunk<
 export const saveAppletThunk = createAsyncThunk<
   AppletBuilder,
   string,
-  { state: RootState }
+  { state: WithAppletBuilder }
 >(
   "appletBuilder/saveApplet",
   async (appletId, { getState, rejectWithValue }) => {
     try {
-      const applet = selectAppletById(getState() as RootState, appletId);
+      const applet = (getState() as WithAppletBuilder).appletBuilder.applets[appletId];
       if (!applet) {
         throw new Error(`Applet with ID ${appletId} not found`);
       }
@@ -191,7 +193,7 @@ export const updateAppletThunk = createAsyncThunk<
   "appletBuilder/updateApplet",
   async ({ id, changes }, { getState, rejectWithValue }) => {
     try {
-      const currentApplet = selectAppletById(getState() as RootState, id);
+      const currentApplet = (getState() as WithAppletBuilder).appletBuilder.applets[id];
       if (!currentApplet) {
         throw new Error(`Applet with ID ${id} not found`);
       }
@@ -267,7 +269,7 @@ export const removeContainerThunk = createAsyncThunk<
   "appletBuilder/removeContainer",
   async ({ appletId, containerId }, { getState, rejectWithValue }) => {
     try {
-      const applet = selectAppletById(getState() as RootState, appletId);
+      const applet = (getState() as WithAppletBuilder).appletBuilder.applets[appletId];
       if (!applet) {
         throw new Error("Applet not found");
       }
@@ -287,12 +289,12 @@ export const removeContainerThunk = createAsyncThunk<
 export const recompileContainerThunk = createAsyncThunk<
   { appletId: string; containerId: string; updatedContainer: ContainerBuilder },
   { appletId: string; containerId: string },
-  { state: RootState }
+  { state: WithAppletBuilder }
 >(
   "appletBuilder/recompileContainer",
   async ({ appletId, containerId }, { getState, rejectWithValue }) => {
     try {
-      const applet = selectAppletById(getState() as RootState, appletId);
+      const applet = (getState() as WithAppletBuilder).appletBuilder.applets[appletId];
       if (!applet) {
         throw new Error(`Applet with ID ${appletId} not found`);
       }
@@ -366,7 +368,7 @@ export const fetchAppletsThunk = createAsyncThunk<AppletBuilder[], void>(
 export const checkAppletSlugUniqueness = createAsyncThunk<
   boolean,
   { slug: string; appletId?: string },
-  { state: RootState }
+  { state: WithAppletBuilder }
 >(
   "appletBuilder/checkSlugUniqueness",
   async ({ slug, appletId }, { rejectWithValue }) => {

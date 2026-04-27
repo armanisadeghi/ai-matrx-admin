@@ -1,14 +1,16 @@
 import { createSelector } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store";
 import {
   selectAllWorkflowNodes,
   selectWorkflowNodesByWorkflowId,
 } from "../workflow-nodes/selectors";
 import { BrokerSourceConfig } from "./types";
+import type { WorkflowState } from './types';
 
-const selectWorkflowState = (state: RootState) => state.workflows;
+const selectWorkflowState = (state: WithWorkflows) => state.workflows;
 
 // Memoized selector to avoid array creation on every call
+type WithWorkflows = { workflows: WorkflowState };
+
 export const selectAllWorkflows = createSelector(
   [selectWorkflowState],
   (workflowState) => {
@@ -18,7 +20,7 @@ export const selectAllWorkflows = createSelector(
 );
 
 export const selectWorkflowById = createSelector(
-  [selectWorkflowState, (_: RootState, id: string) => id],
+  [selectWorkflowState, (_: WithWorkflows, id: string) => id],
   (workflowState, id) => workflowState.entities[id] || null,
 );
 
@@ -52,7 +54,7 @@ export const selectWorkflowsError = createSelector(
 );
 
 export const selectWorkflowIsDirty = createSelector(
-  [selectWorkflowState, (_: RootState, id: string) => id],
+  [selectWorkflowState, (_: WithWorkflows, id: string) => id],
   (workflowState, id) => workflowState.isDirty[id] || false,
 );
 
@@ -74,7 +76,7 @@ export const selectActiveWorkflows = createSelector(
 );
 
 export const selectWorkflowsByCategory = createSelector(
-  [selectAllWorkflows, (_: RootState, category: string) => category],
+  [selectAllWorkflows, (_: WithWorkflows, category: string) => category],
   (workflows, category) =>
     workflows.filter((workflow) => workflow.category === category),
 );
@@ -82,7 +84,7 @@ export const selectWorkflowsByCategory = createSelector(
 export const selectWorkflowWithNodes = createSelector(
   [
     selectWorkflowById,
-    (state: RootState, id: string) =>
+    (state: WithWorkflows, id: string) =>
       selectWorkflowNodesByWorkflowId(state, id),
   ],
   (workflow, workflowNodes) => {
@@ -110,27 +112,27 @@ export const selectActiveWorkflowWithNodes = createSelector(
 
 // Complex State Array Selectors that properly accept workflow ID parameter
 export const selectWorkflowInputs = createSelector(
-  [selectWorkflowState, (_: RootState, id: string) => id],
+  [selectWorkflowState, (_: WithWorkflows, id: string) => id],
   (workflowState, id) => workflowState.entities[id]?.inputs || [],
 );
 
 export const selectWorkflowOutputs = createSelector(
-  [selectWorkflowState, (_: RootState, id: string) => id],
+  [selectWorkflowState, (_: WithWorkflows, id: string) => id],
   (workflowState, id) => workflowState.entities[id]?.outputs || [],
 );
 
 export const selectWorkflowDependencies = createSelector(
-  [selectWorkflowState, (_: RootState, id: string) => id],
+  [selectWorkflowState, (_: WithWorkflows, id: string) => id],
   (workflowState, id) => workflowState.entities[id]?.dependencies || [],
 );
 
 export const selectWorkflowSources = createSelector(
-  [selectWorkflowState, (_: RootState, id: string) => id],
+  [selectWorkflowState, (_: WithWorkflows, id: string) => id],
   (workflowState, id) => workflowState.entities[id]?.sources || [],
 );
 
 export const selectWorkflowDestinations = createSelector(
-  [selectWorkflowState, (_: RootState, id: string) => id],
+  [selectWorkflowState, (_: WithWorkflows, id: string) => id],
   (workflowState, id) => workflowState.entities[id]?.destinations || [],
 );
 
@@ -162,19 +164,19 @@ export const selectActiveWorkflowDestinations = createSelector(
 
 // FIXED: Utility Selectors for Complex State Arrays with proper input selectors
 export const selectWorkflowInputById = createSelector(
-  [selectWorkflowInputs, (_: RootState, __: string, index: number) => index],
+  [selectWorkflowInputs, (_: WithWorkflows, __: string, index: number) => index],
   (inputs, index) => inputs[index] || null,
 );
 
 export const selectWorkflowOutputById = createSelector(
-  [selectWorkflowOutputs, (_: RootState, __: string, index: number) => index],
+  [selectWorkflowOutputs, (_: WithWorkflows, __: string, index: number) => index],
   (outputs, index) => outputs[index] || null,
 );
 
 export const selectWorkflowSourceByBrokerId = createSelector(
   [
     selectWorkflowSources,
-    (_: RootState, __: string, brokerId: string) => brokerId,
+    (_: WithWorkflows, __: string, brokerId: string) => brokerId,
   ],
   (sources, brokerId) =>
     sources.find((source) => source.brokerId === brokerId) || null,
@@ -189,7 +191,7 @@ export const selectWorkflowUserDataSources = createSelector(
 export const selectWorkflowUserDataSourceByBrokerId = createSelector(
   [
     selectWorkflowUserDataSources,
-    (_: RootState, __: string, brokerId: string) => brokerId,
+    (_: WithWorkflows, __: string, brokerId: string) => brokerId,
   ],
   (userDataSources, brokerId) => {
     if (!userDataSources || !Array.isArray(userDataSources)) return null;
@@ -208,7 +210,7 @@ export const selectWorkflowUserInputSources = createSelector(
 export const selectWorkflowUserInputSourceByBrokerId = createSelector(
   [
     selectWorkflowUserInputSources,
-    (_: RootState, __: string, brokerId: string) => brokerId,
+    (_: WithWorkflows, __: string, brokerId: string) => brokerId,
   ],
   (userInputSources, brokerId) => {
     if (!userInputSources || !Array.isArray(userInputSources)) return null;
@@ -221,31 +223,31 @@ export const selectWorkflowUserInputSourceByBrokerId = createSelector(
 // ADDITIONAL HELPER SELECTORS: Factory functions for creating parameterized selectors
 export const createWorkflowInputsSelector = (workflowId: string) =>
   createSelector(
-    [(state: RootState) => selectWorkflowById(state, workflowId)],
+    [(state: WithWorkflows) => selectWorkflowById(state, workflowId)],
     (workflow) => workflow?.inputs || [],
   );
 
 export const createWorkflowOutputsSelector = (workflowId: string) =>
   createSelector(
-    [(state: RootState) => selectWorkflowById(state, workflowId)],
+    [(state: WithWorkflows) => selectWorkflowById(state, workflowId)],
     (workflow) => workflow?.outputs || [],
   );
 
 export const createWorkflowDependenciesSelector = (workflowId: string) =>
   createSelector(
-    [(state: RootState) => selectWorkflowById(state, workflowId)],
+    [(state: WithWorkflows) => selectWorkflowById(state, workflowId)],
     (workflow) => workflow?.dependencies || [],
   );
 
 export const createWorkflowSourcesSelector = (workflowId: string) =>
   createSelector(
-    [(state: RootState) => selectWorkflowById(state, workflowId)],
+    [(state: WithWorkflows) => selectWorkflowById(state, workflowId)],
     (workflow) => workflow?.sources || [],
   );
 
 export const createWorkflowDestinationsSelector = (workflowId: string) =>
   createSelector(
-    [(state: RootState) => selectWorkflowById(state, workflowId)],
+    [(state: WithWorkflows) => selectWorkflowById(state, workflowId)],
     (workflow) => workflow?.destinations || [],
   );
 

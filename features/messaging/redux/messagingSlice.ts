@@ -12,7 +12,6 @@
  */
 
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store";
 import type { ConversationWithDetails, Message } from "../types";
 
 // ============================================
@@ -465,29 +464,31 @@ export const {
 // Selectors
 // ============================================
 
-export const selectMessagingIsOpen = (state: RootState) =>
+type WithMessaging = { messaging: MessagingState };
+
+export const selectMessagingIsOpen = (state: WithMessaging) =>
   state.messaging.isOpen;
-export const selectMessagingSheetWidth = (state: RootState) =>
+export const selectMessagingSheetWidth = (state: WithMessaging) =>
   state.messaging.sheetWidth;
-export const selectCurrentConversationId = (state: RootState) =>
+export const selectCurrentConversationId = (state: WithMessaging) =>
   state.messaging.currentConversationId;
-export const selectConversations = (state: RootState) =>
+export const selectConversations = (state: WithMessaging) =>
   state.messaging.conversations;
-export const selectUnreadCounts = (state: RootState) =>
+export const selectUnreadCounts = (state: WithMessaging) =>
   state.messaging.unreadCounts;
-export const selectTotalUnreadCount = (state: RootState) =>
+export const selectTotalUnreadCount = (state: WithMessaging) =>
   state.messaging.totalUnreadCount;
-export const selectMessagingIsLoading = (state: RootState) =>
+export const selectMessagingIsLoading = (state: WithMessaging) =>
   state.messaging.isLoading;
-export const selectMessagingError = (state: RootState) => state.messaging.error;
-export const selectMessagingIsAvailable = (state: RootState) =>
+export const selectMessagingError = (state: WithMessaging) => state.messaging.error;
+export const selectMessagingIsAvailable = (state: WithMessaging) =>
   state.messaging.isAvailable;
 
 /**
  * Get the current conversation with details
  */
 export const selectCurrentConversation = (
-  state: RootState,
+  state: WithMessaging,
 ): ConversationWithDetails | null => {
   const { conversations, currentConversationId } = state.messaging;
   if (!currentConversationId) return null;
@@ -499,7 +500,7 @@ export const selectCurrentConversation = (
  */
 export const selectConversationUnreadCount =
   (conversationId: string) =>
-  (state: RootState): number => {
+  (state: WithMessaging): number => {
     return state.messaging.unreadCounts[conversationId] || 0;
   };
 

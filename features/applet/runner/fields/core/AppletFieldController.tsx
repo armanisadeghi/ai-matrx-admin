@@ -27,7 +27,6 @@ import StarRatingField from "../StarRatingField";
 import PhoneNumberField from "../PhoneNumberField";
 import RangeSliderField from "../RangeSlider";
 import NumberInputField from "../NumberInputField";
-import { FieldDefinition } from "@/types/customAppTypes";
 import DraggableTableField from "../concepts/DraggableTableField";
 import DraggableEditableTableField from "../concepts/DraggableEditableTableField";
 import DragEditModifyTableField from "../concepts/DragEditModifyTableField";
@@ -35,14 +34,7 @@ import DragTableRowAndColumnField from "../concepts/DragTableRowAndColumnField";
 
 import ConceptBrokerOptionsField from "../concept-broker-options/SearchableSelectField";
 
-export interface CommonFieldProps {
-  field: FieldDefinition;
-  sourceId: string;
-  isMobile?: boolean;
-  source?: string;
-  disabled?: boolean;
-  className?: string;
-}
+export type { CommonFieldProps } from "./types";
 
 export const AppletFieldController = ({
   field,

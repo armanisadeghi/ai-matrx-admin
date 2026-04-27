@@ -1,5 +1,4 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store";
 import type { ReactNode } from "react";
 
 // Supported canvas content types
@@ -255,18 +254,20 @@ export const {
 
 // Selectors — use optional chaining so these work safely with the lite Redux store
 // (public layout includes the full store; canvas state is available if the slice is registered)
-export const selectCanvasIsOpen = (state: RootState) =>
+type WithCanvas = { canvas: CanvasState };
+
+export const selectCanvasIsOpen = (state: WithCanvas) =>
   state.canvas?.isOpen ?? false;
-export const selectCanvasItems = (state: RootState) =>
+export const selectCanvasItems = (state: WithCanvas) =>
   state.canvas?.items ?? [];
-export const selectCurrentItemId = (state: RootState) =>
+export const selectCurrentItemId = (state: WithCanvas) =>
   state.canvas?.currentItemId ?? null;
-export const selectCanvasIsAvailable = (state: RootState) =>
+export const selectCanvasIsAvailable = (state: WithCanvas) =>
   state.canvas?.isAvailable ?? false;
 
 // Get the currently active canvas item
 export const selectCurrentCanvasItem = (
-  state: RootState,
+  state: WithCanvas,
 ): CanvasItem | null => {
   if (!state.canvas) return null;
   const { items, currentItemId } = state.canvas;
@@ -275,21 +276,21 @@ export const selectCurrentCanvasItem = (
 };
 
 // Get current canvas content (for backward compatibility)
-export const selectCanvasContent = (state: RootState): CanvasContent | null => {
+export const selectCanvasContent = (state: WithCanvas): CanvasContent | null => {
   const currentItem = selectCurrentCanvasItem(state);
   return currentItem?.content || null;
 };
 
 // Get canvas count
-export const selectCanvasCount = (state: RootState) =>
+export const selectCanvasCount = (state: WithCanvas) =>
   state.canvas?.items?.length ?? 0;
 
 // Get canvas width
-export const selectCanvasWidth = (state: RootState) =>
+export const selectCanvasWidth = (state: WithCanvas) =>
   state.canvas?.canvasWidth ?? 400;
 
 // Get canvas render mode
-export const selectCanvasRenderMode = (state: RootState) =>
+export const selectCanvasRenderMode = (state: WithCanvas) =>
   state.canvas?.renderMode ?? "panel";
 
 // Export types
