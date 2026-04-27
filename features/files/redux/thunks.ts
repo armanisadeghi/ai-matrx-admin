@@ -398,16 +398,27 @@ export const createFolder = createAsyncThunk<
     resourceType: "folder",
   });
 
+  // Path-style creation when at root: backend creates the folder
+  // idempotently and avoids the `parent_id: null` ambiguity that's been
+  // tripping up direct {folder_name, parent_id: null} requests at root.
+  // For nested creation we keep the explicit name+parentId form so the
+  // caller's tree state matches exactly.
+  const body =
+    arg.parentId === null
+      ? {
+          folder_path: folderName,
+          visibility: arg.visibility ?? "private",
+          metadata: arg.metadata ?? null,
+        }
+      : {
+          folder_name: folderName,
+          parent_id: arg.parentId,
+          visibility: arg.visibility ?? "private",
+          metadata: arg.metadata ?? null,
+        };
+
   try {
-    const { data: row } = await Folders.createFolder(
-      {
-        folder_name: folderName,
-        parent_id: arg.parentId,
-        visibility: arg.visibility ?? "private",
-        metadata: arg.metadata ?? null,
-      },
-      { requestId },
-    );
+    const { data: row } = await Folders.createFolder(body, { requestId });
 
     const folder = dbRowToCloudFolder(row);
     dispatch(upsertFolder(folder));
@@ -419,6 +430,27 @@ export const createFolder = createAsyncThunk<
       }),
     );
     return folder.id;
+  } catch (err) {
+    if (process.env.NODE_ENV !== "production") {
+      const e = err as {
+        status?: number | null;
+        code?: string;
+        detail?: string;
+        userMessage?: string;
+        details?: unknown;
+      };
+      // Surface the full backend response so we can fix the contract drift
+      // rather than show a generic "request failed" toast.
+      console.error("[createFolder] backend error", {
+        status: e.status ?? null,
+        code: e.code,
+        detail: e.detail,
+        userMessage: e.userMessage,
+        details: e.details,
+        sentBody: body,
+      });
+    }
+    throw err;
   } finally {
     releaseRequest(requestId);
   }

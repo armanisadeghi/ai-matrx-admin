@@ -4,7 +4,6 @@ import React, { useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/styles/themes/utils";
 import EntityButton from "./field-components/EntityButton";
-import EntitySearchInput from "./field-components/EntitySearchInput";
 import {
   cardVariants,
   containerVariants,
@@ -39,11 +38,11 @@ import { UnifiedLayoutProps } from "@/components/matrx/Entity/prewired-component
 import { useEntityCrud } from "@/lib/redux/entity/hooks/useEntityCrud";
 import { useRenderedFields } from "@/app/entities/hooks/form-related/useRenderedFields";
 
+export type { FormDensity } from "@/types/formDensity";
+
 export interface FormState {
   [key: string]: any;
 }
-
-export type FormDensity = "normal" | "compact" | "comfortable";
 
 const ArmaniForm: React.FC<UnifiedLayoutProps> = (unifiedLayoutProps) => {
   const entityKey = unifiedLayoutProps.layoutState.selectedEntity || null;

@@ -17,8 +17,9 @@ import {
   SAVE_COMPLETE,
 } from "@/types/storage.types";
 import { storageManager } from "./storageManager";
-import type { RootState } from "@/lib/redux/store";
 import { toast } from "@/lib/toast-service";
+
+type SliceRootState = Record<string, unknown>;
 
 // console.log('Creating storage sync saga');
 
@@ -95,7 +96,7 @@ export function createStorageSyncSaga(config: StorageSyncConfig) {
     const { slice } = action.payload;
     if (slices.includes(slice)) {
       console.log("Slice found, proceeding with save");
-      const state = yield select((state: RootState) => state[slice]);
+      const state = yield select((state: SliceRootState) => state[slice]);
       yield call(saveSliceState, slice, state, true);
     }
   }
@@ -110,7 +111,7 @@ export function createStorageSyncSaga(config: StorageSyncConfig) {
           action.type !== SAVE_COMPLETE,
         function* (action) {
           yield delay(debounceMs);
-          const state = yield select((state: RootState) => state[slice]);
+          const state = yield select((state: SliceRootState) => state[slice]);
           yield call(saveSliceState, slice, state, false);
         },
       );

@@ -7,8 +7,8 @@ import {
   EntityStateField,
   MatrxRecordId,
 } from "@/lib/redux/entity/types/stateTypes";
-import { FormDensity } from "@/components/matrx/ArmaniForm/ArmaniForm";
-import { UnifiedCrudHandlers } from "@/components/matrx/Entity/prewired-components/layouts/types";
+import type { FormDensity } from "@/types/formDensity";
+import type { UnifiedCrudHandlers } from "@/types/unifiedCrudHandlersTypes";
 
 export interface LayoutProps {
   selectedEntity: EntityKeys | null;

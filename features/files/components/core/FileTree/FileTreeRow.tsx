@@ -13,6 +13,7 @@ import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { cn } from "@/lib/utils";
 import { FileIcon } from "@/features/files/components/core/FileIcon/FileIcon";
 import { FileContextMenu } from "@/features/files/components/core/FileContextMenu/FileContextMenu";
+import { FolderContextMenu } from "@/features/files/components/core/FolderContextMenu/FolderContextMenu";
 import type { TreeRow } from "./useTreeExpansion";
 
 const INDENT_PX = 14;
@@ -142,14 +143,29 @@ function FileTreeRowImpl(
 
       <span className="truncate pr-2 flex-1 min-w-0">{name}</span>
 
-      {!isFolder ? (
-        <div
-          className={cn(
-            "opacity-0 group-hover:opacity-100 pr-1",
-            focused && "opacity-100",
-          )}
-          onClick={(e) => e.stopPropagation()}
-        >
+      <div
+        className={cn(
+          "opacity-0 group-hover:opacity-100 pr-1",
+          focused && "opacity-100",
+        )}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {isFolder ? (
+          <FolderContextMenu
+            folderId={row.id}
+            onRename={onRename}
+            onMove={onMove}
+          >
+            <button
+              type="button"
+              tabIndex={-1}
+              aria-label="Folder actions"
+              className="flex h-4 w-4 items-center justify-center rounded hover:bg-accent"
+            >
+              <MoreHorizontal className="h-3 w-3" aria-hidden="true" />
+            </button>
+          </FolderContextMenu>
+        ) : (
           <FileContextMenu
             fileId={row.id}
             onRename={onRename}
@@ -165,8 +181,8 @@ function FileTreeRowImpl(
               <MoreHorizontal className="h-3 w-3" aria-hidden="true" />
             </button>
           </FileContextMenu>
-        </div>
-      ) : null}
+        )}
+      </div>
     </div>
   );
 }

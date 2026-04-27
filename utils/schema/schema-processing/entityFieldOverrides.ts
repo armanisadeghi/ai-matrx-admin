@@ -3,37 +3,11 @@ import { EntityKeys } from '@/types/entityTypes';
 import { initialAutomationTableSchema } from '../initialSchemas';
 import { FieldOverrideName, AllEntityFieldOverrides, ProcessedField, EntityProcessedFields } from './overrideTypes';
 import { applyCalculatedFields } from './fieldCalculatedOverrides';
+import { getFieldOverride, isEmptyOverride } from './fieldOverrideAccess';
+
+export { getFieldOverride, isEmptyOverride } from './fieldOverrideAccess';
 
 // https://claude.ai/chat/1e5472cc-a4fa-42d6-b7a4-0dce43d400ae
-
-
-
-// Helper to check if a value is effectively empty (reused from before)
-export function isEmptyOverride(value: any): boolean {
-    if (value === null || value === undefined || value === '') return true;
-    if (Array.isArray(value) && value.length === 0) return true;
-    if (typeof value === 'object' && Object.keys(value).length === 0) return true;
-    return false;
-}
-
-// Helper to get field-specific override
-export function getFieldOverride(
-    entityName: EntityKeys,
-    fieldName: string,
-    overrideName: FieldOverrideName,
-    fieldOverrides: AllEntityFieldOverrides
-): any | null {
-    const entityOverrides = fieldOverrides[entityName];
-    if (!entityOverrides) return null;
-
-    const fieldOverride = entityOverrides[fieldName];
-    if (!fieldOverride) return null;
-
-    const override = fieldOverride[overrideName];
-    if (isEmptyOverride(override)) return null;
-
-    return override;
-}
 
 // Process a single field property
 function processFieldProperty(

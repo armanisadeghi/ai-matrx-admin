@@ -1,6 +1,6 @@
 import { EntityKeys } from "@/types/entityTypes";
 import { AllEntityFieldOverrides, FieldOverrideName, ProcessedField } from "./overrideTypes";
-import { getFieldOverride } from "./entityFieldOverrides";
+import { getFieldOverride } from "./fieldOverrideAccess";
 
 
 // Updated interface to include fieldName parameter

@@ -47,6 +47,7 @@ export function NewMenu({ parentFolderId, className }: NewMenuProps) {
   const { upload } = useFileUpload({ parentFolderId });
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const folderInputRef = useRef<HTMLInputElement | null>(null);
+  const folderNameInputRef = useRef<HTMLInputElement | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
   const [createError, setCreateError] = useState<string | null>(null);
@@ -147,7 +148,15 @@ export function NewMenu({ parentFolderId, className }: NewMenuProps) {
       />
 
       <AlertDialog open={createOpen} onOpenChange={setCreateOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent
+          onOpenAutoFocus={(e) => {
+            // Radix moves focus to the cancel button by default; override to focus
+            // the name input so the user can immediately type.
+            e.preventDefault();
+            folderNameInputRef.current?.focus();
+            folderNameInputRef.current?.select();
+          }}
+        >
           <AlertDialogHeader>
             <AlertDialogTitle>New folder</AlertDialogTitle>
             <AlertDialogDescription>
@@ -155,7 +164,7 @@ export function NewMenu({ parentFolderId, className }: NewMenuProps) {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <input
-            autoFocus
+            ref={folderNameInputRef}
             type="text"
             value={newFolderName}
             onChange={(e) => setNewFolderName(e.target.value)}

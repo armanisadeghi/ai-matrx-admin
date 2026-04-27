@@ -1,12 +1,12 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { EntityKeys, AnyEntityDatabaseTable } from "@/types/entityTypes";
-import { createEntitySlice } from "./slice";
 import {
   FetchOneWithFkIfkPayload,
   GetOrFetchSelectedRecordsPayload,
 } from "./actions";
 import { QueryOptions } from "./types/stateTypes";
 import type { AppDispatch, RootState } from "@/lib/redux/store";
+import { GET_OR_FETCH_SELECTED_RECORDS_THUNK } from "./entityThunkTypes";
 import { selectEntityDatabaseName } from "@/lib/redux/schema/globalCacheSelectors";
 import EntityLogger from "./utils/entityLogger";
 import { createEntitySelectors } from "./selectors";
@@ -20,7 +20,7 @@ export const getOrFetchSelectedRecordsThunk = createAsyncThunk<
   RecordResult<any>[],
   {
     entityKey: EntityKeys;
-    actions: ReturnType<typeof createEntitySlice<any>>["actions"];
+    actions: Record<string, any>;
     payload: GetOrFetchSelectedRecordsPayload;
   },
   {
@@ -28,7 +28,7 @@ export const getOrFetchSelectedRecordsThunk = createAsyncThunk<
     state: RootState;
   }
 >(
-  "entities/getOrFetchSelectedRecordsThunk",
+  GET_OR_FETCH_SELECTED_RECORDS_THUNK,
   async ({ entityKey, actions, payload }, { dispatch, getState }) => {
     if (
       payload.matrxRecordIds.length === 0 ||
