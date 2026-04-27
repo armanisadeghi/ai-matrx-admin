@@ -57,12 +57,11 @@ const nextConfig = {
     typescript: {
         ignoreBuildErrors: true,
     },
-    // ESLint should run in pre-commit / CI, not during production builds.
-    // The no-barrel-files plugin in .eslintrc.json resolves and parses every
-    // imported module across the entire codebase — adding 5-10+ minutes to builds.
-    eslint: {
-        ignoreDuringBuilds: true,
-    },
+    // Next.js 16 removed the `eslint` config block and the `next lint` command.
+    // Linting is now invoked via the ESLint CLI directly (`pnpm lint`) and is no
+    // longer part of `next build` — so the previous `ignoreDuringBuilds: true`
+    // is implicit. Run lint in pre-commit / CI only; never on production builds
+    // (the no-barrel-files plugin parses every imported module and adds 5-10+ min).
     reactStrictMode: false,
     headers: getHeaders,
     async redirects() {

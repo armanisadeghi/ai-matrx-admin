@@ -15,13 +15,13 @@
  *   - Renders final collapsed diff view immediately
  */
 
-'use client';
+"use client";
 
-import React from 'react';
-import { SearchReplaceDiffRenderer } from '@/components/mardown-display/chat-markdown/diff-blocks/renderers/SearchReplaceDiffRenderer';
-import { StreamingDiffBlock } from '@/components/mardown-display/chat-markdown/diff-blocks/StreamingDiffBlock';
-import { DiffLoadingIndicator } from '@/components/mardown-display/chat-markdown/diff-blocks/DiffLoadingIndicator';
-import { cn } from '@/lib/utils';
+import React from "react";
+import { SearchReplaceDiffRenderer } from "@/components/mardown-display/chat-markdown/diff-blocks/renderers/SearchReplaceDiffRenderer";
+import { StreamingDiffBlock } from "@/components/mardown-display/chat-markdown/diff-blocks/StreamingDiffBlock";
+import { DiffLoadingIndicator } from "@/components/mardown-display/chat-markdown/diff-blocks/DiffLoadingIndicator";
+import { cn } from "@/lib/utils";
 
 // ─── Server-parsed data shape ────────────────────────────────────────────────
 // Python emits this in content_block.data when type === "search_replace"
@@ -68,18 +68,23 @@ export const SearchReplaceBlock: React.FC<SearchReplaceBlockProps> = ({
   serverData,
   content,
   isStreamActive = false,
-  language = 'typescript',
+  language = "typescript",
   className,
 }) => {
   // ── Path 1: server provided structured data ──────────────────────────────
-  if (serverData && typeof serverData === 'object' && 'search' in serverData) {
+  if (serverData && typeof serverData === "object" && "search" in serverData) {
     const data = serverData as SearchReplaceBlockData;
     const effectiveLanguage = data.language ?? language;
 
     // If neither section has content yet, show loading
     if (!data.search && !data.replace) {
       return (
-        <div className={cn('rounded-lg border border-neutral-200 dark:border-neutral-700 bg-muted/30', className)}>
+        <div
+          className={cn(
+            "rounded-lg border border-neutral-200 dark:border-neutral-700 bg-muted/30",
+            className,
+          )}
+        >
           <DiffLoadingIndicator message="Preparing code changes…" />
         </div>
       );
@@ -88,8 +93,8 @@ export const SearchReplaceBlock: React.FC<SearchReplaceBlockProps> = ({
     return (
       <SearchReplaceDiffRenderer
         data={{
-          search: data.search ?? '',
-          replace: data.replace ?? '',
+          search: data.search ?? "",
+          replace: data.replace ?? "",
           searchComplete: data.searchComplete ?? !isStreamActive,
           replaceComplete: data.replaceComplete ?? !isStreamActive,
           isComplete: data.isComplete ?? !isStreamActive,
@@ -115,7 +120,12 @@ export const SearchReplaceBlock: React.FC<SearchReplaceBlockProps> = ({
 
   // ── Path 3: nothing yet — show initial loader ────────────────────────────
   return (
-    <div className={cn('rounded-lg border border-neutral-200 dark:border-neutral-700 bg-muted/30', className)}>
+    <div
+      className={cn(
+        "rounded-lg border border-neutral-200 dark:border-neutral-700 bg-muted/30",
+        className,
+      )}
+    >
       <DiffLoadingIndicator message="Waiting for changes…" />
     </div>
   );
