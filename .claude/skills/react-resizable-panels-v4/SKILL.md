@@ -860,6 +860,7 @@ import type {
 - [ ] Cross-component toggles (header button → panel) go through `<PanelControlProvider>` + `<RegisteredPanel>` (Context preserves across portal).
 - [ ] Panel content (Sidebar, Editor, etc.) is server-rendered — passed as `children` to `<Panel>`, NOT inlined in a `'use client'` wrapper.
 - [ ] Page body wrapper is `<div className="h-full overflow-hidden">` — NO `paddingTop: var(--shell-header-h)` on the outer wrapper (content extends behind the transparent header by design).
+- [ ] Each panel surface decides its own top-spacing: scrolling content (chat conversations, message lists) gets NO `pt-`; static or interactive top content (titles, file tabs, terminal tabs, search inputs) gets `pt-[var(--shell-header-h)]` on its outermost element.
 - [ ] Cross-portal toggles use `<PanelControlProvider>` + `<RegisteredPanel groupKey="...">` + `<ClientGroup groupKey="...">` so toggles go through `groupRef.setLayout()` and adjacent collapsibles stay independent.
 - [ ] No `border-b border-border` on mini-titles inside panels.
 - [ ] Header content has a `<BackChevron>` as its leftmost element pointing to the parent route.
