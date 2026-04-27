@@ -57,6 +57,12 @@ const nextConfig = {
     typescript: {
         ignoreBuildErrors: true,
     },
+    // ESLint should run in pre-commit / CI, not during production builds.
+    // The no-barrel-files plugin in .eslintrc.json resolves and parses every
+    // imported module across the entire codebase — adding 5-10+ minutes to builds.
+    eslint: {
+        ignoreDuringBuilds: true,
+    },
     reactStrictMode: false,
     headers: getHeaders,
     async redirects() {
