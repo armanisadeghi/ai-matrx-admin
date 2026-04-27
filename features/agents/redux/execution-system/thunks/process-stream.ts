@@ -35,6 +35,7 @@ import {
   isBrokerEvent,
   isRecordReservedEvent,
   isRecordUpdateEvent,
+  isResourceChangedEvent,
   isCxMessageReservation,
   isCxRequestReservation,
   isCxToolCallReservation,
@@ -73,6 +74,7 @@ import {
   updateExtractedJson,
 } from "../active-requests/active-requests.slice";
 import { confirmServerSync } from "../conversations/conversations.slice";
+import { receivedFsChange } from "@/features/code/redux/fsChangesSlice";
 import {
   recordBufferSpawned,
   recordContextInjected,
@@ -258,6 +260,7 @@ export async function processStream({
   let infoEvents = 0;
   let recordReservedEvents = 0;
   let recordUpdateEvents = 0;
+  let resourceChangedEvents = 0;
   let otherEvents = 0;
 
   let isInTextRun = false;
@@ -1061,6 +1064,45 @@ export async function processStream({
           },
         }),
       );
+    } else if (isResourceChangedEvent(event)) {
+      // Generic "this resource just changed" primitive. Today it's emitted
+      // by matrx-ai's `fs_write` / `fs_patch` / `fs_mkdir` tools (kind
+      // `fs.file` / `fs.directory`). Future kinds (`cld_files`,
+      // `sandbox.cwd`, `cache.*`) will land on the same wire shape. The
+      // slice swallows ALL kinds; downstream consumers branch on `kind`
+      // and ignore unknown ones — see
+      // `features/code/SANDBOX_PROXY_AND_FS_EVENTS_FE_INTEGRATION.md` §2.
+      resourceChangedEvents++;
+      const d = event.data;
+      dispatch(
+        receivedFsChange({
+          kind: d.kind,
+          action: d.action,
+          resourceId: d.resource_id,
+          sandboxId: d.sandbox_id ?? null,
+          userId: d.user_id ?? null,
+          metadata: d.metadata ?? {},
+          receivedAt: Date.now(),
+          requestId,
+          conversationId,
+        }),
+      );
+      dispatch(
+        appendTimeline({
+          requestId,
+          entry: {
+            kind: "resource_changed",
+            seq: 0,
+            timestamp: now,
+            resourceKind: d.kind,
+            action: d.action,
+            resourceId: d.resource_id,
+            sandboxId: d.sandbox_id ?? null,
+            userId: d.user_id ?? null,
+            metadata: (d.metadata ?? {}) as Record<string, unknown>,
+          },
+        }),
+      );
     } else if (isErrorEvent(event)) {
       otherEvents++;
       const isFatal = true;
@@ -1386,6 +1428,7 @@ export async function processStream({
     infoEvents,
     recordReservedEvents,
     recordUpdateEvents,
+    resourceChangedEvents,
     otherEvents,
     accumulatedTextBytes,
     totalPayloadBytes,

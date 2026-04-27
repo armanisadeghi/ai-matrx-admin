@@ -2974,6 +2974,101 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/files/usage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Storage Usage */
+        get: operations["get_storage_usage_files_usage_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/files/trash": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Trash */
+        get: operations["list_trash_files_trash_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/files/upload/presigned": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create Presigned Upload
+         * @description Issue a presigned PUT URL so the browser uploads directly to S3.
+         */
+        post: operations["create_presigned_upload_files_upload_presigned_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/files/finalize-upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Finalize Presigned Upload
+         * @description Register a file in cld_files after the browser PUT completes.
+         *
+         *     The S3 object now exists; we record metadata + version + folder chain.
+         *     No bytes are read — we trust the actual_size_bytes the client reports
+         *     and verify it via S3 HEAD if necessary.
+         */
+        post: operations["finalize_presigned_upload_files_finalize_upload_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/files/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Search Files */
+        get: operations["search_files_files_search_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/files/by-path/{file_path}": {
         parameters: {
             query?: never;
@@ -3061,6 +3156,72 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/files/bulk": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Bulk Delete Files */
+        delete: operations["bulk_delete_files_files_bulk_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/files/bulk/move": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Bulk Move Files */
+        post: operations["bulk_move_files_files_bulk_move_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/files/migrate-guest-to-user": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Migrate Guest To User
+         * @description Re-own all cld_* rows from a guest UUID to a real user (idempotent, one-shot).
+         *
+         *     Security model (closes C4):
+         *       - Caller MUST be authenticated as ``new_user_id`` (the just-converted user).
+         *       - Caller MUST also send the ``X-Guest-Fingerprint`` (or X-Fingerprint-ID)
+         *         they used as a guest. The backend resolves that fingerprint to a guest
+         *         UUID using the same registry the AuthMiddleware uses, and refuses if
+         *         the resolved UUID does not match ``body.guest_id`` (or, if no guest_id
+         *         is provided, uses the resolved UUID directly).
+         *       - The migration is recorded in ``cld_guest_migrations`` so a second call
+         *         with a DIFFERENT new_user_id fails with a 409 ('locked').
+         *       - Admins / X-Cloud-Files-Bypass callers may pass an explicit guest_id
+         *         without the fingerprint check (for support-tooling).
+         */
+        post: operations["migrate_guest_to_user_files_migrate_guest_to_user_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/files/{file_id}": {
         parameters: {
             query?: never;
@@ -3078,6 +3239,67 @@ export interface paths {
         head?: never;
         /** Update File Metadata */
         patch: operations["update_file_metadata_files__file_id__patch"];
+        trace?: never;
+    };
+    "/files/{file_id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Restore File
+         * @description Undo a soft-delete. Owner or admin grantee only.
+         */
+        post: operations["restore_file_files__file_id__restore_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/files/{file_id}/rename": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Rename File
+         * @description Rename / move a file by changing its logical path. Storage-key stable.
+         */
+        post: operations["rename_file_files__file_id__rename_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/files/{file_id}/copy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Copy File
+         * @description Copy a file to a new logical path. Reads bytes server-side; counts
+         *     against the COPYING USER's quota (the new file is owned by the caller).
+         */
+        post: operations["copy_file_files__file_id__copy_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/files/{file_id}/download": {
@@ -3288,6 +3510,59 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/folders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Folder */
+        post: operations["create_folder_folders_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/folders/{folder_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Folder */
+        get: operations["get_folder_folders__folder_id__get"];
+        put?: never;
+        post?: never;
+        /** Delete Folder */
+        delete: operations["delete_folder_folders__folder_id__delete"];
+        options?: never;
+        head?: never;
+        /** Patch Folder */
+        patch: operations["patch_folder_folders__folder_id__patch"];
+        trace?: never;
+    };
+    "/folders/bulk/move": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Bulk Move Folders */
+        post: operations["bulk_move_folders_folders_bulk_move_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/share/{share_token}": {
         parameters: {
             query?: never;
@@ -3314,6 +3589,108 @@ export interface paths {
         };
         /** Download Shared File */
         get: operations["download_shared_file_share__share_token__download_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cloud-files/list": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Files */
+        get: operations["list_files_cloud_files_list_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cloud-files/get": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get File */
+        get: operations["get_file_cloud_files_get_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cloud-files/put": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Put File */
+        put: operations["put_file_cloud_files_put_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cloud-files/delete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete File */
+        delete: operations["delete_file_cloud_files_delete_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cloud-files/quota": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Quota */
+        get: operations["get_quota_cloud_files_quota_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cloud-files/integrations.aidream": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Integrations Aidream */
+        get: operations["integrations_aidream_cloud_files_integrations_aidream_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3855,6 +4232,16 @@ export interface components {
              */
             memory_scope: string;
             cache_bypass?: components["schemas"]["CacheBypass"] | null;
+            /**
+             * Max Iterations
+             * @default 20
+             */
+            max_iterations: number;
+            /**
+             * Max Retries Per Iteration
+             * @default 2
+             */
+            max_retries_per_iteration: number;
         };
         /** AnalyzeBulkRequest */
         AnalyzeBulkRequest: {
@@ -3956,6 +4343,19 @@ export interface components {
              */
             file: string;
         };
+        /** Body_put_file_cloud_files_put_put */
+        Body_put_file_cloud_files_put_put: {
+            /**
+             * File
+             * Format: binary
+             */
+            file: string;
+            /**
+             * File Path
+             * @description Destination cld_files.file_path
+             */
+            file_path: string;
+        };
         /** Body_upload_file_files_upload_post */
         Body_upload_file_files_upload_post: {
             /**
@@ -4005,6 +4405,51 @@ export interface components {
              * Format: binary
              */
             file: string;
+        };
+        /** BulkFileDeleteRequest */
+        BulkFileDeleteRequest: {
+            /** File Ids */
+            file_ids: string[];
+            /**
+             * Hard Delete
+             * @default false
+             */
+            hard_delete: boolean;
+        };
+        /** BulkFileMoveRequest */
+        BulkFileMoveRequest: {
+            /** File Ids */
+            file_ids: string[];
+            /**
+             * New Parent Folder Id
+             * @description Target folder id, or null to move to root
+             */
+            new_parent_folder_id?: string | null;
+        };
+        /** BulkFolderMoveRequest */
+        BulkFolderMoveRequest: {
+            /** Folder Ids */
+            folder_ids: string[];
+            /** New Parent Id */
+            new_parent_id?: string | null;
+        };
+        /** BulkResponse */
+        BulkResponse: {
+            /** Results */
+            results: components["schemas"]["BulkResultItem"][];
+            /** Succeeded */
+            succeeded: number;
+            /** Failed */
+            failed: number;
+        };
+        /** BulkResultItem */
+        BulkResultItem: {
+            /** Id */
+            id: string;
+            /** Ok */
+            ok: boolean;
+            /** Error */
+            error?: string | null;
         };
         /**
          * CacheBypass
@@ -4439,6 +4884,37 @@ export interface components {
             memory_scope: string;
             cache_bypass?: components["schemas"]["CacheBypass"] | null;
         };
+        /** CopyFileRequest */
+        CopyFileRequest: {
+            /**
+             * Target Path
+             * @description Full destination logical path
+             */
+            target_path: string;
+            /**
+             * Overwrite
+             * @default false
+             */
+            overwrite: boolean;
+        };
+        /** CreateFolderRequest */
+        CreateFolderRequest: {
+            /**
+             * Folder Path
+             * @description Logical folder path, e.g. 'Images/Chat'
+             */
+            folder_path: string;
+            /**
+             * Visibility
+             * @default private
+             * @enum {string}
+             */
+            visibility: "public" | "private" | "shared";
+            /** Metadata */
+            metadata?: {
+                [key: string]: unknown;
+            } | null;
+        };
         /** CreateGroupRequest */
         CreateGroupRequest: {
             /** Name */
@@ -4655,6 +5131,7 @@ export interface components {
         };
         /** ExtractTablesRequest */
         ExtractTablesRequest: {
+            media?: components["schemas"]["MediaRef"] | null;
             /** File */
             file?: {
                 [key: string]: unknown;
@@ -4671,6 +5148,7 @@ export interface components {
         };
         /** ExtractTextRequest */
         ExtractTextRequest: {
+            media?: components["schemas"]["MediaRef"] | null;
             /** File */
             file?: {
                 [key: string]: unknown;
@@ -4759,6 +5237,15 @@ export interface components {
             /** Is New */
             is_new: boolean;
         };
+        /** FinalizeUploadRequest */
+        FinalizeUploadRequest: {
+            /** Upload Id */
+            upload_id: string;
+            /** Actual Size Bytes */
+            actual_size_bytes?: number | null;
+            /** Checksum */
+            checksum?: string | null;
+        };
         /** FireResponse */
         FireResponse: {
             /** Trigger Id */
@@ -4785,6 +5272,34 @@ export interface components {
             };
         } & {
             [key: string]: unknown;
+        };
+        /** FolderRecord */
+        FolderRecord: {
+            /** Id */
+            id: string;
+            /** Owner Id */
+            owner_id: string;
+            /** Folder Path */
+            folder_path: string;
+            /** Folder Name */
+            folder_name: string;
+            /** Parent Id */
+            parent_id?: string | null;
+            /**
+             * Visibility
+             * @default private
+             */
+            visibility: string;
+            /** Metadata */
+            metadata?: {
+                [key: string]: unknown;
+            };
+            /** Created At */
+            created_at?: string | null;
+            /** Updated At */
+            updated_at?: string | null;
+            /** Deleted At */
+            deleted_at?: string | null;
         };
         /**
          * ForkRequest
@@ -4821,6 +5336,79 @@ export interface components {
             grantee_type: "user" | "group";
             /** Expires At */
             expires_at?: string | null;
+        };
+        /**
+         * GuestConversionRequest
+         * @description Migrate a guest's cld_* rows to a real user.
+         *
+         *     The caller MUST be authenticated as ``new_user_id`` AND must have
+         *     ``X-Guest-Fingerprint`` set to the value the guest was using before
+         *     sign-in (the backend hashes + verifies it server-side).
+         */
+        GuestConversionRequest: {
+            /**
+             * New User Id
+             * @description The auth.users.id the guest is becoming
+             */
+            new_user_id: string;
+            /**
+             * Guest Id
+             * @description Optional explicit guest_id; honoured only with admin bypass
+             */
+            guest_id?: string | null;
+        };
+        /** GuestConversionResponse */
+        GuestConversionResponse: {
+            /**
+             * Files
+             * @default 0
+             */
+            files: number;
+            /**
+             * Folders
+             * @default 0
+             */
+            folders: number;
+            /**
+             * Groups
+             * @default 0
+             */
+            groups: number;
+            /**
+             * Perms
+             * @default 0
+             */
+            perms: number;
+            /**
+             * Shares
+             * @default 0
+             */
+            shares: number;
+            /**
+             * Files Migrated
+             * @default 0
+             */
+            files_migrated: number;
+            /**
+             * Folders Migrated
+             * @default 0
+             */
+            folders_migrated: number;
+            /**
+             * Groups Migrated
+             * @default 0
+             */
+            groups_migrated: number;
+            /**
+             * Permissions Migrated
+             * @default 0
+             */
+            permissions_migrated: number;
+            /**
+             * Shares Migrated
+             * @default 0
+             */
+            shares_migrated: number;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -5026,6 +5614,72 @@ export interface components {
             /** Disable Safety Checker */
             disable_safety_checker?: boolean | null;
         };
+        /**
+         * MediaRef
+         * @description Canonical media reference shared across every API that takes media.
+         */
+        MediaRef: {
+            /**
+             * File Id
+             * @description cld_files UUID. Preferred form; returned by POST /files/upload.
+             */
+            file_id?: string | null;
+            /**
+             * Url
+             * @description Any URL we issued (share link, /files/{id}/url, /files/{id}/download, raw S3 URL) or a truly external https://. The server recognises ours and resolves to bytes; external URLs are passed through to providers that fetch them, or downloaded as a last resort.
+             */
+            url?: string | null;
+            /**
+             * File Uri
+             * @description Native cloud URI: s3://bucket/key, gs://..., supabase://...
+             */
+            file_uri?: string | null;
+            /**
+             * Mime Type
+             * @description Hint from the client. Server REPLACES with the canonical cld_files.mime_type when the reference resolves to one of our files.
+             */
+            mime_type?: string | null;
+            /**
+             * Metadata
+             * @description Free-form per-API metadata. Opaque to the resolver.
+             */
+            metadata?: {
+                [key: string]: unknown;
+            };
+            /**
+             * Base64 Data
+             * @description Inline bytes (base64). Set by resolver when needs_bytes=True.
+             */
+            base64_data?: string | null;
+            /**
+             * Resolved Url
+             * @description Fresh presigned URL the resolver minted (provider-fetchable).
+             */
+            resolved_url?: string | null;
+            /** File Size */
+            file_size?: number | null;
+            /** Owner Id */
+            owner_id?: string | null;
+            /**
+             * Is Ours
+             * @description True iff the resolver matched the reference to a cld_files row.
+             * @default false
+             */
+            is_ours: boolean;
+            /**
+             * Resolver Error
+             * @description Set when resolution failed; surface to the caller for logging.
+             */
+            resolver_error?: string | null;
+            /**
+             * Is Resolved
+             * @description Set to True by the boundary normaliser. Resolvers short-circuit when this is True (idempotency). Internal — clients do not set.
+             * @default false
+             */
+            is_resolved: boolean;
+        } & {
+            [key: string]: unknown;
+        };
         /** MediaUpdate */
         MediaUpdate: {
             /** Is Relevant */
@@ -5129,6 +5783,20 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
+        /** PatchFolderRequest */
+        PatchFolderRequest: {
+            /**
+             * Folder Path
+             * @description New full folder path (rename / move)
+             */
+            folder_path?: string | null;
+            /** Visibility */
+            visibility?: ("public" | "private" | "shared") | null;
+            /** Metadata */
+            metadata?: {
+                [key: string]: unknown;
+            } | null;
+        };
         /** PdfPipelineOptions */
         PdfPipelineOptions: {
             /**
@@ -5184,6 +5852,7 @@ export interface components {
         };
         /** PdfRequest */
         PdfRequest: {
+            media?: components["schemas"]["MediaRef"] | null;
             /** File */
             file?: {
                 [key: string]: unknown;
@@ -5222,6 +5891,10 @@ export interface components {
             tables_path?: string | null;
             /** Supabase Url */
             supabase_url?: string | null;
+            /** File Id */
+            file_id?: string | null;
+            /** Storage Uri */
+            storage_uri?: string | null;
         };
         /** PendingCallSummary */
         PendingCallSummary: {
@@ -5322,6 +5995,52 @@ export interface components {
          * @enum {string}
          */
         PostPrepOption: "none" | "translation" | "summarization" | "expansion" | "fact_checking";
+        /**
+         * PresignedUploadRequest
+         * @description Issue a presigned upload URL the browser can PUT directly to S3.
+         *
+         *     Avoids buffering large files through the FastAPI worker. The caller
+         *     MUST call POST /files/finalize-upload with the returned ``upload_id``
+         *     after the PUT succeeds — that registers the file in cld_files.
+         */
+        PresignedUploadRequest: {
+            /**
+             * File Path
+             * @description Logical path the file will live at in cloud_files
+             */
+            file_path: string;
+            /** Content Type */
+            content_type?: string | null;
+            /** Expected Size Bytes */
+            expected_size_bytes?: number | null;
+            /**
+             * Visibility
+             * @default private
+             * @enum {string}
+             */
+            visibility: "public" | "private" | "shared";
+            /** Metadata */
+            metadata?: {
+                [key: string]: unknown;
+            } | null;
+        };
+        /** PresignedUploadResponse */
+        PresignedUploadResponse: {
+            /** Upload Id */
+            upload_id: string;
+            /** Url */
+            url: string;
+            /** Headers */
+            headers: {
+                [key: string]: string;
+            };
+            /** Expires In */
+            expires_in: number;
+            /** File Path */
+            file_path: string;
+            /** Storage Uri */
+            storage_uri: string;
+        };
         /** ProcessBlocksRequest */
         ProcessBlocksRequest: {
             /**
@@ -5495,6 +6214,14 @@ export interface components {
              * @default false
              */
             stream: boolean;
+        };
+        /** RenameFileRequest */
+        RenameFileRequest: {
+            /**
+             * New Path
+             * @description Full new logical path (must include filename)
+             */
+            new_path: string;
         };
         /** ResumeRequest */
         ResumeRequest: {
@@ -5796,6 +6523,15 @@ export interface components {
              */
             search_type: string;
         };
+        /** SearchFilesResponse */
+        SearchFilesResponse: {
+            /** Results */
+            results: components["schemas"]["FileRecord"][];
+            /** Query */
+            query: string;
+            /** Total Returned */
+            total_returned: number;
+        };
         /** SearchKeywordsRequest */
         SearchKeywordsRequest: {
             /** Keywords */
@@ -5880,6 +6616,62 @@ export interface components {
             is_stale?: boolean | null;
             /** Scrape Status */
             scrape_status?: ("pending" | "success" | "thin" | "failed" | "manual" | "skipped" | "complete") | null;
+        };
+        /** StorageUsageResponse */
+        StorageUsageResponse: {
+            /** Tier Id */
+            tier_id: string;
+            /** Tier Name */
+            tier_name: string;
+            /**
+             * Is Blocked
+             * @default false
+             */
+            is_blocked: boolean;
+            /** Blocked Reason */
+            blocked_reason?: string | null;
+            /**
+             * Bytes Used
+             * @default 0
+             */
+            bytes_used: number;
+            /**
+             * Files Count
+             * @default 0
+             */
+            files_count: number;
+            /**
+             * Daily Upload Count
+             * @default 0
+             */
+            daily_upload_count: number;
+            /**
+             * Daily Upload Bytes
+             * @default 0
+             */
+            daily_upload_bytes: number;
+            /** Max Storage Bytes */
+            max_storage_bytes?: number | null;
+            /** Max File Size Bytes */
+            max_file_size_bytes?: number | null;
+            /** Max Files */
+            max_files?: number | null;
+            /** Max Versions Per File */
+            max_versions_per_file?: number | null;
+            /** Max Daily Uploads */
+            max_daily_uploads?: number | null;
+            /** Max Daily Upload Bytes */
+            max_daily_upload_bytes?: number | null;
+            /** Max Bulk Items */
+            max_bulk_items?: number | null;
+            /** Rate Limit Uploads Per Min */
+            rate_limit_uploads_per_min?: number | null;
+            /** Rate Limit Downloads Per Min */
+            rate_limit_downloads_per_min?: number | null;
+            /** Features */
+            features?: {
+                [key: string]: unknown;
+            };
         };
         /** SuggestRequest */
         SuggestRequest: {
@@ -6053,6 +6845,17 @@ export interface components {
             metadata?: {
                 [key: string]: unknown;
             } | null;
+        };
+        /** TrashListResponse */
+        TrashListResponse: {
+            /** Files */
+            files: {
+                [key: string]: unknown;
+            }[];
+            /** Folders */
+            folders: {
+                [key: string]: unknown;
+            }[];
         };
         /** UpdateTriggerActiveRequest */
         UpdateTriggerActiveRequest: {
@@ -11312,7 +12115,10 @@ export interface operations {
     upload_file_files_upload_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Idempotency-Key"?: string | null;
+                "X-Cloud-Files-Bypass"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -11346,6 +12152,8 @@ export interface operations {
         parameters: {
             query?: {
                 folder_path?: string | null;
+                limit?: number;
+                offset?: number;
             };
             header?: never;
             path?: never;
@@ -11375,7 +12183,12 @@ export interface operations {
     };
     get_file_tree_files_tree_get: {
         parameters: {
-            query?: never;
+            query?: {
+                limit?: number;
+                offset?: number;
+                include_folders?: boolean;
+                include_deleted?: boolean;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -11391,6 +12204,15 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     }[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -11415,6 +12237,161 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     }[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_storage_usage_files_usage_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StorageUsageResponse"];
+                };
+            };
+        };
+    };
+    list_trash_files_trash_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TrashListResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_presigned_upload_files_upload_presigned_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Cloud-Files-Bypass"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PresignedUploadRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PresignedUploadResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    finalize_presigned_upload_files_finalize_upload_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FinalizeUploadRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FileUploadResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    search_files_files_search_get: {
+        parameters: {
+            query: {
+                q: string;
+                /** @description Filter by mime type prefix, e.g. 'image/' or 'video/' */
+                mime_prefix?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SearchFilesResponse"];
                 };
             };
             /** @description Validation Error */
@@ -11649,6 +12626,113 @@ export interface operations {
             };
         };
     };
+    bulk_delete_files_files_bulk_delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Cloud-Files-Bypass"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BulkFileDeleteRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulkResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    bulk_move_files_files_bulk_move_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Cloud-Files-Bypass"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BulkFileMoveRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulkResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    migrate_guest_to_user_files_migrate_guest_to_user_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Guest-Fingerprint"?: string | null;
+                "X-Fingerprint-ID"?: string | null;
+                "X-Cloud-Files-Bypass"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GuestConversionRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GuestConversionResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_file_files__file_id__get: {
         parameters: {
             query?: never;
@@ -11715,7 +12799,10 @@ export interface operations {
     };
     update_file_metadata_files__file_id__patch: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description If true (default), merge into existing metadata. False = replace. */
+                metadata_merge?: boolean;
+            };
             header?: never;
             path: {
                 file_id: string;
@@ -11748,10 +12835,115 @@ export interface operations {
             };
         };
     };
+    restore_file_files__file_id__restore_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                file_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeleteResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    rename_file_files__file_id__rename_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                file_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RenameFileRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FileRecord"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    copy_file_files__file_id__copy_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Cloud-Files-Bypass"?: string | null;
+            };
+            path: {
+                file_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CopyFileRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FileUploadResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     download_file_files__file_id__download_get: {
         parameters: {
             query?: {
                 version?: number | null;
+                /** @description Render inline if mime is image/video/audio/pdf; never executable types. */
+                inline?: boolean;
             };
             header?: never;
             path: {
@@ -12295,6 +13487,169 @@ export interface operations {
             };
         };
     };
+    create_folder_folders_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateFolderRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FolderRecord"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_folder_folders__folder_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                folder_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FolderRecord"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_folder_folders__folder_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                folder_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeleteResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    patch_folder_folders__folder_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                folder_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PatchFolderRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FolderRecord"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    bulk_move_folders_folders_bulk_move_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BulkFolderMoveRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulkResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     resolve_share_link_share__share_token__get: {
         parameters: {
             query?: never;
@@ -12353,6 +13708,206 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_files_cloud_files_list_get: {
+        parameters: {
+            query?: {
+                /** @description Optional path prefix filter */
+                prefix?: string;
+                limit?: number;
+            };
+            header?: {
+                authorization?: string | null;
+                "X-Matrx-User-Id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_file_cloud_files_get_get: {
+        parameters: {
+            query: {
+                /** @description cld_files.file_path */
+                path: string;
+            };
+            header?: {
+                authorization?: string | null;
+                "X-Matrx-User-Id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    put_file_cloud_files_put_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+                "X-Matrx-User-Id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_put_file_cloud_files_put_put"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_file_cloud_files_delete_delete: {
+        parameters: {
+            query: {
+                /** @description cld_files.file_path */
+                path: string;
+            };
+            header?: {
+                authorization?: string | null;
+                "X-Matrx-User-Id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_quota_cloud_files_quota_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+                "X-Matrx-User-Id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    integrations_aidream_cloud_files_integrations_aidream_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
                 };
             };
         };

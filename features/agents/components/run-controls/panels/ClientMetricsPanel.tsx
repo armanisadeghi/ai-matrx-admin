@@ -95,6 +95,7 @@ export function ClientMetricsPanel({
         <StatRow label="Data" value={metrics.dataEvents} />
         <StatRow label="Reserved" value={metrics.recordReservedEvents} />
         <StatRow label="Updated" value={metrics.recordUpdateEvents} />
+        <StatRow label="FS Changes" value={metrics.resourceChangedEvents} />
         {metrics.warningEvents > 0 && (
           <StatRow
             label="Warnings"

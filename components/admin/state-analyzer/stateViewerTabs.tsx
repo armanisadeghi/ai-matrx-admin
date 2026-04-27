@@ -548,7 +548,10 @@ export function getStateViewerTabs(
       id: "user",
       label: "User",
       content: (
-        <GenericSliceViewer sliceKey="user" state={completeState.user} />
+        <GenericSliceViewer
+          sliceKey="userProfile"
+          state={completeState.userProfile}
+        />
       ),
     },
     {
@@ -607,33 +610,6 @@ export function getStateViewerTabs(
       ),
     },
     {
-      id: "entities",
-      label: "Entities",
-      content: (
-        <GenericSliceViewer
-          sliceKey="entities"
-          state={completeState.entities}
-        />
-      ),
-    },
-    {
-      id: "entities-custom",
-      label: "Entities Custom",
-      content: (
-        <EntitySliceViewer sliceKey="entities" state={completeState.entities} />
-      ),
-    },
-    {
-      id: "entityFields",
-      label: "Entity Fields",
-      content: (
-        <GenericSliceViewer
-          sliceKey="entityFields"
-          state={completeState.entityFields}
-        />
-      ),
-    },
-    {
       id: "layout",
       label: "Layout",
       content: (
@@ -664,16 +640,6 @@ export function getStateViewerTabs(
         <GenericSliceViewer
           sliceKey="flashcardChat"
           state={completeState.flashcardChat}
-        />
-      ),
-    },
-    {
-      id: "globalCache",
-      label: "Global Cache",
-      content: (
-        <GenericSliceViewer
-          sliceKey="globalCache"
-          state={completeState.globalCache}
         />
       ),
     },
@@ -926,16 +892,6 @@ export function getStateViewerTabs(
         <GenericSliceViewer
           sliceKey="adminPreferences"
           state={completeState.adminPreferences}
-        />
-      ),
-    },
-    {
-      id: "entitySystem",
-      label: "Entity System",
-      content: (
-        <GenericSliceViewer
-          sliceKey="entitySystem"
-          state={completeState.entitySystem}
         />
       ),
     },

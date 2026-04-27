@@ -13,6 +13,7 @@ import type {
   RenderBlockPayload,
   RecordReservedPayload,
   RecordUpdatePayload,
+  ResourceChangedPayload,
   HeartbeatPayload,
   EndPayload,
   BrokerPayload,
@@ -32,6 +33,7 @@ import {
   isRenderBlockEvent,
   isRecordReservedEvent,
   isRecordUpdateEvent,
+  isResourceChangedEvent,
   isHeartbeatEvent,
   isEndEvent,
   isBrokerEvent,
@@ -100,6 +102,7 @@ export interface BackendStreamFoldState {
   renderBlocks: RenderBlockPayload[];
   recordReserved: RecordReservedPayload[];
   recordUpdates: RecordUpdatePayload[];
+  resourceChanges: ResourceChangedPayload[];
   heartbeats: HeartbeatPayload[];
   ends: EndPayload[];
   brokers: BrokerPayload[];
@@ -120,6 +123,7 @@ export interface BackendStreamFoldState {
     renderBlock: number;
     recordReserved: number;
     recordUpdate: number;
+    resourceChanged: number;
     heartbeat: number;
     end: number;
     broker: number;
@@ -148,6 +152,7 @@ function emptyCounts(): BackendStreamFoldState["counts"] {
     renderBlock: 0,
     recordReserved: 0,
     recordUpdate: 0,
+    resourceChanged: 0,
     heartbeat: 0,
     end: 0,
     broker: 0,
@@ -173,6 +178,7 @@ function emptyFoldState(): BackendStreamFoldState {
     renderBlocks: [],
     recordReserved: [],
     recordUpdates: [],
+    resourceChanges: [],
     heartbeats: [],
     ends: [],
     brokers: [],
@@ -292,6 +298,10 @@ export function foldBackendStreamEvents(
       state.counts.recordUpdate++;
       state.recordUpdates.push(event.data);
       pushArrival(state, wire, "record_update", event.data, tt);
+    } else if (isResourceChangedEvent(event)) {
+      state.counts.resourceChanged++;
+      state.resourceChanges.push(event.data);
+      pushArrival(state, wire, "resource_changed", event.data, tt);
     } else if (isHeartbeatEvent(event)) {
       state.counts.heartbeat++;
       state.heartbeats.push(event.data);
@@ -330,4 +340,3 @@ export function foldStreamEventsToToolTestState(events: TypedStreamEvent[]): {
     finalPayload: folded.toolTesterFinalPayload,
   };
 }
-

@@ -35,11 +35,7 @@ import {
   selectProjectId,
   selectTaskId,
 } from "@/features/agent-context/redux/appContextSlice";
-import {
-  selectAccessToken,
-  selectFingerprintId,
-} from "@/lib/redux/slices/userSlice";
-import { resolveBaseUrlForConversation } from "./resolve-base-url";
+import { resolveBackendForConversation } from "./resolve-base-url";
 import {
   createRequest,
   setRequestStatus,
@@ -280,25 +276,17 @@ export const executeInstance = createAsyncThunk<
         ? formatVariablesForDisplay(variables)
         : "";
 
-      // Resolve base URL: per-instance override (sandbox-mode editor sets
-      // this) wins over the global server toggle. Falls back to the
-      // global apiConfig selection.
-      const baseUrl = resolveBaseUrlForConversation(state, conversationId);
-      if (!baseUrl) {
+      // Resolve backend channel: per-conversation override (sandbox-mode
+      // editor sets this) wins over the global server toggle. The
+      // resolver picks the matching auth scheme automatically — Supabase
+      // JWT for the global channel, orchestrator-minted bearer for the
+      // sandbox proxy.
+      const backend = resolveBackendForConversation(state, conversationId);
+      if (!backend) {
         throw new Error("No backend URL configured");
       }
-
-      // Build auth headers
-      const accessToken = selectAccessToken(state);
-      const fingerprintId = selectFingerprintId(state);
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-      };
-      if (accessToken) {
-        headers["Authorization"] = `Bearer ${accessToken}`;
-      } else if (fingerprintId) {
-        headers["X-Fingerprint-ID"] = fingerprintId;
-      }
+      const baseUrl = backend.baseUrl;
+      const headers = backend.headers;
 
       // Multi-turn routing: if there's any prior history (committed turns from a
       // previous send or rehydrated from the database), continue via the
@@ -574,26 +562,16 @@ export const submitToolResults = createAsyncThunk<void, SubmitToolResultsArgs>(
         throw new Error("No conversation ID for tool result submission");
       }
 
-      // Resolve base URL: per-instance override wins over global. Tool
-      // results MUST hit the same server that owns the conversation
+      // Tool results MUST hit the same server that owns the conversation
       // (otherwise the run is orphaned), so use the conversation-aware
-      // resolver here too.
-      const baseUrl = resolveBaseUrlForConversation(
+      // resolver here too — including the matching auth scheme.
+      const backend = resolveBackendForConversation(
         state,
         request.conversationId,
       );
-      if (!baseUrl) throw new Error("No backend URL configured");
-
-      const accessToken = selectAccessToken(state);
-      const fingerprintId = selectFingerprintId(state);
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-      };
-      if (accessToken) {
-        headers["Authorization"] = `Bearer ${accessToken}`;
-      } else if (fingerprintId) {
-        headers["X-Fingerprint-ID"] = fingerprintId;
-      }
+      if (!backend) throw new Error("No backend URL configured");
+      const baseUrl = backend.baseUrl;
+      const headers = backend.headers;
 
       // Map camelCase internal state to snake_case wire format
       const wireResults = results.map((r) => ({

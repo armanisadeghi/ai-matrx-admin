@@ -139,6 +139,24 @@ import { Separator, type SeparatorProps } from "react-resizable-panels";
 
 The library renders `role="separator"`, `aria-controls`, `aria-orientation`, `aria-valuemin/max/now`, plus `data-separator="default" | "hover" | "dragging" | "focus"`. Style off `data-separator=*`, not pseudo-classes.
 
+**Required CSS for any custom Separator** (you WILL hit this in dark mode otherwise):
+
+```tsx
+<Separator
+  className={[
+    "w-0.5 bg-border transition-colors cursor-col-resize",
+    "focus:outline-none",                        // kill the browser's default focus outline
+    "data-[separator=hover]:bg-primary",
+    "data-[separator=focus]:bg-primary",         // after click — keep the primary color, not the browser outline
+    "data-[separator=dragging]:bg-primary",
+  ].join(" ")}
+/>
+```
+
+The library sets `tabIndex={0}` on the Separator, so clicking it focuses it. Without `focus:outline-none` the browser draws its default focus outline — a 1px near-white line in the center — which looks correct in light mode but stands out hard in dark mode. **Always set `focus:outline-none` and explicitly style all four `data-separator` states** (`default` is the inherited `bg-border`; the other three should at minimum match `hover`). Style `data-separator=focus` separately, not just `data-separator=hover`, or you'll get a "click reveals a bright line" bug.
+
+If you don't want to type this every time, use the project wrapper at [`components/ui/resizable.tsx`](../../../components/ui/resizable.tsx) — `ResizableHandle` already does it.
+
 ### Imperative handles
 
 ```tsx
@@ -499,6 +517,7 @@ Each separator is independent — pulling separator B doesn't move separator A. 
 12. **Don't rely on `Layout` being an array.** v4 layout is `{ [panelId: string]: number }`. v3-shaped persisted data needs migration (the `useDefaultLayout` hook does it automatically via `readLegacyLayout`; if you wrote your own persistence in v3, migrate manually).
 13. **`Panel`'s `className`/`style` apply to a NESTED inner div, not the outer `data-panel` div.** Target the outer with `[data-panel]` selector or `elementRef`.
 14. **Don't expect `onCollapse`/`onExpand`.** Removed in v4. Detect transitions in `onResize` by comparing `prev.asPercentage` to `next.asPercentage`.
+15. **Don't forget `focus:outline-none` on a custom Separator.** The library sets `tabIndex={0}`, so clicking the separator focuses it; without that class the browser paints a near-white default outline that's invisible in light mode but jarring in dark mode. Style all four `data-separator` states (`default`/`hover`/`focus`/`dragging`), not just `hover`. See §1 for the canonical class list, or use the project wrapper.
 
 ---
 
@@ -553,6 +572,7 @@ import type {
 - [ ] If SSR: cookie path used (server reads → `defaultLayout` → client wrapper writes). NOT `localStorage`.
 - [ ] No `<div>` between `<Group>` and `<Panel>` / `<Separator>`.
 - [ ] If using imperative API across the tree: Redux holds intent (boolean), one effect drives `panelRef`. Size stays in the library.
+- [ ] Custom Separator has `focus:outline-none` AND explicit styling for `data-[separator=hover|focus|dragging]` (not just `hover`).
 
 ---
 

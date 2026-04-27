@@ -14,7 +14,10 @@ import { useCodeWorkspaceHistory } from "./useCodeWorkspaceHistory";
 import { ContextChip } from "../agent-context/ContextChip";
 import { useSyncEditorContext } from "../agent-context/useSyncEditorContext";
 import { useBindAgentToSandbox } from "../agent-context/useBindAgentToSandbox";
-import { selectActiveSandboxProxyUrl } from "../redux/codeWorkspaceSlice";
+import {
+  selectActiveSandboxId,
+  selectActiveSandboxProxyUrl,
+} from "../redux/codeWorkspaceSlice";
 
 interface ChatPanelSlotProps {
   /** Base path used by header controls inside the runner. Defaults to the
@@ -73,7 +76,8 @@ export const ChatPanelSlot: React.FC<ChatPanelSlotProps> = ({
   // Other backend traffic (notes, settings, etc.) keeps using the global
   // `apiConfigSlice` URL — this scope only affects agent execute thunks.
   const proxyUrl = useAppSelector(selectActiveSandboxProxyUrl);
-  useBindAgentToSandbox({ conversationId, proxyUrl });
+  const sandboxRowId = useAppSelector(selectActiveSandboxId);
+  useBindAgentToSandbox({ conversationId, proxyUrl, sandboxRowId });
 
   const openSettings = useCallback(() => {
     dispatch(

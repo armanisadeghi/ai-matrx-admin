@@ -43,6 +43,7 @@ import {
   setActiveSandboxId,
   setActiveSandboxProxyUrl,
 } from "../../redux/codeWorkspaceSlice";
+import { clearFsChangesBucket } from "../../redux/fsChangesSlice";
 import { SidePanelAction, SidePanelHeader } from "../SidePanelChrome";
 import {
   ACTIVE_ROW,
@@ -148,11 +149,18 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
   );
 
   const disconnect = useCallback(() => {
+    // Wipe the per-sandbox FS-change ring so a subsequent reconnect (or
+    // a switch into a different sandbox) doesn't see stale "recently
+    // changed" rows from the previous session. The slice is keyed by
+    // `sandboxId`, so this clears just this sandbox's bucket.
+    if (activeId) {
+      dispatch(clearFsChangesBucket(activeId));
+    }
     dispatch(setActiveSandboxId(null));
     dispatch(setActiveSandboxProxyUrl(null));
     setFilesystem(new MockFilesystemAdapter());
     setProcess(new MockProcessAdapter());
-  }, [dispatch, setFilesystem, setProcess]);
+  }, [activeId, dispatch, setFilesystem, setProcess]);
 
   const createSandbox = useCallback(
     async (request: SandboxCreateRequest = {}) => {

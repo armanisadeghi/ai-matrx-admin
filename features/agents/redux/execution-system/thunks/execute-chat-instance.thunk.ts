@@ -33,11 +33,7 @@ import { selectSettingsForChatApi } from "../instance-model-overrides/instance-m
 import { selectResolvedVariables } from "../instance-variable-values/instance-variable-values.selectors";
 import { selectContextPayload } from "../instance-context/instance-context.selectors";
 import { selectResourcePayloads } from "../instance-resources/instance-resources.selectors";
-import {
-  selectAccessToken,
-  selectFingerprintId,
-} from "@/lib/redux/slices/userSlice";
-import { resolveBaseUrlForConversation } from "./resolve-base-url";
+import { resolveBackendForConversation } from "./resolve-base-url";
 import {
   createRequest,
   setRequestStatus,
@@ -426,24 +422,15 @@ export const executeChatInstance = createAsyncThunk<
         dispatch(clearMemoryToggleRequest());
       }
 
-      // Resolve base URL: per-instance override (sandbox-mode editor sets
-      // this) wins over the global server toggle.
-      const baseUrl = resolveBaseUrlForConversation(state, conversationId);
-      if (!baseUrl) {
+      // Resolve backend channel — URL + matching auth scheme. Sandbox-mode
+      // override (Bearer <orchestrator token>) wins over the global server
+      // (Supabase JWT or X-Fingerprint-ID for guests).
+      const backend = resolveBackendForConversation(state, conversationId);
+      if (!backend) {
         throw new Error("No backend URL configured");
       }
-
-      // Build auth headers
-      const accessToken = selectAccessToken(state);
-      const fingerprintId = selectFingerprintId(state);
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-      };
-      if (accessToken) {
-        headers["Authorization"] = `Bearer ${accessToken}`;
-      } else if (fingerprintId) {
-        headers["X-Fingerprint-ID"] = fingerprintId;
-      }
+      const baseUrl = backend.baseUrl;
+      const headers = backend.headers;
 
       // Optimistic user message — push to messages.byId before the API
       // call. When `record_reserved cx_message role=user` lands, the stream

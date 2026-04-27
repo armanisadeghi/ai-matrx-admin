@@ -83,6 +83,7 @@ export const useEntityFinal = <TEntity extends EntityKeys>(
   const recordWithDefaultValues = useAppSelector(selectors.selectDefaultValues);
 
   const entityState = (state: RootState) => {
+    // @ts-ignore
     return state.entities[entityKey];
   };
 

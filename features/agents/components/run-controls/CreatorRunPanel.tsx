@@ -42,6 +42,7 @@ import { RunSettingsEditor } from "./RunSettingsEditor";
 import { ContextSlotsTab } from "./ContextSlotsTab";
 import { PayloadTab } from "./PayloadTab";
 import { selectConversationTitle } from "@/features/agents/redux/execution-system/messages/messages.selectors";
+import { selectInstanceUIState } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { SystemInstructionEditor } from "../builder/message-builders/system-instructions/SystemInstructionEditor";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { StreamDebugPanel } from "../debug/StreamDebugPanel";
@@ -49,6 +50,7 @@ import { AgentWidgetInvokerTester } from "./AgentWidgetInvokerTester";
 import { RequestStatsPanel } from "./panels/RequestStatsPanel";
 import { SessionStatsPanel } from "./panels/SessionStatsPanel";
 import { ClientMetricsPanel } from "./panels/ClientMetricsPanel";
+import { BackendTargetPanel } from "./panels/BackendTargetPanel";
 import { cn } from "@/lib/utils";
 
 // =============================================================================
@@ -64,7 +66,8 @@ type TabId =
   | "sysprompt"
   | "last"
   | "session"
-  | "client";
+  | "client"
+  | "backend";
 
 // =============================================================================
 // Tab 1: Actions
@@ -282,6 +285,7 @@ const ALL_TABS: TabId[] = [
   "last",
   "session",
   "client",
+  "backend",
 ];
 
 interface CreatorRunPanelProps {
@@ -340,6 +344,16 @@ export function CreatorRunPanel({
   const conversationTitle = useAppSelector(
     selectConversationTitle(conversationId),
   );
+
+  // At-a-glance API target indicator — appears on the collapsed creator bar
+  // so an admin can see whether THIS conversation is talking to the cloud
+  // server or to a sandbox proxy without expanding the panel. Source of
+  // truth lives in `instanceUIState[conversationId].serverOverrideUrl`;
+  // see BackendTargetPanel for the full breakdown.
+  const instanceUIForBadge = useAppSelector(
+    selectInstanceUIState(conversationId),
+  );
+  const isOverridden = Boolean(instanceUIForBadge?.serverOverrideUrl);
   // Session count across ALL instances for the tab label
   const totalRequestCount = useAppSelector((state) => {
     let count = 0;
@@ -401,6 +415,21 @@ export function CreatorRunPanel({
             <span className="font-medium text-foreground truncate shrink-0 max-w-[120px] sm:max-w-none">
               {conversationTitle ?? "Creator Panel"}
             </span>
+            <span
+              className={cn(
+                "ml-2 inline-flex items-center px-1.5 py-0.5 rounded border text-[9px] font-mono uppercase tracking-wider shrink-0",
+                isOverridden
+                  ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
+                  : "bg-muted text-muted-foreground border-border",
+              )}
+              title={
+                isOverridden
+                  ? "AI calls for this conversation are routed to the sandbox proxy"
+                  : "AI calls for this conversation use the global cloud server"
+              }
+            >
+              {isOverridden ? "Sandbox" : "Cloud"}
+            </span>
             <ChevronDown className="w-3 h-3 shrink-0 ml-auto" />
           </button>
         </div>
@@ -426,6 +455,7 @@ export function CreatorRunPanel({
         totalRequestCount > 0 ? `Session (${totalRequestCount})` : "Session",
     },
     { id: "client", label: "Client" },
+    { id: "backend", label: "Backend" },
   ];
 
   const tabs = allTabDefs.filter((t) => visibleTabIds.includes(t.id));
@@ -499,6 +529,9 @@ export function CreatorRunPanel({
               sourceFeature="agent-creator-panel"
               surfaceKey={`creator-widget-tester:${conversationId}`}
             />
+          )}
+          {activeTab === "backend" && (
+            <BackendTargetPanel conversationId={conversationId} />
           )}
         </div>
       </div>

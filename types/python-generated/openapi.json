@@ -7422,15 +7422,49 @@
         ],
         "summary": "Upload File",
         "operationId": "upload_file_files_upload_post",
+        "parameters": [
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Idempotency-Key"
+            }
+          },
+          {
+            "name": "X-Cloud-Files-Bypass",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Cloud-Files-Bypass"
+            }
+          }
+        ],
         "requestBody": {
+          "required": true,
           "content": {
             "multipart/form-data": {
               "schema": {
                 "$ref": "#/components/schemas/Body_upload_file_files_upload_post"
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "200": {
@@ -7479,6 +7513,29 @@
               ],
               "title": "Folder Path"
             }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
           }
         ],
         "responses": {
@@ -7516,18 +7573,73 @@
         ],
         "summary": "Get File Tree",
         "operationId": "get_file_tree_files_tree_get",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 5000,
+              "minimum": 1,
+              "default": 2000,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "include_folders",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true,
+              "title": "Include Folders"
+            }
+          },
+          {
+            "name": "include_deleted",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Include Deleted"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "items": {
-                    "additionalProperties": true,
-                    "type": "object"
-                  },
                   "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                  },
                   "title": "Response Get File Tree Files Tree Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -7572,6 +7684,270 @@
                     "additionalProperties": true
                   },
                   "title": "Response List Folders Files Folders Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/files/usage": {
+      "get": {
+        "tags": [
+          "Files"
+        ],
+        "summary": "Get Storage Usage",
+        "operationId": "get_storage_usage_files_usage_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorageUsageResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/files/trash": {
+      "get": {
+        "tags": [
+          "Files"
+        ],
+        "summary": "List Trash",
+        "operationId": "list_trash_files_trash_get",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000,
+              "minimum": 1,
+              "default": 200,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrashListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/files/upload/presigned": {
+      "post": {
+        "tags": [
+          "Files"
+        ],
+        "summary": "Create Presigned Upload",
+        "description": "Issue a presigned PUT URL so the browser uploads directly to S3.",
+        "operationId": "create_presigned_upload_files_upload_presigned_post",
+        "parameters": [
+          {
+            "name": "X-Cloud-Files-Bypass",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Cloud-Files-Bypass"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PresignedUploadRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PresignedUploadResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/files/finalize-upload": {
+      "post": {
+        "tags": [
+          "Files"
+        ],
+        "summary": "Finalize Presigned Upload",
+        "description": "Register a file in cld_files after the browser PUT completes.\n\nThe S3 object now exists; we record metadata + version + folder chain.\nNo bytes are read — we trust the actual_size_bytes the client reports\nand verify it via S3 HEAD if necessary.",
+        "operationId": "finalize_presigned_upload_files_finalize_upload_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FinalizeUploadRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileUploadResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/files/search": {
+      "get": {
+        "tags": [
+          "Files"
+        ],
+        "summary": "Search Files",
+        "operationId": "search_files_files_search_get",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "title": "Q"
+            }
+          },
+          {
+            "name": "mime_prefix",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by mime type prefix, e.g. 'image/' or 'video/'",
+              "title": "Mime Prefix"
+            },
+            "description": "Filter by mime type prefix, e.g. 'image/' or 'video/'"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchFilesResponse"
                 }
               }
             }
@@ -7890,6 +8266,216 @@
         }
       }
     },
+    "/files/bulk": {
+      "delete": {
+        "tags": [
+          "Files"
+        ],
+        "summary": "Bulk Delete Files",
+        "operationId": "bulk_delete_files_files_bulk_delete",
+        "parameters": [
+          {
+            "name": "X-Cloud-Files-Bypass",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Cloud-Files-Bypass"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkFileDeleteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/files/bulk/move": {
+      "post": {
+        "tags": [
+          "Files"
+        ],
+        "summary": "Bulk Move Files",
+        "operationId": "bulk_move_files_files_bulk_move_post",
+        "parameters": [
+          {
+            "name": "X-Cloud-Files-Bypass",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Cloud-Files-Bypass"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkFileMoveRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/files/migrate-guest-to-user": {
+      "post": {
+        "tags": [
+          "Files"
+        ],
+        "summary": "Migrate Guest To User",
+        "description": "Re-own all cld_* rows from a guest UUID to a real user (idempotent, one-shot).\n\nSecurity model (closes C4):\n  - Caller MUST be authenticated as ``new_user_id`` (the just-converted user).\n  - Caller MUST also send the ``X-Guest-Fingerprint`` (or X-Fingerprint-ID)\n    they used as a guest. The backend resolves that fingerprint to a guest\n    UUID using the same registry the AuthMiddleware uses, and refuses if\n    the resolved UUID does not match ``body.guest_id`` (or, if no guest_id\n    is provided, uses the resolved UUID directly).\n  - The migration is recorded in ``cld_guest_migrations`` so a second call\n    with a DIFFERENT new_user_id fails with a 409 ('locked').\n  - Admins / X-Cloud-Files-Bypass callers may pass an explicit guest_id\n    without the fingerprint check (for support-tooling).",
+        "operationId": "migrate_guest_to_user_files_migrate_guest_to_user_post",
+        "parameters": [
+          {
+            "name": "X-Guest-Fingerprint",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Guest-Fingerprint"
+            }
+          },
+          {
+            "name": "X-Fingerprint-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Fingerprint-Id"
+            }
+          },
+          {
+            "name": "X-Cloud-Files-Bypass",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Cloud-Files-Bypass"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GuestConversionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuestConversionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/files/{file_id}": {
       "get": {
         "tags": [
@@ -7946,6 +8532,18 @@
               "type": "string",
               "title": "File Id"
             }
+          },
+          {
+            "name": "metadata_merge",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "If true (default), merge into existing metadata. False = replace.",
+              "default": true,
+              "title": "Metadata Merge"
+            },
+            "description": "If true (default), merge into existing metadata. False = replace."
           }
         ],
         "requestBody": {
@@ -8032,6 +8630,171 @@
         }
       }
     },
+    "/files/{file_id}/restore": {
+      "post": {
+        "tags": [
+          "Files"
+        ],
+        "summary": "Restore File",
+        "description": "Undo a soft-delete. Owner or admin grantee only.",
+        "operationId": "restore_file_files__file_id__restore_post",
+        "parameters": [
+          {
+            "name": "file_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "File Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/files/{file_id}/rename": {
+      "post": {
+        "tags": [
+          "Files"
+        ],
+        "summary": "Rename File",
+        "description": "Rename / move a file by changing its logical path. Storage-key stable.",
+        "operationId": "rename_file_files__file_id__rename_post",
+        "parameters": [
+          {
+            "name": "file_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "File Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RenameFileRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileRecord"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/files/{file_id}/copy": {
+      "post": {
+        "tags": [
+          "Files"
+        ],
+        "summary": "Copy File",
+        "description": "Copy a file to a new logical path. Reads bytes server-side; counts\nagainst the COPYING USER's quota (the new file is owned by the caller).",
+        "operationId": "copy_file_files__file_id__copy_post",
+        "parameters": [
+          {
+            "name": "file_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "File Id"
+            }
+          },
+          {
+            "name": "X-Cloud-Files-Bypass",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Cloud-Files-Bypass"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CopyFileRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileUploadResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/files/{file_id}/download": {
       "get": {
         "tags": [
@@ -8064,6 +8827,18 @@
               ],
               "title": "Version"
             }
+          },
+          {
+            "name": "inline",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Render inline if mime is image/video/audio/pdf; never executable types.",
+              "default": false,
+              "title": "Inline"
+            },
+            "description": "Render inline if mime is image/video/audio/pdf; never executable types."
           }
         ],
         "responses": {
@@ -8870,6 +9645,220 @@
         }
       }
     },
+    "/folders": {
+      "post": {
+        "tags": [
+          "Files"
+        ],
+        "summary": "Create Folder",
+        "operationId": "create_folder_folders_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFolderRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FolderRecord"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/folders/{folder_id}": {
+      "get": {
+        "tags": [
+          "Files"
+        ],
+        "summary": "Get Folder",
+        "operationId": "get_folder_folders__folder_id__get",
+        "parameters": [
+          {
+            "name": "folder_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Folder Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FolderRecord"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Files"
+        ],
+        "summary": "Patch Folder",
+        "operationId": "patch_folder_folders__folder_id__patch",
+        "parameters": [
+          {
+            "name": "folder_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Folder Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchFolderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FolderRecord"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Files"
+        ],
+        "summary": "Delete Folder",
+        "operationId": "delete_folder_folders__folder_id__delete",
+        "parameters": [
+          {
+            "name": "folder_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Folder Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/folders/bulk/move": {
+      "post": {
+        "tags": [
+          "Files"
+        ],
+        "summary": "Bulk Move Folders",
+        "operationId": "bulk_move_folders_folders_bulk_move_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkFolderMoveRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/share/{share_token}": {
       "get": {
         "tags": [
@@ -8945,6 +9934,407 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cloud-files/list": {
+      "get": {
+        "tags": [
+          "Sandbox Bridge"
+        ],
+        "summary": "List Files",
+        "operationId": "list_files_cloud_files_list_get",
+        "parameters": [
+          {
+            "name": "prefix",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Optional path prefix filter",
+              "default": "",
+              "title": "Prefix"
+            },
+            "description": "Optional path prefix filter"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 5000,
+              "minimum": 1,
+              "default": 1000,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "X-Matrx-User-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Matrx-User-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response List Files Cloud Files List Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cloud-files/get": {
+      "get": {
+        "tags": [
+          "Sandbox Bridge"
+        ],
+        "summary": "Get File",
+        "operationId": "get_file_cloud_files_get_get",
+        "parameters": [
+          {
+            "name": "path",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "cld_files.file_path",
+              "title": "Path"
+            },
+            "description": "cld_files.file_path"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "X-Matrx-User-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Matrx-User-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cloud-files/put": {
+      "put": {
+        "tags": [
+          "Sandbox Bridge"
+        ],
+        "summary": "Put File",
+        "operationId": "put_file_cloud_files_put_put",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "X-Matrx-User-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Matrx-User-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_put_file_cloud_files_put_put"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Put File Cloud Files Put Put"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cloud-files/delete": {
+      "delete": {
+        "tags": [
+          "Sandbox Bridge"
+        ],
+        "summary": "Delete File",
+        "operationId": "delete_file_cloud_files_delete_delete",
+        "parameters": [
+          {
+            "name": "path",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "cld_files.file_path",
+              "title": "Path"
+            },
+            "description": "cld_files.file_path"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "X-Matrx-User-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Matrx-User-Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cloud-files/quota": {
+      "get": {
+        "tags": [
+          "Sandbox Bridge"
+        ],
+        "summary": "Get Quota",
+        "operationId": "get_quota_cloud_files_quota_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "X-Matrx-User-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Matrx-User-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Quota Cloud Files Quota Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cloud-files/integrations.aidream": {
+      "get": {
+        "tags": [
+          "Sandbox Bridge"
+        ],
+        "summary": "Integrations Aidream",
+        "operationId": "integrations_aidream_cloud_files_integrations_aidream_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Integrations Aidream Cloud Files Integrations Aidream Get"
                 }
               }
             }
@@ -10702,6 +12092,16 @@
                 "type": "null"
               }
             ]
+          },
+          "max_iterations": {
+            "type": "integer",
+            "title": "Max Iterations",
+            "default": 20
+          },
+          "max_retries_per_iteration": {
+            "type": "integer",
+            "title": "Max Retries Per Iteration",
+            "default": 2
           }
         },
         "type": "object",
@@ -10952,6 +12352,26 @@
         ],
         "title": "Body_extract_text_from_pdf_utilities_pdf_extract_text_post"
       },
+      "Body_put_file_cloud_files_put_put": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "binary",
+            "title": "File"
+          },
+          "file_path": {
+            "type": "string",
+            "title": "File Path",
+            "description": "Destination cld_files.file_path"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file",
+          "file_path"
+        ],
+        "title": "Body_put_file_cloud_files_put_put"
+      },
       "Body_upload_file_files_upload_post": {
         "properties": {
           "file": {
@@ -11053,6 +12473,143 @@
           "file"
         ],
         "title": "Body_upload_podcast_video_media_podcast_upload_video_post"
+      },
+      "BulkFileDeleteRequest": {
+        "properties": {
+          "file_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 500,
+            "minItems": 1,
+            "title": "File Ids"
+          },
+          "hard_delete": {
+            "type": "boolean",
+            "title": "Hard Delete",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "file_ids"
+        ],
+        "title": "BulkFileDeleteRequest"
+      },
+      "BulkFileMoveRequest": {
+        "properties": {
+          "file_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 500,
+            "minItems": 1,
+            "title": "File Ids"
+          },
+          "new_parent_folder_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "New Parent Folder Id",
+            "description": "Target folder id, or null to move to root"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file_ids"
+        ],
+        "title": "BulkFileMoveRequest"
+      },
+      "BulkFolderMoveRequest": {
+        "properties": {
+          "folder_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 500,
+            "minItems": 1,
+            "title": "Folder Ids"
+          },
+          "new_parent_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "New Parent Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "folder_ids"
+        ],
+        "title": "BulkFolderMoveRequest"
+      },
+      "BulkResponse": {
+        "properties": {
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/BulkResultItem"
+            },
+            "type": "array",
+            "title": "Results"
+          },
+          "succeeded": {
+            "type": "integer",
+            "title": "Succeeded"
+          },
+          "failed": {
+            "type": "integer",
+            "title": "Failed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "results",
+          "succeeded",
+          "failed"
+        ],
+        "title": "BulkResponse"
+      },
+      "BulkResultItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "ok"
+        ],
+        "title": "BulkResultItem"
       },
       "CacheBypass": {
         "properties": {
@@ -12271,6 +13828,61 @@
         ],
         "title": "ConversationContinueRequest"
       },
+      "CopyFileRequest": {
+        "properties": {
+          "target_path": {
+            "type": "string",
+            "title": "Target Path",
+            "description": "Full destination logical path"
+          },
+          "overwrite": {
+            "type": "boolean",
+            "title": "Overwrite",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "target_path"
+        ],
+        "title": "CopyFileRequest"
+      },
+      "CreateFolderRequest": {
+        "properties": {
+          "folder_path": {
+            "type": "string",
+            "title": "Folder Path",
+            "description": "Logical folder path, e.g. 'Images/Chat'"
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "public",
+              "private",
+              "shared"
+            ],
+            "title": "Visibility",
+            "default": "private"
+          },
+          "metadata": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metadata"
+          }
+        },
+        "type": "object",
+        "required": [
+          "folder_path"
+        ],
+        "title": "CreateFolderRequest"
+      },
       "CreateGroupRequest": {
         "properties": {
           "name": {
@@ -12748,6 +14360,16 @@
       },
       "ExtractTablesRequest": {
         "properties": {
+          "media": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MediaRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "file": {
             "anyOf": [
               {
@@ -12793,6 +14415,16 @@
       },
       "ExtractTextRequest": {
         "properties": {
+          "media": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MediaRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "file": {
             "anyOf": [
               {
@@ -13069,6 +14701,41 @@
         ],
         "title": "FileUploadResponse"
       },
+      "FinalizeUploadRequest": {
+        "properties": {
+          "upload_id": {
+            "type": "string",
+            "title": "Upload Id"
+          },
+          "actual_size_bytes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual Size Bytes"
+          },
+          "checksum": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Checksum"
+          }
+        },
+        "type": "object",
+        "required": [
+          "upload_id"
+        ],
+        "title": "FinalizeUploadRequest"
+      },
       "FireResponse": {
         "properties": {
           "trigger_id": {
@@ -13111,6 +14778,88 @@
         "additionalProperties": true,
         "type": "object",
         "title": "FireTriggerRequest"
+      },
+      "FolderRecord": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "owner_id": {
+            "type": "string",
+            "title": "Owner Id"
+          },
+          "folder_path": {
+            "type": "string",
+            "title": "Folder Path"
+          },
+          "folder_name": {
+            "type": "string",
+            "title": "Folder Name"
+          },
+          "parent_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Id"
+          },
+          "visibility": {
+            "type": "string",
+            "title": "Visibility",
+            "default": "private"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Metadata"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "deleted_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deleted At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "owner_id",
+          "folder_path",
+          "folder_name"
+        ],
+        "title": "FolderRecord"
       },
       "ForkRequest": {
         "properties": {
@@ -13183,6 +14932,89 @@
           "grantee_id"
         ],
         "title": "GrantPermissionRequest"
+      },
+      "GuestConversionRequest": {
+        "properties": {
+          "new_user_id": {
+            "type": "string",
+            "title": "New User Id",
+            "description": "The auth.users.id the guest is becoming"
+          },
+          "guest_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Guest Id",
+            "description": "Optional explicit guest_id; honoured only with admin bypass"
+          }
+        },
+        "type": "object",
+        "required": [
+          "new_user_id"
+        ],
+        "title": "GuestConversionRequest",
+        "description": "Migrate a guest's cld_* rows to a real user.\n\nThe caller MUST be authenticated as ``new_user_id`` AND must have\n``X-Guest-Fingerprint`` set to the value the guest was using before\nsign-in (the backend hashes + verifies it server-side)."
+      },
+      "GuestConversionResponse": {
+        "properties": {
+          "files": {
+            "type": "integer",
+            "title": "Files",
+            "default": 0
+          },
+          "folders": {
+            "type": "integer",
+            "title": "Folders",
+            "default": 0
+          },
+          "groups": {
+            "type": "integer",
+            "title": "Groups",
+            "default": 0
+          },
+          "perms": {
+            "type": "integer",
+            "title": "Perms",
+            "default": 0
+          },
+          "shares": {
+            "type": "integer",
+            "title": "Shares",
+            "default": 0
+          },
+          "files_migrated": {
+            "type": "integer",
+            "title": "Files Migrated",
+            "default": 0
+          },
+          "folders_migrated": {
+            "type": "integer",
+            "title": "Folders Migrated",
+            "default": 0
+          },
+          "groups_migrated": {
+            "type": "integer",
+            "title": "Groups Migrated",
+            "default": 0
+          },
+          "permissions_migrated": {
+            "type": "integer",
+            "title": "Permissions Migrated",
+            "default": 0
+          },
+          "shares_migrated": {
+            "type": "integer",
+            "title": "Shares Migrated",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "title": "GuestConversionResponse"
       },
       "HTTPValidationError": {
         "properties": {
@@ -14023,6 +15855,138 @@
         "type": "object",
         "title": "LLMParams"
       },
+      "MediaRef": {
+        "properties": {
+          "file_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File Id",
+            "description": "cld_files UUID. Preferred form; returned by POST /files/upload."
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url",
+            "description": "Any URL we issued (share link, /files/{id}/url, /files/{id}/download, raw S3 URL) or a truly external https://. The server recognises ours and resolves to bytes; external URLs are passed through to providers that fetch them, or downloaded as a last resort."
+          },
+          "file_uri": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File Uri",
+            "description": "Native cloud URI: s3://bucket/key, gs://..., supabase://..."
+          },
+          "mime_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mime Type",
+            "description": "Hint from the client. Server REPLACES with the canonical cld_files.mime_type when the reference resolves to one of our files."
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Metadata",
+            "description": "Free-form per-API metadata. Opaque to the resolver."
+          },
+          "base64_data": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base64 Data",
+            "description": "Inline bytes (base64). Set by resolver when needs_bytes=True."
+          },
+          "resolved_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved Url",
+            "description": "Fresh presigned URL the resolver minted (provider-fetchable)."
+          },
+          "file_size": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File Size"
+          },
+          "owner_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner Id"
+          },
+          "is_ours": {
+            "type": "boolean",
+            "title": "Is Ours",
+            "description": "True iff the resolver matched the reference to a cld_files row.",
+            "default": false
+          },
+          "resolver_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolver Error",
+            "description": "Set when resolution failed; surface to the caller for logging."
+          },
+          "is_resolved": {
+            "type": "boolean",
+            "title": "Is Resolved",
+            "description": "Set to True by the boundary normaliser. Resolvers short-circuit when this is True (idempotency). Internal — clients do not set.",
+            "default": false
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "title": "MediaRef",
+        "description": "Canonical media reference shared across every API that takes media."
+      },
       "MediaUpdate": {
         "properties": {
           "is_relevant": {
@@ -14233,6 +16197,52 @@
         "title": "NodeDef",
         "description": "User-authored node in a ReactFlow-compatible definition.\n\nThe `data.config` payload is validated against the registered NodeSpec's\n`config_schema` at compile time — not at definition time — so the raw JSON\nround-trips cleanly regardless of whether the target NodeSpec is loaded."
       },
+      "PatchFolderRequest": {
+        "properties": {
+          "folder_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Folder Path",
+            "description": "New full folder path (rename / move)"
+          },
+          "visibility": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "public",
+                  "private",
+                  "shared"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Visibility"
+          },
+          "metadata": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metadata"
+          }
+        },
+        "type": "object",
+        "title": "PatchFolderRequest"
+      },
       "PdfPipelineOptions": {
         "properties": {
           "extract_text": {
@@ -14291,6 +16301,16 @@
       },
       "PdfRequest": {
         "properties": {
+          "media": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MediaRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "file": {
             "anyOf": [
               {
@@ -14407,6 +16427,28 @@
               }
             ],
             "title": "Supabase Url"
+          },
+          "file_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File Id"
+          },
+          "storage_uri": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Storage Uri"
           }
         },
         "type": "object",
@@ -14695,6 +16737,106 @@
           "fact_checking"
         ],
         "title": "PostPrepOption"
+      },
+      "PresignedUploadRequest": {
+        "properties": {
+          "file_path": {
+            "type": "string",
+            "title": "File Path",
+            "description": "Logical path the file will live at in cloud_files"
+          },
+          "content_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content Type"
+          },
+          "expected_size_bytes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Size Bytes"
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "public",
+              "private",
+              "shared"
+            ],
+            "title": "Visibility",
+            "default": "private"
+          },
+          "metadata": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metadata"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file_path"
+        ],
+        "title": "PresignedUploadRequest",
+        "description": "Issue a presigned upload URL the browser can PUT directly to S3.\n\nAvoids buffering large files through the FastAPI worker. The caller\nMUST call POST /files/finalize-upload with the returned ``upload_id``\nafter the PUT succeeds — that registers the file in cld_files."
+      },
+      "PresignedUploadResponse": {
+        "properties": {
+          "upload_id": {
+            "type": "string",
+            "title": "Upload Id"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "headers": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Headers"
+          },
+          "expires_in": {
+            "type": "integer",
+            "title": "Expires In"
+          },
+          "file_path": {
+            "type": "string",
+            "title": "File Path"
+          },
+          "storage_uri": {
+            "type": "string",
+            "title": "Storage Uri"
+          }
+        },
+        "type": "object",
+        "required": [
+          "upload_id",
+          "url",
+          "headers",
+          "expires_in",
+          "file_path",
+          "storage_uri"
+        ],
+        "title": "PresignedUploadResponse"
       },
       "ProcessBlocksRequest": {
         "properties": {
@@ -15035,6 +17177,20 @@
           "urls"
         ],
         "title": "QuickScrapeRequest"
+      },
+      "RenameFileRequest": {
+        "properties": {
+          "new_path": {
+            "type": "string",
+            "title": "New Path",
+            "description": "Full new logical path (must include filename)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "new_path"
+        ],
+        "title": "RenameFileRequest"
       },
       "ResumeRequest": {
         "properties": {
@@ -15555,6 +17711,32 @@
         ],
         "title": "SearchAndScrapeRequest"
       },
+      "SearchFilesResponse": {
+        "properties": {
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/FileRecord"
+            },
+            "type": "array",
+            "title": "Results"
+          },
+          "query": {
+            "type": "string",
+            "title": "Query"
+          },
+          "total_returned": {
+            "type": "integer",
+            "title": "Total Returned"
+          }
+        },
+        "type": "object",
+        "required": [
+          "results",
+          "query",
+          "total_returned"
+        ],
+        "title": "SearchFilesResponse"
+      },
       "SearchKeywordsRequest": {
         "properties": {
           "keywords": {
@@ -15786,6 +17968,164 @@
         },
         "type": "object",
         "title": "SourceUpdate"
+      },
+      "StorageUsageResponse": {
+        "properties": {
+          "tier_id": {
+            "type": "string",
+            "title": "Tier Id"
+          },
+          "tier_name": {
+            "type": "string",
+            "title": "Tier Name"
+          },
+          "is_blocked": {
+            "type": "boolean",
+            "title": "Is Blocked",
+            "default": false
+          },
+          "blocked_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Blocked Reason"
+          },
+          "bytes_used": {
+            "type": "integer",
+            "title": "Bytes Used",
+            "default": 0
+          },
+          "files_count": {
+            "type": "integer",
+            "title": "Files Count",
+            "default": 0
+          },
+          "daily_upload_count": {
+            "type": "integer",
+            "title": "Daily Upload Count",
+            "default": 0
+          },
+          "daily_upload_bytes": {
+            "type": "integer",
+            "title": "Daily Upload Bytes",
+            "default": 0
+          },
+          "max_storage_bytes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Storage Bytes"
+          },
+          "max_file_size_bytes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max File Size Bytes"
+          },
+          "max_files": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Files"
+          },
+          "max_versions_per_file": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Versions Per File"
+          },
+          "max_daily_uploads": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Daily Uploads"
+          },
+          "max_daily_upload_bytes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Daily Upload Bytes"
+          },
+          "max_bulk_items": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Bulk Items"
+          },
+          "rate_limit_uploads_per_min": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rate Limit Uploads Per Min"
+          },
+          "rate_limit_downloads_per_min": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rate Limit Downloads Per Min"
+          },
+          "features": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Features"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tier_id",
+          "tier_name"
+        ],
+        "title": "StorageUsageResponse"
       },
       "SuggestRequest": {
         "properties": {
@@ -16284,6 +18624,32 @@
         },
         "type": "object",
         "title": "TopicUpdate"
+      },
+      "TrashListResponse": {
+        "properties": {
+          "files": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Files"
+          },
+          "folders": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Folders"
+          }
+        },
+        "type": "object",
+        "required": [
+          "files",
+          "folders"
+        ],
+        "title": "TrashListResponse"
       },
       "UpdateTriggerActiveRequest": {
         "properties": {

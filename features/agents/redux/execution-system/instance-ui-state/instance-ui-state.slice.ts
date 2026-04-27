@@ -456,6 +456,30 @@ const instanceUIStateSlice = createSlice({
       const entry = state.byConversationId[action.payload.conversationId];
       if (entry) {
         entry.serverOverrideUrl = action.payload.url;
+        // Clearing the URL clears the paired token — keeping a stale
+        // bearer around with no target it can authenticate against
+        // would just be a bug factory.
+        if (action.payload.url === null) {
+          entry.serverOverrideAuthToken = null;
+        }
+      }
+    },
+
+    /**
+     * Set the bearer token paired with `serverOverrideUrl` for direct
+     * sandbox-proxy calls. Pass `null` to clear (e.g. on disconnect or
+     * when the previous token expired and a new one couldn't be minted).
+     */
+    setServerOverrideAuthToken(
+      state,
+      action: PayloadAction<{
+        conversationId: string;
+        token: string | null;
+      }>,
+    ) {
+      const entry = state.byConversationId[action.payload.conversationId];
+      if (entry) {
+        entry.serverOverrideAuthToken = action.payload.token;
       }
     },
 
@@ -658,6 +682,7 @@ export const {
   setSubmitOnEnter,
   setEditorContextDisabledTabs,
   setServerOverrideUrl,
+  setServerOverrideAuthToken,
   setShowAutoClearToggle,
   setAutoClearConversation,
   setReuseConversationId,

@@ -64,7 +64,7 @@ export default async function ResizableCookieSsrDemo() {
             </div>
           </Panel>
 
-          <Separator className="w-0.5 bg-border data-[separator=hover]:bg-primary data-[separator=dragging]:bg-primary transition-colors cursor-col-resize" />
+          <Separator className="w-0.5 bg-border focus:outline-none data-[separator=hover]:bg-primary data-[separator=focus]:bg-primary data-[separator=dragging]:bg-primary transition-colors cursor-col-resize" />
 
           <Panel id="center" defaultSize="60%" minSize="30%">
             <div className="h-full p-4 bg-card">
@@ -75,7 +75,7 @@ export default async function ResizableCookieSsrDemo() {
             </div>
           </Panel>
 
-          <Separator className="w-0.5 bg-border data-[separator=hover]:bg-primary data-[separator=dragging]:bg-primary transition-colors cursor-col-resize" />
+          <Separator className="w-0.5 bg-border focus:outline-none data-[separator=hover]:bg-primary data-[separator=focus]:bg-primary data-[separator=dragging]:bg-primary transition-colors cursor-col-resize" />
 
           <Panel id="right" defaultSize="20%" minSize="10%">
             <div className="h-full p-4 bg-muted">

@@ -57,6 +57,8 @@ function getEventIcon(eventType: string) {
       return <ArrowRight className="h-3 w-3 text-muted-foreground" />;
     case "record_update":
       return <ArrowRight className="h-3 w-3 text-muted-foreground" />;
+    case "resource_changed":
+      return <ArrowRight className="h-3 w-3 text-fuchsia-400" />;
     case "error":
       return <AlertTriangle className="h-3 w-3 text-destructive" />;
     default:

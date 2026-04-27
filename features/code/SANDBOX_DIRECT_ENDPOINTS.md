@@ -313,4 +313,137 @@ If anything diverges between central and in-container, it'll silently break sand
 
 Nothing — the FE has shipped behind a `null` check. The moment `SandboxResponse.proxy_url` starts coming back populated, sandbox-mode AI calls reroute automatically. We do **not** need any other coordination.
 
+### 7.7 Status (updated 2026‑04‑27)
+
+`proxy_url` is **shipped on the hosted orchestrator** (`orchestrator.dev.codematrx.com`). Streaming SSE through the proxy, both auth modes, and CORS for `aimatrx.com`/`*.vercel.app`/`localhost` have been verified live by the Python team. EC2 picks this up on its next GHA-triggered deploy (assuming the same env vars are set there).
+
+Frontend integration is complete:
+
+- `SandboxesPanel` mirrors `proxy_url` and `sandbox.id` into `codeWorkspace.activeSandboxProxyUrl` / `activeSandboxId` on connect, and clears them on disconnect.
+- `useBindAgentToSandbox(conversationId, proxyUrl, sandboxRowId)` writes `instanceUIState.serverOverrideUrl` and `serverOverrideAuthToken` for the focused chat.
+- `resolveBackendForConversation()` sees the override, returns `{ baseUrl, channel: "override", headers: { Authorization: "Bearer <token>", ... } }` and every execute / chat / cache-invalidate thunk picks up that backend automatically.
+- Admins see the channel/URL/auth scheme in the **Backend** tab of `CreatorRunPanel`, plus a `Cloud` / `Sandbox` pill on the collapsed strip above Smart Input.
+
+### 7.8 Token-mint contract (FE → orchestrator)
+
+Frontend route: `POST /api/sandbox/[id]/access-tokens` (`app/api/sandbox/[id]/access-tokens/route.ts`).
+
+- Authenticates the user via the Supabase server client.
+- Verifies the sandbox row belongs to that user and is in a usable status (`ready` | `running` | `starting`).
+- Resolves the orchestrator for that sandbox row (hosted vs EC2 lookup).
+- Forwards `POST {orchestrator}/sandboxes/{sandbox_id}/access-tokens` with:
+
+```jsonc
+// Request
+headers:
+  X-API-Key: <orchestrator master key>          // server-side only — never reaches the browser
+  Content-Type: application/json
+body:
+  {
+    "scopes": ["ai"],                            // FE defaults to ["ai"]; future scopes (fs, exec) sent through unchanged
+    "actor": {
+      "user_id": "<supabase user id>",
+      "email":   "<supabase email or null>"
+    }
+  }
+```
+
+- Returns the orchestrator's response payload to the browser, augmented with the resolved sandbox metadata:
+
+```jsonc
+// Response (200)
+{
+  "token":   "<jwt>",
+  "exp":     1740000000,                         // unix seconds
+  "jti":     "<token id>",                       // optional, for audit
+  "scopes":  ["ai"],
+  "sandbox_id": "<orchestrator sandbox id>",     // FE-added for cross-checking
+  "tier":    "hosted" | "ec2"                    // FE-added so the UI can label which tier signed the token
+}
+```
+
+The browser stores `{ token, exp, jti, scopes }` via `useSandboxAccessToken`, refreshes it ~30s before `exp`, and attaches it to every `${proxy_url}/...` call as `Authorization: Bearer <token>`.
+
+**No master key ever reaches the browser.** Token minting is the sole capability surface — leaking a minted token grants `ai`-scope access to one sandbox for at most its remaining lifetime.
+
+### 7.9 Filesystem-change detection — `RESOURCE_CHANGED` (shipped 2026-04-27)
+
+When the agent runs in sandbox mode, the in-container Python server modifies the real filesystem inside the container directly (no client-side patches involved). Without a server-pushed signal, the FE would have to poll for those writes — too slow for a code-editor UX.
+
+**Generic resource-changed event — live now in `types/python-generated/stream-events.ts`:**
+
+```jsonc
+// NDJSON event in the same stream the FE already consumes
+{
+  "event": "resource_changed",
+  "data": {
+    "kind":        "fs.file" | "fs.directory" | string, // open-set; future kinds layer on without schema changes
+    "action":      "created" | "modified" | "deleted" | "moved" | "renamed" | "invalidated",
+    "resource_id": "/home/agent/src/components/Foo.tsx", // canonical id — absolute path for fs.* kinds
+    "sandbox_id":  "sbx-abc-123" | null,                 // populated when the change came from inside a container
+    "user_id":     "user-uuid" | null,                   // populated for user-scoped (cloud) kinds
+    "metadata": {
+      "size":        12345,
+      "mtime":       1714248731.512,
+      "checksum":    "sha1:…",
+      "previous_id": "/home/agent/src/components/Bar.tsx" // only present on action === "moved" / "renamed"
+      // additional fields per kind — caller should ignore unknown keys
+    }
+  }
+}
+```
+
+**Why open-set kinds.** matrx-ai's `fs_write` / `fs_patch` / `fs_mkdir` tools emit `kind: "fs.file"` / `"fs.directory"` today. Future invalidations — `cld_files` row updates, `sandbox.cwd` changes, `cache.*` busts — reuse the same wire shape with a new `kind` and **no FE plumbing changes** beyond a new dispatch branch in the consumer hook.
+
+**FE wiring (live):**
+
+| Layer | File | Role |
+|---|---|---|
+| Wire types | `types/python-generated/stream-events.ts` | Auto-generated. Includes `EventType.RESOURCE_CHANGED`, `ResourceChangedPayload`, `isResourceChangedEvent`. |
+| Slice | `features/code/redux/fsChangesSlice.ts` | Per-bucket ring buffer (cap `FS_CHANGES_RING_SIZE = 200`) + `lastByResourceId` lookup. Bucket key = `sandboxId` (or `GLOBAL_BUCKET_KEY`). Selectors: `selectFsChangesBucket`, `selectLastChangeForResource`, `makeSelectChangesByResourceId`, `makeSelectRecentChanges`, `selectLastFsChangeAt`. |
+| Stream branch | `features/agents/redux/execution-system/thunks/process-stream.ts` | `else if (isResourceChangedEvent(event))` dispatches `receivedFsChange` + `appendTimeline({ kind: "resource_changed", … })` and increments `clientMetrics.resourceChangedEvents`. |
+| Timeline type | `features/agents/types/request.types.ts` | `TimelineResourceChanged` entry + `ClientMetrics.resourceChangedEvents` counter. |
+| Offline replay | `features/tool-call-visualization/testing/stream-processing/fold-stream-events.ts` | `state.resourceChanges` array + `counts.resourceChanged` so replay tools see the same shape. |
+| Debug surfaces | `features/agents/components/debug/StreamDebugPanel.tsx`, `features/agents/components/run-controls/panels/ClientMetricsPanel.tsx`, `app/(public)/demos/api-tests/tool-testing/components/StreamEventTimeline.tsx` | `resource_changed` filter chip, fuchsia color, `FilePlus2` icon, summary line, "FS Changes" stat row. |
+| Editor consumer | `features/code/agent-context/useApplyFsChangesToOpenTabs.ts` | Subscribes to the active sandbox bucket. For each new event: `fs.file` → refresh clean tabs via `FilesystemAdapter.readFile()` + `replaceTabContent`, or surface a conflict toast on dirty tabs; `deleted` → close tab; `moved`/`renamed` → close (no in-place rename in the tab slice yet); `fs.directory invalidated` → no-op (explorer's lazy refresh covers it); unknown kinds logged + ignored. Coalesces multi-write bursts to one refresh per `resource_id`. |
+| Mounted in | `features/code/editor/EditorArea.tsx` | Single `useApplyFsChangesToOpenTabs()` call alongside `useApplyAIPatchesToActiveTab`. |
+| Disconnect | `features/code/views/sandboxes/SandboxesPanel.tsx` | `disconnect()` calls `clearFsChangesBucket(activeId)` so the next sandbox doesn't see stale rows. |
+
+The slice and consumer are **forward-compatible**: a new `kind` (e.g. `cld_files`) lands in the slice with zero changes — only `useApplyFsChangesToOpenTabs` (or a sibling consumer hook) needs a new dispatch branch.
+
+**Coalescing.** The consumer collapses repeated events for the same `resource_id` within one render tick to a single refresh; per-event work in the slice and stream router is O(1). The slice ring is capped, so a long-running session can't grow unbounded.
+
+**Acknowledgement.** After the consumer handles an event for a given `resource_id`, it dispatches `acknowledgeFsChange({ bucketKey, resourceId })` to drop the lookup row (the ring is preserved for debug/badge surfaces). This stops follow-up renders from re-firing the same toast.
+
+### 7.10 Client-side patch detection — applied on the FE
+
+In addition to direct tool-call mutations, the agent often returns SEARCH/REPLACE blocks **inline in its assistant text**. These are not tool calls — they're a structured pattern in the markdown stream that the FE detects and applies on the client.
+
+This now lives in `features/code/`:
+
+| Layer | File | Role |
+|---|---|---|
+| Parser | `features/code-editor/agent-code-editor/utils/parseCodeEdits.ts` | Extracts `CodeEdit[]` from raw assistant text. Reused as-is from the cloud code editor — same delimiters, same fuzzy fallback. |
+| Applier | `features/code-editor/agent-code-editor/utils/applyCodeEdits.ts` | Applies edits to a single buffer (exact → fuzzy match). |
+| Slice | `features/code/redux/codePatchesSlice.ts` | Stages pending patches per `tabId`, dedupes by `(conversationId, requestId, tabId)`. |
+| Hook | `features/code/agent-context/useApplyAIPatchesToActiveTab.ts` | Watches stream completion, locates each block in any open tab via the applier, dispatches `stagePatches`. |
+| UI | `features/code/editor/PendingPatchTray.tsx` | Renders pending patches above Monaco with accept / reject (per-patch and bulk). |
+
+Acceptance flow:
+
+```
+parse(stream-end text)
+  → for each block: try-apply against every open tab's buffer
+    → 1 winner: stage as PendingPatch on that tab
+    → 0 winners: skip (target file isn't open; sandbox FS or RESOURCE_CHANGED handles it)
+    → 2+ winners: skip (ambiguous — never overwrite the wrong file)
+  → user accepts via tray
+    → applyCodeEdits(tab.content, [patch])
+    → updateTabContent(tab.id, result.code)            // tab becomes dirty
+    → user saves (Cmd/Ctrl+S) → existing useSaveActiveTab pipeline writes
+      to the right place: code-files, library adapter, sandbox FS, or mock.
+```
+
+This means client-side patches and sandbox-mode tool-call writes can coexist in a single conversation: tool-call writes hit the container directly (visible via `RESOURCE_CHANGED` once shipped), and inline SEARCH/REPLACE blocks become tray entries the user explicitly approves before they touch any file.
+
 

@@ -907,6 +907,40 @@
 @layer base {
   * {
     border-color: hsl(var(--border));
+
+    /* Tailwind v4 hardcodes --tw-ring-offset-color to #fff. That makes any
+       component using `ring-offset-{1,2,N}` without an explicit offset color
+       (the default ShadCN pattern: `focus-visible:ring-2 focus-visible:ring-ring
+       focus-visible:ring-offset-2`) draw a glaring WHITE halo in dark mode and
+       a near-invisible halo in light mode. Override it to transparent so the
+       offset just opens space between the element and the ring while showing
+       whatever surface (card, sheet, page bg) the element sits on. */
+    --tw-ring-offset-color: transparent;
+  }
+
+  /* Native focus outline — replace the UA default color with our themed --ring.
+     
+     Chromium's UA stylesheet applies `:focus-visible { outline:
+     -webkit-focus-ring-color auto 1px }`. The `-webkit-focus-ring-color` value
+     is a SYSTEM color: whitish in macOS dark mode, low-contrast bluish in
+     light mode. That's the "white halo in dark mode, nothing in light mode"
+     symptom we keep chasing. ARIA-interactive widgets (role="separator",
+     role="slider", div tabindex="0") trigger `:focus-visible` on plain mouse
+     click in Chromium — `:focus:not(:focus-visible)` does NOT suppress them,
+     so the only reliable global fix is to override the outline color itself.
+     
+     Setting outline to our --ring token means every focusable element across
+     the app gets a consistent, theme-aware focus indicator without per-
+     component overrides. Components using `focus-visible:ring-*` (Tailwind
+     box-shadow ring) continue to work — outline and box-shadow are independent
+     properties and both can stack if a component opts in.
+     
+     Click-focus on form elements (<button>, <input>) still doesn't trigger
+     :focus-visible, so they show no outline on click — Chromium's standard
+     behavior, preserved. */
+  *:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 1px;
   }
 
   html {

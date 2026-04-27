@@ -31,6 +31,7 @@ import {
   ShieldAlert,
   BookmarkPlus,
   RefreshCw,
+  FilePlus2,
 } from "lucide-react";
 import type {
   ActiveRequest,
@@ -175,6 +176,7 @@ const EVENT_COLORS: Record<string, string> = {
   render_block: "bg-pink-500/20 text-pink-400 border-pink-500/30",
   record_reserved: "bg-teal-500/20 text-teal-400 border-teal-500/30",
   record_update: "bg-teal-500/20 text-teal-400 border-teal-500/30",
+  resource_changed: "bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/30",
 };
 
 const EVENT_ICONS: Record<string, React.ReactNode> = {
@@ -194,6 +196,7 @@ const EVENT_ICONS: Record<string, React.ReactNode> = {
   render_block: <Layers className="h-2.5 w-2.5" />,
   record_reserved: <BookmarkPlus className="h-2.5 w-2.5" />,
   record_update: <RefreshCw className="h-2.5 w-2.5" />,
+  resource_changed: <FilePlus2 className="h-2.5 w-2.5" />,
 };
 
 const STATUS_COLORS: Record<string, string> = {
@@ -327,7 +330,9 @@ function MetricsBar({ metrics }: { metrics: ClientMetrics }) {
         {metrics.recordReservedEvents > 0 &&
           ` reserved:${metrics.recordReservedEvents}`}
         {metrics.recordUpdateEvents > 0 &&
-          ` updated:${metrics.recordUpdateEvents}`}{" "}
+          ` updated:${metrics.recordUpdateEvents}`}
+        {metrics.resourceChangedEvents > 0 &&
+          ` fs:${metrics.resourceChangedEvents}`}{" "}
         other:{metrics.otherEvents})
       </span>
     </div>
@@ -354,6 +359,7 @@ function getTimelineColor(kind: TimelineEntry["kind"]): string {
     heartbeat: EVENT_COLORS.heartbeat,
     record_reserved: EVENT_COLORS.record_reserved,
     record_update: EVENT_COLORS.record_update,
+    resource_changed: EVENT_COLORS.resource_changed,
     unknown: "bg-red-600/30 text-red-300 border-red-500/50 font-semibold",
   };
   return map[kind] ?? "bg-gray-500/20 text-gray-400 border-gray-500/30";
@@ -379,6 +385,7 @@ function getTimelineIcon(kind: TimelineEntry["kind"]): React.ReactNode {
     heartbeat: EVENT_ICONS.heartbeat,
     record_reserved: EVENT_ICONS.record_reserved,
     record_update: EVENT_ICONS.record_update,
+    resource_changed: EVENT_ICONS.resource_changed,
     unknown: <AlertTriangle className="h-2.5 w-2.5" />,
   };
   return map[kind] ?? <CircleDot className="h-2.5 w-2.5" />;
@@ -467,6 +474,16 @@ function timelineSummary(
     }
     case "record_update":
       return `${entry.table} → ${entry.status}: ${entry.recordId.slice(0, 8)}…`;
+    case "resource_changed": {
+      const short =
+        entry.resourceId.length > 48
+          ? `…${entry.resourceId.slice(-44)}`
+          : entry.resourceId;
+      const tag = entry.sandboxId
+        ? `sandbox ${entry.sandboxId.slice(0, 6)}…`
+        : "global";
+      return `${entry.resourceKind} ${entry.action} [${tag}]: ${short}`;
+    }
     case "unknown":
       return `UNRECOGNIZED (${entry.originalEvent}): ${JSON.stringify(entry.rawData).slice(0, 100)}`;
     default:
@@ -761,6 +778,7 @@ const ALL_TIMELINE_KINDS: TimelineEntry["kind"][] = [
   "heartbeat",
   "record_reserved",
   "record_update",
+  "resource_changed",
   "unknown",
 ];
 

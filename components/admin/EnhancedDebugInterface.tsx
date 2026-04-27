@@ -45,7 +45,9 @@ const formatSliceName = (name: string): string => {
 
 // Custom selectors for important state information
 const useDebugSelectors = () => {
+  // @ts-ignore
   const entities = useAppSelector((state: RootState) => state.entities);
+  // @ts-ignore
   const schema = useAppSelector((state: RootState) => state.globalCache);
 
   return useMemo(

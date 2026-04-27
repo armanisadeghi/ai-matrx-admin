@@ -26,7 +26,14 @@ export { useSyncEditorContext } from "./useSyncEditorContext";
 export type { UseSyncEditorContextOptions } from "./useSyncEditorContext";
 export { useBindAgentToSandbox } from "./useBindAgentToSandbox";
 export type { UseBindAgentToSandboxOptions } from "./useBindAgentToSandbox";
+export { useSandboxAccessToken } from "./useSandboxAccessToken";
+export type {
+  SandboxAccessToken,
+  UseSandboxAccessTokenOptions,
+  UseSandboxAccessTokenResult,
+} from "./useSandboxAccessToken";
 export { useMonacoMarkers } from "./useMonacoMarkers";
+export { useApplyAIPatchesToActiveTab } from "./useApplyAIPatchesToActiveTab";
 export { useSendSelectionAsContext } from "./useSendSelectionAsContext";
 export type {
   SelectionContextValue,

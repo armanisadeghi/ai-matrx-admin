@@ -16,11 +16,7 @@
 
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import type { AppDispatch, RootState } from "@/lib/redux/store";
-import {
-  selectAccessToken,
-  selectFingerprintId,
-} from "@/lib/redux/slices/userSlice";
-import { resolveBaseUrlForConversation } from "../thunks/resolve-base-url";
+import { resolveBackendForConversation } from "../thunks/resolve-base-url";
 import { clearCacheBypass } from "./cache-bypass.slice";
 
 interface InvalidateArgs {
@@ -45,18 +41,12 @@ export const invalidateConversationCache = createAsyncThunk<
   "conversations/invalidateCache",
   async ({ conversationId }, { dispatch, getState, rejectWithValue }) => {
     const state = getState();
-    const baseUrl = resolveBaseUrlForConversation(state, conversationId);
-    const accessToken = selectAccessToken(state);
-    const fingerprintId = selectFingerprintId(state);
-
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-    };
-    if (accessToken) {
-      headers.Authorization = `Bearer ${accessToken}`;
-    } else if (fingerprintId) {
-      headers["X-Fingerprint-ID"] = fingerprintId;
+    const backend = resolveBackendForConversation(state, conversationId);
+    if (!backend) {
+      return rejectWithValue({ message: "No backend URL configured" });
     }
+    const baseUrl = backend.baseUrl;
+    const headers = backend.headers;
 
     try {
       const res = await fetch(

@@ -18,6 +18,8 @@ import { useReloadTab } from "../hooks/useReloadTab";
 import { useSendSelectionAsContext } from "../agent-context/useSendSelectionAsContext";
 import { useEditorContextMenuActions } from "../agent-context/useEditorContextMenuActions";
 import { useMonacoMarkers } from "../agent-context/useMonacoMarkers";
+import { useApplyAIPatchesToActiveTab } from "../agent-context/useApplyAIPatchesToActiveTab";
+import { useApplyFsChangesToOpenTabs } from "../agent-context/useApplyFsChangesToOpenTabs";
 import { selectFocusedConversation } from "@/features/agents/redux/execution-system/conversation-focus/conversation-focus.selectors";
 import type { RootState } from "@/lib/redux/store";
 import { useEnvironmentForActiveTab } from "./monaco-environments";
@@ -25,6 +27,7 @@ import { EditorTabs } from "./EditorTabs";
 import { EditorToolbar } from "./EditorToolbar";
 import { MonacoEditor, type StandaloneCodeEditor } from "./MonacoEditor";
 import { BinaryFileViewer } from "./BinaryFileViewer";
+import { PendingPatchTray } from "./PendingPatchTray";
 
 interface EditorAreaProps {
   rightSlotAvailable?: boolean;
@@ -61,6 +64,23 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
   // active tab. One subscription serves all editors mounted in this
   // surface — see `useMonacoMarkers` for the model→tabId mapping.
   useMonacoMarkers();
+
+  // Watch this surface's focused conversation for stream completions and
+  // stage any SEARCH/REPLACE blocks the agent emits as pending patches
+  // against whichever open tab they cleanly match. The tray below the
+  // toolbar surfaces them for accept/reject; acceptance flows through the
+  // normal `updateTabContent` → save pipeline so cloud, library, sandbox,
+  // and mock filesystems all behave identically.
+  useApplyAIPatchesToActiveTab({ conversationId });
+
+  // Bridge `RESOURCE_CHANGED` stream events into the live editor: refresh
+  // clean tabs when the agent's tools touch a file, surface a conflict
+  // toast on dirty tabs, close tabs on delete/rename. Bucket scoping is
+  // automatic — sandbox-mode subscribes to the active sandbox bucket;
+  // cloud/mock fall back to the global bucket. See
+  // `features/code/agent-context/useApplyFsChangesToOpenTabs.ts` for the
+  // full event-handling matrix.
+  useApplyFsChangesToOpenTabs();
 
   const editorRef = useRef<StandaloneCodeEditor | null>(null);
   // State copy of the editor instance so effects (e.g. context-menu action
@@ -230,6 +250,7 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
           canSendSelectionAsContext={canSendSelection}
         />
       </div>
+      <PendingPatchTray />
       <div className="relative flex-1 min-h-0">
         {activeTab ? (
           activeTab.kind === "binary-preview" ? (

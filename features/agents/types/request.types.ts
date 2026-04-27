@@ -86,6 +86,7 @@ export interface ClientMetrics {
   infoEvents: number;
   recordReservedEvents: number;
   recordUpdateEvents: number;
+  resourceChangedEvents: number;
   otherEvents: number;
   accumulatedTextBytes: number;
   totalPayloadBytes: number;
@@ -359,6 +360,7 @@ export type TimelineEntry =
   | TimelineHeartbeat
   | TimelineRecordReserved
   | TimelineRecordUpdate
+  | TimelineResourceChanged
   | TimelineUnknown;
 
 interface TimelineBase {
@@ -432,6 +434,27 @@ export interface TimelineRecordUpdate extends TimelineBase {
   recordId: string;
   status: "active" | "completed" | "failed";
   metadata?: Record<string, unknown>;
+}
+
+/**
+ * Generic "this resource just moved/changed/got invalidated" event. Driven
+ * by the canonical Python `resource_changed` stream event — covers
+ * sandbox-mode `fs_write`/`fs_patch`/`fs_mkdir`, and any future kind
+ * (cloud_files row updates, sandbox.cwd transitions, cache busts, …).
+ */
+export interface TimelineResourceChanged extends TimelineBase {
+  kind: "resource_changed";
+  /** Canonical resource family (`fs.file`, `fs.directory`, `cld_files`, …). */
+  resourceKind: string;
+  /** Action that fired the event (`modified`, `created`, `invalidated`, …). */
+  action: string;
+  /** Absolute path inside the sandbox (for `fs.*`) or the canonical id. */
+  resourceId: string;
+  /** Populated when the change originated inside a sandbox container. */
+  sandboxId: string | null;
+  /** Populated when the change is user-scoped. */
+  userId: string | null;
+  metadata: Record<string, unknown>;
 }
 
 export interface TimelinePhase extends TimelineBase {

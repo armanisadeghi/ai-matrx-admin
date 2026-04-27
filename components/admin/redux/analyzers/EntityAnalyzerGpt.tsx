@@ -21,6 +21,7 @@ const EntityAnalyzerGpt: React.FC<EntityAnalyzerProps> = ({
 }) => {
   const dispatch = useAppDispatch();
   const entityOptions = useAppSelector(selectFormattedEntityOptions);
+  // @ts-ignore
   const entitiesState = useAppSelector((state: RootState) => state.entities);
   const [selectedEntity, setSelectedEntity] = useState<EntityKeys | null>(null);
   const [isOpen, setIsOpen] = useState<boolean>(initialState !== "minimized");

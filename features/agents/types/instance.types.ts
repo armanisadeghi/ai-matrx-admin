@@ -588,6 +588,23 @@ export interface InstanceUIState {
    * Null/undefined = no override; thunks fall back to `selectResolvedBaseUrl`.
    */
   serverOverrideUrl?: string | null;
+
+  /**
+   * Bearer token paired with `serverOverrideUrl` for direct sandbox-proxy
+   * calls. Minted by `POST /api/sandbox/[id]/access-tokens` (which
+   * forwards to the orchestrator), short-lived (orchestrator decides
+   * the TTL — typically 15 min), and refreshed lazily by
+   * `useSandboxAccessToken` before expiry.
+   *
+   * When set together with `serverOverrideUrl`, the agent execute thunks
+   * send `Authorization: Bearer <this token>` and DO NOT send the user's
+   * Supabase JWT (the orchestrator authenticates via this token alone).
+   *
+   * Null/undefined while the URL is set is technically valid — the
+   * proxy will then return 401 for the AI call. The hook is responsible
+   * for keeping URL + token in lockstep.
+   */
+  serverOverrideAuthToken?: string | null;
 }
 
 // =============================================================================
