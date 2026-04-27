@@ -13,7 +13,7 @@
  */
 
 import type { ReactNode } from "react";
-import type { TrayPreviewContext } from "./windowRegistry";
+import type { TrayPreviewContext } from "./windowRegistryTypes";
 
 // ─── Notes ────────────────────────────────────────────────────────────────────
 

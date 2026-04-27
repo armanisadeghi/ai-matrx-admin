@@ -32,7 +32,7 @@ import {
 } from "@/lib/redux/slices/windowManagerSlice";
 
 import { TRAY_GAP_X, TRAY_CHIP_W_DESKTOP } from "./constants/tray";
-import { getRegistryEntryByOverlayId } from "./registry/windowRegistry";
+import { getStaticEntryByOverlayId } from "./registry/windowRegistryMetadata";
 import { renderIcon } from "@/components/official/icons/IconResolver";
 import { TrayChipPreview } from "./WindowTray/TrayChipPreview";
 
@@ -99,7 +99,7 @@ export function WindowTray() {
 
 function MobileTrayChip({ id, title }: { id: string; title: string }) {
   const dispatch = useAppDispatch();
-  const registryEntry = getRegistryEntryByOverlayId(id);
+  const registryEntry = getStaticEntryByOverlayId(id);
   const iconNode = registryEntry?.icon
     ? renderIcon(registryEntry.icon, {
         className: "h-3 w-3 shrink-0 text-muted-foreground",
@@ -140,7 +140,7 @@ function TrayChip({ id, title, chipWidth }: TrayChipProps) {
 
   // Resolve registry icon — falls back to AppWindow when no entry exists
   // or no icon is configured. `renderIcon` returns a JSX element.
-  const registryEntry = getRegistryEntryByOverlayId(id);
+  const registryEntry = getStaticEntryByOverlayId(id);
   const iconNode = registryEntry?.icon
     ? renderIcon(registryEntry.icon, {
         className: "h-3.5 w-3.5 text-muted-foreground shrink-0",

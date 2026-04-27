@@ -17,7 +17,7 @@ import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
-import { getRegistryEntryByOverlayId } from "@/features/window-panels/registry/windowRegistry";
+import { getStaticEntryByOverlayId } from "@/features/window-panels/registry/windowRegistryMetadata";
 import {
   MenuDivider,
   MenuGridItem,
@@ -68,7 +68,7 @@ export default function ToolsGrid({
         if (tile.onActivate) {
           tile.onActivate(ctx);
         } else if (tile.overlayId) {
-          const entry = getRegistryEntryByOverlayId(tile.overlayId);
+          const entry = getStaticEntryByOverlayId(tile.overlayId);
           if (!entry) {
             // eslint-disable-next-line no-console
             console.warn(

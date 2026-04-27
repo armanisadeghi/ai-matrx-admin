@@ -1,7 +1,7 @@
 import { getHydrator, registerPanelHydrator } from "./UrlPanelRegistry";
 import { setDisplayMode } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.slice";
 import { openOverlay } from "@/lib/redux/slices/overlaySlice";
-import { ALL_WINDOW_REGISTRY_ENTRIES } from "../registry/windowRegistry";
+import { ALL_WINDOW_STATIC_METADATA } from "../registry/windowRegistryMetadata";
 
 /**
  * Register all known panel URL hydrators.
@@ -166,7 +166,7 @@ export function initUrlHydration() {
   // instead of a broken deep-link in production.
   if (process.env.NODE_ENV !== "production") {
     const missing: Array<{ overlayId: string; key: string }> = [];
-    for (const entry of ALL_WINDOW_REGISTRY_ENTRIES) {
+    for (const entry of ALL_WINDOW_STATIC_METADATA) {
       const key = entry.urlSync?.key;
       if (!key) continue;
       if (!getHydrator(key)) {

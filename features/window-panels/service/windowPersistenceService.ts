@@ -9,7 +9,7 @@
  */
 
 import { supabase } from "@/utils/supabase/client";
-import type { PanelState, WindowSessionRow } from "../registry/windowRegistry";
+import type { PanelState, WindowSessionRow } from "../registry/windowRegistryTypes";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

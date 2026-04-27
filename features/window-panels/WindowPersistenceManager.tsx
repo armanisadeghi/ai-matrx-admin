@@ -37,10 +37,10 @@ import {
   deleteWindowSession,
 } from "./service/windowPersistenceService";
 import {
-  getRegistryEntryByOverlayId,
-  getRegistryEntryBySlug,
+  getStaticEntryByOverlayId,
+  getStaticEntryBySlug,
   type PanelState,
-} from "./registry/windowRegistry";
+} from "./registry/windowRegistryMetadata";
 import type { WindowEntry } from "@/lib/redux/slices/windowManagerSlice";
 import { clampRectToCurrentViewport } from "./utils/rectClamp";
 import {
@@ -226,7 +226,7 @@ export function WindowPersistenceManager({
 
         for (const session of sessions) {
           // window_type column stores the slug (e.g. "notes-window")
-          const regEntry = getRegistryEntryBySlug(session.window_type);
+          const regEntry = getStaticEntryBySlug(session.window_type);
           if (!regEntry) continue;
 
           // Track the session id keyed by overlayId (used by WindowPanel)
@@ -333,7 +333,7 @@ export function WindowPersistenceManager({
     ) => {
       if (!userId) return;
 
-      const regEntry = getRegistryEntryByOverlayId(overlayId);
+      const regEntry = getStaticEntryByOverlayId(overlayId);
       if (!regEntry || regEntry.ephemeral) return;
 
       const existingSessionId = sessionMapRef.current.get(overlayId);

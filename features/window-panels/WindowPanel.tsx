@@ -52,7 +52,7 @@ import {
   arrangeActiveWindows,
 } from "@/lib/redux/slices/windowManagerSlice";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { getRegistryEntryByOverlayId } from "./registry/windowRegistry";
+import { getStaticEntryByOverlayId } from "./registry/windowRegistryMetadata";
 import MobileDrawerSurface from "./mobile/MobileDrawerSurface";
 import MobileCardSurface from "./mobile/MobileCardSurface";
 import { selectIsDebugMode } from "@/lib/redux/slices/adminDebugSlice";
@@ -81,7 +81,6 @@ import {
   setTraySnapshot,
   clearTraySnapshot,
 } from "./WindowTray/traySnapshotMap";
-// (getRegistryEntryByOverlayId already imported above)
 
 // ─── Resize handle descriptors ───────────────────────────────────────────────
 
@@ -200,6 +199,13 @@ export interface WindowPanelProps extends UseWindowPanelOptions {
    * and merges the result into `data.snapshot`.
    */
   onHeavySnapshot?: () => Promise<Record<string, unknown>>;
+  /**
+   * Optional snapshot capture function for the minimized tray chip.
+   * When provided, WindowPanel calls this just before minimizing and stores
+   * the resulting data URL so the tray chip can show a thumbnail.
+   * Pass this from the window component if it implements custom capture logic.
+   */
+  captureTraySnapshot?: (bodyEl: HTMLElement) => Promise<string | null>;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -234,6 +240,7 @@ export function WindowPanel({
   onCollectData,
   onSessionSaved,
   onHeavySnapshot,
+  captureTraySnapshot,
   ...hookOpts
 }: WindowPanelProps) {
   // ── Pre-compute id and popout capabilities BEFORE useWindowPanel so we
@@ -319,7 +326,7 @@ export function WindowPanel({
   // any prop wiring — fixes the "urlSyncKey set but urlSyncId missing" silent
   // no-op that previously left ~7 windows without deep-link support.
   const urlSyncRegEntry = overlayId
-    ? getRegistryEntryByOverlayId(overlayId)
+    ? getStaticEntryByOverlayId(overlayId)
     : undefined;
   const effectiveUrlSyncKey = urlSyncKey ?? urlSyncRegEntry?.urlSync?.key;
   const effectiveUrlSyncId =
@@ -402,7 +409,7 @@ export function WindowPanel({
 
   useEffect(() => {
     if (!overlayId) return;
-    const entry = getRegistryEntryByOverlayId(overlayId);
+    const entry = getStaticEntryByOverlayId(overlayId);
     if (!entry || (!entry.autosave && !entry.heavySnapshot)) return;
     if (entry.ephemeral) return;
 
@@ -660,15 +667,13 @@ export function WindowPanel({
   // tray chip subscribes to. Cleared on restore + on unmount so a future
   // minimize captures fresh state.
   const bodyRef = useRef<HTMLDivElement | null>(null);
-  const trayRegistryEntry = getRegistryEntryByOverlayId(id);
 
   const handleMinimize = useCallback(() => {
     // Fire-and-forget the snapshot capture — don't block the minimize. The
     // chip shows a fallback (italic title) while waiting for the data URL.
-    const captureFn = trayRegistryEntry?.captureTraySnapshot;
     const bodyEl = bodyRef.current;
-    if (captureFn && bodyEl) {
-      void captureFn(bodyEl)
+    if (captureTraySnapshot && bodyEl) {
+      void captureTraySnapshot(bodyEl)
         .then((dataUrl) => {
           if (dataUrl) setTraySnapshot(id, dataUrl);
         })
@@ -683,7 +688,7 @@ export function WindowPanel({
         });
     }
     onMinimize();
-  }, [id, trayRegistryEntry, onMinimize]);
+  }, [id, captureTraySnapshot, onMinimize]);
 
   const handleRestoreClearingSnapshot = useCallback(() => {
     // Clear snapshot so the next minimize captures fresh state.
@@ -814,7 +819,7 @@ export function WindowPanel({
   // ────────────────────────────────────────────────────────────────────────
   if (isMobile) {
     const regEntry = overlayId
-      ? getRegistryEntryByOverlayId(overlayId)
+      ? getStaticEntryByOverlayId(overlayId)
       : undefined;
     const mobilePresentation = regEntry?.mobilePresentation ?? "fullscreen";
     const mobileSidebarAs = regEntry?.mobileSidebarAs ?? "drawer";
