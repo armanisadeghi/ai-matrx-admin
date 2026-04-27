@@ -46,7 +46,9 @@
     "sync-types": "node scripts/update-api-types.mjs --skip-typecheck",
     "sync-types:local": "node scripts/update-api-types.mjs --skip-typecheck --local",
     "update-api-types": "node scripts/update-api-types.mjs",
-    "update-api-types:local": "node scripts/update-api-types.mjs --local"
+    "update-api-types:local": "node scripts/update-api-types.mjs --local",
+    "build:analyze": "next experimental-analyze --serve",
+    "build:profile": "NEXT_TELEMETRY_DEBUG=1 next build 2>&1 | tee build-profile.log"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.43",
