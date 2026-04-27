@@ -11,7 +11,7 @@
 //   - `deleteCodeFileThunk(id)` handles delete + S3 cleanup.
 
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import type { AppDispatch, RootState } from "@/lib/redux/store";
+import type { CodeFilesSliceState } from "./code-files.types";
 import {
   CodeFilesAPI,
   type CreateCodeFileInput,
@@ -23,7 +23,8 @@ import type {
 import type { CodeFile, CodeFolder } from "./code-files.types";
 import { codeFilesActions } from "./slice";
 
-type ThunkConfig = { dispatch: AppDispatch; state: RootState };
+type StateWithCodeFiles = { codeFiles: CodeFilesSliceState };
+type ThunkConfig = { state: StateWithCodeFiles };
 
 // ── List / folders ─────────────────────────────────────────────────────────
 

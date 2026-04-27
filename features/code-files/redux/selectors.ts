@@ -7,24 +7,25 @@
 //     selectors pattern, lighter weight).
 
 import { createSelector } from "@reduxjs/toolkit";
-import type { RootState } from "@/lib/redux/store";
-import type { CodeFileRecord, CodeFolder } from "./code-files.types";
+import type { CodeFilesSliceState, CodeFileRecord, CodeFolder } from "./code-files.types";
+
+type StateWithCodeFiles = { codeFiles: CodeFilesSliceState };
 
 // ── Base ────────────────────────────────────────────────────────────────────
 
-const selectSlice = (state: RootState) => state.codeFiles;
+const selectSlice = (state: StateWithCodeFiles) => state.codeFiles;
 
-export const selectCodeFilesMap = (state: RootState) => state.codeFiles.files;
-export const selectCodeFoldersMap = (state: RootState) =>
+export const selectCodeFilesMap = (state: StateWithCodeFiles) => state.codeFiles.files;
+export const selectCodeFoldersMap = (state: StateWithCodeFiles) =>
   state.codeFiles.folders;
 
-export const selectCodeFilesListStatus = (state: RootState) =>
+export const selectCodeFilesListStatus = (state: StateWithCodeFiles) =>
   state.codeFiles.listStatus;
 
-export const selectCodeFilesListError = (state: RootState) =>
+export const selectCodeFilesListError = (state: StateWithCodeFiles) =>
   state.codeFiles.listError;
 
-export const selectCodeFoldersLoaded = (state: RootState) =>
+export const selectCodeFoldersLoaded = (state: StateWithCodeFiles) =>
   state.codeFiles.foldersLoaded;
 
 // ── Flat arrays ─────────────────────────────────────────────────────────────
@@ -42,22 +43,22 @@ export const selectAllCodeFolders = createSelector(
 
 const fileSelectorCache = new Map<
   string,
-  (state: RootState) => CodeFileRecord | undefined
+  (state: StateWithCodeFiles) => CodeFileRecord | undefined
 >();
 
 /** Stable per-file selector — same reference across renders for the same id. */
 export function makeSelectCodeFile(
   id: string,
-): (state: RootState) => CodeFileRecord | undefined {
+): (state: StateWithCodeFiles) => CodeFileRecord | undefined {
   const cached = fileSelectorCache.get(id);
   if (cached) return cached;
-  const fn = (state: RootState) => state.codeFiles.files[id];
+  const fn = (state: StateWithCodeFiles) => state.codeFiles.files[id];
   fileSelectorCache.set(id, fn);
   return fn;
 }
 
 export function selectCodeFileById(
-  state: RootState,
+  state: StateWithCodeFiles,
   id: string,
 ): CodeFileRecord | undefined {
   return state.codeFiles.files[id];
@@ -101,7 +102,7 @@ export const selectHasUnsavedCodeChanges = createSelector(
 // ── Convenience ─────────────────────────────────────────────────────────────
 
 export const selectFolderById = (
-  state: RootState,
+  state: StateWithCodeFiles,
   id: string,
 ): CodeFolder | undefined => state.codeFiles.folders[id];
 
