@@ -17,6 +17,10 @@ import { formatFileSize } from "@/features/files/utils/format";
 import { MediaThumbnail } from "@/features/files/components/core/MediaThumbnail/MediaThumbnail";
 import { FileContextMenu } from "@/features/files/components/core/FileContextMenu/FileContextMenu";
 import { FolderContextMenu } from "@/features/files/components/core/FolderContextMenu/FolderContextMenu";
+import {
+  FileRowContextMenu,
+  FolderRowContextMenu,
+} from "@/features/files/components/core/RowContextMenu/RowContextMenu";
 import { useFileActions } from "@/features/files/components/core/FileActions/useFileActions";
 import type {
   CloudFileRecord,
@@ -76,6 +80,7 @@ function GridFile({
   });
 
   return (
+    <FileRowContextMenu fileId={file.id}>
     <div
       ref={setNodeRef}
       className={cn(
@@ -174,6 +179,7 @@ function GridFile({
         </div>
       ) : null}
     </div>
+    </FileRowContextMenu>
   );
 }
 
@@ -200,6 +206,7 @@ function GridFolder({
   });
 
   return (
+    <FolderRowContextMenu folderId={folder.id}>
     <div
       ref={setNodeRef}
       className={cn(
@@ -273,6 +280,7 @@ function GridFolder({
         )}
       </div>
     </div>
+    </FolderRowContextMenu>
   );
 }
 

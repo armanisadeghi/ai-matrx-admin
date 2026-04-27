@@ -49,6 +49,10 @@ export interface UseTreeExpansionResult {
   expand: (folderId: string) => void;
   collapse: (folderId: string) => void;
   expandAllTo: (folderId: string) => void;
+  /** Expand every folder in the tree. Useful for "show me everything" UX. */
+  expandAll: () => void;
+  /** Collapse every folder back to root. */
+  collapseAll: () => void;
 }
 
 export function useTreeExpansion(
@@ -113,6 +117,16 @@ export function useTreeExpansion(
     },
     [foldersById],
   );
+
+  const expandAll = useCallback(() => {
+    // Expand every folder we know about. Cheaper than walking the visible
+    // rows because we have the full map already.
+    setExpanded(new Set(Object.keys(foldersById)));
+  }, [foldersById]);
+
+  const collapseAll = useCallback(() => {
+    setExpanded(new Set());
+  }, []);
 
   // Derive the flat visible-row list.
   const rows = useMemo<TreeRow[]>(() => {
@@ -197,5 +211,15 @@ export function useTreeExpansion(
     sort.sortDir,
   ]);
 
-  return { rows, expanded, isExpanded, toggle, expand, collapse, expandAllTo };
+  return {
+    rows,
+    expanded,
+    isExpanded,
+    toggle,
+    expand,
+    collapse,
+    expandAllTo,
+    expandAll,
+    collapseAll,
+  };
 }

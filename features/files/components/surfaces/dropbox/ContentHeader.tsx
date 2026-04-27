@@ -13,7 +13,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ExternalLink, Settings2, Share2, Upload } from "lucide-react";
+import { ArrowLeft, ExternalLink, Settings2, Share2, Upload } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
@@ -27,6 +27,7 @@ import {
   setActiveFolderId,
 } from "@/features/files/redux/slice";
 import { FileBreadcrumbs } from "@/features/files/components/core/FileBreadcrumbs/FileBreadcrumbs";
+import { TooltipIcon } from "@/features/files/components/core/Tooltip/TooltipIcon";
 import { PermissionsDialog } from "@/features/files/components/core/PermissionsDialog/PermissionsDialog";
 import { ShareLinkDialog } from "@/features/files/components/core/ShareLinkDialog/ShareLinkDialog";
 import type { Visibility } from "@/features/files/types";
@@ -122,25 +123,50 @@ export function ContentHeader({
       )}
     >
       <div className="flex flex-col gap-1">
-        <FileBreadcrumbs
-          folderId={folder ? folder.id : null}
-          onNavigate={handleNavigate}
-          className="text-xs"
-        />
+        <div className="flex items-center gap-1.5">
+          <TooltipIcon label={folder ? "Up to parent folder" : "Already at root"}>
+            <button
+              type="button"
+              aria-label="Up to parent folder"
+              disabled={!folder}
+              onClick={() => {
+                // "Up" — navigate to the parent folder of the active folder.
+                // At root (no active folder) the button is disabled.
+                if (!folder) return;
+                handleNavigate(folder.parentId ?? null);
+              }}
+              className={cn(
+                "flex h-6 w-6 shrink-0 items-center justify-center rounded text-muted-foreground",
+                folder
+                  ? "hover:bg-accent hover:text-foreground"
+                  : "opacity-40 cursor-default",
+              )}
+            >
+              <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
+            </button>
+          </TooltipIcon>
+          <FileBreadcrumbs
+            folderId={folder ? folder.id : null}
+            onNavigate={handleNavigate}
+            className="text-xs"
+          />
+        </div>
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 min-w-0">
             <h1 className="truncate text-xl font-semibold tracking-tight">
               {title}
             </h1>
             {folder ? (
-              <button
-                type="button"
-                aria-label="Folder settings"
-                onClick={() => setPermsOpen(true)}
-                className="flex h-7 w-7 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
-              >
-                <Settings2 className="h-4 w-4" aria-hidden="true" />
-              </button>
+              <TooltipIcon label="Folder settings & permissions">
+                <button
+                  type="button"
+                  aria-label="Folder settings"
+                  onClick={() => setPermsOpen(true)}
+                  className="flex h-7 w-7 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
+                >
+                  <Settings2 className="h-4 w-4" aria-hidden="true" />
+                </button>
+              </TooltipIcon>
             ) : null}
           </div>
 

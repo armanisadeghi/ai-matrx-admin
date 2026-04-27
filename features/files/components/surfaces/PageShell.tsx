@@ -28,11 +28,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   DndContext,
+  DragOverlay,
   PointerSensor,
   closestCenter,
   useSensor,
   useSensors,
   type DragEndEvent,
+  type DragStartEvent,
 } from "@dnd-kit/core";
 import {
   Activity,
@@ -58,6 +60,7 @@ import {
   selectAllFilesArray,
   selectAllFilesMap,
   selectAllFoldersArray,
+  selectAllFoldersMap,
   selectTreeStatus,
   selectViewMode,
 } from "@/features/files/redux/selectors";
@@ -65,7 +68,11 @@ import {
   setActiveFileId,
   setActiveFolderId,
 } from "@/features/files/redux/slice";
-import { moveFile as moveFileThunk } from "@/features/files/redux/thunks";
+import {
+  moveFile as moveFileThunk,
+  updateFolder as updateFolderThunk,
+} from "@/features/files/redux/thunks";
+import { FileIcon } from "@/features/files/components/core/FileIcon/FileIcon";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -163,6 +170,7 @@ function PageShellDesktop({
   const allFiles = useAppSelector(selectAllFilesArray);
   const allFolders = useAppSelector(selectAllFoldersArray);
   const filesById = useAppSelector(selectAllFilesMap);
+  const foldersById = useAppSelector(selectAllFoldersMap);
   const permissionsByResourceId = useAppSelector(
     (s) => s.cloudFiles.permissionsByResourceId,
   );
@@ -186,8 +194,33 @@ function PageShellDesktop({
   const dndSensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
   );
+  const [dragLabel, setDragLabel] = useState<string | null>(null);
+  const handleDragStart = useCallback(
+    (event: DragStartEvent) => {
+      const active = event.active.data.current as
+        | { type?: string; id?: string }
+        | undefined;
+      if (!active?.id) {
+        setDragLabel(null);
+        return;
+      }
+      // Look up the dragged record's display name so the DragOverlay shows
+      // a visible "ghost" — drag previously had no feedback at all.
+      if (active.type === "file") {
+        const f = filesById[active.id];
+        setDragLabel(f?.fileName ?? "File");
+      } else if (active.type === "folder") {
+        const fld = foldersById[active.id];
+        setDragLabel(fld?.folderName ?? "Folder");
+      } else {
+        setDragLabel(null);
+      }
+    },
+    [filesById, foldersById],
+  );
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
+      setDragLabel(null);
       const active = event.active.data.current as
         | { type?: string; id?: string }
         | undefined;
@@ -195,16 +228,26 @@ function PageShellDesktop({
         | { type?: string; id?: string }
         | undefined;
       if (!active?.id || !over?.id) return;
-      // Only file → folder moves are supported. Folder→folder is a Phase
-      // 12 ask (no `moveFolder` thunk yet).
-      if (active.type !== "file" || over.type !== "folder") return;
+      if (over.type !== "folder") return;
       if (active.id === over.id) return;
-      void dispatch(
-        moveFileThunk({ fileId: active.id, newParentFolderId: over.id }),
-      );
+      if (active.type === "file") {
+        void dispatch(
+          moveFileThunk({ fileId: active.id, newParentFolderId: over.id }),
+        );
+      } else if (active.type === "folder") {
+        // Folder → folder move uses updateFolder with parentId patch (the
+        // backend cascades child folder_path updates).
+        void dispatch(
+          updateFolderThunk({
+            folderId: active.id,
+            patch: { parentId: over.id },
+          }),
+        );
+      }
     },
     [dispatch],
   );
+  const handleDragCancel = useCallback(() => setDragLabel(null), []);
 
   const handleSelectFolder = useCallback(
     (folderId: string) => {
@@ -332,7 +375,9 @@ function PageShellDesktop({
     <DndContext
       sensors={dndSensors}
       collisionDetection={closestCenter}
+      onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
+      onDragCancel={handleDragCancel}
     >
       <div
         className={cn(
@@ -527,6 +572,21 @@ function PageShellDesktop({
 
         <RenameHost />
       </div>
+
+      <DragOverlay dropAnimation={null}>
+        {dragLabel ? (
+          <div className="pointer-events-none flex items-center gap-2 rounded-md border bg-popover px-3 py-1.5 text-xs shadow-md">
+            <FileIcon
+              fileName={dragLabel.includes(".") ? dragLabel : undefined}
+              isFolder={!dragLabel.includes(".")}
+              size={14}
+            />
+            <span className="max-w-[200px] truncate font-medium">
+              {dragLabel}
+            </span>
+          </div>
+        ) : null}
+      </DragOverlay>
     </DndContext>
   );
 }

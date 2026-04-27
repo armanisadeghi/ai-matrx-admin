@@ -7,7 +7,7 @@
 
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,6 +18,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { cn } from "@/lib/utils";
 import { extractErrorMessage } from "@/utils/errors";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import {
@@ -49,13 +50,14 @@ export function validateRenameInput(
 }
 
 /**
- * Returns the index where the file extension starts (the dot), or the full
- * length when no extension is present. Used to pre-select just the basename.
+ * Splits a filename into [basename, extension]. Extension includes the dot.
+ * Files with no extension return ["whole-name", ""].
+ * Hidden files like ".env" are treated as basename-only (no extension).
  */
-function basenameSelectionEnd(name: string, kind: RenameKind): number {
-  if (kind === "folder") return name.length;
+export function splitNameAndExtension(name: string): [string, string] {
   const dot = name.lastIndexOf(".");
-  return dot > 0 ? dot : name.length;
+  if (dot <= 0) return [name, ""];
+  return [name.slice(0, dot), name.slice(dot)];
 }
 
 export function RenameDialog({
@@ -67,7 +69,13 @@ export function RenameDialog({
 }: RenameDialogProps) {
   const dispatch = useAppDispatch();
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const [value, setValue] = useState(currentName);
+  const extInputRef = useRef<HTMLInputElement | null>(null);
+  const [originalBase, originalExt] = useMemo(
+    () => (kind === "file" ? splitNameAndExtension(currentName) : [currentName, ""]),
+    [kind, currentName],
+  );
+  const [base, setBase] = useState(originalBase);
+  const [ext, setExt] = useState(originalExt);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -76,14 +84,18 @@ export function RenameDialog({
   // for the same resource (e.g. after an error) still gets a fresh state.
   useEffect(() => {
     if (open) {
-      setValue(currentName);
+      setBase(originalBase);
+      setExt(originalExt);
       setError(null);
       setBusy(false);
     }
-  }, [open, resourceId, currentName]);
+  }, [open, resourceId, originalBase, originalExt]);
+
+  const composedName = kind === "file" ? `${base}${ext}` : base;
+  const extChanged = kind === "file" && ext !== originalExt;
 
   const handleSubmit = useCallback(async () => {
-    const result = validateRenameInput(value, currentName);
+    const result = validateRenameInput(composedName, currentName);
     if (result.ok === false) {
       setError(result.error);
       return;
@@ -110,7 +122,7 @@ export function RenameDialog({
     } finally {
       setBusy(false);
     }
-  }, [dispatch, kind, resourceId, value, currentName, onOpenChange]);
+  }, [dispatch, kind, resourceId, composedName, currentName, onOpenChange]);
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
@@ -120,7 +132,9 @@ export function RenameDialog({
           const el = inputRef.current;
           if (!el) return;
           el.focus();
-          el.setSelectionRange(0, basenameSelectionEnd(currentName, kind));
+          // Select the whole basename so typing replaces it; the extension
+          // field is a separate input so it can't be clobbered.
+          el.setSelectionRange(0, base.length);
         }}
       >
         <AlertDialogHeader>
@@ -128,28 +142,95 @@ export function RenameDialog({
             Rename {kind === "file" ? "file" : "folder"}
           </AlertDialogTitle>
           <AlertDialogDescription>
-            Enter a new name. {kind === "file"
-              ? "Keep the extension to preserve the file type."
+            {kind === "file"
+              ? "The extension is shown separately so it isn't changed by accident."
               : "Children move with the folder."}
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <input
-          ref={inputRef}
-          type="text"
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          placeholder={currentName}
-          className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-          style={{ fontSize: "16px" }}
-          disabled={busy}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              void handleSubmit();
-            }
-          }}
-        />
+
+        {kind === "file" && originalExt ? (
+          <div className="flex items-stretch gap-1.5">
+            <input
+              ref={inputRef}
+              type="text"
+              value={base}
+              onChange={(e) => setBase(e.target.value)}
+              placeholder={originalBase}
+              className="flex-1 min-w-0 rounded-md border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+              style={{ fontSize: "16px" }}
+              disabled={busy}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  void handleSubmit();
+                }
+              }}
+            />
+            <input
+              ref={extInputRef}
+              type="text"
+              value={ext}
+              onChange={(e) => {
+                const v = e.target.value;
+                // Auto-prefix the dot so users typing "txt" still produce
+                // ".txt" — only fight the user when they type whitespace.
+                if (v && !v.startsWith(".") && v !== "") {
+                  setExt("." + v);
+                } else {
+                  setExt(v);
+                }
+              }}
+              aria-label="File extension"
+              title={
+                extChanged
+                  ? "Changing the extension changes the file type — be careful."
+                  : "File extension"
+              }
+              className={cn(
+                "w-24 shrink-0 rounded-md border bg-muted/40 px-2 py-2 text-sm outline-none focus:ring-2",
+                extChanged
+                  ? "border-amber-500/70 text-amber-600 dark:text-amber-400 focus:ring-amber-400"
+                  : "text-muted-foreground focus:ring-ring",
+              )}
+              style={{ fontSize: "16px" }}
+              disabled={busy}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  void handleSubmit();
+                }
+              }}
+            />
+          </div>
+        ) : (
+          <input
+            ref={inputRef}
+            type="text"
+            value={base}
+            onChange={(e) => setBase(e.target.value)}
+            placeholder={originalBase}
+            className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+            style={{ fontSize: "16px" }}
+            disabled={busy}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                void handleSubmit();
+              }
+            }}
+          />
+        )}
+
+        {extChanged ? (
+          <p className="text-xs text-amber-600 dark:text-amber-400">
+            You changed the file extension from{" "}
+            <span className="font-mono">{originalExt || "(none)"}</span> to{" "}
+            <span className="font-mono">{ext || "(none)"}</span>. The file type
+            will change.
+          </p>
+        ) : null}
         {error ? <p className="text-xs text-destructive">{error}</p> : null}
+
         <AlertDialogFooter>
           <AlertDialogCancel disabled={busy} onClick={() => setError(null)}>
             Cancel

@@ -15,6 +15,10 @@ import { cn } from "@/lib/utils";
 import { FileIcon } from "@/features/files/components/core/FileIcon/FileIcon";
 import { FileContextMenu } from "@/features/files/components/core/FileContextMenu/FileContextMenu";
 import { FolderContextMenu } from "@/features/files/components/core/FolderContextMenu/FolderContextMenu";
+import {
+  FileRowContextMenu,
+  FolderRowContextMenu,
+} from "@/features/files/components/core/RowContextMenu/RowContextMenu";
 import { formatFileSize, formatRelativeTime } from "@/features/files/utils/format";
 import type { CloudFileRecord, CloudFolderRecord } from "@/features/files/types";
 
@@ -70,7 +74,7 @@ function FileListRowImpl({
     if (isFolder) setDropRef(node);
   };
 
-  return (
+  const rowBody = (
     <div
       ref={setMergedRef}
       role="row"
@@ -139,6 +143,12 @@ function FileListRowImpl({
         )}
       </div>
     </div>
+  );
+
+  return isFolder ? (
+    <FolderRowContextMenu folderId={record.id}>{rowBody}</FolderRowContextMenu>
+  ) : (
+    <FileRowContextMenu fileId={record.id}>{rowBody}</FileRowContextMenu>
   );
 }
 

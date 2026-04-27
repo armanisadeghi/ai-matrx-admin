@@ -14,6 +14,10 @@ import { cn } from "@/lib/utils";
 import { FileIcon } from "@/features/files/components/core/FileIcon/FileIcon";
 import { FileContextMenu } from "@/features/files/components/core/FileContextMenu/FileContextMenu";
 import { FolderContextMenu } from "@/features/files/components/core/FolderContextMenu/FolderContextMenu";
+import {
+  FileRowContextMenu,
+  FolderRowContextMenu,
+} from "@/features/files/components/core/RowContextMenu/RowContextMenu";
 import type { TreeRow } from "./useTreeExpansion";
 
 const INDENT_PX = 14;
@@ -83,7 +87,7 @@ function FileTreeRowImpl(
       (ref as React.MutableRefObject<HTMLDivElement | null>).current = node;
   };
 
-  return (
+  const rowBody = (
     <div
       ref={setMergedRef}
       role="treeitem"
@@ -184,6 +188,12 @@ function FileTreeRowImpl(
         )}
       </div>
     </div>
+  );
+
+  return isFolder ? (
+    <FolderRowContextMenu folderId={row.id}>{rowBody}</FolderRowContextMenu>
+  ) : (
+    <FileRowContextMenu fileId={row.id}>{rowBody}</FileRowContextMenu>
   );
 }
 

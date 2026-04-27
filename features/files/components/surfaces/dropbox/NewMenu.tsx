@@ -36,6 +36,7 @@ import { cn } from "@/lib/utils";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { createFolder } from "@/features/files/redux/thunks";
 import { useFileUpload } from "@/features/files/hooks/useFileUpload";
+import { TooltipIcon } from "@/features/files/components/core/Tooltip/TooltipIcon";
 
 export interface NewMenuProps {
   parentFolderId: string | null;
@@ -99,19 +100,21 @@ export function NewMenu({ parentFolderId, className }: NewMenuProps) {
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <button
-            type="button"
-            className={cn(
-              "inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground shadow-sm",
-              "hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
-              className,
-            )}
-          >
-            <Plus className="h-4 w-4" aria-hidden="true" />
-            New
-          </button>
-        </DropdownMenuTrigger>
+        <TooltipIcon label="Upload files or create a folder">
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground shadow-sm",
+                "hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+                className,
+              )}
+            >
+              <Plus className="h-4 w-4" aria-hidden="true" />
+              New
+            </button>
+          </DropdownMenuTrigger>
+        </TooltipIcon>
         <DropdownMenuContent align="start" className="w-56">
           <DropdownMenuItem onSelect={() => fileInputRef.current?.click()}>
             <FileUp className="mr-2 h-4 w-4" />

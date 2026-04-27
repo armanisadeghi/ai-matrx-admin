@@ -14,6 +14,7 @@
 
 import { useCallback } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ChevronDown, Plus, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch } from "@/lib/redux/hooks";
@@ -30,21 +31,41 @@ export interface NavSidebarProps {
 
 export function NavSidebar({ section }: NavSidebarProps) {
   const dispatch = useAppDispatch();
+  const router = useRouter();
   const { mode } = useSidebarMode();
+
+  // Sections that filter the file list independently of activeFolderId
+  // (Starred/Recents/Shared/Trash/Photos/Requests). When the user picks a
+  // folder in the tree while on one of these, the file list still shows the
+  // section's filtered set — so the picked folder appears empty. Detect that
+  // case and navigate back to the root section so the folder selection
+  // actually drives the page.
+  const FILTERED_SECTIONS: CloudFilesSection[] = [
+    "starred",
+    "recents",
+    "shared",
+    "trash",
+    "photos",
+    "requests",
+    "activity",
+  ];
+  const isFilteredSection = FILTERED_SECTIONS.includes(section);
 
   const handleSelectFolder = useCallback(
     (folderId: string) => {
       dispatch(setActiveFolderId(folderId));
       dispatch(setActiveFileId(null));
+      if (isFilteredSection) router.push("/cloud-files");
     },
-    [dispatch],
+    [dispatch, isFilteredSection, router],
   );
 
   const handleSelectFile = useCallback(
     (fileId: string) => {
       dispatch(setActiveFileId(fileId));
+      if (isFilteredSection) router.push("/cloud-files");
     },
-    [dispatch],
+    [dispatch, isFilteredSection, router],
   );
 
   return (
@@ -98,7 +119,11 @@ export function NavSidebar({ section }: NavSidebarProps) {
             </button>
           </div>
 
-          <QuickAccessGroup label="Starred" href="/cloud-files/starred">
+          <QuickAccessGroup
+            label="Starred"
+            href="/cloud-files/starred"
+            active={section === "starred"}
+          >
             <Star className="h-3.5 w-3.5" aria-hidden="true" />
           </QuickAccessGroup>
 
@@ -136,17 +161,31 @@ export function NavSidebar({ section }: NavSidebarProps) {
 interface QuickAccessGroupProps {
   label: string;
   href: string;
+  active?: boolean;
   children: React.ReactNode;
 }
 
-function QuickAccessGroup({ label, href, children }: QuickAccessGroupProps) {
+function QuickAccessGroup({
+  label,
+  href,
+  active,
+  children,
+}: QuickAccessGroupProps) {
   return (
     <Link
       href={href}
-      className="group flex items-center gap-2 rounded-md px-2 py-1 text-sm text-foreground/80 hover:bg-accent/60"
+      className={cn(
+        "group flex items-center gap-2 rounded-md px-2 py-1 text-sm transition-colors",
+        active
+          ? "bg-primary/10 text-primary font-semibold"
+          : "text-foreground/80 hover:bg-accent/60",
+      )}
     >
       <ChevronDown
-        className="h-3 w-3 text-muted-foreground"
+        className={cn(
+          "h-3 w-3",
+          active ? "text-primary" : "text-muted-foreground",
+        )}
         aria-hidden="true"
       />
       {children}

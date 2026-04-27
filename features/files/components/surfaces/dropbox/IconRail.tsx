@@ -15,6 +15,7 @@ import Link from "next/link";
 import { Activity, FolderTree, Home, MoreHorizontal } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { TooltipIcon } from "@/features/files/components/core/Tooltip/TooltipIcon";
 import type { CloudFilesSection } from "./section";
 
 export interface IconRailProps {
@@ -60,10 +61,10 @@ export function IconRail({ section, className }: IconRailProps) {
         const active =
           item.key === section || (item.key === "all" && section === "folders-root");
         const Icon = item.icon;
+        const tooltipLabel = item.disabled ? `${item.label} (coming soon)` : item.label;
         const content = (
           <span
             aria-label={item.label}
-            title={item.label}
             className={cn(
               "flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground transition",
               "hover:bg-accent hover:text-foreground",
@@ -75,12 +76,16 @@ export function IconRail({ section, className }: IconRailProps) {
             <span className="sr-only">{item.label}</span>
           </span>
         );
-        return item.href && !item.disabled ? (
-          <Link key={item.key} href={item.href}>
-            {content}
-          </Link>
-        ) : (
-          <div key={item.key}>{content}</div>
+        const inner =
+          item.href && !item.disabled ? (
+            <Link href={item.href}>{content}</Link>
+          ) : (
+            <div>{content}</div>
+          );
+        return (
+          <TooltipIcon key={item.key} label={tooltipLabel} side="right">
+            {inner}
+          </TooltipIcon>
         );
       })}
     </nav>

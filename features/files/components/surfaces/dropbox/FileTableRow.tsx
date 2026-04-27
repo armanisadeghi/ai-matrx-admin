@@ -24,6 +24,10 @@ import {
 import { FileIcon } from "@/features/files/components/core/FileIcon/FileIcon";
 import { FileContextMenu } from "@/features/files/components/core/FileContextMenu/FileContextMenu";
 import { FolderContextMenu } from "@/features/files/components/core/FolderContextMenu/FolderContextMenu";
+import {
+  FileRowContextMenu,
+  FolderRowContextMenu,
+} from "@/features/files/components/core/RowContextMenu/RowContextMenu";
 import { useFileActions } from "@/features/files/components/core/FileActions/useFileActions";
 import { FolderIconWithMembers } from "./FolderIconWithMembers";
 import { AccessBadge } from "./AccessBadge";
@@ -91,6 +95,7 @@ function FileRow({
   });
 
   return (
+    <FileRowContextMenu fileId={file.id}>
     <tr
       ref={setNodeRef}
       className={cn(
@@ -158,6 +163,7 @@ function FileRow({
         </div>
       </td>
     </tr>
+    </FileRowContextMenu>
   );
 }
 
@@ -188,6 +194,7 @@ function FolderRow({
   });
 
   return (
+    <FolderRowContextMenu folderId={folder.id}>
     <tr
       ref={setNodeRef}
       className={cn(
@@ -247,6 +254,7 @@ function FolderRow({
         </div>
       </td>
     </tr>
+    </FolderRowContextMenu>
   );
 }
 

@@ -20,6 +20,7 @@ import {
 } from "react";
 import { FolderTree, List } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { TooltipIcon } from "@/features/files/components/core/Tooltip/TooltipIcon";
 
 export type SidebarMode = "flat" | "tree";
 
@@ -136,21 +137,22 @@ interface ToggleButtonProps {
 
 function ToggleButton({ active, label, onClick, children }: ToggleButtonProps) {
   return (
-    <button
-      type="button"
-      role="radio"
-      aria-checked={active}
-      aria-label={label}
-      title={label}
-      onClick={onClick}
-      className={cn(
-        "flex h-5 w-5 items-center justify-center rounded",
-        active
-          ? "bg-accent text-accent-foreground"
-          : "text-muted-foreground hover:bg-accent/60",
-      )}
-    >
-      {children}
-    </button>
+    <TooltipIcon label={label}>
+      <button
+        type="button"
+        role="radio"
+        aria-checked={active}
+        aria-label={label}
+        onClick={onClick}
+        className={cn(
+          "flex h-5 w-5 items-center justify-center rounded",
+          active
+            ? "bg-accent text-accent-foreground"
+            : "text-muted-foreground hover:bg-accent/60",
+        )}
+      >
+        {children}
+      </button>
+    </TooltipIcon>
   );
 }

@@ -29,6 +29,7 @@ import {
   type DragStartEvent,
 } from "@dnd-kit/core";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import { ChevronsDownUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { moveFile } from "@/features/files/redux/thunks";
@@ -39,6 +40,7 @@ import {
 } from "./FileTreeRow";
 import { useTreeExpansion } from "./useTreeExpansion";
 import type { TreeRow } from "./useTreeExpansion";
+import { TooltipIcon } from "@/features/files/components/core/Tooltip/TooltipIcon";
 
 export interface FileTreeProps {
   /** Called when a row (file or folder) is activated (Enter / double-click). */
@@ -238,6 +240,29 @@ export function FileTree({
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
+      <div className={cn("flex h-full w-full flex-col", className)}>
+        <div className="flex items-center justify-end gap-0.5 border-b border-border/60 bg-background/40 px-1 py-0.5 shrink-0">
+          <TooltipIcon label="Expand all folders">
+            <button
+              type="button"
+              onClick={expansion.expandAll}
+              aria-label="Expand all folders"
+              className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
+            >
+              <ChevronsDownUp className="h-3 w-3 rotate-180" aria-hidden="true" />
+            </button>
+          </TooltipIcon>
+          <TooltipIcon label="Collapse all folders">
+            <button
+              type="button"
+              onClick={expansion.collapseAll}
+              aria-label="Collapse all folders"
+              className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
+            >
+              <ChevronsDownUp className="h-3 w-3" aria-hidden="true" />
+            </button>
+          </TooltipIcon>
+        </div>
       <div
         ref={containerRef}
         role="tree"
@@ -245,9 +270,8 @@ export function FileTree({
         aria-multiselectable="true"
         onKeyDown={handleKeyDown}
         className={cn(
-          "h-full w-full overflow-auto outline-none",
+          "min-h-0 flex-1 overflow-auto outline-none",
           readOnly && "opacity-90 cursor-default",
-          className,
         )}
       >
         <div
@@ -297,6 +321,7 @@ export function FileTree({
             );
           })}
         </div>
+      </div>
       </div>
 
       <DragOverlay>
