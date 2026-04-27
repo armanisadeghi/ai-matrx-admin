@@ -17,12 +17,14 @@ import { useSaveActiveTab } from "../hooks/useSaveActiveTab";
 import { useReloadTab } from "../hooks/useReloadTab";
 import { useSendSelectionAsContext } from "../agent-context/useSendSelectionAsContext";
 import { useEditorContextMenuActions } from "../agent-context/useEditorContextMenuActions";
+import { useMonacoMarkers } from "../agent-context/useMonacoMarkers";
 import { selectFocusedConversation } from "@/features/agents/redux/execution-system/conversation-focus/conversation-focus.selectors";
 import type { RootState } from "@/lib/redux/store";
 import { useEnvironmentForActiveTab } from "./monaco-environments";
 import { EditorTabs } from "./EditorTabs";
 import { EditorToolbar } from "./EditorToolbar";
 import { MonacoEditor, type StandaloneCodeEditor } from "./MonacoEditor";
+import { BinaryFileViewer } from "./BinaryFileViewer";
 
 interface EditorAreaProps {
   rightSlotAvailable?: boolean;
@@ -53,6 +55,13 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
     agentId ? selectFocusedConversation(`agent-runner:${agentId}`) : () => null,
   );
   const conversationId = focusedConversationId ?? conversationIdFromUrl;
+
+  // Mirror Monaco markers (TS, ESLint, JSON schema, etc.) into Redux so
+  // the agent-context bridge can ship `editor.diagnostics` for the
+  // active tab. One subscription serves all editors mounted in this
+  // surface — see `useMonacoMarkers` for the model→tabId mapping.
+  useMonacoMarkers();
+
   const editorRef = useRef<StandaloneCodeEditor | null>(null);
   // State copy of the editor instance so effects (e.g. context-menu action
   // registration) can run *after* Monaco mounts. The ref alone doesn't
@@ -187,6 +196,10 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
       if (mod && !e.shiftKey && !e.altKey && (e.key === "s" || e.key === "S")) {
         // Only intercept when there's actually something to save.
         if (!activeTab) return;
+        // Binary previews have no editable buffer — let the browser
+        // keep its default Cmd+S so users can save the page if they
+        // really want to, instead of silently swallowing the keystroke.
+        if (activeTab.kind === "binary-preview") return;
         e.preventDefault();
         handleSave();
       }
@@ -219,16 +232,20 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
       </div>
       <div className="relative flex-1 min-h-0">
         {activeTab ? (
-          <MonacoEditor
-            key={activeTab.id}
-            value={activeTab.content}
-            language={activeTab.language}
-            path={activeTab.path}
-            onChange={handleChange}
-            onSave={handleSave}
-            onSendSelection={sendSelection}
-            onEditorMount={handleEditorMount}
-          />
+          activeTab.kind === "binary-preview" ? (
+            <BinaryFileViewer key={activeTab.id} tab={activeTab} />
+          ) : (
+            <MonacoEditor
+              key={activeTab.id}
+              value={activeTab.content}
+              language={activeTab.language}
+              path={activeTab.path}
+              onChange={handleChange}
+              onSave={handleSave}
+              onSendSelection={sendSelection}
+              onEditorMount={handleEditorMount}
+            />
+          )
         ) : (
           <EmptyEditorState />
         )}

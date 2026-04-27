@@ -243,3 +243,74 @@ The Vercel `maxDuration = 300` ceiling becomes irrelevant — the only routes th
 - Changing the orchestrator's existing `X-API-Key` master path. Token-based auth is additive.
 - Switching to a different transport (gRPC-Web, etc.). HTTP/SSE + WS is sufficient and well-supported in browsers.
 - A general-purpose user JWT minted directly by Supabase. We prefer scoped, short-lived, single-sandbox tokens — the blast radius of a leaked token is one sandbox for at most 15 minutes.
+
+---
+
+## 7. Sandbox-Mode AI passthrough — `proxy_url` (added 2026‑04‑27)
+
+This section describes a **new, separate** capability that unblocks "true sandbox mode": running the Matrx Python server **inside the container** and pointing the editor's chat conversation at it directly, so AI requests never leave the sandbox.
+
+### 7.1 Why
+
+The frontend now distinguishes two modes (see `EditorMode` in `features/code/redux/codeWorkspaceSlice.ts`):
+
+- `cloud` — the agent's Python server runs centrally and operates on cloud-stored files. AI calls hit the global `apiConfigSlice.activeServer`.
+- `sandbox` — the agent's Python server is a copy running **inside the user's container** at `/home/agent/<server>` (already the case today via `matrx_agent`). AI calls should hit *that* server so tool calls execute against the local filesystem with zero round-trips.
+
+We can't flip `apiConfigSlice.activeServer` to do this, because that would redirect every other call in the page (cloud-files, prompt-apps, agent definitions, …). Instead we already implemented a **per-conversation override** (`instanceUIState.serverOverrideUrl`, consumed by `resolveBaseUrlForConversation`) that scopes the redirection to one chat thread.
+
+What's missing on the orchestrator side: a public, authenticated proxy that fronts the in-container Python server.
+
+### 7.2 What we need
+
+**One field** added to the existing `SandboxResponse` payload:
+
+```jsonc
+{
+  // ...all existing fields...
+  "proxy_url": "https://orchestrator.dev.codematrx.com/sandboxes/<id>/proxy"
+}
+```
+
+The frontend treats this field as authoritative. When a user connects to a sandbox, `SandboxesPanel.connect()` mirrors `proxy_url` into Redux (`codeWorkspace.activeSandboxProxyUrl`); `useBindAgentToSandbox` then writes it to `instanceUIState.serverOverrideUrl` for the active conversation. Cleared on disconnect.
+
+**Field is optional in the type** — until you ship it, the FE silently falls back to the global server (the per-conversation override stays null). No FE code change needed when you flip it on.
+
+### 7.3 Proxy semantics (orchestrator side)
+
+The proxy at `${proxy_url}/<path>` MUST:
+
+1. Forward requests to the in-container Python server's `/<path>` 1:1 — same method, headers (sans hop-by-hop), body, and response shape.
+2. Stream both directions for SSE/NDJSON (`/ai/agents/.../stream` etc.) — the agent execute thunks read NDJSON line-by-line.
+3. Authenticate the same way as §4 — short-lived Bearer token issued by Next.js with scope `ai`. The proxy validates the token, looks up the sandbox, and forwards to `localhost:<container-port>` with no further user auth (the in-container server already trusts requests reaching its bind address).
+4. Serve `OPTIONS` preflight with `Access-Control-Allow-Origin: https://www.aimatrx.com` (and the dev origin) and the standard `Allow-*` headers. The browser hits this URL directly from the chat surface.
+5. Be CORS-safe with `Authorization`, `Content-Type`, `X-Conversation-Id`, `X-Instance-Id` allowed in `Access-Control-Allow-Headers`.
+6. Honor the same `maxDuration ≥ 2h` ceiling as the streaming exec route — agent runs are not bounded by the proxy.
+7. Strip the `X-API-Key` master-key header on the way through (defense in depth — the in-container server should never see master keys).
+
+### 7.4 In-container Python — what it must already speak
+
+The frontend assumes the in-container server exposes the **same `/ai/...` API** as the central server. This is true today because the container ships the same codebase via `matrx_agent`. Concrete endpoints that must work through the proxy:
+
+- `POST /ai/agents/{agent_id}/instances/{instance_id}/execute` (NDJSON stream)
+- `POST /ai/agents/{agent_id}/instances/{instance_id}/chat` (NDJSON stream)
+- `POST /ai/conversations/{conversation_id}/cache/invalidate`
+- Whatever tool-result endpoints the agent uses (`/ai/tool-results/...`).
+
+If anything diverges between central and in-container, it'll silently break sandbox-mode chats with no error surface — please make divergence a deploy-time check.
+
+### 7.5 Acceptance
+
+| Scenario | Expected |
+|---|---|
+| Sandbox `proxy_url` present + user opens a chat | AI execute thunk POSTs to `${proxy_url}/ai/...`, NOT the global server. |
+| Disconnect from sandbox mid-chat | New messages route back to the global server (override is cleared automatically). |
+| `proxy_url` is `null` | Override never set; chat behaves identically to a non-sandbox surface. |
+| Two sandboxes open in two browser tabs | Each tab's chat hits its own `proxy_url`. (The override is keyed by `conversationId` in Redux.) |
+| Bearer token expired | Proxy returns `401`; existing thunks surface this as a chat error. |
+
+### 7.6 What blocks us until this ships
+
+Nothing — the FE has shipped behind a `null` check. The moment `SandboxResponse.proxy_url` starts coming back populated, sandbox-mode AI calls reroute automatically. We do **not** need any other coordination.
+
+

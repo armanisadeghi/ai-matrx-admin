@@ -13,6 +13,8 @@ import { AgentPicker } from "./AgentPicker";
 import { useCodeWorkspaceHistory } from "./useCodeWorkspaceHistory";
 import { ContextChip } from "../agent-context/ContextChip";
 import { useSyncEditorContext } from "../agent-context/useSyncEditorContext";
+import { useBindAgentToSandbox } from "../agent-context/useBindAgentToSandbox";
+import { selectActiveSandboxProxyUrl } from "../redux/codeWorkspaceSlice";
 
 interface ChatPanelSlotProps {
   /** Base path used by header controls inside the runner. Defaults to the
@@ -61,6 +63,17 @@ export const ChatPanelSlot: React.FC<ChatPanelSlotProps> = ({
   // tab set and a chat instance are live. The hook is a no-op when
   // `conversationId` is null, so it's safe to call unconditionally.
   useSyncEditorContext(conversationId);
+
+  // Sandbox-mode binding: when the editor is attached to a sandbox AND the
+  // orchestrator surfaced a per-sandbox proxy URL, redirect THIS conversation's
+  // AI calls into the in-container Python server. The hook is a no-op when:
+  //   • `editorMode !== "sandbox"` (cloud / mock surface), or
+  //   • `proxyUrl` is null (orchestrator hasn't shipped `proxy_url` yet), or
+  //   • `conversationId` is null (no chat focused yet).
+  // Other backend traffic (notes, settings, etc.) keeps using the global
+  // `apiConfigSlice` URL — this scope only affects agent execute thunks.
+  const proxyUrl = useAppSelector(selectActiveSandboxProxyUrl);
+  useBindAgentToSandbox({ conversationId, proxyUrl });
 
   const openSettings = useCallback(() => {
     dispatch(

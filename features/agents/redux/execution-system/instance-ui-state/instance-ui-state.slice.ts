@@ -435,6 +435,30 @@ const instanceUIStateSlice = createSlice({
       }
     },
 
+    /**
+     * Sandbox / multi-server bridge: route this conversation's AI calls
+     * to a specific backend URL instead of the global
+     * `selectResolvedBaseUrl`. Pass `null` to clear and revert to the
+     * global default.
+     *
+     * The execute thunks read this BEFORE consulting `selectResolvedBaseUrl`,
+     * so the rest of the app keeps hitting whichever server the admin
+     * server-toggle picked while this one conversation talks to (e.g.) an
+     * in-container Python via the orchestrator proxy.
+     */
+    setServerOverrideUrl(
+      state,
+      action: PayloadAction<{
+        conversationId: string;
+        url: string | null;
+      }>,
+    ) {
+      const entry = state.byConversationId[action.payload.conversationId];
+      if (entry) {
+        entry.serverOverrideUrl = action.payload.url;
+      }
+    },
+
     setShowAutoClearToggle(
       state,
       action: PayloadAction<{ conversationId: string; value: boolean }>,
@@ -633,6 +657,7 @@ export const {
   toggleCreatorDebug,
   setSubmitOnEnter,
   setEditorContextDisabledTabs,
+  setServerOverrideUrl,
   setShowAutoClearToggle,
   setAutoClearConversation,
   setReuseConversationId,

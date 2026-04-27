@@ -41,6 +41,7 @@ import { openSessionReportTab } from "../../runtime/openSessionReport";
 import {
   selectActiveSandboxId,
   setActiveSandboxId,
+  setActiveSandboxProxyUrl,
 } from "../../redux/codeWorkspaceSlice";
 import { SidePanelAction, SidePanelHeader } from "../SidePanelChrome";
 import {
@@ -119,6 +120,10 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
         return;
       }
       dispatch(setActiveSandboxId(instance.id));
+      // Mirror the per-sandbox proxy URL into Redux so chat surfaces can
+      // bind their conversation to the in-container Python server. Null
+      // until the orchestrator surfaces `proxy_url` on SandboxInstance.
+      dispatch(setActiveSandboxProxyUrl(instance.proxy_url ?? null));
       const label = instance.sandbox_id
         ? instance.sandbox_id.slice(0, 10)
         : instance.id.slice(0, 8);
@@ -144,6 +149,7 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
 
   const disconnect = useCallback(() => {
     dispatch(setActiveSandboxId(null));
+    dispatch(setActiveSandboxProxyUrl(null));
     setFilesystem(new MockFilesystemAdapter());
     setProcess(new MockProcessAdapter());
   }, [dispatch, setFilesystem, setProcess]);
@@ -166,6 +172,7 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
         if (data.instance) {
           const created = data.instance as SandboxInstance;
           dispatch(setActiveSandboxId(created.id));
+          dispatch(setActiveSandboxProxyUrl(created.proxy_url ?? null));
         }
         setCreateModalOpen(false);
       } catch (err) {

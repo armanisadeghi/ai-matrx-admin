@@ -52,7 +52,12 @@ export function useSendSelectionAsContext(
 } {
   const { conversationId, activeTab, editorRef, notify } = opts;
   const dispatch = useAppDispatch();
-  const canSend = Boolean(conversationId && activeTab);
+  // Binary previews (image / video / pdf) don't mount Monaco, so there's
+  // nothing to select. Disable the toolbar action up-front rather than
+  // letting users click into a "no text selected" toast.
+  const canSend = Boolean(
+    conversationId && activeTab && activeTab.kind !== "binary-preview",
+  );
 
   const sendSelection = useCallback((): boolean => {
     if (!conversationId || !activeTab) {

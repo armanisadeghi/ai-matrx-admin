@@ -20,7 +20,7 @@ import {
   selectAccessToken,
   selectFingerprintId,
 } from "@/lib/redux/slices/userSlice";
-import { selectResolvedBaseUrl } from "@/lib/redux/slices/apiConfigSlice";
+import { resolveBaseUrlForConversation } from "../thunks/resolve-base-url";
 import { clearCacheBypass } from "./cache-bypass.slice";
 
 interface InvalidateArgs {
@@ -45,7 +45,7 @@ export const invalidateConversationCache = createAsyncThunk<
   "conversations/invalidateCache",
   async ({ conversationId }, { dispatch, getState, rejectWithValue }) => {
     const state = getState();
-    const baseUrl = selectResolvedBaseUrl(state);
+    const baseUrl = resolveBaseUrlForConversation(state, conversationId);
     const accessToken = selectAccessToken(state);
     const fingerprintId = selectFingerprintId(state);
 

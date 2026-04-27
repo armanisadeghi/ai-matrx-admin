@@ -16,6 +16,10 @@ import {
   DEFAULT_WORKSPACE_ID,
   registerWorkspace,
 } from "./runtime/workspaceRegistry";
+import {
+  classifyEditorMode,
+  setActiveFilesystem,
+} from "./redux/codeWorkspaceSlice";
 
 /** What consumers of the workspace context can read + mutate. */
 export interface CodeWorkspaceContextValue {
@@ -67,6 +71,21 @@ export const CodeWorkspaceProvider: React.FC<CodeWorkspaceProviderProps> = ({
     });
     return unregister;
   }, [workspaceId, filesystem, process, store]);
+
+  // Mirror the active filesystem's metadata into Redux so non-provider
+  // call sites (selectors, thunks, the agent context bridge) can read
+  // it without reaching into React context. This is the single hop
+  // that makes `selectEditorMode` work as a pure selector.
+  useEffect(() => {
+    store.dispatch(
+      setActiveFilesystem({
+        id: filesystem.id,
+        label: filesystem.label,
+        rootPath: filesystem.rootPath,
+        mode: classifyEditorMode(filesystem.id),
+      }),
+    );
+  }, [store, filesystem]);
 
   const value = useMemo<CodeWorkspaceContextValue>(
     () => ({ workspaceId, filesystem, process, setFilesystem, setProcess }),

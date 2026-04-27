@@ -54,6 +54,14 @@ export interface FilesystemSearchHit {
 
 // ─── Editor files / tabs ─────────────────────────────────────────────────────
 
+/**
+ * Tab kind. Defaults to `"editor"` when absent (legacy tabs are always
+ * Monaco-backed). `"binary-preview"` tabs render through `BinaryFileViewer`
+ * — bytes are fetched lazily from the active filesystem adapter, never put
+ * into Redux, never shipped to the agent context bridge.
+ */
+export type EditorTabKind = "editor" | "binary-preview";
+
 export interface EditorFile {
   /** Stable id. Typically the absolute path prefixed with adapter id. */
   id: string;
@@ -69,6 +77,19 @@ export interface EditorFile {
   pristineContent: string;
   /** True iff `content !== pristineContent`. Computed by the slice. */
   dirty?: boolean;
+  /**
+   * What renders this tab. Omit (or set `"editor"`) for the standard
+   * Monaco-backed text editor. `"binary-preview"` swaps Monaco for the
+   * `BinaryFileViewer` so we don't try to feed image / video / pdf bytes
+   * into a code editor.
+   */
+  kind?: EditorTabKind;
+  /**
+   * Resolved MIME type for the file. Only populated on `"binary-preview"`
+   * tabs today — the binary viewer reads it to pick the right previewer
+   * primitive (image / video / audio / pdf / generic).
+   */
+  mime?: string;
   /**
    * Remote `updated_at` captured at load time for source-backed tabs
    * (prompt apps, agent apps, tool UIs). Used by the optimistic

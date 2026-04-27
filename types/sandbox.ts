@@ -48,6 +48,29 @@ export interface SandboxInstance {
     stopped_at: string | null
     stop_reason: SandboxStopReason | null
     ssh_port: number | null
+    /**
+     * Public (proxied) URL that exposes the in-container Python server.
+     * Expected to be the orchestrator's per-sandbox passthrough mount,
+     * e.g. `https://orchestrator.dev.codematrx.com/sandboxes/<id>/proxy`.
+     * The frontend uses this to redirect a per-conversation override
+     * (`instanceUIState.serverOverrideUrl`) when the editor is attached
+     * to this sandbox, so AI calls hit the in-container Python while the
+     * rest of the app keeps using the global server.
+     *
+     * Optional because the orchestrator may not surface it yet — the
+     * frontend treats `null/undefined` as "no sandbox-mode binding,
+     * fall back to global apiConfigSlice".
+     *
+     * Server-side contract for the Python team:
+     *   - URL must NOT include a trailing slash.
+     *   - The server at this URL must speak the same `/ai/*` API as the
+     *     central server (it IS the central server, copied into the
+     *     container by `matrx_agent`).
+     *   - The orchestrator should sign requests at the proxy boundary
+     *     so the in-container daemon trusts them without re-checking
+     *     the user's Supabase JWT.
+     */
+    proxy_url: string | null
     created_at: string
     updated_at: string
     deleted_at: string | null

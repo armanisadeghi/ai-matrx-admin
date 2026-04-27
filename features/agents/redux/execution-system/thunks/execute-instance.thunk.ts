@@ -39,7 +39,7 @@ import {
   selectAccessToken,
   selectFingerprintId,
 } from "@/lib/redux/slices/userSlice";
-import { selectResolvedBaseUrl } from "@/lib/redux/slices/apiConfigSlice";
+import { resolveBaseUrlForConversation } from "./resolve-base-url";
 import {
   createRequest,
   setRequestStatus,
@@ -280,8 +280,10 @@ export const executeInstance = createAsyncThunk<
         ? formatVariablesForDisplay(variables)
         : "";
 
-      // Resolve base URL from Redux (single source of truth)
-      const baseUrl = selectResolvedBaseUrl(state);
+      // Resolve base URL: per-instance override (sandbox-mode editor sets
+      // this) wins over the global server toggle. Falls back to the
+      // global apiConfig selection.
+      const baseUrl = resolveBaseUrlForConversation(state, conversationId);
       if (!baseUrl) {
         throw new Error("No backend URL configured");
       }
@@ -572,8 +574,14 @@ export const submitToolResults = createAsyncThunk<void, SubmitToolResultsArgs>(
         throw new Error("No conversation ID for tool result submission");
       }
 
-      // Resolve base URL and auth (same as executeInstance)
-      const baseUrl = selectResolvedBaseUrl(state);
+      // Resolve base URL: per-instance override wins over global. Tool
+      // results MUST hit the same server that owns the conversation
+      // (otherwise the run is orphaned), so use the conversation-aware
+      // resolver here too.
+      const baseUrl = resolveBaseUrlForConversation(
+        state,
+        request.conversationId,
+      );
       if (!baseUrl) throw new Error("No backend URL configured");
 
       const accessToken = selectAccessToken(state);

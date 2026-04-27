@@ -567,6 +567,27 @@ export interface InstanceUIState {
    * Empty/undefined = include all tabs (default).
    */
   editorContextDisabledTabs?: string[];
+
+  /**
+   * Per-conversation backend URL override.
+   *
+   * When set, the agent execute thunks (`executeInstance`,
+   * `executeChatInstance`, tool-result POSTs) prefer this URL over the
+   * global `selectResolvedBaseUrl(state)`. This is how Sandbox-mode
+   * conversations talk to the in-container Python server without
+   * disturbing every other backend call in the page.
+   *
+   * Set by `useBindAgentToSandbox(conversationId, instanceId)` when the
+   * editor surface mounts a sandbox adapter, cleared on unmount.
+   *
+   * Format: a fully-qualified base URL with no trailing slash, e.g.
+   * `https://orchestrator.dev.codematrx.com/sandboxes/<instanceId>/proxy`.
+   * The thunks will append `/ai/...` paths exactly as they do for the
+   * global base URL — the override is a drop-in replacement.
+   *
+   * Null/undefined = no override; thunks fall back to `selectResolvedBaseUrl`.
+   */
+  serverOverrideUrl?: string | null;
 }
 
 // =============================================================================

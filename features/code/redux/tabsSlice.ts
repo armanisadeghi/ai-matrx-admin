@@ -8,13 +8,38 @@ export interface CodeTabsState {
   order: string[];
   /** Active tab id. */
   activeId: string | null;
+  /**
+   * MRU stack of tab ids the user has opened or activated, most-recent
+   * first, capped at RECENT_FILES_CAP. Survives tab close so an agent
+   * can still see "the last 10 files this user touched" even if some
+   * have been closed since.
+   *
+   * Stored as `${filesystemId}:${path}` (the same shape as `EditorFile.id`)
+   * so we can resolve back to the originating filesystem if needed.
+   */
+  recentTabIds: string[];
 }
+
+export const RECENT_FILES_CAP = 10;
 
 const initialState: CodeTabsState = {
   byId: {},
   order: [],
   activeId: null,
+  recentTabIds: [],
 };
+
+function bumpRecent(state: CodeTabsState, id: string) {
+  // MRU semantics: drop any earlier occurrence, push to front, trim
+  // to the cap. We don't reach for `Set` here because the order matters
+  // and arrays this small don't benefit from hash lookups.
+  const idx = state.recentTabIds.indexOf(id);
+  if (idx !== -1) state.recentTabIds.splice(idx, 1);
+  state.recentTabIds.unshift(id);
+  if (state.recentTabIds.length > RECENT_FILES_CAP) {
+    state.recentTabIds.length = RECENT_FILES_CAP;
+  }
+}
 
 const slice = createSlice({
   name: "codeTabs",
@@ -27,6 +52,7 @@ const slice = createSlice({
         state.order.push(file.id);
       }
       state.activeId = file.id;
+      bumpRecent(state, file.id);
     },
     closeTab(state, action: PayloadAction<string>) {
       const id = action.payload;
@@ -42,6 +68,7 @@ const slice = createSlice({
     setActiveTab(state, action: PayloadAction<string>) {
       if (state.byId[action.payload]) {
         state.activeId = action.payload;
+        bumpRecent(state, action.payload);
       }
     },
     updateTabContent(
@@ -107,6 +134,12 @@ const slice = createSlice({
       state.byId = {};
       state.order = [];
       state.activeId = null;
+      // Recent stack survives a "close all" — those file paths are still
+      // historically interesting to the agent and the user might want to
+      // reopen them. Cleared explicitly via `clearRecentTabs` if needed.
+    },
+    clearRecentTabs(state) {
+      state.recentTabIds = [];
     },
   },
 });
@@ -121,6 +154,7 @@ export const {
   replaceTabContent,
   moveTab,
   closeAllTabs,
+  clearRecentTabs,
 } = slice.actions;
 
 export default slice.reducer;
@@ -143,3 +177,5 @@ export const selectActiveTab = (state: WithCodeTabs) => {
   const tabs = selectCodeTabs(state);
   return tabs.activeId ? tabs.byId[tabs.activeId] : null;
 };
+export const selectRecentTabIds = (state: WithCodeTabs) =>
+  selectCodeTabs(state).recentTabIds ?? emptyOrder;

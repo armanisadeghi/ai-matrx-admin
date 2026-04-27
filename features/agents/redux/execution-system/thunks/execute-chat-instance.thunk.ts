@@ -37,7 +37,7 @@ import {
   selectAccessToken,
   selectFingerprintId,
 } from "@/lib/redux/slices/userSlice";
-import { selectResolvedBaseUrl } from "@/lib/redux/slices/apiConfigSlice";
+import { resolveBaseUrlForConversation } from "./resolve-base-url";
 import {
   createRequest,
   setRequestStatus,
@@ -426,8 +426,9 @@ export const executeChatInstance = createAsyncThunk<
         dispatch(clearMemoryToggleRequest());
       }
 
-      // Resolve base URL
-      const baseUrl = selectResolvedBaseUrl(state);
+      // Resolve base URL: per-instance override (sandbox-mode editor sets
+      // this) wins over the global server toggle.
+      const baseUrl = resolveBaseUrlForConversation(state, conversationId);
       if (!baseUrl) {
         throw new Error("No backend URL configured");
       }

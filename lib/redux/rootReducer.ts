@@ -59,6 +59,7 @@ import { codeFilesReducer } from "@/features/code-files/redux/slice";
 import codeWorkspaceReducer from "@/features/code/redux/codeWorkspaceSlice";
 import codeTabsReducer from "@/features/code/redux/tabsSlice";
 import codeTerminalReducer from "@/features/code/redux/terminalSlice";
+import codeDiagnosticsReducer from "@/features/code/redux/diagnosticsSlice";
 import { cloudFilesReducer } from "@/features/files/redux/slice";
 import messagingReducer from "@/features/messaging/redux/messagingSlice";
 import smsReducer from "@/features/sms/redux/smsSlice";
@@ -189,6 +190,7 @@ export const slimReducerMap = {
   codeWorkspace: codeWorkspaceReducer,
   codeTabs: codeTabsReducer,
   codeTerminal: codeTerminalReducer,
+  codeDiagnostics: codeDiagnosticsReducer,
   // New cloud-files system (migration from Supabase Storage buckets).
   cloudFiles: cloudFilesReducer,
   // SMS integration
