@@ -84,7 +84,8 @@ import type {
   ContentBlockItem,
 } from "@/features/prompt-builtins/types/menu";
 import { mapScopeToVariables } from "@/features/prompt-builtins/utils/execution";
-import { usePromptRunner } from "@/features/prompts/hooks/usePromptRunner";
+import { useShortcutTrigger } from "@/features/agents/hooks/useShortcutTrigger";
+import type { ApplicationScope } from "@/features/agents/utils/scope-mapping";
 import { insertTextAtTextareaCursor } from "@/utils/text-insertion";
 import { toast } from "@/components/ui/use-toast";
 import { useQuickActions } from "@/features/quick-actions/hooks/useQuickActions";
@@ -324,7 +325,7 @@ export function NoteContextMenuHeavy({
     openVoicePad,
   } = useQuickActions();
 
-  const { openPrompt } = usePromptRunner();
+  const trigger = useShortcutTrigger();
 
   const [findReplaceOpen, setFindReplaceOpen] = useState(false);
   const [skipSelectionRestore, setSkipSelectionRestore] = useState(false);
@@ -682,16 +683,6 @@ export function NoteContextMenuHeavy({
 
   const executeAction = useCallback(
     async (item: ShortcutItem, placementType: string = "ai-action") => {
-      if (!item.prompt_builtin) {
-        toast({
-          title: "Prompt Not Connected",
-          description: `"${item.label}" has no connected prompt. Configure it in the admin panel.`,
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const builtin = item.prompt_builtin;
       const ta = textareaRef?.current;
       const selectionText =
         capturedSelection.current?.text ||
@@ -707,30 +698,38 @@ export function NoteContextMenuHeavy({
             selectionEnd: 0,
           });
 
+      // Live UI scope passed to the shortcut. The shortcut row owns its own
+      // scopeMappings/contextMappings and decides which keys it consumes —
+      // unmatched keys are dropped harmlessly by the agent execution path.
       const applicationScope = {
         selection: selectionText,
         content: noteContent,
         context: contextPayload,
       };
 
-      const variables = mapScopeToVariables(
-        applicationScope,
-        item.scope_mappings ?? {},
-        builtin.variableDefaults ?? [],
-      );
-
+      // Admin debug indicator still uses the legacy resolution preview to
+      // surface what *would* have been mapped under the prompt-builtin's
+      // scope_mappings. The agent shortcut performs its own resolution at
+      // launch time; this is purely informational.
       if (isDebugMode) {
+        const previewVariables = item.prompt_builtin
+          ? mapScopeToVariables(
+              applicationScope,
+              item.scope_mappings ?? {},
+              item.prompt_builtin.variableDefaults ?? [],
+            )
+          : {};
         dispatch(
           showPromptDebugIndicator({
             promptName: item.label,
             placementType,
             selectedText: selectionText,
             availableContext: applicationScope,
-            resolvedVariables: variables,
+            resolvedVariables: previewVariables,
             canResolve: {
               canResolve: true,
               missingVariables: [],
-              resolvedVariables: Object.keys(variables),
+              resolvedVariables: Object.keys(previewVariables),
             },
             metadata: {
               scopeMappings: item.scope_mappings ?? {},
@@ -740,28 +739,16 @@ export function NoteContextMenuHeavy({
         );
       }
 
-      const resultDisplay = item.result_display ?? "modal-full";
-      const executionConfig = {
-        auto_run: item.auto_run ?? true,
-        allow_chat: item.allow_chat ?? true,
-        show_variables: item.show_variables ?? false,
-        apply_variables: item.apply_variables ?? true,
-        track_in_runs: true,
-        use_pre_execution_input: item.use_pre_execution_input ?? false,
-      };
-
+      // Fire-and-forget agent shortcut launch. The shortcut row carries
+      // display mode, auto_run, allow_chat, scopeMappings, etc. — we hand
+      // it the live UI scope and let it manage everything downstream.
       try {
-        await openPrompt({
-          promptId: builtin.id,
-          promptSource: "prompt_builtins",
-          variables: item.apply_variables ? variables : {},
-          executionConfig,
-          result_display: resultDisplay,
-          title: item.label,
-          initialMessage: "",
+        await trigger(item.id, {
+          scope: applicationScope as unknown as ApplicationScope,
+          sourceFeature: "notes",
         });
       } catch (error) {
-        console.error("[NoteContextMenu] AI execution error:", error);
+        console.error("[NoteContextMenu] Shortcut launch error:", error);
         toast({
           title: "Execution Failed",
           description:
@@ -772,7 +759,7 @@ export function NoteContextMenuHeavy({
         });
       }
     },
-    [dispatch, isDebugMode, noteContent, textareaRef, openPrompt],
+    [dispatch, isDebugMode, noteContent, textareaRef, trigger],
   );
 
   const insertBlock = useCallback(

@@ -8,8 +8,23 @@ import { EnhancedFileDetails } from "@/utils/file-operations/constants";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface UploadedFile {
+    /**
+     * cld_files UUID. When present, downstream code building outbound AI
+     * API payloads should construct a `MediaRef` from this id (via
+     * `fileIdToMediaRef`) rather than the share URL.
+     */
+    fileId?: string;
     url: string;
+    /**
+     * **FE classification token** — one of `"image" | "video" | "audio"
+     * | "document" | "text" | "pdf" | "other" | "unknown"` from
+     * `classifyFileType()`. This is NOT a MIME type; do not send it to
+     * the backend as `mime_type`. Use `mime_type` below for the real
+     * RFC MIME (`"image/jpeg"`, `"audio/mp3"`, etc.).
+     */
     type: string;
+    /** Real RFC MIME type from the source File / upload result. */
+    mime_type?: string;
     details?: EnhancedFileDetails;
 }
 
@@ -188,7 +203,21 @@ export function UploadResourcePicker({ onBack, onSelect }: UploadResourcePickerP
             }
             setFileStatuses([...updatedStatuses]);
 
-            onSelect(results);
+            // Carry the real RFC MIME (`"image/jpeg"`) on each emitted
+            // result alongside the FE classification token (`"image"`).
+            // Downstream consumers (resource-source.readMime) require the
+            // real MIME — bare classification tokens are explicitly
+            // rejected as MIME values to prevent `mime_type: "image"`
+            // from leaking onto outbound AI API payloads.
+            const enriched: UploadedFile[] = results.map((r, i) => ({
+                ...r,
+                mime_type:
+                    (r as { mime_type?: string }).mime_type ??
+                    r.details?.mimetype ??
+                    filesToUpload[i]?.type ??
+                    undefined,
+            }));
+            onSelect(enriched);
         } catch (error) {
             const errMsg = error instanceof Error
                 ? error.message

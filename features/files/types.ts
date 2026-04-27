@@ -31,6 +31,48 @@ export type ResourceType = "file" | "folder";
 export type GranteeType = "user" | "group";
 
 // ---------------------------------------------------------------------------
+// 1b. MediaRef — canonical reference shape for AI API content blocks
+// ---------------------------------------------------------------------------
+//
+// Mirrors the Python backend's `MediaRef` schema verbatim. Every outbound
+// `image` / `audio` / `video` / `document` content block on the AI APIs
+// (`/ai/agents/{id}`, `/ai/conversations/{id}`, `/ai/chat`, `/ai/manual`,
+// etc.) carries one of these as the file identifier.
+//
+//   Backend Pydantic:
+//     class MediaRef(BaseModel):
+//       file_id:   str | None = None   # cld_files UUID — preferred
+//       url:       str | None = None   # any URL we issued OR external https://
+//       file_uri:  str | None = None   # native cloud URI: s3://, gs://, supabase://
+//       mime_type: str | None = None
+//       metadata:  dict[str, Any] = Field(default_factory=dict)
+//
+// Exactly ONE of `file_id` / `url` / `file_uri` SHOULD be set, in that
+// preference order. Sending more than one is allowed but the backend
+// resolves them in the same priority — `file_id` wins, then `file_uri`,
+// then `url`.
+//
+// Use the builders in [redux/converters.ts](./redux/converters.ts):
+//   - `cloudFileToMediaRef(file)`  — for an in-store CloudFile
+//   - `fileIdToMediaRef(id, mime?)` — when only the id is known
+//   - `urlToMediaRef(url, mime?)`   — for external public URLs
+//
+// **Don't hand-build MediaRefs at callsites.** The builders make sure we
+// never accidentally drift from this contract.
+export interface MediaRef {
+  /** cld_files UUID — preferred form for any file we own. */
+  file_id?: string;
+  /** Any URL we issued (signed S3, share link) OR external https://. */
+  url?: string;
+  /** Native cloud URI: `s3://`, `gs://`, `supabase://...`. */
+  file_uri?: string;
+  /** Optional client hint; backend overrides with `cld_files.mime_type` for owned files. */
+  mime_type?: string;
+  /** Free-form per-call metadata. Keep small — this rides on every request. */
+  metadata?: Record<string, unknown>;
+}
+
+// ---------------------------------------------------------------------------
 // 2. DB row types — straight from Supabase-generated Database type
 // ---------------------------------------------------------------------------
 //

@@ -37,6 +37,7 @@ import { NoteHoverPreview } from "@/features/agents/components/previews/NoteHove
 import { TaskHoverPreview } from "@/features/agents/components/previews/TaskHoverPreview";
 import { WebpageHoverPreview } from "@/features/agents/components/previews/WebpageHoverPreview";
 import { DataRefHoverPreview } from "@/features/agents/components/previews/DataRefHoverPreview";
+import { FileResourceChip } from "@/features/files/components/preview/FileResourceChip";
 import type { DataRef } from "@/features/agents/types/message-types";
 
 function getBlockTypeDisplay(blockType: ResourceBlockType) {
@@ -148,18 +149,56 @@ function truncate(s: string, max = 20) {
   return s.length <= max ? s : `${s.slice(0, max)}…`;
 }
 
+/**
+ * Media blocks (image / audio / video / document) whose source carries a
+ * cld_files UUID get the rich `FileResourceChip` — real thumbnail,
+ * hover-peek, click-to-preview. Everything else (text / notes / tasks /
+ * webpages / etc.) keeps the existing icon-only pill below.
+ */
+function extractFileId(resource: ManagedResource): string | null {
+  const isMedia =
+    resource.blockType === "image" ||
+    resource.blockType === "audio" ||
+    resource.blockType === "video" ||
+    resource.blockType === "document";
+  if (!isMedia) return null;
+  const src = resource.source as Record<string, unknown> | null;
+  if (!src || typeof src !== "object") return null;
+  if (typeof src.file_id === "string") return src.file_id;
+  // Tolerate older shapes that put the cld_files UUID under `id` or `fileId`.
+  if (typeof src.fileId === "string") return src.fileId;
+  if (typeof src.id === "string") return src.id;
+  return null;
+}
+
 interface ResourceChipProps {
   resource: ManagedResource;
   onRemove: () => void;
 }
 
 function ResourceChip({ resource, onRemove }: ResourceChipProps) {
-  const display = getBlockTypeDisplay(resource.blockType);
-  const Icon = display.icon;
-  const label = truncate(getResourceLabel(resource));
+  const fileId = extractFileId(resource);
   const isPending =
     resource.status === "pending" || resource.status === "resolving";
   const isError = resource.status === "error";
+
+  // Rich file chip path — preserve the same enter/exit animation
+  // envelope so AnimatePresence still gets to do its thing on add/remove.
+  if (fileId && !isPending && !isError) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.85 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.85 }}
+      >
+        <FileResourceChip fileId={fileId} onRemove={onRemove} size="sm" />
+      </motion.div>
+    );
+  }
+
+  const display = getBlockTypeDisplay(resource.blockType);
+  const Icon = display.icon;
+  const label = truncate(getResourceLabel(resource));
 
   const chip = (
     <motion.div

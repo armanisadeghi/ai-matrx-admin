@@ -474,6 +474,34 @@ const REGISTRY: WindowRegistryEntry[] = [
     renderTrayPreview: cloudFilesTrayPreview,
   },
 
+  // ── File Preview (the canonical PreviewPane) ──────────────────────────────
+  // Single-file preview in a draggable, resizable, non-blocking WindowPanel.
+  // Wraps the SAME `PreviewPane` users see in /cloud-files so the file
+  // detail / copy-link / download / "open full view" / versions experience
+  // is identical regardless of where the user clicked from (file chip,
+  // message attachment, agent picker, etc.).
+  //
+  // Triggered via `openFilePreview(fileId)` in
+  // [features/files/components/preview/openFilePreview.ts](../../../files/components/preview/openFilePreview.ts).
+  // Singleton — opening a different file replaces the active preview.
+  {
+    slug: "file-preview-window",
+    overlayId: "filePreviewWindow",
+    kind: "window",
+    label: "File preview",
+    componentImport: () =>
+      import(
+        "@/features/window-panels/windows/cloud-files/FilePreviewWindow"
+      ),
+    defaultData: {
+      // cld_files UUID — set by the caller via `data: { fileId }`.
+      fileId: null,
+    },
+    ephemeral: true,
+    mobilePresentation: "fullscreen",
+    urlSync: { key: "file_preview" },
+  },
+
   // ── Web Scraper ───────────────────────────────────────────────────────────
   {
     slug: "scraper-window",

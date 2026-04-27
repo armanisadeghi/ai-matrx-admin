@@ -22,6 +22,9 @@ import "react-pdf/dist/Page/TextLayer.css";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import { cn } from "@/lib/utils";
 import { useFileBlob } from "@/features/files/hooks/useFileBlob";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectFileById } from "@/features/files/redux/selectors";
+import { FileFetchProgress } from "../FileFetchProgress";
 
 // Worker source — pinned to the installed pdfjs version.
 if (typeof window !== "undefined") {
@@ -36,7 +39,14 @@ export interface PdfPreviewProps {
 export default function PdfPreview({ fileId, className }: PdfPreviewProps) {
   // Same-origin blob URL via the Python download endpoint — sidesteps S3
   // CORS that would otherwise 403 a `fetch()` from pdfjs's worker.
-  const { url, loading: blobLoading, error: blobError } = useFileBlob(fileId);
+  const {
+    url,
+    loading: blobLoading,
+    bytesLoaded,
+    bytesTotal,
+    error: blobError,
+  } = useFileBlob(fileId);
+  const file = useAppSelector((s) => (fileId ? selectFileById(s, fileId) : null));
 
   const [numPages, setNumPages] = useState(0);
   const [pageNumber, setPageNumber] = useState(1);
@@ -77,7 +87,11 @@ export default function PdfPreview({ fileId, className }: PdfPreviewProps) {
           className,
         )}
       >
-        <div className="h-10 w-10 animate-pulse rounded bg-muted" />
+        <FileFetchProgress
+          fileName={file?.fileName ?? null}
+          bytesLoaded={bytesLoaded}
+          bytesTotal={bytesTotal}
+        />
       </div>
     );
   }

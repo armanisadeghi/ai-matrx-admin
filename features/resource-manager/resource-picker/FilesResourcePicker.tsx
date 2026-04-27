@@ -53,8 +53,21 @@ import type {
 // ---------------------------------------------------------------------------
 
 type FileSelection = {
+  /**
+   * cld_files UUID. When present, downstream code that needs to send the
+   * file to a backend AI API should build a `MediaRef` from this id (via
+   * `fileIdToMediaRef`) rather than the share URL.
+   */
+  fileId: string;
   url: string;
+  /**
+   * Historical legacy field — has held the real RFC MIME in this picker
+   * (`"image/jpeg"`). Kept for back-compat. New consumers should prefer
+   * `mime_type` below.
+   */
   type: string;
+  /** Real RFC MIME type. The canonical field for outbound AI payloads. */
+  mime_type: string;
   details: EnhancedFileDetails;
 };
 
@@ -276,10 +289,16 @@ export function FilesResourcePicker({
         path: file.filePath,
       };
 
+      const realMime =
+        baseDetails.mimetype || file.mimeType || "application/octet-stream";
       onSelect({
+        fileId: file.id,
         url: fileUrl,
-        type:
-          baseDetails.mimetype || file.mimeType || "application/octet-stream",
+        type: realMime,
+        // Canonical real-MIME field. resource-source.readMime() reads
+        // this directly so the outbound payload gets `mime_type:
+        // "image/jpeg"` rather than `mime_type: "image"`.
+        mime_type: realMime,
         details: enhancedDetails,
       });
     } catch (error) {

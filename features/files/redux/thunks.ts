@@ -42,6 +42,7 @@ import {
 } from "./converters";
 import { registerRequest, releaseRequest } from "./request-ledger";
 import { buildTreeState } from "./tree-utils";
+import { invalidate as invalidateBlobCache } from "@/features/files/hooks/blob-cache";
 import {
   addFilePendingRequest,
   attachChildToFolder,
@@ -116,8 +117,27 @@ export const loadUserFileTree = createAsyncThunk<
 >("cloudFiles/loadUserFileTree", async ({ userId }, { dispatch }) => {
   dispatch(setTreeStatus({ status: "loading" }));
 
+  // The DB has TWO overloads of this function:
+  //   cld_get_user_file_tree(p_user_id uuid)
+  //   cld_get_user_file_tree(p_user_id uuid, p_limit int, p_offset int,
+  //                          p_include_folders boolean, p_include_deleted boolean)
+  //
+  // A 1-arg call (only `p_user_id`) is AMBIGUOUS — Postgres can't pick a
+  // best candidate and PostgREST returns `42725: function ... is not
+  // unique`. Passing one of the new params forces resolution to the
+  // 5-arg overload (which is also the one we want — it returns folders
+  // and the unified `{ kind, path, name, parent_id, size_bytes, ... }`
+  // row shape). We pass the safest defaults explicitly here so the
+  // intent is on the wire and the call is overload-stable.
+  //
+  // Logged for the Python team in for_python/REQUESTS.md — they should
+  // drop the legacy 1-arg overload so this ambiguity can't bite again.
   const { data, error } = await supabase.rpc("cld_get_user_file_tree", {
     p_user_id: userId,
+    p_limit: 5000,
+    p_offset: 0,
+    p_include_folders: true,
+    p_include_deleted: false,
   });
 
   if (error) {
@@ -697,6 +717,11 @@ export const uploadFiles = createAsyncThunk<
             }),
           ),
         );
+        // If this upload replaced an existing file (same logical path,
+        // backend bumped current_version), the cached blob for the
+        // original version is now stale. Invalidate so the next preview
+        // open re-fetches the latest bytes.
+        invalidateBlobCache(data.file_id);
         dispatch(
           attachChildToFolder({
             parentFolderId: arg.parentFolderId,
@@ -971,6 +996,10 @@ export const deleteFile = createAsyncThunk<void, DeleteFileArg, ThunkApi>(
         id: fileId,
       }),
     );
+    // Drop the cached blob bytes — the file is gone, no point holding
+    // memory for something the user can't open anymore (and if the
+    // delete is rolled back on error, the next open will re-fetch).
+    invalidateBlobCache(fileId);
     registerRequest({
       requestId,
       kind: "delete",
@@ -1021,6 +1050,10 @@ export const restoreVersion = createAsyncThunk<
         requestId,
       });
       dispatch(upsertFile(apiFileRecordToCloudFile(data)));
+      // The current bytes just changed — drop any cached blob so the
+      // next preview reads the restored version, not the in-memory
+      // copy of the version that was active before restore.
+      invalidateBlobCache(fileId);
       // Reload version list to pick up the new synthetic version row.
       await dispatch(loadFileVersions({ fileId })).unwrap();
     } finally {
@@ -1227,8 +1260,13 @@ export const bulkDeleteFiles = createAsyncThunk<
     resourceType: "file",
   });
 
-  // Optimistic: remove all targets from the local store.
-  for (const id of arg.fileIds) dispatch(removeFile({ id }));
+  // Optimistic: remove all targets from the local store and drop their
+  // cached blobs (deletion makes the cache entry useless and keeping
+  // bytes around for soft-deleted items wastes the LRU budget).
+  for (const id of arg.fileIds) {
+    dispatch(removeFile({ id }));
+    invalidateBlobCache(id);
+  }
 
   try {
     const { data } = await Files.bulkDeleteFiles(

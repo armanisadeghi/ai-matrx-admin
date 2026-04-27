@@ -411,6 +411,16 @@ const QuickTasksWindow = dynamic(
 // Legacy QuickFiles window removed in Phase 11 — use cloudFilesWindow
 // (registered in Phase 6) instead.
 
+// File preview — single-file canonical PreviewPane in a draggable
+// WindowPanel. Triggered via `openFilePreview(fileId)`. Same surface
+// users get on /cloud-files; here it's just delivered as a non-blocking
+// window. Registered in windowRegistry as `filePreviewWindow`.
+const FilePreviewWindow = dynamic(
+  () =>
+    import("@/features/window-panels/windows/cloud-files/FilePreviewWindow"),
+  { ssr: false },
+);
+
 const QuickDataWindow = dynamic(
   () => import("@/features/window-panels/windows/QuickDataWindow"),
   { ssr: false },
@@ -915,6 +925,19 @@ export const OverlayController: React.FC = () => {
 
   const isScraperWindowOpen = useAppSelector((s) =>
     selectIsOverlayOpen(s, "scraperWindow"),
+  );
+
+  // File preview window — single canonical PreviewPane delivered as a
+  // floating WindowPanel. The `fileId` lives in overlay data (set by
+  // `openFilePreview(fileId)`).
+  const isFilePreviewWindowOpen = useAppSelector((s) =>
+    selectIsOverlayOpen(s, "filePreviewWindow"),
+  );
+  const filePreviewWindowData = useAppSelector(
+    (s) =>
+      selectOverlayData(s, "filePreviewWindow") as {
+        fileId?: string | null;
+      } | null,
   );
 
   const isContextSwitcherWindowOpen = useAppSelector((s) =>
@@ -1512,6 +1535,19 @@ export const OverlayController: React.FC = () => {
       )}
 
       {/* Legacy quickFilesWindow removed in Phase 11 — use cloudFilesWindow. */}
+
+      {/* File preview window — opened via `openFilePreview(fileId)` from
+          anywhere in the app (chips, message attachments, agent picker,
+          etc.). Wraps the canonical cloud-files PreviewPane so users get
+          the SAME view / copy-link / download / open-full-view / version
+          history experience regardless of where they clicked from. */}
+      {isFilePreviewWindowOpen && (
+        <FilePreviewWindow
+          isOpen={true}
+          onClose={() => close("filePreviewWindow")}
+          fileId={filePreviewWindowData?.fileId ?? null}
+        />
+      )}
 
       {isScraperWindowOpen && (
         <ScraperWindow isOpen={true} onClose={() => close("scraperWindow")} />

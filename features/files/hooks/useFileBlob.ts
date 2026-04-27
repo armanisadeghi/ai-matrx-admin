@@ -18,22 +18,32 @@
  * The Python `/files/{id}/download` endpoint streams the bytes through
  * FastAPI (which already has CORS configured for our origins). Routing
  * fetch-based previewers through it sidesteps the S3-CORS issue
- * entirely until the bucket CORS policy is fixed (logged for the
- * Python/admin team — see ARCHITECTURE_FLAWS.md item P-8).
+ * entirely (see for_python/REQUESTS.md item P-8 for the bucket-policy
+ * fix the Python team owes us).
  *
- * The blob URL is revoked automatically when the component unmounts or
- * when the fileId changes, so memory pressure stays bounded.
+ * Caching
+ * ───────
+ * Blobs are cached at MODULE level via [./blob-cache](./blob-cache.ts) —
+ * outside React state — so they survive component unmount / remount.
+ * Closing the preview pane and reopening it is now instantaneous instead
+ * of re-downloading 10 MB of PDF for every open.
  *
- * Usage:
- *   const { url, loading, error, retry } = useFileBlob(fileId);
- *   <PdfDocument file={url} />
+ * The cache:
+ *   - is keyed by `fileId`
+ *   - is capped at 250 MB total via LRU eviction
+ *   - owns each blob's object URL (revokes on eviction or explicit
+ *     `invalidate(fileId)`)
+ *   - is invalidated by upload / restore-version / delete thunks +
+ *     realtime cross-device version inserts (see
+ *     `features/files/redux/thunks.ts` and `redux/realtime-middleware.ts`).
  */
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as Files from "@/features/files/api/files";
 import { extractErrorMessage } from "@/utils/errors";
+import { getCached, setCached } from "./blob-cache";
 
 export interface UseFileBlobResult {
   /** `blob:`-scheme URL safe to feed into any browser API. `null` until ready. */
@@ -41,17 +51,37 @@ export interface UseFileBlobResult {
   /** Underlying Blob — useful for callers that need the raw bytes. */
   blob: Blob | null;
   loading: boolean;
+  /** Bytes received so far during the active fetch. 0 when not loading. */
+  bytesLoaded: number;
+  /** Total bytes when the server advertised Content-Length; null otherwise. */
+  bytesTotal: number | null;
   error: string | null;
-  /** Force a re-fetch (e.g. after auth refresh). */
+  /** Force a re-fetch (e.g. after auth refresh). Drops the cached entry. */
   retry: () => void;
 }
 
 export function useFileBlob(fileId: string | null): UseFileBlobResult {
-  const [url, setUrl] = useState<string | null>(null);
-  const [blob, setBlob] = useState<Blob | null>(null);
-  const [loading, setLoading] = useState<boolean>(!!fileId);
+  // Initialize from cache synchronously so the first render of a
+  // re-opened file is already showing the blob — no `loading` flicker.
+  const initialCached = fileId ? getCached(fileId) : null;
+  const [url, setUrl] = useState<string | null>(initialCached?.url ?? null);
+  const [blob, setBlob] = useState<Blob | null>(
+    initialCached?.blob ?? null,
+  );
+  const [loading, setLoading] = useState<boolean>(
+    !!fileId && !initialCached,
+  );
   const [error, setError] = useState<string | null>(null);
+  const [bytesLoaded, setBytesLoaded] = useState(initialCached ? initialCached.blob.size : 0);
+  const [bytesTotal, setBytesTotal] = useState<number | null>(
+    initialCached ? initialCached.blob.size : null,
+  );
   const [retryToken, setRetryToken] = useState(0);
+
+  // Track the currently displayed cache key so the effect knows whether
+  // an in-flight fetch is for a stale fileId.
+  const activeFileIdRef = useRef<string | null>(fileId);
+  activeFileIdRef.current = fileId;
 
   useEffect(() => {
     if (!fileId) {
@@ -59,16 +89,43 @@ export function useFileBlob(fileId: string | null): UseFileBlobResult {
       setBlob(null);
       setLoading(false);
       setError(null);
+      setBytesLoaded(0);
+      setBytesTotal(null);
       return;
     }
+
+    // 1. Cache hit — show the cached blob immediately, no fetch.
+    const cached = getCached(fileId);
+    if (cached) {
+      setUrl(cached.url);
+      setBlob(cached.blob);
+      setLoading(false);
+      setError(null);
+      setBytesLoaded(cached.blob.size);
+      setBytesTotal(cached.blob.size);
+      return;
+    }
+
+    // 2. Cache miss — fetch with progress.
     let cancelled = false;
     setLoading(true);
     setError(null);
+    setBytesLoaded(0);
+    setBytesTotal(null);
+    setUrl(null);
+    setBlob(null);
 
-    Files.downloadFile(fileId)
+    Files.downloadFileWithProgress(fileId, (ev) => {
+      if (cancelled) return;
+      setBytesLoaded(ev.loaded);
+      if (ev.total !== null) setBytesTotal(ev.total);
+    })
       .then(({ blob: b }) => {
         if (cancelled) return;
         const objectUrl = URL.createObjectURL(b);
+        // Insert into the cache. From now on the cache owns the URL —
+        // do NOT revoke it on unmount; the cache will do it on eviction.
+        setCached(fileId, b, objectUrl);
         setBlob(b);
         setUrl(objectUrl);
         setLoading(false);
@@ -81,13 +138,9 @@ export function useFileBlob(fileId: string | null): UseFileBlobResult {
 
     return () => {
       cancelled = true;
-      // Revoke the previous object URL — guards against memory leak when
-      // fileId changes or the component unmounts.
-      setUrl((prev) => {
-        if (prev) URL.revokeObjectURL(prev);
-        return null;
-      });
-      setBlob(null);
+      // Intentionally NOT revoking the URL — the cache owns it. On
+      // remount with the same fileId we'll read directly from the
+      // cache and skip the network entirely.
     };
   }, [fileId, retryToken]);
 
@@ -95,7 +148,20 @@ export function useFileBlob(fileId: string | null): UseFileBlobResult {
     url,
     blob,
     loading,
+    bytesLoaded,
+    bytesTotal,
     error,
-    retry: () => setRetryToken((t) => t + 1),
+    retry: () => {
+      // A retry implies the cached bytes are bad / stale — drop them so
+      // the next fetch goes to the network. (Inline import to avoid a
+      // circular dep when blob-cache lives in the same dir.)
+      if (fileId) {
+        // Bypass the cache for this retry by invalidating first.
+        // Doing the invalidation lazily here keeps the import surface
+        // small at module load.
+        import("./blob-cache").then(({ invalidate }) => invalidate(fileId));
+      }
+      setRetryToken((t) => t + 1);
+    },
   };
 }

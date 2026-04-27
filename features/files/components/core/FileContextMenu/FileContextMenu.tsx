@@ -17,6 +17,8 @@ import {
   CopyPlus,
   Download,
   Edit2,
+  Eye,
+  FileText,
   FolderInput,
   Globe,
   History,
@@ -65,6 +67,7 @@ import {
   uploadFiles as uploadFilesThunk,
 } from "@/features/files/redux/thunks";
 import { openFolderPicker } from "@/features/files/components/pickers/CloudFilesPickerHost";
+import { openFilePreview } from "@/features/files/components/preview/openFilePreview";
 import { useFileActions } from "@/features/files/components/core/FileActions/useFileActions";
 import { FileInfoDialog } from "@/features/files/components/core/FileInfo/FileInfoDialog";
 
@@ -246,22 +249,40 @@ export function FileContextMenu({
     }
   }, [dispatch, fileId, filesById]);
 
-  // "Show versions" routes through the preview pane: setting the active
-  // file makes PreviewPane mount and the Versions tab is reachable from
-  // there. This avoids forking yet another dialog flow.
-  const handleShowVersions = useCallback(() => {
-    dispatch(setActiveFileId(fileId));
-    // The PreviewPane subscribes to a small bus to know which tab to
-    // open; emit a request via window CustomEvent so we don't have to
-    // thread Redux state for a transient hint.
-    if (typeof window !== "undefined") {
-      window.dispatchEvent(
-        new CustomEvent("cloud-files:open-preview-tab", {
-          detail: { fileId, tab: "versions" },
-        }),
-      );
-    }
-  }, [dispatch, fileId]);
+  // "Show versions" / "Show details" route through the preview surface so
+  // the user gets the SAME experience whether they came from a chip in a
+  // chat message, a row in cloud-files, or the resource picker. Two
+  // wrinkles:
+  //
+  //   1. If the cloud-files PageShell is mounted (user is on
+  //      `/cloud-files/...`), `setActiveFileId` opens the side panel and
+  //      the CustomEvent below tells it which tab to pop.
+  //   2. If we're anywhere else, the side panel doesn't exist — but
+  //      `openFilePreview(fileId)` opens the canonical PreviewPane
+  //      inside a draggable WindowPanel via the global
+  //      `filePreviewWindow` overlay. The CustomEvent fires there too;
+  //      every PreviewPane subscribes regardless of host surface.
+  //
+  // Both dispatches are idempotent + cheap, so we always do both. The
+  // CustomEvent is filtered by `fileId` inside PreviewPane.
+  const openInPreview = useCallback(
+    (tab: "preview" | "info" | "versions") => {
+      dispatch(setActiveFileId(fileId));
+      openFilePreview(fileId);
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(
+          new CustomEvent("cloud-files:open-preview-tab", {
+            detail: { fileId, tab },
+          }),
+        );
+      }
+    },
+    [dispatch, fileId],
+  );
+
+  const handlePreview = useCallback(() => openInPreview("preview"), [openInPreview]);
+  const handleShowDetails = useCallback(() => openInPreview("info"), [openInPreview]);
+  const handleShowVersions = useCallback(() => openInPreview("versions"), [openInPreview]);
 
   return (
     <>
@@ -306,6 +327,10 @@ export function FileContextMenu({
             </>
           ) : (
             <>
+          <DropdownMenuItem onClick={handlePreview}>
+            <Eye className="mr-2 h-4 w-4" />
+            Preview
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={() => void actions.download()}>
             <Download className="mr-2 h-4 w-4" />
             Download
@@ -349,9 +374,13 @@ export function FileContextMenu({
             Duplicate
             <DropdownMenuShortcut>{cmd}D</DropdownMenuShortcut>
           </DropdownMenuItem>
+          <DropdownMenuItem onClick={handleShowDetails}>
+            <FileText className="mr-2 h-4 w-4" />
+            Show details
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setInfoOpen(true)}>
             <Info className="mr-2 h-4 w-4" />
-            File info
+            File info dialog
             <DropdownMenuShortcut>{cmd}I</DropdownMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuItem onClick={handleShowVersions}>

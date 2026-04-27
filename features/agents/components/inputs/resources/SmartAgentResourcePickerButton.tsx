@@ -26,6 +26,10 @@ import {
 } from "@/features/agents/redux/execution-system/instance-resources/instance-resources.slice";
 import { ResourcePickerMenu } from "@/features/resource-manager/resource-picker/ResourcePickerMenu";
 import { ResourcePickerWindow } from "@/features/window-panels/windows/ResourcePickerWindow";
+import {
+  refineBlockType,
+  resourceDataToSource,
+} from "@/features/agents/redux/execution-system/instance-resources/resource-source";
 import type { Resource } from "@/features/prompts/types/resources";
 import type { ResourceBlockType } from "@/features/agents/types/instance.types";
 
@@ -94,7 +98,13 @@ export function SmartAgentResourcePickerButton({
 
   const handleResourceSelected = useCallback(
     (resource: Resource) => {
-      const blockType = resourceTypeToBlockType(resource.type);
+      // Pickers deliver `Resource.type = "file"` for any uploaded file —
+      // image, video, audio, document — so the naive map sends them all
+      // as `"document"` and the AI never sees the JPEG as an image.
+      // `refineBlockType` looks at the data's real MIME and upgrades
+      // `"document"` → `"image"` / `"video"` / `"audio"` when warranted.
+      const baseBlockType = resourceTypeToBlockType(resource.type);
+      const blockType = refineBlockType(baseBlockType, resource.data);
       const label = resourceLabel(resource);
       const resourceId = `res_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
@@ -102,7 +112,7 @@ export function SmartAgentResourcePickerButton({
         addResource({
           conversationId,
           blockType,
-          source: resource.data,
+          source: resourceDataToSource(blockType, resource.data),
           resourceId,
         }),
       );

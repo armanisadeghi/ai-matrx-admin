@@ -11,11 +11,13 @@ import {
   del,
   delJson,
   downloadBlob,
+  downloadBlobWithProgress,
   getJson,
   patchJson,
   postJson,
   postMultipart,
   uploadWithProgress,
+  type DownloadProgressEvent,
   type RequestOptions,
   type ResponseMeta,
   type UploadProgressEvent,
@@ -214,6 +216,29 @@ export async function downloadFile(
   if (params.inline) qs.push("inline=true");
   const q = qs.length ? `?${qs.join("&")}` : "";
   return downloadBlob(`/files/${fileId}/download${q}`, opts);
+}
+
+/**
+ * Same as `downloadFile` but reports byte-level progress via `onProgress`.
+ * Use this when the UI needs a "Downloading 6.2 / 10 MB…" indicator —
+ * notably for `useFileBlob`, which feeds previewers that may pull
+ * multi-megabyte payloads.
+ */
+export async function downloadFileWithProgress(
+  fileId: string,
+  onProgress: (event: DownloadProgressEvent) => void,
+  params: { version?: number; inline?: boolean } = {},
+  opts: RequestOptions = {},
+): Promise<{ blob: Blob; filename: string | null; meta: ResponseMeta }> {
+  const qs: string[] = [];
+  if (params.version !== undefined) qs.push(`version=${params.version}`);
+  if (params.inline) qs.push("inline=true");
+  const q = qs.length ? `?${qs.join("&")}` : "";
+  return downloadBlobWithProgress(
+    `/files/${fileId}/download${q}`,
+    onProgress,
+    opts,
+  );
 }
 
 export async function getSignedUrl(

@@ -68,6 +68,13 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                                   are callable from anywhere in the app once this host
                                   mounts. See features/files/components/pickers/. */}
                               <CloudFilesPickerHost />
+                              {/* File preview is delivered via a registered
+                                  WindowPanel (`filePreviewWindow`) mounted by
+                                  the UnifiedOverlayController — no host needed
+                                  here. Anywhere in the app:
+                                    import { openFilePreview } from
+                                      "@/features/files/components/preview/openFilePreview";
+                                    openFilePreview(fileId); */}
                             </RequestRecoveryProvider>
                           </AudioRecoveryProvider>
                         </TranscriptsProvider>

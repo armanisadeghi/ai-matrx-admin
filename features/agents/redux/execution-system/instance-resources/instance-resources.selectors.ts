@@ -13,6 +13,7 @@ import { createSelector } from "@reduxjs/toolkit";
 import type { RootState } from "@/lib/redux/store";
 import type { ManagedResource } from "@/features/agents/types/instance.types";
 import type { MessagePart } from "@/types/python-generated/stream-events";
+import type { MediaRef } from "@/features/files/types";
 
 const EMPTY_RESOURCES: ManagedResource[] = [];
 const EMPTY_PAYLOADS: MessagePart[] = [];
@@ -123,13 +124,41 @@ export const selectResourcePayloads = (conversationId: string) =>
             case "image":
             case "audio":
             case "video":
-            case "document":
+            case "document": {
+              // Media blocks carry a `MediaRef`-shaped source for files we
+              // own (so the backend can resolve `file_id` directly without
+              // a share-link redirect). Legacy callsites still pass a raw
+              // URL string or a partial object — both are handled here.
+              //
+              // Resolution order matches the backend's `MediaRef` contract:
+              //   1. file_id  — preferred, skip the redirect
+              //   2. file_uri — native cloud URI
+              //   3. url      — public or signed URL
+              //   4. base64_data — only if a callsite hand-rolls one
+              //
+              // We extract the recognized fields explicitly instead of
+              // spreading the whole source — this drops the legacy
+              // `details` / `metadata` / `localId` payload bloat
+              // (~3 KB per content block on the wire) that the backend
+              // ignores anyway.
               if (typeof content === "string") {
+                // Legacy path: bare URL string. The MediaRef.url field
+                // accepts any URL, so this still works — but new callsites
+                // should pass a MediaRef object instead.
                 payload.url = content;
-              } else {
-                Object.assign(payload, content);
+              } else if (content && typeof content === "object") {
+                const ref = content as Partial<MediaRef> & {
+                  base64_data?: string;
+                };
+                if (ref.file_id) payload.file_id = ref.file_id;
+                if (ref.file_uri) payload.file_uri = ref.file_uri;
+                if (ref.url) payload.url = ref.url;
+                if (ref.base64_data) payload.base64_data = ref.base64_data;
+                if (ref.mime_type) payload.mime_type = ref.mime_type;
+                if (ref.metadata) payload.metadata = ref.metadata;
               }
               break;
+            }
             case "youtube_video":
               payload.url = content;
               break;

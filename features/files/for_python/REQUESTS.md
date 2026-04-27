@@ -24,6 +24,55 @@
 
 ## Open items
 
+### 0. 🔴 Drop the legacy 1-arg overload of `cld_get_user_file_tree`
+
+**Priority:** **High — was silently breaking every authenticated file
+manager view (zero files / blank Recents / "loading" never resolves).**
+
+**Context:** Two overloads of `cld_get_user_file_tree` are defined on
+the production Postgres:
+
+```sql
+cld_get_user_file_tree(p_user_id uuid)                          -- legacy
+cld_get_user_file_tree(p_user_id uuid,
+                       p_limit int       DEFAULT 5000,
+                       p_offset int      DEFAULT 0,
+                       p_include_folders boolean DEFAULT true,
+                       p_include_deleted boolean DEFAULT false)  -- new
+```
+
+A FE call that supplies only `p_user_id` (`supabase.rpc(name, { p_user_id })`)
+fails with `42725: function public.cld_get_user_file_tree(uuid) is not unique`
+— Postgres can't pick a best candidate. PostgREST surfaces this as a
+4xx; the FE flips `tree.status` to `error` and renders zero files.
+
+**FE workaround (shipped now):** pass the new overload's params
+explicitly on every call so the resolution is unambiguous:
+
+```ts
+supabase.rpc("cld_get_user_file_tree", {
+  p_user_id: userId,
+  p_limit: 5000,
+  p_offset: 0,
+  p_include_folders: true,
+  p_include_deleted: false,
+});
+```
+
+This routes us to the 5-arg overload reliably (which is also the one
+that returns folders + the unified `{ kind, path, name, parent_id,
+size_bytes, ... }` row shape).
+
+**Ask:** Drop the legacy 1-arg overload — `DROP FUNCTION
+cld_get_user_file_tree(uuid);` — once you confirm no other consumer
+relies on it. Keeping both around will silently break any new caller
+that doesn't know about the ambiguity.
+
+**Blocker?** No (FE workaround is in place) — but **was** blocking
+every browser file-manager view until the workaround landed.
+
+---
+
 ### 1. 🟡 Server-side thumbnail / poster generation on upload
 
 **Priority:** Medium (significant UX win; no user-facing breakage today).

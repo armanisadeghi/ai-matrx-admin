@@ -327,9 +327,15 @@ export function ConversationInput({
             toast.error(`Couldn't upload ${file.name}: ${reason}`);
             continue;
           }
+          // Store the cld_files UUID as `id` (and keep `url` for back-compat).
+          // When this resource is later submitted to the backend, the AI
+          // payload builder prefers the file_id over the share URL — see
+          // selectResourcePayloads in features/agents/redux/execution-system/
+          // instance-resources/instance-resources.selectors.ts.
           const resource: Resource = {
             type: file.type.startsWith("image/") ? "image_link" : "file",
             data: {
+              id: result.fileId,
               url: result.url,
               filename: file.name,
               mime_type: file.type,

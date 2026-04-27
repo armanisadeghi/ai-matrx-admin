@@ -25,6 +25,7 @@ import type {
   CloudUserGroupRow,
   FileRecordApi,
   GranteeType,
+  MediaRef,
   PermissionLevel,
   ResourceType,
   Visibility,
@@ -261,12 +262,49 @@ export function parseCloudTreeRow(raw: unknown): CloudTreeRow | null {
   const visibility = toVisibility(str(row, "visibility") ?? "private");
   const effPerm = str(row, "effective_permission");
 
+  // ── Cross-shape readers ────────────────────────────────────────────────
+  //
+  // The RPC has TWO documented row shapes that we must both accept:
+  //
+  //   Legacy (kind-specific fields):
+  //     { kind, id, owner_id,
+  //       file_path|folder_path, file_name|folder_name,
+  //       parent_folder_id|parent_id, mime_type, file_size, ... }
+  //
+  //   Unified (Python team release notes — "Returns folders too now.
+  //   Each row has a `kind` discriminator"):
+  //     { kind, id, owner_id, path, name, parent_id,
+  //       mime_type, size_bytes, ... }
+  //
+  // Reading both keeps the FE working whether the deployed Postgres
+  // function returns the old or the new shape — useful during rollouts
+  // and in dev / staging where the migration order can be different
+  // from prod. The output `CloudTreeRow` keeps the kind-specific names
+  // so existing consumers don't need to change.
+  //
+  // Diagnosed 2026-04-26: the Python team's RPC update shipped the
+  // unified shape; the FE was still reading the legacy field names,
+  // which meant every row landed in `filesById` with empty
+  // `filePath`/`fileName` and `undefined` `parentFolderId`. The Home
+  // view rendered them as blank rows; the deeper folder filters
+  // returned zero matches because `parentFolderId === activeFolderId`
+  // failed (`undefined !== null`). Result: cloud-files appeared empty
+  // even though every row was in state.
+  // ────────────────────────────────────────────────────────────────────
+  const folderPath = str(row, "folder_path") ?? str(row, "path") ?? "";
+  const folderName = str(row, "folder_name") ?? str(row, "name") ?? "";
+  const filePath = str(row, "file_path") ?? str(row, "path") ?? "";
+  const fileName = str(row, "file_name") ?? str(row, "name") ?? "";
+  const parentFolderId =
+    str(row, "parent_folder_id") ?? str(row, "parent_id");
+  const fileSize = num(row, "file_size") ?? num(row, "size_bytes");
+
   if (isFolder) {
     return {
       kind: "folder",
       id,
-      folder_path: str(row, "folder_path") ?? "",
-      folder_name: str(row, "folder_name") ?? "",
+      folder_path: folderPath,
+      folder_name: folderName,
       parent_id: str(row, "parent_id"),
       visibility,
       effective_permission: effPerm
@@ -282,11 +320,11 @@ export function parseCloudTreeRow(raw: unknown): CloudTreeRow | null {
   return {
     kind: "file",
     id,
-    file_path: str(row, "file_path") ?? "",
-    file_name: str(row, "file_name") ?? "",
-    parent_folder_id: str(row, "parent_folder_id"),
+    file_path: filePath,
+    file_name: fileName,
+    parent_folder_id: parentFolderId,
     mime_type: str(row, "mime_type"),
-    file_size: num(row, "file_size"),
+    file_size: fileSize,
     visibility,
     current_version: num(row, "current_version") ?? 1,
     effective_permission: effPerm
@@ -311,4 +349,67 @@ export function parseCloudTreeRows(raw: unknown): CloudTreeRow[] {
     if (parsed) out.push(parsed);
   }
   return out;
+}
+
+// ---------------------------------------------------------------------------
+// MediaRef builders — outbound API content blocks
+// ---------------------------------------------------------------------------
+//
+// Build a `MediaRef` (the canonical outbound-content reference shape; see
+// [features/files/types.ts](../types.ts)) from whatever the caller has on
+// hand. Always prefer `cloudFileToMediaRef` — it picks `file_id` (preferred)
+// and pulls the mime hint from the in-store record. Use `fileIdToMediaRef`
+// when you have the id but not the full record. Use `urlToMediaRef` only
+// for genuinely external URLs (e.g. a user pasting a public link).
+//
+// Why this lives here: every `addResource` callsite, every chat input, every
+// agent-runner attachment flows through one of these builders. Adding a new
+// identifier scheme (e.g. a `cdn_url` field) means editing this one file.
+
+/** Build a MediaRef from an in-store CloudFile. Prefers `file_id`. */
+export function cloudFileToMediaRef(file: CloudFile): MediaRef {
+  const ref: MediaRef = { file_id: file.id };
+  if (file.mimeType) ref.mime_type = file.mimeType;
+  return ref;
+}
+
+/**
+ * Build a MediaRef from just a `file_id` (e.g. when an upload completes
+ * and the caller has the id but not the full record yet).
+ */
+export function fileIdToMediaRef(
+  fileId: string,
+  mimeType?: string | null,
+): MediaRef {
+  const ref: MediaRef = { file_id: fileId };
+  if (mimeType) ref.mime_type = mimeType;
+  return ref;
+}
+
+/**
+ * Build a MediaRef from an external URL (public website image, signed URL
+ * we don't own, etc.). Use this ONLY when you don't have a `file_id` —
+ * otherwise the backend has to follow the URL to resolve the file.
+ */
+export function urlToMediaRef(
+  url: string,
+  mimeType?: string | null,
+): MediaRef {
+  const ref: MediaRef = { url };
+  if (mimeType) ref.mime_type = mimeType;
+  return ref;
+}
+
+/**
+ * Build a MediaRef from a native cloud URI (`s3://`, `gs://`,
+ * `supabase://...`). Rare on the FE — usually only for backend-issued
+ * file URIs we want to pass through unchanged.
+ */
+export function fileUriToMediaRef(
+  fileUri: string,
+  mimeType?: string | null,
+): MediaRef {
+  const ref: MediaRef = { file_uri: fileUri };
+  if (mimeType) ref.mime_type = mimeType;
+  return ref;
 }

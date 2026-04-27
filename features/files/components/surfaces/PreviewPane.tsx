@@ -23,6 +23,7 @@ import {
   Download,
   ExternalLink,
   History,
+  Info,
   Loader2,
   Sparkles,
   X,
@@ -35,9 +36,13 @@ import { useFileActions } from "@/features/files/components/core/FileActions/use
 import { FilePreview } from "@/features/files/components/core/FilePreview/FilePreview";
 import { FileIcon } from "@/features/files/components/core/FileIcon/FileIcon";
 import { FileVersionsList } from "@/features/files/components/core/FileVersions/FileVersionsList";
+import { FileContextMenu } from "@/features/files/components/core/FileContextMenu/FileContextMenu";
+import { FileRightClickMenu } from "@/features/files/components/core/FileContextMenu/FileRightClickMenu";
+import { MoreHorizontal } from "lucide-react";
 import { PreviewErrorBoundary } from "./PreviewErrorBoundary";
+import { FileInfoTab } from "./FileInfoTab";
 
-type PreviewTab = "preview" | "versions";
+type PreviewTab = "preview" | "versions" | "info";
 
 export interface PreviewPaneProps {
   fileId: string;
@@ -88,7 +93,11 @@ export function PreviewPane({
       const detail = (e as CustomEvent<{ fileId?: string; tab?: PreviewTab }>)
         .detail;
       if (!detail || detail.fileId !== fileId) return;
-      if (detail.tab === "versions" || detail.tab === "preview") {
+      if (
+        detail.tab === "versions" ||
+        detail.tab === "preview" ||
+        detail.tab === "info"
+      ) {
         setActiveTab(detail.tab);
       }
     };
@@ -185,17 +194,28 @@ export function PreviewPane({
           <X className="h-4 w-4" />
         </button>
 
-        <div className="flex min-w-0 flex-1 items-center gap-1.5">
-          {file ? (
-            <FileIcon fileName={file.fileName} size={16} className="shrink-0" />
-          ) : null}
-          <p
-            className="truncate text-sm font-medium"
-            title={file?.fileName ?? ""}
-          >
-            {file?.fileName ?? "Loading…"}
-          </p>
-        </div>
+        {/* Right-click anywhere on the filename / icon area opens the
+         * full file context menu — same items as the 3-dot dropdown to
+         * the right. Wrapping in <FileRightClickMenu> doesn't intercept
+         * left-click, so single-click still selects text inside the
+         * label as before. */}
+        <FileRightClickMenu fileId={fileId}>
+          <div className="flex min-w-0 flex-1 items-center gap-1.5">
+            {file ? (
+              <FileIcon
+                fileName={file.fileName}
+                size={16}
+                className="shrink-0"
+              />
+            ) : null}
+            <p
+              className="truncate text-sm font-medium"
+              title={file?.fileName ?? ""}
+            >
+              {file?.fileName ?? "Loading…"}
+            </p>
+          </div>
+        </FileRightClickMenu>
 
         {/* Action buttons — right side, with a small right margin so they
          * stay clear of the user's avatar. */}
@@ -234,6 +254,21 @@ export function PreviewPane({
           >
             <ExternalLink className="h-3.5 w-3.5" />
           </PreviewIconButton>
+          {/* All other file actions (Rename, Visibility, Show details,
+           * Show versions, Duplicate, Delete, …) live in the full menu
+           * here. Same items the user gets from a right-click anywhere
+           * else in the app — single source via useFileMenuActions. */}
+          <FileContextMenu fileId={fileId}>
+            <button
+              type="button"
+              title="More actions"
+              aria-label="More actions"
+              className="flex h-7 w-7 items-center justify-center rounded-md text-foreground transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={!file}
+            >
+              <MoreHorizontal className="h-3.5 w-3.5" />
+            </button>
+          </FileContextMenu>
         </div>
       </div>
 
@@ -251,6 +286,12 @@ export function PreviewPane({
           onClick={() => setActiveTab("preview")}
         />
         <PreviewTabButton
+          icon={<Info className="h-3.5 w-3.5" />}
+          label="Info"
+          active={activeTab === "info"}
+          onClick={() => setActiveTab("info")}
+        />
+        <PreviewTabButton
           icon={<History className="h-3.5 w-3.5" />}
           label="Versions"
           active={activeTab === "versions"}
@@ -258,17 +299,42 @@ export function PreviewPane({
         />
       </div>
 
-      {/* Body — wrapped in an error boundary so a previewer crash (e.g. PDF
-       * worker fetch failure) shows a recoverable fallback inside the pane
-       * instead of taking down the whole app. */}
-      <div className="flex-1 min-h-0 overflow-hidden">
-        {activeTab === "preview" ? (
+      {/* Body — both tabs stay MOUNTED, only their visibility toggles.
+       *
+       * Why: every fetch-based previewer (PDF, Markdown, Code, Text, Data)
+       * goes through `useFileBlob`, which fetches the bytes and revokes
+       * the blob URL on unmount. If we conditionally rendered tabs, the
+       * Preview tab would unmount whenever the user clicked Versions —
+       * losing a 10MB PDF download and forcing a full re-fetch on
+       * return. Always-mounted with `hidden` keeps the blob alive.
+       *
+       * Each tab has its own error boundary so a crash in one doesn't
+       * blank the other.
+       */}
+      <div className="relative flex-1 min-h-0 overflow-hidden">
+        <div
+          className="absolute inset-0 overflow-hidden"
+          hidden={activeTab !== "preview"}
+          aria-hidden={activeTab !== "preview"}
+        >
           <PreviewErrorBoundary fileId={fileId}>
             <FilePreview fileId={fileId} className="h-full w-full" />
           </PreviewErrorBoundary>
-        ) : (
+        </div>
+        <div
+          className="absolute inset-0 overflow-hidden"
+          hidden={activeTab !== "info"}
+          aria-hidden={activeTab !== "info"}
+        >
+          <FileInfoTab fileId={fileId} className="h-full w-full" />
+        </div>
+        <div
+          className="absolute inset-0 overflow-hidden"
+          hidden={activeTab !== "versions"}
+          aria-hidden={activeTab !== "versions"}
+        >
           <FileVersionsList fileId={fileId} className="h-full w-full" />
-        )}
+        </div>
       </div>
     </div>
   );

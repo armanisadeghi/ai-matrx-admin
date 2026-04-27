@@ -39,13 +39,30 @@ export interface TextBlock {
 }
 
 /**
- * Image — by public URL or raw base64.
- * Supported by all providers. At least one of url or base64_data is required.
+ * Image — by `file_id` (preferred), public URL, native cloud URI, or raw base64.
+ *
+ * Identifier preference (the backend resolves in this order):
+ *   1. `file_id`  — cld_files UUID. Use this for any file we own.
+ *   2. `file_uri` — native cloud URI (`s3://`, `gs://`, `supabase://`).
+ *   3. `url`      — any public or signed URL.
+ *   4. `base64_data` — inline bytes.
+ *
+ * At least one of `file_id` / `file_uri` / `url` / `base64_data` is required.
+ *
+ * See `MediaRef` in [features/files/types.ts](../../files/types.ts) for the
+ * canonical reference shape; build via the helpers in
+ * [features/files/redux/converters.ts](../../files/redux/converters.ts).
+ *
+ * Supported by all providers.
  */
 export interface ImageBlock {
   type: "image";
+  /** cld_files UUID. Preferred — backend skips a redirect lookup. */
+  file_id?: string;
   /** Public URL pointing to the image. */
   url?: string;
+  /** Native cloud URI (`s3://`, `gs://`, `supabase://`). */
+  file_uri?: string;
   /** Base64-encoded image bytes. Include mime_type when using this field. */
   base64_data?: string;
   /** MIME type e.g. "image/jpeg". Auto-detected from the URL or data if omitted. */
@@ -70,8 +87,12 @@ export interface ImageBlock {
  */
 export interface AudioBlock {
   type: "audio";
+  /** cld_files UUID. Preferred — see ImageBlock for the resolution order. */
+  file_id?: string;
   /** Public URL pointing to the audio file. */
   url?: string;
+  /** Native cloud URI (`s3://`, `gs://`, `supabase://`). */
+  file_uri?: string;
   /** Base64-encoded audio bytes. */
   base64_data?: string;
   /** MIME type e.g. "audio/mp3", "audio/wav". Auto-detected if omitted. */
@@ -95,13 +116,16 @@ export interface AudioBlock {
  */
 export interface VideoBlock {
   type: "video";
+  /** cld_files UUID. Preferred — see ImageBlock for the resolution order. */
+  file_id?: string;
   /** Public URL pointing to the video file. */
   url?: string;
   /** Base64-encoded video bytes. */
   base64_data?: string;
   /**
-   * Google File API URI — use this when the file was pre-uploaded via the
-   * Google File API (avoids re-uploading on every request for large files).
+   * Native cloud URI (`s3://`, `gs://`, `supabase://`) OR the Google File
+   * API URI for pre-uploaded files (avoids re-uploading on every request
+   * for large files).
    */
   file_uri?: string;
   /** MIME type e.g. "video/mp4". Auto-detected if omitted. */
@@ -126,8 +150,12 @@ export interface YouTubeVideoBlock {
  */
 export interface DocumentBlock {
   type: "document";
+  /** cld_files UUID. Preferred — see ImageBlock for the resolution order. */
+  file_id?: string;
   /** Public URL pointing to the document. */
   url?: string;
+  /** Native cloud URI (`s3://`, `gs://`, `supabase://`). */
+  file_uri?: string;
   /** Base64-encoded document bytes. Include mime_type when using this field. */
   base64_data?: string;
   /** MIME type e.g. "application/pdf". Auto-detected if omitted. */

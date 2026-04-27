@@ -38,6 +38,7 @@ import {
 } from "@/features/agents/redux/execution-system/messages/messages.selectors";
 import { UserActionBar } from "./UserActionBar";
 import { BlockHoverPreview } from "@/features/agents/components/previews/BlockHoverPreview";
+import { FileResourceChip } from "@/features/files/components/preview/FileResourceChip";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -433,9 +434,43 @@ function BlockModal({ block, onClose }: BlockModalProps) {
 // Chip — tiny pill reference inside the bubble
 // ─────────────────────────────────────────────────────────────────────────────
 
+/**
+ * Pull the cld_files UUID off a content block when present. Media blocks
+ * (image / audio / video / document) carry it as `file_id` per the
+ * MediaRef contract. Non-media blocks return null and fall through to
+ * the legacy per-type chip + modal path.
+ */
+function extractBlockFileId(raw: ContentBlock): string | null {
+  if (!raw || typeof raw !== "object") return null;
+  const { type } = raw as { type?: string };
+  if (
+    type !== "image" &&
+    type !== "image_output" &&
+    type !== "audio" &&
+    type !== "audio_output" &&
+    type !== "video" &&
+    type !== "video_output" &&
+    type !== "document" &&
+    type !== "file_output"
+  ) {
+    return null;
+  }
+  const r = raw as { file_id?: unknown };
+  return typeof r.file_id === "string" ? r.file_id : null;
+}
+
 function AttachmentChip({ block }: { block: NormalisedBlock }) {
   const [open, setOpen] = useState(false);
   const Icon = block.icon;
+
+  // Media blocks with a cld_files UUID get the rich FileResourceChip —
+  // real thumbnail + hover-peek + click → canonical FilePreview dialog.
+  // Everything else (notes, tasks, webpages, tables, list, data, etc.)
+  // keeps the legacy per-type chip + modal pathway below.
+  const fileId = extractBlockFileId(block.raw);
+  if (fileId) {
+    return <FileResourceChip fileId={fileId} size="xs" />;
+  }
 
   const chipButton = (
     <button

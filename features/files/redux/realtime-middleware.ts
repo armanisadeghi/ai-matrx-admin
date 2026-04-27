@@ -46,6 +46,7 @@ import {
 } from "./converters";
 import { isOwnEcho } from "./request-ledger";
 import { reconcileTree } from "./thunks";
+import { invalidate as invalidateBlobCache } from "@/features/files/hooks/blob-cache";
 import {
   attachChildToFolder,
   clearSelection,
@@ -423,6 +424,14 @@ export const cloudFilesRealtimeMiddleware: Middleware = (store) => {
       ...existing.filter((v) => v.id !== converted.id),
     ].sort((a, b) => b.versionNumber - a.versionNumber);
     dispatch(upsertVersionsForFile({ fileId, versions: next }));
+
+    // Cross-device invalidation: if another session uploaded a new
+    // version of this file, the bytes in our local blob cache are now
+    // stale. Drop the cached entry so the next preview open re-fetches
+    // the latest version. (We can't tell from the row alone whether
+    // this version is the new "current" — but it's safer to drop on
+    // any version-row insert than to keep showing old bytes.)
+    void invalidateBlobCache(fileId);
   }
 
   function handlePermissionPayload(

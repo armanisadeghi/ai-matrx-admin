@@ -470,6 +470,140 @@ export async function downloadBlob(
 }
 
 // ---------------------------------------------------------------------------
+// Download WITH progress
+// ---------------------------------------------------------------------------
+//
+// `fetch()` doesn't expose a usable progress event for downloads — you can
+// stream chunks via response.body.getReader() and count bytes, but you
+// don't get a reliable Content-Length until the response headers arrive,
+// and there's no way to combine the streamed response with `response.blob()`
+// without keeping all chunks in memory yourself anyway. XHR is still the
+// only path that gives us a clean (loaded, total) progress signal AND a
+// final Blob, so we use it for any caller that wants to render
+// "Downloading 6.2 / 10 MB…" UI.
+
+export interface DownloadProgressEvent {
+  /** Bytes received so far. */
+  loaded: number;
+  /** Total bytes when the server advertised Content-Length; null otherwise. */
+  total: number | null;
+}
+
+/**
+ * Same as `downloadBlob` but reports progress via `onProgress`. The
+ * progress callback fires on every chunk received and once at the end.
+ *
+ * Falls through to the same auth (Authorization + X-Guest-Fingerprint),
+ * request-id, idempotency-key, and bypass-secret plumbing as the rest
+ * of the client — see `buildHeaders` for the canonical list.
+ */
+export async function downloadBlobWithProgress(
+  path: string,
+  onProgress: (event: DownloadProgressEvent) => void,
+  opts: RequestOptions = {},
+): Promise<{ blob: Blob; meta: ResponseMeta; filename: string | null }> {
+  const token = await getAccessTokenOrNull();
+  const fingerprint = opts.guestFingerprint ?? getCachedFingerprint();
+  if (!token && !fingerprint) {
+    throw new BackendApiError({
+      code: "auth_required",
+      detail: "No active session and no guest fingerprint available",
+      userMessage: "Please sign in to continue.",
+      status: 401,
+    });
+  }
+  const requestId = opts.requestId ?? newRequestId();
+  const url = `${resolveBaseUrl(opts.baseUrlOverride)}${path}`;
+
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("GET", url, true);
+    xhr.responseType = "blob";
+    if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+    if (fingerprint) xhr.setRequestHeader("X-Guest-Fingerprint", fingerprint);
+    if (opts.idempotencyKey)
+      xhr.setRequestHeader("X-Idempotency-Key", opts.idempotencyKey);
+    if (opts.cloudFilesBypass)
+      xhr.setRequestHeader("X-Cloud-Files-Bypass", opts.cloudFilesBypass);
+    xhr.setRequestHeader("X-Request-Id", requestId);
+    xhr.setRequestHeader("Accept", "*/*");
+
+    xhr.addEventListener("progress", (ev) => {
+      onProgress({
+        loaded: ev.loaded,
+        total: ev.lengthComputable ? ev.total : null,
+      });
+    });
+
+    xhr.addEventListener("load", () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        const blob = xhr.response as Blob;
+        const contentDisposition = xhr.getResponseHeader("content-disposition");
+        const filename = parseFilename(contentDisposition);
+        // Final progress notification — many servers don't fire a final
+        // `progress` event with `loaded === total`. Make sure the UI
+        // shows 100% before transitioning to the rendered preview.
+        onProgress({ loaded: blob.size, total: blob.size });
+        resolve({
+          blob,
+          meta: {
+            requestId,
+            status: xhr.status,
+            serverRequestId:
+              xhr.getResponseHeader("x-request-id") ?? null,
+          },
+          filename,
+        });
+        return;
+      }
+      reject(
+        new BackendApiError({
+          code: statusToCloudFilesCode(xhr.status),
+          detail: `HTTP ${xhr.status}`,
+          userMessage: `Download failed (${xhr.status}).`,
+          status: xhr.status,
+          requestId,
+        }),
+      );
+    });
+
+    xhr.addEventListener("error", () => {
+      reject(
+        new BackendApiError({
+          code: "internal",
+          detail: "Network error during download",
+          userMessage: "Download failed — check your connection.",
+          requestId,
+        }),
+      );
+    });
+
+    xhr.addEventListener("abort", () => {
+      reject(
+        new BackendApiError({
+          code: "invalid_request",
+          detail: "Download aborted",
+          userMessage: "Download cancelled.",
+          requestId,
+        }),
+      );
+    });
+
+    if (opts.signal) {
+      if (opts.signal.aborted) {
+        xhr.abort();
+      } else {
+        opts.signal.addEventListener("abort", () => xhr.abort(), {
+          once: true,
+        });
+      }
+    }
+
+    xhr.send();
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 

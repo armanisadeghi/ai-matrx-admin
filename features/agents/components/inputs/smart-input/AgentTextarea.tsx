@@ -34,6 +34,7 @@ import { selectSubmitOnEnter } from "@/features/agents/redux/execution-system/in
 import { selectIsExecuting } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
 import { useClipboardPaste } from "@/components/ui/file-upload/useClipboardPaste";
 import { useFileUploadWithStorage } from "@/components/ui/file-upload/useFileUploadWithStorage";
+import { fileIdToMediaRef } from "@/features/files/redux/converters";
 import {
   addResource,
   setResourcePreview,
@@ -121,14 +122,27 @@ export function AgentTextarea({
           toast.error(`Couldn't upload pasted image: ${reason}`);
           return;
         }
-        const url = (results[0] as { url?: string })?.url;
-        if (!url) return;
+        const result = results[0] as
+          | { url?: string; fileId?: string }
+          | undefined;
+        if (!result) return;
+        // Prefer the cld_files UUID — outbound API requests resolve much
+        // faster against `file_id` than against a `/share/<token>` URL,
+        // and avoid attaching legacy URL-parsed metadata to the payload.
+        // Fall back to `url` only when an upload result somehow lacks an
+        // id (defensive — shouldn't happen with the cloud-files path).
+        const source = result.fileId
+          ? fileIdToMediaRef(result.fileId, file.type)
+          : result.url
+            ? { url: result.url, mime_type: file.type }
+            : null;
+        if (!source) return;
         const resourceId = `res_${Date.now()}_paste`;
         dispatch(
           addResource({
             conversationId,
             blockType: "image",
-            source: { url },
+            source,
             resourceId,
           }),
         );

@@ -76,10 +76,27 @@ function composeFolderPath(bucket: string, path?: string): string {
 // ---------------------------------------------------------------------------
 
 interface UploadResult {
+  /**
+   * cld_files UUID. Use this — not `url` — when handing the file to any
+   * AI API: the backend resolves a `file_id` directly without following
+   * a share-link redirect. See `MediaRef` in
+   * [features/files/types.ts](../../features/files/types.ts).
+   *
+   * Always populated when the upload succeeded. Optional only because
+   * older legacy callers may construct UploadResult-shaped objects from
+   * non-cloud-files sources.
+   */
+  fileId?: string;
+  /**
+   * Persistent share URL — the public `/share/<token>` link. Use this
+   * for display / share-with-a-stranger flows, NOT for AI API calls.
+   * Prefer `fileId` for any backend payload.
+   */
   url: string;
   type: string;
   details: EnhancedFileDetails;
   metadata?: StorageMetadata;
+  /** @deprecated kept for legacy callers — alias of `fileId`. */
   localId?: string;
 }
 
@@ -175,12 +192,17 @@ export const useFileUploadWithStorage = (bucket: string, path?: string) => {
       const details = getFileDetailsByUrl(shareUrl, metadata, result.fileId);
 
       const out: UploadResult = {
+        // cld_files UUID — first-class field. Callers building outbound
+        // AI API payloads should ALWAYS pass this through (as MediaRef.file_id)
+        // rather than the share URL. Build a MediaRef via
+        // `fileIdToMediaRef` from features/files/redux/converters.ts.
+        fileId: result.fileId,
         url: shareUrl,
         type: classifyFileType(file.type),
         details,
         metadata,
-        // Re-use the cloud-files UUID as the localId so callers that
-        // stored this id can still reason about the file.
+        // Legacy alias — same value, kept for back-compat with any
+        // caller that read `localId` directly. New code should use `fileId`.
         localId: result.fileId,
       };
       setResults((prev) => [...prev, out]);

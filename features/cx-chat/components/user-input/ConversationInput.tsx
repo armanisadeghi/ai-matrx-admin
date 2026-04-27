@@ -53,6 +53,11 @@ import {
   removeResource,
 } from "@/features/agents/redux/execution-system/instance-resources/instance-resources.slice";
 import {
+  refineBlockType,
+  resourceDataToSource,
+} from "@/features/agents/redux/execution-system/instance-resources/resource-source";
+import { fileIdToMediaRef } from "@/features/files/redux/converters";
+import {
   selectIsExecuting,
   selectShouldShowVariables,
   selectLatestRequestStatus,
@@ -327,15 +332,17 @@ export function ConversationInput({
             continue;
           }
           const blockType = uploadMimeToBlockType(file.type);
+          // Prefer cld_files UUID — see fileIdToMediaRef in features/files/redux/converters.
+          // Backend resolves `file_id` directly without following a share-link redirect,
+          // and we don't ship the legacy URL-parsed metadata bloat with every request.
+          const source = result.fileId
+            ? fileIdToMediaRef(result.fileId, file.type)
+            : { url: result.url, mime_type: file.type };
           dispatch(
             addResource({
               conversationId,
               blockType,
-              source: {
-                url: result.url,
-                filename: file.name,
-                mimeType: file.type,
-              },
+              source,
             }),
           );
         } catch (err) {
@@ -349,11 +356,16 @@ export function ConversationInput({
 
   const handleResourceSelected = useCallback(
     (resource: { type: string; data: unknown }) => {
+      // Same deal as SmartAgentResourcePickerButton: refine "document"
+      // → "image"/"video"/"audio" when the underlying data has a real
+      // image/video/audio MIME so the AI sees it as the right kind.
+      const baseBlockType = pickerResourceTypeToBlockType(resource.type);
+      const blockType = refineBlockType(baseBlockType, resource.data);
       dispatch(
         addResource({
           conversationId,
-          blockType: pickerResourceTypeToBlockType(resource.type),
-          source: resource.data,
+          blockType,
+          source: resourceDataToSource(blockType, resource.data),
         }),
       );
       setIsResourcePickerOpen(false);
