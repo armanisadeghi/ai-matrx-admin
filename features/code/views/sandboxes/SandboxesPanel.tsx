@@ -1,9 +1,21 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { extractErrorMessage } from "@/utils/errors";
 import {
+  AlertTriangle,
+  Check,
+  CheckCircle2,
+  ChevronDown,
+  ChevronRight,
   Clock,
+  Copy,
   ExternalLink,
   Loader2,
   Plug,
@@ -41,9 +53,11 @@ import { openSessionReportTab } from "../../runtime/openSessionReport";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   selectActiveSandboxId,
+  selectActiveSandboxProxyUrl,
   setActiveSandboxId,
   setActiveSandboxProxyUrl,
 } from "../../redux/codeWorkspaceSlice";
+import { selectIsAdmin } from "@/lib/redux/selectors/userSelectors";
 import { clearFsChangesBucket } from "../../redux/fsChangesSlice";
 import { SidePanelAction, SidePanelHeader } from "../SidePanelChrome";
 import {
@@ -65,6 +79,8 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
 }) => {
   const dispatch = useAppDispatch();
   const activeId = useAppSelector(selectActiveSandboxId);
+  const activeProxyUrl = useAppSelector(selectActiveSandboxProxyUrl);
+  const isAdmin = useAppSelector(selectIsAdmin);
   const { setFilesystem, setProcess } = useCodeWorkspace();
 
   const [instances, setInstances] = useState<SandboxInstance[] | null>(null);
@@ -301,29 +317,11 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
         }
       />
       {activeInstance && (
-        <div
-          className={cn(
-            "flex items-center justify-between gap-2 border-b px-3 py-1.5 text-[11px]",
-            PANE_BORDER,
-            "bg-blue-50 text-blue-900 dark:bg-blue-950/40 dark:text-blue-100",
-          )}
-        >
-          <div className="flex min-w-0 items-center gap-1.5">
-            <Plug size={12} />
-            <span className="truncate font-mono">
-              {activeInstance.sandbox_id?.slice(0, 14) ??
-                activeInstance.id.slice(0, 8)}
-            </span>
-            <span className="opacity-70">connected</span>
-          </div>
-          <button
-            type="button"
-            onClick={disconnect}
-            className="text-[10px] uppercase tracking-wide text-blue-700 hover:text-blue-900 dark:text-blue-300 dark:hover:text-blue-100"
-          >
-            Disconnect
-          </button>
-        </div>
+        <ActiveSandboxBanner
+          instance={activeInstance}
+          proxyUrl={activeProxyUrl}
+          onDisconnect={disconnect}
+        />
       )}
       <div className="flex-1 overflow-y-auto py-1">
         {error && (
@@ -363,6 +361,7 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
             isActive={activeId === instance.id}
             isExpanded={expandedId === instance.id}
             busy={busyId === instance.id}
+            isAdmin={isAdmin}
             onToggle={() =>
               setExpandedId((cur) => (cur === instance.id ? null : instance.id))
             }
@@ -414,6 +413,8 @@ interface SandboxRowProps {
   isActive: boolean;
   isExpanded: boolean;
   busy: boolean;
+  /** Admins get the inline raw-JSON inspector under the metadata grid. */
+  isAdmin: boolean;
   onToggle: () => void;
   onConnect: () => void;
   onStop: () => void;
@@ -426,6 +427,7 @@ const SandboxRow: React.FC<SandboxRowProps> = ({
   isActive,
   isExpanded,
   busy,
+  isAdmin,
   onToggle,
   onConnect,
   onStop,
@@ -480,8 +482,26 @@ const SandboxRow: React.FC<SandboxRowProps> = ({
           <dl className="grid grid-cols-[auto_1fr] gap-x-2 gap-y-0.5 font-mono text-neutral-600 dark:text-neutral-400">
             <dt className="text-neutral-500">ID</dt>
             <dd className="truncate">{instance.id}</dd>
-            <dt className="text-neutral-500">Path</dt>
+            <dt className="text-neutral-500">sandbox_id</dt>
+            <dd className="truncate">{instance.sandbox_id ?? "—"}</dd>
+            <dt className="text-neutral-500">status</dt>
+            <dd className="truncate">{instance.status}</dd>
+            <dt className="text-neutral-500">tier</dt>
+            <dd className="truncate">{instance.config?.tier ?? "—"}</dd>
+            <dt className="text-neutral-500">hot_path</dt>
             <dd className="truncate">{instance.hot_path ?? "—"}</dd>
+            <dt className="text-neutral-500">proxy_url</dt>
+            <dd className="truncate">
+              {instance.proxy_url ? (
+                <span className="text-neutral-600 dark:text-neutral-300">
+                  {instance.proxy_url}
+                </span>
+              ) : (
+                <span className="text-amber-600 dark:text-amber-400">
+                  null — orchestrator hasn’t shipped one
+                </span>
+              )}
+            </dd>
             {instance.expires_at && (
               <>
                 <dt className="text-neutral-500">
@@ -492,7 +512,7 @@ const SandboxRow: React.FC<SandboxRowProps> = ({
                 </dd>
               </>
             )}
-            <dt className="text-neutral-500">Created</dt>
+            <dt className="text-neutral-500">created</dt>
             <dd>{formatDate(instance.created_at)}</dd>
           </dl>
           <div className="mt-2 flex flex-wrap gap-1">
@@ -532,6 +552,7 @@ const SandboxRow: React.FC<SandboxRowProps> = ({
               Open detail
             </a>
           </div>
+          {isAdmin && <RawInstanceInspector instance={instance} />}
         </div>
       )}
     </div>
@@ -583,3 +604,157 @@ function formatDate(iso: string): string {
     minute: "2-digit",
   });
 }
+
+// ─── Active sandbox banner ─────────────────────────────────────────────────
+//
+// The blue strip at the top of the Sandboxes panel that appears once the
+// user has clicked "Connect" on an instance. Beyond confirming the sandbox
+// is wired up to the editor's filesystem, it also surfaces whether AI
+// calls for the focused conversation will be routed into the in-container
+// Python server — which is the single most common "why is this still
+// behaving like cloud?" diagnostic.
+//
+// Binding state is derived purely from the `proxy_url` field on the
+// orchestrator's instance row mirrored into Redux as
+// `codeWorkspace.activeSandboxProxyUrl`. The chat hook
+// (`useBindAgentToSandbox`) only writes the per-conversation override when
+// that URL is non-null, so showing it here covers the entire failure mode
+// without having to plumb conversation-scoped selectors into this panel.
+
+interface ActiveSandboxBannerProps {
+  instance: SandboxInstance;
+  proxyUrl: string | null;
+  onDisconnect: () => void;
+}
+
+const ActiveSandboxBanner: React.FC<ActiveSandboxBannerProps> = ({
+  instance,
+  proxyUrl,
+  onDisconnect,
+}) => {
+  const aiBound = Boolean(proxyUrl);
+  return (
+    <div
+      className={cn(
+        "border-b text-[11px]",
+        PANE_BORDER,
+        aiBound
+          ? "bg-emerald-50 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-100"
+          : "bg-amber-50 text-amber-900 dark:bg-amber-950/30 dark:text-amber-100",
+      )}
+    >
+      <div className="flex items-center justify-between gap-2 px-3 py-1.5">
+        <div className="flex min-w-0 items-center gap-1.5">
+          <Plug size={12} />
+          <span className="truncate font-mono">
+            {instance.sandbox_id?.slice(0, 14) ?? instance.id.slice(0, 8)}
+          </span>
+          <span className="opacity-70">connected</span>
+        </div>
+        <button
+          type="button"
+          onClick={onDisconnect}
+          className="text-[10px] uppercase tracking-wide opacity-80 hover:opacity-100"
+        >
+          Disconnect
+        </button>
+      </div>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-current/10 px-3 py-1 text-[10px]">
+        <span className="inline-flex items-center gap-1">
+          {aiBound ? (
+            <>
+              <CheckCircle2 size={11} className="text-emerald-600 dark:text-emerald-400" />
+              AI calls → sandbox proxy
+            </>
+          ) : (
+            <>
+              <AlertTriangle size={11} className="text-amber-600 dark:text-amber-400" />
+              AI calls → cloud (no proxy_url)
+            </>
+          )}
+        </span>
+        <span className="opacity-70">·</span>
+        <span className="font-mono opacity-80">
+          proxy_url:{" "}
+          {proxyUrl ? (
+            <span title={proxyUrl}>{shortenUrl(proxyUrl)}</span>
+          ) : (
+            <span className="text-amber-700 dark:text-amber-300">null</span>
+          )}
+        </span>
+      </div>
+    </div>
+  );
+};
+
+function shortenUrl(url: string, max = 56): string {
+  if (url.length <= max) return url;
+  // Keep the host + tail so the user can still recognize the orchestrator
+  // and the per-sandbox suffix without busting the single-line layout.
+  return `${url.slice(0, max - 14)}…${url.slice(-12)}`;
+}
+
+// ─── Raw instance inspector ────────────────────────────────────────────────
+//
+// Admin-only accordion that dumps the full `SandboxInstance` row as JSON.
+// Lives inline in the row's expand panel so the inspect-then-act loop never
+// has to leave the Sandboxes view. Used for diagnosing missing fields like
+// `proxy_url`, mis-set `tier`, or a `config` envelope that disagrees with
+// what the orchestrator's `/sandboxes/<id>` detail page shows.
+
+interface RawInstanceInspectorProps {
+  instance: SandboxInstance;
+}
+
+const RawInstanceInspector: React.FC<RawInstanceInspectorProps> = ({
+  instance,
+}) => {
+  const [open, setOpen] = useState(false);
+  const json = useMemo(() => JSON.stringify(instance, null, 2), [instance]);
+
+  return (
+    <div className="mt-2 rounded border border-neutral-200 bg-white text-[10px] dark:border-neutral-800 dark:bg-neutral-950/60">
+      <div className="flex items-center justify-between gap-2 px-2 py-1">
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          className="flex items-center gap-1 text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+        >
+          {open ? <ChevronDown size={10} /> : <ChevronRight size={10} />}
+          <span className="font-mono uppercase tracking-wider">
+            Raw orchestrator payload
+          </span>
+        </button>
+        <CopyButton value={json} />
+      </div>
+      {open && (
+        <pre className="max-h-72 overflow-auto border-t border-neutral-200 px-2 py-1 font-mono text-[10px] leading-snug text-neutral-700 dark:border-neutral-800 dark:text-neutral-300">
+          {json}
+        </pre>
+      )}
+    </div>
+  );
+};
+
+const CopyButton: React.FC<{ value: string; label?: string }> = ({
+  value,
+  label,
+}) => {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        void navigator.clipboard.writeText(value).then(() => {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 1200);
+        });
+      }}
+      title="Copy to clipboard"
+      className="inline-flex items-center gap-1 rounded px-1 py-0.5 text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
+    >
+      {copied ? <Check size={10} /> : <Copy size={10} />}
+      {label && <span>{label}</span>}
+    </button>
+  );
+};
