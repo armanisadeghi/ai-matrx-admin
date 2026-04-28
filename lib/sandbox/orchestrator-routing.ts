@@ -10,21 +10,24 @@
  * This is a server-only module — never import from a Client Component.
  */
 
-import { createClient } from '@/utils/supabase/server'
-import type { SandboxConfig, SandboxTier } from '@/types/sandbox'
+import { createClient } from "@/utils/supabase/server";
+import type { SandboxConfig, SandboxTier } from "@/types/sandbox";
 
-const EC2_URL = process.env.MATRX_ORCHESTRATOR_URL || 'http://54.144.86.132:8000'
-const EC2_KEY = process.env.MATRX_ORCHESTRATOR_API_KEY || ''
-const HOSTED_URL = process.env.MATRX_HOSTED_ORCHESTRATOR_URL || 'https://orchestrator.dev.codematrx.com'
-const HOSTED_KEY = process.env.MATRX_HOSTED_ORCHESTRATOR_API_KEY || ''
+const EC2_URL =
+  process.env.MATRX_ORCHESTRATOR_URL || "http://54.144.86.132:8000";
+const EC2_KEY = process.env.MATRX_ORCHESTRATOR_API_KEY || "";
+const HOSTED_URL =
+  process.env.MATRX_HOSTED_ORCHESTRATOR_URL ||
+  "https://orchestrator.dev.codematrx.com";
+const HOSTED_KEY = process.env.MATRX_HOSTED_ORCHESTRATOR_API_KEY || "";
 
 export interface OrchestratorTarget {
-    /** Base URL, no trailing slash. */
-    url: string
-    /** API key (sent as `X-API-Key`). May be empty for local dev. */
-    apiKey: string
-    /** Resolved tier — either explicit or 'ec2' (back-compat default). */
-    tier: SandboxTier
+  /** Base URL, no trailing slash. */
+  url: string;
+  /** API key (sent as `X-API-Key`). May be empty for local dev. */
+  apiKey: string;
+  /** Resolved tier — either explicit or 'ec2' (back-compat default). */
+  tier: SandboxTier;
 }
 
 /**
@@ -32,11 +35,17 @@ export interface OrchestratorTarget {
  * persisted tier. Rows without an explicit tier default to EC2 — that
  * preserves behavior for sandboxes created before the tier model existed.
  */
-export function resolveOrchestratorByTier(tier: SandboxTier | null | undefined): OrchestratorTarget {
-    if (tier === 'hosted') {
-        return { url: HOSTED_URL.replace(/\/$/, ''), apiKey: HOSTED_KEY, tier: 'hosted' }
-    }
-    return { url: EC2_URL.replace(/\/$/, ''), apiKey: EC2_KEY, tier: 'ec2' }
+export function resolveOrchestratorByTier(
+  tier: SandboxTier | null | undefined,
+): OrchestratorTarget {
+  if (tier === "hosted") {
+    return {
+      url: HOSTED_URL.replace(/\/$/, ""),
+      apiKey: HOSTED_KEY,
+      tier: "hosted",
+    };
+  }
+  return { url: EC2_URL.replace(/\/$/, ""), apiKey: EC2_KEY, tier: "ec2" };
 }
 
 /**
@@ -48,55 +57,68 @@ export function resolveOrchestratorByTier(tier: SandboxTier | null | undefined):
  * single response without a try/catch chain.
  */
 export async function lookupSandboxAndOrchestrator(
-    sandboxRowId: string
+  sandboxRowId: string,
 ): Promise<
-    | {
-          ok: true
-          orchestrator: OrchestratorTarget
-          sandboxId: string
-          status: string
-      }
-    | { ok: false; status: number; error: string }
+  | {
+      ok: true;
+      orchestrator: OrchestratorTarget;
+      sandboxId: string;
+      status: string;
+    }
+  | { ok: false; status: number; error: string }
 > {
-    const supabase = await createClient()
-    const {
-        data: { user },
-        error: userError,
-    } = await supabase.auth.getUser()
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
 
-    if (userError || !user) {
-        return { ok: false, status: 401, error: 'User not authenticated' }
-    }
+  if (userError || !user) {
+    return { ok: false, status: 401, error: "User not authenticated" };
+  }
 
-    const { data, error } = await supabase
-        .from('sandbox_instances')
-        .select('sandbox_id, status, config')
-        .eq('id', sandboxRowId)
-        .eq('user_id', user.id)
-        .is('deleted_at', null)
-        .single()
+  const { data, error } = await supabase
+    .from("sandbox_instances")
+    .select("sandbox_id, status, config, tier")
+    .eq("id", sandboxRowId)
+    .eq("user_id", user.id)
+    .is("deleted_at", null)
+    .single();
 
-    if (error || !data) {
-        return { ok: false, status: 404, error: 'Sandbox instance not found' }
-    }
+  if (error || !data) {
+    return { ok: false, status: 404, error: "Sandbox instance not found" };
+  }
 
-    const tier = ((data.config as SandboxConfig | null)?.tier ?? null) as SandboxTier | null
-    return {
-        ok: true,
-        orchestrator: resolveOrchestratorByTier(tier),
-        sandboxId: data.sandbox_id,
-        status: data.status,
-    }
+  // Prefer the dedicated `tier` column; fall back to `config.tier` for rows
+  // written before the column existed. Unknown values land as `null` so
+  // routing falls back to the EC2 default rather than corrupting traffic.
+  const colTier =
+    data.tier === "ec2" || data.tier === "hosted" ? data.tier : null;
+  const cfg = data.config as SandboxConfig | null;
+  const cfgTier =
+    cfg?.tier === "ec2" || cfg?.tier === "hosted" ? cfg.tier : null;
+  const tier: SandboxTier | null = colTier ?? cfgTier ?? null;
+
+  return {
+    ok: true,
+    orchestrator: resolveOrchestratorByTier(tier),
+    sandboxId: data.sandbox_id,
+    status: data.status,
+  };
 }
 
 /**
  * Build the standard headers we send to the orchestrator on JSON calls.
  * Caller can spread additional headers on top.
  */
-export function orchestratorJsonHeaders(target: OrchestratorTarget): Record<string, string> {
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-    if (target.apiKey) headers['X-API-Key'] = target.apiKey
-    return headers
+export function orchestratorJsonHeaders(
+  target: OrchestratorTarget,
+): Record<string, string> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (target.apiKey) headers["X-API-Key"] = target.apiKey;
+  return headers;
 }
 
 /**
@@ -114,11 +136,11 @@ export function orchestratorJsonHeaders(target: OrchestratorTarget): Record<stri
  * Returns ``null`` only when the matching tier's URL env var isn't set.
  */
 export function buildSandboxProxyUrl(
-    sandboxId: string | null | undefined,
-    tier: SandboxTier | null | undefined,
+  sandboxId: string | null | undefined,
+  tier: SandboxTier | null | undefined,
 ): string | null {
-    if (!sandboxId) return null
-    const target = resolveOrchestratorByTier(tier)
-    if (!target.url) return null
-    return `${target.url}/sandboxes/${sandboxId}/proxy`
+  if (!sandboxId) return null;
+  const target = resolveOrchestratorByTier(tier);
+  if (!target.url) return null;
+  return `${target.url}/sandboxes/${sandboxId}/proxy`;
 }

@@ -206,26 +206,42 @@ function GridFolder({
 }: GridFolderProps) {
   const [hovered, setHovered] = useState(false);
 
-  // Folder cells are drop targets. `isOver` highlights the cell while a
-  // file is being dragged over it.
-  const { isOver, setNodeRef } = useDroppable({
+  // Folder cells are both drop targets AND draggable. Drop = move file/
+  // folder into here. Drag = move this folder under another folder.
+  const { isOver, setNodeRef: setDropRef } = useDroppable({
     id: `grid-folder-${folder.id}`,
     data: { type: "folder", id: folder.id },
   });
+  const {
+    attributes,
+    listeners,
+    setNodeRef: setDragRef,
+    isDragging,
+  } = useDraggable({
+    id: `grid-folder-drag-${folder.id}`,
+    data: { type: "folder", id: folder.id },
+  });
+  const setMergedRef = (node: HTMLDivElement | null) => {
+    setDropRef(node);
+    setDragRef(node);
+  };
 
   return (
     <FolderRowContextMenu folderId={folder.id}>
       <div
-        ref={setNodeRef}
+        ref={setMergedRef}
         className={cn(
           "group flex flex-col rounded-lg border bg-card overflow-hidden transition-shadow",
           selected && "ring-2 ring-ring",
           "hover:shadow-sm",
           isOver && "ring-2 ring-primary bg-primary/5",
+          isDragging && "opacity-50",
         )}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         onDoubleClick={onActivate}
+        {...attributes}
+        {...listeners}
       >
         <div
           className="relative aspect-[4/3] bg-primary/5 flex items-center justify-center"

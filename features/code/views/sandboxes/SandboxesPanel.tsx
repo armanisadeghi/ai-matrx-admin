@@ -30,7 +30,9 @@ import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import type {
   SandboxCreateRequest,
+  SandboxDetailResponse,
   SandboxInstance,
+  SandboxListResponse,
   SandboxStatus,
 } from "@/types/sandbox";
 import { ACTIVE_SANDBOX_STATUSES } from "@/types/sandbox";
@@ -103,8 +105,8 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
       const resp = await fetch("/api/sandbox");
       if (!resp.ok)
         throw new Error(`Failed to list sandboxes (${resp.status})`);
-      const data = await resp.json();
-      setInstances((data.instances ?? []) as SandboxInstance[]);
+      const data: SandboxListResponse = await resp.json();
+      setInstances(data.instances ?? []);
     } catch (err) {
       setError(extractErrorMessage(err));
     } finally {
@@ -192,13 +194,16 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(request),
         });
-        const data = await resp.json();
+        const data = (await resp.json()) as
+          | SandboxDetailResponse
+          | { error?: string };
         if (!resp.ok) {
-          throw new Error(data?.error ?? `Create failed (${resp.status})`);
+          const err = "error" in data ? data.error : undefined;
+          throw new Error(err ?? `Create failed (${resp.status})`);
         }
         await refresh();
-        if (data.instance) {
-          const created = data.instance as SandboxInstance;
+        if ("instance" in data && data.instance) {
+          const created = data.instance;
           dispatch(setActiveSandboxId(created.id));
           dispatch(setActiveSandboxProxyUrl(created.proxy_url ?? null));
         }
@@ -487,7 +492,9 @@ const SandboxRow: React.FC<SandboxRowProps> = ({
             <dt className="text-neutral-500">status</dt>
             <dd className="truncate">{instance.status}</dd>
             <dt className="text-neutral-500">tier</dt>
-            <dd className="truncate">{instance.config?.tier ?? "—"}</dd>
+            <dd className="truncate">
+              {instance.tier ?? instance.config?.tier ?? "—"}
+            </dd>
             <dt className="text-neutral-500">hot_path</dt>
             <dd className="truncate">{instance.hot_path ?? "—"}</dd>
             <dt className="text-neutral-500">proxy_url</dt>
@@ -663,12 +670,18 @@ const ActiveSandboxBanner: React.FC<ActiveSandboxBannerProps> = ({
         <span className="inline-flex items-center gap-1">
           {aiBound ? (
             <>
-              <CheckCircle2 size={11} className="text-emerald-600 dark:text-emerald-400" />
+              <CheckCircle2
+                size={11}
+                className="text-emerald-600 dark:text-emerald-400"
+              />
               AI calls → sandbox proxy
             </>
           ) : (
             <>
-              <AlertTriangle size={11} className="text-amber-600 dark:text-amber-400" />
+              <AlertTriangle
+                size={11}
+                className="text-amber-600 dark:text-amber-400"
+              />
               AI calls → cloud (no proxy_url)
             </>
           )}

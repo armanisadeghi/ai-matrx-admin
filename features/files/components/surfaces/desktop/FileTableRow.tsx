@@ -187,27 +187,42 @@ function FolderRow({
 }: FolderRowProps) {
   const [hovered, setHovered] = useState(false);
 
-  // Folders are drop targets — files can be dragged here to be moved into
-  // them. `isOver` flips while a draggable is hovering, used for the
-  // visual highlight (ring). Folder→folder moves are not yet supported by
-  // the backend, so folders are NOT draggable in this iteration.
-  const { isOver, setNodeRef } = useDroppable({
+  // Folders are both drop targets AND draggable. Drop: another file or
+  // folder lands here and we move it under this folder. Drag: this folder
+  // can be dropped onto another folder (or the tree sidebar) to be moved.
+  const { isOver, setNodeRef: setDropRef } = useDroppable({
     id: `folder-${folder.id}`,
     data: { type: "folder", id: folder.id },
   });
+  const {
+    attributes,
+    listeners,
+    setNodeRef: setDragRef,
+    isDragging,
+  } = useDraggable({
+    id: `folder-drag-${folder.id}`,
+    data: { type: "folder", id: folder.id },
+  });
+  const setMergedRef = (node: HTMLTableRowElement | null) => {
+    setDropRef(node);
+    setDragRef(node);
+  };
 
   return (
     <FolderRowContextMenu folderId={folder.id}>
       <tr
-        ref={setNodeRef}
+        ref={setMergedRef}
         className={cn(
           "group border-b text-sm transition-colors",
           selected ? "bg-accent/70" : "hover:bg-accent/40",
           isOver && "bg-primary/10 ring-1 ring-inset ring-primary",
+          isDragging && "opacity-50",
         )}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         onDoubleClick={onActivate}
+        {...attributes}
+        {...listeners}
       >
         <td className="w-8 px-3 py-2">
           <Checkbox

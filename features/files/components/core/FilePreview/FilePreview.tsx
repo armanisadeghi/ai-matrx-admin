@@ -10,17 +10,21 @@
 
 import dynamic from "next/dynamic";
 import { useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectFileById } from "@/features/files/redux/selectors";
 import { useSignedUrl } from "@/features/files/hooks/useSignedUrl";
 import { useFileActions } from "@/features/files/components/core/FileActions/useFileActions";
 import { getPreviewCapability } from "@/features/files/utils/preview-capabilities";
+import { requestRename } from "@/features/files/components/core/RenameDialog/RenameHost";
 import { ImagePreview } from "./previewers/ImagePreview";
 import { VideoPreview } from "./previewers/VideoPreview";
 import { AudioPreview } from "./previewers/AudioPreview";
 import { TextPreview } from "./previewers/TextPreview";
 import { GenericPreview } from "./previewers/GenericPreview";
+import { PreviewerActionBar } from "./PreviewerActionBar/PreviewerActionBar";
+import { buildPreviewActions } from "./preview-actions";
 
 // Heavy / lazy-loaded previewers. Each is its own chunk so non-matching
 // callers never pay the bundle cost. (See bundle-dynamic-imports rule.)
@@ -73,6 +77,7 @@ export function FilePreview({
   className,
   urlExpiresIn = 3600,
 }: FilePreviewProps) {
+  const router = useRouter();
   const file = useAppSelector((s) => selectFileById(s, fileId));
   const { url, loading } = useSignedUrl(fileId, { expiresIn: urlExpiresIn });
   const actions = useFileActions(fileId);
@@ -81,6 +86,27 @@ export function FilePreview({
     if (!file) return null;
     return getPreviewCapability(file.fileName, file.mimeType, file.fileSize);
   }, [file]);
+
+  // Per-type action bar wiring. Edit handoff is null for kinds we don't
+  // support yet (image / video / audio / pdf / data) — the bar shows the
+  // button as disabled with a tooltip rather than hiding it, so the
+  // capability is discoverable.
+  const actionBar = useMemo(() => {
+    if (!file || !capability) return null;
+    const previewActions = buildPreviewActions({
+      file,
+      previewKind: capability.previewKind,
+      onDownload: () => actions.download(),
+      onCopyLink: () => {
+        void actions.copyShareUrl();
+      },
+      onOpenFullView: () => router.push(`/files/f/${fileId}`),
+      onRename: () => requestRename("file", fileId),
+      onDelete: () => void actions.delete({ hard: false }),
+      // TODO(phase-2.3): wire to the in-place editor handoff.
+    });
+    return <PreviewerActionBar actions={previewActions} />;
+  }, [file, capability, actions, router, fileId]);
 
   if (!file) {
     return (
@@ -127,76 +153,59 @@ export function FilePreview({
     );
   }
 
+  let body: React.ReactNode;
   switch (capability.previewKind) {
     case "image":
-      return (
-        <ImagePreview
-          url={url}
-          fileName={file.fileName}
-          className={className}
-        />
-      );
+      body = <ImagePreview url={url} fileName={file.fileName} />;
+      break;
     case "video":
-      return (
-        <VideoPreview
-          url={url}
-          mimeType={file.mimeType}
-          className={className}
-        />
-      );
+      body = <VideoPreview url={url} mimeType={file.mimeType} />;
+      break;
     case "audio":
-      return (
+      body = (
         <AudioPreview
           url={url}
           fileName={file.fileName}
           mimeType={file.mimeType}
-          className={className}
         />
       );
+      break;
     // Fetch-based previewers receive `fileId` so they can pull the bytes
     // through the Python `/files/{id}/download` endpoint via `useFileBlob`.
-    // That sidesteps S3-CORS — the signed URL works in `<img>` / `<video>`
-    // / `<audio>` (no CORS preflight) but `fetch(signedUrl)` returns 403
-    // until the S3 bucket policy is fixed.
+    // That sidesteps the AWS S3 CORS block — the signed URL works in
+    // `<img>` / `<video>` / `<audio>` tags (no CORS preflight) but
+    // `fetch(signedUrl)` returns 403 until the S3 bucket policy is fixed.
     case "pdf":
-      return <PdfPreview fileId={fileId} className={className} />;
+      body = <PdfPreview fileId={fileId} />;
+      break;
     case "markdown":
-      return <MarkdownPreview fileId={fileId} className={className} />;
+      body = <MarkdownPreview fileId={fileId} />;
+      break;
     case "data":
-      return (
-        <DataPreview
-          fileId={fileId}
-          fileName={file.fileName}
-          className={className}
-        />
-      );
     case "spreadsheet":
-      return (
-        <DataPreview
-          fileId={fileId}
-          fileName={file.fileName}
-          className={className}
-        />
-      );
+      body = <DataPreview fileId={fileId} fileName={file.fileName} />;
+      break;
     case "code":
-      return (
-        <CodePreview
-          fileId={fileId}
-          fileName={file.fileName}
-          className={className}
-        />
-      );
+      body = <CodePreview fileId={fileId} fileName={file.fileName} />;
+      break;
     case "text":
-      return <TextPreview fileId={fileId} className={className} />;
+      body = <TextPreview fileId={fileId} />;
+      break;
     case "generic":
     default:
-      return (
+      body = (
         <GenericPreview
           fileName={file.fileName}
           fileSize={file.fileSize}
           onDownload={() => void actions.download()}
-          className={className}
         />
       );
   }
+
+  return (
+    <div className={cn("flex h-full w-full min-h-0 flex-col", className)}>
+      {actionBar}
+      <div className="min-h-0 flex-1 overflow-hidden">{body}</div>
+    </div>
+  );
 }

@@ -3,18 +3,8 @@ import { createClient } from "@/utils/supabase/server";
 import {
   lookupSandboxAndOrchestrator,
   orchestratorJsonHeaders,
-  buildSandboxProxyUrl,
 } from "@/lib/sandbox/orchestrator-routing";
-import type { SandboxConfig } from "@/types/sandbox";
-
-// Surface orchestrator-derived fields (proxy_url) on every sandbox row
-// the FE reads. Keep in sync with the helper in /api/sandbox/route.ts —
-// or, if this duplication becomes a maintenance issue, extract into
-// `@/lib/sandbox/decorate-sandbox-row.ts` shared by all routes.
-function decorateSandboxRow<T extends { sandbox_id?: string | null; config?: unknown }>(row: T): T & { proxy_url: string | null } {
-  const tier = (row.config as SandboxConfig | null)?.tier ?? null;
-  return { ...row, proxy_url: buildSandboxProxyUrl(row.sandbox_id, tier) };
-}
+import { decorateSandboxRow } from "@/lib/sandbox/decorate-sandbox-row";
 
 export async function GET(
   _request: NextRequest,
@@ -220,7 +210,7 @@ export async function PUT(
       }
 
       return NextResponse.json({
-        instance: updated,
+        instance: decorateSandboxRow(updated),
         orchestrator: orchPayload,
       });
     }

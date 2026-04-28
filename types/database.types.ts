@@ -3039,6 +3039,108 @@ export type Database = {
         }
         Relationships: []
       }
+      cld_account_tiers: {
+        Row: {
+          created_at: string
+          features: Json
+          id: string
+          is_default_for_guests: boolean
+          is_default_for_users: boolean
+          max_bulk_items: number | null
+          max_daily_upload_bytes: number | null
+          max_daily_uploads: number | null
+          max_file_size_bytes: number | null
+          max_files: number | null
+          max_share_links_per_resource: number | null
+          max_storage_bytes: number | null
+          max_versions_per_file: number | null
+          name: string
+          rate_limit_downloads_per_min: number | null
+          rate_limit_general_per_min: number | null
+          rate_limit_uploads_per_min: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          features?: Json
+          id: string
+          is_default_for_guests?: boolean
+          is_default_for_users?: boolean
+          max_bulk_items?: number | null
+          max_daily_upload_bytes?: number | null
+          max_daily_uploads?: number | null
+          max_file_size_bytes?: number | null
+          max_files?: number | null
+          max_share_links_per_resource?: number | null
+          max_storage_bytes?: number | null
+          max_versions_per_file?: number | null
+          name: string
+          rate_limit_downloads_per_min?: number | null
+          rate_limit_general_per_min?: number | null
+          rate_limit_uploads_per_min?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          features?: Json
+          id?: string
+          is_default_for_guests?: boolean
+          is_default_for_users?: boolean
+          max_bulk_items?: number | null
+          max_daily_upload_bytes?: number | null
+          max_daily_uploads?: number | null
+          max_file_size_bytes?: number | null
+          max_files?: number | null
+          max_share_links_per_resource?: number | null
+          max_storage_bytes?: number | null
+          max_versions_per_file?: number | null
+          name?: string
+          rate_limit_downloads_per_min?: number | null
+          rate_limit_general_per_min?: number | null
+          rate_limit_uploads_per_min?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      cld_events: {
+        Row: {
+          actor_id: string | null
+          actor_type: string
+          event_type: string
+          id: string
+          ip_address: unknown
+          occurred_at: string
+          payload: Json
+          request_id: string | null
+          resource_id: string | null
+          resource_type: string | null
+        }
+        Insert: {
+          actor_id?: string | null
+          actor_type: string
+          event_type: string
+          id?: string
+          ip_address?: unknown
+          occurred_at?: string
+          payload?: Json
+          request_id?: string | null
+          resource_id?: string | null
+          resource_type?: string | null
+        }
+        Update: {
+          actor_id?: string | null
+          actor_type?: string
+          event_type?: string
+          id?: string
+          ip_address?: unknown
+          occurred_at?: string
+          payload?: Json
+          request_id?: string | null
+          resource_id?: string | null
+          resource_type?: string | null
+        }
+        Relationships: []
+      }
       cld_file_permissions: {
         Row: {
           expires_at: string | null
@@ -3131,6 +3233,7 @@ export type Database = {
           id: string
           metadata: Json
           mime_type: string | null
+          organization_id: string | null
           owner_id: string
           parent_folder_id: string | null
           storage_uri: string
@@ -3148,6 +3251,7 @@ export type Database = {
           id?: string
           metadata?: Json
           mime_type?: string | null
+          organization_id?: string | null
           owner_id: string
           parent_folder_id?: string | null
           storage_uri: string
@@ -3165,6 +3269,7 @@ export type Database = {
           id?: string
           metadata?: Json
           mime_type?: string | null
+          organization_id?: string | null
           owner_id?: string
           parent_folder_id?: string | null
           storage_uri?: string
@@ -3188,7 +3293,9 @@ export type Database = {
           folder_name: string
           folder_path: string
           id: string
+          is_system: boolean
           metadata: Json
+          organization_id: string | null
           owner_id: string
           parent_id: string | null
           updated_at: string
@@ -3200,7 +3307,9 @@ export type Database = {
           folder_name: string
           folder_path: string
           id?: string
+          is_system?: boolean
           metadata?: Json
+          organization_id?: string | null
           owner_id: string
           parent_id?: string | null
           updated_at?: string
@@ -3212,7 +3321,9 @@ export type Database = {
           folder_name?: string
           folder_path?: string
           id?: string
+          is_system?: boolean
           metadata?: Json
+          organization_id?: string | null
           owner_id?: string
           parent_id?: string | null
           updated_at?: string
@@ -3227,6 +3338,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      cld_guest_migrations: {
+        Row: {
+          fingerprint_hash: string
+          guest_id: string
+          migrated_at: string
+          migrated_to: string
+          payload: Json
+        }
+        Insert: {
+          fingerprint_hash: string
+          guest_id: string
+          migrated_at?: string
+          migrated_to: string
+          payload?: Json
+        }
+        Update: {
+          fingerprint_hash?: string
+          guest_id?: string
+          migrated_at?: string
+          migrated_to?: string
+          payload?: Json
+        }
+        Relationships: []
+      }
+      cld_rate_limit_buckets: {
+        Row: {
+          actor_id: string
+          bucket_kind: string
+          counter: number
+          minute_bucket: string
+        }
+        Insert: {
+          actor_id: string
+          bucket_kind: string
+          counter?: number
+          minute_bucket: string
+        }
+        Update: {
+          actor_id?: string
+          bucket_kind?: string
+          counter?: number
+          minute_bucket?: string
+        }
+        Relationships: []
       }
       cld_share_links: {
         Row: {
@@ -3269,6 +3425,47 @@ export type Database = {
           use_count?: number
         }
         Relationships: []
+      }
+      cld_user_account: {
+        Row: {
+          blocked_reason: string | null
+          created_at: string
+          custom_limits: Json
+          is_blocked: boolean
+          notes: string | null
+          tier_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          blocked_reason?: string | null
+          created_at?: string
+          custom_limits?: Json
+          is_blocked?: boolean
+          notes?: string | null
+          tier_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          blocked_reason?: string | null
+          created_at?: string
+          custom_limits?: Json
+          is_blocked?: boolean
+          notes?: string | null
+          tier_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cld_user_account_tier_id_fkey"
+            columns: ["tier_id"]
+            isOneToOne: false
+            referencedRelation: "cld_account_tiers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       cld_user_group_members: {
         Row: {
@@ -3323,6 +3520,36 @@ export type Database = {
           id?: string
           name?: string
           owner_id?: string
+        }
+        Relationships: []
+      }
+      cld_user_storage_usage: {
+        Row: {
+          bytes_used: number
+          daily_reset_at: string
+          daily_upload_bytes: number
+          daily_upload_count: number
+          files_count: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bytes_used?: number
+          daily_reset_at?: string
+          daily_upload_bytes?: number
+          daily_upload_count?: number
+          files_count?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bytes_used?: number
+          daily_reset_at?: string
+          daily_upload_bytes?: number
+          daily_upload_count?: number
+          files_count?: number
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -11634,6 +11861,7 @@ export type Database = {
           hot_path: string | null
           id: string
           is_public: boolean
+          labels: Json | null
           last_heartbeat_at: string | null
           organization_id: string | null
           project_id: string | null
@@ -11642,6 +11870,9 @@ export type Database = {
           stop_reason: string | null
           stopped_at: string | null
           task_id: string | null
+          template: string | null
+          template_version: string | null
+          tier: string | null
           ttl_seconds: number
           updated_at: string
           user_id: string
@@ -11656,6 +11887,7 @@ export type Database = {
           hot_path?: string | null
           id?: string
           is_public?: boolean
+          labels?: Json | null
           last_heartbeat_at?: string | null
           organization_id?: string | null
           project_id?: string | null
@@ -11664,6 +11896,9 @@ export type Database = {
           stop_reason?: string | null
           stopped_at?: string | null
           task_id?: string | null
+          template?: string | null
+          template_version?: string | null
+          tier?: string | null
           ttl_seconds?: number
           updated_at?: string
           user_id: string
@@ -11678,6 +11913,7 @@ export type Database = {
           hot_path?: string | null
           id?: string
           is_public?: boolean
+          labels?: Json | null
           last_heartbeat_at?: string | null
           organization_id?: string | null
           project_id?: string | null
@@ -11686,6 +11922,9 @@ export type Database = {
           stop_reason?: string | null
           stopped_at?: string | null
           task_id?: string | null
+          template?: string | null
+          template_version?: string | null
+          tier?: string | null
           ttl_seconds?: number
           updated_at?: string
           user_id?: string
@@ -18569,11 +18808,109 @@ export type Database = {
           isSetofReturn: false
         }
       }
-      cld_get_effective_permission: {
-        Args: { p_file_id: string; p_user_id: string }
+      cld_apply_usage_delta: {
+        Args: {
+          p_bytes_delta: number
+          p_files_delta: number
+          p_record_upload?: boolean
+          p_upload_bytes?: number
+          p_user_id: string
+        }
+        Returns: undefined
+      }
+      cld_bump_version: { Args: { p_file_id: string }; Returns: number }
+      cld_check_rate_limit: {
+        Args: { p_actor_id: string; p_kind: string; p_limit: number }
+        Returns: Json
+      }
+      cld_check_upload_quota: {
+        Args: { p_is_guest?: boolean; p_size_bytes: number; p_user_id: string }
+        Returns: Json
+      }
+      cld_consume_share_link: { Args: { p_token: string }; Returns: Json }
+      cld_ensure_folder_chain: {
+        Args: { p_folder_path: string; p_owner_id: string }
         Returns: string
       }
-      cld_get_user_file_tree: { Args: { p_user_id: string }; Returns: Json }
+      cld_get_effective_permission: {
+        Args: { p_resource_id: string; p_user_id: string }
+        Returns: string
+      }
+      cld_get_usage_status: {
+        Args: { p_is_guest?: boolean; p_user_id: string }
+        Returns: Json
+      }
+      cld_get_user_file_tree:
+        | { Args: { p_user_id: string }; Returns: Json }
+        | {
+            Args: {
+              p_include_deleted?: boolean
+              p_include_folders?: boolean
+              p_limit?: number
+              p_offset?: number
+              p_user_id: string
+            }
+            Returns: Json
+          }
+      cld_get_user_limits: {
+        Args: { p_is_guest?: boolean; p_user_id: string }
+        Returns: Json
+      }
+      cld_hard_delete_file: { Args: { p_file_id: string }; Returns: Json }
+      cld_list_trash: {
+        Args: { p_limit?: number; p_offset?: number; p_user_id: string }
+        Returns: Json
+      }
+      cld_migrate_guest_to_user: {
+        Args: { p_guest_id: string; p_new_user_id: string }
+        Returns: Json
+      }
+      cld_migrate_guest_to_user_safe: {
+        Args: {
+          p_fingerprint_hash: string
+          p_guest_id: string
+          p_new_user_id: string
+        }
+        Returns: Json
+      }
+      cld_prune_old_versions: {
+        Args: { p_file_id: string; p_keep: number }
+        Returns: Json
+      }
+      cld_rename_folder: {
+        Args: {
+          p_folder_id: string
+          p_new_parent_id?: string
+          p_new_path: string
+        }
+        Returns: Json
+      }
+      cld_restore_file: { Args: { p_file_id: string }; Returns: boolean }
+      cld_restore_folder: { Args: { p_folder_id: string }; Returns: Json }
+      cld_search_files: {
+        Args: {
+          p_limit?: number
+          p_mime_prefix?: string
+          p_offset?: number
+          p_query: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
+      cld_soft_delete_file: { Args: { p_file_id: string }; Returns: boolean }
+      cld_soft_delete_folder: { Args: { p_folder_id: string }; Returns: Json }
+      cld_user_has_permission_grant: {
+        Args: {
+          p_min_level?: string
+          p_resource_id: string
+          p_resource_type: string
+        }
+        Returns: boolean
+      }
+      cld_user_in_group: { Args: { p_group_id: string }; Returns: boolean }
+      cld_user_owns_file: { Args: { p_file_id: string }; Returns: boolean }
+      cld_user_owns_folder: { Args: { p_folder_id: string }; Returns: boolean }
+      cld_user_owns_group: { Args: { p_group_id: string }; Returns: boolean }
       cleanup_deleted_sandboxes: {
         Args: { retention_days?: number }
         Returns: number
@@ -20011,6 +20348,8 @@ export type Database = {
       get_aga_public_data: {
         Args: { p_app_id?: string; p_slug?: string }
         Returns: {
+          agent_id: string
+          agent_version_id: string
           allowed_imports: Json
           category: string
           component_code: string
@@ -20027,6 +20366,7 @@ export type Database = {
           tagline: string
           tags: string[]
           total_executions: number
+          use_latest: boolean
           variable_schema: Json
         }[]
       }

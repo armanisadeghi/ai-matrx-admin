@@ -4,6 +4,7 @@ import { useCallback, useRef, useState } from "react";
 import type {
   SandboxInstance,
   SandboxListResponse,
+  SandboxDetailResponse,
   SandboxCreateRequest,
   SandboxExecRequest,
   SandboxExecResponse,
@@ -148,7 +149,7 @@ export function useSandboxInstances(projectId?: string) {
           throw new Error(message);
         }
 
-        const { instance } = await resp.json();
+        const { instance }: SandboxDetailResponse = await resp.json();
 
         console.log("[useSandboxInstances] createInstance: Success", {
           id: instance.id,
@@ -168,7 +169,7 @@ export function useSandboxInstances(projectId?: string) {
           return [instance, ...prev];
         });
         setTotal((prev) => prev + 1);
-        return { instance: instance as SandboxInstance, error: null };
+        return { instance, error: null };
       } catch (err) {
         const msg = err instanceof Error ? err.message : "Unknown error";
         console.error("[useSandboxInstances] createInstance: Error", msg);
@@ -194,9 +195,9 @@ export function useSandboxInstances(projectId?: string) {
         );
       }
 
-      const { instance } = await resp.json();
+      const { instance }: SandboxDetailResponse = await resp.json();
       setInstances((prev) => prev.map((i) => (i.id === id ? instance : i)));
-      return instance as SandboxInstance;
+      return instance;
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Unknown error";
       setError(msg);
@@ -223,9 +224,9 @@ export function useSandboxInstances(projectId?: string) {
           );
         }
 
-        const { instance } = await resp.json();
+        const { instance }: SandboxDetailResponse = await resp.json();
         setInstances((prev) => prev.map((i) => (i.id === id ? instance : i)));
-        return instance as SandboxInstance;
+        return instance;
       } catch (err) {
         const msg = err instanceof Error ? err.message : "Unknown error";
         setError(msg);

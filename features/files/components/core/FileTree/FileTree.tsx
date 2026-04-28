@@ -18,21 +18,10 @@ import {
   useRef,
   useState,
 } from "react";
-import {
-  DndContext,
-  DragOverlay,
-  PointerSensor,
-  closestCenter,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-  type DragStartEvent,
-} from "@dnd-kit/core";
+import { useDndMonitor } from "@dnd-kit/core";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { ChevronsDownUp } from "lucide-react";
+import { ChevronsDown, ChevronsUp } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { moveFile } from "@/features/files/redux/thunks";
 import { useFileSelection } from "@/features/files/hooks/useFileSelection";
 import {
   FILE_TREE_ROW_HEIGHT,
@@ -74,7 +63,6 @@ export function FileTree({
   readOnly,
   emptyState,
 }: FileTreeProps) {
-  const dispatch = useAppDispatch();
   const selection = useFileSelection();
   const expansion = useTreeExpansion({ initialExpanded });
   const [focusedIndex, setFocusedIndex] = useState<number>(-1);
@@ -92,11 +80,22 @@ export function FileTree({
     overscan: 12,
   });
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { distance: 6 },
-    }),
-  );
+  // FileTree no longer owns its own DndContext — drag/drop registers with
+  // the parent context (PageShell). useDndMonitor lets us still observe
+  // start/end events for local UI feedback (the dragged-row dim) without
+  // duplicating registration.
+  useDndMonitor({
+    onDragStart(event) {
+      const id = (event.active.data.current as { id?: string } | undefined)?.id;
+      if (id) setDraggingId(id);
+    },
+    onDragEnd() {
+      setDraggingId(null);
+    },
+    onDragCancel() {
+      setDraggingId(null);
+    },
+  });
 
   // ------------------------------------------------------------------- events
 
@@ -186,31 +185,6 @@ export function FileTree({
     [rows, focusedIndex, expansion, virtualizer, onActivateFile, onActivateFolder],
   );
 
-  const handleDragStart = useCallback((event: DragStartEvent) => {
-    const id = (event.active.data.current as { id?: string } | undefined)?.id;
-    if (id) setDraggingId(id);
-  }, []);
-
-  const handleDragEnd = useCallback(
-    (event: DragEndEvent) => {
-      setDraggingId(null);
-      const over = event.over?.data.current as
-        | { type?: "file" | "folder"; id?: string }
-        | undefined;
-      const active = event.active.data.current as
-        | { type?: "file" | "folder"; id?: string }
-        | undefined;
-      if (!over || over.type !== "folder" || !over.id || !active?.id) return;
-      if (active.type !== "file") return; // only file → folder for now
-      if (active.id === over.id) return;
-
-      void dispatch(
-        moveFile({ fileId: active.id, newParentFolderId: over.id }),
-      );
-    },
-    [dispatch],
-  );
-
   // Keep focus in bounds if rows shrink.
   useEffect(() => {
     if (focusedIndex >= rows.length) {
@@ -234,34 +208,36 @@ export function FileTree({
   }
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
-    >
+    <>
       <div className={cn("flex h-full w-full flex-col", className)}>
-        <div className="flex items-center justify-end gap-0.5 border-b border-border/60 bg-background/40 px-1 py-0.5 shrink-0">
-          <TooltipIcon label="Expand all folders">
-            <button
-              type="button"
-              onClick={expansion.expandAll}
-              aria-label="Expand all folders"
-              className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
-            >
-              <ChevronsDownUp className="h-3 w-3 rotate-180" aria-hidden="true" />
-            </button>
-          </TooltipIcon>
-          <TooltipIcon label="Collapse all folders">
-            <button
-              type="button"
-              onClick={expansion.collapseAll}
-              aria-label="Collapse all folders"
-              className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
-            >
-              <ChevronsDownUp className="h-3 w-3" aria-hidden="true" />
-            </button>
-          </TooltipIcon>
+        <div className="flex items-center justify-between gap-1 border-b border-border/60 bg-background/40 px-2 py-1 shrink-0">
+          <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+            Folders
+          </span>
+          <div className="flex items-center gap-1">
+            <TooltipIcon label="Expand all folders">
+              <button
+                type="button"
+                onClick={expansion.expandAll}
+                aria-label="Expand all folders"
+                className="inline-flex h-7 items-center gap-1 rounded-md border border-border/60 bg-background px-1.5 text-[11px] font-medium text-foreground/80 hover:bg-accent hover:text-foreground"
+              >
+                <ChevronsDown className="h-4 w-4" aria-hidden="true" />
+                <span>Expand</span>
+              </button>
+            </TooltipIcon>
+            <TooltipIcon label="Collapse all folders">
+              <button
+                type="button"
+                onClick={expansion.collapseAll}
+                aria-label="Collapse all folders"
+                className="inline-flex h-7 items-center gap-1 rounded-md border border-border/60 bg-background px-1.5 text-[11px] font-medium text-foreground/80 hover:bg-accent hover:text-foreground"
+              >
+                <ChevronsUp className="h-4 w-4" aria-hidden="true" />
+                <span>Collapse</span>
+              </button>
+            </TooltipIcon>
+          </div>
         </div>
       <div
         ref={containerRef}
@@ -323,14 +299,6 @@ export function FileTree({
         </div>
       </div>
       </div>
-
-      <DragOverlay>
-        {draggingId ? (
-          <div className="rounded border bg-card px-2 py-1 text-xs shadow-md">
-            Moving…
-          </div>
-        ) : null}
-      </DragOverlay>
-    </DndContext>
+    </>
   );
 }

@@ -479,10 +479,12 @@ export default function SandboxDetailPage() {
               </CardHeader>
               <CardContent className="space-y-1">
                 <p className="text-xs text-muted-foreground">
-                  Hot: <span className="font-mono">{instance.hot_path}</span>
+                  Hot:{" "}
+                  <span className="font-mono">{instance.hot_path ?? "—"}</span>
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Cold: <span className="font-mono">{instance.cold_path}</span>
+                  Cold:{" "}
+                  <span className="font-mono">{instance.cold_path ?? "—"}</span>
                 </p>
               </CardContent>
             </Card>
@@ -606,7 +608,7 @@ export default function SandboxDetailPage() {
 
           {isActive && <SshAccessPanel sandboxId={id} disabled={!isActive} />}
 
-          {Object.keys(instance.config).length > 0 && (
+          {instance.config && Object.keys(instance.config).length > 0 && (
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -697,7 +699,7 @@ export default function SandboxDetailPage() {
                         Hot Path
                       </span>
                       <code className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded">
-                        {instance.hot_path}
+                        {instance.hot_path ?? "—"}
                       </code>
                     </div>
                     <div>
@@ -705,7 +707,7 @@ export default function SandboxDetailPage() {
                         Cold Path
                       </span>
                       <code className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded">
-                        {instance.cold_path}
+                        {instance.cold_path ?? "—"}
                       </code>
                     </div>
                     <div>
@@ -728,26 +730,17 @@ export default function SandboxDetailPage() {
                           : "--"}
                       </span>
                     </div>
-                    {instance.ssh_port && (
-                      <div>
-                        <span className="text-xs font-medium text-muted-foreground block mb-0.5">
-                          SSH Port
-                        </span>
-                        <code className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded">
-                          {instance.ssh_port}
-                        </code>
-                      </div>
-                    )}
-                    {Object.keys(instance.config).length > 0 && (
-                      <div className="md:col-span-2">
-                        <span className="text-xs font-medium text-muted-foreground block mb-0.5">
-                          Config
-                        </span>
-                        <pre className="text-xs font-mono bg-muted rounded p-2 overflow-x-auto">
-                          {JSON.stringify(instance.config, null, 2)}
-                        </pre>
-                      </div>
-                    )}
+                    {instance.config &&
+                      Object.keys(instance.config).length > 0 && (
+                        <div className="md:col-span-2">
+                          <span className="text-xs font-medium text-muted-foreground block mb-0.5">
+                            Config
+                          </span>
+                          <pre className="text-xs font-mono bg-muted rounded p-2 overflow-x-auto">
+                            {JSON.stringify(instance.config, null, 2)}
+                          </pre>
+                        </div>
+                      )}
                   </div>
                 </CardContent>
               )}
@@ -936,11 +929,13 @@ export default function SandboxDetailPage() {
               This is a destructive action.
               {isActive ? " The running container will be destroyed and " : " "}
               the sandbox row will be removed from your list.{" "}
-              <strong>Your /home/agent volume on this tier is not deleted</strong>
-              {" "}— it stays put and will be re-mounted on the next sandbox
-              you create. To wipe persistent storage entirely, use Settings →
-              Sandbox Storage. If you just want to stop this container, use
-              Stop instead.
+              <strong>
+                Your /home/agent volume on this tier is not deleted
+              </strong>{" "}
+              — it stays put and will be re-mounted on the next sandbox you
+              create. To wipe persistent storage entirely, use Settings →
+              Sandbox Storage. If you just want to stop this container, use Stop
+              instead.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

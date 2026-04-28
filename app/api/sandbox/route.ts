@@ -3,19 +3,14 @@ import { createClient } from "@/utils/supabase/server";
 import {
   resolveOrchestratorByTier,
   orchestratorJsonHeaders,
-  buildSandboxProxyUrl,
 } from "@/lib/sandbox/orchestrator-routing";
+import { decorateSandboxRow } from "@/lib/sandbox/decorate-sandbox-row";
 import { reconcileUserSandboxes } from "@/lib/sandbox/reconcile";
 import type { SandboxConfig, SandboxTier } from "@/types/sandbox";
+import type { Database } from "@/types/database.types";
 
-// Decorate a sandbox row from Postgres with the orchestrator-derived
-// fields we DON'T persist — currently just `proxy_url`. Surfaces the URL
-// even when the row was inserted before we added the orchestrator's
-// proxy_url field, so the FE can rely on it being there always.
-function decorateSandboxRow<T extends { sandbox_id?: string | null; config?: unknown }>(row: T): T & { proxy_url: string | null } {
-  const tier = (row.config as SandboxConfig | null)?.tier ?? null;
-  return { ...row, proxy_url: buildSandboxProxyUrl(row.sandbox_id, tier) };
-}
+type SandboxInstanceInsert =
+  Database["public"]["Tables"]["sandbox_instances"]["Insert"];
 
 export async function GET(request: NextRequest) {
   try {
@@ -268,10 +263,12 @@ export async function POST(request: NextRequest) {
     const orchestratorData = await orchestratorResp.json();
     const effectiveTtl = ttl_seconds || orchestratorData?.ttl_seconds || 7200;
 
-    // Pack tier/template/resources/labels into config until we have dedicated
-    // columns (a follow-up Supabase migration). The orchestrator's response
-    // also includes these fields as top-level — we keep our copy in `config`
-    // for the routing logic in lookupSandboxAndOrchestrator.
+    // `tier`, `template`, `template_version`, and `labels` are now dedicated
+    // top-level columns on `sandbox_instances` (Supabase migration landed).
+    // We still mirror them into `config` JSONB so legacy code paths that read
+    // `config.tier` (e.g. orchestrator-routing pre-migration callers) keep
+    // working — the helper in `decorate-sandbox-row.ts` prefers the column
+    // and falls back to `config` for old rows.
     const persistedConfig: SandboxConfig = {
       ...(config || {}),
       tier,
@@ -281,7 +278,10 @@ export async function POST(request: NextRequest) {
       ...(labels ? { labels } : {}),
     };
 
-    const sandboxRecord = {
+    // Typed against the DB Insert shape: if Supabase types regenerate with a
+    // renamed/required column, this assignment fails at compile time. That's
+    // the contract that catches the next `proxy_url`-style silent drop.
+    const sandboxRecord: SandboxInstanceInsert = {
       user_id: user.id,
       project_id: project_id || null,
       sandbox_id: orchestratorData.sandbox_id,
@@ -290,6 +290,10 @@ export async function POST(request: NextRequest) {
       hot_path: orchestratorData.hot_path || "/home/agent",
       cold_path: orchestratorData.cold_path || "/data/cold",
       config: persistedConfig,
+      tier,
+      template: template ?? null,
+      template_version: template_version ?? null,
+      labels: labels ?? null,
       ttl_seconds: effectiveTtl,
       expires_at:
         orchestratorData.expires_at ||
@@ -313,7 +317,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ instance: decorateSandboxRow(instance) }, { status: 201 });
+    return NextResponse.json(
+      { instance: decorateSandboxRow(instance) },
+      { status: 201 },
+    );
   } catch (error) {
     console.error("Sandbox create API error:", error);
     return NextResponse.json(

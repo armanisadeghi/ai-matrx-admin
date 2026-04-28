@@ -231,12 +231,26 @@ function PageShellDesktop({
       if (over.type !== "folder") return;
       if (active.id === over.id) return;
       if (active.type === "file") {
+        const file = filesById[active.id];
+        if (file && file.parentFolderId === over.id) return; // already there
         void dispatch(
           moveFileThunk({ fileId: active.id, newParentFolderId: over.id }),
         );
       } else if (active.type === "folder") {
         // Folder → folder move uses updateFolder with parentId patch (the
-        // backend cascades child folder_path updates).
+        // backend cascades child folder_path updates). Guard against:
+        //   • dropping onto the current parent (no-op)
+        //   • dropping onto a descendant (cycle)
+        const moving = foldersById[active.id];
+        if (!moving) return;
+        if (moving.parentId === over.id) return;
+        let cursor: string | null = over.id;
+        const seen = new Set<string>();
+        while (cursor && !seen.has(cursor)) {
+          if (cursor === active.id) return; // cycle — refuse
+          seen.add(cursor);
+          cursor = foldersById[cursor]?.parentId ?? null;
+        }
         void dispatch(
           updateFolderThunk({
             folderId: active.id,
@@ -245,7 +259,7 @@ function PageShellDesktop({
         );
       }
     },
-    [dispatch],
+    [dispatch, filesById, foldersById],
   );
   const handleDragCancel = useCallback(() => setDragLabel(null), []);
 
