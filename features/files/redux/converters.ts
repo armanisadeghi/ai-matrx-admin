@@ -81,6 +81,7 @@ export function dbRowToCloudFile(row: CloudFileRow): CloudFile {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     deletedAt: row.deleted_at,
+    source: { kind: "real" },
   };
 }
 
@@ -105,6 +106,7 @@ export function apiFileRecordToCloudFile(row: FileRecordApi): CloudFile {
     createdAt: row.created_at ?? new Date().toISOString(),
     updatedAt: row.updated_at ?? new Date().toISOString(),
     deletedAt: row.deleted_at ?? null,
+    source: { kind: "real" },
   };
 }
 
@@ -124,6 +126,7 @@ export function dbRowToCloudFolder(row: CloudFolderRow): CloudFolder {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     deletedAt: row.deleted_at,
+    source: { kind: "real" },
   };
 }
 

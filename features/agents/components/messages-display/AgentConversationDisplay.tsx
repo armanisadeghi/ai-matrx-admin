@@ -4,22 +4,18 @@
  * AgentConversationDisplay
  *
  * Renders the conversation transcript. Reads ONLY from `messages.byId +
- * orderedIds` (MessageRecord shape) — there is no legacy turn array.
+ * orderedIds` (MessageRecord shape).
  *
- * Child components receive identifiers only (messageId, conversationId,
- * requestId) and subscribe to their own data:
+ * Streaming bubble: the LATEST assistant cx_message reservation IS the
+ * streaming bubble — there is no virtual `__streaming__` entry. While the
+ * stream is active, that record carries `isStreamActive=true` and the
+ * `latestRequestId`; AgentAssistantMessage falls through to the
+ * requestId-driven MarkdownStream path to render in-flight chunks.
  *
- *   - Committed messages:        byId[messageId] (status "active")
- *   - Reserved assistant skel:   byId[messageId] (status "reserved", empty content)
- *   - Live streaming turn:       activeRequests[requestId] (text appears here
- *                                as chunks stream in; byId gets the final
- *                                content on completion)
- *
- * During a live stream the reserved assistant record exists in byId but has
- * empty content; we skip it in the list and push a `__streaming__` entry
- * that renders from activeRequests. When completion lands,
- * `updateMessageRecord` writes the final `CxContentBlock[]` to the same byId
- * entry and the streaming entry disappears.
+ * Once the stream completes, Phase 3 routing in process-stream commits the
+ * final `CxContentBlock[]` content into the same byId record(s) and the
+ * canonical `selectMessageInterleavedContent` selector takes over, joining
+ * tool_call stubs with their full payloads from `observability.toolCalls`.
  */
 
 import { useEffect, useMemo, useRef } from "react";
@@ -98,25 +94,34 @@ export function AgentConversationDisplay({
     phase === "error";
 
   const displayEntries = useMemo((): DisplayEntry[] => {
+    // The streaming bubble is the latest assistant cx_message in orderedIds
+    // while the stream is active — no virtual entry. Find it once so we can
+    // tag it with isStreamActive + the live requestId.
+    let streamingAssistantId: string | null = null;
+    if (isActive) {
+      for (let i = messages.length - 1; i >= 0; i--) {
+        if (messages[i].role === "assistant") {
+          streamingAssistantId = messages[i].id;
+          break;
+        }
+      }
+    }
+
     const entries: DisplayEntry[] = [];
     for (const rec of messages) {
-      if (isEmptyReservedAssistant(rec)) continue;
+      const isStreamingMessage = rec.id === streamingAssistantId;
+      // Skip empty reserved assistants UNLESS they're the active streaming
+      // bubble (in which case the requestId-driven MarkdownStream path
+      // renders the in-flight chunks even though byId.content is still empty).
+      if (isEmptyReservedAssistant(rec) && !isStreamingMessage) continue;
       entries.push({
         key: rec.id,
         role: rec.role,
         messageId: rec.id,
-        requestId: rec._streamRequestId ?? null,
-        isStreamActive: false,
-      });
-    }
-
-    if (isActive) {
-      entries.push({
-        key: "__streaming__",
-        role: "assistant",
-        messageId: null,
-        requestId: latestRequestId ?? null,
-        isStreamActive: true,
+        requestId: isStreamingMessage
+          ? (latestRequestId ?? null)
+          : (rec._streamRequestId ?? null),
+        isStreamActive: isStreamingMessage,
       });
     }
 

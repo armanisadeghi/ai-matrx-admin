@@ -17,10 +17,14 @@
  *   │   original = tab.content                                       │
  *   │   modified = tab.content with all pending patches applied      │
  *   │                                                                │
- *   │   Each hunk gets its own inline [Accept] [Reject] pair rendered│
- *   │   as a Monaco content widget on the modified pane (Cursor /    │
- *   │   VSCode style). Per-hunk actions go through the same          │
- *   │   acceptPatch / rejectPatch path the toolbar uses.             │
+ *   │   Each hunk gets its own inline [Accept] [Reject] strip,       │
+ *   │   rendered into a Monaco *view zone* placed above the hunk's   │
+ *   │   first modified line. View zones reserve real vertical space  │
+ *   │   so the buttons never overlap diff decorations or fight       │
+ *   │   z-indexes — the failure mode that made the original content- │
+ *   │   widget version render as faint, unclickable ghosts. Per-hunk │
+ *   │   actions go through the same acceptPatch / rejectPatch path   │
+ *   │   the toolbar uses.                                            │
  *   └────────────────────────────────────────────────────────────────┘
  *
  * Apply pipeline: identical to before. Accept dispatches `applyCodeEdits`
@@ -38,11 +42,7 @@ import React, {
 } from "react";
 import { createPortal } from "react-dom";
 import { Check, ChevronLeft, ChevronRight, Sparkles, X } from "lucide-react";
-import {
-  DiffEditor,
-  type DiffOnMount,
-  type Monaco,
-} from "@monaco-editor/react";
+import { DiffEditor, type DiffOnMount } from "@monaco-editor/react";
 import type { editor as MonacoEditorNS } from "monaco-editor";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { cn } from "@/lib/utils";
@@ -65,7 +65,6 @@ interface TabDiffViewProps {
 
 interface PatchAnchor {
   patchId: string;
-  modifiedLine: number;
   domNode: HTMLDivElement;
 }
 
@@ -202,117 +201,130 @@ export const TabDiffView: React.FC<TabDiffViewProps> = ({ tab }) => {
   }, [dispatch, patches, tab.id]);
 
   // ── Monaco wiring for per-hunk inline action widgets ──────────────────
-  // We track the diff editor + monaco namespace in state so effects
-  // re-run after the editor mounts (refs alone wouldn't trigger a
-  // rerun, content widgets need to be added AFTER the editor exists).
+  //
+  // We use Monaco *view zones* — not content widgets — to host the
+  // per-hunk Accept / Reject buttons. View zones reserve real vertical
+  // space above (or below) a line in the modified pane, so:
+  //
+  //   1. The buttons sit in their own clean strip, never overlapping the
+  //      diff's red / green decoration overlays (the failure mode that
+  //      made content widgets render as faint, unclickable ghosts in the
+  //      inline diff view).
+  //   2. They naturally receive clicks — no z-index battle with
+  //      decoration layers.
+  //   3. Layout is stable: view zones participate in scroll / minimap
+  //      math, so the buttons stay anchored to their hunk on scroll.
+  //
+  // Each anchor's `domNode` is an empty <div> that Monaco mounts into
+  // the strip; React renders the actual button bar into it via
+  // `createPortal` further down.
   const [diffEditor, setDiffEditor] =
     useState<MonacoEditorNS.IStandaloneDiffEditor | null>(null);
-  const [monacoApi, setMonacoApi] = useState<Monaco | null>(null);
   const [anchors, setAnchors] = useState<PatchAnchor[]>([]);
 
   // Refs to current callbacks so the React-portal buttons always call
-  // the latest version without us re-creating widgets on every render.
+  // the latest version without us tearing down view zones on every
+  // render.
   const acceptPatchRef = useRef(acceptPatch);
   const rejectPatchRef = useRef(rejectPatch);
   acceptPatchRef.current = acceptPatch;
   rejectPatchRef.current = rejectPatch;
 
-  const handleDiffMount: DiffOnMount = useCallback((editor, monaco) => {
+  const handleDiffMount: DiffOnMount = useCallback((editor) => {
     editor.getOriginalEditor().updateOptions({ readOnly: true });
     editor.getModifiedEditor().updateOptions({ readOnly: true });
     setDiffEditor(editor);
-    setMonacoApi(monaco);
   }, []);
 
   // Whenever the diff editor finishes computing (or our patch list
   // changes after an accept), recompute which patch corresponds to
-  // which Monaco hunk and rebuild the anchor list. We assume a 1:1
+  // which Monaco hunk and rebuild the view zones. We assume a 1:1
   // mapping between SEARCH/REPLACE blocks and Monaco hunks, sorted by
-  // their original-side line position — which holds for the SEARCH/
-  // REPLACE format the agent emits because each block is a contiguous
-  // edit.
+  // original-side line position — which holds for the SEARCH/REPLACE
+  // format the agent emits because each block is a contiguous edit.
   useEffect(() => {
     if (!diffEditor) return;
-    let cancelled = false;
+    const modifiedEditor = diffEditor.getModifiedEditor();
+    const ownedZoneIds: string[] = [];
 
     const compute = () => {
-      if (cancelled) return;
       const changes = diffEditor.getLineChanges() ?? [];
-      if (changes.length === 0) {
-        setAnchors([]);
-        return;
-      }
 
+      // Map each pending patch to its original-side line position so
+      // we can zip patches against Monaco's hunk list in document order.
       const positions: Array<{
         patch: PendingPatch;
         originalStart: number;
       }> = [];
       for (const patch of patches) {
         const idx = tab.content.indexOf(patch.search);
-        if (idx === -1) continue; // fuzzy-only patch — skip inline widget
+        if (idx === -1) continue;
         const startLine = tab.content.substring(0, idx).split("\n").length;
         positions.push({ patch, originalStart: startLine });
       }
       positions.sort((a, b) => a.originalStart - b.originalStart);
 
-      const next: PatchAnchor[] = [];
+      const nextAnchors: PatchAnchor[] = [];
       const n = Math.min(positions.length, changes.length);
-      for (let i = 0; i < n; i++) {
-        const change = changes[i];
-        const patch = positions[i].patch;
-        const modifiedLine = Math.max(
-          1,
-          change.modifiedStartLineNumber || change.modifiedEndLineNumber || 1,
-        );
-        const dom = document.createElement("div");
-        // Allow the React-portal button container to receive clicks
-        // even though Monaco overlays default to pointer-events:none.
-        dom.style.pointerEvents = "auto";
-        next.push({
-          patchId: patch.patchId,
-          modifiedLine,
-          domNode: dom,
-        });
-      }
-      setAnchors(next);
+
+      // Single batched view-zone mutation — removes the previous run's
+      // zones AND adds the new ones in one accessor call. Monaco re-
+      // layouts only once, no flicker.
+      modifiedEditor.changeViewZones((accessor) => {
+        for (const id of ownedZoneIds) accessor.removeZone(id);
+        ownedZoneIds.length = 0;
+
+        for (let i = 0; i < n; i++) {
+          const change = changes[i];
+          const patch = positions[i].patch;
+          const modifiedLine = Math.max(
+            1,
+            change.modifiedStartLineNumber || change.modifiedEndLineNumber || 1,
+          );
+
+          const domNode = document.createElement("div");
+          domNode.className = "tab-diff-zone";
+          // Make the strip blend with the diff editor while clearly
+          // separating it from the surrounding code rows.
+          domNode.style.display = "flex";
+          domNode.style.alignItems = "center";
+          domNode.style.justifyContent = "flex-end";
+          domNode.style.padding = "0 12px";
+          domNode.style.pointerEvents = "auto";
+
+          const zoneId = accessor.addZone({
+            // `afterLineNumber: 0` puts the zone at the very top of the
+            // editor; for any other line we want the strip to appear
+            // *above* that line, so we anchor after `line - 1`.
+            afterLineNumber: Math.max(0, modifiedLine - 1),
+            heightInLines: 1,
+            domNode,
+            suppressMouseDown: false,
+          });
+          ownedZoneIds.push(zoneId);
+          nextAnchors.push({ patchId: patch.patchId, domNode });
+        }
+      });
+
+      setAnchors(nextAnchors);
     };
 
     compute();
     const sub = diffEditor.onDidUpdateDiff(compute);
-    return () => {
-      cancelled = true;
-      sub.dispose();
-    };
-  }, [diffEditor, patches, tab.content]);
 
-  // Register Monaco content widgets for each anchor. Re-runs whenever
-  // the anchor list changes (i.e. after a patch is accepted / rejected
-  // and the diff is recomputed).
-  useEffect(() => {
-    if (!diffEditor || !monacoApi || anchors.length === 0) return;
-    const modifiedEditor = diffEditor.getModifiedEditor();
-    const widgets: MonacoEditorNS.IContentWidget[] = [];
-    for (const anchor of anchors) {
-      const widget: MonacoEditorNS.IContentWidget = {
-        getId: () => `tab-diff-action:${anchor.patchId}`,
-        getDomNode: () => anchor.domNode,
-        getPosition: () => ({
-          position: { lineNumber: anchor.modifiedLine, column: 1 },
-          preference: [
-            monacoApi.editor.ContentWidgetPositionPreference.ABOVE,
-            monacoApi.editor.ContentWidgetPositionPreference.BELOW,
-          ],
-        }),
-      };
-      modifiedEditor.addContentWidget(widget);
-      widgets.push(widget);
-    }
     return () => {
-      for (const widget of widgets) {
-        modifiedEditor.removeContentWidget(widget);
+      sub.dispose();
+      // Remove any zones we still own when patches / tab change. Monaco
+      // tolerates calls on a disposed editor, but guarding is cheap.
+      try {
+        modifiedEditor.changeViewZones((accessor) => {
+          for (const id of ownedZoneIds) accessor.removeZone(id);
+        });
+      } catch {
+        // editor already disposed — nothing to clean up
       }
     };
-  }, [diffEditor, monacoApi, anchors]);
+  }, [diffEditor, patches, tab.content]);
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -458,10 +470,10 @@ interface InlineHunkActionsProps {
 }
 
 /**
- * Tiny floating bar rendered as a Monaco content widget at the top of
- * each diff hunk. Mirrors Cursor's pattern: blue Accept, dark Reject,
- * inline with the diff. Inherits keyboard cues (⌥⏎ / ⇧⌥⌫) once we wire
- * editor commands — for now they're click-only.
+ * Action bar rendered into the view-zone strip above each diff hunk.
+ * Mirrors Cursor's pattern: blue Accept, dark Reject, inline with the
+ * diff. Lives inside a real Monaco view zone (not a content overlay)
+ * so clicks aren't swallowed by the diff decoration layer.
  */
 const InlineHunkActions: React.FC<InlineHunkActionsProps> = ({
   ok,
@@ -471,8 +483,8 @@ const InlineHunkActions: React.FC<InlineHunkActionsProps> = ({
   return (
     <div
       className={cn(
-        "inline-flex items-center gap-px overflow-hidden rounded-md text-[11px] font-medium shadow-sm",
-        "ring-1 ring-black/10 dark:ring-white/10",
+        "inline-flex items-center gap-px overflow-hidden rounded text-[11px] font-medium shadow-sm",
+        "ring-1 ring-black/15 dark:ring-white/15",
       )}
       style={{ pointerEvents: "auto" }}
     >

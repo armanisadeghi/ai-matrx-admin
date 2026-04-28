@@ -126,6 +126,26 @@ export type SignedUrlResponse = components["schemas"]["SignedUrlResponse"];
 // These are converted from CloudFileRow / CloudFolderRow in
 // [features/files/redux/converters.ts](./redux/converters.ts).
 
+/**
+ * Discriminator on every cloud-file record. Real records are bytes in S3;
+ * virtual records are Postgres rows surfaced by a `VirtualSourceAdapter`
+ * (Notes, Agent Apps, Tool UIs, code-files snippets, etc.) — see
+ * [features/files/virtual-sources/types.ts](./virtual-sources/types.ts).
+ *
+ * The `source` field defaults to `{ kind: "real" }` everywhere so existing
+ * callers compile unchanged. Synthetic ids of shape
+ * `vfs:<adapterId>:<virtualId>[:<fieldId>]` keep the cloud-files Redux
+ * `filesById` / `foldersById` maps a single keyspace.
+ */
+export type FileSource =
+  | { kind: "real" }
+  | {
+      kind: "virtual";
+      adapterId: string;
+      virtualId: string;
+      fieldId?: string;
+    };
+
 export interface CloudFile {
   id: string;
   ownerId: string;
@@ -142,6 +162,8 @@ export interface CloudFile {
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
+  /** Real S3-backed bytes vs. virtual Postgres-backed adapter row. */
+  source: FileSource;
 }
 
 export interface CloudFolder {
@@ -155,6 +177,8 @@ export interface CloudFolder {
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
+  /** Real cloud-folder vs. virtual adapter root / nested adapter folder. */
+  source: FileSource;
 }
 
 export interface CloudFileVersion {

@@ -15,7 +15,7 @@
  * Lifecycle:
  *   1. Pre-execution gate: if needsPreExecution → <AgentPreExecutionInput />
  *   2. Auto-run: if autoRun && status is "ready" → dispatch execute
- *   3. Main display: SmartAgentMessageList + SmartAgentInput
+ *   3. Main display: AgentConversationDisplay + SmartAgentInput
  */
 
 import { useEffect, useRef } from "react";

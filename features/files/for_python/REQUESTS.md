@@ -483,6 +483,75 @@ already in place; tree converter handles the discriminator.
 
 ---
 
+### 1. 🟡 Virtual Filesystem Adapter — server-side parity
+
+**Priority:** Medium-high. Unblocks shipping a unified `/files` tree on the FE that includes Notes, Agent Apps, Prompt Apps, Tool UIs, and code-files snippets alongside real cloud-files. AND lets AI-agent `fs_*` tools dispatch to the right backing store on the server.
+
+**Context:** The FE shipped `features/files/virtual-sources/` — a `VirtualSourceAdapter` pattern that lifts each Postgres-row "fake file" surface to the same conceptual shape as real cloud-files. Five adapters are live today (Notes, Agent Apps, Prompt Apps, Tool UIs, Code Snippets) and they call Supabase directly via the existing user JWT. Server-side parity is needed so AI tool calls (`fs_read`, `fs_write`, `fs_list`, `fs_rename`, `fs_delete`, `fs_move`, `fs_create`) hit the right adapter on the backend and so the FE's edit flows can call backend endpoints directly when an adapter needs server-side enforcement.
+
+**Shared contract.** TS contract: [features/files/virtual-sources/types.ts](../virtual-sources/types.ts). Pydantic mirror should live at `backend/app/files/virtual/contract.py`. Field names match, snake_case at the wire boundary: `id`, `kind`, `name`, `parent_id`, `badge`, `updated_at`, `extension`, `language`, `mime_type`, `size`, `has_content`, `fields`, `metadata`. Adapter capabilities: `list`, `read`, `write`, `rename`, `delete`, `move`, `folders`, `binary`, `versions`, `multi_field`.
+
+**New endpoints (mounted at `/virtual`, sibling of `/files`):**
+
+```
+GET    /virtual                                       → { adapters: [{ id, label, capabilities, dnd }] }
+GET    /virtual/{adapter_id}/list?parent={vid}&limit=&offset=&include_deleted=
+GET    /virtual/{adapter_id}/{vid}/content?field_id=
+POST   /virtual/{adapter_id}/{vid}/save               body { content, field_id?, expected_updated_at? }
+POST   /virtual/{adapter_id}/{vid}/rename             body { new_name, expected_updated_at? }
+POST   /virtual/{adapter_id}/{vid}/move               body { new_parent_id, expected_updated_at? }
+DELETE /virtual/{adapter_id}/{vid}?hard=
+POST   /virtual/{adapter_id}/create                   body { parent_id, kind, name, content? }
+GET    /virtual/{adapter_id}/{vid}/versions
+POST   /virtual/{adapter_id}/{vid}/versions/{ver}/restore
+POST   /virtual/resolve                               body { path } → { adapter_id, virtual_id, field_id? }
+```
+
+Auth: same as `/files/*` — Supabase JWT in `Authorization`, `X-Request-Id` on every mutation. Optimistic concurrency on writes/renames/moves via `expected_updated_at` (returns 409 `conflict` on mismatch).
+
+**Built-in adapter set (one Python module per source).** Each Python adapter targets the same Postgres table as the corresponding TS adapter — single source of truth is the row.
+
+1. `notes_adapter.py` — `notes` + `note_folders`, scoped to `user_id`, share-aware via `note_shares`. Versions via `note_versions`. capabilities = full. Mirrors [features/files/virtual-sources/adapters/notes.ts](../virtual-sources/adapters/notes.ts).
+2. `aga_apps_adapter.py` — `aga_apps`, single `component_code` field. Scoped to `user_id`. capabilities = list/read/write/rename/delete/create. No folders/move/multi-field. Mirrors [aga-apps.ts](../virtual-sources/adapters/aga-apps.ts).
+3. `prompt_apps_adapter.py` — same shape as `aga_apps_adapter`, table `prompt_apps`. Mirrors [prompt-apps.ts](../virtual-sources/adapters/prompt-apps.ts).
+4. `tool_ui_components_adapter.py` — `tool_ui_components`, multi-field (5 columns: `inline_code` / `overlay_code` / `header_extras_code` / `header_subtitle_code` / `utility_code`). capabilities = list/read/write. No rename/delete (admin asset). `multi_field = true`. Mirrors [tool-ui-components.ts](../virtual-sources/adapters/tool-ui-components.ts).
+5. `code_files_adapter.py` — `code_files` + `code_file_folders`, scoped to `user_id`. capabilities = full. Single field. **Snippets stay as Postgres rows** — they are NOT being migrated to S3-backed cloud-files. Mirrors [code-files.ts](../virtual-sources/adapters/code-files.ts).
+6. `cloud_files_adapter.py` — wraps the existing `cld_files` + S3 logic, registered as `sourceId = "my_files"`. With this adapter the contract is uniform: `fs_read("/My Files/foo.txt")` flows through the SAME path as `fs_read("/Notes/foo.md")` or `fs_read("/Code Snippets/util.ts")`.
+
+**ACL expectation.** Every adapter receives the JWT-resolved `user_id` and applies its own row-level security inside the adapter, NOT in the dispatcher. Document the expected query predicate per adapter in `contract.py` so audits are localized. Cloud-files adapter reuses `cld_file_permissions` + `cld_share_links` exactly as today.
+
+**Path resolution.** `POST /virtual/resolve` is the canonical path → ids resolver. Both the FE (occasionally, for deep links) and the AI tool surface (every call) use it. It MUST NOT cache stale data; rename ops invalidate any per-process caches.
+
+**AI-agent tool integration.** Expose seven tools in `backend/app/ai/tools/fs.py`:
+- `fs_read(path) → content`
+- `fs_write(path, content) → { updated_at }`
+- `fs_list(path) → [VirtualNode]` (`path = "/"` returns adapter roots)
+- `fs_rename(path, new_name) → { updated_at }`
+- `fs_delete(path, hard=false) → null`
+- `fs_move(src, dst_parent) → { updated_at }` — initially same-source only; cross-source returns `ToolError`
+- `fs_create(parent, kind, name, content?) → VirtualNode`
+
+These tools MUST hit the adapter dispatcher on the SERVER. Do not ship a client-side variant — agent tool calls happen during run loops, which are server-only.
+
+**Existing `/files/*` routes stay focused on real cloud-files.** Do not branch them on `source.kind`; the FE picks the right URL based on the record's source. The two namespaces (`/files` and `/virtual`) are siblings.
+
+**Phased delivery (suggest order, not a hard requirement):**
+1. **W1** — Contract module + dispatcher + `POST /virtual/resolve` + `GET /virtual` (lists adapter capabilities).
+2. **W1–2** — `cloud_files_adapter.py` wrapping existing logic. Verifiable: `fs_read("/My Files/foo.txt")` returns the same bytes as `GET /files/{id}/content`.
+3. **W2** — `aga_apps_adapter.py`, `prompt_apps_adapter.py`, `tool_ui_components_adapter.py`, `code_files_adapter.py` (any order; they're independent).
+4. **W3** — `notes_adapter.py` end-to-end.
+5. **W4** — `fs_*` AI tool surface wired into the agent toolbelt; E2E test where an agent writes to one of the adapters and verifies the row.
+
+**Verification posture.** For each adapter: a fixture-driven test that exercises list → read → write → rename → delete in a transaction, plus an ACL test proving user A cannot see user B's rows. Cross-source isolation: `fs_read("/Notes/<user-B-id>")` from user A's JWT must 403, not 404, and never leak the row's existence.
+
+**Open question for you to confirm.** Can we standardize on `expected_updated_at` (TIMESTAMPTZ) across every adapter for optimistic concurrency, or do some tables use a `version: int` we should mirror instead? Notes has `version`; we'd prefer to standardize the wire on `updated_at` and have the adapter translate internally.
+
+**Blocker?** No. The FE adapters all run client-side via Supabase today. This work is the "phase 4" parity step that lets us cut the AI tool surface over to the server and (eventually) move write-path enforcement to the backend.
+
+**Current FE workaround:** Adapters call Supabase directly with the user's JWT. RLS enforces ACL at the DB level. Works for browser flows; doesn't work for agent run loops.
+
+---
+
 ### 🟢 Per-endpoint quotas and rate limits
 
 **Resolved:** 2026-04-26.

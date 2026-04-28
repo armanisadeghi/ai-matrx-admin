@@ -197,9 +197,10 @@ export function processDbMessagesForDisplay(
           "type" in block &&
           (block as { type: string }).type === "tool_call"
         ) {
-          const id = (block as { id?: string }).id;
-          if (id) {
-            const tc = callIdToolCallMap.get(id);
+          const b = block as { id?: string; call_id?: string };
+          const callId = b.call_id ?? b.id;
+          if (callId) {
+            const tc = callIdToolCallMap.get(callId);
             if (tc) rawToolCalls.push(tc);
           }
         }

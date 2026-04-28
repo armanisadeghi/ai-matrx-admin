@@ -47,35 +47,27 @@ export interface PendingPatch {
 export interface CodePatchesState {
   /** Pending patches grouped by tabId. */
   byTabId: Record<string, PendingPatch[]>;
-  /** Set of (conversationId, requestId, tabId) tuples we've already
-   *  processed, encoded as `${conversationId}::${requestId}::${tabId}`.
-   *  Prevents re-staging on hot-reload or selector churn. */
-  seenStageKeys: string[];
 }
 
 const initialState: CodePatchesState = {
   byTabId: {},
-  seenStageKeys: [],
 };
-
-const SEEN_KEYS_CAP = 200;
-
-function makeSeenKey(args: {
-  conversationId: string;
-  requestId: string;
-  tabId: string;
-}): string {
-  return `${args.conversationId}::${args.requestId}::${args.tabId}`;
-}
 
 const slice = createSlice({
   name: "codePatches",
   initialState,
   reducers: {
     /**
-     * Stage one or more patches against a tab, scoped to a single
-     * (conversation, request) pair so the hook can dedupe cleanly.
-     * If we've already seen this stage key, the call is a no-op.
+     * Stage one or more patches against a tab. Idempotent by `patchId`
+     * (= `${requestId}:${tabId}:${blockIndex}`) so the same call can
+     * fire repeatedly during streaming as new SEARCH/REPLACE blocks
+     * close — already-known patches are skipped, never reset, and
+     * never resurrected if the user has accepted or rejected them.
+     *
+     * The patchId composition guarantees blocks from a single agent
+     * turn keep their identity even across hot-reloads or selector
+     * churn, so the streaming consumer can simply re-parse on every
+     * token without bookkeeping.
      */
     stagePatches(
       state,
@@ -91,26 +83,17 @@ const slice = createSlice({
       }>,
     ) {
       const { tabId, conversationId, requestId, patches } = action.payload;
-      const seenKey = makeSeenKey({ conversationId, requestId, tabId });
-      if (state.seenStageKeys.includes(seenKey)) return;
-      if (patches.length === 0) {
-        // Still mark as seen so we don't retry an empty result on every
-        // selector firing.
-        state.seenStageKeys.push(seenKey);
-        if (state.seenStageKeys.length > SEEN_KEYS_CAP) {
-          state.seenStageKeys.splice(
-            0,
-            state.seenStageKeys.length - SEEN_KEYS_CAP,
-          );
-        }
-        return;
-      }
+      if (patches.length === 0) return;
 
       const stagedAt = new Date().toISOString();
       const list = state.byTabId[tabId] ?? [];
+      const known = new Set(list.map((p) => p.patchId));
+      let added = false;
       for (const patch of patches) {
+        const patchId = `${requestId}:${tabId}:${patch.blockIndex}`;
+        if (known.has(patchId)) continue;
         list.push({
-          patchId: `${requestId}:${tabId}:${patch.blockIndex}`,
+          patchId,
           tabId,
           search: patch.search,
           replace: patch.replace,
@@ -120,16 +103,10 @@ const slice = createSlice({
           stagedAt,
           status: "pending",
         });
+        known.add(patchId);
+        added = true;
       }
-      state.byTabId[tabId] = list;
-
-      state.seenStageKeys.push(seenKey);
-      if (state.seenStageKeys.length > SEEN_KEYS_CAP) {
-        state.seenStageKeys.splice(
-          0,
-          state.seenStageKeys.length - SEEN_KEYS_CAP,
-        );
-      }
+      if (added) state.byTabId[tabId] = list;
     },
 
     markPatchApplied(
@@ -182,7 +159,6 @@ const slice = createSlice({
 
     clearAllPatches(state) {
       state.byTabId = {};
-      state.seenStageKeys = [];
     },
   },
 });

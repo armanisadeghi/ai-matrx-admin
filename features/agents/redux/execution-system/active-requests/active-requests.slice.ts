@@ -337,6 +337,14 @@ const activeRequestsSlice = createSlice({
     },
 
     // ── Tool Lifecycle ─────────────────────────────────────────
+    //
+    // NOT a render source for the chat transcript. The canonical selector
+    // (`selectMessageInterleavedContent`) reads tool data from
+    // `observability.toolCalls` and joins it onto the cx_message
+    // tool_call stub blocks. `toolLifecycle` lives here for the
+    // runner/debug overlay (ExecutionInstanceInspector) and the
+    // floating tool-call window (ToolCallWindowPanel) which need the
+    // raw event log + per-callId live state during the stream.
 
     upsertToolLifecycle(
       state,

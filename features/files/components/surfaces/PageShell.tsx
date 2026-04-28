@@ -26,6 +26,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   DndContext,
   DragOverlay,
@@ -91,6 +92,15 @@ import { PreviewPane } from "./PreviewPane";
 import { useFileShortcuts } from "./useFileShortcuts";
 import { RenameHost } from "@/features/files/components/core/RenameDialog/RenameHost";
 import { CloudFileEditorHost } from "@/features/files/components/core/FileEditor/CloudFileEditorHost";
+// Side-effect import: each adapter calls `registerVirtualSource` at module
+// load. Must come before `attachVirtualRoots` is dispatched.
+import "@/features/files/virtual-sources/registerBuiltinVirtualSources";
+import {
+  attachVirtualRoots,
+  loadVirtualChildren,
+  moveAny,
+} from "@/features/files/redux/virtual-thunks";
+import { getVirtualSource } from "@/features/files/virtual-sources/registry";
 import { BulkActionsBar } from "./desktop/BulkActionsBar";
 import { ContentHeader } from "./desktop/ContentHeader";
 import { EmptyState } from "./desktop/EmptyState";
@@ -164,6 +174,7 @@ function PageShellDesktop({
   className,
 }: PageShellProps) {
   const dispatch = useAppDispatch();
+  const router = useRouter();
   const activeFolderId = useAppSelector(selectActiveFolderId);
   const activeFileId = useAppSelector(selectActiveFileId);
   const viewMode = useAppSelector(selectViewMode);
@@ -181,6 +192,14 @@ function PageShellDesktop({
 
   // One-time apply of initial selection.
   useOneShotSelection(initialFolderId, initialFileId);
+
+  // Mount one synthetic root folder per registered virtual source. Idempotent
+  // — re-calling is a no-op since `attachVirtualRoot` checks for the existing
+  // synthetic id. Fires once on mount; the adapters self-registered at module
+  // load via `registerBuiltinVirtualSources`.
+  useEffect(() => {
+    void dispatch(attachVirtualRoots());
+  }, [dispatch]);
 
   // Global keyboard shortcuts — copy link, duplicate, delete. Strictly
   // focus-scoped: skips when an input/textarea/contentEditable is focused
@@ -231,9 +250,32 @@ function PageShellDesktop({
       if (!active?.id || !over?.id) return;
       if (over.type !== "folder") return;
       if (active.id === over.id) return;
+
+      // Cross-source drop policy: reject when source records aren't from the
+      // same backing store. v1 ships with same-source-only moves; cross-source
+      // ("import this Note as a real .md") will land in a follow-up.
+      const activeRec =
+        active.type === "file"
+          ? filesById[active.id]
+          : foldersById[active.id];
+      const overRec = foldersById[over.id];
+      if (activeRec && overRec) {
+        const a = activeRec.source;
+        const o = overRec.source;
+        if (a.kind !== o.kind) return;
+        if (a.kind === "virtual" && o.kind === "virtual") {
+          if (a.adapterId !== o.adapterId) return;
+        }
+      }
+
       if (active.type === "file") {
         const file = filesById[active.id];
         if (file && file.parentFolderId === over.id) return; // already there
+        // Virtual file → adapter move via moveAny.
+        if (file?.source.kind === "virtual") {
+          void dispatch(moveAny({ id: active.id, newParentId: over.id }));
+          return;
+        }
         void dispatch(
           moveFileThunk({ fileId: active.id, newParentFolderId: over.id }),
         );
@@ -252,6 +294,10 @@ function PageShellDesktop({
           seen.add(cursor);
           cursor = foldersById[cursor]?.parentId ?? null;
         }
+        if (moving.source.kind === "virtual") {
+          void dispatch(moveAny({ id: active.id, newParentId: over.id }));
+          return;
+        }
         void dispatch(
           updateFolderThunk({
             folderId: active.id,
@@ -268,15 +314,51 @@ function PageShellDesktop({
     (folderId: string) => {
       dispatch(setActiveFolderId(folderId));
       dispatch(setActiveFileId(null));
+      // If this is a virtual root or virtual folder we haven't loaded the
+      // children of yet, kick off lazy hydration. Re-running for an already-
+      // loaded folder is a no-op — `loadVirtualChildren` short-circuits via
+      // the slice's `fullyLoadedFolderIds` set.
+      const folder = foldersById[folderId];
+      if (folder?.source.kind === "virtual") {
+        void dispatch(
+          loadVirtualChildren({
+            adapterId: folder.source.adapterId,
+            parentVirtualId:
+              folder.source.virtualId === "__root__"
+                ? null
+                : folder.source.virtualId,
+          }),
+        );
+      }
     },
-    [dispatch],
+    [dispatch, foldersById],
   );
 
   const handleSelectFile = useCallback(
     (fileId: string) => {
+      const file = filesById[fileId];
+      // Per-feature edit handoff for virtual files. If the adapter declares
+      // an `openInRoute`, navigate there; otherwise fall through to the
+      // generic preview pane.
+      if (file?.source.kind === "virtual") {
+        const adapter = getVirtualSource(file.source.adapterId);
+        const route = adapter?.openInRoute?.({
+          id: file.source.virtualId,
+          kind: "file",
+          name: file.fileName,
+          parentId: null,
+          extension: undefined,
+          language: undefined,
+          mimeType: file.mimeType ?? undefined,
+        });
+        if (route) {
+          router.push(route);
+          return;
+        }
+      }
       dispatch(setActiveFileId(fileId));
     },
-    [dispatch],
+    [dispatch, filesById, router],
   );
 
   const handleFilterToggle = useCallback((key: FilterChipKey) => {

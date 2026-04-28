@@ -282,8 +282,10 @@ export const selectMessageInterleavedContent = (
             break;
           }
           case "tool_call": {
-            const tc = part as ToolCallPart;
-            const callId = tc.id ?? "unknown";
+            const tc = part as ToolCallPart & { call_id?: string };
+            // The persisted CxContentBlock shape uses `call_id`; the older
+            // ToolCallPart wire shape used `id`. Accept either.
+            const callId = tc.call_id ?? tc.id ?? "unknown";
             const toolCallRecord =
               callId !== "unknown" ? toolCallByCallId.get(callId) : undefined;
 

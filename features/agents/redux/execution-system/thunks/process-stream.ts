@@ -230,12 +230,15 @@ export async function processStream({
 
   // Server-assigned ids captured from `record_reserved` events. Threaded into
   // the commit path so the final assistant turn (and any DB-faithful mirror)
-  // use the server ids — never fake client-generated ones. Position +
-  // userRequestId are captured but not consumed yet; the next wave
-  // (Phase 8: message CRUD + observability flush) picks them up.
-  let reservedAssistantMessageId: string | null = null;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  let reservedAssistantPosition: number | null = null;
+  // use the server ids — never fake client-generated ones.
+  //
+  // The server may reserve more than one assistant cx_message per stream when
+  // a turn spans multiple LLM iterations (each iteration's output lands as a
+  // separate cx_message row in the DB). We track ALL of them in order so the
+  // end-of-stream commit can route each iteration's content to the correct
+  // messageId. Single-reservation streams trivially collapse to one entry.
+  const reservedAssistantTurns: Array<{ messageId: string; position: number }> =
+    [];
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let reservedUserRequestId: string | null = null;
 
@@ -806,39 +809,46 @@ export async function processStream({
       // stream writes here are metadata-only — no re-render storm on the
       // message body.
       if (isCxMessageReservation(d)) {
-        const { position } = d.metadata;
-        // MessageRecord.role is "system" | "user" | "assistant" — narrow out
-        // CxMessageRole's "tool" variant (tool turns live in cx_tool_call).
-        const role = d.metadata.role === "tool" ? "assistant" : d.metadata.role;
-        const owningConversationId =
-          d.parent_refs.conversation_id ?? conversationId;
+        // Tool-role cx_message rows are stubs that pair an assistant tool_call
+        // with its tool_result; the actual tool data lives in cx_tool_call
+        // (observability.toolCalls). Reserving them in messages.byId pollutes
+        // the transcript with empty assistant bubbles once record_update flips
+        // their status off "reserved" — skip the reservation entirely. The
+        // observability.toolCalls path is the canonical home for tool data.
+        if (d.metadata.role !== "tool") {
+          const { position, role } = d.metadata;
+          const owningConversationId =
+            d.parent_refs.conversation_id ?? conversationId;
 
-        if (role === "user" && userMessageClientTempId) {
-          // Promote the optimistic user record to the server id. The record
-          // already carries the user's content, so no further patch needed
-          // here — the stream just swaps the key.
-          dispatch(
-            promoteMessageId({
-              conversationId: owningConversationId,
-              oldId: userMessageClientTempId,
-              newId: d.record_id,
-              position,
-            }),
-          );
-        } else {
-          dispatch(
-            reserveMessage({
-              conversationId: owningConversationId,
+          if (role === "user" && userMessageClientTempId) {
+            // Promote the optimistic user record to the server id. The record
+            // already carries the user's content, so no further patch needed
+            // here — the stream just swaps the key.
+            dispatch(
+              promoteMessageId({
+                conversationId: owningConversationId,
+                oldId: userMessageClientTempId,
+                newId: d.record_id,
+                position,
+              }),
+            );
+          } else {
+            dispatch(
+              reserveMessage({
+                conversationId: owningConversationId,
+                messageId: d.record_id,
+                role,
+                position,
+              }),
+            );
+          }
+
+          if (role === "assistant") {
+            reservedAssistantTurns.push({
               messageId: d.record_id,
-              role,
               position,
-            }),
-          );
-        }
-
-        if (role === "assistant") {
-          reservedAssistantMessageId = d.record_id;
-          reservedAssistantPosition = position;
+            });
+          }
         }
       } else if (d.table === "cx_user_request") {
         reservedUserRequestId = d.record_id;
@@ -1307,22 +1317,112 @@ export async function processStream({
     ? assembleMessageParts(finalRequest)
     : [];
 
-  if (reservedAssistantMessageId) {
+  // tool_result content blocks belong to the DB's role:"tool" cx_message rows,
+  // NOT to the assistant turns. Strip them before committing to any assistant
+  // messageId — the canonical render selector reads tool results from
+  // observability.toolCalls (joined by callId) at display time.
+  const assistantBlocks = cxContentBlocks.filter(
+    (b) => (b as { type?: string }).type !== "tool_result",
+  );
+
+  // Sort reservations by DB position (matches the iteration order on the
+  // server side: each new iteration's assistant output lands at a higher
+  // position than the previous).
+  const sortedTurns = [...reservedAssistantTurns].sort(
+    (a, b) => a.position - b.position,
+  );
+
+  if (sortedTurns.length === 1) {
+    // Single reservation — all assistant content lands here. Common path
+    // when the server collapses a multi-iteration turn into one cx_message.
+    const turn = sortedTurns[0];
     dispatch(
       updateMessageRecord({
         conversationId,
-        messageId: reservedAssistantMessageId,
+        messageId: turn.messageId,
         patch: {
           content:
-            cxContentBlocks as unknown as import("@/types/database.types").Json,
+            assistantBlocks as unknown as import("@/types/database.types").Json,
           status: "active",
           _clientStatus: finalErrorMessage ? "error" : "complete",
-          ...(typeof reservedAssistantPosition === "number" && {
-            position: reservedAssistantPosition,
-          }),
+          position: turn.position,
         },
       }),
     );
+  } else if (sortedTurns.length > 1) {
+    // Multi-reservation — partition assembled blocks by iteration. Each
+    // tool_call carries an iteration on its observability record (looked up
+    // via callId → uuid → cx_tool_call.iteration). Non-tool_call blocks
+    // are bucketed with the iteration of the most-recently-seen tool_call;
+    // trailing blocks after the last tool_call belong to the next (final)
+    // iteration. Iterations are then mapped to reservations in order.
+    const blocksByIter = new Map<
+      number,
+      Array<(typeof assistantBlocks)[number]>
+    >();
+
+    let lastToolCallIndex = -1;
+    for (let i = 0; i < assistantBlocks.length; i++) {
+      if ((assistantBlocks[i] as { type?: string }).type === "tool_call") {
+        lastToolCallIndex = i;
+      }
+    }
+
+    let currentIter = 1;
+    for (let i = 0; i < assistantBlocks.length; i++) {
+      const block = assistantBlocks[i];
+      const blockType = (block as { type?: string }).type;
+      let iter = currentIter;
+
+      if (blockType === "tool_call") {
+        // assembleMessageParts writes the lifecycle callId to the `id` field
+        // (legacy CxToolCallContent shape). New persisted blocks may use
+        // `call_id`. Accept both for forward compatibility.
+        const tcBlock = block as { id?: string; call_id?: string };
+        const callId = tcBlock.call_id ?? tcBlock.id;
+        const uuid = callId
+          ? toolCallIdByProviderCallId.get(callId)
+          : undefined;
+        const tc = uuid ? finalState.observability.toolCalls[uuid] : undefined;
+        if (tc?.iteration) {
+          iter = tc.iteration;
+          currentIter = iter;
+        }
+      } else if (i > lastToolCallIndex && lastToolCallIndex >= 0) {
+        // Trailing block after the last tool_call — final-response iteration.
+        iter = currentIter + 1;
+      }
+
+      const list = blocksByIter.get(iter) ?? [];
+      list.push(block);
+      blocksByIter.set(iter, list);
+    }
+
+    const sortedIters = [...blocksByIter.keys()].sort((a, b) => a - b);
+    for (let i = 0; i < sortedIters.length; i++) {
+      const iter = sortedIters[i];
+      const turn = sortedTurns[i];
+      if (!turn) {
+        console.warn(
+          `[stream:${requestId.slice(0, 8)}] iteration ${iter} has no matching reservation; ${blocksByIter.get(iter)?.length ?? 0} block(s) dropped`,
+        );
+        continue;
+      }
+      dispatch(
+        updateMessageRecord({
+          conversationId,
+          messageId: turn.messageId,
+          patch: {
+            content: blocksByIter.get(iter) as unknown as import(
+              "@/types/database.types"
+            ).Json,
+            status: "active",
+            _clientStatus: finalErrorMessage ? "error" : "complete",
+            position: turn.position,
+          },
+        }),
+      );
+    }
   }
 
   // Flush live tool lifecycle state into the observability slice. Each tool

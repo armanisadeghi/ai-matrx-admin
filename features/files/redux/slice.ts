@@ -58,6 +58,7 @@ function emptyFileRecord(id: string): CloudFileRecord {
     createdAt: "",
     updatedAt: "",
     deletedAt: null,
+    source: { kind: "real" },
 
     _dirty: false,
     _dirtyFields: createFieldFlags<keyof CloudFile>(),
@@ -81,6 +82,7 @@ function emptyFolderRecord(id: string): CloudFolderRecord {
     createdAt: "",
     updatedAt: "",
     deletedAt: null,
+    source: { kind: "real" },
 
     _dirty: false,
     _dirtyFields: createFieldFlags<keyof CloudFolder>(),
@@ -559,6 +561,50 @@ const slice = createSlice({
       state.tree.fullyLoadedFolderIds[action.payload.folderId] = true;
     },
 
+    /**
+     * Mount a virtual adapter as a synthetic root folder. Called once per
+     * registered `VirtualSourceAdapter` from `attachVirtualRoots()` (a thunk
+     * fired during `/files` bootstrap). The synthetic folder has id
+     * `vfs:<adapterId>:__root__` and `source.kind: "virtual"` so the existing
+     * tree renderer and selectors treat it like any other folder.
+     */
+    attachVirtualRoot(
+      state,
+      action: PayloadAction<{
+        adapterId: string;
+        rootId: string;
+        label: string;
+      }>,
+    ) {
+      const { adapterId, rootId, label } = action.payload;
+      // Idempotent: re-registering the same adapter is a no-op.
+      if (state.foldersById[rootId]) return;
+      state.foldersById[rootId] = {
+        id: rootId,
+        ownerId: "",
+        folderPath: `/${label}`,
+        folderName: label,
+        parentId: null,
+        visibility: "private",
+        metadata: {},
+        createdAt: "",
+        updatedAt: "",
+        deletedAt: null,
+        source: { kind: "virtual", adapterId, virtualId: "__root__" },
+
+        _dirty: false,
+        _dirtyFields: {},
+        _fieldHistory: {},
+        _loadedFields: {},
+        _loading: false,
+        _error: null,
+        _pendingRequestIds: [],
+      };
+      if (!state.tree.rootFolderIds.includes(rootId)) {
+        state.tree.rootFolderIds.push(rootId);
+      }
+    },
+
     attachChildToFolder(
       state,
       action: PayloadAction<{
@@ -794,6 +840,7 @@ export const {
   setTreeStatus,
   replaceTree,
   markFolderFullyLoaded,
+  attachVirtualRoot,
   attachChildToFolder,
   detachChildFromFolder,
   // selection + ui

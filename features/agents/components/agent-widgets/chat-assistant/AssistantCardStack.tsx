@@ -11,8 +11,10 @@
  * components while wrapping them in the chat assistant's compact, transparent layout.
  *
  * DESIGN: Messages render as transparent, detached floating items with spacing.
- * No container card backgrounds. The unified displayMessages pattern from
- * AgentConversationDisplay ensures streaming messages never unmount.
+ * The streaming bubble IS the latest assistant cx_message in messages.byId
+ * (tagged with isStreamActive=true while the stream is active) — no virtual
+ * entry, matches AgentConversationDisplay. The "thinking…" planning indicator
+ * is a separate trailing element shown only during connecting/pre_token.
  */
 
 import { useEffect, useRef, useMemo } from "react";
@@ -48,10 +50,20 @@ const AgentAssistantMessage = dynamic(
 
 interface DisplayMessage {
   key: string;
-  role: "user" | "assistant" | "system" | "status";
-  messageId: string | null;
+  role: "user" | "assistant" | "system";
+  messageId: string;
   requestId: string | null;
   isStreamActive: boolean;
+}
+
+function isEmptyReservedAssistant(record: {
+  role: string;
+  status: string;
+  content: unknown;
+}): boolean {
+  if (record.role !== "assistant") return false;
+  if (record.status !== "reserved") return false;
+  return Array.isArray(record.content) && record.content.length === 0;
 }
 
 interface AssistantCardStackProps {
@@ -94,33 +106,41 @@ export function AssistantCardStack({
     phase === "interstitial" ||
     phase === "error";
 
-  // ── Unified display messages (history + live stream) ────────────────────────
-  // This pattern (from AgentConversationDisplay) ensures the streaming message
-  // never unmounts when the stream completes and the turn is committed.
+  // Streaming bubble = latest assistant cx_message in orderedIds while
+  // isActive. No virtual entry — the same pattern as AgentConversationDisplay.
   const displayMessages = useMemo((): DisplayMessage[] => {
-    const msgs: DisplayMessage[] = messages.map((record) => ({
-      key: record.id,
-      role: record.role,
-      messageId: record.id,
-      requestId: record._streamRequestId ?? null,
-      isStreamActive: false,
-    }));
-
+    let streamingAssistantId: string | null = null;
     if (isActive) {
+      for (let i = messages.length - 1; i >= 0; i--) {
+        if (messages[i].role === "assistant") {
+          streamingAssistantId = messages[i].id;
+          break;
+        }
+      }
+    }
+
+    const msgs: DisplayMessage[] = [];
+    for (const record of messages) {
+      const isStreamingMessage = record.id === streamingAssistantId;
+      if (isEmptyReservedAssistant(record) && !isStreamingMessage) continue;
       msgs.push({
-        key: "__streaming__",
-        role:
-          phase === "connecting" || phase === "pre_token"
-            ? "status"
-            : "assistant",
-        messageId: null,
-        requestId: latestRequestId ?? null,
-        isStreamActive: true,
+        key: record.id,
+        role: record.role,
+        messageId: record.id,
+        requestId: isStreamingMessage
+          ? (latestRequestId ?? null)
+          : (record._streamRequestId ?? null),
+        isStreamActive: isStreamingMessage,
       });
     }
 
     return msgs;
-  }, [messages, isActive, phase, latestRequestId]);
+  }, [messages, isActive, latestRequestId]);
+
+  // The "thinking…" indicator is a transient pre-token signal — distinct
+  // from the streaming bubble. Render it as a separate trailing element.
+  const showPlanningIndicator =
+    isActive && (phase === "connecting" || phase === "pre_token");
 
   // ── Auto-scroll on new messages ─────────────────────────────────────────────
   useEffect(() => {
@@ -137,7 +157,7 @@ export function AssistantCardStack({
   };
 
   const hasVariables = variableDefs.length > 0;
-  const hasMessages = displayMessages.length > 0;
+  const hasMessages = displayMessages.length > 0 || showPlanningIndicator;
   // Show variables when: agent has them AND (panel toggle is on OR no messages yet)
   const showVariables = hasVariables && (showVariablePanel || !hasMessages);
 
@@ -157,7 +177,7 @@ export function AssistantCardStack({
       {hasMessages ? (
         <div className="flex-1 space-y-3 px-3 py-2">
           {displayMessages.map((msg) => {
-            if (msg.role === "user" && msg.messageId) {
+            if (msg.role === "user") {
               return (
                 <AgentUserMessage
                   key={msg.key}
@@ -169,21 +189,13 @@ export function AssistantCardStack({
               );
             }
 
-            if (msg.role === "status") {
-              return (
-                <div key={msg.key} className="px-1 py-1">
-                  <AgentPlanningIndicator compact />
-                </div>
-              );
-            }
-
             if (msg.role === "assistant") {
               return (
                 <AgentAssistantMessage
                   key={msg.key}
                   conversationId={conversationId}
                   requestId={msg.requestId ?? undefined}
-                  messageId={msg.messageId ?? undefined}
+                  messageId={msg.messageId}
                   isStreamActive={msg.isStreamActive}
                   surfaceKey={surfaceKey}
                   compact
@@ -193,6 +205,12 @@ export function AssistantCardStack({
 
             return null;
           })}
+
+          {showPlanningIndicator && (
+            <div className="px-1 py-1">
+              <AgentPlanningIndicator compact />
+            </div>
+          )}
 
           <div ref={bottomRef} />
         </div>

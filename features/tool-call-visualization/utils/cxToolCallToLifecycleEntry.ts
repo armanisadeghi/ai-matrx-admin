@@ -14,14 +14,10 @@ import type { CxToolCallRecord } from "@/features/agents/redux/execution-system/
 import type { ToolLifecycleEntry } from "@/features/agents/types/request.types";
 import type { ToolEventPayload } from "@/types/python-generated/stream-events";
 
-// ─── DIAGNOSTIC LOG 1 ─────────────────────────────────────────────────────────
 // Logs what `output` (full text) vs `outputPreview` (truncated metadata) look
 // like going into the converter, then logs what `result` comes out.
-// If you see "output is null" here, the DB query is not returning the full
-// output column — the fix is on the query/RPC side, not here.
-// If you see a valid result but the overlay still shows preview, the issue is
-// downstream (check DIAGNOSTIC LOG 2 in PersistedToolCallCard).
-// ──────────────────────────────────────────────────────────────────────────────
+// If you see "output is null", the DB query is not returning the full output
+// column — the fix is on the query/RPC side, not here.
 
 function parseOutput(
   raw: string | null,
