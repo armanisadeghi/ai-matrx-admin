@@ -5,10 +5,12 @@ import {
   ShieldCheck,
   MessageSquare,
   FileCode2,
+  Server,
 } from "lucide-react";
 import TokenStatusDebug from "./TokenStatusDebug";
 import ChatDebug from "./ChatDebug";
 import AgentAssistantMarkdownDebugModule from "./AgentAssistantMarkdownDebugModule";
+import CodeWorkspaceDebug from "./CodeWorkspaceDebug";
 import { ComponentType } from "react";
 
 /**
@@ -67,6 +69,15 @@ export const debugModules: DebugModule[] = [
     description:
       "Opens a window with source vs draft markdown (edits from assistant bubbles, debug sink)",
     color: "text-amber-400",
+  },
+  {
+    id: "code-workspace",
+    name: "Code workspace",
+    icon: Server,
+    component: CodeWorkspaceDebug,
+    description:
+      "Sandbox connection state, proxy_url, AI binding verdict, and raw orchestrator payload",
+    color: "text-emerald-400",
   },
 ];
 
