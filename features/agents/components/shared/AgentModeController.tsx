@@ -55,7 +55,7 @@ export function getAgentModeHref(
   agentId: string,
   basePath: string,
 ): string {
-  if (mode === "new") return basePath;
+  if (mode === "new") return `${basePath}/new`;
   const map: Record<AgentPageMode, string> = {
     view: `${basePath}/${agentId}`,
     edit: `${basePath}/${agentId}/build`,
@@ -124,7 +124,7 @@ export function AgentModeController({
         setPendingNew(true);
         setShowDirtyDialog(true);
       } else {
-        navigateTo(basePath);
+        navigateTo(`${basePath}/new`);
       }
       return;
     }
@@ -189,7 +189,7 @@ export function AgentModeController({
                 setShowDirtyDialog(false);
                 if (pendingNew) {
                   setPendingNew(false);
-                  navigateTo(basePath);
+                  navigateTo(`${basePath}/new`);
                 }
               }}
             >

@@ -17255,6 +17255,32 @@
             ],
             "title": "Resume Value"
           },
+          "initial_variables": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Initial Variables",
+            "description": "Override the original run's initial_variables for the resumed leg. Leave None to inherit from the original run."
+          },
+          "initial_overrides": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Initial Overrides",
+            "description": "Override LLM parameters for the resumed leg."
+          },
           "max_steps": {
             "type": "integer",
             "maximum": 100000,
@@ -17385,6 +17411,18 @@
               }
             ],
             "title": "Conversation Id"
+          },
+          "initial_variables": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Initial Variables",
+            "description": "Name → value pairs available to every agent node for prompt variable substitution. Distinct from `inputs`, which is the typed payload to the entry node."
+          },
+          "initial_overrides": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Initial Overrides",
+            "description": "LLM parameter overrides applied across the run (temperature, max_tokens, model, etc.). Empty by default."
           },
           "max_steps": {
             "type": "integer",

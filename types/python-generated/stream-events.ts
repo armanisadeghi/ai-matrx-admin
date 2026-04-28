@@ -1919,7 +1919,7 @@ export interface ThinkingPart {
 export interface ToolCallPart {
   metadata?: Record<string, unknown>;
   type?: "tool_call";
-  id?: string;
+  call_id?: string;
   name?: string;
   arguments?: Record<string, unknown>;
 }

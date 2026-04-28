@@ -165,7 +165,6 @@
     "onnxruntime-web": "1.24.3",
     "openai": "latest",
     "papaparse": "^5.5.3",
-    "pdfjs-dist": "5.5.207",
     "popmotion": "latest",
     "pptxgenjs": "^4.0.1",
     "qrcode": "^1.5.4",

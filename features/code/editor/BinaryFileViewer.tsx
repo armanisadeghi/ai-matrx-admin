@@ -18,6 +18,16 @@
  * `blob:` URL is owned by this component and revoked on unmount or path
  * change — base64 buffers never enter Redux, so nothing pinned in the
  * tabs slice ever holds a multi-megabyte image string in memory.
+ *
+ * For the `generic` fallback (unrecognized files) the viewer also runs a
+ * lightweight byte sniff on mount. When the bytes look printable —
+ * either valid UTF-8 or >=95% printable ASCII — the GenericPreview
+ * surfaces a prominent "View as text" button. Clicking it converts the
+ * tab from `binary-preview` to a normal Monaco-backed editor tab via
+ * `convertTabToEditor`, which is how files like `.bashrc`, `Makefile`,
+ * `authorized_keys`, etc. that the registry didn't recognize still end
+ * up being readable. The same button is offered with weaker phrasing
+ * even when the sniff fails, so manual override always works.
  */
 
 import {
@@ -36,9 +46,14 @@ import { AudioPreview } from "@/features/files/components/core/FilePreview/previ
 import { GenericPreview } from "@/features/files/components/core/FilePreview/previewers/GenericPreview";
 import {
   getFilePreviewProfile,
+  sniffTextBytes,
   type PreviewKind,
+  type TextSniffResult,
 } from "@/features/files/utils/file-types";
+import { useAppDispatch } from "@/lib/redux/hooks";
 import { useCodeWorkspace } from "../CodeWorkspaceProvider";
+import { convertTabToEditor } from "../redux/tabsSlice";
+import { languageFromFilename } from "../styles/file-icon";
 import type { EditorFile } from "../types";
 import type { FilesystemAdapter } from "../adapters/FilesystemAdapter";
 import type { BinaryFilePdfPreviewProps } from "./BinaryFilePdfPreview";
@@ -72,10 +87,17 @@ interface BinaryState {
   url: string | null;
   blob: Blob | null;
   size: number | null;
+  /**
+   * Cached byte sniff result for the loaded blob — populated only for
+   * the `generic` preview kind. Other kinds (image / video / pdf) skip
+   * sniffing because their previewers know exactly what to do.
+   */
+  textSniff: TextSniffResult | null;
 }
 
 export function BinaryFileViewer({ tab, className }: BinaryFileViewerProps) {
   const { filesystem } = useCodeWorkspace();
+  const dispatch = useAppDispatch();
 
   const profile = useMemo(
     () => getFilePreviewProfile(tab.name, tab.mime ?? null, null),
@@ -88,7 +110,9 @@ export function BinaryFileViewer({ tab, className }: BinaryFileViewerProps) {
     url: null,
     blob: null,
     size: null,
+    textSniff: null,
   });
+  const [converting, setConverting] = useState(false);
 
   // The viewer is the sole owner of the blob URL it creates. We revoke
   // on unmount AND when the path changes — without that, navigating
@@ -98,7 +122,14 @@ export function BinaryFileViewer({ tab, className }: BinaryFileViewerProps) {
 
   useEffect(() => {
     let cancelled = false;
-    setState({ loading: true, error: null, url: null, blob: null, size: null });
+    setState({
+      loading: true,
+      error: null,
+      url: null,
+      blob: null,
+      size: null,
+      textSniff: null,
+    });
     if (lastUrlRef.current) {
       URL.revokeObjectURL(lastUrlRef.current);
       lastUrlRef.current = null;
@@ -110,12 +141,33 @@ export function BinaryFileViewer({ tab, className }: BinaryFileViewerProps) {
         if (cancelled) return;
         const url = URL.createObjectURL(blob);
         lastUrlRef.current = url;
+
+        // Only sniff for the `generic` fallback — for image / video /
+        // audio / pdf the previewer already knows what to render and
+        // sniffing would be wasted work (and confusing if a JPEG
+        // happens to lead with printable header bytes).
+        let textSniff: TextSniffResult | null = null;
+        if (profile.previewKind === "generic") {
+          try {
+            const headBlob = blob.slice(
+              0,
+              Math.min(blob.size, SNIFF_SAMPLE_BYTES),
+            );
+            const headBuf = await headBlob.arrayBuffer();
+            textSniff = sniffTextBytes(new Uint8Array(headBuf));
+          } catch {
+            // Sniffing is best-effort — never block the previewer on it.
+            textSniff = null;
+          }
+        }
+
         setState({
           loading: false,
           error: null,
           url,
           blob,
           size: blob.size,
+          textSniff,
         });
       } catch (err) {
         if (cancelled) return;
@@ -125,6 +177,7 @@ export function BinaryFileViewer({ tab, className }: BinaryFileViewerProps) {
           url: null,
           blob: null,
           size: null,
+          textSniff: null,
         });
       }
     })();
@@ -136,7 +189,7 @@ export function BinaryFileViewer({ tab, className }: BinaryFileViewerProps) {
         lastUrlRef.current = null;
       }
     };
-  }, [filesystem, tab.path, profile.mime]);
+  }, [filesystem, tab.path, profile.mime, profile.previewKind]);
 
   const handleDownload = useCallback(() => {
     if (!state.blob) return;
@@ -151,6 +204,31 @@ export function BinaryFileViewer({ tab, className }: BinaryFileViewerProps) {
     // it on the next tick so the download has a chance to start.
     setTimeout(() => URL.revokeObjectURL(url), 0);
   }, [state.blob, tab.name]);
+
+  // Reads the blob as text (UTF-8 with replacement characters for any
+  // bad sequences — never throws) and dispatches `convertTabToEditor`
+  // so the tab swaps from `binary-preview` to `editor`. Once Redux
+  // updates, `EditorArea` swaps `<BinaryFileViewer>` for `<MonacoEditor>`
+  // automatically — the user sees their text without reloading.
+  const handleViewAsText = useCallback(async () => {
+    if (!state.blob || converting) return;
+    setConverting(true);
+    try {
+      const text = await blobToText(state.blob);
+      dispatch(
+        convertTabToEditor({
+          id: tab.id,
+          content: text,
+          language: languageFromFilename(tab.name),
+        }),
+      );
+    } catch {
+      // Fall back: if the blob can't be decoded, leave the binary view in
+      // place rather than presenting an empty editor.
+    } finally {
+      setConverting(false);
+    }
+  }, [state.blob, converting, dispatch, tab.id, tab.name]);
 
   if (state.loading) {
     return (
@@ -190,7 +268,10 @@ export function BinaryFileViewer({ tab, className }: BinaryFileViewerProps) {
         mime={profile.mime}
         fileName={tab.name}
         fileSize={state.size}
+        textSniff={state.textSniff}
         onDownload={handleDownload}
+        onViewAsText={state.blob ? handleViewAsText : undefined}
+        viewAsTextBusy={converting}
       />
     </div>
   );
@@ -203,7 +284,10 @@ interface PreviewerProps {
   mime: string;
   fileName: string;
   fileSize: number | null;
+  textSniff: TextSniffResult | null;
   onDownload: () => void;
+  onViewAsText?: () => void;
+  viewAsTextBusy?: boolean;
 }
 
 function BinaryPreviewer({
@@ -213,7 +297,10 @@ function BinaryPreviewer({
   mime,
   fileName,
   fileSize,
+  textSniff,
   onDownload,
+  onViewAsText,
+  viewAsTextBusy,
 }: PreviewerProps) {
   switch (kind) {
     case "image":
@@ -242,19 +329,45 @@ function BinaryPreviewer({
           className="h-full w-full"
         />
       ) : null;
-    default:
+    default: {
+      // Pick the user-facing message based on the byte sniff. A high-
+      // confidence text sniff means the message becomes a positive
+      // ("This file looks like text") with the button as the obvious
+      // primary action; a failed sniff hides the message but still
+      // offers the manual override so genuinely-binary edge cases stay
+      // workable.
+      const looksText = textSniff?.isText === true;
+      const message = looksText
+        ? "This file looks like text. Open it in the editor?"
+        : textSniff
+          ? "This file may be binary. View as text to inspect anyway."
+          : undefined;
       return (
         <GenericPreview
           fileName={fileName}
           fileSize={fileSize}
           onDownload={onDownload}
+          onViewAsText={onViewAsText}
+          viewAsTextLabel={looksText ? "View as text" : "Try as text"}
+          viewAsTextPrimary={looksText}
+          viewAsTextBusy={viewAsTextBusy}
+          message={message}
           className="h-full w-full"
         />
       );
+    }
   }
 }
 
 // ─── helpers ────────────────────────────────────────────────────────────────
+
+/**
+ * How many bytes of the head of a generic file we sample to decide
+ * whether it's text-shaped. 8KB is plenty: covers UTF-8 BOMs, source
+ * files of any size, and most config-file headers, while staying small
+ * enough that even a 1GB blob.slice() is cheap.
+ */
+const SNIFF_SAMPLE_BYTES = 8192;
 
 const containerClass = (extra?: string) =>
   `flex h-full w-full overflow-hidden bg-background ${extra ?? ""}`;
@@ -262,6 +375,22 @@ const loadingClass = (extra?: string) =>
   `flex h-full w-full items-center justify-center bg-background ${extra ?? ""}`;
 const errorClass = (extra?: string) =>
   `flex h-full w-full flex-col items-center justify-center gap-3 p-6 bg-background ${extra ?? ""}`;
+
+/**
+ * Decode a Blob as UTF-8 text without throwing on bad sequences. Replaces
+ * any invalid bytes with U+FFFD so the user can still see most of a
+ * mostly-textual file even if a single byte is mangled.
+ */
+async function blobToText(blob: Blob): Promise<string> {
+  // Modern browsers expose `Blob.text()`, which uses UTF-8 with replacement
+  // and matches what the editor will render. Older runtimes (jsdom in
+  // tests) sometimes lack it — fall back to FileReader.
+  if (typeof blob.text === "function") {
+    return blob.text();
+  }
+  const buffer = await blob.arrayBuffer();
+  return new TextDecoder("utf-8", { fatal: false }).decode(buffer);
+}
 
 /**
  * Pulls the file's bytes through whatever the adapter exposes, in

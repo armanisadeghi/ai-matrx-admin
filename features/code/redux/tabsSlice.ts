@@ -133,6 +133,33 @@ const slice = createSlice({
         tab.remoteUpdatedAt = action.payload.remoteUpdatedAt;
       }
     },
+    /**
+     * Convert a non-editor tab (`binary-preview` / `cloud-file-preview`)
+     * into a real Monaco-backed editor tab with the supplied content. Used
+     * by the "View as text" override on the binary viewer so users can
+     * inspect (and edit) files the registry didn't recognize as text. The
+     * tab keeps its id, name, and path — only `kind`, `language`,
+     * `content`, and `pristineContent` change so the rest of the editor
+     * surface (saves, AI patches, selection-as-context) lights up.
+     */
+    convertTabToEditor(
+      state,
+      action: PayloadAction<{
+        id: string;
+        content: string;
+        language: string;
+      }>,
+    ) {
+      const tab = state.byId[action.payload.id];
+      if (!tab) return;
+      tab.kind = "editor";
+      tab.content = action.payload.content;
+      tab.pristineContent = action.payload.content;
+      tab.language = action.payload.language;
+      tab.dirty = false;
+      tab.mime = undefined;
+      tab.cloudFileId = undefined;
+    },
     moveTab(state, action: PayloadAction<{ id: string; toIndex: number }>) {
       const { id, toIndex } = action.payload;
       const from = state.order.indexOf(id);
@@ -166,6 +193,7 @@ export const {
   markTabSaved,
   setTabRemoteUpdatedAt,
   replaceTabContent,
+  convertTabToEditor,
   moveTab,
   closeAllTabs,
   clearRecentTabs,

@@ -13,17 +13,22 @@ import { getFilePreviewProfile } from "@/features/files/utils/file-types";
  *
  * Branches on the file's preview profile:
  *
- *   - `code` / `text` / `markdown` / `data` / `spreadsheet` / `generic` (with
- *     a text MIME) → the legacy text-read path. Bytes are pulled via
- *     `readFile()` and dropped into a Monaco-backed tab.
+ *   - `code` / `text` / `markdown` / `data` / `spreadsheet` → the
+ *     text-read path. Bytes are pulled via `readFile()` and dropped into
+ *     a Monaco-backed tab. Files like `.bashrc`, `Dockerfile`,
+ *     `Makefile`, `authorized_keys`, etc. all flow through here thanks
+ *     to the registry's named-file aliases and the dotfile heuristic
+ *     fallback.
  *   - `image` / `video` / `audio` / `pdf` → opens a `binary-preview` tab.
  *     The bytes are NOT fetched here; the `BinaryFileViewer` does that
  *     lazily on mount and creates a `blob:` URL it owns. This avoids the
  *     `read failed (400): File is binary, use encoding=base64` error from
  *     the orchestrator and keeps base64 blobs out of Redux.
- *   - non-text generic (archives / 3D models / etc.) → also opens as a
- *     `binary-preview` tab and falls through to the GenericPreview download
- *     prompt.
+ *   - `generic` (archives / 3D meshes / sqlite / office docs / unknown) →
+ *     also opens as a `binary-preview` tab. The viewer sniffs the bytes
+ *     on mount and offers a "View as text" button when the file looks
+ *     printable, so even unrecognized text files have a one-click escape
+ *     hatch into Monaco.
  */
 export function useOpenFile() {
   const dispatch = useAppDispatch();
@@ -42,7 +47,8 @@ export function useOpenFile() {
         kind === "audio" ||
         kind === "pdf" ||
         // `generic` covers archives, 3D meshes, sqlite, office docs, etc.
-        // Anything that isn't a known text MIME stays binary.
+        // The binary viewer's runtime byte-sniff handles the "we labelled
+        // this generic but the bytes are actually text" case.
         kind === "generic";
 
       if (isBinary) {

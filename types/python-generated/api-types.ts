@@ -6255,6 +6255,20 @@ export interface components {
                 [key: string]: unknown;
             } | null;
             /**
+             * Initial Variables
+             * @description Override the original run's initial_variables for the resumed leg. Leave None to inherit from the original run.
+             */
+            initial_variables?: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Initial Overrides
+             * @description Override LLM parameters for the resumed leg.
+             */
+            initial_overrides?: {
+                [key: string]: unknown;
+            } | null;
+            /**
              * Max Steps
              * @default 1000
              */
@@ -6312,6 +6326,20 @@ export interface components {
             thread_id?: string | null;
             /** Conversation Id */
             conversation_id?: string | null;
+            /**
+             * Initial Variables
+             * @description Name → value pairs available to every agent node for prompt variable substitution. Distinct from `inputs`, which is the typed payload to the entry node.
+             */
+            initial_variables?: {
+                [key: string]: unknown;
+            };
+            /**
+             * Initial Overrides
+             * @description LLM parameter overrides applied across the run (temperature, max_tokens, model, etc.). Empty by default.
+             */
+            initial_overrides?: {
+                [key: string]: unknown;
+            };
             /**
              * Max Steps
              * @default 1000

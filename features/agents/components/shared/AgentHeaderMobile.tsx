@@ -92,7 +92,7 @@ export function AgentHeaderMobile({
         setPendingNew(true);
         setShowDirtyDialog(true);
       } else {
-        navigateTo(basePath);
+        navigateTo(`${basePath}/new`);
       }
       return;
     }
@@ -158,7 +158,11 @@ export function AgentHeaderMobile({
         <AgentOptionsMenu agentId={agentId} asTapTarget />
       </div>
 
-      <BottomSheet open={moreOpen} onOpenChange={setMoreOpen} title="Agent mode">
+      <BottomSheet
+        open={moreOpen}
+        onOpenChange={setMoreOpen}
+        title="Agent mode"
+      >
         <BottomSheetHeader
           title="Switch mode"
           trailing={
@@ -232,7 +236,7 @@ export function AgentHeaderMobile({
                 setShowDirtyDialog(false);
                 if (pendingNew) {
                   setPendingNew(false);
-                  navigateTo(basePath);
+                  navigateTo(`${basePath}/new`);
                 }
               }}
             >
