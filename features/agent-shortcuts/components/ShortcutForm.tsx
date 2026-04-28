@@ -10,9 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -70,6 +68,7 @@ import { DefaultVariableValuesEditor } from "./DefaultVariableValuesEditor";
 import { DefaultContextSlotValuesEditor } from "./DefaultContextSlotValuesEditor";
 import { ShortcutScopePicker } from "./ShortcutScopePicker";
 import { ShortcutContextsPicker } from "./ShortcutContextsPicker";
+import { CategorySelect } from "./CategorySelect";
 import { useAgentShortcutCrud } from "../hooks/useAgentShortcutCrud";
 import { RESULT_DISPLAY_OPTIONS } from "../constants";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -397,19 +396,6 @@ export function ShortcutForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, shortcut, categories]);
 
-  const groupedCategories = useMemo(() => {
-    const byPlacement = new Map<string, AgentShortcutCategory[]>();
-    categories.forEach((cat) => {
-      if (!byPlacement.has(cat.placementType)) {
-        byPlacement.set(cat.placementType, []);
-      }
-      byPlacement.get(cat.placementType)!.push(cat);
-    });
-    return Array.from(byPlacement.entries()).sort(([a], [b]) =>
-      a.localeCompare(b),
-    );
-  }, [categories]);
-
   const handleChange = <K extends keyof ShortcutFormData>(
     field: K,
     value: ShortcutFormData[K],
@@ -508,29 +494,15 @@ export function ShortcutForm({
           <Label htmlFor="shortcut-category" className="text-sm">
             Category <span className="text-destructive">*</span>
           </Label>
-          <Select
+          <CategorySelect
+            id="shortcut-category"
+            categories={categories}
             value={formData.categoryId}
             onValueChange={(value) => handleChange("categoryId", value)}
+            placeholder="Select category..."
+            className="h-9"
             disabled={saving}
-          >
-            <SelectTrigger id="shortcut-category" className="h-9">
-              <SelectValue placeholder="Select category..." />
-            </SelectTrigger>
-            <SelectContent>
-              {groupedCategories.map(([placementType, placementCategories]) => (
-                <SelectGroup key={placementType}>
-                  <SelectLabel className="text-xs uppercase">
-                    {placementType}
-                  </SelectLabel>
-                  {placementCategories.map((cat) => (
-                    <SelectItem key={cat.id} value={cat.id}>
-                      {cat.label}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              ))}
-            </SelectContent>
-          </Select>
+          />
         </div>
       </div>
 

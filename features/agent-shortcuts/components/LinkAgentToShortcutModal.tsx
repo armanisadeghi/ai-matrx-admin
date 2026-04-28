@@ -26,13 +26,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   AlertCircle,
   CheckCircle2,
   Link2,
@@ -46,6 +39,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useAgentShortcuts } from "../hooks/useAgentShortcuts";
 import { useAgentShortcutCrud } from "../hooks/useAgentShortcutCrud";
 import { ScopeMappingEditor } from "./ScopeMappingEditor";
+import { CategorySelect } from "./CategorySelect";
 import type { AgentVariableDefinition } from "./ScopeMappingEditor";
 import type { ScopeProps } from "../types";
 import { parseShortcutContextsInput } from "../utils/enabled-contexts";
@@ -282,22 +276,15 @@ export function LinkAgentToShortcutModal({
             <Label htmlFor="link-category" className="text-sm">
               Category <span className="text-destructive">*</span>
             </Label>
-            <Select
+            <CategorySelect
+              id="link-category"
+              categories={categories}
               value={selectedCategoryId}
               onValueChange={setSelectedCategoryId}
+              placeholder="Select category..."
+              className="h-9"
               disabled={isProcessing}
-            >
-              <SelectTrigger id="link-category" className="h-9">
-                <SelectValue placeholder="Select category..." />
-              </SelectTrigger>
-              <SelectContent>
-                {categories.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>
-                    {c.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            />
           </div>
 
           <div className="space-y-1.5">

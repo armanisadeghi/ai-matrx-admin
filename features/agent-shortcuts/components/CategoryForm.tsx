@@ -36,6 +36,7 @@ import IconInputWithValidation from "@/components/official/icons/IconInputWithVa
 import { useToast } from "@/components/ui/use-toast";
 import { CategoryColorPicker } from "./CategoryColorPicker";
 import { ShortcutContextsPicker } from "./ShortcutContextsPicker";
+import { CategorySelect } from "./CategorySelect";
 import { useAgentShortcutCrud } from "../hooks/useAgentShortcutCrud";
 import { PLACEMENT_TYPES, getPlacementTypeMeta } from "../constants";
 import {
@@ -286,30 +287,25 @@ export function CategoryForm({
       <div>
         <Label className="text-xs font-medium">Parent Category</Label>
         {availableParents.length > 0 ? (
-          <div className="flex items-center gap-2">
-            <Select
-              value={formData.parentCategoryId ?? "_root_"}
-              onValueChange={(value) =>
-                handleChange(
-                  "parentCategoryId",
-                  value === "_root_" ? null : value,
-                )
-              }
-              disabled={saving}
-            >
-              <SelectTrigger className="h-9 flex-1">
-                <SelectValue placeholder="None (root level)" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="_root_">None (root level)</SelectItem>
-                {availableParents.map((parent) => (
-                  <SelectItem key={parent.id} value={parent.id}>
-                    {parent.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <CategorySelect
+            categories={allCategories}
+            placementFilter={formData.placementType}
+            excludedIds={
+              editingCategory ? new Set([editingCategory.id]) : undefined
+            }
+            value={formData.parentCategoryId ?? "_root_"}
+            onValueChange={(value) =>
+              handleChange(
+                "parentCategoryId",
+                value === "_root_" ? null : value,
+              )
+            }
+            rootOption={{ value: "_root_", label: "None (root level)" }}
+            placeholder="None (root level)"
+            className="h-9"
+            disabled={saving}
+            compact
+          />
         ) : (
           <div className="h-9 px-3 py-2 rounded-md border border-border bg-muted/50 flex items-center text-xs text-muted-foreground">
             No categories available in this placement — will be root-level

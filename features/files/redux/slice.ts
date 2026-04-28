@@ -219,6 +219,8 @@ const initialState: CloudFilesState = {
     viewMode: "list",
     sortBy: "name",
     sortDir: "asc",
+    kindFilter: "all",
+    detailsLevel: "compact",
     activeFileId: null,
     activeFolderId: null,
   },
@@ -718,6 +720,14 @@ const slice = createSlice({
     ) {
       state.ui.sortBy = action.payload.sortBy;
       state.ui.sortDir = action.payload.sortDir;
+    },
+
+    setKindFilter(state, action: PayloadAction<KindFilter>) {
+      state.ui.kindFilter = action.payload;
+    },
+
+    setDetailsLevel(state, action: PayloadAction<DetailsLevel>) {
+      state.ui.detailsLevel = action.payload;
     },
 
     setActiveFileId(state, action: PayloadAction<string | null>) {

@@ -35,6 +35,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { getPlacementTypeMeta, PLACEMENT_TYPES } from "../constants";
 import type { PlacementType } from "../constants";
 import { useAgentShortcutCrud } from "../hooks/useAgentShortcutCrud";
+import { CategorySelect } from "./CategorySelect";
 import type { AgentShortcutCategory, ScopeProps } from "../types";
 
 export interface DuplicateCategoryModalProps extends ScopeProps {
@@ -223,23 +224,18 @@ export function DuplicateCategoryModal({
       <div>
         <Label className="text-xs font-medium">Parent Category</Label>
         {availableParents.length > 0 ? (
-          <Select
+          <CategorySelect
+            categories={categories}
+            placementFilter={placementType as PlacementType}
+            excludedIds={category ? new Set([category.id]) : undefined}
             value={parentCategoryId}
             onValueChange={setParentCategoryId}
+            rootOption={{ value: ROOT_VALUE, label: "None (root level)" }}
+            placeholder="None (root level)"
+            className="h-9"
             disabled={saving}
-          >
-            <SelectTrigger className="h-9">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={ROOT_VALUE}>None (root level)</SelectItem>
-              {availableParents.map((parent) => (
-                <SelectItem key={parent.id} value={parent.id}>
-                  {parent.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            compact
+          />
         ) : (
           <div className="h-9 px-3 py-2 rounded-md border border-border bg-muted/50 flex items-center text-xs text-muted-foreground">
             No categories available in this placement — will be root-level

@@ -351,11 +351,19 @@ export interface TreeState {
 export type ViewMode = "list" | "grid" | "columns";
 export type SortBy = "name" | "updated_at" | "size" | "type";
 export type SortDirection = "asc" | "desc";
+/** Whether the file table shows files only, folders only, or both. */
+export type KindFilter = "all" | "files" | "folders";
+/** Optional details surface (extension, mime, dimensions, etc.) on rows. */
+export type DetailsLevel = "compact" | "extended";
 
 export interface UiState {
   viewMode: ViewMode;
   sortBy: SortBy;
   sortDir: SortDirection;
+  /** Files-only / folders-only / both. Default = "all". */
+  kindFilter: KindFilter;
+  /** Whether to show extra detail columns (Extension, Type, Owner, …). */
+  detailsLevel: DetailsLevel;
   activeFileId: string | null;
   activeFolderId: string | null;
 }

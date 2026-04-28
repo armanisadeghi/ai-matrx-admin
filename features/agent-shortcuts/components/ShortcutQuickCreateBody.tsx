@@ -48,6 +48,7 @@ import { AgentVersionPicker } from "./AgentVersionPicker";
 import { DefaultVariableValuesEditor } from "./DefaultVariableValuesEditor";
 import { ScopeMappingEditor } from "./ScopeMappingEditor";
 import { ShortcutContextsPicker } from "./ShortcutContextsPicker";
+import { CategorySelect } from "./CategorySelect";
 import {
   FALLBACK_CATEGORY_LABEL,
   DEFAULT_ICON,
@@ -122,28 +123,19 @@ function EssentialsTab({ state }: { state: ShortcutQuickCreateState }) {
           <Label htmlFor="qc-category" className="text-sm">
             Category
           </Label>
-          <Select
-            value={categoryId || undefined}
+          <CategorySelect
+            id="qc-category"
+            categories={categories}
+            value={categoryId ?? ""}
             onValueChange={setCategoryId}
+            placeholder={
+              categories.length === 0
+                ? `Will create "${FALLBACK_CATEGORY_LABEL}"`
+                : "Choose a category"
+            }
+            className="h-9"
             disabled={isSaving}
-          >
-            <SelectTrigger id="qc-category" className="h-9">
-              <SelectValue
-                placeholder={
-                  categories.length === 0
-                    ? `Will create "${FALLBACK_CATEGORY_LABEL}"`
-                    : "Choose a category"
-                }
-              />
-            </SelectTrigger>
-            <SelectContent>
-              {categories.map((c) => (
-                <SelectItem key={c.id} value={c.id}>
-                  {c.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          />
           {categories.length === 0 && (
             <p className="text-[11px] text-muted-foreground leading-tight">
               First shortcut? We&apos;ll create a{" "}
