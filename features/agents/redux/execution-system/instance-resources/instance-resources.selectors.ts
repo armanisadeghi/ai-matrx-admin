@@ -14,8 +14,13 @@ import type { RootState } from "@/lib/redux/store";
 import type { ManagedResource } from "@/features/agents/types/instance.types";
 import type { MessagePart } from "@/types/python-generated/stream-events";
 import type { MediaRef } from "@/features/files/types";
+import {
+  isEditorXmlResource,
+  serializeEditorResourcesAsXml,
+} from "@/features/agents/utils/editor-resource-xml";
 
 const EMPTY_RESOURCES: ManagedResource[] = [];
+const EMPTY_EDITOR_RESOURCES: ManagedResource[] = [];
 const EMPTY_PAYLOADS: MessagePart[] = [];
 
 /**
@@ -104,6 +109,11 @@ export const selectResourcePayloads = (conversationId: string) =>
 
       const arr = Object.values(resources)
         .filter((r) => r.status === "ready")
+        // Editor pills (editor_error / editor_code_snippet) round-trip via
+        // XML in the user message text — not via structured ContentBlocks —
+        // so they're excluded from the API payload here. The XML weave
+        // happens in `assembleRequest` via `selectEditorResourceXml`.
+        .filter((r) => !isEditorXmlResource(r))
         .sort((a, b) => a.sortOrder - b.sortOrder)
         .map((r): MessagePart => {
           if (r.finalPayload) return r.finalPayload;
@@ -187,4 +197,32 @@ export const selectResourcePayloads = (conversationId: string) =>
 
       return arr.length === 0 ? EMPTY_PAYLOADS : arr;
     },
+  );
+
+/**
+ * Editor pills (errors, code snippets) — these resources serialize to XML
+ * embedded in the user message text rather than to structured ContentBlocks.
+ * Returned in sortOrder so the wire format matches what the user composed.
+ */
+export const selectEditorResources = (conversationId: string) =>
+  createSelector(
+    (state: RootState) =>
+      state.instanceResources.byConversationId[conversationId],
+    (resources) => {
+      if (!resources) return EMPTY_EDITOR_RESOURCES;
+      const arr = Object.values(resources)
+        .filter((r) => isEditorXmlResource(r))
+        .sort((a, b) => a.sortOrder - b.sortOrder);
+      return arr.length === 0 ? EMPTY_EDITOR_RESOURCES : arr;
+    },
+  );
+
+/**
+ * Concatenated XML text for all editor-type resources. Empty string when
+ * there are none — `assembleRequest` can append unconditionally.
+ */
+export const selectEditorResourceXml = (conversationId: string) =>
+  createSelector(
+    selectEditorResources(conversationId),
+    (resources) => serializeEditorResourcesAsXml(resources),
   );

@@ -152,6 +152,7 @@ export function BackendTargetPanel({
 
   const overrideUrl = instanceUI?.serverOverrideUrl ?? null;
   const overrideToken = instanceUI?.serverOverrideAuthToken ?? null;
+  const overrideTokenError = instanceUI?.serverOverrideAuthTokenError ?? null;
 
   // For display only — the runtime decision lives in resolveBackendForConversation.
   const channel: "global" | "override" = overrideUrl ? "override" : "global";
@@ -187,16 +188,7 @@ export function BackendTargetPanel({
           <CopyableValue value={effectiveUrl} />
         </Row>
         <Row label="Auth scheme">
-          {channel === "override" ? (
-            <span>
-              Bearer (sandbox token){" "}
-              {tokenStatus === "missing" && (
-                <span className="text-amber-500">— not minted yet</span>
-              )}
-            </span>
-          ) : (
-            <span>Bearer (Supabase JWT)</span>
-          )}
+          <span>Bearer (Supabase JWT)</span>
         </Row>
       </div>
 
@@ -251,6 +243,13 @@ export function BackendTargetPanel({
             {tokenStatus}
           </Pill>
         </Row>
+        {overrideTokenError && (
+          <Row label="Mint error">
+            <span className="text-amber-600 dark:text-amber-400 break-words">
+              {overrideTokenError}
+            </span>
+          </Row>
+        )}
       </div>
 
       {/* Sandbox binding source */}

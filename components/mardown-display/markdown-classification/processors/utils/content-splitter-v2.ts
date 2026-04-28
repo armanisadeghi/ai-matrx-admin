@@ -281,7 +281,15 @@ const XML_TAG_BLOCKS = {
 // ATTRIBUTE-BEARING XML BLOCKS (tags with key="value" attributes)
 // ============================================================================
 
-const ATTRIBUTE_XML_BLOCKS = ["decision", "artifact"] as const;
+const ATTRIBUTE_XML_BLOCKS = [
+  "decision",
+  "artifact",
+  // Editor pills — round-trip representation of code-editor errors and
+  // selected code snippets. Attributes carry file/line/severity/language; the
+  // body carries <message>+<surrounding_code> for errors, raw code for snippets.
+  "editor_error",
+  "editor_code_snippet",
+] as const;
 type AttributeXmlBlockType = (typeof ATTRIBUTE_XML_BLOCKS)[number];
 
 /** Extracts key="value" pairs from an XML opening tag string. */
@@ -455,6 +463,24 @@ function extractAttributeXmlBlock(
   const fullXml = rawXmlOverride ?? consumedLines.join("\n");
 
   // Type-specific metadata construction
+
+  // Editor pill tags — pass attributes straight through as metadata so the
+  // chip component can render file/line/severity/language without parsing.
+  if (
+    detection.type === "editor_error" ||
+    detection.type === "editor_code_snippet"
+  ) {
+    return {
+      content: innerContent,
+      nextIndex: i,
+      metadata: {
+        isComplete: foundClosingTag,
+        ...detection.attributes,
+        rawXml: fullXml,
+      },
+    };
+  }
+
   if (detection.type === "artifact") {
     const artifactId = detection.attributes.id || `artifact-${startIndex}`;
     const artifactIndex = artifactId.includes("_")

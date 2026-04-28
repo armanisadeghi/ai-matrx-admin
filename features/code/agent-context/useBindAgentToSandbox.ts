@@ -5,35 +5,40 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   setServerOverrideUrl,
   setServerOverrideAuthToken,
+  setServerOverrideAuthTokenError,
 } from "@/features/agents/redux/execution-system/instance-ui-state/instance-ui-state.slice";
 import { selectEditorMode } from "../redux/codeWorkspaceSlice";
 import { useSandboxAccessToken } from "./useSandboxAccessToken";
 
 /**
- * Bind a chat conversation to a sandbox-specific backend URL **and** the
- * matching short-lived bearer token while the editor surface is in
- * **sandbox mode**.
+ * Bind a chat conversation to a sandbox-specific backend URL while the
+ * editor surface is in **sandbox mode**.
  *
  * Why this hook:
  *   - In sandbox mode the agent's Python server runs **inside the
  *     container**. AI calls from this conversation should hit
- *     `${proxyUrl}/...` instead of the globally-selected backend.
- *   - The orchestrator authenticates browser-direct calls with a per-
- *     sandbox bearer token (NOT the user's Supabase JWT). This hook
- *     mints+caches that token alongside the URL so the agent execute
- *     thunks can pull both from `instanceUIState` in one read.
+ *     `${proxyUrl}/...` instead of the globally-selected backend. The
+ *     in-container server is the same codebase as the central server
+ *     and authenticates the same way (Supabase JWT) — `/ai/*` is a
+ *     pure URL swap.
  *   - We don't flip `apiConfigSlice.activeServer` because that would
  *     redirect every other backend call in the page (cloud-files,
  *     prompt-apps, agent definitions, etc.). The override is scoped to
  *     this single conversation.
+ *   - The hook also mints+caches a short-lived **sandbox bearer token**
+ *     (`serverOverrideAuthToken`) for the *other* direct-orchestrator
+ *     paths defined in `SANDBOX_DIRECT_ENDPOINTS.md §3` — streaming
+ *     exec, PTY, fs-watch, bulk transfer — where the orchestrator does
+ *     its own auth. The AI passthrough does NOT use this token (the
+ *     in-container server reads the user's Supabase JWT directly).
  *
  * Lifecycle:
  *   - On mount (or whenever `proxyUrl`/`sandboxRowId`/`editorMode` change):
  *     when in sandbox mode AND a `proxyUrl` is provided, dispatch
- *     `setServerOverrideUrl(proxyUrl)`. Concurrently mint a token via
- *     `useSandboxAccessToken(sandboxRowId)`; once it lands, dispatch
- *     `setServerOverrideAuthToken(token)` so the next AI call carries
- *     `Authorization: Bearer <token>`.
+ *     `setServerOverrideUrl(proxyUrl)`. Concurrently mint a sandbox
+ *     bearer token via `useSandboxAccessToken(sandboxRowId)` and stash
+ *     it via `setServerOverrideAuthToken(token)` for non-AI direct-
+ *     orchestrator routes (see top of file).
  *   - Token refreshes (every ~15 min minus 30s) re-dispatch the new value.
  *   - On unmount, on conversation change, or when leaving sandbox mode:
  *     dispatch `null` for both URL and token to revert.
@@ -94,7 +99,7 @@ export function useBindAgentToSandbox({
   // Only mint a token while the binding is actually live — we don't want
   // to spend orchestrator quota for every editor surface that mounts.
   const tokenSandboxId = shouldBind ? (sandboxRowId ?? null) : null;
-  const { token: bearerToken } = useSandboxAccessToken({
+  const { token: bearerToken, error: tokenError } = useSandboxAccessToken({
     sandboxRowId: tokenSandboxId,
   });
 
@@ -148,6 +153,20 @@ export function useBindAgentToSandbox({
       }),
     );
   }, [conversationId, bearerToken, shouldBind, dispatch]);
+
+  // ── Token-mint error binding. Surfaces orchestrator / network failures
+  // through Redux so admin debug panels can show *why* a sandbox call is
+  // unauthenticated instead of a silent "(none)". On success the slice
+  // clears this automatically (see setServerOverrideAuthToken). ─────────
+  useEffect(() => {
+    if (!shouldBind || !conversationId) return;
+    dispatch(
+      setServerOverrideAuthTokenError({
+        conversationId,
+        error: tokenError ?? null,
+      }),
+    );
+  }, [conversationId, tokenError, shouldBind, dispatch]);
 
   // ── Final teardown on unmount. Separate effect so the cleanup fires even
   // when only `conversationId` changes (the main effect handles that case

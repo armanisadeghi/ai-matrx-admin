@@ -109,19 +109,42 @@ export function useSandboxAccessToken({
             `Failed to mint sandbox access token (${resp.status}): ${body}`,
           );
         }
-        const payload = (await resp.json()) as Partial<SandboxAccessToken> & {
+        // Orchestrator's actual response shape (per
+        // SANDBOX_DIRECT_ENDPOINTS.md §2.2) is `{ token, expires_at,
+        // direct_url, ws_base, tier, sandbox_id }`. The other doc page
+        // (§7.8 in SANDBOX_PROXY_AND_FS_EVENTS_FE_INTEGRATION.md) sketched
+        // `{ token, exp, jti, scopes }` — they disagree, the orchestrator
+        // went with `expires_at`. Accept either: prefer `exp` (unix sec)
+        // when present so this still works if the orchestrator ever
+        // standardizes on it; fall back to parsing `expires_at` (ISO).
+        const payload = (await resp.json()) as {
           token?: string;
           exp?: number;
+          expires_at?: string;
+          jti?: string;
+          scopes?: string[];
         };
-        if (!payload.token || typeof payload.exp !== "number") {
+
+        const expSeconds = (() => {
+          if (typeof payload.exp === "number" && Number.isFinite(payload.exp)) {
+            return payload.exp;
+          }
+          if (typeof payload.expires_at === "string") {
+            const ms = Date.parse(payload.expires_at);
+            if (Number.isFinite(ms)) return Math.floor(ms / 1000);
+          }
+          return null;
+        })();
+
+        if (!payload.token || expSeconds === null) {
           throw new Error(
-            "Sandbox access-tokens endpoint returned an invalid payload",
+            `Sandbox access-tokens endpoint returned an invalid payload (missing token or exp/expires_at). Got keys: ${Object.keys(payload).join(", ")}`,
           );
         }
         if (cancelled) return;
         const minted: SandboxAccessToken = {
           token: payload.token,
-          exp: payload.exp,
+          exp: expSeconds,
           jti: payload.jti,
           scopes: payload.scopes ?? scopes ?? ["ai"],
         };

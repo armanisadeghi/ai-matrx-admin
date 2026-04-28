@@ -21,6 +21,9 @@ import { useEditorContextMenuActions } from "../agent-context/useEditorContextMe
 import { useMonacoMarkers } from "../agent-context/useMonacoMarkers";
 import { useApplyAIPatchesToActiveTab } from "../agent-context/useApplyAIPatchesToActiveTab";
 import { useApplyFsChangesToOpenTabs } from "../agent-context/useApplyFsChangesToOpenTabs";
+import { useDiagnosticHoverActions } from "../agent-context/useDiagnosticHoverActions";
+import { selectDiagnosticsByTabId } from "../redux/diagnosticsSlice";
+import { CodeWorkspaceContextMenu } from "../agent-context/CodeWorkspaceContextMenu";
 import { selectFocusedConversation } from "@/features/agents/redux/execution-system/conversation-focus/conversation-focus.selectors";
 import type { RootState } from "@/lib/redux/store";
 import { useEnvironmentForActiveTab } from "./monaco-environments";
@@ -125,6 +128,26 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
     activeTab,
     conversationId,
     defaultAgentId: agentId,
+    notify: ({ type, text }) => {
+      if (type === "success") toast.success(text);
+      else if (type === "error") toast.error(text);
+      else toast.info(text);
+    },
+  });
+
+  // Hover → "Send to AI chat" link on lines carrying a Monaco marker.
+  // Click dispatches an `editor_error` resource pill into the active
+  // conversation; the pill renders above the chat input and round-trips
+  // to the persisted message as `<editor_error>` XML.
+  const activeTabDiagnostics = useAppSelector((state) =>
+    selectDiagnosticsByTabId(state, activeTab?.id ?? null),
+  );
+  useDiagnosticHoverActions({
+    editorRef,
+    editorReadyTick,
+    activeTab,
+    diagnostics: activeTabDiagnostics,
+    conversationId,
     notify: ({ type, text }) => {
       if (type === "success") toast.success(text);
       else if (type === "error") toast.error(text);
@@ -319,16 +342,22 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
           ) : activeTabHasPending ? (
             <TabDiffView key={activeTab.id} tab={activeTab} />
           ) : (
-            <MonacoEditor
-              key={activeTab.id}
-              value={activeTab.content}
-              language={activeTab.language}
-              path={activeTab.path}
-              onChange={handleChange}
-              onSave={handleSave}
-              onSendSelection={sendSelection}
-              onEditorMount={handleEditorMount}
-            />
+            <CodeWorkspaceContextMenu
+              editorRef={editorRef}
+              editorReadyTick={editorReadyTick}
+              className="h-full w-full"
+            >
+              <MonacoEditor
+                key={activeTab.id}
+                value={activeTab.content}
+                language={activeTab.language}
+                path={activeTab.path}
+                onChange={handleChange}
+                onSave={handleSave}
+                onSendSelection={sendSelection}
+                onEditorMount={handleEditorMount}
+              />
+            </CodeWorkspaceContextMenu>
           )
         ) : (
           <EmptyEditorState />

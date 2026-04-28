@@ -218,7 +218,14 @@ export type ResourceStatus =
 
 /**
  * All possible resource/content block types.
- * Maps to the ContentBlock union from the AI API types.
+ *
+ * The first group maps to the ContentBlock union from the AI API types —
+ * those resources serialize to structured `MessagePart`s in `user_input`.
+ *
+ * The `editor_*` group is different: those resources serialize to **XML in
+ * the user message text**, not to structured blocks. They're for pills the
+ * code editor surfaces (errors, code snippets) where the persisted user
+ * message must round-trip through the DB and re-render as chips on load.
  */
 export type ResourceBlockType =
   | "text"
@@ -232,7 +239,9 @@ export type ResourceBlockType =
   | "input_task"
   | "input_table"
   | "input_list"
-  | "input_data";
+  | "input_data"
+  | "editor_error"
+  | "editor_code_snippet";
 
 export interface ResourceOptions {
   keepFresh: boolean;
@@ -605,6 +614,17 @@ export interface InstanceUIState {
    * for keeping URL + token in lockstep.
    */
   serverOverrideAuthToken?: string | null;
+
+  /**
+   * Last error from the bearer-token mint flow for this conversation, if
+   * any. Surfaced by `useBindAgentToSandbox` so admin debug panels can
+   * show *why* a sandbox-mode call is unauthenticated instead of just
+   * "(none)".
+   *
+   * Cleared automatically when a token is successfully minted, when the
+   * URL override is cleared, or when the conversation entry is removed.
+   */
+  serverOverrideAuthTokenError?: string | null;
 }
 
 // =============================================================================

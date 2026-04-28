@@ -461,6 +461,7 @@ const instanceUIStateSlice = createSlice({
         // would just be a bug factory.
         if (action.payload.url === null) {
           entry.serverOverrideAuthToken = null;
+          entry.serverOverrideAuthTokenError = null;
         }
       }
     },
@@ -480,6 +481,31 @@ const instanceUIStateSlice = createSlice({
       const entry = state.byConversationId[action.payload.conversationId];
       if (entry) {
         entry.serverOverrideAuthToken = action.payload.token;
+        if (action.payload.token) {
+          entry.serverOverrideAuthTokenError = null;
+        }
+      }
+    },
+
+    /**
+     * Record the latest bearer-token mint failure for this conversation
+     * so admin debug surfaces (BackendTargetPanel, CodeWorkspaceDebug)
+     * can show *why* a sandbox-mode call is unauthenticated. Pass `null`
+     * to clear (e.g. on retry success or when the binding goes away).
+     *
+     * This is observability-only — runtime auth resolution still keys
+     * exclusively off `serverOverrideAuthToken`.
+     */
+    setServerOverrideAuthTokenError(
+      state,
+      action: PayloadAction<{
+        conversationId: string;
+        error: string | null;
+      }>,
+    ) {
+      const entry = state.byConversationId[action.payload.conversationId];
+      if (entry) {
+        entry.serverOverrideAuthTokenError = action.payload.error;
       }
     },
 
@@ -683,6 +709,7 @@ export const {
   setEditorContextDisabledTabs,
   setServerOverrideUrl,
   setServerOverrideAuthToken,
+  setServerOverrideAuthTokenError,
   setShowAutoClearToggle,
   setAutoClearConversation,
   setReuseConversationId,

@@ -55,6 +55,7 @@ Read [`README.md`](./README.md) before touching anything here. Read [`INVENTORY.
 | 18 | Remove prompt feature code | ⏳ not-started | `phases/phase-18-remove-features.md` |
 | 19 | DB cleanup (drop prompt tables) | ⏳ not-started | `phases/phase-19-db-cleanup.md` |
 | 20 | Final sweep (`aiChatSlice`, legacy `ai_agent`, doc consolidation) | ⏳ not-started | `phases/phase-20-final-sweep.md` |
+| 21 | New `/code` workspace: resource pills + error inspection + unified context menu | ✅ code-complete (smoke testing pending — Problems panel + IDE-actions injection deferred) | `phases/phase-21-code-workspace-resource-pills.md` |
 
 ## Dependency graph (updated)
 

@@ -348,21 +348,22 @@ body:
   }
 ```
 
-- Returns the orchestrator's response payload to the browser, augmented with the resolved sandbox metadata:
+- Returns the orchestrator's response payload to the browser verbatim. **Field names match `§2.2` exactly** — `expires_at` (ISO 8601 UTC string), not a unix-seconds `exp`:
 
 ```jsonc
-// Response (200)
+// Response (200) — orchestrator payload, unchanged on the way through Next.js
 {
-  "token":   "<jwt>",
-  "exp":     1740000000,                         // unix seconds
-  "jti":     "<token id>",                       // optional, for audit
-  "scopes":  ["ai"],
-  "sandbox_id": "<orchestrator sandbox id>",     // FE-added for cross-checking
-  "tier":    "hosted" | "ec2"                    // FE-added so the UI can label which tier signed the token
+  "token":      "<jwt>",
+  "expires_at": "2026-04-28T08:13:04Z",
+  "direct_url": "https://orchestrator.dev.codematrx.com",
+  "ws_base":    "wss://orchestrator.dev.codematrx.com",
+  "tier":       "hosted",                      // also "ec2"
+  "sandbox_id": "<orchestrator sandbox id>",
+  "jti":        "<token id>"                   // optional — present when orchestrator emits it
 }
 ```
 
-The browser stores `{ token, exp, jti, scopes }` via `useSandboxAccessToken`, refreshes it ~30s before `exp`, and attaches it to every `${proxy_url}/...` call as `Authorization: Bearer <token>`.
+`useSandboxAccessToken` parses `expires_at` into unix seconds for its internal refresh timer, refreshes ~30s before expiry, and attaches the token to every `${proxy_url}/...` call as `Authorization: Bearer <token>`. (The hook also accepts a raw `exp` number for forward compatibility, but the orchestrator currently emits `expires_at`.)
 
 **No master key ever reaches the browser.** Token minting is the sole capability surface — leaking a minted token grants `ai`-scope access to one sandbox for at most its remaining lifetime.
 

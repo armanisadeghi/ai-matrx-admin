@@ -25,6 +25,7 @@ import {
   FolderKanban,
   Loader2,
   AlertCircle,
+  Code2,
 } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { selectInstanceResources } from "@/features/agents/redux/execution-system/instance-resources/instance-resources.selectors";
@@ -122,14 +123,55 @@ function getBlockTypeDisplay(blockType: ResourceBlockType) {
       bg: "bg-gray-100 dark:bg-gray-800",
       label: "Data",
     },
+    editor_error: {
+      icon: AlertCircle,
+      color: "text-red-600 dark:text-red-400",
+      bg: "bg-red-100 dark:bg-red-950/30",
+      label: "Error",
+    },
+    editor_code_snippet: {
+      icon: Code2,
+      color: "text-cyan-600 dark:text-cyan-400",
+      bg: "bg-cyan-100 dark:bg-cyan-950/30",
+      label: "Code",
+    },
   };
   return map[blockType] ?? map.text;
+}
+
+function basename(path: string): string {
+  const i = Math.max(path.lastIndexOf("/"), path.lastIndexOf("\\"));
+  return i === -1 ? path : path.slice(i + 1);
 }
 
 function getResourceLabel(resource: ManagedResource): string {
   // preview is set by SmartAgentResourcePickerButton as the display label string
   if (typeof resource.preview === "string" && resource.preview) {
     return resource.preview;
+  }
+  // Editor pills carry a structured `source` we can format directly —
+  // keeps the chip identifiable even though `preview` is never set on add.
+  if (resource.blockType === "editor_error") {
+    const src = resource.source as
+      | { file?: string; line?: number }
+      | null;
+    if (src?.file) {
+      return `${basename(src.file)}${src.line ? `:${src.line}` : ""}`;
+    }
+  }
+  if (resource.blockType === "editor_code_snippet") {
+    const src = resource.source as
+      | { file?: string; startLine?: number; endLine?: number }
+      | null;
+    if (src?.file) {
+      const range =
+        src.startLine !== undefined && src.endLine !== undefined
+          ? src.startLine === src.endLine
+            ? `:${src.startLine}`
+            : `:${src.startLine}-${src.endLine}`
+          : "";
+      return `${basename(src.file)}${range}`;
+    }
   }
   // Fallback: derive from source
   const src = resource.source as Record<string, unknown> | null;

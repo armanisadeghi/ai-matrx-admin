@@ -1,10 +1,17 @@
-# FEATURE.md — `code-editor`
+# FEATURE.md — `code-editor` (legacy / embedded)
 
 **Status:** `active` — **major upgrade incoming:** file-system + git repository integration + full agentic coding system
 **Tier:** `1`
-**Last updated:** `2026-04-22`
+**Last updated:** `2026-04-28`
 
-> This is one of the most strategically important surfaces in the product. Current state is solid; the next rebuild wave will turn it into a full agentic coding environment.
+> This is the **embedded** code-editor surface — the one consumed by the agent builder, prompt-app editor, notes, and the V2 / V3 / Compact code editor variants. Its agent integration runs through the legacy widget-tool + Shortcuts pipeline.
+>
+> **Not to be confused with [`features/code/`](../code/FEATURE.md)** — the **new** VSCode-style standalone workspace mounted at `/code`. That workspace has its own Monaco instance, its own tabs/diagnostics/patches slices, and binds to the **new agent system** via `AgentRunnerPage` rather than via Shortcuts. The two editors share `vsc_*` context-key naming (the same Shortcut can bind to either) but are otherwise independent code paths. The chat-binding split:
+>
+> | Surface | Editor code | Chat / agent integration |
+> |---|---|---|
+> | This feature (`features/code-editor/`) | embedded multi-file core in builder / notes / app pages | legacy `cx-conversation` chat where embedded; Shortcuts via `UnifiedAgentContextMenu` (Phase 5) |
+> | New workspace (`features/code/`) at `/code` | standalone Monaco + tabs + diagnostics + patches slices | new agents system via `AgentRunnerPage`; instance-context bridge (`editor.tab.*`, `editor.selection.*`); right-click currently uses Monaco-native actions only |
 
 ---
 
@@ -137,6 +144,7 @@ This section is **explicitly forward-looking**. Treat everything in it as planne
 ## Change log
 
 - `2026-04-22` — claude: initial FEATURE.md; documents current state + flags upcoming file-system / git / agentic-coding upgrade.
+- `2026-04-28` — claude: clarified scope vs the new `features/code/` workspace at `/code`; added cross-reference table for chat-binding split (legacy `cx-conversation` + Shortcuts here vs new agents system + `AgentRunnerPage` there).
 
 ---
 

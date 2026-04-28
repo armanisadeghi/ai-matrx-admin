@@ -51,7 +51,15 @@ const SIMPLE_XML_TAGS = new Set([
 ]);
 
 /** Attribute-bearing XML tags */
-const ATTR_XML_TAGS = new Set(["decision", "artifact"]);
+const ATTR_XML_TAGS = new Set([
+  "decision",
+  "artifact",
+  // Editor pill tags — carry attributes (file, line, severity, language, …)
+  // so they're classified as ATTR. The chat-markdown renderer parses them
+  // back into chips on load.
+  "editor_error",
+  "editor_code_snippet",
+]);
 
 /** All known XML tag names combined (for quick "is this one of ours?" check) */
 const ALL_XML_TAGS = new Set([...SIMPLE_XML_TAGS, ...ATTR_XML_TAGS]);

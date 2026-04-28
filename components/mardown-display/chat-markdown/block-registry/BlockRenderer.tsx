@@ -1312,6 +1312,24 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
         />
       );
 
+    case "editor_error":
+      return (
+        <BlockComponents.EditorErrorBlock
+          key={index}
+          content={block.content}
+          metadata={block.metadata}
+        />
+      );
+
+    case "editor_code_snippet":
+      return (
+        <BlockComponents.EditorCodeSnippetBlock
+          key={index}
+          content={block.content}
+          metadata={block.metadata}
+        />
+      );
+
     case "tree":
       return (
         <BlockComponents.TreeBlock

@@ -56,6 +56,30 @@ export async function POST(
       );
     }
 
+    // Fail fast (and loudly) when the per-tier orchestrator API key isn't
+    // configured. Without it the orchestrator rejects the mint with a
+    // 401/403 and the FE just sees `Bearer token: (none)` with no clue
+    // which env var to check. Surface the exact var name so admins can
+    // fix it in one shot.
+    if (!lookup.orchestrator.apiKey) {
+      const expectedEnvVar =
+        lookup.orchestrator.tier === "hosted"
+          ? "MATRX_HOSTED_ORCHESTRATOR_API_KEY"
+          : "MATRX_ORCHESTRATOR_API_KEY";
+      console.error(
+        `[access-tokens] Missing orchestrator API key — set ${expectedEnvVar} on Vercel + locally. Tier: ${lookup.orchestrator.tier}, sandbox: ${lookup.sandboxId}`,
+      );
+      return NextResponse.json(
+        {
+          error: "Sandbox orchestrator API key is not configured",
+          details: `Set ${expectedEnvVar} in your environment (Vercel + local .env). This is the master X-API-Key used to mint sandbox bearer tokens. Note: MATRX_ACCESS_TOKEN_SECRET is the orchestrator's HMAC signing secret (Python side) — it does not authenticate Next.js → orchestrator calls.`,
+          tier: lookup.orchestrator.tier,
+          expectedEnvVar,
+        },
+        { status: 500 },
+      );
+    }
+
     // We need the user record for the actor block — the orchestrator's
     // audit log keys on it. lookupSandboxAndOrchestrator already
     // verified ownership; we just re-read for email + id.

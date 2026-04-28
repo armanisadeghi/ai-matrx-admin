@@ -26,7 +26,10 @@ import type { AssembledAgentStartRequest } from "@/features/agents/types/request
 import type { MessagePart } from "@/types/python-generated/stream-events";
 import { generateRequestId } from "../utils/ids";
 import { setInstanceStatus } from "../conversations/conversations.slice";
-import { selectResourcePayloads } from "../instance-resources/instance-resources.selectors";
+import {
+  selectEditorResourceXml,
+  selectResourcePayloads,
+} from "../instance-resources/instance-resources.selectors";
 import { selectResolvedVariables } from "../instance-variable-values/instance-variable-values.selectors";
 import { selectSettingsOverridesForApi } from "../instance-model-overrides/instance-model-overrides.selectors";
 import { selectContextPayload } from "../instance-context/instance-context.selectors";
@@ -100,10 +103,23 @@ export function assembleRequest(
   // We send exactly what the user typed.
   const userInputState =
     state.instanceUserInput.byConversationId[conversationId];
-  const textInput = userInputState?.text ?? "";
+  const rawTextInput = userInputState?.text ?? "";
   const messageParts = userInputState?.messageParts;
 
-  // Resources → ContentBlock[]
+  // Editor pills (errors / code snippets) round-trip via XML in the user
+  // message text. The contract above protects user-typed content; this is
+  // structured resource data the user explicitly attached, serialized for
+  // round-trip persistence (so the message renders identically when reloaded
+  // from the DB). Append after the typed text — never prepend, since the
+  // user's prose should still lead the message.
+  const editorResourceXml = selectEditorResourceXml(conversationId)(state);
+  const textInput = editorResourceXml
+    ? rawTextInput
+      ? `${rawTextInput}\n\n${editorResourceXml}`
+      : editorResourceXml
+    : rawTextInput;
+
+  // Resources → ContentBlock[] (editor pills are filtered out by the selector)
   const resourcePayloads = selectResourcePayloads(conversationId)(state);
   // Variables (three-tier resolved — uses instance-owned definitions snapshot)
   const variables = selectResolvedVariables(conversationId)(state);
@@ -241,8 +257,12 @@ export const executeInstance = createAsyncThunk<
       // Verbatim — never trim/normalize the user's typed text.
       const userInputEntry =
         state.instanceUserInput.byConversationId[conversationId];
-      const userInputText = userInputEntry?.text ?? "";
       const userMessageParts = userInputEntry?.messageParts ?? undefined;
+      // We pull the text from the assembled payload below so the optimistic
+      // user message includes any editor-resource XML appended in
+      // assembleRequest. Without this, the optimistic bubble would show only
+      // the user's raw prose; on reload from the DB the same message would
+      // render as prose + chips — a visible mismatch during the first turn.
 
       // Assemble the request
       const payload = assembleRequest(state, conversationId);
@@ -311,8 +331,19 @@ export const executeInstance = createAsyncThunk<
       const resourceBlocks = Array.isArray(payload.user_input)
         ? payload.user_input.filter((b) => b.type !== "text")
         : [];
+      // Pull the assembled text (with editor-resource XML appended) so the
+      // optimistic bubble matches what the DB will serve back.
+      const assembledUserText = Array.isArray(payload.user_input)
+        ? (
+            payload.user_input.find((b) => b.type === "text") as
+              | (MessagePart & { text?: string })
+              | undefined
+          )?.text ?? ""
+        : typeof payload.user_input === "string"
+          ? payload.user_input
+          : "";
 
-      const displayContent = [variableLines, userInputText]
+      const displayContent = [variableLines, assembledUserText]
         .filter(Boolean)
         .join("\n");
 

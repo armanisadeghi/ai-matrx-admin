@@ -92,6 +92,12 @@ const InlineDecisionBlock = lazy(
   () => import("../../blocks/inline-decision/InlineDecisionBlock"),
 );
 const ArtifactBlock = lazy(() => import("../../blocks/artifact/ArtifactBlock"));
+const EditorErrorBlock = lazy(
+  () => import("../../blocks/editor-resources/EditorErrorBlock"),
+);
+const EditorCodeSnippetBlock = lazy(
+  () => import("../../blocks/editor-resources/EditorCodeSnippetBlock"),
+);
 const YamlBlock = lazy(() => import("../../blocks/yaml/YamlBlock"));
 const XmlBlock = lazy(() => import("../../blocks/xml/XmlBlock"));
 const CsvBlock = lazy(() => import("../../blocks/csv/CsvBlock"));
@@ -369,6 +375,16 @@ export const BlockComponents = {
   ArtifactBlock: (props: any) => (
     <LazyBlockWrapper>
       <ArtifactBlock {...props} />
+    </LazyBlockWrapper>
+  ),
+  EditorErrorBlock: (props: any) => (
+    <LazyBlockWrapper>
+      <EditorErrorBlock {...props} />
+    </LazyBlockWrapper>
+  ),
+  EditorCodeSnippetBlock: (props: any) => (
+    <LazyBlockWrapper>
+      <EditorCodeSnippetBlock {...props} />
     </LazyBlockWrapper>
   ),
   YamlBlock: (props: any) => (

@@ -212,8 +212,11 @@ export const MonacoEditor: React.FC<MonacoEditorProps> = ({
             verticalScrollbarSize: 10,
             horizontalScrollbarSize: 10,
           },
-          contextmenu: true,
-          // Rely on @monaco-editor/react to render Monaco's native context menu.
+          contextmenu: false,
+          // Right-click is handled by `CodeWorkspaceContextMenu` (Radix
+          // wrapper) so users get agent shortcuts on right-click. Monaco's
+          // IDE actions (Format Document, Go to Definition, etc.) remain
+          // accessible via the command palette (`F1`/`Cmd+Shift+P`).
         }}
       />
     </div>

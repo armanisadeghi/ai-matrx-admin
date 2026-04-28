@@ -63,12 +63,16 @@ const PANEL_IDS = {
  * └──┴──────────┴────────────────────────────┴──────────┴──────────┘
  *                                StatusBar
  *
- * Every panel is user-draggable. In addition, toggle buttons in the editor
- * toolbar + status bar collapse/expand panels deterministically: whenever a
- * side or right-side panel expands, we rebalance the layout so the newly
- * revealed space is taken *from the center* — never from a sibling right
- * panel. This keeps chat and chat-history cleanly adjacent instead of
- * competing for the same column.
+ * Panel sizing rules (react-resizable-panels v4):
+ *   - All defaultSize / minSize / collapsedSize values are PERCENTAGE STRINGS
+ *     (e.g. "18%"). Bare numbers in v4 are PIXELS — using them on the body
+ *     group caused the sidebar to mount at 18px and the terminal at 30px,
+ *     producing the hydration mismatch (server flex-grow != client flex-grow)
+ *     and the visible "snap" on first effect tick.
+ *   - Toggle behaviour goes through a single `groupRef.setLayout()` call —
+ *     never `panel.collapse()` / `panel.expand()` for adjacent collapsibles
+ *     (the lib's pivot trap pushes freed space into the immediate neighbour).
+ *     The right + farRight columns sit side-by-side, so this matters.
  */
 export const WorkspaceLayout: React.FC<WorkspaceLayoutProps> = ({
   rightSlot,
@@ -84,9 +88,6 @@ export const WorkspaceLayout: React.FC<WorkspaceLayoutProps> = ({
   const terminalOpen = useAppSelector(selectTerminalOpen);
 
   const bodyGroupRef = useRef<GroupImperativeHandle | null>(null);
-  const sideRef = useRef<PanelImperativeHandle>(null);
-  const rightRef = useRef<PanelImperativeHandle>(null);
-  const farRightRef = useRef<PanelImperativeHandle>(null);
   const bottomRef = useRef<PanelImperativeHandle>(null);
 
   const rightAvailable = Boolean(rightSlot);
@@ -112,76 +113,53 @@ export const WorkspaceLayout: React.FC<WorkspaceLayoutProps> = ({
     : farRightSlot;
 
   /**
-   * Collapse/expand individual panels imperatively, then rebalance so that
-   * newly revealed/surrendered space flows to/from the *center* panel —
-   * never siblings. This keeps chat and chat-history cleanly adjacent
-   * instead of fighting each other for the same column.
+   * Compute the full body-group layout from Redux state and apply via
+   * `setLayout()` in one shot. Replaces the previous imperative
+   * `collapse()`/`expand()` + rAF rebalance pair, which was racy AND hit
+   * the v4 pivot trap (collapsing one of right/farRight pushed its freed
+   * space into the other adjacent collapsible).
+   *
+   * Behaviour preserved from the old implementation:
+   *   - When a panel is closed in Redux, its size is 0.
+   *   - When a panel reopens, we keep the user's last drag size if it's
+   *     within range; otherwise we fall back to the DESIRED_* target.
+   *   - The center panel absorbs whatever remains.
    */
   useEffect(() => {
     const group = bodyGroupRef.current;
     if (!group) return;
 
-    const side = sideRef.current;
-    const right = rightAvailable ? rightRef.current : null;
-    const farRight = farRightAvailable ? farRightRef.current : null;
+    const current = group.getLayout();
+    const preserve = (val: number | undefined, target: number) =>
+      typeof val === "number" && val >= target / 2 ? val : target;
 
-    // Apply collapse/expand first so the panel runtime knows each panel's
-    // desired "on/off" state before we set the layout sizes.
-    if (side) {
-      if (sideOpen && side.isCollapsed()) side.expand();
-      else if (!sideOpen && !side.isCollapsed()) side.collapse();
-    }
-    if (right) {
-      if (rightOpen && right.isCollapsed()) right.expand();
-      else if (!rightOpen && !right.isCollapsed()) right.collapse();
-    }
-    if (farRight) {
-      if (farRightOpen && farRight.isCollapsed()) farRight.expand();
-      else if (!farRightOpen && !farRight.isCollapsed()) farRight.collapse();
-    }
-
-    // Next tick: the group's reported sizes update after imperative
-    // collapse/expand calls. Rebalance using desired sizes for each open
-    // panel, stealing any remaining space from center. We preserve the
-    // user's existing drag size (if they resized the panel) but fall back
-    // to the DESIRED_* target when a panel was just re-opened.
-    const id = requestAnimationFrame(() => {
-      const g = bodyGroupRef.current;
-      if (!g) return;
-      const current = g.getLayout();
-      const preserve = (val: number | undefined, target: number) =>
-        typeof val === "number" && val >= target / 2 ? val : target;
-
-      const sideSize = sideOpen
-        ? preserve(current[PANEL_IDS.SIDE], DESIRED_SIDE)
+    const sideSize = sideOpen
+      ? preserve(current[PANEL_IDS.SIDE], DESIRED_SIDE)
+      : 0;
+    const rightSize =
+      rightAvailable && rightOpen
+        ? preserve(current[PANEL_IDS.RIGHT], DESIRED_RIGHT)
         : 0;
-      const rightSize =
-        rightAvailable && rightOpen
-          ? preserve(current[PANEL_IDS.RIGHT], DESIRED_RIGHT)
-          : 0;
-      const farRightSize =
-        farRightAvailable && farRightOpen
-          ? preserve(current[PANEL_IDS.FAR_RIGHT], DESIRED_FAR_RIGHT)
-          : 0;
+    const farRightSize =
+      farRightAvailable && farRightOpen
+        ? preserve(current[PANEL_IDS.FAR_RIGHT], DESIRED_FAR_RIGHT)
+        : 0;
 
-      const centerSize = Math.max(
-        100 - sideSize - rightSize - farRightSize,
-        25,
-      );
-      const total = sideSize + centerSize + rightSize + farRightSize;
-      const scale = 100 / total;
+    const centerSize = Math.max(
+      100 - sideSize - rightSize - farRightSize,
+      25,
+    );
+    const total = sideSize + centerSize + rightSize + farRightSize;
+    const scale = 100 / total;
 
-      const layout: Record<string, number> = {
-        [PANEL_IDS.SIDE]: sideSize * scale,
-        [PANEL_IDS.CENTER]: centerSize * scale,
-      };
-      if (rightAvailable) layout[PANEL_IDS.RIGHT] = rightSize * scale;
-      if (farRightAvailable) layout[PANEL_IDS.FAR_RIGHT] = farRightSize * scale;
+    const layout: Record<string, number> = {
+      [PANEL_IDS.SIDE]: sideSize * scale,
+      [PANEL_IDS.CENTER]: centerSize * scale,
+    };
+    if (rightAvailable) layout[PANEL_IDS.RIGHT] = rightSize * scale;
+    if (farRightAvailable) layout[PANEL_IDS.FAR_RIGHT] = farRightSize * scale;
 
-      g.setLayout(layout);
-    });
-
-    return () => cancelAnimationFrame(id);
+    group.setLayout(layout);
   }, [
     sideOpen,
     activeView,
@@ -191,6 +169,10 @@ export const WorkspaceLayout: React.FC<WorkspaceLayoutProps> = ({
     farRightAvailable,
   ]);
 
+  // Terminal lives in the inner vertical group with only one collapsible
+  // panel (editor isn't collapsible) — no pivot trap, so the lib's
+  // panel.collapse() / panel.expand() is safe and gives us automatic prior-
+  // size memory for free.
   useEffect(() => {
     const ref = bottomRef.current;
     if (!ref) return;
@@ -210,18 +192,16 @@ export const WorkspaceLayout: React.FC<WorkspaceLayoutProps> = ({
         <ActivityBar />
         <ResizablePanelGroup
           orientation="horizontal"
-          autoSave="matrx-code-body"
           groupRef={bodyGroupRef}
           className="h-full min-h-0 flex-1"
         >
           {/* ── Side panel (Explorer/Search/Git/etc.) ─────────────────── */}
           <ResizablePanel
-            panelRef={sideRef}
             id={PANEL_IDS.SIDE}
-            defaultSize={DESIRED_SIDE}
-            minSize={12}
+            defaultSize={`${DESIRED_SIDE}%`}
+            minSize="12%"
             collapsible
-            collapsedSize={0}
+            collapsedSize="0%"
             onResize={(size) => {
               const open = size.asPercentage > 0;
               if (open !== sideOpen) dispatch(setSideOpen(open));
@@ -233,13 +213,16 @@ export const WorkspaceLayout: React.FC<WorkspaceLayoutProps> = ({
           <ResizableHandle />
 
           {/* ── Center split (Editor over Bottom panel) ───────────────── */}
-          <ResizablePanel id={PANEL_IDS.CENTER} defaultSize={62} minSize={25}>
+          <ResizablePanel
+            id={PANEL_IDS.CENTER}
+            defaultSize="62%"
+            minSize="25%"
+          >
             <ResizablePanelGroup
               orientation="vertical"
-              autoSave="matrx-code-center"
               className="h-full min-h-0"
             >
-              <ResizablePanel id="editor" defaultSize={70} minSize={20}>
+              <ResizablePanel id="editor" defaultSize="70%" minSize="20%">
                 <EditorArea
                   rightSlotAvailable={rightAvailable}
                   farRightSlotAvailable={farRightAvailable}
@@ -250,10 +233,10 @@ export const WorkspaceLayout: React.FC<WorkspaceLayoutProps> = ({
               <ResizablePanel
                 panelRef={bottomRef}
                 id="bottom"
-                defaultSize={30}
-                minSize={10}
+                defaultSize="30%"
+                minSize="10%"
                 collapsible
-                collapsedSize={0}
+                collapsedSize="0%"
                 onResize={(size) => {
                   const open = size.asPercentage > 0;
                   if (open !== terminalOpen) dispatch(setTerminalOpen(open));
@@ -269,12 +252,11 @@ export const WorkspaceLayout: React.FC<WorkspaceLayoutProps> = ({
             <>
               <ResizableHandle />
               <ResizablePanel
-                panelRef={rightRef}
                 id={PANEL_IDS.RIGHT}
-                defaultSize={DESIRED_RIGHT}
-                minSize={12}
+                defaultSize={`${DESIRED_RIGHT}%`}
+                minSize="12%"
                 collapsible
-                collapsedSize={0}
+                collapsedSize="0%"
                 onResize={(size) => {
                   const open = size.asPercentage > 0;
                   if (open !== rightOpen) dispatch(setRightOpen(open));
@@ -293,12 +275,11 @@ export const WorkspaceLayout: React.FC<WorkspaceLayoutProps> = ({
             <>
               <ResizableHandle />
               <ResizablePanel
-                panelRef={farRightRef}
                 id={PANEL_IDS.FAR_RIGHT}
-                defaultSize={DESIRED_FAR_RIGHT}
-                minSize={10}
+                defaultSize={`${DESIRED_FAR_RIGHT}%`}
+                minSize="10%"
                 collapsible
-                collapsedSize={0}
+                collapsedSize="0%"
                 onResize={(size) => {
                   const open = size.asPercentage > 0;
                   if (open !== farRightOpen) dispatch(setFarRightOpen(open));

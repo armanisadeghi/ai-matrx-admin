@@ -55,20 +55,24 @@ export function resolveBaseUrlForConversation(
 
 /**
  * Resolve the full **backend channel** (URL + auth headers) for a
- * conversation. Encapsulates the cloud-vs-sandbox auth split:
+ * conversation.
  *
- *   - **Global** (cloud) — uses Supabase JWT (`Authorization: Bearer <jwt>`)
- *     when the user is signed in, falling back to `X-Fingerprint-ID` for
- *     guest sessions.
- *   - **Override** (sandbox proxy) — uses the orchestrator-minted
- *     short-lived bearer token (`Authorization: Bearer <sandbox-token>`)
- *     persisted alongside `serverOverrideUrl` on `instanceUIState`. The
- *     orchestrator validates and forwards to the in-container Python; the
- *     Supabase JWT must NOT be sent here (the orchestrator's audit log
- *     would conflate two identities).
+ * Auth is **identical** on both channels — the user's Supabase JWT
+ * (`Authorization: Bearer <jwt>`) when signed in, falling back to
+ * `X-Fingerprint-ID` for guest sessions. The override channel is just a
+ * URL swap: the in-container Python server is the same codebase as the
+ * central server and authenticates the same way (the conversation row
+ * is owned by the user's Supabase identity, not by the sandbox).
  *
- * Returns `null` when no URL is configured for either channel — caller
- * is responsible for surfacing the error.
+ * The sandbox-minted bearer token (`serverOverrideAuthToken`) is kept
+ * in Redux for *other* direct-orchestrator paths (streaming exec, PTY,
+ * fs-watch, bulk transfer — see `SANDBOX_DIRECT_ENDPOINTS.md §3`) but
+ * is deliberately NOT layered onto `/ai/*` calls here. Replacing the
+ * Supabase JWT with the sandbox token caused the in-container server
+ * to lose user identity → RLS hid the conversation → 404
+ * "Conversation not found".
+ *
+ * Returns `null` when no URL is configured — caller surfaces the error.
  */
 export function resolveBackendForConversation(
   state: RootState,
@@ -77,31 +81,13 @@ export function resolveBackendForConversation(
   const entry =
     state.instanceUIState?.byConversationId?.[conversationId] ?? null;
   const overrideUrl = entry?.serverOverrideUrl ?? null;
-  const overrideToken = entry?.serverOverrideAuthToken ?? null;
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };
 
-  if (overrideUrl) {
-    const baseUrl = overrideUrl.endsWith("/")
-      ? overrideUrl.slice(0, -1)
-      : overrideUrl;
-    if (overrideToken) {
-      headers["Authorization"] = `Bearer ${overrideToken}`;
-    }
-    // Note: we deliberately do NOT include the user's Supabase JWT or
-    // the fingerprint header on the override channel. The proxy
-    // authenticates via its own minted token; sending two identities is
-    // ambiguous on the orchestrator audit log and the proxy strips
-    // unknown auth headers anyway.
-    return { baseUrl, channel: "override", headers };
-  }
-
-  const resolved = selectResolvedBaseUrl(state);
-  if (!resolved) return null;
-  const baseUrl = resolved.endsWith("/") ? resolved.slice(0, -1) : resolved;
-
+  // Same auth on both channels — Supabase JWT first, fingerprint fallback.
+  // The override is a URL swap, nothing more.
   const accessToken = selectAccessToken(state);
   const fingerprintId = selectFingerprintId(state);
   if (accessToken) {
@@ -109,5 +95,16 @@ export function resolveBackendForConversation(
   } else if (fingerprintId) {
     headers["X-Fingerprint-ID"] = fingerprintId;
   }
+
+  if (overrideUrl) {
+    const baseUrl = overrideUrl.endsWith("/")
+      ? overrideUrl.slice(0, -1)
+      : overrideUrl;
+    return { baseUrl, channel: "override", headers };
+  }
+
+  const resolved = selectResolvedBaseUrl(state);
+  if (!resolved) return null;
+  const baseUrl = resolved.endsWith("/") ? resolved.slice(0, -1) : resolved;
   return { baseUrl, channel: "global", headers };
 }

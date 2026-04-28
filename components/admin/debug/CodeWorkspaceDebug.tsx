@@ -108,6 +108,61 @@ export default function CodeWorkspaceDebug() {
   const [rawList, setRawList] = useState<unknown | null>(null);
   const [rawListOpen, setRawListOpen] = useState(false);
 
+  const [mintLoading, setMintLoading] = useState(false);
+  const [mintStatus, setMintStatus] = useState<number | null>(null);
+  const [mintResult, setMintResult] = useState<unknown | null>(null);
+  const [mintOpen, setMintOpen] = useState(false);
+
+  const testMint = useCallback(async () => {
+    if (!activeSandboxId) return;
+    setMintLoading(true);
+    setMintStatus(null);
+    setMintResult(null);
+    try {
+      const resp = await fetch(
+        `/api/sandbox/${encodeURIComponent(activeSandboxId)}/access-tokens`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ scopes: ["ai"] }),
+          cache: "no-store",
+        },
+      );
+      const text = await resp.text();
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(text);
+      } catch {
+        parsed = { _rawBody: text };
+      }
+      // Mask the token for display so admins can paste this output without
+      // leaking a usable bearer. The status code + error fields are the
+      // signal we actually need.
+      if (
+        parsed &&
+        typeof parsed === "object" &&
+        parsed !== null &&
+        "token" in parsed &&
+        typeof (parsed as { token?: unknown }).token === "string"
+      ) {
+        const tok = (parsed as { token: string }).token;
+        (parsed as Record<string, unknown>).token =
+          tok.length > 12 ? `${tok.slice(0, 6)}…${tok.slice(-4)}` : "<short>";
+      }
+      setMintStatus(resp.status);
+      setMintResult(parsed);
+      setMintOpen(true);
+    } catch (err) {
+      setMintStatus(0);
+      setMintResult({
+        _fetchError: err instanceof Error ? err.message : String(err),
+      });
+      setMintOpen(true);
+    } finally {
+      setMintLoading(false);
+    }
+  }, [activeSandboxId]);
+
   const fetchRawList = useCallback(async () => {
     setRawListLoading(true);
     setRawListError(null);
@@ -186,13 +241,11 @@ export default function CodeWorkspaceDebug() {
       </Section>
 
       {/* ── Per-conversation overrides ──────────────────────────────────── */}
-      <Section
-        title={`Conversations bound to a sandbox (${overrides.length})`}
-      >
+      <Section title={`Conversations bound to a sandbox (${overrides.length})`}>
         {overrides.length === 0 ? (
           <p className="text-[11px] opacity-70">
-            No conversation has a serverOverrideUrl. AI calls in every chat
-            use the global cloud URL.
+            No conversation has a serverOverrideUrl. AI calls in every chat use
+            the global cloud URL.
           </p>
         ) : (
           <ul className="space-y-1.5">
@@ -222,6 +275,71 @@ export default function CodeWorkspaceDebug() {
             ))}
           </ul>
         )}
+      </Section>
+
+      {/* ── Bearer-token mint test ──────────────────────────────────────── */}
+      <Section title="Test sandbox access-token mint">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => void testMint()}
+            disabled={mintLoading || !activeSandboxId}
+            className="inline-flex items-center gap-1 rounded border border-neutral-300 bg-white px-2 py-0.5 text-[11px] hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:hover:bg-neutral-800"
+          >
+            {mintLoading ? (
+              <Loader2 size={11} className="animate-spin" />
+            ) : (
+              <RefreshCw size={11} />
+            )}
+            POST /api/sandbox/{"{id}"}/access-tokens
+          </button>
+          {mintStatus !== null && (
+            <span
+              className={cn(
+                "rounded px-1.5 py-0.5 font-mono text-[10px]",
+                mintStatus >= 200 && mintStatus < 300
+                  ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400"
+                  : "bg-amber-500/15 text-amber-700 dark:text-amber-400",
+              )}
+            >
+              HTTP {mintStatus}
+            </span>
+          )}
+          {mintResult !== null && (
+            <CopyButton
+              value={JSON.stringify(mintResult, null, 2)}
+              label="Copy JSON"
+            />
+          )}
+        </div>
+        {!activeSandboxId && (
+          <p className="text-[10px] opacity-70">
+            Connect to a sandbox first to enable this button.
+          </p>
+        )}
+        {mintResult !== null && (
+          <Collapsible
+            open={mintOpen}
+            onToggle={() => setMintOpen((o) => !o)}
+            title="Inspect mint response"
+          >
+            <pre className="max-h-72 overflow-auto rounded bg-neutral-50 p-2 font-mono text-[10px] leading-snug dark:bg-neutral-950">
+              {JSON.stringify(mintResult, null, 2)}
+            </pre>
+          </Collapsible>
+        )}
+        <p className="text-[10px] opacity-70">
+          Hits the same Next.js route the chat surface uses. The token is{" "}
+          <strong>masked</strong> in the displayed JSON. Common 500 errors:
+          missing{" "}
+          <code className="font-mono">MATRX_HOSTED_ORCHESTRATOR_API_KEY</code>{" "}
+          (hosted tier) or{" "}
+          <code className="font-mono">MATRX_ORCHESTRATOR_API_KEY</code> (EC2
+          tier). Note:{" "}
+          <code className="font-mono">MATRX_ACCESS_TOKEN_SECRET</code> is the
+          orchestrator's HMAC signing secret on the Python side — it does NOT
+          authenticate Next.js → orchestrator calls.
+        </p>
       </Section>
 
       {/* ── Raw orchestrator payload ───────────────────────────────────── */}
@@ -267,9 +385,9 @@ export default function CodeWorkspaceDebug() {
           Use this to confirm whether{" "}
           <code className="font-mono">proxy_url</code>,{" "}
           <code className="font-mono">tier</code>, and{" "}
-          <code className="font-mono">status</code> match what the
-          orchestrator should be returning. Same payload the Sandboxes
-          panel renders, but reachable from any page.
+          <code className="font-mono">status</code> match what the orchestrator
+          should be returning. Same payload the Sandboxes panel renders, but
+          reachable from any page.
         </p>
       </Section>
     </div>
@@ -330,11 +448,7 @@ function Verdict({
           : "bg-amber-500/10 text-amber-700 dark:text-amber-300",
       )}
     >
-      {ok ? (
-        <CheckCircle2 size={12} />
-      ) : (
-        <AlertTriangle size={12} />
-      )}
+      {ok ? <CheckCircle2 size={12} /> : <AlertTriangle size={12} />}
       <span>{ok ? okLabel : warnLabel}</span>
     </div>
   );
