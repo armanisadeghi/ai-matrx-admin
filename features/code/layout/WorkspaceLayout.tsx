@@ -39,12 +39,15 @@ export interface WorkspaceLayoutProps {
   className?: string;
 }
 
-/** Preferred percentages for each horizontal panel. These are targets we
- *  aim for whenever a panel toggles from collapsed → expanded; the user can
- *  then drag freely after that without us interfering. */
+/** Preferred percentages each horizontal panel snaps to whenever it
+ *  re-opens after the user has not manually resized it. */
 const DESIRED_SIDE = 18;
 const DESIRED_RIGHT = 20;
 const DESIRED_FAR_RIGHT = 16;
+
+/** Center vertical-group split between editor and the small bottom terminal. */
+const DESIRED_TERMINAL = 15;
+const DESIRED_EDITOR = 100 - DESIRED_TERMINAL;
 
 const PANEL_IDS = {
   SIDE: "side",
@@ -63,16 +66,20 @@ const PANEL_IDS = {
  * └──┴──────────┴────────────────────────────┴──────────┴──────────┘
  *                                StatusBar
  *
- * Panel sizing rules (react-resizable-panels v4):
- *   - All defaultSize / minSize / collapsedSize values are PERCENTAGE STRINGS
- *     (e.g. "18%"). Bare numbers in v4 are PIXELS — using them on the body
- *     group caused the sidebar to mount at 18px and the terminal at 30px,
- *     producing the hydration mismatch (server flex-grow != client flex-grow)
- *     and the visible "snap" on first effect tick.
+ * No-shift contract:
+ *   - Every panel's `defaultSize` is computed from current Redux state at
+ *     render time, so the visible panels' defaults always sum to exactly
+ *     100% — no SSR scaling, no first-paint snap.
+ *   - The body-group `useEffect` and the terminal `useEffect` skip their
+ *     first run via `isMountedRef`. Server-rendered layout stays put on
+ *     mount; the effects only fire on subsequent Redux state changes.
  *   - Toggle behaviour goes through a single `groupRef.setLayout()` call —
- *     never `panel.collapse()` / `panel.expand()` for adjacent collapsibles
- *     (the lib's pivot trap pushes freed space into the immediate neighbour).
- *     The right + farRight columns sit side-by-side, so this matters.
+ *     never `panel.collapse()` for adjacent collapsibles (right + farRight
+ *     are adjacent and the lib's pivot would push freed space into the
+ *     other neighbour, re-expanding it).
+ *   - All sizes are PERCENTAGE STRINGS (`"18%"`) — bare numbers in v4 are
+ *     pixels, which would mount the sidebar at 18px and the terminal at
+ *     30px and produce hydration mismatches.
  */
 export const WorkspaceLayout: React.FC<WorkspaceLayoutProps> = ({
   rightSlot,
@@ -93,6 +100,21 @@ export const WorkspaceLayout: React.FC<WorkspaceLayoutProps> = ({
   const rightAvailable = Boolean(rightSlot);
   const farRightAvailable = Boolean(farRightSlot);
 
+  // ── DYNAMIC DEFAULTS ─────────────────────────────────────────────────
+  // Each panel's defaultSize is derived from Redux state so the visible
+  // panels always sum to 100% on mount. This is what prevents the lib
+  // from scaling defaults proportionally and producing a first-paint snap.
+  const sideDefault = sideOpen ? DESIRED_SIDE : 0;
+  const rightDefault = rightAvailable && rightOpen ? DESIRED_RIGHT : 0;
+  const farRightDefault =
+    farRightAvailable && farRightOpen ? DESIRED_FAR_RIGHT : 0;
+  const centerDefault = Math.max(
+    100 - sideDefault - rightDefault - farRightDefault,
+    0,
+  );
+  const editorDefault = terminalOpen ? DESIRED_EDITOR : 100;
+  const terminalDefault = terminalOpen ? DESIRED_TERMINAL : 0;
+
   /** Only one panel can be the rightmost (avatar-colliding) column. Priority,
    *  from right to left: farRight > right > editor. */
   const farRightIsRightmost = farRightAvailable && farRightOpen;
@@ -112,20 +134,17 @@ export const WorkspaceLayout: React.FC<WorkspaceLayoutProps> = ({
       )
     : farRightSlot;
 
-  /**
-   * Compute the full body-group layout from Redux state and apply via
-   * `setLayout()` in one shot. Replaces the previous imperative
-   * `collapse()`/`expand()` + rAF rebalance pair, which was racy AND hit
-   * the v4 pivot trap (collapsing one of right/farRight pushed its freed
-   * space into the other adjacent collapsible).
-   *
-   * Behaviour preserved from the old implementation:
-   *   - When a panel is closed in Redux, its size is 0.
-   *   - When a panel reopens, we keep the user's last drag size if it's
-   *     within range; otherwise we fall back to the DESIRED_* target.
-   *   - The center panel absorbs whatever remains.
-   */
+  // ── BODY GROUP TOGGLE EFFECT ─────────────────────────────────────────
+  // On first mount this is a no-op (server already rendered the correct
+  // layout via dynamic defaults). On subsequent Redux changes, compute the
+  // new full layout in one shot and apply via setLayout — bypassing the
+  // pivot trap that would otherwise re-expand a collapsed neighbour.
+  const isBodyMounted = useRef(false);
   useEffect(() => {
+    if (!isBodyMounted.current) {
+      isBodyMounted.current = true;
+      return;
+    }
     const group = bodyGroupRef.current;
     if (!group) return;
 
@@ -169,11 +188,17 @@ export const WorkspaceLayout: React.FC<WorkspaceLayoutProps> = ({
     farRightAvailable,
   ]);
 
-  // Terminal lives in the inner vertical group with only one collapsible
-  // panel (editor isn't collapsible) — no pivot trap, so the lib's
-  // panel.collapse() / panel.expand() is safe and gives us automatic prior-
-  // size memory for free.
+  // ── TERMINAL TOGGLE EFFECT ───────────────────────────────────────────
+  // Same skip-on-mount pattern. Terminal is the only collapsible in its
+  // inner vertical group (editor isn't collapsible) so the pivot trap
+  // doesn't apply here — panel.collapse()/expand() is safe and gives us
+  // the lib's free prior-size memory.
+  const isTerminalMounted = useRef(false);
   useEffect(() => {
+    if (!isTerminalMounted.current) {
+      isTerminalMounted.current = true;
+      return;
+    }
     const ref = bottomRef.current;
     if (!ref) return;
     if (terminalOpen && ref.isCollapsed()) ref.expand();
@@ -198,7 +223,7 @@ export const WorkspaceLayout: React.FC<WorkspaceLayoutProps> = ({
           {/* ── Side panel (Explorer/Search/Git/etc.) ─────────────────── */}
           <ResizablePanel
             id={PANEL_IDS.SIDE}
-            defaultSize={`${DESIRED_SIDE}%`}
+            defaultSize={`${sideDefault}%`}
             minSize="12%"
             collapsible
             collapsedSize="0%"
@@ -215,14 +240,18 @@ export const WorkspaceLayout: React.FC<WorkspaceLayoutProps> = ({
           {/* ── Center split (Editor over Bottom panel) ───────────────── */}
           <ResizablePanel
             id={PANEL_IDS.CENTER}
-            defaultSize="62%"
+            defaultSize={`${centerDefault}%`}
             minSize="25%"
           >
             <ResizablePanelGroup
               orientation="vertical"
               className="h-full min-h-0"
             >
-              <ResizablePanel id="editor" defaultSize="70%" minSize="20%">
+              <ResizablePanel
+                id="editor"
+                defaultSize={`${editorDefault}%`}
+                minSize="20%"
+              >
                 <EditorArea
                   rightSlotAvailable={rightAvailable}
                   farRightSlotAvailable={farRightAvailable}
@@ -233,7 +262,7 @@ export const WorkspaceLayout: React.FC<WorkspaceLayoutProps> = ({
               <ResizablePanel
                 panelRef={bottomRef}
                 id="bottom"
-                defaultSize="30%"
+                defaultSize={`${terminalDefault}%`}
                 minSize="10%"
                 collapsible
                 collapsedSize="0%"
@@ -253,7 +282,7 @@ export const WorkspaceLayout: React.FC<WorkspaceLayoutProps> = ({
               <ResizableHandle />
               <ResizablePanel
                 id={PANEL_IDS.RIGHT}
-                defaultSize={`${DESIRED_RIGHT}%`}
+                defaultSize={`${rightDefault}%`}
                 minSize="12%"
                 collapsible
                 collapsedSize="0%"
@@ -276,7 +305,7 @@ export const WorkspaceLayout: React.FC<WorkspaceLayoutProps> = ({
               <ResizableHandle />
               <ResizablePanel
                 id={PANEL_IDS.FAR_RIGHT}
-                defaultSize={`${DESIRED_FAR_RIGHT}%`}
+                defaultSize={`${farRightDefault}%`}
                 minSize="10%"
                 collapsible
                 collapsedSize="0%"

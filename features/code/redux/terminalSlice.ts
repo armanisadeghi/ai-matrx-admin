@@ -24,7 +24,10 @@ export interface CodeTerminalState {
 }
 
 const initialState: CodeTerminalState = {
-  open: false,
+  // Terminal is visible (small) on initial load. The WorkspaceLayout's
+  // dynamic defaults render the terminal at ~15% of the center column when
+  // this is true; toggling it via the toolbar/status-bar collapses it.
+  open: true,
   activeTab: "terminal",
   lines: [],
   history: [],

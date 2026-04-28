@@ -25,6 +25,7 @@ import {
   Square,
   Timer,
   Trash2,
+  WifiOff,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -33,6 +34,7 @@ import type {
   SandboxDetailResponse,
   SandboxInstance,
   SandboxListResponse,
+  SandboxProbeResponse,
   SandboxStatus,
 } from "@/types/sandbox";
 import { ACTIVE_SANDBOX_STATUSES } from "@/types/sandbox";
@@ -58,6 +60,7 @@ import {
   selectActiveSandboxProxyUrl,
   setActiveSandboxId,
   setActiveSandboxProxyUrl,
+  setActiveView,
 } from "../../redux/codeWorkspaceSlice";
 import { selectIsAdmin } from "@/lib/redux/selectors/userSelectors";
 import { clearFsChangesBucket } from "../../redux/fsChangesSlice";
@@ -89,14 +92,26 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [connectingId, setConnectingId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<SandboxInstance | null>(
     null,
   );
+  // Per-row probe outcome from the most recent connect attempt. Lets the
+  // sandbox row render a small "alive / unreachable / orphan" dot beside the
+  // status pill so the user can see at-a-glance which rows are real even
+  // before they click. Keyed by `instance.id`.
+  const [probeStatusById, setProbeStatusById] = useState<
+    Record<string, SandboxProbeResponse["aliveness"]>
+  >({});
+  // True only on the very first mount-time reconcile pass. Stops the panel
+  // from looking empty/idle while the orchestrator sweep is still running.
+  const [reconciling, setReconciling] = useState(false);
 
   const pollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const didMountReconcileRef = useRef(false);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -114,8 +129,28 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
     }
   }, []);
 
+  // First mount only: ask the orchestrator which of our "active" rows still
+  // exist. Anything orphaned gets marked `destroyed` server-side and falls
+  // out of the next /api/sandbox list. This is what stops the user from
+  // clicking a ghost row and seeing "Conversation not found" surfaced as the
+  // chat error instead of the real cause.
+  //
+  // We deliberately don't block the first list render on this — show the row
+  // optimistically, then re-list once reconcile finishes. The per-click probe
+  // is the second line of defense.
   useEffect(() => {
     void refresh();
+    if (didMountReconcileRef.current) return;
+    didMountReconcileRef.current = true;
+    setReconciling(true);
+    void fetch("/api/sandbox/reconcile", { method: "POST" })
+      .catch((err) => {
+        console.warn("[SandboxesPanel] reconcile failed:", err);
+      })
+      .finally(() => {
+        setReconciling(false);
+        void refresh();
+      });
   }, [refresh]);
 
   // Poll while any instance is creating/starting.
@@ -133,15 +168,15 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
     };
   }, [instances, refresh]);
 
-  const connect = useCallback(
+  /**
+   * Wire `instance` into the workspace as the active sandbox: swap the
+   * filesystem + process adapters, mirror `proxy_url` into Redux for the chat
+   * binding, and pop open the session report. Pure side-effect — does NOT
+   * probe; callers are expected to gate this on whatever readiness check
+   * makes sense for their entry point.
+   */
+  const wireInstance = useCallback(
     (instance: SandboxInstance) => {
-      const effective = getEffectiveStatus(instance);
-      if (!ACTIVE_SANDBOX_STATUSES.includes(effective)) {
-        setError(
-          `Sandbox ${instance.id} is ${STATUS_LABELS[effective].toLowerCase()} — it must be starting/ready/running to connect.`,
-        );
-        return;
-      }
       dispatch(setActiveSandboxId(instance.id));
       // Mirror the per-sandbox proxy URL into Redux so chat surfaces can
       // bind their conversation to the in-container Python server. Null
@@ -168,6 +203,79 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
       });
     },
     [dispatch, setFilesystem, setProcess],
+  );
+
+  /**
+   * One-click connect: pre-flight probe → wire the workspace → switch to
+   * Explorer so the files appear immediately.
+   *
+   * The probe is the killer feature here. Without it, clicking a ghost row
+   * (Supabase says `ready`, orchestrator destroyed the container) silently
+   * binds the chat to a `proxy_url` that 404s every AI call as
+   * "Conversation not found". With it, we either:
+   *   - confirm `alive` and connect normally,
+   *   - detect `gone` (orchestrator returned 404), reconcile the row in
+   *     place, refresh the list (the dead row falls out), and surface a
+   *     clear "this sandbox no longer exists" message,
+   *   - or fall back to optimistic-connect on `unreachable` (transient
+   *     orchestrator blip — leaving the user blocked here would be worse
+   *     than letting them try and fail with a real error).
+   */
+  const connect = useCallback(
+    async (instance: SandboxInstance) => {
+      const effective = getEffectiveStatus(instance);
+      if (!ACTIVE_SANDBOX_STATUSES.includes(effective)) {
+        setError(
+          `Sandbox ${instance.id} is ${STATUS_LABELS[effective].toLowerCase()} — it must be starting/ready/running to connect.`,
+        );
+        return;
+      }
+
+      setConnectingId(instance.id);
+      setError(null);
+
+      let probeOutcome: SandboxProbeResponse["aliveness"] | null = null;
+      try {
+        const resp = await fetch(`/api/sandbox/${instance.id}/probe`, {
+          method: "POST",
+        });
+        if (resp.ok) {
+          const data: SandboxProbeResponse = await resp.json();
+          probeOutcome = data.aliveness;
+          setProbeStatusById((cur) => ({
+            ...cur,
+            [instance.id]: data.aliveness,
+          }));
+        }
+      } catch (err) {
+        // Network error talking to OUR API (not the orchestrator) — treat
+        // as unreachable and let the optimistic path run.
+        console.warn("[SandboxesPanel] probe call failed:", err);
+      }
+
+      if (probeOutcome === "gone") {
+        // Row was just reconciled to `destroyed` by the API. Refresh so it
+        // disappears from the list and the user sees what actually happened.
+        setError(
+          `Sandbox ${instance.sandbox_id?.slice(0, 14) ?? instance.id.slice(0, 8)} no longer exists on the orchestrator — it was destroyed out of band. The row has been cleaned up.`,
+        );
+        setConnectingId(null);
+        void refresh();
+        return;
+      }
+
+      // `alive` or `unreachable` (or null for our-API failure) — connect.
+      // On `unreachable` the user may still hit AI errors, but at least
+      // they're talking to the right URL and the orchestrator's actual
+      // error will surface clearly when traffic resumes.
+      wireInstance(instance);
+      // Auto-switch to Explorer so the user sees the sandbox files right
+      // away. This is the whole point of single-click connect — the user
+      // picked a sandbox, they want to work in it, not stay on the picker.
+      dispatch(setActiveView("explorer"));
+      setConnectingId(null);
+    },
+    [dispatch, refresh, wireInstance],
   );
 
   const disconnect = useCallback(() => {
@@ -203,9 +311,12 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
         }
         await refresh();
         if ("instance" in data && data.instance) {
-          const created = data.instance;
-          dispatch(setActiveSandboxId(created.id));
-          dispatch(setActiveSandboxProxyUrl(created.proxy_url ?? null));
+          // Wire the freshly-created sandbox into the workspace immediately.
+          // No probe here — we just heard back from the orchestrator that it
+          // was created, so it's definitionally alive. Switch to Explorer so
+          // the user lands on their files.
+          wireInstance(data.instance);
+          dispatch(setActiveView("explorer"));
         }
         setCreateModalOpen(false);
       } catch (err) {
@@ -216,7 +327,7 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
         setCreating(false);
       }
     },
-    [dispatch, refresh],
+    [dispatch, refresh, wireInstance],
   );
 
   const stopSandbox = useCallback(
@@ -297,15 +408,20 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
 
   const activeInstance = instances?.find((i) => i.id === activeId);
 
+  // Header subtitle. Surface the reconcile sweep so the user sees that the
+  // initial load is doing more than just an /api/sandbox GET.
+  const subtitle = useMemo(() => {
+    if (reconciling && instances === null) return "Reconciling…";
+    if (instances === null) return undefined;
+    if (instances.length === 0) return "No sandboxes";
+    return `${instances.length} sandbox${instances.length === 1 ? "" : "es"}`;
+  }, [reconciling, instances]);
+
   return (
     <div className={cn("flex h-full min-h-0 flex-col", className)}>
       <SidePanelHeader
         title="Sandboxes"
-        subtitle={
-          instances
-            ? `${instances.length} instance${instances.length === 1 ? "" : "s"}`
-            : undefined
-        }
+        subtitle={subtitle}
         actions={
           <>
             <SidePanelAction
@@ -366,11 +482,13 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
             isActive={activeId === instance.id}
             isExpanded={expandedId === instance.id}
             busy={busyId === instance.id}
+            connecting={connectingId === instance.id}
+            probeAliveness={probeStatusById[instance.id] ?? null}
             isAdmin={isAdmin}
-            onToggle={() =>
+            onActivate={() => void connect(instance)}
+            onToggleDetails={() =>
               setExpandedId((cur) => (cur === instance.id ? null : instance.id))
             }
-            onConnect={() => connect(instance)}
             onStop={() => void stopSandbox(instance)}
             onExtend={() => void extendSandbox(instance)}
             onDelete={() => setDeleteTarget(instance)}
@@ -415,13 +533,25 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
 
 interface SandboxRowProps {
   instance: SandboxInstance;
+  /** This sandbox is the workspace's active connection right now. */
   isActive: boolean;
+  /** Details/secondary-actions panel is currently open. */
   isExpanded: boolean;
+  /** Some lifecycle action (stop/extend/delete) is in flight. */
   busy: boolean;
+  /** Probe → wire round-trip in flight for this row. */
+  connecting: boolean;
+  /**
+   * Latest probe outcome for this row, or `null` if we haven't probed yet
+   * this session. Drives the small dot beside the status pill.
+   */
+  probeAliveness: SandboxProbeResponse["aliveness"] | null;
   /** Admins get the inline raw-JSON inspector under the metadata grid. */
   isAdmin: boolean;
-  onToggle: () => void;
-  onConnect: () => void;
+  /** Primary action: probe + wire + switch to Explorer. */
+  onActivate: () => void;
+  /** Toggle the details/secondary-actions disclosure (chevron). */
+  onToggleDetails: () => void;
   onStop: () => void;
   onExtend: () => void;
   onDelete: () => void;
@@ -432,9 +562,11 @@ const SandboxRow: React.FC<SandboxRowProps> = ({
   isActive,
   isExpanded,
   busy,
+  connecting,
+  probeAliveness,
   isAdmin,
-  onToggle,
-  onConnect,
+  onActivate,
+  onToggleDetails,
   onStop,
   onExtend,
   onDelete,
@@ -446,42 +578,88 @@ const SandboxRow: React.FC<SandboxRowProps> = ({
   const canStop = ["ready", "running", "starting"].includes(effective);
   const canExtend = ACTIVE_EFFECTIVE_STATUSES.includes(effective);
   const remaining = useTimeRemaining(instance.expires_at, "minute");
+  const idShort = instance.sandbox_id?.slice(0, 14) ?? instance.id.slice(0, 8);
+
+  // Row click behavior: if it's already the active one, the click toggles the
+  // details disclosure (so the user can stop/extend/delete without leaving the
+  // panel). Otherwise the click is the activate action — probe + wire.
+  const rowClickHandler = isActive ? onToggleDetails : onActivate;
+  const rowClickDisabled = !isActive && (!canConnect || connecting);
 
   return (
     <div>
-      <button
-        type="button"
-        onClick={onToggle}
+      <div
         className={cn(
-          "flex w-full items-center justify-between gap-2 px-3 text-left text-[12px]",
-          ROW_HEIGHT,
-          HOVER_ROW,
+          "flex w-full items-stretch gap-1 text-[12px]",
           isActive && ACTIVE_ROW,
         )}
       >
-        <div className="flex min-w-0 items-center gap-2">
-          <Server
-            size={14}
-            className={cn(
-              "shrink-0",
-              isActive
-                ? "text-blue-500"
-                : "text-neutral-500 dark:text-neutral-400",
-            )}
-          />
-          <span className="truncate font-mono">
-            {instance.sandbox_id?.slice(0, 14) ?? instance.id.slice(0, 8)}
-          </span>
-        </div>
-        <span
+        <button
+          type="button"
+          onClick={rowClickHandler}
+          disabled={rowClickDisabled}
+          title={
+            isActive
+              ? "Active sandbox — click for details"
+              : canConnect
+                ? "Connect to this sandbox"
+                : `Cannot connect — ${STATUS_LABELS[effective].toLowerCase()}`
+          }
           className={cn(
-            "shrink-0 rounded px-1.5 py-[1px] text-[10px] uppercase tracking-wide",
-            statusPillClasses(effective),
+            "group flex min-w-0 flex-1 items-center justify-between gap-2 px-3 text-left",
+            ROW_HEIGHT,
+            HOVER_ROW,
+            "disabled:cursor-not-allowed disabled:opacity-50",
           )}
         >
-          {STATUS_LABELS[effective]}
-        </span>
-      </button>
+          <div className="flex min-w-0 items-center gap-2">
+            {connecting ? (
+              <Loader2
+                size={14}
+                className="shrink-0 animate-spin text-blue-500"
+              />
+            ) : (
+              <Server
+                size={14}
+                className={cn(
+                  "shrink-0",
+                  isActive
+                    ? "text-blue-500"
+                    : "text-neutral-500 dark:text-neutral-400",
+                )}
+              />
+            )}
+            <span className="truncate font-mono">{idShort}</span>
+            {isActive && (
+              <span className="shrink-0 rounded bg-blue-100 px-1 py-[1px] font-mono text-[9px] uppercase tracking-wider text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
+                active
+              </span>
+            )}
+          </div>
+          <div className="flex shrink-0 items-center gap-1.5">
+            <ProbeDot aliveness={probeAliveness} />
+            <span
+              className={cn(
+                "rounded px-1.5 py-[1px] text-[10px] uppercase tracking-wide",
+                statusPillClasses(effective),
+              )}
+            >
+              {STATUS_LABELS[effective]}
+            </span>
+          </div>
+        </button>
+        <button
+          type="button"
+          onClick={onToggleDetails}
+          title={isExpanded ? "Hide details" : "Show details"}
+          aria-expanded={isExpanded}
+          className={cn(
+            "flex w-6 shrink-0 items-center justify-center text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100",
+          )}
+        >
+          {isExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+        </button>
+      </div>
       {isExpanded && (
         <div className="border-b border-neutral-200 bg-neutral-50 px-3 py-2 text-[11px] dark:border-neutral-800 dark:bg-neutral-900/60">
           <dl className="grid grid-cols-[auto_1fr] gap-x-2 gap-y-0.5 font-mono text-neutral-600 dark:text-neutral-400">
@@ -521,15 +699,25 @@ const SandboxRow: React.FC<SandboxRowProps> = ({
             )}
             <dt className="text-neutral-500">created</dt>
             <dd>{formatDate(instance.created_at)}</dd>
+            {probeAliveness && (
+              <>
+                <dt className="text-neutral-500">last probe</dt>
+                <dd className="truncate">
+                  <ProbeLabel aliveness={probeAliveness} />
+                </dd>
+              </>
+            )}
           </dl>
           <div className="mt-2 flex flex-wrap gap-1">
-            <ActionButton
-              icon={Plug}
-              label="Connect"
-              onClick={onConnect}
-              disabled={!canConnect || busy}
-              primary={canConnect}
-            />
+            {!isActive && (
+              <ActionButton
+                icon={Plug}
+                label={connecting ? "Connecting…" : "Connect"}
+                onClick={onActivate}
+                disabled={!canConnect || connecting}
+                primary={canConnect}
+              />
+            )}
             <ActionButton
               icon={Timer}
               label="+1h TTL"
@@ -563,6 +751,69 @@ const SandboxRow: React.FC<SandboxRowProps> = ({
         </div>
       )}
     </div>
+  );
+};
+
+// ─── Probe indicator ───────────────────────────────────────────────────────
+//
+// The small status dot beside each sandbox's status pill. It reflects the
+// most recent probe result for the row this session — so when the user clicks
+// a row that turns out to be a ghost, every other row at-a-glance also gets
+// the right indicator on the next refresh cycle. Pure visual; no semantics
+// beyond "what did the orchestrator last say about this row".
+
+interface ProbeDotProps {
+  aliveness: SandboxProbeResponse["aliveness"] | null;
+}
+
+const ProbeDot: React.FC<ProbeDotProps> = ({ aliveness }) => {
+  if (!aliveness) return null;
+  if (aliveness === "alive") {
+    return (
+      <CheckCircle2
+        size={11}
+        className="text-emerald-600 dark:text-emerald-400"
+        aria-label="Probe: alive on orchestrator"
+      />
+    );
+  }
+  if (aliveness === "gone") {
+    return (
+      <AlertTriangle
+        size={11}
+        className="text-red-600 dark:text-red-400"
+        aria-label="Probe: orchestrator says this sandbox is gone"
+      />
+    );
+  }
+  return (
+    <WifiOff
+      size={11}
+      className="text-amber-600 dark:text-amber-400"
+      aria-label="Probe: orchestrator unreachable"
+    />
+  );
+};
+
+const ProbeLabel: React.FC<ProbeDotProps> = ({ aliveness }) => {
+  if (aliveness === "alive") {
+    return (
+      <span className="text-emerald-700 dark:text-emerald-400">
+        alive on orchestrator
+      </span>
+    );
+  }
+  if (aliveness === "gone") {
+    return (
+      <span className="text-red-700 dark:text-red-400">
+        gone — orchestrator returned 404
+      </span>
+    );
+  }
+  return (
+    <span className="text-amber-700 dark:text-amber-400">
+      orchestrator unreachable
+    </span>
   );
 };
 

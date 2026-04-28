@@ -225,6 +225,30 @@ export interface UserPersistenceResponse {
   tiers: UserPersistenceInfo[];
 }
 
+/**
+ * Three-state result of `POST /api/sandbox/[id]/probe`. Mirrors the
+ * server-side `SandboxProbeResult` so client code can render outcomes
+ * without re-deriving the type.
+ *
+ *   - `alive`        — orchestrator confirms the sandbox still exists.
+ *   - `gone`         — orchestrator returned 404 / terminal status; the
+ *                      row was just marked destroyed in-place.
+ *   - `unreachable`  — orchestrator timed out / network failure; the row
+ *                      is left untouched and the caller may retry.
+ */
+export type SandboxProbeAliveness = "alive" | "gone" | "unreachable";
+
+export interface SandboxProbeResponse {
+  id: string;
+  sandbox_id: string;
+  tier: SandboxTier;
+  aliveness: SandboxProbeAliveness;
+  http_status: number;
+  prior_status: string;
+  new_status: string;
+  reason: string;
+}
+
 export const ACTIVE_SANDBOX_STATUSES: SandboxStatus[] = [
   "creating",
   "starting",

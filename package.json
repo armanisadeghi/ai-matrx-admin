@@ -47,7 +47,8 @@
     "sync-types:local": "node scripts/update-api-types.mjs --skip-typecheck --local",
     "update-api-types": "node scripts/update-api-types.mjs",
     "update-api-types:local": "node scripts/update-api-types.mjs --local",
-    "build:analyze": "next experimental-analyze --serve",
+    "build:analyze": "ts-node scripts/generate-manifest.ts && next experimental-analyze",
+    "build:analyze:save": "ts-node scripts/generate-manifest.ts && next experimental-analyze --output",
     "build:profile": "NEXT_TELEMETRY_DEBUG=1 next build 2>&1 | tee build-profile.log"
   },
   "dependencies": {

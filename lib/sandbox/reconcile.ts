@@ -12,29 +12,161 @@
  * Server-only.
  */
 
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/utils/supabase/server";
 import {
   resolveOrchestratorByTier,
   orchestratorJsonHeaders,
 } from "@/lib/sandbox/orchestrator-routing";
-import type { SandboxConfig, SandboxTier } from "@/types/sandbox";
+import type { Database } from "@/types/database.types";
+import type {
+  SandboxConfig,
+  SandboxProbeResponse,
+  SandboxTier,
+} from "@/types/sandbox";
 
 const ACTIVE_STATUSES = ["creating", "starting", "ready", "running"] as const;
 const ORCHESTRATOR_DEAD_STATUSES = new Set(["stopped", "destroyed", "error"]);
+
+/**
+ * The server-internal probe result is the same shape the FE consumes —
+ * deliberately re-exported through the shared `SandboxProbeResponse` type so
+ * the two sides can never drift on field names or aliveness strings.
+ */
+export type SandboxProbeResult = SandboxProbeResponse;
 
 export interface ReconcileResult {
   total: number;
   reconciled: number;
   still_active: number;
   unreachable: number;
-  rows: Array<{
-    id: string;
-    sandbox_id: string;
-    tier: SandboxTier;
-    prior_status: string;
-    new_status: string;
-    reason: string;
-  }>;
+  rows: SandboxProbeResult[];
+}
+
+type SandboxRowMin = Pick<
+  Database["public"]["Tables"]["sandbox_instances"]["Row"],
+  "id" | "sandbox_id" | "status" | "config" | "tier"
+>;
+
+/**
+ * Resolve a row's tier with the same precedence the rest of the codebase uses:
+ * dedicated `tier` column first, fall back to `config.tier` for legacy rows
+ * written before the column was promoted, default to `'ec2'` last.
+ */
+function resolveRowTier(row: SandboxRowMin): SandboxTier {
+  const colTier = row.tier === "ec2" || row.tier === "hosted" ? row.tier : null;
+  const cfg = row.config as SandboxConfig | null;
+  const cfgTier =
+    cfg?.tier === "ec2" || cfg?.tier === "hosted" ? cfg.tier : null;
+  return colTier ?? cfgTier ?? "ec2";
+}
+
+/**
+ * Ask the orchestrator whether `row` still exists and act on the answer.
+ *
+ *   - `alive`        → leave Supabase untouched
+ *   - `gone`         → mutate Supabase: status='destroyed', stopped_at=now,
+ *                      stop_reason='reconcile_orphan'
+ *   - `unreachable`  → leave Supabase untouched (transient network blip;
+ *                      retrying later is the right call)
+ *
+ * Returns a `SandboxProbeResult` either way so the caller can render the
+ * outcome consistently (single-row probe + bulk reconcile share the type).
+ *
+ * `userId` is required to gate the destroy-write under Supabase RLS — the
+ * caller is the one who already proved ownership.
+ */
+export async function probeAndReconcileSandboxRow(
+  supabase: SupabaseClient<Database>,
+  row: SandboxRowMin,
+  userId: string,
+): Promise<SandboxProbeResult> {
+  const tier = resolveRowTier(row);
+  const target = resolveOrchestratorByTier(tier);
+
+  let aliveness: SandboxProbeResult["aliveness"] = "unreachable";
+  let httpStatus = 0;
+
+  try {
+    const resp = await fetch(`${target.url}/sandboxes/${row.sandbox_id}`, {
+      method: "GET",
+      headers: orchestratorJsonHeaders(target),
+      signal: AbortSignal.timeout(5_000),
+    });
+    httpStatus = resp.status;
+    if (resp.status === 404) {
+      aliveness = "gone";
+    } else if (resp.ok) {
+      const body = (await resp.json().catch(() => ({}))) as { status?: string };
+      aliveness = ORCHESTRATOR_DEAD_STATUSES.has(body.status ?? "")
+        ? "gone"
+        : "alive";
+    }
+  } catch {
+    aliveness = "unreachable";
+  }
+
+  if (aliveness === "alive") {
+    return {
+      id: row.id,
+      sandbox_id: row.sandbox_id,
+      tier,
+      aliveness,
+      http_status: httpStatus,
+      prior_status: row.status,
+      new_status: row.status,
+      reason: `orchestrator returned http=${httpStatus} (alive)`,
+    };
+  }
+  if (aliveness === "unreachable") {
+    return {
+      id: row.id,
+      sandbox_id: row.sandbox_id,
+      tier,
+      aliveness,
+      http_status: httpStatus,
+      prior_status: row.status,
+      new_status: row.status,
+      reason: `orchestrator unreachable (http=${httpStatus})`,
+    };
+  }
+
+  // 'gone' — mark the row destroyed so it stops counting against the active
+  // limit and stops appearing as a connect target.
+  const { error: updateErr } = await supabase
+    .from("sandbox_instances")
+    .update({
+      status: "destroyed",
+      stopped_at: new Date().toISOString(),
+      stop_reason: "reconcile_orphan",
+    })
+    .eq("id", row.id)
+    .eq("user_id", userId);
+
+  if (updateErr) {
+    console.error("[reconcile] update failed:", updateErr);
+    return {
+      id: row.id,
+      sandbox_id: row.sandbox_id,
+      tier,
+      aliveness,
+      http_status: httpStatus,
+      prior_status: row.status,
+      new_status: row.status,
+      reason: `update failed: ${updateErr.message}`,
+    };
+  }
+
+  return {
+    id: row.id,
+    sandbox_id: row.sandbox_id,
+    tier,
+    aliveness,
+    http_status: httpStatus,
+    prior_status: row.status,
+    new_status: "destroyed",
+    reason: `orchestrator returned http=${httpStatus} (gone)`,
+  };
 }
 
 /**
@@ -49,9 +181,11 @@ export async function reconcileUserSandboxes(
 ): Promise<ReconcileResult> {
   const supabase = await createClient();
 
+  // Pull `tier` (column) AND `config` so the helper can resolve the row's
+  // tier with the same precedence as the rest of the codebase.
   const { data: rows, error } = await supabase
     .from("sandbox_instances")
-    .select("id, sandbox_id, status, config")
+    .select("id, sandbox_id, status, config, tier")
     .eq("user_id", userId)
     .in("status", [...ACTIVE_STATUSES])
     .is("deleted_at", null);
@@ -66,97 +200,27 @@ export async function reconcileUserSandboxes(
     };
   }
 
-  const summary: ReconcileResult["rows"] = [];
+  // Run every row in parallel (capped at 5 by the active-sandbox limit).
+  const results = await Promise.all(
+    rows.map((row) => probeAndReconcileSandboxRow(supabase, row, userId)),
+  );
+
   let reconciled = 0;
   let stillActive = 0;
   let unreachable = 0;
-
-  await Promise.all(
-    rows.map(async (row) => {
-      const tier = ((row.config as SandboxConfig | null)?.tier ?? "ec2") as SandboxTier;
-      const target = resolveOrchestratorByTier(tier);
-
-      let orchestratorStatus: "alive" | "gone" | "unreachable" = "unreachable";
-      let httpStatus = 0;
-
-      try {
-        const resp = await fetch(
-          `${target.url}/sandboxes/${row.sandbox_id}`,
-          {
-            method: "GET",
-            headers: orchestratorJsonHeaders(target),
-            signal: AbortSignal.timeout(5_000),
-          },
-        );
-        httpStatus = resp.status;
-        if (resp.status === 404) {
-          orchestratorStatus = "gone";
-        } else if (resp.ok) {
-          const body = (await resp.json()) as { status?: string };
-          orchestratorStatus = ORCHESTRATOR_DEAD_STATUSES.has(body.status ?? "")
-            ? "gone"
-            : "alive";
-        }
-      } catch {
-        orchestratorStatus = "unreachable";
-      }
-
-      if (orchestratorStatus === "alive") {
-        stillActive += 1;
-        return;
-      }
-      if (orchestratorStatus === "unreachable") {
-        unreachable += 1;
-        // Don't touch rows when the orchestrator is unreachable — could be a
-        // transient network blip. Better to leave them and let a retry catch
-        // the real state.
-        summary.push({
-          id: row.id,
-          sandbox_id: row.sandbox_id,
-          tier,
-          prior_status: row.status,
-          new_status: row.status,
-          reason: `orchestrator unreachable (http=${httpStatus})`,
-        });
-        return;
-      }
-
-      // orchestratorStatus === "gone" — row references a sandbox the
-      // orchestrator no longer knows about. Mark it stopped.
-      const { error: updateErr } = await supabase
-        .from("sandbox_instances")
-        .update({
-          status: "destroyed",
-          stopped_at: new Date().toISOString(),
-          stop_reason: "reconcile_orphan",
-        })
-        .eq("id", row.id)
-        .eq("user_id", userId);
-
-      if (!updateErr) {
-        reconciled += 1;
-        summary.push({
-          id: row.id,
-          sandbox_id: row.sandbox_id,
-          tier,
-          prior_status: row.status,
-          new_status: "destroyed",
-          reason: `orchestrator returned http=${httpStatus} (gone)`,
-        });
-      } else {
-        // Update failure shouldn't happen in practice; log and surface.
-        console.error("[reconcile] update failed:", updateErr);
-        summary.push({
-          id: row.id,
-          sandbox_id: row.sandbox_id,
-          tier,
-          prior_status: row.status,
-          new_status: row.status,
-          reason: `update failed: ${updateErr.message}`,
-        });
-      }
-    }),
-  );
+  const summary: SandboxProbeResult[] = [];
+  for (const r of results) {
+    if (r.aliveness === "alive") {
+      stillActive += 1;
+      continue;
+    }
+    if (r.aliveness === "unreachable") {
+      unreachable += 1;
+    } else if (r.new_status === "destroyed") {
+      reconciled += 1;
+    }
+    summary.push(r);
+  }
 
   return {
     total: rows.length,

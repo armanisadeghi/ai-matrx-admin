@@ -85,6 +85,11 @@ export const ChatHistorySlot: React.FC<ChatHistorySlotProps> = ({
   const headerSubtitle =
     mounted && filter.mode !== "all" ? filterLabel : undefined;
 
+  // Same SSR-mismatch concern as headerSubtitle above — `filterLabel` derives
+  // from the user-prefs slice that hydrates client-side after init, so we
+  // defer the dynamic value until after mount and render a stable copy on
+  // the server's first paint. `suppressHydrationWarning` belt-and-braces in
+  // case any wrapper React mounts before our effect fires.
   const emptyState = useMemo(
     () => (
       <div className="flex flex-col items-center gap-2 px-4 py-6 text-center">
@@ -98,8 +103,11 @@ export const ChatHistorySlot: React.FC<ChatHistorySlotProps> = ({
         </div>
         <div className="text-[11px] text-neutral-500 dark:text-neutral-400">
           Matching filter{" "}
-          <span className="font-medium text-neutral-700 dark:text-neutral-200">
-            {filterLabel}
+          <span
+            className="font-medium text-neutral-700 dark:text-neutral-200"
+            suppressHydrationWarning
+          >
+            {mounted ? filterLabel : "your saved filter"}
           </span>
           .
         </div>
@@ -112,7 +120,7 @@ export const ChatHistorySlot: React.FC<ChatHistorySlotProps> = ({
         </button>
       </div>
     ),
-    [filterLabel, openSettings],
+    [filterLabel, mounted, openSettings],
   );
 
   return (
