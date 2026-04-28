@@ -25,6 +25,7 @@ import { SidePanelHeader, SidePanelAction } from "../SidePanelChrome";
 import { CloudFilesExplorer } from "./CloudFilesExplorer";
 import { FileTree } from "./FileTree";
 import { PendingChangesSection } from "./PendingChangesSection";
+import { EditHistorySection } from "./EditHistorySection";
 
 interface ExplorerPanelProps {
   className?: string;
@@ -162,6 +163,11 @@ export const ExplorerPanel: React.FC<ExplorerPanelProps> = ({ className }) => {
           one consistent place to find AI edits regardless of which
           filesystem the workspace is pointed at. */}
       <PendingChangesSection />
+
+      {/* Persistent timeline of every assistant message that has
+          touched a file in the active conversation. Auto-hides when
+          there's no history yet. */}
+      <EditHistorySection />
 
       {showFileTree ? (
         <>

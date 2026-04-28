@@ -1,23 +1,23 @@
 /**
  * Streaming Diff Block
- * 
+ *
  * Main component that handles streaming diff content with multiple styles.
  * Optimized for performance with thousands of streaming chunks.
- * 
+ *
  * State Machine:
  * detecting → buffering → streaming → complete
  *           ↘ fallback (if unrecognized)
  */
 
-'use client';
+"use client";
 
-import React, { useMemo, useCallback } from 'react';
-import { detectDiffStyle, getDiffStyleHandler } from './diff-style-registry';
-import { SearchReplaceDiffRenderer } from './renderers/SearchReplaceDiffRenderer';
-import { DiffLoadingIndicator } from './DiffLoadingIndicator';
-import CodeBlock from '@/features/code-editor/components/code-block/CodeBlock';
-import { cn } from '@/lib/utils';
-import type { DiffStyle, StreamingDiffState } from './types';
+import React, { useMemo, useCallback } from "react";
+import { detectDiffStyle, getDiffStyleHandler } from "./diff-style-registry";
+import { SearchReplaceDiffRenderer } from "./renderers/SearchReplaceDiffRenderer";
+import { DiffLoadingIndicator } from "./DiffLoadingIndicator";
+import CodeBlock from "@/features/code-editor/components/code-block/CodeBlock";
+import { cn } from "@/lib/utils";
+import type { DiffStyle, StreamingDiffState } from "./types";
 
 interface StreamingDiffBlockProps {
   content: string;
@@ -30,7 +30,10 @@ interface StreamingDiffBlockProps {
  * Determine current streaming state based on content
  * Memoized for performance with frequent re-renders
  */
-function useStreamingState(content: string, isStreamActive: boolean): {
+function useStreamingState(
+  content: string,
+  isStreamActive: boolean,
+): {
   state: StreamingDiffState;
   style: DiffStyle;
   confidence: number;
@@ -39,7 +42,7 @@ function useStreamingState(content: string, isStreamActive: boolean): {
     // CRITICAL: Show loading for first 15 characters to prevent initial UI jumps
     // This prevents flickering when ```diff first appears
     if (!content || content.trim().length < 15) {
-      return { state: 'detecting', style: 'unknown', confidence: 0 };
+      return { state: "detecting", style: "unknown", confidence: 0 };
     }
 
     // Detect style
@@ -49,10 +52,18 @@ function useStreamingState(content: string, isStreamActive: boolean): {
     if (detection.confidence < 0.6) {
       if (isStreamActive) {
         // Keep showing loading while we figure out what this is
-        return { state: 'detecting', style: 'unknown', confidence: detection.confidence };
+        return {
+          state: "detecting",
+          style: "unknown",
+          confidence: detection.confidence,
+        };
       } else {
         // Stream ended and still don't know - fallback to code block
-        return { state: 'fallback', style: 'unknown', confidence: detection.confidence };
+        return {
+          state: "fallback",
+          style: "unknown",
+          confidence: detection.confidence,
+        };
       }
     }
 
@@ -61,14 +72,14 @@ function useStreamingState(content: string, isStreamActive: boolean): {
     if (isStreamActive) {
       // Still streaming - let the renderer handle showing REPLACE in real-time
       return {
-        state: 'streaming',
+        state: "streaming",
         style: detection.style,
         confidence: detection.confidence,
       };
     } else {
       // Stream complete - show final collapsed diff view
       return {
-        state: 'complete',
+        state: "complete",
         style: detection.style,
         confidence: detection.confidence,
       };
@@ -80,60 +91,71 @@ function useStreamingState(content: string, isStreamActive: boolean): {
  * Main StreamingDiffBlock component
  * Highly optimized for streaming performance
  */
-export const StreamingDiffBlock: React.FC<StreamingDiffBlockProps> = React.memo(({
-  content,
-  language = 'typescript',
-  isStreamActive = false,
-  className,
-}) => {
-  // Determine current state (memoized)
-  const { state, style, confidence } = useStreamingState(content, isStreamActive);
+export const StreamingDiffBlock: React.FC<StreamingDiffBlockProps> = React.memo(
+  ({ content, language = "typescript", isStreamActive = false, className }) => {
+    // Determine current state (memoized)
+    const { state, style, confidence } = useStreamingState(
+      content,
+      isStreamActive,
+    );
 
-  // Get handler for detected style (memoized)
-  const handler = useMemo(() => {
-    if (style === 'unknown') return null;
-    return getDiffStyleHandler(style);
-  }, [style]);
+    // Get handler for detected style (memoized)
+    const handler = useMemo(() => {
+      if (style === "unknown") return null;
+      return getDiffStyleHandler(style);
+    }, [style]);
 
-  // Parse content with style-specific parser (memoized)
-  const parsedData = useMemo(() => {
-    if (!handler) return null;
-    return handler.parse(content);
-  }, [handler, content]);
+    // Parse content with style-specific parser (memoized)
+    const parsedData = useMemo(() => {
+      if (!handler) return null;
+      return handler.parse(content);
+    }, [handler, content]);
 
-  // Render based on state
-  switch (state) {
-    case 'detecting':
-      // Still trying to figure out what this is
-      return (
-        <div className={cn('rounded-lg border border-neutral-200 dark:border-neutral-700 bg-muted/30', className)}>
-          <DiffLoadingIndicator message="Analyzing diff format..." />
-        </div>
-      );
+    // Render based on state
+    switch (state) {
+      case "detecting":
+        // Still trying to figure out what this is
+        return (
+          <div
+            className={cn(
+              "rounded-lg border border-neutral-200 dark:border-neutral-700 bg-muted/30",
+              className,
+            )}
+          >
+            <DiffLoadingIndicator message="Identifying code to target..." />
+          </div>
+        );
 
-    case 'fallback':
-      // Couldn't detect or low confidence - just show as code
-      return (
-        <CodeBlock
-          code={content}
-          language="diff"
-          showLineNumbers={true}
-          className={className}
-        />
-      );
+      case "fallback":
+        // Couldn't detect or low confidence - just show as code
+        return (
+          <CodeBlock
+            code={content}
+            language="diff"
+            showLineNumbers={true}
+            className={className}
+          />
+        );
 
-    case 'streaming':
-    case 'complete':
-      // Render with style-specific renderer
-      return renderDiffByStyle(style, parsedData, language, isStreamActive, className);
+      case "streaming":
+      case "complete":
+        // Render with style-specific renderer
+        return renderDiffByStyle(
+          style,
+          parsedData,
+          language,
+          isStreamActive,
+          className,
+        );
 
-    default:
-      // Shouldn't reach here
-      return null;
-  }
-});
+      default:
+        // Shouldn't reach here
+        return null;
+    }
+  },
+);
 
-StreamingDiffBlock.displayName = 'StreamingDiffBlock';
+StreamingDiffBlock.displayName = "StreamingDiffBlock";
 
 /**
  * Route to appropriate renderer based on diff style
@@ -144,10 +166,10 @@ function renderDiffByStyle(
   parsedData: any,
   language: string,
   isStreamActive: boolean,
-  className?: string
+  className?: string,
 ): React.ReactNode {
   switch (style) {
-    case 'search-replace':
+    case "search-replace":
       return (
         <SearchReplaceDiffRenderer
           data={parsedData}
@@ -161,12 +183,16 @@ function renderDiffByStyle(
     // case 'unified':
     //   return <UnifiedDiffRenderer data={parsedData} ... />;
 
-    case 'unknown':
+    case "unknown":
     default:
       // Fallback to code block
       return (
         <CodeBlock
-          code={parsedData?.search || parsedData?.replace || '// Unknown diff format'}
+          code={
+            parsedData?.search ||
+            parsedData?.replace ||
+            "// Unknown diff format"
+          }
           language="diff"
           showLineNumbers={true}
           className={className}
@@ -174,4 +200,3 @@ function renderDiffByStyle(
       );
   }
 }
-

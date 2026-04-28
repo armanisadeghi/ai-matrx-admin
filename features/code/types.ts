@@ -70,12 +70,20 @@ export interface FilesystemSearchHit {
  *    code-workspace filesystem adapter. The tab's `path` is a synthetic
  *    `cloud-file:/<name>` display string and the file is identified
  *    by `cloudFileId`.
+ *  - `"history-triple"`    → renders `<TripleDiffView>` showing
+ *    Before / With updates / Modifications-Since for one (message,
+ *    file) snapshot. Read-only; no save pipeline, no selection-as-
+ *    context. Identified by `historyMessageFileId`.
  *
  * AI patch review is NOT a tab kind — when a normal `"editor"` tab has
  * pending AI patches, `EditorArea` swaps in `<TabDiffView>` (Cursor-style
  * inline diff) automatically. The tab itself stays a normal editor tab.
  */
-export type EditorTabKind = "editor" | "binary-preview" | "cloud-file-preview";
+export type EditorTabKind =
+  | "editor"
+  | "binary-preview"
+  | "cloud-file-preview"
+  | "history-triple";
 
 /**
  * Tabs that don't have an editable text buffer (no Monaco, no AI patches,
@@ -83,7 +91,11 @@ export type EditorTabKind = "editor" | "binary-preview" | "cloud-file-preview";
  * keeps every consumer in sync when a new preview kind is added.
  */
 export function isPreviewTab(kind?: EditorTabKind): boolean {
-  return kind === "binary-preview" || kind === "cloud-file-preview";
+  return (
+    kind === "binary-preview" ||
+    kind === "cloud-file-preview" ||
+    kind === "history-triple"
+  );
 }
 
 export interface EditorFile {
@@ -136,6 +148,24 @@ export interface EditorFile {
    * at least once during this session.
    */
   lastSavedAt?: string;
+  /**
+   * For `"history-triple"` tabs only — the message id whose snapshot
+   * this tab is inspecting. Combined with `historyFileIdentityKey`
+   * (the canonical `${adapter}:${path}` of the underlying file)
+   * gives `<TripleDiffView>` everything it needs to look up the
+   * snapshot in `codeEditHistorySlice`.
+   */
+  historyMessageId?: string;
+  /** For `"history-triple"` tabs only — `${adapter}:${path}`. */
+  historyFileIdentityKey?: string;
+  /**
+   * Source of the most recent buffer mutation. Set by `updateTabContent`
+   * with sensible defaults. The keyboard undo binding watches this so
+   * `Cmd/Ctrl+Z` only triggers `undoLastEditThunk` when an AI accept
+   * was the last thing to touch the buffer; user-typing undo continues
+   * to belong to Monaco.
+   */
+  lastMutationSource?: "user" | "ai" | "ai-undo";
 }
 
 // ─── Process / terminal ──────────────────────────────────────────────────────

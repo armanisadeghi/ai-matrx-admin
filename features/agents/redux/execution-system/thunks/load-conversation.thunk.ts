@@ -51,6 +51,7 @@ import {
   setMemoryMetadata,
   type ObservationalMemoryMetadata,
 } from "../observational-memory/observational-memory.slice";
+import { loadCodeEditHistoryThunk } from "@/features/code/redux/codeEditHistoryHydration";
 
 // =============================================================================
 // Bundle shape
@@ -528,6 +529,14 @@ export const loadConversation = createAsyncThunk<
     //   conversationId,
     //   surfaceKey ?? "(none)",
     // );
+    // Kick off the AI edit-history fetch in parallel with the
+    // conversation bundle. We don't await the result here — the
+    // history hook hydrates the slice itself, and the chat surface
+    // doesn't depend on history rows for its first paint. Stale
+    // history would also be fine; nothing in the message render
+    // pipeline reads from `codeEditHistory`.
+    const historyPromise = dispatch(loadCodeEditHistoryThunk(conversationId));
+
     let bundle: CxConversationBundle;
     try {
       bundle = await fetchConversationBundle(conversationId, {
@@ -537,8 +546,13 @@ export const loadConversation = createAsyncThunk<
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error("[loadConversation] fetchConversationBundle failed:", err);
+      // Don't leave the history fetch dangling on a bundle failure.
+      void historyPromise;
       throw err;
     }
+    // Surface a single dev-only warning if the history fetch fails
+    // separately from the bundle — never block hydration on it.
+    void historyPromise.catch?.(() => undefined);
     const conv = bundle.conversation;
     // eslint-disable-next-line no-console
     // console.log(

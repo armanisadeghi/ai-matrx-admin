@@ -10,6 +10,16 @@
  *   • The triple-view inspector (Before / With updates / Modifications
  *     Since) opened from any assistant message.
  *
+ * ── Phase 2 (deferred) — realtime cross-device sync ───────────────────
+ * A natural follow-up: subscribe to Supabase `postgres_changes` on
+ * `cx_code_message_file` filtered by `conversation_id` (mirrors
+ * `cloudFilesRealtimeMiddleware`'s pattern) and dispatch incremental
+ * `mergeFromServer` actions when other devices upsert rows for the
+ * same conversation. The hook would mount alongside
+ * `useFlushAIEditHistory` in `<CodeWorkspaceProvider>` and cap itself
+ * at the focused conversation to avoid unbounded subscriptions.
+ * Out of scope for the initial cut — file this here so it isn't lost.
+ *
  * State shape:
  *
  *   byConversation: Record<conversationId, MessageFileSnapshot[]>
@@ -51,10 +61,7 @@ import {
   createSlice,
   type PayloadAction,
 } from "@reduxjs/toolkit";
-import {
-  fileIdentityKey,
-  type FileIdentity,
-} from "../utils/fileIdentity";
+import { fileIdentityKey, type FileIdentity } from "../utils/fileIdentity";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -223,15 +230,11 @@ function removeSnapshotEverywhere(
   }
   const msg = state.byMessage[messageId];
   if (msg) {
-    state.byMessage[messageId] = msg.filter(
-      (s) => snapshotKey(s) !== fileKey,
-    );
+    state.byMessage[messageId] = msg.filter((s) => snapshotKey(s) !== fileKey);
   }
   const file = state.byFile[fileKey];
   if (file) {
-    state.byFile[fileKey] = file.filter(
-      (s) => s.messageId !== messageId,
-    );
+    state.byFile[fileKey] = file.filter((s) => s.messageId !== messageId);
   }
 }
 
@@ -596,7 +599,10 @@ const slice = createSlice({
     },
 
     /** Remove every snapshot for one conversation — used on logout. */
-    clearConversation(state, action: PayloadAction<{ conversationId: string }>) {
+    clearConversation(
+      state,
+      action: PayloadAction<{ conversationId: string }>,
+    ) {
       const list = state.byConversation[action.payload.conversationId];
       if (list) {
         for (const s of list) {
@@ -668,8 +674,7 @@ export const selectSnapshotsForMessage =
   (state: WithCodeEditHistory): MessageFileSnapshot[] => {
     if (!messageId) return EMPTY_SNAPSHOT_LIST;
     return (
-      selectCodeEditHistory(state).byMessage[messageId] ??
-      EMPTY_SNAPSHOT_LIST
+      selectCodeEditHistory(state).byMessage[messageId] ?? EMPTY_SNAPSHOT_LIST
     );
   };
 
@@ -720,8 +725,7 @@ export const selectHydrationStatus =
 
 export const selectPendingWrites = (
   state: WithCodeEditHistory,
-): Record<string, PendingWrite> =>
-  selectCodeEditHistory(state).pendingWrites;
+): Record<string, PendingWrite> => selectCodeEditHistory(state).pendingWrites;
 
 export const selectHasPendingWrites = createSelector(
   [selectPendingWrites],

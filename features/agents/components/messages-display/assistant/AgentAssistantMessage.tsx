@@ -47,6 +47,7 @@ import { Button } from "@/components/ui/button";
 import { RotateCw } from "lucide-react";
 import { toast } from "sonner";
 import { useDomCapturePrint } from "@/features/conversation/hooks/useDomCapturePrint";
+import { MessageFilesStrip } from "@/features/code/views/history/MessageFilesStrip";
 
 interface AgentAssistantMessageProps {
   conversationId: string;
@@ -152,7 +153,11 @@ export function AgentAssistantMessage({
   const effectiveRequestId = isStreamActive ? requestId : undefined;
 
   return (
-    <div ref={captureRef}>
+    <div
+      ref={captureRef}
+      data-message-id={messageId ?? undefined}
+      className="rounded transition-shadow"
+    >
       <MarkdownStream
         requestId={effectiveRequestId}
         turnId={messageId}
@@ -163,6 +168,12 @@ export function AgentAssistantMessage({
         hideCopyButton={true}
         allowFullScreenEditor={false}
       />
+      {messageId && (
+        <MessageFilesStrip
+          conversationId={conversationId}
+          messageId={messageId}
+        />
+      )}
       {!isStreamActive && messageId && (
         <AssistantActionBar
           content={flatText}

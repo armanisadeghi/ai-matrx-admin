@@ -30,7 +30,9 @@ import { MonacoEditor, type StandaloneCodeEditor } from "./MonacoEditor";
 import { BinaryFileViewer } from "./BinaryFileViewer";
 import { CloudFilePreviewer } from "./CloudFilePreviewer";
 import { TabDiffView } from "./TabDiffView";
+import { TripleDiffView } from "./TripleDiffView";
 import { selectPendingPatchCountForTab } from "../redux/codePatchesSlice";
+import { undoLastEditThunk } from "../redux/codeEditUndoRevert";
 
 interface EditorAreaProps {
   rightSlotAvailable?: boolean;
@@ -240,6 +242,50 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
     return () => window.removeEventListener("keydown", onKey);
   }, [activeTab, handleSave]);
 
+  // Cmd/Ctrl+Z when the last mutation came from an AI accept: undo
+  // the AI edit instead of letting Monaco unwind a per-keystroke
+  // history entry. Once we've run an AI undo (or the user types
+  // anything afterwards), `lastMutationSource` flips back to
+  // `"user"` and Monaco's normal undo takes over again.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const mod = e.metaKey || e.ctrlKey;
+      if (mod && !e.shiftKey && !e.altKey && (e.key === "z" || e.key === "Z")) {
+        if (!activeTab) return;
+        if (isPreviewTab(activeTab.kind)) return;
+        if (activeTab.lastMutationSource !== "ai") return;
+        // Don't fire when focus is inside an input or textarea outside
+        // Monaco — that's almost never what the user wants.
+        const target = e.target as Element | null;
+        if (
+          target &&
+          (target.tagName === "INPUT" ||
+            target.tagName === "TEXTAREA" ||
+            (target as HTMLElement).isContentEditable)
+        ) {
+          // Inside Monaco, the editor itself owns the keystroke — let
+          // it pass. The Monaco DOM uses contenteditable, so we'd hit
+          // this branch. We still want our binding to win because the
+          // last-mutation guard ensures we only intervene right after
+          // an AI accept; a single user keystroke clears the flag.
+          if (
+            !target.classList?.contains("monaco-mouse-cursor-text") &&
+            !target.closest(".monaco-editor")
+          ) {
+            return;
+          }
+        }
+        const ok = dispatch(undoLastEditThunk({ tabId: activeTab.id }));
+        if (ok) {
+          e.preventDefault();
+        }
+      }
+    };
+    window.addEventListener("keydown", onKey, { capture: true });
+    return () =>
+      window.removeEventListener("keydown", onKey, { capture: true });
+  }, [activeTab, dispatch]);
+
   return (
     <div className={cn("flex h-full min-h-0 flex-col", EDITOR_BG, className)}>
       <div
@@ -268,6 +314,8 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
             <CloudFilePreviewer key={activeTab.id} tab={activeTab} />
           ) : activeTab.kind === "binary-preview" ? (
             <BinaryFileViewer key={activeTab.id} tab={activeTab} />
+          ) : activeTab.kind === "history-triple" ? (
+            <TripleDiffView key={activeTab.id} tab={activeTab} />
           ) : activeTabHasPending ? (
             <TabDiffView key={activeTab.id} tab={activeTab} />
           ) : (

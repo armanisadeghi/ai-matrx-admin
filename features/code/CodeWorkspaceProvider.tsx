@@ -20,6 +20,7 @@ import {
   classifyEditorMode,
   setActiveFilesystem,
 } from "./redux/codeWorkspaceSlice";
+import { useFlushAIEditHistory } from "./redux/codeEditHistoryFlush";
 
 /** What consumers of the workspace context can read + mutate. */
 export interface CodeWorkspaceContextValue {
@@ -86,6 +87,11 @@ export const CodeWorkspaceProvider: React.FC<CodeWorkspaceProviderProps> = ({
       }),
     );
   }, [store, filesystem]);
+
+  // Persistence scheduler for the AI edit-history slice. Lives at the
+  // workspace root so a single subscription handles every code tab in
+  // the page. Safe no-op when there are no pending writes.
+  useFlushAIEditHistory();
 
   const value = useMemo<CodeWorkspaceContextValue>(
     () => ({ workspaceId, filesystem, process, setFilesystem, setProcess }),

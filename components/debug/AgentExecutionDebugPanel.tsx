@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   X,
   ChevronDown,
@@ -314,7 +314,11 @@ export const AgentExecutionDebugPanel: React.FC<
     selectPendingToolCallsForInstance(instanceId),
   );
 
-  const assembledRequest = useAppSelector(selectAssembledRequest(instanceId));
+  const assembledSelector = useMemo(
+    () => selectAssembledRequest(instanceId),
+    [instanceId],
+  );
+  const assembledRequest = useAppSelector(assembledSelector);
 
   const uiState = useAppSelector(selectInstanceUIState(instanceId));
   const displayMode = useAppSelector(selectDisplayMode(instanceId));
@@ -582,7 +586,9 @@ export const AgentExecutionDebugPanel: React.FC<
               {/* TODO: wire aggregate/completion stats to activeRequests/observability */}
 
               {messages.length === 0 ? (
-                <p className="text-xs text-gray-500">No committed messages yet</p>
+                <p className="text-xs text-gray-500">
+                  No committed messages yet
+                </p>
               ) : (
                 <div className="space-y-3">
                   {messages.map((record, idx) => (

@@ -50,6 +50,7 @@ import {
   getSignedUrl as getSignedUrlThunk,
   uploadFiles as uploadFilesThunk,
 } from "../../redux/thunks";
+import { deleteAny } from "../../redux/virtual-thunks";
 import { requestRename } from "../core/RenameDialog/RenameHost";
 
 interface PendingDelete {
@@ -109,6 +110,10 @@ export function useFileShortcuts(): {
       // ⌘L / Ctrl+L — copy share link for the active file.
       if (onlyCmd && e.key.toLowerCase() === "l") {
         if (!activeFileId) return;
+        // Virtual files don't have signed S3 URLs to copy. Skip silently
+        // rather than showing an error — the action menu hides the button
+        // for virtual files for the same reason.
+        if (filesById[activeFileId]?.source.kind === "virtual") return;
         e.preventDefault();
         void (async () => {
           try {
@@ -133,6 +138,9 @@ export function useFileShortcuts(): {
         if (!activeFileId) return;
         const file = filesById[activeFileId];
         if (!file) return;
+        // Duplicate fetches the current bytes via signed URL — only works
+        // for real cloud-files. Skip for virtual rows.
+        if (file.source.kind === "virtual") return;
         e.preventDefault();
         void (async () => {
           try {
@@ -253,9 +261,16 @@ export function useFileShortcuts(): {
     if (!pendingDelete) return;
     const ids = [...pendingDelete.ids];
     setPendingDelete(null);
+    // Use the source-aware deleteAny so virtual files route through their
+    // adapter's `delete()` (the unified /v1 thunk picks the right path
+    // based on synthetic-id detection).
+    const deleteForId = (id: string) =>
+      filesById[id]?.source.kind === "virtual"
+        ? dispatch(deleteAny({ id }))
+        : dispatch(deleteFileThunk({ fileId: id }));
     if (pendingDelete.kind === "single") {
       try {
-        await dispatch(deleteFileThunk({ fileId: ids[0] })).unwrap();
+        await deleteForId(ids[0]).unwrap();
         // If the deleted file was the previewed one, dismiss the pane.
         if (ids[0] === activeFileId) dispatch(setActiveFileId(null));
       } catch {
@@ -269,7 +284,7 @@ export function useFileShortcuts(): {
       while (cursor < ids.length) {
         const i = cursor++;
         try {
-          await dispatch(deleteFileThunk({ fileId: ids[i] })).unwrap();
+          await deleteForId(ids[i]).unwrap();
         } catch {
           /* per-item failure tolerable */
         }

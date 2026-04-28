@@ -350,12 +350,61 @@ export const selectIsInstanceReady =
 // =============================================================================
 
 /**
- * Preview the assembled API request for an instance.
+ * Memoized assembled API request preview for a conversation.
+ *
+ * Tracks only the top-level Redux slices consulted by {@link assembleRequest}.
+ * When those slice references are unchanged (Immer structural sharing), the
+ * cached assembled result is returned — avoids rerenders and spurious allocations on unrelated
+ * store updates.
+ *
+ * **IMPORTANT:** If `assembleRequest` starts reading additional slices, add those
+ * inputs here so the preview stays reactive.
+ *
+ * Usage — stabilize selector identity with `useMemo`:
+ * `useMemo(() => makeSelectAssembledRequest(conversationId), [conversationId])`.
  */
-export const selectAssembledRequest =
-  (conversationId: string) =>
-  (state: RootState): AssembledAgentStartRequest | null =>
-    assembleRequest(state, conversationId);
+export function makeSelectAssembledRequest(conversationId: string) {
+  return createSelector(
+    [
+      (s: RootState) => s.conversations,
+      (s: RootState) => s.instanceUIState,
+      (s: RootState) => s.instanceUserInput,
+      (s: RootState) => s.instanceResources,
+      (s: RootState) => s.instanceVariableValues,
+      (s: RootState) => s.instanceModelOverrides,
+      (s: RootState) => s.instanceContext,
+      (s: RootState) => s.instanceClientTools,
+      (s: RootState) => s.appContext,
+    ],
+    (
+      conversations,
+      instanceUIState,
+      instanceUserInput,
+      instanceResources,
+      instanceVariableValues,
+      instanceModelOverrides,
+      instanceContext,
+      instanceClientTools,
+      appContext,
+    ): AssembledAgentStartRequest | null => {
+      const state = {
+        conversations,
+        instanceUIState,
+        instanceUserInput,
+        instanceResources,
+        instanceVariableValues,
+        instanceModelOverrides,
+        instanceContext,
+        instanceClientTools,
+        appContext,
+      } as RootState;
+      return assembleRequest(state, conversationId);
+    },
+  );
+}
+
+/** @deprecated Use {@link makeSelectAssembledRequest}; same underlying factory (alias). */
+export const selectAssembledRequest = makeSelectAssembledRequest;
 
 /**
  * Complete summary of an instance's current state.

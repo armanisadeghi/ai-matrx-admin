@@ -100,6 +100,11 @@ export function FileContextMenu({
   // built-in RenameDialog so renaming works everywhere the menu is mounted.
   const handleRename = onRename ?? (() => setRenameOpen(true));
   const file = filesById[fileId];
+  // Virtual files (Notes / Agent Apps / Code Snippets / etc.) don't go
+  // through the Python `/files/{id}` REST contract, so any action that
+  // depends on a signed S3 URL (Download / Copy link / Duplicate) or on
+  // cld_* tables (Versions / File info / Visibility) is hidden.
+  const isVirtual = file?.source.kind === "virtual";
 
   // When the right-clicked file is part of a multi-selection AND selection
   // has more than one item, the menu pivots to "batch actions" mode and
@@ -342,24 +347,28 @@ export function FileContextMenu({
                 <Eye className="mr-2 h-4 w-4" />
                 Preview
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => void actions.download()}>
-                <Download className="mr-2 h-4 w-4" />
-                Download
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => {
-                  void actions.copyShareUrl();
-                }}
-              >
-                <Copy className="mr-2 h-4 w-4" />
-                Copy link
-                <DropdownMenuShortcut>{cmd}L</DropdownMenuShortcut>
-              </DropdownMenuItem>
-              {onShare ? (
-                <DropdownMenuItem onClick={onShare}>
-                  <Share2 className="mr-2 h-4 w-4" />
-                  Share…
-                </DropdownMenuItem>
+              {!isVirtual ? (
+                <>
+                  <DropdownMenuItem onClick={() => void actions.download()}>
+                    <Download className="mr-2 h-4 w-4" />
+                    Download
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      void actions.copyShareUrl();
+                    }}
+                  >
+                    <Copy className="mr-2 h-4 w-4" />
+                    Copy link
+                    <DropdownMenuShortcut>{cmd}L</DropdownMenuShortcut>
+                  </DropdownMenuItem>
+                  {onShare ? (
+                    <DropdownMenuItem onClick={onShare}>
+                      <Share2 className="mr-2 h-4 w-4" />
+                      Share…
+                    </DropdownMenuItem>
+                  ) : null}
+                </>
               ) : null}
 
               <DropdownMenuSeparator />
@@ -375,54 +384,60 @@ export function FileContextMenu({
                   Move…
                 </DropdownMenuItem>
               ) : null}
-              <DropdownMenuItem
-                onClick={() => void handleDuplicate()}
-                disabled={busy !== null}
-              >
-                <CopyPlus className="mr-2 h-4 w-4" />
-                Duplicate
-                <DropdownMenuShortcut>{cmd}D</DropdownMenuShortcut>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleShowDetails}>
-                <FileText className="mr-2 h-4 w-4" />
-                Show details
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setInfoOpen(true)}>
-                <Info className="mr-2 h-4 w-4" />
-                File info dialog
-                <DropdownMenuShortcut>{cmd}I</DropdownMenuShortcut>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleShowVersions}>
-                <History className="mr-2 h-4 w-4" />
-                Show versions
-              </DropdownMenuItem>
+              {!isVirtual ? (
+                <>
+                  <DropdownMenuItem
+                    onClick={() => void handleDuplicate()}
+                    disabled={busy !== null}
+                  >
+                    <CopyPlus className="mr-2 h-4 w-4" />
+                    Duplicate
+                    <DropdownMenuShortcut>{cmd}D</DropdownMenuShortcut>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleShowDetails}>
+                    <FileText className="mr-2 h-4 w-4" />
+                    Show details
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setInfoOpen(true)}>
+                    <Info className="mr-2 h-4 w-4" />
+                    File info dialog
+                    <DropdownMenuShortcut>{cmd}I</DropdownMenuShortcut>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleShowVersions}>
+                    <History className="mr-2 h-4 w-4" />
+                    Show versions
+                  </DropdownMenuItem>
+                </>
+              ) : null}
 
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger>
-                  <Lock className="mr-2 h-4 w-4" />
-                  Visibility
-                </DropdownMenuSubTrigger>
-                <DropdownMenuSubContent>
-                  <DropdownMenuItem
-                    onClick={() => void handleVisibility("private")}
-                  >
+              {!isVirtual ? (
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>
                     <Lock className="mr-2 h-4 w-4" />
-                    Private
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => void handleVisibility("shared")}
-                  >
-                    <Users className="mr-2 h-4 w-4" />
-                    Shared
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => void handleVisibility("public")}
-                  >
-                    <Globe className="mr-2 h-4 w-4" />
-                    Public
-                  </DropdownMenuItem>
-                </DropdownMenuSubContent>
-              </DropdownMenuSub>
+                    Visibility
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent>
+                    <DropdownMenuItem
+                      onClick={() => void handleVisibility("private")}
+                    >
+                      <Lock className="mr-2 h-4 w-4" />
+                      Private
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => void handleVisibility("shared")}
+                    >
+                      <Users className="mr-2 h-4 w-4" />
+                      Shared
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => void handleVisibility("public")}
+                    >
+                      <Globe className="mr-2 h-4 w-4" />
+                      Public
+                    </DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+              ) : null}
 
               <DropdownMenuSeparator />
 

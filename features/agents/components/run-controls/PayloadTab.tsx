@@ -31,7 +31,7 @@ import type {
 } from "@/features/agents/types/agent-api-types";
 import type { InstanceContextEntry } from "@/features/agents/types/instance.types";
 import type { MessagePart } from "@/types/python-generated/stream-events";
-import { assembleRequest } from "@/features/agents/redux/execution-system/thunks/execute-instance.thunk";
+import { makeSelectAssembledRequest } from "@/features/agents/redux/execution-system/selectors/aggregate.selectors";
 import { selectAgentContextSlots } from "@/features/agents/redux/agent-definition/selectors";
 import { EmptyStats, StatRow, StatSection } from "./panels/shared";
 import { TYPE_COLORS } from "./ContextSlotsTab";
@@ -202,14 +202,11 @@ interface PayloadTabProps {
 }
 
 export function PayloadTab({ conversationId }: PayloadTabProps) {
-  // `assembleRequest` always allocates a new object — it must not be the direct
-  // return value of `useAppSelector` (unstable ref / dev double-invoke warning).
-  // Subscribe to the root state, then memoize one assembly per state snapshot.
-  const state = useAppSelector((s: RootState) => s);
-  const request = useMemo(
-    () => assembleRequest(state, conversationId),
-    [state, conversationId],
+  const assembledRequestSelector = useMemo(
+    () => makeSelectAssembledRequest(conversationId),
+    [conversationId],
   );
+  const request = useAppSelector(assembledRequestSelector);
 
   const agentId = useAppSelector((state) =>
     selectAgentIdForConversation(state, conversationId),

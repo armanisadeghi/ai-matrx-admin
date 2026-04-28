@@ -374,10 +374,18 @@ export const StreamAwareChatMarkdown: React.FC<
 
           if (block.type === "tool_call") {
             const toolBlock = block as ToolCallBlock;
+            // True if any subsequent block exists — text OR another tool.
+            // Drives the per-card auto-collapse so a finished tool collapses
+            // the moment we move on to the next one (next tool starts OR
+            // the model begins streaming text). Pure text-after detection
+            // would leave already-finished cards expanded while subsequent
+            // tools are still running.
             const hasContentAfter = canonicalBlocks
               .slice(index + 1)
               .some(
-                (b) => b.type === "text" && (b as TextBlock).content.trim(),
+                (b) =>
+                  b.type === "tool_call" ||
+                  (b.type === "text" && (b as TextBlock).content.trim()),
               );
 
             return (

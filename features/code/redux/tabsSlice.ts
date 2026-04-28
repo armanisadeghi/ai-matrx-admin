@@ -73,12 +73,26 @@ const slice = createSlice({
     },
     updateTabContent(
       state,
-      action: PayloadAction<{ id: string; content: string }>,
+      action: PayloadAction<{
+        id: string;
+        content: string;
+        /**
+         * Where the mutation came from. Defaults to `"user"` so the
+         * common Monaco-typing path doesn't have to thread it through
+         * — only AI-driven dispatches (TabDiffView accept,
+         * undo/revert thunks) need to flag themselves. The keyboard
+         * undo binding reads this back to decide whether
+         * `Cmd/Ctrl+Z` should fall through to Monaco (user typing) or
+         * fire `undoLastEditThunk` (AI mutation).
+         */
+        source?: "user" | "ai" | "ai-undo";
+      }>,
     ) {
       const tab = state.byId[action.payload.id];
       if (!tab) return;
       tab.content = action.payload.content;
       tab.dirty = tab.content !== tab.pristineContent;
+      tab.lastMutationSource = action.payload.source ?? "user";
     },
     markTabSaved(state, action: PayloadAction<string>) {
       const tab = state.byId[action.payload];

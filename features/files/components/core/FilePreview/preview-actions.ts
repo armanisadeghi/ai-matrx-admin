@@ -48,6 +48,7 @@ export function buildPreviewActions(
   args: BuildPreviewActionsArgs,
 ): PreviewerAction[] {
   const {
+    file,
     previewKind,
     onDownload,
     onCopyLink,
@@ -57,6 +58,8 @@ export function buildPreviewActions(
     onEdit,
     openInRoute,
   } = args;
+
+  const isVirtual = file.source.kind === "virtual";
 
   const actions: PreviewerAction[] = [];
 
@@ -70,7 +73,11 @@ export function buildPreviewActions(
     });
   }
 
-  if (EDITABLE_KINDS.includes(previewKind)) {
+  // The Edit button opens the generic CloudFileEditor which fetches bytes
+  // through the Python `/files/{id}/download` endpoint. Virtual files don't
+  // have real S3-backed bytes, so that download 404s. The inline preview IS
+  // the editor for virtual files, so we hide the Edit button entirely.
+  if (!isVirtual && EDITABLE_KINDS.includes(previewKind)) {
     actions.push({
       id: "edit",
       label: "Edit",
@@ -82,28 +89,36 @@ export function buildPreviewActions(
     });
   }
 
+  // Download + Copy link both go through the Python `/files/{id}/url`
+  // signed-URL endpoint, which only works for real cloud-files. Virtual
+  // files surface those operations through their adapter (or via the "Open
+  // in <feature>" route) — hiding them here avoids broken click states.
+  if (!isVirtual) {
+    actions.push(
+      {
+        id: "download",
+        label: "Download",
+        icon: Download,
+        onClick: onDownload,
+        primary: true,
+      },
+      {
+        id: "copy-link",
+        label: "Copy link",
+        icon: Copy,
+        onClick: onCopyLink,
+        primary: true,
+      },
+      {
+        id: "open-full",
+        label: "Open full view",
+        icon: Maximize2,
+        onClick: onOpenFullView,
+        primary: false,
+      },
+    );
+  }
   actions.push(
-    {
-      id: "download",
-      label: "Download",
-      icon: Download,
-      onClick: onDownload,
-      primary: true,
-    },
-    {
-      id: "copy-link",
-      label: "Copy link",
-      icon: Copy,
-      onClick: onCopyLink,
-      primary: true,
-    },
-    {
-      id: "open-full",
-      label: "Open full view",
-      icon: Maximize2,
-      onClick: onOpenFullView,
-      primary: false,
-    },
     {
       id: "rename",
       label: "Rename",

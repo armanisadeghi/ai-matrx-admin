@@ -15,5 +15,6 @@
     "**/node_modules": true,
     "**/temp": true
   },
-  "terminal.integrated.scrollback": 20000
+  "terminal.integrated.scrollback": 20000,
+  "references.preferredLocation": "view"
 }

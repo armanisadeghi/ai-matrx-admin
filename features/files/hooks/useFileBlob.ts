@@ -94,6 +94,24 @@ export function useFileBlob(fileId: string | null): UseFileBlobResult {
       return;
     }
 
+    // Synthetic ids belong to virtual sources (Notes / Agent Apps / etc.).
+    // They aren't real S3-backed bytes — `Files.downloadFileWithProgress`
+    // would 404 against the Python backend. Callers should mount the
+    // adapter's `inlinePreview` instead, or use `readAny` from
+    // `redux/virtual-thunks.ts`. Surface a clear error rather than silently
+    // failing.
+    if (fileId.startsWith("vfs:")) {
+      setUrl(null);
+      setBlob(null);
+      setLoading(false);
+      setError(
+        "useFileBlob can't load virtual files — use the adapter's inlinePreview or readAny instead.",
+      );
+      setBytesLoaded(0);
+      setBytesTotal(null);
+      return;
+    }
+
     // 1. Cache hit — show the cached blob immediately, no fetch.
     const cached = getCached(fileId);
     if (cached) {

@@ -86,19 +86,22 @@ export function FileRowContextMenu({ fileId, children }: FileRowContextMenuProps
     openFilePreview(fileId);
   }, [dispatch, fileId]);
 
+  const isVirtual = file?.source.kind === "virtual";
+
   const handleMove = useCallback(async () => {
     if (!file) return;
     const folderId = await openFolderPicker({ title: "Move to…" });
     if (folderId === undefined) return; // user dismissed
     if (folderId === file.parentFolderId) return;
     try {
-      await dispatch(
-        moveFileThunk({ fileId, newParentFolderId: folderId }),
-      ).unwrap();
+      // useFileActions.move is now source-aware: real → moveFileThunk,
+      // virtual → moveAny. Routes correctly without an explicit branch
+      // here.
+      await actions.move(folderId);
     } catch {
       /* error surfaces via slice state */
     }
-  }, [dispatch, file, fileId]);
+  }, [actions, file]);
 
   const handleDuplicate = useCallback(async () => {
     if (!file) return;
@@ -144,15 +147,22 @@ export function FileRowContextMenu({ fileId, children }: FileRowContextMenuProps
             <Eye className="mr-2 h-4 w-4" />
             Preview
           </ContextMenuItem>
-          <ContextMenuItem onClick={() => void actions.download()}>
-            <Download className="mr-2 h-4 w-4" />
-            Download
-          </ContextMenuItem>
-          <ContextMenuItem onClick={() => void actions.copyShareUrl()}>
-            <Copy className="mr-2 h-4 w-4" />
-            Copy link
-            <ContextMenuShortcut>{cmd}L</ContextMenuShortcut>
-          </ContextMenuItem>
+          {/* Download / Copy link / Duplicate go through the Python signed-URL
+              endpoint — only meaningful for real cloud-files. Virtual rows
+              hide these (their inline preview owns export/share semantics). */}
+          {!isVirtual ? (
+            <>
+              <ContextMenuItem onClick={() => void actions.download()}>
+                <Download className="mr-2 h-4 w-4" />
+                Download
+              </ContextMenuItem>
+              <ContextMenuItem onClick={() => void actions.copyShareUrl()}>
+                <Copy className="mr-2 h-4 w-4" />
+                Copy link
+                <ContextMenuShortcut>{cmd}L</ContextMenuShortcut>
+              </ContextMenuItem>
+            </>
+          ) : null}
           <ContextMenuSeparator />
           <ContextMenuItem onClick={() => requestRename("file", fileId)}>
             <Edit2 className="mr-2 h-4 w-4" />
@@ -163,11 +173,13 @@ export function FileRowContextMenu({ fileId, children }: FileRowContextMenuProps
             <FolderInput className="mr-2 h-4 w-4" />
             Move…
           </ContextMenuItem>
-          <ContextMenuItem onClick={() => void handleDuplicate()}>
-            <CopyPlus className="mr-2 h-4 w-4" />
-            Duplicate
-            <ContextMenuShortcut>{cmd}D</ContextMenuShortcut>
-          </ContextMenuItem>
+          {!isVirtual ? (
+            <ContextMenuItem onClick={() => void handleDuplicate()}>
+              <CopyPlus className="mr-2 h-4 w-4" />
+              Duplicate
+              <ContextMenuShortcut>{cmd}D</ContextMenuShortcut>
+            </ContextMenuItem>
+          ) : null}
           <ContextMenuSeparator />
           <ContextMenuItem
             className="text-destructive focus:text-destructive"

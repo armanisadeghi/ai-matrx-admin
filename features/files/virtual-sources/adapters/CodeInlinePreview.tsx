@@ -18,7 +18,8 @@
 
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { CheckCircle2, Loader2, Save } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { readAny, writeAny } from "@/features/files/redux/virtual-thunks";
 import { makeSyntheticId } from "@/features/files/virtual-sources/path";
@@ -56,9 +57,12 @@ function CodeInlinePreview({ adapterId, id, fieldId, name }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [savedAt, setSavedAt] = useState<number | null>(null);
   const lastSavedRef = useRef<string>("");
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const syntheticId = makeSyntheticId(adapterId, id, fieldId);
+  const isDirty = content !== lastSavedRef.current;
 
   // Load on mount / target change. Routes through the source-aware `readAny`
   // thunk, which dispatches to the correct adapter under the hood.
@@ -93,13 +97,20 @@ function CodeInlinePreview({ adapterId, id, fieldId, name }: Props) {
     async (next: string) => {
       if (next === lastSavedRef.current) return;
       setSaving(true);
+      setSaveError(null);
       try {
         await dispatch(
           writeAny({ id: syntheticId, content: next }),
         ).unwrap();
         lastSavedRef.current = next;
-      } catch {
-        // swallow — typing again will re-trigger the save
+        setSavedAt(Date.now());
+      } catch (err) {
+        // Surface the error so the user sees that the save failed instead
+        // of silently losing edits. Most likely cause: RLS rejection or a
+        // missing column on the underlying row.
+        setSaveError(
+          err instanceof Error ? err.message : "Save failed.",
+        );
       } finally {
         setSaving(false);
       }
@@ -161,17 +172,52 @@ function CodeInlinePreview({ adapterId, id, fieldId, name }: Props) {
     );
   }
 
+  // Recently saved indicator — fades after 2 seconds.
+  const recentlySaved =
+    savedAt !== null && Date.now() - savedAt < 2000 && !isDirty;
+
   return (
     <div className="flex h-full w-full flex-col">
-      <div className="flex items-center justify-between border-b border-border/60 px-3 py-1.5 text-xs text-muted-foreground">
+      <div className="flex items-center justify-between gap-3 border-b border-border/60 px-3 py-1.5 text-xs text-muted-foreground">
         <span className="truncate font-medium text-foreground">{name}</span>
-        {saving ? (
-          <span className="flex items-center gap-1">
-            <Loader2 className="h-3 w-3 animate-spin" />
-            Saving…
-          </span>
-        ) : null}
+        <div className="flex items-center gap-2">
+          {saving ? (
+            <span className="flex items-center gap-1">
+              <Loader2 className="h-3 w-3 animate-spin" />
+              Saving…
+            </span>
+          ) : recentlySaved ? (
+            <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+              <CheckCircle2 className="h-3 w-3" />
+              Saved
+            </span>
+          ) : isDirty ? (
+            <span className="text-amber-600 dark:text-amber-400">
+              Unsaved changes
+            </span>
+          ) : null}
+          <button
+            type="button"
+            onClick={() => void handleSaveShortcut()}
+            disabled={!isDirty || saving}
+            title="Save (⌘S / Ctrl+S)"
+            className={cn(
+              "inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-medium",
+              isDirty && !saving
+                ? "border-primary/40 bg-primary text-primary-foreground hover:bg-primary/90"
+                : "border-border/60 bg-muted/30 text-muted-foreground cursor-not-allowed",
+            )}
+          >
+            <Save className="h-3 w-3" />
+            Save
+          </button>
+        </div>
       </div>
+      {saveError ? (
+        <div className="border-b border-destructive/30 bg-destructive/10 px-3 py-1.5 text-xs text-destructive">
+          {saveError}
+        </div>
+      ) : null}
       <div className="min-h-0 flex-1">
         <MonacoEditor
           value={content}

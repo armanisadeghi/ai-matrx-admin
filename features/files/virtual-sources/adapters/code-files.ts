@@ -139,36 +139,33 @@ const codeFilesAdapter: VirtualSourceAdapter = {
     return id ? { id } : null;
   },
 
-  async list(supabase, userId, args: ListArgs): Promise<VirtualNode[]> {
-    if (!userId) return [];
-    // Folders + files at this level. Two queries in parallel — folders are
-    // typically a small set so the round-trip is cheap.
+  async list(supabase, _userId, args: ListArgs): Promise<VirtualNode[]> {
+    // RLS scopes both `code_files` and `code_file_folders` by `auth.uid()`,
+    // so we don't need an explicit `.eq("user_id", userId)`. Adding it
+    // breaks when the Redux `userAuth.id` hasn't hydrated yet (passed in as
+    // empty string) — the predicate would silently match nothing.
     const [folderRes, fileRes] = await Promise.all([
       args.parentId === null
         ? supabase
             .from("code_file_folders")
             .select(FOLDER_LIST_COLUMNS)
-            .eq("user_id", userId)
             .is("parent_folder_id", null)
             .order("name", { ascending: true })
         : supabase
             .from("code_file_folders")
             .select(FOLDER_LIST_COLUMNS)
-            .eq("user_id", userId)
             .eq("parent_folder_id", args.parentId)
             .order("name", { ascending: true }),
       args.parentId === null
         ? supabase
             .from("code_files")
             .select(FILE_LIST_COLUMNS)
-            .eq("user_id", userId)
             .eq("is_deleted", false)
             .is("folder_id", null)
             .order("updated_at", { ascending: false })
         : supabase
             .from("code_files")
             .select(FILE_LIST_COLUMNS)
-            .eq("user_id", userId)
             .eq("is_deleted", false)
             .eq("folder_id", args.parentId)
             .order("updated_at", { ascending: false }),
@@ -199,12 +196,11 @@ const codeFilesAdapter: VirtualSourceAdapter = {
     return [...folders, ...files];
   },
 
-  async read(supabase, userId, id): Promise<VirtualContent> {
+  async read(supabase, _userId, id): Promise<VirtualContent> {
     const { data, error } = await supabase
       .from("code_files")
       .select(`${FILE_LIST_COLUMNS},content`)
       .eq("id", id)
-      .eq("user_id", userId)
       .maybeSingle();
     if (error || !data) {
       throw new Error(`Code file not found: ${id}`);
@@ -234,31 +230,36 @@ const codeFilesAdapter: VirtualSourceAdapter = {
     };
   },
 
-  async write(supabase, userId, args: WriteArgs) {
+  async write(supabase, _userId, args: WriteArgs) {
+    // RLS scopes the update — no explicit user_id predicate. Adding one
+    // would silently drop the write when `userAuth.id` hasn't hydrated.
     let query = supabase
       .from("code_files")
       .update({
         content: args.content,
         updated_at: new Date().toISOString(),
       })
-      .eq("id", args.id)
-      .eq("user_id", userId);
+      .eq("id", args.id);
     if (args.expectedUpdatedAt) {
       query = query.eq("updated_at", args.expectedUpdatedAt);
     }
     const { data, error } = await query.select("updated_at").maybeSingle();
-    if (error || !data) {
-      throw new Error(error?.message ?? "Code file save failed");
+    if (error) {
+      throw new Error(error.message || "Code file save failed");
+    }
+    if (!data) {
+      throw new Error(
+        `Code file save returned no row — RLS may have blocked the update (id=${args.id})`,
+      );
     }
     return { updatedAt: (data as { updated_at: string }).updated_at };
   },
 
-  async rename(supabase, userId, args: RenameArgs) {
+  async rename(supabase, _userId, args: RenameArgs) {
     let query = supabase
       .from("code_files")
       .update({ name: args.newName, updated_at: new Date().toISOString() })
-      .eq("id", args.id)
-      .eq("user_id", userId);
+      .eq("id", args.id);
     if (args.expectedUpdatedAt) {
       query = query.eq("updated_at", args.expectedUpdatedAt);
     }
@@ -271,7 +272,6 @@ const codeFilesAdapter: VirtualSourceAdapter = {
       .from("code_file_folders")
       .update({ name: args.newName, updated_at: new Date().toISOString() })
       .eq("id", args.id)
-      .eq("user_id", userId)
       .select("updated_at")
       .maybeSingle();
     if (folderRes.error || !folderRes.data) {
@@ -282,7 +282,7 @@ const codeFilesAdapter: VirtualSourceAdapter = {
     };
   },
 
-  async move(supabase, userId, args: MoveArgs) {
+  async move(supabase, _userId, args: MoveArgs) {
     // Files use folder_id; folders use parent_folder_id. Try file first.
     const fileRes = await supabase
       .from("code_files")
@@ -291,7 +291,6 @@ const codeFilesAdapter: VirtualSourceAdapter = {
         updated_at: new Date().toISOString(),
       })
       .eq("id", args.id)
-      .eq("user_id", userId)
       .select("updated_at")
       .maybeSingle();
     if (!fileRes.error && fileRes.data) {
@@ -304,7 +303,6 @@ const codeFilesAdapter: VirtualSourceAdapter = {
         updated_at: new Date().toISOString(),
       })
       .eq("id", args.id)
-      .eq("user_id", userId)
       .select("updated_at")
       .maybeSingle();
     if (folderRes.error || !folderRes.data) {
@@ -315,21 +313,19 @@ const codeFilesAdapter: VirtualSourceAdapter = {
     };
   },
 
-  async delete(supabase, userId, id, hard) {
+  async delete(supabase, _userId, id, hard) {
     if (hard) {
       const { error } = await supabase
         .from("code_files")
         .delete()
-        .eq("id", id)
-        .eq("user_id", userId);
+        .eq("id", id);
       if (error) throw error;
       return;
     }
     const { error } = await supabase
       .from("code_files")
       .update({ is_deleted: true, updated_at: new Date().toISOString() })
-      .eq("id", id)
-      .eq("user_id", userId);
+      .eq("id", id);
     if (error) throw error;
   },
 

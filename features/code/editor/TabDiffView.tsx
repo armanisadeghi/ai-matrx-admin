@@ -57,6 +57,11 @@ import {
   selectTabIdsWithPendingChanges,
   type PendingPatch,
 } from "../redux/codePatchesSlice";
+import {
+  recordPatchAcceptedThunk,
+  recordPatchRejectedThunk,
+} from "../redux/codeEditHistoryThunks";
+import { tabToFileIdentity } from "../utils/fileIdentity";
 import type { EditorFile } from "../types";
 
 interface TabDiffViewProps {
@@ -124,81 +129,192 @@ export const TabDiffView: React.FC<TabDiffViewProps> = ({ tab }) => {
     if (nextTabId) dispatch(setActiveTab(nextTabId));
   }, [dispatch, nextTabId]);
 
+  // File identity for history persistence. `tabToFileIdentity` returns
+  // null for synthetic tabs (untitled scratch, missing path) — we skip
+  // history recording in that case but still let the user accept the
+  // patch, since the buffer-level apply is harmless without an anchor.
+  const fileIdentity = useMemo(() => tabToFileIdentity(tab), [tab]);
+
   // ── Apply / reject actions ────────────────────────────────────────────
+  // Each action records into `codeEditHistorySlice` so we can offer
+  // undo, message-scoped revert, and the triple-view inspector. The
+  // history thunk handles the rare race where `requestId` exists but
+  // the assistant `cx_message.id` hasn't been server-reserved yet.
   const acceptPatch = useCallback(
     (patch: PendingPatch) => {
-      const result = applyCodeEdits(tab.content, [
+      const before = tab.content;
+      const result = applyCodeEdits(before, [
         { id: patch.patchId, search: patch.search, replace: patch.replace },
       ]);
       if (!result.success || !result.code) {
+        const reason = result.errors[0] ?? "apply failed";
         dispatch(
           markPatchRejected({
             tabId: tab.id,
             patchId: patch.patchId,
-            reason: result.errors[0] ?? "apply failed",
+            reason,
           }),
         );
+        if (fileIdentity) {
+          dispatch(
+            recordPatchRejectedThunk({
+              requestId: patch.sourceRequestId,
+              fileIdentity,
+              beforeContent: before,
+              afterContent: before,
+              patchId: patch.patchId,
+              blockIndex: patch.blockIndex,
+              search: patch.search,
+              replace: patch.replace,
+              reason,
+            }),
+          );
+        }
         return;
       }
-      dispatch(updateTabContent({ id: tab.id, content: result.code }));
+      const after = result.code;
+      dispatch(updateTabContent({ id: tab.id, content: after, source: "ai" }));
       dispatch(markPatchApplied({ tabId: tab.id, patchId: patch.patchId }));
+      if (fileIdentity) {
+        dispatch(
+          recordPatchAcceptedThunk({
+            requestId: patch.sourceRequestId,
+            fileIdentity,
+            beforeContent: before,
+            afterContent: after,
+            patchId: patch.patchId,
+            blockIndex: patch.blockIndex,
+            search: patch.search,
+            replace: patch.replace,
+          }),
+        );
+      }
     },
-    [dispatch, tab.id, tab.content],
+    [dispatch, tab.id, tab.content, fileIdentity],
   );
 
   const rejectPatch = useCallback(
     (patch: PendingPatch) => {
+      const reason = "user rejected";
       dispatch(
         markPatchRejected({
           tabId: tab.id,
           patchId: patch.patchId,
-          reason: "user rejected",
+          reason,
         }),
       );
+      if (fileIdentity) {
+        dispatch(
+          recordPatchRejectedThunk({
+            requestId: patch.sourceRequestId,
+            fileIdentity,
+            beforeContent: tab.content,
+            afterContent: tab.content,
+            patchId: patch.patchId,
+            blockIndex: patch.blockIndex,
+            search: patch.search,
+            replace: patch.replace,
+            reason,
+          }),
+        );
+      }
     },
-    [dispatch, tab.id],
+    [dispatch, tab.id, tab.content, fileIdentity],
   );
 
   const acceptAll = useCallback(() => {
     let working = tab.content;
-    const applied: string[] = [];
-    const rejectedWithReason: Array<{ patchId: string; reason: string }> = [];
+    const applied: Array<{
+      before: string;
+      after: string;
+      patch: PendingPatch;
+    }> = [];
+    const rejectedWithReason: Array<{ patch: PendingPatch; reason: string }> =
+      [];
     for (const patch of patches) {
+      const before = working;
       const result = applyCodeEdits(working, [
         { id: patch.patchId, search: patch.search, replace: patch.replace },
       ]);
       if (result.success && result.code) {
         working = result.code;
-        applied.push(patch.patchId);
+        applied.push({ before, after: result.code, patch });
       } else {
         rejectedWithReason.push({
-          patchId: patch.patchId,
+          patch,
           reason: result.errors[0] ?? "apply failed",
         });
       }
     }
     if (working !== tab.content) {
-      dispatch(updateTabContent({ id: tab.id, content: working }));
-    }
-    for (const patchId of applied) {
-      dispatch(markPatchApplied({ tabId: tab.id, patchId }));
-    }
-    for (const { patchId, reason } of rejectedWithReason) {
-      dispatch(markPatchRejected({ tabId: tab.id, patchId, reason }));
-    }
-  }, [dispatch, patches, tab.id, tab.content]);
-
-  const rejectAll = useCallback(() => {
-    for (const patch of patches) {
       dispatch(
-        markPatchRejected({
-          tabId: tab.id,
-          patchId: patch.patchId,
-          reason: "user rejected (file)",
-        }),
+        updateTabContent({ id: tab.id, content: working, source: "ai" }),
       );
     }
-  }, [dispatch, patches, tab.id]);
+    for (const entry of applied) {
+      dispatch(
+        markPatchApplied({ tabId: tab.id, patchId: entry.patch.patchId }),
+      );
+      if (fileIdentity) {
+        dispatch(
+          recordPatchAcceptedThunk({
+            requestId: entry.patch.sourceRequestId,
+            fileIdentity,
+            beforeContent: entry.before,
+            afterContent: entry.after,
+            patchId: entry.patch.patchId,
+            blockIndex: entry.patch.blockIndex,
+            search: entry.patch.search,
+            replace: entry.patch.replace,
+          }),
+        );
+      }
+    }
+    for (const { patch, reason } of rejectedWithReason) {
+      dispatch(
+        markPatchRejected({ tabId: tab.id, patchId: patch.patchId, reason }),
+      );
+      if (fileIdentity) {
+        dispatch(
+          recordPatchRejectedThunk({
+            requestId: patch.sourceRequestId,
+            fileIdentity,
+            beforeContent: working,
+            afterContent: working,
+            patchId: patch.patchId,
+            blockIndex: patch.blockIndex,
+            search: patch.search,
+            replace: patch.replace,
+            reason,
+          }),
+        );
+      }
+    }
+  }, [dispatch, patches, tab.id, tab.content, fileIdentity]);
+
+  const rejectAll = useCallback(() => {
+    const reason = "user rejected (file)";
+    for (const patch of patches) {
+      dispatch(
+        markPatchRejected({ tabId: tab.id, patchId: patch.patchId, reason }),
+      );
+      if (fileIdentity) {
+        dispatch(
+          recordPatchRejectedThunk({
+            requestId: patch.sourceRequestId,
+            fileIdentity,
+            beforeContent: tab.content,
+            afterContent: tab.content,
+            patchId: patch.patchId,
+            blockIndex: patch.blockIndex,
+            search: patch.search,
+            replace: patch.replace,
+            reason,
+          }),
+        );
+      }
+    }
+  }, [dispatch, patches, tab.id, tab.content, fileIdentity]);
 
   // ── Monaco wiring for per-hunk inline action widgets ──────────────────
   //

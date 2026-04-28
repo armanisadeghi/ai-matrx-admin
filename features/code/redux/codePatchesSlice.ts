@@ -136,6 +136,32 @@ const slice = createSlice({
       }
     },
 
+    /**
+     * Flip an applied or rejected patch back to `pending` so it shows
+     * up again in `<TabDiffView>`. Used by the undo-last-edit thunk
+     * after it inverts the patch's effect on the buffer — the user
+     * can then decide whether to re-accept it or leave it unapplied.
+     *
+     * If the patch is no longer in the slice (e.g. cleared by a tab
+     * close before undo), this is a no-op so the thunk doesn't error
+     * out on a stale id.
+     */
+    restagePatch(
+      state,
+      action: PayloadAction<{
+        tabId: string;
+        patchId: string;
+      }>,
+    ) {
+      const list = state.byTabId[action.payload.tabId];
+      if (!list) return;
+      const entry = list.find((p) => p.patchId === action.payload.patchId);
+      if (entry) {
+        entry.status = "pending";
+        entry.rejectReason = undefined;
+      }
+    },
+
     /** Drop all patches (any status) for a tab — used when the tab is
      *  closed, or after the user clears the tray. */
     clearPatchesForTab(state, action: PayloadAction<{ tabId: string }>) {
@@ -167,6 +193,7 @@ export const {
   stagePatches,
   markPatchApplied,
   markPatchRejected,
+  restagePatch,
   clearPatchesForTab,
   clearResolvedPatchesForTab,
   clearAllPatches,
