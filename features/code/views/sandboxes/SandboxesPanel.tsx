@@ -293,7 +293,7 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
   }, [activeId, dispatch, setFilesystem, setProcess]);
 
   const createSandbox = useCallback(
-    async (request: SandboxCreateRequest = {}) => {
+    async (request: SandboxCreateRequest = {}): Promise<SandboxInstance | undefined> => {
       setCreating(true);
       setError(null);
       try {
@@ -310,15 +310,13 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
           throw new Error(err ?? `Create failed (${resp.status})`);
         }
         await refresh();
+        // DON'T wire the instance yet — the modal will run diagnostics first
+        // and only call back to wire it (via onReady) once aidream is up.
+        // Return the instance so the modal knows which sandbox to diagnose.
         if ("instance" in data && data.instance) {
-          // Wire the freshly-created sandbox into the workspace immediately.
-          // No probe here — we just heard back from the orchestrator that it
-          // was created, so it's definitionally alive. Switch to Explorer so
-          // the user lands on their files.
-          wireInstance(data.instance);
-          dispatch(setActiveView("explorer"));
+          return data.instance;
         }
-        setCreateModalOpen(false);
+        return undefined;
       } catch (err) {
         const message = extractErrorMessage(err);
         setError(message);
@@ -327,7 +325,19 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
         setCreating(false);
       }
     },
-    [dispatch, refresh, wireInstance],
+    [refresh],
+  );
+
+  // Called by the diagnostics modal once aidream reports overall_ok=true.
+  // This is what wireInstance + setActiveView used to happen synchronously
+  // inside createSandbox above — now deferred to verified state.
+  const handleSandboxReady = useCallback(
+    (instance: SandboxInstance) => {
+      wireInstance(instance);
+      dispatch(setActiveView("explorer"));
+      setCreateModalOpen(false);
+    },
+    [dispatch, wireInstance],
   );
 
   const stopSandbox = useCallback(
@@ -500,6 +510,7 @@ export const SandboxesPanel: React.FC<SandboxesPanelProps> = ({
         busy={creating}
         onClose={() => setCreateModalOpen(false)}
         onCreate={createSandbox}
+        onReady={handleSandboxReady}
       />
       <ConfirmDialog
         open={!!deleteTarget}

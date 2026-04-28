@@ -39,6 +39,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 import { SshAccessPanel } from "@/components/sandbox/ssh-access-panel";
+import { SandboxDiagnosticsPanel } from "@/features/code/views/sandboxes/SandboxDiagnosticsPanel";
 import { useTimeRemaining } from "@/hooks/sandbox/use-time-remaining";
 import {
   STATUS_BADGE_VARIANT,
@@ -607,6 +608,24 @@ export default function SandboxDetailPage() {
           </Card>
 
           {isActive && <SshAccessPanel sandboxId={id} disabled={!isActive} />}
+
+          {/* Diagnostics — always visible. Shows readiness of every layer
+              (container, matrx_agent, aidream FastAPI, aidream DB pools)
+              and live logs from inside the sandbox. The user explicitly
+              asked for this so sandbox state is never a black box. */}
+          {isActive && (
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <Activity className="w-4 h-4" />
+                  Diagnostics & Live Logs
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <SandboxDiagnosticsPanel sandboxId={id} />
+              </CardContent>
+            </Card>
+          )}
 
           {instance.config && Object.keys(instance.config).length > 0 && (
             <Card>
