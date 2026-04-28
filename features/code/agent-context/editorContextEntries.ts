@@ -56,27 +56,38 @@ export const editorSelectionKey = (tabId: string) =>
   `editor.selection.${tabId}`;
 
 /**
- * Hint shipped only in sandbox mode — tells the agent which FS tools are
- * available inside the container so it stops trying to ask the user for
- * file content it can read on its own. Kept short on purpose; the actual
- * tool descriptors travel separately on the agent definition.
+ * Hint shipped only in sandbox mode — tells the agent which tools are
+ * available so it stops trying to ask the user for file content it can
+ * read on its own. The names below MUST match the matrx-ai registry
+ * exactly; the actual tool descriptors travel separately on the agent
+ * definition. If matrx-ai ever renames a tool, update this hint in lock
+ * step.
  */
 export const SANDBOX_TOOLS_HINT = [
-  "You are connected to a sandbox container with direct filesystem access.",
-  "Use the in-container tools to read, list, search, and modify files —",
-  "do NOT ask the user to paste file contents.",
+  "You are connected to a sandbox container with direct filesystem and shell",
+  "access. Use the tools below directly — do NOT ask the user to paste file",
+  "contents and do NOT emit code blocks expecting the user to apply them.",
   "",
-  "Available tools (call directly):",
-  "  read_file(path)            — read any text file",
-  "  list_dir(path)             — list a directory",
-  "  search_paths(pattern)      — find files by name/glob",
-  "  search_content(query)      — grep across the workspace",
-  "  apply_diff(path, diff)     — propose a SEARCH/REPLACE diff (preferred",
-  "                               for edits — the user will accept/reject)",
-  "  run_shell(command)         — run a command (use for build/test/lint)",
+  "Workspace root: /home/agent (the agent's home, where projects like",
+  "/home/agent/aidream live). Always use absolute paths.",
   "",
-  "Always prefer `apply_diff` for edits so the user sees an inline diff",
-  "in their editor and can accept or reject before it touches disk.",
+  "Filesystem tools (matrx-ai registry names):",
+  "  fs_list(path, recursive?)               — list a directory",
+  "  fs_read(path, offset?, limit?)          — read a text file (1MB cap)",
+  "  fs_write(path, content, encoding?)      — overwrite/create a file",
+  "  fs_mkdir(path, parents?)                — create a directory",
+  "  fs_search(pattern, path?, content?)     — name/glob or content grep",
+  "  fs_patch(path, edits)                   — apply SEARCH/REPLACE edits",
+  "                                            (preferred for surgical changes)",
+  "",
+  "Shell escape hatch (run anything):",
+  "  shell_execute(command, working_dir?)    — run any bash command",
+  "                                            (grep -r, find, git, build, etc.)",
+  "  shell_python(script)                    — run a Python snippet",
+  "",
+  "Prefer fs_patch for targeted edits so the user can see the SEARCH/REPLACE",
+  "diff. Use shell_execute when the task needs piping, recursion, or anything",
+  "the structured fs_* tools don't cover.",
 ].join("\n");
 
 export interface EditorTabsSummary {

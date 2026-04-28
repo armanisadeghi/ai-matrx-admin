@@ -52,6 +52,7 @@ import {
   unregisterAbortController,
 } from "./abort-registry";
 import { resilientFetch } from "@/lib/net/resilient-fetch";
+import { getActiveSandboxBinding } from "@/lib/sandbox/active-binding";
 import { toNetError } from "@/lib/net/errors";
 import { payloadSafetyStore } from "@/lib/persistence/payloadSafetyStore";
 import {
@@ -492,9 +493,17 @@ export const executeChatInstance = createAsyncThunk<
       ) as unknown as
         | import("../message-crud/cache-bypass.slice").CacheBypassFlags
         | null;
-      const outboundPayload = pendingBypass
+      const outboundPayload: Record<string, unknown> = pendingBypass
         ? { ...payload, cache_bypass: pendingBypass }
-        : payload;
+        : { ...payload };
+
+      // Active sandbox binding — same shape as the agent path. Hydrates
+      // ctx.metadata["active_sandbox"] on aidream so matrx-ai's fs/shell
+      // tools route into the container instead of running on the host.
+      const sandboxBinding = await getActiveSandboxBinding(getState);
+      if (sandboxBinding) {
+        outboundPayload.sandbox = sandboxBinding;
+      }
 
       const submitAt = performance.now();
 

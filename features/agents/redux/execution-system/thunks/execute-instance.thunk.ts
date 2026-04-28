@@ -23,6 +23,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import type { RootState } from "@/lib/redux/store";
 import type { AssembledAgentStartRequest } from "@/features/agents/types/request.types";
+import { getActiveSandboxBinding } from "@/lib/sandbox/active-binding";
 import type { MessagePart } from "@/types/python-generated/stream-events";
 import { generateRequestId } from "../utils/ids";
 import { setInstanceStatus } from "../conversations/conversations.slice";
@@ -453,6 +454,16 @@ export const executeInstance = createAsyncThunk<
           ...(isEphemeral && { store: false }),
           ...(pendingBypass && { cache_bypass: pendingBypass }),
         } as Record<string, unknown>;
+      }
+
+      // Attach the active sandbox binding (if any). matrx-ai's fs/shell
+      // tools read this off AppContext.metadata to decide whether to run
+      // locally on the aidream host or proxy into the sandbox container.
+      // Mints/refreshes the scoped access token on demand; null means
+      // "no sandbox bound" → request flows unchanged.
+      const sandboxBinding = await getActiveSandboxBinding(getState);
+      if (sandboxBinding) {
+        (routedPayload as Record<string, unknown>).sandbox = sandboxBinding;
       }
 
       // Record the true submit moment — this is t=0 for all client timing.
