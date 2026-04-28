@@ -51,6 +51,12 @@ interface TapTargetButtonSolidProps extends TapTargetButtonProps {
   bgColor?: string;
   iconColor?: string;
   hoverBgColor?: string;
+  /**
+   * Press-state background. Defaults to `active:brightness-90` which works on
+   * any color. Override when using a custom `bgColor` that should darken to a
+   * specific shade on press (e.g. `active:bg-primary/60`).
+   */
+  activeBgColor?: string;
 }
 
 const EXTERNAL_RE = /^(https?:|mailto:|tel:)/i;
@@ -226,8 +232,13 @@ function withTooltip(
   );
 }
 
+// CHANGE 2026-04-27: Press-feedback ownership moved from this outer wrapper
+// onto the visible inner pill via `.matrx-tap-pill` (defined in styles/shell.css).
+// Outer is now a static 44pt invisible touch target — no transition, no scale.
+// If presses feel wrong (no shrink, no flash, jitter), check matrx-tap-pill in
+// shell.css OR the inner-pill className of each variant below.
 const TAP_OUTER_CLASS =
-  "flex h-11 w-11 items-center justify-center bg-transparent transition-transform active:scale-95 group outline-none cursor-pointer disabled:opacity-40 disabled:pointer-events-none";
+  "flex h-11 w-11 items-center justify-center bg-transparent group outline-none cursor-pointer disabled:opacity-40 disabled:pointer-events-none";
 
 export const TapTargetButton = forwardRef<
   HTMLButtonElement,
@@ -255,8 +266,11 @@ export const TapTargetButton = forwardRef<
   ref,
 ) {
   const color = className ?? "text-foreground";
+  // CHANGE 2026-04-27: matrx-tap-pill replaces the prior `transition-colors`
+  // and provides the press-down scale + mobile tap hygiene. Background-flash
+  // on press still comes from `.matrx-shell-glass:active` in shell.css.
   const inner = (
-    <div className="flex h-8 w-8 items-center justify-center rounded-full matrx-shell-glass transition-colors">
+    <div className="matrx-tap-pill flex h-8 w-8 items-center justify-center rounded-full matrx-shell-glass">
       <IconContent
         icon={icon}
         strokeWidth={strokeWidth}
@@ -316,8 +330,11 @@ export const TapTargetButtonTransparent = forwardRef<
   ref,
 ) {
   const color = className ?? "text-foreground";
+  // CHANGE 2026-04-27: matrx-tap-pill replaces the prior `transition-colors`.
+  // `active:bg-muted-foreground/15` adds the press-bg-flash that was missing
+  // on this variant — gives parity with glass/group. Hover bg is unchanged.
   const inner = (
-    <div className="flex h-8 w-8 items-center justify-center hover:bg-muted rounded-full transition-colors">
+    <div className="matrx-tap-pill flex h-8 w-8 items-center justify-center rounded-full hover:bg-muted active:bg-muted-foreground/15">
       <IconContent
         icon={icon}
         strokeWidth={strokeWidth}
@@ -371,6 +388,7 @@ export const TapTargetButtonSolid = forwardRef<
     bgColor = "bg-primary",
     iconColor = "text-primary-foreground",
     hoverBgColor = "hover:bg-primary/80",
+    activeBgColor = "active:brightness-90",
     tooltip,
     tooltipSide,
     tooltipAlign,
@@ -378,9 +396,13 @@ export const TapTargetButtonSolid = forwardRef<
   },
   ref,
 ) {
+  // CHANGE 2026-04-27: matrx-tap-pill replaces the prior `transition-colors`.
+  // `activeBgColor` (defaults to `active:brightness-90`) gives press-bg-flash
+  // parity with glass/group. Override per-call when using a custom bgColor
+  // that should darken to a specific shade (e.g. `active:bg-primary/60`).
   const inner = (
     <div
-      className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors ${bgColor} ${hoverBgColor}`}
+      className={`matrx-tap-pill flex h-8 w-8 items-center justify-center rounded-full ${bgColor} ${hoverBgColor} ${activeBgColor}`}
     >
       <IconContent
         icon={icon}
@@ -444,8 +466,12 @@ export const TapTargetButtonForGroup = forwardRef<
   ref,
 ) {
   const color = className ?? "text-foreground";
+  // CHANGE 2026-04-27: matrx-tap-pill replaces the prior inline
+  // `transition-[background,transform] active:scale-95` so this variant shares
+  // the same timing curve and scale as glass/transparent/solid. Background
+  // flash on press still comes from `.matrx-glass-interactive:active`.
   const inner = (
-    <div className="flex h-6 w-6 items-center justify-center rounded-full matrx-glass-interactive transition-[background,transform] active:scale-95">
+    <div className="matrx-tap-pill flex h-6 w-6 items-center justify-center rounded-full matrx-glass-interactive">
       <IconContent
         icon={icon}
         strokeWidth={strokeWidth}

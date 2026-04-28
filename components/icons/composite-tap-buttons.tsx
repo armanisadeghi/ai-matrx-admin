@@ -17,6 +17,7 @@ interface CompositeButtonBaseProps {
   bgColor?: string;
   iconColor?: string;
   hoverBgColor?: string;
+  activeBgColor?: string;
   // Link support — see tap-buttons.tsx for full semantics.
   href?: string;
   target?: "_blank" | "_self" | "_parent" | "_top";

@@ -24,6 +24,7 @@ interface TapButtonProps {
   bgColor?: string;
   iconColor?: string;
   hoverBgColor?: string;
+  activeBgColor?: string;
   // Link support — when set, the button renders as a Next.js Link or <a>.
   // Internal hrefs use next/link; external (http(s)://, mailto:, tel:) use <a>
   // with target="_blank" + rel="noopener noreferrer" by default. Pass an
