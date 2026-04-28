@@ -1,7 +1,19 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { ChevronDown, X } from "lucide-react";
 import { MatrxRecordId } from "@/types/entityTypes";
-import { DeepSeek, Gemini, Claude, OpenAI, Grok, Meta, Qwen, Mistral, Groq, Cerebras, Microsoft  } from "@lobehub/icons";
+import {
+    DeepSeek,
+    Gemini,
+    Claude,
+    OpenAI,
+    Grok,
+    Meta,
+    Qwen,
+    Mistral,
+    Groq,
+    Cerebras,
+    Microsoft,
+} from "@/features/chat/components/input/model-provider-icons";
 interface Model {
     id: string;
     name: string;

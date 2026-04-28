@@ -64,7 +64,6 @@
     "@fingerprintjs/fingerprintjs": "^5.1.0",
     "@hello-pangea/dnd": "latest",
     "@hookform/resolvers": "latest",
-    "@lobehub/icons": "^2.48.0",
     "@modelcontextprotocol/sdk": "1.29.0",
     "@monaco-editor/react": "^4.7.0",
     "@mynaui/icons-react": "latest",
