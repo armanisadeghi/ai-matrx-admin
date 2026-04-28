@@ -2,12 +2,6 @@ import { createSelector } from "@reduxjs/toolkit";
 import type { RootState } from "@/lib/redux/store";
 import { selectCodeTabs, selectRecentTabIds } from "../redux/tabsSlice";
 import {
-  selectActiveFilesystemLabel,
-  selectActiveFilesystemRoot,
-  selectEditorMode,
-  type EditorMode,
-} from "../redux/codeWorkspaceSlice";
-import {
   selectAllDiagnostics,
   type EditorDiagnostic,
 } from "../redux/diagnosticsSlice";
@@ -30,65 +24,27 @@ import { isPreviewTab } from "../types";
  *                              dropped down to last RECENT_FILES_CAP entries.
  *   editor.selection.<id>    — { id, path, language, selection: { startLine,
  *                                endLine, startColumn, endColumn }, text }
- *   workspace.root           — string | null (active filesystem rootPath)
- *   workspace.source         — { mode: "sandbox"|"cloud"|"mock", label,
- *                                rootPath } — single source of truth for
- *                              the agent to know how to fetch more.
- *   workspace.tools          — sandbox mode only: a short hint telling the
- *                              agent it has direct FS tools available, with
- *                              the tool names — see SANDBOX_TOOLS_HINT.
+ *
+ * What this DOES NOT advertise (intentionally — would bloat context and
+ * is the wrong layer to own these claims):
+ *   - Workspace root / cwd / any path claim. Authoritative answers come
+ *     from the server-side fs/shell tools (e.g. `shell_execute pwd`).
+ *   - Tool names / availability. Lives on the agent's tool descriptors
+ *     and matrx-ai's registry — duplicating it here risked drift.
  *
  * The summary stays compact (no buffer content) so an agent can do
  * `ctx_get("editor.tabs")` to see what's open without dragging buffers
  * through the prompt; it then reads any non-active file via its
- * read_file / read_lines tools.
+ * fs_read tool.
  */
 
 export const EDITOR_TABS_KEY = "editor.tabs";
 export const EDITOR_ACTIVE_FILE_KEY = "editor.activeFile";
 export const EDITOR_RECENT_FILES_KEY = "editor.recentFiles";
 export const EDITOR_DIAGNOSTICS_KEY = "editor.diagnostics";
-export const WORKSPACE_ROOT_KEY = "workspace.root";
-export const WORKSPACE_SOURCE_KEY = "workspace.source";
-export const WORKSPACE_TOOLS_KEY = "workspace.tools";
 export const editorTabKey = (tabId: string) => `editor.tab.${tabId}`;
 export const editorSelectionKey = (tabId: string) =>
   `editor.selection.${tabId}`;
-
-/**
- * Hint shipped only in sandbox mode — tells the agent which tools are
- * available so it stops trying to ask the user for file content it can
- * read on its own. The names below MUST match the matrx-ai registry
- * exactly; the actual tool descriptors travel separately on the agent
- * definition. If matrx-ai ever renames a tool, update this hint in lock
- * step.
- */
-export const SANDBOX_TOOLS_HINT = [
-  "You are connected to a sandbox container with direct filesystem and shell",
-  "access. Use the tools below directly — do NOT ask the user to paste file",
-  "contents and do NOT emit code blocks expecting the user to apply them.",
-  "",
-  "Workspace root: /home/agent (the agent's home, where projects like",
-  "/home/agent/aidream live). Always use absolute paths.",
-  "",
-  "Filesystem tools (matrx-ai registry names):",
-  "  fs_list(path, recursive?)               — list a directory",
-  "  fs_read(path, offset?, limit?)          — read a text file (1MB cap)",
-  "  fs_write(path, content, encoding?)      — overwrite/create a file",
-  "  fs_mkdir(path, parents?)                — create a directory",
-  "  fs_search(pattern, path?, content?)     — name/glob or content grep",
-  "  fs_patch(path, edits)                   — apply SEARCH/REPLACE edits",
-  "                                            (preferred for surgical changes)",
-  "",
-  "Shell escape hatch (run anything):",
-  "  shell_execute(command, working_dir?)    — run any bash command",
-  "                                            (grep -r, find, git, build, etc.)",
-  "  shell_python(script)                    — run a Python snippet",
-  "",
-  "Prefer fs_patch for targeted edits so the user can see the SEARCH/REPLACE",
-  "diff. Use shell_execute when the task needs piping, recursion, or anything",
-  "the structured fs_* tools don't cover.",
-].join("\n");
 
 export interface EditorTabsSummary {
   tabs: Array<{
@@ -128,12 +84,6 @@ export interface EditorRecentFileValue {
   /** True when the file is still open in a tab; false if it was closed
    *  but stayed in the MRU stack. */
   open: boolean;
-}
-
-export interface WorkspaceSourceValue {
-  mode: EditorMode;
-  label: string | null;
-  rootPath: string | null;
 }
 
 /**
@@ -205,17 +155,11 @@ export const selectEditorContextEntries = createSelector(
   [
     selectCodeTabs,
     selectRecentTabIds,
-    selectActiveFilesystemRoot,
-    selectActiveFilesystemLabel,
-    selectEditorMode,
     selectAllDiagnostics,
   ],
   (
     tabsState,
     recentTabIds,
-    fsRoot,
-    fsLabel,
-    mode,
     diagnosticsByTabId,
   ): EditorContextEntryInput[] => {
     const entries: EditorContextEntryInput[] = [];
@@ -231,28 +175,35 @@ export const selectEditorContextEntries = createSelector(
       tabs: allTabs.map(summarizeTab),
       activeId: tabsState.activeId,
     };
-    entries.push({
-      key: EDITOR_TABS_KEY,
-      value: summary,
-      label: "Open editor tabs",
-      type: "json",
-    });
+    // Skip when nothing is open. An empty `editor.tabs` entry just clutters
+    // the agent's "Available Context" manifest with a key that resolves to
+    // {tabs: [], activeId: null} — it answers no question the agent has.
+    if (allTabs.length > 0) {
+      entries.push({
+        key: EDITOR_TABS_KEY,
+        value: summary,
+        label: "Open editor tabs",
+        type: "json",
+      });
+    }
 
     // ── editor.activeFile (lightweight, no content) ────────────────────────
-    entries.push({
-      key: EDITOR_ACTIVE_FILE_KEY,
-      value: activeTab
-        ? ({
-            id: activeTab.id,
-            path: activeTab.path,
-            name: activeTab.name,
-            language: activeTab.language,
-            dirty: !!activeTab.dirty,
-          } satisfies EditorActiveFileValue)
-        : null,
-      label: "Active editor file",
-      type: "json",
-    });
+    // Same reasoning — skip when no tab is active. The agent can `ctx_get`
+    // the key explicitly if it really wants to confirm "nothing open".
+    if (activeTab) {
+      entries.push({
+        key: EDITOR_ACTIVE_FILE_KEY,
+        value: {
+          id: activeTab.id,
+          path: activeTab.path,
+          name: activeTab.name,
+          language: activeTab.language,
+          dirty: !!activeTab.dirty,
+        } satisfies EditorActiveFileValue,
+        label: "Active editor file",
+        type: "json",
+      });
+    }
 
     // ── editor.tab.<active> (full content, ACTIVE ONLY) ────────────────────
     // Other text tabs deliberately do NOT carry content — see header.
@@ -267,30 +218,32 @@ export const selectEditorContextEntries = createSelector(
     }
 
     // ── editor.diagnostics (active tab only, with a counts header) ─────────
-    // Always shipped so the agent can verify "no diagnostics" even when
-    // the slice is empty. Counts are derived from Monaco markers via
-    // `useMonacoMarkers` — populated only on surfaces that mount the hook.
-    const activeDiagnostics = activeTab
-      ? (diagnosticsByTabId[activeTab.id] ?? [])
-      : [];
-    const counts = activeDiagnostics.reduce(
-      (acc, d) => {
-        acc[d.severity] += 1;
-        acc.total += 1;
-        return acc;
-      },
-      { error: 0, warning: 0, info: 0, hint: 0, total: 0 },
-    );
-    entries.push({
-      key: EDITOR_DIAGNOSTICS_KEY,
-      value: {
-        tabId: activeTab?.id ?? null,
-        counts,
-        diagnostics: activeDiagnostics,
-      } satisfies EditorDiagnosticsValue,
-      label: "Editor diagnostics",
-      type: "json",
-    });
+    // Skip entirely when there's no active tab OR when the active tab has
+    // zero diagnostics — an empty list is the default and just clutters
+    // the manifest. The agent can still `ctx_get` the key to confirm.
+    if (activeTab) {
+      const activeDiagnostics = diagnosticsByTabId[activeTab.id] ?? [];
+      if (activeDiagnostics.length > 0) {
+        const counts = activeDiagnostics.reduce(
+          (acc, d) => {
+            acc[d.severity] += 1;
+            acc.total += 1;
+            return acc;
+          },
+          { error: 0, warning: 0, info: 0, hint: 0, total: 0 },
+        );
+        entries.push({
+          key: EDITOR_DIAGNOSTICS_KEY,
+          value: {
+            tabId: activeTab.id,
+            counts,
+            diagnostics: activeDiagnostics,
+          } satisfies EditorDiagnosticsValue,
+          label: "Editor diagnostics",
+          type: "json",
+        });
+      }
+    }
 
     // ── editor.recentFiles (MRU, metadata only) ────────────────────────────
     const recentFiles: EditorRecentFileValue[] = recentTabIds
@@ -322,40 +275,25 @@ export const selectEditorContextEntries = createSelector(
         } satisfies EditorRecentFileValue;
       })
       .filter((f) => Boolean(f.path));
-    entries.push({
-      key: EDITOR_RECENT_FILES_KEY,
-      value: recentFiles,
-      label: "Recently opened files",
-      type: "json",
-    });
-
-    // ── workspace.root + workspace.source ──────────────────────────────────
-    entries.push({
-      key: WORKSPACE_ROOT_KEY,
-      value: fsRoot,
-      label: "Workspace root path",
-      type: "json",
-    });
-    entries.push({
-      key: WORKSPACE_SOURCE_KEY,
-      value: {
-        mode,
-        label: fsLabel,
-        rootPath: fsRoot,
-      } satisfies WorkspaceSourceValue,
-      label: "Workspace source",
-      type: "json",
-    });
-
-    // ── workspace.tools (sandbox-only hint) ────────────────────────────────
-    if (mode === "sandbox") {
+    if (recentFiles.length > 0) {
       entries.push({
-        key: WORKSPACE_TOOLS_KEY,
-        value: SANDBOX_TOOLS_HINT,
-        label: "In-container filesystem tools",
-        type: "text",
+        key: EDITOR_RECENT_FILES_KEY,
+        value: recentFiles,
+        label: "Recently opened files",
+        type: "json",
       });
     }
+
+    // No workspace.root / .source / .tools here — those used to advertise
+    // FE-side filesystem state and a hardcoded list of "available tools" to
+    // the agent. Both bloated context and risked drift: workspace.root
+    // didn't always match the cwd the server-side fs/shell tools actually
+    // use (matrx-ai's scoped_base_for adds per-user-project nesting that
+    // the FE had no view of), and workspace.tools advertised tool names
+    // that diverged from matrx-ai's actual registry. The agent learns the
+    // real workspace by calling its tools (`shell_execute pwd`, `fs_list /home/agent`)
+    // and learns the real tool surface from the agent definition's tool
+    // descriptors. Don't add either back without a strong reason.
 
     return entries;
   },

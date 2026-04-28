@@ -3,10 +3,6 @@ export {
   EDITOR_ACTIVE_FILE_KEY,
   EDITOR_RECENT_FILES_KEY,
   EDITOR_DIAGNOSTICS_KEY,
-  WORKSPACE_ROOT_KEY,
-  WORKSPACE_SOURCE_KEY,
-  WORKSPACE_TOOLS_KEY,
-  SANDBOX_TOOLS_HINT,
   editorTabKey,
   editorSelectionKey,
   filterDisabledTabs,
@@ -20,7 +16,6 @@ export type {
   EditorActiveFileValue,
   EditorRecentFileValue,
   EditorDiagnosticsValue,
-  WorkspaceSourceValue,
 } from "./editorContextEntries";
 export { useSyncEditorContext } from "./useSyncEditorContext";
 export type { UseSyncEditorContextOptions } from "./useSyncEditorContext";
