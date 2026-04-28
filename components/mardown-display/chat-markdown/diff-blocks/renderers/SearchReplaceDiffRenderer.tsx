@@ -193,23 +193,16 @@ export const SearchReplaceDiffRenderer: React.FC<
       <div className={cn("space-y-2", className)}>
         {/* Show REPLACE streaming as code */}
         {replace && (
-          <div className="relative">
-            <div className="absolute top-2 left-2 z-10">
-              <div className="bg-primary/90 text-primary-foreground text-[10px] px-2 py-0.5 rounded font-mono">
-                GENERATING
-              </div>
-            </div>
-            <div
-              ref={streamScrollRef}
-              className="max-h-[140px] overflow-y-auto overscroll-contain"
-            >
-              <CodeBlock
-                code={replace}
-                language={language}
-                showLineNumbers={true}
-                isStreamActive={isStreamActive}
-              />
-            </div>
+          <div
+            ref={streamScrollRef}
+            className="max-h-[140px] overflow-y-auto overscroll-contain"
+          >
+            <CodeBlock
+              code={replace}
+              language={language}
+              showLineNumbers={true}
+              isStreamActive={isStreamActive}
+            />
           </div>
         )}
       </div>

@@ -78,24 +78,27 @@ export const AgentPicker: React.FC<AgentPickerProps> = ({
   // user preferences. Those prefs are hydrated client-side from Supabase /
   // localStorage and are NOT in the SSR snapshot, so the server renders
   // `filter` as the default ("all") while the client renders the user's
-  // saved value (e.g. "specific"). That divergence reshapes
-  // `<AgentList>`'s children (header chip present on client, absent on
-  // server) and triggers a hydration mismatch.
+  // saved value (e.g. "explicit"). That divergence reshapes the picker's
+  // children (header chip + footer button + agent roster) and triggers a
+  // hydration mismatch.
   //
-  // Gate the chip behind a mount flag so the FIRST render on both server
-  // and client matches; the chip animates in after hydration.
+  // Gate every filter-dependent piece behind a single `mounted` flag so the
+  // FIRST render on both server and client matches a "no filter" picker;
+  // after hydration, swap in the real saved filter.
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  const effectiveFilter: CodeAgentFilter | null = mounted ? filter : null;
+
   const selectFilteredAgents = useMemo(() => makeSelectAgentsForFilter(), []);
   const filteredAgents = useAppSelector((state) =>
-    selectFilteredAgents(state, filter),
+    selectFilteredAgents(state, effectiveFilter),
   );
 
   const agents: AgentDefinitionRecord[] =
-    bypassFilter || !filter || filter.mode === "all"
+    bypassFilter || !effectiveFilter || effectiveFilter.mode === "all"
       ? allAgents
       : filteredAgents;
 
@@ -164,9 +167,9 @@ export const AgentPicker: React.FC<AgentPickerProps> = ({
     : null;
 
   const filterChip =
-    mounted && filter && filter.mode !== "all" ? (
+    effectiveFilter && effectiveFilter.mode !== "all" ? (
       <FilterChip
-        label={describeFilter(filter)}
+        label={describeFilter(effectiveFilter)}
         bypassed={bypassFilter}
         onToggleBypass={() => setBypassFilter((v) => !v)}
         onEdit={openFilterSettings}
@@ -203,7 +206,7 @@ export const AgentPicker: React.FC<AgentPickerProps> = ({
             header={filterChip}
             footer={
               <FilterFooter
-                filter={filter}
+                filter={effectiveFilter}
                 bypassFilter={bypassFilter}
                 onOpenSettings={openFilterSettings}
               />
@@ -244,7 +247,7 @@ export const AgentPicker: React.FC<AgentPickerProps> = ({
         header={filterChip}
         footer={
           <FilterFooter
-            filter={filter}
+            filter={effectiveFilter}
             bypassFilter={bypassFilter}
             onOpenSettings={openFilterSettings}
           />

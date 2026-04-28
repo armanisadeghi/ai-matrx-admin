@@ -272,6 +272,9 @@ export const loadFolderContents = createAsyncThunk<
   { folderId: string },
   ThunkApi
 >("cloudFiles/loadFolderContents", async ({ folderId }, { dispatch }) => {
+  // Virtual folders use their adapter's `list()` via `loadVirtualChildren`
+  // — `cld_*` tables don't know about them and would 22P02 on the synthetic id.
+  if (folderId.startsWith("vfs:")) return;
   const [filesRes, foldersRes] = await Promise.all([
     supabase
       .from("cld_files")
@@ -310,11 +313,22 @@ export const loadFolderContents = createAsyncThunk<
   }
 });
 
+// Virtual ids look like `vfs:<adapter>:<vid>` and can't be queried against
+// the real `cld_*` tables — Postgres rejects them with `22P02 invalid input
+// syntax for type uuid`. The version / permission / share-link surfaces
+// aren't mapped to virtual sources in v1, so these thunks short-circuit
+// for synthetic ids. Consumers (FileVersionsList, useSharing) also render
+// a "not supported here" empty state so the UX is clear, not silent.
+function isVirtualResourceId(id: string): boolean {
+  return id.startsWith("vfs:");
+}
+
 export const loadFileVersions = createAsyncThunk<
   void,
   { fileId: string },
   ThunkApi
 >("cloudFiles/loadFileVersions", async ({ fileId }, { dispatch }) => {
+  if (isVirtualResourceId(fileId)) return;
   const { data, error } = await supabase
     .from("cld_file_versions")
     .select("*")
@@ -332,6 +346,7 @@ export const loadPermissions = createAsyncThunk<
   { resourceId: string },
   ThunkApi
 >("cloudFiles/loadPermissions", async ({ resourceId }, { dispatch }) => {
+  if (isVirtualResourceId(resourceId)) return;
   const { data, error } = await supabase
     .from("cld_file_permissions")
     .select("*")
@@ -348,6 +363,7 @@ export const loadShareLinks = createAsyncThunk<
   { resourceId: string },
   ThunkApi
 >("cloudFiles/loadShareLinks", async ({ resourceId }, { dispatch }) => {
+  if (isVirtualResourceId(resourceId)) return;
   const { data, error } = await supabase
     .from("cld_share_links")
     .select("*")
@@ -1071,6 +1087,7 @@ export const restoreVersion = createAsyncThunk<
 >(
   "cloudFiles/restoreVersion",
   async ({ fileId, versionNumber }, { dispatch }) => {
+    if (isVirtualResourceId(fileId)) return;
     dispatch(setFileLoading({ id: fileId, loading: true }));
     const requestId = newRequestId();
     registerRequest({
@@ -1106,6 +1123,9 @@ export const grantPermission = createAsyncThunk<
   GrantPermissionArg,
   ThunkApi
 >("cloudFiles/grantPermission", async (arg, { dispatch }) => {
+  if (isVirtualResourceId(arg.resourceId)) {
+    throw new Error("Sharing isn't available for this source yet.");
+  }
   const requestId = newRequestId();
   registerRequest({
     requestId,
@@ -1146,6 +1166,9 @@ export const revokePermission = createAsyncThunk<
   RevokePermissionArg,
   ThunkApi
 >("cloudFiles/revokePermission", async (arg, { dispatch }) => {
+  if (isVirtualResourceId(arg.resourceId)) {
+    throw new Error("Sharing isn't available for this source yet.");
+  }
   const requestId = newRequestId();
   registerRequest({
     requestId,
@@ -1190,6 +1213,9 @@ export const createShareLink = createAsyncThunk<
   CreateShareLinkArg,
   ThunkApi
 >("cloudFiles/createShareLink", async (arg, { dispatch }) => {
+  if (isVirtualResourceId(arg.resourceId)) {
+    throw new Error("Share links aren't available for this source yet.");
+  }
   const requestId = newRequestId();
   registerRequest({
     requestId,
@@ -1248,6 +1274,13 @@ export const getSignedUrl = createAsyncThunk<
   SignedUrlArg,
   ThunkApi
 >("cloudFiles/getSignedUrl", async ({ fileId, expiresIn }) => {
+  if (isVirtualResourceId(fileId)) {
+    // Virtual files don't have S3 bytes — there's no signed URL. Callers
+    // already hide the buttons that surface signed URLs (Download, Copy
+    // link, Open in new tab) for virtual rows; this guards the API path
+    // for any remaining callers.
+    throw new Error("Signed URLs aren't available for virtual sources");
+  }
   const { data } = await Files.getSignedUrl(fileId, { expiresIn });
   return { url: data.url, expiresIn: data.expires_in };
 });

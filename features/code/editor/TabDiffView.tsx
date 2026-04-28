@@ -407,6 +407,15 @@ export const TabDiffView: React.FC<TabDiffViewProps> = ({ tab }) => {
           domNode.style.justifyContent = "flex-end";
           domNode.style.padding = "0 12px";
           domNode.style.pointerEvents = "auto";
+          // Monaco renders `.view-overlays` (which paints the red/green
+          // diff line decorations) AFTER `.view-zones` in DOM order, and
+          // both are `position: absolute` with `z-index: auto` inside
+          // `.lines-content`. That puts the decoration strips on top of
+          // our view zone, swallowing every click and the hover cursor.
+          // Because `.view-zones` is itself unstacked, an explicit z-index
+          // on this child promotes into the grandparent's stacking context
+          // and lifts our action bar above the decoration overlays.
+          domNode.style.zIndex = "10";
 
           const zoneId = accessor.addZone({
             // `afterLineNumber: 0` puts the zone at the very top of the
@@ -620,7 +629,7 @@ const InlineHunkActions: React.FC<InlineHunkActionsProps> = ({
         className={cn(
           "inline-flex items-center gap-1 px-2 py-0.5",
           ok
-            ? "bg-blue-600 text-white hover:bg-blue-700"
+            ? "cursor-pointer bg-blue-600 text-white hover:bg-blue-700"
             : "cursor-not-allowed bg-neutral-300 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-500",
         )}
       >
@@ -635,7 +644,7 @@ const InlineHunkActions: React.FC<InlineHunkActionsProps> = ({
           onReject();
         }}
         title="Reject this edit"
-        className="inline-flex items-center gap-1 bg-neutral-700 px-2 py-0.5 text-white hover:bg-neutral-600 dark:bg-neutral-800 dark:hover:bg-neutral-700"
+        className="inline-flex cursor-pointer items-center gap-1 bg-neutral-700 px-2 py-0.5 text-white hover:bg-neutral-600 dark:bg-neutral-800 dark:hover:bg-neutral-700"
       >
         <X className="h-3 w-3" />
         Reject

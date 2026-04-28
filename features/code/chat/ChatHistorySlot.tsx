@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Filter, Settings2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -71,6 +71,20 @@ export const ChatHistorySlot: React.FC<ChatHistorySlotProps> = ({
 
   const filterLabel = useMemo(() => describeFilter(filter), [filter]);
 
+  // User preferences hydrate client-side AFTER the Redux store init, so the
+  // server renders with the slice default (`filter.mode === "all"` → no
+  // subtitle) while the client's first paint already reflects the saved
+  // value (e.g. "explicit" → "Specific (10)" subtitle). React then sees a
+  // missing `<span>` on the server and bails on hydration. Defer the
+  // subtitle until after mount so the FIRST render on both sides agrees.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const headerSubtitle =
+    mounted && filter.mode !== "all" ? filterLabel : undefined;
+
   const emptyState = useMemo(
     () => (
       <div className="flex flex-col items-center gap-2 px-4 py-6 text-center">
@@ -105,7 +119,7 @@ export const ChatHistorySlot: React.FC<ChatHistorySlotProps> = ({
     <div className={cn("flex h-full min-h-0 flex-col", className)}>
       <SidePanelHeader
         title="History"
-        subtitle={filter.mode === "all" ? undefined : filterLabel}
+        subtitle={headerSubtitle}
         actions={
           <SidePanelAction
             icon={Settings2}

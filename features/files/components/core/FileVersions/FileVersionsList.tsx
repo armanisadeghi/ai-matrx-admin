@@ -52,6 +52,13 @@ export function FileVersionsList({ fileId, className }: FileVersionsListProps) {
   const dispatch = useAppDispatch();
   const file = useAppSelector((s) => selectFileById(s, fileId));
   const versions = useAppSelector((s) => selectVersionsForFile(s, fileId));
+  // Virtual files (Notes / Code Snippets / Agent Apps / etc.) don't share
+  // the `cld_file_versions` table — each adapter owns its own version
+  // schema, exposed via `adapter.listVersions`. v1 ships without that path
+  // wired through the preview pane, so we render a clear empty state
+  // instead of trying to query a UUID-typed column with a synthetic id.
+  const isVirtual =
+    fileId.startsWith("vfs:") || file?.source.kind === "virtual";
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -59,6 +66,7 @@ export function FileVersionsList({ fileId, className }: FileVersionsListProps) {
   const [restoring, setRestoring] = useState<number | null>(null);
 
   const fetchVersions = useCallback(async () => {
+    if (isVirtual) return;
     setLoading(true);
     setError(null);
     try {
@@ -68,13 +76,30 @@ export function FileVersionsList({ fileId, className }: FileVersionsListProps) {
     } finally {
       setLoading(false);
     }
-  }, [dispatch, fileId]);
+  }, [dispatch, fileId, isVirtual]);
 
   // Reload versions whenever the file id changes — the parent (PreviewPane)
   // mounts a new instance per fileId so this fires on every preview swap.
   useEffect(() => {
     void fetchVersions();
   }, [fetchVersions]);
+
+  if (isVirtual) {
+    return (
+      <div
+        className={cn(
+          "flex h-full w-full items-center justify-center p-6 text-center",
+          className,
+        )}
+      >
+        <p className="max-w-sm text-sm text-muted-foreground">
+          Version history isn't available for this source yet. Each backing
+          system (Notes, Code Snippets, Agent Apps, …) tracks its own
+          versions; we'll wire those into this tab soon.
+        </p>
+      </div>
+    );
+  }
 
   const handleRestore = useCallback(
     async (versionNumber: number) => {
