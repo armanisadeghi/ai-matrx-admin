@@ -46,12 +46,18 @@ export class SandboxFilesystemAdapter implements FilesystemAdapter {
 
   // ── private HTTP helpers ───────────────────────────────────────────────────
 
-  private url(subpath: string, query?: Record<string, string | undefined>): string {
+  private url(
+    subpath: string,
+    query?: Record<string, string | undefined>,
+  ): string {
     const qs = query
       ? "?" +
         Object.entries(query)
           .filter(([, v]) => v !== undefined && v !== null && v !== "")
-          .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v as string)}`)
+          .map(
+            ([k, v]) =>
+              `${encodeURIComponent(k)}=${encodeURIComponent(v as string)}`,
+          )
           .join("&")
       : "";
     return `/api/sandbox/${this.instanceId}/fs/${subpath}${qs}`;
@@ -65,7 +71,9 @@ export class SandboxFilesystemAdapter implements FilesystemAdapter {
     const resp = await fetch(this.url(subpath, query), rest);
     if (!resp.ok) {
       const text = await resp.text().catch(() => resp.statusText);
-      throw new Error(`fs ${rest.method ?? "GET"} ${subpath} failed (${resp.status}): ${text}`);
+      throw new Error(
+        `fs ${rest.method ?? "GET"} ${subpath} failed (${resp.status}): ${text}`,
+      );
     }
     const ct = resp.headers.get("content-type") || "";
     if (ct.includes("application/json")) {
@@ -78,7 +86,9 @@ export class SandboxFilesystemAdapter implements FilesystemAdapter {
   // ── core methods ───────────────────────────────────────────────────────────
 
   async listChildren(path: string): Promise<FilesystemNode[]> {
-    const data = await this.req<{ entries: DaemonEntry[] }>("list", { query: { path } });
+    const data = await this.req<{ entries: DaemonEntry[] }>("list", {
+      query: { path },
+    });
     const nodes: FilesystemNode[] = (data.entries ?? []).map((e) => ({
       path: e.path,
       name: e.name,
@@ -97,7 +107,12 @@ export class SandboxFilesystemAdapter implements FilesystemAdapter {
     const e = await this.req<DaemonEntry>("stat", { query: { path } });
     return {
       path: e.path,
-      kind: e.kind === "dir" ? "directory" : e.kind === "symlink" ? "symlink" : "file",
+      kind:
+        e.kind === "dir"
+          ? "directory"
+          : e.kind === "symlink"
+            ? "symlink"
+            : "file",
       size: e.size,
       mode: e.mode,
       modifiedAt: e.mtime ? new Date(e.mtime * 1000).toISOString() : undefined,
@@ -115,18 +130,54 @@ export class SandboxFilesystemAdapter implements FilesystemAdapter {
   }
 
   async readFileBinary(path: string): Promise<string> {
-    // The daemon returns base64 in a JSON envelope when encoding=base64.
-    const data = await this.req<{ content: string; encoding: "base64" }>("read", {
-      query: { path, encoding: "base64" },
-    });
-    return data.content;
+    // The daemon emits base64 when encoding=base64 — but historically
+    // it has shipped two response shapes:
+    //   • JSON envelope: `{ content: "<base64>", encoding: "base64" }`
+    //   • Plain text body: the raw base64 string
+    // Tolerate both so a daemon upgrade can't break binary previews.
+    // Also strip whitespace / newlines that some encoders insert (PEM
+    // / MIME line wrapping) — `window.atob` rejects those even though
+    // they're valid base64.
+    const resp = await fetch(this.url("read", { path, encoding: "base64" }));
+    if (!resp.ok) {
+      const text = await resp.text().catch(() => resp.statusText);
+      throw new Error(`read failed (${resp.status}): ${text}`);
+    }
+    const ct = resp.headers.get("content-type") || "";
+    let raw: string;
+    if (ct.includes("application/json")) {
+      const data = (await resp.json()) as
+        | {
+            content?: string;
+            encoding?: string;
+          }
+        | string
+        | null;
+      if (typeof data === "string") {
+        raw = data;
+      } else if (data && typeof data.content === "string") {
+        raw = data.content;
+      } else {
+        throw new Error(
+          `read failed: unexpected JSON shape for base64 read (${typeof data})`,
+        );
+      }
+    } else {
+      raw = await resp.text();
+    }
+    return raw.replace(/\s+/g, "");
   }
 
   async writeFile(path: string, content: string): Promise<void> {
     await this.req("write", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ path, content, encoding: "utf8", create_parents: true }),
+      body: JSON.stringify({
+        path,
+        content,
+        encoding: "utf8",
+        create_parents: true,
+      }),
     });
   }
 
@@ -134,7 +185,12 @@ export class SandboxFilesystemAdapter implements FilesystemAdapter {
     await this.req("write", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ path, content: base64, encoding: "base64", create_parents: true }),
+      body: JSON.stringify({
+        path,
+        content: base64,
+        encoding: "base64",
+        create_parents: true,
+      }),
     });
   }
 
@@ -153,7 +209,11 @@ export class SandboxFilesystemAdapter implements FilesystemAdapter {
     });
   }
 
-  async rename(fromPath: string, toPath: string, overwrite: boolean = false): Promise<void> {
+  async rename(
+    fromPath: string,
+    toPath: string,
+    overwrite: boolean = false,
+  ): Promise<void> {
     await this.req("rename", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -161,7 +221,11 @@ export class SandboxFilesystemAdapter implements FilesystemAdapter {
     });
   }
 
-  async copy(fromPath: string, toPath: string, recursive: boolean = true): Promise<void> {
+  async copy(
+    fromPath: string,
+    toPath: string,
+    recursive: boolean = true,
+  ): Promise<void> {
     await this.req("copy", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -185,7 +249,9 @@ export class SandboxFilesystemAdapter implements FilesystemAdapter {
       socket = new WebSocket(url);
       socket.onmessage = (event) => {
         try {
-          const msg = JSON.parse(typeof event.data === "string" ? event.data : "{}");
+          const msg = JSON.parse(
+            typeof event.data === "string" ? event.data : "{}",
+          );
           if (msg && msg.type && msg.path) {
             cb({
               type: msg.type,
@@ -286,15 +352,32 @@ export class SandboxFilesystemAdapter implements FilesystemAdapter {
   }
 
   async download(path: string): Promise<Blob> {
-    const base64 = await this.readFileBinary(path);
-    const bytes = base64ToUint8Array(base64);
-    // Copy into a fresh ArrayBuffer so the resulting Blob doesn't
-    // capture a `Uint8Array<ArrayBufferLike>` (which can be a
-    // SharedArrayBuffer view) that TypeScript can't narrow back to the
-    // strict `BlobPart` union under newer lib.dom.
-    const buffer = new ArrayBuffer(bytes.byteLength);
-    new Uint8Array(buffer).set(bytes);
-    return new Blob([buffer]);
+    // Fast path: the daemon exposes `/fs/download` which returns the
+    // raw bytes (Content-Type: application/octet-stream or whatever
+    // mime it can sniff). This avoids the 33% base64 inflation +
+    // `atob` decoding cost for large media (images / video / pdf /
+    // archives) and — more importantly — sidesteps the
+    // "atob: not correctly encoded" failure when an upstream layer
+    // returns plain text instead of the expected JSON envelope.
+    const resp = await fetch(this.url("download", { path }));
+    if (resp.ok) {
+      return await resp.blob();
+    }
+    // Fallback: older orchestrators / daemons that don't advertise
+    // `/fs/download` still answer `/fs/read?encoding=base64`.
+    if (resp.status === 404 || resp.status === 405) {
+      const base64 = await this.readFileBinary(path);
+      const bytes = base64ToUint8Array(base64);
+      // Copy into a fresh ArrayBuffer so the resulting Blob doesn't
+      // capture a `Uint8Array<ArrayBufferLike>` (which can be a
+      // SharedArrayBuffer view) that TypeScript can't narrow back to
+      // the strict `BlobPart` union under newer lib.dom.
+      const buffer = new ArrayBuffer(bytes.byteLength);
+      new Uint8Array(buffer).set(bytes);
+      return new Blob([buffer]);
+    }
+    const text = await resp.text().catch(() => resp.statusText);
+    throw new Error(`download failed (${resp.status}): ${text}`);
   }
 
   async batchRead(paths: string[]): Promise<Record<string, string>> {
@@ -329,11 +412,19 @@ function arrayBufferToBase64(buf: ArrayBuffer): string {
   for (let i = 0; i < bytes.length; i += chunk) {
     binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
   }
-  return typeof window !== "undefined" ? window.btoa(binary) : Buffer.from(binary, "binary").toString("base64");
+  return typeof window !== "undefined"
+    ? window.btoa(binary)
+    : Buffer.from(binary, "binary").toString("base64");
 }
 
 function base64ToUint8Array(base64: string): Uint8Array {
-  const binary = typeof window !== "undefined" ? window.atob(base64) : Buffer.from(base64, "base64").toString("binary");
+  // `window.atob` rejects whitespace even though MIME / PEM base64
+  // routinely contains line breaks. Strip first.
+  const cleaned = base64.replace(/\s+/g, "");
+  const binary =
+    typeof window !== "undefined"
+      ? window.atob(cleaned)
+      : Buffer.from(cleaned, "base64").toString("binary");
   const out = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) out[i] = binary.charCodeAt(i);
   return out;

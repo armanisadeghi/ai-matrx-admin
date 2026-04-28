@@ -299,10 +299,13 @@ async function fetchBinary(
 }
 
 function base64ToUint8Array(base64: string): Uint8Array {
+  // `window.atob` is strict about whitespace; PEM / MIME base64 wraps
+  // lines at 64 chars and would blow up here without the strip.
+  const cleaned = base64.replace(/\s+/g, "");
   const binary =
     typeof window !== "undefined"
-      ? window.atob(base64)
-      : Buffer.from(base64, "base64").toString("binary");
+      ? window.atob(cleaned)
+      : Buffer.from(cleaned, "base64").toString("binary");
   const out = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) out[i] = binary.charCodeAt(i);
   return out;
