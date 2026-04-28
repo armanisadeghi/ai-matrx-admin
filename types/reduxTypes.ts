@@ -1,7 +1,23 @@
 // types/reduxTypes.ts
-import { Database } from "@/types/database.types";
-import { UserData } from "@/utils/userDataMapper";
-import { GlobalCacheState } from "@/lib/redux/schema/globalCacheSlice";
+//
+// BUILD-TIME OPTIMIZATION CONTRACT
+// --------------------------------
+// This file is imported by EVERY layout (authenticated, a, public, ssr,
+// legacy, EntityProviders, Providers) plus the redux store factories and
+// many slice creators. Under `isolatedModules: true`, named imports
+// without the `type` keyword force SWC to keep the module reference, which
+// means Turbopack walks the target module for every chunk that touches
+// this file.
+//
+// EVERY import here MUST be `import type` unless the symbol is actually
+// used at runtime. `Database` is the entrypoint to the 24k-line
+// `database.types.ts`; `GlobalCacheState` reaches `globalCacheSlice.ts`
+// which pulls `@reduxjs/toolkit` + the 115k-line `initialSchemas.ts` via
+// `entityTypes`. Both are pure type usage in this file — keeping them
+// type-only deletes them from the slim path's static graph entirely.
+import type { Database } from "@/types/database.types";
+import type { UserData } from "@/utils/userDataMapper";
+import type { GlobalCacheState } from "@/lib/redux/schema/globalCacheSlice";
 import type { ContextMenuRow } from "@/utils/supabase/ssrShellData";
 
 /**

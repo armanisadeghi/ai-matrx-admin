@@ -1,7 +1,7 @@
 /*
 import {ActionReducerMapBuilder, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {AutomationEntity, EntityKeys, ExtractType} from "@/types/entityTypes";
-import {DeleteResponse, PaginatedResponse, SliceState} from "@/types/reduxTypes";
+import type {DeleteResponse, PaginatedResponse, SliceState} from "@/types/reduxTypes";
 
 
 /!**

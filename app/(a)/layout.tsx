@@ -5,7 +5,7 @@ import { Providers } from "@/app/Providers";
 import { mapUserData } from "@/utils/userDataMapper";
 import { checkIsUserAdmin } from "@/utils/supabase/userSessionData";
 import { getEmptyGlobalCache } from "@/utils/schema/schema-processing/emptyGlobalCache";
-import { InitialReduxState } from "@/types/reduxTypes";
+import type { InitialReduxState } from "@/types/reduxTypes";
 // Phase 4 PR 4.C: removed `setGlobalUserIdAndToken` import — `lib/globalState.ts`
 // is deleted in this PR. The Redux preloaded state below carries the user data;
 // `lib/sync/identity::attachStore` (called from StoreProvider) wires the
@@ -18,7 +18,7 @@ import GlassPortal from "@/features/shell/components/GlassPortal";
 import NavActiveSync from "@/features/shell/components/NavActiveSync";
 import VisualViewportSync from "@/features/shell/components/VisualViewportSync";
 import DeferredIslands from "@/features/shell/islands/DeferredIslands";
-import { UserData } from "@/utils/userDataMapper";
+import type { UserData } from "@/utils/userDataMapper";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {

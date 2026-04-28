@@ -9,7 +9,7 @@ import {
 } from "@/constants/navigation-links";
 import { checkIsUserAdmin } from "@/utils/supabase/userSessionData";
 import { getEmptyGlobalCache } from "@/utils/schema/schema-processing/emptyGlobalCache";
-import { InitialReduxState } from "@/types/reduxTypes";
+import type { InitialReduxState } from "@/types/reduxTypes";
 import NavigationLoader from "@/components/loaders/NavigationLoader";
 import { headers } from "next/headers";
 // Phase 4 PR 4.C: removed `setGlobalUserIdAndToken` import — `lib/globalState.ts`

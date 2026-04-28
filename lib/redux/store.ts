@@ -21,8 +21,8 @@ import type { IdentityKey } from "@/lib/sync/types";
 import { mapUserData, type UserData } from "@/utils/userDataMapper";
 import type { BaseReduxState } from "@/types/reduxTypes";
 import { defaultUserPreferences } from "@/lib/redux/slices/defaultPreferences";
-import {
-  initializeUserPreferencesState,
+import { initializeUserPreferencesState } from "@/lib/redux/slices/userPreferencesSlice";
+import type {
   UserPreferences,
   UserPreferencesState,
 } from "@/lib/redux/slices/userPreferencesSlice";

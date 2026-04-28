@@ -1,4 +1,4 @@
-import { Database } from "@/types/database.types";
+import type { Database } from "@/types/database.types";
 
 // =============================================================================
 // Raw DB types — source of truth, never hand-edit
