@@ -27,7 +27,12 @@ import type {
   CloudShareLink,
   CloudUserGroup,
   CloudUserGroupMember,
+  AccessFilter,
+  DetailsLevel,
+  KindFilter,
+  ModifiedFilter,
   SelectionState,
+  SizeFilter,
   SortBy,
   SortDirection,
   TreeChildren,
@@ -221,6 +226,12 @@ const initialState: CloudFilesState = {
     sortDir: "asc",
     kindFilter: "all",
     detailsLevel: "compact",
+    columnFilters: {
+      name: "",
+      modified: "any",
+      size: "any",
+      access: "any",
+    },
     activeFileId: null,
     activeFolderId: null,
   },
@@ -730,6 +741,33 @@ const slice = createSlice({
       state.ui.detailsLevel = action.payload;
     },
 
+    setColumnFilter(
+      state,
+      action: PayloadAction<
+        | { column: "name"; value: string }
+        | { column: "modified"; value: ModifiedFilter }
+        | { column: "size"; value: SizeFilter }
+        | { column: "access"; value: AccessFilter }
+      >,
+    ) {
+      const next = action.payload;
+      if (next.column === "name") state.ui.columnFilters.name = next.value;
+      else if (next.column === "modified")
+        state.ui.columnFilters.modified = next.value;
+      else if (next.column === "size") state.ui.columnFilters.size = next.value;
+      else if (next.column === "access")
+        state.ui.columnFilters.access = next.value;
+    },
+
+    clearColumnFilters(state) {
+      state.ui.columnFilters = {
+        name: "",
+        modified: "any",
+        size: "any",
+        access: "any",
+      };
+    },
+
     setActiveFileId(state, action: PayloadAction<string | null>) {
       state.ui.activeFileId = action.payload;
     },
@@ -889,6 +927,10 @@ export const {
   toggleSelection,
   setViewMode,
   setSort,
+  setKindFilter,
+  setDetailsLevel,
+  setColumnFilter,
+  clearColumnFilters,
   setActiveFileId,
   setActiveFolderId,
   // uploads

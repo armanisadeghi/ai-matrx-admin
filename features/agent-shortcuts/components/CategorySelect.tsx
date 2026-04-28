@@ -221,9 +221,8 @@ export function CategorySelect({
 
   const showPlacementHeaders = !placementFilter;
 
-  const selectedCategory = value && value !== rootOption?.value
-    ? byId.get(value)
-    : undefined;
+  const selectedCategory =
+    value && value !== rootOption?.value ? byId.get(value) : undefined;
   const selectedPath = selectedCategory
     ? buildPath(selectedCategory, byId)
     : [];
@@ -254,9 +253,7 @@ export function CategorySelect({
                   variant="secondary"
                   className={cn(
                     "shrink-0 font-medium",
-                    compact
-                      ? "text-[10px] px-1 py-0"
-                      : "text-xs px-1.5 py-0.5",
+                    compact ? "text-[10px] px-1 py-0" : "text-xs px-1.5 py-0.5",
                   )}
                 >
                   {selectedPlacementMeta.label}
@@ -374,10 +371,7 @@ function CategorySelectItem({
           {category.label}
         </span>
         {!category.isActive && (
-          <Badge
-            variant="outline"
-            className="text-[10px] h-4 ml-1 shrink-0"
-          >
+          <Badge variant="outline" className="text-[10px] h-4 ml-1 shrink-0">
             inactive
           </Badge>
         )}

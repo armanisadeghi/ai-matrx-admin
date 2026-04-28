@@ -446,13 +446,6 @@ function AgentRunBody({
         <div className="flex items-center gap-1">
           <PlusTapButton onClick={handleNewRun} />
         </div>
-        <div className="flex-1 min-w-0 flex justify-center">
-          <AgentModeController
-            agentId={agentId}
-            basePath="/agents"
-            currentPath={currentPath}
-          />
-        </div>
         <div className="flex items-center gap-1.5 shrink-0">
           <AgentSaveStatus agentId={agentId} />
           <AgentOptionsMenu agentId={agentId} />

@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   selectAllFoldersMap,
+  selectKindFilter,
   selectPermissionsForResource,
   selectActiveShareLinksForResource,
   EMPTY_CLOUD_FILE_PERMISSIONS,
@@ -25,6 +26,7 @@ import {
 import {
   setActiveFileId,
   setActiveFolderId,
+  setKindFilter,
 } from "@/features/files/redux/slice";
 import { FileBreadcrumbs } from "@/features/files/components/core/FileBreadcrumbs/FileBreadcrumbs";
 import { TooltipIcon } from "@/features/files/components/core/Tooltip/TooltipIcon";
@@ -35,6 +37,7 @@ import { AccessBadge } from "./AccessBadge";
 import { SharedAvatarStack } from "./SharedAvatarStack";
 import { FilterChips } from "./FilterChips";
 import type { FilterChipKey } from "./FilterChips";
+import { KindFilter } from "./KindFilter";
 import { ViewModeToggle } from "./ViewModeToggle";
 import { NewMenu } from "./NewMenu";
 import type { CloudFilesSection } from "./section";
@@ -76,6 +79,7 @@ export function ContentHeader({
 }: ContentHeaderProps) {
   const dispatch = useAppDispatch();
   const foldersById = useAppSelector(selectAllFoldersMap);
+  const kindFilter = useAppSelector(selectKindFilter);
   const folder = activeFolderId ? foldersById[activeFolderId] : null;
   const permissions = useAppSelector((s) =>
     activeFolderId
@@ -215,7 +219,13 @@ export function ContentHeader({
 
       {showFilterRow ? (
         <div className="flex items-center justify-between gap-3">
-          <FilterChips active={activeFilter} onToggle={onFilterToggle} />
+          <div className="flex items-center gap-3">
+            <FilterChips active={activeFilter} onToggle={onFilterToggle} />
+            <KindFilter
+              value={kindFilter}
+              onChange={(next) => dispatch(setKindFilter(next))}
+            />
+          </div>
           <ViewModeToggle />
         </div>
       ) : null}

@@ -356,6 +356,23 @@ export type KindFilter = "all" | "files" | "folders";
 /** Optional details surface (extension, mime, dimensions, etc.) on rows. */
 export type DetailsLevel = "compact" | "extended";
 
+/** Modified-date preset filter — "today", "week" = last 7d, "month" = last 30d. */
+export type ModifiedFilter = "any" | "today" | "week" | "month";
+/** Size preset filter — buckets familiar to users. */
+export type SizeFilter = "any" | "small" | "medium" | "large" | "huge";
+/** Access (visibility) filter. */
+export type AccessFilter = "any" | "private" | "shared" | "public";
+
+/** Per-column filters surfaced through the column-header dropdowns. */
+export interface ColumnFilters {
+  /** Name "contains" — column-scoped text filter, distinct from the
+   *  global search box. */
+  name: string;
+  modified: ModifiedFilter;
+  size: SizeFilter;
+  access: AccessFilter;
+}
+
 export interface UiState {
   viewMode: ViewMode;
   sortBy: SortBy;
@@ -364,6 +381,8 @@ export interface UiState {
   kindFilter: KindFilter;
   /** Whether to show extra detail columns (Extension, Type, Owner, …). */
   detailsLevel: DetailsLevel;
+  /** Per-column filter values driven by the column-header dropdowns. */
+  columnFilters: ColumnFilters;
   activeFileId: string | null;
   activeFolderId: string | null;
 }

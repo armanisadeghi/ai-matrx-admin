@@ -229,6 +229,31 @@ export const selectSort = createSelector([selectUiSlice], (ui) => ({
   sortDir: ui.sortDir,
 }));
 
+export const selectKindFilter = createSelector(
+  [selectUiSlice],
+  (ui) => ui.kindFilter,
+);
+
+export const selectDetailsLevel = createSelector(
+  [selectUiSlice],
+  (ui) => ui.detailsLevel,
+);
+
+export const selectColumnFilters = createSelector(
+  [selectUiSlice],
+  (ui) => ui.columnFilters,
+);
+
+/** Convenience: true iff any column filter is set away from its default. */
+export const selectHasActiveColumnFilters = createSelector(
+  [selectColumnFilters],
+  (cf) =>
+    cf.name.length > 0 ||
+    cf.modified !== "any" ||
+    cf.size !== "any" ||
+    cf.access !== "any",
+);
+
 export const selectActiveFileId = createSelector(
   [selectUiSlice],
   (ui) => ui.activeFileId,

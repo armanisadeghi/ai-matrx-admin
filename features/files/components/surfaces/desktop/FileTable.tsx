@@ -11,12 +11,14 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import { ArrowDown, ArrowUp, Search as SearchIcon } from "lucide-react";
+import { Search as SearchIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   selectActiveFileId,
+  selectColumnFilters,
+  selectKindFilter,
   selectAllFoldersMap,
   selectSelection,
   selectSort,
@@ -25,15 +27,18 @@ import {
   clearSelection,
   setActiveFileId,
   setActiveFolderId,
+  setColumnFilter,
   setSelection,
   setSort,
   toggleSelection,
 } from "@/features/files/redux/slice";
 import type {
+  AccessFilter,
   CloudFilePermission,
   CloudFileRecord,
   CloudFolderRecord,
-  SortBy,
+  ModifiedFilter,
+  SizeFilter,
 } from "@/features/files/types";
 import { ShareLinkDialog } from "@/features/files/components/core/ShareLinkDialog/ShareLinkDialog";
 import type { CloudFilesSection } from "./section";
@@ -44,6 +49,15 @@ import {
 } from "./row-data";
 import type { FilterChipKey } from "./FilterChips";
 import { FileTableRow } from "./FileTableRow";
+import { ColumnHeader } from "./ColumnHeader";
+import { ActiveColumnFilters } from "./ActiveColumnFilters";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Check, ChevronDown, Filter } from "lucide-react";
 
 export interface FileTableProps {
   folders: CloudFolderRecord[];
@@ -84,6 +98,8 @@ export function FileTable({
   const selection = useAppSelector(selectSelection);
   const activeFileId = useAppSelector(selectActiveFileId);
   const { sortBy, sortDir } = useAppSelector(selectSort);
+  const kindFilter = useAppSelector(selectKindFilter);
+  const columnFilters = useAppSelector(selectColumnFilters);
   // Used to render parent-folder breadcrumbs on each row in search mode so
   // identically-named files in different folders are unambiguous.
   const foldersById = useAppSelector(selectAllFoldersMap);
@@ -96,9 +112,20 @@ export function FileTable({
         section,
         searchQuery,
         filter,
+        kindFilter,
+        columnFilters,
         permissionsByResourceId,
       }),
-    [folders, files, section, searchQuery, filter, permissionsByResourceId],
+    [
+      folders,
+      files,
+      section,
+      searchQuery,
+      filter,
+      kindFilter,
+      columnFilters,
+      permissionsByResourceId,
+    ],
   );
 
   // Resolve "Parent/Child" path for a given folder id. Cached per-render via
@@ -211,6 +238,7 @@ export function FileTable({
           </span>
         </div>
       ) : null}
+      <ActiveColumnFilters />
       <div className="flex-1 min-h-0 overflow-auto">
         <table className="w-full border-collapse">
           <thead className="sticky top-0 z-10 bg-background">
@@ -222,30 +250,75 @@ export function FileTable({
                   aria-label="Select all"
                 />
               </th>
-              <SortableHeader
+              <ColumnHeader
                 label="Name"
                 sortKey="name"
                 activeSortBy={sortBy}
                 activeSortDir={sortDir}
-                onChange={(next) => dispatch(setSort(next))}
+                onChangeSort={(next) => dispatch(setSort(next))}
+                hasActiveFilter={columnFilters.name.length > 0}
+                filterContent={
+                  <input
+                    type="text"
+                    value={columnFilters.name}
+                    onChange={(e) =>
+                      dispatch(
+                        setColumnFilter({ column: "name", value: e.target.value }),
+                      )
+                    }
+                    placeholder="Filter by name…"
+                    className="w-full rounded-md border bg-background px-2 py-1 text-xs outline-none focus:ring-2 focus:ring-ring"
+                    onClick={(e) => e.stopPropagation()}
+                    onKeyDown={(e) => e.stopPropagation()}
+                  />
+                }
               />
-              <SortableHeader
+              <ColumnHeader
                 label="Last modified"
                 sortKey="updated_at"
                 activeSortBy={sortBy}
                 activeSortDir={sortDir}
-                onChange={(next) => dispatch(setSort(next))}
+                onChangeSort={(next) => dispatch(setSort(next))}
+                ascLabel="Oldest first"
+                descLabel="Newest first"
                 align="left"
+                hasActiveFilter={columnFilters.modified !== "any"}
+                filterContent={
+                  <ModifiedFilterPicker
+                    value={columnFilters.modified}
+                    onChange={(value) =>
+                      dispatch(setColumnFilter({ column: "modified", value }))
+                    }
+                  />
+                }
               />
-              <SortableHeader
+              <ColumnHeader
                 label="Size"
                 sortKey="size"
                 activeSortBy={sortBy}
                 activeSortDir={sortDir}
-                onChange={(next) => dispatch(setSort(next))}
+                onChangeSort={(next) => dispatch(setSort(next))}
+                ascLabel="Smallest first"
+                descLabel="Largest first"
                 align="left"
+                hasActiveFilter={columnFilters.size !== "any"}
+                filterContent={
+                  <SizeFilterPicker
+                    value={columnFilters.size}
+                    onChange={(value) =>
+                      dispatch(setColumnFilter({ column: "size", value }))
+                    }
+                  />
+                }
               />
-              <th className="px-4 py-2 text-left font-medium">Access</th>
+              <th className="px-4 py-2 text-left font-medium">
+                <AccessHeader
+                  active={columnFilters.access}
+                  onChange={(value) =>
+                    dispatch(setColumnFilter({ column: "access", value }))
+                  }
+                />
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -319,57 +392,122 @@ export function FileTable({
   );
 }
 
-interface SortableHeaderProps {
-  label: string;
-  sortKey: SortBy;
-  activeSortBy: SortBy;
-  activeSortDir: "asc" | "desc";
-  onChange: (arg: { sortBy: SortBy; sortDir: "asc" | "desc" }) => void;
-  align?: "left" | "right";
+// ── Per-column filter pickers ──────────────────────────────────────────────
+
+interface ModifiedFilterPickerProps {
+  value: ModifiedFilter;
+  onChange: (next: ModifiedFilter) => void;
 }
 
-function SortableHeader({
-  label,
-  sortKey,
-  activeSortBy,
-  activeSortDir,
-  onChange,
-  align = "left",
-}: SortableHeaderProps) {
-  const isActive = activeSortBy === sortKey;
+const MODIFIED_OPTIONS: ReadonlyArray<{ value: ModifiedFilter; label: string }> =
+  [
+    { value: "any", label: "Any time" },
+    { value: "today", label: "Today" },
+    { value: "week", label: "Last 7 days" },
+    { value: "month", label: "Last 30 days" },
+  ];
+
+function ModifiedFilterPicker({ value, onChange }: ModifiedFilterPickerProps) {
   return (
-    <th
-      className={cn(
-        "px-4 py-2 font-medium whitespace-nowrap",
-        align === "left" ? "text-left" : "text-right",
-      )}
-    >
-      <button
-        type="button"
-        className={cn(
-          "inline-flex items-center gap-1 hover:text-foreground",
-          isActive && "text-foreground",
-        )}
-        onClick={() => {
-          if (isActive) {
-            onChange({
-              sortBy: sortKey,
-              sortDir: activeSortDir === "asc" ? "desc" : "asc",
-            });
-          } else {
-            onChange({ sortBy: sortKey, sortDir: "asc" });
-          }
-        }}
-      >
-        {label}
-        {isActive ? (
-          activeSortDir === "asc" ? (
-            <ArrowUp className="h-3 w-3" />
-          ) : (
-            <ArrowDown className="h-3 w-3" />
-          )
-        ) : null}
-      </button>
-    </th>
+    <div className="flex flex-col gap-0.5">
+      {MODIFIED_OPTIONS.map((opt) => (
+        <button
+          key={opt.value}
+          type="button"
+          onClick={() => onChange(opt.value)}
+          className={cn(
+            "rounded px-2 py-1 text-left text-xs hover:bg-accent",
+            value === opt.value && "bg-accent font-medium",
+          )}
+        >
+          {opt.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+interface SizeFilterPickerProps {
+  value: SizeFilter;
+  onChange: (next: SizeFilter) => void;
+}
+
+const SIZE_OPTIONS: ReadonlyArray<{ value: SizeFilter; label: string }> = [
+  { value: "any", label: "Any size" },
+  { value: "small", label: "≤ 1 MB" },
+  { value: "medium", label: "1 – 10 MB" },
+  { value: "large", label: "10 – 100 MB" },
+  { value: "huge", label: "> 100 MB" },
+];
+
+function SizeFilterPicker({ value, onChange }: SizeFilterPickerProps) {
+  return (
+    <div className="flex flex-col gap-0.5">
+      {SIZE_OPTIONS.map((opt) => (
+        <button
+          key={opt.value}
+          type="button"
+          onClick={() => onChange(opt.value)}
+          className={cn(
+            "rounded px-2 py-1 text-left text-xs hover:bg-accent",
+            value === opt.value && "bg-accent font-medium",
+          )}
+        >
+          {opt.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+interface AccessHeaderProps {
+  active: AccessFilter;
+  onChange: (next: AccessFilter) => void;
+}
+
+const ACCESS_OPTIONS: ReadonlyArray<{ value: AccessFilter; label: string }> = [
+  { value: "any", label: "Any" },
+  { value: "private", label: "Private" },
+  { value: "shared", label: "Shared" },
+  { value: "public", label: "Public" },
+];
+
+/**
+ * Access column has no sort key (access isn't a sortable scalar) — render
+ * just the label + filter dropdown without sort options.
+ */
+function AccessHeader({ active, onChange }: AccessHeaderProps) {
+  const isActive = active !== "any";
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          className={cn(
+            "inline-flex items-center gap-1 rounded px-1 py-0.5 hover:bg-accent/60 hover:text-foreground",
+            isActive && "text-primary",
+          )}
+        >
+          Access
+          <ChevronDown className="h-3 w-3" />
+          {isActive ? <Filter className="h-3 w-3" /> : null}
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-48">
+        {ACCESS_OPTIONS.map((opt) => (
+          <DropdownMenuItem
+            key={opt.value}
+            onClick={() => onChange(opt.value)}
+          >
+            {active === opt.value ? (
+              <Check className="mr-2 h-4 w-4" />
+            ) : (
+              <span className="mr-6" />
+            )}
+            {opt.label}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

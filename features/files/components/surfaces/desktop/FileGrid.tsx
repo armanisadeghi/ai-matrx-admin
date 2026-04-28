@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   selectActiveFileId,
+  selectKindFilter,
   selectAllFoldersMap,
   selectSelection,
 } from "@/features/files/redux/selectors";
@@ -90,6 +91,7 @@ export function FileGrid({
     [foldersById],
   );
 
+  const kindFilter = useAppSelector(selectKindFilter);
   const rows = useMemo(
     () =>
       buildRows({
@@ -98,9 +100,18 @@ export function FileGrid({
         section,
         searchQuery,
         filter,
+        kindFilter,
         permissionsByResourceId,
       }),
-    [folders, files, section, searchQuery, filter, permissionsByResourceId],
+    [
+      folders,
+      files,
+      section,
+      searchQuery,
+      filter,
+      kindFilter,
+      permissionsByResourceId,
+    ],
   );
 
   const [shareTarget, setShareTarget] = useState<ShareDialogState | null>(null);
