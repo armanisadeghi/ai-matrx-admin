@@ -1,24 +1,33 @@
 "use client";
 
 import React from "react";
-import dynamic from "next/dynamic";
 import { ReactQueryProvider } from "@/providers/ReactQueryProvider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import StoreProvider from "@/providers/StoreProvider";
 import { InitialReduxState, LiteInitialReduxState } from "@/types/reduxTypes";
 import { PublicAuthSync } from "./PublicAuthSync";
 
-// Bundle dedup (Phase 6): legacy OverlayController (~2,500 LOC) is
-// chunked off the initial bundle. Only loaded at runtime when V2 is OFF.
-const OverlayController = dynamic(
-  () => import("@/components/overlays/OverlayController"),
-  { ssr: false },
-);
+// ─── BEGIN PROBE: legacy OverlayController bundle exclusion ────────────────
+// TEMPORARY — mirrors the same probe in `app/DeferredSingletons.tsx`.
+// See that file for full rationale. To revert: uncomment all four
+// "PROBE-RESTORE" blocks here and in DeferredSingletons.tsx.
+// ───────────────────────────────────────────────────────────────────────────
+
+// PROBE-RESTORE (1/4) — `dynamic` import (only used by legacy controller)
+// import dynamic from "next/dynamic";
+
+// PROBE-RESTORE (2/4) — legacy controller dynamic import
+// const OverlayController = dynamic(
+//   () => import("@/components/overlays/OverlayController"),
+//   { ssr: false },
+// );
 import UnifiedOverlayController from "@/features/window-panels/UnifiedOverlayController";
 
-const USE_OVERLAYS_V2 =
-  process.env.NEXT_PUBLIC_OVERLAYS_V2 === "1" ||
-  process.env.NEXT_PUBLIC_OVERLAYS_V2 === "true";
+// PROBE-RESTORE (3/4) — env-flag toggle
+// const USE_OVERLAYS_V2 =
+//   process.env.NEXT_PUBLIC_OVERLAYS_V2 === "1" ||
+//   process.env.NEXT_PUBLIC_OVERLAYS_V2 === "true";
+// ─── END PROBE ─────────────────────────────────────────────────────────────
 
 interface PublicProvidersProps {
   children: React.ReactNode;
@@ -41,10 +50,16 @@ export function PublicProviders({
 }: PublicProvidersProps) {
   return (
     <ReactQueryProvider>
-      <StoreProvider initialState={initialState as Partial<InitialReduxState> & LiteInitialReduxState}>
+      <StoreProvider
+        initialState={
+          initialState as Partial<InitialReduxState> & LiteInitialReduxState
+        }
+      >
         <TooltipProvider delayDuration={200}>
           <PublicAuthSync />
-          {USE_OVERLAYS_V2 ? <UnifiedOverlayController /> : <OverlayController />}
+          {/* PROBE-RESTORE (4/4) — original ternary:
+              {USE_OVERLAYS_V2 ? <UnifiedOverlayController /> : <OverlayController />} */}
+          <UnifiedOverlayController />
           {children}
         </TooltipProvider>
       </StoreProvider>

@@ -1,26 +1,46 @@
 "use client";
 
-import dynamic from "next/dynamic";
+// ─── BEGIN PROBE: legacy OverlayController bundle exclusion ────────────────
+// TEMPORARY — revert after Vercel build comparison.
+//
+// Goal: produce a Vercel build that 100% excludes the legacy
+// `components/overlays/OverlayController.tsx` (2,569 LOC + 99 nested
+// dynamic imports) so we can measure its real bundle/build cost.
+//
+// Why we comment out the `dynamic(() => import(...))` expression and not
+// just the JSX: Turbopack/Webpack emit a chunk for any `import("…")`
+// expression they see at build time, regardless of whether the component
+// is ever rendered. Removing the JSX alone would still produce the chunk
+// and fetch it on the client. The import expression itself must be gone.
+//
+// Trade-off accepted for this probe: any UI that dispatches to
+// `promptRunnerSlice` (legacy /ai/prompts, PromptBuilder, etc.) will be
+// non-functional during this build — actions dispatch, no controller
+// renders the modal. Confirmed acceptable by Arman for this measurement.
+//
+// To revert: uncomment the four blocks below marked "PROBE-RESTORE",
+// re-add the ternary in the JSX (search "PROBE-RESTORE" in this file),
+// and apply the same revert to `app/(public)/PublicProviders.tsx`.
+// ───────────────────────────────────────────────────────────────────────────
+
+// PROBE-RESTORE (1/4) — `dynamic` import (only used by legacy controller)
+// import dynamic from "next/dynamic";
+
 import { useIdleReady, useIdleTask } from "@/utils/idle-scheduler";
 import { PersistentDOMConnector } from "@/providers/persistance/PersistentDOMConnector";
 
-// Bundle dedup (Phase 6): the legacy ~2,500-line OverlayController is
-// chunked off the initial bundle so its weight only ships when V2 is OFF
-// at runtime. UnifiedOverlayController stays static — it's tiny (~60 LOC)
-// and uses `componentImport` per registry entry to lazy-load each window.
-const OverlayController = dynamic(
-  () => import("@/components/overlays/OverlayController"),
-  { ssr: false },
-);
+// PROBE-RESTORE (2/4) — legacy controller dynamic import
+// const OverlayController = dynamic(
+//   () => import("@/components/overlays/OverlayController"),
+//   { ssr: false },
+// );
 import UnifiedOverlayController from "@/features/window-panels/UnifiedOverlayController";
 
-// Opt-in switch to the registry-driven controller. Default off until the
-// remaining non-window overlays (agent widgets, prompt runners, quick sheets,
-// etc.) are absorbed into the registry in sub-phase 2b. Flip via
-// `NEXT_PUBLIC_OVERLAYS_V2=1` in .env.local for smoke testing.
-const USE_OVERLAYS_V2 =
-  process.env.NEXT_PUBLIC_OVERLAYS_V2 === "1" ||
-  process.env.NEXT_PUBLIC_OVERLAYS_V2 === "true";
+// PROBE-RESTORE (3/4) — env-flag toggle
+// const USE_OVERLAYS_V2 =
+//   process.env.NEXT_PUBLIC_OVERLAYS_V2 === "1" ||
+//   process.env.NEXT_PUBLIC_OVERLAYS_V2 === "true";
+// ─── END PROBE ─────────────────────────────────────────────────────────────
 import { AudioRecoveryToast } from "@/features/audio/components/AudioRecoveryToast";
 import AuthSessionWatcher from "@/components/layout/AuthSessionWatcher";
 import AnnouncementProvider from "@/components/layout/AnnouncementProvider";
@@ -122,7 +142,9 @@ export default function DeferredSingletons() {
   return (
     <>
       <PersistentDOMConnector />
-      {USE_OVERLAYS_V2 ? <UnifiedOverlayController /> : <OverlayController />}
+      {/* PROBE-RESTORE (4/4) — original ternary:
+          {USE_OVERLAYS_V2 ? <UnifiedOverlayController /> : <OverlayController />} */}
+      <UnifiedOverlayController />
       <AudioRecoveryToast />
       <AuthSessionWatcher />
       <AnnouncementProvider />
