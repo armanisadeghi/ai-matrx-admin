@@ -20,6 +20,7 @@
 
 import { Code2 } from "lucide-react";
 import { registerVirtualSource } from "@/features/files/virtual-sources/registry";
+import { makeCodeInlinePreview } from "./CodeInlinePreview";
 import type {
   ListArgs,
   RenameArgs,
@@ -382,6 +383,8 @@ const codeFilesAdapter: VirtualSourceAdapter = {
       hasContent: !!row.content || !!row.s3_key,
     };
   },
+
+  inlinePreview: makeCodeInlinePreview("code_files"),
 
   openInRoute(node) {
     if (node.kind === "folder") return null;

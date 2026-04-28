@@ -1,12 +1,10 @@
-// Original generated type (replaced by patch-db-types.sh):
-// export type Json =
-//   | string
-//   | number
-//   | boolean
-//   | null
-//   | { [key: string]: Json | undefined }
-//   | Json[]
-export type Json = unknown
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
 
 export type Database = {
   // Allows to automatically instantiate createClient with right options
@@ -5623,6 +5621,160 @@ export type Database = {
           },
           {
             foreignKeyName: "cx_artifact_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "cx_message"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cx_code_edit: {
+        Row: {
+          applied_at: string | null
+          block_index: number
+          conversation_id: string
+          created_at: string
+          id: string
+          message_file_id: string
+          message_id: string
+          reject_reason: string | null
+          rejected_at: string | null
+          replace_text: string
+          reverted_at: string | null
+          search_text: string
+          status: Database["public"]["Enums"]["code_edit_status"]
+          user_id: string
+        }
+        Insert: {
+          applied_at?: string | null
+          block_index: number
+          conversation_id: string
+          created_at?: string
+          id?: string
+          message_file_id: string
+          message_id: string
+          reject_reason?: string | null
+          rejected_at?: string | null
+          replace_text: string
+          reverted_at?: string | null
+          search_text: string
+          status: Database["public"]["Enums"]["code_edit_status"]
+          user_id: string
+        }
+        Update: {
+          applied_at?: string | null
+          block_index?: number
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          message_file_id?: string
+          message_id?: string
+          reject_reason?: string | null
+          rejected_at?: string | null
+          replace_text?: string
+          reverted_at?: string | null
+          search_text?: string
+          status?: Database["public"]["Enums"]["code_edit_status"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cx_code_edit_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "cx_conversation"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cx_code_edit_message_file_id_fkey"
+            columns: ["message_file_id"]
+            isOneToOne: false
+            referencedRelation: "cx_code_message_file"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cx_code_edit_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "cx_message"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cx_code_message_file: {
+        Row: {
+          after_content: string
+          before_content: string
+          conversation_id: string
+          created_at: string
+          edits_applied_count: number
+          edits_pending_count: number
+          edits_rejected_count: number
+          file_adapter: string
+          file_path: string
+          git_branch: string | null
+          git_commit_sha: string | null
+          id: string
+          library_file_id: string | null
+          message_id: string
+          organization_id: string | null
+          reverted_at: string | null
+          status: Database["public"]["Enums"]["code_message_file_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          after_content: string
+          before_content: string
+          conversation_id: string
+          created_at?: string
+          edits_applied_count?: number
+          edits_pending_count?: number
+          edits_rejected_count?: number
+          file_adapter: string
+          file_path: string
+          git_branch?: string | null
+          git_commit_sha?: string | null
+          id?: string
+          library_file_id?: string | null
+          message_id: string
+          organization_id?: string | null
+          reverted_at?: string | null
+          status?: Database["public"]["Enums"]["code_message_file_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          after_content?: string
+          before_content?: string
+          conversation_id?: string
+          created_at?: string
+          edits_applied_count?: number
+          edits_pending_count?: number
+          edits_rejected_count?: number
+          file_adapter?: string
+          file_path?: string
+          git_branch?: string | null
+          git_commit_sha?: string | null
+          id?: string
+          library_file_id?: string | null
+          message_id?: string
+          organization_id?: string | null
+          reverted_at?: string | null
+          status?: Database["public"]["Enums"]["code_message_file_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cx_code_message_file_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "cx_conversation"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cx_code_message_file_message_id_fkey"
             columns: ["message_id"]
             isOneToOne: false
             referencedRelation: "cx_message"
@@ -19533,6 +19685,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      cx_code_history_upsert: { Args: { p_payload: Json }; Returns: Json }
       cx_fork_conversation: {
         Args: { p_at_position: number; p_conversation_id: string }
         Returns: Json
@@ -22690,6 +22843,8 @@ export type Database = {
         | "presentation"
         | "other"
       broker_role: "input_broker" | "output_broker"
+      code_edit_status: "applied" | "rejected" | "reverted"
+      code_message_file_status: "in_progress" | "completed" | "reverted"
       cognition_matrices:
         | "agent_crew"
         | "agent_mixture"
@@ -23415,6 +23570,8 @@ export const Constants = {
         "other",
       ],
       broker_role: ["input_broker", "output_broker"],
+      code_edit_status: ["applied", "rejected", "reverted"],
+      code_message_file_status: ["in_progress", "completed", "reverted"],
       cognition_matrices: [
         "agent_crew",
         "agent_mixture",

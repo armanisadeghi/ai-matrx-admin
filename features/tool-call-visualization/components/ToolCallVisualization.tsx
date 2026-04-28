@@ -3,23 +3,16 @@
 /**
  * ToolCallVisualization (canonical, v2 contract)
  *
- * The ONE shell for rendering tool calls in this codebase.
+ * The single shell for rendering tool calls. **One tool call = one shell.**
  *
- * Two modes:
+ * Always entries-driven: the caller hands over an explicit
+ * `ToolLifecycleEntry[]` (typically a single entry — one card per tool
+ * invocation, inline, in the order the model emitted it).
  *
- *   1. Request-driven (live stream + live persistence):
- *        <ToolCallVisualization requestId={requestId} />
- *
- *      Reads ToolLifecycleEntry[] from the active-requests slice via the
- *      canonical selectors (in emission order) and drives the registry.
- *
- *   2. Entries-driven (persistence / tests / fixtures):
- *        <ToolCallVisualization entries={entries} />
- *
- *      Accepts ToolLifecycleEntry[] directly. Used by the persisted-turn
- *      path and the testing harness.
- *
- * There is no ToolCallObject anywhere in this tree.
+ * `requestId` is metadata only — passed through so the floating-window
+ * grouping can collect every tool from the same request into one window.
+ * It is **never** used to subscribe to "all tools for this request" —
+ * doing that produced the legacy "every card shows every tool" bug.
  */
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
@@ -44,54 +37,24 @@ import {
   shouldKeepExpandedOnStream,
 } from "../registry/registry";
 import { prefetchRenderer } from "../dynamic/fetcher";
-import { useOrderedToolLifecycles } from "../redux/hooks";
 import { ToolUpdatesOverlay } from "./ToolUpdatesOverlay";
 
 // ─── Public props ─────────────────────────────────────────────────────────────
 
-type RequestDriven = {
-  requestId: string;
-  entries?: never;
-};
-type EntriesDriven = {
+export interface ToolCallVisualizationProps {
+  entries: ToolLifecycleEntry[];
   /**
-   * Optional request id even on the entries-driven path. Live chat-stream
-   * tool cards (`InlineToolCard` in ToolHandlers) render one lifecycle entry
-   * at a time but still belong to a request — passing `requestId` here lets
-   * the floating-window button merge every tool from that request into one
-   * per-request window instead of spawning a window per card.
+   * Optional. Metadata only — used by the floating-window button so
+   * re-clicks from any tool group in the same request focus the same
+   * window. Never used to fetch "all tools for this request".
    */
   requestId?: string;
-  entries: ToolLifecycleEntry[];
-};
-
-export type ToolCallVisualizationProps = (RequestDriven | EntriesDriven) & {
   /** True when content has started streaming — triggers auto-collapse. */
   hasContent?: boolean;
   /** Persisted (post-stream) snapshot — some renderers render compactly. */
   isPersisted?: boolean;
   className?: string;
-};
-
-// ─── Internal request-driven wrapper ──────────────────────────────────────────
-
-const RequestDrivenShell: React.FC<{
-  requestId: string;
-  hasContent?: boolean;
-  isPersisted?: boolean;
-  className?: string;
-}> = ({ requestId, hasContent, isPersisted, className }) => {
-  const entries = useOrderedToolLifecycles(requestId);
-  return (
-    <ToolCallVisualizationInner
-      entries={entries}
-      requestId={requestId}
-      hasContent={hasContent}
-      isPersisted={isPersisted}
-      className={className}
-    />
-  );
-};
+}
 
 // ─── Shell implementation ─────────────────────────────────────────────────────
 
@@ -121,7 +84,6 @@ const ToolCallVisualizationInner: React.FC<{
   >(undefined);
   const dispatch = useAppDispatch();
 
-  console.log("[TOOL CALL VISUALIZATION INNER] entries:", entries);
   // Prefetch any dynamic renderers for tools in this group.
   useEffect(() => {
     for (const e of entries) {
@@ -306,13 +268,6 @@ const ToolCallVisualizationInner: React.FC<{
       {isExpanded && (
         <div className="px-4 py-3 space-y-4">
           {entries.map((entry) => {
-            console.log(
-              "[DIAG-3 InlineRenderer] callId=%s toolName=%s result type=%s result=%o",
-              entry.callId,
-              entry.toolName,
-              typeof entry.result,
-              entry.result,
-            );
             const InlineRenderer = getInlineRenderer(entry.toolName);
             const groupDisplayName = getToolDisplayName(entry.toolName);
             return (
@@ -364,36 +319,20 @@ const ToolCallVisualizationInner: React.FC<{
 
 // ─── Public component ─────────────────────────────────────────────────────────
 
-export const ToolCallVisualization: React.FC<ToolCallVisualizationProps> = (
-  props,
-) => {
-  if ("requestId" in props && props.requestId) {
-    // console.log(
-    //   "[TOOL CALL VISUALIZATION] Returning RequestDrivenShell for requestId:",
-    //   props.requestId,
-    // );
-    return (
-      <RequestDrivenShell
-        requestId={props.requestId}
-        hasContent={props.hasContent}
-        isPersisted={props.isPersisted}
-        className={props.className}
-      />
-    );
-  }
-  // console.log(
-  //   "[TOOL CALL VISUALIZATION] Returning ToolCallVisualizationInner for entries:",
-  //   props.entries,
-  // );
-  return (
-    <ToolCallVisualizationInner
-      entries={props.entries ?? []}
-      requestId={props.requestId}
-      hasContent={props.hasContent}
-      isPersisted={props.isPersisted}
-      className={props.className}
-    />
-  );
-};
+export const ToolCallVisualization: React.FC<ToolCallVisualizationProps> = ({
+  entries,
+  requestId,
+  hasContent,
+  isPersisted,
+  className,
+}) => (
+  <ToolCallVisualizationInner
+    entries={entries}
+    requestId={requestId}
+    hasContent={hasContent}
+    isPersisted={isPersisted}
+    className={className}
+  />
+);
 
 export default ToolCallVisualization;

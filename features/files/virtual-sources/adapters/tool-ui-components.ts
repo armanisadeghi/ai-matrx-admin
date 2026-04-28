@@ -14,6 +14,7 @@
 
 import { Wrench } from "lucide-react";
 import { registerVirtualSource } from "@/features/files/virtual-sources/registry";
+import { makeCodeInlinePreview } from "./CodeInlinePreview";
 import type {
   ListArgs,
   WriteArgs,
@@ -228,6 +229,8 @@ const toolUiAdapter: VirtualSourceAdapter = {
   async delete() {
     throw new VirtualSourceError("not_supported", "delete");
   },
+
+  inlinePreview: makeCodeInlinePreview("tool_ui_components"),
 
   openInRoute(node) {
     // Folder rows have no dedicated route; field leaves open the /code tab.

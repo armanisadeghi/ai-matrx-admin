@@ -14,6 +14,7 @@
 
 import { Bot } from "lucide-react";
 import { registerVirtualSource } from "@/features/files/virtual-sources/registry";
+import { makeCodeInlinePreview } from "./CodeInlinePreview";
 import type {
   ListArgs,
   RenameArgs,
@@ -164,6 +165,8 @@ const agaAppsAdapter: VirtualSourceAdapter = {
       .eq("user_id", userId);
     if (error) throw error;
   },
+
+  inlinePreview: makeCodeInlinePreview("aga_apps"),
 
   openInRoute(node) {
     return `/code?tab=${encodeURIComponent(`${TAB_ID_PREFIX}${node.id}`)}`;

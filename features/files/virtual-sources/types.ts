@@ -27,6 +27,7 @@
  * `features/files/for_python/REQUESTS.md` for the Python parity contract.
  */
 
+import type { ComponentType } from "react";
 import type { LucideIcon } from "lucide-react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
@@ -95,6 +96,19 @@ export interface VirtualContent {
    *  `getSignedUrl()` instead. */
   content: string;
   updatedAt?: string;
+}
+
+/** Props passed to an adapter's `inlinePreview` component when it's mounted
+ *  by the cloud-files preview pane. The pane resolves the synthetic id back
+ *  to its parts and hands them in directly. */
+export interface InlinePreviewProps {
+  /** The adapter-scoped row id (already de-prefixed from the synthetic id). */
+  id: VirtualId;
+  /** Field id for multi-field rows (Tool UIs). Single-field sources omit. */
+  fieldId?: string;
+  /** Initial display name. The component is free to update its own title
+   *  internally on rename. */
+  name: string;
 }
 
 /** Per-row version history entry, when `capabilities.versions === true`. */
@@ -277,15 +291,31 @@ export interface VirtualSourceAdapter {
     args: CreateArgs,
   ): Promise<VirtualNode>;
 
-  // ---- routing handoff ----
+  // ---- inline preview / editor ----
 
   /**
-   * If returned, double-click in `/files` navigates here instead of opening
-   * the generic preview / Monaco editor. Lets each feature keep its rich
-   * editor (Notes opens in `/notes/<id>`, Agent Apps in `/code` with the
-   * right tab pre-loaded).
+   * Per-source inline viewer/editor for the cloud-files preview pane. When
+   * provided, the preview pane mounts this component instead of the generic
+   * `<FilePreview>` registry. The component is responsible for fetching its
+   * own content (typically via `adapter.read()`) and saving on edit
+   * (typically via `adapter.write()`) — the cloud-files preview pane just
+   * provides the chrome (action bar + close button).
    *
-   * Returning `null` means "use the generic preview".
+   * Notes wraps `NoteEditorCore`; code-shaped sources wrap `SmallCodeEditor`.
+   * Adapters that omit this fall back to the generic Monaco preview through
+   * `useFileBlob` / `readAny`.
+   */
+  inlinePreview?: ComponentType<InlinePreviewProps>;
+
+  // ---- routing handoff (secondary action) ----
+
+  /**
+   * Optional URL the user can click "Open in <feature>" to navigate to.
+   * **Not the primary activation behavior** — double-click in `/files`
+   * always opens the inline preview first. Surfaces as a button in the
+   * preview pane's action bar.
+   *
+   * Returning `null` hides the button (no dedicated route exists).
    */
   openInRoute?(node: VirtualNode): string | null;
 

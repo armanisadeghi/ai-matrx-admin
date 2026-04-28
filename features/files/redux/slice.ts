@@ -547,9 +547,36 @@ const slice = createSlice({
         fullyLoadedFolderIds?: Record<string, true>;
       }>,
     ) {
-      state.tree.rootFolderIds = action.payload.rootFolderIds;
+      // Preserve virtual roots across real-tree reloads. Without this, every
+      // `loadUserFileTree` (re)load would wipe the synthetic adapter roots
+      // that were mounted via `attachVirtualRoot`, and they'd disappear from
+      // the sidebar even though their folder records still exist in
+      // `foldersById`. Virtual roots come first so they always render at the
+      // top of the tree.
+      const incomingIds = new Set(action.payload.rootFolderIds);
+      const virtualRoots = state.tree.rootFolderIds.filter((id) => {
+        if (incomingIds.has(id)) return false;
+        return state.foldersById[id]?.source.kind === "virtual";
+      });
+      state.tree.rootFolderIds = [
+        ...virtualRoots,
+        ...action.payload.rootFolderIds,
+      ];
       state.tree.rootFileIds = action.payload.rootFileIds;
-      state.tree.childrenByFolderId = action.payload.childrenByFolderId;
+      // Same for childrenByFolderId — virtual subtrees must survive the
+      // reload so already-hydrated adapter folders aren't emptied.
+      const preservedChildren: Record<string, TreeChildren> = {};
+      for (const [folderId, children] of Object.entries(
+        state.tree.childrenByFolderId,
+      )) {
+        if (state.foldersById[folderId]?.source.kind === "virtual") {
+          preservedChildren[folderId] = children;
+        }
+      }
+      state.tree.childrenByFolderId = {
+        ...preservedChildren,
+        ...action.payload.childrenByFolderId,
+      };
       state.tree.fullyLoadedFolderIds =
         action.payload.fullyLoadedFolderIds ?? {};
       state.tree.status = "loaded";
@@ -601,7 +628,10 @@ const slice = createSlice({
         _pendingRequestIds: [],
       };
       if (!state.tree.rootFolderIds.includes(rootId)) {
-        state.tree.rootFolderIds.push(rootId);
+        // Prepend so virtual roots always render at the top of the tree,
+        // regardless of whether `attachVirtualRoot` fires before or after
+        // `loadUserFileTree`'s `replaceTree`.
+        state.tree.rootFolderIds.unshift(rootId);
       }
     },
 

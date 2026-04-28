@@ -12,10 +12,15 @@ import {
     selectOrderedToolLifecycles,
     selectToolCallIdsInOrder,
     selectToolLifecycle,
-    selectHasAnyTools,
 } from "./selectors";
 
-/** All tool lifecycle entries for this request, in stream (tool_started) order. */
+/**
+ * All tool lifecycle entries for this request, in stream (tool_started) order.
+ * Used ONLY by the floating-window debug surface
+ * (`ToolCallWindowPanel`). The chat transcript renders one card per
+ * `callId` and never subscribes to "all tools for the request" — doing
+ * that produced the legacy "every card shows every tool" bug.
+ */
 export function useOrderedToolLifecycles(
     requestId: string,
 ): ToolLifecycleEntry[] {
@@ -33,9 +38,4 @@ export function useToolLifecycle(
     callId: string,
 ): ToolLifecycleEntry | undefined {
     return useAppSelector(selectToolLifecycle(requestId, callId));
-}
-
-/** True when this request has at least one tool lifecycle entry. */
-export function useHasAnyTools(requestId: string): boolean {
-    return useAppSelector(selectHasAnyTools(requestId));
 }

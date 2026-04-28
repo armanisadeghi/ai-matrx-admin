@@ -151,8 +151,8 @@ export function AgentModeController({
               }}
               title={label}
               className={cn(
-                "flex items-center justify-center gap-1 p-0.5 text-[0.6875rem] font-medium rounded-full transition-colors cursor-pointer",
-                "px-1.5",
+                "flex items-center justify-center gap-1 py-0.5 text-[0.6875rem] font-medium rounded-full transition-colors cursor-pointer",
+                "px-2.5",
                 "[&_svg]:w-3.5 [&_svg]:h-3.5",
                 isActive
                   ? "bg-[var(--shell-glass-bg-active)] text-[var(--shell-nav-text-hover)]"

@@ -26,7 +26,6 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import {
   DndContext,
   DragOverlay,
@@ -100,7 +99,6 @@ import {
   loadVirtualChildren,
   moveAny,
 } from "@/features/files/redux/virtual-thunks";
-import { getVirtualSource } from "@/features/files/virtual-sources/registry";
 import { BulkActionsBar } from "./desktop/BulkActionsBar";
 import { ContentHeader } from "./desktop/ContentHeader";
 import { EmptyState } from "./desktop/EmptyState";
@@ -174,7 +172,6 @@ function PageShellDesktop({
   className,
 }: PageShellProps) {
   const dispatch = useAppDispatch();
-  const router = useRouter();
   const activeFolderId = useAppSelector(selectActiveFolderId);
   const activeFileId = useAppSelector(selectActiveFileId);
   const viewMode = useAppSelector(selectViewMode);
@@ -336,29 +333,14 @@ function PageShellDesktop({
 
   const handleSelectFile = useCallback(
     (fileId: string) => {
-      const file = filesById[fileId];
-      // Per-feature edit handoff for virtual files. If the adapter declares
-      // an `openInRoute`, navigate there; otherwise fall through to the
-      // generic preview pane.
-      if (file?.source.kind === "virtual") {
-        const adapter = getVirtualSource(file.source.adapterId);
-        const route = adapter?.openInRoute?.({
-          id: file.source.virtualId,
-          kind: "file",
-          name: file.fileName,
-          parentId: null,
-          extension: undefined,
-          language: undefined,
-          mimeType: file.mimeType ?? undefined,
-        });
-        if (route) {
-          router.push(route);
-          return;
-        }
-      }
+      // Activation always opens the inline preview pane — for both real and
+      // virtual files. The adapter's `openInRoute` is exposed as a secondary
+      // "Open in <feature>" button in the preview action bar so users keep
+      // the option of jumping to the dedicated editor without losing the
+      // inline-first default.
       dispatch(setActiveFileId(fileId));
     },
-    [dispatch, filesById, router],
+    [dispatch],
   );
 
   const handleFilterToggle = useCallback((key: FilterChipKey) => {

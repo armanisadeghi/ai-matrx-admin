@@ -14,47 +14,11 @@ import type { CxToolCallRecord } from "@/features/agents/redux/execution-system/
 import type { ToolLifecycleEntry } from "@/features/agents/types/request.types";
 import type { ToolEventPayload } from "@/types/python-generated/stream-events";
 
-// Logs what `output` (full text) vs `outputPreview` (truncated metadata) look
-// like going into the converter, then logs what `result` comes out.
-// If you see "output is null", the DB query is not returning the full output
-// column — the fix is on the query/RPC side, not here.
-
-function parseOutput(
-  raw: string | null,
-  preview: unknown,
-  callId: string,
-  toolName: string,
-): unknown {
-  if (!raw) {
-    console.warn(
-      "[DIAG-1 cxToolCallToLifecycleEntry] output is NULL for callId=%s tool=%s. " +
-        "Result will be null. outputPreview=%o",
-      callId,
-      toolName,
-      preview,
-    );
-    return null;
-  }
+function parseOutput(raw: string | null): unknown {
+  if (!raw) return null;
   try {
-    const parsed = JSON.parse(raw);
-    console.log(
-      "[DIAG-1 cxToolCallToLifecycleEntry] output parsed as JSON for callId=%s tool=%s. " +
-        "result=%o  outputPreview=%o",
-      callId,
-      toolName,
-      parsed,
-      preview,
-    );
-    return parsed;
+    return JSON.parse(raw);
   } catch {
-    console.log(
-      "[DIAG-1 cxToolCallToLifecycleEntry] output is plain text for callId=%s tool=%s. " +
-        "length=%d  outputPreview=%o",
-      callId,
-      toolName,
-      raw.length,
-      preview,
-    );
     return raw;
   }
 }
@@ -76,12 +40,7 @@ export function cxToolCallToLifecycleEntry(
 ): ToolLifecycleEntry {
   const now = new Date().toISOString();
 
-  const result = parseOutput(
-    record.output,
-    record.outputPreview,
-    record.callId,
-    record.toolName,
-  );
+  const result = parseOutput(record.output);
   const events = parseEvents(record.executionEvents);
 
   const entry: ToolLifecycleEntry = {

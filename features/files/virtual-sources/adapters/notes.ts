@@ -22,6 +22,7 @@
 
 import { StickyNote } from "lucide-react";
 import { registerVirtualSource } from "@/features/files/virtual-sources/registry";
+import { NotesInlinePreview } from "./NotesInlinePreview";
 import type {
   ListArgs,
   RenameArgs,
@@ -314,6 +315,8 @@ const notesAdapter: VirtualSourceAdapter = {
       mimeType: "text/markdown",
     };
   },
+
+  inlinePreview: NotesInlinePreview,
 
   openInRoute(node) {
     // Folder nodes don't have a dedicated route; only file leaves do.

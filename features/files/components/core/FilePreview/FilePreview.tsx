@@ -19,6 +19,7 @@ import { useFileActions } from "@/features/files/components/core/FileActions/use
 import { getPreviewCapability } from "@/features/files/utils/preview-capabilities";
 import { requestRename } from "@/features/files/components/core/RenameDialog/RenameHost";
 import { requestEdit } from "@/features/files/components/core/FileEditor/CloudFileEditorHost";
+import { getVirtualSource } from "@/features/files/virtual-sources/registry";
 import { ImagePreview } from "./previewers/ImagePreview";
 import { VideoPreview } from "./previewers/VideoPreview";
 import { AudioPreview } from "./previewers/AudioPreview";
@@ -94,6 +95,29 @@ export function FilePreview({
   // capability is discoverable.
   const actionBar = useMemo(() => {
     if (!file || !capability) return null;
+    // Virtual sources surface an "Open in <feature>" handoff in the action
+    // bar when the adapter declares `openInRoute`. The handoff is secondary
+    // — the primary experience is the inline preview the adapter mounts via
+    // `inlinePreview`.
+    let openInRoute:
+      | { label: string; onClick: () => void }
+      | undefined;
+    if (file.source.kind === "virtual") {
+      const adapter = getVirtualSource(file.source.adapterId);
+      const route = adapter?.openInRoute?.({
+        id: file.source.virtualId,
+        kind: "file",
+        name: file.fileName,
+        parentId: null,
+        mimeType: file.mimeType ?? undefined,
+      });
+      if (route && adapter) {
+        openInRoute = {
+          label: `Open in ${adapter.label}`,
+          onClick: () => router.push(route),
+        };
+      }
+    }
     const previewActions = buildPreviewActions({
       file,
       previewKind: capability.previewKind,
@@ -105,6 +129,7 @@ export function FilePreview({
       onRename: () => requestRename("file", fileId),
       onDelete: () => void actions.delete({ hard: false }),
       onEdit: () => requestEdit(fileId),
+      openInRoute,
     });
     return <PreviewerActionBar actions={previewActions} />;
   }, [file, capability, actions, router, fileId]);
@@ -120,6 +145,29 @@ export function FilePreview({
         File not found.
       </div>
     );
+  }
+
+  // Virtual sources: prefer the adapter's per-source inline editor when
+  // declared. The adapter component is responsible for its own load/save;
+  // we still render the standard action bar above it so Download / Copy
+  // link / Rename / Delete / "Open in <feature>" all work uniformly.
+  if (file.source.kind === "virtual") {
+    const adapter = getVirtualSource(file.source.adapterId);
+    const Inline = adapter?.inlinePreview;
+    if (Inline) {
+      return (
+        <div className={cn("flex h-full w-full min-h-0 flex-col", className)}>
+          {actionBar}
+          <div className="min-h-0 flex-1 overflow-hidden">
+            <Inline
+              id={file.source.virtualId}
+              fieldId={file.source.fieldId}
+              name={file.fileName}
+            />
+          </div>
+        </div>
+      );
+    }
   }
 
   if (!capability) return null;

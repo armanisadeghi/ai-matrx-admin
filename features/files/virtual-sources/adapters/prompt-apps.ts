@@ -9,6 +9,7 @@
 
 import { Sparkles } from "lucide-react";
 import { registerVirtualSource } from "@/features/files/virtual-sources/registry";
+import { makeCodeInlinePreview } from "./CodeInlinePreview";
 import type {
   ListArgs,
   RenameArgs,
@@ -152,6 +153,8 @@ const promptAppsAdapter: VirtualSourceAdapter = {
       .eq("user_id", userId);
     if (error) throw error;
   },
+
+  inlinePreview: makeCodeInlinePreview("prompt_apps"),
 
   openInRoute(node) {
     return `/code?tab=${encodeURIComponent(`${TAB_ID_PREFIX}${node.id}`)}`;

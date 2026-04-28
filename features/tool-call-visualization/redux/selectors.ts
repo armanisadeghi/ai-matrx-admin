@@ -65,11 +65,3 @@ export const selectOrderedToolLifecycles = (requestId: string) =>
     },
   );
 
-/** True if at least one tool lifecycle entry exists for the request. */
-export const selectHasAnyTools =
-  (requestId: string) =>
-  (state: RootState): boolean => {
-    const map = state.activeRequests.byRequestId[requestId]?.toolLifecycle;
-    if (!map) return false;
-    return Object.keys(map).length > 0;
-  };

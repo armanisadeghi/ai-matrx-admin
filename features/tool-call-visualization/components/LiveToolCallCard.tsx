@@ -41,7 +41,6 @@ export function LiveToolCallCard({
 
   if (!entry) return null;
 
-  console.log("[lIVE TOOL CALL CARD] entry:", entry);
   return (
     <ToolCallVisualization
       entries={[entry]}

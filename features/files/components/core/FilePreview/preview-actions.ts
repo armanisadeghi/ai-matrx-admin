@@ -13,6 +13,7 @@ import {
   Copy,
   Download,
   Edit3,
+  ExternalLink,
   Maximize2,
   Trash2,
 } from "lucide-react";
@@ -35,6 +36,10 @@ export interface BuildPreviewActionsArgs {
   onDelete: () => void;
   /** Triggers the in-place editor handoff (Code / Markdown / Text only). */
   onEdit?: () => void | Promise<void>;
+  /** Optional handoff to a feature-owned editor route. Comes from the
+   *  virtual-source adapter's `openInRoute(node)`. Surfaces as a primary
+   *  "Open in <feature>" button when provided. */
+  openInRoute?: { label: string; onClick: () => void };
 }
 
 const EDITABLE_KINDS: ReadonlyArray<PreviewKind> = ["code", "markdown", "text"];
@@ -50,9 +55,20 @@ export function buildPreviewActions(
     onRename,
     onDelete,
     onEdit,
+    openInRoute,
   } = args;
 
   const actions: PreviewerAction[] = [];
+
+  if (openInRoute) {
+    actions.push({
+      id: "open-in-route",
+      label: openInRoute.label,
+      icon: ExternalLink,
+      onClick: openInRoute.onClick,
+      primary: true,
+    });
+  }
 
   if (EDITABLE_KINDS.includes(previewKind)) {
     actions.push({
