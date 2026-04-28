@@ -916,6 +916,53 @@ function OrphanedToolsBanner({
   onRemove: (name: string) => void;
   onRemoveAll: () => void;
 }) {
+  const [resolved, setResolved] = useState<Record<string, DatabaseTool>>({});
+  const [lookupStatus, setLookupStatus] = useState<
+    "idle" | "loading" | "done" | "error"
+  >("idle");
+
+  // Stable string key so we re-fetch only when the actual ID set changes.
+  const idsKey = useMemo(() => [...orphanedTools].sort().join(","), [
+    orphanedTools,
+  ]);
+
+  useEffect(() => {
+    if (orphanedTools.length === 0) {
+      setResolved({});
+      setLookupStatus("idle");
+      return;
+    }
+
+    let active = true;
+    setLookupStatus("loading");
+    const supabase = createClient();
+    supabase
+      .from("tools")
+      .select("*")
+      .in("id", orphanedTools)
+      .then(({ data, error }) => {
+        if (!active) return;
+        if (error) {
+          console.error("Failed to look up orphaned tools", error);
+          setLookupStatus("error");
+          return;
+        }
+        const map: Record<string, DatabaseTool> = {};
+        for (const tool of (data || []) as DatabaseTool[]) {
+          map[tool.id] = tool;
+        }
+        setResolved(map);
+        setLookupStatus("done");
+      });
+
+    return () => {
+      active = false;
+    };
+    // idsKey changes only when the actual ID set changes; safe to ignore the
+    // closed-over orphanedTools array since its content tracks idsKey 1:1.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [idsKey]);
+
   return (
     <TooltipProvider delayDuration={300}>
       <div className="mx-3 mt-3 rounded border border-yellow-400 dark:border-yellow-600 overflow-hidden">
@@ -939,36 +986,98 @@ function OrphanedToolsBanner({
             </Button>
           )}
         </div>
-        {orphanedTools.map((name, idx) => (
-          <div
-            key={name}
-            className={`flex items-center gap-2 px-2.5 py-1.5 bg-yellow-50/30 dark:bg-yellow-950/15 ${
-              idx < orphanedTools.length - 1
-                ? "border-b border-yellow-200 dark:border-yellow-800/40"
-                : ""
-            }`}
-          >
-            <AlertTriangle className="h-3 w-3 text-yellow-500 shrink-0" />
-            <span className="font-mono text-xs text-foreground flex-1 truncate">
-              {name}
-            </span>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6 text-muted-foreground hover:text-destructive shrink-0"
-                  onClick={() => onRemove(name)}
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="left" className="text-xs">
-                Remove from agent
-              </TooltipContent>
-            </Tooltip>
-          </div>
-        ))}
+        {orphanedTools.map((id, idx) => {
+          const tool = resolved[id];
+          const isLast = idx === orphanedTools.length - 1;
+          const status: "loading" | "inactive" | "missing" =
+            lookupStatus === "loading"
+              ? "loading"
+              : tool
+                ? "inactive"
+                : "missing";
+
+          return (
+            <div
+              key={id}
+              className={`flex items-start gap-2 px-2.5 py-1.5 bg-yellow-50/30 dark:bg-yellow-950/15 ${
+                !isLast
+                  ? "border-b border-yellow-200 dark:border-yellow-800/40"
+                  : ""
+              }`}
+            >
+              <AlertTriangle className="h-3 w-3 text-yellow-500 shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                {status === "inactive" && tool ? (
+                  <>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-xs font-semibold text-foreground truncate">
+                        {tool.name}
+                      </span>
+                      {tool.category && (
+                        <Badge
+                          variant="outline"
+                          className="h-4 px-1 text-[9px] font-normal"
+                        >
+                          {tool.category}
+                        </Badge>
+                      )}
+                      <Badge
+                        variant="outline"
+                        className="h-4 px-1 text-[9px] font-normal text-orange-600 border-orange-400 dark:text-orange-400 dark:border-orange-700"
+                      >
+                        Inactive
+                      </Badge>
+                    </div>
+                    {tool.description && (
+                      <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-2">
+                        {tool.description}
+                      </p>
+                    )}
+                    <p className="font-mono text-[9px] text-muted-foreground/70 mt-0.5 truncate">
+                      {id}
+                    </p>
+                  </>
+                ) : status === "missing" ? (
+                  <>
+                    <div className="flex items-center gap-1.5">
+                      <Badge
+                        variant="outline"
+                        className="h-4 px-1 text-[9px] font-normal text-destructive border-destructive/50"
+                      >
+                        Not in DB
+                      </Badge>
+                    </div>
+                    <p className="font-mono text-[10px] text-foreground mt-0.5 truncate">
+                      {id}
+                    </p>
+                  </>
+                ) : (
+                  <div className="flex items-center gap-1.5">
+                    <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+                    <span className="font-mono text-[10px] text-muted-foreground truncate">
+                      {id}
+                    </span>
+                  </div>
+                )}
+              </div>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 text-muted-foreground hover:text-destructive shrink-0"
+                    onClick={() => onRemove(id)}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="left" className="text-xs">
+                  Remove from agent
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          );
+        })}
       </div>
     </TooltipProvider>
   );

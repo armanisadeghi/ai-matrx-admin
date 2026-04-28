@@ -98,6 +98,39 @@ export class ToolsService {
   }
 
   /**
+   * Fetch tools by UUID including inactive ones — used for diagnosing
+   * orphaned tool references (deactivated/replaced tools still on agents).
+   */
+  async fetchToolsByIdsIncludingInactive(
+    toolIds: string[],
+  ): Promise<DatabaseTool[]> {
+    if (toolIds.length === 0) return [];
+
+    try {
+      const { data, error } = await this.supabase
+        .from("tools")
+        .select("*")
+        .in("id", toolIds);
+
+      if (error) {
+        console.error(
+          "Error fetching tools by identifiers (incl. inactive):",
+          error,
+        );
+        throw error;
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error(
+        "Failed to fetch tools by identifiers (incl. inactive):",
+        error,
+      );
+      throw error;
+    }
+  }
+
+  /**
    * Search tools by name or description
    */
   async searchTools(query: string): Promise<DatabaseTool[]> {

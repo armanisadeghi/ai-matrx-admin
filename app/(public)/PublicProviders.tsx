@@ -22,6 +22,7 @@ import { PublicAuthSync } from "./PublicAuthSync";
 //   { ssr: false },
 // );
 import UnifiedOverlayController from "@/features/window-panels/UnifiedOverlayController";
+import LegacyPromptOverlaysController from "@/features/prompts/components/results-display/LegacyPromptOverlaysController";
 
 // PROBE-RESTORE (3/4) — env-flag toggle
 // const USE_OVERLAYS_V2 =
@@ -60,6 +61,7 @@ export function PublicProviders({
           {/* PROBE-RESTORE (4/4) — original ternary:
               {USE_OVERLAYS_V2 ? <UnifiedOverlayController /> : <OverlayController />} */}
           <UnifiedOverlayController />
+          <LegacyPromptOverlaysController />
           {children}
         </TooltipProvider>
       </StoreProvider>
