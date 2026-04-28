@@ -98,3 +98,27 @@ export function orchestratorJsonHeaders(target: OrchestratorTarget): Record<stri
     if (target.apiKey) headers['X-API-Key'] = target.apiKey
     return headers
 }
+
+/**
+ * Compute the public proxy_url a browser uses to reach an in-container
+ * matrx_agent daemon (and the AI Dream FastAPI when sandbox-mode is on).
+ *
+ * The orchestrator returns this on every fresh ``SandboxResponse``, but
+ * we don't persist it to ``sandbox_instances`` (the URL is derivable from
+ * the orchestrator's base + the upstream sandbox_id, so persisting would
+ * just add a sync surface). This helper recomputes from the per-tier
+ * ``MATRX_*_ORCHESTRATOR_URL`` env var so every list / detail / create
+ * response surfaces the same URL the orchestrator's own SandboxResponse
+ * carries.
+ *
+ * Returns ``null`` only when the matching tier's URL env var isn't set.
+ */
+export function buildSandboxProxyUrl(
+    sandboxId: string | null | undefined,
+    tier: SandboxTier | null | undefined,
+): string | null {
+    if (!sandboxId) return null
+    const target = resolveOrchestratorByTier(tier)
+    if (!target.url) return null
+    return `${target.url}/sandboxes/${sandboxId}/proxy`
+}

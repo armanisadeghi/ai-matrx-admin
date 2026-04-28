@@ -3,9 +3,19 @@ import { createClient } from "@/utils/supabase/server";
 import {
   resolveOrchestratorByTier,
   orchestratorJsonHeaders,
+  buildSandboxProxyUrl,
 } from "@/lib/sandbox/orchestrator-routing";
 import { reconcileUserSandboxes } from "@/lib/sandbox/reconcile";
 import type { SandboxConfig, SandboxTier } from "@/types/sandbox";
+
+// Decorate a sandbox row from Postgres with the orchestrator-derived
+// fields we DON'T persist — currently just `proxy_url`. Surfaces the URL
+// even when the row was inserted before we added the orchestrator's
+// proxy_url field, so the FE can rely on it being there always.
+function decorateSandboxRow<T extends { sandbox_id?: string | null; config?: unknown }>(row: T): T & { proxy_url: string | null } {
+  const tier = (row.config as SandboxConfig | null)?.tier ?? null;
+  return { ...row, proxy_url: buildSandboxProxyUrl(row.sandbox_id, tier) };
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -69,7 +79,7 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({
-      instances,
+      instances: instances.map(decorateSandboxRow),
       pagination: {
         total: count || 0,
         limit,
@@ -303,7 +313,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ instance }, { status: 201 });
+    return NextResponse.json({ instance: decorateSandboxRow(instance) }, { status: 201 });
   } catch (error) {
     console.error("Sandbox create API error:", error);
     return NextResponse.json(
