@@ -427,7 +427,8 @@ This now lives in `features/code/`:
 | Applier | `features/code-editor/agent-code-editor/utils/applyCodeEdits.ts` | Applies edits to a single buffer (exact → fuzzy match). |
 | Slice | `features/code/redux/codePatchesSlice.ts` | Stages pending patches per `tabId`, dedupes by `(conversationId, requestId, tabId)`. |
 | Hook | `features/code/agent-context/useApplyAIPatchesToActiveTab.ts` | Watches stream completion, locates each block in any open tab via the applier, dispatches `stagePatches`. |
-| UI | `features/code/editor/PendingPatchTray.tsx` | Renders pending patches above Monaco with accept / reject (per-patch and bulk). |
+| UI (in tab) | `features/code/editor/TabDiffView.tsx` | When a tab has pending patches, `EditorArea` swaps `<MonacoEditor>` for this Cursor-style inline diff view. Slim toolbar with `Accept all` / `Reject all`, expandable per-edit list, and a Monaco `DiffEditor` showing original vs. proposed. |
+| UI (sidebar) | `features/code/views/explorer/PendingChangesSection.tsx` | "Pending Changes" section in the Explorer that lists every tab with staged edits. Click a row → activates that tab → `TabDiffView` renders the diff. Auto-hides when there are no pending patches. |
 
 Acceptance flow:
 

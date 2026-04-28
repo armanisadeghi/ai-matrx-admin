@@ -24,6 +24,7 @@ import { useCodeWorkspace } from "../../CodeWorkspaceProvider";
 import { SidePanelHeader, SidePanelAction } from "../SidePanelChrome";
 import { CloudFilesExplorer } from "./CloudFilesExplorer";
 import { FileTree } from "./FileTree";
+import { PendingChangesSection } from "./PendingChangesSection";
 
 interface ExplorerPanelProps {
   className?: string;
@@ -155,6 +156,12 @@ export const ExplorerPanel: React.FC<ExplorerPanelProps> = ({ className }) => {
           </>
         }
       />
+
+      {/* Auto-hides when no patches are staged. Sits above both the
+          sandbox file tree and the cloud-files explorer so the user has
+          one consistent place to find AI edits regardless of which
+          filesystem the workspace is pointed at. */}
+      <PendingChangesSection />
 
       {showFileTree ? (
         <>

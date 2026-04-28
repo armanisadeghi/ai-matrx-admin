@@ -253,3 +253,31 @@ export const selectPendingPatchCountForTab = (
   const pending = selectPendingPatchesForTab(tabId);
   return (state: WithCodePatches): number => pending(state).length;
 };
+
+/**
+ * Stable list of every tab id that currently has at least one
+ * `pending` patch, in tab-strip order. Used by `<TabDiffView>` to
+ * power the "previous file / next file" navigation buttons in the
+ * top toolbar. Memoized so the array reference is stable across
+ * unrelated state changes.
+ */
+const EMPTY_ID_LIST: string[] = [];
+
+export const selectTabIdsWithPendingChanges = createSelector(
+  [
+    (state: WithCodePatches) => selectCodePatches(state).byTabId,
+    (
+      state: WithCodePatches & {
+        codeTabs?: { order?: string[] };
+      },
+    ): string[] => state.codeTabs?.order ?? EMPTY_ID_LIST,
+  ],
+  (byTabId, order): string[] => {
+    if (!order || order.length === 0) return EMPTY_ID_LIST;
+    const out = order.filter((tabId) => {
+      const list = byTabId[tabId];
+      return Boolean(list && list.some((p) => p.status === "pending"));
+    });
+    return out.length === 0 ? EMPTY_ID_LIST : out;
+  },
+);

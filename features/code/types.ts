@@ -70,18 +70,12 @@ export interface FilesystemSearchHit {
  *    code-workspace filesystem adapter. The tab's `path` is a synthetic
  *    `cloud-file:/<name>` display string and the file is identified
  *    by `cloudFileId`.
- *  - `"ai-review"`         → singleton "AI Review" tab that hosts the
- *    multi-file AI patch review surface (Cursor-style file list + Monaco
- *    DiffEditor). Has no editable buffer of its own — accept / reject
- *    actions mutate the underlying file tabs through the normal
- *    `updateTabContent` → save pipeline. Only one of these exists at a
- *    time; opened lazily by `ensureReviewTab` when patches are staged.
+ *
+ * AI patch review is NOT a tab kind — when a normal `"editor"` tab has
+ * pending AI patches, `EditorArea` swaps in `<TabDiffView>` (Cursor-style
+ * inline diff) automatically. The tab itself stays a normal editor tab.
  */
-export type EditorTabKind =
-  | "editor"
-  | "binary-preview"
-  | "cloud-file-preview"
-  | "ai-review";
+export type EditorTabKind = "editor" | "binary-preview" | "cloud-file-preview";
 
 /**
  * Tabs that don't have an editable text buffer (no Monaco, no AI patches,
@@ -89,11 +83,7 @@ export type EditorTabKind =
  * keeps every consumer in sync when a new preview kind is added.
  */
 export function isPreviewTab(kind?: EditorTabKind): boolean {
-  return (
-    kind === "binary-preview" ||
-    kind === "cloud-file-preview" ||
-    kind === "ai-review"
-  );
+  return kind === "binary-preview" || kind === "cloud-file-preview";
 }
 
 export interface EditorFile {

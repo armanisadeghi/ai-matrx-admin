@@ -22,11 +22,12 @@
  *   stage call exactly once per request → tab pairing.
  *
  * UX contract:
- *   This hook only stages — it does NOT mutate tab content. The user
- *   reviews + accepts patches via `<PendingPatchTray>`. Acceptance flows
- *   through the existing `updateTabContent` → save pipeline (so cloud,
- *   library, sandbox, and mock filesystems all work without a special
- *   case).
+ *   This hook only stages — it does NOT mutate tab content. Tabs that
+ *   own a pending patch automatically swap from `<MonacoEditor>` to
+ *   `<TabDiffView>` (Cursor-style: the file's own tab becomes the diff).
+ *   Acceptance flows through the existing `updateTabContent` → save
+ *   pipeline so cloud, library, sandbox, and mock filesystems all work
+ *   without a special case.
  */
 
 import { useEffect, useRef } from "react";
@@ -45,7 +46,6 @@ import { applyCodeEdits } from "@/features/code-editor/agent-code-editor/utils/a
 import { selectCodeTabs, type CodeTabsState } from "../redux/tabsSlice";
 import { stagePatches } from "../redux/codePatchesSlice";
 import { isPreviewTab } from "../types";
-import { ensureReviewTab } from "../editor/aiReviewTab";
 
 interface UseApplyAIPatchesToActiveTabOptions {
   /** Conversation whose stream we observe. Pass `null` to disable. */
@@ -177,14 +177,6 @@ export function useApplyAIPatchesToActiveTab({
           patches,
         }),
       );
-    }
-
-    // Surface the singleton AI Review tab the moment patches land. We
-    // use the no-focus variant so the user keeps editing whatever they
-    // were editing — the tab simply appears in the strip with the inline
-    // tray giving them a one-click path into the full review surface.
-    if (byTab.size > 0) {
-      dispatch(ensureReviewTab());
     }
   }, [conversationId, requestId, requestStatus, isExecuting, dispatch, store]);
 }

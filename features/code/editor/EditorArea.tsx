@@ -29,8 +29,8 @@ import { EditorToolbar } from "./EditorToolbar";
 import { MonacoEditor, type StandaloneCodeEditor } from "./MonacoEditor";
 import { BinaryFileViewer } from "./BinaryFileViewer";
 import { CloudFilePreviewer } from "./CloudFilePreviewer";
-import { PendingPatchTray } from "./PendingPatchTray";
-import { AIReviewSurface } from "./AIReviewSurface";
+import { TabDiffView } from "./TabDiffView";
+import { selectPendingPatchCountForTab } from "../redux/codePatchesSlice";
 
 interface EditorAreaProps {
   rightSlotAvailable?: boolean;
@@ -49,6 +49,14 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
 }) => {
   const dispatch = useAppDispatch();
   const activeTab = useAppSelector(selectActiveTab);
+  // When the agent has staged SEARCH/REPLACE patches against the active
+  // tab's buffer, the tab's body swaps from `<MonacoEditor>` to
+  // `<TabDiffView>` (Cursor-style: the file's own tab IS the review).
+  // No separate review tab, no global tray, no extra heading layers.
+  const activeTabPendingCount = useAppSelector(
+    selectPendingPatchCountForTab(activeTab?.id ?? null),
+  );
+  const activeTabHasPending = activeTabPendingCount > 0;
   const saveActiveTab = useSaveActiveTab();
   const reloadTab = useReloadTab();
   const searchParams = useSearchParams();
@@ -254,19 +262,14 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
           canSendSelectionAsContext={canSendSelection}
         />
       </div>
-      {/* Inline patch tray. Hidden when the AI Review tab is active —
-          the full review surface already shows everything the tray
-          would, and rendering the strip on top of it just steals
-          vertical space. */}
-      {activeTab?.kind !== "ai-review" && <PendingPatchTray />}
       <div className="relative flex-1 min-h-0">
         {activeTab ? (
-          activeTab.kind === "ai-review" ? (
-            <AIReviewSurface key={activeTab.id} />
-          ) : activeTab.kind === "cloud-file-preview" ? (
+          activeTab.kind === "cloud-file-preview" ? (
             <CloudFilePreviewer key={activeTab.id} tab={activeTab} />
           ) : activeTab.kind === "binary-preview" ? (
             <BinaryFileViewer key={activeTab.id} tab={activeTab} />
+          ) : activeTabHasPending ? (
+            <TabDiffView key={activeTab.id} tab={activeTab} />
           ) : (
             <MonacoEditor
               key={activeTab.id}

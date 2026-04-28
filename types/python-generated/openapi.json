@@ -6,15 +6,15 @@
     "version": "2.0.0"
   },
   "paths": {
-    "/auth/aimatrx-admin": {
+    "/auth/aimatrx": {
       "get": {
         "tags": [
           "Auth",
           "Auth"
         ],
-        "summary": "Initiate Admin Oauth",
-        "description": "Start the admin OAuth flow — redirect browser to aimatrx.com consent screen.",
-        "operationId": "initiate_admin_oauth_auth_aimatrx_admin_get",
+        "summary": "Initiate Oauth",
+        "description": "Start the OAuth flow — redirect browser to aimatrx.com authorize endpoint.",
+        "operationId": "initiate_oauth_auth_aimatrx_get",
         "parameters": [
           {
             "name": "app_redirect",
@@ -22,10 +22,10 @@
             "required": true,
             "schema": {
               "type": "string",
-              "description": "Dashboard callback URL, e.g. https://admin.app.matrxserver.com/oauth/callback",
+              "description": "SPA callback URL, e.g. https://admin.app.matrxserver.com/oauth/callback",
               "title": "App Redirect"
             },
-            "description": "Dashboard callback URL, e.g. https://admin.app.matrxserver.com/oauth/callback"
+            "description": "SPA callback URL, e.g. https://admin.app.matrxserver.com/oauth/callback"
           }
         ],
         "responses": {
@@ -57,7 +57,7 @@
           "Auth"
         ],
         "summary": "Oauth Callback",
-        "description": "Handle the callback from aimatrx.com after the user approves.",
+        "description": "Handle the callback from aimatrx.com after the user signs in.",
         "operationId": "oauth_callback_auth_callback_get",
         "parameters": [
           {

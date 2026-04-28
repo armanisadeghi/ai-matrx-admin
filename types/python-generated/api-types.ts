@@ -4,7 +4,7 @@
  */
 
 export interface paths {
-    "/auth/aimatrx-admin": {
+    "/auth/aimatrx": {
         parameters: {
             query?: never;
             header?: never;
@@ -12,10 +12,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Initiate Admin Oauth
-         * @description Start the admin OAuth flow — redirect browser to aimatrx.com consent screen.
+         * Initiate Oauth
+         * @description Start the OAuth flow — redirect browser to aimatrx.com authorize endpoint.
          */
-        get: operations["initiate_admin_oauth_auth_aimatrx_admin_get"];
+        get: operations["initiate_oauth_auth_aimatrx_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -33,7 +33,7 @@ export interface paths {
         };
         /**
          * Oauth Callback
-         * @description Handle the callback from aimatrx.com after the user approves.
+         * @description Handle the callback from aimatrx.com after the user signs in.
          */
         get: operations["oauth_callback_auth_callback_get"];
         put?: never;
@@ -6948,10 +6948,10 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    initiate_admin_oauth_auth_aimatrx_admin_get: {
+    initiate_oauth_auth_aimatrx_get: {
         parameters: {
             query: {
-                /** @description Dashboard callback URL, e.g. https://admin.app.matrxserver.com/oauth/callback */
+                /** @description SPA callback URL, e.g. https://admin.app.matrxserver.com/oauth/callback */
                 app_redirect: string;
             };
             header?: never;
