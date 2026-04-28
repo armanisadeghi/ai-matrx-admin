@@ -45,6 +45,7 @@ import { applyCodeEdits } from "@/features/code-editor/agent-code-editor/utils/a
 import { selectCodeTabs, type CodeTabsState } from "../redux/tabsSlice";
 import { stagePatches } from "../redux/codePatchesSlice";
 import { isPreviewTab } from "../types";
+import { ensureReviewTab } from "../editor/aiReviewTab";
 
 interface UseApplyAIPatchesToActiveTabOptions {
   /** Conversation whose stream we observe. Pass `null` to disable. */
@@ -176,6 +177,14 @@ export function useApplyAIPatchesToActiveTab({
           patches,
         }),
       );
+    }
+
+    // Surface the singleton AI Review tab the moment patches land. We
+    // use the no-focus variant so the user keeps editing whatever they
+    // were editing — the tab simply appears in the strip with the inline
+    // tray giving them a one-click path into the full review surface.
+    if (byTab.size > 0) {
+      dispatch(ensureReviewTab());
     }
   }, [conversationId, requestId, requestStatus, isExecuting, dispatch, store]);
 }

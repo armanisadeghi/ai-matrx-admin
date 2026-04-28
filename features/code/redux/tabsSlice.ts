@@ -54,6 +54,18 @@ const slice = createSlice({
       state.activeId = file.id;
       bumpRecent(state, file.id);
     },
+    /**
+     * Idempotent "tab exists in the strip" — does NOT steal focus from
+     * whatever is currently active. Used by the AI patch pipeline to
+     * surface the singleton review tab without yanking the user out of
+     * the file they're editing.
+     */
+    ensureTab(state, action: PayloadAction<EditorFile>) {
+      const file = action.payload;
+      if (state.byId[file.id]) return;
+      state.byId[file.id] = { ...file, dirty: false };
+      state.order.push(file.id);
+    },
     closeTab(state, action: PayloadAction<string>) {
       const id = action.payload;
       if (!state.byId[id]) return;
@@ -146,6 +158,7 @@ const slice = createSlice({
 
 export const {
   openTab,
+  ensureTab,
   closeTab,
   setActiveTab,
   updateTabContent,

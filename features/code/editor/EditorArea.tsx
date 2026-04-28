@@ -30,6 +30,7 @@ import { MonacoEditor, type StandaloneCodeEditor } from "./MonacoEditor";
 import { BinaryFileViewer } from "./BinaryFileViewer";
 import { CloudFilePreviewer } from "./CloudFilePreviewer";
 import { PendingPatchTray } from "./PendingPatchTray";
+import { AIReviewSurface } from "./AIReviewSurface";
 
 interface EditorAreaProps {
   rightSlotAvailable?: boolean;
@@ -253,10 +254,16 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
           canSendSelectionAsContext={canSendSelection}
         />
       </div>
-      <PendingPatchTray />
+      {/* Inline patch tray. Hidden when the AI Review tab is active —
+          the full review surface already shows everything the tray
+          would, and rendering the strip on top of it just steals
+          vertical space. */}
+      {activeTab?.kind !== "ai-review" && <PendingPatchTray />}
       <div className="relative flex-1 min-h-0">
         {activeTab ? (
-          activeTab.kind === "cloud-file-preview" ? (
+          activeTab.kind === "ai-review" ? (
+            <AIReviewSurface key={activeTab.id} />
+          ) : activeTab.kind === "cloud-file-preview" ? (
             <CloudFilePreviewer key={activeTab.id} tab={activeTab} />
           ) : activeTab.kind === "binary-preview" ? (
             <BinaryFileViewer key={activeTab.id} tab={activeTab} />

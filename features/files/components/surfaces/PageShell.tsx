@@ -90,6 +90,7 @@ import { MobileStack } from "./MobileStack";
 import { PreviewPane } from "./PreviewPane";
 import { useFileShortcuts } from "./useFileShortcuts";
 import { RenameHost } from "@/features/files/components/core/RenameDialog/RenameHost";
+import { CloudFileEditorHost } from "@/features/files/components/core/FileEditor/CloudFileEditorHost";
 import { BulkActionsBar } from "./desktop/BulkActionsBar";
 import { ContentHeader } from "./desktop/ContentHeader";
 import { EmptyState } from "./desktop/EmptyState";
@@ -585,6 +586,7 @@ function PageShellDesktop({
         </AlertDialog>
 
         <RenameHost />
+        <CloudFileEditorHost />
       </div>
 
       <DragOverlay dropAnimation={null}>

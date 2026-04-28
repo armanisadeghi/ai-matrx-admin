@@ -18,6 +18,7 @@ import { useSignedUrl } from "@/features/files/hooks/useSignedUrl";
 import { useFileActions } from "@/features/files/components/core/FileActions/useFileActions";
 import { getPreviewCapability } from "@/features/files/utils/preview-capabilities";
 import { requestRename } from "@/features/files/components/core/RenameDialog/RenameHost";
+import { requestEdit } from "@/features/files/components/core/FileEditor/CloudFileEditorHost";
 import { ImagePreview } from "./previewers/ImagePreview";
 import { VideoPreview } from "./previewers/VideoPreview";
 import { AudioPreview } from "./previewers/AudioPreview";
@@ -103,7 +104,7 @@ export function FilePreview({
       onOpenFullView: () => router.push(`/files/f/${fileId}`),
       onRename: () => requestRename("file", fileId),
       onDelete: () => void actions.delete({ hard: false }),
-      // TODO(phase-2.3): wire to the in-place editor handoff.
+      onEdit: () => requestEdit(fileId),
     });
     return <PreviewerActionBar actions={previewActions} />;
   }, [file, capability, actions, router, fileId]);

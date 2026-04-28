@@ -20,8 +20,11 @@ import {
   AlertCircle,
   Download,
   FolderInput,
+  Globe,
   Loader2,
+  Lock,
   Trash2,
+  Users,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -37,6 +40,12 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   selectAllFilesMap,
   selectAllFoldersMap,
   selectSelection,
@@ -44,10 +53,14 @@ import {
 import { clearSelection } from "@/features/files/redux/slice";
 import {
   deleteFile as deleteFileThunk,
+  deleteFolder as deleteFolderThunk,
   getSignedUrl as getSignedUrlThunk,
   moveFile as moveFileThunk,
+  updateFileMetadata,
+  updateFolder as updateFolderThunk,
 } from "@/features/files/redux/thunks";
 import { openFolderPicker } from "@/features/files/components/pickers/CloudFilesPickerHost";
+import type { Visibility } from "@/features/files/types";
 
 const MAX_PARALLEL = 4;
 
@@ -58,7 +71,7 @@ export function BulkActionsBar({ className }: { className?: string }) {
   const foldersById = useAppSelector(selectAllFoldersMap);
 
   const [busyKind, setBusyKind] = useState<
-    "download" | "move" | "delete" | null
+    "download" | "move" | "delete" | "visibility" | null
   >(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [transientNote, setTransientNote] = useState<string | null>(null);
@@ -78,6 +91,7 @@ export function BulkActionsBar({ className }: { className?: string }) {
 
   const totalCount = selection.selectedIds.length;
   const hasFiles = selectedFileIds.length > 0;
+  const hasAny = totalCount > 0;
 
   const showFolderNote = useCallback(
     (verb: string) => {
@@ -129,43 +143,92 @@ export function BulkActionsBar({ className }: { className?: string }) {
   }, [busyKind, dispatch, filesById, hasFiles, selectedFileIds, showFolderNote]);
 
   const handleMove = useCallback(async () => {
-    if (!hasFiles || busyKind) return;
+    if (!hasAny || busyKind) return;
     const target = await openFolderPicker({
-      title: `Move ${selectedFileIds.length} ${
-        selectedFileIds.length === 1 ? "file" : "files"
-      } to folder`,
+      title: `Move ${totalCount} ${totalCount === 1 ? "item" : "items"} to folder`,
       description: "Choose a destination folder.",
     });
     // openFolderPicker returns undefined if cancelled (null = root).
     if (target === undefined) return;
     setBusyKind("move");
-    showFolderNote("move");
     try {
+      // Files: moveFile thunk. Folders: updateFolder with parentId patch.
+      // Skip folders being moved into themselves or one of their descendants
+      // (the parent thunk would either fail server-side or cause a cycle).
+      const isDescendantOf = (candidate: string, ancestor: string) => {
+        let cursor: string | null = candidate;
+        const seen = new Set<string>();
+        while (cursor && !seen.has(cursor)) {
+          if (cursor === ancestor) return true;
+          seen.add(cursor);
+          cursor = foldersById[cursor]?.parentId ?? null;
+        }
+        return false;
+      };
       await runWithConcurrency(selectedFileIds, MAX_PARALLEL, async (id) => {
         await dispatch(
           moveFileThunk({ fileId: id, newParentFolderId: target }),
+        ).unwrap();
+      });
+      await runWithConcurrency(selectedFolderIds, MAX_PARALLEL, async (id) => {
+        if (target !== null && isDescendantOf(target, id)) return; // cycle
+        if (foldersById[id]?.parentId === target) return; // no-op
+        await dispatch(
+          updateFolderThunk({ folderId: id, patch: { parentId: target } }),
         ).unwrap();
       });
       dispatch(clearSelection());
     } finally {
       setBusyKind(null);
     }
-  }, [busyKind, dispatch, hasFiles, selectedFileIds, showFolderNote]);
+  }, [
+    busyKind,
+    dispatch,
+    foldersById,
+    hasAny,
+    selectedFileIds,
+    selectedFolderIds,
+    totalCount,
+  ]);
 
   const handleDelete = useCallback(async () => {
-    if (!hasFiles || busyKind) return;
+    if (!hasAny || busyKind) return;
     setConfirmDelete(false);
     setBusyKind("delete");
-    showFolderNote("delete");
     try {
       await runWithConcurrency(selectedFileIds, MAX_PARALLEL, async (id) => {
         await dispatch(deleteFileThunk({ fileId: id })).unwrap();
+      });
+      await runWithConcurrency(selectedFolderIds, MAX_PARALLEL, async (id) => {
+        await dispatch(deleteFolderThunk({ folderId: id })).unwrap();
       });
       dispatch(clearSelection());
     } finally {
       setBusyKind(null);
     }
-  }, [busyKind, dispatch, hasFiles, selectedFileIds, showFolderNote]);
+  }, [busyKind, dispatch, hasAny, selectedFileIds, selectedFolderIds]);
+
+  const handleVisibility = useCallback(
+    async (visibility: Visibility) => {
+      if (!hasAny || busyKind) return;
+      setBusyKind("visibility");
+      try {
+        await runWithConcurrency(selectedFileIds, MAX_PARALLEL, async (id) => {
+          await dispatch(
+            updateFileMetadata({ fileId: id, patch: { visibility } }),
+          ).unwrap();
+        });
+        await runWithConcurrency(selectedFolderIds, MAX_PARALLEL, async (id) => {
+          await dispatch(
+            updateFolderThunk({ folderId: id, patch: { visibility } }),
+          ).unwrap();
+        });
+      } finally {
+        setBusyKind(null);
+      }
+    },
+    [busyKind, dispatch, hasAny, selectedFileIds, selectedFolderIds],
+  );
 
   // Hidden when nothing is selected. Mounting is conditional in the parent;
   // this guard is belt-and-suspenders.
@@ -197,14 +260,45 @@ export function BulkActionsBar({ className }: { className?: string }) {
         label="Move…"
         onClick={handleMove}
         running={busyKind === "move"}
-        disabled={!hasFiles || busyKind !== null}
+        disabled={!hasAny || busyKind !== null}
       />
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            type="button"
+            disabled={!hasAny || busyKind !== null}
+            className={cn(
+              "flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-medium transition-colors",
+              "disabled:cursor-not-allowed disabled:opacity-50",
+              "text-foreground hover:bg-accent",
+            )}
+          >
+            {busyKind === "visibility" ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Lock className="h-3.5 w-3.5" />
+            )}
+            Visibility
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="center" className="w-44">
+          <DropdownMenuItem onClick={() => void handleVisibility("private")}>
+            <Lock className="mr-2 h-4 w-4" /> Private
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => void handleVisibility("shared")}>
+            <Users className="mr-2 h-4 w-4" /> Shared
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => void handleVisibility("public")}>
+            <Globe className="mr-2 h-4 w-4" /> Public
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
       <BulkActionButton
         icon={<Trash2 className="h-3.5 w-3.5" />}
         label="Delete"
         onClick={() => setConfirmDelete(true)}
         running={busyKind === "delete"}
-        disabled={!hasFiles || busyKind !== null}
+        disabled={!hasAny || busyKind !== null}
         tone="destructive"
       />
 
@@ -230,29 +324,22 @@ export function BulkActionsBar({ className }: { className?: string }) {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Delete {selectedFileIds.length}{" "}
-              {selectedFileIds.length === 1 ? "file" : "files"}?
+              Delete {totalCount} {totalCount === 1 ? "item" : "items"}?
             </AlertDialogTitle>
             <AlertDialogDescription>
-              {selectedFolderIds.length > 0 ? (
-                <>
-                  {selectedFolderIds.length}{" "}
-                  {selectedFolderIds.length === 1 ? "folder" : "folders"} in
-                  your selection will be skipped — folder bulk-delete isn't
-                  available yet. Files will move to trash and can be restored
-                  for 30 days.
-                </>
-              ) : (
-                <>
-                  These files will move to trash. You can restore them for 30
-                  days before bytes are removed.
-                </>
-              )}
+              {selectedFolderIds.length > 0 && selectedFileIds.length > 0
+                ? `${selectedFileIds.length} file${selectedFileIds.length === 1 ? "" : "s"} and ${selectedFolderIds.length} folder${selectedFolderIds.length === 1 ? "" : "s"} (with all contents) will move to Trash. You can restore them later.`
+                : selectedFolderIds.length > 0
+                  ? "Folders will be moved to Trash along with all of their contents. You can restore them later."
+                  : "These files will move to Trash. You can restore them for 30 days before bytes are removed."}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => void handleDelete()}>
+            <AlertDialogAction
+              onClick={() => void handleDelete()}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
