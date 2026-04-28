@@ -75,7 +75,7 @@ export default async function VSCodeShellPage() {
           >
             <Sidebar />
           </RegisteredPanel>
-          <Handle />
+          <Handle hideWhenCollapsed={["sidebar"]} />
 
           <Panel id="main" minSize="30%">
             <ClientGroup
@@ -89,7 +89,7 @@ export default async function VSCodeShellPage() {
               <Panel id="editor" minSize="20%">
                 <EditorSurface />
               </Panel>
-              <Handle />
+              <Handle hideWhenCollapsed={["terminal"]} />
               <RegisteredPanel
                 registerAs="terminal"
                 groupKey="main"
@@ -103,7 +103,7 @@ export default async function VSCodeShellPage() {
               </RegisteredPanel>
             </ClientGroup>
           </Panel>
-          <Handle />
+          <Handle hideWhenCollapsed={["chat"]} />
 
           <RegisteredPanel
             registerAs="chat"
@@ -116,7 +116,7 @@ export default async function VSCodeShellPage() {
           >
             <ChatSurface />
           </RegisteredPanel>
-          <Handle />
+          <Handle hideWhenCollapsed={["chat", "chat-history"]} />
 
           <RegisteredPanel
             registerAs="chat-history"

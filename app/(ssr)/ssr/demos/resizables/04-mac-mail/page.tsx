@@ -58,7 +58,7 @@ export default async function MacMailPage() {
           >
             <Folders />
           </RegisteredPanel>
-          <Handle />
+          <Handle hideWhenCollapsed={["folders", "messages"]} />
 
           <RegisteredPanel
             registerAs="messages"
@@ -71,12 +71,12 @@ export default async function MacMailPage() {
           >
             <MessagesList />
           </RegisteredPanel>
-          <Handle />
+          <Handle hideWhenCollapsed={["messages"]} />
 
           <Panel id="reader" minSize="20%">
             <Reader />
           </Panel>
-          <Handle />
+          <Handle hideWhenCollapsed={["inspector"]} />
 
           <RegisteredPanel
             registerAs="inspector"
@@ -89,7 +89,7 @@ export default async function MacMailPage() {
           >
             <Inspector />
           </RegisteredPanel>
-          <Handle />
+          <Handle hideWhenCollapsed={["inspector", "chat-history"]} />
 
           <RegisteredPanel
             registerAs="chat-history"

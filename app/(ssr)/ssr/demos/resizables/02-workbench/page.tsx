@@ -64,13 +64,13 @@ export default async function WorkbenchDemoPage() {
             <FilesSidebar />
           </RegisteredPanel>
 
-          <Handle />
+          <Handle hideWhenCollapsed={["files"]} />
 
           <Panel id="editor" minSize="30%">
             <EditorSurface />
           </Panel>
 
-          <Handle />
+          <Handle hideWhenCollapsed={["inspector"]} />
 
           <RegisteredPanel
             registerAs="inspector"

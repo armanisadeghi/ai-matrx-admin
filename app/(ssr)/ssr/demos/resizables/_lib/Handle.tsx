@@ -2,16 +2,36 @@
 
 import { Separator, type SeparatorProps } from "react-resizable-panels";
 import { cn } from "@/styles/themes/utils";
+import { usePanelControlsOptional } from "./PanelControlProvider";
+
+interface HandleProps extends SeparatorProps {
+  /** When ANY of the named registered panels is currently collapsed, this
+   *  Handle returns null. Prevents users from grabbing a sliver of separator
+   *  next to a 0%-width panel and dragging it back open — the toggle button
+   *  becomes the only way to expand. */
+  hideWhenCollapsed?: string[];
+}
 
 // Orientation-aware Separator wrapper used by every demo.
 // Reads aria-orientation (set by the lib based on parent Group orientation):
 //   - vertical Separator (in horizontal group)   → 0.5 wide bar, col-resize cursor
 //   - horizontal Separator (in vertical group)   → 0.5 tall bar, row-resize cursor
-// Required: focus:outline-none to suppress the browser's default focus outline,
-// plus state classes for hover / active / dragging so the bar paints in primary
-// at all interaction states (skipping `active` causes a "click reveals a white
-// line" bug in dark mode — see SKILL.md §1).
-export function Handle({ className, ...props }: SeparatorProps) {
+// `focus:outline-none` suppresses the browser's default focus outline; the
+// data-separator state classes paint primary on hover/active/dragging.
+export function Handle({
+  hideWhenCollapsed,
+  className,
+  ...props
+}: HandleProps) {
+  const controls = usePanelControlsOptional();
+  if (
+    hideWhenCollapsed &&
+    controls &&
+    hideWhenCollapsed.some((name) => controls.isCollapsed(name))
+  ) {
+    return null;
+  }
+
   return (
     <Separator
       {...props}

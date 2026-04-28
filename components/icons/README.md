@@ -75,6 +75,31 @@ Pass-through props: `onClick`, `as`, `htmlFor`, `ariaLabel`, `disabled`, `classN
 **Available:**
 `MenuTapButton` `PlusTapButton` `SearchTapButton` `SettingsTapButton` `MaximizeTapButton` `ArrowDownUpTapButton` `BellTapButton` `UploadTapButton` `UndoTapButton` `RedoTapButton` `CopyTapButton` `TrashTapButton` `ChevronLeftTapButton` `PanelLeftTapButton` `PanelRightTapButton` `SquarePenTapButton` `XTapButton` `FilterTapButton` `PlayTapButton` `PauseTapButton` `StopTapButton` `Volume2TapButton`
 
+### Links
+
+Pass `href` to render the tap button as a link instead of a `<button>`. The visual shell, tooltip, and `disabled` styling are identical — only the trigger element changes. Works on every pre-composed TapButton (general, AI, composite) and every variant (`glass`, `transparent`, `solid`, `group`).
+
+```tsx
+<PlusTapButton href="/tasks" />                     // next/link <Link> (internal, prefetched)
+<XTapButton href="https://x.com" />                 // <a target="_blank" rel="noopener noreferrer">
+<MailTapButton href="mailto:hi@example.com" />      // <a target="_blank">
+<HelpTapButton href="/docs" target="_blank" />      // internal Link, opens in new tab
+<HelpTapButton href="/docs" target="_blank" rel="noopener" /> // explicit rel override
+<DownloadTapButton href="/api/file" prefetch={false} />        // disable Link prefetch
+<DocsTapButton href="/docs" disabled />             // <span aria-disabled> — non-navigable, same look
+```
+
+Resolution rules:
+
+| Condition | Trigger element |
+|---|---|
+| no `href` | `<button>` (or `<label>` when `as="label"`) — unchanged |
+| `href` matches `http(s)://`, `mailto:`, or `tel:` | `<a target="_blank" rel="noopener noreferrer">` (defaults can be overridden) |
+| `href` is internal | `next/link` `<Link>` — `target` / `rel` / `prefetch` pass through |
+| `href` + `disabled` | `<span aria-disabled="true">` — same visual, no navigation |
+
+The `target` prop overrides the auto-detect, including for internal Next.js links — so `<HelpTapButton href="/docs" target="_blank" />` opens an internal route in a new tab.
+
 ---
 
 ## AI Tap Buttons — `ai-tap-buttons.tsx`

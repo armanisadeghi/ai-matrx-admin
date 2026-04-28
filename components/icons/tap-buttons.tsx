@@ -24,6 +24,14 @@ interface TapButtonProps {
   bgColor?: string;
   iconColor?: string;
   hoverBgColor?: string;
+  // Link support — when set, the button renders as a Next.js Link or <a>.
+  // Internal hrefs use next/link; external (http(s)://, mailto:, tel:) use <a>
+  // with target="_blank" + rel="noopener noreferrer" by default. Pass an
+  // explicit `target` to override (works for internal links too).
+  href?: string;
+  target?: "_blank" | "_self" | "_parent" | "_top";
+  rel?: string;
+  prefetch?: boolean | null;
   // Tooltip support — defaults to `ariaLabel`. Pass `false` to opt out.
   tooltip?: string | false;
   tooltipSide?: "top" | "right" | "bottom" | "left";
@@ -201,11 +209,12 @@ export function TrashTapButton(props: TapButtonProps) {
   );
 }
 
-// lucide: chevron-left v0.577.0 (unchanged)
+// lucide: chevron-left v0.577.0 — arms extended from 6 to 7 (45° kept) for a
+// slightly larger glyph that better fills the 32px inner pill.
 export function ChevronLeftTapButton(props: TapButtonProps) {
   return (
-    <Wrap ariaLabel="Back" strokeWidth={1.75} {...props}>
-      <path d="m15 18-6-6 6-6" />
+    <Wrap ariaLabel="Back" {...props}>
+      <path d="m16 19-7-7 7-7" />
     </Wrap>
   );
 }

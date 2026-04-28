@@ -1,9 +1,9 @@
 import { Group, Panel } from "react-resizable-panels";
+import { ChevronLeftTapButton } from "@/components/icons/tap-buttons";
 import PageHeader from "@/features/shell/components/header/PageHeader";
 import { createRouteMetadata } from "@/utils/route-metadata";
 import { Handle } from "../_lib/Handle";
 import { DemoTitle } from "../_lib/DemoTitle";
-import { BackChevron } from "../_lib/BackChevron";
 
 export const metadata = createRouteMetadata("/ssr/demos/resizables/00-baseline", {
   title: "00 · Baseline 2-panel split",
@@ -22,8 +22,12 @@ export default function BaselineDemoPage() {
   return (
     <>
       <PageHeader>
-        <div className="flex items-center gap-2 min-w-0 w-full">
-          <BackChevron href="/ssr/demos/resizables" />
+        <div className="flex items-center gap-0 p-0 min-w-0 w-full">
+          <ChevronLeftTapButton
+            href="/ssr/demos/resizables"
+            variant="transparent"
+            ariaLabel="Back"
+          />
           <DemoTitle
             title="Demo 00 — baseline"
             subtitle="2-panel split · no persistence · pure server component"

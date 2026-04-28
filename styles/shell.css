@@ -923,7 +923,7 @@
   justify-content: space-between;
   height: var(--shell-header-h);
   /* Padding is handled by the layout */
-  padding: 0 0.375rem 0 0.375rem;
+  padding: 0 0 0 0;
   padding-top: var(--shell-safe-area-top);
   /* Completely transparent — no bg, no border, no blur */
   background: transparent;

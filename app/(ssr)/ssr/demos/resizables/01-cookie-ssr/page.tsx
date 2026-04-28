@@ -1,10 +1,10 @@
 import { Panel } from "react-resizable-panels";
 import PageHeader from "@/features/shell/components/header/PageHeader";
 import { createRouteMetadata } from "@/utils/route-metadata";
+import { ChevronLeftTapButton } from "@/components/icons/tap-buttons";
 import { ClientGroup } from "../_lib/ClientGroup";
 import { Handle } from "../_lib/Handle";
 import { DemoTitle } from "../_lib/DemoTitle";
-import { BackChevron } from "../_lib/BackChevron";
 import { readLayoutCookie } from "../_lib/readLayoutCookie";
 
 export const metadata = createRouteMetadata(
@@ -29,8 +29,12 @@ export default async function CookieSsrDemoPage() {
   return (
     <>
       <PageHeader>
-        <div className="flex items-center gap-2 min-w-0 w-full">
-          <BackChevron href="/ssr/demos/resizables" />
+        <div className="flex items-center gap-0 p-0 min-w-0 w-full">
+          <ChevronLeftTapButton
+            href="/ssr/demos/resizables"
+            variant="transparent"
+            ariaLabel="Back"
+          />
           <DemoTitle
             title="Demo 01 — cookie-backed SSR"
             subtitle="server reads · client writes on pointer-up · no flash on reload"

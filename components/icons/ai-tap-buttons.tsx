@@ -20,6 +20,11 @@ export interface AITapButtonProps {
   bgColor?: string;
   iconColor?: string;
   hoverBgColor?: string;
+  // Link support — see tap-buttons.tsx for full semantics.
+  href?: string;
+  target?: "_blank" | "_self" | "_parent" | "_top";
+  rel?: string;
+  prefetch?: boolean | null;
 }
 
 function Wrap({

@@ -4,7 +4,10 @@ import {
   forwardRef,
   type ButtonHTMLAttributes,
   type ReactElement,
+  type ReactNode,
+  type Ref,
 } from "react";
+import Link from "next/link";
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import { TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -18,6 +21,21 @@ interface TapTargetButtonProps {
   htmlFor?: string;
   ariaLabel?: string;
   disabled?: boolean;
+  /**
+   * When set, the tap button renders as a link instead of a button.
+   * - Internal hrefs (e.g. "/tasks") render via `next/link`.
+   * - External hrefs (http://, https://, mailto:, tel:) render as `<a>`
+   *   with `target="_blank"` and `rel="noopener noreferrer"` by default.
+   * - When combined with `disabled`, the trigger renders as a non-navigable
+   *   `<span aria-disabled="true">` with the same visual styling.
+   */
+  href?: string;
+  /** Override target. Works on both internal Links and external anchors. */
+  target?: "_blank" | "_self" | "_parent" | "_top";
+  /** Override rel. Works on both internal Links and external anchors. */
+  rel?: string;
+  /** Forwarded to next/link. Pass `false` to disable Link prefetching. */
+  prefetch?: boolean | null;
   /**
    * Tooltip text. Defaults to `ariaLabel` when omitted.
    * Pass `false` to explicitly disable the tooltip.
@@ -34,6 +52,8 @@ interface TapTargetButtonSolidProps extends TapTargetButtonProps {
   iconColor?: string;
   hoverBgColor?: string;
 }
+
+const EXTERNAL_RE = /^(https?:|mailto:|tel:)/i;
 
 function IconContent({
   icon,
@@ -55,6 +75,110 @@ function IconContent({
     >
       {children}
     </svg>
+  );
+}
+
+interface RenderTriggerArgs {
+  href?: string;
+  target?: "_blank" | "_self" | "_parent" | "_top";
+  rel?: string;
+  prefetch?: boolean | null;
+  as?: "button" | "label";
+  htmlFor?: string;
+  onClick?: () => void;
+  ariaLabel?: string;
+  disabled?: boolean;
+  outerClassName: string;
+  children: ReactNode;
+  rest?: ButtonHTMLAttributes<HTMLButtonElement>;
+  buttonRef?: Ref<HTMLButtonElement>;
+}
+
+/**
+ * Resolves the correct trigger element based on the props passed.
+ *
+ * - `href` + `disabled` → unclickable `<span aria-disabled>`
+ * - `href` matching `http(s):|mailto:|tel:` → `<a target="_blank" rel="noopener noreferrer">`
+ * - `href` (internal) → `next/link` `<Link>`
+ * - `as="label"` → `<label htmlFor=...>`
+ * - default → `<button>`
+ */
+function renderTrigger({
+  href,
+  target,
+  rel,
+  prefetch,
+  as,
+  htmlFor,
+  onClick,
+  ariaLabel,
+  disabled,
+  outerClassName,
+  children,
+  rest,
+  buttonRef,
+}: RenderTriggerArgs): ReactElement {
+  if (disabled && href) {
+    return (
+      <span
+        aria-disabled="true"
+        aria-label={ariaLabel}
+        className={`${outerClassName} opacity-40 pointer-events-none`}
+      >
+        {children}
+      </span>
+    );
+  }
+  if (href) {
+    const isExternal = EXTERNAL_RE.test(href);
+    if (isExternal) {
+      return (
+        <a
+          href={href}
+          target={target ?? "_blank"}
+          rel={rel ?? "noopener noreferrer"}
+          aria-label={ariaLabel}
+          className={outerClassName}
+        >
+          {children}
+        </a>
+      );
+    }
+    return (
+      <Link
+        href={href}
+        target={target}
+        rel={rel}
+        prefetch={prefetch}
+        aria-label={ariaLabel}
+        className={outerClassName}
+      >
+        {children}
+      </Link>
+    );
+  }
+  if (as === "label") {
+    return (
+      <label
+        htmlFor={htmlFor}
+        aria-label={ariaLabel}
+        className={outerClassName}
+      >
+        {children}
+      </label>
+    );
+  }
+  return (
+    <button
+      ref={buttonRef}
+      onClick={onClick}
+      aria-label={ariaLabel}
+      disabled={disabled}
+      {...rest}
+      className={outerClassName}
+    >
+      {children}
+    </button>
   );
 }
 
@@ -102,6 +226,9 @@ function withTooltip(
   );
 }
 
+const TAP_OUTER_CLASS =
+  "flex h-11 w-11 items-center justify-center bg-transparent transition-transform active:scale-95 group outline-none cursor-pointer disabled:opacity-40 disabled:pointer-events-none";
+
 export const TapTargetButton = forwardRef<
   HTMLButtonElement,
   TapTargetButtonProps & ButtonHTMLAttributes<HTMLButtonElement>
@@ -116,6 +243,10 @@ export const TapTargetButton = forwardRef<
     htmlFor,
     ariaLabel,
     disabled,
+    href,
+    target,
+    rel,
+    prefetch,
     tooltip,
     tooltipSide,
     tooltipAlign,
@@ -124,53 +255,33 @@ export const TapTargetButton = forwardRef<
   ref,
 ) {
   const color = className ?? "text-foreground";
-  if (as === "label") {
-    const labelEl = (
-      <label
-        htmlFor={htmlFor}
-        aria-label={ariaLabel}
-        className="flex h-11 w-11 items-center justify-center bg-transparent transition-transform active:scale-95 group outline-none cursor-pointer"
+  const inner = (
+    <div className="flex h-8 w-8 items-center justify-center rounded-full matrx-shell-glass transition-colors">
+      <IconContent
+        icon={icon}
+        strokeWidth={strokeWidth}
+        className={`w-4 h-4 ${color}`}
       >
-        <div className="flex h-8 w-8 items-center justify-center rounded-full matrx-shell-glass transition-colors">
-          <IconContent
-            icon={icon}
-            strokeWidth={strokeWidth}
-            className={`w-4 h-4 ${color}`}
-          >
-            {children}
-          </IconContent>
-        </div>
-      </label>
-    );
-    return withTooltip(labelEl, {
-      tooltip,
-      ariaLabel,
-      disabled,
-      tooltipSide,
-      tooltipAlign,
-    });
-  }
-  const buttonEl = (
-    <button
-      ref={ref}
-      onClick={onClick}
-      aria-label={ariaLabel}
-      disabled={disabled}
-      {...rest}
-      className="flex h-11 w-11 items-center justify-center bg-transparent transition-transform active:scale-95 group outline-none cursor-pointer disabled:opacity-40 disabled:pointer-events-none"
-    >
-      <div className="flex h-8 w-8 items-center justify-center rounded-full matrx-shell-glass transition-colors">
-        <IconContent
-          icon={icon}
-          strokeWidth={strokeWidth}
-          className={`w-4 h-4 ${color}`}
-        >
-          {children}
-        </IconContent>
-      </div>
-    </button>
+        {children}
+      </IconContent>
+    </div>
   );
-  return withTooltip(buttonEl, {
+  const trigger = renderTrigger({
+    href,
+    target,
+    rel,
+    prefetch,
+    as,
+    htmlFor,
+    onClick,
+    ariaLabel,
+    disabled,
+    outerClassName: TAP_OUTER_CLASS,
+    children: inner,
+    rest,
+    buttonRef: ref,
+  });
+  return withTooltip(trigger, {
     tooltip,
     ariaLabel,
     disabled,
@@ -189,8 +300,14 @@ export const TapTargetButtonTransparent = forwardRef<
     strokeWidth = 2,
     onClick,
     className,
+    as,
+    htmlFor,
     ariaLabel,
     disabled,
+    href,
+    target,
+    rel,
+    prefetch,
     tooltip,
     tooltipSide,
     tooltipAlign,
@@ -199,27 +316,33 @@ export const TapTargetButtonTransparent = forwardRef<
   ref,
 ) {
   const color = className ?? "text-foreground";
-  const buttonEl = (
-    <button
-      ref={ref}
-      onClick={onClick}
-      aria-label={ariaLabel}
-      disabled={disabled}
-      {...rest}
-      className="flex h-11 w-11 items-center justify-center bg-transparent transition-transform active:scale-95 group outline-none cursor-pointer disabled:opacity-40 disabled:pointer-events-none"
-    >
-      <div className="flex h-8 w-8 items-center justify-center hover:bg-muted rounded-full transition-colors">
-        <IconContent
-          icon={icon}
-          strokeWidth={strokeWidth}
-          className={`w-4 h-4 ${color}`}
-        >
-          {children}
-        </IconContent>
-      </div>
-    </button>
+  const inner = (
+    <div className="flex h-8 w-8 items-center justify-center hover:bg-muted rounded-full transition-colors">
+      <IconContent
+        icon={icon}
+        strokeWidth={strokeWidth}
+        className={`w-4 h-4 ${color}`}
+      >
+        {children}
+      </IconContent>
+    </div>
   );
-  return withTooltip(buttonEl, {
+  const trigger = renderTrigger({
+    href,
+    target,
+    rel,
+    prefetch,
+    as,
+    htmlFor,
+    onClick,
+    ariaLabel,
+    disabled,
+    outerClassName: TAP_OUTER_CLASS,
+    children: inner,
+    rest,
+    buttonRef: ref,
+  });
+  return withTooltip(trigger, {
     tooltip,
     ariaLabel,
     disabled,
@@ -237,8 +360,14 @@ export const TapTargetButtonSolid = forwardRef<
     children,
     strokeWidth = 2,
     onClick,
+    as,
+    htmlFor,
     ariaLabel,
     disabled,
+    href,
+    target,
+    rel,
+    prefetch,
     bgColor = "bg-primary",
     iconColor = "text-primary-foreground",
     hoverBgColor = "hover:bg-primary/80",
@@ -249,29 +378,35 @@ export const TapTargetButtonSolid = forwardRef<
   },
   ref,
 ) {
-  const buttonEl = (
-    <button
-      ref={ref}
-      onClick={onClick}
-      aria-label={ariaLabel}
-      disabled={disabled}
-      {...rest}
-      className="flex h-11 w-11 items-center justify-center bg-transparent transition-transform active:scale-95 group outline-none cursor-pointer disabled:opacity-40 disabled:pointer-events-none"
+  const inner = (
+    <div
+      className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors ${bgColor} ${hoverBgColor}`}
     >
-      <div
-        className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors ${bgColor} ${hoverBgColor}`}
+      <IconContent
+        icon={icon}
+        strokeWidth={strokeWidth}
+        className={`w-4 h-4 ${iconColor}`}
       >
-        <IconContent
-          icon={icon}
-          strokeWidth={strokeWidth}
-          className={`w-4 h-4 ${iconColor}`}
-        >
-          {children}
-        </IconContent>
-      </div>
-    </button>
+        {children}
+      </IconContent>
+    </div>
   );
-  return withTooltip(buttonEl, {
+  const trigger = renderTrigger({
+    href,
+    target,
+    rel,
+    prefetch,
+    as,
+    htmlFor,
+    onClick,
+    ariaLabel,
+    disabled,
+    outerClassName: TAP_OUTER_CLASS,
+    children: inner,
+    rest,
+    buttonRef: ref,
+  });
+  return withTooltip(trigger, {
     tooltip,
     ariaLabel,
     disabled,
@@ -279,6 +414,9 @@ export const TapTargetButtonSolid = forwardRef<
     tooltipAlign,
   });
 });
+
+const TAP_GROUP_OUTER_CLASS =
+  "flex h-9 w-9 items-center justify-center bg-transparent group outline-none disabled:opacity-40 disabled:pointer-events-none";
 
 export const TapTargetButtonForGroup = forwardRef<
   HTMLButtonElement,
@@ -290,8 +428,14 @@ export const TapTargetButtonForGroup = forwardRef<
     strokeWidth = 2,
     onClick,
     className,
+    as,
+    htmlFor,
     ariaLabel,
     disabled,
+    href,
+    target,
+    rel,
+    prefetch,
     tooltip,
     tooltipSide,
     tooltipAlign,
@@ -300,27 +444,33 @@ export const TapTargetButtonForGroup = forwardRef<
   ref,
 ) {
   const color = className ?? "text-foreground";
-  const buttonEl = (
-    <button
-      ref={ref}
-      onClick={onClick}
-      aria-label={ariaLabel}
-      disabled={disabled}
-      {...rest}
-      className="flex h-9 w-9 items-center justify-center bg-transparent group outline-none disabled:opacity-40 disabled:pointer-events-none"
-    >
-      <div className="flex h-6 w-6 items-center justify-center rounded-full matrx-glass-interactive transition-[background,transform] active:scale-95">
-        <IconContent
-          icon={icon}
-          strokeWidth={strokeWidth}
-          className={`w-4 h-4 ${color}`}
-        >
-          {children}
-        </IconContent>
-      </div>
-    </button>
+  const inner = (
+    <div className="flex h-6 w-6 items-center justify-center rounded-full matrx-glass-interactive transition-[background,transform] active:scale-95">
+      <IconContent
+        icon={icon}
+        strokeWidth={strokeWidth}
+        className={`w-4 h-4 ${color}`}
+      >
+        {children}
+      </IconContent>
+    </div>
   );
-  return withTooltip(buttonEl, {
+  const trigger = renderTrigger({
+    href,
+    target,
+    rel,
+    prefetch,
+    as,
+    htmlFor,
+    onClick,
+    ariaLabel,
+    disabled,
+    outerClassName: TAP_GROUP_OUTER_CLASS,
+    children: inner,
+    rest,
+    buttonRef: ref,
+  });
+  return withTooltip(trigger, {
     tooltip,
     ariaLabel,
     disabled,
