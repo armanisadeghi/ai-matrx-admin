@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { AgentAppPublicRenderer } from "./AgentAppPublicRenderer";
 import type { AgentApp, PublicAgentApp } from "../types";
 
@@ -14,6 +13,9 @@ export function AgentAppRenderer({ app, slug }: AgentAppRendererProps) {
     id: app.id,
     slug: app.slug,
     name: app.name,
+    agent_id: app.agent_id,
+    agent_version_id: app.agent_version_id,
+    use_latest: app.use_latest,
     tagline: app.tagline,
     description: app.description,
     category: app.category,
